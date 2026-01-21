@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -18,20 +19,28 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { AlertTriangle, Check, Edit2, Info, Sparkles } from 'lucide-react';
+import { AlertTriangle, Check, Info, Sparkles, CircleDot } from 'lucide-react';
 
-export interface PhotoAnalysisResult {
-  detected: boolean;
-  confidence: number;
-  tooth: string | null;
+// Multi-tooth detection structure
+export interface DetectedTooth {
+  tooth: string;
   tooth_region: string | null;
   cavity_class: string | null;
   restoration_size: string | null;
-  vita_shade: string | null;
   substrate: string | null;
   substrate_condition: string | null;
   enamel_condition: string | null;
   depth: string | null;
+  priority: "alta" | "média" | "baixa";
+  notes: string | null;
+}
+
+export interface PhotoAnalysisResult {
+  detected: boolean;
+  confidence: number;
+  detected_teeth: DetectedTooth[];
+  primary_tooth: string | null;
+  vita_shade: string | null;
   observations: string[];
   warnings: string[];
 }
@@ -60,6 +69,7 @@ interface ReviewAnalysisStepProps {
   formData: ReviewFormData;
   onFormChange: (data: Partial<ReviewFormData>) => void;
   imageBase64: string | null;
+  onToothSelect?: (tooth: DetectedTooth) => void;
 }
 
 const TEETH = {
@@ -67,21 +77,50 @@ const TEETH = {
   lower: ['48', '47', '46', '45', '44', '43', '42', '41', '31', '32', '33', '34', '35', '36', '37', '38'],
 };
 
+const priorityStyles = {
+  alta: 'bg-destructive text-destructive-foreground',
+  média: 'bg-warning text-warning-foreground border border-warning-foreground/20',
+  baixa: 'bg-secondary text-secondary-foreground',
+};
+
 export function ReviewAnalysisStep({
   analysisResult,
   formData,
   onFormChange,
   imageBase64,
+  onToothSelect,
 }: ReviewAnalysisStepProps) {
   const confidence = analysisResult?.confidence ?? 0;
   const confidenceColor = confidence >= 80 ? 'text-green-600' : confidence >= 60 ? 'text-yellow-600' : 'text-red-600';
+  const detectedTeeth = analysisResult?.detected_teeth || [];
+  const hasMultipleTeeth = detectedTeeth.length > 1;
+
+  // Handle selecting a detected tooth
+  const handleSelectDetectedTooth = (tooth: DetectedTooth) => {
+    onFormChange({
+      tooth: tooth.tooth,
+      toothRegion: tooth.tooth_region || formData.toothRegion,
+      cavityClass: tooth.cavity_class || formData.cavityClass,
+      restorationSize: tooth.restoration_size || formData.restorationSize,
+      substrate: tooth.substrate || formData.substrate,
+      substrateCondition: tooth.substrate_condition || formData.substrateCondition,
+      enamelCondition: tooth.enamel_condition || formData.enamelCondition,
+      depth: tooth.depth || formData.depth,
+    });
+    if (onToothSelect) {
+      onToothSelect(tooth);
+    }
+  };
 
   return (
     <div className="space-y-6">
       <div className="text-center">
         <h2 className="text-2xl font-semibold mb-2">Revisão da Análise</h2>
         <p className="text-muted-foreground">
-          Confirme ou ajuste os dados detectados pela IA
+          {hasMultipleTeeth 
+            ? `Detectados ${detectedTeeth.length} dentes com problema. Selecione qual tratar primeiro.`
+            : 'Confirme ou ajuste os dados detectados pela IA'
+          }
         </p>
       </div>
 
@@ -93,9 +132,16 @@ export function ReviewAnalysisStep({
               <Sparkles className="w-5 h-5 text-primary" />
               <span className="text-sm">Análise por IA</span>
             </div>
-            <Badge variant="secondary" className={confidenceColor}>
-              {confidence}% de confiança
-            </Badge>
+            <div className="flex items-center gap-3">
+              {hasMultipleTeeth && (
+                <Badge variant="outline" className="text-xs">
+                  {detectedTeeth.length} dentes detectados
+                </Badge>
+              )}
+              <Badge variant="secondary" className={confidenceColor}>
+                {confidence}% de confiança
+              </Badge>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -115,6 +161,56 @@ export function ReviewAnalysisStep({
                 </ul>
               </div>
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Multi-tooth Selection */}
+      {hasMultipleTeeth && (
+        <Card className="border-primary/50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <CircleDot className="w-4 h-4 text-primary" />
+              Dentes Detectados
+              <Badge variant="secondary" className="ml-2">{detectedTeeth.length}</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              Clique em um dente para preencher os dados automaticamente. Cada dente pode gerar um caso separado.
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {detectedTeeth.map((tooth, index) => (
+                <Button
+                  key={`${tooth.tooth}-${index}`}
+                  variant={formData.tooth === tooth.tooth ? "default" : "outline"}
+                  className="h-auto py-3 px-4 flex flex-col items-start relative"
+                  onClick={() => handleSelectDetectedTooth(tooth)}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <span className="font-semibold text-lg">Dente {tooth.tooth}</span>
+                    <Badge 
+                      variant={tooth.priority === 'alta' ? 'destructive' : tooth.priority === 'baixa' ? 'secondary' : 'outline'}
+                      className="text-xs"
+                    >
+                      {tooth.priority}
+                    </Badge>
+                  </div>
+                  <div className="text-xs text-left mt-1 opacity-80">
+                    {tooth.cavity_class && <span>{tooth.cavity_class}</span>}
+                    {tooth.restoration_size && <span> • {tooth.restoration_size}</span>}
+                  </div>
+                  {formData.tooth === tooth.tooth && (
+                    <div className="absolute top-1 right-1">
+                      <Check className="w-4 h-4" />
+                    </div>
+                  )}
+                </Button>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground mt-3 text-center">
+              💡 Dica: Complete este caso primeiro, depois volte para criar os demais.
+            </p>
           </CardContent>
         </Card>
       )}
@@ -196,7 +292,7 @@ export function ReviewAnalysisStep({
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Dente</Label>
+                  <Label>Dente *</Label>
                   <Select
                     value={formData.tooth}
                     onValueChange={(value) => onFormChange({ tooth: value })}
@@ -452,11 +548,11 @@ export function ReviewAnalysisStep({
         </AccordionItem>
 
         <AccordionItem value="notes">
-          <AccordionTrigger>Observações Clínicas</AccordionTrigger>
+          <AccordionTrigger>Notas Clínicas</AccordionTrigger>
           <AccordionContent>
             <div className="pt-2">
               <Textarea
-                placeholder="Informações adicionais relevantes para o caso..."
+                placeholder="Adicione observações clínicas, histórico relevante, ou detalhes específicos do caso..."
                 value={formData.clinicalNotes}
                 onChange={(e) => onFormChange({ clinicalNotes: e.target.value })}
                 rows={4}

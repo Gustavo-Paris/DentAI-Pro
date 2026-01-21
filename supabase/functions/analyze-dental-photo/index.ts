@@ -12,18 +12,25 @@ interface AnalyzePhotoRequest {
   imageType?: string; // "intraoral" | "frontal_smile" | "45_smile" | "face"
 }
 
-interface PhotoAnalysisResult {
-  detected: boolean;
-  confidence: number;
-  tooth: string | null;
+interface DetectedTooth {
+  tooth: string;
   tooth_region: string | null;
   cavity_class: string | null;
   restoration_size: string | null;
-  vita_shade: string | null;
   substrate: string | null;
   substrate_condition: string | null;
   enamel_condition: string | null;
   depth: string | null;
+  priority: "alta" | "média" | "baixa";
+  notes: string | null;
+}
+
+interface PhotoAnalysisResult {
+  detected: boolean;
+  confidence: number;
+  detected_teeth: DetectedTooth[];
+  primary_tooth: string | null;
+  vita_shade: string | null;
   observations: string[];
   warnings: string[];
 }
@@ -57,102 +64,138 @@ serve(async (req) => {
       base64Image = base64Image.split(",")[1];
     }
 
-    // System prompt for dental photo analysis
+    // System prompt for dental photo analysis - MULTI-TOOTH DETECTION
     const systemPrompt = `Você é um especialista em odontologia restauradora com 20 anos de experiência em análise de casos clínicos.
 
-Sua tarefa é analisar fotos intraorais de cavidades dentárias e identificar com precisão:
-1. Qual dente está sendo mostrado (notação universal ou FDI)
+Sua tarefa é analisar fotos intraorais e identificar TODOS os dentes que apresentam problemas (cáries, restaurações defeituosas, lesões, etc.).
+
+Para CADA dente com problema identificado, determine:
+1. Número do dente (notação FDI: 11-18, 21-28, 31-38, 41-48)
 2. A região do dente (anterior/posterior, superior/inferior)
 3. A classificação da cavidade (Classe I, II, III, IV, V ou VI)
-4. O tamanho estimado da restauração necessária (pequena, média, grande, extensa)
-5. A cor VITA mais próxima do dente adjacente (A1, A2, A3, A3.5, B1, B2, etc.)
-6. O tipo de substrato visível (esmalte, dentina, dentina esclerótica, dentina afetada)
-7. A condição do substrato (saudável, esclerótico, manchado, cariado)
-8. A condição do esmalte (íntegro, fraturado, hipoplásico, fluorose)
-9. A profundidade estimada da cavidade (superficial, média, profunda)
+4. O tamanho estimado da restauração necessária (Pequena, Média, Grande, Extensa)
+5. O tipo de substrato visível (Esmalte, Dentina, Esmalte e Dentina, Dentina profunda)
+6. A condição do substrato (Saudável, Esclerótico, Manchado, Cariado, Desidratado)
+7. A condição do esmalte (Íntegro, Fraturado, Hipoplásico, Fluorose, Erosão)
+8. A profundidade estimada da cavidade (Superficial, Média, Profunda)
+9. Prioridade de tratamento (alta, média, baixa) baseada na urgência clínica
 
-Seja preciso e conservador nas estimativas. Se não conseguir identificar algo com certeza, indique isso claramente.`;
+Adicionalmente, identifique:
+- A cor VITA geral da arcada (A1, A2, A3, A3.5, B1, B2, etc.)
+- O dente que deve ser tratado primeiro (primary_tooth) baseado na prioridade clínica
 
-    const userPrompt = `Analise esta foto intraoral e identifique os parâmetros clínicos para uma restauração em resina composta.
+IMPORTANTE: 
+- Se houver múltiplos dentes com problema, liste TODOS eles no array detected_teeth
+- Ordene por prioridade (alta primeiro)
+- Seja preciso e conservador nas estimativas
+- Se não conseguir identificar algo com certeza, indique isso claramente`;
+
+    const userPrompt = `Analise esta foto intraoral e identifique TODOS os dentes que necessitam de restauração em resina composta.
 
 Tipo de foto: ${data.imageType || "intraoral"}
 
-Forneça sua análise detalhada usando a função analyze_dental_photo.`;
+IMPORTANTE: Detecte e liste CADA dente com problema separadamente no array detected_teeth. Se houver 3 dentes com cárie, retorne 3 objetos no array.
 
-    // Tool definition for structured output
+Forneça sua análise completa usando a função analyze_dental_photo.`;
+
+    // Tool definition for structured output - MULTI-TOOTH SUPPORT
     const tools = [
       {
         type: "function",
         function: {
           name: "analyze_dental_photo",
-          description: "Retorna a análise estruturada de uma foto dental intraoral",
+          description: "Retorna a análise estruturada de uma foto dental intraoral, detectando TODOS os dentes com problemas",
           parameters: {
             type: "object",
             properties: {
               detected: {
                 type: "boolean",
-                description: "Se foi possível detectar uma cavidade ou área de restauração na foto"
+                description: "Se foi possível detectar pelo menos um dente com problema na foto"
               },
               confidence: {
                 type: "number",
-                description: "Nível de confiança da análise de 0 a 100"
+                description: "Nível de confiança geral da análise de 0 a 100"
               },
-              tooth: {
-                type: "string",
-                description: "Número do dente identificado (ex: '11', '21', '36', '46'). Null se não identificável.",
-                nullable: true
+              detected_teeth: {
+                type: "array",
+                description: "Lista de TODOS os dentes detectados com problemas, ordenados por prioridade",
+                items: {
+                  type: "object",
+                  properties: {
+                    tooth: {
+                      type: "string",
+                      description: "Número do dente (notação FDI: 11-18, 21-28, 31-38, 41-48)"
+                    },
+                    tooth_region: {
+                      type: "string",
+                      enum: ["anterior-superior", "anterior-inferior", "posterior-superior", "posterior-inferior"],
+                      description: "Região do dente na arcada",
+                      nullable: true
+                    },
+                    cavity_class: {
+                      type: "string",
+                      enum: ["Classe I", "Classe II", "Classe III", "Classe IV", "Classe V", "Classe VI"],
+                      description: "Classificação de Black da cavidade",
+                      nullable: true
+                    },
+                    restoration_size: {
+                      type: "string",
+                      enum: ["Pequena", "Média", "Grande", "Extensa"],
+                      description: "Tamanho estimado da restauração",
+                      nullable: true
+                    },
+                    substrate: {
+                      type: "string",
+                      enum: ["Esmalte", "Dentina", "Esmalte e Dentina", "Dentina profunda"],
+                      description: "Tipo de substrato principal visível",
+                      nullable: true
+                    },
+                    substrate_condition: {
+                      type: "string",
+                      enum: ["Saudável", "Esclerótico", "Manchado", "Cariado", "Desidratado"],
+                      description: "Condição do substrato dentário",
+                      nullable: true
+                    },
+                    enamel_condition: {
+                      type: "string",
+                      enum: ["Íntegro", "Fraturado", "Hipoplásico", "Fluorose", "Erosão"],
+                      description: "Condição do esmalte periférico",
+                      nullable: true
+                    },
+                    depth: {
+                      type: "string",
+                      enum: ["Superficial", "Média", "Profunda"],
+                      description: "Profundidade estimada da cavidade",
+                      nullable: true
+                    },
+                    priority: {
+                      type: "string",
+                      enum: ["alta", "média", "baixa"],
+                      description: "Prioridade de tratamento baseada na urgência clínica"
+                    },
+                    notes: {
+                      type: "string",
+                      description: "Observações específicas sobre este dente",
+                      nullable: true
+                    }
+                  },
+                  required: ["tooth", "priority"]
+                }
               },
-              tooth_region: {
+              primary_tooth: {
                 type: "string",
-                enum: ["anterior-superior", "anterior-inferior", "posterior-superior", "posterior-inferior"],
-                description: "Região do dente na arcada",
-                nullable: true
-              },
-              cavity_class: {
-                type: "string",
-                enum: ["Classe I", "Classe II", "Classe III", "Classe IV", "Classe V", "Classe VI"],
-                description: "Classificação de Black da cavidade",
-                nullable: true
-              },
-              restoration_size: {
-                type: "string",
-                enum: ["Pequena", "Média", "Grande", "Extensa"],
-                description: "Tamanho estimado da restauração",
+                description: "Número do dente que deve ser tratado primeiro (mais urgente)",
                 nullable: true
               },
               vita_shade: {
                 type: "string",
-                description: "Cor VITA mais próxima (ex: A1, A2, A3, A3.5, B1, B2, C1, D2)",
-                nullable: true
-              },
-              substrate: {
-                type: "string",
-                enum: ["Esmalte", "Dentina", "Esmalte e Dentina", "Dentina profunda"],
-                description: "Tipo de substrato principal visível",
-                nullable: true
-              },
-              substrate_condition: {
-                type: "string",
-                enum: ["Saudável", "Esclerótico", "Manchado", "Cariado", "Desidratado"],
-                description: "Condição do substrato dentário",
-                nullable: true
-              },
-              enamel_condition: {
-                type: "string",
-                enum: ["Íntegro", "Fraturado", "Hipoplásico", "Fluorose", "Erosão"],
-                description: "Condição do esmalte periférico",
-                nullable: true
-              },
-              depth: {
-                type: "string",
-                enum: ["Superficial", "Média", "Profunda"],
-                description: "Profundidade estimada da cavidade",
+                description: "Cor VITA geral da arcada (ex: A1, A2, A3, A3.5, B1, B2, C1, D2)",
                 nullable: true
               },
               observations: {
                 type: "array",
                 items: { type: "string" },
-                description: "Observações clínicas relevantes"
+                description: "Observações clínicas gerais sobre a arcada/foto"
               },
               warnings: {
                 type: "array",
@@ -160,7 +203,7 @@ Forneça sua análise detalhada usando a função analyze_dental_photo.`;
                 description: "Alertas ou pontos de atenção para o operador"
               }
             },
-            required: ["detected", "confidence", "observations", "warnings"],
+            required: ["detected", "confidence", "detected_teeth", "observations", "warnings"],
             additionalProperties: false
           }
         }
@@ -264,22 +307,38 @@ Forneça sua análise detalhada usando a função analyze_dental_photo.`;
       }
     }
 
-    // Ensure required fields have defaults
+    // Ensure required fields have defaults and normalize detected_teeth
+    const detectedTeeth: DetectedTooth[] = (analysisResult.detected_teeth || []).map((tooth: Partial<DetectedTooth>) => ({
+      tooth: tooth.tooth || "desconhecido",
+      tooth_region: tooth.tooth_region ?? null,
+      cavity_class: tooth.cavity_class ?? null,
+      restoration_size: tooth.restoration_size ?? null,
+      substrate: tooth.substrate ?? null,
+      substrate_condition: tooth.substrate_condition ?? null,
+      enamel_condition: tooth.enamel_condition ?? null,
+      depth: tooth.depth ?? null,
+      priority: tooth.priority || "média",
+      notes: tooth.notes ?? null,
+    }));
+
+    // Sort by priority: alta > média > baixa
+    const priorityOrder = { alta: 0, média: 1, baixa: 2 };
+    detectedTeeth.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+
     const result: PhotoAnalysisResult = {
-      detected: analysisResult.detected ?? false,
+      detected: analysisResult.detected ?? detectedTeeth.length > 0,
       confidence: analysisResult.confidence ?? 0,
-      tooth: analysisResult.tooth ?? null,
-      tooth_region: analysisResult.tooth_region ?? null,
-      cavity_class: analysisResult.cavity_class ?? null,
-      restoration_size: analysisResult.restoration_size ?? null,
+      detected_teeth: detectedTeeth,
+      primary_tooth: analysisResult.primary_tooth ?? (detectedTeeth.length > 0 ? detectedTeeth[0].tooth : null),
       vita_shade: analysisResult.vita_shade ?? null,
-      substrate: analysisResult.substrate ?? null,
-      substrate_condition: analysisResult.substrate_condition ?? null,
-      enamel_condition: analysisResult.enamel_condition ?? null,
-      depth: analysisResult.depth ?? null,
       observations: analysisResult.observations ?? [],
       warnings: analysisResult.warnings ?? [],
     };
+
+    // Add warning if multiple teeth detected
+    if (detectedTeeth.length > 1) {
+      result.warnings.unshift(`Detectados ${detectedTeeth.length} dentes com necessidade de tratamento. Recomenda-se criar um caso para cada dente.`);
+    }
 
     return new Response(
       JSON.stringify({
