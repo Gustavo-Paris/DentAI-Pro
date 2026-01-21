@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { LogOut, Plus, FileText, Calendar } from 'lucide-react';
+import { LogOut, Plus, FileText, Calendar, Package } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -37,7 +37,6 @@ export default function Dashboard() {
     const fetchData = async () => {
       if (!user) return;
 
-      // Fetch profile
       const { data: profileData } = await supabase
         .from('profiles')
         .select('full_name')
@@ -46,7 +45,6 @@ export default function Dashboard() {
 
       setProfile(profileData);
 
-      // Fetch evaluations with resin data
       const { data: evaluationsData } = await supabase
         .from('evaluations')
         .select(`
@@ -63,7 +61,7 @@ export default function Dashboard() {
         `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
-        .limit(10);
+        .limit(5);
 
       setEvaluations(evaluationsData || []);
       setLoading(false);
@@ -81,7 +79,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="border-b border-border">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <span className="text-xl font-semibold tracking-tight">ResinMatch AI</span>
@@ -93,50 +90,57 @@ export default function Dashboard() {
       </header>
 
       <main className="container mx-auto px-6 py-8 max-w-4xl">
-        {/* Welcome */}
         <div className="mb-8">
-          <h1 className="text-2xl font-semibold mb-1">
-            Olá, {firstName}
-          </h1>
-          <p className="text-muted-foreground">
-            Bem-vindo ao seu painel de avaliações
-          </p>
+          <h1 className="text-2xl font-semibold mb-1">Olá, {firstName}</h1>
+          <p className="text-muted-foreground">Bem-vindo ao seu painel</p>
         </div>
 
-        {/* Stats & CTA */}
-        <div className="grid md:grid-cols-3 gap-4 mb-8">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total de avaliações
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <Skeleton className="h-8 w-12" />
-              ) : (
-                <p className="text-3xl font-semibold">{evaluations.length}</p>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="md:col-span-2 flex items-center justify-between p-6">
+        {/* Quick Actions */}
+        <div className="grid md:grid-cols-2 gap-4 mb-8">
+          <Card className="flex items-center justify-between p-6">
             <div>
-              <h3 className="font-medium mb-1">Nova avaliação</h3>
-              <p className="text-sm text-muted-foreground">
-                Analise um novo caso clínico com IA
-              </p>
+              <h3 className="font-medium mb-1">Novo Caso Clínico</h3>
+              <p className="text-sm text-muted-foreground">Análise com IA para resina ideal</p>
             </div>
-            <Link to="/evaluation">
+            <Link to="/new-case">
               <Button>
                 <Plus className="w-4 h-4 mr-2" />
                 Iniciar
               </Button>
             </Link>
           </Card>
+
+          <Card className="flex items-center justify-between p-6">
+            <div>
+              <h3 className="font-medium mb-1">Meu Inventário</h3>
+              <p className="text-sm text-muted-foreground">Gerencie suas resinas disponíveis</p>
+            </div>
+            <Link to="/inventory">
+              <Button variant="outline">
+                <Package className="w-4 h-4 mr-2" />
+                Ver
+              </Button>
+            </Link>
+          </Card>
         </div>
 
-        {/* Recent evaluations */}
+        {/* Stats */}
+        <Card className="mb-8">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Total de avaliações
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <Skeleton className="h-8 w-12" />
+            ) : (
+              <p className="text-3xl font-semibold">{evaluations.length}</p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Recent Evaluations */}
         <div>
           <h2 className="text-lg font-medium mb-4">Avaliações recentes</h2>
           
@@ -149,10 +153,8 @@ export default function Dashboard() {
           ) : evaluations.length === 0 ? (
             <Card className="p-8 text-center">
               <FileText className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground mb-4">
-                Você ainda não fez nenhuma avaliação
-              </p>
-              <Link to="/evaluation">
+              <p className="text-muted-foreground mb-4">Nenhuma avaliação ainda</p>
+              <Link to="/new-case">
                 <Button>Fazer primeira avaliação</Button>
               </Link>
             </Card>
