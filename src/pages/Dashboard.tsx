@@ -54,7 +54,7 @@ export default function Dashboard() {
           cavity_class,
           recommendation_text,
           recommended_resin_id,
-          resins (
+          resins!recommended_resin_id (
             name,
             manufacturer
           )

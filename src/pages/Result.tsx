@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Download, Plus, CheckCircle, Image } from 'lucide-react';
+import { ArrowLeft, Download, Plus, CheckCircle, Image, Package, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import StratificationProtocol from '@/components/StratificationProtocol';
@@ -70,6 +70,10 @@ interface Evaluation {
   photo_45: string | null;
   photo_face: string | null;
   stratification_protocol: StratificationProtocolData | null;
+  is_from_inventory: boolean;
+  ideal_resin_id: string | null;
+  ideal_reason: string | null;
+  ideal_resin: Resin | null;
 }
 
 export default function Result() {
@@ -90,7 +94,8 @@ export default function Result() {
         .from('evaluations')
         .select(`
           *,
-          resins (*)
+          resins:resins!recommended_resin_id (*),
+          ideal_resin:resins!ideal_resin_id (*)
         `)
         .eq('id', id)
         .single();
@@ -164,9 +169,11 @@ export default function Result() {
   }
 
   const resin = evaluation.resins;
+  const idealResin = evaluation.ideal_resin;
   const alternatives = evaluation.alternatives as Alternative[] | null;
   const hasPhotos = photoUrls.frontal || photoUrls.angle45 || photoUrls.face;
   const stratificationProtocol = evaluation.stratification_protocol as StratificationProtocolData | null;
+  const showIdealResin = idealResin && idealResin.id !== resin?.id;
 
   return (
     <div className="min-h-screen bg-background print:bg-background">
@@ -209,7 +216,15 @@ export default function Result() {
                   </CardTitle>
                   <p className="text-muted-foreground mt-1">{resin.manufacturer}</p>
                 </div>
-                <Badge variant="secondary">{resin.type}</Badge>
+                <div className="flex flex-col items-end gap-2">
+                  <Badge variant="secondary">{resin.type}</Badge>
+                  {evaluation.is_from_inventory && (
+                    <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
+                      <Package className="w-3 h-3 mr-1" />
+                      No seu estoque
+                    </Badge>
+                  )}
+                </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -242,6 +257,32 @@ export default function Result() {
                   </p>
                 </div>
               )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Ideal Resin (when different from recommended) */}
+        {showIdealResin && (
+          <Card className="mb-6 border-muted-foreground/20 bg-secondary/50">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2 text-muted-foreground">
+                <Sparkles className="w-4 h-4" />
+                Opção Ideal (fora do estoque)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div>
+                <p className="font-medium">{idealResin.name}</p>
+                <p className="text-sm text-muted-foreground">{idealResin.manufacturer}</p>
+              </div>
+              {evaluation.ideal_reason && (
+                <p className="text-sm text-muted-foreground">
+                  {evaluation.ideal_reason}
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground/70">
+                Considere adquirir para casos futuros similares
+              </p>
             </CardContent>
           </Card>
         )}

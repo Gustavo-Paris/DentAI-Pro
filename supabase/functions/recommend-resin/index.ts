@@ -9,6 +9,7 @@ const corsHeaders = {
 
 interface EvaluationData {
   evaluationId: string;
+  userId: string;
   patientAge: string;
   tooth: string;
   region: string;
@@ -44,7 +45,76 @@ serve(async (req) => {
 
     if (resinsError) throw resinsError;
 
-    // Build prompt for AI
+    // Fetch user's inventory
+    const { data: userInventory, error: inventoryError } = await supabase
+      .from("user_inventory")
+      .select("resin_id")
+      .eq("user_id", data.userId);
+
+    if (inventoryError) {
+      console.error("Error fetching inventory:", inventoryError);
+    }
+
+    const inventoryResinIds = userInventory?.map((i) => i.resin_id) || [];
+    const hasInventory = inventoryResinIds.length > 0;
+
+    // Separate resins into inventory and non-inventory groups
+    const inventoryResins = resins.filter((r) =>
+      inventoryResinIds.includes(r.id)
+    );
+    const otherResins = resins.filter(
+      (r) => !inventoryResinIds.includes(r.id)
+    );
+
+    // Build prompt for AI with inventory awareness
+    const formatResinList = (resinList: typeof resins) =>
+      resinList
+        .map(
+          (r) => `
+- ${r.name} (${r.manufacturer})
+  Tipo: ${r.type}
+  Indicações: ${r.indications.join(", ")}
+  Opacidade: ${r.opacity}
+  Resistência: ${r.resistance}
+  Polimento: ${r.polishing}
+  Estética: ${r.aesthetics}
+  Faixa de preço: ${r.price_range}
+  Descrição: ${r.description || "N/A"}
+`
+        )
+        .join("\n");
+
+    const inventorySection = hasInventory
+      ? `
+=== RESINAS NO INVENTÁRIO DO DENTISTA (PRIORIZAR) ===
+${formatResinList(inventoryResins)}
+
+=== OUTRAS RESINAS DISPONÍVEIS ===
+${formatResinList(otherResins)}`
+      : `
+=== RESINAS DISPONÍVEIS ===
+${formatResinList(resins)}
+
+NOTA: O dentista ainda não cadastrou seu inventário. Recomende a melhor opção geral.`;
+
+    const inventoryInstructions = hasInventory
+      ? `
+INSTRUÇÕES IMPORTANTES:
+1. Primeiro, identifique a resina TECNICAMENTE IDEAL para este caso específico
+2. Verifique se a resina ideal está no inventário do dentista
+3. Se a ideal ESTIVER no inventário: recomende-a como principal
+4. Se a ideal NÃO estiver no inventário: 
+   - Encontre a MELHOR ALTERNATIVA do inventário que seja clinicamente adequada
+   - Recomende essa alternativa como principal
+   - Inclua a resina ideal nas informações para que o dentista possa considerar adquiri-la
+5. Se NENHUMA resina do inventário for clinicamente adequada: recomende a ideal externa
+6. Sempre priorize resinas do inventário quando forem clinicamente aceitáveis`
+      : `
+INSTRUÇÕES:
+1. Identifique a resina tecnicamente ideal para este caso
+2. Recomende-a como principal
+3. Sugira alternativas relevantes`;
+
     const prompt = `Você é um especialista em materiais dentários. Analise o caso clínico abaixo e recomende a melhor resina composta.
 
 CASO CLÍNICO:
@@ -60,31 +130,21 @@ CASO CLÍNICO:
 - Bruxismo: ${data.bruxism ? "Sim" : "Não"}
 - Expectativa de longevidade: ${data.longevityExpectation}
 - Orçamento: ${data.budget}
+${inventorySection}
+${inventoryInstructions}
 
-RESINAS DISPONÍVEIS:
-${resins
-  .map(
-    (r) => `
-- ${r.name} (${r.manufacturer})
-  Tipo: ${r.type}
-  Indicações: ${r.indications.join(", ")}
-  Opacidade: ${r.opacity}
-  Resistência: ${r.resistance}
-  Polimento: ${r.polishing}
-  Estética: ${r.aesthetics}
-  Faixa de preço: ${r.price_range}
-  Descrição: ${r.description || "N/A"}
-`
-  )
-  .join("\n")}
-
-Com base nas características do caso e nas resinas disponíveis, responda em formato JSON:
+Responda em formato JSON:
 {
-  "recommended_resin_name": "nome exato da resina recomendada",
-  "justification": "explicação detalhada de 2-3 frases do porquê esta resina é ideal para o caso",
-  "alternatives": [
-    {"name": "nome da alternativa 1", "manufacturer": "fabricante", "reason": "razão breve"},
-    {"name": "nome da alternativa 2", "manufacturer": "fabricante", "reason": "razão breve"}
+  "recommended_resin_name": "nome exato da resina recomendada (priorize as do inventário se adequadas)",
+  "is_from_inventory": true ou false,
+  "ideal_resin_name": "nome da resina tecnicamente ideal (se diferente da recomendada, caso contrário deixe null)",
+  "ideal_reason": "explicação de por que a ideal seria superior (se aplicável, caso contrário deixe null)",
+  "justification": "explicação detalhada de 2-3 frases do porquê esta resina é a melhor escolha considerando o inventário e o caso",
+  "inventory_alternatives": [
+    {"name": "...", "manufacturer": "...", "reason": "alternativa disponível no estoque"}
+  ],
+  "external_alternatives": [
+    {"name": "...", "manufacturer": "...", "reason": "alternativa para considerar aquisição"}
   ]
 }
 
@@ -107,7 +167,7 @@ Responda APENAS com o JSON, sem texto adicional.`;
               content: prompt,
             },
           ],
-          max_tokens: 1000,
+          max_tokens: 1500,
         }),
       }
     );
@@ -124,7 +184,6 @@ Responda APENAS com o JSON, sem texto adicional.`;
     // Parse JSON from AI response
     let recommendation;
     try {
-      // Extract JSON from response (in case there's extra text)
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         recommendation = JSON.parse(jsonMatch[0]);
@@ -139,8 +198,28 @@ Responda APENAS com o JSON, sem texto adicional.`;
     // Find the recommended resin in database
     const recommendedResin = resins.find(
       (r) =>
-        r.name.toLowerCase() === recommendation.recommended_resin_name.toLowerCase()
+        r.name.toLowerCase() ===
+        recommendation.recommended_resin_name.toLowerCase()
     );
+
+    // Find the ideal resin if different
+    let idealResin = null;
+    if (
+      recommendation.ideal_resin_name &&
+      recommendation.ideal_resin_name.toLowerCase() !==
+        recommendation.recommended_resin_name.toLowerCase()
+    ) {
+      idealResin = resins.find(
+        (r) =>
+          r.name.toLowerCase() === recommendation.ideal_resin_name.toLowerCase()
+      );
+    }
+
+    // Combine alternatives (inventory first, then external)
+    const allAlternatives = [
+      ...(recommendation.inventory_alternatives || []),
+      ...(recommendation.external_alternatives || []),
+    ].slice(0, 4); // Limit to 4 alternatives
 
     // Update evaluation with recommendation
     const { error: updateError } = await supabase
@@ -148,7 +227,10 @@ Responda APENAS com o JSON, sem texto adicional.`;
       .update({
         recommended_resin_id: recommendedResin?.id || null,
         recommendation_text: recommendation.justification,
-        alternatives: recommendation.alternatives,
+        alternatives: allAlternatives,
+        is_from_inventory: recommendation.is_from_inventory || false,
+        ideal_resin_id: idealResin?.id || null,
+        ideal_reason: recommendation.ideal_reason || null,
       })
       .eq("id", data.evaluationId);
 
@@ -160,7 +242,10 @@ Responda APENAS com o JSON, sem texto adicional.`;
         recommendation: {
           resin: recommendedResin,
           justification: recommendation.justification,
-          alternatives: recommendation.alternatives,
+          alternatives: allAlternatives,
+          isFromInventory: recommendation.is_from_inventory,
+          idealResin: idealResin,
+          idealReason: recommendation.ideal_reason,
         },
       }),
       {
@@ -170,12 +255,9 @@ Responda APENAS com o JSON, sem texto adicional.`;
   } catch (error: unknown) {
     console.error("Error:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
-    return new Response(
-      JSON.stringify({ error: message }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ error: message }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });

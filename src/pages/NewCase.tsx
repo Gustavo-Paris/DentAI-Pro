@@ -150,12 +150,13 @@ export default function NewCase() {
 
       if (evalError) throw evalError;
 
-      // Call AI recommendation edge function
+      // Call AI recommendation edge function with userId for inventory-aware recommendations
       const { error: aiError } = await supabase.functions.invoke(
         'recommend-resin',
         {
           body: {
             evaluationId: evaluation.id,
+            userId: user.id,
             patientAge: formData.patientAge,
             tooth: formData.selectedTooth,
             region: formData.toothRegion,

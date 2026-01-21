@@ -23,6 +23,9 @@ export type Database = {
           cavity_class: string
           created_at: string
           id: string
+          ideal_reason: string | null
+          ideal_resin_id: string | null
+          is_from_inventory: boolean | null
           longevity_expectation: string
           patient_age: number
           photo_45: string | null
@@ -47,6 +50,9 @@ export type Database = {
           cavity_class: string
           created_at?: string
           id?: string
+          ideal_reason?: string | null
+          ideal_resin_id?: string | null
+          is_from_inventory?: boolean | null
           longevity_expectation: string
           patient_age: number
           photo_45?: string | null
@@ -71,6 +77,9 @@ export type Database = {
           cavity_class?: string
           created_at?: string
           id?: string
+          ideal_reason?: string | null
+          ideal_resin_id?: string | null
+          is_from_inventory?: boolean | null
           longevity_expectation?: string
           patient_age?: number
           photo_45?: string | null
@@ -88,6 +97,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "evaluations_ideal_resin_id_fkey"
+            columns: ["ideal_resin_id"]
+            isOneToOne: false
+            referencedRelation: "resins"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "evaluations_recommended_resin_id_fkey"
             columns: ["recommended_resin_id"]
