@@ -239,10 +239,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "user_inventory_resin_id_fkey"
+            foreignKeyName: "user_inventory_resin_catalog_fkey"
             columns: ["resin_id"]
             isOneToOne: false
-            referencedRelation: "resins"
+            referencedRelation: "resin_catalog"
             referencedColumns: ["id"]
           },
         ]
