@@ -22,6 +22,7 @@ export type Database = {
           budget: string
           cavity_class: string
           created_at: string
+          has_inventory_at_creation: boolean | null
           id: string
           ideal_reason: string | null
           ideal_resin_id: string | null
@@ -49,6 +50,7 @@ export type Database = {
           budget: string
           cavity_class: string
           created_at?: string
+          has_inventory_at_creation?: boolean | null
           id?: string
           ideal_reason?: string | null
           ideal_resin_id?: string | null
@@ -76,6 +78,7 @@ export type Database = {
           budget?: string
           cavity_class?: string
           created_at?: string
+          has_inventory_at_creation?: boolean | null
           id?: string
           ideal_reason?: string | null
           ideal_resin_id?: string | null

@@ -74,6 +74,7 @@ interface Evaluation {
   ideal_resin_id: string | null;
   ideal_reason: string | null;
   ideal_resin: Resin | null;
+  has_inventory_at_creation: boolean;
 }
 
 export default function Result() {
@@ -203,6 +204,30 @@ export default function Result() {
         <p className="text-sm text-muted-foreground mb-6 print:hidden">
           {format(new Date(evaluation.created_at), "d 'de' MMMM 'de' yyyy, HH:mm", { locale: ptBR })}
         </p>
+
+        {/* Inventory Banner */}
+        {!evaluation.has_inventory_at_creation && (
+          <Card className="mb-6 border-primary/20 bg-primary/5 print:hidden">
+            <CardContent className="py-4">
+              <div className="flex items-center gap-3">
+                <Package className="w-5 h-5 text-primary" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium">
+                    Personalize suas recomendações
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Cadastre as resinas do seu consultório para receber sugestões baseadas no seu estoque.
+                  </p>
+                </div>
+                <Link to="/inventory">
+                  <Button size="sm" variant="outline">
+                    Ir para Inventário
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Main Recommendation */}
         {resin && (

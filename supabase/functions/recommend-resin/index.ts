@@ -231,6 +231,7 @@ Responda APENAS com o JSON, sem texto adicional.`;
         is_from_inventory: recommendation.is_from_inventory || false,
         ideal_resin_id: idealResin?.id || null,
         ideal_reason: recommendation.ideal_reason || null,
+        has_inventory_at_creation: hasInventory,
       })
       .eq("id", data.evaluationId);
 
