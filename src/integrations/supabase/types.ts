@@ -25,11 +25,15 @@ export type Database = {
           id: string
           longevity_expectation: string
           patient_age: number
+          photo_45: string | null
+          photo_face: string | null
+          photo_frontal: string | null
           recommendation_text: string | null
           recommended_resin_id: string | null
           region: string
           restoration_size: string
           stratification_needed: boolean
+          stratification_protocol: Json | null
           substrate: string
           tooth: string
           tooth_color: string
@@ -45,11 +49,15 @@ export type Database = {
           id?: string
           longevity_expectation: string
           patient_age: number
+          photo_45?: string | null
+          photo_face?: string | null
+          photo_frontal?: string | null
           recommendation_text?: string | null
           recommended_resin_id?: string | null
           region: string
           restoration_size: string
           stratification_needed?: boolean
+          stratification_protocol?: Json | null
           substrate: string
           tooth: string
           tooth_color: string
@@ -65,11 +73,15 @@ export type Database = {
           id?: string
           longevity_expectation?: string
           patient_age?: number
+          photo_45?: string | null
+          photo_face?: string | null
+          photo_frontal?: string | null
           recommendation_text?: string | null
           recommended_resin_id?: string | null
           region?: string
           restoration_size?: string
           stratification_needed?: boolean
+          stratification_protocol?: Json | null
           substrate?: string
           tooth?: string
           tooth_color?: string

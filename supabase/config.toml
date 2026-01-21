@@ -1,1 +1,7 @@
 project_id = "jknouttcuwbvygkobrff"
+
+[functions.recommend-resin]
+verify_jwt = false
+
+[functions.analyze-photos]
+verify_jwt = false

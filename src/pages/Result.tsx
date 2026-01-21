@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Download, Plus, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Download, Plus, CheckCircle, Image } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import StratificationProtocol from '@/components/StratificationProtocol';
 
 interface Resin {
   id: string;
@@ -28,6 +29,25 @@ interface Alternative {
   reason: string;
 }
 
+interface StratificationProtocolData {
+  color_analysis: {
+    base_shade: string;
+    cervical: string;
+    body: string;
+    incisal: string;
+    effects: string[];
+  };
+  stratification_layers: Array<{
+    layer: number;
+    material: string;
+    thickness: string;
+    area: string;
+  }>;
+  texture_notes: string;
+  surface_characteristics: string[];
+  recommendations: string;
+}
+
 interface Evaluation {
   id: string;
   created_at: string;
@@ -46,12 +66,21 @@ interface Evaluation {
   recommendation_text: string | null;
   alternatives: Alternative[] | null;
   resins: Resin | null;
+  photo_frontal: string | null;
+  photo_45: string | null;
+  photo_face: string | null;
+  stratification_protocol: StratificationProtocolData | null;
 }
 
 export default function Result() {
   const { id } = useParams<{ id: string }>();
   const [evaluation, setEvaluation] = useState<Evaluation | null>(null);
   const [loading, setLoading] = useState(true);
+  const [photoUrls, setPhotoUrls] = useState<{
+    frontal: string | null;
+    angle45: string | null;
+    face: string | null;
+  }>({ frontal: null, angle45: null, face: null });
 
   useEffect(() => {
     const fetchEvaluation = async () => {
@@ -68,6 +97,38 @@ export default function Result() {
 
       setEvaluation(data as unknown as Evaluation);
       setLoading(false);
+
+      // Load signed URLs for photos
+      if (data) {
+        const urls: { frontal: string | null; angle45: string | null; face: string | null } = {
+          frontal: null,
+          angle45: null,
+          face: null,
+        };
+
+        if (data.photo_frontal) {
+          const { data: signedData } = await supabase.storage
+            .from('clinical-photos')
+            .createSignedUrl(data.photo_frontal, 3600);
+          urls.frontal = signedData?.signedUrl || null;
+        }
+
+        if (data.photo_45) {
+          const { data: signedData } = await supabase.storage
+            .from('clinical-photos')
+            .createSignedUrl(data.photo_45, 3600);
+          urls.angle45 = signedData?.signedUrl || null;
+        }
+
+        if (data.photo_face) {
+          const { data: signedData } = await supabase.storage
+            .from('clinical-photos')
+            .createSignedUrl(data.photo_face, 3600);
+          urls.face = signedData?.signedUrl || null;
+        }
+
+        setPhotoUrls(urls);
+      }
     };
 
     fetchEvaluation();
@@ -104,6 +165,8 @@ export default function Result() {
 
   const resin = evaluation.resins;
   const alternatives = evaluation.alternatives as Alternative[] | null;
+  const hasPhotos = photoUrls.frontal || photoUrls.angle45 || photoUrls.face;
+  const stratificationProtocol = evaluation.stratification_protocol as StratificationProtocolData | null;
 
   return (
     <div className="min-h-screen bg-background print:bg-background">
@@ -198,6 +261,53 @@ export default function Result() {
                 </Card>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Clinical Photos */}
+        {hasPhotos && (
+          <div className="mb-6">
+            <h3 className="font-medium mb-3 flex items-center gap-2">
+              <Image className="w-4 h-4" />
+              Fotos Clínicas
+            </h3>
+            <div className="grid grid-cols-3 gap-3">
+              {photoUrls.frontal && (
+                <div className="aspect-square rounded-lg overflow-hidden bg-secondary">
+                  <img
+                    src={photoUrls.frontal}
+                    alt="Sorriso Frontal"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+              {photoUrls.angle45 && (
+                <div className="aspect-square rounded-lg overflow-hidden bg-secondary">
+                  <img
+                    src={photoUrls.angle45}
+                    alt="Sorriso 45°"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+              {photoUrls.face && (
+                <div className="aspect-square rounded-lg overflow-hidden bg-secondary">
+                  <img
+                    src={photoUrls.face}
+                    alt="Rosto"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Stratification Protocol */}
+        {stratificationProtocol && (
+          <div className="mb-6">
+            <h3 className="font-medium mb-3">Protocolo de Estratificação</h3>
+            <StratificationProtocol protocol={stratificationProtocol} />
           </div>
         )}
 
