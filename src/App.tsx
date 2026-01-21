@@ -9,7 +9,8 @@ import Landing from "@/pages/Landing";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import Dashboard from "@/pages/Dashboard";
-import Evaluation from "@/pages/Evaluation";
+import NewCase from "@/pages/NewCase";
+import Inventory from "@/pages/Inventory";
 import Result from "@/pages/Result";
 import NotFound from "@/pages/NotFound";
 
@@ -35,10 +36,18 @@ const App = () => (
               }
             />
             <Route
-              path="/evaluation"
+              path="/new-case"
               element={
                 <ProtectedRoute>
-                  <Evaluation />
+                  <NewCase />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/inventory"
+              element={
+                <ProtectedRoute>
+                  <Inventory />
                 </ProtectedRoute>
               }
             />
