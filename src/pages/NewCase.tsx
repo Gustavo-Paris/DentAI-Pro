@@ -9,7 +9,7 @@ import { ArrowLeft, ArrowRight, Camera, Brain, ClipboardCheck, FileText, Loader2
 
 import { PhotoUploadStep } from '@/components/wizard/PhotoUploadStep';
 import { AnalyzingStep } from '@/components/wizard/AnalyzingStep';
-import { ReviewAnalysisStep, PhotoAnalysisResult, ReviewFormData } from '@/components/wizard/ReviewAnalysisStep';
+import { ReviewAnalysisStep, PhotoAnalysisResult, ReviewFormData, DetectedTooth } from '@/components/wizard/ReviewAnalysisStep';
 
 const steps = [
   { id: 1, name: 'Foto', icon: Camera },
@@ -106,22 +106,34 @@ export default function NewCase() {
       if (error) throw error;
 
       if (data?.analysis) {
-        setAnalysisResult(data.analysis);
-        
-        // Pre-fill form with detected values
         const analysis = data.analysis as PhotoAnalysisResult;
-        setFormData((prev) => ({
-          ...prev,
-          tooth: analysis.tooth || prev.tooth,
-          toothRegion: analysis.tooth_region || (analysis.tooth ? (isAnterior(analysis.tooth) ? 'anterior' : 'posterior') : prev.toothRegion),
-          cavityClass: analysis.cavity_class || prev.cavityClass,
-          restorationSize: analysis.restoration_size || prev.restorationSize,
-          vitaShade: analysis.vita_shade || prev.vitaShade,
-          substrate: analysis.substrate || prev.substrate,
-          substrateCondition: analysis.substrate_condition || prev.substrateCondition,
-          enamelCondition: analysis.enamel_condition || prev.enamelCondition,
-          depth: analysis.depth || prev.depth,
-        }));
+        setAnalysisResult(analysis);
+        
+        // Pre-fill form with primary tooth or first detected tooth
+        const primaryToothData = analysis.detected_teeth?.find(
+          (t) => t.tooth === analysis.primary_tooth
+        ) || analysis.detected_teeth?.[0];
+        
+        if (primaryToothData) {
+          setFormData((prev) => ({
+            ...prev,
+            tooth: primaryToothData.tooth || prev.tooth,
+            toothRegion: primaryToothData.tooth_region || (primaryToothData.tooth ? (isAnterior(primaryToothData.tooth) ? 'anterior' : 'posterior') : prev.toothRegion),
+            cavityClass: primaryToothData.cavity_class || prev.cavityClass,
+            restorationSize: primaryToothData.restoration_size || prev.restorationSize,
+            vitaShade: analysis.vita_shade || prev.vitaShade,
+            substrate: primaryToothData.substrate || prev.substrate,
+            substrateCondition: primaryToothData.substrate_condition || prev.substrateCondition,
+            enamelCondition: primaryToothData.enamel_condition || prev.enamelCondition,
+            depth: primaryToothData.depth || prev.depth,
+          }));
+        } else if (analysis.vita_shade) {
+          // Even if no teeth detected, use VITA shade
+          setFormData((prev) => ({
+            ...prev,
+            vitaShade: analysis.vita_shade || prev.vitaShade,
+          }));
+        }
 
         // Move to review step
         setTimeout(() => {
