@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Progress } from '@/components/ui/progress';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
+import PhotoUploader from '@/components/PhotoUploader';
 import { 
   ArrowLeft, 
   ArrowRight, 
@@ -17,7 +18,8 @@ import {
   User,
   Stethoscope,
   Palette,
-  ClipboardList
+  ClipboardList,
+  Camera
 } from 'lucide-react';
 
 interface FormData {
@@ -41,6 +43,10 @@ interface FormData {
   longevityExpectation: string;
   // Notes
   clinicalNotes: string;
+  // Photos
+  photoFrontal: string | null;
+  photo45: string | null;
+  photoFace: string | null;
 }
 
 const initialFormData: FormData = {
@@ -58,6 +64,9 @@ const initialFormData: FormData = {
   budget: 'intermediário',
   longevityExpectation: 'média',
   clinicalNotes: '',
+  photoFrontal: null,
+  photo45: null,
+  photoFace: null,
 };
 
 const TEETH = {
@@ -70,6 +79,7 @@ const steps = [
   { id: 2, name: 'Dente', icon: Stethoscope },
   { id: 3, name: 'Clínico', icon: ClipboardList },
   { id: 4, name: 'Estética', icon: Palette },
+  { id: 5, name: 'Fotos', icon: Camera },
 ];
 
 export default function NewCase() {
@@ -79,7 +89,7 @@ export default function NewCase() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const totalSteps = 4;
+  const totalSteps = 5;
   const progress = (step / totalSteps) * 100;
 
   const updateField = <K extends keyof FormData>(field: K, value: FormData[K]) => {
@@ -131,6 +141,9 @@ export default function NewCase() {
           stratification_needed: formData.needsStratification,
           budget: formData.budget,
           longevity_expectation: formData.longevityExpectation,
+          photo_frontal: formData.photoFrontal,
+          photo_45: formData.photo45,
+          photo_face: formData.photoFace,
         })
         .select()
         .single();
@@ -160,6 +173,27 @@ export default function NewCase() {
       );
 
       if (aiError) throw aiError;
+
+      // If photos were uploaded, analyze them with multimodal AI
+      const hasPhotos = formData.photoFrontal || formData.photo45 || formData.photoFace;
+      if (hasPhotos) {
+        const { error: photoError } = await supabase.functions.invoke(
+          'analyze-photos',
+          {
+            body: {
+              evaluationId: evaluation.id,
+              photoFrontal: formData.photoFrontal,
+              photo45: formData.photo45,
+              photoFace: formData.photoFace,
+            },
+          }
+        );
+
+        if (photoError) {
+          console.error('Photo analysis error:', photoError);
+          toast.warning('Recomendação gerada, mas análise de fotos falhou');
+        }
+      }
 
       toast.success('Caso criado e analisado com sucesso!');
       navigate(`/result/${evaluation.id}`);
@@ -521,6 +555,51 @@ export default function NewCase() {
                 />
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Step 5: Photos */}
+        {step === 5 && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-xl font-semibold mb-1">Fotos Clínicas</h2>
+              <p className="text-sm text-muted-foreground">
+                Opcional: adicione fotos para análise multimodal com IA e protocolo de estratificação personalizado
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <PhotoUploader
+                label="Sorriso Frontal"
+                description="Foto frontal do sorriso com os dentes naturais expostos"
+                photoType="frontal"
+                value={formData.photoFrontal}
+                onChange={(url) => updateField('photoFrontal', url)}
+                userId={user?.id || ''}
+              />
+
+              <PhotoUploader
+                label="Sorriso 45°"
+                description="Vista lateral do sorriso para análise de forma e contorno"
+                photoType="45"
+                value={formData.photo45}
+                onChange={(url) => updateField('photo45', url)}
+                userId={user?.id || ''}
+              />
+
+              <PhotoUploader
+                label="Rosto Completo"
+                description="Foto do rosto para análise de harmonia facial"
+                photoType="face"
+                value={formData.photoFace}
+                onChange={(url) => updateField('photoFace', url)}
+                userId={user?.id || ''}
+              />
+            </div>
+
+            <p className="text-xs text-muted-foreground text-center">
+              A análise de fotos utiliza IA multimodal (Gemini 2.5 Pro) para gerar um protocolo de estratificação personalizado baseado nas características visuais do paciente.
+            </p>
           </div>
         )}
 
