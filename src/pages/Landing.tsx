@@ -1,0 +1,180 @@
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import { Sparkles, Target, Clock, BookOpen } from 'lucide-react';
+
+export default function Landing() {
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b border-border">
+        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+          <span className="text-xl font-semibold tracking-tight">ResinMatch AI</span>
+          <div className="flex items-center gap-4">
+            <Link to="/login">
+              <Button variant="ghost" size="sm">Entrar</Button>
+            </Link>
+            <Link to="/register">
+              <Button size="sm">Começar</Button>
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {/* Hero */}
+      <section className="py-24 md:py-32">
+        <div className="container mx-auto px-6 text-center max-w-3xl">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight leading-tight mb-6">
+            A resina ideal para cada caso clínico
+          </h1>
+          <p className="text-lg text-muted-foreground mb-10 max-w-xl mx-auto">
+            Inteligência artificial que analisa seu caso e recomenda a melhor resina composta com justificativa técnica detalhada.
+          </p>
+          <Link to="/register">
+            <Button size="lg" className="px-8">
+              Começar Avaliação Gratuita
+            </Button>
+          </Link>
+        </div>
+      </section>
+
+      {/* Benefits */}
+      <section className="py-20 border-t border-border">
+        <div className="container mx-auto px-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              {
+                icon: Clock,
+                title: 'Rápido',
+                description: 'Recomendação em segundos, não horas de pesquisa.',
+              },
+              {
+                icon: Sparkles,
+                title: 'IA Avançada',
+                description: 'Análise inteligente baseada em evidências científicas.',
+              },
+              {
+                icon: Target,
+                title: 'Preciso',
+                description: 'Considera todas as variáveis do caso clínico.',
+              },
+              {
+                icon: BookOpen,
+                title: 'Educativo',
+                description: 'Justificativas detalhadas para cada recomendação.',
+              },
+            ].map((benefit, index) => (
+              <div key={index} className="text-center">
+                <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center mx-auto mb-4">
+                  <benefit.icon className="w-5 h-5 text-foreground" />
+                </div>
+                <h3 className="font-medium mb-2">{benefit.title}</h3>
+                <p className="text-sm text-muted-foreground">{benefit.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section className="py-20 border-t border-border">
+        <div className="container mx-auto px-6 max-w-3xl">
+          <h2 className="text-2xl md:text-3xl font-semibold text-center mb-16">
+            Como funciona
+          </h2>
+          <div className="space-y-12">
+            {[
+              {
+                step: '01',
+                title: 'Preencha o formulário',
+                description: 'Informe os dados do paciente, características do caso e requisitos estéticos.',
+              },
+              {
+                step: '02',
+                title: 'IA analisa seu caso',
+                description: 'Nossa inteligência artificial processa as informações e consulta o banco de resinas.',
+              },
+              {
+                step: '03',
+                title: 'Receba a recomendação',
+                description: 'Obtenha a resina ideal com justificativa técnica e alternativas.',
+              },
+            ].map((item, index) => (
+              <div key={index} className="flex gap-6">
+                <span className="text-4xl font-light text-muted-foreground/50">{item.step}</span>
+                <div>
+                  <h3 className="font-medium mb-1">{item.title}</h3>
+                  <p className="text-muted-foreground">{item.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="py-20 border-t border-border">
+        <div className="container mx-auto px-6 max-w-2xl">
+          <h2 className="text-2xl md:text-3xl font-semibold text-center mb-12">
+            Perguntas frequentes
+          </h2>
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="item-1">
+              <AccordionTrigger>Como a IA faz a recomendação?</AccordionTrigger>
+              <AccordionContent>
+                Nossa IA analisa os dados do seu caso clínico (tipo de cavidade, região, requisitos estéticos, etc.) e cruza com um banco de dados de resinas compostas, considerando as indicações de cada material para fornecer a melhor recomendação.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-2">
+              <AccordionTrigger>Quais resinas estão no banco de dados?</AccordionTrigger>
+              <AccordionContent>
+                Temos as principais marcas do mercado como 3M ESPE, Ivoclar Vivadent, Kulzer, FGM, Dentsply, SDI, Tokuyama e Shofu. O banco é constantemente atualizado.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-3">
+              <AccordionTrigger>Posso exportar as recomendações?</AccordionTrigger>
+              <AccordionContent>
+                Sim, todas as recomendações podem ser exportadas em PDF com os dados do caso, a resina recomendada, justificativa técnica e alternativas.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-4">
+              <AccordionTrigger>É gratuito?</AccordionTrigger>
+              <AccordionContent>
+                Sim, você pode criar uma conta e fazer avaliações gratuitamente. O histórico de avaliações fica salvo na sua conta.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-20 border-t border-border">
+        <div className="container mx-auto px-6 text-center">
+          <h2 className="text-2xl md:text-3xl font-semibold mb-4">
+            Pronto para começar?
+          </h2>
+          <p className="text-muted-foreground mb-8">
+            Crie sua conta e faça sua primeira avaliação em minutos.
+          </p>
+          <Link to="/register">
+            <Button size="lg" className="px-8">
+              Criar Conta Gratuita
+            </Button>
+          </Link>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-border py-8">
+        <div className="container mx-auto px-6 text-center text-sm text-muted-foreground">
+          © {new Date().getFullYear()} ResinMatch AI. Ferramenta de apoio à decisão clínica.
+        </div>
+      </footer>
+    </div>
+  );
+}
