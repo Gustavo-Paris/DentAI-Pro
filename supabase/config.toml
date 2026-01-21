@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.analyze-photos]
 verify_jwt = false
+
+[functions.analyze-dental-photo]
+verify_jwt = false
