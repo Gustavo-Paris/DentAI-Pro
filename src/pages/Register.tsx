@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 
 export default function Register() {
   const [fullName, setFullName] = useState('');
+  const [cro, setCro] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -30,7 +31,7 @@ export default function Register() {
 
     setLoading(true);
 
-    const { error } = await signUp(email, password, fullName);
+    const { error } = await signUp(email, password, fullName, cro);
     
     if (error) {
       toast.error('Erro ao criar conta', {
@@ -67,6 +68,17 @@ export default function Register() {
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="cro">CRO (opcional)</Label>
+            <Input
+              id="cro"
+              type="text"
+              placeholder="CRO-SP 12345"
+              value={cro}
+              onChange={(e) => setCro(e.target.value)}
             />
           </div>
 
