@@ -88,6 +88,7 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          cro: string | null
           full_name: string | null
           id: string
           updated_at: string
@@ -95,6 +96,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          cro?: string | null
           full_name?: string | null
           id?: string
           updated_at?: string
@@ -102,6 +104,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          cro?: string | null
           full_name?: string | null
           id?: string
           updated_at?: string
@@ -153,6 +156,35 @@ export type Database = {
           type?: string
         }
         Relationships: []
+      }
+      user_inventory: {
+        Row: {
+          created_at: string
+          id: string
+          resin_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          resin_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          resin_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_inventory_resin_id_fkey"
+            columns: ["resin_id"]
+            isOneToOne: false
+            referencedRelation: "resins"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
