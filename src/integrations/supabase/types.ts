@@ -17,11 +17,14 @@ export type Database = {
       evaluations: {
         Row: {
           aesthetic_level: string
+          alerts: Json | null
           alternatives: Json | null
           bruxism: boolean
           budget: string
           cavity_class: string
           created_at: string
+          depth: string | null
+          enamel_condition: string | null
           has_inventory_at_creation: boolean | null
           id: string
           ideal_reason: string | null
@@ -29,27 +32,37 @@ export type Database = {
           is_from_inventory: boolean | null
           longevity_expectation: string
           patient_age: number
+          patient_name: string | null
           photo_45: string | null
           photo_face: string | null
           photo_frontal: string | null
+          priority: string | null
+          protocol_layers: Json | null
           recommendation_text: string | null
           recommended_resin_id: string | null
           region: string
           restoration_size: string
+          simulation_url: string | null
+          status: string | null
           stratification_needed: boolean
           stratification_protocol: Json | null
           substrate: string
+          substrate_condition: string | null
           tooth: string
           tooth_color: string
           user_id: string
+          warnings: Json | null
         }
         Insert: {
           aesthetic_level: string
+          alerts?: Json | null
           alternatives?: Json | null
           bruxism?: boolean
           budget: string
           cavity_class: string
           created_at?: string
+          depth?: string | null
+          enamel_condition?: string | null
           has_inventory_at_creation?: boolean | null
           id?: string
           ideal_reason?: string | null
@@ -57,27 +70,37 @@ export type Database = {
           is_from_inventory?: boolean | null
           longevity_expectation: string
           patient_age: number
+          patient_name?: string | null
           photo_45?: string | null
           photo_face?: string | null
           photo_frontal?: string | null
+          priority?: string | null
+          protocol_layers?: Json | null
           recommendation_text?: string | null
           recommended_resin_id?: string | null
           region: string
           restoration_size: string
+          simulation_url?: string | null
+          status?: string | null
           stratification_needed?: boolean
           stratification_protocol?: Json | null
           substrate: string
+          substrate_condition?: string | null
           tooth: string
           tooth_color: string
           user_id: string
+          warnings?: Json | null
         }
         Update: {
           aesthetic_level?: string
+          alerts?: Json | null
           alternatives?: Json | null
           bruxism?: boolean
           budget?: string
           cavity_class?: string
           created_at?: string
+          depth?: string | null
+          enamel_condition?: string | null
           has_inventory_at_creation?: boolean | null
           id?: string
           ideal_reason?: string | null
@@ -85,19 +108,26 @@ export type Database = {
           is_from_inventory?: boolean | null
           longevity_expectation?: string
           patient_age?: number
+          patient_name?: string | null
           photo_45?: string | null
           photo_face?: string | null
           photo_frontal?: string | null
+          priority?: string | null
+          protocol_layers?: Json | null
           recommendation_text?: string | null
           recommended_resin_id?: string | null
           region?: string
           restoration_size?: string
+          simulation_url?: string | null
+          status?: string | null
           stratification_needed?: boolean
           stratification_protocol?: Json | null
           substrate?: string
+          substrate_condition?: string | null
           tooth?: string
           tooth_color?: string
           user_id?: string
+          warnings?: Json | null
         }
         Relationships: [
           {
