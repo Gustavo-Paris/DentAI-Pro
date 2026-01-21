@@ -143,6 +143,36 @@ export type Database = {
         }
         Relationships: []
       }
+      resin_catalog: {
+        Row: {
+          brand: string
+          created_at: string | null
+          id: string
+          opacity: string
+          product_line: string
+          shade: string
+          type: string
+        }
+        Insert: {
+          brand: string
+          created_at?: string | null
+          id?: string
+          opacity: string
+          product_line: string
+          shade: string
+          type: string
+        }
+        Update: {
+          brand?: string
+          created_at?: string | null
+          id?: string
+          opacity?: string
+          product_line?: string
+          shade?: string
+          type?: string
+        }
+        Relationships: []
+      }
       resins: {
         Row: {
           aesthetics: string
