@@ -210,7 +210,9 @@ Forneça sua análise completa usando a função analyze_dental_photo.`;
       }
     ];
 
-    // Call Lovable AI Gateway with Gemini 2.5 Pro (best for vision + complex reasoning)
+    // Call Lovable AI Gateway with Gemini 2.5 Flash (faster, good for vision)
+    console.log("Calling AI Gateway for dental photo analysis...");
+    
     const aiResponse = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
       {
@@ -220,7 +222,7 @@ Forneça sua análise completa usando a função analyze_dental_photo.`;
           Authorization: `Bearer ${lovableApiKey}`,
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-pro",
+          model: "google/gemini-2.5-flash",
           messages: [
             {
               role: "system",
@@ -240,8 +242,8 @@ Forneça sua análise completa usando a função analyze_dental_photo.`;
             },
           ],
           tools,
-          tool_choice: { type: "function", function: { name: "analyze_dental_photo" } },
-          max_tokens: 1500,
+          tool_choice: "auto",
+          max_tokens: 2000,
         }),
       }
     );
@@ -280,12 +282,14 @@ Forneça sua análise completa usando a função analyze_dental_photo.`;
     }
 
     const aiResult = await aiResponse.json();
+    console.log("AI Response received:", JSON.stringify(aiResult).slice(0, 500));
     
     // Extract tool call result
     let analysisResult: PhotoAnalysisResult;
     
     const toolCall = aiResult.choices?.[0]?.message?.tool_calls?.[0];
     if (toolCall && toolCall.function?.arguments) {
+      console.log("Found tool call, parsing arguments...");
       try {
         analysisResult = JSON.parse(toolCall.function.arguments);
       } catch (parseError) {
@@ -293,16 +297,39 @@ Forneça sua análise completa usando a função analyze_dental_photo.`;
         throw new Error("Falha ao processar resposta da IA");
       }
     } else {
-      // Fallback: try to extract from content
+      // Fallback: try to extract from content (Gemini sometimes returns JSON in content)
       const content = aiResult.choices?.[0]?.message?.content;
+      console.log("No tool call found, checking content:", content?.slice(0, 200));
+      
       if (content) {
-        const jsonMatch = content.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          analysisResult = JSON.parse(jsonMatch[0]);
+        // Try to find JSON in the content
+        const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
+        if (jsonMatch && jsonMatch[1]) {
+          try {
+            analysisResult = JSON.parse(jsonMatch[1]);
+            console.log("Parsed JSON from code block");
+          } catch {
+            // Try plain JSON match
+            const plainJsonMatch = content.match(/\{[\s\S]*\}/);
+            if (plainJsonMatch) {
+              analysisResult = JSON.parse(plainJsonMatch[0]);
+              console.log("Parsed plain JSON from content");
+            } else {
+              throw new Error("Resposta da IA não contém dados estruturados");
+            }
+          }
         } else {
-          throw new Error("Resposta da IA não contém dados estruturados");
+          // Try plain JSON match
+          const plainJsonMatch = content.match(/\{[\s\S]*\}/);
+          if (plainJsonMatch) {
+            analysisResult = JSON.parse(plainJsonMatch[0]);
+            console.log("Parsed plain JSON from content");
+          } else {
+            throw new Error("Resposta da IA não contém dados estruturados");
+          }
         }
       } else {
+        console.error("AI response structure:", JSON.stringify(aiResult));
         throw new Error("Resposta da IA está vazia");
       }
     }
