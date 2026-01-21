@@ -22,6 +22,35 @@ interface EvaluationData {
   bruxism: boolean;
   longevityExpectation: string;
   budget: string;
+  depth?: string;
+  substrateCondition?: string;
+}
+
+interface ProtocolLayer {
+  order: number;
+  name: string;
+  resin_brand: string;
+  shade: string;
+  thickness: string;
+  purpose: string;
+  technique: string;
+}
+
+interface ProtocolAlternative {
+  resin: string;
+  shade: string;
+  technique: string;
+  tradeoff: string;
+}
+
+interface StratificationProtocol {
+  layers: ProtocolLayer[];
+  alternative: ProtocolAlternative;
+  checklist: string[];
+  alerts: string[];
+  warnings: string[];
+  justification: string;
+  confidence: "alta" | "média" | "baixa";
 }
 
 serve(async (req) => {
@@ -115,7 +144,7 @@ INSTRUÇÕES:
 2. Recomende-a como principal
 3. Sugira alternativas relevantes`;
 
-    const prompt = `Você é um especialista em materiais dentários. Analise o caso clínico abaixo e recomende a melhor resina composta.
+    const prompt = `Você é um especialista em materiais dentários e técnicas restauradoras. Analise o caso clínico abaixo e forneça uma recomendação COMPLETA com protocolo de estratificação.
 
 CASO CLÍNICO:
 - Idade do paciente: ${data.patientAge} anos
@@ -123,9 +152,11 @@ CASO CLÍNICO:
 - Região: ${data.region}
 - Classe da cavidade: ${data.cavityClass}
 - Tamanho da restauração: ${data.restorationSize}
+- Profundidade: ${data.depth || "Não especificada"}
 - Substrato: ${data.substrate}
+- Condição do substrato: ${data.substrateCondition || "Normal"}
 - Nível estético: ${data.aestheticLevel}
-- Cor do dente: ${data.toothColor}
+- Cor do dente (VITA): ${data.toothColor}
 - Necessita estratificação: ${data.stratificationNeeded ? "Sim" : "Não"}
 - Bruxismo: ${data.bruxism ? "Sim" : "Não"}
 - Expectativa de longevidade: ${data.longevityExpectation}
@@ -133,19 +164,59 @@ CASO CLÍNICO:
 ${inventorySection}
 ${inventoryInstructions}
 
+INSTRUÇÕES PARA PROTOCOLO DE ESTRATIFICAÇÃO:
+1. Se o substrato estiver escurecido/manchado, SEMPRE inclua camada de opaco
+2. Para casos estéticos (anteriores), use 3 camadas: Opaco (se necessário), Dentina, Esmalte
+3. Para posteriores com alta demanda estética, considere estratificação
+4. Para posteriores simples, pode recomendar técnica bulk ou incrementos simples
+5. Adapte as cores das camadas baseado na cor VITA informada (ex: A2 → OA2 opaco, A2D dentina, A2E esmalte)
+
 Responda em formato JSON:
 {
-  "recommended_resin_name": "nome exato da resina recomendada (priorize as do inventário se adequadas)",
+  "recommended_resin_name": "nome exato da resina recomendada",
   "is_from_inventory": true ou false,
-  "ideal_resin_name": "nome da resina tecnicamente ideal (se diferente da recomendada, caso contrário deixe null)",
-  "ideal_reason": "explicação de por que a ideal seria superior (se aplicável, caso contrário deixe null)",
-  "justification": "explicação detalhada de 2-3 frases do porquê esta resina é a melhor escolha considerando o inventário e o caso",
+  "ideal_resin_name": "nome da resina ideal se diferente (null se igual)",
+  "ideal_reason": "explicação se ideal for diferente (null se não aplicável)",
+  "justification": "explicação detalhada de 2-3 frases",
   "inventory_alternatives": [
-    {"name": "...", "manufacturer": "...", "reason": "alternativa disponível no estoque"}
+    {"name": "...", "manufacturer": "...", "reason": "..."}
   ],
   "external_alternatives": [
-    {"name": "...", "manufacturer": "...", "reason": "alternativa para considerar aquisição"}
-  ]
+    {"name": "...", "manufacturer": "...", "reason": "..."}
+  ],
+  "protocol": {
+    "layers": [
+      {
+        "order": 1,
+        "name": "Nome da camada (Opaco/Dentina/Esmalte/Body/Bulk)",
+        "resin_brand": "Marca da resina",
+        "shade": "Cor específica (ex: OA2, A2D, A2E)",
+        "thickness": "Espessura recomendada (ex: 0.3-0.5mm)",
+        "purpose": "Objetivo desta camada",
+        "technique": "Técnica de aplicação"
+      }
+    ],
+    "alternative": {
+      "resin": "Resina alternativa para técnica simplificada",
+      "shade": "Cor única",
+      "technique": "Descrição da técnica alternativa",
+      "tradeoff": "O que se perde com esta alternativa"
+    },
+    "checklist": [
+      "Passo 1: Profilaxia...",
+      "Passo 2: Seleção de cor...",
+      "..."
+    ],
+    "alerts": [
+      "Alerta condicional 1",
+      "Alerta condicional 2"
+    ],
+    "warnings": [
+      "NÃO fazer X",
+      "NÃO fazer Y"
+    ],
+    "confidence": "alta/média/baixa"
+  }
 }
 
 Responda APENAS com o JSON, sem texto adicional.`;
@@ -221,7 +292,10 @@ Responda APENAS com o JSON, sem texto adicional.`;
       ...(recommendation.external_alternatives || []),
     ].slice(0, 4); // Limit to 4 alternatives
 
-    // Update evaluation with recommendation
+    // Extract protocol from recommendation
+    const protocol = recommendation.protocol as StratificationProtocol | undefined;
+
+    // Update evaluation with recommendation and full protocol
     const { error: updateError } = await supabase
       .from("evaluations")
       .update({
@@ -232,6 +306,16 @@ Responda APENAS com o JSON, sem texto adicional.`;
         ideal_resin_id: idealResin?.id || null,
         ideal_reason: recommendation.ideal_reason || null,
         has_inventory_at_creation: hasInventory,
+        // New protocol fields
+        stratification_protocol: protocol ? {
+          layers: protocol.layers,
+          alternative: protocol.alternative,
+          checklist: protocol.checklist,
+          confidence: protocol.confidence,
+        } : null,
+        protocol_layers: protocol?.layers || null,
+        alerts: protocol?.alerts || [],
+        warnings: protocol?.warnings || [],
       })
       .eq("id", data.evaluationId);
 
@@ -247,6 +331,7 @@ Responda APENAS com o JSON, sem texto adicional.`;
           isFromInventory: recommendation.is_from_inventory,
           idealResin: idealResin,
           idealReason: recommendation.ideal_reason,
+          protocol: protocol || null,
         },
       }),
       {
