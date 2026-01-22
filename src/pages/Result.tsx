@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Download, Plus, CheckCircle, Image, Package, Sparkles, Layers } from 'lucide-react';
+import { ArrowLeft, Download, Plus, CheckCircle, Image, Package, Sparkles, Layers, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { toast } from 'sonner';
+import { generateProtocolPDF } from '@/lib/generatePDF';
 
 // Protocol components
 import ProtocolTable, { ProtocolLayer } from '@/components/protocol/ProtocolTable';
@@ -76,10 +79,18 @@ interface Evaluation {
   has_inventory_at_creation: boolean;
 }
 
+interface DentistProfile {
+  full_name: string | null;
+  cro: string | null;
+}
+
 export default function Result() {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
   const [evaluation, setEvaluation] = useState<Evaluation | null>(null);
   const [loading, setLoading] = useState(true);
+  const [generatingPDF, setGeneratingPDF] = useState(false);
+  const [dentistProfile, setDentistProfile] = useState<DentistProfile | null>(null);
   const [photoUrls, setPhotoUrls] = useState<{
     frontal: string | null;
     angle45: string | null;
@@ -87,9 +98,10 @@ export default function Result() {
   }>({ frontal: null, angle45: null, face: null });
 
   useEffect(() => {
-    const fetchEvaluation = async () => {
+    const fetchData = async () => {
       if (!id) return;
 
+      // Fetch evaluation
       const { data } = await supabase
         .from('evaluations')
         .select(`
@@ -102,6 +114,17 @@ export default function Result() {
 
       setEvaluation(data as unknown as Evaluation);
       setLoading(false);
+
+      // Fetch dentist profile
+      if (user) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('full_name, cro')
+          .eq('user_id', user.id)
+          .single();
+        
+        setDentistProfile(profileData);
+      }
 
       // Load signed URLs for photos
       if (data) {
@@ -136,12 +159,49 @@ export default function Result() {
       }
     };
 
-    fetchEvaluation();
-  }, [id]);
+    fetchData();
+  }, [id, user]);
 
-  const generatePDF = () => {
-    window.print();
+  const handleExportPDF = async () => {
+    if (!evaluation) return;
+    
+    setGeneratingPDF(true);
+    
+    try {
+      const evalProtocol = evaluation.stratification_protocol;
+      
+      await generateProtocolPDF({
+        createdAt: evaluation.created_at,
+        dentistName: dentistProfile?.full_name || undefined,
+        dentistCRO: dentistProfile?.cro || undefined,
+        patientAge: evaluation.patient_age,
+        tooth: evaluation.tooth,
+        region: evaluation.region,
+        cavityClass: evaluation.cavity_class,
+        restorationSize: evaluation.restoration_size,
+        toothColor: evaluation.tooth_color,
+        aestheticLevel: evaluation.aesthetic_level,
+        bruxism: evaluation.bruxism,
+        stratificationNeeded: evaluation.stratification_needed,
+        resin: evaluation.resins,
+        recommendationText: evaluation.recommendation_text,
+        layers: evalProtocol?.layers || evaluation.protocol_layers || [],
+        alternative: evalProtocol?.alternative,
+        checklist: evalProtocol?.checklist || [],
+        alerts: evaluation.alerts || [],
+        warnings: evaluation.warnings || [],
+        confidence: evalProtocol?.confidence || 'média',
+      });
+      
+      toast.success('PDF gerado com sucesso!');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast.error('Erro ao gerar PDF');
+    } finally {
+      setGeneratingPDF(false);
+    }
   };
+
 
   if (loading) {
     return (
@@ -446,8 +506,12 @@ export default function Result() {
 
         {/* Actions */}
         <div className="flex gap-3 print:hidden">
-          <Button variant="outline" onClick={generatePDF}>
-            <Download className="w-4 h-4 mr-2" />
+          <Button variant="outline" onClick={handleExportPDF} disabled={generatingPDF}>
+            {generatingPDF ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Download className="w-4 h-4 mr-2" />
+            )}
             Baixar PDF
           </Button>
           <Link to="/new-case" className="flex-1">
