@@ -19,7 +19,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { AlertTriangle, Check, Info, Sparkles, CircleDot } from 'lucide-react';
+import { AlertTriangle, Check, Info, Sparkles, CircleDot, RefreshCw, Loader2 } from 'lucide-react';
 
 // Multi-tooth detection structure
 export interface DetectedTooth {
@@ -70,6 +70,8 @@ interface ReviewAnalysisStepProps {
   onFormChange: (data: Partial<ReviewFormData>) => void;
   imageBase64: string | null;
   onToothSelect?: (tooth: DetectedTooth) => void;
+  onReanalyze?: () => void;
+  isReanalyzing?: boolean;
 }
 
 const TEETH = {
@@ -89,6 +91,8 @@ export function ReviewAnalysisStep({
   onFormChange,
   imageBase64,
   onToothSelect,
+  onReanalyze,
+  isReanalyzing = false,
 }: ReviewAnalysisStepProps) {
   const confidence = analysisResult?.confidence ?? 0;
   const confidenceColor = confidence >= 80 ? 'text-green-600' : confidence >= 60 ? 'text-yellow-600' : 'text-red-600';
@@ -141,6 +145,22 @@ export function ReviewAnalysisStep({
               <Badge variant="secondary" className={confidenceColor}>
                 {confidence}% de confiança
               </Badge>
+              {onReanalyze && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onReanalyze}
+                  disabled={isReanalyzing}
+                  className="h-7 px-2"
+                >
+                  {isReanalyzing ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="w-4 h-4" />
+                  )}
+                  <span className="ml-1 hidden sm:inline">Reanalisar</span>
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>

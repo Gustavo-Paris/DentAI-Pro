@@ -64,10 +64,15 @@ serve(async (req) => {
       base64Image = base64Image.split(",")[1];
     }
 
-    // System prompt for dental photo analysis - MULTI-TOOTH DETECTION
+    // System prompt for dental photo analysis - MULTI-TOOTH DETECTION (ENHANCED FOR CONSISTENCY)
     const systemPrompt = `Você é um especialista em odontologia restauradora com 20 anos de experiência em análise de casos clínicos.
 
-Sua tarefa é analisar fotos intraorais e identificar TODOS os dentes que apresentam problemas (cáries, restaurações defeituosas, lesões, etc.).
+REGRA CRÍTICA E OBRIGATÓRIA: Você DEVE identificar ABSOLUTAMENTE TODOS os dentes com problemas visíveis na foto.
+- Analise SISTEMATICAMENTE cada quadrante: superior-direito (Q1: 11-18), superior-esquerdo (Q2: 21-28), inferior-esquerdo (Q3: 31-38), inferior-direito (Q4: 41-48)
+- Se houver 4 dentes com problema, liste TODOS OS 4 no array detected_teeth
+- NUNCA retorne apenas 1 dente se houver mais dentes com problemas visíveis
+- Em caso de DÚVIDA sobre um dente, INCLUA ele na lista (é melhor listar a mais do que a menos - o dentista revisará)
+- Cada dente com cárie, fratura, restauração defeituosa ou lesão DEVE ser listado separadamente
 
 Para CADA dente com problema identificado, determine:
 1. Número do dente (notação FDI: 11-18, 21-28, 31-38, 41-48)
@@ -84,19 +89,20 @@ Adicionalmente, identifique:
 - A cor VITA geral da arcada (A1, A2, A3, A3.5, B1, B2, etc.)
 - O dente que deve ser tratado primeiro (primary_tooth) baseado na prioridade clínica
 
-IMPORTANTE: 
-- Se houver múltiplos dentes com problema, liste TODOS eles no array detected_teeth
-- Ordene por prioridade (alta primeiro)
-- Seja preciso e conservador nas estimativas
-- Se não conseguir identificar algo com certeza, indique isso claramente`;
+IMPORTANTE: Seja preciso e conservador nas estimativas. Se não conseguir identificar algo com certeza, indique isso claramente mas INCLUA o dente na lista.`;
 
-    const userPrompt = `Analise esta foto intraoral e identifique TODOS os dentes que necessitam de restauração em resina composta.
+    const userPrompt = `Analise esta foto intraoral e identifique TODOS os dentes que necessitam de restauração.
 
 Tipo de foto: ${data.imageType || "intraoral"}
 
-IMPORTANTE: Detecte e liste CADA dente com problema separadamente no array detected_teeth. Se houver 3 dentes com cárie, retorne 3 objetos no array.
+INSTRUÇÕES OBRIGATÓRIAS:
+1. Examine CADA quadrante da arcada visível na foto (Q1, Q2, Q3, Q4)
+2. Liste CADA dente com problema como um objeto SEPARADO no array detected_teeth
+3. Se detectar problemas em 2, 3, 4 ou mais dentes, TODOS devem aparecer na resposta
+4. NÃO omita nenhum dente com problema visível
+5. Ordene os dentes por prioridade de tratamento (alta primeiro)
 
-Forneça sua análise completa usando a função analyze_dental_photo.`;
+Use a função analyze_dental_photo para retornar a análise estruturada.`;
 
     // Tool definition for structured output - MULTI-TOOTH SUPPORT
     const tools = [
@@ -210,8 +216,9 @@ Forneça sua análise completa usando a função analyze_dental_photo.`;
       }
     ];
 
-    // Call Lovable AI Gateway with Gemini 2.5 Flash (faster, good for vision)
-    console.log("Calling AI Gateway for dental photo analysis...");
+    // Call Lovable AI Gateway with Gemini 2.5 Pro (more accurate for multi-tooth detection)
+    // Using low temperature for consistency and forced tool_choice for structured output
+    console.log("Calling AI Gateway for dental photo analysis with Gemini Pro...");
     
     const aiResponse = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
@@ -222,7 +229,8 @@ Forneça sua análise completa usando a função analyze_dental_photo.`;
           Authorization: `Bearer ${lovableApiKey}`,
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
+          model: "google/gemini-2.5-pro",
+          temperature: 0.1, // Low temperature for more deterministic/consistent results
           messages: [
             {
               role: "system",
@@ -242,8 +250,8 @@ Forneça sua análise completa usando a função analyze_dental_photo.`;
             },
           ],
           tools,
-          tool_choice: "auto",
-          max_tokens: 2000,
+          tool_choice: { type: "function", function: { name: "analyze_dental_photo" } }, // Force structured output
+          max_tokens: 3000, // Increased for multiple teeth
         }),
       }
     );
@@ -362,9 +370,21 @@ Forneça sua análise completa usando a função analyze_dental_photo.`;
       warnings: analysisResult.warnings ?? [],
     };
 
+    // Log detection results for debugging
+    console.log(`Multi-tooth detection complete: ${detectedTeeth.length} teeth found`);
+    console.log(`Primary tooth: ${result.primary_tooth}, Confidence: ${result.confidence}%`);
+    if (detectedTeeth.length > 0) {
+      console.log(`Teeth detected: ${detectedTeeth.map(t => `${t.tooth}(${t.priority})`).join(', ')}`);
+    }
+
     // Add warning if multiple teeth detected
     if (detectedTeeth.length > 1) {
-      result.warnings.unshift(`Detectados ${detectedTeeth.length} dentes com necessidade de tratamento. Recomenda-se criar um caso para cada dente.`);
+      result.warnings.unshift(`Detectados ${detectedTeeth.length} dentes com necessidade de tratamento. Selecione qual deseja tratar primeiro.`);
+    }
+
+    // Add warning if only 1 tooth detected with low confidence (might be missing teeth)
+    if (detectedTeeth.length === 1 && result.confidence < 85) {
+      result.warnings.push("Apenas 1 dente detectado. Se houver mais dentes com problema na foto, use 'Reanalisar' ou adicione manualmente.");
     }
 
     return new Response(

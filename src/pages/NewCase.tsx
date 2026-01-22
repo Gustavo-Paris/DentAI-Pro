@@ -43,6 +43,7 @@ export default function NewCase() {
   const [analysisResult, setAnalysisResult] = useState<PhotoAnalysisResult | null>(null);
   const [formData, setFormData] = useState<ReviewFormData>(initialFormData);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isReanalyzing, setIsReanalyzing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadedPhotoPath, setUploadedPhotoPath] = useState<string | null>(null);
   
@@ -158,6 +159,62 @@ export default function NewCase() {
       setStep(3);
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  // Reanalyze photo (force new AI analysis)
+  const handleReanalyze = async () => {
+    if (!imageBase64) return;
+
+    setIsReanalyzing(true);
+
+    try {
+      // Call the analyze-dental-photo edge function again
+      const { data, error } = await supabase.functions.invoke('analyze-dental-photo', {
+        body: {
+          imageBase64: imageBase64,
+          imageType: 'intraoral',
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.analysis) {
+        const analysis = data.analysis as PhotoAnalysisResult;
+        setAnalysisResult(analysis);
+        
+        // Pre-fill form with primary tooth or first detected tooth
+        const primaryToothData = analysis.detected_teeth?.find(
+          (t) => t.tooth === analysis.primary_tooth
+        ) || analysis.detected_teeth?.[0];
+        
+        if (primaryToothData) {
+          setFormData((prev) => ({
+            ...prev,
+            tooth: primaryToothData.tooth || prev.tooth,
+            toothRegion: primaryToothData.tooth_region || (primaryToothData.tooth ? (isAnterior(primaryToothData.tooth) ? 'anterior' : 'posterior') : prev.toothRegion),
+            cavityClass: primaryToothData.cavity_class || prev.cavityClass,
+            restorationSize: primaryToothData.restoration_size || prev.restorationSize,
+            vitaShade: analysis.vita_shade || prev.vitaShade,
+            substrate: primaryToothData.substrate || prev.substrate,
+            substrateCondition: primaryToothData.substrate_condition || prev.substrateCondition,
+            enamelCondition: primaryToothData.enamel_condition || prev.enamelCondition,
+            depth: primaryToothData.depth || prev.depth,
+          }));
+        }
+
+        toast.success(`Reanálise concluída: ${analysis.detected_teeth?.length || 0} dente(s) detectado(s)`);
+      }
+    } catch (error: any) {
+      console.error('Reanalysis error:', error);
+      
+      if (error?.message?.includes('429') || error?.code === 'RATE_LIMITED') {
+        toast.error('Limite de requisições excedido. Aguarde alguns minutos.');
+      } else {
+        toast.error('Erro na reanálise. Tente novamente.');
+      }
+    } finally {
+      setIsReanalyzing(false);
     }
   };
 
@@ -324,6 +381,8 @@ export default function NewCase() {
             formData={formData}
             onFormChange={handleFormChange}
             imageBase64={imageBase64}
+            onReanalyze={handleReanalyze}
+            isReanalyzing={isReanalyzing}
           />
         )}
 
