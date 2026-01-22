@@ -52,6 +52,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip }: DSDStepProps) {
   const [result, setResult] = useState<DSDResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [simulationImageUrl, setSimulationImageUrl] = useState<string | null>(null);
+  const [isRegeneratingSimulation, setIsRegeneratingSimulation] = useState(false);
 
   // Load signed URL for simulation
   useEffect(() => {
@@ -133,7 +134,49 @@ export function DSDStep({ imageBase64, onComplete, onSkip }: DSDStepProps) {
   const handleRetry = () => {
     setResult(null);
     setError(null);
+    setSimulationImageUrl(null);
     analyzeDSD();
+  };
+
+  const handleRegenerateSimulation = async () => {
+    if (!imageBase64 || !result?.analysis) return;
+
+    setIsRegeneratingSimulation(true);
+
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke('generate-dsd', {
+        body: {
+          imageBase64,
+          regenerateSimulationOnly: true,
+          existingAnalysis: result.analysis,
+        },
+      });
+
+      if (fnError) throw fnError;
+
+      if (data?.simulation_url) {
+        // Update result with new simulation URL
+        setResult((prev) => prev ? { ...prev, simulation_url: data.simulation_url } : prev);
+        
+        // Load signed URL
+        const { data: signedData } = await supabase.storage
+          .from('dsd-simulations')
+          .createSignedUrl(data.simulation_url, 3600);
+        
+        if (signedData?.signedUrl) {
+          setSimulationImageUrl(signedData.signedUrl);
+        }
+        
+        toast.success('Nova simulação gerada!');
+      } else {
+        throw new Error('Simulação não gerada');
+      }
+    } catch (err: any) {
+      console.error('Regenerate simulation error:', err);
+      toast.error('Erro ao regenerar simulação. Tente novamente.');
+    } finally {
+      setIsRegeneratingSimulation(false);
+    }
   };
 
   const handleContinue = () => {
@@ -249,8 +292,28 @@ export function DSDStep({ imageBase64, onComplete, onSkip }: DSDStepProps) {
 
         {/* Comparison Slider */}
         {imageBase64 && simulationImageUrl && (
-          <div className="space-y-2">
-            <h3 className="font-medium text-sm text-muted-foreground">Comparação Antes/Depois</h3>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="font-medium text-sm text-muted-foreground">Comparação Antes/Depois</h3>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRegenerateSimulation}
+                disabled={isRegeneratingSimulation}
+              >
+                {isRegeneratingSimulation ? (
+                  <>
+                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                    Gerando...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="w-3 h-3 mr-1" />
+                    Nova Simulação
+                  </>
+                )}
+              </Button>
+            </div>
             <ComparisonSlider
               beforeImage={imageBase64}
               afterImage={simulationImageUrl}
@@ -258,14 +321,34 @@ export function DSDStep({ imageBase64, onComplete, onSkip }: DSDStepProps) {
           </div>
         )}
 
-        {/* If no simulation, show just the original */}
+        {/* If no simulation, show button to generate */}
         {imageBase64 && !simulationImageUrl && (
-          <Alert>
-            <AlertCircle className="w-4 h-4" />
-            <AlertDescription>
-              A simulação visual não pôde ser gerada, mas a análise de proporções está disponível abaixo.
-            </AlertDescription>
-          </Alert>
+          <div className="space-y-3">
+            <Alert>
+              <AlertCircle className="w-4 h-4" />
+              <AlertDescription>
+                A simulação visual não pôde ser gerada, mas a análise de proporções está disponível abaixo.
+              </AlertDescription>
+            </Alert>
+            <Button
+              variant="outline"
+              onClick={handleRegenerateSimulation}
+              disabled={isRegeneratingSimulation}
+              className="w-full"
+            >
+              {isRegeneratingSimulation ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Gerando simulação...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Tentar Gerar Simulação
+                </>
+              )}
+            </Button>
+          </div>
         )}
 
         {/* Proportions Analysis */}
