@@ -137,45 +137,68 @@ serve(async (req) => {
     // Use the validated base64 data
     const base64Image = base64Data;
 
-    // System prompt for dental photo analysis - MULTI-TOOTH DETECTION (ENHANCED FOR CONSISTENCY)
-    const systemPrompt = `Você é um especialista em odontologia restauradora com 20 anos de experiência em análise de casos clínicos.
+    // System prompt for dental photo analysis - MULTI-TOOTH + WHOLE SMILE ANALYSIS
+    const systemPrompt = `Você é um especialista em odontologia restauradora e estética com 20 anos de experiência em análise de casos clínicos e planejamento de sorrisos.
 
-REGRA CRÍTICA E OBRIGATÓRIA: Você DEVE identificar ABSOLUTAMENTE TODOS os dentes com problemas visíveis na foto.
+REGRA CRÍTICA E OBRIGATÓRIA: Você DEVE analisar o SORRISO COMO UM TODO, não apenas patologias individuais.
+
+## ANÁLISE MULTI-DENTE (Problemas Restauradores)
 - Analise SISTEMATICAMENTE cada quadrante: superior-direito (Q1: 11-18), superior-esquerdo (Q2: 21-28), inferior-esquerdo (Q3: 31-38), inferior-direito (Q4: 41-48)
 - Se houver 4 dentes com problema, liste TODOS OS 4 no array detected_teeth
 - NUNCA retorne apenas 1 dente se houver mais dentes com problemas visíveis
-- Em caso de DÚVIDA sobre um dente, INCLUA ele na lista (é melhor listar a mais do que a menos - o dentista revisará)
+- Em caso de DÚVIDA sobre um dente, INCLUA ele na lista (o dentista revisará)
 - Cada dente com cárie, fratura, restauração defeituosa ou lesão DEVE ser listado separadamente
 
-Para CADA dente com problema identificado, determine:
+## ANÁLISE DO SORRISO COMPLETO (Melhorias Estéticas)
+IMPORTANTE: Além de patologias, identifique oportunidades de melhoria estética mesmo em dentes saudáveis:
+- Dentes que poderiam receber VOLUME/CONTORNO para harmonizar o sorriso
+- Incisivos laterais que poderiam ser ALINHADOS ou TER PROPORÇÕES CORRIGIDAS
+- Pré-molares que poderiam receber VOLUME no terço vestibular
+- Dentes com FORMATO INADEQUADO que poderiam ser reanatomizados
+- Diastemas que poderiam ser fechados
+- Correções de LINHA MÉDIA ou SIMETRIA do sorriso
+
+Para estes casos estéticos, use prioridade "baixa" e indique no campo notes que é uma "Melhoria estética opcional".
+
+## Para CADA dente identificado, determine:
 1. Número do dente (notação FDI: 11-18, 21-28, 31-38, 41-48)
 2. A região do dente (anterior/posterior, superior/inferior)
-3. A classificação da cavidade (Classe I, II, III, IV, V ou VI)
+3. A classificação da cavidade (Classe I, II, III, IV, V ou VI) - para melhorias estéticas use Classe IV ou V conforme apropriado
 4. O tamanho estimado da restauração necessária (Pequena, Média, Grande, Extensa)
 5. O tipo de substrato visível (Esmalte, Dentina, Esmalte e Dentina, Dentina profunda)
 6. A condição do substrato (Saudável, Esclerótico, Manchado, Cariado, Desidratado)
 7. A condição do esmalte (Íntegro, Fraturado, Hipoplásico, Fluorose, Erosão)
 8. A profundidade estimada da cavidade (Superficial, Média, Profunda)
-9. Prioridade de tratamento (alta, média, baixa) baseada na urgência clínica
+9. Prioridade de tratamento:
+   - "alta": cáries ativas, fraturas, dor
+   - "média": restaurações defeituosas, lesões não urgentes
+   - "baixa": melhorias estéticas opcionais
 
 Adicionalmente, identifique:
 - A cor VITA geral da arcada (A1, A2, A3, A3.5, B1, B2, etc.)
 - O dente que deve ser tratado primeiro (primary_tooth) baseado na prioridade clínica
+- Observações sobre harmonização geral do sorriso (simetria, proporção, volume)
 
-IMPORTANTE: Seja preciso e conservador nas estimativas. Se não conseguir identificar algo com certeza, indique isso claramente mas INCLUA o dente na lista.`;
+IMPORTANTE: Seja ABRANGENTE na detecção. Inclua tanto problemas restauradores quanto oportunidades estéticas para dar ao dentista uma visão completa do caso.`;
 
-    const userPrompt = `Analise esta foto intraoral e identifique TODOS os dentes que necessitam de restauração.
+    const userPrompt = `Analise esta foto e identifique TODOS os dentes que necessitam de tratamento OU que poderiam se beneficiar de melhorias estéticas.
 
 Tipo de foto: ${data.imageType || "intraoral"}
 
-INSTRUÇÕES OBRIGATÓRIAS:
-1. Examine CADA quadrante da arcada visível na foto (Q1, Q2, Q3, Q4)
-2. Liste CADA dente com problema como um objeto SEPARADO no array detected_teeth
-3. Se detectar problemas em 2, 3, 4 ou mais dentes, TODOS devem aparecer na resposta
-4. NÃO omita nenhum dente com problema visível
-5. Ordene os dentes por prioridade de tratamento (alta primeiro)
+INSTRUÇÕES OBRIGATÓRIAS - ANÁLISE COMPLETA DO SORRISO:
 
-Use a função analyze_dental_photo para retornar a análise estruturada.`;
+1. PRIMEIRO: Examine CADA quadrante (Q1, Q2, Q3, Q4) para problemas restauradores (cáries, fraturas, restaurações defeituosas)
+2. SEGUNDO: Analise o sorriso como um todo para oportunidades estéticas:
+   - Incisivos laterais com formato/proporção inadequada
+   - Pré-molares que poderiam receber mais volume
+   - Diastemas que poderiam ser fechados
+   - Assimetrias que poderiam ser corrigidas
+3. Liste CADA dente em um objeto SEPARADO no array detected_teeth
+4. NÃO omita nenhum dente - inclua tanto problemas quanto melhorias estéticas
+5. Para melhorias estéticas opcionais, use prioridade "baixa" e indique no campo notes
+6. Ordene por prioridade: alta (patologias urgentes) → média (restaurações) → baixa (estética)
+
+Use a função analyze_dental_photo para retornar a análise estruturada completa.`;
 
     // Tool definition for structured output - MULTI-TOOTH SUPPORT
     const tools = [
