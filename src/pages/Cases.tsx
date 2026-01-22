@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -45,12 +46,30 @@ interface Evaluation {
 
 type FilterStatus = 'all' | 'draft' | 'completed';
 
+interface LocationState {
+  newCaseIds?: string[];
+  patientName?: string;
+  teethCount?: number;
+}
+
 export default function Cases() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const locationState = location.state as LocationState | null;
+  const newCaseIds = locationState?.newCaseIds || [];
+  const teethCount = locationState?.teethCount || 0;
+  
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterStatus>('all');
+
+  // Clear state after viewing to prevent stale highlights on refresh
+  useEffect(() => {
+    if (newCaseIds.length > 0) {
+      window.history.replaceState({}, document.title);
+    }
+  }, [newCaseIds.length]);
 
   useEffect(() => {
     fetchEvaluations();
@@ -152,6 +171,21 @@ export default function Cases() {
       </header>
 
       <main className="container mx-auto px-6 py-8 max-w-5xl">
+        {/* Success Banner for New Cases */}
+        {newCaseIds.length > 0 && (
+          <div className="mb-6 p-4 bg-primary/10 border border-primary/20 rounded-lg flex items-center gap-3">
+            <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
+            <div>
+              <p className="font-medium">
+                {teethCount} protocolo{teethCount > 1 ? 's' : ''} criado{teethCount > 1 ? 's' : ''} com sucesso!
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Os casos novos estão destacados abaixo.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Filter */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
@@ -208,9 +242,17 @@ export default function Cases() {
               </TableHeader>
               <TableBody>
                 {filteredEvaluations.map((evaluation) => (
-                  <TableRow key={evaluation.id}>
+                  <TableRow 
+                    key={evaluation.id}
+                    className={newCaseIds.includes(evaluation.id) ? 'bg-primary/5 border-l-2 border-l-primary' : ''}
+                  >
                     <TableCell className="font-medium">
-                      {evaluation.patient_name || 'Sem nome'}
+                      <span className="flex items-center gap-2">
+                        {evaluation.patient_name || 'Sem nome'}
+                        {newCaseIds.includes(evaluation.id) && (
+                          <Badge variant="secondary" className="text-xs">Novo</Badge>
+                        )}
+                      </span>
                     </TableCell>
                     <TableCell>{evaluation.tooth}</TableCell>
                     <TableCell>{evaluation.cavity_class}</TableCell>
