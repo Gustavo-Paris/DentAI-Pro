@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Download, Plus, CheckCircle, Image, Package, Sparkles, Layers, Loader2 } from 'lucide-react';
+import { ArrowLeft, Download, Plus, CheckCircle, Image, Package, Sparkles, Layers, Loader2, Smile } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -20,6 +20,9 @@ import WarningsSection from '@/components/protocol/WarningsSection';
 import ConfidenceIndicator from '@/components/protocol/ConfidenceIndicator';
 import AlternativeBox, { ProtocolAlternative } from '@/components/protocol/AlternativeBox';
 import CaseSummaryBox from '@/components/protocol/CaseSummaryBox';
+import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
+import { ProportionsCard } from '@/components/dsd/ProportionsCard';
+import { DSDAnalysis } from '@/components/wizard/DSDStep';
 
 interface Resin {
   id: string;
@@ -78,6 +81,9 @@ interface Evaluation {
   ideal_resin: Resin | null;
   has_inventory_at_creation: boolean;
   checklist_progress: number[] | null;
+  // DSD fields
+  dsd_analysis: DSDAnalysis | null;
+  dsd_simulation_url: string | null;
 }
 
 interface DentistProfile {
@@ -97,6 +103,7 @@ export default function Result() {
     angle45: string | null;
     face: string | null;
   }>({ frontal: null, angle45: null, face: null });
+  const [dsdSimulationUrl, setDsdSimulationUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -157,6 +164,15 @@ export default function Result() {
         }
 
         setPhotoUrls(urls);
+
+        // Load DSD simulation URL
+        const dsdUrl = (data as any).dsd_simulation_url;
+        if (dsdUrl) {
+          const { data: dsdSigned } = await supabase.storage
+            .from('dsd-simulations')
+            .createSignedUrl(dsdUrl, 3600);
+          setDsdSimulationUrl(dsdSigned?.signedUrl || null);
+        }
       }
     };
 
@@ -332,7 +348,28 @@ export default function Result() {
           />
         </section>
 
-        {/* SECTION 2: Clinical Photos / Simulation */}
+        {/* DSD Section */}
+        {evaluation.dsd_analysis && (
+          <section className="mb-8">
+            <h3 className="font-medium mb-3 flex items-center gap-2">
+              <Smile className="w-4 h-4" />
+              Planejamento Digital do Sorriso (DSD)
+            </h3>
+            
+            {/* Comparison Slider */}
+            {photoUrls.frontal && dsdSimulationUrl && (
+              <div className="mb-4">
+                <ComparisonSlider
+                  beforeImage={photoUrls.frontal}
+                  afterImage={dsdSimulationUrl}
+                />
+              </div>
+            )}
+            
+            {/* Proportions */}
+            <ProportionsCard analysis={evaluation.dsd_analysis} />
+          </section>
+        )}
         {hasPhotos && (
           <section className="mb-8">
             <h3 className="font-medium mb-3 flex items-center gap-2">

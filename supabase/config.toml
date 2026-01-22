@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.analyze-dental-photo]
 verify_jwt = false
+
+[functions.generate-dsd]
+verify_jwt = false

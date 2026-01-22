@@ -25,6 +25,8 @@ export type Database = {
           checklist_progress: Json | null
           created_at: string
           depth: string | null
+          dsd_analysis: Json | null
+          dsd_simulation_url: string | null
           enamel_condition: string | null
           has_inventory_at_creation: boolean | null
           id: string
@@ -65,6 +67,8 @@ export type Database = {
           checklist_progress?: Json | null
           created_at?: string
           depth?: string | null
+          dsd_analysis?: Json | null
+          dsd_simulation_url?: string | null
           enamel_condition?: string | null
           has_inventory_at_creation?: boolean | null
           id?: string
@@ -105,6 +109,8 @@ export type Database = {
           checklist_progress?: Json | null
           created_at?: string
           depth?: string | null
+          dsd_analysis?: Json | null
+          dsd_simulation_url?: string | null
           enamel_condition?: string | null
           has_inventory_at_creation?: boolean | null
           id?: string
