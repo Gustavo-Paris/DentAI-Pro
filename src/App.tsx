@@ -12,6 +12,7 @@ import Dashboard from "@/pages/Dashboard";
 import NewCase from "@/pages/NewCase";
 import Inventory from "@/pages/Inventory";
 import Result from "@/pages/Result";
+import Cases from "@/pages/Cases";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Inventory />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/cases"
+              element={
+                <ProtectedRoute>
+                  <Cases />
                 </ProtectedRoute>
               }
             />
