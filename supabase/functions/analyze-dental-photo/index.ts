@@ -216,130 +216,139 @@ Use a função analyze_dental_photo para retornar a análise estruturada.`;
       }
     ];
 
-    // Call Lovable AI Gateway with Gemini 2.5 Pro (more accurate for multi-tooth detection)
-    // Using low temperature for consistency and forced tool_choice for structured output
-    console.log("Calling AI Gateway for dental photo analysis with Gemini Pro...");
-    
-    const aiResponse = await fetch(
-      "https://ai.gateway.lovable.dev/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${lovableApiKey}`,
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-pro",
-          temperature: 0.1, // Low temperature for more deterministic/consistent results
-          messages: [
-            {
-              role: "system",
-              content: systemPrompt
-            },
-            {
-              role: "user",
-              content: [
-                { type: "text", text: userPrompt },
-                {
-                  type: "image_url",
-                  image_url: {
-                    url: `data:image/jpeg;base64,${base64Image}`,
-                  },
-                },
-              ],
-            },
-          ],
-          tools,
-          tool_choice: { type: "function", function: { name: "analyze_dental_photo" } }, // Force structured output
-          max_tokens: 3000, // Increased for multiple teeth
-        }),
-      }
-    );
-
-    if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error("AI API error:", aiResponse.status, errorText);
-
-      if (aiResponse.status === 429) {
-        return new Response(
-          JSON.stringify({ 
-            error: "Limite de requisições excedido. Aguarde alguns minutos.",
-            code: "RATE_LIMITED"
-          }),
-          {
-            status: 429,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
-        );
-      }
-
-      if (aiResponse.status === 402) {
-        return new Response(
-          JSON.stringify({ 
-            error: "Créditos insuficientes. Adicione créditos à sua conta.",
-            code: "PAYMENT_REQUIRED"
-          }),
-          {
-            status: 402,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
-        );
-      }
-
-      throw new Error(`AI API error: ${aiResponse.status}`);
-    }
-
-    const aiResult = await aiResponse.json();
-    console.log("AI Response received:", JSON.stringify(aiResult).slice(0, 500));
-    
-    // Extract tool call result
-    let analysisResult: PhotoAnalysisResult;
-    
-    const toolCall = aiResult.choices?.[0]?.message?.tool_calls?.[0];
-    if (toolCall && toolCall.function?.arguments) {
-      console.log("Found tool call, parsing arguments...");
-      try {
-        analysisResult = JSON.parse(toolCall.function.arguments);
-      } catch (parseError) {
-        console.error("Failed to parse tool call arguments:", toolCall.function.arguments);
-        throw new Error("Falha ao processar resposta da IA");
-      }
-    } else {
-      // Fallback: try to extract from content (Gemini sometimes returns JSON in content)
-      const content = aiResult.choices?.[0]?.message?.content;
-      console.log("No tool call found, checking content:", content?.slice(0, 200));
+    // Helper function to call AI with a specific model
+    const callAI = async (model: string): Promise<PhotoAnalysisResult | null> => {
+      console.log(`Calling AI Gateway with model: ${model}...`);
       
+      const response = await fetch(
+        "https://ai.gateway.lovable.dev/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${lovableApiKey}`,
+          },
+          body: JSON.stringify({
+            model,
+            temperature: 0.1,
+            messages: [
+              {
+                role: "system",
+                content: systemPrompt
+              },
+              {
+                role: "user",
+                content: [
+                  { type: "text", text: userPrompt },
+                  {
+                    type: "image_url",
+                    image_url: {
+                      url: `data:image/jpeg;base64,${base64Image}`,
+                    },
+                  },
+                ],
+              },
+            ],
+            tools,
+            tool_choice: { type: "function", function: { name: "analyze_dental_photo" } },
+            max_tokens: 3000,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`AI API error (${model}):`, response.status, errorText);
+
+        if (response.status === 429) {
+          throw { status: 429, message: "Rate limited" };
+        }
+        if (response.status === 402) {
+          throw { status: 402, message: "Payment required" };
+        }
+        return null;
+      }
+
+      const result = await response.json();
+      console.log(`AI Response (${model}):`, JSON.stringify(result).slice(0, 500));
+
+      // Check for malformed function call
+      const finishReason = result.choices?.[0]?.native_finish_reason || result.choices?.[0]?.finish_reason;
+      if (finishReason === "MALFORMED_FUNCTION_CALL") {
+        console.log(`Model ${model} returned MALFORMED_FUNCTION_CALL, will retry with different model`);
+        return null;
+      }
+
+      // Extract tool call
+      const toolCall = result.choices?.[0]?.message?.tool_calls?.[0];
+      if (toolCall && toolCall.function?.arguments) {
+        console.log("Found tool call, parsing arguments...");
+        try {
+          return JSON.parse(toolCall.function.arguments);
+        } catch (parseError) {
+          console.error("Failed to parse tool call arguments:", toolCall.function.arguments);
+          return null;
+        }
+      }
+
+      // Fallback: try to extract from content
+      const content = result.choices?.[0]?.message?.content;
       if (content) {
-        // Try to find JSON in the content
-        const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
-        if (jsonMatch && jsonMatch[1]) {
+        console.log("Checking content for JSON...");
+        const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/) || content.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
           try {
-            analysisResult = JSON.parse(jsonMatch[1]);
-            console.log("Parsed JSON from code block");
+            const jsonStr = jsonMatch[1] || jsonMatch[0];
+            return JSON.parse(jsonStr);
           } catch {
-            // Try plain JSON match
-            const plainJsonMatch = content.match(/\{[\s\S]*\}/);
-            if (plainJsonMatch) {
-              analysisResult = JSON.parse(plainJsonMatch[0]);
-              console.log("Parsed plain JSON from content");
-            } else {
-              throw new Error("Resposta da IA não contém dados estruturados");
-            }
-          }
-        } else {
-          // Try plain JSON match
-          const plainJsonMatch = content.match(/\{[\s\S]*\}/);
-          if (plainJsonMatch) {
-            analysisResult = JSON.parse(plainJsonMatch[0]);
-            console.log("Parsed plain JSON from content");
-          } else {
-            throw new Error("Resposta da IA não contém dados estruturados");
+            console.log("Failed to parse JSON from content");
           }
         }
-      } else {
-        console.error("AI response structure:", JSON.stringify(aiResult));
-        throw new Error("Resposta da IA está vazia");
       }
+
+      return null;
+    };
+
+    // Try models in order of reliability for tool calling
+    const modelsToTry = [
+      "google/gemini-3-flash-preview",  // Fast, good at tool calling
+      "google/gemini-2.5-flash",         // Reliable fallback
+    ];
+
+    let analysisResult: PhotoAnalysisResult | null = null;
+
+    for (const model of modelsToTry) {
+      try {
+        analysisResult = await callAI(model);
+        if (analysisResult) {
+          console.log(`Successfully got analysis from ${model}`);
+          break;
+        }
+      } catch (error: any) {
+        if (error?.status === 429) {
+          return new Response(
+            JSON.stringify({ 
+              error: "Limite de requisições excedido. Aguarde alguns minutos.",
+              code: "RATE_LIMITED"
+            }),
+            { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        if (error?.status === 402) {
+          return new Response(
+            JSON.stringify({ 
+              error: "Créditos insuficientes. Adicione créditos à sua conta.",
+              code: "PAYMENT_REQUIRED"
+            }),
+            { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        console.error(`Error with model ${model}:`, error);
+      }
+    }
+
+    if (!analysisResult) {
+      throw new Error("Não foi possível analisar a foto. Tente novamente.");
     }
 
     // Ensure required fields have defaults and normalize detected_teeth
