@@ -68,6 +68,16 @@ export default function NewCase() {
     return anteriorTeeth.includes(tooth);
   };
 
+  // Helper to get full region format for API
+  const getFullRegion = (tooth: string): string => {
+    const toothNum = parseInt(tooth);
+    const isUpper = toothNum >= 10 && toothNum <= 28;
+    if (isAnterior(tooth)) {
+      return isUpper ? 'anterior-superior' : 'anterior-inferior';
+    }
+    return isUpper ? 'posterior-superior' : 'posterior-inferior';
+  };
+
   // Upload image to storage and get path
   const uploadImageToStorage = async (base64: string): Promise<string | null> => {
     if (!user) return null;
@@ -280,10 +290,10 @@ export default function NewCase() {
             patient_name: formData.patientName || null,
             patient_age: parseInt(formData.patientAge),
             tooth: tooth,
-            region: isAnterior(tooth) ? 'anterior' : 'posterior',
+            region: getFullRegion(tooth),
             cavity_class: toothData?.cavity_class || formData.cavityClass,
-            restoration_size: (toothData?.restoration_size || formData.restorationSize).toLowerCase(),
-            substrate: (toothData?.substrate || formData.substrate).toLowerCase(),
+            restoration_size: toothData?.restoration_size || formData.restorationSize,
+            substrate: toothData?.substrate || formData.substrate,
             tooth_color: formData.vitaShade,
             depth: toothData?.depth || formData.depth,
             substrate_condition: toothData?.substrate_condition || formData.substrateCondition,
@@ -308,10 +318,10 @@ export default function NewCase() {
             userId: user.id,
             patientAge: formData.patientAge,
             tooth: tooth,
-            region: isAnterior(tooth) ? 'anterior' : 'posterior',
+            region: getFullRegion(tooth),
             cavityClass: toothData?.cavity_class || formData.cavityClass,
-            restorationSize: (toothData?.restoration_size || formData.restorationSize).toLowerCase(),
-            substrate: (toothData?.substrate || formData.substrate).toLowerCase(),
+            restorationSize: toothData?.restoration_size || formData.restorationSize,
+            substrate: toothData?.substrate || formData.substrate,
             bruxism: formData.bruxism,
             aestheticLevel: formData.aestheticLevel,
             toothColor: formData.vitaShade,
