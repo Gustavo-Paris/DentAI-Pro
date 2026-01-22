@@ -32,8 +32,8 @@ const initialFormData: ReviewFormData = {
   depth: 'Média',
   bruxism: false,
   aestheticLevel: 'alto',
-  budget: 'intermediário',
-  longevityExpectation: 'média',
+  budget: 'moderado',
+  longevityExpectation: 'médio',
   clinicalNotes: '',
 };
 
