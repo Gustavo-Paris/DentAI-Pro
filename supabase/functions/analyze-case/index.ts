@@ -1,30 +1,14 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
-
-interface CaseData {
-  caseId: string;
-  patientAge: number;
-  toothNumber: string;
-  toothRegion: string;
-  cavityClass: string;
-  restorationSize: string;
-  substrate: string;
-  hasBruxism: boolean;
-  aestheticLevel: string;
-  toothShade: string;
-  needsStratification: boolean;
-  clinicalNotes?: string;
-}
+import { getCorsHeaders, handleCorsPreFlight, ERROR_MESSAGES, createErrorResponse } from "../_shared/cors.ts";
+import { validateCaseData, type CaseData } from "../_shared/validation.ts";
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const corsHeaders = getCorsHeaders(req);
+  
+  // Handle CORS preflight
+  const preflightResponse = handleCorsPreFlight(req);
+  if (preflightResponse) return preflightResponse;
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -33,7 +17,21 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const caseData: CaseData = await req.json();
+    // Parse and validate input
+    let rawData: unknown;
+    try {
+      rawData = await req.json();
+    } catch {
+      return createErrorResponse(ERROR_MESSAGES.INVALID_REQUEST, 400, corsHeaders);
+    }
+
+    const validation = validateCaseData(rawData);
+    if (!validation.success || !validation.data) {
+      console.error("Validation failed:", validation.error);
+      return createErrorResponse(validation.error || ERROR_MESSAGES.INVALID_REQUEST, 400, corsHeaders);
+    }
+
+    const caseData: CaseData = validation.data;
 
     // Fetch all resins from catalog
     const { data: resins, error: resinsError } = await supabase
@@ -41,7 +39,8 @@ serve(async (req) => {
       .select("*");
 
     if (resinsError) {
-      throw new Error(`Error fetching resins: ${resinsError.message}`);
+      console.error("Database error fetching resins:", resinsError);
+      return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
     }
 
     // Build the prompt for AI
@@ -121,14 +120,24 @@ Responda APENAS em formato JSON válido com a seguinte estrutura:
     });
 
     if (!aiResponse.ok) {
-      throw new Error(`AI API error: ${aiResponse.statusText}`);
+      console.error("AI API error:", aiResponse.status);
+      
+      if (aiResponse.status === 429) {
+        return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
+      }
+      if (aiResponse.status === 402) {
+        return createErrorResponse(ERROR_MESSAGES.PAYMENT_REQUIRED, 402, corsHeaders, "PAYMENT_REQUIRED");
+      }
+      
+      return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     }
 
     const aiResult = await aiResponse.json();
     const content = aiResult.choices[0]?.message?.content;
 
     if (!content) {
-      throw new Error("No content in AI response");
+      console.error("No content in AI response");
+      return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     }
 
     // Parse the AI response
@@ -142,8 +151,8 @@ Responda APENAS em formato JSON válido com a seguinte estrutura:
         throw new Error("No JSON found in response");
       }
     } catch (parseError) {
-      console.error("Error parsing AI response:", parseError);
-      throw new Error("Failed to parse AI recommendation");
+      console.error("Error parsing AI response");
+      return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     }
 
     // Find the recommended resin in the catalog
@@ -175,7 +184,7 @@ Responda APENAS em formato JSON válido com a seguinte estrutura:
 
     if (resultError) {
       console.error("Error saving result:", resultError);
-      throw new Error(`Error saving result: ${resultError.message}`);
+      return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
     }
 
     // Update case status
@@ -200,8 +209,7 @@ Responda APENAS em formato JSON válido com a seguinte estrutura:
       }
     );
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    console.error("Error in analyze-case function:", errorMessage);
+    console.error("Error in analyze-case function:", error);
 
     // Try to update case status to error
     try {
@@ -219,12 +227,6 @@ Responda APENAS em formato JSON válido com a seguinte estrutura:
       console.error("Error updating case status:", e);
     }
 
-    return new Response(
-      JSON.stringify({ error: errorMessage }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
   }
 });

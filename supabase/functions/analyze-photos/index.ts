@@ -1,23 +1,14 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
-
-interface AnalyzePhotosData {
-  evaluationId: string;
-  photoFrontal?: string;
-  photo45?: string;
-  photoFace?: string;
-}
+import { getCorsHeaders, handleCorsPreFlight, ERROR_MESSAGES, createErrorResponse } from "../_shared/cors.ts";
+import { validateAnalyzePhotosData, type AnalyzePhotosData } from "../_shared/validation.ts";
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const corsHeaders = getCorsHeaders(req);
+  
+  // Handle CORS preflight
+  const preflightResponse = handleCorsPreFlight(req);
+  if (preflightResponse) return preflightResponse;
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -28,10 +19,7 @@ serve(async (req) => {
     // Validate authentication
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
-      return new Response(
-        JSON.stringify({ error: "Não autorizado" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return createErrorResponse(ERROR_MESSAGES.UNAUTHORIZED, 401, corsHeaders);
     }
 
     // Create client with user's auth token to verify claims
@@ -43,18 +31,29 @@ serve(async (req) => {
     const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
     
     if (claimsError || !claimsData?.claims) {
-      return new Response(
-        JSON.stringify({ error: "Token inválido" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return createErrorResponse(ERROR_MESSAGES.INVALID_TOKEN, 401, corsHeaders);
     }
 
     const userId = claimsData.claims.sub as string;
 
+    // Parse and validate input
+    let rawData: unknown;
+    try {
+      rawData = await req.json();
+    } catch {
+      return createErrorResponse(ERROR_MESSAGES.INVALID_REQUEST, 400, corsHeaders);
+    }
+
+    const validation = validateAnalyzePhotosData(rawData);
+    if (!validation.success || !validation.data) {
+      console.error("Validation failed:", validation.error);
+      return createErrorResponse(validation.error || ERROR_MESSAGES.INVALID_REQUEST, 400, corsHeaders);
+    }
+
+    const data: AnalyzePhotosData = validation.data;
+
     // Use service role client for database operations
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    const data: AnalyzePhotosData = await req.json();
 
     // Fetch evaluation data and verify ownership
     const { data: evaluation, error: evalError } = await supabase
@@ -63,14 +62,14 @@ serve(async (req) => {
       .eq("id", data.evaluationId)
       .single();
 
-    if (evalError) throw evalError;
+    if (evalError) {
+      console.error("Database error fetching evaluation:", evalError);
+      return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
+    }
 
     // Verify user owns this evaluation
     if (evaluation.user_id !== userId) {
-      return new Response(
-        JSON.stringify({ error: "Acesso negado a esta avaliação" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return createErrorResponse(ERROR_MESSAGES.ACCESS_DENIED, 403, corsHeaders);
     }
 
     // Download images and convert to base64
@@ -84,7 +83,7 @@ serve(async (req) => {
         .download(path);
 
       if (error) {
-        console.error(`Error downloading ${type}:`, error);
+        console.error(`Error downloading ${type}`);
         return null;
       }
 
@@ -110,13 +109,7 @@ serve(async (req) => {
     const validPhotos = photos.filter((p): p is { type: string; base64: string } => p !== null);
 
     if (validPhotos.length === 0) {
-      return new Response(
-        JSON.stringify({ error: "Nenhuma foto válida encontrada" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+      return createErrorResponse(ERROR_MESSAGES.NO_PHOTO, 400, corsHeaders);
     }
 
     // Build prompt for AI
@@ -198,30 +191,16 @@ Responda APENAS com o JSON, sem texto adicional.`;
     );
 
     if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error("AI API error:", errorText);
+      console.error("AI API error:", aiResponse.status);
       
       if (aiResponse.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Limite de requisições excedido. Tente novamente em alguns minutos." }),
-          {
-            status: 429,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
-        );
+        return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
       }
-      
       if (aiResponse.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "Créditos insuficientes. Por favor, adicione créditos à sua conta." }),
-          {
-            status: 402,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
-        );
+        return createErrorResponse(ERROR_MESSAGES.PAYMENT_REQUIRED, 402, corsHeaders, "PAYMENT_REQUIRED");
       }
       
-      throw new Error(`AI API error: ${aiResponse.status}`);
+      return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     }
 
     const aiResult = await aiResponse.json();
@@ -237,8 +216,8 @@ Responda APENAS com o JSON, sem texto adicional.`;
         throw new Error("No JSON found in response");
       }
     } catch (parseError) {
-      console.error("Failed to parse AI response:", content);
-      throw new Error("Failed to parse AI stratification protocol");
+      console.error("Failed to parse AI response");
+      return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     }
 
     // Update evaluation with stratification protocol
@@ -252,7 +231,10 @@ Responda APENAS com o JSON, sem texto adicional.`;
       })
       .eq("id", data.evaluationId);
 
-    if (updateError) throw updateError;
+    if (updateError) {
+      console.error("Database error saving result:", updateError);
+      return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
+    }
 
     return new Response(
       JSON.stringify({
@@ -265,13 +247,6 @@ Responda APENAS com o JSON, sem texto adicional.`;
     );
   } catch (error: unknown) {
     console.error("Error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return new Response(
-      JSON.stringify({ error: message }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
   }
 });

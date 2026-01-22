@@ -1,11 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+import { getCorsHeaders, handleCorsPreFlight, ERROR_MESSAGES, createErrorResponse } from "../_shared/cors.ts";
 
 interface AnalyzePhotoRequest {
   imageBase64: string;
@@ -35,10 +30,41 @@ interface PhotoAnalysisResult {
   warnings: string[];
 }
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+// Validate image request data
+function validateImageRequest(data: unknown): { success: boolean; error?: string; data?: AnalyzePhotoRequest } {
+  if (!data || typeof data !== "object") {
+    return { success: false, error: ERROR_MESSAGES.INVALID_REQUEST };
   }
+
+  const obj = data as Record<string, unknown>;
+
+  if (!obj.imageBase64 || typeof obj.imageBase64 !== "string") {
+    return { success: false, error: ERROR_MESSAGES.IMAGE_INVALID };
+  }
+
+  // Validate imageType if provided
+  if (obj.imageType !== undefined) {
+    const validTypes = ["intraoral", "frontal_smile", "45_smile", "face"];
+    if (typeof obj.imageType !== "string" || !validTypes.includes(obj.imageType)) {
+      obj.imageType = "intraoral"; // Default to intraoral
+    }
+  }
+
+  return {
+    success: true,
+    data: {
+      imageBase64: obj.imageBase64 as string,
+      imageType: (obj.imageType as string) || "intraoral",
+    },
+  };
+}
+
+serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+  
+  // Handle CORS preflight
+  const preflightResponse = handleCorsPreFlight(req);
+  if (preflightResponse) return preflightResponse;
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -46,20 +72,17 @@ serve(async (req) => {
     const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
     
     if (!lovableApiKey) {
-      throw new Error("LOVABLE_API_KEY not configured");
+      console.error("LOVABLE_API_KEY not configured");
+      return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
     }
 
     // Validate authentication
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
-      return new Response(
-        JSON.stringify({ error: "Não autorizado" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return createErrorResponse(ERROR_MESSAGES.UNAUTHORIZED, 401, corsHeaders);
     }
 
     // Verify JWT claims
-    const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
     const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
     });
@@ -68,23 +91,23 @@ serve(async (req) => {
     const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
     
     if (claimsError || !claimsData?.claims) {
-      return new Response(
-        JSON.stringify({ error: "Token inválido" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return createErrorResponse(ERROR_MESSAGES.INVALID_TOKEN, 401, corsHeaders);
     }
 
-    const data: AnalyzePhotoRequest = await req.json();
-
-    if (!data.imageBase64) {
-      return new Response(
-        JSON.stringify({ error: "Imagem não fornecida" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+    // Parse and validate request
+    let rawData: unknown;
+    try {
+      rawData = await req.json();
+    } catch {
+      return createErrorResponse(ERROR_MESSAGES.INVALID_REQUEST, 400, corsHeaders);
     }
+
+    const validation = validateImageRequest(rawData);
+    if (!validation.success || !validation.data) {
+      return createErrorResponse(validation.error || ERROR_MESSAGES.INVALID_REQUEST, 400, corsHeaders);
+    }
+
+    const data = validation.data;
 
     // Server-side validation of image data
     const base64Data = data.imageBase64.includes(",") 
@@ -93,18 +116,12 @@ serve(async (req) => {
     
     // Validate base64 format
     if (!/^[A-Za-z0-9+/=]+$/.test(base64Data)) {
-      return new Response(
-        JSON.stringify({ error: "Formato de imagem inválido" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return createErrorResponse(ERROR_MESSAGES.IMAGE_INVALID, 400, corsHeaders);
     }
 
     // Validate image size (max 10MB in base64 = ~13.3MB base64 string)
     if (base64Data.length > 13 * 1024 * 1024) {
-      return new Response(
-        JSON.stringify({ error: "Imagem muito grande. Máximo: 10MB" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return createErrorResponse(ERROR_MESSAGES.IMAGE_TOO_LARGE, 400, corsHeaders);
     }
 
     // Verify magic bytes for common image formats
@@ -114,10 +131,7 @@ serve(async (req) => {
     const isWEBP = bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46;
     
     if (!isJPEG && !isPNG && !isWEBP) {
-      return new Response(
-        JSON.stringify({ error: "Formato de imagem não suportado. Use JPG, PNG ou WEBP" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return createErrorResponse(ERROR_MESSAGES.IMAGE_FORMAT_UNSUPPORTED, 400, corsHeaders);
     }
 
     // Use the validated base64 data
@@ -316,8 +330,7 @@ Use a função analyze_dental_photo para retornar a análise estruturada.`;
       );
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`AI API error (${model}):`, response.status, errorText);
+        console.error(`AI API error (${model}):`, response.status);
 
         if (response.status === 429) {
           throw { status: 429, message: "Rate limited" };
@@ -329,7 +342,7 @@ Use a função analyze_dental_photo para retornar a análise estruturada.`;
       }
 
       const result = await response.json();
-      console.log(`AI Response (${model}):`, JSON.stringify(result).slice(0, 500));
+      console.log(`AI Response (${model}): success`);
 
       // Check for malformed function call
       const finishReason = result.choices?.[0]?.native_finish_reason || result.choices?.[0]?.finish_reason;
@@ -345,7 +358,7 @@ Use a função analyze_dental_photo para retornar a análise estruturada.`;
         try {
           return JSON.parse(toolCall.function.arguments);
         } catch (parseError) {
-          console.error("Failed to parse tool call arguments:", toolCall.function.arguments);
+          console.error("Failed to parse tool call arguments");
           return null;
         }
       }
@@ -383,31 +396,20 @@ Use a função analyze_dental_photo para retornar a análise estruturada.`;
           console.log(`Successfully got analysis from ${model}`);
           break;
         }
-      } catch (error: any) {
-        if (error?.status === 429) {
-          return new Response(
-            JSON.stringify({ 
-              error: "Limite de requisições excedido. Aguarde alguns minutos.",
-              code: "RATE_LIMITED"
-            }),
-            { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
+      } catch (error: unknown) {
+        const err = error as { status?: number };
+        if (err?.status === 429) {
+          return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
         }
-        if (error?.status === 402) {
-          return new Response(
-            JSON.stringify({ 
-              error: "Créditos insuficientes. Adicione créditos à sua conta.",
-              code: "PAYMENT_REQUIRED"
-            }),
-            { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
+        if (err?.status === 402) {
+          return createErrorResponse(ERROR_MESSAGES.PAYMENT_REQUIRED, 402, corsHeaders, "PAYMENT_REQUIRED");
         }
-        console.error(`Error with model ${model}:`, error);
+        console.error(`Error with model ${model}`);
       }
     }
 
     if (!analysisResult) {
-      throw new Error("Não foi possível analisar a foto. Tente novamente.");
+      return createErrorResponse(ERROR_MESSAGES.ANALYSIS_FAILED, 500, corsHeaders);
     }
 
     // Ensure required fields have defaults and normalize detected_teeth
@@ -441,9 +443,6 @@ Use a função analyze_dental_photo para retornar a análise estruturada.`;
     // Log detection results for debugging
     console.log(`Multi-tooth detection complete: ${detectedTeeth.length} teeth found`);
     console.log(`Primary tooth: ${result.primary_tooth}, Confidence: ${result.confidence}%`);
-    if (detectedTeeth.length > 0) {
-      console.log(`Teeth detected: ${detectedTeeth.map(t => `${t.tooth}(${t.priority})`).join(', ')}`);
-    }
 
     // Add warning if multiple teeth detected
     if (detectedTeeth.length > 1) {
@@ -466,13 +465,6 @@ Use a função analyze_dental_photo para retornar a análise estruturada.`;
     );
   } catch (error: unknown) {
     console.error("Error analyzing photo:", error);
-    const message = error instanceof Error ? error.message : "Erro desconhecido";
-    return new Response(
-      JSON.stringify({ error: message }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
   }
 });

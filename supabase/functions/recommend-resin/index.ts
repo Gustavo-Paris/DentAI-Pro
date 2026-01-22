@@ -1,30 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
-
-interface EvaluationData {
-  evaluationId: string;
-  userId: string;
-  patientAge: string;
-  tooth: string;
-  region: string;
-  cavityClass: string;
-  restorationSize: string;
-  substrate: string;
-  aestheticLevel: string;
-  toothColor: string;
-  stratificationNeeded: boolean;
-  bruxism: boolean;
-  longevityExpectation: string;
-  budget: string;
-  depth?: string;
-  substrateCondition?: string;
-}
+import { getCorsHeaders, handleCorsPreFlight, ERROR_MESSAGES, createErrorResponse } from "../_shared/cors.ts";
+import { validateEvaluationData, type EvaluationData } from "../_shared/validation.ts";
 
 interface ProtocolLayer {
   order: number;
@@ -54,9 +31,11 @@ interface StratificationProtocol {
 }
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const corsHeaders = getCorsHeaders(req);
+  
+  // Handle CORS preflight
+  const preflightResponse = handleCorsPreFlight(req);
+  if (preflightResponse) return preflightResponse;
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -67,10 +46,7 @@ serve(async (req) => {
     // Validate authentication
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
-      return new Response(
-        JSON.stringify({ error: "Não autorizado" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return createErrorResponse(ERROR_MESSAGES.UNAUTHORIZED, 401, corsHeaders);
     }
 
     // Create client with user's auth token to verify claims
@@ -82,33 +58,44 @@ serve(async (req) => {
     const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
     
     if (claimsError || !claimsData?.claims) {
-      return new Response(
-        JSON.stringify({ error: "Token inválido" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return createErrorResponse(ERROR_MESSAGES.INVALID_TOKEN, 401, corsHeaders);
     }
 
     const userId = claimsData.claims.sub as string;
 
-    // Use service role client for database operations
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    // Parse and validate input
+    let rawData: unknown;
+    try {
+      rawData = await req.json();
+    } catch {
+      return createErrorResponse(ERROR_MESSAGES.INVALID_REQUEST, 400, corsHeaders);
+    }
 
-    const data: EvaluationData = await req.json();
+    const validation = validateEvaluationData(rawData);
+    if (!validation.success || !validation.data) {
+      console.error("Validation failed:", validation.error);
+      return createErrorResponse(validation.error || ERROR_MESSAGES.INVALID_REQUEST, 400, corsHeaders);
+    }
+
+    const data: EvaluationData = validation.data;
 
     // Verify user owns this evaluation
     if (data.userId !== userId) {
-      return new Response(
-        JSON.stringify({ error: "Acesso negado a esta avaliação" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return createErrorResponse(ERROR_MESSAGES.ACCESS_DENIED, 403, corsHeaders);
     }
+
+    // Use service role client for database operations
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Fetch all resins from database
     const { data: resins, error: resinsError } = await supabase
       .from("resins")
       .select("*");
 
-    if (resinsError) throw resinsError;
+    if (resinsError) {
+      console.error("Database error fetching resins:", resinsError);
+      return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
+    }
 
     // Fetch user's inventory
     const { data: userInventory, error: inventoryError } = await supabase
@@ -280,9 +267,16 @@ Responda APENAS com o JSON, sem texto adicional.`;
     );
 
     if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error("AI API error:", errorText);
-      throw new Error(`AI API error: ${aiResponse.status}`);
+      console.error("AI API error:", aiResponse.status);
+      
+      if (aiResponse.status === 429) {
+        return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
+      }
+      if (aiResponse.status === 402) {
+        return createErrorResponse(ERROR_MESSAGES.PAYMENT_REQUIRED, 402, corsHeaders, "PAYMENT_REQUIRED");
+      }
+      
+      return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     }
 
     const aiResult = await aiResponse.json();
@@ -298,8 +292,8 @@ Responda APENAS com o JSON, sem texto adicional.`;
         throw new Error("No JSON found in response");
       }
     } catch (parseError) {
-      console.error("Failed to parse AI response:", content);
-      throw new Error("Failed to parse AI recommendation");
+      console.error("Failed to parse AI response");
+      return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     }
 
     // Find the recommended resin in database
@@ -355,7 +349,10 @@ Responda APENAS com o JSON, sem texto adicional.`;
       })
       .eq("id", data.evaluationId);
 
-    if (updateError) throw updateError;
+    if (updateError) {
+      console.error("Database error saving result:", updateError);
+      return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
+    }
 
     return new Response(
       JSON.stringify({
@@ -376,10 +373,6 @@ Responda APENAS com o JSON, sem texto adicional.`;
     );
   } catch (error: unknown) {
     console.error("Error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return new Response(JSON.stringify({ error: message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
   }
 });
