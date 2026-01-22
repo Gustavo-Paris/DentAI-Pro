@@ -11,6 +11,55 @@ interface PhotoUploadStepProps {
   isUploading: boolean;
 }
 
+// Compress image to reduce payload size for API calls
+const compressImage = async (
+  file: File, 
+  maxWidth: number = 1920, 
+  quality: number = 0.8
+): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let width = img.width;
+      let height = img.height;
+      
+      // Resize maintaining aspect ratio
+      if (width > maxWidth) {
+        height = Math.round((height * maxWidth) / width);
+        width = maxWidth;
+      }
+      
+      canvas.width = width;
+      canvas.height = height;
+      
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        reject(new Error('Could not get canvas context'));
+        return;
+      }
+      
+      ctx.drawImage(img, 0, 0, width, height);
+      
+      // Convert to JPEG with compression
+      const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+      
+      // Clean up object URL
+      URL.revokeObjectURL(img.src);
+      
+      resolve(compressedBase64);
+    };
+    
+    img.onerror = () => {
+      URL.revokeObjectURL(img.src);
+      reject(new Error('Failed to load image'));
+    };
+    
+    img.src = URL.createObjectURL(file);
+  });
+};
+
 export function PhotoUploadStep({
   imageBase64,
   onImageChange,
@@ -19,6 +68,7 @@ export function PhotoUploadStep({
 }: PhotoUploadStepProps) {
   const [dragActive, setDragActive] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
+  const [isCompressing, setIsCompressing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   
@@ -42,7 +92,7 @@ export function PhotoUploadStep({
   // Mostra botão câmera se for mobile real OU tela pequena (para preview)
   const showCameraButton = isMobileDevice || isSmallScreen;
 
-  const handleFile = useCallback((file: File) => {
+  const handleFile = useCallback(async (file: File) => {
     if (!file.type.startsWith('image/')) {
       toast.error('Apenas imagens são permitidas');
       return;
@@ -53,12 +103,17 @@ export function PhotoUploadStep({
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const result = e.target?.result as string;
-      onImageChange(result);
-    };
-    reader.readAsDataURL(file);
+    setIsCompressing(true);
+    
+    try {
+      const compressedBase64 = await compressImage(file);
+      onImageChange(compressedBase64);
+    } catch (error) {
+      console.error('Error compressing image:', error);
+      toast.error('Erro ao processar imagem. Tente novamente.');
+    } finally {
+      setIsCompressing(false);
+    }
   }, [onImageChange]);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
@@ -114,41 +169,55 @@ export function PhotoUploadStep({
           onDrop={handleDrop}
         >
           <CardContent className="py-16">
-            <div className="flex flex-col items-center justify-center text-center">
-              <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
-                <Camera className="w-10 h-10 text-primary" />
+            {isCompressing ? (
+              <div className="flex flex-col items-center justify-center text-center">
+                <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
+                  <Loader2 className="w-10 h-10 text-primary animate-spin" />
+                </div>
+                <h3 className="text-lg font-medium mb-2">
+                  Processando imagem...
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Otimizando para análise
+                </p>
               </div>
-              
-              <h3 className="text-lg font-medium mb-2">
-                Arraste uma foto aqui
-              </h3>
-              <p className="text-sm text-muted-foreground mb-6">
-                {showCameraButton ? 'ou escolha uma foto existente ou tire uma nova' : 'ou escolha uma foto do seu dispositivo'}
-              </p>
+            ) : (
+              <div className="flex flex-col items-center justify-center text-center">
+                <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
+                  <Camera className="w-10 h-10 text-primary" />
+                </div>
+                
+                <h3 className="text-lg font-medium mb-2">
+                  Arraste uma foto aqui
+                </h3>
+                <p className="text-sm text-muted-foreground mb-6">
+                  {showCameraButton ? 'ou escolha uma foto existente ou tire uma nova' : 'ou escolha uma foto do seu dispositivo'}
+                </p>
 
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button
-                  variant="default"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  Escolher da Galeria
-                </Button>
-                {showCameraButton && (
+                <div className="flex flex-col sm:flex-row gap-3">
                   <Button
-                    variant="outline"
-                    onClick={() => cameraInputRef.current?.click()}
+                    variant="default"
+                    onClick={() => fileInputRef.current?.click()}
                   >
-                    <Camera className="w-4 h-4 mr-2" />
-                    Tirar Foto
+                    <Upload className="w-4 h-4 mr-2" />
+                    Escolher da Galeria
                   </Button>
-                )}
-              </div>
+                  {showCameraButton && (
+                    <Button
+                      variant="outline"
+                      onClick={() => cameraInputRef.current?.click()}
+                    >
+                      <Camera className="w-4 h-4 mr-2" />
+                      Tirar Foto
+                    </Button>
+                  )}
+                </div>
 
-              <p className="text-xs text-muted-foreground mt-6">
-                Formatos: JPG, PNG, HEIC • Máximo: 10MB
-              </p>
-            </div>
+                <p className="text-xs text-muted-foreground mt-6">
+                  Formatos: JPG, PNG, HEIC • Máximo: 10MB
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       ) : (
