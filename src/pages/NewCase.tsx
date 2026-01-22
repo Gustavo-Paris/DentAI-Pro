@@ -332,7 +332,13 @@ export default function NewCase() {
         navigate(`/result/${createdEvaluationIds[0]}`);
       } else {
         toast.success(`${teethToProcess.length} protocolos gerados com sucesso!`);
-        navigate('/cases'); // Go to cases list to see all created evaluations
+        navigate('/cases', { 
+          state: { 
+            newCaseIds: createdEvaluationIds,
+            patientName: formData.patientName,
+            teethCount: teethToProcess.length
+          } 
+        });
       }
     } catch (error) {
       console.error('Error:', error);
