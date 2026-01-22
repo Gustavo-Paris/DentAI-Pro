@@ -46,12 +46,21 @@ export default function NewCase() {
   const [isReanalyzing, setIsReanalyzing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadedPhotoPath, setUploadedPhotoPath] = useState<string | null>(null);
+  const [selectedTeeth, setSelectedTeeth] = useState<string[]>([]);
   
   const { user } = useAuth();
   const navigate = useNavigate();
 
   const totalSteps = 4;
   const progress = (step / totalSteps) * 100;
+
+  // Auto-select all detected teeth when analysis completes
+  useEffect(() => {
+    if (analysisResult?.detected_teeth && analysisResult.detected_teeth.length > 0) {
+      const allTeeth = analysisResult.detected_teeth.map(t => t.tooth);
+      setSelectedTeeth(allTeeth);
+    }
+  }, [analysisResult]);
 
   // Helper to determine if tooth is anterior
   const isAnterior = (tooth: string) => {
@@ -229,79 +238,102 @@ export default function NewCase() {
       toast.error('Informe a idade do paciente');
       return false;
     }
-    if (!formData.tooth) {
-      toast.error('Selecione o dente');
+    // For multi-tooth, we need at least one selected
+    const teethToProcess = selectedTeeth.length > 0 ? selectedTeeth : [formData.tooth];
+    if (teethToProcess.length === 0 || !teethToProcess[0]) {
+      toast.error('Selecione pelo menos um dente');
       return false;
     }
     return true;
   };
 
-  // Submit the case
+  // Get tooth data from analysis result
+  const getToothData = (toothNumber: string) => {
+    return analysisResult?.detected_teeth?.find(t => t.tooth === toothNumber);
+  };
+
+  // Submit the case - process all selected teeth
   const handleSubmit = async () => {
     if (!user || !validateForm()) return;
 
     setIsSubmitting(true);
     setStep(4);
 
+    // Determine which teeth to process
+    const teethToProcess = selectedTeeth.length > 0 ? selectedTeeth : [formData.tooth];
+    const createdEvaluationIds: string[] = [];
+
     try {
-      // Create evaluation record
-      const { data: evaluation, error: evalError } = await supabase
-        .from('evaluations')
-        .insert({
-          user_id: user.id,
-          patient_name: formData.patientName || null,
-          patient_age: parseInt(formData.patientAge),
-          tooth: formData.tooth,
-          region: isAnterior(formData.tooth) ? 'anterior' : 'posterior',
-          cavity_class: formData.cavityClass,
-          restoration_size: formData.restorationSize.toLowerCase(),
-          substrate: formData.substrate.toLowerCase(),
-          tooth_color: formData.vitaShade,
-          depth: formData.depth,
-          substrate_condition: formData.substrateCondition,
-          enamel_condition: formData.enamelCondition,
-          bruxism: formData.bruxism,
-          aesthetic_level: formData.aestheticLevel,
-          budget: formData.budget,
-          longevity_expectation: formData.longevityExpectation,
-          photo_frontal: uploadedPhotoPath,
-          status: 'analyzing',
-        })
-        .select()
-        .single();
+      for (const tooth of teethToProcess) {
+        // Get tooth-specific data if available from AI analysis
+        const toothData = getToothData(tooth);
+        
+        // Create evaluation record for each tooth
+        const { data: evaluation, error: evalError } = await supabase
+          .from('evaluations')
+          .insert({
+            user_id: user.id,
+            patient_name: formData.patientName || null,
+            patient_age: parseInt(formData.patientAge),
+            tooth: tooth,
+            region: isAnterior(tooth) ? 'anterior' : 'posterior',
+            cavity_class: toothData?.cavity_class || formData.cavityClass,
+            restoration_size: (toothData?.restoration_size || formData.restorationSize).toLowerCase(),
+            substrate: (toothData?.substrate || formData.substrate).toLowerCase(),
+            tooth_color: formData.vitaShade,
+            depth: toothData?.depth || formData.depth,
+            substrate_condition: toothData?.substrate_condition || formData.substrateCondition,
+            enamel_condition: toothData?.enamel_condition || formData.enamelCondition,
+            bruxism: formData.bruxism,
+            aesthetic_level: formData.aestheticLevel,
+            budget: formData.budget,
+            longevity_expectation: formData.longevityExpectation,
+            photo_frontal: uploadedPhotoPath,
+            status: 'analyzing',
+          })
+          .select()
+          .single();
 
-      if (evalError) throw evalError;
+        if (evalError) throw evalError;
+        createdEvaluationIds.push(evaluation.id);
 
-      // Call recommend-resin edge function
-      const { error: aiError } = await supabase.functions.invoke('recommend-resin', {
-        body: {
-          evaluationId: evaluation.id,
-          userId: user.id,
-          patientAge: formData.patientAge,
-          tooth: formData.tooth,
-          region: isAnterior(formData.tooth) ? 'anterior' : 'posterior',
-          cavityClass: formData.cavityClass,
-          restorationSize: formData.restorationSize.toLowerCase(),
-          substrate: formData.substrate.toLowerCase(),
-          bruxism: formData.bruxism,
-          aestheticLevel: formData.aestheticLevel,
-          toothColor: formData.vitaShade,
-          stratificationNeeded: true,
-          budget: formData.budget,
-          longevityExpectation: formData.longevityExpectation,
-        },
-      });
+        // Call recommend-resin edge function for each tooth
+        const { error: aiError } = await supabase.functions.invoke('recommend-resin', {
+          body: {
+            evaluationId: evaluation.id,
+            userId: user.id,
+            patientAge: formData.patientAge,
+            tooth: tooth,
+            region: isAnterior(tooth) ? 'anterior' : 'posterior',
+            cavityClass: toothData?.cavity_class || formData.cavityClass,
+            restorationSize: (toothData?.restoration_size || formData.restorationSize).toLowerCase(),
+            substrate: (toothData?.substrate || formData.substrate).toLowerCase(),
+            bruxism: formData.bruxism,
+            aestheticLevel: formData.aestheticLevel,
+            toothColor: formData.vitaShade,
+            stratificationNeeded: true,
+            budget: formData.budget,
+            longevityExpectation: formData.longevityExpectation,
+          },
+        });
 
-      if (aiError) throw aiError;
+        if (aiError) throw aiError;
 
-      // Update status to completed
-      await supabase
-        .from('evaluations')
-        .update({ status: 'completed' })
-        .eq('id', evaluation.id);
+        // Update status to completed
+        await supabase
+          .from('evaluations')
+          .update({ status: 'completed' })
+          .eq('id', evaluation.id);
+      }
 
-      toast.success('Caso analisado com sucesso!');
-      navigate(`/result/${evaluation.id}`);
+      // Success message
+      if (teethToProcess.length === 1) {
+        toast.success('Caso analisado com sucesso!');
+        navigate(`/result/${createdEvaluationIds[0]}`);
+      } else {
+        toast.success(`${teethToProcess.length} protocolos gerados com sucesso!`);
+        navigate('/cases'); // Go to cases list to see all created evaluations
+      }
     } catch (error) {
       console.error('Error:', error);
       toast.error('Erro ao criar caso');
@@ -383,6 +415,8 @@ export default function NewCase() {
             imageBase64={imageBase64}
             onReanalyze={handleReanalyze}
             isReanalyzing={isReanalyzing}
+            selectedTeeth={selectedTeeth}
+            onSelectedTeethChange={setSelectedTeeth}
           />
         )}
 
