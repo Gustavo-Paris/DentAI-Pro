@@ -1,8 +1,7 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Camera, Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
 
 interface PhotoUploadStepProps {
@@ -21,7 +20,12 @@ export function PhotoUploadStep({
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
-  const isMobile = useIsMobile();
+  
+  // Detecta dispositivo móvel real via userAgent (não apenas por largura de tela)
+  const isMobileDevice = useMemo(() => {
+    if (typeof navigator === 'undefined') return false;
+    return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  }, []);
 
   const handleFile = useCallback((file: File) => {
     if (!file.type.startsWith('image/')) {
@@ -104,7 +108,7 @@ export function PhotoUploadStep({
                 Arraste uma foto aqui
               </h3>
               <p className="text-sm text-muted-foreground mb-6">
-                {isMobile ? 'ou escolha uma foto existente ou tire uma nova' : 'ou escolha uma foto do seu dispositivo'}
+                {isMobileDevice ? 'ou escolha uma foto existente ou tire uma nova' : 'ou escolha uma foto do seu dispositivo'}
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3">
@@ -115,7 +119,7 @@ export function PhotoUploadStep({
                   <Upload className="w-4 h-4 mr-2" />
                   Escolher da Galeria
                 </Button>
-                {isMobile && (
+                {isMobileDevice && (
                   <Button
                     variant="outline"
                     onClick={() => cameraInputRef.current?.click()}
