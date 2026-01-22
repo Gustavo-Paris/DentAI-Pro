@@ -12,7 +12,7 @@ import Dashboard from "@/pages/Dashboard";
 import NewCase from "@/pages/NewCase";
 import Inventory from "@/pages/Inventory";
 import Result from "@/pages/Result";
-import Cases from "@/pages/Cases";
+import Evaluations from "@/pages/Evaluations";
 import EvaluationDetails from "@/pages/EvaluationDetails";
 import NotFound from "@/pages/NotFound";
 
@@ -54,10 +54,10 @@ const App = () => (
               }
             />
             <Route
-              path="/cases"
+              path="/evaluations"
               element={
                 <ProtectedRoute>
-                  <Cases />
+                  <Evaluations />
                 </ProtectedRoute>
               }
             />
