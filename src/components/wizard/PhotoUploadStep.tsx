@@ -19,6 +19,7 @@ export function PhotoUploadStep({
 }: PhotoUploadStepProps) {
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = useCallback((file: File) => {
     if (!file.type.startsWith('image/')) {
@@ -101,16 +102,23 @@ export function PhotoUploadStep({
                 Arraste uma foto aqui
               </h3>
               <p className="text-sm text-muted-foreground mb-6">
-                ou clique para selecionar do dispositivo
+                ou escolha uma foto existente ou tire uma nova
               </p>
 
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <Button
                   variant="default"
                   onClick={() => fileInputRef.current?.click()}
                 >
                   <Upload className="w-4 h-4 mr-2" />
-                  Selecionar Foto
+                  Escolher da Galeria
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => cameraInputRef.current?.click()}
+                >
+                  <Camera className="w-4 h-4 mr-2" />
+                  Tirar Foto
                 </Button>
               </div>
 
@@ -142,8 +150,18 @@ export function PhotoUploadStep({
         </Card>
       )}
 
+      {/* Input para galeria - sem capture */}
       <input
         ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFileChange}
+        className="hidden"
+      />
+
+      {/* Input para câmera - com capture */}
+      <input
+        ref={cameraInputRef}
         type="file"
         accept="image/*"
         capture="environment"
