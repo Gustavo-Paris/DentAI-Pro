@@ -13,6 +13,7 @@ import NewCase from "@/pages/NewCase";
 import Inventory from "@/pages/Inventory";
 import Result from "@/pages/Result";
 import Cases from "@/pages/Cases";
+import Session from "@/pages/Session";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -57,6 +58,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Cases />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/session/:sessionId"
+              element={
+                <ProtectedRoute>
+                  <Session />
                 </ProtectedRoute>
               }
             />

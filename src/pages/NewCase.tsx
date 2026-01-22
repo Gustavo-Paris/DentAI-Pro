@@ -262,6 +262,9 @@ export default function NewCase() {
     // Determine which teeth to process
     const teethToProcess = selectedTeeth.length > 0 ? selectedTeeth : [formData.tooth];
     const createdEvaluationIds: string[] = [];
+    
+    // Generate a shared session_id for all teeth in this batch
+    const sessionId = crypto.randomUUID();
 
     try {
       for (const tooth of teethToProcess) {
@@ -273,6 +276,7 @@ export default function NewCase() {
           .from('evaluations')
           .insert({
             user_id: user.id,
+            session_id: sessionId,
             patient_name: formData.patientName || null,
             patient_age: parseInt(formData.patientAge),
             tooth: tooth,
@@ -326,20 +330,9 @@ export default function NewCase() {
           .eq('id', evaluation.id);
       }
 
-      // Success message
-      if (teethToProcess.length === 1) {
-        toast.success('Caso analisado com sucesso!');
-        navigate(`/result/${createdEvaluationIds[0]}`);
-      } else {
-        toast.success(`${teethToProcess.length} protocolos gerados com sucesso!`);
-        navigate('/cases', { 
-          state: { 
-            newCaseIds: createdEvaluationIds,
-            patientName: formData.patientName,
-            teethCount: teethToProcess.length
-          } 
-        });
-      }
+      // Success message - always navigate to session page for consistency
+      toast.success(`${teethToProcess.length} protocolo(s) gerado(s) com sucesso!`);
+      navigate(`/session/${sessionId}`);
     } catch (error) {
       console.error('Error:', error);
       toast.error('Erro ao criar caso');

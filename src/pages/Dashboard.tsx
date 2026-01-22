@@ -5,7 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { LogOut, Plus, FileText, Calendar, Package } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { LogOut, Plus, FileText, Calendar, Package, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -14,12 +15,22 @@ interface Evaluation {
   created_at: string;
   tooth: string;
   cavity_class: string;
+  patient_name: string | null;
+  session_id: string | null;
   recommendation_text: string | null;
   recommended_resin_id: string | null;
   resins?: {
     name: string;
     manufacturer: string;
   } | null;
+}
+
+interface Session {
+  session_id: string;
+  patient_name: string | null;
+  created_at: string;
+  teeth: string[];
+  evaluationCount: number;
 }
 
 interface Profile {
@@ -30,7 +41,8 @@ export default function Dashboard() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [totalEvaluations, setTotalEvaluations] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -45,6 +57,7 @@ export default function Dashboard() {
 
       setProfile(profileData);
 
+      // Fetch evaluations and group by session_id
       const { data: evaluationsData } = await supabase
         .from('evaluations')
         .select(`
@@ -52,6 +65,8 @@ export default function Dashboard() {
           created_at,
           tooth,
           cavity_class,
+          patient_name,
+          session_id,
           recommendation_text,
           recommended_resin_id,
           resins!recommended_resin_id (
@@ -60,10 +75,36 @@ export default function Dashboard() {
           )
         `)
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(5);
+        .order('created_at', { ascending: false });
 
-      setEvaluations(evaluationsData || []);
+      if (evaluationsData) {
+        setTotalEvaluations(evaluationsData.length);
+        
+        // Group by session_id
+        const sessionMap = new Map<string, Evaluation[]>();
+        
+        evaluationsData.forEach(evaluation => {
+          const sessionKey = evaluation.session_id || evaluation.id; // fallback to id for old records
+          if (!sessionMap.has(sessionKey)) {
+            sessionMap.set(sessionKey, []);
+          }
+          sessionMap.get(sessionKey)!.push(evaluation);
+        });
+
+        // Convert to array and take first 5 sessions
+        const sessionsArray: Session[] = Array.from(sessionMap.entries())
+          .slice(0, 5)
+          .map(([sessionId, evals]) => ({
+            session_id: sessionId,
+            patient_name: evals[0].patient_name,
+            created_at: evals[0].created_at,
+            teeth: evals.map(e => e.tooth),
+            evaluationCount: evals.length,
+          }));
+
+        setSessions(sessionsArray);
+      }
+      
       setLoading(false);
     };
 
@@ -128,21 +169,29 @@ export default function Dashboard() {
         <Card className="mb-8">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total de avaliações
+              Total de protocolos
             </CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
               <Skeleton className="h-8 w-12" />
             ) : (
-              <p className="text-3xl font-semibold">{evaluations.length}</p>
+              <p className="text-3xl font-semibold">{totalEvaluations}</p>
             )}
           </CardContent>
         </Card>
 
-        {/* Recent Evaluations */}
+        {/* Recent Sessions */}
         <div>
-          <h2 className="text-lg font-medium mb-4">Avaliações recentes</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-medium">Sessões recentes</h2>
+            <Link to="/cases">
+              <Button variant="ghost" size="sm">
+                Ver todos os casos
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </Link>
+          </div>
           
           {loading ? (
             <div className="space-y-3">
@@ -150,31 +199,47 @@ export default function Dashboard() {
                 <Skeleton key={i} className="h-20 w-full" />
               ))}
             </div>
-          ) : evaluations.length === 0 ? (
+          ) : sessions.length === 0 ? (
             <Card className="p-8 text-center">
               <FileText className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground mb-4">Nenhuma avaliação ainda</p>
+              <p className="text-muted-foreground mb-4">Nenhuma sessão ainda</p>
               <Link to="/new-case">
-                <Button>Fazer primeira avaliação</Button>
+                <Button>Criar primeiro caso</Button>
               </Link>
             </Card>
           ) : (
             <div className="space-y-3">
-              {evaluations.map((evaluation) => (
-                <Link key={evaluation.id} to={`/result/${evaluation.id}`}>
+              {sessions.map((session) => (
+                <Link key={session.session_id} to={`/session/${session.session_id}`}>
                   <Card className="p-4 hover:bg-secondary/50 transition-colors cursor-pointer">
                     <div className="flex items-center justify-between">
-                      <div>
+                      <div className="flex-1">
                         <p className="font-medium">
-                          {evaluation.resins?.name || 'Avaliação em andamento'}
+                          {session.patient_name || 'Paciente sem nome'}
                         </p>
-                        <p className="text-sm text-muted-foreground">
-                          Dente {evaluation.tooth} • {evaluation.cavity_class}
-                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <p className="text-sm text-muted-foreground">
+                            {session.evaluationCount} dente{session.evaluationCount > 1 ? 's' : ''}
+                          </p>
+                          <span className="text-muted-foreground">•</span>
+                          <div className="flex gap-1">
+                            {session.teeth.slice(0, 4).map((tooth) => (
+                              <Badge key={tooth} variant="outline" className="text-xs">
+                                {tooth}
+                              </Badge>
+                            ))}
+                            {session.teeth.length > 4 && (
+                              <Badge variant="outline" className="text-xs">
+                                +{session.teeth.length - 4}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <Calendar className="w-4 h-4 mr-1" />
-                        {format(new Date(evaluation.created_at), "d 'de' MMM", { locale: ptBR })}
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Calendar className="w-4 h-4" />
+                        {format(new Date(session.created_at), "d 'de' MMM", { locale: ptBR })}
+                        <ChevronRight className="w-4 h-4" />
                       </div>
                     </div>
                   </Card>

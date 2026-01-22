@@ -42,6 +42,7 @@ export type Database = {
           recommended_resin_id: string | null
           region: string
           restoration_size: string
+          session_id: string | null
           simulation_url: string | null
           status: string | null
           stratification_needed: boolean
@@ -80,6 +81,7 @@ export type Database = {
           recommended_resin_id?: string | null
           region: string
           restoration_size: string
+          session_id?: string | null
           simulation_url?: string | null
           status?: string | null
           stratification_needed?: boolean
@@ -118,6 +120,7 @@ export type Database = {
           recommended_resin_id?: string | null
           region?: string
           restoration_size?: string
+          session_id?: string | null
           simulation_url?: string | null
           status?: string | null
           stratification_needed?: boolean
