@@ -77,6 +77,7 @@ interface Evaluation {
   ideal_reason: string | null;
   ideal_resin: Resin | null;
   has_inventory_at_creation: boolean;
+  checklist_progress: number[] | null;
 }
 
 interface DentistProfile {
@@ -161,6 +162,24 @@ export default function Result() {
 
     fetchData();
   }, [id, user]);
+
+  const handleChecklistChange = async (indices: number[]) => {
+    if (!evaluation || !id) return;
+
+    // Update local state immediately for responsiveness
+    setEvaluation(prev => prev ? { ...prev, checklist_progress: indices } : null);
+
+    // Persist to database
+    const { error } = await supabase
+      .from('evaluations')
+      .update({ checklist_progress: indices })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error saving checklist progress:', error);
+      toast.error('Erro ao salvar progresso');
+    }
+  };
 
   const handleExportPDF = async () => {
     if (!evaluation) return;
@@ -437,7 +456,11 @@ export default function Result() {
                 <CardTitle className="text-base">Passo a Passo</CardTitle>
               </CardHeader>
               <CardContent>
-                <ProtocolChecklist items={checklist} />
+                <ProtocolChecklist 
+                  items={checklist} 
+                  checkedIndices={evaluation.checklist_progress || []}
+                  onProgressChange={handleChecklistChange}
+                />
               </CardContent>
             </Card>
           </section>

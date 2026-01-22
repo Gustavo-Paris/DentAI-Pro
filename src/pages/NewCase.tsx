@@ -330,9 +330,9 @@ export default function NewCase() {
           .eq('id', evaluation.id);
       }
 
-      // Success message - always navigate to session page for consistency
-      toast.success(`${teethToProcess.length} protocolo(s) gerado(s) com sucesso!`);
-      navigate(`/session/${sessionId}`);
+      // Success message - always navigate to evaluation page for consistency
+      toast.success(`${teethToProcess.length} caso(s) gerado(s) com sucesso!`);
+      navigate(`/evaluation/${sessionId}`);
     } catch (error) {
       console.error('Error:', error);
       toast.error('Erro ao criar caso');
@@ -425,9 +425,9 @@ export default function NewCase() {
               <Loader2 className="w-10 h-10 text-primary animate-spin" />
             </div>
             <div className="text-center">
-              <h2 className="text-xl font-semibold mb-2">Gerando Protocolo</h2>
+              <h2 className="text-xl font-semibold mb-2">Gerando Caso</h2>
               <p className="text-muted-foreground">
-                A IA está criando o protocolo de estratificação personalizado...
+                A IA está criando o caso clínico personalizado...
               </p>
             </div>
           </div>
@@ -450,7 +450,7 @@ export default function NewCase() {
                   </>
                 ) : (
                   <>
-                    Gerar Protocolo
+                    Gerar Caso
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </>
                 )}

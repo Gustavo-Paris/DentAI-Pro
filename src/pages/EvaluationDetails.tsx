@@ -20,6 +20,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { 
   LogOut, 
   ArrowLeft, 
@@ -29,13 +34,20 @@ import {
   MoreHorizontal,
   Calendar,
   User,
-  Image as ImageIcon
+  Image as ImageIcon,
+  AlertCircle
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
 
-interface SessionEvaluation {
+interface StratificationProtocol {
+  checklist?: string[];
+  layers?: unknown[];
+  [key: string]: unknown;
+}
+
+interface EvaluationItem {
   id: string;
   created_at: string;
   patient_name: string | null;
@@ -44,27 +56,29 @@ interface SessionEvaluation {
   restoration_size: string;
   status: string | null;
   photo_frontal: string | null;
+  checklist_progress: number[] | null;
+  stratification_protocol: StratificationProtocol | null;
   resins?: {
     name: string;
     manufacturer: string;
   } | null;
 }
 
-export default function Session() {
-  const { sessionId } = useParams<{ sessionId: string }>();
+export default function EvaluationDetails() {
+  const { evaluationId } = useParams<{ evaluationId: string }>();
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   
-  const [evaluations, setEvaluations] = useState<SessionEvaluation[]>([]);
+  const [evaluations, setEvaluations] = useState<EvaluationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchSessionData();
-  }, [user, sessionId]);
+    fetchEvaluationData();
+  }, [user, evaluationId]);
 
-  const fetchSessionData = async () => {
-    if (!user || !sessionId) return;
+  const fetchEvaluationData = async () => {
+    if (!user || !evaluationId) return;
 
     const { data, error } = await supabase
       .from('evaluations')
@@ -77,21 +91,23 @@ export default function Session() {
         restoration_size,
         status,
         photo_frontal,
+        checklist_progress,
+        stratification_protocol,
         resins!recommended_resin_id (
           name,
           manufacturer
         )
       `)
       .eq('user_id', user.id)
-      .eq('session_id', sessionId)
+      .eq('session_id', evaluationId)
       .order('tooth', { ascending: true });
 
     if (error) {
-      console.error('Error fetching session:', error);
-      toast.error('Erro ao carregar sessão');
+      console.error('Error fetching evaluation:', error);
+      toast.error('Erro ao carregar avaliação');
       navigate('/dashboard');
     } else if (data && data.length > 0) {
-      setEvaluations(data);
+      setEvaluations(data as EvaluationItem[]);
       
       // Load photo if available
       const photoPath = data[0]?.photo_frontal;
@@ -104,7 +120,7 @@ export default function Session() {
         }
       }
     } else {
-      toast.error('Sessão não encontrada');
+      toast.error('Avaliação não encontrada');
       navigate('/dashboard');
     }
     setLoading(false);
@@ -115,7 +131,27 @@ export default function Session() {
     navigate('/');
   };
 
+  // Check if checklist is complete for a given evaluation
+  const isChecklistComplete = (evaluation: EvaluationItem): boolean => {
+    const protocol = evaluation.stratification_protocol;
+    const checklist = protocol?.checklist || [];
+    const progress = evaluation.checklist_progress || [];
+    
+    // If there's no checklist, consider it complete
+    if (checklist.length === 0) return true;
+    
+    return progress.length >= checklist.length;
+  };
+
   const handleMarkAsCompleted = async (id: string) => {
+    const evaluation = evaluations.find(e => e.id === id);
+    if (!evaluation) return;
+
+    if (!isChecklistComplete(evaluation)) {
+      toast.error('Complete todas as etapas do checklist antes de finalizar este caso');
+      return;
+    }
+
     const { error } = await supabase
       .from('evaluations')
       .update({ status: 'completed' })
@@ -125,30 +161,39 @@ export default function Session() {
       toast.error('Erro ao atualizar status');
     } else {
       toast.success('Caso marcado como finalizado');
-      fetchSessionData();
+      fetchEvaluationData();
     }
   };
 
   const handleMarkAllAsCompleted = async () => {
-    const pendingIds = evaluations
-      .filter(e => e.status !== 'completed')
-      .map(e => e.id);
+    const pending = evaluations.filter(e => e.status !== 'completed');
+    const completable = pending.filter(e => isChecklistComplete(e));
 
-    if (pendingIds.length === 0) {
+    if (pending.length === 0) {
       toast.info('Todos os casos já estão finalizados');
+      return;
+    }
+
+    if (completable.length === 0) {
+      toast.error('Nenhum caso pode ser finalizado. Complete os checklists primeiro.');
       return;
     }
 
     const { error } = await supabase
       .from('evaluations')
       .update({ status: 'completed' })
-      .in('id', pendingIds);
+      .in('id', completable.map(e => e.id));
 
     if (error) {
       toast.error('Erro ao atualizar status');
     } else {
-      toast.success(`${pendingIds.length} caso(s) marcado(s) como finalizado(s)`);
-      fetchSessionData();
+      const skipped = pending.length - completable.length;
+      if (skipped > 0) {
+        toast.success(`${completable.length} caso(s) finalizado(s). ${skipped} caso(s) aguardando checklist.`);
+      } else {
+        toast.success(`${completable.length} caso(s) marcado(s) como finalizado(s)`);
+      }
+      fetchEvaluationData();
     }
   };
 
@@ -157,8 +202,15 @@ export default function Session() {
     toast.info('Abrindo página para impressão...');
   };
 
-  const getStatusBadge = (status: string | null) => {
-    if (status === 'completed') {
+  const getChecklistProgress = (evaluation: EvaluationItem): { current: number; total: number } => {
+    const protocol = evaluation.stratification_protocol;
+    const checklist = protocol?.checklist || [];
+    const progress = evaluation.checklist_progress || [];
+    return { current: progress.length, total: checklist.length };
+  };
+
+  const getStatusBadge = (evaluation: EvaluationItem) => {
+    if (evaluation.status === 'completed') {
       return (
         <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
           <CheckCircle className="w-3 h-3" />
@@ -166,19 +218,29 @@ export default function Session() {
         </span>
       );
     }
+    
+    const { current, total } = getChecklistProgress(evaluation);
+    const hasChecklist = total > 0;
+    
     return (
-      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
+      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
         Planejado
+        {hasChecklist && (
+          <span className="text-muted-foreground">({current}/{total})</span>
+        )}
       </span>
     );
   };
 
+  const canMarkAsCompleted = (evaluation: EvaluationItem): boolean => {
+    return evaluation.status !== 'completed' && isChecklistComplete(evaluation);
+  };
+
   const patientName = evaluations[0]?.patient_name || 'Paciente sem nome';
-  const sessionDate = evaluations[0]?.created_at 
+  const evaluationDate = evaluations[0]?.created_at 
     ? format(new Date(evaluations[0].created_at), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })
     : '';
   const completedCount = evaluations.filter(e => e.status === 'completed').length;
-  const teethList = evaluations.map(e => e.tooth).join(', ');
 
   return (
     <div className="min-h-screen bg-background">
@@ -190,7 +252,7 @@ export default function Session() {
                 <ArrowLeft className="w-4 h-4" />
               </Button>
             </Link>
-            <span className="text-xl font-semibold tracking-tight">Detalhes da Sessão</span>
+            <span className="text-xl font-semibold tracking-tight">Detalhes da Avaliação</span>
           </div>
           <Button variant="ghost" size="sm" onClick={handleSignOut}>
             <LogOut className="w-4 h-4 mr-2" />
@@ -207,7 +269,7 @@ export default function Session() {
           </div>
         ) : (
           <>
-            {/* Session Header */}
+            {/* Evaluation Header */}
             <Card className="mb-6">
               <CardContent className="p-6">
                 <div className="flex flex-col md:flex-row gap-6">
@@ -227,14 +289,14 @@ export default function Session() {
                     </div>
                   )}
 
-                  {/* Session Info */}
+                  {/* Evaluation Info */}
                   <div className="flex-1">
                     <h1 className="text-2xl font-semibold mb-2">{patientName}</h1>
                     
                     <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-4">
                       <div className="flex items-center gap-1">
                         <Calendar className="w-4 h-4" />
-                        {sessionDate}
+                        {evaluationDate}
                       </div>
                       <div className="flex items-center gap-1">
                         <User className="w-4 h-4" />
@@ -269,14 +331,14 @@ export default function Session() {
                 disabled={completedCount === evaluations.length}
               >
                 <CheckCircle className="w-4 h-4 mr-2" />
-                Marcar todos como finalizados
+                Marcar todos como concluídos
               </Button>
             </div>
 
-            {/* Teeth Table */}
+            {/* Cases Table */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Protocolos Gerados</CardTitle>
+                <CardTitle className="text-lg">Casos Gerados</CardTitle>
               </CardHeader>
               <CardContent className="p-0">
                 <Table>
@@ -306,7 +368,7 @@ export default function Session() {
                             <span className="text-muted-foreground">-</span>
                           )}
                         </TableCell>
-                        <TableCell>{getStatusBadge(evaluation.status)}</TableCell>
+                        <TableCell>{getStatusBadge(evaluation)}</TableCell>
                         <TableCell className="text-right">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -317,17 +379,34 @@ export default function Session() {
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={() => navigate(`/result/${evaluation.id}`)}>
                                 <Eye className="w-4 h-4 mr-2" />
-                                Ver protocolo
+                                Ver caso
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => handleExportPDF(evaluation.id)}>
                                 <FileDown className="w-4 h-4 mr-2" />
                                 Exportar PDF
                               </DropdownMenuItem>
                               {evaluation.status !== 'completed' && (
-                                <DropdownMenuItem onClick={() => handleMarkAsCompleted(evaluation.id)}>
-                                  <CheckCircle className="w-4 h-4 mr-2" />
-                                  Marcar como finalizado
-                                </DropdownMenuItem>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <DropdownMenuItem 
+                                      onClick={() => handleMarkAsCompleted(evaluation.id)}
+                                      disabled={!canMarkAsCompleted(evaluation)}
+                                      className={!canMarkAsCompleted(evaluation) ? 'opacity-50' : ''}
+                                    >
+                                      {canMarkAsCompleted(evaluation) ? (
+                                        <CheckCircle className="w-4 h-4 mr-2" />
+                                      ) : (
+                                        <AlertCircle className="w-4 h-4 mr-2" />
+                                      )}
+                                      Marcar como finalizado
+                                    </DropdownMenuItem>
+                                  </TooltipTrigger>
+                                  {!canMarkAsCompleted(evaluation) && (
+                                    <TooltipContent>
+                                      Complete o checklist para finalizar
+                                    </TooltipContent>
+                                  )}
+                                </Tooltip>
                               )}
                             </DropdownMenuContent>
                           </DropdownMenu>

@@ -13,7 +13,7 @@ import NewCase from "@/pages/NewCase";
 import Inventory from "@/pages/Inventory";
 import Result from "@/pages/Result";
 import Cases from "@/pages/Cases";
-import Session from "@/pages/Session";
+import EvaluationDetails from "@/pages/EvaluationDetails";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -62,10 +62,10 @@ const App = () => (
               }
             />
             <Route
-              path="/session/:sessionId"
+              path="/evaluation/:evaluationId"
               element={
                 <ProtectedRoute>
-                  <Session />
+                  <EvaluationDetails />
                 </ProtectedRoute>
               }
             />
