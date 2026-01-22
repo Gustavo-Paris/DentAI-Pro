@@ -25,8 +25,15 @@ interface DSDResult {
   simulation_url: string | null;
 }
 
+interface RequestData {
+  imageBase64: string;
+  evaluationId?: string;
+  regenerateSimulationOnly?: boolean;
+  existingAnalysis?: DSDAnalysis;
+}
+
 // Validate request
-function validateRequest(data: unknown): { success: boolean; error?: string; data?: { imageBase64: string; evaluationId?: string } } {
+function validateRequest(data: unknown): { success: boolean; error?: string; data?: RequestData } {
   if (!data || typeof data !== "object") {
     return { success: false, error: "Dados inválidos" };
   }
@@ -48,8 +55,249 @@ function validateRequest(data: unknown): { success: boolean; error?: string; dat
     data: {
       imageBase64: req.imageBase64,
       evaluationId: typeof req.evaluationId === "string" ? req.evaluationId : undefined,
+      regenerateSimulationOnly: req.regenerateSimulationOnly === true,
+      existingAnalysis: req.existingAnalysis as DSDAnalysis | undefined,
     },
   };
+}
+
+// Generate simulation image
+async function generateSimulation(
+  imageBase64: string,
+  analysis: DSDAnalysis,
+  userId: string,
+  supabase: any,
+  apiKey: string
+): Promise<string | null> {
+  const simulationPrompt = `Baseado na análise DSD, edite esta foto do sorriso para mostrar uma SIMULAÇÃO do resultado ideal:
+
+MODIFICAÇÕES A APLICAR:
+${analysis.suggestions.map((s) => `- Dente ${s.tooth}: ${s.proposed_change}`).join("\n")}
+
+DIRETRIZES:
+- Mantenha a naturalidade do sorriso
+- Melhore a simetria dental
+- Aplique proporção dourada aos incisivos
+- Mantenha características pessoais do paciente
+- Resultado deve parecer natural, não artificial
+- NÃO mude a cor da pele ou características faciais
+- Foque APENAS nos dentes e sorriso
+
+Crie uma visualização realista do resultado do tratamento estético dental.`;
+
+  const simulationResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "google/gemini-2.5-flash-image-preview",
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: simulationPrompt },
+            { type: "image_url", image_url: { url: imageBase64 } },
+          ],
+        },
+      ],
+      modalities: ["image", "text"],
+    }),
+  });
+
+  if (!simulationResponse.ok) {
+    console.warn("Simulation generation failed:", simulationResponse.status);
+    return null;
+  }
+
+  const simData = await simulationResponse.json();
+  const generatedImage = simData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+
+  if (!generatedImage) {
+    console.warn("No image in simulation response");
+    return null;
+  }
+
+  // Upload simulation to storage
+  const base64Data = generatedImage.replace(/^data:image\/\w+;base64,/, "");
+  const binaryData = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
+  
+  const fileName = `${userId}/dsd_simulation_${Date.now()}.png`;
+  
+  const { error: uploadError } = await supabase.storage
+    .from("dsd-simulations")
+    .upload(fileName, binaryData, {
+      contentType: "image/png",
+      upsert: true,
+    });
+
+  if (uploadError) {
+    console.error("Upload error:", uploadError);
+    return null;
+  }
+
+  return fileName;
+}
+
+// Analyze facial proportions
+async function analyzeProportions(
+  imageBase64: string,
+  apiKey: string,
+  corsHeaders: Record<string, string>
+): Promise<DSDAnalysis | Response> {
+  const analysisPrompt = `Você é um especialista em Digital Smile Design (DSD) e Odontologia Estética.
+Analise esta foto de sorriso/face do paciente e forneça uma análise detalhada das proporções faciais e dentárias.
+
+ANÁLISE OBRIGATÓRIA:
+1. **Linha Média Facial**: Determine se a linha média facial está centrada ou desviada
+2. **Linha Média Dental**: Avalie se os incisivos centrais superiores estão alinhados com a linha média facial
+3. **Linha do Sorriso**: Classifique a exposição gengival (alta, média, baixa)
+4. **Corredor Bucal**: Avalie o espaço escuro lateral ao sorrir
+5. **Plano Oclusal**: Verifique se está nivelado ou inclinado
+6. **Proporção Dourada**: Calcule a conformidade com a proporção áurea (0-100%)
+7. **Simetria**: Avalie a simetria geral do sorriso (0-100%)
+
+SUGESTÕES:
+Para cada dente que poderia ser melhorado esteticamente, forneça:
+- Número do dente (notação universal: 11-48)
+- Problema atual identificado
+- Mudança proposta para harmonização
+
+OBSERVAÇÕES:
+Inclua observações gerais sobre o sorriso e recomendações de tratamento.
+
+IMPORTANTE:
+- Seja objetivo e clínico
+- Base suas análises em princípios de DSD estabelecidos
+- Considere a proporção dourada (1:0.618)
+- Avalie tanto a estética quanto a função`;
+
+  const analysisResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "google/gemini-2.5-pro",
+      messages: [
+        { role: "system", content: analysisPrompt },
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "Analise esta foto e retorne a análise DSD completa usando a ferramenta analyze_dsd." },
+            { type: "image_url", image_url: { url: imageBase64 } },
+          ],
+        },
+      ],
+      tools: [
+        {
+          type: "function",
+          function: {
+            name: "analyze_dsd",
+            description: "Retorna a análise completa do Digital Smile Design",
+            parameters: {
+              type: "object",
+              properties: {
+                facial_midline: {
+                  type: "string",
+                  enum: ["centrada", "desviada_esquerda", "desviada_direita"],
+                },
+                dental_midline: {
+                  type: "string",
+                  enum: ["alinhada", "desviada_esquerda", "desviada_direita"],
+                },
+                smile_line: {
+                  type: "string",
+                  enum: ["alta", "média", "baixa"],
+                },
+                buccal_corridor: {
+                  type: "string",
+                  enum: ["adequado", "excessivo", "ausente"],
+                },
+                occlusal_plane: {
+                  type: "string",
+                  enum: ["nivelado", "inclinado_esquerda", "inclinado_direita"],
+                },
+                golden_ratio_compliance: {
+                  type: "number",
+                  minimum: 0,
+                  maximum: 100,
+                },
+                symmetry_score: {
+                  type: "number",
+                  minimum: 0,
+                  maximum: 100,
+                },
+                suggestions: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      tooth: { type: "string" },
+                      current_issue: { type: "string" },
+                      proposed_change: { type: "string" },
+                    },
+                    required: ["tooth", "current_issue", "proposed_change"],
+                  },
+                },
+                observations: {
+                  type: "array",
+                  items: { type: "string" },
+                },
+                confidence: {
+                  type: "string",
+                  enum: ["alta", "média", "baixa"],
+                },
+              },
+              required: [
+                "facial_midline",
+                "dental_midline",
+                "smile_line",
+                "buccal_corridor",
+                "occlusal_plane",
+                "golden_ratio_compliance",
+                "symmetry_score",
+                "suggestions",
+                "observations",
+                "confidence",
+              ],
+              additionalProperties: false,
+            },
+          },
+        },
+      ],
+      tool_choice: { type: "function", function: { name: "analyze_dsd" } },
+    }),
+  });
+
+  if (!analysisResponse.ok) {
+    const status = analysisResponse.status;
+    if (status === 429) {
+      return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
+    }
+    if (status === 402) {
+      return createErrorResponse(ERROR_MESSAGES.PAYMENT_REQUIRED, 402, corsHeaders, "PAYMENT_REQUIRED");
+    }
+    console.error("AI analysis error:", status, await analysisResponse.text());
+    return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
+  }
+
+  const analysisData = await analysisResponse.json();
+  const toolCall = analysisData.choices?.[0]?.message?.tool_calls?.[0];
+
+  if (toolCall?.function?.arguments) {
+    try {
+      return JSON.parse(toolCall.function.arguments) as DSDAnalysis;
+    } catch {
+      console.error("Failed to parse tool call arguments");
+      return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
+    }
+  }
+
+  console.error("No tool call in response");
+  return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
 }
 
 serve(async (req: Request) => {
@@ -95,263 +343,43 @@ serve(async (req: Request) => {
       return createErrorResponse(validation.error || ERROR_MESSAGES.INVALID_REQUEST, 400, corsHeaders);
     }
 
-    const { imageBase64, evaluationId } = validation.data;
+    const { imageBase64, evaluationId, regenerateSimulationOnly, existingAnalysis } = validation.data;
 
-    // === STEP 1: Analyze facial proportions ===
-    const analysisPrompt = `Você é um especialista em Digital Smile Design (DSD) e Odontologia Estética.
-Analise esta foto de sorriso/face do paciente e forneça uma análise detalhada das proporções faciais e dentárias.
-
-ANÁLISE OBRIGATÓRIA:
-1. **Linha Média Facial**: Determine se a linha média facial está centrada ou desviada
-2. **Linha Média Dental**: Avalie se os incisivos centrais superiores estão alinhados com a linha média facial
-3. **Linha do Sorriso**: Classifique a exposição gengival (alta, média, baixa)
-4. **Corredor Bucal**: Avalie o espaço escuro lateral ao sorrir
-5. **Plano Oclusal**: Verifique se está nivelado ou inclinado
-6. **Proporção Dourada**: Calcule a conformidade com a proporção áurea (0-100%)
-7. **Simetria**: Avalie a simetria geral do sorriso (0-100%)
-
-SUGESTÕES:
-Para cada dente que poderia ser melhorado esteticamente, forneça:
-- Número do dente (notação universal: 11-48)
-- Problema atual identificado
-- Mudança proposta para harmonização
-
-OBSERVAÇÕES:
-Inclua observações gerais sobre o sorriso e recomendações de tratamento.
-
-IMPORTANTE:
-- Seja objetivo e clínico
-- Base suas análises em princípios de DSD estabelecidos
-- Considere a proporção dourada (1:0.618)
-- Avalie tanto a estética quanto a função`;
-
-    const analysisResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-pro",
-        messages: [
-          { role: "system", content: analysisPrompt },
-          {
-            role: "user",
-            content: [
-              { type: "text", text: "Analise esta foto e retorne a análise DSD completa usando a ferramenta analyze_dsd." },
-              { type: "image_url", image_url: { url: imageBase64 } },
-            ],
-          },
-        ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "analyze_dsd",
-              description: "Retorna a análise completa do Digital Smile Design",
-              parameters: {
-                type: "object",
-                properties: {
-                  facial_midline: {
-                    type: "string",
-                    enum: ["centrada", "desviada_esquerda", "desviada_direita"],
-                    description: "Posição da linha média facial",
-                  },
-                  dental_midline: {
-                    type: "string",
-                    enum: ["alinhada", "desviada_esquerda", "desviada_direita"],
-                    description: "Alinhamento da linha média dental com a facial",
-                  },
-                  smile_line: {
-                    type: "string",
-                    enum: ["alta", "média", "baixa"],
-                    description: "Classificação da linha do sorriso",
-                  },
-                  buccal_corridor: {
-                    type: "string",
-                    enum: ["adequado", "excessivo", "ausente"],
-                    description: "Avaliação do corredor bucal",
-                  },
-                  occlusal_plane: {
-                    type: "string",
-                    enum: ["nivelado", "inclinado_esquerda", "inclinado_direita"],
-                    description: "Orientação do plano oclusal",
-                  },
-                  golden_ratio_compliance: {
-                    type: "number",
-                    minimum: 0,
-                    maximum: 100,
-                    description: "Conformidade com proporção dourada (0-100%)",
-                  },
-                  symmetry_score: {
-                    type: "number",
-                    minimum: 0,
-                    maximum: 100,
-                    description: "Score de simetria do sorriso (0-100%)",
-                  },
-                  suggestions: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: {
-                        tooth: { type: "string", description: "Número do dente (11-48)" },
-                        current_issue: { type: "string", description: "Problema identificado" },
-                        proposed_change: { type: "string", description: "Mudança proposta" },
-                      },
-                      required: ["tooth", "current_issue", "proposed_change"],
-                    },
-                    description: "Sugestões de tratamento por dente",
-                  },
-                  observations: {
-                    type: "array",
-                    items: { type: "string" },
-                    description: "Observações gerais sobre o sorriso",
-                  },
-                  confidence: {
-                    type: "string",
-                    enum: ["alta", "média", "baixa"],
-                    description: "Confiança na análise",
-                  },
-                },
-                required: [
-                  "facial_midline",
-                  "dental_midline",
-                  "smile_line",
-                  "buccal_corridor",
-                  "occlusal_plane",
-                  "golden_ratio_compliance",
-                  "symmetry_score",
-                  "suggestions",
-                  "observations",
-                  "confidence",
-                ],
-                additionalProperties: false,
-              },
-            },
-          },
-        ],
-        tool_choice: { type: "function", function: { name: "analyze_dsd" } },
-      }),
-    });
-
-    if (!analysisResponse.ok) {
-      const status = analysisResponse.status;
-      if (status === 429) {
-        return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
-      }
-      if (status === 402) {
-        return createErrorResponse(ERROR_MESSAGES.PAYMENT_REQUIRED, 402, corsHeaders, "PAYMENT_REQUIRED");
-      }
-      console.error("AI analysis error:", status, await analysisResponse.text());
-      return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
-    }
-
-    const analysisData = await analysisResponse.json();
-    
-    // Extract analysis from tool call
     let analysis: DSDAnalysis;
-    const toolCall = analysisData.choices?.[0]?.message?.tool_calls?.[0];
-    
-    if (toolCall?.function?.arguments) {
-      try {
-        analysis = JSON.parse(toolCall.function.arguments);
-      } catch {
-        console.error("Failed to parse tool call arguments");
-        return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
-      }
+
+    // If regenerating simulation only, use existing analysis
+    if (regenerateSimulationOnly && existingAnalysis) {
+      analysis = existingAnalysis;
     } else {
-      console.error("No tool call in response");
-      return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
+      // Run full analysis
+      const analysisResult = await analyzeProportions(imageBase64, LOVABLE_API_KEY, corsHeaders);
+      
+      // Check if it's an error response
+      if (analysisResult instanceof Response) {
+        return analysisResult;
+      }
+      
+      analysis = analysisResult;
     }
 
-    // === STEP 2: Generate simulation image ===
+    // Generate simulation image
     let simulationUrl: string | null = null;
-
     try {
-      const simulationPrompt = `Baseado na análise DSD, edite esta foto do sorriso para mostrar uma SIMULAÇÃO do resultado ideal:
-
-MODIFICAÇÕES A APLICAR:
-${analysis.suggestions.map((s) => `- Dente ${s.tooth}: ${s.proposed_change}`).join("\n")}
-
-DIRETRIZES:
-- Mantenha a naturalidade do sorriso
-- Melhore a simetria dental
-- Aplique proporção dourada aos incisivos
-- Mantenha características pessoais do paciente
-- Resultado deve parecer natural, não artificial
-- NÃO mude a cor da pele ou características faciais
-- Foque APENAS nos dentes e sorriso
-
-Crie uma visualização realista do resultado do tratamento estético dental.`;
-
-      const simulationResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash-image-preview",
-          messages: [
-            {
-              role: "user",
-              content: [
-                { type: "text", text: simulationPrompt },
-                { type: "image_url", image_url: { url: imageBase64 } },
-              ],
-            },
-          ],
-          modalities: ["image", "text"],
-        }),
-      });
-
-      if (simulationResponse.ok) {
-        const simData = await simulationResponse.json();
-        const generatedImage = simData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-
-        if (generatedImage) {
-          // Upload simulation to storage
-          const base64Data = generatedImage.replace(/^data:image\/\w+;base64,/, "");
-          const binaryData = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
-          
-          const fileName = `${user.id}/dsd_simulation_${Date.now()}.png`;
-          
-          const { error: uploadError } = await supabase.storage
-            .from("dsd-simulations")
-            .upload(fileName, binaryData, {
-              contentType: "image/png",
-              upsert: true,
-            });
-
-          if (!uploadError) {
-            simulationUrl = fileName;
-          } else {
-            console.error("Upload error:", uploadError);
-          }
-        }
-      } else {
-        console.warn("Simulation generation failed, continuing without simulation");
-      }
+      simulationUrl = await generateSimulation(imageBase64, analysis, user.id, supabase, LOVABLE_API_KEY);
     } catch (simError) {
       console.error("Simulation error:", simError);
       // Continue without simulation - analysis is still valid
     }
 
-    // === STEP 3: Update evaluation if provided ===
+    // Update evaluation if provided
     if (evaluationId) {
-      // Verify ownership
       const { data: evalData, error: evalError } = await supabase
         .from("evaluations")
         .select("user_id")
         .eq("id", evaluationId)
         .single();
 
-      if (evalError || !evalData) {
-        console.error("Evaluation not found:", evaluationId);
-      } else if (evalData.user_id !== user.id) {
-        console.error("User does not own evaluation");
-      } else {
-        // Update evaluation with DSD data
+      if (!evalError && evalData && evalData.user_id === user.id) {
         await supabase
           .from("evaluations")
           .update({
