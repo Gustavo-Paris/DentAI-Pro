@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useMemo } from 'react';
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Camera, Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
@@ -18,14 +18,29 @@ export function PhotoUploadStep({
   isUploading,
 }: PhotoUploadStepProps) {
   const [dragActive, setDragActive] = useState(false);
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   
-  // Detecta dispositivo móvel real via userAgent (não apenas por largura de tela)
+  // Detecta dispositivo móvel real via userAgent
   const isMobileDevice = useMemo(() => {
     if (typeof navigator === 'undefined') return false;
     return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   }, []);
+
+  // Detecta tela pequena para funcionar no preview do Lovable
+  useEffect(() => {
+    const checkScreen = () => {
+      setIsSmallScreen(window.innerWidth < 768);
+    };
+    
+    checkScreen();
+    window.addEventListener('resize', checkScreen);
+    return () => window.removeEventListener('resize', checkScreen);
+  }, []);
+
+  // Mostra botão câmera se for mobile real OU tela pequena (para preview)
+  const showCameraButton = isMobileDevice || isSmallScreen;
 
   const handleFile = useCallback((file: File) => {
     if (!file.type.startsWith('image/')) {
@@ -108,7 +123,7 @@ export function PhotoUploadStep({
                 Arraste uma foto aqui
               </h3>
               <p className="text-sm text-muted-foreground mb-6">
-                {isMobileDevice ? 'ou escolha uma foto existente ou tire uma nova' : 'ou escolha uma foto do seu dispositivo'}
+                {showCameraButton ? 'ou escolha uma foto existente ou tire uma nova' : 'ou escolha uma foto do seu dispositivo'}
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3">
@@ -119,7 +134,7 @@ export function PhotoUploadStep({
                   <Upload className="w-4 h-4 mr-2" />
                   Escolher da Galeria
                 </Button>
-                {isMobileDevice && (
+                {showCameraButton && (
                   <Button
                     variant="outline"
                     onClick={() => cameraInputRef.current?.click()}
