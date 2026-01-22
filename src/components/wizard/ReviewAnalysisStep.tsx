@@ -20,7 +20,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { AlertTriangle, Check, Info, Sparkles, CircleDot, RefreshCw, Loader2, Plus } from 'lucide-react';
+import { AlertTriangle, Check, Info, Sparkles, CircleDot, RefreshCw, Loader2, Plus, Wrench, Wand2 } from 'lucide-react';
 
 // Multi-tooth detection structure
 export interface DetectedTooth {
@@ -106,6 +106,23 @@ export function ReviewAnalysisStep({
   const confidenceColor = confidence >= 80 ? 'text-green-600' : confidence >= 60 ? 'text-yellow-600' : 'text-red-600';
   const detectedTeeth = analysisResult?.detected_teeth || [];
   const hasMultipleTeeth = detectedTeeth.length > 1;
+
+  // Separate teeth by category: restorative needs vs aesthetic improvements
+  const restorativeTeeth = detectedTeeth.filter(t => t.priority === 'alta' || t.priority === 'média');
+  const aestheticTeeth = detectedTeeth.filter(t => t.priority === 'baixa');
+
+  // Select all teeth of a category
+  const handleSelectCategory = (category: 'restorative' | 'aesthetic' | 'all') => {
+    if (!onSelectedTeethChange) return;
+    
+    if (category === 'restorative') {
+      onSelectedTeethChange(restorativeTeeth.map(t => t.tooth));
+    } else if (category === 'aesthetic') {
+      onSelectedTeethChange(aestheticTeeth.map(t => t.tooth));
+    } else {
+      onSelectedTeethChange(detectedTeeth.map(t => t.tooth));
+    }
+  };
 
   // Toggle tooth selection for multi-protocol generation
   const handleToggleTooth = (tooth: string, checked: boolean) => {
@@ -213,7 +230,7 @@ export function ReviewAnalysisStep({
         </Card>
       )}
 
-      {/* Multi-tooth Selection with Checkboxes */}
+      {/* Multi-tooth Selection with Categories */}
       {hasMultipleTeeth && (
         <Card className="border-primary/50">
           <CardHeader className="pb-2">
@@ -229,42 +246,147 @@ export function ReviewAnalysisStep({
             <p className="text-sm text-muted-foreground mb-4">
               Marque os dentes que deseja incluir no protocolo. Cada dente gerará um caso separado.
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {detectedTeeth.map((tooth, index) => {
-                const isSelected = selectedTeeth.includes(tooth.tooth);
-                return (
-                  <div
-                    key={`${tooth.tooth}-${index}`}
-                    className={`flex items-start gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
-                      isSelected ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
-                    }`}
-                    onClick={() => handleToggleTooth(tooth.tooth, !isSelected)}
-                  >
-                    <Checkbox
-                      checked={isSelected}
-                      onCheckedChange={(checked) => handleToggleTooth(tooth.tooth, !!checked)}
-                      className="mt-1"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold">Dente {tooth.tooth}</span>
-                        <Badge 
-                          variant={tooth.priority === 'alta' ? 'destructive' : tooth.priority === 'baixa' ? 'secondary' : 'outline'}
-                          className="text-xs"
-                        >
-                          {tooth.priority}
-                        </Badge>
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        {tooth.cavity_class && <span>{tooth.cavity_class}</span>}
-                        {tooth.restoration_size && <span> • {tooth.restoration_size}</span>}
-                        {tooth.depth && <span> • {tooth.depth}</span>}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+
+            {/* Quick selection buttons */}
+            <div className="flex flex-wrap gap-2 mb-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleSelectCategory('restorative')}
+                className="text-xs"
+              >
+                <Wrench className="w-3 h-3 mr-1" />
+                Apenas Necessários ({restorativeTeeth.length})
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleSelectCategory('all')}
+                className="text-xs"
+              >
+                <Check className="w-3 h-3 mr-1" />
+                Selecionar Todos ({detectedTeeth.length})
+              </Button>
+              {aestheticTeeth.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleSelectCategory('aesthetic')}
+                  className="text-xs"
+                >
+                  <Wand2 className="w-3 h-3 mr-1" />
+                  Apenas Estéticos ({aestheticTeeth.length})
+                </Button>
+              )}
+              {selectedTeeth.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onSelectedTeethChange?.([])}
+                  className="text-xs text-muted-foreground"
+                >
+                  Limpar seleção
+                </Button>
+              )}
             </div>
+
+            {/* Restorative teeth section */}
+            {restorativeTeeth.length > 0 && (
+              <div className="mb-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <Wrench className="w-4 h-4 text-destructive" />
+                  <h4 className="font-medium text-sm">Tratamentos Necessários</h4>
+                  <Badge variant="destructive" className="text-xs">{restorativeTeeth.length}</Badge>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {restorativeTeeth.map((tooth, index) => {
+                    const isSelected = selectedTeeth.includes(tooth.tooth);
+                    return (
+                      <div
+                        key={`restorative-${tooth.tooth}-${index}`}
+                        className={`flex items-start gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
+                          isSelected ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                        }`}
+                        onClick={() => handleToggleTooth(tooth.tooth, !isSelected)}
+                      >
+                        <Checkbox
+                          checked={isSelected}
+                          onCheckedChange={(checked) => handleToggleTooth(tooth.tooth, !!checked)}
+                          className="mt-1"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold">Dente {tooth.tooth}</span>
+                            <Badge 
+                              variant={tooth.priority === 'alta' ? 'destructive' : 'outline'}
+                              className="text-xs"
+                            >
+                              {tooth.priority}
+                            </Badge>
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {tooth.cavity_class && <span>{tooth.cavity_class}</span>}
+                            {tooth.restoration_size && <span> • {tooth.restoration_size}</span>}
+                            {tooth.depth && <span> • {tooth.depth}</span>}
+                          </div>
+                          {tooth.notes && (
+                            <p className="text-xs text-muted-foreground mt-1 italic">{tooth.notes}</p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Aesthetic improvements section */}
+            {aestheticTeeth.length > 0 && (
+              <div className="mb-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Wand2 className="w-4 h-4 text-primary" />
+                  <h4 className="font-medium text-sm">Melhorias Estéticas (Opcionais)</h4>
+                  <Badge variant="secondary" className="text-xs">{aestheticTeeth.length}</Badge>
+                </div>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Sugestões para harmonização do sorriso detectadas pela IA
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {aestheticTeeth.map((tooth, index) => {
+                    const isSelected = selectedTeeth.includes(tooth.tooth);
+                    return (
+                      <div
+                        key={`aesthetic-${tooth.tooth}-${index}`}
+                        className={`flex items-start gap-3 p-3 border border-dashed rounded-lg cursor-pointer transition-colors ${
+                          isSelected ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                        }`}
+                        onClick={() => handleToggleTooth(tooth.tooth, !isSelected)}
+                      >
+                        <Checkbox
+                          checked={isSelected}
+                          onCheckedChange={(checked) => handleToggleTooth(tooth.tooth, !!checked)}
+                          className="mt-1"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1">
+                              <Sparkles className="w-3 h-3 text-primary" />
+                              <span className="font-semibold">Dente {tooth.tooth}</span>
+                            </div>
+                            <Badge variant="secondary" className="text-xs">
+                              estético
+                            </Badge>
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {tooth.notes || 'Melhoria estética sugerida'}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Add manual tooth button */}
             {!showManualAdd ? (
