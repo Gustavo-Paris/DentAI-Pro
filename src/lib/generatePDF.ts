@@ -197,8 +197,9 @@ export async function generateProtocolPDF(data: PDFData): Promise<void> {
     pdf.setFillColor(59, 130, 246);
     pdf.rect(margin, y, contentWidth, 8, 'F');
     
-    const colWidths = [25, 50, 25, 25, contentWidth - 125];
-    const cols = [margin + 2, margin + 27, margin + 77, margin + 102, margin + 127];
+    // Adjusted column widths for better text fitting
+    const colWidths = [35, 45, 22, 22, contentWidth - 124];
+    const cols = [margin + 2, margin + 37, margin + 82, margin + 104, margin + 126];
     
     y += 5;
     pdf.setTextColor(255, 255, 255);
@@ -208,31 +209,43 @@ export async function generateProtocolPDF(data: PDFData): Promise<void> {
     pdf.text('Resina', cols[1], y);
     pdf.text('Cor', cols[2], y);
     pdf.text('Espessura', cols[3], y);
-    pdf.text('Técnica', cols[4], y);
+    pdf.text('Tecnica', cols[4], y);
     
     y += 6;
     
-    // Table rows
+    // Table rows with text wrapping
     data.layers.forEach((layer, index) => {
-      checkPageBreak(12);
+      checkPageBreak(16);
+      
+      // Calculate wrapped text for each column
+      pdf.setFontSize(8);
+      const layerName = `${layer.order}. ${layer.name}`;
+      const layerLines = pdf.splitTextToSize(layerName, colWidths[0] - 2);
+      const resinLines = pdf.splitTextToSize(layer.resin_brand || '-', colWidths[1] - 2);
+      const shadeLines = pdf.splitTextToSize(layer.shade || '-', colWidths[2] - 2);
+      const thicknessLines = pdf.splitTextToSize(layer.thickness || '-', colWidths[3] - 2);
+      const techniqueLines = pdf.splitTextToSize(layer.technique || '-', colWidths[4] - 2);
+      
+      // Calculate row height based on max lines
+      const maxLines = Math.max(layerLines.length, resinLines.length, techniqueLines.length);
+      const rowHeight = Math.max(10, maxLines * 4 + 4);
       
       const bgColor: [number, number, number] = index % 2 === 0 ? [255, 255, 255] : [248, 250, 252];
       pdf.setFillColor(...bgColor);
-      pdf.rect(margin, y - 4, contentWidth, 10, 'F');
+      pdf.rect(margin, y - 4, contentWidth, rowHeight, 'F');
       
       pdf.setTextColor(0, 0, 0);
       pdf.setFont('helvetica', 'normal');
       pdf.setFontSize(8);
       
-      pdf.text(`${layer.order}. ${layer.name}`, cols[0], y);
-      pdf.text(layer.resin_brand || '-', cols[1], y);
-      pdf.text(layer.shade || '-', cols[2], y);
-      pdf.text(layer.thickness || '-', cols[3], y);
+      // Print each column with wrapping
+      pdf.text(layerLines, cols[0], y);
+      pdf.text(resinLines, cols[1], y);
+      pdf.text(shadeLines, cols[2], y);
+      pdf.text(thicknessLines, cols[3], y);
+      pdf.text(techniqueLines, cols[4], y);
       
-      const techniqueLines = pdf.splitTextToSize(layer.technique || '-', colWidths[4]);
-      pdf.text(techniqueLines[0], cols[4], y);
-      
-      y += 10;
+      y += rowHeight;
     });
     
     y += 5;
@@ -290,37 +303,39 @@ export async function generateProtocolPDF(data: PDFData): Promise<void> {
     
     // Alerts (left side)
     if (data.alerts.length > 0) {
-      addText('⚠ ALERTAS', margin, y, { fontSize: 10, fontStyle: 'bold', color: [202, 138, 4] });
+      addText('ALERTAS', margin, y, { fontSize: 10, fontStyle: 'bold', color: [202, 138, 4] });
       
       let alertY = y + 6;
       pdf.setFillColor(254, 249, 195); // Yellow light
-      const alertHeight = data.alerts.length * 7 + 6;
+      const alertHeight = data.alerts.length * 10 + 8;
       pdf.roundedRect(margin, alertY, halfWidth, alertHeight, 2, 2, 'F');
       
       alertY += 5;
       data.alerts.forEach((alert) => {
-        addText(`• ${alert}`, margin + 3, alertY, { fontSize: 7, color: [133, 77, 14], maxWidth: halfWidth - 6 });
-        alertY += 7;
+        const alertLines = pdf.splitTextToSize(`- ${alert}`, halfWidth - 8);
+        addText(alertLines[0], margin + 3, alertY, { fontSize: 7, color: [133, 77, 14] });
+        alertY += 10;
       });
     }
     
     // Warnings (right side)
     if (data.warnings.length > 0) {
-      addText('✕ O QUE NÃO FAZER', margin + halfWidth + 5, y, { fontSize: 10, fontStyle: 'bold', color: [220, 38, 38] });
+      addText('O QUE NAO FAZER', margin + halfWidth + 5, y, { fontSize: 10, fontStyle: 'bold', color: [220, 38, 38] });
       
       let warningY = y + 6;
       pdf.setFillColor(254, 226, 226); // Red light
-      const warningHeight = data.warnings.length * 7 + 6;
+      const warningHeight = data.warnings.length * 10 + 8;
       pdf.roundedRect(margin + halfWidth + 5, warningY, halfWidth, warningHeight, 2, 2, 'F');
       
       warningY += 5;
       data.warnings.forEach((warning) => {
-        addText(`✕ ${warning}`, margin + halfWidth + 8, warningY, { fontSize: 7, color: [153, 27, 27], maxWidth: halfWidth - 6 });
-        warningY += 7;
+        const warningLines = pdf.splitTextToSize(`- ${warning}`, halfWidth - 8);
+        addText(warningLines[0], margin + halfWidth + 8, warningY, { fontSize: 7, color: [153, 27, 27] });
+        warningY += 10;
       });
     }
     
-    y += Math.max(data.alerts.length, data.warnings.length) * 7 + 20;
+    y += Math.max(data.alerts.length, data.warnings.length) * 10 + 25;
   }
 
   // ============ CONFIDENCE ============

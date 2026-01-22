@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
@@ -19,7 +20,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { AlertTriangle, Check, Info, Sparkles, CircleDot, RefreshCw, Loader2 } from 'lucide-react';
+import { AlertTriangle, Check, Info, Sparkles, CircleDot, RefreshCw, Loader2, Plus } from 'lucide-react';
 
 // Multi-tooth detection structure
 export interface DetectedTooth {
@@ -72,6 +73,8 @@ interface ReviewAnalysisStepProps {
   onToothSelect?: (tooth: DetectedTooth) => void;
   onReanalyze?: () => void;
   isReanalyzing?: boolean;
+  selectedTeeth?: string[];
+  onSelectedTeethChange?: (teeth: string[]) => void;
 }
 
 const TEETH = {
@@ -93,11 +96,36 @@ export function ReviewAnalysisStep({
   onToothSelect,
   onReanalyze,
   isReanalyzing = false,
+  selectedTeeth = [],
+  onSelectedTeethChange,
 }: ReviewAnalysisStepProps) {
+  const [showManualAdd, setShowManualAdd] = useState(false);
+  const [manualTooth, setManualTooth] = useState('');
+  
   const confidence = analysisResult?.confidence ?? 0;
   const confidenceColor = confidence >= 80 ? 'text-green-600' : confidence >= 60 ? 'text-yellow-600' : 'text-red-600';
   const detectedTeeth = analysisResult?.detected_teeth || [];
   const hasMultipleTeeth = detectedTeeth.length > 1;
+
+  // Toggle tooth selection for multi-protocol generation
+  const handleToggleTooth = (tooth: string, checked: boolean) => {
+    if (!onSelectedTeethChange) return;
+    if (checked) {
+      onSelectedTeethChange([...selectedTeeth, tooth]);
+    } else {
+      onSelectedTeethChange(selectedTeeth.filter(t => t !== tooth));
+    }
+  };
+
+  // Add manual tooth
+  const handleAddManualTooth = () => {
+    if (!manualTooth || !onSelectedTeethChange) return;
+    if (!selectedTeeth.includes(manualTooth)) {
+      onSelectedTeethChange([...selectedTeeth, manualTooth]);
+    }
+    setManualTooth('');
+    setShowManualAdd(false);
+  };
 
   // Handle selecting a detected tooth
   const handleSelectDetectedTooth = (tooth: DetectedTooth) => {
@@ -185,52 +213,105 @@ export function ReviewAnalysisStep({
         </Card>
       )}
 
-      {/* Multi-tooth Selection */}
+      {/* Multi-tooth Selection with Checkboxes */}
       {hasMultipleTeeth && (
         <Card className="border-primary/50">
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <CircleDot className="w-4 h-4 text-primary" />
-              Dentes Detectados
-              <Badge variant="secondary" className="ml-2">{detectedTeeth.length}</Badge>
+              Selecione os Dentes para o Protocolo
+              <Badge variant="secondary" className="ml-2">
+                {selectedTeeth.length > 0 ? `${selectedTeeth.length} selecionado(s)` : detectedTeeth.length}
+              </Badge>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              Clique em um dente para preencher os dados automaticamente. Cada dente pode gerar um caso separado.
+              Marque os dentes que deseja incluir no protocolo. Cada dente gerará um caso separado.
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {detectedTeeth.map((tooth, index) => (
-                <Button
-                  key={`${tooth.tooth}-${index}`}
-                  variant={formData.tooth === tooth.tooth ? "default" : "outline"}
-                  className="h-auto py-3 px-4 flex flex-col items-start relative"
-                  onClick={() => handleSelectDetectedTooth(tooth)}
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <span className="font-semibold text-lg">Dente {tooth.tooth}</span>
-                    <Badge 
-                      variant={tooth.priority === 'alta' ? 'destructive' : tooth.priority === 'baixa' ? 'secondary' : 'outline'}
-                      className="text-xs"
-                    >
-                      {tooth.priority}
-                    </Badge>
-                  </div>
-                  <div className="text-xs text-left mt-1 opacity-80">
-                    {tooth.cavity_class && <span>{tooth.cavity_class}</span>}
-                    {tooth.restoration_size && <span> • {tooth.restoration_size}</span>}
-                  </div>
-                  {formData.tooth === tooth.tooth && (
-                    <div className="absolute top-1 right-1">
-                      <Check className="w-4 h-4" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {detectedTeeth.map((tooth, index) => {
+                const isSelected = selectedTeeth.includes(tooth.tooth);
+                return (
+                  <div
+                    key={`${tooth.tooth}-${index}`}
+                    className={`flex items-start gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
+                      isSelected ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                    }`}
+                    onClick={() => handleToggleTooth(tooth.tooth, !isSelected)}
+                  >
+                    <Checkbox
+                      checked={isSelected}
+                      onCheckedChange={(checked) => handleToggleTooth(tooth.tooth, !!checked)}
+                      className="mt-1"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold">Dente {tooth.tooth}</span>
+                        <Badge 
+                          variant={tooth.priority === 'alta' ? 'destructive' : tooth.priority === 'baixa' ? 'secondary' : 'outline'}
+                          className="text-xs"
+                        >
+                          {tooth.priority}
+                        </Badge>
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        {tooth.cavity_class && <span>{tooth.cavity_class}</span>}
+                        {tooth.restoration_size && <span> • {tooth.restoration_size}</span>}
+                        {tooth.depth && <span> • {tooth.depth}</span>}
+                      </div>
                     </div>
-                  )}
-                </Button>
-              ))}
+                  </div>
+                );
+              })}
             </div>
-            <p className="text-xs text-muted-foreground mt-3 text-center">
-              💡 Dica: Complete este caso primeiro, depois volte para criar os demais.
-            </p>
+
+            {/* Add manual tooth button */}
+            {!showManualAdd ? (
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-4 w-full"
+                onClick={() => setShowManualAdd(true)}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Adicionar dente manualmente
+              </Button>
+            ) : (
+              <div className="mt-4 flex gap-2">
+                <Select value={manualTooth} onValueChange={setManualTooth}>
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="Selecione o dente" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <div className="px-2 py-1 text-xs font-medium text-muted-foreground">Superior</div>
+                    {TEETH.upper.map((t) => (
+                      <SelectItem key={t} value={t} disabled={selectedTeeth.includes(t)}>
+                        {t} {selectedTeeth.includes(t) && '(já adicionado)'}
+                      </SelectItem>
+                    ))}
+                    <div className="px-2 py-1 text-xs font-medium text-muted-foreground">Inferior</div>
+                    {TEETH.lower.map((t) => (
+                      <SelectItem key={t} value={t} disabled={selectedTeeth.includes(t)}>
+                        {t} {selectedTeeth.includes(t) && '(já adicionado)'}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button onClick={handleAddManualTooth} disabled={!manualTooth}>
+                  Adicionar
+                </Button>
+                <Button variant="ghost" onClick={() => setShowManualAdd(false)}>
+                  Cancelar
+                </Button>
+              </div>
+            )}
+
+            {selectedTeeth.length > 0 && (
+              <p className="text-sm text-primary mt-4 text-center font-medium">
+                ✓ {selectedTeeth.length} dente(s) selecionado(s) para gerar protocolo
+              </p>
+            )}
           </CardContent>
         </Card>
       )}
