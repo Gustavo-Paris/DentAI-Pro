@@ -602,7 +602,7 @@ export function ReviewAnalysisStep({
                   onValueChange={(value) => onFormChange({ budget: value })}
                   className="grid grid-cols-3 gap-2"
                 >
-                  {['premium', 'intermediário', 'econômico'].map((budget) => (
+                  {['premium', 'moderado', 'econômico'].map((budget) => (
                     <div key={budget}>
                       <RadioGroupItem
                         value={budget}
@@ -627,7 +627,7 @@ export function ReviewAnalysisStep({
                   onValueChange={(value) => onFormChange({ longevityExpectation: value })}
                   className="grid grid-cols-3 gap-2"
                 >
-                  {['alta', 'média', 'baixa'].map((exp) => (
+                  {['longo', 'médio', 'curto'].map((exp) => (
                     <div key={exp}>
                       <RadioGroupItem
                         value={exp}
