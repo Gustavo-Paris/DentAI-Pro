@@ -32,6 +32,11 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
 
+interface StratificationProtocol {
+  checklist?: string[];
+  [key: string]: unknown;
+}
+
 interface Evaluation {
   id: string;
   created_at: string;
@@ -39,6 +44,8 @@ interface Evaluation {
   tooth: string;
   cavity_class: string;
   status: string | null;
+  checklist_progress: number[] | null;
+  stratification_protocol: StratificationProtocol | null;
   resins?: {
     name: string;
   } | null;
@@ -87,6 +94,8 @@ export default function Cases() {
         tooth,
         cavity_class,
         status,
+        checklist_progress,
+        stratification_protocol,
         resins!recommended_resin_id (
           name
         )
@@ -98,7 +107,7 @@ export default function Cases() {
       console.error('Error fetching evaluations:', error);
       toast.error('Erro ao carregar casos');
     } else {
-      setEvaluations(data || []);
+      setEvaluations((data || []) as Evaluation[]);
     }
     setLoading(false);
   };
@@ -108,7 +117,27 @@ export default function Cases() {
     navigate('/');
   };
 
+  // Check if checklist is complete for a given evaluation
+  const isChecklistComplete = (evaluation: Evaluation): boolean => {
+    const protocol = evaluation.stratification_protocol;
+    const checklist = protocol?.checklist || [];
+    const progress = evaluation.checklist_progress || [];
+    
+    // If there's no checklist, consider it complete
+    if (checklist.length === 0) return true;
+    
+    return progress.length >= checklist.length;
+  };
+
   const handleMarkAsCompleted = async (id: string) => {
+    const evaluation = evaluations.find(e => e.id === id);
+    if (!evaluation) return;
+
+    if (!isChecklistComplete(evaluation)) {
+      toast.error('Complete todas as etapas do checklist antes de finalizar este caso');
+      return;
+    }
+
     const { error } = await supabase
       .from('evaluations')
       .update({ status: 'completed' })
@@ -135,8 +164,15 @@ export default function Cases() {
     return true;
   });
 
-  const getStatusBadge = (status: string | null) => {
-    if (status === 'completed') {
+  const getChecklistProgress = (evaluation: Evaluation): { current: number; total: number } => {
+    const protocol = evaluation.stratification_protocol;
+    const checklist = protocol?.checklist || [];
+    const progress = evaluation.checklist_progress || [];
+    return { current: progress.length, total: checklist.length };
+  };
+
+  const getStatusBadge = (evaluation: Evaluation) => {
+    if (evaluation.status === 'completed') {
       return (
         <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
           <CheckCircle className="w-3 h-3" />
@@ -144,9 +180,16 @@ export default function Cases() {
         </span>
       );
     }
+
+    const { current, total } = getChecklistProgress(evaluation);
+    const hasChecklist = total > 0;
+
     return (
-      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
+      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
         Planejado
+        {hasChecklist && (
+          <span className="text-muted-foreground">({current}/{total})</span>
+        )}
       </span>
     );
   };
@@ -177,7 +220,7 @@ export default function Cases() {
             <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
             <div>
               <p className="font-medium">
-                {teethCount} protocolo{teethCount > 1 ? 's' : ''} criado{teethCount > 1 ? 's' : ''} com sucesso!
+                {teethCount} caso{teethCount > 1 ? 's' : ''} criado{teethCount > 1 ? 's' : ''} com sucesso!
               </p>
               <p className="text-sm text-muted-foreground">
                 Os casos novos estão destacados abaixo.
@@ -259,7 +302,7 @@ export default function Cases() {
                     <TableCell>
                       {format(new Date(evaluation.created_at), "dd/MM/yyyy", { locale: ptBR })}
                     </TableCell>
-                    <TableCell>{getStatusBadge(evaluation.status)}</TableCell>
+                    <TableCell>{getStatusBadge(evaluation)}</TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>

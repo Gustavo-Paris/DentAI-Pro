@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { CheckCircle2 } from "lucide-react";
@@ -6,27 +5,33 @@ import { CheckCircle2 } from "lucide-react";
 interface ProtocolChecklistProps {
   items: string[];
   title?: string;
+  checkedIndices?: number[];
+  onProgressChange?: (indices: number[]) => void;
 }
 
-export default function ProtocolChecklist({ items, title = "Passo a Passo" }: ProtocolChecklistProps) {
-  const [checkedItems, setCheckedItems] = useState<Set<number>>(new Set());
-
+export default function ProtocolChecklist({ 
+  items, 
+  title = "Passo a Passo",
+  checkedIndices = [],
+  onProgressChange
+}: ProtocolChecklistProps) {
   if (!items || items.length === 0) return null;
 
+  const checkedSet = new Set(checkedIndices);
+
   const toggleItem = (index: number) => {
-    setCheckedItems((prev) => {
-      const next = new Set(prev);
-      if (next.has(index)) {
-        next.delete(index);
-      } else {
-        next.add(index);
-      }
-      return next;
-    });
+    const newSet = new Set(checkedSet);
+    if (newSet.has(index)) {
+      newSet.delete(index);
+    } else {
+      newSet.add(index);
+    }
+    const newIndices = Array.from(newSet).sort((a, b) => a - b);
+    onProgressChange?.(newIndices);
   };
 
-  const progress = (checkedItems.size / items.length) * 100;
-  const allComplete = checkedItems.size === items.length;
+  const progress = (checkedSet.size / items.length) * 100;
+  const allComplete = checkedSet.size === items.length;
 
   return (
     <div className="space-y-3">
@@ -42,7 +47,7 @@ export default function ProtocolChecklist({ items, title = "Passo a Passo" }: Pr
           />
         </div>
         <span className="text-sm text-muted-foreground">
-          {checkedItems.size}/{items.length}
+          {checkedSet.size}/{items.length}
         </span>
         {allComplete && (
           <CheckCircle2 className="w-5 h-5 text-green-500" />
@@ -52,7 +57,7 @@ export default function ProtocolChecklist({ items, title = "Passo a Passo" }: Pr
       {/* Checklist items */}
       <div className="space-y-2">
         {items.map((item, index) => {
-          const isChecked = checkedItems.has(index);
+          const isChecked = checkedSet.has(index);
           return (
             <label
               key={index}

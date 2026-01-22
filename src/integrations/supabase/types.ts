@@ -22,6 +22,7 @@ export type Database = {
           bruxism: boolean
           budget: string
           cavity_class: string
+          checklist_progress: Json | null
           created_at: string
           depth: string | null
           enamel_condition: string | null
@@ -61,6 +62,7 @@ export type Database = {
           bruxism?: boolean
           budget: string
           cavity_class: string
+          checklist_progress?: Json | null
           created_at?: string
           depth?: string | null
           enamel_condition?: string | null
@@ -100,6 +102,7 @@ export type Database = {
           bruxism?: boolean
           budget?: string
           cavity_class?: string
+          checklist_progress?: Json | null
           created_at?: string
           depth?: string | null
           enamel_condition?: string | null

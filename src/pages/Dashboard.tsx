@@ -169,7 +169,7 @@ export default function Dashboard() {
         <Card className="mb-8">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total de protocolos
+              Total de casos
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -184,7 +184,7 @@ export default function Dashboard() {
         {/* Recent Sessions */}
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-medium">Sessões recentes</h2>
+            <h2 className="text-lg font-medium">Avaliações recentes</h2>
             <Link to="/cases">
               <Button variant="ghost" size="sm">
                 Ver todos os casos
@@ -202,7 +202,7 @@ export default function Dashboard() {
           ) : sessions.length === 0 ? (
             <Card className="p-8 text-center">
               <FileText className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground mb-4">Nenhuma sessão ainda</p>
+              <p className="text-muted-foreground mb-4">Nenhuma avaliação ainda</p>
               <Link to="/new-case">
                 <Button>Criar primeiro caso</Button>
               </Link>
@@ -210,7 +210,7 @@ export default function Dashboard() {
           ) : (
             <div className="space-y-3">
               {sessions.map((session) => (
-                <Link key={session.session_id} to={`/session/${session.session_id}`}>
+                <Link key={session.session_id} to={`/evaluation/${session.session_id}`}>
                   <Card className="p-4 hover:bg-secondary/50 transition-colors cursor-pointer">
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
