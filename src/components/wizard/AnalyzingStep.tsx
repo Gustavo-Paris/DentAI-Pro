@@ -1,10 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2, Brain, Sparkles, Check } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Loader2, Brain, Sparkles, Check, AlertCircle, RefreshCw, ArrowRight } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 
 interface AnalyzingStepProps {
   imageBase64: string | null;
+  isAnalyzing: boolean;
+  analysisError: string | null;
+  onRetry: () => void;
+  onSkipToReview: () => void;
 }
 
 const analysisSteps = [
@@ -16,15 +21,30 @@ const analysisSteps = [
   { id: 6, label: 'Gerando diagnóstico...', duration: 1000 },
 ];
 
-export function AnalyzingStep({ imageBase64 }: AnalyzingStepProps) {
+export function AnalyzingStep({ 
+  imageBase64, 
+  isAnalyzing, 
+  analysisError, 
+  onRetry, 
+  onSkipToReview 
+}: AnalyzingStepProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);
 
+  // Reset animation when analysis starts
   useEffect(() => {
+    if (!isAnalyzing) {
+      return;
+    }
+
+    // Reset states when analysis starts
+    setCurrentStep(0);
+    setProgress(0);
+
     let totalElapsed = 0;
     const totalDuration = analysisSteps.reduce((sum, s) => sum + s.duration, 0);
 
-    const intervals: NodeJS.Timeout[] = [];
+    const intervals: ReturnType<typeof setTimeout>[] = [];
 
     analysisSteps.forEach((step, index) => {
       const timeout = setTimeout(() => {
@@ -42,14 +62,61 @@ export function AnalyzingStep({ imageBase64 }: AnalyzingStepProps) {
       });
     }, totalDuration / 95);
 
-    intervals.push(progressInterval as unknown as NodeJS.Timeout);
-
     return () => {
       intervals.forEach(clearTimeout);
       clearInterval(progressInterval);
     };
-  }, []);
+  }, [isAnalyzing]);
 
+  // Show error state
+  if (analysisError) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center">
+          <div className="w-20 h-20 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-10 h-10 text-destructive" />
+          </div>
+          <h2 className="text-2xl font-semibold mb-2">Erro na Análise</h2>
+          <p className="text-muted-foreground max-w-md mx-auto">
+            {analysisError}
+          </p>
+        </div>
+
+        {imageBase64 && (
+          <div className="flex justify-center">
+            <img
+              src={imageBase64}
+              alt="Foto enviada"
+              className="w-48 h-48 object-cover rounded-lg opacity-75"
+            />
+          </div>
+        )}
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground text-center">
+                Você pode tentar novamente ou prosseguir com a entrada manual dos dados clínicos.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button onClick={onRetry} className="gap-2">
+                  <RefreshCw className="w-4 h-4" />
+                  Tentar Novamente
+                </Button>
+                <Button variant="outline" onClick={onSkipToReview} className="gap-2">
+                  <ArrowRight className="w-4 h-4" />
+                  Pular para Revisão Manual
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Show loading state
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -123,7 +190,7 @@ export function AnalyzingStep({ imageBase64 }: AnalyzingStepProps) {
       <div className="flex justify-center">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Sparkles className="w-4 h-4 text-primary" />
-          <span>Powered by Gemini 2.5 Pro Vision</span>
+          <span>Powered by Gemini 3 Flash Preview</span>
         </div>
       </div>
     </div>
