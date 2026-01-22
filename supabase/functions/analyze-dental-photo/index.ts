@@ -41,9 +41,37 @@ serve(async (req) => {
   }
 
   try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
+    
     if (!lovableApiKey) {
       throw new Error("LOVABLE_API_KEY not configured");
+    }
+
+    // Validate authentication
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Não autorizado" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Verify JWT claims
+    const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
+    
+    if (claimsError || !claimsData?.claims) {
+      return new Response(
+        JSON.stringify({ error: "Token inválido" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     const data: AnalyzePhotoRequest = await req.json();
@@ -58,11 +86,42 @@ serve(async (req) => {
       );
     }
 
-    // Clean base64 if it has data URI prefix
-    let base64Image = data.imageBase64;
-    if (base64Image.includes(",")) {
-      base64Image = base64Image.split(",")[1];
+    // Server-side validation of image data
+    const base64Data = data.imageBase64.includes(",") 
+      ? data.imageBase64.split(",")[1] 
+      : data.imageBase64;
+    
+    // Validate base64 format
+    if (!/^[A-Za-z0-9+/=]+$/.test(base64Data)) {
+      return new Response(
+        JSON.stringify({ error: "Formato de imagem inválido" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
+
+    // Validate image size (max 10MB in base64 = ~13.3MB base64 string)
+    if (base64Data.length > 13 * 1024 * 1024) {
+      return new Response(
+        JSON.stringify({ error: "Imagem muito grande. Máximo: 10MB" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Verify magic bytes for common image formats
+    const bytes = Uint8Array.from(atob(base64Data.slice(0, 16)), c => c.charCodeAt(0));
+    const isJPEG = bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF;
+    const isPNG = bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47;
+    const isWEBP = bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46;
+    
+    if (!isJPEG && !isPNG && !isWEBP) {
+      return new Response(
+        JSON.stringify({ error: "Formato de imagem não suportado. Use JPG, PNG ou WEBP" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Use the validated base64 data
+    const base64Image = base64Data;
 
     // System prompt for dental photo analysis - MULTI-TOOTH DETECTION (ENHANCED FOR CONSISTENCY)
     const systemPrompt = `Você é um especialista em odontologia restauradora com 20 anos de experiência em análise de casos clínicos.

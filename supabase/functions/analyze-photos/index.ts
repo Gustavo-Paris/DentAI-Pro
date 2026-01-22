@@ -21,14 +21,42 @@ serve(async (req) => {
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const lovableApiKey = Deno.env.get("LOVABLE_API_KEY")!;
 
+    // Validate authentication
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Não autorizado" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Create client with user's auth token to verify claims
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
+    
+    if (claimsError || !claimsData?.claims) {
+      return new Response(
+        JSON.stringify({ error: "Token inválido" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const userId = claimsData.claims.sub as string;
+
+    // Use service role client for database operations
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const data: AnalyzePhotosData = await req.json();
 
-    // Fetch evaluation data
+    // Fetch evaluation data and verify ownership
     const { data: evaluation, error: evalError } = await supabase
       .from("evaluations")
       .select("*")
@@ -36,6 +64,14 @@ serve(async (req) => {
       .single();
 
     if (evalError) throw evalError;
+
+    // Verify user owns this evaluation
+    if (evaluation.user_id !== userId) {
+      return new Response(
+        JSON.stringify({ error: "Acesso negado a esta avaliação" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     // Download images and convert to base64
     const imageContents: { type: string; base64: string }[] = [];
