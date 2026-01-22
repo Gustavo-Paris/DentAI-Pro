@@ -5,17 +5,19 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
-import { ArrowLeft, ArrowRight, Camera, Brain, ClipboardCheck, FileText, Loader2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Camera, Brain, ClipboardCheck, FileText, Loader2, Smile } from 'lucide-react';
 
 import { PhotoUploadStep } from '@/components/wizard/PhotoUploadStep';
 import { AnalyzingStep } from '@/components/wizard/AnalyzingStep';
+import { DSDStep, DSDResult } from '@/components/wizard/DSDStep';
 import { ReviewAnalysisStep, PhotoAnalysisResult, ReviewFormData, DetectedTooth } from '@/components/wizard/ReviewAnalysisStep';
 
 const steps = [
   { id: 1, name: 'Foto', icon: Camera },
   { id: 2, name: 'Análise', icon: Brain },
-  { id: 3, name: 'Revisão', icon: ClipboardCheck },
-  { id: 4, name: 'Resultado', icon: FileText },
+  { id: 3, name: 'DSD', icon: Smile },
+  { id: 4, name: 'Revisão', icon: ClipboardCheck },
+  { id: 5, name: 'Resultado', icon: FileText },
 ];
 
 const initialFormData: ReviewFormData = {
@@ -47,11 +49,12 @@ export default function NewCase() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadedPhotoPath, setUploadedPhotoPath] = useState<string | null>(null);
   const [selectedTeeth, setSelectedTeeth] = useState<string[]>([]);
+  const [dsdResult, setDsdResult] = useState<DSDResult | null>(null);
   
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const totalSteps = 4;
+  const totalSteps = 5;
   const progress = (step / totalSteps) * 100;
 
   // Auto-select all detected teeth when analysis completes
@@ -155,9 +158,9 @@ export default function NewCase() {
           }));
         }
 
-        // Move to review step
+        // Move to DSD step
         setTimeout(() => {
-          setStep(3);
+          setStep(3); // DSD step
         }, 500);
       } else {
         throw new Error('Análise não retornou dados');
@@ -174,8 +177,8 @@ export default function NewCase() {
         toast.error('Erro na análise. Prosseguindo com entrada manual.');
       }
       
-      // Move to review step anyway for manual input
-      setStep(3);
+      // Move to review step anyway for manual input (skip DSD)
+      setStep(4);
     } finally {
       setIsAnalyzing(false);
     }
@@ -267,7 +270,7 @@ export default function NewCase() {
     if (!user || !validateForm()) return;
 
     setIsSubmitting(true);
-    setStep(4);
+    setStep(5);
 
     // Determine which teeth to process
     const teethToProcess = selectedTeeth.length > 0 ? selectedTeeth : [formData.tooth];
@@ -281,30 +284,37 @@ export default function NewCase() {
         // Get tooth-specific data if available from AI analysis
         const toothData = getToothData(tooth);
         
-        // Create evaluation record for each tooth
+        // Create evaluation record for each tooth (include DSD data)
+        // Note: dsd_analysis and dsd_simulation_url columns were added via migration
+        // but types.ts is auto-generated, so we cast the insert object
+        const insertData = {
+          user_id: user.id,
+          session_id: sessionId,
+          patient_name: formData.patientName || null,
+          patient_age: parseInt(formData.patientAge),
+          tooth: tooth,
+          region: getFullRegion(tooth),
+          cavity_class: toothData?.cavity_class || formData.cavityClass,
+          restoration_size: toothData?.restoration_size || formData.restorationSize,
+          substrate: toothData?.substrate || formData.substrate,
+          tooth_color: formData.vitaShade,
+          depth: toothData?.depth || formData.depth,
+          substrate_condition: toothData?.substrate_condition || formData.substrateCondition,
+          enamel_condition: toothData?.enamel_condition || formData.enamelCondition,
+          bruxism: formData.bruxism,
+          aesthetic_level: formData.aestheticLevel,
+          budget: formData.budget,
+          longevity_expectation: formData.longevityExpectation,
+          photo_frontal: uploadedPhotoPath,
+          status: 'analyzing',
+          // DSD data (columns added via migration)
+          dsd_analysis: dsdResult?.analysis || null,
+          dsd_simulation_url: dsdResult?.simulation_url || null,
+        } as Record<string, unknown>;
+
         const { data: evaluation, error: evalError } = await supabase
           .from('evaluations')
-          .insert({
-            user_id: user.id,
-            session_id: sessionId,
-            patient_name: formData.patientName || null,
-            patient_age: parseInt(formData.patientAge),
-            tooth: tooth,
-            region: getFullRegion(tooth),
-            cavity_class: toothData?.cavity_class || formData.cavityClass,
-            restoration_size: toothData?.restoration_size || formData.restorationSize,
-            substrate: toothData?.substrate || formData.substrate,
-            tooth_color: formData.vitaShade,
-            depth: toothData?.depth || formData.depth,
-            substrate_condition: toothData?.substrate_condition || formData.substrateCondition,
-            enamel_condition: toothData?.enamel_condition || formData.enamelCondition,
-            bruxism: formData.bruxism,
-            aesthetic_level: formData.aestheticLevel,
-            budget: formData.budget,
-            longevity_expectation: formData.longevityExpectation,
-            photo_frontal: uploadedPhotoPath,
-            status: 'analyzing',
-          })
+          .insert(insertData as any)
           .select()
           .single();
 
@@ -346,22 +356,35 @@ export default function NewCase() {
     } catch (error) {
       console.error('Error:', error);
       toast.error('Erro ao criar caso');
-      setStep(3); // Go back to review on error
+      setStep(4); // Go back to review on error
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // DSD handlers
+  const handleDSDComplete = (result: DSDResult | null) => {
+    setDsdResult(result);
+    setStep(4); // Move to review
+  };
+
+  const handleDSDSkip = () => {
+    setDsdResult(null);
+    setStep(4); // Move to review
   };
 
   // Navigation handlers
   const handleBack = () => {
     if (step === 1) {
       navigate('/dashboard');
+    } else if (step === 4) {
+      setStep(3); // Go back to DSD
     } else if (step === 3) {
-      setStep(1);
+      setStep(1); // Go back to photo
     }
   };
 
-  const canGoBack = step === 1 || step === 3;
+  const canGoBack = step === 1 || step === 3 || step === 4;
 
   return (
     <div className="min-h-screen bg-background">
@@ -417,6 +440,14 @@ export default function NewCase() {
         )}
 
         {step === 3 && (
+          <DSDStep
+            imageBase64={imageBase64}
+            onComplete={handleDSDComplete}
+            onSkip={handleDSDSkip}
+          />
+        )}
+
+        {step === 4 && (
           <ReviewAnalysisStep
             analysisResult={analysisResult}
             formData={formData}
@@ -429,7 +460,7 @@ export default function NewCase() {
           />
         )}
 
-        {step === 4 && (
+        {step === 5 && (
           <div className="flex flex-col items-center justify-center py-12 sm:py-16 space-y-4 sm:space-y-6">
             <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary/10 flex items-center justify-center">
               <Loader2 className="w-8 h-8 sm:w-10 sm:h-10 text-primary animate-spin" />
@@ -451,7 +482,7 @@ export default function NewCase() {
               Voltar
             </Button>
 
-            {step === 3 && (
+            {step === 4 && (
               <Button onClick={handleSubmit} disabled={isSubmitting} className="w-full sm:w-auto">
                 {isSubmitting ? (
                   <>
