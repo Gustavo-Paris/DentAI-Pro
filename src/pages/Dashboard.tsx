@@ -17,6 +17,7 @@ interface Evaluation {
   cavity_class: string;
   patient_name: string | null;
   session_id: string | null;
+  status: string | null;
   recommendation_text: string | null;
   recommended_resin_id: string | null;
   resins?: {
@@ -42,7 +43,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [sessions, setSessions] = useState<Session[]>([]);
-  const [totalEvaluations, setTotalEvaluations] = useState(0);
+  const [pendingCases, setPendingCases] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -67,6 +68,7 @@ export default function Dashboard() {
           cavity_class,
           patient_name,
           session_id,
+          status,
           recommendation_text,
           recommended_resin_id,
           resins!recommended_resin_id (
@@ -78,7 +80,11 @@ export default function Dashboard() {
         .order('created_at', { ascending: false });
 
       if (evaluationsData) {
-        setTotalEvaluations(evaluationsData.length);
+        // Count only pending cases (not completed)
+        const pendingCount = evaluationsData.filter(
+          e => e.status !== 'completed'
+        ).length;
+        setPendingCases(pendingCount);
         
         // Group by session_id
         const sessionMap = new Map<string, Evaluation[]>();
@@ -140,7 +146,7 @@ export default function Dashboard() {
         <div className="grid md:grid-cols-2 gap-4 mb-8">
           <Card className="flex items-center justify-between p-6">
             <div>
-              <h3 className="font-medium mb-1">Novo Caso Clínico</h3>
+              <h3 className="font-medium mb-1">Nova Avaliação</h3>
               <p className="text-sm text-muted-foreground">Análise com IA para resina ideal</p>
             </div>
             <Link to="/new-case">
@@ -169,14 +175,21 @@ export default function Dashboard() {
         <Card className="mb-8">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total de casos
+              Casos em aberto
             </CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
               <Skeleton className="h-8 w-12" />
             ) : (
-              <p className="text-3xl font-semibold">{totalEvaluations}</p>
+              <>
+                <p className={`text-3xl font-semibold ${pendingCases > 0 ? 'text-amber-600' : 'text-primary'}`}>
+                  {pendingCases}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {pendingCases === 0 ? 'Todos finalizados!' : 'Aguardando finalização'}
+                </p>
+              </>
             )}
           </CardContent>
         </Card>
@@ -185,9 +198,9 @@ export default function Dashboard() {
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-medium">Avaliações recentes</h2>
-            <Link to="/cases">
+            <Link to="/evaluations">
               <Button variant="ghost" size="sm">
-                Ver todos os casos
+                Ver todas as avaliações
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </Link>
@@ -204,7 +217,7 @@ export default function Dashboard() {
               <FileText className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
               <p className="text-muted-foreground mb-4">Nenhuma avaliação ainda</p>
               <Link to="/new-case">
-                <Button>Criar primeiro caso</Button>
+                <Button>Criar primeira avaliação</Button>
               </Link>
             </Card>
           ) : (

@@ -59,7 +59,7 @@ interface LocationState {
   teethCount?: number;
 }
 
-export default function Cases() {
+export default function Evaluations() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -105,7 +105,7 @@ export default function Cases() {
 
     if (error) {
       console.error('Error fetching evaluations:', error);
-      toast.error('Erro ao carregar casos');
+      toast.error('Erro ao carregar avaliações');
     } else {
       setEvaluations((data || []) as Evaluation[]);
     }
@@ -204,7 +204,7 @@ export default function Cases() {
                 <ArrowLeft className="w-4 h-4" />
               </Button>
             </Link>
-            <span className="text-xl font-semibold tracking-tight">Meus Casos</span>
+            <span className="text-xl font-semibold tracking-tight">Minhas Avaliações</span>
           </div>
           <Button variant="ghost" size="sm" onClick={handleSignOut}>
             <LogOut className="w-4 h-4 mr-2" />
@@ -245,7 +245,7 @@ export default function Cases() {
             </Select>
           </div>
           <p className="text-sm text-muted-foreground">
-            {filteredEvaluations.length} caso(s)
+            {filteredEvaluations.length} avaliação(ões)
           </p>
         </div>
 
@@ -259,15 +259,15 @@ export default function Cases() {
         ) : filteredEvaluations.length === 0 ? (
           <Card className="p-12 text-center">
             <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="font-medium mb-2">Nenhum caso encontrado</h3>
+            <h3 className="font-medium mb-2">Nenhuma avaliação encontrada</h3>
             <p className="text-sm text-muted-foreground mb-4">
               {filter === 'all' 
-                ? 'Você ainda não criou nenhum caso clínico.'
-                : `Nenhum caso com status "${filter === 'draft' ? 'planejado' : 'finalizado'}".`
+                ? 'Você ainda não criou nenhuma avaliação.'
+                : `Nenhuma avaliação com status "${filter === 'draft' ? 'planejado' : 'finalizado'}".`
               }
             </p>
             <Link to="/new-case">
-              <Button>Criar primeiro caso</Button>
+              <Button>Criar primeira avaliação</Button>
             </Link>
           </Card>
         ) : (
