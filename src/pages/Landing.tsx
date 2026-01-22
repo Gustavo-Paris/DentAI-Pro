@@ -13,9 +13,9 @@ export default function Landing() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <span className="text-xl font-semibold tracking-tight">ResinMatch AI</span>
-          <div className="flex items-center gap-4">
+        <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+          <span className="text-lg sm:text-xl font-semibold tracking-tight">ResinMatch AI</span>
+          <div className="flex items-center gap-2 sm:gap-4">
             <Link to="/login">
               <Button variant="ghost" size="sm">Entrar</Button>
             </Link>
@@ -27,16 +27,16 @@ export default function Landing() {
       </header>
 
       {/* Hero */}
-      <section className="py-24 md:py-32">
-        <div className="container mx-auto px-6 text-center max-w-3xl">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight leading-tight mb-6">
+      <section className="py-16 sm:py-24 md:py-32">
+        <div className="container mx-auto px-4 sm:px-6 text-center max-w-3xl">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight leading-tight mb-4 sm:mb-6">
             A resina ideal para cada caso clínico
           </h1>
-          <p className="text-lg text-muted-foreground mb-10 max-w-xl mx-auto">
+          <p className="text-base sm:text-lg text-muted-foreground mb-8 sm:mb-10 max-w-xl mx-auto">
             Inteligência artificial que analisa seu caso e recomenda a melhor resina composta com justificativa técnica detalhada.
           </p>
           <Link to="/register">
-            <Button size="lg" className="px-8">
+            <Button size="lg" className="px-6 sm:px-8">
               Começar Avaliação Gratuita
             </Button>
           </Link>
@@ -44,9 +44,9 @@ export default function Landing() {
       </section>
 
       {/* Benefits */}
-      <section className="py-20 border-t border-border">
-        <div className="container mx-auto px-6">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <section className="py-12 sm:py-20 border-t border-border">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
             {[
               {
                 icon: Clock,
@@ -70,11 +70,11 @@ export default function Landing() {
               },
             ].map((benefit, index) => (
               <div key={index} className="text-center">
-                <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center mx-auto mb-4">
-                  <benefit.icon className="w-5 h-5 text-foreground" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-secondary flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <benefit.icon className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
                 </div>
-                <h3 className="font-medium mb-2">{benefit.title}</h3>
-                <p className="text-sm text-muted-foreground">{benefit.description}</p>
+                <h3 className="font-medium text-sm sm:text-base mb-1 sm:mb-2">{benefit.title}</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground">{benefit.description}</p>
               </div>
             ))}
           </div>
@@ -82,12 +82,12 @@ export default function Landing() {
       </section>
 
       {/* How it works */}
-      <section className="py-20 border-t border-border">
-        <div className="container mx-auto px-6 max-w-3xl">
-          <h2 className="text-2xl md:text-3xl font-semibold text-center mb-16">
+      <section className="py-12 sm:py-20 border-t border-border">
+        <div className="container mx-auto px-4 sm:px-6 max-w-3xl">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-8 sm:mb-16">
             Como funciona
           </h2>
-          <div className="space-y-12">
+          <div className="space-y-8 sm:space-y-12">
             {[
               {
                 step: '01',
@@ -105,11 +105,11 @@ export default function Landing() {
                 description: 'Obtenha a resina ideal com justificativa técnica e alternativas.',
               },
             ].map((item, index) => (
-              <div key={index} className="flex gap-6">
-                <span className="text-4xl font-light text-muted-foreground/50">{item.step}</span>
+              <div key={index} className="flex gap-4 sm:gap-6">
+                <span className="text-2xl sm:text-4xl font-light text-muted-foreground/50">{item.step}</span>
                 <div>
-                  <h3 className="font-medium mb-1">{item.title}</h3>
-                  <p className="text-muted-foreground">{item.description}</p>
+                  <h3 className="font-medium text-sm sm:text-base mb-1">{item.title}</h3>
+                  <p className="text-sm sm:text-base text-muted-foreground">{item.description}</p>
                 </div>
               </div>
             ))}
@@ -118,9 +118,9 @@ export default function Landing() {
       </section>
 
       {/* FAQ */}
-      <section className="py-20 border-t border-border">
-        <div className="container mx-auto px-6 max-w-2xl">
-          <h2 className="text-2xl md:text-3xl font-semibold text-center mb-12">
+      <section className="py-12 sm:py-20 border-t border-border">
+        <div className="container mx-auto px-4 sm:px-6 max-w-2xl">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-8 sm:mb-12">
             Perguntas frequentes
           </h2>
           <Accordion type="single" collapsible className="w-full">
@@ -153,16 +153,16 @@ export default function Landing() {
       </section>
 
       {/* CTA */}
-      <section className="py-20 border-t border-border">
-        <div className="container mx-auto px-6 text-center">
-          <h2 className="text-2xl md:text-3xl font-semibold mb-4">
+      <section className="py-12 sm:py-20 border-t border-border">
+        <div className="container mx-auto px-4 sm:px-6 text-center">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold mb-3 sm:mb-4">
             Pronto para começar?
           </h2>
-          <p className="text-muted-foreground mb-8">
+          <p className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-8">
             Crie sua conta e faça sua primeira avaliação em minutos.
           </p>
           <Link to="/register">
-            <Button size="lg" className="px-8">
+            <Button size="lg" className="px-6 sm:px-8">
               Criar Conta Gratuita
             </Button>
           </Link>
@@ -170,8 +170,8 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border py-8">
-        <div className="container mx-auto px-6 text-center text-sm text-muted-foreground">
+      <footer className="border-t border-border py-6 sm:py-8">
+        <div className="container mx-auto px-4 sm:px-6 text-center text-xs sm:text-sm text-muted-foreground">
           © {new Date().getFullYear()} ResinMatch AI. Ferramenta de apoio à decisão clínica.
         </div>
       </footer>

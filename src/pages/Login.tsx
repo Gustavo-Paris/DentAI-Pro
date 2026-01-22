@@ -32,13 +32,13 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-6">
+    <div className="min-h-screen bg-background flex items-center justify-center px-4 sm:px-6 py-8">
       <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <Link to="/" className="text-xl font-semibold tracking-tight">
+        <div className="text-center mb-6 sm:mb-8">
+          <Link to="/" className="text-lg sm:text-xl font-semibold tracking-tight">
             ResinMatch AI
           </Link>
-          <h1 className="text-2xl font-semibold mt-8 mb-2">Entrar</h1>
+          <h1 className="text-xl sm:text-2xl font-semibold mt-6 sm:mt-8 mb-2">Entrar</h1>
           <p className="text-sm text-muted-foreground">
             Acesse sua conta para continuar
           </p>

@@ -127,52 +127,56 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <span className="text-xl font-semibold tracking-tight">ResinMatch AI</span>
+        <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+          <span className="text-lg sm:text-xl font-semibold tracking-tight">ResinMatch AI</span>
           <Button variant="ghost" size="sm" onClick={handleSignOut}>
-            <LogOut className="w-4 h-4 mr-2" />
-            Sair
+            <LogOut className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Sair</span>
           </Button>
         </div>
       </header>
 
-      <main className="container mx-auto px-6 py-8 max-w-4xl">
-        <div className="mb-8">
-          <h1 className="text-2xl font-semibold mb-1">Olá, {firstName}</h1>
-          <p className="text-muted-foreground">Bem-vindo ao seu painel</p>
+      <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-4xl">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-xl sm:text-2xl font-semibold mb-1">Olá, {firstName}</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Bem-vindo ao seu painel</p>
         </div>
 
         {/* Quick Actions */}
-        <div className="grid md:grid-cols-2 gap-4 mb-8">
-          <Card className="flex items-center justify-between p-6">
-            <div>
-              <h3 className="font-medium mb-1">Nova Avaliação</h3>
-              <p className="text-sm text-muted-foreground">Análise com IA para resina ideal</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
+          <Card className="p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <h3 className="font-medium mb-1">Nova Avaliação</h3>
+                <p className="text-sm text-muted-foreground">Análise com IA para resina ideal</p>
+              </div>
+              <Link to="/new-case" className="w-full sm:w-auto">
+                <Button className="w-full sm:w-auto">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Iniciar
+                </Button>
+              </Link>
             </div>
-            <Link to="/new-case">
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                Iniciar
-              </Button>
-            </Link>
           </Card>
 
-          <Card className="flex items-center justify-between p-6">
-            <div>
-              <h3 className="font-medium mb-1">Meu Inventário</h3>
-              <p className="text-sm text-muted-foreground">Gerencie suas resinas disponíveis</p>
+          <Card className="p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <h3 className="font-medium mb-1">Meu Inventário</h3>
+                <p className="text-sm text-muted-foreground">Gerencie suas resinas disponíveis</p>
+              </div>
+              <Link to="/inventory" className="w-full sm:w-auto">
+                <Button variant="outline" className="w-full sm:w-auto">
+                  <Package className="w-4 h-4 mr-2" />
+                  Ver
+                </Button>
+              </Link>
             </div>
-            <Link to="/inventory">
-              <Button variant="outline">
-                <Package className="w-4 h-4 mr-2" />
-                Ver
-              </Button>
-            </Link>
           </Card>
         </div>
 
         {/* Stats */}
-        <Card className="mb-8">
+        <Card className="mb-6 sm:mb-8">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Casos em aberto
@@ -183,7 +187,7 @@ export default function Dashboard() {
               <Skeleton className="h-8 w-12" />
             ) : (
               <>
-                <p className={`text-3xl font-semibold ${pendingCases > 0 ? 'text-amber-600' : 'text-primary'}`}>
+                <p className={`text-2xl sm:text-3xl font-semibold ${pendingCases > 0 ? 'text-amber-600' : 'text-primary'}`}>
                   {pendingCases}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
@@ -197,10 +201,11 @@ export default function Dashboard() {
         {/* Recent Sessions */}
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-medium">Avaliações recentes</h2>
+            <h2 className="text-base sm:text-lg font-medium">Avaliações recentes</h2>
             <Link to="/evaluations">
-              <Button variant="ghost" size="sm">
-                Ver todas as avaliações
+              <Button variant="ghost" size="sm" className="h-8 px-2 sm:px-3">
+                <span className="hidden sm:inline">Ver todas as avaliações</span>
+                <span className="sm:hidden">Ver todas</span>
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </Link>
@@ -213,8 +218,8 @@ export default function Dashboard() {
               ))}
             </div>
           ) : sessions.length === 0 ? (
-            <Card className="p-8 text-center">
-              <FileText className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+            <Card className="p-6 sm:p-8 text-center">
+              <FileText className="w-8 sm:w-10 h-8 sm:h-10 text-muted-foreground mx-auto mb-3" />
               <p className="text-muted-foreground mb-4">Nenhuma avaliação ainda</p>
               <Link to="/new-case">
                 <Button>Criar primeira avaliação</Button>
@@ -224,34 +229,36 @@ export default function Dashboard() {
             <div className="space-y-3">
               {sessions.map((session) => (
                 <Link key={session.session_id} to={`/evaluation/${session.session_id}`}>
-                  <Card className="p-4 hover:bg-secondary/50 transition-colors cursor-pointer">
-                    <div className="flex items-center justify-between">
+                  <Card className="p-3 sm:p-4 hover:bg-secondary/50 transition-colors cursor-pointer">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
                       <div className="flex-1">
-                        <p className="font-medium">
+                        <p className="font-medium text-sm sm:text-base">
                           {session.patient_name || 'Paciente sem nome'}
                         </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <p className="text-sm text-muted-foreground">
+                        <div className="flex flex-wrap items-center gap-2 mt-1">
+                          <p className="text-xs sm:text-sm text-muted-foreground">
                             {session.evaluationCount} dente{session.evaluationCount > 1 ? 's' : ''}
                           </p>
-                          <span className="text-muted-foreground">•</span>
-                          <div className="flex gap-1">
-                            {session.teeth.slice(0, 4).map((tooth) => (
+                          <span className="text-muted-foreground hidden sm:inline">•</span>
+                          <div className="flex gap-1 flex-wrap">
+                            {session.teeth.slice(0, 3).map((tooth) => (
                               <Badge key={tooth} variant="outline" className="text-xs">
                                 {tooth}
                               </Badge>
                             ))}
-                            {session.teeth.length > 4 && (
+                            {session.teeth.length > 3 && (
                               <Badge variant="outline" className="text-xs">
-                                +{session.teeth.length - 4}
+                                +{session.teeth.length - 3}
                               </Badge>
                             )}
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Calendar className="w-4 h-4" />
-                        {format(new Date(session.created_at), "d 'de' MMM", { locale: ptBR })}
+                      <div className="flex items-center justify-between sm:justify-end gap-2 text-xs sm:text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+                          {format(new Date(session.created_at), "d 'de' MMM", { locale: ptBR })}
+                        </div>
                         <ChevronRight className="w-4 h-4" />
                       </div>
                     </div>
