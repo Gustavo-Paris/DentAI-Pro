@@ -43,48 +43,74 @@ export default function ProtocolTable({ layers }: ProtocolTableProps) {
 
   return (
     <div className="rounded-lg border overflow-hidden">
-      <Table>
-        <TableHeader>
-          <TableRow className="bg-muted/50">
-            <TableHead className="w-[140px]">Camada</TableHead>
-            <TableHead>Resina</TableHead>
-            <TableHead className="w-[80px]">Cor</TableHead>
-            <TableHead className="w-[100px]">Espessura</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {layers.map((layer) => (
-            <TableRow key={layer.order} className={getLayerStyles(layer.name)}>
-              <TableCell className="font-medium">
-                {layer.order}. {layer.name}
-              </TableCell>
-              <TableCell>{layer.resin_brand}</TableCell>
-              <TableCell>
-                <span className="inline-flex items-center px-2 py-1 rounded-md bg-background font-mono text-sm">
-                  {layer.shade}
-                </span>
-              </TableCell>
-              <TableCell className="text-muted-foreground">
-                {layer.thickness}
-              </TableCell>
+      {/* Desktop Table */}
+      <div className="hidden sm:block overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/50">
+              <TableHead className="w-[140px]">Camada</TableHead>
+              <TableHead>Resina</TableHead>
+              <TableHead className="w-[80px]">Cor</TableHead>
+              <TableHead className="w-[100px]">Espessura</TableHead>
             </TableRow>
+          </TableHeader>
+          <TableBody>
+            {layers.map((layer) => (
+              <TableRow key={layer.order} className={getLayerStyles(layer.name)}>
+                <TableCell className="font-medium">
+                  {layer.order}. {layer.name}
+                </TableCell>
+                <TableCell>{layer.resin_brand}</TableCell>
+                <TableCell>
+                  <span className="inline-flex items-center px-2 py-1 rounded-md bg-background font-mono text-sm">
+                    {layer.shade}
+                  </span>
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  {layer.thickness}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+        
+        {/* Layer details */}
+        <div className="divide-y divide-border">
+          {layers.map((layer) => (
+            <div key={`detail-${layer.order}`} className="px-4 py-3 bg-muted/30">
+              <div className="flex items-start gap-4 text-sm">
+                <div className="flex-1">
+                  <span className="text-muted-foreground">Objetivo: </span>
+                  <span>{layer.purpose}</span>
+                </div>
+                <div className="flex-1">
+                  <span className="text-muted-foreground">Técnica: </span>
+                  <span>{layer.technique}</span>
+                </div>
+              </div>
+            </div>
           ))}
-        </TableBody>
-      </Table>
-      
-      {/* Layer details on hover/expand */}
-      <div className="divide-y divide-border">
+        </div>
+      </div>
+
+      {/* Mobile Cards */}
+      <div className="sm:hidden divide-y divide-border">
         {layers.map((layer) => (
-          <div key={`detail-${layer.order}`} className="px-4 py-3 bg-muted/30">
-            <div className="flex items-start gap-4 text-sm">
-              <div className="flex-1">
-                <span className="text-muted-foreground">Objetivo: </span>
-                <span>{layer.purpose}</span>
-              </div>
-              <div className="flex-1">
-                <span className="text-muted-foreground">Técnica: </span>
-                <span>{layer.technique}</span>
-              </div>
+          <div key={layer.order} className={`p-3 ${getLayerStyles(layer.name)}`}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-medium text-sm">
+                {layer.order}. {layer.name}
+              </span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-background font-mono text-xs">
+                {layer.shade}
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground mb-1">
+              {layer.resin_brand} • {layer.thickness}
+            </p>
+            <div className="text-xs space-y-1 mt-2 pt-2 border-t border-border/50">
+              <p><span className="text-muted-foreground">Objetivo:</span> {layer.purpose}</p>
+              <p><span className="text-muted-foreground">Técnica:</span> {layer.technique}</p>
             </div>
           </div>
         ))}

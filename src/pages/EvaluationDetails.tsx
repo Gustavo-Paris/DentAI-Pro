@@ -214,7 +214,7 @@ export default function EvaluationDetails() {
       return (
         <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
           <CheckCircle className="w-3 h-3" />
-          Finalizado
+          <span className="hidden sm:inline">Finalizado</span>
         </span>
       );
     }
@@ -224,7 +224,7 @@ export default function EvaluationDetails() {
     
     return (
       <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
-        Planejado
+        <span className="hidden sm:inline">Planejado</span>
         {hasChecklist && (
           <span className="text-muted-foreground">({current}/{total})</span>
         )}
@@ -245,23 +245,26 @@ export default function EvaluationDetails() {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-4">
             <Link to="/dashboard">
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9">
                 <ArrowLeft className="w-4 h-4" />
               </Button>
             </Link>
-            <span className="text-xl font-semibold tracking-tight">Detalhes da Avaliação</span>
+            <span className="text-lg sm:text-xl font-semibold tracking-tight">
+              <span className="hidden sm:inline">Detalhes da Avaliação</span>
+              <span className="sm:hidden">Detalhes</span>
+            </span>
           </div>
           <Button variant="ghost" size="sm" onClick={handleSignOut}>
-            <LogOut className="w-4 h-4 mr-2" />
-            Sair
+            <LogOut className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Sair</span>
           </Button>
         </div>
       </header>
 
-      <main className="container mx-auto px-6 py-8 max-w-5xl">
+      <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-5xl">
         {loading ? (
           <div className="space-y-4">
             <Skeleton className="h-32 w-full" />
@@ -270,12 +273,12 @@ export default function EvaluationDetails() {
         ) : (
           <>
             {/* Evaluation Header */}
-            <Card className="mb-6">
-              <CardContent className="p-6">
-                <div className="flex flex-col md:flex-row gap-6">
+            <Card className="mb-4 sm:mb-6">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
                   {/* Photo Preview */}
                   {photoUrl && (
-                    <div className="w-full md:w-48 h-48 rounded-lg overflow-hidden bg-secondary flex-shrink-0">
+                    <div className="w-full md:w-32 lg:w-48 h-32 sm:h-48 rounded-lg overflow-hidden bg-secondary flex-shrink-0">
                       <img 
                         src={photoUrl} 
                         alt="Foto clínica" 
@@ -284,29 +287,35 @@ export default function EvaluationDetails() {
                     </div>
                   )}
                   {!photoUrl && (
-                    <div className="w-full md:w-48 h-48 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
-                      <ImageIcon className="w-12 h-12 text-muted-foreground" />
+                    <div className="w-full md:w-32 lg:w-48 h-32 sm:h-48 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
+                      <ImageIcon className="w-8 sm:w-12 h-8 sm:h-12 text-muted-foreground" />
                     </div>
                   )}
 
                   {/* Evaluation Info */}
                   <div className="flex-1">
-                    <h1 className="text-2xl font-semibold mb-2">{patientName}</h1>
+                    <h1 className="text-xl sm:text-2xl font-semibold mb-2">{patientName}</h1>
                     
-                    <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-4">
+                    <div className="flex flex-wrap gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
                       <div className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
-                        {evaluationDate}
+                        <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+                        <span className="hidden sm:inline">{evaluationDate}</span>
+                        <span className="sm:hidden">
+                          {evaluations[0]?.created_at 
+                            ? format(new Date(evaluations[0].created_at), "dd/MM/yyyy", { locale: ptBR })
+                            : ''
+                          }
+                        </span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <User className="w-4 h-4" />
+                        <User className="w-3 h-3 sm:w-4 sm:h-4" />
                         {evaluations.length} dente(s)
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap gap-2 mb-4">
+                    <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
                       {evaluations.map(e => (
-                        <Badge key={e.id} variant="outline">
+                        <Badge key={e.id} variant="outline" className="text-xs">
                           Dente {e.tooth}
                         </Badge>
                       ))}
@@ -327,16 +336,19 @@ export default function EvaluationDetails() {
             <div className="flex justify-end gap-2 mb-4">
               <Button 
                 variant="outline" 
+                size="sm"
                 onClick={handleMarkAllAsCompleted}
                 disabled={completedCount === evaluations.length}
+                className="text-xs sm:text-sm"
               >
-                <CheckCircle className="w-4 h-4 mr-2" />
-                Marcar todos como concluídos
+                <CheckCircle className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Marcar todos como concluídos</span>
+                <span className="sm:hidden">Concluir todos</span>
               </Button>
             </div>
 
-            {/* Cases Table */}
-            <Card>
+            {/* Cases Table - Desktop */}
+            <Card className="hidden sm:block">
               <CardHeader>
                 <CardTitle className="text-lg">Casos Gerados</CardTitle>
               </CardHeader>
@@ -417,6 +429,62 @@ export default function EvaluationDetails() {
                 </Table>
               </CardContent>
             </Card>
+
+            {/* Cases Cards - Mobile */}
+            <div className="sm:hidden space-y-3">
+              <h3 className="font-semibold text-lg">Casos Gerados</h3>
+              {evaluations.map((evaluation) => (
+                <Card key={evaluation.id} className="p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <p className="font-semibold">Dente {evaluation.tooth}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {evaluation.cavity_class} • {evaluation.restoration_size}
+                      </p>
+                    </div>
+                    {getStatusBadge(evaluation)}
+                  </div>
+                  
+                  {evaluation.resins && (
+                    <div className="mb-3 p-2 bg-muted/50 rounded">
+                      <p className="text-sm font-medium">{evaluation.resins.name}</p>
+                      <p className="text-xs text-muted-foreground">{evaluation.resins.manufacturer}</p>
+                    </div>
+                  )}
+                  
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => navigate(`/result/${evaluation.id}`)}
+                    >
+                      <Eye className="w-4 h-4 mr-1" />
+                      Ver
+                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleExportPDF(evaluation.id)}>
+                          <FileDown className="w-4 h-4 mr-2" />
+                          Exportar PDF
+                        </DropdownMenuItem>
+                        {evaluation.status !== 'completed' && canMarkAsCompleted(evaluation) && (
+                          <DropdownMenuItem onClick={() => handleMarkAsCompleted(evaluation.id)}>
+                            <CheckCircle className="w-4 h-4 mr-2" />
+                            Marcar como finalizado
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </Card>
+              ))}
+            </div>
           </>
         )}
       </main>

@@ -357,21 +357,21 @@ export default function NewCase() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center gap-4">
+        <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <Link to="/dashboard">
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9">
                 <ArrowLeft className="w-4 h-4" />
               </Button>
             </Link>
-            <span className="text-xl font-semibold tracking-tight">Novo Caso</span>
+            <span className="text-lg sm:text-xl font-semibold tracking-tight">Novo Caso</span>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-6 py-8 max-w-2xl">
+      <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-2xl">
         {/* Progress Steps */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <div className="flex justify-between mb-4">
             {steps.map((s) => (
               <div
@@ -379,11 +379,11 @@ export default function NewCase() {
                 className={`flex flex-col items-center ${step >= s.id ? 'text-foreground' : 'text-muted-foreground'}`}
               >
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-colors ${
+                  className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center mb-1 sm:mb-2 transition-colors ${
                     step >= s.id ? 'bg-primary text-primary-foreground' : 'bg-secondary'
                   }`}
                 >
-                  <s.icon className="w-5 h-5" />
+                  <s.icon className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
                 <span className="text-xs hidden sm:block">{s.name}</span>
               </div>
@@ -420,13 +420,13 @@ export default function NewCase() {
         )}
 
         {step === 4 && (
-          <div className="flex flex-col items-center justify-center py-16 space-y-6">
-            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
-              <Loader2 className="w-10 h-10 text-primary animate-spin" />
+          <div className="flex flex-col items-center justify-center py-12 sm:py-16 space-y-4 sm:space-y-6">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary/10 flex items-center justify-center">
+              <Loader2 className="w-8 h-8 sm:w-10 sm:h-10 text-primary animate-spin" />
             </div>
             <div className="text-center">
-              <h2 className="text-xl font-semibold mb-2">Gerando Caso</h2>
-              <p className="text-muted-foreground">
+              <h2 className="text-lg sm:text-xl font-semibold mb-2">Gerando Caso</h2>
+              <p className="text-sm sm:text-base text-muted-foreground">
                 A IA está criando o caso clínico personalizado...
               </p>
             </div>
@@ -435,14 +435,14 @@ export default function NewCase() {
 
         {/* Navigation */}
         {canGoBack && (
-          <div className="flex justify-between mt-8">
-            <Button variant="outline" onClick={handleBack}>
+          <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 mt-6 sm:mt-8">
+            <Button variant="outline" onClick={handleBack} className="w-full sm:w-auto">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Voltar
             </Button>
 
             {step === 3 && (
-              <Button onClick={handleSubmit} disabled={isSubmitting}>
+              <Button onClick={handleSubmit} disabled={isSubmitting} className="w-full sm:w-auto">
                 {isSubmitting ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
