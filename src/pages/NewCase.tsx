@@ -323,10 +323,10 @@ export default function NewCase() {
 
         if (aiError) throw aiError;
 
-        // Update status to completed
+        // Update status to draft (ready for checklist completion)
         await supabase
           .from('evaluations')
-          .update({ status: 'completed' })
+          .update({ status: 'draft' })
           .eq('id', evaluation.id);
       }
 
