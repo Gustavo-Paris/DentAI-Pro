@@ -50,6 +50,7 @@ export default function NewCase() {
   const [uploadedPhotoPath, setUploadedPhotoPath] = useState<string | null>(null);
   const [selectedTeeth, setSelectedTeeth] = useState<string[]>([]);
   const [dsdResult, setDsdResult] = useState<DSDResult | null>(null);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
   
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -110,6 +111,7 @@ export default function NewCase() {
 
     setStep(2);
     setIsAnalyzing(true);
+    setAnalysisError(null); // Clear any previous error
 
     try {
       // Upload to storage first
@@ -158,30 +160,45 @@ export default function NewCase() {
           }));
         }
 
-        // Move to DSD step
-        setTimeout(() => {
-          setStep(3); // DSD step
-        }, 500);
+        // Move to DSD step after successful analysis
+        setIsAnalyzing(false);
+        setStep(3); // DSD step
       } else {
         throw new Error('Análise não retornou dados');
       }
     } catch (error: any) {
       console.error('Analysis error:', error);
       
-      // Handle rate limit / payment errors
+      // Determine error message
+      let errorMessage = 'Não foi possível analisar a foto. Verifique se a imagem está nítida e tente novamente.';
+      
       if (error?.message?.includes('429') || error?.code === 'RATE_LIMITED') {
-        toast.error('Limite de requisições excedido. Aguarde alguns minutos.');
+        errorMessage = 'Limite de requisições excedido. Aguarde alguns minutos e tente novamente.';
       } else if (error?.message?.includes('402') || error?.code === 'PAYMENT_REQUIRED') {
-        toast.error('Créditos insuficientes. Adicione créditos à sua conta.');
-      } else {
-        toast.error('Erro na análise. Prosseguindo com entrada manual.');
+        errorMessage = 'Créditos insuficientes. Adicione créditos à sua conta para continuar.';
+      } else if (error?.message?.includes('não retornou dados')) {
+        errorMessage = 'A IA não conseguiu identificar estruturas dentárias na foto. Tente uma foto com melhor iluminação.';
       }
       
-      // Move to review step anyway for manual input (skip DSD)
-      setStep(4);
-    } finally {
+      // Set error state - user stays on step 2 and sees error UI
+      setAnalysisError(errorMessage);
       setIsAnalyzing(false);
+      // DO NOT advance step - let user decide to retry or skip
     }
+  };
+
+  // Retry analysis
+  const handleRetryAnalysis = () => {
+    setAnalysisError(null);
+    analyzePhoto();
+  };
+
+  // Skip to manual review
+  const handleSkipToReview = () => {
+    setAnalysisError(null);
+    setIsAnalyzing(false);
+    setStep(4);
+    toast.info('Prosseguindo com entrada manual.');
   };
 
   // Reanalyze photo (force new AI analysis)
@@ -436,7 +453,13 @@ export default function NewCase() {
         )}
 
         {step === 2 && (
-          <AnalyzingStep imageBase64={imageBase64} />
+          <AnalyzingStep 
+            imageBase64={imageBase64}
+            isAnalyzing={isAnalyzing}
+            analysisError={analysisError}
+            onRetry={handleRetryAnalysis}
+            onSkipToReview={handleSkipToReview}
+          />
         )}
 
         {step === 3 && (
