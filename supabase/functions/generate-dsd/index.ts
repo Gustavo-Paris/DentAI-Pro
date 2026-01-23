@@ -193,52 +193,62 @@ async function generateSimulation(
     
     simulationPrompt = `VOCÊ É UM EDITOR DE FOTOS ODONTOLÓGICAS ESPECIALISTA.
 
-TAREFA: Reconstruir digitalmente os dentes ausentes/danificados para mostrar o resultado pós-tratamento.
+TAREFA PRINCIPAL: Criar uma SIMULAÇÃO DO SORRISO IDEAL pós-tratamento completo.
+Esta visualização mostra como o sorriso ficará DEPOIS de TODOS os tratamentos (implantes, restaurações E clareamento).
+
+═══════════════════════════════════════════════════════════════
+PARTE 1: RECONSTRUÇÃO DOS DENTES AUSENTES/DANIFICADOS
+═══════════════════════════════════════════════════════════════
 
 DENTES A RECONSTRUIR:
 ${specificInstructions || '- Reconstruir dentes danificados usando vizinhos como referência'}
 
-INSTRUÇÕES TÉCNICAS DE RECONSTRUÇÃO:
+REGRAS DE RECONSTRUÇÃO:
+- Use o dente CONTRALATERAL (lado oposto) como referência EXATA de formato e tamanho
+- Proporção: Incisivo central largura = 75-80% da altura
+- Simetria bilateral PERFEITA
+- O dente reconstruído deve ser INDISTINGUÍVEL dos outros
 
-1. PROPORÇÃO OBRIGATÓRIA (Lei da Proporção Dental):
-   - Incisivo central: Largura = 75-80% da altura
-   - Use o dente CONTRALATERAL (do lado oposto) como referência EXATA
-   - Se reconstruindo o 11, COPIE as dimensões do 21 (espelhado)
-   - Mantenha simetria bilateral PERFEITA
+═══════════════════════════════════════════════════════════════
+PARTE 2: HARMONIZAÇÃO E CLAREAMENTO DE TODOS OS DENTES
+═══════════════════════════════════════════════════════════════
 
-2. COR E TEXTURA OBRIGATÓRIA:
-   - COPIE EXATAMENTE a cor do dente vizinho mais próximo
-   - NÃO adicione manchas, estrias, marcas ou descolorações
-   - Mantenha uniformidade de cor com os dentes existentes
-   - Aplique LEVE translucidez apenas no terço incisal (borda)
-   - Resultado deve ser LIMPO e NATURAL
+OBRIGATÓRIO PARA TODOS OS DENTES VISÍVEIS (existentes + reconstruídos):
 
-3. FORMATO ${toothShape.toUpperCase()}:
-   ${shapeInstruction}
-   - Bordas incisais definidas e naturais
-   - Ângulos correspondentes ao formato selecionado
-   - Transição suave com a gengiva
+1. REMOVA TODAS as manchas, descolorações e imperfeições
+2. UNIFORMIZE a cor para tom A2 natural (branco-amarelado suave e uniforme)
+3. HARMONIZE as bordas incisais para ficarem alinhadas
+4. APLIQUE brilho natural uniforme em todos os dentes
 
-4. POSICIONAMENTO PRECISO:
-   - Alinhe a borda incisal EXATAMENTE com os dentes vizinhos
-   - Respeite a linha do sorriso existente
-   - Centralize o dente no espaço disponível
-   - Mantenha o arco dental natural
+COR FINAL OBRIGATÓRIA:
+- TODOS os dentes devem ter a MESMA cor uniforme A2
+- NÃO pode haver nenhum dente mais amarelo ou manchado que outro
+- Translucidez leve no terço incisal
+- REMOVA COMPLETAMENTE manchas amareladas, marrons ou escuras
 
+═══════════════════════════════════════════════════════════════
+FORMATO DOS DENTES: ${toothShape.toUpperCase()}
+═══════════════════════════════════════════════════════════════
+${shapeInstruction}
+
+═══════════════════════════════════════════════════════════════
 REGRAS ABSOLUTAS (NUNCA VIOLE):
-❌ NÃO adicione manchas, estrias ou descolorações
+═══════════════════════════════════════════════════════════════
+❌ NÃO altere lábios, gengiva visível ou fundo
+❌ NÃO deixe NENHUM dente com cor diferente dos outros
+❌ NÃO deixe manchas ou descolorações em NENHUM dente
 ❌ NÃO crie texturas artificiais ou estranhas
-❌ NÃO altere a posição dos lábios
-❌ NÃO modifique a gengiva além do necessário
-❌ NÃO deixe o dente com cor diferente dos vizinhos
-✅ COPIE a cor EXATA dos dentes vizinhos
-✅ USE proporções SIMÉTRICAS com dente contralateral
-✅ MANTENHA aparência LIMPA, NATURAL e PROFISSIONAL
-✅ CRIE um dente que pareça REAL, não artificial
+
+✅ TODOS os dentes devem ter cor uniforme A2 natural
+✅ RECONSTRUA os dentes ausentes com perfeição
+✅ REMOVA todas as imperfeições de cor de TODOS os dentes
+✅ CRIE um sorriso harmonioso, LIMPO e ATRAENTE
 
 RESULTADO ESPERADO:
-Uma foto realista mostrando o sorriso COMPLETO e HARMONIOSO após o tratamento.
-O dente reconstruído deve ser INDISTINGUÍVEL dos dentes naturais do paciente.`;
+Uma foto do sorriso PERFEITO e HARMONIOSO mostrando como ficará após 
+implantes, clareamento e restaurações completas.
+Esta imagem será usada para MOTIVAR o paciente a fazer o tratamento.
+O "antes e depois" deve ser IMPRESSIONANTE.`;
   } else if (isIntraoralPhoto) {
     // INTRAORAL PROMPT: Simplified for close-up photos
     simulationPrompt = `TAREFA: Melhore sutilmente os dentes EXISTENTES nesta foto.
@@ -254,32 +264,29 @@ PRESERVE: gengiva, fundo, estruturas não-dentais.
 
 Retorne a imagem editada com dentes harmonizados.`;
   } else {
-    // STANDARD PROMPT: For normal smile photos with minor adjustments
-    simulationPrompt = `TAREFA: Editar APENAS os dentes visíveis nesta foto de sorriso.
+    // STANDARD PROMPT: For normal smile photos with harmonization
+    simulationPrompt = `TAREFA: Criar simulação do sorriso IDEAL nesta foto.
 
 REGRA ABSOLUTA #1 - MOLDURA INTOCÁVEL:
 Copie a foto original PIXEL POR PIXEL para lábios, pele, fundo.
 A única diferença permitida são os dentes.
 
-REGRA ABSOLUTA #2 - LÁBIOS FIXOS:
-Os lábios devem estar na posição IDÊNTICA à original.
-NÃO levante, mova ou altere o contorno labial.
-
-REGRA ABSOLUTA #3 - GENGIVA ORIGINAL:
-NÃO crie gengiva onde não existe na foto original.
-Modifique apenas a gengiva que JÁ É VISÍVEL.
+REGRA ABSOLUTA #2 - LÁBIOS E GENGIVA FIXOS:
+Lábios e gengiva devem estar na posição IDÊNTICA à original.
 
 FORMATO DOS DENTES - ${toothShape.toUpperCase()}:
 ${shapeInstruction}
-Aplique este formato de forma sutil e harmônica, mantendo naturalidade.
 
-EDIÇÕES PERMITIDAS NOS DENTES:
+EDIÇÕES NOS DENTES:
 ${analysis.suggestions.slice(0, 4).map((s) => `- ${s.tooth}: ${s.proposed_change}`).join("\n")}
 
-VERIFICAÇÃO FINAL:
-- Lábios na mesma posição? ✓
-- Nenhuma gengiva nova criada? ✓
-- Só os dentes foram alterados? ✓`;
+HARMONIZAÇÃO DE COR (OBRIGATÓRIO):
+- UNIFORMIZE todos os dentes para cor A2 natural
+- REMOVA manchas, descolorações e imperfeições de TODOS os dentes
+- APLIQUE brilho natural uniforme
+- Todos os dentes devem ter a MESMA cor
+
+RESULTADO: Sorriso harmonioso e atraente que motive o paciente.`;
   }
 
   console.log("DSD Simulation - Prompt length:", simulationPrompt.length, "Reconstruction:", needsReconstruction, "Intraoral:", isIntraoralPhoto);
