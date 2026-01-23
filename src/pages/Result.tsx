@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Download, Plus, CheckCircle, Image, Package, Sparkles, Layers, Loader2, Smile, Crown } from 'lucide-react';
+import { ArrowLeft, Download, Plus, CheckCircle, Image, Package, Sparkles, Layers, Loader2, Smile, Crown, Stethoscope, ArrowUpRight, CircleX } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -67,9 +67,18 @@ interface Evaluation {
   dsd_analysis: DSDAnalysis | null;
   dsd_simulation_url: string | null;
   // Porcelain fields
-  treatment_type: 'resina' | 'porcelana' | null;
+  treatment_type: 'resina' | 'porcelana' | 'coroa' | 'implante' | 'endodontia' | 'encaminhamento' | null;
   cementation_protocol: CementationProtocol | null;
   ai_treatment_indication: string | null;
+  generic_protocol: {
+    treatment_type: string;
+    tooth: string;
+    summary: string;
+    checklist: string[];
+    alerts: string[];
+    recommendations: string[];
+    ai_reason?: string;
+  } | null;
 }
 
 interface DentistProfile {
@@ -268,7 +277,7 @@ export default function Result() {
         isFromInventory: evaluation.is_from_inventory,
         
         // Porcelain data
-        treatmentType: evaluation.treatment_type || 'resina',
+        treatmentType: (evaluation.treatment_type === 'porcelana' ? 'porcelana' : 'resina') as 'resina' | 'porcelana',
         cementationProtocol: evaluation.cementation_protocol || undefined,
       });
       
@@ -315,19 +324,40 @@ export default function Result() {
   // Determine treatment type
   const treatmentType = evaluation.treatment_type || 'resina';
   const isPorcelain = treatmentType === 'porcelana';
+  const isSpecialTreatment = ['implante', 'coroa', 'endodontia', 'encaminhamento'].includes(treatmentType);
   const cementationProtocol = evaluation.cementation_protocol as CementationProtocol | null;
+  const genericProtocol = evaluation.generic_protocol;
   
   // Get protocol data from new structure (for resin)
   const protocol = evaluation.stratification_protocol;
   const layers = protocol?.layers || evaluation.protocol_layers || [];
-  const checklist = isPorcelain ? (cementationProtocol?.checklist || []) : (protocol?.checklist || []);
-  const alerts = isPorcelain ? (cementationProtocol?.alerts || []) : (evaluation.alerts || []);
+  const checklist = isPorcelain 
+    ? (cementationProtocol?.checklist || []) 
+    : isSpecialTreatment && genericProtocol
+    ? genericProtocol.checklist
+    : (protocol?.checklist || []);
+  const alerts = isPorcelain 
+    ? (cementationProtocol?.alerts || []) 
+    : isSpecialTreatment && genericProtocol
+    ? genericProtocol.alerts
+    : (evaluation.alerts || []);
   const warnings = isPorcelain ? (cementationProtocol?.warnings || []) : (evaluation.warnings || []);
   const confidence = isPorcelain ? (cementationProtocol?.confidence || "média") : (protocol?.confidence || "média");
   const protocolAlternative = protocol?.alternative;
   
   const showIdealResin = idealResin && idealResin.id !== resin?.id;
-  const hasProtocol = isPorcelain ? !!cementationProtocol : layers.length > 0;
+  const hasProtocol = isPorcelain ? !!cementationProtocol : isSpecialTreatment ? !!genericProtocol : layers.length > 0;
+
+  // Treatment type display info
+  const treatmentInfo: Record<string, { label: string; icon: any; color: string }> = {
+    resina: { label: 'Resina Composta', icon: Layers, color: 'primary' },
+    porcelana: { label: 'Facetas de Porcelana', icon: Crown, color: 'warning' },
+    coroa: { label: 'Coroa Total', icon: Crown, color: 'purple-500' },
+    implante: { label: 'Indicação de Implante', icon: CircleX, color: 'orange-500' },
+    endodontia: { label: 'Tratamento de Canal', icon: Stethoscope, color: 'rose-500' },
+    encaminhamento: { label: 'Encaminhamento', icon: ArrowUpRight, color: 'muted' },
+  };
+  const currentTreatmentInfo = treatmentInfo[treatmentType] || treatmentInfo.resina;
 
   return (
     <div className="min-h-screen bg-background print:bg-background">
@@ -383,25 +413,42 @@ export default function Result() {
         )}
 
         {/* Treatment Type Banner */}
-        {isPorcelain && (
-          <Card className="mb-6 border-warning/30 bg-warning/5">
+        {treatmentType !== 'resina' && (
+          <Card className={`mb-6 border-${currentTreatmentInfo.color}/30 bg-${currentTreatmentInfo.color}/5`}>
             <CardContent className="py-4">
               <div className="flex items-center gap-3">
-                <Crown className="w-5 h-5 text-warning" />
+                <currentTreatmentInfo.icon className={`w-5 h-5 text-${currentTreatmentInfo.color}`} />
                 <div className="flex-1">
                   <p className="text-sm font-medium">
-                    Tratamento: Facetas de Porcelana
+                    Tratamento: {currentTreatmentInfo.label}
                   </p>
-                  {evaluation.ai_treatment_indication && (
+                  {genericProtocol?.ai_reason && (
+                    <p className="text-xs text-muted-foreground">
+                      {genericProtocol.ai_reason}
+                    </p>
+                  )}
+                  {evaluation.ai_treatment_indication && !genericProtocol?.ai_reason && (
                     <p className="text-xs text-muted-foreground">
                       {evaluation.ai_treatment_indication}
                     </p>
                   )}
                 </div>
-                <Badge variant="outline" className="border-warning text-warning">
-                  Porcelana
+                <Badge variant="outline">
+                  {currentTreatmentInfo.label}
                 </Badge>
               </div>
+              
+              {/* Show recommendations for special treatments */}
+              {isSpecialTreatment && genericProtocol?.recommendations && (
+                <div className="mt-4 pt-4 border-t border-border">
+                  <p className="text-sm font-medium mb-2">Recomendações ao paciente:</p>
+                  <ul className="text-xs text-muted-foreground space-y-1">
+                    {genericProtocol.recommendations.map((rec, i) => (
+                      <li key={i}>• {rec}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}

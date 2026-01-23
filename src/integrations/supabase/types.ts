@@ -32,6 +32,7 @@ export type Database = {
           dsd_analysis: Json | null
           dsd_simulation_url: string | null
           enamel_condition: string | null
+          generic_protocol: Json | null
           has_inventory_at_creation: boolean | null
           id: string
           ideal_reason: string | null
@@ -79,6 +80,7 @@ export type Database = {
           dsd_analysis?: Json | null
           dsd_simulation_url?: string | null
           enamel_condition?: string | null
+          generic_protocol?: Json | null
           has_inventory_at_creation?: boolean | null
           id?: string
           ideal_reason?: string | null
@@ -126,6 +128,7 @@ export type Database = {
           dsd_analysis?: Json | null
           dsd_simulation_url?: string | null
           enamel_condition?: string | null
+          generic_protocol?: Json | null
           has_inventory_at_creation?: boolean | null
           id?: string
           ideal_reason?: string | null

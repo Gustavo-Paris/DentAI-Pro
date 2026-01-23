@@ -7,6 +7,9 @@ interface AnalyzePhotoRequest {
   imageType?: string; // "intraoral" | "frontal_smile" | "45_smile" | "face"
 }
 
+// Expanded treatment types
+type TreatmentIndication = "resina" | "porcelana" | "coroa" | "implante" | "endodontia" | "encaminhamento";
+
 interface DetectedTooth {
   tooth: string;
   tooth_region: string | null;
@@ -18,7 +21,7 @@ interface DetectedTooth {
   depth: string | null;
   priority: "alta" | "média" | "baixa";
   notes: string | null;
-  treatment_indication?: "resina" | "porcelana";
+  treatment_indication?: TreatmentIndication;
   indication_reason?: string;
 }
 
@@ -30,7 +33,7 @@ interface PhotoAnalysisResult {
   vita_shade: string | null;
   observations: string[];
   warnings: string[];
-  treatment_indication?: "resina" | "porcelana";
+  treatment_indication?: TreatmentIndication;
   indication_reason?: string;
 }
 
@@ -141,10 +144,10 @@ serve(async (req) => {
     // Use the validated base64 data
     const base64Image = base64Data;
 
-    // System prompt for dental photo analysis - MULTI-TOOTH + WHOLE SMILE ANALYSIS
+    // System prompt for dental photo analysis - MULTI-TOOTH + EXPANDED TREATMENT TYPES
     const systemPrompt = `Você é um especialista em odontologia restauradora e estética com 20 anos de experiência em análise de casos clínicos e planejamento de sorrisos.
 
-REGRA CRÍTICA E OBRIGATÓRIA: Você DEVE analisar o SORRISO COMO UM TODO, não apenas patologias individuais.
+REGRA CRÍTICA E OBRIGATÓRIA: Você DEVE analisar o SORRISO COMO UM TODO, identificando TODOS os tipos de tratamento necessários.
 
 ## ANÁLISE MULTI-DENTE (Problemas Restauradores)
 - Analise SISTEMATICAMENTE cada quadrante: superior-direito (Q1: 11-18), superior-esquerdo (Q2: 21-28), inferior-esquerdo (Q3: 31-38), inferior-direito (Q4: 41-48)
@@ -154,55 +157,74 @@ REGRA CRÍTICA E OBRIGATÓRIA: Você DEVE analisar o SORRISO COMO UM TODO, não 
 - Cada dente com cárie, fratura, restauração defeituosa ou lesão DEVE ser listado separadamente
 
 ## ANÁLISE DO SORRISO COMPLETO (Melhorias Estéticas)
-IMPORTANTE: Além de patologias, identifique oportunidades de melhoria estética mesmo em dentes saudáveis:
+Além de patologias, identifique oportunidades de melhoria estética mesmo em dentes saudáveis:
 - Dentes que poderiam receber VOLUME/CONTORNO para harmonizar o sorriso
 - Incisivos laterais que poderiam ser ALINHADOS ou TER PROPORÇÕES CORRIGIDAS
-- Pré-molares que poderiam receber VOLUME no terço vestibular
-- Dentes com FORMATO INADEQUADO que poderiam ser reanatomizados
 - Diastemas que poderiam ser fechados
-- Correções de LINHA MÉDIA ou SIMETRIA do sorriso
 
-Para estes casos estéticos, use prioridade "baixa" e indique no campo notes que é uma "Melhoria estética opcional".
+## TIPOS DE TRATAMENTO DISPONÍVEIS:
 
-## Para CADA dente identificado, determine:
-1. Número do dente (notação FDI: 11-18, 21-28, 31-38, 41-48)
-2. A região do dente (anterior/posterior, superior/inferior)
-3. A classificação da cavidade (Classe I, II, III, IV, V ou VI) - para melhorias estéticas use Classe IV ou V conforme apropriado
-4. O tamanho estimado da restauração necessária (Pequena, Média, Grande, Extensa)
-5. O tipo de substrato visível (Esmalte, Dentina, Esmalte e Dentina, Dentina profunda)
-6. A condição do substrato (Saudável, Esclerótico, Manchado, Cariado, Desidratado)
-7. A condição do esmalte (Íntegro, Fraturado, Hipoplásico, Fluorose, Erosão)
-8. A profundidade estimada da cavidade (Superficial, Média, Profunda)
-9. Prioridade de tratamento:
-   - "alta": cáries ativas, fraturas, dor
-   - "média": restaurações defeituosas, lesões não urgentes
-   - "baixa": melhorias estéticas opcionais
-10. INDICAÇÃO DE TRATAMENTO para cada dente:
-    - "resina": restaurações pontuais, cáries localizadas, pequenas fraturas
-    - "porcelana": escurecimento severo (canal, tetraciclina), restaurações extensas >50%, múltiplos dentes anteriores, harmonização complexa
-
-## CRITÉRIOS PARA INDICAR FACETAS DE PORCELANA:
-- Escurecimento severo por tratamento de canal ou tetraciclina
-- Restaurações extensas comprometendo >50% da estrutura dental
-- Múltiplos dentes anteriores (3+) com necessidade de harmonização estética
-- Diastemas múltiplos ou assimetrias significativas
-- Fluorose severa ou hipoplasia extensa
-- Casos onde a cor/forma do dente não pode ser corrigida apenas com resina
-
-## CRITÉRIOS PARA INDICAR RESINA COMPOSTA:
+### "resina" - Restauração direta de resina composta
 - Lesões de cárie localizadas
 - Restaurações pequenas a médias (<50% da estrutura)
 - Fechamento de diastemas simples (até 2mm)
 - Correções estéticas pontuais em 1-2 dentes
 - Fraturas parciais restauráveis
 
+### "porcelana" - Facetas/laminados cerâmicos
+- Escurecimento severo por tratamento de canal ou tetraciclina
+- Restaurações extensas comprometendo >50% da estrutura dental
+- Múltiplos dentes anteriores (3+) com necessidade de harmonização estética
+- Diastemas múltiplos ou assimetrias significativas
+- Fluorose severa ou hipoplasia extensa
+
+### "coroa" - Coroa total (metal-cerâmica ou cerâmica pura)
+- Destruição coronária 60-80% com raiz saudável
+- Pós tratamento de canal em dentes posteriores
+- Restaurações múltiplas extensas no mesmo dente
+- Dente com grande perda de estrutura mas raiz viável
+
+### "implante" - Indica necessidade de extração e implante
+- Raiz residual sem estrutura coronária viável
+- Destruição >80% da coroa clínica sem possibilidade de reabilitação
+- Lesão periapical extensa com prognóstico ruim
+- Fratura vertical de raiz
+- Reabsorção radicular avançada
+
+### "endodontia" - Tratamento de canal necessário antes de restauração
+- Escurecimento sugestivo de necrose pulpar
+- Lesão periapical visível radiograficamente
+- Exposição pulpar por cárie profunda
+- Sintomatologia de pulpite irreversível
+
+### "encaminhamento" - Caso fora do escopo (ortodontia, periodontia, etc.)
+- Problemas periodontais significativos (mobilidade, recessão severa)
+- Má-oclusão que requer ortodontia primeiro
+- Lesões suspeitas (encaminhar para biópsia)
+- Casos que requerem especialista
+
+## Para CADA dente identificado, determine:
+1. Número do dente (notação FDI: 11-18, 21-28, 31-38, 41-48)
+2. A região do dente (anterior/posterior, superior/inferior)
+3. A classificação da cavidade (Classe I, II, III, IV, V ou VI)
+4. O tamanho estimado da restauração (Pequena, Média, Grande, Extensa)
+5. O tipo de substrato visível (Esmalte, Dentina, Esmalte e Dentina, Dentina profunda)
+6. A condição do substrato (Saudável, Esclerótico, Manchado, Cariado, Desidratado)
+7. A condição do esmalte (Íntegro, Fraturado, Hipoplásico, Fluorose, Erosão)
+8. A profundidade estimada (Superficial, Média, Profunda)
+9. Prioridade de tratamento:
+   - "alta": cáries ativas, fraturas, dor, necessidade de extração/implante
+   - "média": restaurações defeituosas, lesões não urgentes, coroas
+   - "baixa": melhorias estéticas opcionais
+10. INDICAÇÃO DE TRATAMENTO: resina, porcelana, coroa, implante, endodontia, ou encaminhamento
+
 Adicionalmente, identifique:
 - A cor VITA geral da arcada (A1, A2, A3, A3.5, B1, B2, etc.)
 - O dente que deve ser tratado primeiro (primary_tooth) baseado na prioridade clínica
-- Observações sobre harmonização geral do sorriso (simetria, proporção, volume)
-- INDICAÇÃO GERAL de tratamento (resina ou porcelana) baseada no caso completo
+- Observações sobre harmonização geral do sorriso
+- INDICAÇÃO GERAL predominante do caso
 
-IMPORTANTE: Seja ABRANGENTE na detecção. Inclua tanto problemas restauradores quanto oportunidades estéticas para dar ao dentista uma visão completa do caso.`;
+IMPORTANTE: Seja ABRANGENTE na detecção. Cada dente pode ter um tipo de tratamento diferente.`;
 
     const userPrompt = `Analise esta foto e identifique TODOS os dentes que necessitam de tratamento OU que poderiam se beneficiar de melhorias estéticas.
 
@@ -305,16 +327,16 @@ Use a função analyze_dental_photo para retornar a análise estruturada complet
                     },
                     treatment_indication: {
                       type: "string",
-                      enum: ["resina", "porcelana"],
-                      description: "Indicação de tratamento: resina para restaurações pontuais, porcelana para casos complexos/estéticos"
+                      enum: ["resina", "porcelana", "coroa", "implante", "endodontia", "encaminhamento"],
+                      description: "Tipo de tratamento indicado: resina (restauração direta), porcelana (faceta/laminado), coroa (coroa total), implante (extração + implante), endodontia (canal), encaminhamento (especialista)"
                     },
                     indication_reason: {
                       type: "string",
-                      description: "Razão da indicação de tratamento",
+                      description: "Razão detalhada da indicação de tratamento",
                       nullable: true
                     }
                   },
-                  required: ["tooth", "priority"]
+                  required: ["tooth", "priority", "treatment_indication"]
                 }
               },
               primary_tooth: {
@@ -339,12 +361,12 @@ Use a função analyze_dental_photo para retornar a análise estruturada complet
               },
               treatment_indication: {
                 type: "string",
-                enum: ["resina", "porcelana"],
-                description: "Indicação GERAL de tratamento para o caso: resina para restaurações pontuais, porcelana para harmonização complexa"
+                enum: ["resina", "porcelana", "coroa", "implante", "endodontia", "encaminhamento"],
+                description: "Indicação GERAL predominante do caso (o tipo de tratamento mais relevante para a maioria dos dentes)"
               },
               indication_reason: {
                 type: "string",
-                description: "Razão detalhada da indicação de tratamento"
+                description: "Razão detalhada da indicação de tratamento predominante"
               }
             },
             required: ["detected", "confidence", "detected_teeth", "observations", "warnings"],

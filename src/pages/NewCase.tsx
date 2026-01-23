@@ -10,7 +10,7 @@ import { ArrowLeft, ArrowRight, Camera, Brain, ClipboardCheck, FileText, Loader2
 import { PhotoUploadStep } from '@/components/wizard/PhotoUploadStep';
 import { AnalyzingStep } from '@/components/wizard/AnalyzingStep';
 import { DSDStep, DSDResult, ToothShape } from '@/components/wizard/DSDStep';
-import { ReviewAnalysisStep, PhotoAnalysisResult, ReviewFormData, DetectedTooth } from '@/components/wizard/ReviewAnalysisStep';
+import { ReviewAnalysisStep, PhotoAnalysisResult, ReviewFormData, DetectedTooth, TreatmentType, TREATMENT_LABELS } from '@/components/wizard/ReviewAnalysisStep';
 
 const steps = [
   { id: 1, name: 'Foto', icon: Camera },
@@ -53,6 +53,7 @@ export default function NewCase() {
   const [dsdResult, setDsdResult] = useState<DSDResult | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [selectedToothShape, setSelectedToothShape] = useState<ToothShape | null>(null);
+  const [toothTreatments, setToothTreatments] = useState<Record<string, TreatmentType>>({});
   
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -60,18 +61,25 @@ export default function NewCase() {
   const totalSteps = 5;
   const progress = (step / totalSteps) * 100;
 
-  // Auto-select all detected teeth and sync treatment type when analysis completes
+  // Auto-select all detected teeth and initialize per-tooth treatments when analysis completes
   useEffect(() => {
     if (analysisResult?.detected_teeth && analysisResult.detected_teeth.length > 0) {
       const allTeeth = analysisResult.detected_teeth.map(t => t.tooth);
       setSelectedTeeth(allTeeth);
+      
+      // Initialize per-tooth treatments from AI indications
+      const initialTreatments: Record<string, TreatmentType> = {};
+      analysisResult.detected_teeth.forEach(t => {
+        initialTreatments[t.tooth] = t.treatment_indication || 'resina';
+      });
+      setToothTreatments(initialTreatments);
     }
     
-    // CRITICAL: Sync treatment type with AI indication
+    // CRITICAL: Sync global treatment type with AI indication (for form-level default)
     if (analysisResult?.treatment_indication) {
       setFormData(prev => ({
         ...prev,
-        treatmentType: analysisResult.treatment_indication as 'resina' | 'porcelana',
+        treatmentType: analysisResult.treatment_indication as TreatmentType,
       }));
     }
   }, [analysisResult]);
@@ -292,7 +300,17 @@ export default function NewCase() {
     return analysisResult?.detected_teeth?.find(t => t.tooth === toothNumber);
   };
 
-  // Submit the case - process all selected teeth
+  // Handler for per-tooth treatment changes
+  const handleToothTreatmentChange = (tooth: string, treatment: TreatmentType) => {
+    setToothTreatments(prev => ({ ...prev, [tooth]: treatment }));
+  };
+
+  // Get treatment type for a specific tooth
+  const getToothTreatment = (tooth: string): TreatmentType => {
+    return toothTreatments[tooth] || getToothData(tooth)?.treatment_indication || formData.treatmentType || 'resina';
+  };
+
+  // Submit the case - process all selected teeth with their individual treatment types
   const handleSubmit = async () => {
     if (!user || !validateForm()) return;
 
@@ -306,13 +324,19 @@ export default function NewCase() {
     // Generate a shared session_id for all teeth in this batch
     const sessionId = crypto.randomUUID();
 
-    // Determine treatment type from form
-    const treatmentType = formData.treatmentType || 'resina';
+    // Track treatment counts for success message
+    const treatmentCounts: Record<string, number> = {};
 
     try {
       for (const tooth of teethToProcess) {
         // Get tooth-specific data if available from AI analysis
         const toothData = getToothData(tooth);
+        
+        // CRITICAL: Get treatment type for THIS specific tooth
+        const treatmentType = getToothTreatment(tooth);
+        
+        // Track for success message
+        treatmentCounts[treatmentType] = (treatmentCounts[treatmentType] || 0) + 1;
         
         // Create evaluation record for each tooth
         const insertData = {
@@ -335,11 +359,11 @@ export default function NewCase() {
           longevity_expectation: formData.longevityExpectation,
           photo_frontal: uploadedPhotoPath,
           status: 'analyzing',
-          // CRITICAL: Save treatment type and DSD data
+          // CRITICAL: Save PER-TOOTH treatment type and DSD data
           treatment_type: treatmentType,
           desired_tooth_shape: selectedToothShape || null,
-          ai_treatment_indication: analysisResult?.treatment_indication || null,
-          ai_indication_reason: analysisResult?.indication_reason || null,
+          ai_treatment_indication: toothData?.treatment_indication || analysisResult?.treatment_indication || null,
+          ai_indication_reason: toothData?.indication_reason || analysisResult?.indication_reason || null,
           dsd_analysis: dsdResult?.analysis || null,
           dsd_simulation_url: dsdResult?.simulation_url || null,
         } as Record<string, unknown>;
@@ -353,43 +377,60 @@ export default function NewCase() {
         if (evalError) throw evalError;
         createdEvaluationIds.push(evaluation.id);
 
-        // CRITICAL: Call the correct edge function based on treatment type
-        if (treatmentType === 'porcelana') {
-          // Call recommend-cementation for porcelain veneers
-          const { error: cementError } = await supabase.functions.invoke('recommend-cementation', {
-            body: {
-              evaluationId: evaluation.id,
-              teeth: [tooth],
-              shade: formData.vitaShade,
-              ceramicType: 'Dissilicato de lítio',
-              substrate: toothData?.substrate || formData.substrate,
-              substrateCondition: toothData?.substrate_condition || formData.substrateCondition,
-            },
-          });
+        // CRITICAL: Call the correct edge function based on EACH TOOTH'S treatment type
+        switch (treatmentType) {
+          case 'porcelana':
+            // Call recommend-cementation for porcelain veneers
+            const { error: cementError } = await supabase.functions.invoke('recommend-cementation', {
+              body: {
+                evaluationId: evaluation.id,
+                teeth: [tooth],
+                shade: formData.vitaShade,
+                ceramicType: 'Dissilicato de lítio',
+                substrate: toothData?.substrate || formData.substrate,
+                substrateCondition: toothData?.substrate_condition || formData.substrateCondition,
+              },
+            });
+            if (cementError) throw cementError;
+            break;
 
-          if (cementError) throw cementError;
-        } else {
-          // Call recommend-resin for composite restorations
-          const { error: aiError } = await supabase.functions.invoke('recommend-resin', {
-            body: {
-              evaluationId: evaluation.id,
-              userId: user.id,
-              patientAge: formData.patientAge,
-              tooth: tooth,
-              region: getFullRegion(tooth),
-              cavityClass: toothData?.cavity_class || formData.cavityClass,
-              restorationSize: toothData?.restoration_size || formData.restorationSize,
-              substrate: toothData?.substrate || formData.substrate,
-              bruxism: formData.bruxism,
-              aestheticLevel: formData.aestheticLevel,
-              toothColor: formData.vitaShade,
-              stratificationNeeded: true,
-              budget: formData.budget,
-              longevityExpectation: formData.longevityExpectation,
-            },
-          });
+          case 'resina':
+            // Call recommend-resin for composite restorations
+            const { error: aiError } = await supabase.functions.invoke('recommend-resin', {
+              body: {
+                evaluationId: evaluation.id,
+                userId: user.id,
+                patientAge: formData.patientAge,
+                tooth: tooth,
+                region: getFullRegion(tooth),
+                cavityClass: toothData?.cavity_class || formData.cavityClass,
+                restorationSize: toothData?.restoration_size || formData.restorationSize,
+                substrate: toothData?.substrate || formData.substrate,
+                bruxism: formData.bruxism,
+                aestheticLevel: formData.aestheticLevel,
+                toothColor: formData.vitaShade,
+                stratificationNeeded: true,
+                budget: formData.budget,
+                longevityExpectation: formData.longevityExpectation,
+              },
+            });
+            if (aiError) throw aiError;
+            break;
 
-          if (aiError) throw aiError;
+          case 'implante':
+          case 'coroa':
+          case 'endodontia':
+          case 'encaminhamento':
+            // For these treatment types, save a generic protocol with reference checklist
+            const genericProtocol = getGenericProtocol(treatmentType, tooth, toothData);
+            await supabase
+              .from('evaluations')
+              .update({ 
+                generic_protocol: genericProtocol,
+                recommendation_text: genericProtocol.summary,
+              })
+              .eq('id', evaluation.id);
+            break;
         }
 
         // Update status to draft (ready for checklist completion)
@@ -399,9 +440,12 @@ export default function NewCase() {
           .eq('id', evaluation.id);
       }
 
-      // Success message with treatment type context
-      const treatmentLabel = treatmentType === 'porcelana' ? 'Faceta(s) de porcelana' : 'Caso(s) de resina';
-      toast.success(`${teethToProcess.length} ${treatmentLabel} gerado(s) com sucesso!`);
+      // Build success message with treatment counts
+      const treatmentMessages = Object.entries(treatmentCounts)
+        .map(([type, count]) => `${count} ${TREATMENT_LABELS[type as TreatmentType] || type}`)
+        .join(', ');
+      
+      toast.success(`Casos criados: ${treatmentMessages}`);
       navigate(`/evaluation/${sessionId}`);
     } catch (error) {
       console.error('Error:', error);
@@ -410,6 +454,111 @@ export default function NewCase() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Generate generic protocol for non-restorative treatments
+  const getGenericProtocol = (treatmentType: TreatmentType, tooth: string, toothData: DetectedTooth | undefined) => {
+    const protocols: Record<string, { summary: string; checklist: string[]; alerts: string[]; recommendations: string[] }> = {
+      implante: {
+        summary: `Dente ${tooth} indicado para extração e reabilitação com implante.`,
+        checklist: [
+          'Solicitar tomografia computadorizada cone beam',
+          'Avaliar quantidade e qualidade óssea disponível',
+          'Verificar espaço protético adequado',
+          'Avaliar condição periodontal dos dentes adjacentes',
+          'Planejar tempo de osseointegração',
+          'Discutir opções de prótese provisória',
+          'Encaminhar para cirurgião implantodontista',
+          'Agendar retorno para acompanhamento',
+        ],
+        alerts: [
+          'Avaliar contraindicações sistêmicas para cirurgia',
+          'Verificar uso de bifosfonatos ou anticoagulantes',
+          'Considerar enxerto ósseo se necessário',
+        ],
+        recommendations: [
+          'Manter higiene oral adequada',
+          'Evitar fumar durante o tratamento',
+          'Seguir orientações pré e pós-operatórias',
+        ],
+      },
+      coroa: {
+        summary: `Dente ${tooth} indicado para restauração com coroa total.`,
+        checklist: [
+          'Realizar preparo coronário seguindo princípios biomecânicos',
+          'Avaliar necessidade de núcleo/pino intrarradicular',
+          'Selecionar material da coroa (metal-cerâmica, cerâmica pura, zircônia)',
+          'Moldagem de trabalho',
+          'Confecção de provisório adequado',
+          'Prova da infraestrutura',
+          'Seleção de cor com escala VITA',
+          'Cimentação definitiva',
+          'Ajuste oclusal',
+          'Orientações de higiene',
+        ],
+        alerts: [
+          'Verificar saúde pulpar antes do preparo',
+          'Avaliar relação coroa-raiz',
+          'Considerar tratamento periodontal prévio se necessário',
+        ],
+        recommendations: [
+          'Proteger o provisório durante a espera',
+          'Evitar alimentos duros e pegajosos',
+        ],
+      },
+      endodontia: {
+        summary: `Dente ${tooth} necessita de tratamento endodôntico antes de restauração definitiva.`,
+        checklist: [
+          'Confirmar diagnóstico pulpar',
+          'Solicitar radiografia periapical',
+          'Avaliar anatomia radicular',
+          'Planejamento do acesso endodôntico',
+          'Instrumentação e irrigação dos canais',
+          'Medicação intracanal se necessário',
+          'Obturação dos canais radiculares',
+          'Radiografia de controle pós-obturação',
+          'Agendar restauração definitiva',
+          'Orientar retorno se houver dor ou inchaço',
+        ],
+        alerts: [
+          'Avaliar necessidade de retratamento',
+          'Verificar presença de lesão periapical',
+          'Considerar encaminhamento para especialista em casos complexos',
+        ],
+        recommendations: [
+          'Evitar mastigar do lado tratado até restauração definitiva',
+          'Retornar imediatamente se houver dor intensa ou inchaço',
+        ],
+      },
+      encaminhamento: {
+        summary: `Dente ${tooth} requer avaliação especializada.`,
+        checklist: [
+          'Documentar achados clínicos',
+          'Realizar radiografias necessárias',
+          'Preparar relatório para o especialista',
+          'Identificar especialidade adequada',
+          'Orientar paciente sobre próximos passos',
+          'Agendar retorno para acompanhamento',
+        ],
+        alerts: [
+          'Urgência do encaminhamento depende do diagnóstico',
+          'Manter comunicação com especialista',
+        ],
+        recommendations: [
+          'Levar exames e relatório ao especialista',
+          'Informar sobre medicamentos em uso',
+        ],
+      },
+    };
+
+    const protocol = protocols[treatmentType] || protocols.encaminhamento;
+    
+    return {
+      treatment_type: treatmentType,
+      tooth: tooth,
+      ai_reason: toothData?.indication_reason || null,
+      ...protocol,
+    };
   };
 
   // DSD handlers - capture toothShape from DSD step
@@ -517,6 +666,8 @@ export default function NewCase() {
             isReanalyzing={isReanalyzing}
             selectedTeeth={selectedTeeth}
             onSelectedTeethChange={setSelectedTeeth}
+            toothTreatments={toothTreatments}
+            onToothTreatmentChange={handleToothTreatmentChange}
           />
         )}
 
