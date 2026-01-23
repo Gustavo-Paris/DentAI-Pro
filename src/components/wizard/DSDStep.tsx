@@ -5,14 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
-import { Smile, Sparkles, Loader2, RefreshCw, ChevronRight, Lightbulb, AlertCircle, Square, Triangle, Circle, RectangleHorizontal } from 'lucide-react';
+import { Smile, Sparkles, Loader2, RefreshCw, ChevronRight, Lightbulb, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
 import { ProportionsCard } from '@/components/dsd/ProportionsCard';
 
-export type ToothShape = 'natural' | 'quadrado' | 'triangular' | 'oval' | 'retangular';
+// Tooth shape is now fixed as 'natural' - removed manual selection per market research
+const TOOTH_SHAPE = 'natural' as const;
 
 export interface DSDAnalysis {
   facial_midline: "centrada" | "desviada_esquerda" | "desviada_direita";
@@ -36,22 +35,13 @@ export interface DSDResult {
   analysis: DSDAnalysis;
   simulation_url: string | null;
   simulation_note?: string;
-  toothShape?: ToothShape;
 }
 
 interface DSDStepProps {
   imageBase64: string | null;
-  onComplete: (result: DSDResult | null, toothShape?: ToothShape) => void;
+  onComplete: (result: DSDResult | null) => void;
   onSkip: () => void;
 }
-
-const toothShapeOptions: { value: ToothShape; label: string; description: string; icon: React.ReactNode }[] = [
-  { value: 'natural', label: 'Natural', description: 'Manter características individuais', icon: <Smile className="w-5 h-5" /> },
-  { value: 'quadrado', label: 'Quadrado', description: 'Bordas retas, ângulos definidos', icon: <Square className="w-5 h-5" /> },
-  { value: 'triangular', label: 'Triangular', description: 'Convergência para cervical', icon: <Triangle className="w-5 h-5" /> },
-  { value: 'oval', label: 'Oval', description: 'Contornos arredondados', icon: <Circle className="w-5 h-5" /> },
-  { value: 'retangular', label: 'Retangular', description: 'Proporção alongada', icon: <RectangleHorizontal className="w-5 h-5" /> },
-];
 
 const analysisSteps = [
   { label: 'Detectando landmarks faciais...', duration: 2000 },
@@ -68,8 +58,6 @@ export function DSDStep({ imageBase64, onComplete, onSkip }: DSDStepProps) {
   const [error, setError] = useState<string | null>(null);
   const [simulationImageUrl, setSimulationImageUrl] = useState<string | null>(null);
   const [isRegeneratingSimulation, setIsRegeneratingSimulation] = useState(false);
-  const [selectedToothShape, setSelectedToothShape] = useState<ToothShape>('natural');
-  const [showShapeSelector, setShowShapeSelector] = useState(true);
 
   // Load signed URL for simulation
   useEffect(() => {
@@ -96,7 +84,6 @@ export function DSDStep({ imageBase64, onComplete, onSkip }: DSDStepProps) {
       return;
     }
 
-    setShowShapeSelector(false);
     setIsAnalyzing(true);
     setError(null);
     setCurrentStep(0);
@@ -113,7 +100,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip }: DSDStepProps) {
 
     try {
       const { data, error: fnError } = await supabase.functions.invoke('generate-dsd', {
-        body: { imageBase64, toothShape: selectedToothShape },
+        body: { imageBase64, toothShape: TOOTH_SHAPE },
       });
 
       clearInterval(stepInterval);
@@ -166,17 +153,9 @@ export function DSDStep({ imageBase64, onComplete, onSkip }: DSDStepProps) {
     }
   };
 
-  // Start analysis when shape is selected (not on mount anymore)
-  const handleStartAnalysis = () => {
-    if (imageBase64 && !isAnalyzing) {
-      analyzeDSD();
-    }
-  };
-
-  // Legacy: auto-start for backward compatibility
+  // Auto-start analysis when component mounts with image
   useEffect(() => {
-    // Don't auto-start - wait for user to select shape
-    if (imageBase64 && !result && !isAnalyzing && !error && !showShapeSelector) {
+    if (imageBase64 && !result && !isAnalyzing && !error) {
       analyzeDSD();
     }
   }, [imageBase64]);
@@ -185,7 +164,6 @@ export function DSDStep({ imageBase64, onComplete, onSkip }: DSDStepProps) {
     setResult(null);
     setError(null);
     setSimulationImageUrl(null);
-    setShowShapeSelector(true);
     analyzeDSD();
   };
 
@@ -200,7 +178,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip }: DSDStepProps) {
           imageBase64,
           regenerateSimulationOnly: true,
           existingAnalysis: result.analysis,
-          toothShape: selectedToothShape,
+          toothShape: TOOTH_SHAPE,
         },
       });
 
@@ -232,86 +210,8 @@ export function DSDStep({ imageBase64, onComplete, onSkip }: DSDStepProps) {
   };
 
   const handleContinue = () => {
-    onComplete(result, selectedToothShape);
+    onComplete(result);
   };
-
-  // Shape selector screen
-  if (showShapeSelector && !result && !isAnalyzing) {
-    return (
-      <div className="space-y-6">
-        <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-            <Smile className="w-8 h-8 text-primary" />
-          </div>
-          <h2 className="text-xl font-semibold mb-2">Formato dos Dentes</h2>
-          <p className="text-muted-foreground">
-            Escolha o formato desejado para a simulação do sorriso
-          </p>
-        </div>
-
-        {/* Preview Image */}
-        {imageBase64 && (
-          <Card>
-            <CardContent className="p-4">
-              <img
-                src={imageBase64}
-                alt="Foto do sorriso"
-                className="w-full rounded-lg max-h-64 object-cover"
-              />
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Shape Selection */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Selecione o Formato</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <RadioGroup
-              value={selectedToothShape}
-              onValueChange={(value) => setSelectedToothShape(value as ToothShape)}
-              className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3"
-            >
-              {toothShapeOptions.map((option) => (
-                <div key={option.value}>
-                  <RadioGroupItem
-                    value={option.value}
-                    id={`shape-${option.value}`}
-                    className="peer sr-only"
-                  />
-                  <Label
-                    htmlFor={`shape-${option.value}`}
-                    className="flex flex-col items-center justify-center p-4 border rounded-lg cursor-pointer transition-all hover:border-primary/50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5"
-                  >
-                    <div className="mb-2 text-muted-foreground peer-data-[state=checked]:text-primary">
-                      {option.icon}
-                    </div>
-                    <span className="font-medium text-sm">{option.label}</span>
-                    <span className="text-xs text-muted-foreground text-center mt-1">
-                      {option.description}
-                    </span>
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
-          </CardContent>
-        </Card>
-
-        {/* Action buttons */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Button variant="outline" onClick={onSkip} className="sm:flex-1">
-            Pular DSD
-          </Button>
-          <Button onClick={handleStartAnalysis} className="sm:flex-1">
-            <Sparkles className="w-4 h-4 mr-2" />
-            Iniciar Análise
-            <ChevronRight className="w-4 h-4 ml-2" />
-          </Button>
-        </div>
-      </div>
-    );
-  }
 
   // Loading state
   if (isAnalyzing) {
