@@ -8,15 +8,21 @@ const ALLOWED_ORIGINS = [
   "http://localhost:8080",
   "http://localhost:5173",
   "http://localhost:3000",
+  "http://127.0.0.1:8080",
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:3000",
 ];
 
 export function getCorsHeaders(req: Request): Record<string, string> {
   const origin = req.headers.get("origin") || "";
   
   // Check if origin is in allowed list
-  const isAllowed = ALLOWED_ORIGINS.some(allowed => 
-    origin === allowed || origin.endsWith(".lovable.app")
-  );
+  const isAllowed =
+    !!origin &&
+    (ALLOWED_ORIGINS.includes(origin) ||
+      origin.endsWith(".lovable.app") ||
+      // Preview domains (iframe) can be hosted under *.lovableproject.com
+      origin.endsWith(".lovableproject.com"));
   
   return {
     "Access-Control-Allow-Origin": isAllowed ? origin : ALLOWED_ORIGINS[0],
