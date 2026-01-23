@@ -28,7 +28,7 @@ const convertHeicToJpeg = async (file: File): Promise<File> => {
     const convertedBlob = await heic2any({
       blob: file,
       toType: 'image/jpeg',
-      quality: 0.85,
+      quality: 0.7, // Lower quality for smaller payload
     });
     
     // heic2any pode retornar Blob ou Blob[] - garantir que é um Blob
@@ -54,10 +54,11 @@ const readFileAsDataURL = (file: File): Promise<string> => {
 };
 
 // Compress image to reduce payload size for API calls
+// Max 1280px and quality 0.7 to ensure payloads stay under Edge Function limits
 const compressImage = async (
   file: File, 
-  maxWidth: number = 1920, 
-  quality: number = 0.8
+  maxWidth: number = 1280, 
+  quality: number = 0.7
 ): Promise<string> => {
   return new Promise((resolve, reject) => {
     const img = new Image();
