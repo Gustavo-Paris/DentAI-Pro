@@ -18,6 +18,8 @@ interface DetectedTooth {
   depth: string | null;
   priority: "alta" | "média" | "baixa";
   notes: string | null;
+  treatment_indication?: "resina" | "porcelana";
+  indication_reason?: string;
 }
 
 interface PhotoAnalysisResult {
@@ -28,6 +30,8 @@ interface PhotoAnalysisResult {
   vita_shade: string | null;
   observations: string[];
   warnings: string[];
+  treatment_indication?: "resina" | "porcelana";
+  indication_reason?: string;
 }
 
 // Validate image request data
@@ -173,11 +177,30 @@ Para estes casos estéticos, use prioridade "baixa" e indique no campo notes que
    - "alta": cáries ativas, fraturas, dor
    - "média": restaurações defeituosas, lesões não urgentes
    - "baixa": melhorias estéticas opcionais
+10. INDICAÇÃO DE TRATAMENTO para cada dente:
+    - "resina": restaurações pontuais, cáries localizadas, pequenas fraturas
+    - "porcelana": escurecimento severo (canal, tetraciclina), restaurações extensas >50%, múltiplos dentes anteriores, harmonização complexa
+
+## CRITÉRIOS PARA INDICAR FACETAS DE PORCELANA:
+- Escurecimento severo por tratamento de canal ou tetraciclina
+- Restaurações extensas comprometendo >50% da estrutura dental
+- Múltiplos dentes anteriores (3+) com necessidade de harmonização estética
+- Diastemas múltiplos ou assimetrias significativas
+- Fluorose severa ou hipoplasia extensa
+- Casos onde a cor/forma do dente não pode ser corrigida apenas com resina
+
+## CRITÉRIOS PARA INDICAR RESINA COMPOSTA:
+- Lesões de cárie localizadas
+- Restaurações pequenas a médias (<50% da estrutura)
+- Fechamento de diastemas simples (até 2mm)
+- Correções estéticas pontuais em 1-2 dentes
+- Fraturas parciais restauráveis
 
 Adicionalmente, identifique:
 - A cor VITA geral da arcada (A1, A2, A3, A3.5, B1, B2, etc.)
 - O dente que deve ser tratado primeiro (primary_tooth) baseado na prioridade clínica
 - Observações sobre harmonização geral do sorriso (simetria, proporção, volume)
+- INDICAÇÃO GERAL de tratamento (resina ou porcelana) baseada no caso completo
 
 IMPORTANTE: Seja ABRANGENTE na detecção. Inclua tanto problemas restauradores quanto oportunidades estéticas para dar ao dentista uma visão completa do caso.`;
 
@@ -279,6 +302,16 @@ Use a função analyze_dental_photo para retornar a análise estruturada complet
                       type: "string",
                       description: "Observações específicas sobre este dente",
                       nullable: true
+                    },
+                    treatment_indication: {
+                      type: "string",
+                      enum: ["resina", "porcelana"],
+                      description: "Indicação de tratamento: resina para restaurações pontuais, porcelana para casos complexos/estéticos"
+                    },
+                    indication_reason: {
+                      type: "string",
+                      description: "Razão da indicação de tratamento",
+                      nullable: true
                     }
                   },
                   required: ["tooth", "priority"]
@@ -303,6 +336,15 @@ Use a função analyze_dental_photo para retornar a análise estruturada complet
                 type: "array",
                 items: { type: "string" },
                 description: "Alertas ou pontos de atenção para o operador"
+              },
+              treatment_indication: {
+                type: "string",
+                enum: ["resina", "porcelana"],
+                description: "Indicação GERAL de tratamento para o caso: resina para restaurações pontuais, porcelana para harmonização complexa"
+              },
+              indication_reason: {
+                type: "string",
+                description: "Razão detalhada da indicação de tratamento"
               }
             },
             required: ["detected", "confidence", "detected_teeth", "observations", "warnings"],
@@ -447,6 +489,8 @@ Use a função analyze_dental_photo para retornar a análise estruturada complet
       depth: tooth.depth ?? null,
       priority: tooth.priority || "média",
       notes: tooth.notes ?? null,
+      treatment_indication: tooth.treatment_indication ?? "resina",
+      indication_reason: tooth.indication_reason ?? undefined,
     }));
 
     // Sort by priority: alta > média > baixa
@@ -461,6 +505,8 @@ Use a função analyze_dental_photo para retornar a análise estruturada complet
       vita_shade: analysisResult.vita_shade ?? null,
       observations: analysisResult.observations ?? [],
       warnings: analysisResult.warnings ?? [],
+      treatment_indication: analysisResult.treatment_indication ?? "resina",
+      indication_reason: analysisResult.indication_reason ?? undefined,
     };
 
     // Log detection results for debugging

@@ -37,6 +37,7 @@ const initialFormData: ReviewFormData = {
   budget: 'moderado',
   longevityExpectation: 'médio',
   clinicalNotes: '',
+  treatmentType: 'resina',
 };
 
 export default function NewCase() {

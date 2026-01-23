@@ -17,14 +17,18 @@ export type Database = {
       evaluations: {
         Row: {
           aesthetic_level: string
+          ai_indication_reason: string | null
+          ai_treatment_indication: string | null
           alerts: Json | null
           alternatives: Json | null
           bruxism: boolean
           budget: string
           cavity_class: string
+          cementation_protocol: Json | null
           checklist_progress: Json | null
           created_at: string
           depth: string | null
+          desired_tooth_shape: string | null
           dsd_analysis: Json | null
           dsd_simulation_url: string | null
           enamel_condition: string | null
@@ -54,19 +58,24 @@ export type Database = {
           substrate_condition: string | null
           tooth: string
           tooth_color: string
+          treatment_type: string | null
           user_id: string
           warnings: Json | null
         }
         Insert: {
           aesthetic_level: string
+          ai_indication_reason?: string | null
+          ai_treatment_indication?: string | null
           alerts?: Json | null
           alternatives?: Json | null
           bruxism?: boolean
           budget: string
           cavity_class: string
+          cementation_protocol?: Json | null
           checklist_progress?: Json | null
           created_at?: string
           depth?: string | null
+          desired_tooth_shape?: string | null
           dsd_analysis?: Json | null
           dsd_simulation_url?: string | null
           enamel_condition?: string | null
@@ -96,19 +105,24 @@ export type Database = {
           substrate_condition?: string | null
           tooth: string
           tooth_color: string
+          treatment_type?: string | null
           user_id: string
           warnings?: Json | null
         }
         Update: {
           aesthetic_level?: string
+          ai_indication_reason?: string | null
+          ai_treatment_indication?: string | null
           alerts?: Json | null
           alternatives?: Json | null
           bruxism?: boolean
           budget?: string
           cavity_class?: string
+          cementation_protocol?: Json | null
           checklist_progress?: Json | null
           created_at?: string
           depth?: string | null
+          desired_tooth_shape?: string | null
           dsd_analysis?: Json | null
           dsd_simulation_url?: string | null
           enamel_condition?: string | null
@@ -138,6 +152,7 @@ export type Database = {
           substrate_condition?: string | null
           tooth?: string
           tooth_color?: string
+          treatment_type?: string | null
           user_id?: string
           warnings?: Json | null
         }
