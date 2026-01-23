@@ -329,22 +329,25 @@ RESULTADO: Sorriso harmonioso, lábios e gengiva INALTERADOS.`;
     return null;
   };
 
-  // Generate variations in parallel
-  console.log(`Generating ${NUM_VARIATIONS} DSD variations in parallel...`);
-  const variationPromises = Array(NUM_VARIATIONS).fill(null).map((_, i) => generateSingleVariation(i));
-  const variationResults = await Promise.all(variationPromises);
+  // Generate variations in parallel using Promise.any() to return FIRST successful
+  console.log(`Generating ${NUM_VARIATIONS} DSD variations in parallel (Promise.any)...`);
   
-  // Filter successful results
-  const successfulVariations = variationResults.filter((r): r is string => r !== null);
+  const variationPromises = Array(NUM_VARIATIONS).fill(null).map(async (_, i) => {
+    const result = await generateSingleVariation(i);
+    if (!result) throw new Error(`Variation ${i} failed`);
+    return result;
+  });
   
-  if (successfulVariations.length === 0) {
-    console.warn("All simulation variations failed");
+  try {
+    // Return as soon as the FIRST variation succeeds (faster response)
+    const firstSuccessful = await Promise.any(variationPromises);
+    console.log(`DSD simulation ready (first successful variation)`);
+    return firstSuccessful;
+  } catch (aggregateError) {
+    // All variations failed
+    console.warn("All DSD simulation variations failed:", aggregateError);
     return null;
   }
-  
-  // Auto-select: return first successful variation (can add similarity scoring later)
-  console.log(`Generated ${successfulVariations.length}/${NUM_VARIATIONS} variations, selecting first`);
-  return successfulVariations[0];
 }
 
 // Analyze facial proportions

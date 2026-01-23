@@ -88,7 +88,9 @@ export function DSDStep({ imageBase64, onComplete, onSkip }: DSDStepProps) {
     loadSimulationUrl();
   }, [result?.simulation_url]);
 
-  const analyzeDSD = async () => {
+  const analyzeDSD = async (retryCount = 0) => {
+    const MAX_RETRIES = 2;
+    
     if (!imageBase64) {
       setError('Nenhuma imagem disponível para análise');
       return;
@@ -127,18 +129,40 @@ export function DSDStep({ imageBase64, onComplete, onSkip }: DSDStepProps) {
         throw new Error('Dados de análise não retornados');
       }
     } catch (err: any) {
+      clearInterval(stepInterval);
       console.error('DSD error:', err);
+      
+      // Check if it's a connection/timeout error that can be retried
+      const isConnectionError = 
+        err?.name === 'AbortError' ||
+        err?.message?.includes('Failed to fetch') ||
+        err?.message?.includes('fetch') ||
+        err?.message?.includes('timeout') ||
+        err?.message?.includes('network');
+      
+      if (isConnectionError && retryCount < MAX_RETRIES) {
+        console.log(`DSD retry ${retryCount + 1}/${MAX_RETRIES}...`);
+        toast.info(`Reconectando... (tentativa ${retryCount + 1})`);
+        setIsAnalyzing(false);
+        await new Promise(r => setTimeout(r, 2000)); // Wait 2s before retry
+        return analyzeDSD(retryCount + 1);
+      }
       
       if (err?.message?.includes('429') || err?.code === 'RATE_LIMITED') {
         setError('Limite de requisições excedido. Aguarde alguns minutos.');
       } else if (err?.message?.includes('402') || err?.code === 'PAYMENT_REQUIRED') {
         setError('Créditos insuficientes. Adicione créditos à sua conta.');
+      } else if (isConnectionError) {
+        setError('Erro de conexão. Verifique sua internet e tente novamente.');
       } else {
         setError('Não foi possível gerar a análise DSD. Você pode pular esta etapa.');
       }
+      setIsAnalyzing(false);
     } finally {
       clearInterval(stepInterval);
-      setIsAnalyzing(false);
+      if (!error) {
+        setIsAnalyzing(false);
+      }
     }
   };
 
