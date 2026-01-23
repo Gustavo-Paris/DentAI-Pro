@@ -157,10 +157,7 @@ async function generateSimulation(
   let simulationPrompt: string;
   
   if (needsReconstruction) {
-    // RECONSTRUCTION PROMPT: For cases with missing/destroyed teeth
-    // This creates a visualization of the POST-TREATMENT result
-    
-    // Extract teeth that need reconstruction
+    // RECONSTRUCTION PROMPT - MINIMALISTA
     const teethToReconstruct = analysis.suggestions
       .filter(s => {
         const issue = s.current_issue.toLowerCase();
@@ -174,11 +171,9 @@ async function generateSimulation(
                change.includes('coroa');
       });
     
-    // Generate specific instructions with contralateral reference
     const specificInstructions = teethToReconstruct.map(s => {
       const toothNum = parseInt(s.tooth);
       let contralateral = '';
-      // Calculate contralateral tooth (11 <-> 21, 12 <-> 22, etc)
       if (toothNum >= 11 && toothNum <= 18) {
         contralateral = String(toothNum + 10);
       } else if (toothNum >= 21 && toothNum <= 28) {
@@ -188,181 +183,168 @@ async function generateSimulation(
       } else if (toothNum >= 41 && toothNum <= 48) {
         contralateral = String(toothNum - 10);
       }
-      return `- Dente ${s.tooth}: COPIE formato, tamanho e cor do dente ${contralateral || 'vizinho'} (espelhado)`;
-    }).join('\n');
+      return `Dente ${s.tooth}: COPIE do ${contralateral || 'vizinho'}`;
+    }).join(', ');
     
-    simulationPrompt = `VOCÊ É UM EDITOR DE FOTOS ODONTOLÓGICAS ESPECIALISTA.
+    simulationPrompt = `TAREFA: Editar APENAS os dentes nesta foto de sorriso.
 
-TAREFA PRINCIPAL: Criar uma SIMULAÇÃO DO SORRISO IDEAL pós-tratamento completo.
-Esta visualização mostra como o sorriso ficará DEPOIS de TODOS os tratamentos (implantes, restaurações E clareamento).
+REGRA ABSOLUTA #1 - MOLDURA CONGELADA:
+Copie a foto original PIXEL POR PIXEL.
+Lábios, gengiva, pele e fundo = IDÊNTICOS à original.
+Se um pixel mostra lábio na original, deve mostrar lábio no resultado.
+NÃO levante, mova ou altere o contorno labial.
 
-═══════════════════════════════════════════════════════════════
-PARTE 1: RECONSTRUÇÃO DOS DENTES AUSENTES/DANIFICADOS
-═══════════════════════════════════════════════════════════════
+REGRA ABSOLUTA #2 - GENGIVA PROIBIDA:
+NÃO crie gengiva onde não existe na foto original.
+Se a gengiva está coberta pelo lábio, ela deve CONTINUAR coberta.
+Modifique apenas a gengiva que JÁ É VISÍVEL.
 
-DENTES A RECONSTRUIR:
-${specificInstructions || '- Reconstruir dentes danificados usando vizinhos como referência'}
+REGRA ABSOLUTA #3 - RECONSTRUÇÃO + CLAREAMENTO:
+RECONSTRUA: ${specificInstructions || 'dentes danificados usando vizinhos como referência'}
+Proporção: largura = 75-80% da altura, simetria bilateral.
 
-REGRAS DE RECONSTRUÇÃO:
-- Use o dente CONTRALATERAL (lado oposto) como referência EXATA de formato e tamanho
-- Proporção: Incisivo central largura = 75-80% da altura
-- Simetria bilateral PERFEITA
-- O dente reconstruído deve ser INDISTINGUÍVEL dos outros
-
-═══════════════════════════════════════════════════════════════
-PARTE 2: HARMONIZAÇÃO E CLAREAMENTO DE TODOS OS DENTES
-═══════════════════════════════════════════════════════════════
-
-OBRIGATÓRIO PARA TODOS OS DENTES VISÍVEIS (existentes + reconstruídos):
-
-1. REMOVA TODAS as manchas, descolorações e imperfeições
-2. UNIFORMIZE a cor para tom A2 natural (branco-amarelado suave e uniforme)
-3. HARMONIZE as bordas incisais para ficarem alinhadas
-4. APLIQUE brilho natural uniforme em todos os dentes
-
-COR FINAL OBRIGATÓRIA:
-- TODOS os dentes devem ter a MESMA cor uniforme A2
-- NÃO pode haver nenhum dente mais amarelo ou manchado que outro
-- Translucidez leve no terço incisal
-- REMOVA COMPLETAMENTE manchas amareladas, marrons ou escuras
-
-═══════════════════════════════════════════════════════════════
-FORMATO DOS DENTES: ${toothShape.toUpperCase()}
-═══════════════════════════════════════════════════════════════
-${shapeInstruction}
-
-═══════════════════════════════════════════════════════════════
-REGRAS ABSOLUTAS (NUNCA VIOLE):
-═══════════════════════════════════════════════════════════════
-❌ NÃO altere lábios, gengiva visível ou fundo
-❌ NÃO deixe NENHUM dente com cor diferente dos outros
-❌ NÃO deixe manchas ou descolorações em NENHUM dente
-❌ NÃO crie texturas artificiais ou estranhas
-
-✅ TODOS os dentes devem ter cor uniforme A2 natural
-✅ RECONSTRUA os dentes ausentes com perfeição
-✅ REMOVA todas as imperfeições de cor de TODOS os dentes
-✅ CRIE um sorriso harmonioso, LIMPO e ATRAENTE
-
-RESULTADO ESPERADO:
-Uma foto do sorriso PERFEITO e HARMONIOSO mostrando como ficará após 
-implantes, clareamento e restaurações completas.
-Esta imagem será usada para MOTIVAR o paciente a fazer o tratamento.
-O "antes e depois" deve ser IMPRESSIONANTE.`;
-  } else if (isIntraoralPhoto) {
-    // INTRAORAL PROMPT: Simplified for close-up photos
-    simulationPrompt = `TAREFA: Melhore sutilmente os dentes EXISTENTES nesta foto.
-
-EDIÇÕES PERMITIDAS nos dentes VISÍVEIS:
-- Harmonizar contorno levemente
-- Melhorar proporção sutil
-- Suavizar bordas incisais
-
-Formato desejado: ${toothShape.toUpperCase()} - ${shapeInstruction}
-
-PRESERVE: gengiva, fundo, estruturas não-dentais.
-
-Retorne a imagem editada com dentes harmonizados.`;
-  } else {
-    // STANDARD PROMPT: For normal smile photos with harmonization
-    simulationPrompt = `TAREFA: Criar simulação do sorriso IDEAL nesta foto.
-
-REGRA ABSOLUTA #1 - MOLDURA INTOCÁVEL:
-Copie a foto original PIXEL POR PIXEL para lábios, pele, fundo.
-A única diferença permitida são os dentes.
-
-REGRA ABSOLUTA #2 - LÁBIOS E GENGIVA FIXOS:
-Lábios e gengiva devem estar na posição IDÊNTICA à original.
-
-FORMATO DOS DENTES - ${toothShape.toUpperCase()}:
-${shapeInstruction}
-
-EDIÇÕES NOS DENTES:
-${analysis.suggestions.slice(0, 4).map((s) => `- ${s.tooth}: ${s.proposed_change}`).join("\n")}
-
-HARMONIZAÇÃO DE COR (OBRIGATÓRIO):
-- UNIFORMIZE todos os dentes para cor A2 natural
-- REMOVA manchas, descolorações e imperfeições de TODOS os dentes
-- APLIQUE brilho natural uniforme
+COR OBRIGATÓRIA (TODOS os dentes):
+- Tom uniforme A1/A2 (branco natural, levemente claro)
+- REMOVA todas as manchas e descolorações
 - Todos os dentes devem ter a MESMA cor
 
-RESULTADO: Sorriso harmonioso e atraente que motive o paciente.`;
+FORMATO: ${toothShape.toUpperCase()} - ${shapeInstruction}
+
+VERIFICAÇÃO FINAL:
+- Lábios na mesma posição? ✓
+- Nenhuma gengiva nova criada? ✓
+- Só os dentes foram alterados? ✓`;
+
+  } else if (isIntraoralPhoto) {
+    // INTRAORAL PROMPT - Simplificado
+    simulationPrompt = `TAREFA: Melhore SUTILMENTE os dentes nesta foto intraoral.
+
+MOLDURA CONGELADA: Não altere gengiva, fundo ou estruturas não-dentais.
+
+EDIÇÕES PERMITIDAS:
+- Uniformizar cor para A1/A2
+- Suavizar contorno levemente
+- Remover manchas visíveis
+
+FORMATO: ${toothShape.toUpperCase()} - ${shapeInstruction}
+
+Retorne a imagem com dentes harmonizados.`;
+
+  } else {
+    // STANDARD PROMPT - Minimalista
+    simulationPrompt = `TAREFA: Editar APENAS os dentes visíveis nesta foto de sorriso.
+
+REGRA ABSOLUTA #1 - MOLDURA CONGELADA:
+Copie a foto original PIXEL POR PIXEL.
+Lábios, gengiva, pele e fundo = IDÊNTICOS à original.
+NÃO altere posição ou formato dos lábios.
+
+REGRA ABSOLUTA #2 - GENGIVA/LÁBIO INTOCÁVEIS:
+NÃO crie gengiva onde não existe.
+Se o lábio cobre a gengiva, ela deve continuar coberta.
+
+EDIÇÕES PERMITIDAS nos dentes VISÍVEIS:
+${analysis.suggestions.slice(0, 4).map((s) => `- ${s.tooth}: ${s.proposed_change}`).join("\n")}
+
+COR OBRIGATÓRIA:
+- Tom uniforme A1/A2 natural
+- REMOVA manchas e descolorações
+- Todos os dentes com MESMA cor
+
+FORMATO: ${toothShape.toUpperCase()} - ${shapeInstruction}
+
+RESULTADO: Sorriso harmonioso, lábios e gengiva INALTERADOS.`;
   }
 
   console.log("DSD Simulation - Prompt length:", simulationPrompt.length, "Reconstruction:", needsReconstruction, "Intraoral:", isIntraoralPhoto);
 
-  // Models to try in order (prioritize best model for reconstruction)
-  const modelsToTry = [
-    "google/gemini-3-pro-image-preview",
-    "google/gemini-2.5-flash", // Fallback
-  ];
-
-  for (const model of modelsToTry) {
-    try {
-      console.log(`Trying simulation model: ${model}`);
-      
-      const simulationResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: model,
-          messages: [
-            {
-              role: "user",
-              content: [
-                { type: "text", text: simulationPrompt },
-                { type: "image_url", image_url: { url: imageBase64 } },
-              ],
-            },
-          ],
-          modalities: ["image", "text"],
-        }),
-      });
-
-      if (!simulationResponse.ok) {
-        console.warn(`Simulation model ${model} failed:`, simulationResponse.status);
-        continue; // Try next model
-      }
-
-      const simData = await simulationResponse.json();
-      const generatedImage = simData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-
-      if (!generatedImage) {
-        console.warn(`No image in response from ${model}`);
-        continue; // Try next model
-      }
-
-      // Upload simulation to storage
-      const base64Data = generatedImage.replace(/^data:image\/\w+;base64,/, "");
-      const binaryData = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
-      
-      const fileName = `${userId}/dsd_simulation_${Date.now()}.png`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from("dsd-simulations")
-        .upload(fileName, binaryData, {
-          contentType: "image/png",
-          upsert: true,
+  // Generate 3 variations and auto-select
+  const NUM_VARIATIONS = 3;
+  const modelsToTry = ["google/gemini-3-pro-image-preview", "google/gemini-2.5-flash-image-preview"];
+  
+  const generateSingleVariation = async (variationIndex: number): Promise<string | null> => {
+    for (const model of modelsToTry) {
+      try {
+        console.log(`Variation ${variationIndex}: Trying ${model}`);
+        
+        const simulationResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: model,
+            messages: [
+              {
+                role: "user",
+                content: [
+                  { type: "text", text: simulationPrompt },
+                  { type: "image_url", image_url: { url: imageBase64 } },
+                ],
+              },
+            ],
+            modalities: ["image", "text"],
+          }),
         });
 
-      if (uploadError) {
-        console.error("Upload error:", uploadError);
-        return null;
+        if (!simulationResponse.ok) {
+          console.warn(`Variation ${variationIndex} - ${model} failed:`, simulationResponse.status);
+          continue;
+        }
+
+        const simData = await simulationResponse.json();
+        const generatedImage = simData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+
+        if (!generatedImage) {
+          console.warn(`Variation ${variationIndex} - No image from ${model}`);
+          continue;
+        }
+
+        // Upload this variation
+        const base64Data = generatedImage.replace(/^data:image\/\w+;base64,/, "");
+        const binaryData = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
+        
+        const fileName = `${userId}/dsd_simulation_${Date.now()}_v${variationIndex}.png`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from("dsd-simulations")
+          .upload(fileName, binaryData, {
+            contentType: "image/png",
+            upsert: true,
+          });
+
+        if (uploadError) {
+          console.error(`Variation ${variationIndex} upload error:`, uploadError);
+          return null;
+        }
+
+        console.log(`Variation ${variationIndex} generated successfully with ${model}`);
+        return fileName;
+      } catch (err) {
+        console.warn(`Variation ${variationIndex} - ${model} error:`, err);
+        continue;
       }
-
-      console.log(`Simulation generated successfully with ${model}`);
-      return fileName;
-    } catch (err) {
-      console.warn(`Model ${model} error:`, err);
-      continue; // Try next model
     }
-  }
+    return null;
+  };
 
-  console.warn("All simulation models failed");
-  return null;
+  // Generate variations in parallel
+  console.log(`Generating ${NUM_VARIATIONS} DSD variations in parallel...`);
+  const variationPromises = Array(NUM_VARIATIONS).fill(null).map((_, i) => generateSingleVariation(i));
+  const variationResults = await Promise.all(variationPromises);
+  
+  // Filter successful results
+  const successfulVariations = variationResults.filter((r): r is string => r !== null);
+  
+  if (successfulVariations.length === 0) {
+    console.warn("All simulation variations failed");
+    return null;
+  }
+  
+  // Auto-select: return first successful variation (can add similarity scoring later)
+  console.log(`Generated ${successfulVariations.length}/${NUM_VARIATIONS} variations, selecting first`);
+  return successfulVariations[0];
 }
 
 // Analyze facial proportions
