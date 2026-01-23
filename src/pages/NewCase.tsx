@@ -9,7 +9,7 @@ import { ArrowLeft, ArrowRight, Camera, Brain, ClipboardCheck, FileText, Loader2
 
 import { PhotoUploadStep } from '@/components/wizard/PhotoUploadStep';
 import { AnalyzingStep } from '@/components/wizard/AnalyzingStep';
-import { DSDStep, DSDResult, ToothShape } from '@/components/wizard/DSDStep';
+import { DSDStep, DSDResult } from '@/components/wizard/DSDStep';
 import { ReviewAnalysisStep, PhotoAnalysisResult, ReviewFormData, DetectedTooth, TreatmentType, TREATMENT_LABELS } from '@/components/wizard/ReviewAnalysisStep';
 
 const steps = [
@@ -52,7 +52,7 @@ export default function NewCase() {
   const [selectedTeeth, setSelectedTeeth] = useState<string[]>([]);
   const [dsdResult, setDsdResult] = useState<DSDResult | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
-  const [selectedToothShape, setSelectedToothShape] = useState<ToothShape | null>(null);
+  // Removed tooth shape selection - now uses 'natural' as default internally
   const [toothTreatments, setToothTreatments] = useState<Record<string, TreatmentType>>({});
   
   const { user } = useAuth();
@@ -361,7 +361,7 @@ export default function NewCase() {
           status: 'analyzing',
           // CRITICAL: Save PER-TOOTH treatment type and DSD data
           treatment_type: treatmentType,
-          desired_tooth_shape: selectedToothShape || null,
+          desired_tooth_shape: 'natural', // Fixed default - removed manual selection
           ai_treatment_indication: toothData?.treatment_indication || analysisResult?.treatment_indication || null,
           ai_indication_reason: toothData?.indication_reason || analysisResult?.indication_reason || null,
           dsd_analysis: dsdResult?.analysis || null,
@@ -561,18 +561,14 @@ export default function NewCase() {
     };
   };
 
-  // DSD handlers - capture toothShape from DSD step
-  const handleDSDComplete = (result: DSDResult | null, toothShape?: ToothShape) => {
+  // DSD handlers - simplified (tooth shape is now automatic)
+  const handleDSDComplete = (result: DSDResult | null) => {
     setDsdResult(result);
-    if (toothShape) {
-      setSelectedToothShape(toothShape);
-    }
     setStep(4); // Move to review
   };
 
   const handleDSDSkip = () => {
     setDsdResult(null);
-    setSelectedToothShape(null);
     setStep(4); // Move to review
   };
 
