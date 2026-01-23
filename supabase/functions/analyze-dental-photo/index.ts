@@ -419,11 +419,14 @@ Use a função analyze_dental_photo para retornar a análise estruturada complet
       if (!response.ok) {
         console.error(`AI API error (${model}):`, response.status);
 
+        // For 429 and 402, return null to try next model instead of throwing immediately
         if (response.status === 429) {
-          throw { status: 429, message: "Rate limited" };
+          console.log(`Model ${model} rate limited, trying next model...`);
+          return null;
         }
         if (response.status === 402) {
-          throw { status: 402, message: "Payment required" };
+          console.log(`Model ${model} payment required, trying next model...`);
+          return null;
         }
         return null;
       }
@@ -470,8 +473,9 @@ Use a função analyze_dental_photo para retornar a análise estruturada complet
 
     // Try models in order of reliability for tool calling
     const modelsToTry = [
-      "google/gemini-3-flash-preview",  // Fast, good at tool calling
-      "google/gemini-2.5-flash",         // Reliable fallback
+      "google/gemini-2.5-flash",         // Most reliable, good balance
+      "google/gemini-3-flash-preview",   // Fast, good at tool calling
+      "openai/gpt-5-mini",               // Strong fallback
     ];
 
     let analysisResult: PhotoAnalysisResult | null = null;
