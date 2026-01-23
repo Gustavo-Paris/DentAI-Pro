@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Camera, Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import heic2any from 'heic2any';
 
 interface PhotoUploadStepProps {
   imageBase64: string | null;
@@ -10,6 +11,37 @@ interface PhotoUploadStepProps {
   onAnalyze: () => void;
   isUploading: boolean;
 }
+
+// Detecção robusta de HEIC (Safari iOS pode retornar type vazio)
+const isHeicFile = (file: File): boolean => {
+  const typeIsHeic = file.type === 'image/heic' || file.type === 'image/heif';
+  const nameIsHeic = /\.(heic|heif)$/i.test(file.name);
+  const typeIsEmpty = file.type === '' || file.type === 'application/octet-stream';
+  
+  // Se tipo é HEIC, ou se tipo está vazio/genérico E nome termina em .heic/.heif
+  return typeIsHeic || (typeIsEmpty && nameIsHeic);
+};
+
+// Converter HEIC para JPEG usando heic2any
+const convertHeicToJpeg = async (file: File): Promise<File> => {
+  try {
+    const convertedBlob = await heic2any({
+      blob: file,
+      toType: 'image/jpeg',
+      quality: 0.85,
+    });
+    
+    // heic2any pode retornar Blob ou Blob[] - garantir que é um Blob
+    const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+    
+    // Criar novo File com extensão .jpg
+    const newFileName = file.name.replace(/\.(heic|heif)$/i, '.jpg');
+    return new File([blob], newFileName, { type: 'image/jpeg' });
+  } catch (error) {
+    console.error('HEIC conversion failed:', error);
+    throw error;
+  }
+};
 
 // Read file as base64 without compression (fallback for problematic formats)
 const readFileAsDataURL = (file: File): Promise<string> => {
@@ -118,7 +150,8 @@ export function PhotoUploadStep({
   const showCameraButton = isMobileDevice || isSmallScreen;
 
   const handleFile = useCallback(async (file: File) => {
-    if (!file.type.startsWith('image/')) {
+    // Validação de tipo - aceitar imagens E arquivos sem tipo (HEIC no Safari)
+    if (!file.type.startsWith('image/') && file.type !== '' && file.type !== 'application/octet-stream') {
       toast.error('Apenas imagens são permitidas');
       return;
     }
@@ -129,33 +162,31 @@ export function PhotoUploadStep({
     }
 
     setIsCompressing(true);
-    
-    // HEIC/HEIF não é suportado pelo Canvas - usar fallback direto
-    const isHEIC = file.type === 'image/heic' || 
-                   file.type === 'image/heif' || 
-                   file.name.toLowerCase().endsWith('.heic') ||
-                   file.name.toLowerCase().endsWith('.heif');
 
     try {
-      if (isHEIC) {
-        // Pular compressão para HEIC (formato Apple)
-        const base64 = await readFileAsDataURL(file);
-        onImageChange(base64);
-      } else {
-        const compressedBase64 = await compressImage(file);
-        onImageChange(compressedBase64);
-      }
-    } catch (error) {
-      console.warn('Compression failed, using fallback:', error);
+      let processedFile = file;
       
-      // Fallback: usar FileReader para imagem original
+      // Converter HEIC para JPEG primeiro
+      if (isHeicFile(file)) {
+        toast.info('Convertendo foto do iPhone...');
+        processedFile = await convertHeicToJpeg(file);
+      }
+      
+      // Agora comprimir o JPEG resultante
+      const compressedBase64 = await compressImage(processedFile);
+      onImageChange(compressedBase64);
+      
+    } catch (error) {
+      console.warn('Processing failed:', error);
+      
+      // Fallback: tentar ler original (pode não funcionar para HEIC)
       try {
         const base64 = await readFileAsDataURL(file);
         onImageChange(base64);
-        toast.info('Imagem carregada sem compressão');
+        toast.info('Imagem carregada sem conversão');
       } catch (fallbackError) {
         console.error('Fallback also failed:', fallbackError);
-        toast.error('Erro ao processar imagem. Tente outro formato (JPG ou PNG).');
+        toast.error('Erro ao processar imagem. Tente enviar como JPG ou PNG.');
       }
     } finally {
       setIsCompressing(false);
