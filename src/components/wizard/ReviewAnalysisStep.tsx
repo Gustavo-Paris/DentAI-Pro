@@ -20,7 +20,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { AlertTriangle, Check, Info, Sparkles, CircleDot, RefreshCw, Loader2, Plus, Wrench, Wand2, Crown } from 'lucide-react';
+import { AlertTriangle, Check, Info, Sparkles, CircleDot, RefreshCw, Loader2, Plus, Wrench, Wand2, Crown, Stethoscope, CircleX, ArrowUpRight } from 'lucide-react';
+
+// Expanded treatment types
+export type TreatmentType = 'resina' | 'porcelana' | 'coroa' | 'implante' | 'endodontia' | 'encaminhamento';
 
 // Multi-tooth detection structure
 export interface DetectedTooth {
@@ -34,7 +37,7 @@ export interface DetectedTooth {
   depth: string | null;
   priority: "alta" | "média" | "baixa";
   notes: string | null;
-  treatment_indication?: "resina" | "porcelana";
+  treatment_indication?: TreatmentType;
   indication_reason?: string;
 }
 
@@ -46,11 +49,28 @@ export interface PhotoAnalysisResult {
   vita_shade: string | null;
   observations: string[];
   warnings: string[];
-  treatment_indication?: "resina" | "porcelana";
+  treatment_indication?: TreatmentType;
   indication_reason?: string;
 }
 
-export type TreatmentType = 'resina' | 'porcelana';
+// Treatment type labels and icons mapping
+export const TREATMENT_LABELS: Record<TreatmentType, string> = {
+  resina: 'Resina Composta',
+  porcelana: 'Faceta de Porcelana',
+  coroa: 'Coroa Total',
+  implante: 'Implante',
+  endodontia: 'Tratamento de Canal',
+  encaminhamento: 'Encaminhamento',
+};
+
+export const TREATMENT_DESCRIPTIONS: Record<TreatmentType, string> = {
+  resina: 'Protocolo de estratificação',
+  porcelana: 'Protocolo de cimentação',
+  coroa: 'Protocolo de preparo e cimentação',
+  implante: 'Checklist de avaliação para implante',
+  endodontia: 'Tratamento endodôntico necessário',
+  encaminhamento: 'Encaminhamento para especialista',
+};
 
 export interface ReviewFormData {
   patientName: string;
@@ -82,7 +102,35 @@ interface ReviewAnalysisStepProps {
   isReanalyzing?: boolean;
   selectedTeeth?: string[];
   onSelectedTeethChange?: (teeth: string[]) => void;
+  toothTreatments?: Record<string, TreatmentType>;
+  onToothTreatmentChange?: (tooth: string, treatment: TreatmentType) => void;
 }
+
+// Get icon for treatment type
+const getTreatmentIcon = (treatment: TreatmentType) => {
+  switch (treatment) {
+    case 'resina': return Wrench;
+    case 'porcelana': return Crown;
+    case 'coroa': return Crown;
+    case 'implante': return CircleX;
+    case 'endodontia': return Stethoscope;
+    case 'encaminhamento': return ArrowUpRight;
+    default: return Wrench;
+  }
+};
+
+// Get style for treatment type
+const getTreatmentStyle = (treatment: TreatmentType) => {
+  switch (treatment) {
+    case 'resina': return 'border-primary/50 bg-primary/5';
+    case 'porcelana': return 'border-warning/50 bg-warning/5';
+    case 'coroa': return 'border-purple-500/50 bg-purple-50 dark:bg-purple-950/20';
+    case 'implante': return 'border-orange-500/50 bg-orange-50 dark:bg-orange-950/20';
+    case 'endodontia': return 'border-rose-500/50 bg-rose-50 dark:bg-rose-950/20';
+    case 'encaminhamento': return 'border-muted bg-muted/20';
+    default: return '';
+  }
+};
 
 const TEETH = {
   upper: ['18', '17', '16', '15', '14', '13', '12', '11', '21', '22', '23', '24', '25', '26', '27', '28'],
@@ -105,6 +153,8 @@ export function ReviewAnalysisStep({
   isReanalyzing = false,
   selectedTeeth = [],
   onSelectedTeethChange,
+  toothTreatments = {},
+  onToothTreatmentChange,
 }: ReviewAnalysisStepProps) {
   const [showManualAdd, setShowManualAdd] = useState(false);
   const [manualTooth, setManualTooth] = useState('');
@@ -390,7 +440,7 @@ export function ReviewAnalysisStep({
                           className="mt-1"
                         />
                         <div className="flex-1">
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-between mb-2">
                             <span className="font-semibold">Dente {tooth.tooth}</span>
                             <Badge 
                               variant={tooth.priority === 'alta' ? 'destructive' : 'outline'}
@@ -399,12 +449,39 @@ export function ReviewAnalysisStep({
                               {tooth.priority}
                             </Badge>
                           </div>
-                          <div className="text-xs text-muted-foreground mt-1">
+                          <div className="text-xs text-muted-foreground mb-2">
                             {tooth.cavity_class && <span>{tooth.cavity_class}</span>}
                             {tooth.restoration_size && <span> • {tooth.restoration_size}</span>}
                             {tooth.depth && <span> • {tooth.depth}</span>}
                           </div>
-                          {tooth.notes && (
+                          
+                          {/* Per-tooth treatment selector */}
+                          {isSelected && onToothTreatmentChange && (
+                            <Select
+                              value={toothTreatments[tooth.tooth] || tooth.treatment_indication || 'resina'}
+                              onValueChange={(value) => onToothTreatmentChange(tooth.tooth, value as TreatmentType)}
+                            >
+                              <SelectTrigger className="h-8 text-xs">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="resina">🔧 Resina Composta</SelectItem>
+                                <SelectItem value="porcelana">👑 Faceta de Porcelana</SelectItem>
+                                <SelectItem value="coroa">💎 Coroa Total</SelectItem>
+                                <SelectItem value="implante">🦷 Implante</SelectItem>
+                                <SelectItem value="endodontia">🩺 Tratamento de Canal</SelectItem>
+                                <SelectItem value="encaminhamento">↗️ Encaminhamento</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          )}
+                          
+                          {/* Treatment indication from AI */}
+                          {tooth.indication_reason && (
+                            <p className="text-xs text-muted-foreground mt-2 italic">
+                              IA: {tooth.indication_reason}
+                            </p>
+                          )}
+                          {tooth.notes && !tooth.indication_reason && (
                             <p className="text-xs text-muted-foreground mt-1 italic">{tooth.notes}</p>
                           )}
                         </div>
@@ -432,7 +509,7 @@ export function ReviewAnalysisStep({
                     return (
                       <div
                         key={`aesthetic-${tooth.tooth}-${index}`}
-                        className={`flex items-start gap-3 p-3 border border-dashed rounded-lg cursor-pointer transition-colors ${
+                        className={`flex items-start gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
                           isSelected ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
                         }`}
                         onClick={() => handleToggleTooth(tooth.tooth, !isSelected)}
@@ -443,18 +520,36 @@ export function ReviewAnalysisStep({
                           className="mt-1"
                         />
                         <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-1">
-                              <Sparkles className="w-3 h-3 text-primary" />
-                              <span className="font-semibold">Dente {tooth.tooth}</span>
-                            </div>
-                            <Badge variant="secondary" className="text-xs">
-                              estético
-                            </Badge>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-semibold">Dente {tooth.tooth}</span>
+                            <Badge variant="secondary" className="text-xs">estética</Badge>
                           </div>
-                          <div className="text-xs text-muted-foreground mt-1">
-                            {tooth.notes || 'Melhoria estética sugerida'}
+                          <div className="text-xs text-muted-foreground mb-2">
+                            {tooth.notes || 'Melhoria estética opcional'}
                           </div>
+                          
+                          {/* Per-tooth treatment selector for aesthetic */}
+                          {isSelected && onToothTreatmentChange && (
+                            <Select
+                              value={toothTreatments[tooth.tooth] || tooth.treatment_indication || 'resina'}
+                              onValueChange={(value) => onToothTreatmentChange(tooth.tooth, value as TreatmentType)}
+                            >
+                              <SelectTrigger className="h-8 text-xs">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="resina">🔧 Resina Composta</SelectItem>
+                                <SelectItem value="porcelana">👑 Faceta de Porcelana</SelectItem>
+                                <SelectItem value="coroa">💎 Coroa Total</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          )}
+                          
+                          {tooth.indication_reason && (
+                            <p className="text-xs text-muted-foreground mt-2 italic">
+                              IA: {tooth.indication_reason}
+                            </p>
+                          )}
                         </div>
                       </div>
                     );
