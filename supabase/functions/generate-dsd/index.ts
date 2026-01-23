@@ -69,21 +69,43 @@ async function generateSimulation(
   supabase: any,
   apiKey: string
 ): Promise<string | null> {
-  const simulationPrompt = `Baseado na análise DSD, edite esta foto do sorriso para mostrar uma SIMULAÇÃO do resultado ideal:
+  const simulationPrompt = `Você é um especialista em Digital Smile Design (DSD) e Mock-up Digital.
+Edite SUTILMENTE esta foto para simular o resultado de tratamentos RESTAURADORES estéticos.
 
-MODIFICAÇÕES A APLICAR:
+⚠️ REGRAS ABSOLUTAS - NUNCA VIOLAR:
+
+1. **APENAS ADIÇÃO**: Na odontologia estética restauradora (facetas, lentes de contato, coroas), 
+   só podemos ADICIONAR material aos dentes. NUNCA diminuir, encurtar ou afinar dentes.
+
+2. **GENGIVA INTOCÁVEL**: A linha gengival deve permanecer EXATAMENTE igual à foto original.
+   NÃO cresça, diminua ou modifique a gengiva de forma alguma.
+
+3. **PRESERVAR ANATOMIA**: Mantenha a forma básica e proporção de cada dente.
+   Você pode: clarear, aumentar levemente (extensão incisal), fechar diastemas.
+   NUNCA: reduzir largura, encurtar comprimento, mudar formato drasticamente.
+
+4. **TECIDOS MOLES INTACTOS**: Lábios, pele, pelos faciais devem ser IDÊNTICOS à original.
+
+5. **MUDANÇAS SUTIS**: As modificações devem ser sutis e naturais, não transformações dramáticas.
+
+MODIFICAÇÕES PERMITIDAS (baseadas na análise):
 ${analysis.suggestions.map((s) => `- Dente ${s.tooth}: ${s.proposed_change}`).join("\n")}
 
-DIRETRIZES:
-- Mantenha a naturalidade do sorriso
-- Melhore a simetria dental
-- Aplique proporção dourada aos incisivos
-- Mantenha características pessoais do paciente
-- Resultado deve parecer natural, não artificial
-- NÃO mude a cor da pele ou características faciais
-- Foque APENAS nos dentes e sorriso
+TIPO DE MODIFICAÇÕES REALISTAS:
+✅ Clareamento dental
+✅ Extensão do bordo incisal (deixar dente mais longo)
+✅ Fechamento de diastemas (espaços entre dentes)
+✅ Correção de forma por ADIÇÃO (deixar mais largo, mais arredondado)
+✅ Harmonização de altura entre dentes
 
-Crie uma visualização realista do resultado do tratamento estético dental.`;
+❌ PROIBIDO:
+❌ Diminuir tamanho de qualquer dente
+❌ Modificar gengiva
+❌ Alterar lábios ou pele
+❌ Mudar cor da pele ou características faciais
+❌ Transformações dramáticas
+
+Crie uma simulação SUTIL e REALISTA que um dentista poderia entregar com facetas de resina ou cerâmica.`;
 
   const simulationResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
@@ -158,20 +180,28 @@ ANÁLISE OBRIGATÓRIA:
 6. **Proporção Dourada**: Calcule a conformidade com a proporção áurea (0-100%)
 7. **Simetria**: Avalie a simetria geral do sorriso (0-100%)
 
-SUGESTÕES:
-Para cada dente que poderia ser melhorado esteticamente, forneça:
+SUGESTÕES - APENAS TRATAMENTOS ADITIVOS:
+Para cada dente que poderia ser melhorado, forneça APENAS mudanças possíveis com restaurações aditivas:
 - Número do dente (notação universal: 11-48)
 - Problema atual identificado
-- Mudança proposta para harmonização
+- Mudança proposta (APENAS ADITIVA)
+
+REGRAS PARA SUGESTÕES:
+✅ PERMITIDO: aumentar comprimento, fechar espaços, harmonizar por adição, clarear
+❌ PROIBIDO: diminuir, encurtar, afinar, reduzir largura de dentes
+
+Exemplo BOM: "Aumentar bordo incisal do 21 em 1mm para harmonizar com 11"
+Exemplo RUIM: "Diminuir largura do 12 para proporção dourada" - NÃO USAR
 
 OBSERVAÇÕES:
-Inclua observações gerais sobre o sorriso e recomendações de tratamento.
+Inclua observações gerais sobre o sorriso e recomendações de tratamento ADITIVO.
 
 IMPORTANTE:
 - Seja objetivo e clínico
 - Base suas análises em princípios de DSD estabelecidos
-- Considere a proporção dourada (1:0.618)
-- Avalie tanto a estética quanto a função`;
+- Considere a proporção dourada (1:0.618) mas NUNCA sugira reduzir dentes
+- Avalie tanto a estética quanto a função
+- TODAS as sugestões devem ser realizáveis com facetas/lentes de contato/coroas`;
 
   const analysisResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
