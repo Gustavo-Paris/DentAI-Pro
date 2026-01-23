@@ -552,16 +552,20 @@ export default function Result() {
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {photoUrls.frontal && (
-                <div className="relative aspect-square rounded-lg overflow-hidden bg-secondary border-2 border-primary/30">
+                <div className="relative aspect-square rounded-lg overflow-hidden bg-secondary ring-2 ring-primary ring-offset-2 ring-offset-background">
                   <img
                     src={photoUrls.frontal}
                     alt="Foto Clínica"
                     className="w-full h-full object-cover"
                   />
-                  {/* Tooth indicator overlay */}
-                  <div className="absolute bottom-2 left-2 bg-foreground/80 text-background px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1">
-                    <MapPin className="w-3 h-3" />
-                    Dente {evaluation.tooth}
+                  {/* Prominent tooth indicator overlay */}
+                  <div className="absolute top-2 left-2 right-2">
+                    <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold shadow-lg ${currentTreatmentStyle.bgClass} ${currentTreatmentStyle.borderClass} border backdrop-blur-sm`}>
+                      <div className={`p-1 rounded-full ${currentTreatmentStyle.iconClass} bg-background/80`}>
+                        <MapPin className="w-4 h-4" />
+                      </div>
+                      <span className="text-foreground">Dente {evaluation.tooth}</span>
+                    </div>
                   </div>
                 </div>
               )}
