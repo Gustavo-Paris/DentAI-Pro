@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { LogOut, Plus, FileText, Calendar, Package, ChevronRight, User } from 'lucide-react';
+import { LogOut, Plus, FileText, Calendar, Package, ChevronRight, Search } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -150,6 +150,23 @@ export default function Dashboard() {
         <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
           <span className="text-lg sm:text-xl font-semibold tracking-tight">ResinMatch AI</span>
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                const event = new KeyboardEvent('keydown', {
+                  key: 'k',
+                  metaKey: true,
+                  bubbles: true,
+                });
+                document.dispatchEvent(event);
+              }}
+              className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground bg-secondary/50 hover:bg-secondary rounded-md border border-border transition-colors"
+            >
+              <Search className="w-4 h-4" />
+              <span>Buscar...</span>
+              <kbd className="ml-1 px-1.5 py-0.5 text-xs bg-background rounded border border-border">
+                ⌘K
+              </kbd>
+            </button>
             <Link to="/profile">
               <Avatar className="w-8 h-8 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all">
                 <AvatarImage src={avatarUrl || undefined} alt={profile?.full_name || 'Avatar'} />
