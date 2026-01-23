@@ -83,6 +83,8 @@ export interface PDFData {
   createdAt: string;
   dentistName?: string;
   dentistCRO?: string;
+  clinicName?: string;
+  clinicLogo?: string; // base64
   patientName?: string;
   patientAge: number;
   tooth: string;

@@ -5,6 +5,26 @@ import type { PDFData } from '@/types/protocol';
 
 export type { PDFData };
 
+// Helper to sanitize text for PDF (remove accents for helvetica font compatibility)
+const sanitizeText = (text: string | null | undefined): string => {
+  if (!text) return '';
+  const charMap: Record<string, string> = {
+    'á': 'a', 'à': 'a', 'ã': 'a', 'â': 'a', 'ä': 'a',
+    'é': 'e', 'è': 'e', 'ê': 'e', 'ë': 'e',
+    'í': 'i', 'ì': 'i', 'î': 'i', 'ï': 'i',
+    'ó': 'o', 'ò': 'o', 'õ': 'o', 'ô': 'o', 'ö': 'o',
+    'ú': 'u', 'ù': 'u', 'û': 'u', 'ü': 'u',
+    'ç': 'c', 'ñ': 'n',
+    'Á': 'A', 'À': 'A', 'Ã': 'A', 'Â': 'A', 'Ä': 'A',
+    'É': 'E', 'È': 'E', 'Ê': 'E', 'Ë': 'E',
+    'Í': 'I', 'Ì': 'I', 'Î': 'I', 'Ï': 'I',
+    'Ó': 'O', 'Ò': 'O', 'Õ': 'O', 'Ô': 'O', 'Ö': 'O',
+    'Ú': 'U', 'Ù': 'U', 'Û': 'U', 'Ü': 'U',
+    'Ç': 'C', 'Ñ': 'N',
+  };
+  return text.split('').map(char => charMap[char] || char).join('');
+};
+
 // Helper to convert image URL to base64
 const imageToBase64 = async (url: string): Promise<string | null> => {
   try {
@@ -109,9 +129,25 @@ export async function generateProtocolPDF(data: PDFData): Promise<void> {
   pdf.setFillColor(59, 130, 246);
   pdf.rect(0, 35, pageWidth, 3, 'F');
   
-  // Title and subtitle
-  addText('ResinMatch AI', margin, 14, { fontSize: 20, fontStyle: 'bold', color: [255, 255, 255] });
-  addText('Protocolo de Restauracao Estetica', margin, 22, { fontSize: 11, color: [191, 219, 254] });
+  // Clinic logo on left (if available)
+  let headerTextStartX = margin;
+  if (data.clinicLogo) {
+    try {
+      pdf.addImage(data.clinicLogo, 'PNG', margin, 6, 26, 26);
+      headerTextStartX = margin + 30;
+    } catch (e) {
+      console.warn('Could not add clinic logo to PDF:', e);
+    }
+  }
+  
+  // Title and subtitle (adjusted for logo)
+  if (data.clinicName) {
+    addText(sanitizeText(data.clinicName), headerTextStartX, 12, { fontSize: 14, fontStyle: 'bold', color: [255, 255, 255] });
+    addText('ResinMatch AI - Protocolo de Restauracao Estetica', headerTextStartX, 20, { fontSize: 9, color: [191, 219, 254] });
+  } else {
+    addText('ResinMatch AI', headerTextStartX, 14, { fontSize: 20, fontStyle: 'bold', color: [255, 255, 255] });
+    addText('Protocolo de Restauracao Estetica', headerTextStartX, 22, { fontSize: 11, color: [191, 219, 254] });
+  }
   
   // Date and professional info on right
   const dateStr = format(new Date(data.createdAt), "dd/MM/yyyy", { locale: ptBR });
@@ -121,12 +157,12 @@ export async function generateProtocolPDF(data: PDFData): Promise<void> {
   
   if (data.dentistName) {
     pdf.setFontSize(10);
-    pdf.text(data.dentistName, pageWidth - margin, 21, { align: 'right' });
+    pdf.text(sanitizeText(data.dentistName), pageWidth - margin, 21, { align: 'right' });
   }
   if (data.dentistCRO) {
     pdf.setFontSize(9);
     pdf.setTextColor(191, 219, 254);
-    pdf.text(`CRO: ${data.dentistCRO}`, pageWidth - margin, 28, { align: 'right' });
+    pdf.text(`CRO: ${sanitizeText(data.dentistCRO)}`, pageWidth - margin, 28, { align: 'right' });
   }
 
   y = 48;
