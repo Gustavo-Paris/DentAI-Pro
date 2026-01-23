@@ -69,43 +69,62 @@ async function generateSimulation(
   supabase: any,
   apiKey: string
 ): Promise<string | null> {
-  const simulationPrompt = `Você é um especialista em Digital Smile Design (DSD) e Mock-up Digital.
-Edite SUTILMENTE esta foto para simular o resultado de tratamentos RESTAURADORES estéticos.
+  const simulationPrompt = `Você é um especialista em Digital Smile Design (DSD) e Mock-up Digital para visualização de tratamentos com LENTES DE CONTATO DENTAL e FACETAS.
 
-⚠️ REGRAS ABSOLUTAS - NUNCA VIOLAR:
+OBJETIVO: Criar uma simulação FOTORREALISTA de como ficaria o sorriso após tratamento com lentes de contato dental. A imagem deve parecer uma FOTO REAL de um caso finalizado, não um render digital.
 
-1. **APENAS ADIÇÃO**: Na odontologia estética restauradora (facetas, lentes de contato, coroas), 
-   só podemos ADICIONAR material aos dentes. NUNCA diminuir, encurtar ou afinar dentes.
+⚠️ REGRAS DE PRESERVAÇÃO ABSOLUTA:
 
-2. **GENGIVA INTOCÁVEL**: A linha gengival deve permanecer EXATAMENTE igual à foto original.
-   NÃO cresça, diminua ou modifique a gengiva de forma alguma.
+1. **GENGIVA 100% IDÊNTICA**: Não altere NADA da gengiva. Cada pixel da gengiva deve ser exatamente igual à foto original. Zero modificações.
 
-3. **PRESERVAR ANATOMIA**: Mantenha a forma básica e proporção de cada dente.
-   Você pode: clarear, aumentar levemente (extensão incisal), fechar diastemas.
-   NUNCA: reduzir largura, encurtar comprimento, mudar formato drasticamente.
+2. **LÁBIOS E PELE INTOCADOS**: Lábios, pele, pelos, rugas, textura facial devem ser PIXEL POR PIXEL idênticos à original.
 
-4. **TECIDOS MOLES INTACTOS**: Lábios, pele, pelos faciais devem ser IDÊNTICOS à original.
+3. **APENAS ADIÇÃO DE MATERIAL**: Lentes de contato são tratamentos ADITIVOS:
+   ✅ Aumentar levemente o comprimento (máx 1-2mm no bordo incisal)
+   ✅ Preencher espaços entre dentes (diastemas)
+   ✅ Harmonizar contorno por adição
+   ❌ NUNCA diminuir, encurtar ou afinar nenhum dente
 
-5. **MUDANÇAS SUTIS**: As modificações devem ser sutis e naturais, não transformações dramáticas.
+⚠️ REGRAS DE REALISMO FOTOGRÁFICO - CRÍTICAS:
 
-MODIFICAÇÕES PERMITIDAS (baseadas na análise):
+4. **COR NATURAL, NÃO HOLLYWOOD**: 
+   - NÃO faça dentes brancos puros/artificiais
+   - Use tom natural claro (equivalente a A1-A2 na escala VITA)
+   - Dentes reais têm leve tom amarelado/acinzentado nas áreas cervicais
+   - EVITE o efeito "chiclete branco" ou "dentes de porcelana fake"
+   - A cor deve parecer de dentes saudáveis naturais, não clareamento extremo
+
+5. **TEXTURA E TRANSLUCIDEZ OBRIGATÓRIAS**:
+   - PRESERVE a textura superficial natural dos dentes
+   - MANTENHA a translucidez das bordas incisais (levemente acinzentada/azulada)
+   - Dentes devem ter brilho natural - não foscos nem excessivamente brilhantes
+   - Preserve micro-texturas e reflexos naturais da superfície dental
+
+6. **CARACTERIZAÇÃO INDIVIDUAL DE CADA DENTE**:
+   - Cada dente DEVE manter sua individualidade
+   - NÃO deixe todos os dentes iguais ou simétricos demais
+   - Mantenha pequenas variações naturais de forma, angulação e cor
+   - Preserve anatomia natural (mamelões incisais, depressões sutis, linhas de desenvolvimento)
+
+7. **MUDANÇAS MÍNIMAS E GRADUAIS**:
+   - As modificações devem ser as MÍNIMAS necessárias
+   - O paciente deve ser FACILMENTE reconhecível
+   - Prefira SUB-corrigir a super-corrigir
+   - O resultado deve parecer NATURAL, não artificialmente perfeito
+
+MODIFICAÇÕES ESPECÍFICAS A APLICAR:
 ${analysis.suggestions.map((s) => `- Dente ${s.tooth}: ${s.proposed_change}`).join("\n")}
 
-TIPO DE MODIFICAÇÕES REALISTAS:
-✅ Clareamento dental
-✅ Extensão do bordo incisal (deixar dente mais longo)
-✅ Fechamento de diastemas (espaços entre dentes)
-✅ Correção de forma por ADIÇÃO (deixar mais largo, mais arredondado)
-✅ Harmonização de altura entre dentes
+CHECKLIST OBRIGATÓRIO ANTES DE FINALIZAR:
+□ Gengiva está 100% idêntica à original? (crítico)
+□ Lábios, pele e características faciais inalterados? (crítico)
+□ A cor dos dentes é natural (não branca artificial)?
+□ A textura e translucidez foram preservadas?
+□ Cada dente mantém caracterização individual única?
+□ As mudanças são sutis e clinicamente realizáveis?
+□ O resultado parece uma foto real, não um render?
 
-❌ PROIBIDO:
-❌ Diminuir tamanho de qualquer dente
-❌ Modificar gengiva
-❌ Alterar lábios ou pele
-❌ Mudar cor da pele ou características faciais
-❌ Transformações dramáticas
-
-Crie uma simulação SUTIL e REALISTA que um dentista poderia entregar com facetas de resina ou cerâmica.`;
+Se QUALQUER item falhar, refaça a edição com mais cuidado.`;
 
   const simulationResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
@@ -180,28 +199,39 @@ ANÁLISE OBRIGATÓRIA:
 6. **Proporção Dourada**: Calcule a conformidade com a proporção áurea (0-100%)
 7. **Simetria**: Avalie a simetria geral do sorriso (0-100%)
 
-SUGESTÕES - APENAS TRATAMENTOS ADITIVOS:
-Para cada dente que poderia ser melhorado, forneça APENAS mudanças possíveis com restaurações aditivas:
+SUGESTÕES - APENAS TRATAMENTOS CONSERVADORES COM LENTES DE CONTATO:
+Para cada dente que poderia ser melhorado, forneça APENAS mudanças MÍNIMAS possíveis com lentes de contato dental:
 - Número do dente (notação universal: 11-48)
-- Problema atual identificado
-- Mudança proposta (APENAS ADITIVA)
+- Problema atual identificado (seja específico e objetivo)
+- Mudança proposta (CONSERVADORA e ADITIVA apenas)
 
-REGRAS PARA SUGESTÕES:
-✅ PERMITIDO: aumentar comprimento, fechar espaços, harmonizar por adição, clarear
-❌ PROIBIDO: diminuir, encurtar, afinar, reduzir largura de dentes
+LIMITES PARA SUGESTÕES:
+- MÁXIMO de 1-2mm de extensão incisal por dente
+- Fechamento de diastemas de até 2mm por lado
+- Harmonização SUTIL de contorno (não transformações)
+- NÃO sugira clareamento extremo ou cor artificial
 
-Exemplo BOM: "Aumentar bordo incisal do 21 em 1mm para harmonizar com 11"
-Exemplo RUIM: "Diminuir largura do 12 para proporção dourada" - NÃO USAR
+REGRAS ESTRITAS:
+✅ PERMITIDO: aumentar levemente comprimento, fechar pequenos espaços, harmonizar contorno
+❌ PROIBIDO: diminuir, encurtar, mudanças dramáticas de forma
+❌ PROIBIDO: sugerir "dentes brancos", "clareamento Hollywood" ou cor artificial
+❌ PROIBIDO: sugerir mais de 3-4 dentes por arcada (foque nos essenciais)
+
+Exemplo BOM: "Aumentar bordo incisal do 21 em 1mm para harmonizar altura com 11"
+Exemplo BOM: "Fechar diastema de 1mm entre 11 e 21 com adição em mesial de ambos"
+Exemplo RUIM: "Clarear todos os dentes para tom mais branco" - NÃO USAR
+Exemplo RUIM: "Modificar formato do 12 para proporção dourada" - NÃO USAR
+
+FILOSOFIA: MENOS É MAIS. Sugira apenas o ESSENCIAL para harmonização natural.
 
 OBSERVAÇÕES:
-Inclua observações gerais sobre o sorriso e recomendações de tratamento ADITIVO.
+Inclua 2-3 observações clínicas objetivas sobre o sorriso.
 
 IMPORTANTE:
-- Seja objetivo e clínico
-- Base suas análises em princípios de DSD estabelecidos
-- Considere a proporção dourada (1:0.618) mas NUNCA sugira reduzir dentes
-- Avalie tanto a estética quanto a função
-- TODAS as sugestões devem ser realizáveis com facetas/lentes de contato/coroas`;
+- Seja CONSERVADOR nas sugestões
+- Priorize naturalidade sobre perfeição
+- Considere proporção dourada como GUIA, não como meta absoluta
+- TODAS as sugestões devem ser clinicamente realizáveis com lentes de contato (0.3-0.5mm espessura)`;
 
   const analysisResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
