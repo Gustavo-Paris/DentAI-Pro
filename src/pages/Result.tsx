@@ -79,6 +79,8 @@ interface Evaluation {
     recommendations: string[];
     ai_reason?: string;
   } | null;
+  // Session navigation
+  session_id: string;
 }
 
 interface DentistProfile {
@@ -415,12 +417,19 @@ export default function Result() {
       <header className="border-b border-border print:hidden">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <span className="text-xl font-semibold tracking-tight">ResinMatch AI</span>
-          <Link to="/dashboard">
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Dashboard
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link to={`/evaluation/${evaluation.session_id}`}>
+              <Button variant="outline" size="sm">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Avaliação
+              </Button>
+            </Link>
+            <Link to="/dashboard">
+              <Button variant="ghost" size="sm">
+                Dashboard
+              </Button>
+            </Link>
+          </div>
         </div>
       </header>
 
