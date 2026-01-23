@@ -133,6 +133,20 @@ async function generateSimulation(
 ): Promise<string | null> {
   const shapeInstruction = toothShapeDescriptions[toothShape] || toothShapeDescriptions.natural;
   
+  // Check if case needs reconstruction (missing/destroyed teeth)
+  const needsReconstruction = analysis.suggestions.some(s => {
+    const issue = s.current_issue.toLowerCase();
+    const change = s.proposed_change.toLowerCase();
+    return issue.includes('ausente') || 
+           issue.includes('destruição') || 
+           issue.includes('destruído') ||
+           issue.includes('fratura') ||
+           issue.includes('raiz residual') ||
+           change.includes('implante') ||
+           change.includes('coroa total') ||
+           change.includes('extração');
+  });
+  
   // Check if it's an intraoral photo (simpler prompt needed)
   const isIntraoralPhoto = analysis.observations?.some(obs => 
     obs.toLowerCase().includes('intraoral') || 
@@ -140,37 +154,81 @@ async function generateSimulation(
     obs.toLowerCase().includes('aproximada')
   );
   
-  // Use simplified prompt for intraoral photos
-  const simulationPrompt = isIntraoralPhoto
-    ? `TAREFA: Melhore sutilmente os dentes EXISTENTES nesta foto.
+  let simulationPrompt: string;
+  
+  if (needsReconstruction) {
+    // RECONSTRUCTION PROMPT: For cases with missing/destroyed teeth
+    // This creates a visualization of the POST-TREATMENT result
+    const treatmentsToSimulate = analysis.suggestions
+      .filter(s => {
+        const issue = s.current_issue.toLowerCase();
+        const change = s.proposed_change.toLowerCase();
+        return issue.includes('ausente') || 
+               issue.includes('destruição') || 
+               issue.includes('destruído') ||
+               issue.includes('fratura') ||
+               change.includes('implante') ||
+               change.includes('coroa');
+      })
+      .map(s => `- ${s.tooth}: ${s.current_issue} → RECONSTRUIR com ${s.proposed_change}`)
+      .join('\n');
+    
+    simulationPrompt = `TAREFA: Criar SIMULAÇÃO VISUAL do sorriso APÓS TRATAMENTO COMPLETO.
 
-PROIBIDO:
-- NÃO adicione dentes onde não existem
-- NÃO modifique gengiva ou tecidos moles
-- NÃO altere fundo ou estruturas não-dentais
-- NÃO faça mudanças dramáticas
+CONTEXTO CLÍNICO:
+Esta foto mostra um caso que requer tratamento restaurador/protético.
+Você deve criar uma visualização de como ficará o sorriso DEPOIS do tratamento.
 
-PERMITIDO apenas nos dentes VISÍVEIS:
+TRATAMENTOS A SIMULAR:
+${treatmentsToSimulate || '- Reconstrução dos dentes danificados/ausentes'}
+
+INSTRUÇÕES DE EDIÇÃO OBRIGATÓRIAS:
+1. RECONSTRUA os dentes ausentes ou destruídos criando dentes novos naturais
+2. Use os dentes vizinhos como referência para tamanho e forma
+3. Use cor natural A2-A3 (combinar com dentes existentes do paciente)
+4. Preserve EXATAMENTE: lábios, gengiva visível, fundo da imagem
+
+FORMATO DOS DENTES: ${toothShape.toUpperCase()}
+${shapeInstruction}
+
+RESULTADO ESPERADO:
+Uma foto editada mostrando o sorriso COMPLETO e HARMONIOSO como ficará após o tratamento.
+
+REGRAS DE NATURALIDADE:
+- Dentes reconstruídos devem parecer NATURAIS, não artificialmente perfeitos
+- Manter proporção e simetria com dentes vizinhos
+- Incluir características naturais (leve translucidez, bordas incisais naturais)
+- Cor deve harmonizar com os outros dentes do paciente
+
+IMPORTANTE: Esta é uma simulação de RESULTADO FINAL. Crie os dentes que faltam!`;
+  } else if (isIntraoralPhoto) {
+    // INTRAORAL PROMPT: Simplified for close-up photos
+    simulationPrompt = `TAREFA: Melhore sutilmente os dentes EXISTENTES nesta foto.
+
+EDIÇÕES PERMITIDAS nos dentes VISÍVEIS:
 - Harmonizar contorno levemente
 - Melhorar proporção sutil
-- Suavizar bordas
+- Suavizar bordas incisais
 
 Formato desejado: ${toothShape.toUpperCase()} - ${shapeInstruction}
 
-Retorne a imagem editada.`
-    : `TAREFA: Editar APENAS os dentes visíveis nesta foto de sorriso.
+PRESERVE: gengiva, fundo, estruturas não-dentais.
 
-REGRA ABSOLUTA #1 - CÓPIA EXATA:
-Copie a foto original PIXEL POR PIXEL. A única diferença permitida são os dentes.
+Retorne a imagem editada com dentes harmonizados.`;
+  } else {
+    // STANDARD PROMPT: For normal smile photos with minor adjustments
+    simulationPrompt = `TAREFA: Editar APENAS os dentes visíveis nesta foto de sorriso.
 
-REGRA ABSOLUTA #2 - LÁBIOS INTOCÁVEIS:
+REGRA ABSOLUTA #1 - MOLDURA INTOCÁVEL:
+Copie a foto original PIXEL POR PIXEL para lábios, pele, fundo.
+A única diferença permitida são os dentes.
+
+REGRA ABSOLUTA #2 - LÁBIOS FIXOS:
 Os lábios devem estar na posição IDÊNTICA à original.
 NÃO levante, mova ou altere o contorno labial.
-Se um pixel mostra lábio na original, deve mostrar lábio no resultado.
 
-REGRA ABSOLUTA #3 - GENGIVA PROIBIDA:
+REGRA ABSOLUTA #3 - GENGIVA ORIGINAL:
 NÃO crie gengiva onde não existe na foto original.
-Se a gengiva está coberta pelo lábio, ela deve continuar coberta.
 Modifique apenas a gengiva que JÁ É VISÍVEL.
 
 FORMATO DOS DENTES - ${toothShape.toUpperCase()}:
@@ -184,13 +242,14 @@ VERIFICAÇÃO FINAL:
 - Lábios na mesma posição? ✓
 - Nenhuma gengiva nova criada? ✓
 - Só os dentes foram alterados? ✓`;
+  }
 
-  console.log("DSD Simulation - Prompt length:", simulationPrompt.length, "Suggestions:", analysis.suggestions.length, "Intraoral:", isIntraoralPhoto);
+  console.log("DSD Simulation - Prompt length:", simulationPrompt.length, "Reconstruction:", needsReconstruction, "Intraoral:", isIntraoralPhoto);
 
-  // Models to try in order
+  // Models to try in order (prioritize best model for reconstruction)
   const modelsToTry = [
     "google/gemini-3-pro-image-preview",
-    "google/gemini-2.5-flash", // Fallback for image understanding
+    "google/gemini-2.5-flash", // Fallback
   ];
 
   for (const model of modelsToTry) {
