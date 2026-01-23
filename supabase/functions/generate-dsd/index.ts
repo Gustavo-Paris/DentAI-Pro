@@ -159,7 +159,9 @@ async function generateSimulation(
   if (needsReconstruction) {
     // RECONSTRUCTION PROMPT: For cases with missing/destroyed teeth
     // This creates a visualization of the POST-TREATMENT result
-    const treatmentsToSimulate = analysis.suggestions
+    
+    // Extract teeth that need reconstruction
+    const teethToReconstruct = analysis.suggestions
       .filter(s => {
         const issue = s.current_issue.toLowerCase();
         const change = s.proposed_change.toLowerCase();
@@ -167,40 +169,76 @@ async function generateSimulation(
                issue.includes('destruição') || 
                issue.includes('destruído') ||
                issue.includes('fratura') ||
+               issue.includes('raiz') ||
                change.includes('implante') ||
                change.includes('coroa');
-      })
-      .map(s => `- ${s.tooth}: ${s.current_issue} → RECONSTRUIR com ${s.proposed_change}`)
-      .join('\n');
+      });
     
-    simulationPrompt = `TAREFA: Criar SIMULAÇÃO VISUAL do sorriso APÓS TRATAMENTO COMPLETO.
+    // Generate specific instructions with contralateral reference
+    const specificInstructions = teethToReconstruct.map(s => {
+      const toothNum = parseInt(s.tooth);
+      let contralateral = '';
+      // Calculate contralateral tooth (11 <-> 21, 12 <-> 22, etc)
+      if (toothNum >= 11 && toothNum <= 18) {
+        contralateral = String(toothNum + 10);
+      } else if (toothNum >= 21 && toothNum <= 28) {
+        contralateral = String(toothNum - 10);
+      } else if (toothNum >= 31 && toothNum <= 38) {
+        contralateral = String(toothNum + 10);
+      } else if (toothNum >= 41 && toothNum <= 48) {
+        contralateral = String(toothNum - 10);
+      }
+      return `- Dente ${s.tooth}: COPIE formato, tamanho e cor do dente ${contralateral || 'vizinho'} (espelhado)`;
+    }).join('\n');
+    
+    simulationPrompt = `VOCÊ É UM EDITOR DE FOTOS ODONTOLÓGICAS ESPECIALISTA.
 
-CONTEXTO CLÍNICO:
-Esta foto mostra um caso que requer tratamento restaurador/protético.
-Você deve criar uma visualização de como ficará o sorriso DEPOIS do tratamento.
+TAREFA: Reconstruir digitalmente os dentes ausentes/danificados para mostrar o resultado pós-tratamento.
 
-TRATAMENTOS A SIMULAR:
-${treatmentsToSimulate || '- Reconstrução dos dentes danificados/ausentes'}
+DENTES A RECONSTRUIR:
+${specificInstructions || '- Reconstruir dentes danificados usando vizinhos como referência'}
 
-INSTRUÇÕES DE EDIÇÃO OBRIGATÓRIAS:
-1. RECONSTRUA os dentes ausentes ou destruídos criando dentes novos naturais
-2. Use os dentes vizinhos como referência para tamanho e forma
-3. Use cor natural A2-A3 (combinar com dentes existentes do paciente)
-4. Preserve EXATAMENTE: lábios, gengiva visível, fundo da imagem
+INSTRUÇÕES TÉCNICAS DE RECONSTRUÇÃO:
 
-FORMATO DOS DENTES: ${toothShape.toUpperCase()}
-${shapeInstruction}
+1. PROPORÇÃO OBRIGATÓRIA (Lei da Proporção Dental):
+   - Incisivo central: Largura = 75-80% da altura
+   - Use o dente CONTRALATERAL (do lado oposto) como referência EXATA
+   - Se reconstruindo o 11, COPIE as dimensões do 21 (espelhado)
+   - Mantenha simetria bilateral PERFEITA
+
+2. COR E TEXTURA OBRIGATÓRIA:
+   - COPIE EXATAMENTE a cor do dente vizinho mais próximo
+   - NÃO adicione manchas, estrias, marcas ou descolorações
+   - Mantenha uniformidade de cor com os dentes existentes
+   - Aplique LEVE translucidez apenas no terço incisal (borda)
+   - Resultado deve ser LIMPO e NATURAL
+
+3. FORMATO ${toothShape.toUpperCase()}:
+   ${shapeInstruction}
+   - Bordas incisais definidas e naturais
+   - Ângulos correspondentes ao formato selecionado
+   - Transição suave com a gengiva
+
+4. POSICIONAMENTO PRECISO:
+   - Alinhe a borda incisal EXATAMENTE com os dentes vizinhos
+   - Respeite a linha do sorriso existente
+   - Centralize o dente no espaço disponível
+   - Mantenha o arco dental natural
+
+REGRAS ABSOLUTAS (NUNCA VIOLE):
+❌ NÃO adicione manchas, estrias ou descolorações
+❌ NÃO crie texturas artificiais ou estranhas
+❌ NÃO altere a posição dos lábios
+❌ NÃO modifique a gengiva além do necessário
+❌ NÃO deixe o dente com cor diferente dos vizinhos
+✅ COPIE a cor EXATA dos dentes vizinhos
+✅ USE proporções SIMÉTRICAS com dente contralateral
+✅ MANTENHA aparência LIMPA, NATURAL e PROFISSIONAL
+✅ CRIE um dente que pareça REAL, não artificial
 
 RESULTADO ESPERADO:
-Uma foto editada mostrando o sorriso COMPLETO e HARMONIOSO como ficará após o tratamento.
-
-REGRAS DE NATURALIDADE:
-- Dentes reconstruídos devem parecer NATURAIS, não artificialmente perfeitos
-- Manter proporção e simetria com dentes vizinhos
-- Incluir características naturais (leve translucidez, bordas incisais naturais)
-- Cor deve harmonizar com os outros dentes do paciente
-
-IMPORTANTE: Esta é uma simulação de RESULTADO FINAL. Crie os dentes que faltam!`;
+Uma foto realista mostrando o sorriso COMPLETO e HARMONIOSO após o tratamento.
+O dente reconstruído deve ser INDISTINGUÍVEL dos dentes naturais do paciente.`;
   } else if (isIntraoralPhoto) {
     // INTRAORAL PROMPT: Simplified for close-up photos
     simulationPrompt = `TAREFA: Melhore sutilmente os dentes EXISTENTES nesta foto.
