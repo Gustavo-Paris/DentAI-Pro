@@ -6,12 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Download, Plus, CheckCircle, Image, Package, Sparkles, Layers, Loader2, Smile } from 'lucide-react';
+import { ArrowLeft, Download, Plus, CheckCircle, Image, Package, Sparkles, Layers, Loader2, Smile, Crown } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { generateProtocolPDF } from '@/lib/generatePDF';
-import type { Resin, StratificationProtocol, ProtocolLayer, ProtocolAlternative } from '@/types/protocol';
+import type { Resin, StratificationProtocol, ProtocolLayer, ProtocolAlternative, CementationProtocol } from '@/types/protocol';
 
 // Protocol components
 import ProtocolTable from '@/components/protocol/ProtocolTable';
@@ -24,6 +24,7 @@ import CaseSummaryBox from '@/components/protocol/CaseSummaryBox';
 import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
 import { ProportionsCard } from '@/components/dsd/ProportionsCard';
 import { DSDAnalysis } from '@/components/wizard/DSDStep';
+import { CementationProtocolCard } from '@/components/protocol/CementationProtocolCard';
 
 interface Alternative {
   name: string;
@@ -65,6 +66,10 @@ interface Evaluation {
   // DSD fields
   dsd_analysis: DSDAnalysis | null;
   dsd_simulation_url: string | null;
+  // Porcelain fields
+  treatment_type: 'resina' | 'porcelana' | null;
+  cementation_protocol: CementationProtocol | null;
+  ai_treatment_indication: string | null;
 }
 
 interface DentistProfile {
@@ -261,6 +266,10 @@ export default function Result() {
         idealResin: evaluation.ideal_resin || undefined,
         idealReason: evaluation.ideal_reason || undefined,
         isFromInventory: evaluation.is_from_inventory,
+        
+        // Porcelain data
+        treatmentType: evaluation.treatment_type || 'resina',
+        cementationProtocol: evaluation.cementation_protocol || undefined,
       });
       
       toast.success('PDF gerado com sucesso!');
@@ -303,17 +312,22 @@ export default function Result() {
   const alternatives = evaluation.alternatives as Alternative[] | null;
   const hasPhotos = photoUrls.frontal || photoUrls.angle45 || photoUrls.face;
   
-  // Get protocol data from new structure
+  // Determine treatment type
+  const treatmentType = evaluation.treatment_type || 'resina';
+  const isPorcelain = treatmentType === 'porcelana';
+  const cementationProtocol = evaluation.cementation_protocol as CementationProtocol | null;
+  
+  // Get protocol data from new structure (for resin)
   const protocol = evaluation.stratification_protocol;
   const layers = protocol?.layers || evaluation.protocol_layers || [];
-  const checklist = protocol?.checklist || [];
-  const alerts = evaluation.alerts || [];
-  const warnings = evaluation.warnings || [];
-  const confidence = protocol?.confidence || "média";
+  const checklist = isPorcelain ? (cementationProtocol?.checklist || []) : (protocol?.checklist || []);
+  const alerts = isPorcelain ? (cementationProtocol?.alerts || []) : (evaluation.alerts || []);
+  const warnings = isPorcelain ? (cementationProtocol?.warnings || []) : (evaluation.warnings || []);
+  const confidence = isPorcelain ? (cementationProtocol?.confidence || "média") : (protocol?.confidence || "média");
   const protocolAlternative = protocol?.alternative;
   
   const showIdealResin = idealResin && idealResin.id !== resin?.id;
-  const hasProtocol = layers.length > 0;
+  const hasProtocol = isPorcelain ? !!cementationProtocol : layers.length > 0;
 
   return (
     <div className="min-h-screen bg-background print:bg-background">
@@ -363,6 +377,30 @@ export default function Result() {
                     Ir para Inventário
                   </Button>
                 </Link>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Treatment Type Banner */}
+        {isPorcelain && (
+          <Card className="mb-6 border-warning/30 bg-warning/5">
+            <CardContent className="py-4">
+              <div className="flex items-center gap-3">
+                <Crown className="w-5 h-5 text-warning" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium">
+                    Tratamento: Facetas de Porcelana
+                  </p>
+                  {evaluation.ai_treatment_indication && (
+                    <p className="text-xs text-muted-foreground">
+                      {evaluation.ai_treatment_indication}
+                    </p>
+                  )}
+                </div>
+                <Badge variant="outline" className="border-warning text-warning">
+                  Porcelana
+                </Badge>
               </div>
             </CardContent>
           </Card>
@@ -502,26 +540,39 @@ export default function Result() {
           </section>
         )}
 
-        {/* SECTION 3: Protocol Layers Table */}
-        {hasProtocol && (
+        {/* SECTION 3: Protocol - Conditional based on treatment type */}
+        {isPorcelain && cementationProtocol ? (
           <section className="mb-8">
-            <h3 className="font-medium mb-3 flex items-center gap-2">
-              <Layers className="w-4 h-4" />
-              Protocolo de Camadas
-            </h3>
-            <ProtocolTable layers={layers} />
+            <CementationProtocolCard 
+              protocol={cementationProtocol}
+              checkedIndices={evaluation.checklist_progress || []}
+              onProgressChange={handleChecklistChange}
+            />
           </section>
+        ) : (
+          <>
+            {/* Resin Protocol Layers Table */}
+            {hasProtocol && (
+              <section className="mb-8">
+                <h3 className="font-medium mb-3 flex items-center gap-2">
+                  <Layers className="w-4 h-4" />
+                  Protocolo de Camadas
+                </h3>
+                <ProtocolTable layers={layers} />
+              </section>
+            )}
+
+            {/* SECTION 4: Simplified Alternative */}
+            {protocolAlternative && (
+              <section className="mb-8">
+                <AlternativeBox alternative={protocolAlternative} />
+              </section>
+            )}
+          </>
         )}
 
-        {/* SECTION 4: Simplified Alternative */}
-        {protocolAlternative && (
-          <section className="mb-8">
-            <AlternativeBox alternative={protocolAlternative} />
-          </section>
-        )}
-
-        {/* SECTION 5: Step-by-Step Checklist */}
-        {checklist.length > 0 && (
+        {/* SECTION 5: Step-by-Step Checklist - Only for resin (porcelain has integrated checklist) */}
+        {!isPorcelain && checklist.length > 0 && (
           <section className="mb-8 print:hidden">
             <Card>
               <CardHeader className="pb-3">
@@ -538,16 +589,16 @@ export default function Result() {
           </section>
         )}
 
-        {/* SECTION 6 & 7: Alerts and Warnings side by side */}
-        {(alerts.length > 0 || warnings.length > 0) && (
+        {/* SECTION 6 & 7: Alerts and Warnings side by side - Only for resin (porcelain has integrated alerts) */}
+        {!isPorcelain && (alerts.length > 0 || warnings.length > 0) && (
           <section className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-4">
             <AlertsSection alerts={alerts} />
             <WarningsSection warnings={warnings} />
           </section>
         )}
 
-        {/* SECTION 8: Confidence Indicator */}
-        {hasProtocol && (
+        {/* SECTION 8: Confidence Indicator - Only for resin (porcelain has integrated confidence) */}
+        {!isPorcelain && hasProtocol && (
           <section className="mb-8">
             <ConfidenceIndicator confidence={confidence} />
           </section>

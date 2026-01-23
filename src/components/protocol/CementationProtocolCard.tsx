@@ -105,14 +105,14 @@ export function CementationProtocolCard({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <Card className="border-amber-500/20 bg-amber-50/50 dark:bg-amber-950/10">
+      <Card className="border-warning/20 bg-warning/5">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Crown className="w-5 h-5 text-amber-600" />
+            <Crown className="w-5 h-5 text-warning" />
             Protocolo de Cimentação de Facetas
             <Badge 
               variant={protocol.confidence === 'alta' ? 'default' : 'secondary'}
-              className={protocol.confidence === 'alta' ? 'bg-emerald-500' : ''}
+              className={protocol.confidence === 'alta' ? 'bg-primary' : ''}
             >
               Confiança {protocol.confidence}
             </Badge>
@@ -268,9 +268,9 @@ export function CementationProtocolCard({
 
       {/* Warnings */}
       {protocol.warnings && protocol.warnings.length > 0 && (
-        <Card className="border-yellow-500/50 bg-yellow-50 dark:bg-yellow-950/20">
+        <Card className="border-warning/50 bg-warning/10">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2 text-yellow-700 dark:text-yellow-300">
+            <CardTitle className="text-base flex items-center gap-2 text-warning">
               <AlertTriangle className="w-4 h-4" />
               Pontos de Atenção
             </CardTitle>
@@ -278,7 +278,7 @@ export function CementationProtocolCard({
           <CardContent>
             <ul className="space-y-2">
               {protocol.warnings.map((warning, index) => (
-                <li key={index} className="flex items-start gap-2 text-sm text-yellow-700 dark:text-yellow-300">
+                <li key={index} className="flex items-start gap-2 text-sm text-warning">
                   <span className="mt-0.5">⚠️</span>
                   {warning}
                 </li>
