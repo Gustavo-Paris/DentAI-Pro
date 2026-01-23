@@ -81,6 +81,13 @@ interface Evaluation {
   } | null;
   // Session navigation
   session_id: string;
+  // Tooth bounds for visual highlight
+  tooth_bounds: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } | null;
 }
 
 interface DentistProfile {
@@ -361,6 +368,7 @@ export default function Result() {
     ringClass: string;
     solidBgClass: string;
     glowClass: string;
+    overlayColor: string;
   }> = {
     resina: { 
       label: 'Restauração em Resina', 
@@ -372,6 +380,7 @@ export default function Result() {
       ringClass: 'ring-blue-500',
       solidBgClass: 'bg-blue-600',
       glowClass: 'bg-blue-400',
+      overlayColor: 'rgba(59, 130, 246, 0.45)',
     },
     porcelana: { 
       label: 'Faceta de Porcelana', 
@@ -383,6 +392,7 @@ export default function Result() {
       ringClass: 'ring-amber-500',
       solidBgClass: 'bg-amber-600',
       glowClass: 'bg-amber-400',
+      overlayColor: 'rgba(249, 115, 22, 0.45)',
     },
     coroa: { 
       label: 'Coroa Protética', 
@@ -394,6 +404,7 @@ export default function Result() {
       ringClass: 'ring-purple-500',
       solidBgClass: 'bg-purple-600',
       glowClass: 'bg-purple-400',
+      overlayColor: 'rgba(147, 51, 234, 0.45)',
     },
     implante: { 
       label: 'Indicação de Implante', 
@@ -405,6 +416,7 @@ export default function Result() {
       ringClass: 'ring-orange-500',
       solidBgClass: 'bg-orange-600',
       glowClass: 'bg-orange-400',
+      overlayColor: 'rgba(239, 68, 68, 0.45)',
     },
     endodontia: { 
       label: 'Tratamento de Canal', 
@@ -416,6 +428,7 @@ export default function Result() {
       ringClass: 'ring-rose-500',
       solidBgClass: 'bg-rose-600',
       glowClass: 'bg-rose-400',
+      overlayColor: 'rgba(244, 63, 94, 0.45)',
     },
     encaminhamento: { 
       label: 'Encaminhamento', 
@@ -427,6 +440,7 @@ export default function Result() {
       ringClass: 'ring-gray-400',
       solidBgClass: 'bg-gray-600',
       glowClass: 'bg-gray-400',
+      overlayColor: 'rgba(107, 114, 128, 0.45)',
     },
   };
   const currentTreatmentStyle = treatmentStyles[treatmentType] || treatmentStyles.resina;
@@ -583,11 +597,27 @@ export default function Result() {
                       alt="Foto Clínica"
                       className="w-full h-full object-cover"
                     />
-                    {/* Prominent tooth indicator overlay */}
-                    <div className="absolute top-3 left-3">
-                      <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-base font-bold shadow-xl ${currentTreatmentStyle.solidBgClass} text-white`}>
-                        <MapPin className="w-5 h-5" />
-                        <span>DENTE {evaluation.tooth}</span>
+                    
+                    {/* Colored overlay directly on the tooth */}
+                    {evaluation.tooth_bounds && (
+                      <div 
+                        className="absolute rounded-full pointer-events-none"
+                        style={{
+                          left: `${evaluation.tooth_bounds.x - evaluation.tooth_bounds.width / 2}%`,
+                          top: `${evaluation.tooth_bounds.y - evaluation.tooth_bounds.height / 2}%`,
+                          width: `${evaluation.tooth_bounds.width}%`,
+                          height: `${evaluation.tooth_bounds.height}%`,
+                          backgroundColor: currentTreatmentStyle.overlayColor,
+                          mixBlendMode: 'multiply',
+                          boxShadow: `0 0 20px 8px ${currentTreatmentStyle.overlayColor}`,
+                        }}
+                      />
+                    )}
+                    
+                    {/* Tooth number badge - smaller and positioned based on tooth location */}
+                    <div className="absolute bottom-2 left-2">
+                      <div className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold shadow-lg ${currentTreatmentStyle.solidBgClass} text-white`}>
+                        <span>Dente {evaluation.tooth}</span>
                       </div>
                     </div>
                   </div>

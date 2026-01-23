@@ -366,6 +366,8 @@ export default function NewCase() {
           ai_indication_reason: toothData?.indication_reason || analysisResult?.indication_reason || null,
           dsd_analysis: dsdResult?.analysis || null,
           dsd_simulation_url: dsdResult?.simulation_url || null,
+          // Tooth position for visual highlight overlay
+          tooth_bounds: toothData?.tooth_bounds || null,
         } as Record<string, unknown>;
 
         const { data: evaluation, error: evalError } = await supabase

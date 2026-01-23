@@ -58,6 +58,7 @@ export type Database = {
           substrate: string
           substrate_condition: string | null
           tooth: string
+          tooth_bounds: Json | null
           tooth_color: string
           treatment_type: string | null
           user_id: string
@@ -106,6 +107,7 @@ export type Database = {
           substrate: string
           substrate_condition?: string | null
           tooth: string
+          tooth_bounds?: Json | null
           tooth_color: string
           treatment_type?: string | null
           user_id: string
@@ -154,6 +156,7 @@ export type Database = {
           substrate?: string
           substrate_condition?: string | null
           tooth?: string
+          tooth_bounds?: Json | null
           tooth_color?: string
           treatment_type?: string | null
           user_id?: string
