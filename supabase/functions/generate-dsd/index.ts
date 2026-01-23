@@ -69,72 +69,30 @@ async function generateSimulation(
   supabase: any,
   apiKey: string
 ): Promise<string | null> {
-  const simulationPrompt = `Você é um especialista em Digital Smile Design (DSD) e Mock-up Digital.
+  const simulationPrompt = `TAREFA: Editar APENAS os dentes visíveis nesta foto de sorriso.
 
-OBJETIVO: Criar uma simulação FOTORREALISTA de como ficaria o sorriso após tratamento com lentes de contato dental.
+REGRA ABSOLUTA #1 - CÓPIA EXATA:
+Copie a foto original PIXEL POR PIXEL. A única diferença permitida são os dentes.
 
-🚨 REGRA CRÍTICA - MÁSCARA DE ENQUADRAMENTO 🚨
+REGRA ABSOLUTA #2 - LÁBIOS INTOCÁVEIS:
+Os lábios devem estar na posição IDÊNTICA à original.
+NÃO levante, mova ou altere o contorno labial.
+Se um pixel mostra lábio na original, deve mostrar lábio no resultado.
 
-A foto original tem um "enquadramento" definido pelos lábios e tecidos moles.
-Este enquadramento é uma MÁSCARA INTOCÁVEL. Você só pode modificar os DENTES VISÍVEIS dentro desta máscara.
+REGRA ABSOLUTA #3 - GENGIVA PROIBIDA:
+NÃO crie gengiva onde não existe na foto original.
+Se a gengiva está coberta pelo lábio, ela deve continuar coberta.
+Modifique apenas a gengiva que JÁ É VISÍVEL.
 
-PROIBIDO ABSOLUTAMENTE:
-- ❌ Mover, levantar ou alterar a posição dos lábios
-- ❌ Aumentar a área de exposição do sorriso
-- ❌ Mostrar mais gengiva do que está visível na foto original
-- ❌ Criar/inventar gengiva onde o lábio cobria
-- ❌ Alterar o formato da boca ou abertura do sorriso
+EDIÇÕES PERMITIDAS NOS DENTES:
+${analysis.suggestions.map((s) => `- ${s.tooth}: ${s.proposed_change}`).join("\n")}
 
-REGRA DE OURO: Se um pixel é lábio/pele na original, ele DEVE ser lábio/pele na simulação.
-REGRA DE OURO 2: Se um pixel não mostra gengiva na original, NÃO pode mostrar gengiva na simulação.
+VERIFICAÇÃO FINAL:
+- Lábios na mesma posição? ✓
+- Nenhuma gengiva nova criada? ✓
+- Só os dentes foram alterados? ✓`;
 
-⚠️ PRESERVAÇÃO ABSOLUTA:
-
-1. **LÁBIOS = MÁSCARA FIXA**: 
-   - A posição EXATA de cada pixel do lábio superior e inferior deve ser idêntica
-   - O lábio NÃO pode estar "levantado" ou em posição diferente
-   - O contorno labial é uma FRONTEIRA que não pode ser ultrapassada
-
-2. **GENGIVA = APENAS O QUE JÁ EXISTE**:
-   - Modifique apenas a gengiva que JÁ É VISÍVEL na foto original
-   - NUNCA adicione gengiva onde o lábio cobre na original
-   - A linha gengival visível deve ter formato idêntico
-
-3. **PELE E FACE**:
-   - Textura, cor, pelos faciais = 100% idênticos
-   - Nenhuma modificação facial permitida
-
-⚠️ REGRAS PARA OS DENTES (única área editável):
-
-4. **APENAS ADIÇÃO DE MATERIAL**:
-   - Aumentar levemente comprimento (máx 1-2mm bordo incisal)
-   - Preencher diastemas
-   - Harmonizar contorno por adição
-   - NUNCA diminuir, encurtar ou afinar
-
-5. **COR NATURAL (A1-A2)**:
-   - NÃO faça dentes brancos artificiais
-   - Use tom natural com leve saturação cervical
-   - Preserve translucidez das bordas incisais
-
-6. **TEXTURA REAL**:
-   - Mantenha micro-texturas e reflexos naturais
-   - Cada dente deve ter caracterização individual
-   - Evite uniformidade artificial
-
-MODIFICAÇÕES NOS DENTES:
-${analysis.suggestions.map((s) => `- Dente ${s.tooth}: ${s.proposed_change}`).join("\n")}
-
-✅ CHECKLIST FINAL OBRIGATÓRIO:
-
-□ Os lábios estão na EXATA mesma posição da foto original?
-□ A área de exposição do sorriso é IDÊNTICA (não está maior)?
-□ Existe alguma gengiva visível que NÃO existia antes? (deve ser NÃO)
-□ Pele e textura facial estão inalteradas?
-□ A cor dos dentes é natural (não branca artificial)?
-□ O resultado parece uma foto real de um caso clínico?
-
-SE QUALQUER ITEM FALHAR, REFAÇA PRESERVANDO MELHOR O ENQUADRAMENTO ORIGINAL.`;
+  console.log("DSD Simulation - Prompt length:", simulationPrompt.length, "Suggestions:", analysis.suggestions.length);
 
   const simulationResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
@@ -143,7 +101,7 @@ SE QUALQUER ITEM FALHAR, REFAÇA PRESERVANDO MELHOR O ENQUADRAMENTO ORIGINAL.`;
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "google/gemini-2.5-flash-image-preview",
+      model: "google/gemini-3-pro-image-preview",
       messages: [
         {
           role: "user",
