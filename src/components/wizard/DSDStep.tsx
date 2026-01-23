@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Smile, Sparkles, Loader2, RefreshCw, ChevronRight, Lightbulb, AlertCircle, Square, Triangle, Circle, RectangleHorizontal } from 'lucide-react';
@@ -29,11 +29,13 @@ export interface DSDAnalysis {
   }[];
   observations: string[];
   confidence: "alta" | "média" | "baixa";
+  simulation_limitation?: string;
 }
 
 export interface DSDResult {
   analysis: DSDAnalysis;
   simulation_url: string | null;
+  simulation_note?: string;
   toothShape?: ToothShape;
 }
 
@@ -375,6 +377,13 @@ export function DSDStep({ imageBase64, onComplete, onSkip }: DSDStepProps) {
   // Result state
   if (result) {
     const { analysis } = result;
+    
+    // Check for attention observations
+    const attentionObservations = analysis.observations?.filter(obs => 
+      obs.toUpperCase().includes('ATENÇÃO') || obs.toUpperCase().includes('ATENCAO')
+    ) || [];
+    
+    const hasLimitations = analysis.confidence === 'baixa' || attentionObservations.length > 0 || result.simulation_note;
 
     return (
       <div className="space-y-6">
@@ -386,13 +395,53 @@ export function DSDStep({ imageBase64, onComplete, onSkip }: DSDStepProps) {
           <h2 className="text-xl font-semibold mb-2">Planejamento Digital do Sorriso</h2>
           <div className="flex items-center justify-center gap-2">
             <Badge 
-              variant={analysis.confidence === 'alta' ? 'default' : 'secondary'}
-              className={analysis.confidence === 'alta' ? 'bg-emerald-500' : ''}
+              variant={analysis.confidence === 'alta' ? 'default' : analysis.confidence === 'média' ? 'secondary' : 'outline'}
+              className={
+                analysis.confidence === 'alta' 
+                  ? 'bg-emerald-500' 
+                  : analysis.confidence === 'baixa' 
+                    ? 'border-amber-500 text-amber-700 bg-amber-50' 
+                    : ''
+              }
             >
               Confiança {analysis.confidence}
             </Badge>
           </div>
         </div>
+
+        {/* Alert for low confidence or limitations */}
+        {hasLimitations && (
+          <Alert variant="default" className="border-amber-500 bg-amber-50">
+            <AlertCircle className="h-4 w-4 text-amber-600" />
+            <AlertTitle className="text-amber-800">Caso com Limitações para Simulação</AlertTitle>
+            <AlertDescription className="text-amber-700">
+              {result.simulation_note || 
+                'Este caso apresenta características que limitam a precisão da simulação visual. A análise de proporções está disponível, mas o resultado final pode variar significativamente.'}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Attention observations from AI */}
+        {attentionObservations.length > 0 && (
+          <Card className="border-amber-400 bg-amber-50/50">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2 text-amber-800">
+                <AlertCircle className="w-4 h-4" />
+                Pontos de Atenção
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2">
+                {attentionObservations.map((obs, index) => (
+                  <li key={index} className="text-sm text-amber-700 flex items-start gap-2">
+                    <span className="text-amber-600 mt-0.5">•</span>
+                    {obs.replace(/^ATENÇÃO:\s*/i, '')}
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Comparison Slider */}
         {imageBase64 && simulationImageUrl && (
@@ -492,7 +541,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip }: DSDStepProps) {
           </Card>
         )}
 
-        {/* Observations */}
+        {/* Observations - filter out attention ones already shown above */}
         {analysis.observations && analysis.observations.length > 0 && (
           <Card>
             <CardHeader className="pb-3">
@@ -500,12 +549,14 @@ export function DSDStep({ imageBase64, onComplete, onSkip }: DSDStepProps) {
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
-                {analysis.observations.map((obs, index) => (
-                  <li key={index} className="text-sm text-muted-foreground flex items-start gap-2">
-                    <span className="text-primary mt-0.5">•</span>
-                    {obs}
-                  </li>
-                ))}
+                {analysis.observations
+                  .filter(obs => !obs.toUpperCase().includes('ATENÇÃO') && !obs.toUpperCase().includes('ATENCAO'))
+                  .map((obs, index) => (
+                    <li key={index} className="text-sm text-muted-foreground flex items-start gap-2">
+                      <span className="text-primary mt-0.5">•</span>
+                      {obs}
+                    </li>
+                  ))}
               </ul>
             </CardContent>
           </Card>

@@ -18,11 +18,13 @@ interface DSDAnalysis {
   }[];
   observations: string[];
   confidence: "alta" | "média" | "baixa";
+  simulation_limitation?: string; // New: explains why simulation may be limited
 }
 
 interface DSDResult {
   analysis: DSDAnalysis;
   simulation_url: string | null;
+  simulation_note?: string; // New: message when simulation is not possible
 }
 
 interface RequestData {
@@ -75,7 +77,52 @@ const toothShapeDescriptions: Record<string, string> = {
   retangular: "Proporção altura/largura mais alongada, bordas verticais mais paralelas",
 };
 
-// Generate simulation image
+// Check if case has severe destruction that limits DSD
+function hasSevereDestruction(analysis: DSDAnalysis): { isLimited: boolean; reason: string | null } {
+  const destructionKeywords = [
+    'ausente', 'destruição', 'raiz residual', 'implante', 'extração',
+    'fratura extensa', 'destruído', 'coroa total', 'prótese', 'sem coroa'
+  ];
+  
+  const hasDestructionInSuggestions = analysis.suggestions.some(s => 
+    destructionKeywords.some(keyword => 
+      s.current_issue.toLowerCase().includes(keyword) ||
+      s.proposed_change.toLowerCase().includes(keyword)
+    )
+  );
+  
+  const hasDestructionInObservations = analysis.observations?.some(obs =>
+    destructionKeywords.some(keyword => obs.toLowerCase().includes(keyword))
+  );
+  
+  if (hasDestructionInSuggestions || hasDestructionInObservations) {
+    return {
+      isLimited: true,
+      reason: "Caso apresenta destruição dental significativa (dente ausente, fratura extensa ou necessidade de implante/coroa). A simulação visual pode não representar o resultado final com precisão."
+    };
+  }
+  
+  // Check if confidence is low due to photo quality or case complexity
+  if (analysis.confidence === 'baixa') {
+    const hasComplexityNote = analysis.observations?.some(obs =>
+      obs.toLowerCase().includes('intraoral') ||
+      obs.toLowerCase().includes('close-up') ||
+      obs.toLowerCase().includes('complexo') ||
+      obs.toLowerCase().includes('limitad')
+    );
+    
+    if (hasComplexityNote) {
+      return {
+        isLimited: true,
+        reason: "Foto intraoral ou caso complexo detectado. Recomenda-se foto do sorriso completo para simulação mais precisa."
+      };
+    }
+  }
+  
+  return { isLimited: false, reason: null };
+}
+
+// Generate simulation image with retry logic
 async function generateSimulation(
   imageBase64: string,
   analysis: DSDAnalysis,
@@ -86,7 +133,32 @@ async function generateSimulation(
 ): Promise<string | null> {
   const shapeInstruction = toothShapeDescriptions[toothShape] || toothShapeDescriptions.natural;
   
-  const simulationPrompt = `TAREFA: Editar APENAS os dentes visíveis nesta foto de sorriso.
+  // Check if it's an intraoral photo (simpler prompt needed)
+  const isIntraoralPhoto = analysis.observations?.some(obs => 
+    obs.toLowerCase().includes('intraoral') || 
+    obs.toLowerCase().includes('close-up') ||
+    obs.toLowerCase().includes('aproximada')
+  );
+  
+  // Use simplified prompt for intraoral photos
+  const simulationPrompt = isIntraoralPhoto
+    ? `TAREFA: Melhore sutilmente os dentes EXISTENTES nesta foto.
+
+PROIBIDO:
+- NÃO adicione dentes onde não existem
+- NÃO modifique gengiva ou tecidos moles
+- NÃO altere fundo ou estruturas não-dentais
+- NÃO faça mudanças dramáticas
+
+PERMITIDO apenas nos dentes VISÍVEIS:
+- Harmonizar contorno levemente
+- Melhorar proporção sutil
+- Suavizar bordas
+
+Formato desejado: ${toothShape.toUpperCase()} - ${shapeInstruction}
+
+Retorne a imagem editada.`
+    : `TAREFA: Editar APENAS os dentes visíveis nesta foto de sorriso.
 
 REGRA ABSOLUTA #1 - CÓPIA EXATA:
 Copie a foto original PIXEL POR PIXEL. A única diferença permitida são os dentes.
@@ -106,68 +178,87 @@ ${shapeInstruction}
 Aplique este formato de forma sutil e harmônica, mantendo naturalidade.
 
 EDIÇÕES PERMITIDAS NOS DENTES:
-${analysis.suggestions.map((s) => `- ${s.tooth}: ${s.proposed_change}`).join("\n")}
+${analysis.suggestions.slice(0, 4).map((s) => `- ${s.tooth}: ${s.proposed_change}`).join("\n")}
 
 VERIFICAÇÃO FINAL:
 - Lábios na mesma posição? ✓
 - Nenhuma gengiva nova criada? ✓
 - Só os dentes foram alterados? ✓`;
 
-  console.log("DSD Simulation - Prompt length:", simulationPrompt.length, "Suggestions:", analysis.suggestions.length);
+  console.log("DSD Simulation - Prompt length:", simulationPrompt.length, "Suggestions:", analysis.suggestions.length, "Intraoral:", isIntraoralPhoto);
 
-  const simulationResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "google/gemini-3-pro-image-preview",
-      messages: [
-        {
-          role: "user",
-          content: [
-            { type: "text", text: simulationPrompt },
-            { type: "image_url", image_url: { url: imageBase64 } },
-          ],
+  // Models to try in order
+  const modelsToTry = [
+    "google/gemini-3-pro-image-preview",
+    "google/gemini-2.5-flash", // Fallback for image understanding
+  ];
+
+  for (const model of modelsToTry) {
+    try {
+      console.log(`Trying simulation model: ${model}`);
+      
+      const simulationResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
         },
-      ],
-      modalities: ["image", "text"],
-    }),
-  });
+        body: JSON.stringify({
+          model: model,
+          messages: [
+            {
+              role: "user",
+              content: [
+                { type: "text", text: simulationPrompt },
+                { type: "image_url", image_url: { url: imageBase64 } },
+              ],
+            },
+          ],
+          modalities: ["image", "text"],
+        }),
+      });
 
-  if (!simulationResponse.ok) {
-    console.warn("Simulation generation failed:", simulationResponse.status);
-    return null;
+      if (!simulationResponse.ok) {
+        console.warn(`Simulation model ${model} failed:`, simulationResponse.status);
+        continue; // Try next model
+      }
+
+      const simData = await simulationResponse.json();
+      const generatedImage = simData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+
+      if (!generatedImage) {
+        console.warn(`No image in response from ${model}`);
+        continue; // Try next model
+      }
+
+      // Upload simulation to storage
+      const base64Data = generatedImage.replace(/^data:image\/\w+;base64,/, "");
+      const binaryData = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
+      
+      const fileName = `${userId}/dsd_simulation_${Date.now()}.png`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from("dsd-simulations")
+        .upload(fileName, binaryData, {
+          contentType: "image/png",
+          upsert: true,
+        });
+
+      if (uploadError) {
+        console.error("Upload error:", uploadError);
+        return null;
+      }
+
+      console.log(`Simulation generated successfully with ${model}`);
+      return fileName;
+    } catch (err) {
+      console.warn(`Model ${model} error:`, err);
+      continue; // Try next model
+    }
   }
 
-  const simData = await simulationResponse.json();
-  const generatedImage = simData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-
-  if (!generatedImage) {
-    console.warn("No image in simulation response");
-    return null;
-  }
-
-  // Upload simulation to storage
-  const base64Data = generatedImage.replace(/^data:image\/\w+;base64,/, "");
-  const binaryData = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
-  
-  const fileName = `${userId}/dsd_simulation_${Date.now()}.png`;
-  
-  const { error: uploadError } = await supabase.storage
-    .from("dsd-simulations")
-    .upload(fileName, binaryData, {
-      contentType: "image/png",
-      upsert: true,
-    });
-
-  if (uploadError) {
-    console.error("Upload error:", uploadError);
-    return null;
-  }
-
-  return fileName;
+  console.warn("All simulation models failed");
+  return null;
 }
 
 // Analyze facial proportions
@@ -188,6 +279,15 @@ ANÁLISE OBRIGATÓRIA:
 6. **Proporção Dourada**: Calcule a conformidade com a proporção áurea (0-100%)
 7. **Simetria**: Avalie a simetria geral do sorriso (0-100%)
 
+AVALIAÇÃO DE VIABILIDADE DO DSD:
+Antes de sugerir tratamentos, avalie se o caso É ADEQUADO para simulação visual:
+
+CASOS INADEQUADOS PARA DSD (marque confidence = "baixa" e adicione observação):
+- Dentes ausentes que requerem implante → Adicione: "ATENÇÃO: Dente(s) ausente(s) detectado(s). Caso requer tratamento cirúrgico antes do planejamento estético."
+- Destruição coronária > 50% que requer coroa/extração → Adicione: "ATENÇÃO: Destruição dental severa. Recomenda-se tratamento protético prévio."
+- Raízes residuais → Adicione: "ATENÇÃO: Raiz residual identificada. Extração necessária antes do planejamento."
+- Foto intraoral/close-up sem contexto facial → Adicione: "ATENÇÃO: Foto intraoral detectada. Simulação limitada sem proporções faciais."
+
 SUGESTÕES - APENAS TRATAMENTOS CONSERVADORES COM LENTES DE CONTATO:
 Para cada dente que poderia ser melhorado, forneça APENAS mudanças MÍNIMAS possíveis com lentes de contato dental:
 - Número do dente (notação universal: 11-48)
@@ -205,22 +305,25 @@ REGRAS ESTRITAS:
 ❌ PROIBIDO: diminuir, encurtar, mudanças dramáticas de forma
 ❌ PROIBIDO: sugerir "dentes brancos", "clareamento Hollywood" ou cor artificial
 ❌ PROIBIDO: sugerir mais de 3-4 dentes por arcada (foque nos essenciais)
+❌ PROIBIDO: sugerir tratamentos para dentes AUSENTES ou com destruição severa
 
 Exemplo BOM: "Aumentar bordo incisal do 21 em 1mm para harmonizar altura com 11"
 Exemplo BOM: "Fechar diastema de 1mm entre 11 e 21 com adição em mesial de ambos"
 Exemplo RUIM: "Clarear todos os dentes para tom mais branco" - NÃO USAR
-Exemplo RUIM: "Modificar formato do 12 para proporção dourada" - NÃO USAR
+Exemplo RUIM: "Reconstruir dente ausente" - NÃO USAR
 
 FILOSOFIA: MENOS É MAIS. Sugira apenas o ESSENCIAL para harmonização natural.
 
 OBSERVAÇÕES:
 Inclua 2-3 observações clínicas objetivas sobre o sorriso.
+Se identificar limitações para simulação, inclua uma observação com "ATENÇÃO:" explicando.
 
 IMPORTANTE:
 - Seja CONSERVADOR nas sugestões
 - Priorize naturalidade sobre perfeição
 - Considere proporção dourada como GUIA, não como meta absoluta
-- TODAS as sugestões devem ser clinicamente realizáveis com lentes de contato (0.3-0.5mm espessura)`;
+- TODAS as sugestões devem ser clinicamente realizáveis com lentes de contato (0.3-0.5mm espessura)
+- Se o caso NÃO for adequado para DSD, AINDA forneça a análise de proporções mas marque confidence="baixa"`;
 
   const analysisResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
@@ -411,6 +514,15 @@ serve(async (req: Request) => {
       analysis = analysisResult;
     }
 
+    // Check for severe destruction that limits simulation value
+    const destructionCheck = hasSevereDestruction(analysis);
+    let simulationNote: string | undefined;
+    
+    if (destructionCheck.isLimited) {
+      console.log("Severe destruction detected:", destructionCheck.reason);
+      simulationNote = destructionCheck.reason || undefined;
+    }
+
     // Generate simulation image
     let simulationUrl: string | null = null;
     try {
@@ -439,10 +551,11 @@ serve(async (req: Request) => {
       }
     }
 
-    // Return result
+    // Return result with note if applicable
     const result: DSDResult = {
       analysis,
       simulation_url: simulationUrl,
+      simulation_note: simulationNote,
     };
 
     return new Response(JSON.stringify(result), {
