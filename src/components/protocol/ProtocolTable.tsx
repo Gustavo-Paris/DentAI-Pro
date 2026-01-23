@@ -6,16 +6,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ProtocolLayer } from "@/types/protocol";
 
-export interface ProtocolLayer {
-  order: number;
-  name: string;
-  resin_brand: string;
-  shade: string;
-  thickness: string;
-  purpose: string;
-  technique: string;
-}
+export type { ProtocolLayer };
 
 interface ProtocolTableProps {
   layers: ProtocolLayer[];

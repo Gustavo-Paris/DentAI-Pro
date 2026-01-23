@@ -1,12 +1,8 @@
 import { Zap } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ProtocolAlternative } from "@/types/protocol";
 
-export interface ProtocolAlternative {
-  resin: string;
-  shade: string;
-  technique: string;
-  tradeoff: string;
-}
+export type { ProtocolAlternative };
 
 interface AlternativeBoxProps {
   alternative: ProtocolAlternative;
