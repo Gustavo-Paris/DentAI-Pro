@@ -1,0 +1,350 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getCorsHeaders, handleCorsPreFlight, createErrorResponse, ERROR_MESSAGES } from "../_shared/cors.ts";
+
+// Cementation protocol interfaces
+interface CementationStep {
+  order: number;
+  step: string;
+  material: string;
+  technique?: string;
+  time?: string;
+}
+
+interface CementationProtocol {
+  preparation_steps: CementationStep[];
+  ceramic_treatment: CementationStep[];
+  tooth_treatment: CementationStep[];
+  cementation: {
+    cement_type: string;
+    cement_brand: string;
+    shade: string;
+    light_curing_time: string;
+    technique: string;
+  };
+  finishing: CementationStep[];
+  post_operative: string[];
+  checklist: string[];
+  alerts: string[];
+  warnings: string[];
+  confidence: "alta" | "média" | "baixa";
+}
+
+interface RequestData {
+  evaluationId: string;
+  teeth: string[];
+  shade: string;
+  ceramicType?: string;
+  substrate: string;
+  substrateCondition?: string;
+}
+
+// Validate request
+function validateRequest(data: unknown): { success: boolean; error?: string; data?: RequestData } {
+  if (!data || typeof data !== "object") {
+    return { success: false, error: "Dados inválidos" };
+  }
+
+  const req = data as Record<string, unknown>;
+
+  if (!req.evaluationId || typeof req.evaluationId !== "string") {
+    return { success: false, error: "ID da avaliação não fornecido" };
+  }
+
+  if (!req.teeth || !Array.isArray(req.teeth) || req.teeth.length === 0) {
+    return { success: false, error: "Dentes não especificados" };
+  }
+
+  if (!req.shade || typeof req.shade !== "string") {
+    return { success: false, error: "Cor não especificada" };
+  }
+
+  if (!req.substrate || typeof req.substrate !== "string") {
+    return { success: false, error: "Substrato não especificado" };
+  }
+
+  return {
+    success: true,
+    data: {
+      evaluationId: req.evaluationId as string,
+      teeth: req.teeth as string[],
+      shade: req.shade as string,
+      ceramicType: (req.ceramicType as string) || "Dissilicato de lítio",
+      substrate: req.substrate as string,
+      substrateCondition: req.substrateCondition as string | undefined,
+    },
+  };
+}
+
+serve(async (req: Request) => {
+  // Handle CORS preflight
+  const corsResponse = handleCorsPreFlight(req);
+  if (corsResponse) return corsResponse;
+
+  const corsHeaders = getCorsHeaders(req);
+
+  try {
+    // Get API keys
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+    if (!LOVABLE_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      console.error("Missing required environment variables");
+      return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
+    }
+
+    // Validate authentication
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return createErrorResponse(ERROR_MESSAGES.UNAUTHORIZED, 401, corsHeaders);
+    }
+
+    // Create Supabase client
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+    // Validate user token
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      return createErrorResponse(ERROR_MESSAGES.INVALID_TOKEN, 401, corsHeaders);
+    }
+
+    // Parse and validate request body
+    const body = await req.json();
+    const validation = validateRequest(body);
+
+    if (!validation.success || !validation.data) {
+      return createErrorResponse(validation.error || ERROR_MESSAGES.INVALID_REQUEST, 400, corsHeaders);
+    }
+
+    const { evaluationId, teeth, shade, ceramicType, substrate, substrateCondition } = validation.data;
+
+    // Verify evaluation ownership
+    const { data: evalData, error: evalError } = await supabase
+      .from("evaluations")
+      .select("user_id")
+      .eq("id", evaluationId)
+      .single();
+
+    if (evalError || !evalData || evalData.user_id !== user.id) {
+      return createErrorResponse(ERROR_MESSAGES.UNAUTHORIZED, 403, corsHeaders);
+    }
+
+    // AI prompt for cementation protocol
+    const systemPrompt = `Você é um especialista em cimentação de facetas de porcelana com mais de 15 anos de experiência clínica.
+Gere um protocolo COMPLETO e DETALHADO de cimentação para facetas cerâmicas.
+
+IMPORTANTE:
+- Seja específico com marcas e materiais brasileiros quando possível
+- Inclua tempos precisos para cada etapa
+- Considere o tipo de cerâmica e substrato informados
+- Priorize técnicas atualizadas e baseadas em evidências`;
+
+    const userPrompt = `Gere um protocolo de cimentação de facetas de porcelana para o seguinte caso:
+
+DADOS DO CASO:
+- Dente(s): ${teeth.join(", ")}
+- Cor desejada: ${shade}
+- Tipo de cerâmica: ${ceramicType}
+- Substrato: ${substrate}
+${substrateCondition ? `- Condição do substrato: ${substrateCondition}` : ""}
+
+Retorne o protocolo usando a função generate_cementation_protocol.`;
+
+    // Tool definition for structured output
+    const tools = [
+      {
+        type: "function",
+        function: {
+          name: "generate_cementation_protocol",
+          description: "Gera um protocolo completo de cimentação de facetas cerâmicas",
+          parameters: {
+            type: "object",
+            properties: {
+              preparation_steps: {
+                type: "array",
+                description: "Etapas de preparo (se aplicável)",
+                items: {
+                  type: "object",
+                  properties: {
+                    order: { type: "number" },
+                    step: { type: "string" },
+                    material: { type: "string" },
+                    technique: { type: "string" },
+                    time: { type: "string" },
+                  },
+                  required: ["order", "step", "material"],
+                },
+              },
+              ceramic_treatment: {
+                type: "array",
+                description: "Tratamento da superfície cerâmica",
+                items: {
+                  type: "object",
+                  properties: {
+                    order: { type: "number" },
+                    step: { type: "string" },
+                    material: { type: "string" },
+                    time: { type: "string" },
+                  },
+                  required: ["order", "step", "material"],
+                },
+              },
+              tooth_treatment: {
+                type: "array",
+                description: "Tratamento da superfície dental",
+                items: {
+                  type: "object",
+                  properties: {
+                    order: { type: "number" },
+                    step: { type: "string" },
+                    material: { type: "string" },
+                    time: { type: "string" },
+                  },
+                  required: ["order", "step", "material"],
+                },
+              },
+              cementation: {
+                type: "object",
+                description: "Detalhes do cimento e técnica de cimentação",
+                properties: {
+                  cement_type: { type: "string", description: "Tipo de cimento (fotopolimerizável, dual, etc)" },
+                  cement_brand: { type: "string", description: "Marca sugerida do cimento" },
+                  shade: { type: "string", description: "Cor do cimento" },
+                  light_curing_time: { type: "string", description: "Tempo de fotopolimerização" },
+                  technique: { type: "string", description: "Técnica de inserção e remoção de excessos" },
+                },
+                required: ["cement_type", "cement_brand", "shade", "light_curing_time", "technique"],
+              },
+              finishing: {
+                type: "array",
+                description: "Etapas de acabamento e polimento",
+                items: {
+                  type: "object",
+                  properties: {
+                    order: { type: "number" },
+                    step: { type: "string" },
+                    material: { type: "string" },
+                  },
+                  required: ["order", "step", "material"],
+                },
+              },
+              post_operative: {
+                type: "array",
+                items: { type: "string" },
+                description: "Recomendações pós-operatórias para o paciente",
+              },
+              checklist: {
+                type: "array",
+                items: { type: "string" },
+                description: "Checklist passo a passo para o dentista",
+              },
+              alerts: {
+                type: "array",
+                items: { type: "string" },
+                description: "O que NÃO fazer durante o procedimento",
+              },
+              warnings: {
+                type: "array",
+                items: { type: "string" },
+                description: "Pontos de atenção importantes",
+              },
+              confidence: {
+                type: "string",
+                enum: ["alta", "média", "baixa"],
+                description: "Nível de confiança do protocolo",
+              },
+            },
+            required: [
+              "preparation_steps",
+              "ceramic_treatment",
+              "tooth_treatment",
+              "cementation",
+              "finishing",
+              "post_operative",
+              "checklist",
+              "alerts",
+              "warnings",
+              "confidence",
+            ],
+            additionalProperties: false,
+          },
+        },
+      },
+    ];
+
+    // Call AI for protocol generation
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-pro",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+        tools,
+        tool_choice: { type: "function", function: { name: "generate_cementation_protocol" } },
+      }),
+    });
+
+    if (!response.ok) {
+      const status = response.status;
+      if (status === 429) {
+        return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
+      }
+      if (status === 402) {
+        return createErrorResponse(ERROR_MESSAGES.PAYMENT_REQUIRED, 402, corsHeaders, "PAYMENT_REQUIRED");
+      }
+      console.error("AI error:", status);
+      return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
+    }
+
+    const aiResult = await response.json();
+    const toolCall = aiResult.choices?.[0]?.message?.tool_calls?.[0];
+
+    if (!toolCall?.function?.arguments) {
+      console.error("No tool call in response");
+      return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
+    }
+
+    let protocol: CementationProtocol;
+    try {
+      protocol = JSON.parse(toolCall.function.arguments);
+    } catch {
+      console.error("Failed to parse protocol");
+      return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
+    }
+
+    // Update evaluation with cementation protocol
+    const { error: updateError } = await supabase
+      .from("evaluations")
+      .update({
+        cementation_protocol: protocol,
+        treatment_type: "porcelana",
+      })
+      .eq("id", evaluationId);
+
+    if (updateError) {
+      console.error("Update error:", updateError);
+    }
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        protocol,
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
+  } catch (error) {
+    console.error("Cementation protocol error:", error);
+    return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
+  }
+});

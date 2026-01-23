@@ -30,6 +30,7 @@ interface RequestData {
   evaluationId?: string;
   regenerateSimulationOnly?: boolean;
   existingAnalysis?: DSDAnalysis;
+  toothShape?: 'natural' | 'quadrado' | 'triangular' | 'oval' | 'retangular';
 }
 
 // Validate request
@@ -50,6 +51,9 @@ function validateRequest(data: unknown): { success: boolean; error?: string; dat
     return { success: false, error: ERROR_MESSAGES.IMAGE_FORMAT_UNSUPPORTED };
   }
 
+  const validShapes = ['natural', 'quadrado', 'triangular', 'oval', 'retangular'];
+  const toothShape = validShapes.includes(req.toothShape as string) ? req.toothShape as string : 'natural';
+
   return {
     success: true,
     data: {
@@ -57,9 +61,19 @@ function validateRequest(data: unknown): { success: boolean; error?: string; dat
       evaluationId: typeof req.evaluationId === "string" ? req.evaluationId : undefined,
       regenerateSimulationOnly: req.regenerateSimulationOnly === true,
       existingAnalysis: req.existingAnalysis as DSDAnalysis | undefined,
+      toothShape: toothShape as RequestData['toothShape'],
     },
   };
 }
+
+// Tooth shape descriptions for simulation prompt
+const toothShapeDescriptions: Record<string, string> = {
+  natural: "Manter as características individuais naturais de cada dente do paciente",
+  quadrado: "Bordas incisais retas e paralelas, ângulos bem definidos, proporção largura/altura equilibrada",
+  triangular: "Convergência gradual em direção à cervical, bordas incisais mais largas que a região cervical",
+  oval: "Contornos arredondados e suaves, transições sem ângulos marcados, formato elíptico",
+  retangular: "Proporção altura/largura mais alongada, bordas verticais mais paralelas",
+};
 
 // Generate simulation image
 async function generateSimulation(
@@ -67,8 +81,11 @@ async function generateSimulation(
   analysis: DSDAnalysis,
   userId: string,
   supabase: any,
-  apiKey: string
+  apiKey: string,
+  toothShape: string = 'natural'
 ): Promise<string | null> {
+  const shapeInstruction = toothShapeDescriptions[toothShape] || toothShapeDescriptions.natural;
+  
   const simulationPrompt = `TAREFA: Editar APENAS os dentes visíveis nesta foto de sorriso.
 
 REGRA ABSOLUTA #1 - CÓPIA EXATA:
@@ -83,6 +100,10 @@ REGRA ABSOLUTA #3 - GENGIVA PROIBIDA:
 NÃO crie gengiva onde não existe na foto original.
 Se a gengiva está coberta pelo lábio, ela deve continuar coberta.
 Modifique apenas a gengiva que JÁ É VISÍVEL.
+
+FORMATO DOS DENTES - ${toothShape.toUpperCase()}:
+${shapeInstruction}
+Aplique este formato de forma sutil e harmônica, mantendo naturalidade.
 
 EDIÇÕES PERMITIDAS NOS DENTES:
 ${analysis.suggestions.map((s) => `- ${s.tooth}: ${s.proposed_change}`).join("\n")}
@@ -371,7 +392,7 @@ serve(async (req: Request) => {
       return createErrorResponse(validation.error || ERROR_MESSAGES.INVALID_REQUEST, 400, corsHeaders);
     }
 
-    const { imageBase64, evaluationId, regenerateSimulationOnly, existingAnalysis } = validation.data;
+    const { imageBase64, evaluationId, regenerateSimulationOnly, existingAnalysis, toothShape } = validation.data;
 
     let analysis: DSDAnalysis;
 
@@ -393,7 +414,7 @@ serve(async (req: Request) => {
     // Generate simulation image
     let simulationUrl: string | null = null;
     try {
-      simulationUrl = await generateSimulation(imageBase64, analysis, user.id, supabase, LOVABLE_API_KEY);
+      simulationUrl = await generateSimulation(imageBase64, analysis, user.id, supabase, LOVABLE_API_KEY, toothShape || 'natural');
     } catch (simError) {
       console.error("Simulation error:", simError);
       // Continue without simulation - analysis is still valid
