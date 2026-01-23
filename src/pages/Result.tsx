@@ -178,6 +178,22 @@ export default function Result() {
     }
   };
 
+  // Helper to fetch image as base64
+  const fetchImageAsBase64 = async (url: string): Promise<string | null> => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(blob);
+      });
+    } catch {
+      return null;
+    }
+  };
+
   const handleExportPDF = async () => {
     if (!evaluation) return;
     
@@ -186,10 +202,19 @@ export default function Result() {
     try {
       const evalProtocol = evaluation.stratification_protocol;
       
+      // Load photos as base64 for PDF embedding
+      const [photoFrontalBase64, photo45Base64, photoFaceBase64, dsdSimBase64] = await Promise.all([
+        photoUrls.frontal ? fetchImageAsBase64(photoUrls.frontal) : Promise.resolve(null),
+        photoUrls.angle45 ? fetchImageAsBase64(photoUrls.angle45) : Promise.resolve(null),
+        photoUrls.face ? fetchImageAsBase64(photoUrls.face) : Promise.resolve(null),
+        dsdSimulationUrl ? fetchImageAsBase64(dsdSimulationUrl) : Promise.resolve(null),
+      ]);
+      
       await generateProtocolPDF({
         createdAt: evaluation.created_at,
         dentistName: dentistProfile?.full_name || undefined,
         dentistCRO: dentistProfile?.cro || undefined,
+        patientName: (evaluation as any).patient_name || undefined,
         patientAge: evaluation.patient_age,
         tooth: evaluation.tooth,
         region: evaluation.region,
@@ -207,6 +232,35 @@ export default function Result() {
         alerts: evaluation.alerts || [],
         warnings: evaluation.warnings || [],
         confidence: evalProtocol?.confidence || 'média',
+        
+        // Clinical photos
+        photoFrontal: photoFrontalBase64 || undefined,
+        photo45: photo45Base64 || undefined,
+        photoFace: photoFaceBase64 || undefined,
+        
+        // DSD data
+        dsdAnalysis: evaluation.dsd_analysis ? {
+          facial_midline: evaluation.dsd_analysis.facial_midline,
+          dental_midline: evaluation.dsd_analysis.dental_midline,
+          smile_line: evaluation.dsd_analysis.smile_line,
+          buccal_corridor: evaluation.dsd_analysis.buccal_corridor,
+          occlusal_plane: evaluation.dsd_analysis.occlusal_plane,
+          golden_ratio_compliance: evaluation.dsd_analysis.golden_ratio_compliance,
+          symmetry_score: evaluation.dsd_analysis.symmetry_score,
+          suggestions: evaluation.dsd_analysis.suggestions,
+          observations: evaluation.dsd_analysis.observations,
+        } : undefined,
+        dsdSimulationImage: dsdSimBase64 || undefined,
+        
+        // Additional clinical data
+        substrate: evaluation.substrate,
+        longevityExpectation: evaluation.longevity_expectation,
+        budget: evaluation.budget,
+        
+        // Ideal resin info
+        idealResin: evaluation.ideal_resin || undefined,
+        idealReason: evaluation.ideal_reason || undefined,
+        isFromInventory: evaluation.is_from_inventory,
       });
       
       toast.success('PDF gerado com sucesso!');

@@ -39,10 +39,23 @@ export interface StratificationProtocol {
   [key: string]: unknown;
 }
 
+export interface DSDAnalysisPDF {
+  facial_midline?: string;
+  dental_midline?: string;
+  smile_line?: string;
+  buccal_corridor?: string;
+  occlusal_plane?: string;
+  golden_ratio_compliance?: number;
+  symmetry_score?: number;
+  suggestions?: { tooth: string; current_issue: string; proposed_change: string }[];
+  observations?: string[];
+}
+
 export interface PDFData {
   createdAt: string;
   dentistName?: string;
   dentistCRO?: string;
+  patientName?: string;
   patientAge: number;
   tooth: string;
   region: string;
@@ -60,4 +73,26 @@ export interface PDFData {
   alerts: string[];
   warnings: string[];
   confidence: string;
+  
+  // Clinical photos (base64)
+  photoFrontal?: string;
+  photo45?: string;
+  photoFace?: string;
+  
+  // DSD Analysis
+  dsdAnalysis?: DSDAnalysisPDF;
+  dsdSimulationImage?: string;
+  
+  // Additional clinical data
+  depth?: string;
+  substrateCondition?: string;
+  enamelCondition?: string;
+  substrate?: string;
+  longevityExpectation?: string;
+  budget?: string;
+  
+  // Ideal resin (when different from recommended)
+  idealResin?: Resin;
+  idealReason?: string;
+  isFromInventory?: boolean;
 }
