@@ -11,6 +11,16 @@ interface PhotoUploadStepProps {
   isUploading: boolean;
 }
 
+// Read file as base64 without compression (fallback for problematic formats)
+const readFileAsDataURL = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsDataURL(file);
+  });
+};
+
 // Compress image to reduce payload size for API calls
 const compressImage = async (
   file: File, 
@@ -20,38 +30,53 @@ const compressImage = async (
   return new Promise((resolve, reject) => {
     const img = new Image();
     
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      let width = img.width;
-      let height = img.height;
-      
-      // Resize maintaining aspect ratio
-      if (width > maxWidth) {
-        height = Math.round((height * maxWidth) / width);
-        width = maxWidth;
-      }
-      
-      canvas.width = width;
-      canvas.height = height;
-      
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        reject(new Error('Could not get canvas context'));
-        return;
-      }
-      
-      ctx.drawImage(img, 0, 0, width, height);
-      
-      // Convert to JPEG with compression
-      const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
-      
-      // Clean up object URL
+    // Timeout de segurança para dispositivos móveis problemáticos
+    const timeout = setTimeout(() => {
       URL.revokeObjectURL(img.src);
+      reject(new Error('Timeout loading image'));
+    }, 10000);
+    
+    img.onload = () => {
+      clearTimeout(timeout);
       
-      resolve(compressedBase64);
+      try {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        
+        // Resize maintaining aspect ratio
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          URL.revokeObjectURL(img.src);
+          reject(new Error('Could not get canvas context'));
+          return;
+        }
+        
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Convert to JPEG with compression
+        const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+        
+        // Clean up object URL
+        URL.revokeObjectURL(img.src);
+        
+        resolve(compressedBase64);
+      } catch (err) {
+        URL.revokeObjectURL(img.src);
+        reject(err);
+      }
     };
     
     img.onerror = () => {
+      clearTimeout(timeout);
       URL.revokeObjectURL(img.src);
       reject(new Error('Failed to load image'));
     };
@@ -105,12 +130,33 @@ export function PhotoUploadStep({
 
     setIsCompressing(true);
     
+    // HEIC/HEIF não é suportado pelo Canvas - usar fallback direto
+    const isHEIC = file.type === 'image/heic' || 
+                   file.type === 'image/heif' || 
+                   file.name.toLowerCase().endsWith('.heic') ||
+                   file.name.toLowerCase().endsWith('.heif');
+
     try {
-      const compressedBase64 = await compressImage(file);
-      onImageChange(compressedBase64);
+      if (isHEIC) {
+        // Pular compressão para HEIC (formato Apple)
+        const base64 = await readFileAsDataURL(file);
+        onImageChange(base64);
+      } else {
+        const compressedBase64 = await compressImage(file);
+        onImageChange(compressedBase64);
+      }
     } catch (error) {
-      console.error('Error compressing image:', error);
-      toast.error('Erro ao processar imagem. Tente novamente.');
+      console.warn('Compression failed, using fallback:', error);
+      
+      // Fallback: usar FileReader para imagem original
+      try {
+        const base64 = await readFileAsDataURL(file);
+        onImageChange(base64);
+        toast.info('Imagem carregada sem compressão');
+      } catch (fallbackError) {
+        console.error('Fallback also failed:', fallbackError);
+        toast.error('Erro ao processar imagem. Tente outro formato (JPG ou PNG).');
+      }
     } finally {
       setIsCompressing(false);
     }
