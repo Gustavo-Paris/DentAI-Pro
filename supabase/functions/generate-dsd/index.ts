@@ -69,62 +69,72 @@ async function generateSimulation(
   supabase: any,
   apiKey: string
 ): Promise<string | null> {
-  const simulationPrompt = `Você é um especialista em Digital Smile Design (DSD) e Mock-up Digital para visualização de tratamentos com LENTES DE CONTATO DENTAL e FACETAS.
+  const simulationPrompt = `Você é um especialista em Digital Smile Design (DSD) e Mock-up Digital.
 
-OBJETIVO: Criar uma simulação FOTORREALISTA de como ficaria o sorriso após tratamento com lentes de contato dental. A imagem deve parecer uma FOTO REAL de um caso finalizado, não um render digital.
+OBJETIVO: Criar uma simulação FOTORREALISTA de como ficaria o sorriso após tratamento com lentes de contato dental.
 
-⚠️ REGRAS DE PRESERVAÇÃO ABSOLUTA:
+🚨 REGRA CRÍTICA - MÁSCARA DE ENQUADRAMENTO 🚨
 
-1. **GENGIVA 100% IDÊNTICA**: Não altere NADA da gengiva. Cada pixel da gengiva deve ser exatamente igual à foto original. Zero modificações.
+A foto original tem um "enquadramento" definido pelos lábios e tecidos moles.
+Este enquadramento é uma MÁSCARA INTOCÁVEL. Você só pode modificar os DENTES VISÍVEIS dentro desta máscara.
 
-2. **LÁBIOS E PELE INTOCADOS**: Lábios, pele, pelos, rugas, textura facial devem ser PIXEL POR PIXEL idênticos à original.
+PROIBIDO ABSOLUTAMENTE:
+- ❌ Mover, levantar ou alterar a posição dos lábios
+- ❌ Aumentar a área de exposição do sorriso
+- ❌ Mostrar mais gengiva do que está visível na foto original
+- ❌ Criar/inventar gengiva onde o lábio cobria
+- ❌ Alterar o formato da boca ou abertura do sorriso
 
-3. **APENAS ADIÇÃO DE MATERIAL**: Lentes de contato são tratamentos ADITIVOS:
-   ✅ Aumentar levemente o comprimento (máx 1-2mm no bordo incisal)
-   ✅ Preencher espaços entre dentes (diastemas)
-   ✅ Harmonizar contorno por adição
-   ❌ NUNCA diminuir, encurtar ou afinar nenhum dente
+REGRA DE OURO: Se um pixel é lábio/pele na original, ele DEVE ser lábio/pele na simulação.
+REGRA DE OURO 2: Se um pixel não mostra gengiva na original, NÃO pode mostrar gengiva na simulação.
 
-⚠️ REGRAS DE REALISMO FOTOGRÁFICO - CRÍTICAS:
+⚠️ PRESERVAÇÃO ABSOLUTA:
 
-4. **COR NATURAL, NÃO HOLLYWOOD**: 
-   - NÃO faça dentes brancos puros/artificiais
-   - Use tom natural claro (equivalente a A1-A2 na escala VITA)
-   - Dentes reais têm leve tom amarelado/acinzentado nas áreas cervicais
-   - EVITE o efeito "chiclete branco" ou "dentes de porcelana fake"
-   - A cor deve parecer de dentes saudáveis naturais, não clareamento extremo
+1. **LÁBIOS = MÁSCARA FIXA**: 
+   - A posição EXATA de cada pixel do lábio superior e inferior deve ser idêntica
+   - O lábio NÃO pode estar "levantado" ou em posição diferente
+   - O contorno labial é uma FRONTEIRA que não pode ser ultrapassada
 
-5. **TEXTURA E TRANSLUCIDEZ OBRIGATÓRIAS**:
-   - PRESERVE a textura superficial natural dos dentes
-   - MANTENHA a translucidez das bordas incisais (levemente acinzentada/azulada)
-   - Dentes devem ter brilho natural - não foscos nem excessivamente brilhantes
-   - Preserve micro-texturas e reflexos naturais da superfície dental
+2. **GENGIVA = APENAS O QUE JÁ EXISTE**:
+   - Modifique apenas a gengiva que JÁ É VISÍVEL na foto original
+   - NUNCA adicione gengiva onde o lábio cobre na original
+   - A linha gengival visível deve ter formato idêntico
 
-6. **CARACTERIZAÇÃO INDIVIDUAL DE CADA DENTE**:
-   - Cada dente DEVE manter sua individualidade
-   - NÃO deixe todos os dentes iguais ou simétricos demais
-   - Mantenha pequenas variações naturais de forma, angulação e cor
-   - Preserve anatomia natural (mamelões incisais, depressões sutis, linhas de desenvolvimento)
+3. **PELE E FACE**:
+   - Textura, cor, pelos faciais = 100% idênticos
+   - Nenhuma modificação facial permitida
 
-7. **MUDANÇAS MÍNIMAS E GRADUAIS**:
-   - As modificações devem ser as MÍNIMAS necessárias
-   - O paciente deve ser FACILMENTE reconhecível
-   - Prefira SUB-corrigir a super-corrigir
-   - O resultado deve parecer NATURAL, não artificialmente perfeito
+⚠️ REGRAS PARA OS DENTES (única área editável):
 
-MODIFICAÇÕES ESPECÍFICAS A APLICAR:
+4. **APENAS ADIÇÃO DE MATERIAL**:
+   - Aumentar levemente comprimento (máx 1-2mm bordo incisal)
+   - Preencher diastemas
+   - Harmonizar contorno por adição
+   - NUNCA diminuir, encurtar ou afinar
+
+5. **COR NATURAL (A1-A2)**:
+   - NÃO faça dentes brancos artificiais
+   - Use tom natural com leve saturação cervical
+   - Preserve translucidez das bordas incisais
+
+6. **TEXTURA REAL**:
+   - Mantenha micro-texturas e reflexos naturais
+   - Cada dente deve ter caracterização individual
+   - Evite uniformidade artificial
+
+MODIFICAÇÕES NOS DENTES:
 ${analysis.suggestions.map((s) => `- Dente ${s.tooth}: ${s.proposed_change}`).join("\n")}
 
-CHECKLIST OBRIGATÓRIO ANTES DE FINALIZAR:
-□ Gengiva está 100% idêntica à original? (crítico)
-□ Lábios, pele e características faciais inalterados? (crítico)
-□ A cor dos dentes é natural (não branca artificial)?
-□ A textura e translucidez foram preservadas?
-□ Cada dente mantém caracterização individual única?
-□ As mudanças são sutis e clinicamente realizáveis?
-□ O resultado parece uma foto real, não um render?
+✅ CHECKLIST FINAL OBRIGATÓRIO:
 
-Se QUALQUER item falhar, refaça a edição com mais cuidado.`;
+□ Os lábios estão na EXATA mesma posição da foto original?
+□ A área de exposição do sorriso é IDÊNTICA (não está maior)?
+□ Existe alguma gengiva visível que NÃO existia antes? (deve ser NÃO)
+□ Pele e textura facial estão inalteradas?
+□ A cor dos dentes é natural (não branca artificial)?
+□ O resultado parece uma foto real de um caso clínico?
+
+SE QUALQUER ITEM FALHAR, REFAÇA PRESERVANDO MELHOR O ENQUADRAMENTO ORIGINAL.`;
 
   const simulationResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
