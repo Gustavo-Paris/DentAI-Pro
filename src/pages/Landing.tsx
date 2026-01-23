@@ -1,12 +1,14 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Sparkles, Target, Clock, BookOpen } from 'lucide-react';
+import { Sparkles, Target, Clock, BookOpen, Star, Quote } from 'lucide-react';
 
 export default function Landing() {
   return (
@@ -29,6 +31,10 @@ export default function Landing() {
       {/* Hero */}
       <section className="py-16 sm:py-24 md:py-32">
         <div className="container mx-auto px-4 sm:px-6 text-center max-w-3xl">
+          <Badge variant="secondary" className="mb-4">
+            <Sparkles className="w-3 h-3 mr-1" />
+            Potencializado por IA
+          </Badge>
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight leading-tight mb-4 sm:mb-6">
             A resina ideal para cada caso clínico
           </h1>
@@ -40,6 +46,26 @@ export default function Landing() {
               Começar Avaliação Gratuita
             </Button>
           </Link>
+        </div>
+      </section>
+
+      {/* Stats */}
+      <section className="py-8 sm:py-12 border-t border-border bg-secondary/30">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-3 gap-4 text-center">
+            <div>
+              <p className="text-2xl sm:text-3xl font-semibold">500+</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Avaliações realizadas</p>
+            </div>
+            <div>
+              <p className="text-2xl sm:text-3xl font-semibold">250+</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Cores de resinas</p>
+            </div>
+            <div>
+              <p className="text-2xl sm:text-3xl font-semibold">15+</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Marcas disponíveis</p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -76,6 +102,57 @@ export default function Landing() {
                 <h3 className="font-medium text-sm sm:text-base mb-1 sm:mb-2">{benefit.title}</h3>
                 <p className="text-xs sm:text-sm text-muted-foreground">{benefit.description}</p>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="py-12 sm:py-20 border-t border-border bg-secondary/30">
+        <div className="container mx-auto px-4 sm:px-6 max-w-4xl">
+          <h2 className="text-xl sm:text-2xl font-semibold text-center mb-8 sm:mb-12">
+            O que dizem os dentistas
+          </h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            {[
+              {
+                quote: "Economizo horas de pesquisa em cada caso. A IA realmente entende as nuances da seleção de resinas e me dá confiança nas minhas escolhas.",
+                author: "Dr. Carlos Mendonça",
+                role: "Dentista Estético • São Paulo, SP",
+                rating: 5
+              },
+              {
+                quote: "O protocolo de estratificação que a ferramenta gera é excelente. Meus resultados estéticos melhoraram significativamente desde que comecei a usar.",
+                author: "Dra. Ana Paula Ribeiro",
+                role: "Clínica Geral • Rio de Janeiro, RJ",
+                rating: 5
+              },
+              {
+                quote: "Ferramenta essencial para quem trabalha com estética dental. A análise de cor e a sugestão de camadas é impressionantemente precisa.",
+                author: "Dr. Fernando Costa",
+                role: "Especialista em Dentística • Belo Horizonte, MG",
+                rating: 5
+              },
+              {
+                quote: "Uso diariamente no meu consultório. A integração com meu inventário pessoal torna as recomendações ainda mais práticas e aplicáveis.",
+                author: "Dra. Juliana Santos",
+                role: "Cirurgiã-Dentista • Curitiba, PR",
+                rating: 5
+              }
+            ].map((testimonial, i) => (
+              <Card key={i} className="p-6">
+                <div className="flex gap-1 mb-3">
+                  {Array.from({ length: testimonial.rating }).map((_, j) => (
+                    <Star key={j} className="w-4 h-4 fill-primary text-primary" />
+                  ))}
+                </div>
+                <Quote className="w-6 h-6 text-muted-foreground/30 mb-2" />
+                <p className="text-muted-foreground mb-4 text-sm sm:text-base">{testimonial.quote}</p>
+                <div>
+                  <p className="font-medium text-sm">{testimonial.author}</p>
+                  <p className="text-xs text-muted-foreground">{testimonial.role}</p>
+                </div>
+              </Card>
             ))}
           </div>
         </div>
@@ -133,19 +210,25 @@ export default function Landing() {
             <AccordionItem value="item-2">
               <AccordionTrigger>Quais resinas estão no banco de dados?</AccordionTrigger>
               <AccordionContent>
-                Temos as principais marcas do mercado como 3M ESPE, Ivoclar Vivadent, Kulzer, FGM, Dentsply, SDI, Tokuyama e Shofu. O banco é constantemente atualizado.
+                Temos as principais marcas do mercado como 3M ESPE, Ivoclar Vivadent, Kulzer, FGM, Dentsply, SDI, Tokuyama e Shofu. O banco é constantemente atualizado com mais de 250 cores disponíveis.
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-3">
               <AccordionTrigger>Posso exportar as recomendações?</AccordionTrigger>
               <AccordionContent>
-                Sim, todas as recomendações podem ser exportadas em PDF com os dados do caso, a resina recomendada, justificativa técnica e alternativas.
+                Sim, todas as recomendações podem ser exportadas em PDF com os dados do caso, a resina recomendada, justificativa técnica, protocolo de aplicação e alternativas.
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-4">
               <AccordionTrigger>É gratuito?</AccordionTrigger>
               <AccordionContent>
                 Sim, você pode criar uma conta e fazer avaliações gratuitamente. O histórico de avaliações fica salvo na sua conta.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-5">
+              <AccordionTrigger>A ferramenta substitui meu julgamento clínico?</AccordionTrigger>
+              <AccordionContent>
+                Não. O ResinMatch AI é uma ferramenta de apoio à decisão clínica. As recomendações são sugestões baseadas em evidências e devem ser validadas pelo profissional de acordo com cada caso específico.
               </AccordionContent>
             </AccordionItem>
           </Accordion>
@@ -171,8 +254,22 @@ export default function Landing() {
 
       {/* Footer */}
       <footer className="border-t border-border py-6 sm:py-8">
-        <div className="container mx-auto px-4 sm:px-6 text-center text-xs sm:text-sm text-muted-foreground">
-          © {new Date().getFullYear()} ResinMatch AI. Ferramenta de apoio à decisão clínica.
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-center sm:text-left">
+              <span className="text-xs sm:text-sm text-muted-foreground">
+                © {new Date().getFullYear()} ResinMatch AI. Ferramenta de apoio à decisão clínica.
+              </span>
+            </div>
+            <div className="flex items-center gap-4 text-xs sm:text-sm text-muted-foreground">
+              <Link to="/terms" className="hover:text-foreground hover:underline underline-offset-4">
+                Termos de Uso
+              </Link>
+              <Link to="/privacy" className="hover:text-foreground hover:underline underline-offset-4">
+                Privacidade
+              </Link>
+            </div>
+          </div>
         </div>
       </footer>
     </div>

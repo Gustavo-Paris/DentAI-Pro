@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 
 export default function Register() {
@@ -12,6 +13,7 @@ export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const { signUp } = useAuth();
   const navigate = useNavigate();
@@ -19,6 +21,11 @@ export default function Register() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!acceptedTerms) {
+      toast.error('Você precisa aceitar os Termos de Uso e Política de Privacidade');
+      return;
+    }
+
     if (password !== confirmPassword) {
       toast.error('As senhas não coincidem');
       return;
@@ -118,7 +125,25 @@ export default function Register() {
             />
           </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
+          <div className="flex items-start gap-2">
+            <Checkbox 
+              id="terms" 
+              checked={acceptedTerms}
+              onCheckedChange={(checked) => setAcceptedTerms(checked as boolean)}
+            />
+            <Label htmlFor="terms" className="text-sm leading-relaxed cursor-pointer">
+              Li e aceito os{' '}
+              <Link to="/terms" className="underline underline-offset-4 hover:text-foreground" target="_blank">
+                Termos de Uso
+              </Link>
+              {' '}e a{' '}
+              <Link to="/privacy" className="underline underline-offset-4 hover:text-foreground" target="_blank">
+                Política de Privacidade
+              </Link>
+            </Label>
+          </div>
+
+          <Button type="submit" className="w-full" disabled={loading || !acceptedTerms}>
             {loading ? 'Criando conta...' : 'Criar conta'}
           </Button>
         </form>
