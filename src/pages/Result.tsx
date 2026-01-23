@@ -358,6 +358,9 @@ export default function Result() {
     borderClass: string;
     iconClass: string;
     badgeVariant: 'default' | 'secondary' | 'outline' | 'destructive';
+    ringClass: string;
+    solidBgClass: string;
+    glowClass: string;
   }> = {
     resina: { 
       label: 'Restauração em Resina', 
@@ -365,7 +368,10 @@ export default function Result() {
       bgClass: 'bg-primary/5',
       borderClass: 'border-primary/20',
       iconClass: 'text-primary',
-      badgeVariant: 'default'
+      badgeVariant: 'default',
+      ringClass: 'ring-blue-500',
+      solidBgClass: 'bg-blue-600',
+      glowClass: 'bg-blue-400',
     },
     porcelana: { 
       label: 'Faceta de Porcelana', 
@@ -373,7 +379,10 @@ export default function Result() {
       bgClass: 'bg-amber-50 dark:bg-amber-950/20',
       borderClass: 'border-amber-200 dark:border-amber-800',
       iconClass: 'text-amber-600',
-      badgeVariant: 'secondary'
+      badgeVariant: 'secondary',
+      ringClass: 'ring-amber-500',
+      solidBgClass: 'bg-amber-600',
+      glowClass: 'bg-amber-400',
     },
     coroa: { 
       label: 'Coroa Protética', 
@@ -381,7 +390,10 @@ export default function Result() {
       bgClass: 'bg-purple-50 dark:bg-purple-950/20',
       borderClass: 'border-purple-200 dark:border-purple-800',
       iconClass: 'text-purple-600',
-      badgeVariant: 'secondary'
+      badgeVariant: 'secondary',
+      ringClass: 'ring-purple-500',
+      solidBgClass: 'bg-purple-600',
+      glowClass: 'bg-purple-400',
     },
     implante: { 
       label: 'Indicação de Implante', 
@@ -389,7 +401,10 @@ export default function Result() {
       bgClass: 'bg-orange-50 dark:bg-orange-950/20',
       borderClass: 'border-orange-200 dark:border-orange-800',
       iconClass: 'text-orange-600',
-      badgeVariant: 'secondary'
+      badgeVariant: 'secondary',
+      ringClass: 'ring-orange-500',
+      solidBgClass: 'bg-orange-600',
+      glowClass: 'bg-orange-400',
     },
     endodontia: { 
       label: 'Tratamento de Canal', 
@@ -397,7 +412,10 @@ export default function Result() {
       bgClass: 'bg-rose-50 dark:bg-rose-950/20',
       borderClass: 'border-rose-200 dark:border-rose-800',
       iconClass: 'text-rose-600',
-      badgeVariant: 'destructive'
+      badgeVariant: 'destructive',
+      ringClass: 'ring-rose-500',
+      solidBgClass: 'bg-rose-600',
+      glowClass: 'bg-rose-400',
     },
     encaminhamento: { 
       label: 'Encaminhamento', 
@@ -405,7 +423,10 @@ export default function Result() {
       bgClass: 'bg-muted/50',
       borderClass: 'border-border',
       iconClass: 'text-muted-foreground',
-      badgeVariant: 'outline'
+      badgeVariant: 'outline',
+      ringClass: 'ring-gray-400',
+      solidBgClass: 'bg-gray-600',
+      glowClass: 'bg-gray-400',
     },
   };
   const currentTreatmentStyle = treatmentStyles[treatmentType] || treatmentStyles.resina;
@@ -552,19 +573,22 @@ export default function Result() {
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {photoUrls.frontal && (
-                <div className="relative aspect-square rounded-lg overflow-hidden bg-secondary ring-2 ring-primary ring-offset-2 ring-offset-background">
-                  <img
-                    src={photoUrls.frontal}
-                    alt="Foto Clínica"
-                    className="w-full h-full object-cover"
-                  />
-                  {/* Prominent tooth indicator overlay */}
-                  <div className="absolute top-2 left-2 right-2">
-                    <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold shadow-lg ${currentTreatmentStyle.bgClass} ${currentTreatmentStyle.borderClass} border backdrop-blur-sm`}>
-                      <div className={`p-1 rounded-full ${currentTreatmentStyle.iconClass} bg-background/80`}>
-                        <MapPin className="w-4 h-4" />
+                <div className="relative">
+                  {/* Outer glow effect */}
+                  <div className={`absolute -inset-1 rounded-xl ${currentTreatmentStyle.glowClass} opacity-60`} />
+                  
+                  <div className={`relative aspect-square rounded-lg overflow-hidden bg-secondary ring-4 ${currentTreatmentStyle.ringClass} ring-offset-4 ring-offset-background shadow-xl`}>
+                    <img
+                      src={photoUrls.frontal}
+                      alt="Foto Clínica"
+                      className="w-full h-full object-cover"
+                    />
+                    {/* Prominent tooth indicator overlay */}
+                    <div className="absolute top-3 left-3">
+                      <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-base font-bold shadow-xl ${currentTreatmentStyle.solidBgClass} text-white`}>
+                        <MapPin className="w-5 h-5" />
+                        <span>DENTE {evaluation.tooth}</span>
                       </div>
-                      <span className="text-foreground">Dente {evaluation.tooth}</span>
                     </div>
                   </div>
                 </div>
