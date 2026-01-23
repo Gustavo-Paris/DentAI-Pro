@@ -465,6 +465,117 @@ export async function generateProtocolPDF(data: PDFData): Promise<void> {
     y += 6;
   }
 
+  // ============ CEMENTATION PROTOCOL (for porcelain) ============
+  if (data.treatmentType === 'porcelana' && data.cementationProtocol) {
+    const cementProtocol = data.cementationProtocol;
+    
+    checkPageBreak(30);
+    addText('PROTOCOLO DE CIMENTACAO DE FACETAS', margin, y, { fontSize: 11, fontStyle: 'bold', color: [202, 138, 4] });
+    y += 7;
+    
+    // Ceramic Treatment
+    if (cementProtocol.ceramic_treatment && cementProtocol.ceramic_treatment.length > 0) {
+      checkPageBreak(25);
+      addText('Tratamento da Ceramica', margin, y, { fontSize: 9, fontStyle: 'bold', color: [37, 99, 235] });
+      y += 5;
+      
+      pdf.setFillColor(254, 243, 199);
+      const ceramicHeight = cementProtocol.ceramic_treatment.length * 7 + 4;
+      pdf.roundedRect(margin, y, contentWidth, ceramicHeight, 2, 2, 'F');
+      y += 4;
+      
+      cementProtocol.ceramic_treatment.sort((a, b) => a.order - b.order).forEach((step) => {
+        addText(`${step.order}. ${step.step}`, margin + 4, y, { fontSize: 8, fontStyle: 'bold' });
+        addText(`(${step.material}${step.time ? ` - ${step.time}` : ''})`, margin + 80, y, { fontSize: 7, color: [100, 100, 100] });
+        y += 6;
+      });
+      y += 6;
+    }
+    
+    // Tooth Treatment
+    if (cementProtocol.tooth_treatment && cementProtocol.tooth_treatment.length > 0) {
+      checkPageBreak(25);
+      addText('Tratamento do Dente', margin, y, { fontSize: 9, fontStyle: 'bold', color: [37, 99, 235] });
+      y += 5;
+      
+      pdf.setFillColor(219, 234, 254);
+      const toothHeight = cementProtocol.tooth_treatment.length * 7 + 4;
+      pdf.roundedRect(margin, y, contentWidth, toothHeight, 2, 2, 'F');
+      y += 4;
+      
+      cementProtocol.tooth_treatment.sort((a, b) => a.order - b.order).forEach((step) => {
+        addText(`${step.order}. ${step.step}`, margin + 4, y, { fontSize: 8, fontStyle: 'bold' });
+        addText(`(${step.material}${step.time ? ` - ${step.time}` : ''})`, margin + 80, y, { fontSize: 7, color: [100, 100, 100] });
+        y += 6;
+      });
+      y += 6;
+    }
+    
+    // Cementation details
+    checkPageBreak(30);
+    addText('Cimentacao', margin, y, { fontSize: 9, fontStyle: 'bold', color: [37, 99, 235] });
+    y += 5;
+    
+    pdf.setFillColor(220, 252, 231);
+    pdf.roundedRect(margin, y, contentWidth, 24, 2, 2, 'F');
+    
+    y += 6;
+    const cementCol1 = margin + 5;
+    const cementCol2 = margin + contentWidth / 2;
+    
+    pdf.setFontSize(7);
+    pdf.setTextColor(100, 100, 100);
+    pdf.text('Cimento', cementCol1, y);
+    pdf.text('Cor', cementCol2, y);
+    y += 4;
+    pdf.setFontSize(9);
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(cementProtocol.cementation.cement_brand, cementCol1, y);
+    pdf.text(cementProtocol.cementation.shade, cementCol2, y);
+    
+    y += 6;
+    pdf.setFontSize(7);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(100, 100, 100);
+    pdf.text('Fotopolimerizacao', cementCol1, y);
+    pdf.text('Tipo', cementCol2, y);
+    y += 4;
+    pdf.setFontSize(9);
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(cementProtocol.cementation.light_curing_time, cementCol1, y);
+    pdf.text(cementProtocol.cementation.cement_type, cementCol2, y);
+    
+    y += 10;
+    
+    // Finishing
+    if (cementProtocol.finishing && cementProtocol.finishing.length > 0) {
+      checkPageBreak(20);
+      addText('Acabamento e Polimento', margin, y, { fontSize: 9, fontStyle: 'bold', color: [37, 99, 235] });
+      y += 5;
+      
+      cementProtocol.finishing.sort((a, b) => a.order - b.order).forEach((step) => {
+        addText(`${step.order}. ${step.step} - ${step.material}`, margin + 4, y, { fontSize: 8 });
+        y += 5;
+      });
+      y += 4;
+    }
+    
+    // Post-operative
+    if (cementProtocol.post_operative && cementProtocol.post_operative.length > 0) {
+      checkPageBreak(20);
+      addText('Orientacoes Pos-operatorias', margin, y, { fontSize: 9, fontStyle: 'bold', color: [37, 99, 235] });
+      y += 5;
+      
+      cementProtocol.post_operative.forEach((item) => {
+        addText(`• ${item}`, margin + 4, y, { fontSize: 7, color: [60, 60, 60], maxWidth: contentWidth - 10 });
+        y += 5;
+      });
+      y += 4;
+    }
+  }
+
   // ============ ALERTS & WARNINGS ============
   if (data.alerts.length > 0 || data.warnings.length > 0) {
     checkPageBreak(35);

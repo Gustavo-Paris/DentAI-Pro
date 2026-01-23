@@ -39,6 +39,34 @@ export interface StratificationProtocol {
   [key: string]: unknown;
 }
 
+// Cementation protocol for porcelain veneers
+export interface CementationStep {
+  order: number;
+  step: string;
+  material: string;
+  technique?: string;
+  time?: string;
+}
+
+export interface CementationProtocol {
+  preparation_steps?: CementationStep[];
+  ceramic_treatment: CementationStep[];
+  tooth_treatment: CementationStep[];
+  cementation: {
+    cement_type: string;
+    cement_brand: string;
+    shade: string;
+    light_curing_time: string;
+    technique: string;
+  };
+  finishing: CementationStep[];
+  post_operative: string[];
+  checklist: string[];
+  alerts: string[];
+  warnings: string[];
+  confidence: "alta" | "média" | "baixa";
+}
+
 export interface DSDAnalysisPDF {
   facial_midline?: string;
   dental_midline?: string;
@@ -95,4 +123,8 @@ export interface PDFData {
   idealResin?: Resin;
   idealReason?: string;
   isFromInventory?: boolean;
+  
+  // Porcelain treatment data
+  treatmentType?: 'resina' | 'porcelana';
+  cementationProtocol?: CementationProtocol;
 }
