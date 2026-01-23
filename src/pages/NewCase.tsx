@@ -9,7 +9,7 @@ import { ArrowLeft, ArrowRight, Camera, Brain, ClipboardCheck, FileText, Loader2
 
 import { PhotoUploadStep } from '@/components/wizard/PhotoUploadStep';
 import { AnalyzingStep } from '@/components/wizard/AnalyzingStep';
-import { DSDStep, DSDResult } from '@/components/wizard/DSDStep';
+import { DSDStep, DSDResult, ToothShape } from '@/components/wizard/DSDStep';
 import { ReviewAnalysisStep, PhotoAnalysisResult, ReviewFormData, DetectedTooth } from '@/components/wizard/ReviewAnalysisStep';
 
 const steps = [
@@ -52,6 +52,7 @@ export default function NewCase() {
   const [selectedTeeth, setSelectedTeeth] = useState<string[]>([]);
   const [dsdResult, setDsdResult] = useState<DSDResult | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [selectedToothShape, setSelectedToothShape] = useState<ToothShape | null>(null);
   
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -59,11 +60,19 @@ export default function NewCase() {
   const totalSteps = 5;
   const progress = (step / totalSteps) * 100;
 
-  // Auto-select all detected teeth when analysis completes
+  // Auto-select all detected teeth and sync treatment type when analysis completes
   useEffect(() => {
     if (analysisResult?.detected_teeth && analysisResult.detected_teeth.length > 0) {
       const allTeeth = analysisResult.detected_teeth.map(t => t.tooth);
       setSelectedTeeth(allTeeth);
+    }
+    
+    // CRITICAL: Sync treatment type with AI indication
+    if (analysisResult?.treatment_indication) {
+      setFormData(prev => ({
+        ...prev,
+        treatmentType: analysisResult.treatment_indication as 'resina' | 'porcelana',
+      }));
     }
   }, [analysisResult]);
 
@@ -297,14 +306,15 @@ export default function NewCase() {
     // Generate a shared session_id for all teeth in this batch
     const sessionId = crypto.randomUUID();
 
+    // Determine treatment type from form
+    const treatmentType = formData.treatmentType || 'resina';
+
     try {
       for (const tooth of teethToProcess) {
         // Get tooth-specific data if available from AI analysis
         const toothData = getToothData(tooth);
         
-        // Create evaluation record for each tooth (include DSD data)
-        // Note: dsd_analysis and dsd_simulation_url columns were added via migration
-        // but types.ts is auto-generated, so we cast the insert object
+        // Create evaluation record for each tooth
         const insertData = {
           user_id: user.id,
           session_id: sessionId,
@@ -325,7 +335,11 @@ export default function NewCase() {
           longevity_expectation: formData.longevityExpectation,
           photo_frontal: uploadedPhotoPath,
           status: 'analyzing',
-          // DSD data (columns added via migration)
+          // CRITICAL: Save treatment type and DSD data
+          treatment_type: treatmentType,
+          desired_tooth_shape: selectedToothShape || null,
+          ai_treatment_indication: analysisResult?.treatment_indication || null,
+          ai_indication_reason: analysisResult?.indication_reason || null,
           dsd_analysis: dsdResult?.analysis || null,
           dsd_simulation_url: dsdResult?.simulation_url || null,
         } as Record<string, unknown>;
@@ -339,27 +353,44 @@ export default function NewCase() {
         if (evalError) throw evalError;
         createdEvaluationIds.push(evaluation.id);
 
-        // Call recommend-resin edge function for each tooth
-        const { error: aiError } = await supabase.functions.invoke('recommend-resin', {
-          body: {
-            evaluationId: evaluation.id,
-            userId: user.id,
-            patientAge: formData.patientAge,
-            tooth: tooth,
-            region: getFullRegion(tooth),
-            cavityClass: toothData?.cavity_class || formData.cavityClass,
-            restorationSize: toothData?.restoration_size || formData.restorationSize,
-            substrate: toothData?.substrate || formData.substrate,
-            bruxism: formData.bruxism,
-            aestheticLevel: formData.aestheticLevel,
-            toothColor: formData.vitaShade,
-            stratificationNeeded: true,
-            budget: formData.budget,
-            longevityExpectation: formData.longevityExpectation,
-          },
-        });
+        // CRITICAL: Call the correct edge function based on treatment type
+        if (treatmentType === 'porcelana') {
+          // Call recommend-cementation for porcelain veneers
+          const { error: cementError } = await supabase.functions.invoke('recommend-cementation', {
+            body: {
+              evaluationId: evaluation.id,
+              teeth: [tooth],
+              shade: formData.vitaShade,
+              ceramicType: 'Dissilicato de lítio',
+              substrate: toothData?.substrate || formData.substrate,
+              substrateCondition: toothData?.substrate_condition || formData.substrateCondition,
+            },
+          });
 
-        if (aiError) throw aiError;
+          if (cementError) throw cementError;
+        } else {
+          // Call recommend-resin for composite restorations
+          const { error: aiError } = await supabase.functions.invoke('recommend-resin', {
+            body: {
+              evaluationId: evaluation.id,
+              userId: user.id,
+              patientAge: formData.patientAge,
+              tooth: tooth,
+              region: getFullRegion(tooth),
+              cavityClass: toothData?.cavity_class || formData.cavityClass,
+              restorationSize: toothData?.restoration_size || formData.restorationSize,
+              substrate: toothData?.substrate || formData.substrate,
+              bruxism: formData.bruxism,
+              aestheticLevel: formData.aestheticLevel,
+              toothColor: formData.vitaShade,
+              stratificationNeeded: true,
+              budget: formData.budget,
+              longevityExpectation: formData.longevityExpectation,
+            },
+          });
+
+          if (aiError) throw aiError;
+        }
 
         // Update status to draft (ready for checklist completion)
         await supabase
@@ -368,8 +399,9 @@ export default function NewCase() {
           .eq('id', evaluation.id);
       }
 
-      // Success message - always navigate to evaluation page for consistency
-      toast.success(`${teethToProcess.length} caso(s) gerado(s) com sucesso!`);
+      // Success message with treatment type context
+      const treatmentLabel = treatmentType === 'porcelana' ? 'Faceta(s) de porcelana' : 'Caso(s) de resina';
+      toast.success(`${teethToProcess.length} ${treatmentLabel} gerado(s) com sucesso!`);
       navigate(`/evaluation/${sessionId}`);
     } catch (error) {
       console.error('Error:', error);
@@ -380,14 +412,18 @@ export default function NewCase() {
     }
   };
 
-  // DSD handlers
-  const handleDSDComplete = (result: DSDResult | null) => {
+  // DSD handlers - capture toothShape from DSD step
+  const handleDSDComplete = (result: DSDResult | null, toothShape?: ToothShape) => {
     setDsdResult(result);
+    if (toothShape) {
+      setSelectedToothShape(toothShape);
+    }
     setStep(4); // Move to review
   };
 
   const handleDSDSkip = () => {
     setDsdResult(null);
+    setSelectedToothShape(null);
     setStep(4); // Move to review
   };
 
