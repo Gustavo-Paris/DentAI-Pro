@@ -35,13 +35,70 @@ import {
   Calendar,
   User,
   Image as ImageIcon,
-  AlertCircle
+  AlertCircle,
+  Layers,
+  Crown,
+  Stethoscope,
+  ArrowUpRight,
+  CircleX
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
 
-import type { StratificationProtocol } from '@/types/protocol';
+import type { StratificationProtocol, CementationProtocol } from '@/types/protocol';
+
+// Treatment type configuration
+const treatmentConfig: Record<string, { 
+  label: string; 
+  shortLabel: string;
+  icon: any;
+  variant: 'default' | 'secondary' | 'destructive' | 'outline';
+  showCavityInfo: boolean;
+}> = {
+  resina: { 
+    label: 'Resina Composta', 
+    shortLabel: 'Resina',
+    icon: Layers,
+    variant: 'default',
+    showCavityInfo: true 
+  },
+  porcelana: { 
+    label: 'Faceta de Porcelana', 
+    shortLabel: 'Faceta',
+    icon: Crown,
+    variant: 'secondary',
+    showCavityInfo: false 
+  },
+  coroa: { 
+    label: 'Coroa Total', 
+    shortLabel: 'Coroa',
+    icon: Crown,
+    variant: 'secondary',
+    showCavityInfo: false 
+  },
+  implante: { 
+    label: 'Implante', 
+    shortLabel: 'Implante',
+    icon: CircleX,
+    variant: 'outline',
+    showCavityInfo: false 
+  },
+  endodontia: { 
+    label: 'Endodontia', 
+    shortLabel: 'Endo',
+    icon: Stethoscope,
+    variant: 'outline',
+    showCavityInfo: false 
+  },
+  encaminhamento: { 
+    label: 'Encaminhamento', 
+    shortLabel: 'Encaminhar',
+    icon: ArrowUpRight,
+    variant: 'outline',
+    showCavityInfo: false 
+  },
+};
 
 interface EvaluationItem {
   id: string;
@@ -54,6 +111,10 @@ interface EvaluationItem {
   photo_frontal: string | null;
   checklist_progress: number[] | null;
   stratification_protocol: StratificationProtocol | null;
+  treatment_type: string | null;
+  ai_treatment_indication: string | null;
+  cementation_protocol: CementationProtocol | null;
+  generic_protocol: { checklist?: string[] } | null;
   resins?: {
     name: string;
     manufacturer: string;
@@ -89,6 +150,10 @@ export default function EvaluationDetails() {
         photo_frontal,
         checklist_progress,
         stratification_protocol,
+        treatment_type,
+        ai_treatment_indication,
+        cementation_protocol,
+        generic_protocol,
         resins!recommended_resin_id (
           name,
           manufacturer
@@ -103,7 +168,7 @@ export default function EvaluationDetails() {
       toast.error('Erro ao carregar avaliação');
       navigate('/dashboard');
     } else if (data && data.length > 0) {
-      setEvaluations(data as EvaluationItem[]);
+      setEvaluations(data as unknown as EvaluationItem[]);
       
       // Load photo if available
       const photoPath = data[0]?.photo_frontal;
@@ -127,10 +192,25 @@ export default function EvaluationDetails() {
     navigate('/');
   };
 
+  // Get checklist based on treatment type
+  const getChecklist = (evaluation: EvaluationItem): string[] => {
+    const treatmentType = evaluation.treatment_type || 'resina';
+    switch (treatmentType) {
+      case 'porcelana':
+        return (evaluation.cementation_protocol as any)?.checklist || [];
+      case 'coroa':
+      case 'implante':
+      case 'endodontia':
+      case 'encaminhamento':
+        return evaluation.generic_protocol?.checklist || [];
+      default: // resina
+        return evaluation.stratification_protocol?.checklist || [];
+    }
+  };
+
   // Check if checklist is complete for a given evaluation
   const isChecklistComplete = (evaluation: EvaluationItem): boolean => {
-    const protocol = evaluation.stratification_protocol;
-    const checklist = protocol?.checklist || [];
+    const checklist = getChecklist(evaluation);
     const progress = evaluation.checklist_progress || [];
     
     // If there's no checklist, consider it complete
@@ -199,10 +279,36 @@ export default function EvaluationDetails() {
   };
 
   const getChecklistProgress = (evaluation: EvaluationItem): { current: number; total: number } => {
-    const protocol = evaluation.stratification_protocol;
-    const checklist = protocol?.checklist || [];
+    const checklist = getChecklist(evaluation);
     const progress = evaluation.checklist_progress || [];
     return { current: progress.length, total: checklist.length };
+  };
+  
+  // Get clinical details based on treatment type
+  const getClinicalDetails = (evaluation: EvaluationItem): string => {
+    const treatmentType = evaluation.treatment_type || 'resina';
+    const config = treatmentConfig[treatmentType];
+    
+    if (config?.showCavityInfo) {
+      return `${evaluation.cavity_class} • ${evaluation.restoration_size}`;
+    }
+    
+    // For other treatments, show AI indication or short description
+    return evaluation.ai_treatment_indication || config?.label || '-';
+  };
+  
+  // Get treatment badge
+  const getTreatmentBadge = (evaluation: EvaluationItem) => {
+    const treatmentType = evaluation.treatment_type || 'resina';
+    const config = treatmentConfig[treatmentType] || treatmentConfig.resina;
+    const IconComponent = config.icon;
+    
+    return (
+      <Badge variant={config.variant} className="gap-1">
+        <IconComponent className="w-3 h-3" />
+        <span className="hidden md:inline">{config.shortLabel}</span>
+      </Badge>
+    );
   };
 
   const getStatusBadge = (evaluation: EvaluationItem) => {
@@ -353,9 +459,8 @@ export default function EvaluationDetails() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Dente</TableHead>
-                      <TableHead>Classe</TableHead>
-                      <TableHead>Tamanho</TableHead>
-                      <TableHead>Resina</TableHead>
+                      <TableHead>Tratamento</TableHead>
+                      <TableHead>Detalhes</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Ações</TableHead>
                     </TableRow>
@@ -364,17 +469,11 @@ export default function EvaluationDetails() {
                     {evaluations.map((evaluation) => (
                       <TableRow key={evaluation.id}>
                         <TableCell className="font-medium">{evaluation.tooth}</TableCell>
-                        <TableCell>{evaluation.cavity_class}</TableCell>
-                        <TableCell className="capitalize">{evaluation.restoration_size}</TableCell>
+                        <TableCell>{getTreatmentBadge(evaluation)}</TableCell>
                         <TableCell>
-                          {evaluation.resins ? (
-                            <div>
-                              <p className="font-medium">{evaluation.resins.name}</p>
-                              <p className="text-xs text-muted-foreground">{evaluation.resins.manufacturer}</p>
-                            </div>
-                          ) : (
-                            <span className="text-muted-foreground">-</span>
-                          )}
+                          <span className="text-sm text-muted-foreground capitalize">
+                            {getClinicalDetails(evaluation)}
+                          </span>
                         </TableCell>
                         <TableCell>{getStatusBadge(evaluation)}</TableCell>
                         <TableCell className="text-right">
@@ -432,16 +531,18 @@ export default function EvaluationDetails() {
               {evaluations.map((evaluation) => (
                 <Card key={evaluation.id} className="p-4">
                   <div className="flex items-start justify-between mb-3">
-                    <div>
+                    <div className="flex items-center gap-2">
+                      {getTreatmentBadge(evaluation)}
                       <p className="font-semibold">Dente {evaluation.tooth}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {evaluation.cavity_class} • {evaluation.restoration_size}
-                      </p>
                     </div>
                     {getStatusBadge(evaluation)}
                   </div>
                   
-                  {evaluation.resins && (
+                  <p className="text-sm text-muted-foreground mb-3 capitalize">
+                    {getClinicalDetails(evaluation)}
+                  </p>
+                  
+                  {evaluation.treatment_type === 'resina' && evaluation.resins && (
                     <div className="mb-3 p-2 bg-muted/50 rounded">
                       <p className="text-sm font-medium">{evaluation.resins.name}</p>
                       <p className="text-xs text-muted-foreground">{evaluation.resins.manufacturer}</p>

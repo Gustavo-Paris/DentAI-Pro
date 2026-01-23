@@ -453,9 +453,10 @@ export default function Result() {
           </Card>
         )}
 
-        {/* SECTION 1: Case Summary */}
+        {/* SECTION 1: Case Summary - Contextual based on treatment type */}
         <section className="mb-8">
           <CaseSummaryBox
+            treatmentType={treatmentType}
             patientAge={evaluation.patient_age}
             tooth={evaluation.tooth}
             region={evaluation.region}
@@ -465,6 +466,7 @@ export default function Result() {
             aestheticLevel={evaluation.aesthetic_level}
             bruxism={evaluation.bruxism}
             stratificationNeeded={evaluation.stratification_needed}
+            indicationReason={evaluation.ai_treatment_indication || genericProtocol?.ai_reason}
           />
         </section>
 
@@ -599,18 +601,50 @@ export default function Result() {
         ) : (
           <>
             {/* Resin Protocol Layers Table */}
-            {hasProtocol && (
+            {hasProtocol && treatmentType === 'resina' && (
               <section className="mb-8">
                 <h3 className="font-medium mb-3 flex items-center gap-2">
                   <Layers className="w-4 h-4" />
-                  Protocolo de Camadas
+                  Protocolo de Estratificação
                 </h3>
                 <ProtocolTable layers={layers} />
               </section>
             )}
+            
+            {/* Generic Protocol for special treatments */}
+            {isSpecialTreatment && genericProtocol && (
+              <section className="mb-8">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      {treatmentType === 'coroa' && <Crown className="w-4 h-4" />}
+                      {treatmentType === 'implante' && <CircleX className="w-4 h-4" />}
+                      {treatmentType === 'endodontia' && <Stethoscope className="w-4 h-4" />}
+                      {treatmentType === 'encaminhamento' && <ArrowUpRight className="w-4 h-4" />}
+                      {treatmentType === 'coroa' && 'Planejamento Protético'}
+                      {treatmentType === 'implante' && 'Planejamento Cirúrgico'}
+                      {treatmentType === 'endodontia' && 'Protocolo Endodôntico'}
+                      {treatmentType === 'encaminhamento' && 'Orientações de Encaminhamento'}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {genericProtocol.summary && (
+                      <p className="text-sm text-muted-foreground mb-4">
+                        {genericProtocol.summary}
+                      </p>
+                    )}
+                    <ProtocolChecklist 
+                      items={genericProtocol.checklist} 
+                      checkedIndices={evaluation.checklist_progress || []}
+                      onProgressChange={handleChecklistChange}
+                    />
+                  </CardContent>
+                </Card>
+              </section>
+            )}
 
-            {/* SECTION 4: Simplified Alternative */}
-            {protocolAlternative && (
+            {/* SECTION 4: Simplified Alternative - Only for resin */}
+            {treatmentType === 'resina' && protocolAlternative && (
               <section className="mb-8">
                 <AlternativeBox alternative={protocolAlternative} />
               </section>
@@ -618,8 +652,8 @@ export default function Result() {
           </>
         )}
 
-        {/* SECTION 5: Step-by-Step Checklist - Only for resin (porcelain has integrated checklist) */}
-        {!isPorcelain && checklist.length > 0 && (
+        {/* SECTION 5: Step-by-Step Checklist - Only for resin (porcelain and special have integrated) */}
+        {treatmentType === 'resina' && checklist.length > 0 && (
           <section className="mb-8 print:hidden">
             <Card>
               <CardHeader className="pb-3">
@@ -636,16 +670,16 @@ export default function Result() {
           </section>
         )}
 
-        {/* SECTION 6 & 7: Alerts and Warnings side by side - Only for resin (porcelain has integrated alerts) */}
-        {!isPorcelain && (alerts.length > 0 || warnings.length > 0) && (
+        {/* SECTION 6 & 7: Alerts and Warnings side by side - Only for resin */}
+        {treatmentType === 'resina' && (alerts.length > 0 || warnings.length > 0) && (
           <section className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-4">
             <AlertsSection alerts={alerts} />
             <WarningsSection warnings={warnings} />
           </section>
         )}
 
-        {/* SECTION 8: Confidence Indicator - Only for resin (porcelain has integrated confidence) */}
-        {!isPorcelain && hasProtocol && (
+        {/* SECTION 8: Confidence Indicator - Only for resin */}
+        {treatmentType === 'resina' && hasProtocol && (
           <section className="mb-8">
             <ConfidenceIndicator confidence={confidence} />
           </section>

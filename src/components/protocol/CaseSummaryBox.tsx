@@ -1,20 +1,39 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { User, MapPin, Layers, Palette } from "lucide-react";
+import { User, MapPin, Layers, Palette, Crown, Stethoscope, ArrowUpRight, CircleX } from "lucide-react";
+
+// Treatment type configuration
+const treatmentConfig: Record<string, { 
+  label: string; 
+  icon: any;
+  showCavityInfo: boolean;
+}> = {
+  resina: { label: 'Resina Composta', icon: Layers, showCavityInfo: true },
+  porcelana: { label: 'Faceta de Porcelana', icon: Crown, showCavityInfo: false },
+  coroa: { label: 'Coroa Total', icon: Crown, showCavityInfo: false },
+  implante: { label: 'Implante', icon: CircleX, showCavityInfo: false },
+  endodontia: { label: 'Endodontia', icon: Stethoscope, showCavityInfo: false },
+  encaminhamento: { label: 'Encaminhamento', icon: ArrowUpRight, showCavityInfo: false },
+};
 
 interface CaseSummaryBoxProps {
+  treatmentType?: 'resina' | 'porcelana' | 'coroa' | 'implante' | 'endodontia' | 'encaminhamento' | string;
   patientAge: number;
   tooth: string;
   region: string;
-  cavityClass: string;
-  restorationSize: string;
   toothColor: string;
   aestheticLevel: string;
   bruxism: boolean;
   stratificationNeeded: boolean;
+  // Resina-specific
+  cavityClass?: string;
+  restorationSize?: string;
+  // Non-resina specific
+  indicationReason?: string | null;
 }
 
 export default function CaseSummaryBox({
+  treatmentType = 'resina',
   patientAge,
   tooth,
   region,
@@ -24,7 +43,12 @@ export default function CaseSummaryBox({
   aestheticLevel,
   bruxism,
   stratificationNeeded,
+  indicationReason,
 }: CaseSummaryBoxProps) {
+  const config = treatmentConfig[treatmentType] || treatmentConfig.resina;
+  const showCavityInfo = config.showCavityInfo;
+  const TreatmentIcon = config.icon;
+  
   return (
     <Card>
       <CardHeader className="pb-2 sm:pb-3">
@@ -34,7 +58,7 @@ export default function CaseSummaryBox({
         </CardTitle>
       </CardHeader>
       <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+        <div className={`grid grid-cols-2 ${showCavityInfo ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-3 sm:gap-4`}>
           <div className="space-y-0.5 sm:space-y-1">
             <div className="flex items-center gap-1 sm:gap-1.5 text-muted-foreground text-xs">
               <User className="w-3 h-3" />
@@ -52,19 +76,36 @@ export default function CaseSummaryBox({
             <p className="text-xs text-muted-foreground">{region}</p>
           </div>
           
-          <div className="space-y-0.5 sm:space-y-1">
-            <div className="flex items-center gap-1 sm:gap-1.5 text-muted-foreground text-xs">
-              <Layers className="w-3 h-3" />
-              Cavidade
+          {/* Conditional: Cavity info for resina only */}
+          {showCavityInfo && cavityClass && restorationSize && (
+            <div className="space-y-0.5 sm:space-y-1">
+              <div className="flex items-center gap-1 sm:gap-1.5 text-muted-foreground text-xs">
+                <Layers className="w-3 h-3" />
+                Cavidade
+              </div>
+              <p className="font-medium text-sm sm:text-base">{cavityClass}</p>
+              <p className="text-xs text-muted-foreground capitalize">{restorationSize}</p>
             </div>
-            <p className="font-medium text-sm sm:text-base">{cavityClass}</p>
-            <p className="text-xs text-muted-foreground capitalize">{restorationSize}</p>
-          </div>
+          )}
+          
+          {/* Conditional: Treatment type for non-resina */}
+          {!showCavityInfo && (
+            <div className="space-y-0.5 sm:space-y-1">
+              <div className="flex items-center gap-1 sm:gap-1.5 text-muted-foreground text-xs">
+                <TreatmentIcon className="w-3 h-3" />
+                Tratamento
+              </div>
+              <p className="font-medium text-sm sm:text-base">{config.label}</p>
+              {indicationReason && (
+                <p className="text-xs text-muted-foreground line-clamp-2">{indicationReason}</p>
+              )}
+            </div>
+          )}
           
           <div className="space-y-0.5 sm:space-y-1">
             <div className="flex items-center gap-1 sm:gap-1.5 text-muted-foreground text-xs">
               <Palette className="w-3 h-3" />
-              Cor VITA
+              Cor {showCavityInfo ? 'VITA' : 'Alvo'}
             </div>
             <p className="font-mono font-medium text-sm sm:text-base">{toothColor}</p>
           </div>
@@ -80,9 +121,14 @@ export default function CaseSummaryBox({
               Bruxismo
             </Badge>
           )}
-          {stratificationNeeded && (
+          {stratificationNeeded && showCavityInfo && (
             <Badge variant="secondary" className="text-xs">
               Estratificação
+            </Badge>
+          )}
+          {!showCavityInfo && (
+            <Badge variant="secondary" className="text-xs">
+              {config.label}
             </Badge>
           )}
         </div>
