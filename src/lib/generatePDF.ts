@@ -1,56 +1,9 @@
 import jsPDF from 'jspdf';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import type { PDFData } from '@/types/protocol';
 
-interface ProtocolLayer {
-  order: number;
-  name: string;
-  resin_brand: string;
-  shade: string;
-  thickness: string;
-  purpose: string;
-  technique: string;
-}
-
-interface ProtocolAlternative {
-  resin: string;
-  shade: string;
-  technique: string;
-  tradeoff: string;
-}
-
-interface Resin {
-  name: string;
-  manufacturer: string;
-  type: string;
-  opacity: string;
-  resistance: string;
-  polishing: string;
-  aesthetics: string;
-}
-
-interface PDFData {
-  createdAt: string;
-  dentistName?: string;
-  dentistCRO?: string;
-  patientAge: number;
-  tooth: string;
-  region: string;
-  cavityClass: string;
-  restorationSize: string;
-  toothColor: string;
-  aestheticLevel: string;
-  bruxism: boolean;
-  stratificationNeeded: boolean;
-  resin: Resin | null;
-  recommendationText: string | null;
-  layers: ProtocolLayer[];
-  alternative?: ProtocolAlternative;
-  checklist: string[];
-  alerts: string[];
-  warnings: string[];
-  confidence: string;
-}
+export type { PDFData };
 
 export async function generateProtocolPDF(data: PDFData): Promise<void> {
   const pdf = new jsPDF('p', 'mm', 'a4');

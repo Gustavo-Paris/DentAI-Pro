@@ -11,43 +11,24 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { generateProtocolPDF } from '@/lib/generatePDF';
+import type { Resin, StratificationProtocol, ProtocolLayer, ProtocolAlternative } from '@/types/protocol';
 
 // Protocol components
-import ProtocolTable, { ProtocolLayer } from '@/components/protocol/ProtocolTable';
+import ProtocolTable from '@/components/protocol/ProtocolTable';
 import ProtocolChecklist from '@/components/protocol/ProtocolChecklist';
 import AlertsSection from '@/components/protocol/AlertsSection';
 import WarningsSection from '@/components/protocol/WarningsSection';
 import ConfidenceIndicator from '@/components/protocol/ConfidenceIndicator';
-import AlternativeBox, { ProtocolAlternative } from '@/components/protocol/AlternativeBox';
+import AlternativeBox from '@/components/protocol/AlternativeBox';
 import CaseSummaryBox from '@/components/protocol/CaseSummaryBox';
 import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
 import { ProportionsCard } from '@/components/dsd/ProportionsCard';
 import { DSDAnalysis } from '@/components/wizard/DSDStep';
 
-interface Resin {
-  id: string;
-  name: string;
-  manufacturer: string;
-  type: string;
-  opacity: string;
-  resistance: string;
-  polishing: string;
-  aesthetics: string;
-  price_range: string;
-  description: string | null;
-}
-
 interface Alternative {
   name: string;
   manufacturer: string;
   reason: string;
-}
-
-interface StratificationProtocol {
-  layers: ProtocolLayer[];
-  alternative: ProtocolAlternative;
-  checklist: string[];
-  confidence: "alta" | "média" | "baixa";
 }
 
 interface Evaluation {
