@@ -93,6 +93,8 @@ interface Evaluation {
 interface DentistProfile {
   full_name: string | null;
   cro: string | null;
+  clinic_name: string | null;
+  clinic_logo_url: string | null;
 }
 
 export default function Result() {
@@ -131,7 +133,7 @@ export default function Result() {
       if (user) {
         const { data: profileData } = await supabase
           .from('profiles')
-          .select('full_name, cro')
+          .select('full_name, cro, clinic_name, clinic_logo_url')
           .eq('user_id', user.id)
           .single();
         
@@ -225,7 +227,15 @@ export default function Result() {
     try {
       const evalProtocol = evaluation.stratification_protocol;
       
-      // Load photos as base64 for PDF embedding
+      // Load photos and clinic logo as base64 for PDF embedding
+      let clinicLogoBase64: string | null = null;
+      if (dentistProfile?.clinic_logo_url) {
+        const { data: logoUrl } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(dentistProfile.clinic_logo_url);
+        clinicLogoBase64 = await fetchImageAsBase64(logoUrl.publicUrl);
+      }
+      
       const [photoFrontalBase64, photo45Base64, photoFaceBase64, dsdSimBase64] = await Promise.all([
         photoUrls.frontal ? fetchImageAsBase64(photoUrls.frontal) : Promise.resolve(null),
         photoUrls.angle45 ? fetchImageAsBase64(photoUrls.angle45) : Promise.resolve(null),
@@ -237,6 +247,8 @@ export default function Result() {
         createdAt: evaluation.created_at,
         dentistName: dentistProfile?.full_name || undefined,
         dentistCRO: dentistProfile?.cro || undefined,
+        clinicName: dentistProfile?.clinic_name || undefined,
+        clinicLogo: clinicLogoBase64 || undefined,
         patientName: (evaluation as any).patient_name || undefined,
         patientAge: evaluation.patient_age,
         tooth: evaluation.tooth,

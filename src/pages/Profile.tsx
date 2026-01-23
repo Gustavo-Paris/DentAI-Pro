@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowLeft, Camera, Loader2, Save, User } from 'lucide-react';
+import { ArrowLeft, Camera, Loader2, Save, Building2, ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ProfileData {
@@ -16,24 +16,29 @@ interface ProfileData {
   clinic_name: string | null;
   phone: string | null;
   avatar_url: string | null;
+  clinic_logo_url: string | null;
 }
 
 export default function Profile() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [profile, setProfile] = useState<ProfileData>({
     full_name: '',
     cro: '',
     clinic_name: '',
     phone: '',
     avatar_url: null,
+    clinic_logo_url: null,
   });
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -41,7 +46,7 @@ export default function Profile() {
 
       const { data, error } = await supabase
         .from('profiles')
-        .select('full_name, cro, clinic_name, phone, avatar_url')
+        .select('full_name, cro, clinic_name, phone, avatar_url, clinic_logo_url')
         .eq('user_id', user.id)
         .single();
 
@@ -56,6 +61,12 @@ export default function Profile() {
             .getPublicUrl(data.avatar_url);
           setAvatarPreview(urlData.publicUrl);
         }
+        if (data.clinic_logo_url) {
+          const { data: logoUrlData } = supabase.storage
+            .from('avatars')
+            .getPublicUrl(data.clinic_logo_url);
+          setLogoPreview(logoUrlData.publicUrl);
+        }
       }
       setLoading(false);
     };
@@ -65,6 +76,10 @@ export default function Profile() {
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleLogoClick = () => {
+    logoInputRef.current?.click();
   };
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -117,6 +132,56 @@ export default function Profile() {
     }
   };
 
+  const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Por favor, selecione uma imagem');
+      return;
+    }
+
+    // Validate file size (max 1MB for logos)
+    if (file.size > 1 * 1024 * 1024) {
+      toast.error('A logo deve ter no máximo 1MB');
+      return;
+    }
+
+    setUploadingLogo(true);
+
+    try {
+      // Delete old logo if exists
+      if (profile.clinic_logo_url) {
+        await supabase.storage.from('avatars').remove([profile.clinic_logo_url]);
+      }
+
+      // Upload new logo
+      const fileExt = file.name.split('.').pop();
+      const filePath = `${user.id}/clinic-logo.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      setLogoPreview(urlData.publicUrl + '?t=' + Date.now());
+      setProfile(prev => ({ ...prev, clinic_logo_url: filePath }));
+      toast.success('Logo atualizada!');
+    } catch (error) {
+      console.error('Error uploading logo:', error);
+      toast.error('Erro ao enviar logo');
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
   const handleSave = async () => {
     if (!user) return;
 
@@ -131,6 +196,7 @@ export default function Profile() {
           clinic_name: profile.clinic_name,
           phone: profile.phone,
           avatar_url: profile.avatar_url,
+          clinic_logo_url: profile.clinic_logo_url,
         })
         .eq('user_id', user.id);
 
@@ -178,35 +244,75 @@ export default function Profile() {
       <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-lg">
         <Card>
           <CardHeader className="text-center pb-2">
-            <div className="flex justify-center mb-4">
-              <div className="relative">
-                <Avatar className="w-24 h-24 cursor-pointer" onClick={handleAvatarClick}>
-                  <AvatarImage src={avatarPreview || undefined} alt={profile.full_name || 'Avatar'} />
-                  <AvatarFallback className="text-2xl bg-primary/10">
-                    {uploading ? (
-                      <Loader2 className="w-8 h-8 animate-spin" />
+            {/* Avatar and Logo side by side */}
+            <div className="flex justify-center items-start gap-8 mb-4">
+              {/* Avatar Section */}
+              <div className="flex flex-col items-center">
+                <div className="relative">
+                  <Avatar className="w-20 h-20 cursor-pointer" onClick={handleAvatarClick}>
+                    <AvatarImage src={avatarPreview || undefined} alt={profile.full_name || 'Avatar'} />
+                    <AvatarFallback className="text-xl bg-primary/10">
+                      {uploading ? (
+                        <Loader2 className="w-6 h-6 animate-spin" />
+                      ) : (
+                        getInitials(profile.full_name)
+                      )}
+                    </AvatarFallback>
+                  </Avatar>
+                  <button
+                    type="button"
+                    onClick={handleAvatarClick}
+                    disabled={uploading}
+                    className="absolute bottom-0 right-0 p-1.5 rounded-full bg-primary text-primary-foreground shadow-md hover:bg-primary/90 transition-colors"
+                  >
+                    <Camera className="w-3 h-3" />
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    className="hidden"
+                  />
+                </div>
+                <span className="text-xs text-muted-foreground mt-2">Foto Pessoal</span>
+              </div>
+
+              {/* Clinic Logo Section */}
+              <div className="flex flex-col items-center">
+                <div className="relative">
+                  <div 
+                    className="w-20 h-20 rounded-lg border-2 border-dashed border-border bg-muted/50 flex items-center justify-center cursor-pointer hover:border-primary/50 transition-colors overflow-hidden"
+                    onClick={handleLogoClick}
+                  >
+                    {uploadingLogo ? (
+                      <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                    ) : logoPreview ? (
+                      <img src={logoPreview} alt="Logo" className="w-full h-full object-contain p-1" />
                     ) : (
-                      getInitials(profile.full_name)
+                      <Building2 className="w-8 h-8 text-muted-foreground" />
                     )}
-                  </AvatarFallback>
-                </Avatar>
-                <button
-                  type="button"
-                  onClick={handleAvatarClick}
-                  disabled={uploading}
-                  className="absolute bottom-0 right-0 p-2 rounded-full bg-primary text-primary-foreground shadow-md hover:bg-primary/90 transition-colors"
-                >
-                  <Camera className="w-4 h-4" />
-                </button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarChange}
-                  className="hidden"
-                />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleLogoClick}
+                    disabled={uploadingLogo}
+                    className="absolute bottom-0 right-0 p-1.5 rounded-full bg-primary text-primary-foreground shadow-md hover:bg-primary/90 transition-colors"
+                  >
+                    <ImageIcon className="w-3 h-3" />
+                  </button>
+                  <input
+                    ref={logoInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/svg+xml"
+                    onChange={handleLogoChange}
+                    className="hidden"
+                  />
+                </div>
+                <span className="text-xs text-muted-foreground mt-2">Logo do Consultório</span>
               </div>
             </div>
+            
             <CardTitle>Editar Perfil</CardTitle>
             <CardDescription>Atualize suas informações pessoais e profissionais</CardDescription>
           </CardHeader>
