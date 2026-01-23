@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Download, Plus, CheckCircle, Image, Package, Sparkles, Layers, Loader2, Smile, Crown, Stethoscope, ArrowUpRight, CircleX } from 'lucide-react';
+import { ArrowLeft, Download, Plus, CheckCircle, Image, Package, Sparkles, Layers, Loader2, Smile, Crown, Stethoscope, ArrowUpRight, CircleX, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -348,16 +348,66 @@ export default function Result() {
   const showIdealResin = idealResin && idealResin.id !== resin?.id;
   const hasProtocol = isPorcelain ? !!cementationProtocol : isSpecialTreatment ? !!genericProtocol : layers.length > 0;
 
-  // Treatment type display info
-  const treatmentInfo: Record<string, { label: string; icon: any; color: string }> = {
-    resina: { label: 'Resina Composta', icon: Layers, color: 'primary' },
-    porcelana: { label: 'Facetas de Porcelana', icon: Crown, color: 'warning' },
-    coroa: { label: 'Coroa Total', icon: Crown, color: 'purple-500' },
-    implante: { label: 'Indicação de Implante', icon: CircleX, color: 'orange-500' },
-    endodontia: { label: 'Tratamento de Canal', icon: Stethoscope, color: 'rose-500' },
-    encaminhamento: { label: 'Encaminhamento', icon: ArrowUpRight, color: 'muted' },
+  // Treatment type display info with styling
+  const treatmentStyles: Record<string, { 
+    label: string; 
+    icon: any; 
+    bgClass: string;
+    borderClass: string;
+    iconClass: string;
+    badgeVariant: 'default' | 'secondary' | 'outline' | 'destructive';
+  }> = {
+    resina: { 
+      label: 'Restauração em Resina', 
+      icon: Layers, 
+      bgClass: 'bg-primary/5',
+      borderClass: 'border-primary/20',
+      iconClass: 'text-primary',
+      badgeVariant: 'default'
+    },
+    porcelana: { 
+      label: 'Faceta de Porcelana', 
+      icon: Crown, 
+      bgClass: 'bg-amber-50 dark:bg-amber-950/20',
+      borderClass: 'border-amber-200 dark:border-amber-800',
+      iconClass: 'text-amber-600',
+      badgeVariant: 'secondary'
+    },
+    coroa: { 
+      label: 'Coroa Protética', 
+      icon: Crown, 
+      bgClass: 'bg-purple-50 dark:bg-purple-950/20',
+      borderClass: 'border-purple-200 dark:border-purple-800',
+      iconClass: 'text-purple-600',
+      badgeVariant: 'secondary'
+    },
+    implante: { 
+      label: 'Indicação de Implante', 
+      icon: CircleX, 
+      bgClass: 'bg-orange-50 dark:bg-orange-950/20',
+      borderClass: 'border-orange-200 dark:border-orange-800',
+      iconClass: 'text-orange-600',
+      badgeVariant: 'secondary'
+    },
+    endodontia: { 
+      label: 'Tratamento de Canal', 
+      icon: Stethoscope, 
+      bgClass: 'bg-rose-50 dark:bg-rose-950/20',
+      borderClass: 'border-rose-200 dark:border-rose-800',
+      iconClass: 'text-rose-600',
+      badgeVariant: 'destructive'
+    },
+    encaminhamento: { 
+      label: 'Encaminhamento', 
+      icon: ArrowUpRight, 
+      bgClass: 'bg-muted/50',
+      borderClass: 'border-border',
+      iconClass: 'text-muted-foreground',
+      badgeVariant: 'outline'
+    },
   };
-  const currentTreatmentInfo = treatmentInfo[treatmentType] || treatmentInfo.resina;
+  const currentTreatmentStyle = treatmentStyles[treatmentType] || treatmentStyles.resina;
+  const TreatmentIcon = currentTreatmentStyle.icon;
 
   return (
     <div className="min-h-screen bg-background print:bg-background">
@@ -384,12 +434,32 @@ export default function Result() {
         </div>
 
         {/* Date */}
-        <p className="text-sm text-muted-foreground mb-6 print:hidden">
+        <p className="text-sm text-muted-foreground mb-4 print:hidden">
           {format(new Date(evaluation.created_at), "d 'de' MMMM 'de' yyyy, HH:mm", { locale: ptBR })}
         </p>
 
-        {/* Inventory Banner */}
-        {!evaluation.has_inventory_at_creation && (
+        {/* Treatment Type Header - Always visible */}
+        <Card className={`mb-6 ${currentTreatmentStyle.bgClass} ${currentTreatmentStyle.borderClass}`}>
+          <CardContent className="py-4">
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-lg ${currentTreatmentStyle.bgClass}`}>
+                <TreatmentIcon className={`w-6 h-6 ${currentTreatmentStyle.iconClass}`} />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-lg font-semibold">{currentTreatmentStyle.label}</h2>
+                <p className="text-sm text-muted-foreground">
+                  Dente {evaluation.tooth} • {evaluation.region.replace('-', ' ')}
+                </p>
+              </div>
+              <Badge variant={currentTreatmentStyle.badgeVariant}>
+                {treatmentType === 'resina' ? 'Direta' : 'Indireta'}
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Inventory Banner - Only for resin treatments */}
+        {treatmentType === 'resina' && !evaluation.has_inventory_at_creation && (
           <Card className="mb-6 border-primary/20 bg-primary/5 print:hidden">
             <CardContent className="py-4">
               <div className="flex items-center gap-3">
@@ -412,43 +482,16 @@ export default function Result() {
           </Card>
         )}
 
-        {/* Treatment Type Banner */}
-        {treatmentType !== 'resina' && (
-          <Card className={`mb-6 border-${currentTreatmentInfo.color}/30 bg-${currentTreatmentInfo.color}/5`}>
+        {/* Special Treatment Recommendations */}
+        {isSpecialTreatment && genericProtocol?.recommendations && (
+          <Card className="mb-6 border-muted">
             <CardContent className="py-4">
-              <div className="flex items-center gap-3">
-                <currentTreatmentInfo.icon className={`w-5 h-5 text-${currentTreatmentInfo.color}`} />
-                <div className="flex-1">
-                  <p className="text-sm font-medium">
-                    Tratamento: {currentTreatmentInfo.label}
-                  </p>
-                  {genericProtocol?.ai_reason && (
-                    <p className="text-xs text-muted-foreground">
-                      {genericProtocol.ai_reason}
-                    </p>
-                  )}
-                  {evaluation.ai_treatment_indication && !genericProtocol?.ai_reason && (
-                    <p className="text-xs text-muted-foreground">
-                      {evaluation.ai_treatment_indication}
-                    </p>
-                  )}
-                </div>
-                <Badge variant="outline">
-                  {currentTreatmentInfo.label}
-                </Badge>
-              </div>
-              
-              {/* Show recommendations for special treatments */}
-              {isSpecialTreatment && genericProtocol?.recommendations && (
-                <div className="mt-4 pt-4 border-t border-border">
-                  <p className="text-sm font-medium mb-2">Recomendações ao paciente:</p>
-                  <ul className="text-xs text-muted-foreground space-y-1">
-                    {genericProtocol.recommendations.map((rec, i) => (
-                      <li key={i}>• {rec}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+              <p className="text-sm font-medium mb-2">Recomendações ao paciente:</p>
+              <ul className="text-xs text-muted-foreground space-y-1">
+                {genericProtocol.recommendations.map((rec, i) => (
+                  <li key={i}>• {rec}</li>
+                ))}
+              </ul>
             </CardContent>
           </Card>
         )}
@@ -500,12 +543,17 @@ export default function Result() {
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {photoUrls.frontal && (
-                <div className="aspect-square rounded-lg overflow-hidden bg-secondary">
+                <div className="relative aspect-square rounded-lg overflow-hidden bg-secondary border-2 border-primary/30">
                   <img
                     src={photoUrls.frontal}
                     alt="Foto Clínica"
                     className="w-full h-full object-cover"
                   />
+                  {/* Tooth indicator overlay */}
+                  <div className="absolute bottom-2 left-2 bg-foreground/80 text-background px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1">
+                    <MapPin className="w-3 h-3" />
+                    Dente {evaluation.tooth}
+                  </div>
                 </div>
               )}
               {photoUrls.angle45 && (
