@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { LogOut, Plus, FileText, Calendar, Package, ChevronRight } from 'lucide-react';
+import { LogOut, Plus, FileText, Calendar, Package, ChevronRight, User } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -36,12 +37,14 @@ interface Session {
 
 interface Profile {
   full_name: string | null;
+  avatar_url: string | null;
 }
 
 export default function Dashboard() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [pendingCases, setPendingCases] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -52,11 +55,18 @@ export default function Dashboard() {
 
       const { data: profileData } = await supabase
         .from('profiles')
-        .select('full_name')
+        .select('full_name, avatar_url')
         .eq('user_id', user.id)
         .single();
 
       setProfile(profileData);
+      
+      if (profileData?.avatar_url) {
+        const { data: urlData } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(profileData.avatar_url);
+        setAvatarUrl(urlData.publicUrl);
+      }
 
       // Fetch evaluations and group by session_id
       const { data: evaluationsData } = await supabase
@@ -123,16 +133,36 @@ export default function Dashboard() {
   };
 
   const firstName = profile?.full_name?.split(' ')[0] || 'Usuário';
+  
+  const getInitials = (name: string | null) => {
+    if (!name) return 'U';
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border">
         <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
           <span className="text-lg sm:text-xl font-semibold tracking-tight">ResinMatch AI</span>
-          <Button variant="ghost" size="sm" onClick={handleSignOut}>
-            <LogOut className="w-4 h-4 sm:mr-2" />
-            <span className="hidden sm:inline">Sair</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Link to="/profile">
+              <Avatar className="w-8 h-8 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all">
+                <AvatarImage src={avatarUrl || undefined} alt={profile?.full_name || 'Avatar'} />
+                <AvatarFallback className="text-xs bg-primary/10">
+                  {getInitials(profile?.full_name)}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
+            <Button variant="ghost" size="sm" onClick={handleSignOut}>
+              <LogOut className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Sair</span>
+            </Button>
+          </div>
         </div>
       </header>
 
