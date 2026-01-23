@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Camera, Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import heic2any from 'heic2any';
+import { isHeic, heicTo } from 'heic-to';
 
 interface PhotoUploadStepProps {
   imageBase64: string | null;
@@ -12,33 +12,30 @@ interface PhotoUploadStepProps {
   isUploading: boolean;
 }
 
-// Detecção robusta de HEIC (Safari iOS pode retornar type vazio)
-const isHeicFile = (file: File): boolean => {
-  const typeIsHeic = file.type === 'image/heic' || file.type === 'image/heif';
-  const nameIsHeic = /\.(heic|heif)$/i.test(file.name);
-  const typeIsEmpty = file.type === '' || file.type === 'application/octet-stream';
-  
-  // Se tipo é HEIC, ou se tipo está vazio/genérico E nome termina em .heic/.heif
-  return typeIsHeic || (typeIsEmpty && nameIsHeic);
+// Detecção robusta de HEIC usando a biblioteca heic-to + fallback
+const checkIsHeic = async (file: File): Promise<boolean> => {
+  try {
+    return await isHeic(file);
+  } catch {
+    // Fallback para detecção por nome/tipo (Safari iOS pode retornar type vazio)
+    const typeIsHeic = file.type === 'image/heic' || file.type === 'image/heif';
+    const nameIsHeic = /\.(heic|heif)$/i.test(file.name);
+    const typeIsEmpty = file.type === '' || file.type === 'application/octet-stream';
+    return typeIsHeic || (typeIsEmpty && nameIsHeic);
+  }
 };
 
-// Converter HEIC para JPEG usando heic2any
-const convertHeicToJpeg = async (file: File): Promise<File> => {
+// Converter HEIC para JPEG usando heic-to (suporta iOS 18)
+const convertHeicToJpeg = async (file: File): Promise<Blob> => {
   try {
-    const convertedBlob = await heic2any({
+    const jpegBlob = await heicTo({
       blob: file,
-      toType: 'image/jpeg',
-      quality: 0.7, // Lower quality for smaller payload
+      type: 'image/jpeg',
+      quality: 0.7,
     });
-    
-    // heic2any pode retornar Blob ou Blob[] - garantir que é um Blob
-    const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
-    
-    // Criar novo File com extensão .jpg
-    const newFileName = file.name.replace(/\.(heic|heif)$/i, '.jpg');
-    return new File([blob], newFileName, { type: 'image/jpeg' });
+    return jpegBlob;
   } catch (error) {
-    console.error('HEIC conversion failed:', error);
+    console.error('[PhotoUpload] HEIC conversion failed:', error);
     throw error;
   }
 };
@@ -56,7 +53,7 @@ const readFileAsDataURL = (file: File): Promise<string> => {
 // Compress image to reduce payload size for API calls
 // Max 1280px and quality 0.7 to ensure payloads stay under Edge Function limits
 const compressImage = async (
-  file: File, 
+  file: File | Blob, 
   maxWidth: number = 1280, 
   quality: number = 0.7
 ): Promise<string> => {
@@ -67,7 +64,7 @@ const compressImage = async (
     const timeout = setTimeout(() => {
       URL.revokeObjectURL(img.src);
       reject(new Error('Timeout loading image'));
-    }, 10000);
+    }, 15000);
     
     img.onload = () => {
       clearTimeout(timeout);
@@ -151,6 +148,12 @@ export function PhotoUploadStep({
   const showCameraButton = isMobileDevice || isSmallScreen;
 
   const handleFile = useCallback(async (file: File) => {
+    console.log('[PhotoUpload] File received:', {
+      name: file.name,
+      type: file.type,
+      size: file.size,
+    });
+
     // Validação de tipo - aceitar imagens E arquivos sem tipo (HEIC no Safari)
     if (!file.type.startsWith('image/') && file.type !== '' && file.type !== 'application/octet-stream') {
       toast.error('Apenas imagens são permitidas');
@@ -165,29 +168,47 @@ export function PhotoUploadStep({
     setIsCompressing(true);
 
     try {
-      let processedFile = file;
+      let processedBlob: File | Blob = file;
       
-      // Converter HEIC para JPEG primeiro
-      if (isHeicFile(file)) {
+      // Verificar se é HEIC usando a nova biblioteca
+      const fileIsHeic = await checkIsHeic(file);
+      console.log('[PhotoUpload] Is HEIC:', fileIsHeic);
+      
+      if (fileIsHeic) {
         toast.info('Convertendo foto do iPhone...');
-        processedFile = await convertHeicToJpeg(file);
+        console.log('[PhotoUpload] Starting HEIC conversion...');
+        processedBlob = await convertHeicToJpeg(file);
+        console.log('[PhotoUpload] HEIC conversion successful');
       }
       
-      // Agora comprimir o JPEG resultante
-      const compressedBase64 = await compressImage(processedFile);
+      // Comprimir a imagem
+      console.log('[PhotoUpload] Starting compression...');
+      const compressedBase64 = await compressImage(processedBlob);
+      console.log('[PhotoUpload] Compression successful, size:', compressedBase64.length);
       onImageChange(compressedBase64);
       
     } catch (error) {
-      console.warn('Processing failed:', error);
+      console.error('[PhotoUpload] Processing failed:', error);
       
-      // Fallback: tentar ler original (pode não funcionar para HEIC)
+      // Fallback: tentar conversão automática do Safari
       try {
+        console.log('[PhotoUpload] Trying Safari native fallback...');
         const base64 = await readFileAsDataURL(file);
-        onImageChange(base64);
-        toast.info('Imagem carregada sem conversão');
+        
+        // Se o Safari converteu automaticamente para JPEG/PNG
+        if (base64.startsWith('data:image/jpeg') || base64.startsWith('data:image/png')) {
+          console.log('[PhotoUpload] Safari native conversion worked');
+          onImageChange(base64);
+          toast.info('Imagem carregada com conversão automática');
+          return;
+        }
+        
+        // Se ainda é HEIC no base64, não vai funcionar
+        console.warn('[PhotoUpload] Safari did not auto-convert');
+        toast.error('Erro ao processar imagem. Tente tirar a foto novamente ou envie como JPG.');
       } catch (fallbackError) {
-        console.error('Fallback also failed:', fallbackError);
-        toast.error('Erro ao processar imagem. Tente enviar como JPG ou PNG.');
+        console.error('[PhotoUpload] Fallback also failed:', fallbackError);
+        toast.error('Não foi possível processar esta foto. Tente enviar como JPG ou usar a câmera diretamente.');
       }
     } finally {
       setIsCompressing(false);
@@ -224,6 +245,9 @@ export function PhotoUploadStep({
     onImageChange(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
+    }
+    if (cameraInputRef.current) {
+      cameraInputRef.current.value = '';
     }
   };
 
