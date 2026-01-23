@@ -10,6 +10,13 @@ interface AnalyzePhotoRequest {
 // Expanded treatment types
 type TreatmentIndication = "resina" | "porcelana" | "coroa" | "implante" | "endodontia" | "encaminhamento";
 
+interface ToothBounds {
+  x: number;       // Center X position (0-100%)
+  y: number;       // Center Y position (0-100%)
+  width: number;   // Width as percentage (0-100%)
+  height: number;  // Height as percentage (0-100%)
+}
+
 interface DetectedTooth {
   tooth: string;
   tooth_region: string | null;
@@ -23,6 +30,7 @@ interface DetectedTooth {
   notes: string | null;
   treatment_indication?: TreatmentIndication;
   indication_reason?: string;
+  tooth_bounds?: ToothBounds;
 }
 
 interface PhotoAnalysisResult {
@@ -217,6 +225,11 @@ Além de patologias, identifique oportunidades de melhoria estética mesmo em de
    - "média": restaurações defeituosas, lesões não urgentes, coroas
    - "baixa": melhorias estéticas opcionais
 10. INDICAÇÃO DE TRATAMENTO: resina, porcelana, coroa, implante, endodontia, ou encaminhamento
+11. POSIÇÃO DO DENTE NA IMAGEM (tooth_bounds): Para o dente PRINCIPAL, estime a posição na foto:
+   - x: posição horizontal do CENTRO do dente (0% = esquerda, 100% = direita)
+   - y: posição vertical do CENTRO do dente (0% = topo, 100% = base)
+   - width: largura aproximada do dente como % da imagem
+   - height: altura aproximada do dente como % da imagem
 
 Adicionalmente, identifique:
 - A cor VITA geral da arcada (A1, A2, A3, A3.5, B1, B2, etc.)
@@ -334,6 +347,17 @@ Use a função analyze_dental_photo para retornar a análise estruturada complet
                       type: "string",
                       description: "Razão detalhada da indicação de tratamento",
                       nullable: true
+                    },
+                    tooth_bounds: {
+                      type: "object",
+                      description: "Posição aproximada do dente na imagem, em porcentagem (0-100). SEMPRE forneça para o dente principal.",
+                      properties: {
+                        x: { type: "number", description: "Posição X do centro do dente (0-100%)" },
+                        y: { type: "number", description: "Posição Y do centro do dente (0-100%)" },
+                        width: { type: "number", description: "Largura aproximada do dente (0-100%)" },
+                        height: { type: "number", description: "Altura aproximada do dente (0-100%)" }
+                      },
+                      required: ["x", "y", "width", "height"]
                     }
                   },
                   required: ["tooth", "priority", "treatment_indication"]

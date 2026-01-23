@@ -39,6 +39,12 @@ export interface DetectedTooth {
   notes: string | null;
   treatment_indication?: TreatmentType;
   indication_reason?: string;
+  tooth_bounds?: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
 }
 
 export interface PhotoAnalysisResult {
