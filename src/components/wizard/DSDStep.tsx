@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuthenticatedFetch } from '@/hooks/useAuthenticatedFetch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -58,6 +59,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip }: DSDStepProps) {
   const [error, setError] = useState<string | null>(null);
   const [simulationImageUrl, setSimulationImageUrl] = useState<string | null>(null);
   const [isRegeneratingSimulation, setIsRegeneratingSimulation] = useState(false);
+  const { invokeFunction } = useAuthenticatedFetch();
 
   // Load signed URL for simulation
   useEffect(() => {
@@ -99,7 +101,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip }: DSDStepProps) {
     }, 2500);
 
     try {
-      const { data, error: fnError } = await supabase.functions.invoke('generate-dsd', {
+      const { data, error: fnError } = await invokeFunction<DSDResult>('generate-dsd', {
         body: { imageBase64, toothShape: TOOTH_SHAPE },
       });
 
@@ -110,7 +112,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip }: DSDStepProps) {
       }
 
       if (data?.analysis) {
-        setResult(data as DSDResult);
+        setResult(data);
         toast.success('Análise DSD concluída!');
       } else {
         throw new Error('Dados de análise não retornados');
@@ -173,7 +175,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip }: DSDStepProps) {
     setIsRegeneratingSimulation(true);
 
     try {
-      const { data, error: fnError } = await supabase.functions.invoke('generate-dsd', {
+      const { data, error: fnError } = await invokeFunction<DSDResult>('generate-dsd', {
         body: {
           imageBase64,
           regenerateSimulationOnly: true,
