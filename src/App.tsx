@@ -20,6 +20,8 @@ import Inventory from "@/pages/Inventory";
 import Result from "@/pages/Result";
 import Evaluations from "@/pages/Evaluations";
 import EvaluationDetails from "@/pages/EvaluationDetails";
+import Patients from "@/pages/Patients";
+import PatientProfile from "@/pages/PatientProfile";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -92,6 +94,22 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/patients"
+              element={
+                <ProtectedRoute>
+                  <Patients />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/patient/:patientId"
+              element={
+                <ProtectedRoute>
+                  <PatientProfile />
                 </ProtectedRoute>
               }
             />

@@ -64,6 +64,7 @@ export type Database = {
           is_from_inventory: boolean | null
           longevity_expectation: string
           patient_age: number
+          patient_id: string | null
           patient_name: string | null
           photo_45: string | null
           photo_face: string | null
@@ -113,6 +114,7 @@ export type Database = {
           is_from_inventory?: boolean | null
           longevity_expectation: string
           patient_age: number
+          patient_id?: string | null
           patient_name?: string | null
           photo_45?: string | null
           photo_face?: string | null
@@ -162,6 +164,7 @@ export type Database = {
           is_from_inventory?: boolean | null
           longevity_expectation?: string
           patient_age?: number
+          patient_id?: string | null
           patient_name?: string | null
           photo_45?: string | null
           photo_face?: string | null
@@ -195,6 +198,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "evaluations_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "evaluations_recommended_resin_id_fkey"
             columns: ["recommended_resin_id"]
             isOneToOne: false
@@ -202,6 +212,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      patients: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
