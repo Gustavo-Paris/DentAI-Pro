@@ -317,12 +317,12 @@ export default function Dashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
           <Card className="p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
                 <h3 className="font-medium mb-1">Nova Avaliação</h3>
-                <p className="text-sm text-muted-foreground">Análise com IA para resina ideal</p>
+                <p className="text-sm text-muted-foreground">Análise com IA</p>
               </div>
               <Link to="/new-case" className="w-full sm:w-auto">
                 <Button className="w-full sm:w-auto">
@@ -336,8 +336,23 @@ export default function Dashboard() {
           <Card className="p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
+                <h3 className="font-medium mb-1">Meus Pacientes</h3>
+                <p className="text-sm text-muted-foreground">{metrics.totalPatients} cadastrados</p>
+              </div>
+              <Link to="/patients" className="w-full sm:w-auto">
+                <Button variant="outline" className="w-full sm:w-auto">
+                  <Users className="w-4 h-4 mr-2" />
+                  Ver
+                </Button>
+              </Link>
+            </div>
+          </Card>
+
+          <Card className="p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
                 <h3 className="font-medium mb-1">Meu Inventário</h3>
-                <p className="text-sm text-muted-foreground">Gerencie suas resinas disponíveis</p>
+                <p className="text-sm text-muted-foreground">Resinas disponíveis</p>
               </div>
               <Link to="/inventory" className="w-full sm:w-auto">
                 <Button variant="outline" className="w-full sm:w-auto">
