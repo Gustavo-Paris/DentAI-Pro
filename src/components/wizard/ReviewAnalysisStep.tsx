@@ -21,6 +21,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { AlertTriangle, Check, Info, Sparkles, CircleDot, RefreshCw, Loader2, Plus, Wrench, Wand2, Crown, Stethoscope, CircleX, ArrowUpRight } from 'lucide-react';
+import { PatientAutocomplete } from '@/components/PatientAutocomplete';
 
 // Expanded treatment types
 export type TreatmentType = 'resina' | 'porcelana' | 'coroa' | 'implante' | 'endodontia' | 'encaminhamento';
@@ -110,6 +111,8 @@ interface ReviewAnalysisStepProps {
   onSelectedTeethChange?: (teeth: string[]) => void;
   toothTreatments?: Record<string, TreatmentType>;
   onToothTreatmentChange?: (tooth: string, treatment: TreatmentType) => void;
+  selectedPatientId?: string | null;
+  onPatientSelect?: (name: string, patientId?: string) => void;
 }
 
 // Get icon for treatment type
@@ -161,6 +164,8 @@ export function ReviewAnalysisStep({
   onSelectedTeethChange,
   toothTreatments = {},
   onToothTreatmentChange,
+  selectedPatientId,
+  onPatientSelect,
 }: ReviewAnalysisStepProps) {
   const [showManualAdd, setShowManualAdd] = useState(false);
   const [manualTooth, setManualTooth] = useState('');
@@ -653,15 +658,16 @@ export function ReviewAnalysisStep({
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="patientName">Nome (opcional)</Label>
-                  <Input
-                    id="patientName"
-                    placeholder="Nome do paciente"
-                    value={formData.patientName}
-                    onChange={(e) => onFormChange({ patientName: e.target.value })}
-                  />
-                </div>
+                <PatientAutocomplete
+                  value={formData.patientName}
+                  onChange={(name, patientId) => {
+                    onFormChange({ patientName: name });
+                    onPatientSelect?.(name, patientId);
+                  }}
+                  selectedPatientId={selectedPatientId}
+                  placeholder="Nome do paciente"
+                  label="Nome (opcional)"
+                />
                 <div className="space-y-2">
                   <Label htmlFor="patientAge">Idade *</Label>
                   <Input

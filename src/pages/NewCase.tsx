@@ -56,6 +56,7 @@ export default function NewCase() {
   const [selectedTeeth, setSelectedTeeth] = useState<string[]>([]);
   const [dsdResult, setDsdResult] = useState<DSDResult | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
   // Removed tooth shape selection - now uses 'natural' as default internally
   const [toothTreatments, setToothTreatments] = useState<Record<string, TreatmentType>>({});
   
@@ -391,6 +392,41 @@ export default function NewCase() {
     const treatmentCounts: Record<string, number> = {};
 
     try {
+      // Handle patient creation/linking
+      let patientId = selectedPatientId;
+      
+      if (formData.patientName && !patientId) {
+        // Create new patient if name provided but no existing patient selected
+        const { data: newPatient, error: patientError } = await supabase
+          .from('patients')
+          .insert({
+            user_id: user.id,
+            name: formData.patientName.trim(),
+          })
+          .select('id')
+          .single();
+
+        if (patientError) {
+          // If conflict (patient already exists), try to find them
+          if (patientError.code === '23505') {
+            const { data: existingPatient } = await supabase
+              .from('patients')
+              .select('id')
+              .eq('user_id', user.id)
+              .eq('name', formData.patientName.trim())
+              .maybeSingle();
+            
+            if (existingPatient) {
+              patientId = existingPatient.id;
+            }
+          } else {
+            console.error('Error creating patient:', patientError);
+          }
+        } else if (newPatient) {
+          patientId = newPatient.id;
+        }
+      }
+
       for (const tooth of teethToProcess) {
         // Get tooth-specific data if available from AI analysis
         const toothData = getToothData(tooth);
@@ -405,6 +441,7 @@ export default function NewCase() {
         const insertData = {
           user_id: user.id,
           session_id: sessionId,
+          patient_id: patientId || null,
           patient_name: formData.patientName || null,
           patient_age: parseInt(formData.patientAge),
           tooth: tooth,
@@ -752,6 +789,10 @@ export default function NewCase() {
             onSelectedTeethChange={setSelectedTeeth}
             toothTreatments={toothTreatments}
             onToothTreatmentChange={handleToothTreatmentChange}
+            selectedPatientId={selectedPatientId}
+            onPatientSelect={(name, patientId) => {
+              setSelectedPatientId(patientId || null);
+            }}
           />
         )}
 
