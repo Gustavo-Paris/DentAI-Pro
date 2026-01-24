@@ -1,16 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { ArrowLeft, ArrowRight, Camera, Brain, ClipboardCheck, FileText, Loader2, Smile } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Camera, Brain, ClipboardCheck, FileText, Loader2, Smile, Check, Save } from 'lucide-react';
 
 import { PhotoUploadStep } from '@/components/wizard/PhotoUploadStep';
 import { AnalyzingStep } from '@/components/wizard/AnalyzingStep';
 import { DSDStep, DSDResult } from '@/components/wizard/DSDStep';
 import { ReviewAnalysisStep, PhotoAnalysisResult, ReviewFormData, DetectedTooth, TreatmentType, TREATMENT_LABELS } from '@/components/wizard/ReviewAnalysisStep';
+import { DraftRestoreModal } from '@/components/wizard/DraftRestoreModal';
+import { useWizardDraft, WizardDraft } from '@/hooks/useWizardDraft';
 
 const steps = [
   { id: 1, name: 'Foto', icon: Camera },
@@ -55,11 +58,66 @@ export default function NewCase() {
   // Removed tooth shape selection - now uses 'natural' as default internally
   const [toothTreatments, setToothTreatments] = useState<Record<string, TreatmentType>>({});
   
+  // Draft restoration state
+  const [showRestoreModal, setShowRestoreModal] = useState(false);
+  const [pendingDraft, setPendingDraft] = useState<WizardDraft | null>(null);
+  
   const { user } = useAuth();
   const navigate = useNavigate();
+  
+  // Auto-save hook
+  const { loadDraft, saveDraft, clearDraft, isSaving, lastSavedAt } = useWizardDraft(user?.id);
 
   const totalSteps = 5;
   const progress = (step / totalSteps) * 100;
+
+  // Check for pending draft on mount
+  useEffect(() => {
+    const draft = loadDraft();
+    if (draft && draft.step >= 2) {
+      setPendingDraft(draft);
+      setShowRestoreModal(true);
+    }
+  }, [loadDraft]);
+
+  // Auto-save when state changes (only after analysis step)
+  useEffect(() => {
+    if (step >= 3 && user) {
+      saveDraft({
+        step,
+        formData,
+        selectedTeeth,
+        toothTreatments,
+        analysisResult,
+        dsdResult,
+        uploadedPhotoPath,
+      });
+    }
+  }, [step, formData, selectedTeeth, toothTreatments, analysisResult, dsdResult, uploadedPhotoPath, saveDraft, user]);
+
+  // Handle draft restoration
+  const handleRestoreDraft = useCallback(() => {
+    if (!pendingDraft) return;
+    
+    setStep(pendingDraft.step);
+    setFormData(pendingDraft.formData);
+    setSelectedTeeth(pendingDraft.selectedTeeth);
+    setToothTreatments(pendingDraft.toothTreatments);
+    setAnalysisResult(pendingDraft.analysisResult);
+    setDsdResult(pendingDraft.dsdResult);
+    setUploadedPhotoPath(pendingDraft.uploadedPhotoPath);
+    
+    setShowRestoreModal(false);
+    setPendingDraft(null);
+    toast.success('Rascunho restaurado com sucesso');
+  }, [pendingDraft]);
+
+  // Handle draft discard
+  const handleDiscardDraft = useCallback(() => {
+    clearDraft();
+    setShowRestoreModal(false);
+    setPendingDraft(null);
+  }, [clearDraft]);
 
   // Auto-select all detected teeth and initialize per-tooth treatments when analysis completes
   useEffect(() => {
@@ -448,6 +506,10 @@ export default function NewCase() {
         .join(', ');
       
       toast.success(`Casos criados: ${treatmentMessages}`);
+      
+      // Clear draft after successful submission
+      clearDraft();
+      
       navigate(`/evaluation/${sessionId}`);
     } catch (error) {
       console.error('Error:', error);
@@ -592,13 +654,32 @@ export default function NewCase() {
       {/* Header */}
       <header className="border-b border-border">
         <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
-          <div className="flex items-center gap-2 sm:gap-4">
-            <Link to="/dashboard">
-              <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9">
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-            </Link>
-            <span className="text-lg sm:text-xl font-semibold tracking-tight">Novo Caso</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <Link to="/dashboard">
+                <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9">
+                  <ArrowLeft className="w-4 h-4" />
+                </Button>
+              </Link>
+              <span className="text-lg sm:text-xl font-semibold tracking-tight">Novo Caso</span>
+            </div>
+            
+            {/* Auto-save indicator */}
+            {step >= 3 && (
+              <Badge variant="outline" className="text-xs gap-1.5">
+                {isSaving ? (
+                  <>
+                    <Save className="w-3 h-3 animate-pulse" />
+                    <span className="hidden sm:inline">Salvando...</span>
+                  </>
+                ) : lastSavedAt ? (
+                  <>
+                    <Check className="w-3 h-3 text-emerald-500 dark:text-emerald-400" />
+                    <span className="hidden sm:inline">Salvo</span>
+                  </>
+                ) : null}
+              </Badge>
+            )}
           </div>
         </div>
       </header>
@@ -709,6 +790,15 @@ export default function NewCase() {
           </div>
         )}
       </main>
+      
+      {/* Draft Restore Modal */}
+      <DraftRestoreModal
+        open={showRestoreModal}
+        onOpenChange={setShowRestoreModal}
+        lastSavedAt={pendingDraft?.lastSavedAt || null}
+        onRestore={handleRestoreDraft}
+        onDiscard={handleDiscardDraft}
+      />
     </div>
   );
 }
