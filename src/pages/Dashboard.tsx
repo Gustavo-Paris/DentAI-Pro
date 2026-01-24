@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { LogOut, Plus, FileText, Calendar, Package, ChevronRight, Search } from 'lucide-react';
+import { LogOut, Plus, FileText, Calendar, Package, ChevronRight, Search, FileWarning } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { format } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useWizardDraft, WizardDraft } from '@/hooks/useWizardDraft';
 
 interface Evaluation {
   id: string;
@@ -48,6 +49,19 @@ export default function Dashboard() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [pendingCases, setPendingCases] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [pendingDraft, setPendingDraft] = useState<WizardDraft | null>(null);
+  
+  const { loadDraft, clearDraft } = useWizardDraft(user?.id);
+
+  // Check for pending draft
+  useEffect(() => {
+    if (user) {
+      const draft = loadDraft();
+      if (draft) {
+        setPendingDraft(draft);
+      }
+    }
+  }, [user, loadDraft]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -188,6 +202,53 @@ export default function Dashboard() {
           <h1 className="text-xl sm:text-2xl font-semibold mb-1">Olá, {firstName}</h1>
           <p className="text-sm sm:text-base text-muted-foreground">Bem-vindo ao seu painel</p>
         </div>
+
+        {/* Pending Draft Card */}
+        {pendingDraft && (
+          <Card className="mb-6 border-amber-500/50 bg-amber-50/50 dark:bg-amber-950/20">
+            <CardContent className="p-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-full bg-amber-100 dark:bg-amber-900/50 shrink-0">
+                    <FileWarning className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-amber-900 dark:text-amber-100">
+                      Avaliação não finalizada
+                    </h3>
+                    <p className="text-sm text-amber-700 dark:text-amber-300 mt-0.5">
+                      {pendingDraft.formData?.patientName || 'Paciente sem nome'} — {pendingDraft.selectedTeeth?.length || 0} dente(s) selecionado(s)
+                    </p>
+                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                      Salvo {formatDistanceToNow(new Date(pendingDraft.lastSavedAt), { 
+                        addSuffix: true, 
+                        locale: ptBR 
+                      })}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-2 self-end sm:self-center">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    className="text-amber-700 hover:text-amber-900 hover:bg-amber-100 dark:text-amber-300 dark:hover:text-amber-100 dark:hover:bg-amber-900/50"
+                    onClick={() => {
+                      clearDraft();
+                      setPendingDraft(null);
+                    }}
+                  >
+                    Descartar
+                  </Button>
+                  <Link to="/new-case">
+                    <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white">
+                      Continuar
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
