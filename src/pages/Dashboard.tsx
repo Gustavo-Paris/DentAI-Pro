@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { LogOut, Plus, FileText, Calendar, Package, ChevronRight, Search, FileWarning } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { LogOut, Plus, FileText, Calendar, Package, ChevronRight, Search, FileWarning, TrendingUp, Users, CheckCircle2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format, formatDistanceToNow, subDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useWizardDraft, WizardDraft } from '@/hooks/useWizardDraft';
 
@@ -34,11 +35,19 @@ interface Session {
   created_at: string;
   teeth: string[];
   evaluationCount: number;
+  completedCount: number;
 }
 
 interface Profile {
   full_name: string | null;
   avatar_url: string | null;
+}
+
+interface DashboardMetrics {
+  pendingCases: number;
+  weeklyEvaluations: number;
+  completionRate: number;
+  totalPatients: number;
 }
 
 export default function Dashboard() {
@@ -47,7 +56,12 @@ export default function Dashboard() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [sessions, setSessions] = useState<Session[]>([]);
-  const [pendingCases, setPendingCases] = useState(0);
+  const [metrics, setMetrics] = useState<DashboardMetrics>({
+    pendingCases: 0,
+    weeklyEvaluations: 0,
+    completionRate: 0,
+    totalPatients: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [pendingDraft, setPendingDraft] = useState<WizardDraft | null>(null);
   
@@ -107,11 +121,27 @@ export default function Dashboard() {
         .order('created_at', { ascending: false });
 
       if (evaluationsData) {
-        // Count only pending cases (not completed)
-        const pendingCount = evaluationsData.filter(
-          e => e.status !== 'completed'
-        ).length;
-        setPendingCases(pendingCount);
+        // Calculate metrics
+        const totalCases = evaluationsData.length;
+        const completedCases = evaluationsData.filter(e => e.status === 'completed').length;
+        const pendingCount = totalCases - completedCases;
+        const completionRate = totalCases > 0 ? Math.round((completedCases / totalCases) * 100) : 0;
+        
+        // Weekly evaluations
+        const oneWeekAgo = subDays(new Date(), 7);
+        const weeklyCount = evaluationsData.filter(e => new Date(e.created_at) > oneWeekAgo).length;
+        
+        // Unique patients
+        const uniquePatients = new Set(
+          evaluationsData.map(e => e.patient_name).filter(Boolean)
+        ).size;
+
+        setMetrics({
+          pendingCases: pendingCount,
+          weeklyEvaluations: weeklyCount,
+          completionRate,
+          totalPatients: uniquePatients,
+        });
         
         // Group by session_id
         const sessionMap = new Map<string, Evaluation[]>();
@@ -133,6 +163,7 @@ export default function Dashboard() {
             created_at: evals[0].created_at,
             teeth: evals.map(e => e.tooth),
             evaluationCount: evals.length,
+            completedCount: evals.filter(e => e.status === 'completed').length,
           }));
 
         setSessions(sessionsArray);
@@ -149,6 +180,11 @@ export default function Dashboard() {
     navigate('/');
   };
 
+  const handleDiscardDraft = () => {
+    clearDraft();
+    setPendingDraft(null);
+  };
+
   const firstName = profile?.full_name?.split(' ')[0] || 'Usuário';
   
   const getInitials = (name: string | null) => {
@@ -159,6 +195,21 @@ export default function Dashboard() {
       .join('')
       .toUpperCase()
       .slice(0, 2);
+  };
+
+  const getStatusBadge = (session: Session) => {
+    if (session.completedCount === session.evaluationCount) {
+      return (
+        <Badge variant="outline" className="text-xs border-primary/30 text-primary bg-primary/10">
+          Concluído
+        </Badge>
+      );
+    }
+    return (
+      <Badge variant="outline" className="text-xs border-amber-500/30 text-amber-600 bg-amber-50 dark:bg-amber-950/30">
+        Em progresso
+      </Badge>
+    );
   };
 
   return (
@@ -206,52 +257,64 @@ export default function Dashboard() {
           <p className="text-sm sm:text-base text-muted-foreground">Bem-vindo ao seu painel</p>
         </div>
 
-        {/* Pending Draft Card */}
-        {pendingDraft && (
-          <Card className="mb-6 border-amber-500/50 bg-amber-50/50 dark:bg-amber-950/20">
-            <CardContent className="p-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-full bg-amber-100 dark:bg-amber-900/50 shrink-0">
-                    <FileWarning className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-amber-900 dark:text-amber-100">
-                      Avaliação não finalizada
-                    </h3>
-                    <p className="text-sm text-amber-700 dark:text-amber-300 mt-0.5">
-                      {pendingDraft.formData?.patientName || 'Paciente sem nome'} — {pendingDraft.selectedTeeth?.length || 0} dente(s) selecionado(s)
-                    </p>
-                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-                      Salvo {formatDistanceToNow(new Date(pendingDraft.lastSavedAt), { 
-                        addSuffix: true, 
-                        locale: ptBR 
-                      })}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-2 self-end sm:self-center">
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    className="text-amber-700 hover:text-amber-900 hover:bg-amber-100 dark:text-amber-300 dark:hover:text-amber-100 dark:hover:bg-amber-900/50"
-                    onClick={() => {
-                      clearDraft();
-                      setPendingDraft(null);
-                    }}
-                  >
-                    Descartar
-                  </Button>
-                  <Link to="/new-case">
-                    <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white">
-                      Continuar
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </CardContent>
+        {/* Value Indicators Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 sm:mb-8">
+          <Card className="p-3 sm:p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <FileWarning className="w-4 h-4 text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">Em aberto</p>
+            </div>
+            {loading ? (
+              <Skeleton className="h-7 w-10" />
+            ) : (
+              <p className={`text-xl sm:text-2xl font-semibold ${metrics.pendingCases > 0 ? 'text-amber-600' : 'text-primary'}`}>
+                {metrics.pendingCases}
+              </p>
+            )}
           </Card>
-        )}
+
+          <Card className="p-3 sm:p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <TrendingUp className="w-4 h-4 text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">Esta semana</p>
+            </div>
+            {loading ? (
+              <Skeleton className="h-7 w-10" />
+            ) : (
+              <p className="text-xl sm:text-2xl font-semibold">
+                {metrics.weeklyEvaluations}
+              </p>
+            )}
+          </Card>
+
+          <Card className="p-3 sm:p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <CheckCircle2 className="w-4 h-4 text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">Conclusão</p>
+            </div>
+            {loading ? (
+              <Skeleton className="h-7 w-10" />
+            ) : (
+              <p className="text-xl sm:text-2xl font-semibold text-primary">
+                {metrics.completionRate}%
+              </p>
+            )}
+          </Card>
+
+          <Card className="p-3 sm:p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <Users className="w-4 h-4 text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">Pacientes</p>
+            </div>
+            {loading ? (
+              <Skeleton className="h-7 w-10" />
+            ) : (
+              <p className="text-xl sm:text-2xl font-semibold">
+                {metrics.totalPatients}
+              </p>
+            )}
+          </Card>
+        </div>
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
@@ -286,29 +349,6 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Stats */}
-        <Card className="mb-6 sm:mb-8">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Casos em aberto
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <Skeleton className="h-8 w-12" />
-            ) : (
-              <>
-                <p className={`text-2xl sm:text-3xl font-semibold ${pendingCases > 0 ? 'text-amber-600' : 'text-primary'}`}>
-                  {pendingCases}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {pendingCases === 0 ? 'Todos finalizados!' : 'Aguardando finalização'}
-                </p>
-              </>
-            )}
-          </CardContent>
-        </Card>
-
         {/* Recent Sessions */}
         <div>
           <div className="flex items-center justify-between mb-4">
@@ -328,7 +368,7 @@ export default function Dashboard() {
                 <Skeleton key={i} className="h-20 w-full" />
               ))}
             </div>
-          ) : sessions.length === 0 ? (
+          ) : sessions.length === 0 && !pendingDraft ? (
             <Card className="p-6 sm:p-8 text-center">
               <FileText className="w-8 sm:w-10 h-8 sm:h-10 text-muted-foreground mx-auto mb-3" />
               <p className="text-muted-foreground mb-4">Nenhuma avaliação ainda</p>
@@ -338,15 +378,65 @@ export default function Dashboard() {
             </Card>
           ) : (
             <div className="space-y-3">
+              {/* Draft as first item if exists */}
+              {pendingDraft && (
+                <Card className="p-3 sm:p-4 border-amber-500/50 bg-amber-50/50 dark:bg-amber-950/20">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <FileWarning className="w-4 h-4 text-amber-600" />
+                        <p className="font-medium text-sm sm:text-base">
+                          {pendingDraft.formData?.patientName || 'Paciente sem nome'}
+                        </p>
+                        <Badge variant="outline" className="text-xs border-amber-500/30 text-amber-600 bg-amber-100 dark:bg-amber-900/50">
+                          Rascunho
+                        </Badge>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-xs sm:text-sm text-muted-foreground">
+                          {pendingDraft.selectedTeeth?.length || 0} dente{(pendingDraft.selectedTeeth?.length || 0) !== 1 ? 's' : ''} selecionado{(pendingDraft.selectedTeeth?.length || 0) !== 1 ? 's' : ''}
+                        </p>
+                        <span className="text-muted-foreground">•</span>
+                        <p className="text-xs text-muted-foreground">
+                          Salvo {formatDistanceToNow(new Date(pendingDraft.lastSavedAt), { 
+                            addSuffix: true, 
+                            locale: ptBR 
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 self-end sm:self-center">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        className="text-amber-700 hover:text-amber-900 hover:bg-amber-100 dark:text-amber-300 dark:hover:text-amber-100 dark:hover:bg-amber-900/50"
+                        onClick={handleDiscardDraft}
+                      >
+                        Descartar
+                      </Button>
+                      <Link to="/new-case">
+                        <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white">
+                          Continuar
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </Card>
+              )}
+
+              {/* Regular sessions */}
               {sessions.map((session) => (
                 <Link key={session.session_id} to={`/evaluation/${session.session_id}`}>
                   <Card className="p-3 sm:p-4 hover:bg-secondary/50 transition-colors cursor-pointer">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
-                      <div className="flex-1">
-                        <p className="font-medium text-sm sm:text-base">
-                          {session.patient_name || 'Paciente sem nome'}
-                        </p>
-                        <div className="flex flex-wrap items-center gap-2 mt-1">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="font-medium text-sm sm:text-base truncate">
+                            {session.patient_name || 'Paciente sem nome'}
+                          </p>
+                          {getStatusBadge(session)}
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
                           <p className="text-xs sm:text-sm text-muted-foreground">
                             {session.evaluationCount} dente{session.evaluationCount > 1 ? 's' : ''}
                           </p>
@@ -365,12 +455,22 @@ export default function Dashboard() {
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between sm:justify-end gap-2 text-xs sm:text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
-                          {format(new Date(session.created_at), "d 'de' MMM", { locale: ptBR })}
+                      <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
+                        {/* Progress indicator */}
+                        <div className="flex items-center gap-2">
+                          <Progress 
+                            value={(session.completedCount / session.evaluationCount) * 100} 
+                            className="w-12 sm:w-16 h-1.5"
+                          />
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">
+                            {session.completedCount}/{session.evaluationCount}
+                          </span>
                         </div>
-                        <ChevronRight className="w-4 h-4" />
+                        <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground">
+                          <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+                          {format(new Date(session.created_at), "d MMM", { locale: ptBR })}
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-muted-foreground" />
                       </div>
                     </div>
                   </Card>
