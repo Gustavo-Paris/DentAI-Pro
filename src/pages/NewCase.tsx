@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuthenticatedFetch } from '@/hooks/useAuthenticatedFetch';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
@@ -64,6 +65,7 @@ export default function NewCase() {
   
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { invokeFunction } = useAuthenticatedFetch();
   
   // Auto-save hook
   const { loadDraft, saveDraft, clearDraft, isSaving, lastSavedAt } = useWizardDraft(user?.id);
@@ -199,8 +201,8 @@ export default function NewCase() {
         setUploadedPhotoPath(photoPath);
       }
 
-      // Call the analyze-dental-photo edge function
-      const { data, error } = await supabase.functions.invoke('analyze-dental-photo', {
+      // Call the analyze-dental-photo edge function with authenticated fetch
+      const { data, error } = await invokeFunction<{ analysis: PhotoAnalysisResult }>('analyze-dental-photo', {
         body: {
           imageBase64: imageBase64,
           imageType: 'intraoral',
@@ -287,8 +289,8 @@ export default function NewCase() {
     setIsReanalyzing(true);
 
     try {
-      // Call the analyze-dental-photo edge function again
-      const { data, error } = await supabase.functions.invoke('analyze-dental-photo', {
+      // Call the analyze-dental-photo edge function with authenticated fetch
+      const { data, error } = await invokeFunction<{ analysis: PhotoAnalysisResult }>('analyze-dental-photo', {
         body: {
           imageBase64: imageBase64,
           imageType: 'intraoral',
