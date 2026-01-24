@@ -55,12 +55,15 @@ export default function Dashboard() {
 
   // Check for pending draft
   useEffect(() => {
-    if (user) {
-      const draft = loadDraft();
-      if (draft) {
-        setPendingDraft(draft);
+    const checkDraft = async () => {
+      if (user) {
+        const draft = await loadDraft();
+        if (draft) {
+          setPendingDraft(draft);
+        }
       }
-    }
+    };
+    checkDraft();
   }, [user, loadDraft]);
 
   useEffect(() => {
