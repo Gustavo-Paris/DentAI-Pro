@@ -31,7 +31,6 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <GlobalSearch />
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
@@ -98,6 +97,7 @@ const App = () => (
             />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <GlobalSearch />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
