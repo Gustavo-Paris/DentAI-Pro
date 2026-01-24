@@ -73,11 +73,14 @@ export default function NewCase() {
 
   // Check for pending draft on mount
   useEffect(() => {
-    const draft = loadDraft();
-    if (draft && draft.step >= 2) {
-      setPendingDraft(draft);
-      setShowRestoreModal(true);
-    }
+    const checkDraft = async () => {
+      const draft = await loadDraft();
+      if (draft && draft.step >= 2) {
+        setPendingDraft(draft);
+        setShowRestoreModal(true);
+      }
+    };
+    checkDraft();
   }, [loadDraft]);
 
   // Auto-save when state changes (only after analysis step)
