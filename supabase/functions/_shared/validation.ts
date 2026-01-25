@@ -70,6 +70,8 @@ export interface EvaluationData {
   budget: string;
   depth?: string;
   substrateCondition?: string;
+  enamelCondition?: string;
+  clinicalNotes?: string;
 }
 
 export function validateEvaluationData(data: unknown): ValidationResult<EvaluationData> {
@@ -146,6 +148,14 @@ export function validateEvaluationData(data: unknown): ValidationResult<Evaluati
     return { success: false, error: "Condição do substrato inválida" };
   }
 
+  if (obj.enamelCondition !== undefined && !isString(obj.enamelCondition, 50)) {
+    return { success: false, error: "Condição do esmalte inválida" };
+  }
+
+  if (obj.clinicalNotes !== undefined && !isString(obj.clinicalNotes, 2000)) {
+    return { success: false, error: "Notas clínicas muito longas" };
+  }
+
   return {
     success: true,
     data: {
@@ -165,6 +175,8 @@ export function validateEvaluationData(data: unknown): ValidationResult<Evaluati
       budget: obj.budget as string,
       depth: obj.depth as string | undefined,
       substrateCondition: obj.substrateCondition as string | undefined,
+      enamelCondition: obj.enamelCondition as string | undefined,
+      clinicalNotes: obj.clinicalNotes as string | undefined,
     },
   };
 }

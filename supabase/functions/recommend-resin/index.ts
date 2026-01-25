@@ -178,12 +178,14 @@ CASO CLÍNICO:
 - Profundidade: ${data.depth || "Não especificada"}
 - Substrato: ${data.substrate}
 - Condição do substrato: ${data.substrateCondition || "Normal"}
+- Condição do esmalte: ${data.enamelCondition || "Íntegro"}
 - Nível estético: ${data.aestheticLevel}
 - Cor do dente (VITA): ${data.toothColor}
 - Necessita estratificação: ${data.stratificationNeeded ? "Sim" : "Não"}
 - Bruxismo: ${data.bruxism ? "Sim" : "Não"}
 - Expectativa de longevidade: ${data.longevityExpectation}
 - Orçamento: ${data.budget}
+${data.clinicalNotes ? `- Observações clínicas: ${data.clinicalNotes}` : ''}
 ${inventorySection}
 ${inventoryInstructions}
 
