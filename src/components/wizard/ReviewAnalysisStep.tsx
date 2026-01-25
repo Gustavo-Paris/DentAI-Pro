@@ -298,55 +298,6 @@ export function ReviewAnalysisStep({
         </Card>
       )}
 
-      {/* Treatment Type Selector */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            Tipo de Tratamento
-            {analysisResult?.treatment_indication && (
-              <Badge variant="outline" className="font-normal text-xs">
-                <Sparkles className="w-3 h-3 mr-1" />
-                Sugerido: {analysisResult.treatment_indication === 'porcelana' ? 'Faceta' : 'Resina'}
-              </Badge>
-            )}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <RadioGroup
-            value={formData.treatmentType || 'resina'}
-            onValueChange={(value) => onFormChange({ treatmentType: value as TreatmentType })}
-            className="grid grid-cols-2 gap-4"
-          >
-            <div>
-              <RadioGroupItem value="resina" id="treatment-resina" className="peer sr-only" />
-              <Label
-                htmlFor="treatment-resina"
-                className="flex flex-col items-center justify-center p-4 border rounded-lg cursor-pointer transition-all hover:border-primary/50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5"
-              >
-                <Wrench className="w-6 h-6 mb-2 text-muted-foreground peer-data-[state=checked]:text-primary" />
-                <span className="font-medium">Resina Composta</span>
-                <span className="text-xs text-muted-foreground text-center mt-1">
-                  Protocolo de estratificação
-                </span>
-              </Label>
-            </div>
-            <div>
-              <RadioGroupItem value="porcelana" id="treatment-porcelana" className="peer sr-only" />
-              <Label
-                htmlFor="treatment-porcelana"
-                className="flex flex-col items-center justify-center p-4 border rounded-lg cursor-pointer transition-all hover:border-primary/50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5"
-              >
-                <Crown className="w-6 h-6 mb-2 text-muted-foreground peer-data-[state=checked]:text-primary" />
-                <span className="font-medium">Faceta de Porcelana</span>
-                <span className="text-xs text-muted-foreground text-center mt-1">
-                  Protocolo de cimentação
-                </span>
-              </Label>
-            </div>
-          </RadioGroup>
-        </CardContent>
-      </Card>
-
       {/* Warnings */}
       {analysisResult?.warnings && analysisResult.warnings.length > 0 && (
         <Card className="border-yellow-500/50 bg-yellow-50 dark:bg-yellow-950/20">
@@ -802,7 +753,7 @@ export function ReviewAnalysisStep({
       </div>
 
       {/* Additional Details - Accordion */}
-      <Accordion type="single" collapsible className="w-full">
+      <Accordion type="single" collapsible defaultValue="aesthetic" className="w-full">
         <AccordionItem value="clinical">
           <AccordionTrigger>Detalhes Clínicos Adicionais</AccordionTrigger>
           <AccordionContent>
@@ -875,9 +826,10 @@ export function ReviewAnalysisStep({
                 <RadioGroup
                   value={formData.aestheticLevel}
                   onValueChange={(value) => onFormChange({ aestheticLevel: value })}
-                  className="grid grid-cols-3 gap-2"
+                  className="grid grid-cols-2 sm:grid-cols-4 gap-2"
                 >
                   {[
+                    { value: 'muito alto', label: 'Muito Alto' },
                     { value: 'alto', label: 'Alto' },
                     { value: 'médio', label: 'Médio' },
                     { value: 'baixo', label: 'Baixo' },
