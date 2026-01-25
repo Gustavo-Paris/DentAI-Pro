@@ -7,9 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { ArrowLeft, ArrowRight, Camera, Brain, ClipboardCheck, FileText, Loader2, Smile, Check, Save } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Camera, Brain, ClipboardCheck, FileText, Loader2, Smile, Check, Save, Heart } from 'lucide-react';
 
 import { PhotoUploadStep, AdditionalPhotos } from '@/components/wizard/PhotoUploadStep';
+import { PatientPreferencesStep, PatientPreferences } from '@/components/wizard/PatientPreferencesStep';
 import { AnalyzingStep } from '@/components/wizard/AnalyzingStep';
 import { DSDStep, DSDResult } from '@/components/wizard/DSDStep';
 import { ReviewAnalysisStep, PhotoAnalysisResult, ReviewFormData, DetectedTooth, TreatmentType, TREATMENT_LABELS } from '@/components/wizard/ReviewAnalysisStep';
@@ -18,10 +19,11 @@ import { useWizardDraft, WizardDraft } from '@/hooks/useWizardDraft';
 
 const steps = [
   { id: 1, name: 'Foto', icon: Camera },
-  { id: 2, name: 'Análise', icon: Brain },
-  { id: 3, name: 'DSD', icon: Smile },
-  { id: 4, name: 'Revisão', icon: ClipboardCheck },
-  { id: 5, name: 'Resultado', icon: FileText },
+  { id: 2, name: 'Preferências', icon: Heart },
+  { id: 3, name: 'Análise', icon: Brain },
+  { id: 4, name: 'DSD', icon: Smile },
+  { id: 5, name: 'Revisão', icon: ClipboardCheck },
+  { id: 6, name: 'Resultado', icon: FileText },
 ];
 
 const initialFormData: ReviewFormData = {
@@ -60,6 +62,7 @@ export default function NewCase() {
   // Removed tooth shape selection - now uses 'natural' as default internally
   const [toothTreatments, setToothTreatments] = useState<Record<string, TreatmentType>>({});
   const [additionalPhotos, setAdditionalPhotos] = useState<AdditionalPhotos>({ smile45: null, face: null });
+  const [patientPreferences, setPatientPreferences] = useState<PatientPreferences>({ aestheticGoals: '', desiredChanges: [] });
   
   // Draft restoration state
   const [showRestoreModal, setShowRestoreModal] = useState(false);
@@ -72,7 +75,7 @@ export default function NewCase() {
   // Auto-save hook
   const { loadDraft, saveDraft, clearDraft, isSaving, lastSavedAt } = useWizardDraft(user?.id);
 
-  const totalSteps = 5;
+  const totalSteps = 6;
   const progress = (step / totalSteps) * 100;
 
   // Check for pending draft on mount
@@ -89,7 +92,7 @@ export default function NewCase() {
 
   // Auto-save when state changes (only after analysis step)
   useEffect(() => {
-    if (step >= 3 && user) {
+    if (step >= 4 && user) {
       saveDraft({
         step,
         formData,
@@ -99,9 +102,10 @@ export default function NewCase() {
         dsdResult,
         uploadedPhotoPath,
         additionalPhotos,
+        patientPreferences,
       });
     }
-  }, [step, formData, selectedTeeth, toothTreatments, analysisResult, dsdResult, uploadedPhotoPath, additionalPhotos, saveDraft, user]);
+  }, [step, formData, selectedTeeth, toothTreatments, analysisResult, dsdResult, uploadedPhotoPath, additionalPhotos, patientPreferences, saveDraft, user]);
 
   // Handle draft restoration
   const handleRestoreDraft = useCallback(() => {
@@ -115,6 +119,7 @@ export default function NewCase() {
     setDsdResult(pendingDraft.dsdResult);
     setUploadedPhotoPath(pendingDraft.uploadedPhotoPath);
     setAdditionalPhotos(pendingDraft.additionalPhotos || { smile45: null, face: null });
+    setPatientPreferences(pendingDraft.patientPreferences || { aestheticGoals: '', desiredChanges: [] });
     
     setShowRestoreModal(false);
     setPendingDraft(null);
@@ -194,7 +199,7 @@ export default function NewCase() {
   const analyzePhoto = async () => {
     if (!imageBase64) return;
 
-    setStep(2);
+    setStep(3); // Go to analyzing step (step 3 now)
     setIsAnalyzing(true);
     setAnalysisError(null); // Clear any previous error
 
@@ -247,7 +252,7 @@ export default function NewCase() {
 
         // Move to DSD step after successful analysis
         setIsAnalyzing(false);
-        setStep(3); // DSD step
+        setStep(4); // DSD step (step 4 now)
       } else {
         throw new Error('Análise não retornou dados');
       }
@@ -265,11 +270,21 @@ export default function NewCase() {
         errorMessage = 'A IA não conseguiu identificar estruturas dentárias na foto. Tente uma foto com melhor iluminação.';
       }
       
-      // Set error state - user stays on step 2 and sees error UI
+      // Set error state - user stays on step 3 and sees error UI
       setAnalysisError(errorMessage);
       setIsAnalyzing(false);
       // DO NOT advance step - let user decide to retry or skip
     }
+  };
+
+  // Handle preferences step navigation
+  const handlePreferencesContinue = () => {
+    analyzePhoto();
+  };
+
+  const handlePreferencesSkip = () => {
+    setPatientPreferences({ aestheticGoals: '', desiredChanges: [] });
+    analyzePhoto();
   };
 
   // Retry analysis
@@ -282,7 +297,7 @@ export default function NewCase() {
   const handleSkipToReview = () => {
     setAnalysisError(null);
     setIsAnalyzing(false);
-    setStep(4);
+    setStep(5); // Review step (step 5 now)
     toast.info('Prosseguindo com entrada manual.');
   };
 
@@ -382,7 +397,7 @@ export default function NewCase() {
     if (!user || !validateForm()) return;
 
     setIsSubmitting(true);
-    setStep(5);
+    setStep(6); // Go to result step (step 6 now)
 
     // Determine which teeth to process
     const teethToProcess = selectedTeeth.length > 0 ? selectedTeeth : [formData.tooth];
@@ -471,6 +486,9 @@ export default function NewCase() {
           dsd_simulation_url: dsdResult?.simulation_url || null,
           // Tooth position for visual highlight overlay
           tooth_bounds: toothData?.tooth_bounds || null,
+          // Patient aesthetic preferences
+          patient_aesthetic_goals: patientPreferences.aestheticGoals || null,
+          patient_desired_changes: patientPreferences.desiredChanges.length > 0 ? patientPreferences.desiredChanges : null,
         } as Record<string, unknown>;
 
         const { data: evaluation, error: evalError } = await supabase
@@ -685,14 +703,16 @@ export default function NewCase() {
   const handleBack = () => {
     if (step === 1) {
       navigate('/dashboard');
+    } else if (step === 2) {
+      setStep(1); // Go back to photo from preferences
     } else if (step === 4) {
-      setStep(3); // Go back to DSD
-    } else if (step === 3) {
-      setStep(1); // Go back to photo
+      setStep(3); // Go back to analyzing from DSD (skip preferences)
+    } else if (step === 5) {
+      setStep(4); // Go back to DSD from review
     }
   };
 
-  const canGoBack = step === 1 || step === 3 || step === 4;
+  const canGoBack = step === 1 || step === 2 || step === 4 || step === 5;
 
   return (
     <div className="min-h-screen bg-background">
@@ -710,7 +730,7 @@ export default function NewCase() {
             </div>
             
             {/* Auto-save indicator */}
-            {step >= 3 && (
+            {step >= 4 && (
               <Badge variant="outline" className="text-xs gap-1.5">
                 {isSaving ? (
                   <>
@@ -719,7 +739,7 @@ export default function NewCase() {
                   </>
                 ) : lastSavedAt ? (
                   <>
-                    <Check className="w-3 h-3 text-emerald-500 dark:text-emerald-400" />
+                    <Check className="w-3 h-3 text-primary" />
                     <span className="hidden sm:inline">Salvo</span>
                   </>
                 ) : null}
@@ -757,7 +777,7 @@ export default function NewCase() {
           <PhotoUploadStep
             imageBase64={imageBase64}
             onImageChange={setImageBase64}
-            onAnalyze={analyzePhoto}
+            onAnalyze={() => setStep(2)}
             isUploading={false}
             additionalPhotos={additionalPhotos}
             onAdditionalPhotosChange={setAdditionalPhotos}
@@ -765,6 +785,15 @@ export default function NewCase() {
         )}
 
         {step === 2 && (
+          <PatientPreferencesStep
+            preferences={patientPreferences}
+            onPreferencesChange={setPatientPreferences}
+            onContinue={handlePreferencesContinue}
+            onSkip={handlePreferencesSkip}
+          />
+        )}
+
+        {step === 3 && (
           <AnalyzingStep 
             imageBase64={imageBase64}
             isAnalyzing={isAnalyzing}
@@ -774,16 +803,17 @@ export default function NewCase() {
           />
         )}
 
-        {step === 3 && (
+        {step === 4 && (
           <DSDStep
             imageBase64={imageBase64}
             onComplete={handleDSDComplete}
             onSkip={handleDSDSkip}
             additionalPhotos={additionalPhotos}
+            patientPreferences={patientPreferences}
           />
         )}
 
-        {step === 4 && (
+        {step === 5 && (
           <ReviewAnalysisStep
             analysisResult={analysisResult}
             formData={formData}
@@ -802,7 +832,7 @@ export default function NewCase() {
           />
         )}
 
-        {step === 5 && (
+        {step === 6 && (
           <div className="flex flex-col items-center justify-center py-12 sm:py-16 space-y-4 sm:space-y-6">
             <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary/10 flex items-center justify-center">
               <Loader2 className="w-8 h-8 sm:w-10 sm:h-10 text-primary animate-spin" />
@@ -824,7 +854,7 @@ export default function NewCase() {
               Voltar
             </Button>
 
-            {step === 4 && (
+            {step === 5 && (
               <Button onClick={handleSubmit} disabled={isSubmitting} className="w-full sm:w-auto">
                 {isSubmitting ? (
                   <>

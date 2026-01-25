@@ -64,7 +64,9 @@ export type Database = {
           ideal_resin_id: string | null
           is_from_inventory: boolean | null
           longevity_expectation: string
+          patient_aesthetic_goals: string | null
           patient_age: number
+          patient_desired_changes: string[] | null
           patient_id: string | null
           patient_name: string | null
           photo_45: string | null
@@ -115,7 +117,9 @@ export type Database = {
           ideal_resin_id?: string | null
           is_from_inventory?: boolean | null
           longevity_expectation: string
+          patient_aesthetic_goals?: string | null
           patient_age: number
+          patient_desired_changes?: string[] | null
           patient_id?: string | null
           patient_name?: string | null
           photo_45?: string | null
@@ -166,7 +170,9 @@ export type Database = {
           ideal_resin_id?: string | null
           is_from_inventory?: boolean | null
           longevity_expectation?: string
+          patient_aesthetic_goals?: string | null
           patient_age?: number
+          patient_desired_changes?: string[] | null
           patient_id?: string | null
           patient_name?: string | null
           photo_45?: string | null

@@ -43,11 +43,17 @@ interface AdditionalPhotos {
   face: string | null;
 }
 
+interface PatientPreferences {
+  aestheticGoals: string;
+  desiredChanges: string[];
+}
+
 interface DSDStepProps {
   imageBase64: string | null;
   onComplete: (result: DSDResult | null) => void;
   onSkip: () => void;
   additionalPhotos?: AdditionalPhotos;
+  patientPreferences?: PatientPreferences;
 }
 
 const analysisSteps = [
@@ -58,7 +64,7 @@ const analysisSteps = [
   { label: 'Gerando simulação do sorriso...', duration: 5000 },
 ];
 
-export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos }: DSDStepProps) {
+export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, patientPreferences }: DSDStepProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [result, setResult] = useState<DSDResult | null>(null);
@@ -107,7 +113,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos }: D
     }, 2500);
 
     try {
-      // Build request body with optional additional photos
+      // Build request body with optional additional photos and patient preferences
       const requestBody: Record<string, unknown> = {
         imageBase64,
         toothShape: TOOTH_SHAPE,
@@ -118,6 +124,14 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos }: D
         requestBody.additionalPhotos = {
           smile45: additionalPhotos.smile45 || undefined,
           face: additionalPhotos.face || undefined,
+        };
+      }
+      
+      // Add patient preferences if available (for personalized suggestions)
+      if (patientPreferences?.aestheticGoals || patientPreferences?.desiredChanges?.length) {
+        requestBody.patientPreferences = {
+          aestheticGoals: patientPreferences.aestheticGoals || undefined,
+          desiredChanges: patientPreferences.desiredChanges || undefined,
         };
       }
       
