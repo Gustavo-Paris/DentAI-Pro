@@ -372,6 +372,63 @@ export type Database = {
         }
         Relationships: []
       }
+      session_detected_teeth: {
+        Row: {
+          cavity_class: string | null
+          created_at: string
+          depth: string | null
+          enamel_condition: string | null
+          id: string
+          indication_reason: string | null
+          priority: string | null
+          restoration_size: string | null
+          session_id: string
+          substrate: string | null
+          substrate_condition: string | null
+          tooth: string
+          tooth_bounds: Json | null
+          tooth_region: string | null
+          treatment_indication: string | null
+          user_id: string
+        }
+        Insert: {
+          cavity_class?: string | null
+          created_at?: string
+          depth?: string | null
+          enamel_condition?: string | null
+          id?: string
+          indication_reason?: string | null
+          priority?: string | null
+          restoration_size?: string | null
+          session_id: string
+          substrate?: string | null
+          substrate_condition?: string | null
+          tooth: string
+          tooth_bounds?: Json | null
+          tooth_region?: string | null
+          treatment_indication?: string | null
+          user_id: string
+        }
+        Update: {
+          cavity_class?: string | null
+          created_at?: string
+          depth?: string | null
+          enamel_condition?: string | null
+          id?: string
+          indication_reason?: string | null
+          priority?: string | null
+          restoration_size?: string | null
+          session_id?: string
+          substrate?: string | null
+          substrate_condition?: string | null
+          tooth?: string
+          tooth_bounds?: Json | null
+          tooth_region?: string | null
+          treatment_indication?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_inventory: {
         Row: {
           created_at: string
