@@ -171,9 +171,32 @@ async function generateSimulation(
   userId: string,
   supabase: any,
   apiKey: string,
-  toothShape: string = 'natural'
+  toothShape: string = 'natural',
+  patientPreferences?: PatientPreferences
 ): Promise<string | null> {
   const shapeInstruction = toothShapeDescriptions[toothShape] || toothShapeDescriptions.natural;
+  
+  // Build patient preferences instruction for simulation
+  let patientDesires = '';
+  if (patientPreferences?.desiredChanges?.length) {
+    const desireLabels: Record<string, string> = {
+      'whiter': 'dentes mais brancos (tom A1/B1)',
+      'harmonious': 'sorriso mais harmonioso e natural',
+      'spacing': 'fechar espaços/diastemas',
+      'alignment': 'dentes mais alinhados',
+      'natural': 'formato mais natural',
+      'asymmetry': 'corrigir assimetrias'
+    };
+    
+    const desires = patientPreferences.desiredChanges
+      .map(id => desireLabels[id] || id)
+      .join(', ');
+    
+    patientDesires = `\nOBJETIVO DO PACIENTE: ${desires}.\n`;
+  }
+  if (patientPreferences?.aestheticGoals) {
+    patientDesires += `DESCRIÇÃO DO PACIENTE: "${patientPreferences.aestheticGoals}"\n`;
+  }
   
   // Check if case needs reconstruction (missing/destroyed teeth)
   const needsReconstruction = analysis.suggestions.some(s => {
@@ -253,7 +276,7 @@ COR OBRIGATÓRIA (TODOS os dentes):
 - Tom uniforme A1/A2 (branco natural, levemente claro)
 - REMOVA todas as manchas e descolorações
 - Todos os dentes devem ter a MESMA cor
-
+${patientDesires}
 FORMATO: ${toothShape.toUpperCase()} - ${shapeInstruction}
 
 VERIFICAÇÃO FINAL:
@@ -271,7 +294,7 @@ EDIÇÕES PERMITIDAS:
 - Uniformizar cor para A1/A2
 - Suavizar contorno levemente
 - Remover manchas visíveis
-
+${patientDesires}
 FORMATO: ${toothShape.toUpperCase()} - ${shapeInstruction}
 
 Retorne a imagem com dentes harmonizados.`;
@@ -296,7 +319,7 @@ COR OBRIGATÓRIA:
 - Tom uniforme A1/A2 natural
 - REMOVA manchas e descolorações
 - Todos os dentes com MESMA cor
-
+${patientDesires}
 FORMATO: ${toothShape.toUpperCase()} - ${shapeInstruction}
 
 RESULTADO: Sorriso harmonioso, lábios e gengiva INALTERADOS.`;
@@ -724,7 +747,7 @@ serve(async (req: Request) => {
     // Generate simulation image
     let simulationUrl: string | null = null;
     try {
-      simulationUrl = await generateSimulation(imageBase64, analysis, user.id, supabase, LOVABLE_API_KEY, toothShape || 'natural');
+      simulationUrl = await generateSimulation(imageBase64, analysis, user.id, supabase, LOVABLE_API_KEY, toothShape || 'natural', patientPreferences);
     } catch (simError) {
       console.error("Simulation error:", simError);
       // Continue without simulation - analysis is still valid
