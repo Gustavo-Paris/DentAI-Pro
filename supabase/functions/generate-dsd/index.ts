@@ -27,12 +27,18 @@ interface DSDResult {
   simulation_note?: string; // New: message when simulation is not possible
 }
 
+interface AdditionalPhotos {
+  smile45?: string;  // 45° smile photo for buccal corridor analysis
+  face?: string;     // Full face photo for facial proportions
+}
+
 interface RequestData {
   imageBase64: string;
   evaluationId?: string;
   regenerateSimulationOnly?: boolean;
   existingAnalysis?: DSDAnalysis;
   toothShape?: 'natural' | 'quadrado' | 'triangular' | 'oval' | 'retangular';
+  additionalPhotos?: AdditionalPhotos;
 }
 
 // Validate request
@@ -56,6 +62,20 @@ function validateRequest(data: unknown): { success: boolean; error?: string; dat
   const validShapes = ['natural', 'quadrado', 'triangular', 'oval', 'retangular'];
   const toothShape = validShapes.includes(req.toothShape as string) ? req.toothShape as string : 'natural';
 
+  // Parse additional photos if provided
+  let additionalPhotos: AdditionalPhotos | undefined;
+  if (req.additionalPhotos && typeof req.additionalPhotos === 'object') {
+    const photos = req.additionalPhotos as Record<string, unknown>;
+    additionalPhotos = {
+      smile45: typeof photos.smile45 === 'string' && photos.smile45 ? photos.smile45 : undefined,
+      face: typeof photos.face === 'string' && photos.face ? photos.face : undefined,
+    };
+    // Only include if at least one photo is present
+    if (!additionalPhotos.smile45 && !additionalPhotos.face) {
+      additionalPhotos = undefined;
+    }
+  }
+
   return {
     success: true,
     data: {
@@ -64,6 +84,7 @@ function validateRequest(data: unknown): { success: boolean; error?: string; dat
       regenerateSimulationOnly: req.regenerateSimulationOnly === true,
       existingAnalysis: req.existingAnalysis as DSDAnalysis | undefined,
       toothShape: toothShape as RequestData['toothShape'],
+      additionalPhotos,
     },
   };
 }
@@ -354,10 +375,33 @@ RESULTADO: Sorriso harmonioso, lábios e gengiva INALTERADOS.`;
 async function analyzeProportions(
   imageBase64: string,
   apiKey: string,
-  corsHeaders: Record<string, string>
+  corsHeaders: Record<string, string>,
+  additionalPhotos?: AdditionalPhotos
 ): Promise<DSDAnalysis | Response> {
+  // Build additional context based on available photos
+  let additionalContext = '';
+  if (additionalPhotos?.smile45) {
+    additionalContext += `
+FOTO ADICIONAL - SORRISO 45°:
+Uma foto do sorriso em ângulo de 45 graus foi fornecida. Use-a para:
+- Avaliar melhor o corredor bucal (espaço escuro lateral)
+- Analisar a projeção labial e dental em perfil
+- Verificar a curvatura do arco do sorriso
+`;
+  }
+  if (additionalPhotos?.face) {
+    additionalContext += `
+FOTO ADICIONAL - FACE COMPLETA:
+Uma foto da face completa foi fornecida. Use-a para:
+- Aplicar a regra dos terços faciais com mais precisão
+- Avaliar a linha média facial em relação a landmarks como nariz e queixo
+- Considerar proporções faciais globais no planejamento
+`;
+  }
+
   const analysisPrompt = `Você é um especialista em Digital Smile Design (DSD) e Odontologia Estética.
 Analise esta foto de sorriso/face do paciente e forneça uma análise detalhada das proporções faciais e dentárias.
+${additionalContext}
 
 ANÁLISE OBRIGATÓRIA:
 1. **Linha Média Facial**: Determine se a linha média facial está centrada ou desviada
@@ -584,7 +628,12 @@ serve(async (req: Request) => {
       return createErrorResponse(validation.error || ERROR_MESSAGES.INVALID_REQUEST, 400, corsHeaders);
     }
 
-    const { imageBase64, evaluationId, regenerateSimulationOnly, existingAnalysis, toothShape } = validation.data;
+    const { imageBase64, evaluationId, regenerateSimulationOnly, existingAnalysis, toothShape, additionalPhotos } = validation.data;
+
+    // Log if additional photos were provided (for debugging)
+    if (additionalPhotos) {
+      console.log(`DSD analysis with additional photos: smile45=${!!additionalPhotos.smile45}, face=${!!additionalPhotos.face}`);
+    }
 
     let analysis: DSDAnalysis;
 
@@ -592,8 +641,8 @@ serve(async (req: Request) => {
     if (regenerateSimulationOnly && existingAnalysis) {
       analysis = existingAnalysis;
     } else {
-      // Run full analysis
-      const analysisResult = await analyzeProportions(imageBase64, LOVABLE_API_KEY, corsHeaders);
+      // Run full analysis - pass additional photos for context enrichment
+      const analysisResult = await analyzeProportions(imageBase64, LOVABLE_API_KEY, corsHeaders, additionalPhotos);
       
       // Check if it's an error response
       if (analysisResult instanceof Response) {

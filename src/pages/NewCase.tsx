@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { ArrowLeft, ArrowRight, Camera, Brain, ClipboardCheck, FileText, Loader2, Smile, Check, Save } from 'lucide-react';
 
-import { PhotoUploadStep } from '@/components/wizard/PhotoUploadStep';
+import { PhotoUploadStep, AdditionalPhotos } from '@/components/wizard/PhotoUploadStep';
 import { AnalyzingStep } from '@/components/wizard/AnalyzingStep';
 import { DSDStep, DSDResult } from '@/components/wizard/DSDStep';
 import { ReviewAnalysisStep, PhotoAnalysisResult, ReviewFormData, DetectedTooth, TreatmentType, TREATMENT_LABELS } from '@/components/wizard/ReviewAnalysisStep';
@@ -59,6 +59,7 @@ export default function NewCase() {
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
   // Removed tooth shape selection - now uses 'natural' as default internally
   const [toothTreatments, setToothTreatments] = useState<Record<string, TreatmentType>>({});
+  const [additionalPhotos, setAdditionalPhotos] = useState<AdditionalPhotos>({ smile45: null, face: null });
   
   // Draft restoration state
   const [showRestoreModal, setShowRestoreModal] = useState(false);
@@ -97,9 +98,10 @@ export default function NewCase() {
         analysisResult,
         dsdResult,
         uploadedPhotoPath,
+        additionalPhotos,
       });
     }
-  }, [step, formData, selectedTeeth, toothTreatments, analysisResult, dsdResult, uploadedPhotoPath, saveDraft, user]);
+  }, [step, formData, selectedTeeth, toothTreatments, analysisResult, dsdResult, uploadedPhotoPath, additionalPhotos, saveDraft, user]);
 
   // Handle draft restoration
   const handleRestoreDraft = useCallback(() => {
@@ -112,6 +114,7 @@ export default function NewCase() {
     setAnalysisResult(pendingDraft.analysisResult);
     setDsdResult(pendingDraft.dsdResult);
     setUploadedPhotoPath(pendingDraft.uploadedPhotoPath);
+    setAdditionalPhotos(pendingDraft.additionalPhotos || { smile45: null, face: null });
     
     setShowRestoreModal(false);
     setPendingDraft(null);
@@ -756,6 +759,8 @@ export default function NewCase() {
             onImageChange={setImageBase64}
             onAnalyze={analyzePhoto}
             isUploading={false}
+            additionalPhotos={additionalPhotos}
+            onAdditionalPhotosChange={setAdditionalPhotos}
           />
         )}
 
@@ -774,6 +779,7 @@ export default function NewCase() {
             imageBase64={imageBase64}
             onComplete={handleDSDComplete}
             onSkip={handleDSDSkip}
+            additionalPhotos={additionalPhotos}
           />
         )}
 

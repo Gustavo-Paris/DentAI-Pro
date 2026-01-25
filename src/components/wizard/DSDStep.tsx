@@ -38,10 +38,16 @@ export interface DSDResult {
   simulation_note?: string;
 }
 
+interface AdditionalPhotos {
+  smile45: string | null;
+  face: string | null;
+}
+
 interface DSDStepProps {
   imageBase64: string | null;
   onComplete: (result: DSDResult | null) => void;
   onSkip: () => void;
+  additionalPhotos?: AdditionalPhotos;
 }
 
 const analysisSteps = [
@@ -52,7 +58,7 @@ const analysisSteps = [
   { label: 'Gerando simulação do sorriso...', duration: 5000 },
 ];
 
-export function DSDStep({ imageBase64, onComplete, onSkip }: DSDStepProps) {
+export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos }: DSDStepProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [result, setResult] = useState<DSDResult | null>(null);
@@ -101,8 +107,22 @@ export function DSDStep({ imageBase64, onComplete, onSkip }: DSDStepProps) {
     }, 2500);
 
     try {
+      // Build request body with optional additional photos
+      const requestBody: Record<string, unknown> = {
+        imageBase64,
+        toothShape: TOOTH_SHAPE,
+      };
+      
+      // Add additional photos if available (for enriching analysis context)
+      if (additionalPhotos?.smile45 || additionalPhotos?.face) {
+        requestBody.additionalPhotos = {
+          smile45: additionalPhotos.smile45 || undefined,
+          face: additionalPhotos.face || undefined,
+        };
+      }
+      
       const { data, error: fnError } = await invokeFunction<DSDResult>('generate-dsd', {
-        body: { imageBase64, toothShape: TOOTH_SHAPE },
+        body: requestBody,
       });
 
       clearInterval(stepInterval);
