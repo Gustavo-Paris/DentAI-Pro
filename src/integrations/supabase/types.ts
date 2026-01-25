@@ -40,6 +40,7 @@ export type Database = {
       }
       evaluations: {
         Row: {
+          additional_photos: Json | null
           aesthetic_level: string
           ai_indication_reason: string | null
           ai_treatment_indication: string | null
@@ -90,6 +91,7 @@ export type Database = {
           warnings: Json | null
         }
         Insert: {
+          additional_photos?: Json | null
           aesthetic_level: string
           ai_indication_reason?: string | null
           ai_treatment_indication?: string | null
@@ -140,6 +142,7 @@ export type Database = {
           warnings?: Json | null
         }
         Update: {
+          additional_photos?: Json | null
           aesthetic_level?: string
           ai_indication_reason?: string | null
           ai_treatment_indication?: string | null

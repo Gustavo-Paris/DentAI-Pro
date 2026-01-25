@@ -3,6 +3,11 @@ import { PhotoAnalysisResult, ReviewFormData, TreatmentType } from '@/components
 import { DSDResult } from '@/components/wizard/DSDStep';
 import { supabase } from '@/integrations/supabase/client';
 
+export interface AdditionalPhotos {
+  smile45: string | null;
+  face: string | null;
+}
+
 export interface WizardDraft {
   step: number;
   formData: ReviewFormData;
@@ -11,6 +16,7 @@ export interface WizardDraft {
   analysisResult: PhotoAnalysisResult | null;
   dsdResult: DSDResult | null;
   uploadedPhotoPath: string | null;
+  additionalPhotos?: AdditionalPhotos;
   lastSavedAt: string;
 }
 

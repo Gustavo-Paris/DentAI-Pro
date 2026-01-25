@@ -1,15 +1,24 @@
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Camera, Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Camera, Upload, X, Image as ImageIcon, Loader2, ChevronDown, ChevronUp, User, Smile } from 'lucide-react';
 import { toast } from 'sonner';
 import { isHeic, heicTo } from 'heic-to';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Badge } from '@/components/ui/badge';
+
+export interface AdditionalPhotos {
+  smile45: string | null;
+  face: string | null;
+}
 
 interface PhotoUploadStepProps {
   imageBase64: string | null;
   onImageChange: (base64: string | null) => void;
   onAnalyze: () => void;
   isUploading: boolean;
+  additionalPhotos?: AdditionalPhotos;
+  onAdditionalPhotosChange?: (photos: AdditionalPhotos) => void;
 }
 
 // Detecção robusta de HEIC usando a biblioteca heic-to + fallback
@@ -120,12 +129,18 @@ export function PhotoUploadStep({
   onImageChange,
   onAnalyze,
   isUploading,
+  additionalPhotos = { smile45: null, face: null },
+  onAdditionalPhotosChange,
 }: PhotoUploadStepProps) {
   const [dragActive, setDragActive] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [isCompressing, setIsCompressing] = useState(false);
+  const [isOptionalOpen, setIsOptionalOpen] = useState(false);
+  const [processingOptional, setProcessingOptional] = useState<'smile45' | 'face' | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  const smile45InputRef = useRef<HTMLInputElement>(null);
+  const faceInputRef = useRef<HTMLInputElement>(null);
   
   // Detecta dispositivo móvel real via userAgent
   const isMobileDevice = useMemo(() => {
@@ -251,6 +266,84 @@ export function PhotoUploadStep({
     }
   };
 
+  // Handle optional photo upload (45° or Face)
+  const handleOptionalFile = useCallback(async (file: File, type: 'smile45' | 'face') => {
+    if (!file.type.startsWith('image/') && file.type !== '' && file.type !== 'application/octet-stream') {
+      toast.error('Apenas imagens são permitidas');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Imagem deve ter no máximo 10MB');
+      return;
+    }
+
+    setProcessingOptional(type);
+
+    try {
+      let processedBlob: File | Blob = file;
+      
+      const fileIsHeic = await checkIsHeic(file);
+      if (fileIsHeic) {
+        processedBlob = await convertHeicToJpeg(file);
+      }
+      
+      const compressedBase64 = await compressImage(processedBlob);
+      
+      if (onAdditionalPhotosChange) {
+        onAdditionalPhotosChange({
+          ...additionalPhotos,
+          [type]: compressedBase64,
+        });
+      }
+      
+      toast.success(type === 'smile45' ? 'Foto 45° adicionada' : 'Foto de face adicionada');
+    } catch (error) {
+      console.error('[PhotoUpload] Optional photo processing failed:', error);
+      
+      try {
+        const base64 = await readFileAsDataURL(file);
+        if (base64.startsWith('data:image/jpeg') || base64.startsWith('data:image/png')) {
+          if (onAdditionalPhotosChange) {
+            onAdditionalPhotosChange({
+              ...additionalPhotos,
+              [type]: base64,
+            });
+          }
+          return;
+        }
+        toast.error('Erro ao processar foto opcional');
+      } catch {
+        toast.error('Erro ao processar foto');
+      }
+    } finally {
+      setProcessingOptional(null);
+    }
+  }, [additionalPhotos, onAdditionalPhotosChange]);
+
+  const handleOptionalFileChange = (type: 'smile45' | 'face') => (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      handleOptionalFile(e.target.files[0], type);
+    }
+  };
+
+  const removeOptionalPhoto = (type: 'smile45' | 'face') => {
+    if (onAdditionalPhotosChange) {
+      onAdditionalPhotosChange({
+        ...additionalPhotos,
+        [type]: null,
+      });
+    }
+    if (type === 'smile45' && smile45InputRef.current) {
+      smile45InputRef.current.value = '';
+    }
+    if (type === 'face' && faceInputRef.current) {
+      faceInputRef.current.value = '';
+    }
+  };
+
+  const optionalPhotosCount = [additionalPhotos.smile45, additionalPhotos.face].filter(Boolean).length;
+
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -362,6 +455,134 @@ export function PhotoUploadStep({
         onChange={handleFileChange}
         className="hidden"
       />
+
+      {/* Inputs ocultos para fotos opcionais */}
+      <input
+        ref={smile45InputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleOptionalFileChange('smile45')}
+        className="hidden"
+      />
+      <input
+        ref={faceInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleOptionalFileChange('face')}
+        className="hidden"
+      />
+
+      {/* Seção de fotos opcionais - aparece após foto principal */}
+      {imageBase64 && (
+        <Collapsible open={isOptionalOpen} onOpenChange={setIsOptionalOpen}>
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" className="w-full justify-between py-3 h-auto">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">Fotos adicionais (opcional)</span>
+                {optionalPhotosCount > 0 && (
+                  <Badge variant="secondary" className="text-xs">
+                    {optionalPhotosCount} foto{optionalPhotosCount > 1 ? 's' : ''}
+                  </Badge>
+                )}
+              </div>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <span className="text-xs">Melhora a análise</span>
+                {isOptionalOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </div>
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Foto 45° */}
+              <Card className="border-dashed">
+                <CardContent className="p-3">
+                  {additionalPhotos.smile45 ? (
+                    <div className="relative">
+                      <img 
+                        src={additionalPhotos.smile45} 
+                        alt="Sorriso 45°" 
+                        className="w-full h-24 object-cover rounded"
+                      />
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-1 right-1 h-6 w-6"
+                        onClick={() => removeOptionalPhoto('smile45')}
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                      <span className="absolute bottom-1 left-1 bg-background/80 text-xs px-1 rounded">
+                        Sorriso 45°
+                      </span>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => smile45InputRef.current?.click()}
+                      disabled={processingOptional === 'smile45'}
+                      className="w-full h-24 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded transition-colors"
+                    >
+                      {processingOptional === 'smile45' ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <>
+                          <Smile className="w-5 h-5" />
+                          <span className="text-xs font-medium">Sorriso 45°</span>
+                          <span className="text-[10px]">Corredor bucal</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Foto Face */}
+              <Card className="border-dashed">
+                <CardContent className="p-3">
+                  {additionalPhotos.face ? (
+                    <div className="relative">
+                      <img 
+                        src={additionalPhotos.face} 
+                        alt="Face completa" 
+                        className="w-full h-24 object-cover rounded"
+                      />
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-1 right-1 h-6 w-6"
+                        onClick={() => removeOptionalPhoto('face')}
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                      <span className="absolute bottom-1 left-1 bg-background/80 text-xs px-1 rounded">
+                        Face
+                      </span>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => faceInputRef.current?.click()}
+                      disabled={processingOptional === 'face'}
+                      className="w-full h-24 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded transition-colors"
+                    >
+                      {processingOptional === 'face' ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <>
+                          <User className="w-5 h-5" />
+                          <span className="text-xs font-medium">Face Completa</span>
+                          <span className="text-[10px]">Proporções faciais</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2 text-center">
+              Essas fotos ajudam a melhorar a análise de proporções, mas não são usadas na simulação visual.
+            </p>
+          </CollapsibleContent>
+        </Collapsible>
+      )}
 
       {imageBase64 && (
         <div className="flex justify-center">
