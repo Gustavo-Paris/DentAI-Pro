@@ -144,17 +144,19 @@ function hasSevereDestruction(analysis: DSDAnalysis): { isLimited: boolean; reas
   
   // Check if confidence is low due to photo quality or case complexity
   if (analysis.confidence === 'baixa') {
-    const hasComplexityNote = analysis.observations?.some(obs =>
-      obs.toLowerCase().includes('intraoral') ||
-      obs.toLowerCase().includes('close-up') ||
-      obs.toLowerCase().includes('complexo') ||
-      obs.toLowerCase().includes('limitad')
-    );
+    // Only flag as limited if it's a TRUE intraoral photo (with retractor, no visible lips)
+    const hasTrueIntraoralIssue = analysis.observations?.some(obs => {
+      const lower = obs.toLowerCase();
+      // Must have "intraoral" AND specific markers like "afastador", "sem lábio", "interna"
+      return (lower.includes('afastador') || 
+              (lower.includes('intraoral') && (lower.includes('interna') || lower.includes('sem lábio') || lower.includes('retrator'))) ||
+              lower.includes('close-up extremo'));
+    });
     
-    if (hasComplexityNote) {
+    if (hasTrueIntraoralIssue) {
       return {
         isLimited: true,
-        reason: "Foto intraoral ou caso complexo detectado. Recomenda-se foto do sorriso completo para simulação mais precisa."
+        reason: "Foto intraoral com afastador detectada. Recomenda-se foto do sorriso completo para simulação mais precisa."
       };
     }
   }
@@ -187,12 +189,16 @@ async function generateSimulation(
            change.includes('extração');
   });
   
-  // Check if it's an intraoral photo (simpler prompt needed)
-  const isIntraoralPhoto = analysis.observations?.some(obs => 
-    obs.toLowerCase().includes('intraoral') || 
-    obs.toLowerCase().includes('close-up') ||
-    obs.toLowerCase().includes('aproximada')
-  );
+  // Check if it's a TRUE intraoral photo (simpler prompt needed)
+  // Only trigger for actual intraoral photos with retractors, not smile photos with lips visible
+  const isIntraoralPhoto = analysis.observations?.some(obs => {
+    const lower = obs.toLowerCase();
+    // Require specific intraoral markers - NOT just "intraoral detectada"
+    return lower.includes('afastador') || 
+           lower.includes('retrator') ||
+           (lower.includes('intraoral') && (lower.includes('interna') || lower.includes('sem lábio'))) ||
+           lower.includes('close-up extremo');
+  });
   
   let simulationPrompt: string;
   
@@ -459,7 +465,18 @@ CASOS INADEQUADOS PARA DSD (marque confidence = "baixa" e adicione observação)
 - Dentes ausentes que requerem implante → Adicione: "ATENÇÃO: Dente(s) ausente(s) detectado(s). Caso requer tratamento cirúrgico antes do planejamento estético."
 - Destruição coronária > 50% que requer coroa/extração → Adicione: "ATENÇÃO: Destruição dental severa. Recomenda-se tratamento protético prévio."
 - Raízes residuais → Adicione: "ATENÇÃO: Raiz residual identificada. Extração necessária antes do planejamento."
-- Foto intraoral/close-up sem contexto facial → Adicione: "ATENÇÃO: Foto intraoral detectada. Simulação limitada sem proporções faciais."
+- Foto INTRAORAL VERDADEIRA (com afastador de lábio, APENAS gengiva e dentes internos visíveis, SEM lábios externos) → Adicione: "ATENÇÃO: Foto intraoral com afastador detectada. Simulação limitada sem proporções faciais."
+
+DEFINIÇÃO DE TIPOS DE FOTO - IMPORTANTE:
+- FOTO INTRAORAL: Close-up INTERNO da boca (afastador de lábio presente, apenas gengiva/dentes visíveis, SEM lábios externos)
+- FOTO DE SORRISO: Qualquer foto que mostre os LÁBIOS (superior e inferior), mesmo sem olhos/nariz visíveis - É ADEQUADA para DSD
+- FOTO FACIAL COMPLETA: Face inteira com olhos, nariz, boca visíveis
+
+REGRA CRÍTICA:
+Se a foto mostra LÁBIOS (superior e inferior), barba/pele perioral, e dentes durante o sorriso → NÃO é intraoral!
+Foto de sorriso parcial (com lábios visíveis, sem olhos) ainda é ADEQUADA para análise DSD.
+Use confidence="média" ou "alta" para fotos de sorriso com lábios.
+APENAS use confidence="baixa" por tipo de foto se for uma foto INTRAORAL VERDADEIRA (com afastador, sem lábios externos).
 
 SUGESTÕES - APENAS TRATAMENTOS CONSERVADORES COM LENTES DE CONTATO:
 Para cada dente que poderia ser melhorado, forneça APENAS mudanças MÍNIMAS possíveis com lentes de contato dental:
