@@ -691,12 +691,12 @@ export default function NewCase() {
   // DSD handlers - simplified (tooth shape is now automatic)
   const handleDSDComplete = (result: DSDResult | null) => {
     setDsdResult(result);
-    setStep(4); // Move to review
+    setStep(5); // Move to review (step 5)
   };
 
   const handleDSDSkip = () => {
     setDsdResult(null);
-    setStep(4); // Move to review
+    setStep(5); // Move to review (step 5)
   };
 
   // Navigation handlers
