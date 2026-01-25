@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -20,8 +22,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { AlertTriangle, Check, Info, Sparkles, CircleDot, RefreshCw, Loader2, Plus, Wrench, Wand2, Crown, Stethoscope, CircleX, ArrowUpRight } from 'lucide-react';
+import { AlertTriangle, Check, Info, Sparkles, CircleDot, RefreshCw, Loader2, Plus, Wrench, Wand2, Crown, Stethoscope, CircleX, ArrowUpRight, CalendarIcon } from 'lucide-react';
 import { PatientAutocomplete } from '@/components/PatientAutocomplete';
+import { calculateAge } from '@/lib/dateUtils';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 
 // Expanded treatment types
 export type TreatmentType = 'resina' | 'porcelana' | 'coroa' | 'implante' | 'endodontia' | 'encaminhamento';
@@ -112,7 +118,9 @@ interface ReviewAnalysisStepProps {
   toothTreatments?: Record<string, TreatmentType>;
   onToothTreatmentChange?: (tooth: string, treatment: TreatmentType) => void;
   selectedPatientId?: string | null;
-  onPatientSelect?: (name: string, patientId?: string) => void;
+  onPatientSelect?: (name: string, patientId?: string, birthDate?: string | null) => void;
+  patientBirthDate?: string | null;
+  onPatientBirthDateChange?: (date: string | null) => void;
 }
 
 // Get icon for treatment type
@@ -166,6 +174,8 @@ export function ReviewAnalysisStep({
   onToothTreatmentChange,
   selectedPatientId,
   onPatientSelect,
+  patientBirthDate,
+  onPatientBirthDateChange,
 }: ReviewAnalysisStepProps) {
   const [showManualAdd, setShowManualAdd] = useState(false);
   const [manualTooth, setManualTooth] = useState('');
@@ -608,27 +618,78 @@ export function ReviewAnalysisStep({
               <CardTitle className="text-base">Dados do Paciente</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <PatientAutocomplete
                   value={formData.patientName}
-                  onChange={(name, patientId) => {
+                  onChange={(name, patientId, birthDate) => {
                     onFormChange({ patientName: name });
-                    onPatientSelect?.(name, patientId);
+                    onPatientSelect?.(name, patientId, birthDate);
                   }}
                   selectedPatientId={selectedPatientId}
                   placeholder="Nome do paciente"
                   label="Nome (opcional)"
                 />
+                
+                {/* Birth date + calculated age */}
                 <div className="space-y-2">
-                  <Label htmlFor="patientAge">Idade *</Label>
-                  <Input
-                    id="patientAge"
-                    type="number"
-                    placeholder="Ex: 35"
-                    value={formData.patientAge}
-                    onChange={(e) => onFormChange({ patientAge: e.target.value })}
-                    required
-                  />
+                  <Label>Data de Nascimento *</Label>
+                  <div className="flex gap-2 items-start">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "flex-1 justify-start text-left font-normal",
+                            !patientBirthDate && "text-muted-foreground"
+                          )}
+                          disabled={!!selectedPatientId && !!patientBirthDate}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {patientBirthDate 
+                            ? format(new Date(patientBirthDate), "dd/MM/yyyy", { locale: ptBR })
+                            : "Selecionar data"
+                          }
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={patientBirthDate ? new Date(patientBirthDate) : undefined}
+                          onSelect={(date) => {
+                            if (date) {
+                              const isoDate = date.toISOString().split('T')[0];
+                              onPatientBirthDateChange?.(isoDate);
+                              // Auto-calculate and set age
+                              const age = calculateAge(isoDate);
+                              onFormChange({ patientAge: String(age) });
+                            }
+                          }}
+                          disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                          initialFocus
+                          className={cn("p-3 pointer-events-auto")}
+                          captionLayout="dropdown-buttons"
+                          fromYear={1920}
+                          toYear={new Date().getFullYear()}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    
+                    {/* Show calculated age */}
+                    {patientBirthDate && (
+                      <div className="flex items-center gap-1 px-3 py-2 rounded-md bg-primary/10 text-primary min-w-[80px] justify-center">
+                        <span className="text-sm font-medium">
+                          {calculateAge(patientBirthDate)} anos
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Hint for existing patients */}
+                  {selectedPatientId && !patientBirthDate && (
+                    <p className="text-xs text-muted-foreground">
+                      Adicione para preencher automaticamente nas próximas vezes
+                    </p>
+                  )}
                 </div>
               </div>
             </CardContent>

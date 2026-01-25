@@ -11,11 +11,12 @@ interface Patient {
   name: string;
   phone: string | null;
   email: string | null;
+  birth_date: string | null;
 }
 
 interface PatientAutocompleteProps {
   value: string;
-  onChange: (name: string, patientId?: string) => void;
+  onChange: (name: string, patientId?: string, birthDate?: string | null) => void;
   placeholder?: string;
   label?: string;
   selectedPatientId?: string | null;
@@ -45,7 +46,7 @@ export function PatientAutocomplete({
       setIsLoading(true);
       const { data, error } = await supabase
         .from('patients')
-        .select('id, name, phone, email')
+        .select('id, name, phone, email, birth_date')
         .eq('user_id', user.id)
         .order('name');
 
@@ -82,14 +83,14 @@ export function PatientAutocomplete({
 
   // Handle selecting a patient
   const handleSelectPatient = (patient: Patient) => {
-    onChange(patient.name, patient.id);
+    onChange(patient.name, patient.id, patient.birth_date);
     setIsOpen(false);
     setHighlightedIndex(-1);
   };
 
   // Handle creating new patient (just use the typed name)
   const handleCreateNew = () => {
-    onChange(value, undefined);
+    onChange(value, undefined, null);
     setIsOpen(false);
   };
 

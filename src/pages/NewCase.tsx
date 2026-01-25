@@ -59,6 +59,8 @@ export default function NewCase() {
   const [dsdResult, setDsdResult] = useState<DSDResult | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+  const [patientBirthDate, setPatientBirthDate] = useState<string | null>(null);
+  const [originalPatientBirthDate, setOriginalPatientBirthDate] = useState<string | null>(null);
   // Removed tooth shape selection - now uses 'natural' as default internally
   const [toothTreatments, setToothTreatments] = useState<Record<string, TreatmentType>>({});
   const [additionalPhotos, setAdditionalPhotos] = useState<AdditionalPhotos>({ smile45: null, face: null });
@@ -426,6 +428,7 @@ export default function NewCase() {
           .insert({
             user_id: user.id,
             name: formData.patientName.trim(),
+            birth_date: patientBirthDate || null,
           })
           .select('id')
           .single();
@@ -449,6 +452,14 @@ export default function NewCase() {
         } else if (newPatient) {
           patientId = newPatient.id;
         }
+      }
+      
+      // Update existing patient's birth_date if it was added for the first time
+      if (patientId && patientBirthDate && !originalPatientBirthDate) {
+        await supabase
+          .from('patients')
+          .update({ birth_date: patientBirthDate })
+          .eq('id', patientId);
       }
 
       for (const tooth of teethToProcess) {
@@ -838,8 +849,27 @@ export default function NewCase() {
             toothTreatments={toothTreatments}
             onToothTreatmentChange={handleToothTreatmentChange}
             selectedPatientId={selectedPatientId}
-            onPatientSelect={(name, patientId) => {
+            patientBirthDate={patientBirthDate}
+            onPatientBirthDateChange={setPatientBirthDate}
+            onPatientSelect={(name, patientId, birthDate) => {
               setSelectedPatientId(patientId || null);
+              setPatientBirthDate(birthDate || null);
+              setOriginalPatientBirthDate(birthDate || null);
+              
+              // Auto-calculate age if birth date exists
+              if (birthDate) {
+                const birth = new Date(birthDate);
+                const today = new Date();
+                let age = today.getFullYear() - birth.getFullYear();
+                const monthDiff = today.getMonth() - birth.getMonth();
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+                  age--;
+                }
+                setFormData(prev => ({ ...prev, patientAge: String(age) }));
+              } else {
+                // Clear age if no birth date
+                setFormData(prev => ({ ...prev, patientAge: '' }));
+              }
             }}
           />
         )}
