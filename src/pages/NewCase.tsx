@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -78,8 +78,14 @@ export default function NewCase() {
   const totalSteps = 6;
   const progress = (step / totalSteps) * 100;
 
-  // Check for pending draft on mount
+  // Ref to ensure draft check only runs once
+  const hasCheckedDraftRef = useRef(false);
+
+  // Check for pending draft on mount (only once)
   useEffect(() => {
+    if (hasCheckedDraftRef.current) return;
+    hasCheckedDraftRef.current = true;
+
     const checkDraft = async () => {
       const draft = await loadDraft();
       if (draft && draft.step >= 2) {
