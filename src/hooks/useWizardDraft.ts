@@ -2,6 +2,7 @@ import { useCallback, useRef, useState, useEffect } from 'react';
 import { PhotoAnalysisResult, ReviewFormData, TreatmentType } from '@/components/wizard/ReviewAnalysisStep';
 import { DSDResult } from '@/components/wizard/DSDStep';
 import { supabase } from '@/integrations/supabase/client';
+import { PatientPreferences } from '@/components/wizard/PatientPreferencesStep';
 
 export interface AdditionalPhotos {
   smile45: string | null;
@@ -17,6 +18,7 @@ export interface WizardDraft {
   dsdResult: DSDResult | null;
   uploadedPhotoPath: string | null;
   additionalPhotos?: AdditionalPhotos;
+  patientPreferences?: PatientPreferences;
   lastSavedAt: string;
 }
 

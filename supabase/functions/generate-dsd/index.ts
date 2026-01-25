@@ -32,6 +32,11 @@ interface AdditionalPhotos {
   face?: string;     // Full face photo for facial proportions
 }
 
+interface PatientPreferences {
+  aestheticGoals?: string;
+  desiredChanges?: string[];
+}
+
 interface RequestData {
   imageBase64: string;
   evaluationId?: string;
@@ -39,6 +44,7 @@ interface RequestData {
   existingAnalysis?: DSDAnalysis;
   toothShape?: 'natural' | 'quadrado' | 'triangular' | 'oval' | 'retangular';
   additionalPhotos?: AdditionalPhotos;
+  patientPreferences?: PatientPreferences;
 }
 
 // Validate request
@@ -70,9 +76,21 @@ function validateRequest(data: unknown): { success: boolean; error?: string; dat
       smile45: typeof photos.smile45 === 'string' && photos.smile45 ? photos.smile45 : undefined,
       face: typeof photos.face === 'string' && photos.face ? photos.face : undefined,
     };
-    // Only include if at least one photo is present
     if (!additionalPhotos.smile45 && !additionalPhotos.face) {
       additionalPhotos = undefined;
+    }
+  }
+
+  // Parse patient preferences if provided
+  let patientPreferences: PatientPreferences | undefined;
+  if (req.patientPreferences && typeof req.patientPreferences === 'object') {
+    const prefs = req.patientPreferences as Record<string, unknown>;
+    patientPreferences = {
+      aestheticGoals: typeof prefs.aestheticGoals === 'string' ? prefs.aestheticGoals : undefined,
+      desiredChanges: Array.isArray(prefs.desiredChanges) ? prefs.desiredChanges : undefined,
+    };
+    if (!patientPreferences.aestheticGoals && !patientPreferences.desiredChanges?.length) {
+      patientPreferences = undefined;
     }
   }
 
@@ -85,6 +103,7 @@ function validateRequest(data: unknown): { success: boolean; error?: string; dat
       existingAnalysis: req.existingAnalysis as DSDAnalysis | undefined,
       toothShape: toothShape as RequestData['toothShape'],
       additionalPhotos,
+      patientPreferences,
     },
   };
 }
