@@ -3,7 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { User, Plus, Check } from 'lucide-react';
 
@@ -168,31 +167,31 @@ export function PatientAutocomplete({
 
       {/* Dropdown */}
       {showDropdown && (
-        <Card
+        <div
           ref={dropdownRef}
-          className="absolute z-50 w-full mt-1 py-1 max-h-64 overflow-auto shadow-lg bg-popover border border-border"
+          className="absolute left-0 right-0 z-50 mt-1 py-1 max-h-64 overflow-auto rounded-md border border-border bg-popover shadow-md"
         >
           {/* Existing patients */}
           {filteredPatients.map((patient, index) => (
             <button
               key={patient.id}
               type="button"
-              className={`w-full px-3 py-2 flex items-center gap-3 text-left hover:bg-accent transition-colors ${
-                highlightedIndex === index ? 'bg-accent' : ''
+              className={`w-full px-3 py-2.5 flex items-center gap-3 text-left transition-colors ${
+                highlightedIndex === index ? 'bg-accent' : 'hover:bg-accent/50'
               }`}
               onClick={() => handleSelectPatient(patient)}
               onMouseEnter={() => setHighlightedIndex(index)}
             >
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                 <User className="w-4 h-4 text-primary" />
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm truncate">{patient.name}</p>
+              <div className="flex-1 min-w-0 overflow-hidden">
+                <p className="font-medium text-sm truncate text-foreground">{patient.name}</p>
                 {patient.phone && (
                   <p className="text-xs text-muted-foreground truncate">{patient.phone}</p>
                 )}
               </div>
-              <Badge variant="secondary" className="text-xs">
+              <Badge variant="outline" className="text-xs shrink-0 bg-secondary text-secondary-foreground">
                 Existente
               </Badge>
             </button>
@@ -200,22 +199,25 @@ export function PatientAutocomplete({
 
           {/* Create new option */}
           {!exactMatch && value.trim().length >= 2 && (
-            <button
-              type="button"
-              className={`w-full px-3 py-2 flex items-center gap-3 text-left hover:bg-accent transition-colors border-t border-border ${
-                highlightedIndex === filteredPatients.length ? 'bg-accent' : ''
-              }`}
-              onClick={handleCreateNew}
-              onMouseEnter={() => setHighlightedIndex(filteredPatients.length)}
-            >
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Plus className="w-4 h-4 text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm">Criar "{value.trim()}"</p>
-                <p className="text-xs text-muted-foreground">Novo paciente</p>
-              </div>
-            </button>
+            <>
+              {filteredPatients.length > 0 && <div className="border-t border-border my-1" />}
+              <button
+                type="button"
+                className={`w-full px-3 py-2.5 flex items-center gap-3 text-left transition-colors ${
+                  highlightedIndex === filteredPatients.length ? 'bg-accent' : 'hover:bg-accent/50'
+                }`}
+                onClick={handleCreateNew}
+                onMouseEnter={() => setHighlightedIndex(filteredPatients.length)}
+              >
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <Plus className="w-4 h-4 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm text-foreground">Criar "{value.trim()}"</p>
+                  <p className="text-xs text-muted-foreground">Novo paciente</p>
+                </div>
+              </button>
+            </>
           )}
 
           {/* No results */}
@@ -224,7 +226,7 @@ export function PatientAutocomplete({
               Digite pelo menos 2 caracteres...
             </div>
           )}
-        </Card>
+        </div>
       )}
     </div>
   );
