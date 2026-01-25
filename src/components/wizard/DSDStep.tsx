@@ -92,6 +92,8 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
 
   const analyzeDSD = async (retryCount = 0) => {
     const MAX_RETRIES = 2;
+    let didRetry = false;
+    let hasError = false;
     
     if (!imageBase64) {
       setError('Nenhuma imagem disponível para análise');
@@ -147,6 +149,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
 
       if (data?.analysis) {
         setResult(data);
+        setIsAnalyzing(false);
         toast.success('Análise DSD concluída!');
       } else {
         throw new Error('Dados de análise não retornados');
@@ -161,16 +164,18 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
         err?.message?.includes('Failed to fetch') ||
         err?.message?.includes('fetch') ||
         err?.message?.includes('timeout') ||
-        err?.message?.includes('network');
+        err?.message?.includes('network') ||
+        err?.message?.includes('500');
       
       if (isConnectionError && retryCount < MAX_RETRIES) {
         console.log(`DSD retry ${retryCount + 1}/${MAX_RETRIES}...`);
+        didRetry = true;
         toast.info(`Reconectando... (tentativa ${retryCount + 1})`);
-        setIsAnalyzing(false);
         await new Promise(r => setTimeout(r, 2000)); // Wait 2s before retry
         return analyzeDSD(retryCount + 1);
       }
       
+      hasError = true;
       if (err?.message?.includes('429') || err?.code === 'RATE_LIMITED') {
         setError('Limite de requisições excedido. Aguarde alguns minutos.');
       } else if (err?.message?.includes('402') || err?.code === 'PAYMENT_REQUIRED') {
@@ -183,7 +188,8 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
       setIsAnalyzing(false);
     } finally {
       clearInterval(stepInterval);
-      if (!error) {
+      // Only set isAnalyzing to false if we didn't retry and didn't already handle it
+      if (!didRetry && !hasError) {
         setIsAnalyzing(false);
       }
     }
