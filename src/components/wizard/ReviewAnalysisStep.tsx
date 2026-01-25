@@ -619,10 +619,10 @@ export function ReviewAnalysisStep({
         </Card>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="space-y-6">
         {/* Preview Image */}
         {imageBase64 && (
-          <Card className="lg:row-span-2">
+          <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-base">Foto Analisada</CardTitle>
             </CardHeader>
