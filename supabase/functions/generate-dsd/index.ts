@@ -395,7 +395,8 @@ async function analyzeProportions(
   imageBase64: string,
   apiKey: string,
   corsHeaders: Record<string, string>,
-  additionalPhotos?: AdditionalPhotos
+  additionalPhotos?: AdditionalPhotos,
+  patientPreferences?: PatientPreferences
 ): Promise<DSDAnalysis | Response> {
   // Build additional context based on available photos
   let additionalContext = '';
@@ -418,9 +419,29 @@ Uma foto da face completa foi fornecida. Use-a para:
 `;
   }
 
+  // Build patient preferences context
+  let preferencesContext = '';
+  if (patientPreferences?.aestheticGoals || patientPreferences?.desiredChanges?.length) {
+    preferencesContext = `
+
+PREFERÊNCIAS DO PACIENTE:
+O paciente expressou os seguintes desejos estéticos. PRIORIZE sugestões que atendam a estes objetivos quando clinicamente viável:
+`;
+    if (patientPreferences.aestheticGoals) {
+      preferencesContext += `Objetivos descritos pelo paciente: "${patientPreferences.aestheticGoals}"
+`;
+    }
+    if (patientPreferences.desiredChanges?.length) {
+      preferencesContext += `Mudanças desejadas: ${patientPreferences.desiredChanges.join(', ')}
+`;
+    }
+    preferencesContext += `
+IMPORTANTE: Use as preferências do paciente para PRIORIZAR sugestões, mas NÃO sugira tratamentos clinicamente inadequados apenas para atender desejos. Sempre mantenha o foco em resultados conservadores e naturais.`;
+  }
+
   const analysisPrompt = `Você é um especialista em Digital Smile Design (DSD) e Odontologia Estética.
 Analise esta foto de sorriso/face do paciente e forneça uma análise detalhada das proporções faciais e dentárias.
-${additionalContext}
+${additionalContext}${preferencesContext}
 
 ANÁLISE OBRIGATÓRIA:
 1. **Linha Média Facial**: Determine se a linha média facial está centrada ou desviada
@@ -647,11 +668,14 @@ serve(async (req: Request) => {
       return createErrorResponse(validation.error || ERROR_MESSAGES.INVALID_REQUEST, 400, corsHeaders);
     }
 
-    const { imageBase64, evaluationId, regenerateSimulationOnly, existingAnalysis, toothShape, additionalPhotos } = validation.data;
+    const { imageBase64, evaluationId, regenerateSimulationOnly, existingAnalysis, toothShape, additionalPhotos, patientPreferences } = validation.data;
 
-    // Log if additional photos were provided (for debugging)
+    // Log if additional photos or preferences were provided
     if (additionalPhotos) {
       console.log(`DSD analysis with additional photos: smile45=${!!additionalPhotos.smile45}, face=${!!additionalPhotos.face}`);
+    }
+    if (patientPreferences) {
+      console.log(`DSD analysis with patient preferences: goals=${!!patientPreferences.aestheticGoals}, changes=${patientPreferences.desiredChanges?.length || 0}`);
     }
 
     let analysis: DSDAnalysis;
@@ -660,8 +684,8 @@ serve(async (req: Request) => {
     if (regenerateSimulationOnly && existingAnalysis) {
       analysis = existingAnalysis;
     } else {
-      // Run full analysis - pass additional photos for context enrichment
-      const analysisResult = await analyzeProportions(imageBase64, LOVABLE_API_KEY, corsHeaders, additionalPhotos);
+      // Run full analysis - pass additional photos and preferences for context enrichment
+      const analysisResult = await analyzeProportions(imageBase64, LOVABLE_API_KEY, corsHeaders, additionalPhotos, patientPreferences);
       
       // Check if it's an error response
       if (analysisResult instanceof Response) {
