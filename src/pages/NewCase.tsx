@@ -580,6 +580,38 @@ export default function NewCase() {
           .eq('id', evaluation.id);
       }
 
+      // Save unselected teeth to session_detected_teeth for later use
+      const allDetectedTeeth = analysisResult?.detected_teeth || [];
+      const unselectedTeeth = allDetectedTeeth.filter(t => !teethToProcess.includes(t.tooth));
+      
+      if (unselectedTeeth.length > 0) {
+        const { error: pendingError } = await supabase
+          .from('session_detected_teeth')
+          .insert(
+            unselectedTeeth.map(t => ({
+              session_id: sessionId,
+              user_id: user.id,
+              tooth: t.tooth,
+              priority: t.priority,
+              treatment_indication: t.treatment_indication || 'resina',
+              indication_reason: t.indication_reason || null,
+              cavity_class: t.cavity_class,
+              restoration_size: t.restoration_size,
+              substrate: t.substrate,
+              substrate_condition: t.substrate_condition,
+              enamel_condition: t.enamel_condition,
+              depth: t.depth,
+              tooth_region: t.tooth_region,
+              tooth_bounds: t.tooth_bounds || null,
+            }))
+          );
+        
+        if (pendingError) {
+          console.error('Error saving pending teeth:', pendingError);
+          // Non-critical error, don't block the flow
+        }
+      }
+
       // Build success message with treatment counts
       const treatmentMessages = Object.entries(treatmentCounts)
         .map(([type, count]) => `${count} ${TREATMENT_LABELS[type as TreatmentType] || type}`)

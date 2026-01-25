@@ -40,13 +40,15 @@ import {
   Crown,
   Stethoscope,
   ArrowUpRight,
-  CircleX
+  CircleX,
+  Plus
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
 
 import type { StratificationProtocol, CementationProtocol } from '@/types/protocol';
+import { AddTeethModal, PendingTooth } from '@/components/AddTeethModal';
 
 // Treatment type configuration
 const treatmentConfig: Record<string, { 
@@ -104,6 +106,8 @@ interface EvaluationItem {
   id: string;
   created_at: string;
   patient_name: string | null;
+  patient_id: string | null;
+  patient_age: number;
   tooth: string;
   cavity_class: string;
   restoration_size: string;
@@ -115,6 +119,11 @@ interface EvaluationItem {
   ai_treatment_indication: string | null;
   cementation_protocol: CementationProtocol | null;
   generic_protocol: { checklist?: string[] } | null;
+  tooth_color: string;
+  bruxism: boolean;
+  aesthetic_level: string;
+  budget: string;
+  longevity_expectation: string;
   resins?: {
     name: string;
     manufacturer: string;
@@ -129,9 +138,12 @@ export default function EvaluationDetails() {
   const [evaluations, setEvaluations] = useState<EvaluationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [pendingTeeth, setPendingTeeth] = useState<PendingTooth[]>([]);
+  const [showAddTeethModal, setShowAddTeethModal] = useState(false);
 
   useEffect(() => {
     fetchEvaluationData();
+    fetchPendingTeeth();
   }, [user, evaluationId]);
 
   const fetchEvaluationData = async () => {
@@ -143,6 +155,8 @@ export default function EvaluationDetails() {
         id,
         created_at,
         patient_name,
+        patient_id,
+        patient_age,
         tooth,
         cavity_class,
         restoration_size,
@@ -154,6 +168,11 @@ export default function EvaluationDetails() {
         ai_treatment_indication,
         cementation_protocol,
         generic_protocol,
+        tooth_color,
+        bruxism,
+        aesthetic_level,
+        budget,
+        longevity_expectation,
         resins!recommended_resin_id (
           name,
           manufacturer
@@ -185,6 +204,28 @@ export default function EvaluationDetails() {
       navigate('/dashboard');
     }
     setLoading(false);
+  };
+
+  const fetchPendingTeeth = async () => {
+    if (!user || !evaluationId) return;
+
+    const { data, error } = await supabase
+      .from('session_detected_teeth')
+      .select('*')
+      .eq('session_id', evaluationId)
+      .eq('user_id', user.id)
+      .order('tooth', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching pending teeth:', error);
+    } else if (data) {
+      setPendingTeeth(data as PendingTooth[]);
+    }
+  };
+
+  const handleAddTeethSuccess = () => {
+    fetchEvaluationData();
+    fetchPendingTeeth();
   };
 
   const handleSignOut = async () => {
@@ -435,7 +476,20 @@ export default function EvaluationDetails() {
             </Card>
 
             {/* Actions */}
-            <div className="flex justify-end gap-2 mb-4">
+            <div className="flex flex-wrap justify-end gap-2 mb-4">
+              {pendingTeeth.length > 0 && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setShowAddTeethModal(true)}
+                  className="text-xs sm:text-sm border-primary/50 text-primary hover:bg-primary/5"
+                >
+                  <Plus className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Adicionar mais dentes</span>
+                  <span className="sm:hidden">Adicionar</span>
+                  <Badge variant="secondary" className="ml-1.5 text-xs">{pendingTeeth.length}</Badge>
+                </Button>
+              )}
               <Button 
                 variant="outline" 
                 size="sm"
@@ -585,6 +639,28 @@ export default function EvaluationDetails() {
           </>
         )}
       </main>
+      
+      {/* Add Teeth Modal */}
+      {evaluations.length > 0 && (
+        <AddTeethModal
+          open={showAddTeethModal}
+          onClose={() => setShowAddTeethModal(false)}
+          pendingTeeth={pendingTeeth}
+          sessionId={evaluationId || ''}
+          patientData={{
+            name: evaluations[0]?.patient_name || null,
+            age: evaluations[0]?.patient_age || 30,
+            id: evaluations[0]?.patient_id || null,
+            vitaShade: evaluations[0]?.tooth_color || 'A2',
+            bruxism: evaluations[0]?.bruxism || false,
+            aestheticLevel: evaluations[0]?.aesthetic_level || 'alto',
+            budget: evaluations[0]?.budget || 'moderado',
+            longevityExpectation: evaluations[0]?.longevity_expectation || 'médio',
+            photoPath: evaluations[0]?.photo_frontal || null,
+          }}
+          onSuccess={handleAddTeethSuccess}
+        />
+      )}
     </div>
   );
 }
