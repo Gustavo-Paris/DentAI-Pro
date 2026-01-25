@@ -705,14 +705,19 @@ export default function NewCase() {
       navigate('/dashboard');
     } else if (step === 2) {
       setStep(1); // Go back to photo from preferences
+    } else if (step === 3) {
+      // From analyzing step - go back to preferences
+      setStep(2);
+      setAnalysisError(null);
+      setIsAnalyzing(false);
     } else if (step === 4) {
-      setStep(3); // Go back to analyzing from DSD (skip preferences)
+      setStep(2); // Go back to preferences from DSD (skip re-analysis)
     } else if (step === 5) {
       setStep(4); // Go back to DSD from review
     }
   };
 
-  const canGoBack = step === 1 || step === 2 || step === 4 || step === 5;
+  const canGoBack = step >= 1 && step <= 5;
 
   return (
     <div className="min-h-screen bg-background">
@@ -800,6 +805,7 @@ export default function NewCase() {
             analysisError={analysisError}
             onRetry={handleRetryAnalysis}
             onSkipToReview={handleSkipToReview}
+            onBack={handleBack}
           />
         )}
 

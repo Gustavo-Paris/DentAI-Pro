@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, Brain, Sparkles, Check, AlertCircle, RefreshCw, ArrowRight } from 'lucide-react';
+import { Loader2, Brain, Sparkles, Check, AlertCircle, RefreshCw, ArrowRight, ArrowLeft } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 
 interface AnalyzingStepProps {
@@ -10,6 +10,7 @@ interface AnalyzingStepProps {
   analysisError: string | null;
   onRetry: () => void;
   onSkipToReview: () => void;
+  onBack?: () => void;
 }
 
 const analysisSteps = [
@@ -26,7 +27,8 @@ export function AnalyzingStep({
   isAnalyzing, 
   analysisError, 
   onRetry, 
-  onSkipToReview 
+  onSkipToReview,
+  onBack,
 }: AnalyzingStepProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -100,6 +102,12 @@ export function AnalyzingStep({
               </p>
               
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                {onBack && (
+                  <Button variant="ghost" onClick={onBack} className="gap-2">
+                    <ArrowLeft className="w-4 h-4" />
+                    Voltar
+                  </Button>
+                )}
                 <Button onClick={onRetry} className="gap-2">
                   <RefreshCw className="w-4 h-4" />
                   Tentar Novamente
