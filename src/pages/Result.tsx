@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Download, Plus, CheckCircle, Image, Package, Sparkles, Layers, Loader2, Smile, Crown, Stethoscope, ArrowUpRight, CircleX, MapPin } from 'lucide-react';
+import { ArrowLeft, Download, Plus, CheckCircle, Image, Package, Sparkles, Layers, Loader2, Smile, Crown, Stethoscope, ArrowUpRight, CircleX, MapPin, Heart } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -88,6 +88,9 @@ interface Evaluation {
     width: number;
     height: number;
   } | null;
+  // Patient preferences
+  patient_aesthetic_goals: string | null;
+  patient_desired_changes: string[] | null;
 }
 
 interface DentistProfile {
@@ -591,6 +594,47 @@ export default function Result() {
             <ProportionsCard analysis={evaluation.dsd_analysis} />
           </section>
         )}
+
+        {/* Patient Preferences */}
+        {(evaluation.patient_aesthetic_goals || (evaluation.patient_desired_changes && evaluation.patient_desired_changes.length > 0)) && (
+          <section className="mb-8">
+            <Card className="border-primary/20 bg-primary/5">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Heart className="w-4 h-4 text-primary" />
+                  Preferências do Paciente
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {evaluation.patient_aesthetic_goals && (
+                  <p className="text-sm text-muted-foreground italic">
+                    "{evaluation.patient_aesthetic_goals}"
+                  </p>
+                )}
+                {evaluation.patient_desired_changes && evaluation.patient_desired_changes.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {evaluation.patient_desired_changes.map((change) => {
+                      const labels: Record<string, string> = {
+                        whiter: 'Dentes mais brancos',
+                        harmonious: 'Sorriso mais harmonioso',
+                        spacing: 'Corrigir espaçamentos',
+                        alignment: 'Dentes mais alinhados',
+                        natural: 'Formato mais natural',
+                        asymmetry: 'Corrigir assimetrias',
+                      };
+                      return (
+                        <Badge key={change} variant="secondary" className="text-xs">
+                          {labels[change] || change}
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </section>
+        )}
+
         {hasPhotos && (
           <section className="mb-8">
             <h3 className="font-medium mb-3 flex items-center gap-2">
