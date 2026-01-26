@@ -118,7 +118,7 @@ serve(async (req) => {
       (r) => !inventoryResinIds.includes(r.id)
     );
 
-    // Build prompt for AI with inventory awareness
+    // Build prompt for AI with budget and inventory awareness
     const formatResinList = (resinList: typeof resins) =>
       resinList
         .map(
@@ -136,38 +136,115 @@ serve(async (req) => {
         )
         .join("\n");
 
+    // Group resins by price range for better budget-aware recommendations
+    const groupResinsByPrice = (resinList: typeof resins) => ({
+      economico: resinList.filter((r) => r.price_range === "Econômico"),
+      intermediario: resinList.filter((r) => r.price_range === "Intermediário"),
+      medioAlto: resinList.filter((r) => r.price_range === "Médio-alto"),
+      premium: resinList.filter((r) => r.price_range === "Premium"),
+    });
+
+    // Get budget-appropriate resins based on user's budget selection
+    const getBudgetAppropriateResins = (
+      resinList: typeof resins,
+      budget: string
+    ) => {
+      const groups = groupResinsByPrice(resinList);
+      switch (budget) {
+        case "econômico":
+          return [...groups.economico, ...groups.intermediario];
+        case "moderado":
+          return [...groups.intermediario, ...groups.medioAlto];
+        case "premium":
+          return resinList; // All resins available for premium budget
+        default:
+          return resinList;
+      }
+    };
+
+    // Filter inventory resins by budget if user has inventory
+    const budgetAppropriateInventory = hasInventory
+      ? getBudgetAppropriateResins(inventoryResins, data.budget)
+      : [];
+    const budgetAppropriateOther = hasInventory
+      ? getBudgetAppropriateResins(otherResins, data.budget)
+      : getBudgetAppropriateResins(resins, data.budget);
+
+    // Group all resins by price for the prompt
+    const allGroups = groupResinsByPrice(resins);
+
+    // Build budget rules section for the prompt
+    const budgetRulesSection = `
+=== REGRAS DE ORÇAMENTO (OBRIGATÓRIO SEGUIR!) ===
+
+O orçamento selecionado pelo paciente é: "${data.budget}"
+
+MAPEAMENTO DE ORÇAMENTO PARA FAIXAS DE PREÇO:
+- Orçamento "econômico": Recomendar APENAS resinas "Econômico" ou "Intermediário"
+- Orçamento "moderado": Recomendar resinas "Intermediário" ou "Médio-alto", EVITAR "Premium"
+- Orçamento "premium": Pode recomendar qualquer faixa, priorizando as melhores tecnicamente
+
+⚠️ REGRA CRÍTICA: A recomendação principal DEVE respeitar o orçamento do paciente!
+- Se o orçamento é "econômico", NÃO recomende resinas Premium como Filtek Z350 XT, Estelite Omega, Venus Diamond
+- Se o orçamento é "moderado", NÃO recomende resinas Premium como Filtek Z350 XT, Estelite Omega, Venus Diamond
+- Apenas para orçamento "premium" você pode recomendar resinas Premium
+`;
+
+    // Build resins section organized by price range
+    const resinsByPriceSection = `
+=== RESINAS ORGANIZADAS POR FAIXA DE PREÇO ===
+
+**ECONÔMICAS** (para orçamento econômico):
+${allGroups.economico.length > 0 ? formatResinList(allGroups.economico) : "Nenhuma resina nesta faixa"}
+
+**INTERMEDIÁRIAS** (para orçamento econômico ou moderado):
+${allGroups.intermediario.length > 0 ? formatResinList(allGroups.intermediario) : "Nenhuma resina nesta faixa"}
+
+**MÉDIO-ALTO** (para orçamento moderado ou premium):
+${allGroups.medioAlto.length > 0 ? formatResinList(allGroups.medioAlto) : "Nenhuma resina nesta faixa"}
+
+**PREMIUM** (APENAS para orçamento premium):
+${allGroups.premium.length > 0 ? formatResinList(allGroups.premium) : "Nenhuma resina nesta faixa"}
+`;
+
     const inventorySection = hasInventory
       ? `
-=== RESINAS NO INVENTÁRIO DO DENTISTA (PRIORIZAR) ===
-${formatResinList(inventoryResins)}
+=== RESINAS NO INVENTÁRIO DO DENTISTA ===
+${budgetAppropriateInventory.length > 0 
+    ? `Resinas do inventário compatíveis com orçamento "${data.budget}":\n${formatResinList(budgetAppropriateInventory)}`
+    : `Nenhuma resina do inventário é compatível com o orçamento "${data.budget}".`}
 
-=== OUTRAS RESINAS DISPONÍVEIS ===
-${formatResinList(otherResins)}`
+Outras resinas do inventário (fora do orçamento):
+${inventoryResins.filter((r) => !budgetAppropriateInventory.includes(r)).length > 0
+    ? formatResinList(inventoryResins.filter((r) => !budgetAppropriateInventory.includes(r)))
+    : "Nenhuma"}
+`
       : `
-=== RESINAS DISPONÍVEIS ===
-${formatResinList(resins)}
-
-NOTA: O dentista ainda não cadastrou seu inventário. Recomende a melhor opção geral.`;
+NOTA: O dentista ainda não cadastrou seu inventário. Recomende a melhor opção considerando o orçamento "${data.budget}".
+`;
 
     const inventoryInstructions = hasInventory
       ? `
-INSTRUÇÕES IMPORTANTES:
-1. Primeiro, identifique a resina TECNICAMENTE IDEAL para este caso específico
-2. Verifique se a resina ideal está no inventário do dentista
-3. Se a ideal ESTIVER no inventário: recomende-a como principal
-4. Se a ideal NÃO estiver no inventário: 
-   - Encontre a MELHOR ALTERNATIVA do inventário que seja clinicamente adequada
-   - Recomende essa alternativa como principal
-   - Inclua a resina ideal nas informações para que o dentista possa considerar adquiri-la
-5. Se NENHUMA resina do inventário for clinicamente adequada: recomende a ideal externa
-6. Sempre priorize resinas do inventário quando forem clinicamente aceitáveis`
+INSTRUÇÕES DE PRIORIDADE (seguir nesta ordem):
+1. PRIMEIRO: Verificar orçamento - a resina DEVE estar na faixa de preço adequada ao orçamento "${data.budget}"
+2. SEGUNDO: Dentro das resinas adequadas ao orçamento, PRIORIZAR as que estão no inventário do dentista
+3. TERCEIRO: Se nenhuma do inventário for adequada ao orçamento, recomendar a melhor opção externa dentro do orçamento
+4. QUARTO: Aspectos técnicos (indicação clínica, estética, resistência) como critério de desempate
+
+IMPORTANTE: 
+- Se o inventário tem resinas adequadas ao orçamento, use-as como principal
+- A resina ideal tecnicamente pode ser mencionada como sugestão futura se estiver fora do orçamento`
       : `
-INSTRUÇÕES:
-1. Identifique a resina tecnicamente ideal para este caso
-2. Recomende-a como principal
-3. Sugira alternativas relevantes`;
+INSTRUÇÕES DE PRIORIDADE (seguir nesta ordem):
+1. PRIMEIRO: Verificar orçamento - a resina DEVE estar na faixa de preço adequada ao orçamento "${data.budget}"
+2. SEGUNDO: Dentro das resinas adequadas ao orçamento, escolher a melhor tecnicamente para o caso
+3. TERCEIRO: Aspectos técnicos (indicação clínica, estética, resistência) como critério de seleção
+
+IMPORTANTE: Não recomende resinas Premium se o orçamento não for premium!`;
 
     const prompt = `Você é um especialista em materiais dentários e técnicas restauradoras. Analise o caso clínico abaixo e forneça uma recomendação COMPLETA com protocolo de estratificação.
+
+${budgetRulesSection}
 
 CASO CLÍNICO:
 - Idade do paciente: ${data.patientAge} anos
@@ -184,8 +261,10 @@ CASO CLÍNICO:
 - Necessita estratificação: ${data.stratificationNeeded ? "Sim" : "Não"}
 - Bruxismo: ${data.bruxism ? "Sim" : "Não"}
 - Expectativa de longevidade: ${data.longevityExpectation}
-- Orçamento: ${data.budget}
+- Orçamento: ${data.budget} ⚠️ RESPEITAR ESTA FAIXA!
 ${data.clinicalNotes ? `- Observações clínicas: ${data.clinicalNotes}` : ''}
+
+${resinsByPriceSection}
 ${inventorySection}
 ${inventoryInstructions}
 
@@ -198,11 +277,13 @@ INSTRUÇÕES PARA PROTOCOLO DE ESTRATIFICAÇÃO:
 
 Responda em formato JSON:
 {
-  "recommended_resin_name": "nome exato da resina recomendada",
+  "recommended_resin_name": "nome exato da resina recomendada (DEVE respeitar o orçamento!)",
   "is_from_inventory": true ou false,
   "ideal_resin_name": "nome da resina ideal se diferente (null se igual)",
   "ideal_reason": "explicação se ideal for diferente (null se não aplicável)",
-  "justification": "explicação detalhada de 2-3 frases",
+  "budget_compliance": true ou false (a resina recomendada respeita o orçamento?),
+  "price_range": "faixa de preço da resina recomendada (Econômico/Intermediário/Médio-alto/Premium)",
+  "justification": "explicação detalhada de 2-3 frases incluindo por que esta resina foi escolhida considerando o orçamento",
   "inventory_alternatives": [
     {"name": "...", "manufacturer": "...", "reason": "..."}
   ],
@@ -297,6 +378,9 @@ Responda APENAS com o JSON, sem texto adicional.`;
       console.error("Failed to parse AI response");
       return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     }
+
+    // Log budget compliance for debugging
+    console.log(`Budget: ${data.budget}, Recommended: ${recommendation.recommended_resin_name}, Price Range: ${recommendation.price_range}, Budget Compliant: ${recommendation.budget_compliance}`);
 
     // Find the recommended resin in database
     const recommendedResin = resins.find(
