@@ -257,11 +257,17 @@ async function generateSimulation(
     
     simulationPrompt = `TAREFA: Editar APENAS os dentes nesta foto de sorriso.
 
-REGRA ABSOLUTA #1 - MOLDURA CONGELADA:
-Copie a foto original PIXEL POR PIXEL.
+=== DIMENSÕES E ENQUADRAMENTO (CRÍTICO) ===
+- A imagem de SAÍDA deve ter EXATAMENTE as mesmas dimensões da ENTRADA
+- NÃO fazer zoom, crop, pan ou qualquer alteração de enquadramento
+- Todos os elementos da borda (lábios, pele) devem estar nas MESMAS posições
+- Se a foto original mostra 8 dentes, a simulação DEVE mostrar os mesmos 8 dentes
+
+REGRA ABSOLUTA #1 - ENQUADRAMENTO IDÊNTICO:
+Copie a foto original PIXEL POR PIXEL para áreas não-dentais.
 Lábios, gengiva, pele e fundo = IDÊNTICOS à original.
 Se um pixel mostra lábio na original, deve mostrar lábio no resultado.
-NÃO levante, mova ou altere o contorno labial.
+NÃO mova, amplie ou altere o contorno da imagem.
 
 REGRA ABSOLUTA #2 - GENGIVA PROIBIDA:
 NÃO crie gengiva onde não existe na foto original.
@@ -279,14 +285,20 @@ COR OBRIGATÓRIA (TODOS os dentes):
 ${patientDesires}
 FORMATO: ${toothShape.toUpperCase()} - ${shapeInstruction}
 
-VERIFICAÇÃO FINAL:
-- Lábios na mesma posição? ✓
-- Nenhuma gengiva nova criada? ✓
-- Só os dentes foram alterados? ✓`;
+LISTA DE VERIFICAÇÃO FINAL:
+[ ] Dimensões da imagem idênticas?
+[ ] Lábios na mesma posição e tamanho?
+[ ] Nenhuma gengiva nova criada?
+[ ] Todos os dentes originais visíveis?
+[ ] Só os dentes foram alterados?`;
 
   } else if (isIntraoralPhoto) {
-    // INTRAORAL PROMPT - Simplificado
+    // INTRAORAL PROMPT - Simplificado com preservação de dimensões
     simulationPrompt = `TAREFA: Melhore SUTILMENTE os dentes nesta foto intraoral.
+
+=== DIMENSÕES (CRÍTICO) ===
+- SAÍDA = mesmas dimensões que ENTRADA
+- NÃO fazer zoom, crop ou pan
 
 MOLDURA CONGELADA: Não altere gengiva, fundo ou estruturas não-dentais.
 
@@ -297,16 +309,22 @@ EDIÇÕES PERMITIDAS:
 ${patientDesires}
 FORMATO: ${toothShape.toUpperCase()} - ${shapeInstruction}
 
-Retorne a imagem com dentes harmonizados.`;
+Retorne a imagem com dentes harmonizados, MESMAS dimensões.`;
 
   } else {
-    // STANDARD PROMPT - Minimalista
+    // STANDARD PROMPT - Com preservação explícita de dimensões
     simulationPrompt = `TAREFA: Editar APENAS os dentes visíveis nesta foto de sorriso.
 
-REGRA ABSOLUTA #1 - MOLDURA CONGELADA:
+=== DIMENSÕES E ENQUADRAMENTO (CRÍTICO) ===
+- SAÍDA = mesmas dimensões que ENTRADA
+- NÃO fazer zoom, crop, pan
+- Bordas da imagem (lábios, pele) = IDÊNTICAS
+
+REGRA ABSOLUTA #1 - ENQUADRAMENTO IDÊNTICO:
 Copie a foto original PIXEL POR PIXEL.
 Lábios, gengiva, pele e fundo = IDÊNTICOS à original.
 NÃO altere posição ou formato dos lábios.
+NÃO amplie ou reduza a área dos dentes.
 
 REGRA ABSOLUTA #2 - GENGIVA/LÁBIO INTOCÁVEIS:
 NÃO crie gengiva onde não existe.
@@ -322,14 +340,22 @@ COR OBRIGATÓRIA:
 ${patientDesires}
 FORMATO: ${toothShape.toUpperCase()} - ${shapeInstruction}
 
-RESULTADO: Sorriso harmonioso, lábios e gengiva INALTERADOS.`;
+RESULTADO: Sorriso harmonioso, lábios e gengiva INALTERADOS, MESMAS dimensões.`;
   }
 
-  console.log("DSD Simulation - Prompt length:", simulationPrompt.length, "Reconstruction:", needsReconstruction, "Intraoral:", isIntraoralPhoto);
+  console.log("DSD Simulation Request:", {
+    promptType: needsReconstruction ? 'reconstruction' : (isIntraoralPhoto ? 'intraoral' : 'standard'),
+    promptLength: simulationPrompt.length,
+    imageDataLength: imageBase64.length,
+    analysisConfidence: analysis.confidence,
+    suggestionsCount: analysis.suggestions.length,
+    patientDesires: patientPreferences?.desiredChanges
+  });
 
   // Generate 3 variations and auto-select
   const NUM_VARIATIONS = 3;
-  const modelsToTry = ["google/gemini-3-pro-image-preview", "google/gemini-2.5-flash-image-preview"];
+  // Prioritize flash for better framing preservation
+  const modelsToTry = ["google/gemini-2.5-flash-image-preview", "google/gemini-3-pro-image-preview"];
   
   const generateSingleVariation = async (variationIndex: number): Promise<string | null> => {
     for (const model of modelsToTry) {
