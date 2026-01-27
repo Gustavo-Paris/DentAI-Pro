@@ -57,6 +57,7 @@ import { toast } from 'sonner';
 
 import type { StratificationProtocol, CementationProtocol } from '@/types/protocol';
 import { AddTeethModal, PendingTooth } from '@/components/AddTeethModal';
+import { ClinicalPhotoThumbnail } from '@/components/OptimizedImage';
 
 // Treatment type configuration
 const treatmentConfig: Record<string, { 
@@ -145,7 +146,6 @@ export default function EvaluationDetails() {
   
   const [evaluations, setEvaluations] = useState<EvaluationItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [pendingTeeth, setPendingTeeth] = useState<PendingTooth[]>([]);
   const [showAddTeethModal, setShowAddTeethModal] = useState(false);
 
@@ -196,17 +196,7 @@ export default function EvaluationDetails() {
       navigate('/dashboard');
     } else if (data && data.length > 0) {
       setEvaluations(data as unknown as EvaluationItem[]);
-      
-      // Load photo if available
-      const photoPath = data[0]?.photo_frontal;
-      if (photoPath) {
-        const { data: urlData } = await supabase.storage
-          .from('clinical-photos')
-          .createSignedUrl(photoPath, 3600);
-        if (urlData?.signedUrl) {
-          setPhotoUrl(urlData.signedUrl);
-        }
-      }
+      // Photo is now handled by OptimizedImage component
     } else {
       toast.error('Avaliação não encontrada');
       navigate('/dashboard');
@@ -442,17 +432,15 @@ export default function EvaluationDetails() {
             <Card className="mb-4 sm:mb-6">
               <CardContent className="p-4 sm:p-6">
                 <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
-                  {/* Photo Preview */}
-                  {photoUrl && (
-                    <div className="w-full md:w-32 lg:w-48 h-32 sm:h-48 rounded-lg overflow-hidden bg-secondary flex-shrink-0">
-                      <img 
-                        src={photoUrl} 
-                        alt="Foto clínica" 
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
-                  {!photoUrl && (
+                  {/* Photo Preview - Using optimized thumbnail */}
+                  {evaluations[0]?.photo_frontal ? (
+                    <ClinicalPhotoThumbnail
+                      path={evaluations[0].photo_frontal}
+                      alt="Foto clínica"
+                      size="grid"
+                      className="w-full md:w-32 lg:w-48 h-32 sm:h-48 flex-shrink-0"
+                    />
+                  ) : (
                     <div className="w-full md:w-32 lg:w-48 h-32 sm:h-48 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
                       <ImageIcon className="w-8 sm:w-12 h-8 sm:h-12 text-muted-foreground" />
                     </div>
