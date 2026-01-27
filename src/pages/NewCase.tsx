@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,6 +16,7 @@ import { DSDStep, DSDResult } from '@/components/wizard/DSDStep';
 import { ReviewAnalysisStep, PhotoAnalysisResult, ReviewFormData, DetectedTooth, TreatmentType, TREATMENT_LABELS } from '@/components/wizard/ReviewAnalysisStep';
 import { DraftRestoreModal } from '@/components/wizard/DraftRestoreModal';
 import { useWizardDraft, WizardDraft } from '@/hooks/useWizardDraft';
+import { LoadingOverlay } from '@/components/LoadingOverlay';
 
 const steps = [
   { id: 1, name: 'Foto', icon: Camera },
@@ -54,6 +55,7 @@ export default function NewCase() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isReanalyzing, setIsReanalyzing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionStep, setSubmissionStep] = useState(0);
   const [uploadedPhotoPath, setUploadedPhotoPath] = useState<string | null>(null);
   const [selectedTeeth, setSelectedTeeth] = useState<string[]>([]);
   const [dsdResult, setDsdResult] = useState<DSDResult | null>(null);
@@ -400,11 +402,23 @@ export default function NewCase() {
     return toothTreatments[tooth] || getToothData(tooth)?.treatment_indication || formData.treatmentType || 'resina';
   };
 
+  // Submission steps for LoadingOverlay
+  const submissionSteps = useMemo(() => {
+    const teethCount = selectedTeeth.length > 0 ? selectedTeeth.length : 1;
+    return [
+      { label: 'Preparando dados do paciente...', completed: submissionStep >= 1 },
+      { label: `Criando ${teethCount} caso(s) clínico(s)...`, completed: submissionStep >= 2 },
+      { label: 'Gerando protocolos personalizados...', completed: submissionStep >= 3 },
+      { label: 'Finalizando e salvando...', completed: submissionStep >= 4 },
+    ];
+  }, [submissionStep, selectedTeeth.length]);
+
   // Submit the case - process all selected teeth with their individual treatment types
   const handleSubmit = async () => {
     if (!user || !validateForm()) return;
 
     setIsSubmitting(true);
+    setSubmissionStep(0);
     setStep(6); // Go to result step (step 6 now)
 
     // Determine which teeth to process
@@ -418,7 +432,8 @@ export default function NewCase() {
     const treatmentCounts: Record<string, number> = {};
 
     try {
-      // Handle patient creation/linking
+      // Step 1: Handle patient creation/linking
+      setSubmissionStep(1);
       let patientId = selectedPatientId;
       
       if (formData.patientName && !patientId) {
@@ -461,6 +476,9 @@ export default function NewCase() {
           .update({ birth_date: patientBirthDate })
           .eq('id', patientId);
       }
+
+      // Step 2: Create evaluation records
+      setSubmissionStep(2);
 
       for (const tooth of teethToProcess) {
         // Get tooth-specific data if available from AI analysis
@@ -517,6 +535,8 @@ export default function NewCase() {
         if (evalError) throw evalError;
         createdEvaluationIds.push(evaluation.id);
 
+        // Step 3: Generate protocols
+        setSubmissionStep(3);
         // CRITICAL: Call the correct edge function based on EACH TOOTH'S treatment type
         switch (treatmentType) {
           case 'porcelana':
@@ -579,6 +599,9 @@ export default function NewCase() {
           .update({ status: 'draft' })
           .eq('id', evaluation.id);
       }
+
+      // Step 4: Finalize and save pending teeth
+      setSubmissionStep(4);
 
       // Save unselected teeth to session_detected_teeth for later use
       const allDetectedTeeth = analysisResult?.detected_teeth || [];
@@ -907,17 +930,20 @@ export default function NewCase() {
         )}
 
         {step === 6 && (
-          <div className="flex flex-col items-center justify-center py-12 sm:py-16 space-y-4 sm:space-y-6">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary/10 flex items-center justify-center">
-              <Loader2 className="w-8 h-8 sm:w-10 sm:h-10 text-primary animate-spin" />
+          <>
+            <LoadingOverlay
+              isLoading={isSubmitting}
+              message="Gerando Caso Clínico"
+              steps={submissionSteps}
+            />
+            <div className="flex flex-col items-center justify-center py-12 sm:py-16 space-y-4 sm:space-y-6">
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground">
+                  Processando...
+                </p>
+              </div>
             </div>
-            <div className="text-center">
-              <h2 className="text-lg sm:text-xl font-semibold mb-2">Gerando Caso</h2>
-              <p className="text-sm sm:text-base text-muted-foreground">
-                A IA está criando o caso clínico personalizado...
-              </p>
-            </div>
-          </div>
+          </>
         )}
 
         {/* Navigation */}
