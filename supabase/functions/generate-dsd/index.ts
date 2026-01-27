@@ -212,6 +212,40 @@ async function generateSimulation(
            change.includes('extração');
   });
   
+  // Check if case has old restorations that need replacement
+  const needsRestorationReplacement = analysis.suggestions.some(s => {
+    const issue = s.current_issue.toLowerCase();
+    const change = s.proposed_change.toLowerCase();
+    return issue.includes('restauração') || 
+           issue.includes('restauracao') ||
+           issue.includes('resina') ||
+           issue.includes('manchamento') ||
+           issue.includes('interface') ||
+           issue.includes('infiltração') ||
+           issue.includes('infiltracao') ||
+           change.includes('substituir') ||
+           change.includes('substituição') ||
+           change.includes('substituicao') ||
+           change.includes('nova restauração') ||
+           change.includes('nova restauracao');
+  });
+
+  // Get list of teeth needing restoration replacement for the prompt
+  let restorationTeeth = '';
+  if (needsRestorationReplacement) {
+    restorationTeeth = analysis.suggestions
+      .filter(s => {
+        const issue = s.current_issue.toLowerCase();
+        return issue.includes('restauração') || 
+               issue.includes('restauracao') ||
+               issue.includes('resina') ||
+               issue.includes('manchamento') ||
+               issue.includes('interface');
+      })
+      .map(s => s.tooth)
+      .join(', ');
+  }
+  
   // Check if it's a TRUE intraoral photo (simpler prompt needed)
   // Only trigger for actual intraoral photos with retractors, not smile photos with lips visible
   const isIntraoralPhoto = analysis.observations?.some(obs => {
@@ -257,16 +291,26 @@ async function generateSimulation(
     
     simulationPrompt = `TAREFA: Editar APENAS os dentes nesta foto de sorriso.
 
+=== PRESERVAÇÃO ABSOLUTA DE LÁBIOS/PELE (CRÍTICO) ===
+Os lábios e pele perioral devem ser IDÊNTICOS à foto original.
+Copie EXATAMENTE: textura dos lábios, linhas de expressão, cor da pele, pelos/barba.
+Qualquer diferença nos lábios = FALHA CRÍTICA.
+
+TÉCNICA OBRIGATÓRIA:
+1. Extraia a região NÃO-DENTAL como máscara fixa
+2. Aplique edição APENAS na área dos dentes
+3. Recomponha usando a máscara original para lábios/pele
+
 === DIMENSÕES E ENQUADRAMENTO (CRÍTICO) ===
 - A imagem de SAÍDA deve ter EXATAMENTE as mesmas dimensões da ENTRADA
 - NÃO fazer zoom, crop, pan ou qualquer alteração de enquadramento
 - Todos os elementos da borda (lábios, pele) devem estar nas MESMAS posições
 - Se a foto original mostra 8 dentes, a simulação DEVE mostrar os mesmos 8 dentes
 
-REGRA ABSOLUTA #1 - ENQUADRAMENTO IDÊNTICO:
-Copie a foto original PIXEL POR PIXEL para áreas não-dentais.
-Lábios, gengiva, pele e fundo = IDÊNTICOS à original.
-Se um pixel mostra lábio na original, deve mostrar lábio no resultado.
+REGRA ABSOLUTA #1 - ENQUADRAMENTO CONGELADO:
+Trate a área NÃO-DENTAL como uma MÁSCARA fixa.
+Lábios superior/inferior, gengiva, pele = COPIE da original PIXEL POR PIXEL.
+Use técnica de "inpainting" APENAS na área dos DENTES.
 NÃO mova, amplie ou altere o contorno da imagem.
 
 REGRA ABSOLUTA #2 - GENGIVA PROIBIDA:
@@ -285,12 +329,70 @@ COR OBRIGATÓRIA (TODOS os dentes):
 ${patientDesires}
 FORMATO: ${toothShape.toUpperCase()} - ${shapeInstruction}
 
-LISTA DE VERIFICAÇÃO FINAL:
+VERIFICAÇÃO FINAL:
+[ ] Lábios IDÊNTICOS à original? (textura, linhas, cor, volume)
+[ ] Pele perioral inalterada?
 [ ] Dimensões da imagem idênticas?
-[ ] Lábios na mesma posição e tamanho?
 [ ] Nenhuma gengiva nova criada?
 [ ] Todos os dentes originais visíveis?
 [ ] Só os dentes foram alterados?`;
+
+  } else if (needsRestorationReplacement) {
+    // RESTORATION REPLACEMENT PROMPT - Para casos com restaurações antigas
+    simulationPrompt = `TAREFA: Visualizar SUBSTITUIÇÃO de restaurações antigas nesta foto de sorriso.
+
+=== PRESERVAÇÃO ABSOLUTA DE LÁBIOS/PELE (CRÍTICO) ===
+Os lábios e pele perioral devem ser IDÊNTICOS à foto original.
+Copie EXATAMENTE: textura dos lábios, linhas de expressão, cor da pele, pelos/barba.
+Qualquer diferença nos lábios = FALHA CRÍTICA.
+
+TÉCNICA OBRIGATÓRIA:
+1. Extraia a região NÃO-DENTAL como máscara fixa imutável
+2. Aplique edição APENAS na área dos dentes
+3. Recomponha usando a máscara original para lábios/pele
+
+DIMENSÕES OBRIGATÓRIAS:
+- SAÍDA = mesmas dimensões que ENTRADA (pixel por pixel)
+- NÃO fazer zoom, crop ou pan
+- Bordas da imagem = IDÊNTICAS
+
+REGRA #1 - ENQUADRAMENTO CONGELADO:
+Trate a área NÃO-DENTAL como uma MÁSCARA fixa.
+Lábios superior/inferior, gengiva, pele = COPIE da original sem alteração.
+Use técnica de "inpainting" apenas na área dos DENTES.
+
+REGRA #2 - GENGIVA INTOCÁVEL:
+NÃO crie, estenda ou modifique gengiva.
+Se a gengiva está coberta pelo lábio, deve continuar coberta.
+
+REGRA #3 - SUBSTITUIÇÃO DE RESTAURAÇÕES:
+DENTES COM RESTAURAÇÕES ANTIGAS A CORRIGIR: ${restorationTeeth || 'incisivos centrais superiores'}
+
+Para estes dentes, você deve:
+1. REMOVER visualmente as linhas de interface (margem da restauração antiga)
+2. UNIFORMIZAR a cor com os dentes naturais adjacentes
+3. ELIMINAR manchamentos marginais (linhas amareladas/acinzentadas)
+4. HARMONIZAR translucidez - igual aos dentes naturais vizinhos
+5. MANTER o formato/tamanho original do dente
+
+O objetivo é mostrar como estes dentes ficariam COM NOVAS RESTAURAÇÕES de alta qualidade,
+sem interfaces visíveis, cor natural uniforme, e integração perfeita.
+
+COR OBRIGATÓRIA (TODOS os dentes):
+- Tom uniforme A1/A2 (branco natural)
+- REMOVA todas as manchas, linhas de interface e descolorações
+- Todos os dentes devem ter a MESMA cor e translucidez
+${patientDesires}
+FORMATO: ${toothShape.toUpperCase()} - ${shapeInstruction}
+
+VERIFICAÇÃO FINAL:
+[ ] Lábios IDÊNTICOS à original? (textura, linhas, cor, volume)
+[ ] Pele perioral inalterada?
+[ ] Dimensões idênticas?
+[ ] Só os dentes foram modificados?
+[ ] Interfaces de restauração removidas?
+
+RESULTADO: Sorriso com restaurações novas invisíveis, cor uniforme natural.`;
 
   } else if (isIntraoralPhoto) {
     // INTRAORAL PROMPT - Simplificado com preservação de dimensões
@@ -306,22 +408,33 @@ EDIÇÕES PERMITIDAS:
 - Uniformizar cor para A1/A2
 - Suavizar contorno levemente
 - Remover manchas visíveis
+- Remover linhas de interface de restaurações antigas
 ${patientDesires}
 FORMATO: ${toothShape.toUpperCase()} - ${shapeInstruction}
 
 Retorne a imagem com dentes harmonizados, MESMAS dimensões.`;
 
   } else {
-    // STANDARD PROMPT - Com preservação explícita de dimensões
+    // STANDARD PROMPT - Com preservação explícita de lábios e dimensões
     simulationPrompt = `TAREFA: Editar APENAS os dentes visíveis nesta foto de sorriso.
+
+=== PRESERVAÇÃO ABSOLUTA DE LÁBIOS/PELE (CRÍTICO) ===
+COPIE PIXEL POR PIXEL toda a área não-dental:
+- Lábio superior: cada linha, textura, brilho, volume
+- Lábio inferior: formato exato, cor, volume
+- Pele perioral: tons, texturas, pelos
+- Cantos da boca: posição idêntica
+
+TÉCNICA: Trate lábios como MÁSCARA IMUTÁVEL.
+Qualquer alteração nos lábios = resultado rejeitado.
 
 === DIMENSÕES E ENQUADRAMENTO (CRÍTICO) ===
 - SAÍDA = mesmas dimensões que ENTRADA
 - NÃO fazer zoom, crop, pan
 - Bordas da imagem (lábios, pele) = IDÊNTICAS
 
-REGRA ABSOLUTA #1 - ENQUADRAMENTO IDÊNTICO:
-Copie a foto original PIXEL POR PIXEL.
+REGRA ABSOLUTA #1 - ENQUADRAMENTO CONGELADO:
+Copie a foto original PIXEL POR PIXEL para áreas não-dentais.
 Lábios, gengiva, pele e fundo = IDÊNTICOS à original.
 NÃO altere posição ou formato dos lábios.
 NÃO amplie ou reduza a área dos dentes.
@@ -333,6 +446,12 @@ Se o lábio cobre a gengiva, ela deve continuar coberta.
 EDIÇÕES PERMITIDAS nos dentes VISÍVEIS:
 ${analysis.suggestions.slice(0, 4).map((s) => `- ${s.tooth}: ${s.proposed_change}`).join("\n")}
 
+CORREÇÃO DE RESTAURAÇÕES EXISTENTES (se visíveis):
+Se algum dente visível possui restauração antiga (interface visível, manchamento marginal):
+- REMOVA a linha de interface para integração perfeita
+- UNIFORMIZE a cor com dentes naturais adjacentes
+- ELIMINE manchamentos marginais
+
 COR OBRIGATÓRIA:
 - Tom uniforme A1/A2 natural
 - REMOVA manchas e descolorações
@@ -340,15 +459,24 @@ COR OBRIGATÓRIA:
 ${patientDesires}
 FORMATO: ${toothShape.toUpperCase()} - ${shapeInstruction}
 
+VERIFICAÇÃO FINAL:
+[ ] Lábios IDÊNTICOS à original? (textura, linhas, cor)
+[ ] Pele perioral inalterada?
+[ ] Dimensões idênticas?
+
 RESULTADO: Sorriso harmonioso, lábios e gengiva INALTERADOS, MESMAS dimensões.`;
   }
 
   console.log("DSD Simulation Request:", {
-    promptType: needsReconstruction ? 'reconstruction' : (isIntraoralPhoto ? 'intraoral' : 'standard'),
+    promptType: needsReconstruction ? 'reconstruction' : 
+                (needsRestorationReplacement ? 'restoration-replacement' : 
+                (isIntraoralPhoto ? 'intraoral' : 'standard')),
     promptLength: simulationPrompt.length,
     imageDataLength: imageBase64.length,
     analysisConfidence: analysis.confidence,
     suggestionsCount: analysis.suggestions.length,
+    needsRestorationReplacement,
+    restorationTeeth: restorationTeeth || 'none',
     patientDesires: patientPreferences?.desiredChanges
   });
 
@@ -507,7 +635,41 @@ ANÁLISE OBRIGATÓRIA:
 6. **Proporção Dourada**: Calcule a conformidade com a proporção áurea (0-100%)
 7. **Simetria**: Avalie a simetria geral do sorriso (0-100%)
 
-AVALIAÇÃO DE VIABILIDADE DO DSD:
+=== DETECÇÃO CRÍTICA DE RESTAURAÇÕES EXISTENTES ===
+ANTES de fazer qualquer elogio estético, você DEVE examinar CADA dente visível para sinais de restaurações prévias.
+
+SINAIS DE RESTAURAÇÕES DE RESINA (procure atentamente):
+- Interface visível (linha onde a resina encontra o esmalte natural)
+- Diferença de cor/translucidez DENTRO do mesmo dente
+- Manchamento marginal (linha amarelada/acinzentada na borda da restauração)
+- Textura diferente entre superfícies (áreas mais lisas ou mais opacas)
+- Contorno artificial ou excessivamente uniforme
+- Perda de polimento em partes do dente
+- Cor mais opaca/artificial comparada a dentes adjacentes naturais
+
+DIFERENCIAÇÃO CRÍTICA:
+- Dente NATURAL saudável: gradiente de cor cervical→incisal, translucidez uniforme, micro-textura orgânica
+- Dente com RESINA: cor mais uniforme/artificial, interface visível, possível manchamento marginal
+
+REGRAS PARA RESTAURAÇÕES DETECTADAS:
+1. NÃO diga "excelente resultado estético" se restaurações com defeitos estão presentes
+2. NÃO elogie "translucidez natural" em dentes claramente restaurados
+3. IDENTIFIQUE cada dente restaurado com problema específico
+4. PRIORIZE sugestão de "Substituição de restauração" sobre mudanças cosméticas sutis
+
+TIPOS DE PROBLEMAS EM RESTAURAÇÕES ANTIGAS:
+- "Restauração com manchamento marginal"
+- "Interface visível entre resina e esmalte"
+- "Restauração com cor inadequada"
+- "Restauração com perda de anatomia"
+- "Restauração classe IV com contorno artificial"
+- "Restauração com perda de polimento"
+
+OBSERVAÇÃO OBRIGATÓRIA:
+Se detectar restaurações com problemas, DEVE incluir nas observações:
+"ATENÇÃO: Restauração(ões) de resina detectada(s) em [dentes]. Apresentam [problema]. Recomenda-se substituição."
+
+=== AVALIAÇÃO DE VIABILIDADE DO DSD ===
 Antes de sugerir tratamentos, avalie se o caso É ADEQUADO para simulação visual:
 
 CASOS INADEQUADOS PARA DSD (marque confidence = "baixa" e adicione observação):
@@ -527,11 +689,20 @@ Foto de sorriso parcial (com lábios visíveis, sem olhos) ainda é ADEQUADA par
 Use confidence="média" ou "alta" para fotos de sorriso com lábios.
 APENAS use confidence="baixa" por tipo de foto se for uma foto INTRAORAL VERDADEIRA (com afastador, sem lábios externos).
 
-SUGESTÕES - APENAS TRATAMENTOS CONSERVADORES COM LENTES DE CONTATO:
-Para cada dente que poderia ser melhorado, forneça APENAS mudanças MÍNIMAS possíveis com lentes de contato dental:
-- Número do dente (notação universal: 11-48)
-- Problema atual identificado (seja específico e objetivo)
-- Mudança proposta (CONSERVADORA e ADITIVA apenas)
+=== SUGESTÕES - PRIORIDADE DE TRATAMENTOS ===
+PRIORIDADE 1: Restaurações com infiltração/manchamento (saúde bucal)
+PRIORIDADE 2: Restaurações com cor/anatomia inadequada (estética funcional)
+PRIORIDADE 3: Melhorias em dentes naturais (refinamento estético)
+
+TIPOS DE SUGESTÕES PERMITIDAS:
+
+A) SUBSTITUIÇÃO DE RESTAURAÇÃO (prioridade alta):
+   - current_issue: "Restauração classe IV com manchamento marginal e interface visível"
+   - proposed_change: "Substituir por nova restauração com melhor adaptação de cor e contorno"
+
+B) TRATAMENTO CONSERVADOR (para dentes naturais sem restauração):
+   - current_issue: "Bordo incisal irregular"
+   - proposed_change: "Aumentar 1mm com lente de contato"
 
 LIMITES PARA SUGESTÕES:
 - MÁXIMO de 1-2mm de extensão incisal por dente
@@ -540,28 +711,32 @@ LIMITES PARA SUGESTÕES:
 - NÃO sugira clareamento extremo ou cor artificial
 
 REGRAS ESTRITAS:
+✅ PERMITIDO: identificar e sugerir substituição de restaurações antigas
 ✅ PERMITIDO: aumentar levemente comprimento, fechar pequenos espaços, harmonizar contorno
+❌ PROIBIDO: elogiar restaurações que claramente têm problemas
+❌ PROIBIDO: ignorar diferenças de cor/textura entre áreas do dente
+❌ PROIBIDO: dizer "excelente resultado" se restaurações antigas com defeitos estão presentes
+❌ PROIBIDO: focar em melhorias sutis quando restaurações precisam ser substituídas
 ❌ PROIBIDO: diminuir, encurtar, mudanças dramáticas de forma
 ❌ PROIBIDO: sugerir "dentes brancos", "clareamento Hollywood" ou cor artificial
 ❌ PROIBIDO: sugerir mais de 3-4 dentes por arcada (foque nos essenciais)
 ❌ PROIBIDO: sugerir tratamentos para dentes AUSENTES ou com destruição severa
 
-Exemplo BOM: "Aumentar bordo incisal do 21 em 1mm para harmonizar altura com 11"
-Exemplo BOM: "Fechar diastema de 1mm entre 11 e 21 com adição em mesial de ambos"
-Exemplo RUIM: "Clarear todos os dentes para tom mais branco" - NÃO USAR
-Exemplo RUIM: "Reconstruir dente ausente" - NÃO USAR
+Exemplo BOM (substituição): "Restauração classe IV do 11 com interface visível" → "Substituir por nova restauração com melhor adaptação"
+Exemplo BOM (conservador): "Aumentar bordo incisal do 21 em 1mm para harmonizar altura com 11"
+Exemplo RUIM: "Excelente translucidez natural" em dente com restauração visível - NÃO USAR
 
-FILOSOFIA: MENOS É MAIS. Sugira apenas o ESSENCIAL para harmonização natural.
+FILOSOFIA: Primeiro identifique problemas em restaurações existentes, depois considere melhorias em dentes naturais.
 
 OBSERVAÇÕES:
 Inclua 2-3 observações clínicas objetivas sobre o sorriso.
+Se detectar restaurações com problemas, PRIORIZE alertar sobre elas.
 Se identificar limitações para simulação, inclua uma observação com "ATENÇÃO:" explicando.
 
 IMPORTANTE:
-- Seja CONSERVADOR nas sugestões
-- Priorize naturalidade sobre perfeição
-- Considere proporção dourada como GUIA, não como meta absoluta
-- TODAS as sugestões devem ser clinicamente realizáveis com lentes de contato (0.3-0.5mm espessura)
+- Seja CRÍTICO ao avaliar restaurações existentes
+- Priorize identificar problemas em trabalhos anteriores
+- TODAS as sugestões devem ser clinicamente realizáveis
 - Se o caso NÃO for adequado para DSD, AINDA forneça a análise de proporções mas marque confidence="baixa"`;
 
   const analysisResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
