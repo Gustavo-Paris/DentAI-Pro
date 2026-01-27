@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,9 +25,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { ArrowLeft, Plus, Search, Package, Trash2, Loader2, X } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { ArrowLeft, Plus, Search, Package, Loader2, X } from 'lucide-react';
+import { useInventoryList, useResinCatalog, useAddToInventory, useRemoveFromInventory } from '@/hooks/queries/useInventory';
 import { toast } from 'sonner';
 import { ResinBadge } from '@/components/ResinBadge';
 import { ResinTypeLegend, getTypeColorClasses } from '@/components/ResinTypeLegend';
@@ -41,29 +40,15 @@ interface CatalogResin {
   opacity: string;
 }
 
-interface InventoryItem {
-  id: string;
-  resin_id: string;
-  resin: CatalogResin;
-}
-
-// Group resins by brand and product_line
 interface GroupedResins {
   [brand: string]: {
     [productLine: string]: CatalogResin[];
   };
 }
 
-const PAGE_SIZE = 30;
-
 export default function Inventory() {
-  const { user } = useAuth();
-  const [inventory, setInventory] = useState<InventoryItem[]>([]);
-  const [catalog, setCatalog] = useState<CatalogResin[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [addingResins, setAddingResins] = useState(false);
-  const [removingResin, setRemovingResin] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const [allItems, setAllItems] = useState<Array<{ id: string; resin_id: string; resin: CatalogResin }>>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [filterBrand, setFilterBrand] = useState('all');
@@ -72,107 +57,51 @@ export default function Inventory() {
   const [catalogFilterType, setCatalogFilterType] = useState('all');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedResins, setSelectedResins] = useState<Set<string>>(new Set());
-  const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-  const [totalCount, setTotalCount] = useState(0);
+  const [removingResin, setRemovingResin] = useState<string | null>(null);
 
+  const { data: inventoryData, isLoading, isFetching } = useInventoryList(page, 30);
+  const { data: catalog = [] } = useResinCatalog();
+  const addToInventoryMutation = useAddToInventory();
+  const removeFromInventoryMutation = useRemoveFromInventory();
+
+  // Accumulate inventory items across pages
   useEffect(() => {
-    if (user) {
-      fetchInventory(0, false);
-      fetchCatalog();
-    }
-  }, [user]);
-
-  const fetchInventory = async (pageNumber: number = 0, append: boolean = false) => {
-    if (!user) return;
-
-    if (!append) setLoading(true);
-    else setLoadingMore(true);
-
-    const { data, error, count } = await supabase
-      .from('user_inventory')
-      .select(`
-        id,
-        resin_id,
-        resin:resin_catalog(*)
-      `, { count: 'exact' })
-      .eq('user_id', user.id)
-      .range(pageNumber * PAGE_SIZE, (pageNumber + 1) * PAGE_SIZE - 1);
-
-    if (error) {
-      toast.error('Erro ao carregar inventário');
-    } else {
-      if (append) {
-        setInventory(prev => [...prev, ...((data as unknown as InventoryItem[]) || [])]);
+    if (inventoryData?.items) {
+      if (page === 0) {
+        setAllItems(inventoryData.items);
       } else {
-        setInventory((data as unknown as InventoryItem[]) || []);
+        setAllItems(prev => [...prev, ...inventoryData.items]);
       }
-      setTotalCount(count || 0);
-      setHasMore((count || 0) > (pageNumber + 1) * PAGE_SIZE);
     }
-    setLoading(false);
-    setLoadingMore(false);
-  };
+  }, [inventoryData, page]);
 
   const handleLoadMore = () => {
-    const nextPage = page + 1;
-    setPage(nextPage);
-    fetchInventory(nextPage, true);
-  };
-
-  const fetchCatalog = async () => {
-    const { data, error } = await supabase
-      .from('resin_catalog')
-      .select('*')
-      .order('brand', { ascending: true })
-      .order('product_line', { ascending: true })
-      .order('type', { ascending: true })
-      .order('shade', { ascending: true });
-
-    if (!error) {
-      setCatalog(data || []);
-    }
+    setPage(p => p + 1);
   };
 
   const addSelectedToInventory = async () => {
-    if (!user || selectedResins.size === 0) return;
+    if (selectedResins.size === 0) return;
 
-    setAddingResins(true);
-
-    const inserts = Array.from(selectedResins).map((resinId) => ({
-      user_id: user.id,
-      resin_id: resinId,
-    }));
-
-    const { error } = await supabase.from('user_inventory').insert(inserts);
-
-    if (error) {
-      toast.error('Erro ao adicionar resinas');
-    } else {
+    try {
+      await addToInventoryMutation.mutateAsync(Array.from(selectedResins));
       toast.success(`${selectedResins.size} resina(s) adicionada(s) ao inventário`);
       setSelectedResins(new Set());
       setPage(0);
-      await fetchInventory(0, false);
       setDialogOpen(false);
+    } catch {
+      toast.error('Erro ao adicionar resinas');
     }
-
-    setAddingResins(false);
   };
 
   const removeFromInventory = async (inventoryItemId: string) => {
     setRemovingResin(inventoryItemId);
 
-    const { error } = await supabase
-      .from('user_inventory')
-      .delete()
-      .eq('id', inventoryItemId);
-
-    if (error) {
-      toast.error('Erro ao remover resina');
-    } else {
+    try {
+      await removeFromInventoryMutation.mutateAsync(inventoryItemId);
       toast.success('Resina removida do inventário');
-      setInventory(inventory.filter((item) => item.id !== inventoryItemId));
-      setTotalCount(prev => prev - 1);
+      setAllItems(prev => prev.filter(item => item.id !== inventoryItemId));
+    } catch {
+      toast.error('Erro ao remover resina');
     }
 
     setRemovingResin(null);
@@ -189,19 +118,19 @@ export default function Inventory() {
   };
 
   const inventoryResinIds = useMemo(
-    () => new Set(inventory.map((item) => item.resin_id)),
-    [inventory]
+    () => new Set(allItems.map((item) => item.resin_id)),
+    [allItems]
   );
 
   // Get unique brands and types from inventory
   const inventoryBrands = useMemo(
-    () => [...new Set(inventory.map((item) => item.resin.brand))].sort(),
-    [inventory]
+    () => [...new Set(allItems.map((item) => item.resin.brand))].sort(),
+    [allItems]
   );
 
   const inventoryTypes = useMemo(
-    () => [...new Set(inventory.map((item) => item.resin.type))].sort(),
-    [inventory]
+    () => [...new Set(allItems.map((item) => item.resin.type))].sort(),
+    [allItems]
   );
 
   // Get unique brands and types from catalog
@@ -217,7 +146,7 @@ export default function Inventory() {
 
   // Filter inventory
   const filteredInventory = useMemo(() => {
-    return inventory.filter((item) => {
+    return allItems.filter((item) => {
       const matchesSearch =
         item.resin.shade.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.resin.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -226,7 +155,7 @@ export default function Inventory() {
       const matchesBrand = filterBrand === 'all' || item.resin.brand === filterBrand;
       return matchesSearch && matchesType && matchesBrand;
     });
-  }, [inventory, searchTerm, filterType, filterBrand]);
+  }, [allItems, searchTerm, filterType, filterBrand]);
 
   // Group filtered inventory by brand and product_line
   const groupedInventory = useMemo(() => {
@@ -246,7 +175,7 @@ export default function Inventory() {
 
   // Get inventory item by resin_id for removal
   const getInventoryItemId = (resinId: string) => {
-    return inventory.find((item) => item.resin_id === resinId)?.id;
+    return allItems.find((item) => item.resin_id === resinId)?.id;
   };
 
   // Filter catalog for dialog (exclude already in inventory)
@@ -279,7 +208,7 @@ export default function Inventory() {
     return grouped;
   }, [filteredCatalog]);
 
-  if (loading) {
+  if (isLoading && page === 0) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -418,9 +347,9 @@ export default function Inventory() {
                   </span>
                   <Button
                     onClick={addSelectedToInventory}
-                    disabled={selectedResins.size === 0 || addingResins}
+                    disabled={selectedResins.size === 0 || addToInventoryMutation.isPending}
                   >
-                    {addingResins ? (
+                    {addToInventoryMutation.isPending ? (
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     ) : (
                       <Plus className="h-4 w-4 mr-2" />
@@ -485,7 +414,7 @@ export default function Inventory() {
                 <Package className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-semibold">{inventory.length}</p>
+                <p className="text-2xl font-semibold">{allItems.length}</p>
                 <p className="text-sm text-muted-foreground">
                   cores de resina no inventário
                 </p>
@@ -576,21 +505,21 @@ export default function Inventory() {
           </Accordion>
         )}
 
-        {/* Botão Carregar mais */}
-        {hasMore && !loading && (
+        {/* Load More Button */}
+        {inventoryData?.hasMore && (
           <Button
             variant="outline"
             onClick={handleLoadMore}
-            disabled={loadingMore}
+            disabled={isFetching}
             className="w-full mt-6"
           >
-            {loadingMore ? (
+            {isFetching ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 Carregando...
               </>
             ) : (
-              `Carregar mais (${inventory.length} de ${totalCount})`
+              `Carregar mais (${allItems.length} de ${inventoryData.totalCount})`
             )}
           </Button>
         )}

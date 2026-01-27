@@ -1,33 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { useProfile, useDashboardData } from '@/hooks/queries/useDashboard';
+import { useWizardDraft, WizardDraft } from '@/hooks/useWizardDraft';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { LogOut, Plus, FileText, Calendar, Package, ChevronRight, Search, FileWarning, TrendingUp, Users, CheckCircle2 } from 'lucide-react';
+import { LogOut, Plus, FileText, Package, ChevronRight, Search, FileWarning, TrendingUp, Users, CheckCircle2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { format, formatDistanceToNow, subDays } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { useWizardDraft, WizardDraft } from '@/hooks/useWizardDraft';
-
-interface Evaluation {
-  id: string;
-  created_at: string;
-  tooth: string;
-  cavity_class: string;
-  patient_name: string | null;
-  session_id: string | null;
-  status: string | null;
-  recommendation_text: string | null;
-  recommended_resin_id: string | null;
-  resins?: {
-    name: string;
-    manufacturer: string;
-  } | null;
-}
 
 interface Session {
   session_id: string;
@@ -38,34 +21,25 @@ interface Session {
   completedCount: number;
 }
 
-interface Profile {
-  full_name: string | null;
-  avatar_url: string | null;
-}
-
-interface DashboardMetrics {
-  pendingCases: number;
-  weeklyEvaluations: number;
-  completionRate: number;
-  totalPatients: number;
-}
-
 export default function Dashboard() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [sessions, setSessions] = useState<Session[]>([]);
-  const [metrics, setMetrics] = useState<DashboardMetrics>({
+  const [pendingDraft, setPendingDraft] = useState<WizardDraft | null>(null);
+
+  const { data: profileData, isLoading: loadingProfile } = useProfile();
+  const { data: dashboardData, isLoading: loadingDashboard } = useDashboardData();
+  const { loadDraft, clearDraft } = useWizardDraft(user?.id);
+
+  const loading = loadingProfile || loadingDashboard;
+  const profile = profileData?.profile;
+  const avatarUrl = profileData?.avatarUrl;
+  const metrics = dashboardData?.metrics ?? {
     pendingCases: 0,
     weeklyEvaluations: 0,
     completionRate: 0,
     totalPatients: 0,
-  });
-  const [loading, setLoading] = useState(true);
-  const [pendingDraft, setPendingDraft] = useState<WizardDraft | null>(null);
-  
-  const { loadDraft, clearDraft } = useWizardDraft(user?.id);
+  };
+  const sessions = dashboardData?.sessions ?? [];
 
   // Check for pending draft
   useEffect(() => {
@@ -80,101 +54,6 @@ export default function Dashboard() {
     checkDraft();
   }, [user, loadDraft]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!user) return;
-
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('full_name, avatar_url')
-        .eq('user_id', user.id)
-        .single();
-
-      setProfile(profileData);
-      
-      if (profileData?.avatar_url) {
-        const { data: urlData } = supabase.storage
-          .from('avatars')
-          .getPublicUrl(profileData.avatar_url);
-        setAvatarUrl(urlData.publicUrl);
-      }
-
-      // Fetch evaluations and group by session_id
-      const { data: evaluationsData } = await supabase
-        .from('evaluations')
-        .select(`
-          id,
-          created_at,
-          tooth,
-          cavity_class,
-          patient_name,
-          session_id,
-          status,
-          recommendation_text,
-          recommended_resin_id,
-          resins!recommended_resin_id (
-            name,
-            manufacturer
-          )
-        `)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (evaluationsData) {
-        // Calculate metrics
-        const totalCases = evaluationsData.length;
-        const completedCases = evaluationsData.filter(e => e.status === 'completed').length;
-        const pendingCount = totalCases - completedCases;
-        const completionRate = totalCases > 0 ? Math.round((completedCases / totalCases) * 100) : 0;
-        
-        // Weekly evaluations
-        const oneWeekAgo = subDays(new Date(), 7);
-        const weeklyCount = evaluationsData.filter(e => new Date(e.created_at) > oneWeekAgo).length;
-        
-        // Unique patients
-        const uniquePatients = new Set(
-          evaluationsData.map(e => e.patient_name).filter(Boolean)
-        ).size;
-
-        setMetrics({
-          pendingCases: pendingCount,
-          weeklyEvaluations: weeklyCount,
-          completionRate,
-          totalPatients: uniquePatients,
-        });
-        
-        // Group by session_id
-        const sessionMap = new Map<string, Evaluation[]>();
-        
-        evaluationsData.forEach(evaluation => {
-          const sessionKey = evaluation.session_id || evaluation.id; // fallback to id for old records
-          if (!sessionMap.has(sessionKey)) {
-            sessionMap.set(sessionKey, []);
-          }
-          sessionMap.get(sessionKey)!.push(evaluation);
-        });
-
-        // Convert to array and take first 5 sessions
-        const sessionsArray: Session[] = Array.from(sessionMap.entries())
-          .slice(0, 5)
-          .map(([sessionId, evals]) => ({
-            session_id: sessionId,
-            patient_name: evals[0].patient_name,
-            created_at: evals[0].created_at,
-            teeth: evals.map(e => e.tooth),
-            evaluationCount: evals.length,
-            completedCount: evals.filter(e => e.status === 'completed').length,
-          }));
-
-        setSessions(sessionsArray);
-      }
-      
-      setLoading(false);
-    };
-
-    fetchData();
-  }, [user]);
-
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
@@ -186,7 +65,7 @@ export default function Dashboard() {
   };
 
   const firstName = profile?.full_name?.split(' ')[0] || 'Usuário';
-  
+
   const getInitials = (name: string | null) => {
     if (!name) return 'U';
     return name
@@ -376,7 +255,7 @@ export default function Dashboard() {
               </Button>
             </Link>
           </div>
-          
+
           {loading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
@@ -413,16 +292,16 @@ export default function Dashboard() {
                         </p>
                         <span className="text-muted-foreground">•</span>
                         <p className="text-xs text-muted-foreground">
-                          Salvo {formatDistanceToNow(new Date(pendingDraft.lastSavedAt), { 
-                            addSuffix: true, 
-                            locale: ptBR 
+                          Salvo {formatDistanceToNow(new Date(pendingDraft.lastSavedAt), {
+                            addSuffix: true,
+                            locale: ptBR
                           })}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 self-end sm:self-center">
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="sm"
                         className="text-amber-700 hover:text-amber-900 hover:bg-amber-100 dark:text-amber-300 dark:hover:text-amber-100 dark:hover:bg-amber-900/50"
                         onClick={handleDiscardDraft}
@@ -457,35 +336,27 @@ export default function Dashboard() {
                           </p>
                           <span className="text-muted-foreground hidden sm:inline">•</span>
                           <div className="flex gap-1 flex-wrap">
-                            {session.teeth.slice(0, 3).map((tooth) => (
+                            {session.teeth.slice(0, 2).map((tooth) => (
                               <Badge key={tooth} variant="outline" className="text-xs">
                                 {tooth}
                               </Badge>
                             ))}
-                            {session.teeth.length > 3 && (
+                            {session.teeth.length > 2 && (
                               <Badge variant="outline" className="text-xs">
-                                +{session.teeth.length - 3}
+                                +{session.teeth.length - 2}
                               </Badge>
                             )}
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
-                        {/* Progress indicator */}
-                        <div className="flex items-center gap-2">
-                          <Progress 
-                            value={(session.completedCount / session.evaluationCount) * 100} 
-                            className="w-12 sm:w-16 h-1.5"
-                          />
-                          <span className="text-xs text-muted-foreground whitespace-nowrap">
-                            {session.completedCount}/{session.evaluationCount}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground">
-                          <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
-                          {format(new Date(session.created_at), "d MMM", { locale: ptBR })}
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground self-end sm:self-center">
+                        <span className="hidden sm:inline">
+                          {format(new Date(session.created_at), "d 'de' MMM", { locale: ptBR })}
+                        </span>
+                        <span className="sm:hidden">
+                          {format(new Date(session.created_at), "dd/MM", { locale: ptBR })}
+                        </span>
+                        <ChevronRight className="w-4 h-4" />
                       </div>
                     </div>
                   </Card>

@@ -1,7 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { usePatientsList } from "@/hooks/queries/usePatients";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,137 +8,40 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, Search, Users, Plus, ChevronRight, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { toast } from "sonner";
-
-interface PatientWithStats {
-  id: string;
-  name: string;
-  phone: string | null;
-  email: string | null;
-  sessionCount: number;
-  caseCount: number;
-  completedCount: number;
-  lastVisit: string | null;
-}
-
-const PAGE_SIZE = 20;
 
 const Patients = () => {
-  const { user } = useAuth();
   const navigate = useNavigate();
-  const [patients, setPatients] = useState<PatientWithStats[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-  const [totalCount, setTotalCount] = useState(0);
+  const [allPatients, setAllPatients] = useState<Array<{
+    id: string;
+    name: string;
+    phone: string | null;
+    email: string | null;
+    sessionCount: number;
+    caseCount: number;
+    completedCount: number;
+    lastVisit: string | null;
+  }>>([]);
 
-  const fetchPatients = useCallback(async (pageNumber: number = 0, append: boolean = false) => {
-    if (!user) return;
+  const { data, isLoading, isFetching } = usePatientsList(page, 20);
 
-    if (!append) {
-      setLoading(true);
-    } else {
-      setLoadingMore(true);
-    }
-
-    // Single optimized query - fetch patients with evaluation stats using a subquery approach
-    const { data: patientsData, error: patientsError, count } = await supabase
-      .from("patients")
-      .select("id, name, phone, email", { count: 'exact' })
-      .eq("user_id", user.id)
-      .order("name")
-      .range(pageNumber * PAGE_SIZE, (pageNumber + 1) * PAGE_SIZE - 1);
-
-    if (patientsError) {
-      toast.error("Erro ao carregar pacientes");
-      setLoading(false);
-      setLoadingMore(false);
-      return;
-    }
-
-    if (!patientsData || patientsData.length === 0) {
-      if (!append) {
-        setPatients([]);
-      }
-      setHasMore(false);
-      setLoading(false);
-      setLoadingMore(false);
-      return;
-    }
-
-    // Fetch evaluation stats for the current page of patients only (fixes N+1)
-    const patientIds = patientsData.map(p => p.id);
-    const { data: evaluationsData, error: evalsError } = await supabase
-      .from("evaluations")
-      .select("patient_id, session_id, status, created_at")
-      .eq("user_id", user.id)
-      .in("patient_id", patientIds);
-
-    if (evalsError) {
-      toast.error("Erro ao carregar estatísticas");
-      setLoading(false);
-      setLoadingMore(false);
-      return;
-    }
-
-    // Calculate stats per patient
-    const patientsWithStats: PatientWithStats[] = patientsData.map((patient) => {
-      const patientEvals = evaluationsData?.filter((e) => e.patient_id === patient.id) || [];
-      const uniqueSessions = new Set(patientEvals.map((e) => e.session_id));
-      const completedCount = patientEvals.filter((e) => e.status === "completed").length;
-      const lastEval = patientEvals.sort(
-        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      )[0];
-
-      return {
-        id: patient.id,
-        name: patient.name,
-        phone: patient.phone,
-        email: patient.email,
-        sessionCount: uniqueSessions.size,
-        caseCount: patientEvals.length,
-        completedCount,
-        lastVisit: lastEval?.created_at || null,
-      };
-    });
-
-    // Sort by last visit (most recent first), then by name
-    patientsWithStats.sort((a, b) => {
-      if (a.lastVisit && b.lastVisit) {
-        return new Date(b.lastVisit).getTime() - new Date(a.lastVisit).getTime();
-      }
-      if (a.lastVisit) return -1;
-      if (b.lastVisit) return 1;
-      return a.name.localeCompare(b.name);
-    });
-
-    if (append) {
-      setPatients(prev => [...prev, ...patientsWithStats]);
-    } else {
-      setPatients(patientsWithStats);
-    }
-
-    setTotalCount(count || 0);
-    setHasMore((count || 0) > (pageNumber + 1) * PAGE_SIZE);
-    setLoading(false);
-    setLoadingMore(false);
-  }, [user]);
-
+  // Accumulate patients across pages
   useEffect(() => {
-    if (user) {
-      fetchPatients(0, false);
+    if (data?.patients) {
+      if (page === 0) {
+        setAllPatients(data.patients);
+      } else {
+        setAllPatients(prev => [...prev, ...data.patients]);
+      }
     }
-  }, [user, fetchPatients]);
+  }, [data, page]);
 
   const handleLoadMore = () => {
-    const nextPage = page + 1;
-    setPage(nextPage);
-    fetchPatients(nextPage, true);
+    setPage(p => p + 1);
   };
 
-  const filteredPatients = patients.filter((p) =>
+  const filteredPatients = allPatients.filter((p) =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -163,7 +65,7 @@ const Patients = () => {
             </Button>
             <div>
               <h1 className="text-lg font-semibold">Meus Pacientes</h1>
-              <p className="text-sm text-muted-foreground">{totalCount} pacientes</p>
+              <p className="text-sm text-muted-foreground">{data?.totalCount ?? 0} pacientes</p>
             </div>
           </div>
           <Link to="/new-case">
@@ -188,7 +90,7 @@ const Patients = () => {
         </div>
 
         {/* Loading State */}
-        {loading && (
+        {isLoading && page === 0 && (
           <div className="space-y-3">
             {[1, 2, 3, 4].map((i) => (
               <Skeleton key={i} className="h-24 w-full rounded-lg" />
@@ -197,7 +99,7 @@ const Patients = () => {
         )}
 
         {/* Empty State */}
-        {!loading && patients.length === 0 && (
+        {!isLoading && allPatients.length === 0 && (
           <Card className="p-8 text-center">
             <Users className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="font-medium mb-2">Nenhum paciente cadastrado</h3>
@@ -214,7 +116,7 @@ const Patients = () => {
         )}
 
         {/* No Results */}
-        {!loading && patients.length > 0 && filteredPatients.length === 0 && (
+        {!isLoading && allPatients.length > 0 && filteredPatients.length === 0 && (
           <Card className="p-8 text-center">
             <Search className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="font-medium mb-2">Nenhum paciente encontrado</h3>
@@ -225,7 +127,7 @@ const Patients = () => {
         )}
 
         {/* Patients List */}
-        {!loading && filteredPatients.length > 0 && (
+        {!isLoading && filteredPatients.length > 0 && (
           <div className="space-y-3">
             {filteredPatients.map((patient) => (
               <Link key={patient.id} to={`/patient/${patient.id}`}>
@@ -264,14 +166,14 @@ const Patients = () => {
             ))}
 
             {/* Load More Button */}
-            {hasMore && !searchQuery && (
-              <Button 
-                variant="outline" 
+            {data?.hasMore && !searchQuery && (
+              <Button
+                variant="outline"
                 onClick={handleLoadMore}
-                disabled={loadingMore}
+                disabled={isFetching}
                 className="w-full mt-4"
               >
-                {loadingMore ? (
+                {isFetching ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     Carregando...
