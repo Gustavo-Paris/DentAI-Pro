@@ -289,128 +289,69 @@ async function generateSimulation(
       return `Dente ${s.tooth}: COPIE do ${contralateral || 'vizinho'}`;
     }).join(', ');
     
-    simulationPrompt = `TAREFA: Editar APENAS os dentes nesta foto de sorriso.
+    simulationPrompt = `Using this smile photo, reconstruct the missing/damaged teeth and whiten all teeth.
 
-=== PRESERVAÇÃO ABSOLUTA DE LÁBIOS/PELE (CRÍTICO) ===
-Os lábios e pele perioral devem ser IDÊNTICOS à foto original.
-Copie EXATAMENTE: textura dos lábios, linhas de expressão, cor da pele, pelos/barba.
-Qualquer diferença nos lábios = FALHA CRÍTICA.
+CRITICAL PRESERVATION RULE:
+Keep the lips, skin, facial features, and image framing EXACTLY THE SAME as the original photo.
+The ONLY change should be the teeth.
 
-TÉCNICA OBRIGATÓRIA:
-1. Extraia a região NÃO-DENTAL como máscara fixa
-2. Aplique edição APENAS na área dos dentes
-3. Recomponha usando a máscara original para lábios/pele
+TEETH RECONSTRUCTION:
+- ${specificInstructions || 'Reconstruct damaged/missing teeth using neighboring teeth as reference'}
+- Whiten all teeth to shade A1/A2 (natural bright white)
+- Make all teeth uniform in color and brightness
+${patientDesires ? `- Patient wants: ${patientDesires}` : ''}
 
-=== DIMENSÕES E ENQUADRAMENTO (CRÍTICO) ===
-- A imagem de SAÍDA deve ter EXATAMENTE as mesmas dimensões da ENTRADA
-- NÃO fazer zoom, crop, pan ou qualquer alteração de enquadramento
-- Todos os elementos da borda (lábios, pele) devem estar nas MESMAS posições
-- Se a foto original mostra 8 dentes, a simulação DEVE mostrar os mesmos 8 dentes
-
-REGRA ABSOLUTA #1 - ENQUADRAMENTO CONGELADO:
-Trate a área NÃO-DENTAL como uma MÁSCARA fixa.
-Lábios superior/inferior, gengiva, pele = COPIE da original PIXEL POR PIXEL.
-Use técnica de "inpainting" APENAS na área dos DENTES.
-NÃO mova, amplie ou altere o contorno da imagem.
-
-REGRA ABSOLUTA #2 - GENGIVA PROIBIDA:
-NÃO crie gengiva onde não existe na foto original.
-Se a gengiva está coberta pelo lábio, ela deve CONTINUAR coberta.
-Modifique apenas a gengiva que JÁ É VISÍVEL.
-
-REGRA ABSOLUTA #3 - RECONSTRUÇÃO:
-RECONSTRUA: ${specificInstructions || 'dentes danificados usando vizinhos como referência'}
-IMPORTANTE: Copie o formato/tamanho EXATO do dente contralateral (espelho).
-NÃO invente proporções - use os dentes vizinhos como referência direta.
-
-COR OBRIGATÓRIA (TODOS os dentes):
-- Tom uniforme A1/A2 (branco natural)
-- REMOVA todas as manchas e descolorações
-- Todos os dentes devem ter a MESMA cor
-${patientDesires}
-
-VERIFICAÇÃO FINAL:
-[ ] Lábios IDÊNTICOS à original? (textura, linhas, cor, volume)
-[ ] Pele perioral inalterada?
-[ ] Dimensões da imagem idênticas?
-[ ] Nenhuma gengiva nova criada?
-[ ] Todos os dentes originais visíveis?
-[ ] Só os dentes foram alterados?`;
+MANDATORY: The lips and skin texture must remain IDENTICAL to the original photo.
+Do NOT change the photo angle, zoom, or composition.
+Output the edited image with the exact same dimensions.`;
 
   } else if (needsRestorationReplacement) {
-    // RESTORATION REPLACEMENT PROMPT - BALANCEADO (ação positiva + limites)
-    simulationPrompt = `TAREFA: Aplicar clareamento dental profissional e remover manchas.
+    // RESTORATION REPLACEMENT PROMPT - Ultra-short, preservation-first
+    simulationPrompt = `Using this smile photo, change ONLY the teeth color and remove restoration interface lines.
 
-=== AÇÃO PRINCIPAL (OBRIGATÓRIA) ===
-CLAREAR TODOS OS DENTES para tom A1/A2 (branco natural brilhante).
-Isso é um CLAREAMENTO DENTAL - os dentes devem ficar VISIVELMENTE mais brancos.
+CRITICAL PRESERVATION RULE:
+Keep the lips, skin, facial features, and image framing EXACTLY THE SAME as the original photo.
+Do not modify anything except the teeth.
 
-AÇÕES ESPECÍFICAS:
-1. CLAREAR: Mude a cor de todos os dentes para branco natural A1/A2
-2. MANCHAS: REMOVA todas as manchas amarelas, marrons ou acinzentadas
-3. INTERFACES: Nos dentes ${restorationTeeth || '11 e 21'}, ELIMINE as linhas de transição entre resina e esmalte
-4. UNIFORMIZAR: Todos os dentes devem ter a MESMA cor (sem variações)
-5. BRILHO: Adicione reflexos naturais uniformes
-6. SIMETRIA: Harmonize contornos de laterais assimétricos (12 vs 22)
+TEETH EDIT:
+- Whiten all visible teeth to shade A1/A2 (natural bright white)
+- On teeth ${restorationTeeth || '11, 21'}: blend/remove any visible restoration interface lines
+- Make the color uniform across all teeth (no color variation)
+- Harmonize asymmetric lateral incisors (12 vs 22) if needed
+${patientDesires ? `- Patient wants: ${patientDesires}` : ''}
 
-O RESULTADO deve ser um sorriso VISIVELMENTE mais branco e limpo.
-Compare: antes = dentes amarelados com manchas, depois = dentes brancos uniformes.
-${patientDesires}
-=== PRESERVAÇÃO ===
-- Lábios e pele: IDÊNTICOS à foto original
-- Formato dos dentes: manter silhueta original
-- Dimensões da imagem: SAÍDA = ENTRADA
-
-VERIFICAÇÃO: Os dentes devem estar CLARAMENTE mais brancos que na foto original.`;
+The lips and skin must be PIXEL-PERFECT identical to the input image.
+Output the edited image with the exact same dimensions.`;
 
   } else if (isIntraoralPhoto) {
-    // INTRAORAL PROMPT - BALANCEADO (ação positiva + limites)
-    simulationPrompt = `TAREFA: Aplicar clareamento dental profissional em foto intraoral.
+    // INTRAORAL PROMPT - Ultra-short
+    simulationPrompt = `Using this intraoral dental photo, whiten the teeth.
 
-=== AÇÃO PRINCIPAL ===
-CLAREAR TODOS OS DENTES para tom A1/A2 (branco natural).
-Os dentes devem ficar VISIVELMENTE mais brancos.
+EDIT:
+- Change all visible teeth to white shade A1/A2
+- Remove stains and discoloration
+- Make color uniform
+${patientDesires ? `- Patient wants: ${patientDesires}` : ''}
 
-AÇÕES:
-1. CLAREAR todos os dentes para branco natural
-2. REMOVER todas as manchas e descolorações
-3. UNIFORMIZAR cor e brilho
-4. SUAVIZAR linhas de interface de restaurações
-${patientDesires}
-PRESERVAR: Gengiva, fundo, dimensões da imagem.
-Manter silhueta dental original.
-
-RESULTADO: Dentes CLARAMENTE mais brancos que na foto original.`;
+PRESERVE: Gums, background, image dimensions - keep exactly as original.`;
 
   } else {
-    // STANDARD PROMPT - BALANCEADO (ação positiva + limites)
-    simulationPrompt = `TAREFA: Aplicar clareamento dental profissional.
+    // STANDARD PROMPT - Ultra-short, preservation-first
+    simulationPrompt = `Using this smile photo, change ONLY the teeth color.
 
-=== AÇÃO PRINCIPAL (OBRIGATÓRIA) ===
-CLAREAR TODOS OS DENTES para tom A1/A2 (branco natural brilhante).
-O resultado deve ser um CLAREAMENTO VISÍVEL - dentes significativamente mais brancos.
+CRITICAL PRESERVATION RULE:
+Keep the lips, skin, facial features, and image framing EXACTLY THE SAME as the original photo.
+Do not modify anything except the teeth.
 
-AÇÕES ESPECÍFICAS:
-1. CLAREAR: Mude a cor de TODOS os dentes visíveis para branco A1/A2
-2. MANCHAS: REMOVA qualquer mancha amarela, marrom ou descoloração
-3. UNIFORMIZAR: Todos os dentes devem ter a MESMA cor e brilho
-4. REFLEXOS: Adicione reflexos naturais que indicam dentes saudáveis
-5. SIMETRIA BILATERAL: Se os LATERAIS (12 e 22) tiverem formas DIFERENTES:
-   - Um mais quadrado, outro mais arredondado
-   - Um mais largo, outro mais estreito
-   VOCÊ PODE harmonizar os contornos para ficarem SIMÉTRICOS
-   Use o lateral mais harmônico como referência para o outro
-${patientDesires}
-=== PRESERVAÇÃO ===
-- Lábios e pele: copie EXATAMENTE da foto original
-- Formato dos dentes: mantenha a silhueta natural
-- Dimensões: SAÍDA = mesmas dimensões da ENTRADA
+TEETH EDIT:
+- Whiten all visible teeth to shade A1/A2 (natural bright white)
+- Remove any stains, yellowing, or discoloration
+- Make the color uniform across all teeth
+- Harmonize asymmetric lateral incisors (12 vs 22) if shapes differ
+${patientDesires ? `- Patient wants: ${patientDesires}` : ''}
 
-RESULTADO ESPERADO:
-- Dentes VISIVELMENTE mais brancos (diferença clara do original)
-- Cor uniforme A1/A2 em todos os dentes
-- Sem manchas ou descolorações
-- Lábios e rosto inalterados`;
+The lips, skin texture, and photo composition must be PIXEL-PERFECT identical to the input image.
+Output the edited image with the exact same dimensions.`;
   }
 
   const promptType = needsReconstruction ? 'reconstruction' : 
