@@ -1,44 +1,43 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
+import { registerSchema, type RegisterFormData } from '@/lib/schemas/auth';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 
 export default function Register() {
-  const [fullName, setFullName] = useState('');
-  const [cro, setCro] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const { signUp } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!acceptedTerms) {
-      toast.error('Você precisa aceitar os Termos de Uso e Política de Privacidade');
-      return;
-    }
+  const form = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      fullName: '',
+      cro: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      acceptedTerms: false,
+    },
+  });
 
-    if (password !== confirmPassword) {
-      toast.error('As senhas não coincidem');
-      return;
-    }
-
-    if (password.length < 6) {
-      toast.error('A senha deve ter pelo menos 6 caracteres');
-      return;
-    }
-
+  const onSubmit = async (data: RegisterFormData) => {
     setLoading(true);
 
-    const { error } = await signUp(email, password, fullName, cro);
+    const { error } = await signUp(data.email, data.password, data.fullName, data.cro || '');
     
     if (error) {
       toast.error('Erro ao criar conta', {
@@ -65,88 +64,129 @@ export default function Register() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="fullName">Nome completo</Label>
-            <Input
-              id="fullName"
-              type="text"
-              placeholder="Dr. João Silva"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              required
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="fullName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nome completo</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Dr. João Silva"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="cro">CRO (opcional)</Label>
-            <Input
-              id="cro"
-              type="text"
-              placeholder="CRO-SP 12345"
-              value={cro}
-              onChange={(e) => setCro(e.target.value)}
+            <FormField
+              control={form.control}
+              name="cro"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>CRO (opcional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="CRO-SP 12345"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="email">Email profissional</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="seu@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email profissional</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder="seu@email.com"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Senha</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Senha</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="••••••••"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirmar senha</Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              placeholder="••••••••"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirmar senha</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="••••••••"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <div className="flex items-start gap-2">
-            <Checkbox 
-              id="terms" 
-              checked={acceptedTerms}
-              onCheckedChange={(checked) => setAcceptedTerms(checked as boolean)}
+            <FormField
+              control={form.control}
+              name="acceptedTerms"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel className="text-sm leading-relaxed cursor-pointer font-normal">
+                      Li e aceito os{' '}
+                      <Link to="/terms" className="underline underline-offset-4 hover:text-foreground" target="_blank">
+                        Termos de Uso
+                      </Link>
+                      {' '}e a{' '}
+                      <Link to="/privacy" className="underline underline-offset-4 hover:text-foreground" target="_blank">
+                        Política de Privacidade
+                      </Link>
+                    </FormLabel>
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
             />
-            <Label htmlFor="terms" className="text-sm leading-relaxed cursor-pointer">
-              Li e aceito os{' '}
-              <Link to="/terms" className="underline underline-offset-4 hover:text-foreground" target="_blank">
-                Termos de Uso
-              </Link>
-              {' '}e a{' '}
-              <Link to="/privacy" className="underline underline-offset-4 hover:text-foreground" target="_blank">
-                Política de Privacidade
-              </Link>
-            </Label>
-          </div>
 
-          <Button type="submit" className="w-full" disabled={loading || !acceptedTerms}>
-            {loading ? 'Criando conta...' : 'Criar conta'}
-          </Button>
-        </form>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? 'Criando conta...' : 'Criar conta'}
+            </Button>
+          </form>
+        </Form>
 
         <p className="text-center text-sm text-muted-foreground mt-6">
           Já tem uma conta?{' '}
