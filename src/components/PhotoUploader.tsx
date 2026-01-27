@@ -61,8 +61,8 @@ export default function PhotoUploader({
 
       if (uploadError) throw uploadError;
 
-      // Get the public URL
-      const { data: urlData } = supabase.storage
+      // Get the public URL (result not used as we store path, not URL)
+      supabase.storage
         .from('clinical-photos')
         .getPublicUrl(fileName);
 

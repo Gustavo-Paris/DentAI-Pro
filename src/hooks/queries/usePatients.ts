@@ -70,8 +70,8 @@ export function usePatientsList(page: number = 0, pageSize: number = 20) {
 
         return {
           ...patient,
-          notes: null,
-          birth_date: null,
+          notes: null as string | null,
+          birth_date: null as string | null,
           created_at: '',
           sessionCount: uniqueSessions.size,
           caseCount: patientEvals.length,

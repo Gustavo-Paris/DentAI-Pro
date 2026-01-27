@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2, Plus, Wrench, Crown, Stethoscope, CircleX, ArrowUpRight, Wand2 } from 'lucide-react';
+import { Loader2, Plus, Wrench, Wand2 } from 'lucide-react';
 
 export type TreatmentType = 'resina' | 'porcelana' | 'coroa' | 'implante' | 'endodontia' | 'encaminhamento';
 
@@ -72,17 +72,6 @@ const TREATMENT_LABELS: Record<TreatmentType, string> = {
   encaminhamento: 'Encaminhamento',
 };
 
-const getTreatmentIcon = (treatment: TreatmentType) => {
-  switch (treatment) {
-    case 'resina': return Wrench;
-    case 'porcelana': return Crown;
-    case 'coroa': return Crown;
-    case 'implante': return CircleX;
-    case 'endodontia': return Stethoscope;
-    case 'encaminhamento': return ArrowUpRight;
-    default: return Wrench;
-  }
-};
 
 const priorityStyles: Record<string, string> = {
   alta: 'bg-destructive text-destructive-foreground',
@@ -433,7 +422,6 @@ export function AddTeethModal({
               <div className="space-y-2">
                 {restorativeTeeth.map((tooth) => {
                   const isSelected = selectedTeeth.includes(tooth.tooth);
-                  const TreatmentIcon = getTreatmentIcon(getToothTreatment(tooth));
                   
                   return (
                     <div

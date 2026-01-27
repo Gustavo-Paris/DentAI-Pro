@@ -22,7 +22,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { AlertTriangle, Check, Info, Sparkles, CircleDot, RefreshCw, Loader2, Plus, Wrench, Wand2, Crown, Stethoscope, CircleX, ArrowUpRight, CalendarIcon } from 'lucide-react';
+import { AlertTriangle, Check, Info, Sparkles, CircleDot, RefreshCw, Loader2, Plus, Wrench, Wand2, Crown, CalendarIcon } from 'lucide-react';
 import { PatientAutocomplete } from '@/components/PatientAutocomplete';
 import { calculateAge } from '@/lib/dateUtils';
 import { format } from 'date-fns';
@@ -123,42 +123,9 @@ interface ReviewAnalysisStepProps {
   onPatientBirthDateChange?: (date: string | null) => void;
 }
 
-// Get icon for treatment type
-const getTreatmentIcon = (treatment: TreatmentType) => {
-  switch (treatment) {
-    case 'resina': return Wrench;
-    case 'porcelana': return Crown;
-    case 'coroa': return Crown;
-    case 'implante': return CircleX;
-    case 'endodontia': return Stethoscope;
-    case 'encaminhamento': return ArrowUpRight;
-    default: return Wrench;
-  }
-};
-
-// Get style for treatment type
-const getTreatmentStyle = (treatment: TreatmentType) => {
-  switch (treatment) {
-    case 'resina': return 'border-primary/50 bg-primary/5';
-    case 'porcelana': return 'border-warning/50 bg-warning/5';
-    case 'coroa': return 'border-purple-500/50 bg-purple-50 dark:bg-purple-950/20';
-    case 'implante': return 'border-orange-500/50 bg-orange-50 dark:bg-orange-950/20';
-    case 'endodontia': return 'border-rose-500/50 bg-rose-50 dark:bg-rose-950/20';
-    case 'encaminhamento': return 'border-muted bg-muted/20';
-    default: return '';
-  }
-};
-
 const TEETH = {
   upper: ['18', '17', '16', '15', '14', '13', '12', '11', '21', '22', '23', '24', '25', '26', '27', '28'],
   lower: ['48', '47', '46', '45', '44', '43', '42', '41', '31', '32', '33', '34', '35', '36', '37', '38'],
-};
-
-// Priority styles - used in tooth priority badges
-const _priorityStyles = {
-  alta: 'bg-destructive text-destructive-foreground',
-  média: 'bg-warning text-warning-foreground border border-warning-foreground/20',
-  baixa: 'bg-secondary text-secondary-foreground',
 };
 
 export function ReviewAnalysisStep({
@@ -166,7 +133,6 @@ export function ReviewAnalysisStep({
   formData,
   onFormChange,
   imageBase64,
-  onToothSelect,
   onReanalyze,
   isReanalyzing = false,
   selectedTeeth = [],
@@ -177,7 +143,7 @@ export function ReviewAnalysisStep({
   onPatientSelect,
   patientBirthDate,
   onPatientBirthDateChange,
-}: ReviewAnalysisStepProps) {
+}: Omit<ReviewAnalysisStepProps, 'onToothSelect'>) {
   const [showManualAdd, setShowManualAdd] = useState(false);
   const [manualTooth, setManualTooth] = useState('');
   
@@ -222,24 +188,6 @@ export function ReviewAnalysisStep({
     setManualTooth('');
     setShowManualAdd(false);
   };
-
-  // Handle selecting a detected tooth
-  const handleSelectDetectedTooth = (tooth: DetectedTooth) => {
-    onFormChange({
-      tooth: tooth.tooth,
-      toothRegion: tooth.tooth_region || formData.toothRegion,
-      cavityClass: tooth.cavity_class || formData.cavityClass,
-      restorationSize: tooth.restoration_size || formData.restorationSize,
-      substrate: tooth.substrate || formData.substrate,
-      substrateCondition: tooth.substrate_condition || formData.substrateCondition,
-      enamelCondition: tooth.enamel_condition || formData.enamelCondition,
-      depth: tooth.depth || formData.depth,
-    });
-    if (onToothSelect) {
-      onToothSelect(tooth);
-    }
-  };
-
   return (
     <div className="space-y-6">
       <div className="text-center">
