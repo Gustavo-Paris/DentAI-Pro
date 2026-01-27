@@ -29,6 +29,7 @@ import WarningsSection from '@/components/protocol/WarningsSection';
 import ConfidenceIndicator from '@/components/protocol/ConfidenceIndicator';
 import AlternativeBox from '@/components/protocol/AlternativeBox';
 import CaseSummaryBox from '@/components/protocol/CaseSummaryBox';
+import WhiteningPreferenceAlert from '@/components/protocol/WhiteningPreferenceAlert';
 import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
 import { ProportionsCard } from '@/components/dsd/ProportionsCard';
 import { DSDAnalysis } from '@/components/wizard/DSDStep';
@@ -662,6 +663,16 @@ export default function Result() {
                 )}
               </CardContent>
             </Card>
+          </section>
+        )}
+
+        {/* Whitening Preference Alert - Only for resin treatments */}
+        {treatmentType === 'resina' && evaluation.patient_desired_changes?.includes('whiter') && (
+          <section className="mb-8">
+            <WhiteningPreferenceAlert
+              originalColor={evaluation.tooth_color}
+              hasWhiteningPreference={true}
+            />
           </section>
         )}
 
