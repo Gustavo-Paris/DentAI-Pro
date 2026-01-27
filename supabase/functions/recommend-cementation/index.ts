@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsPreFlight, createErrorResponse, ERROR_MESSAGES } from "../_shared/cors.ts";
+import { logger } from "../_shared/logger.ts";
 
 // Cementation protocol interfaces
 interface CementationStep {
@@ -90,7 +91,7 @@ serve(async (req: Request) => {
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
     if (!LOVABLE_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-      console.error("Missing required environment variables");
+      logger.error("Missing required environment variables");
       return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
     }
 
@@ -301,7 +302,7 @@ Retorne o protocolo usando a função generate_cementation_protocol.`;
       if (status === 402) {
         return createErrorResponse(ERROR_MESSAGES.PAYMENT_REQUIRED, 402, corsHeaders, "PAYMENT_REQUIRED");
       }
-      console.error("AI error:", status);
+      logger.error("AI error:", status);
       return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     }
 
@@ -309,7 +310,7 @@ Retorne o protocolo usando a função generate_cementation_protocol.`;
     const toolCall = aiResult.choices?.[0]?.message?.tool_calls?.[0];
 
     if (!toolCall?.function?.arguments) {
-      console.error("No tool call in response");
+      logger.error("No tool call in response");
       return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     }
 

@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsPreFlight, ERROR_MESSAGES, createErrorResponse } from "../_shared/cors.ts";
 import { validateEvaluationData, type EvaluationData } from "../_shared/validation.ts";
+import { logger } from "../_shared/logger.ts";
 
 interface ProtocolLayer {
   order: number;
@@ -73,7 +74,7 @@ serve(async (req) => {
 
     const validation = validateEvaluationData(rawData);
     if (!validation.success || !validation.data) {
-      console.error("Validation failed:", validation.error);
+      logger.error("Validation failed:", validation.error);
       return createErrorResponse(validation.error || ERROR_MESSAGES.INVALID_REQUEST, 400, corsHeaders);
     }
 
@@ -93,7 +94,7 @@ serve(async (req) => {
       .select("*");
 
     if (resinsError) {
-      console.error("Database error fetching resins:", resinsError);
+      logger.error("Database error fetching resins:", resinsError);
       return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
     }
 
@@ -104,7 +105,7 @@ serve(async (req) => {
       .eq("user_id", data.userId);
 
     if (inventoryError) {
-      console.error("Error fetching inventory:", inventoryError);
+      logger.error("Error fetching inventory:", inventoryError);
     }
 
     const inventoryResinIds = userInventory?.map((i) => i.resin_id) || [];
