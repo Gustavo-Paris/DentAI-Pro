@@ -92,11 +92,6 @@ export function useWizardDraft(userId: string | undefined) {
     }
   }, [userId, isDraftExpired]);
 
-  // Synchronous version that returns cached draft (used internally)
-  // Prefixed with underscore to indicate intentionally unused export
-  const _getCachedDraft = useCallback((): WizardDraft | null => {
-    return cachedDraftRef.current;
-  }, []);
 
   // Save draft with debounce
   const saveDraft = useCallback((draft: Omit<WizardDraft, 'lastSavedAt'>) => {
@@ -180,11 +175,6 @@ export function useWizardDraft(userId: string | undefined) {
     }
   }, [userId]);
 
-  // Check if draft exists (async) - kept for potential future use
-  const _hasDraft = useCallback(async (): Promise<boolean> => {
-    const draft = await loadDraft();
-    return draft !== null;
-  }, [loadDraft]);
 
   // Cleanup timeout on unmount
   useEffect(() => {

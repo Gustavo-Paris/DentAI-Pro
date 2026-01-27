@@ -14,12 +14,12 @@ import {
   BreadcrumbSeparator,
   BreadcrumbPage,
 } from '@/components/ui/breadcrumb';
-import { ArrowLeft, Download, Plus, CheckCircle, Image, Package, Sparkles, Layers, Loader2, Smile, Crown, Stethoscope, ArrowUpRight, CircleX, MapPin, Heart, Palette } from 'lucide-react';
+import { ArrowLeft, Download, Plus, CheckCircle, Image, Package, Sparkles, Layers, Loader2, Smile, Crown, Stethoscope, ArrowUpRight, CircleX, Heart, Palette } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { generateProtocolPDF } from '@/lib/generatePDF';
-import type { Resin, StratificationProtocol, ProtocolLayer, ProtocolAlternative, CementationProtocol } from '@/types/protocol';
+import type { Resin, StratificationProtocol, ProtocolLayer, CementationProtocol } from '@/types/protocol';
 
 // Protocol components
 import ProtocolTable from '@/components/protocol/ProtocolTable';

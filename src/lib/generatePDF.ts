@@ -25,21 +25,6 @@ const sanitizeText = (text: string | null | undefined): string => {
   return text.split('').map(char => charMap[char] || char).join('');
 };
 
-// Helper to convert image URL to base64
-const imageToBase64 = async (url: string): Promise<string | null> => {
-  try {
-    const response = await fetch(url);
-    const blob = await response.blob();
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = () => resolve(null);
-      reader.readAsDataURL(blob);
-    });
-  } catch {
-    return null;
-  }
-};
 
 export async function generateProtocolPDF(data: PDFData): Promise<void> {
   const pdf = new jsPDF('p', 'mm', 'a4');
@@ -49,7 +34,6 @@ export async function generateProtocolPDF(data: PDFData): Promise<void> {
   const contentWidth = pageWidth - margin * 2;
   let y = margin;
   let currentPage = 1;
-  let totalPages = 1; // Will be updated at the end
 
   // ============ HELPER FUNCTIONS ============
   const addText = (text: string, x: number, currentY: number, options?: { 
@@ -368,7 +352,6 @@ export async function generateProtocolPDF(data: PDFData): Promise<void> {
     ].filter(p => p.value);
     
     if (dsdParams.length > 0) {
-      const paramWidth = contentWidth / 2 - 5;
       let paramX = margin + 5;
       
       dsdParams.forEach((param, i) => {

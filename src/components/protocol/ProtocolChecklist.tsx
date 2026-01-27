@@ -11,7 +11,6 @@ interface ProtocolChecklistProps {
 
 export default function ProtocolChecklist({ 
   items, 
-  title = "Passo a Passo",
   checkedIndices = [],
   onProgressChange
 }: ProtocolChecklistProps) {

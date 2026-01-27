@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Camera, Upload, X, Image as ImageIcon, Loader2, ChevronDown, ChevronUp, User, Smile } from 'lucide-react';
 import { toast } from 'sonner';

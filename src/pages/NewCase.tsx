@@ -946,7 +946,7 @@ export default function NewCase() {
             selectedPatientId={selectedPatientId}
             patientBirthDate={patientBirthDate}
             onPatientBirthDateChange={setPatientBirthDate}
-            onPatientSelect={(name, patientId, birthDate) => {
+            onPatientSelect={(_name, patientId, birthDate) => {
               setSelectedPatientId(patientId || null);
               setPatientBirthDate(birthDate || null);
               setOriginalPatientBirthDate(birthDate || null);

@@ -100,7 +100,7 @@ export default function Evaluation() {
       if (insertError) throw insertError;
 
       // Call AI recommendation edge function
-      const { data: recommendation, error: aiError } = await supabase.functions.invoke(
+      const { error: aiError } = await supabase.functions.invoke(
         'recommend-resin',
         {
           body: {
