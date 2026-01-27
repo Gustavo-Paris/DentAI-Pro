@@ -1,7 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { usePatientDetail, usePatientSessions, useUpdatePatient } from "@/hooks/queries/usePatients";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,148 +40,47 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 
-interface Patient {
-  id: string;
-  name: string;
-  phone: string | null;
-  email: string | null;
-  notes: string | null;
-  created_at: string;
-}
-
-interface SessionGroup {
-  session_id: string;
-  teeth: string[];
-  evaluationCount: number;
-  completedCount: number;
-  created_at: string;
-}
-
 const PatientProfile = () => {
   const { patientId } = useParams<{ patientId: string }>();
-  const { user } = useAuth();
   const navigate = useNavigate();
 
-  const [patient, setPatient] = useState<Patient | null>(null);
-  const [sessions, setSessions] = useState<SessionGroup[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const { data: patient, isLoading: loadingPatient } = usePatientDetail(patientId || '');
+  const { data: sessions = [], isLoading: loadingSessions } = usePatientSessions(patientId || '');
+  const updatePatientMutation = useUpdatePatient();
 
-  // Edit form state
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editName, setEditName] = useState("");
   const [editPhone, setEditPhone] = useState("");
   const [editEmail, setEditEmail] = useState("");
   const [editNotes, setEditNotes] = useState("");
 
-  useEffect(() => {
-    if (!user || !patientId) return;
-
-    const fetchData = async () => {
-      setLoading(true);
-
-      // Fetch patient
-      const { data: patientData, error: patientError } = await supabase
-        .from("patients")
-        .select("*")
-        .eq("id", patientId)
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (patientError || !patientData) {
-        console.error("Error fetching patient:", patientError);
-        navigate("/patients");
-        return;
-      }
-
-      setPatient(patientData);
-      setEditName(patientData.name);
-      setEditPhone(patientData.phone || "");
-      setEditEmail(patientData.email || "");
-      setEditNotes(patientData.notes || "");
-
-      // Fetch evaluations for this patient
-      const { data: evaluationsData, error: evalsError } = await supabase
-        .from("evaluations")
-        .select("session_id, tooth, status, created_at")
-        .eq("patient_id", patientId)
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-
-      if (evalsError) {
-        console.error("Error fetching evaluations:", evalsError);
-        setLoading(false);
-        return;
-      }
-
-      // Group by session
-      const sessionMap = new Map<string, { teeth: string[]; statuses: string[]; created_at: string }>();
-
-      (evaluationsData || []).forEach((evaluation) => {
-        const sessionId = evaluation.session_id || evaluation.tooth;
-        if (!sessionMap.has(sessionId)) {
-          sessionMap.set(sessionId, { teeth: [], statuses: [], created_at: evaluation.created_at });
-        }
-        const session = sessionMap.get(sessionId)!;
-        session.teeth.push(evaluation.tooth);
-        session.statuses.push(evaluation.status || "draft");
-      });
-
-      const sessionsArray: SessionGroup[] = Array.from(sessionMap.entries()).map(
-        ([sessionId, data]) => ({
-          session_id: sessionId,
-          teeth: data.teeth,
-          evaluationCount: data.teeth.length,
-          completedCount: data.statuses.filter((s) => s === "completed").length,
-          created_at: data.created_at,
-        })
-      );
-
-      // Sort by date (most recent first)
-      sessionsArray.sort(
-        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
-
-      setSessions(sessionsArray);
-      setLoading(false);
-    };
-
-    fetchData();
-  }, [user, patientId, navigate]);
+  // Initialize form when patient data loads
+  const initializeForm = () => {
+    if (patient) {
+      setEditName(patient.name);
+      setEditPhone(patient.phone || "");
+      setEditEmail(patient.email || "");
+      setEditNotes(patient.notes || "");
+    }
+  };
 
   const handleSave = async () => {
-    if (!patient) return;
+    if (!patient || !patientId) return;
 
-    setSaving(true);
-
-    const { error } = await supabase
-      .from("patients")
-      .update({
+    try {
+      await updatePatientMutation.mutateAsync({
+        id: patientId,
         name: editName.trim(),
         phone: editPhone.trim() || null,
         email: editEmail.trim() || null,
         notes: editNotes.trim() || null,
-      })
-      .eq("id", patient.id);
+      });
 
-    setSaving(false);
-
-    if (error) {
-      console.error("Error updating patient:", error);
+      toast.success("Dados do paciente atualizados");
+      setEditDialogOpen(false);
+    } catch {
       toast.error("Erro ao salvar alterações");
-      return;
     }
-
-    setPatient({
-      ...patient,
-      name: editName.trim(),
-      phone: editPhone.trim() || null,
-      email: editEmail.trim() || null,
-      notes: editNotes.trim() || null,
-    });
-
-    toast.success("Dados do paciente atualizados");
-    setEditDialogOpen(false);
   };
 
   const getInitials = (name: string) => {
@@ -193,6 +91,8 @@ const PatientProfile = () => {
       .toUpperCase()
       .slice(0, 2);
   };
+
+  const loading = loadingPatient || loadingSessions;
 
   // Calculate metrics
   const totalSessions = sessions.length;
@@ -218,7 +118,10 @@ const PatientProfile = () => {
     );
   }
 
-  if (!patient) return null;
+  if (!patient) {
+    navigate("/patients");
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -240,7 +143,10 @@ const PatientProfile = () => {
             </div>
           </div>
 
-          <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+          <Dialog open={editDialogOpen} onOpenChange={(open) => {
+            setEditDialogOpen(open);
+            if (open) initializeForm();
+          }}>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm">
                 <Pencil className="w-4 h-4 mr-1" />
@@ -294,8 +200,11 @@ const PatientProfile = () => {
                   <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
                     Cancelar
                   </Button>
-                  <Button onClick={handleSave} disabled={saving || !editName.trim()}>
-                    {saving ? "Salvando..." : "Salvar"}
+                  <Button
+                    onClick={handleSave}
+                    disabled={updatePatientMutation.isPending || !editName.trim()}
+                  >
+                    {updatePatientMutation.isPending ? "Salvando..." : "Salvar"}
                   </Button>
                 </div>
               </div>
@@ -325,6 +234,7 @@ const PatientProfile = () => {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
+
         {/* Contact Info */}
         <Card className="p-4">
           <div className="flex flex-wrap gap-4 text-sm">
@@ -351,7 +261,10 @@ const PatientProfile = () => {
                 Nenhuma informação adicional.{" "}
                 <button
                   className="text-primary hover:underline"
-                  onClick={() => setEditDialogOpen(true)}
+                  onClick={() => {
+                    initializeForm();
+                    setEditDialogOpen(true);
+                  }}
                 >
                   Adicionar dados
                 </button>
