@@ -44,7 +44,6 @@ const convertHeicToJpeg = async (file: File): Promise<Blob> => {
     });
     return jpegBlob;
   } catch (error) {
-    console.error('[PhotoUpload] HEIC conversion failed:', error);
     throw error;
   }
 };
@@ -163,12 +162,6 @@ export function PhotoUploadStep({
   const showCameraButton = isMobileDevice || isSmallScreen;
 
   const handleFile = useCallback(async (file: File) => {
-    console.log('[PhotoUpload] File received:', {
-      name: file.name,
-      type: file.type,
-      size: file.size,
-    });
-
     // Validação de tipo - aceitar imagens E arquivos sem tipo (HEIC no Safari)
     if (!file.type.startsWith('image/') && file.type !== '' && file.type !== 'application/octet-stream') {
       toast.error('Apenas imagens são permitidas');
@@ -187,42 +180,30 @@ export function PhotoUploadStep({
       
       // Verificar se é HEIC usando a nova biblioteca
       const fileIsHeic = await checkIsHeic(file);
-      console.log('[PhotoUpload] Is HEIC:', fileIsHeic);
       
       if (fileIsHeic) {
         toast.info('Convertendo foto do iPhone...');
-        console.log('[PhotoUpload] Starting HEIC conversion...');
         processedBlob = await convertHeicToJpeg(file);
-        console.log('[PhotoUpload] HEIC conversion successful');
       }
       
       // Comprimir a imagem
-      console.log('[PhotoUpload] Starting compression...');
       const compressedBase64 = await compressImage(processedBlob);
-      console.log('[PhotoUpload] Compression successful, size:', compressedBase64.length);
       onImageChange(compressedBase64);
       
-    } catch (error) {
-      console.error('[PhotoUpload] Processing failed:', error);
-      
+    } catch {
       // Fallback: tentar conversão automática do Safari
       try {
-        console.log('[PhotoUpload] Trying Safari native fallback...');
         const base64 = await readFileAsDataURL(file);
         
         // Se o Safari converteu automaticamente para JPEG/PNG
         if (base64.startsWith('data:image/jpeg') || base64.startsWith('data:image/png')) {
-          console.log('[PhotoUpload] Safari native conversion worked');
           onImageChange(base64);
           toast.info('Imagem carregada com conversão automática');
           return;
         }
         
-        // Se ainda é HEIC no base64, não vai funcionar
-        console.warn('[PhotoUpload] Safari did not auto-convert');
         toast.error('Erro ao processar imagem. Tente tirar a foto novamente ou envie como JPG.');
-      } catch (fallbackError) {
-        console.error('[PhotoUpload] Fallback also failed:', fallbackError);
+      } catch {
         toast.error('Não foi possível processar esta foto. Tente enviar como JPG ou usar a câmera diretamente.');
       }
     } finally {
@@ -298,9 +279,7 @@ export function PhotoUploadStep({
       }
       
       toast.success(type === 'smile45' ? 'Foto 45° adicionada' : 'Foto de face adicionada');
-    } catch (error) {
-      console.error('[PhotoUpload] Optional photo processing failed:', error);
-      
+    } catch {
       try {
         const base64 = await readFileAsDataURL(file);
         if (base64.startsWith('data:image/jpeg') || base64.startsWith('data:image/png')) {

@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsPreFlight, createErrorResponse, ERROR_MESSAGES } from "../_shared/cors.ts";
+import { logger } from "../_shared/logger.ts";
 
 // DSD Analysis interface
 interface DSDAnalysis {
@@ -60,7 +61,7 @@ async function getTeethMask(
   imageBase64: string,
   apiKey: string
 ): Promise<{ bounds: TeethBounds }> {
-  console.log("Detecting teeth region for mask...");
+  logger.log("Detecting teeth region for mask...");
   
   const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
@@ -98,7 +99,7 @@ Be precise - this will be used for image masking.`
   });
   
   if (!response.ok) {
-    console.warn("Teeth mask detection failed:", response.status);
+    logger.warn("Teeth mask detection failed:", response.status);
     throw new Error("Could not detect teeth region");
   }
   
@@ -111,11 +112,11 @@ Be precise - this will be used for image masking.`
     try {
       const parsed = JSON.parse(jsonMatch[0]);
       if (parsed.bounds && typeof parsed.bounds.x === 'number') {
-        console.log("Teeth region detected:", parsed.bounds);
+        logger.log("Teeth region detected:", parsed.bounds);
         return { bounds: parsed.bounds };
       }
     } catch (e) {
-      console.warn("Failed to parse teeth bounds JSON:", e);
+      logger.warn("Failed to parse teeth bounds JSON:", e);
     }
   }
   
@@ -129,8 +130,8 @@ async function blendWithOriginal(
   teethBounds: TeethBounds,
   apiKey: string
 ): Promise<string | null> {
-  console.log("Blending simulation with original (absolute preservation)...");
-  console.log("Teeth bounds for blend:", teethBounds);
+  logger.log("Blending simulation with original (absolute preservation)...");
+  logger.log("Teeth bounds for blend:", teethBounds);
   
   const blendPrompt = `You have TWO images of the SAME person:
 
@@ -179,7 +180,7 @@ Output the blended image with EXACT same dimensions as the original.`;
     });
 
     if (!response.ok) {
-      console.warn("Blend API call failed:", response.status);
+      logger.warn("Blend API call failed:", response.status);
       return null;
     }
 
@@ -187,14 +188,14 @@ Output the blended image with EXACT same dimensions as the original.`;
     const blendedImage = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
     
     if (blendedImage) {
-      console.log("Blend successful - lips/skin preserved from original");
+      logger.log("Blend successful - lips/skin preserved from original");
       return blendedImage;
     }
     
-    console.warn("No blended image in response");
+    logger.warn("No blended image in response");
     return null;
   } catch (err) {
-    console.error("Blend error:", err);
+    logger.error("Blend error:", err);
     return null;
   }
 }
@@ -210,7 +211,7 @@ async function selectBestVariation(
     return variationUrls[0];
   }
   
-  console.log(`Selecting best variation from ${variationUrls.length} options...`);
+  logger.log(`Selecting best variation from ${variationUrls.length} options...`);
   
   // Download variations to compare
   const variationImages: string[] = [];
@@ -224,7 +225,7 @@ async function selectBestVariation(
         variationImages.push(base64);
       }
     } catch (e) {
-      console.warn("Failed to download variation for comparison:", e);
+      logger.warn("Failed to download variation for comparison:", e);
     }
   }
   
@@ -275,7 +276,7 @@ Choose the variation where ONLY the teeth look different, and everything else is
       if (choice === 'C' && variationUrls.length > 2) return variationUrls[2];
     }
   } catch (e) {
-    console.warn("Variation comparison failed:", e);
+    logger.warn("Variation comparison failed:", e);
   }
   
   // Default to first variation
@@ -606,7 +607,7 @@ Output the edited image with the exact same dimensions.`;
                      (needsRestorationReplacement ? 'restoration-replacement' : 
                      (isIntraoralPhoto ? 'intraoral' : 'standard'));
   
-  console.log("DSD Simulation Request:", {
+  logger.log("DSD Simulation Request:", {
     promptType,
     approach: "HYBRID - mask detection + generation + blend",
     promptLength: simulationPrompt.length,
@@ -623,7 +624,7 @@ Output the edited image with the exact same dimensions.`;
     const maskResult = await getTeethMask(imageBase64, apiKey);
     teethBounds = maskResult.bounds;
   } catch (err) {
-    console.warn("Could not detect teeth mask, using fallback bounds:", err);
+    logger.warn("Could not detect teeth mask, using fallback bounds:", err);
   }
 
   // STEP 2: Generate simulation variations
@@ -633,7 +634,7 @@ Output the edited image with the exact same dimensions.`;
   const generateSingleVariation = async (variationIndex: number): Promise<{ fileName: string; imageBase64: string } | null> => {
     for (const model of modelsToTry) {
       try {
-        console.log(`Variation ${variationIndex}: Trying ${model}`);
+        logger.log(`Variation ${variationIndex}: Trying ${model}`);
         
         const simulationResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",
@@ -657,7 +658,7 @@ Output the edited image with the exact same dimensions.`;
         });
 
         if (!simulationResponse.ok) {
-          console.warn(`Variation ${variationIndex} - ${model} failed:`, simulationResponse.status);
+          logger.warn(`Variation ${variationIndex} - ${model} failed:`, simulationResponse.status);
           continue;
         }
 
@@ -665,7 +666,7 @@ Output the edited image with the exact same dimensions.`;
         const generatedImage = simData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
 
         if (!generatedImage) {
-          console.warn(`Variation ${variationIndex} - No image from ${model}`);
+          logger.warn(`Variation ${variationIndex} - No image from ${model}`);
           continue;
         }
 
@@ -683,14 +684,14 @@ Output the edited image with the exact same dimensions.`;
           });
 
         if (uploadError) {
-          console.error(`Variation ${variationIndex} upload error:`, uploadError);
+          logger.error(`Variation ${variationIndex} upload error:`, uploadError);
           return null;
         }
 
-        console.log(`Variation ${variationIndex} generated successfully with ${model}`);
+        logger.log(`Variation ${variationIndex} generated successfully with ${model}`);
         return { fileName, imageBase64: generatedImage };
       } catch (err) {
-        console.warn(`Variation ${variationIndex} - ${model} error:`, err);
+        logger.warn(`Variation ${variationIndex} - ${model} error:`, err);
         continue;
       }
     }
@@ -698,7 +699,7 @@ Output the edited image with the exact same dimensions.`;
   };
 
   // Generate variations in parallel
-  console.log(`Generating ${NUM_VARIATIONS} DSD variations in parallel...`);
+  logger.log(`Generating ${NUM_VARIATIONS} DSD variations in parallel...`);
   
   const variationPromises = Array(NUM_VARIATIONS).fill(null).map((_, i) => generateSingleVariation(i));
   const variationResults = await Promise.allSettled(variationPromises);
@@ -712,11 +713,11 @@ Output the edited image with the exact same dimensions.`;
   }
   
   if (successfulVariations.length === 0) {
-    console.warn("All DSD simulation variations failed");
+    logger.warn("All DSD simulation variations failed");
     return null;
   }
   
-  console.log(`${successfulVariations.length} variations generated successfully`);
+  logger.log(`${successfulVariations.length} variations generated successfully`);
   
   // STEP 3: Blend best variation with original (ABSOLUTE PRESERVATION)
   // Use first successful variation for blending
@@ -745,18 +746,18 @@ Output the edited image with the exact same dimensions.`;
         });
       
       if (!uploadError) {
-        console.log("DSD simulation ready (blended with original for absolute preservation)");
+        logger.log("DSD simulation ready (blended with original for absolute preservation)");
         return blendedFileName;
       } else {
-        console.warn("Blended upload failed, returning raw variation:", uploadError);
+        logger.warn("Blended upload failed, returning raw variation:", uploadError);
       }
     }
   } catch (blendErr) {
-    console.warn("Blend step failed, returning raw variation:", blendErr);
+    logger.warn("Blend step failed, returning raw variation:", blendErr);
   }
   
   // Fallback: return raw variation if blend fails
-  console.log("DSD simulation ready (raw variation, blend unavailable)");
+  logger.log("DSD simulation ready (raw variation, blend unavailable)");
   return bestVariation.fileName;
 }
 
@@ -1054,7 +1055,7 @@ IMPORTANTE:
     if (status === 402) {
       return createErrorResponse(ERROR_MESSAGES.PAYMENT_REQUIRED, 402, corsHeaders, "PAYMENT_REQUIRED");
     }
-    console.error("AI analysis error:", status, await analysisResponse.text());
+    logger.error("AI analysis error:", status, await analysisResponse.text());
     return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
   }
 
@@ -1065,12 +1066,12 @@ IMPORTANTE:
     try {
       return JSON.parse(toolCall.function.arguments) as DSDAnalysis;
     } catch {
-      console.error("Failed to parse tool call arguments");
+      logger.error("Failed to parse tool call arguments");
       return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     }
   }
 
-  console.error("No tool call in response");
+  logger.error("No tool call in response");
   return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
 }
 
@@ -1088,7 +1089,7 @@ serve(async (req: Request) => {
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
     if (!LOVABLE_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-      console.error("Missing required environment variables");
+      logger.error("Missing required environment variables");
       return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
     }
 
@@ -1121,10 +1122,10 @@ serve(async (req: Request) => {
 
     // Log if additional photos or preferences were provided
     if (additionalPhotos) {
-      console.log(`DSD analysis with additional photos: smile45=${!!additionalPhotos.smile45}, face=${!!additionalPhotos.face}`);
+      logger.log(`DSD analysis with additional photos: smile45=${!!additionalPhotos.smile45}, face=${!!additionalPhotos.face}`);
     }
     if (patientPreferences) {
-      console.log(`DSD analysis with patient preferences: goals=${!!patientPreferences.aestheticGoals}, changes=${patientPreferences.desiredChanges?.length || 0}`);
+      logger.log(`DSD analysis with patient preferences: goals=${!!patientPreferences.aestheticGoals}, changes=${patientPreferences.desiredChanges?.length || 0}`);
     }
 
     let analysis: DSDAnalysis;
@@ -1149,7 +1150,7 @@ serve(async (req: Request) => {
     let simulationNote: string | undefined;
     
     if (destructionCheck.isLimited) {
-      console.log("Severe destruction detected:", destructionCheck.reason);
+      logger.log("Severe destruction detected:", destructionCheck.reason);
       simulationNote = destructionCheck.reason || undefined;
     }
 
@@ -1158,7 +1159,7 @@ serve(async (req: Request) => {
     try {
       simulationUrl = await generateSimulation(imageBase64, analysis, user.id, supabase, LOVABLE_API_KEY, toothShape || 'natural', patientPreferences);
     } catch (simError) {
-      console.error("Simulation error:", simError);
+      logger.error("Simulation error:", simError);
       // Continue without simulation - analysis is still valid
     }
 
@@ -1192,7 +1193,7 @@ serve(async (req: Request) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("DSD generation error:", error);
+    logger.error("DSD generation error:", error);
     return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
   }
 });

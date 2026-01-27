@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsPreFlight, ERROR_MESSAGES, createErrorResponse } from "../_shared/cors.ts";
+import { logger } from "../_shared/logger.ts";
 
 interface AnalyzePhotoRequest {
   imageBase64: string;
@@ -87,7 +88,7 @@ serve(async (req) => {
     const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
     
     if (!lovableApiKey) {
-      console.error("LOVABLE_API_KEY not configured");
+      logger.error("LOVABLE_API_KEY not configured");
       return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
     }
 
@@ -402,7 +403,7 @@ Use a função analyze_dental_photo para retornar a análise estruturada complet
 
     // Helper function to call AI with a specific model
     const callAI = async (model: string): Promise<PhotoAnalysisResult | null> => {
-      console.log(`Calling AI Gateway with model: ${model}...`);
+      logger.log(`Calling AI Gateway with model: ${model}...`);
       
       const response = await fetch(
         "https://ai.gateway.lovable.dev/v1/chat/completions",
@@ -441,38 +442,38 @@ Use a função analyze_dental_photo para retornar a análise estruturada complet
       );
 
       if (!response.ok) {
-        console.error(`AI API error (${model}):`, response.status);
+        logger.error(`AI API error (${model}):`, response.status);
 
         // For 429 and 402, return null to try next model instead of throwing immediately
         if (response.status === 429) {
-          console.log(`Model ${model} rate limited, trying next model...`);
+          logger.log(`Model ${model} rate limited, trying next model...`);
           return null;
         }
         if (response.status === 402) {
-          console.log(`Model ${model} payment required, trying next model...`);
+          logger.log(`Model ${model} payment required, trying next model...`);
           return null;
         }
         return null;
       }
 
       const result = await response.json();
-      console.log(`AI Response (${model}): success`);
+      logger.log(`AI Response (${model}): success`);
 
       // Check for malformed function call
       const finishReason = result.choices?.[0]?.native_finish_reason || result.choices?.[0]?.finish_reason;
       if (finishReason === "MALFORMED_FUNCTION_CALL") {
-        console.log(`Model ${model} returned MALFORMED_FUNCTION_CALL, will retry with different model`);
+        logger.log(`Model ${model} returned MALFORMED_FUNCTION_CALL, will retry with different model`);
         return null;
       }
 
       // Extract tool call
       const toolCall = result.choices?.[0]?.message?.tool_calls?.[0];
       if (toolCall && toolCall.function?.arguments) {
-        console.log("Found tool call, parsing arguments...");
+        logger.log("Found tool call, parsing arguments...");
         try {
           return JSON.parse(toolCall.function.arguments);
-        } catch (parseError) {
-          console.error("Failed to parse tool call arguments");
+        } catch {
+          logger.error("Failed to parse tool call arguments");
           return null;
         }
       }
@@ -480,14 +481,14 @@ Use a função analyze_dental_photo para retornar a análise estruturada complet
       // Fallback: try to extract from content
       const content = result.choices?.[0]?.message?.content;
       if (content) {
-        console.log("Checking content for JSON...");
+        logger.log("Checking content for JSON...");
         const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/) || content.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           try {
             const jsonStr = jsonMatch[1] || jsonMatch[0];
             return JSON.parse(jsonStr);
           } catch {
-            console.log("Failed to parse JSON from content");
+            logger.log("Failed to parse JSON from content");
           }
         }
       }
@@ -508,7 +509,7 @@ Use a função analyze_dental_photo para retornar a análise estruturada complet
       try {
         analysisResult = await callAI(model);
         if (analysisResult) {
-          console.log(`Successfully got analysis from ${model}`);
+          logger.log(`Successfully got analysis from ${model}`);
           break;
         }
       } catch (error: unknown) {
@@ -519,7 +520,7 @@ Use a função analyze_dental_photo para retornar a análise estruturada complet
         if (err?.status === 402) {
           return createErrorResponse(ERROR_MESSAGES.PAYMENT_REQUIRED, 402, corsHeaders, "PAYMENT_REQUIRED");
         }
-        console.error(`Error with model ${model}`);
+        logger.error(`Error with model ${model}`);
       }
     }
 
@@ -560,8 +561,8 @@ Use a função analyze_dental_photo para retornar a análise estruturada complet
     };
 
     // Log detection results for debugging
-    console.log(`Multi-tooth detection complete: ${detectedTeeth.length} teeth found`);
-    console.log(`Primary tooth: ${result.primary_tooth}, Confidence: ${result.confidence}%`);
+    logger.log(`Multi-tooth detection complete: ${detectedTeeth.length} teeth found`);
+    logger.log(`Primary tooth: ${result.primary_tooth}, Confidence: ${result.confidence}%`);
 
     // Add warning if multiple teeth detected
     if (detectedTeeth.length > 1) {
@@ -583,7 +584,7 @@ Use a função analyze_dental_photo para retornar a análise estruturada complet
       }
     );
   } catch (error: unknown) {
-    console.error("Error analyzing photo:", error);
+    logger.error("Error analyzing photo:", error);
     return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
   }
 });

@@ -54,11 +54,14 @@ interface GroupedResins {
   };
 }
 
+const PAGE_SIZE = 30;
+
 export default function Inventory() {
   const { user } = useAuth();
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [catalog, setCatalog] = useState<CatalogResin[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [addingResins, setAddingResins] = useState(false);
   const [removingResin, setRemovingResin] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -69,33 +72,52 @@ export default function Inventory() {
   const [catalogFilterType, setCatalogFilterType] = useState('all');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedResins, setSelectedResins] = useState<Set<string>>(new Set());
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
 
   useEffect(() => {
     if (user) {
-      fetchInventory();
+      fetchInventory(0, false);
       fetchCatalog();
     }
   }, [user]);
 
-  const fetchInventory = async () => {
+  const fetchInventory = async (pageNumber: number = 0, append: boolean = false) => {
     if (!user) return;
 
-    const { data, error } = await supabase
+    if (!append) setLoading(true);
+    else setLoadingMore(true);
+
+    const { data, error, count } = await supabase
       .from('user_inventory')
       .select(`
         id,
         resin_id,
         resin:resin_catalog(*)
-      `)
-      .eq('user_id', user.id);
+      `, { count: 'exact' })
+      .eq('user_id', user.id)
+      .range(pageNumber * PAGE_SIZE, (pageNumber + 1) * PAGE_SIZE - 1);
 
     if (error) {
-      console.error('Error fetching inventory:', error);
       toast.error('Erro ao carregar inventário');
     } else {
-      setInventory((data as unknown as InventoryItem[]) || []);
+      if (append) {
+        setInventory(prev => [...prev, ...((data as unknown as InventoryItem[]) || [])]);
+      } else {
+        setInventory((data as unknown as InventoryItem[]) || []);
+      }
+      setTotalCount(count || 0);
+      setHasMore((count || 0) > (pageNumber + 1) * PAGE_SIZE);
     }
     setLoading(false);
+    setLoadingMore(false);
+  };
+
+  const handleLoadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchInventory(nextPage, true);
   };
 
   const fetchCatalog = async () => {
@@ -107,9 +129,7 @@ export default function Inventory() {
       .order('type', { ascending: true })
       .order('shade', { ascending: true });
 
-    if (error) {
-      console.error('Error fetching catalog:', error);
-    } else {
+    if (!error) {
       setCatalog(data || []);
     }
   };
@@ -127,12 +147,12 @@ export default function Inventory() {
     const { error } = await supabase.from('user_inventory').insert(inserts);
 
     if (error) {
-      console.error('Error adding to inventory:', error);
       toast.error('Erro ao adicionar resinas');
     } else {
       toast.success(`${selectedResins.size} resina(s) adicionada(s) ao inventário`);
       setSelectedResins(new Set());
-      await fetchInventory();
+      setPage(0);
+      await fetchInventory(0, false);
       setDialogOpen(false);
     }
 
@@ -148,11 +168,11 @@ export default function Inventory() {
       .eq('id', inventoryItemId);
 
     if (error) {
-      console.error('Error removing from inventory:', error);
       toast.error('Erro ao remover resina');
     } else {
       toast.success('Resina removida do inventário');
       setInventory(inventory.filter((item) => item.id !== inventoryItemId));
+      setTotalCount(prev => prev - 1);
     }
 
     setRemovingResin(null);
@@ -554,6 +574,25 @@ export default function Inventory() {
               </AccordionItem>
             ))}
           </Accordion>
+        )}
+
+        {/* Botão Carregar mais */}
+        {hasMore && !loading && (
+          <Button
+            variant="outline"
+            onClick={handleLoadMore}
+            disabled={loadingMore}
+            className="w-full mt-6"
+          >
+            {loadingMore ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Carregando...
+              </>
+            ) : (
+              `Carregar mais (${inventory.length} de ${totalCount})`
+            )}
+          </Button>
         )}
       </main>
     </div>
