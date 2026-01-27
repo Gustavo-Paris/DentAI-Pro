@@ -1,313 +1,169 @@
 
-# Plano: Correções e Melhorias Baseadas no Feedback da Dentista
+# Plano: Corrigir Consistencia do DSD - Mesmo Paciente, Apenas Dentes Editados
 
-## Resumo dos Problemas Identificados (com Evidência Visual)
+## Problema Identificado
 
-| # | Problema | Evidência | Prioridade |
-|---|----------|-----------|------------|
-| 1 | Erro "Erro ao criar caso" sem detalhes | Print mostra toast genérico | ALTA |
-| 2 | Detecção incorreta (11,21 vs 11,12) | Relatório da dentista | ALTA |
-| 3 | Sugestões incompletas (3 vs 8 dentes) | Relatório da dentista | ALTA |
-| 4 | Simulação não corrige assimetria laterais | Prints do slider DSD | MÉDIA |
-| 5 | Falta preferência de clareamento | Relatório da dentista | BAIXA |
-| 6 | Lista consolidada de resinas | Print mostra tabela dispersa | BAIXA |
-| 7 | "Biselamento em esmalte" desatualizado | Print IMG_2710 mostra no checklist | MÉDIA |
-| 8 | Protocolo adesivo rígido | Relatório da dentista | BAIXA |
+A simulacao DSD esta gerando **bocas completamente diferentes** - os labios mudam de forma, a textura da pele muda, o enquadramento muda. Isso e inaceitavel para uma ferramenta clinica.
 
----
+### Evidencia Visual (screenshot fornecido):
+- **Antes**: Labios mais finos, textura de pele especifica, angulo X
+- **Depois**: Labios mais grossos, textura diferente, angulo Y
+- Os dentes parecem de outra pessoa, nao do mesmo paciente
 
-## Correções Técnicas Detalhadas
+## Causa Raiz
 
-### 1. Mensagens de Erro Detalhadas
+Os prompts atuais sao **muito longos e complexos** (30-50 linhas), o que:
+1. Dilui a instrucao critica de preservacao
+2. Confunde o modelo com multiplas prioridades conflitantes
+3. O modelo "reinterpreta" a imagem inteira ao inves de editar pontualmente
 
-**Arquivo**: `src/pages/NewCase.tsx` (linhas 648-656)
+### Best Practice do Google (documentacao oficial):
 
-**Problema Atual**:
-```typescript
-} catch (error) {
-  console.error('Error:', error);
-  toast.error('Erro ao criar caso');
-  setStep(4);
-}
+> **Template para Inpainting:**
+> "Using the provided image, change only the [specific element] to [new element/description]. **Keep everything else in the image exactly the same, preserving the original style, lighting, and composition.**"
+
+O Google recomenda:
+1. Prompts CURTOS e DIRETOS
+2. Instrucao de preservacao como REGRA PRINCIPAL (nao secundaria)
+3. Foco em UM elemento especifico
+
+## Solucao: Prompts Ultra-Curtos com Foco em Preservacao
+
+### Filosofia Nova
+
+```text
+ANTES (problema):
+[50 linhas de instrucoes misturadas]
+"Clarear dentes... preservar labios... cor A1... remover manchas... simetria..."
+
+DEPOIS (solucao):
+[5-8 linhas com hierarquia clara]
+"PRESERVAR: Labios, pele, enquadramento - IDENTICOS ao original
+EDITAR: Apenas a cor dos dentes para branco A1/A2"
 ```
 
-**Solução**:
-Implementar tratamento de erros específico com mensagens descritivas:
+## Alteracoes Tecnicas
+
+### Arquivo: supabase/functions/generate-dsd/index.ts
+
+#### Novo Prompt Standard (5-8 linhas)
+
+Substituir linhas 386-413 por:
 
 ```typescript
-} catch (error: any) {
-  console.error('Error creating case:', error);
-  
-  let errorMessage = 'Erro ao criar caso';
-  let shouldGoBack = true;
-  
-  // Erros de banco de dados
-  if (error?.code === '23505') {
-    errorMessage = 'Paciente já cadastrado com este nome. Selecione o paciente existente.';
-  } else if (error?.code === '23503') {
-    errorMessage = 'Erro de referência no banco de dados. Verifique os dados do paciente.';
-  } 
-  // Erros de Edge Functions
-  else if (error?.message?.includes('recommend-resin')) {
-    errorMessage = 'Erro ao gerar protocolo de resina. Verifique a cor VITA e tente novamente.';
-  } else if (error?.message?.includes('recommend-cementation')) {
-    errorMessage = 'Erro ao gerar protocolo de cimentação. Tente novamente.';
-  }
-  // Erros de validação
-  else if (error?.message?.includes('Cor VITA')) {
-    errorMessage = 'Cor VITA inválida. Selecione uma cor válida (ex: A1, A2, B1).';
-  }
-  // Erros de rede
-  else if (error?.message?.includes('network') || error?.message?.includes('fetch') || error?.message?.includes('Failed to fetch')) {
-    errorMessage = 'Erro de conexão. Verifique sua internet e tente novamente.';
-  }
-  // Erros de rate limit
-  else if (error?.message?.includes('429') || error?.code === 'RATE_LIMITED') {
-    errorMessage = 'Muitas requisições. Aguarde alguns minutos.';
-    shouldGoBack = false;
-  }
-  // Erro genérico com detalhes
-  else if (error?.message && error.message.length < 100) {
-    errorMessage = `Erro: ${error.message}`;
-  }
-  
-  toast.error(errorMessage, { duration: 5000 });
-  if (shouldGoBack) {
-    setStep(5); // Voltar para revisão
-  }
-}
+simulationPrompt = `Using this smile photo, change ONLY the teeth color.
+
+CRITICAL PRESERVATION RULE:
+Keep the lips, skin, facial features, and image framing EXACTLY THE SAME as the original photo.
+Do not modify anything except the teeth.
+
+TEETH EDIT:
+- Whiten all visible teeth to shade A1/A2 (natural bright white)
+- Remove any stains, yellowing, or discoloration
+- Make the color uniform across all teeth
+${patientDesires ? `- Patient wants: ${patientDesires}` : ''}
+
+The lips, skin texture, and photo composition must be PIXEL-PERFECT identical to the input image.
+Output the edited image with the exact same dimensions.`;
 ```
 
----
+#### Novo Prompt Restoration-Replacement (5-8 linhas)
 
-### 2. Melhorar Detecção de Dentes (11 vs 12)
-
-**Arquivo**: `supabase/functions/generate-dsd/index.ts` (linhas 580-612)
-
-**Problema**: A IA confunde central (11/21) com lateral (12/22).
-
-**Solução**: Adicionar critérios precisos de identificação FDI no `analysisPrompt`:
-
-Adicionar após linha 612 (antes de "=== AVALIAÇÃO DE VIABILIDADE"):
+Substituir linhas 340-364 por:
 
 ```typescript
-=== IDENTIFICAÇÃO PRECISA DE DENTES COM RESTAURAÇÃO ===
+simulationPrompt = `Using this smile photo, change ONLY the teeth color and remove restoration interface lines.
 
-PROCESSO OBRIGATÓRIO DE IDENTIFICAÇÃO:
-1. Analise CADA dente INDIVIDUALMENTE
-2. Compare o dente com seu contralateral (11 vs 21, 12 vs 22)
-3. Se um dente tem restauração e seu contralateral NÃO tem, isso é um indicador FORTE
+CRITICAL PRESERVATION RULE:
+Keep the lips, skin, facial features, and image framing EXACTLY THE SAME as the original photo.
+Do not modify anything except the teeth.
 
-CRITÉRIOS DE IDENTIFICAÇÃO FDI - MEMORIZE:
-┌─────────────────────────────────────────────────────────────────┐
-│ CENTRAIS (11, 21): MAIORES, mais LARGOS, bordos mais RETOS     │
-│ LATERAIS (12, 22): MENORES (~20-30% mais estreitos),           │
-│                    contorno mais ARREDONDADO/OVAL              │
-│ CANINOS (13, 23): PONTIAGUDOS, proeminência vestibular         │
-└─────────────────────────────────────────────────────────────────┘
+TEETH EDIT:
+- Whiten all visible teeth to shade A1/A2 (natural bright white)
+- On teeth ${restorationTeeth || '11, 21'}: blend/remove any visible restoration interface lines
+- Make the color uniform across all teeth (no color variation)
+${patientDesires ? `- Patient wants: ${patientDesires}` : ''}
 
-ERRO COMUM A EVITAR:
-Se você detectar 2 dentes com restauração lado a lado, pergunte-se:
-- São dois CENTRAIS (11 e 21)? → Estão um de cada lado da linha média
-- São CENTRAL + LATERAL (11 e 12)? → Estão do MESMO lado, lateral é menor
-
-DICA VISUAL: 
-O lateral é visivelmente MAIS ESTREITO que o central ao lado.
-Se dois dentes parecem ter o MESMO tamanho, provavelmente são os dois centrais.
-Se um é claramente MENOR, é o lateral.
+The lips and skin must be PIXEL-PERFECT identical to the input image.`;
 ```
 
----
+#### Novo Prompt Reconstruction (5-8 linhas)
 
-### 3. Remover Limite de Sugestões (3-4 dentes)
-
-**Arquivo**: `supabase/functions/generate-dsd/index.ts` (linha 664)
-
-**Problema Atual**:
-```typescript
-❌ PROIBIDO: sugerir mais de 3-4 dentes por arcada (foque nos essenciais)
-```
-
-**Solução**: Substituir linha 664 por:
+Substituir linhas 292-338 por:
 
 ```typescript
-✅ OBRIGATÓRIO: Listar TODOS os dentes que precisam de intervenção
-   - Se o paciente tem 6-8 dentes com restaurações antigas, liste TODOS
-   - Ordene por prioridade: problemas de saúde > estética funcional > refinamento
-   - O dentista precisa ver o escopo COMPLETO para planejar orçamento
+simulationPrompt = `Using this smile photo, reconstruct the missing/damaged teeth and whiten all teeth.
+
+CRITICAL PRESERVATION RULE:
+Keep the lips, skin, facial features, and image framing EXACTLY THE SAME as the original photo.
+The ONLY change should be the teeth.
+
+TEETH RECONSTRUCTION:
+- ${specificInstructions || 'Reconstruct damaged/missing teeth using neighboring teeth as reference'}
+- Whiten all teeth to shade A1/A2
+- Make all teeth uniform in color and brightness
+
+MANDATORY: The lips and skin texture must remain IDENTICAL to the original photo.
+Do NOT change the photo angle, zoom, or composition.`;
 ```
 
----
+#### Novo Prompt Intraoral (5-8 linhas)
 
-### 4. Permitir Correção de Assimetria dos Laterais
-
-**Arquivo**: `supabase/functions/generate-dsd/index.ts` (prompt Standard, linhas 386-407)
-
-**Problema**: Os prompts conservadores impedem correção de assimetria.
-
-**Solução**: Adicionar exceção explícita para harmonização de simetria:
-
-Inserir após linha 396 (após "4. REFLEXOS"):
+Substituir linhas 366-383 por:
 
 ```typescript
-5. SIMETRIA BILATERAL: Se os LATERAIS (12 e 22) tiverem formas DIFERENTES:
-   - Um mais quadrado, outro mais arredondado
-   - Um mais largo, outro mais estreito
-   VOCÊ PODE harmonizar os contornos para ficarem SIMÉTRICOS
-   Use o lateral mais harmônico como referência para o outro
+simulationPrompt = `Using this intraoral dental photo, whiten the teeth.
+
+EDIT:
+- Change all visible teeth to white shade A1/A2
+- Remove stains and discoloration
+- Make color uniform
+
+PRESERVE: Gums, background, image dimensions - keep exactly as original.`;
 ```
 
-Também adicionar no prompt restoration-replacement após linha 353:
+## Por Que Esta Solucao Funciona
 
-```typescript
-6. SIMETRIA: Harmonize contornos de laterais assimétricos (12 vs 22)
-```
+| Aspecto | Antes | Depois |
+|---------|-------|--------|
+| Tamanho do prompt | 30-50 linhas | 5-10 linhas |
+| Primeira instrucao | "TAREFA: Clarear..." (acao) | "CRITICAL PRESERVATION RULE" (limite) |
+| Idioma | Portugues | Ingles (modelo treinado) |
+| Hierarquia | Misturada | Clara (PRESERVAR primeiro, EDITAR depois) |
+| Complexidade | 10+ instrucoes | 3-4 instrucoes |
 
----
+## Mudanca Estrategica: Ingles
 
-### 5. Preferência de Clareamento já Existe
+Os modelos Gemini foram **treinados predominantemente em ingles**. Usar ingles para instrucoes criticas aumenta a precisao de compreensao, especialmente para regras de preservacao.
 
-**Verificação**: O campo `whiter` já existe em `PatientPreferencesStep.tsx`.
+Nota: Os labels para o usuario continuam em portugues. Apenas o prompt tecnico para a IA e em ingles.
 
-**Problema**: Não está sendo usado no `recommend-resin`.
+## Resumo de Arquivos
 
-**Arquivo**: `supabase/functions/recommend-resin/index.ts` (linha 265)
+| Arquivo | Alteracao |
+|---------|-----------|
+| `supabase/functions/generate-dsd/index.ts` | Reescrever os 4 prompts de simulacao (reconstruction, restoration, intraoral, standard) com formato ultra-curto |
 
-**Solução**: Adicionar após linha 265:
+## Resultado Esperado
 
-```typescript
-${data.patientDesiredWhiter ? `
-PREFERÊNCIA DE COR DO PACIENTE:
-O paciente DESEJA dentes mais brancos. 
-Recomende tons de resina 1-2 níveis mais claros que ${data.toothColor}.
-Exemplo: Se cor atual é A3, sugira resinas em A2 ou A1.
-` : ''}
-```
+### Antes:
+- Labios mudam de forma
+- Pele muda de textura
+- Enquadramento diferente
+- Parece outra pessoa
 
-E adicionar o campo na validação e interface se necessário.
+### Depois:
+- Labios IDENTICOS
+- Pele IDENTICA
+- Enquadramento IDENTICO
+- Apenas os dentes ficam mais brancos
 
----
+## Proximos Passos Opcionais
 
-### 6. Card de Resumo de Resinas
+Se apos esta mudanca ainda houver inconsistencias:
 
-**Arquivo**: `src/pages/Result.tsx` ou `src/components/protocol/StratificationProtocol.tsx`
+1. **Fallback com multiplas tentativas**: Gerar 3 variacoes e comparar pixels dos labios com a imagem original para selecionar a mais consistente
 
-**Problema**: As resinas estão dispersas na tabela de camadas.
+2. **Mascara de fusao pos-processamento**: Usar deteccao de labios para extrair a mascara e sobrepor a imagem original nos labios apos a geracao (requer biblioteca de visao computacional)
 
-**Solução**: Adicionar card consolidado após a tabela de estratificação:
-
-```typescript
-// Novo card após a tabela de layers
-<Card className="mt-4 border-primary/20">
-  <CardHeader className="py-3">
-    <CardTitle className="text-sm flex items-center gap-2">
-      <Palette className="w-4 h-4" />
-      Resinas Utilizadas
-    </CardTitle>
-  </CardHeader>
-  <CardContent className="py-2">
-    <div className="flex flex-wrap gap-2">
-      {/* Deduplicate resins */}
-      {[...new Set(protocol?.layers?.map(l => `${l.resin_brand} ${l.shade}`))].map((resin, i) => (
-        <Badge key={i} variant="secondary" className="text-xs">
-          {resin}
-        </Badge>
-      ))}
-    </div>
-  </CardContent>
-</Card>
-```
-
----
-
-### 7. Remover "Biselamento em Esmalte" Desatualizado
-
-**Arquivo**: `supabase/functions/recommend-resin/index.ts` (prompt, linha ~276)
-
-**Problema**: O checklist inclui "Biselamento amplo em esmalte" que é técnica obsoleta.
-
-**Solução**: Adicionar regras explícitas no prompt após linha 276:
-
-```typescript
-TÉCNICAS OBSOLETAS - NÃO INCLUIR NO CHECKLIST:
-❌ "Bisel em esmalte" ou "Biselamento" → Técnica ultrapassada
-❌ "Bisel amplo" → Não usar
-❌ "Ácido fosfórico por 30 segundos em dentina" → Tempo excessivo
-
-TÉCNICAS ATUALIZADAS PARA USAR:
-✅ "Acabamento em chanfro suave" ou "Transição suave entre resina e esmalte"
-✅ "Sem preparo adicional em esmalte" (técnica minimamente invasiva)
-✅ "Condicionamento ácido conforme indicação do substrato e orientação do fabricante"
-
-REGRA: O checklist NÃO DEVE conter a palavra "bisel" ou "biselamento".
-```
-
----
-
-### 8. Protocolo Adesivo Flexível
-
-**Arquivo**: `supabase/functions/recommend-resin/index.ts` (prompt)
-
-**Solução**: Modificar a estrutura do checklist no prompt para incluir flexibilidade:
-
-```typescript
-No checklist, para o passo de adesivo, usar:
-"Sistema adesivo conforme protocolo do fabricante (verificar tempo de aplicação, camadas e fotoativação específicos)"
-
-No array de "alerts", incluir:
-"O protocolo adesivo varia entre fabricantes - consulte as instruções do sistema utilizado"
-```
-
----
-
-## Resumo de Arquivos a Modificar
-
-| Arquivo | Alterações |
-|---------|------------|
-| `src/pages/NewCase.tsx` | Tratamento de erros detalhado (linhas 648-656) |
-| `supabase/functions/generate-dsd/index.ts` | 1) Critérios FDI para dentes 2) Remover limite de sugestões 3) Permitir correção de assimetria |
-| `supabase/functions/recommend-resin/index.ts` | 1) Remover bisel 2) Flexibilizar adesivo 3) Considerar preferência de clareamento |
-| `src/pages/Result.tsx` | Adicionar card de resumo de resinas (opcional) |
-
----
-
-## Ordem de Implementação
-
-### Fase 1 - Críticos (Bugs)
-1. Mensagens de erro detalhadas (`NewCase.tsx`)
-2. Remover limite de sugestões (`generate-dsd`)
-3. Remover "bisel em esmalte" (`recommend-resin`)
-
-### Fase 2 - Melhorias de Precisão
-4. Critérios FDI para identificação de dentes (`generate-dsd`)
-5. Permitir correção de assimetria (`generate-dsd`)
-6. Flexibilizar protocolo adesivo (`recommend-resin`)
-
-### Fase 3 - Novas Funcionalidades
-7. Usar preferência de clareamento (`recommend-resin`)
-8. Card de resumo de resinas (`Result.tsx`)
-
----
-
-## Seção Técnica - Detalhes de Implementação
-
-### Validação de Cor VITA (Problema nos logs)
-
-Nos logs aparece: `"Validation failed: Cor VITA inválida"`
-
-Verificar se a validação em `_shared/validation.ts` aceita todas as cores VITA válidas:
-- Escala clássica: A1, A2, A3, A3.5, A4, B1, B2, B3, B4, C1, C2, C3, C4, D2, D3, D4
-- Bleach shades: BL1, BL2, BL3, BL4, OM1, OM2, OM3
-
-### Deploy de Edge Functions
-
-Após modificações:
-- `generate-dsd` - precisa redeploy
-- `recommend-resin` - precisa redeploy
-
-### Testes Recomendados
-
-1. Criar caso com paciente existente (não deve dar erro 23505)
-2. Criar caso com restaurações em 11+12 (deve detectar corretamente)
-3. Verificar que checklist não contém "bisel"
-4. Verificar que sugestões listam todos os dentes necessários
+3. **Feedback de validacao**: Adicionar checagem automatica que rejeita imagens onde a diferenca de pixels fora dos dentes excede um threshold
