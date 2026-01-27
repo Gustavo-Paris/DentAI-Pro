@@ -154,7 +154,8 @@ const TEETH = {
   lower: ['48', '47', '46', '45', '44', '43', '42', '41', '31', '32', '33', '34', '35', '36', '37', '38'],
 };
 
-const priorityStyles = {
+// Priority styles - used in tooth priority badges
+const _priorityStyles = {
   alta: 'bg-destructive text-destructive-foreground',
   média: 'bg-warning text-warning-foreground border border-warning-foreground/20',
   baixa: 'bg-secondary text-secondary-foreground',
