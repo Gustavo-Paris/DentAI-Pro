@@ -1,5 +1,5 @@
+import { Suspense, lazy } from 'react';
 import { Toaster } from "@/components/ui/toaster";
-import Profile from "./pages/Profile";
 import { GlobalSearch } from "@/components/GlobalSearch";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,6 +8,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Eager load auth pages (needed immediately)
 import Landing from "@/pages/Landing";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
@@ -15,17 +18,30 @@ import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
 import Terms from "@/pages/Terms";
 import Privacy from "@/pages/Privacy";
-import Dashboard from "@/pages/Dashboard";
-import NewCase from "@/pages/NewCase";
-import Inventory from "@/pages/Inventory";
-import Result from "@/pages/Result";
-import Evaluations from "@/pages/Evaluations";
-import EvaluationDetails from "@/pages/EvaluationDetails";
-import Patients from "@/pages/Patients";
-import PatientProfile from "@/pages/PatientProfile";
 import NotFound from "@/pages/NotFound";
 
+// Lazy load protected pages
+const Dashboard = lazy(() => import("@/pages/Dashboard"));
+const NewCase = lazy(() => import("@/pages/NewCase"));
+const Inventory = lazy(() => import("@/pages/Inventory"));
+const Result = lazy(() => import("@/pages/Result"));
+const Evaluations = lazy(() => import("@/pages/Evaluations"));
+const EvaluationDetails = lazy(() => import("@/pages/EvaluationDetails"));
+const Patients = lazy(() => import("@/pages/Patients"));
+const PatientProfile = lazy(() => import("@/pages/PatientProfile"));
+const Profile = lazy(() => import("@/pages/Profile"));
+
 const queryClient = new QueryClient();
+
+// Loading fallback for lazy-loaded pages
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="w-full max-w-4xl mx-4 space-y-4">
+      <Skeleton className="h-16 w-full" />
+      <Skeleton className="h-[400px] w-full" />
+    </div>
+  </div>
+);
 
 const App = () => (
   <ErrorBoundary>
@@ -36,6 +52,7 @@ const App = () => (
         <BrowserRouter>
           <AuthProvider>
           <Routes>
+            {/* Public routes - eagerly loaded */}
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
@@ -43,11 +60,15 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
+
+            {/* Protected routes - lazy loaded */}
             <Route
               path="/dashboard"
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <Suspense fallback={<PageLoader />}>
+                    <Dashboard />
+                  </Suspense>
                 </ProtectedRoute>
               }
             />
@@ -55,7 +76,9 @@ const App = () => (
               path="/new-case"
               element={
                 <ProtectedRoute>
-                  <NewCase />
+                  <Suspense fallback={<PageLoader />}>
+                    <NewCase />
+                  </Suspense>
                 </ProtectedRoute>
               }
             />
@@ -63,7 +86,9 @@ const App = () => (
               path="/inventory"
               element={
                 <ProtectedRoute>
-                  <Inventory />
+                  <Suspense fallback={<PageLoader />}>
+                    <Inventory />
+                  </Suspense>
                 </ProtectedRoute>
               }
             />
@@ -71,7 +96,9 @@ const App = () => (
               path="/evaluations"
               element={
                 <ProtectedRoute>
-                  <Evaluations />
+                  <Suspense fallback={<PageLoader />}>
+                    <Evaluations />
+                  </Suspense>
                 </ProtectedRoute>
               }
             />
@@ -79,7 +106,9 @@ const App = () => (
               path="/evaluation/:evaluationId"
               element={
                 <ProtectedRoute>
-                  <EvaluationDetails />
+                  <Suspense fallback={<PageLoader />}>
+                    <EvaluationDetails />
+                  </Suspense>
                 </ProtectedRoute>
               }
             />
@@ -87,7 +116,9 @@ const App = () => (
               path="/result/:id"
               element={
                 <ProtectedRoute>
-                  <Result />
+                  <Suspense fallback={<PageLoader />}>
+                    <Result />
+                  </Suspense>
                 </ProtectedRoute>
               }
             />
@@ -95,7 +126,9 @@ const App = () => (
               path="/profile"
               element={
                 <ProtectedRoute>
-                  <Profile />
+                  <Suspense fallback={<PageLoader />}>
+                    <Profile />
+                  </Suspense>
                 </ProtectedRoute>
               }
             />
@@ -103,7 +136,9 @@ const App = () => (
               path="/patients"
               element={
                 <ProtectedRoute>
-                  <Patients />
+                  <Suspense fallback={<PageLoader />}>
+                    <Patients />
+                  </Suspense>
                 </ProtectedRoute>
               }
             />
@@ -111,13 +146,15 @@ const App = () => (
               path="/patient/:patientId"
               element={
                 <ProtectedRoute>
-                  <PatientProfile />
+                  <Suspense fallback={<PageLoader />}>
+                    <PatientProfile />
+                  </Suspense>
                 </ProtectedRoute>
               }
             />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            <GlobalSearch />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          <GlobalSearch />
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
