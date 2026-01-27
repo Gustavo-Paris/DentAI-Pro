@@ -646,10 +646,46 @@ export default function NewCase() {
       clearDraft();
       
       navigate(`/evaluation/${sessionId}`);
-    } catch (error) {
-      console.error('Error:', error);
-      toast.error('Erro ao criar caso');
-      setStep(4); // Go back to review on error
+    } catch (error: any) {
+      console.error('Error creating case:', error);
+      
+      let errorMessage = 'Erro ao criar caso';
+      let shouldGoBack = true;
+      
+      // Erros de banco de dados
+      if (error?.code === '23505') {
+        errorMessage = 'Paciente já cadastrado com este nome. Selecione o paciente existente.';
+      } else if (error?.code === '23503') {
+        errorMessage = 'Erro de referência no banco de dados. Verifique os dados do paciente.';
+      } 
+      // Erros de Edge Functions
+      else if (error?.message?.includes('recommend-resin')) {
+        errorMessage = 'Erro ao gerar protocolo de resina. Verifique a cor VITA e tente novamente.';
+      } else if (error?.message?.includes('recommend-cementation')) {
+        errorMessage = 'Erro ao gerar protocolo de cimentação. Tente novamente.';
+      }
+      // Erros de validação
+      else if (error?.message?.includes('Cor VITA') || error?.message?.includes('VITA inválida')) {
+        errorMessage = 'Cor VITA inválida. Selecione uma cor válida (ex: A1, A2, B1).';
+      }
+      // Erros de rede
+      else if (error?.message?.includes('network') || error?.message?.includes('fetch') || error?.message?.includes('Failed to fetch')) {
+        errorMessage = 'Erro de conexão. Verifique sua internet e tente novamente.';
+      }
+      // Erros de rate limit
+      else if (error?.message?.includes('429') || error?.code === 'RATE_LIMITED') {
+        errorMessage = 'Muitas requisições. Aguarde alguns minutos.';
+        shouldGoBack = false;
+      }
+      // Erro genérico com detalhes
+      else if (error?.message && error.message.length < 100) {
+        errorMessage = `Erro: ${error.message}`;
+      }
+      
+      toast.error(errorMessage, { duration: 5000 });
+      if (shouldGoBack) {
+        setStep(5); // Voltar para revisão (step 5 é a revisão no wizard de 6 passos)
+      }
     } finally {
       setIsSubmitting(false);
     }

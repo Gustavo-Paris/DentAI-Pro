@@ -13,8 +13,18 @@ const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-
 // Tooth notation validation (FDI: 11-18, 21-28, 31-38, 41-48)
 const TOOTH_REGEX = /^[1-4][1-8]$/;
 
-// VITA shade validation
-const VITA_SHADES = ["A1", "A2", "A3", "A3.5", "A4", "B1", "B2", "B3", "B4", "C1", "C2", "C3", "C4", "D2", "D3", "D4"];
+// VITA shade validation - includes classic, bleach, and opaque shades
+const VITA_SHADES = [
+  // Escala clássica
+  "A1", "A2", "A3", "A3.5", "A4", 
+  "B1", "B2", "B3", "B4", 
+  "C1", "C2", "C3", "C4", 
+  "D2", "D3", "D4",
+  // Bleach shades
+  "BL1", "BL2", "BL3", "BL4",
+  // Opaque/Modifier shades
+  "OM1", "OM2", "OM3"
+];
 
 // Valid enum values
 const VALID_REGIONS = ["anterior-superior", "anterior-inferior", "posterior-superior", "posterior-inferior"];
