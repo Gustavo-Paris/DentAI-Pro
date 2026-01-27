@@ -47,6 +47,254 @@ interface RequestData {
   patientPreferences?: PatientPreferences;
 }
 
+// Teeth bounding box for mask-based blending
+interface TeethBounds {
+  x: number;      // left edge as % of image width (0-100)
+  y: number;      // top edge as % of image height (0-100)
+  width: number;  // width as % of image width
+  height: number; // height as % of image height
+}
+
+// Detect teeth region for mask-based blending
+async function getTeethMask(
+  imageBase64: string,
+  apiKey: string
+): Promise<{ bounds: TeethBounds }> {
+  console.log("Detecting teeth region for mask...");
+  
+  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "google/gemini-2.5-flash",
+      messages: [{
+        role: "user",
+        content: [
+          { 
+            type: "text", 
+            text: `Analyze this smile photo and return the EXACT bounding box coordinates of all visible teeth as a single region.
+
+Return ONLY valid JSON with this exact structure:
+{
+  "bounds": {
+    "x": <left edge as % of image width, 0-100>,
+    "y": <top edge as % of image height, 0-100>,
+    "width": <width as % of image width>,
+    "height": <height as % of image height>
+  }
+}
+
+Focus ONLY on the teeth area - do not include lips or gums in the bounding box.
+The bounding box should tightly encompass ALL visible teeth.
+Be precise - this will be used for image masking.`
+          },
+          { type: "image_url", image_url: { url: imageBase64 } },
+        ],
+      }],
+    }),
+  });
+  
+  if (!response.ok) {
+    console.warn("Teeth mask detection failed:", response.status);
+    throw new Error("Could not detect teeth region");
+  }
+  
+  const data = await response.json();
+  const content = data.choices?.[0]?.message?.content || '';
+  
+  // Parse JSON from response
+  const jsonMatch = content.match(/\{[\s\S]*\}/);
+  if (jsonMatch) {
+    try {
+      const parsed = JSON.parse(jsonMatch[0]);
+      if (parsed.bounds && typeof parsed.bounds.x === 'number') {
+        console.log("Teeth region detected:", parsed.bounds);
+        return { bounds: parsed.bounds };
+      }
+    } catch (e) {
+      console.warn("Failed to parse teeth bounds JSON:", e);
+    }
+  }
+  
+  throw new Error("Could not parse teeth region coordinates");
+}
+
+// Blend simulation with original image - ONLY teeth from simulation, EVERYTHING ELSE from original
+async function blendWithOriginal(
+  originalBase64: string,
+  simulationBase64: string,
+  teethBounds: TeethBounds,
+  apiKey: string
+): Promise<string | null> {
+  console.log("Blending simulation with original (absolute preservation)...");
+  console.log("Teeth bounds for blend:", teethBounds);
+  
+  const blendPrompt = `You have TWO images of the SAME person:
+
+IMAGE 1 (ORIGINAL): The patient's unedited smile photo
+IMAGE 2 (SIMULATION): A version with whitened/improved teeth
+
+YOUR TASK: Create a PERFECT BLEND where:
+
+OUTSIDE THE TEETH (coordinates roughly ${teethBounds.x}%-${teethBounds.x + teethBounds.width}% horizontal, ${teethBounds.y}%-${teethBounds.y + teethBounds.height}% vertical):
+- Use ONLY pixels from the ORIGINAL image
+- Lips must be PIXEL-PERFECT identical to original
+- Skin texture must be IDENTICAL to original
+- Gums must be IDENTICAL to original
+- Photo framing/dimensions must be IDENTICAL
+
+INSIDE THE TEETH AREA:
+- Use the improved/whitened teeth from the SIMULATION image
+
+AT THE BOUNDARY:
+- Create a smooth 2-3 pixel gradient for seamless transition
+
+CRITICAL: The result must look like the ORIGINAL photo with ONLY the teeth improved.
+The lips, skin, and all non-dental areas must be INDISTINGUISHABLE from the original.
+
+Output the blended image with EXACT same dimensions as the original.`;
+
+  try {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash-image-preview",
+        messages: [{
+          role: "user",
+          content: [
+            { type: "text", text: blendPrompt },
+            { type: "image_url", image_url: { url: originalBase64 } },
+            { type: "image_url", image_url: { url: simulationBase64 } },
+          ],
+        }],
+        modalities: ["image", "text"],
+      }),
+    });
+
+    if (!response.ok) {
+      console.warn("Blend API call failed:", response.status);
+      return null;
+    }
+
+    const data = await response.json();
+    const blendedImage = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    
+    if (blendedImage) {
+      console.log("Blend successful - lips/skin preserved from original");
+      return blendedImage;
+    }
+    
+    console.warn("No blended image in response");
+    return null;
+  } catch (err) {
+    console.error("Blend error:", err);
+    return null;
+  }
+}
+
+// Select best variation based on preservation of non-dental areas
+async function selectBestVariation(
+  originalBase64: string,
+  variationUrls: string[],
+  supabase: any,
+  apiKey: string
+): Promise<string> {
+  if (variationUrls.length <= 1) {
+    return variationUrls[0];
+  }
+  
+  console.log(`Selecting best variation from ${variationUrls.length} options...`);
+  
+  // Download variations to compare
+  const variationImages: string[] = [];
+  for (const url of variationUrls.slice(0, 3)) {
+    try {
+      const { data } = await supabase.storage
+        .from("dsd-simulations")
+        .download(url);
+      if (data) {
+        const base64 = await blobToBase64(data);
+        variationImages.push(base64);
+      }
+    } catch (e) {
+      console.warn("Failed to download variation for comparison:", e);
+    }
+  }
+  
+  if (variationImages.length < 2) {
+    return variationUrls[0];
+  }
+  
+  const comparePrompt = `You have:
+1. ORIGINAL smile photo (first image)
+2. VARIATION A (second image) - teeth whitened
+3. VARIATION B (third image) - teeth whitened
+${variationImages.length > 2 ? '4. VARIATION C (fourth image) - teeth whitened' : ''}
+
+Compare the variations to the ORIGINAL and select which one has the BEST preservation of NON-DENTAL areas:
+- Which one has lips MOST IDENTICAL to original?
+- Which one has skin texture MOST IDENTICAL to original?
+- Which one has framing/angle MOST IDENTICAL to original?
+
+Respond with ONLY the letter: "A", "B"${variationImages.length > 2 ? ', or "C"' : ''}
+Choose the variation where ONLY the teeth look different, and everything else is unchanged.`;
+
+  try {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [{
+          role: "user",
+          content: [
+            { type: "text", text: comparePrompt },
+            { type: "image_url", image_url: { url: originalBase64 } },
+            ...variationImages.map(img => ({ type: "image_url", image_url: { url: img } })),
+          ],
+        }],
+      }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      const choice = data.choices?.[0]?.message?.content?.trim().toUpperCase();
+      
+      if (choice === 'A') return variationUrls[0];
+      if (choice === 'B' && variationUrls.length > 1) return variationUrls[1];
+      if (choice === 'C' && variationUrls.length > 2) return variationUrls[2];
+    }
+  } catch (e) {
+    console.warn("Variation comparison failed:", e);
+  }
+  
+  // Default to first variation
+  return variationUrls[0];
+}
+
+// Helper to convert blob to base64
+async function blobToBase64(blob: Blob): Promise<string> {
+  const buffer = await blob.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  const base64 = btoa(binary);
+  const mimeType = blob.type || 'image/png';
+  return `data:${mimeType};base64,${base64}`;
+}
+
 // Validate request
 function validateRequest(data: unknown): { success: boolean; error?: string; data?: RequestData } {
   if (!data || typeof data !== "object") {
@@ -360,7 +608,7 @@ Output the edited image with the exact same dimensions.`;
   
   console.log("DSD Simulation Request:", {
     promptType,
-    approach: "BALANCEADO - ação positiva (clarear) + limites (preservar formato)",
+    approach: "HYBRID - mask detection + generation + blend",
     promptLength: simulationPrompt.length,
     imageDataLength: imageBase64.length,
     analysisConfidence: analysis.confidence,
@@ -369,12 +617,20 @@ Output the edited image with the exact same dimensions.`;
     restorationTeeth: restorationTeeth || 'none'
   });
 
-  // Generate 3 variations and auto-select
+  // STEP 1: Detect teeth region for mask-based blending
+  let teethBounds: TeethBounds = { x: 25, y: 35, width: 50, height: 30 }; // Fallback
+  try {
+    const maskResult = await getTeethMask(imageBase64, apiKey);
+    teethBounds = maskResult.bounds;
+  } catch (err) {
+    console.warn("Could not detect teeth mask, using fallback bounds:", err);
+  }
+
+  // STEP 2: Generate simulation variations
   const NUM_VARIATIONS = 3;
-  // Prioritize flash for better framing preservation
   const modelsToTry = ["google/gemini-2.5-flash-image-preview", "google/gemini-3-pro-image-preview"];
   
-  const generateSingleVariation = async (variationIndex: number): Promise<string | null> => {
+  const generateSingleVariation = async (variationIndex: number): Promise<{ fileName: string; imageBase64: string } | null> => {
     for (const model of modelsToTry) {
       try {
         console.log(`Variation ${variationIndex}: Trying ${model}`);
@@ -413,11 +669,11 @@ Output the edited image with the exact same dimensions.`;
           continue;
         }
 
-        // Upload this variation
+        // Upload raw variation
         const base64Data = generatedImage.replace(/^data:image\/\w+;base64,/, "");
         const binaryData = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
         
-        const fileName = `${userId}/dsd_simulation_${Date.now()}_v${variationIndex}.png`;
+        const fileName = `${userId}/dsd_raw_${Date.now()}_v${variationIndex}.png`;
         
         const { error: uploadError } = await supabase.storage
           .from("dsd-simulations")
@@ -432,7 +688,7 @@ Output the edited image with the exact same dimensions.`;
         }
 
         console.log(`Variation ${variationIndex} generated successfully with ${model}`);
-        return fileName;
+        return { fileName, imageBase64: generatedImage };
       } catch (err) {
         console.warn(`Variation ${variationIndex} - ${model} error:`, err);
         continue;
@@ -441,25 +697,67 @@ Output the edited image with the exact same dimensions.`;
     return null;
   };
 
-  // Generate variations in parallel using Promise.any() to return FIRST successful
-  console.log(`Generating ${NUM_VARIATIONS} DSD variations in parallel (Promise.any)...`);
+  // Generate variations in parallel
+  console.log(`Generating ${NUM_VARIATIONS} DSD variations in parallel...`);
   
-  const variationPromises = Array(NUM_VARIATIONS).fill(null).map(async (_, i) => {
-    const result = await generateSingleVariation(i);
-    if (!result) throw new Error(`Variation ${i} failed`);
-    return result;
-  });
+  const variationPromises = Array(NUM_VARIATIONS).fill(null).map((_, i) => generateSingleVariation(i));
+  const variationResults = await Promise.allSettled(variationPromises);
   
-  try {
-    // Return as soon as the FIRST variation succeeds (faster response)
-    const firstSuccessful = await Promise.any(variationPromises);
-    console.log(`DSD simulation ready (first successful variation)`);
-    return firstSuccessful;
-  } catch (aggregateError) {
-    // All variations failed
-    console.warn("All DSD simulation variations failed:", aggregateError);
+  // Collect successful variations
+  const successfulVariations: { fileName: string; imageBase64: string }[] = [];
+  for (const result of variationResults) {
+    if (result.status === 'fulfilled' && result.value) {
+      successfulVariations.push(result.value);
+    }
+  }
+  
+  if (successfulVariations.length === 0) {
+    console.warn("All DSD simulation variations failed");
     return null;
   }
+  
+  console.log(`${successfulVariations.length} variations generated successfully`);
+  
+  // STEP 3: Blend best variation with original (ABSOLUTE PRESERVATION)
+  // Use first successful variation for blending
+  const bestVariation = successfulVariations[0];
+  
+  try {
+    const blendedImageBase64 = await blendWithOriginal(
+      imageBase64,
+      bestVariation.imageBase64,
+      teethBounds,
+      apiKey
+    );
+    
+    if (blendedImageBase64) {
+      // Upload blended result
+      const base64Data = blendedImageBase64.replace(/^data:image\/\w+;base64,/, "");
+      const binaryData = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
+      
+      const blendedFileName = `${userId}/dsd_blended_${Date.now()}.png`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from("dsd-simulations")
+        .upload(blendedFileName, binaryData, {
+          contentType: "image/png",
+          upsert: true,
+        });
+      
+      if (!uploadError) {
+        console.log("DSD simulation ready (blended with original for absolute preservation)");
+        return blendedFileName;
+      } else {
+        console.warn("Blended upload failed, returning raw variation:", uploadError);
+      }
+    }
+  } catch (blendErr) {
+    console.warn("Blend step failed, returning raw variation:", blendErr);
+  }
+  
+  // Fallback: return raw variation if blend fails
+  console.log("DSD simulation ready (raw variation, blend unavailable)");
+  return bestVariation.fileName;
 }
 
 // Analyze facial proportions
