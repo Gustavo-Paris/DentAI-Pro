@@ -318,16 +318,16 @@ NÃO crie gengiva onde não existe na foto original.
 Se a gengiva está coberta pelo lábio, ela deve CONTINUAR coberta.
 Modifique apenas a gengiva que JÁ É VISÍVEL.
 
-REGRA ABSOLUTA #3 - RECONSTRUÇÃO + CLAREAMENTO:
+REGRA ABSOLUTA #3 - RECONSTRUÇÃO:
 RECONSTRUA: ${specificInstructions || 'dentes danificados usando vizinhos como referência'}
-Proporção: largura = 75-80% da altura, simetria bilateral.
+IMPORTANTE: Copie o formato/tamanho EXATO do dente contralateral (espelho).
+NÃO invente proporções - use os dentes vizinhos como referência direta.
 
 COR OBRIGATÓRIA (TODOS os dentes):
-- Tom uniforme A1/A2 (branco natural, levemente claro)
+- Tom uniforme A1/A2 (branco natural)
 - REMOVA todas as manchas e descolorações
 - Todos os dentes devem ter a MESMA cor
 ${patientDesires}
-FORMATO: ${toothShape.toUpperCase()} - ${shapeInstruction}
 
 VERIFICAÇÃO FINAL:
 [ ] Lábios IDÊNTICOS à original? (textura, linhas, cor, volume)
@@ -338,65 +338,61 @@ VERIFICAÇÃO FINAL:
 [ ] Só os dentes foram alterados?`;
 
   } else if (needsRestorationReplacement) {
-    // RESTORATION REPLACEMENT PROMPT - Para casos com restaurações antigas
-    simulationPrompt = `TAREFA: Visualizar SUBSTITUIÇÃO de restaurações antigas nesta foto de sorriso.
+    // RESTORATION REPLACEMENT PROMPT - CONSERVADOR (apenas cor, preservar morfologia)
+    simulationPrompt = `TAREFA: Corrigir COR de restaurações antigas - NÃO alterar formato dos dentes.
 
-=== PRESERVAÇÃO ABSOLUTA DE LÁBIOS/PELE (CRÍTICO) ===
-Os lábios e pele perioral devem ser IDÊNTICOS à foto original.
-Copie EXATAMENTE: textura dos lábios, linhas de expressão, cor da pele, pelos/barba.
-Qualquer diferença nos lábios = FALHA CRÍTICA.
+=== PRESERVAÇÃO TOTAL (CRÍTICO) ===
+- Lábios/pele: IDÊNTICOS (pixel por pixel)
+- FORMATO dos dentes: IDÊNTICO (silhueta 100% preservada)
+- TAMANHO dos dentes: IDÊNTICO (nenhuma alteração de proporção)
+- POSIÇÃO dos dentes: IDÊNTICA (não mover nenhum dente)
 
-TÉCNICA OBRIGATÓRIA:
-1. Extraia a região NÃO-DENTAL como máscara fixa imutável
-2. Aplique edição APENAS na área dos dentes
-3. Recomponha usando a máscara original para lábios/pele
+PROIBIDO ALTERAR (TOLERÂNCIA ZERO):
+- Contorno/formato de QUALQUER dente
+- Bordos incisais (a silhueta da borda deve ser IDÊNTICA)
+- Largura ou altura de qualquer dente
+- Espaçamentos/diastemas existentes
+- Pontos de contato entre dentes
+- Angulação dos dentes
+- "Harmonizar" ou "suavizar" a geometria
 
 DIMENSÕES OBRIGATÓRIAS:
-- SAÍDA = mesmas dimensões que ENTRADA (pixel por pixel)
+- SAÍDA = mesmas dimensões que ENTRADA
 - NÃO fazer zoom, crop ou pan
 - Bordas da imagem = IDÊNTICAS
 
-REGRA #1 - ENQUADRAMENTO CONGELADO:
-Trate a área NÃO-DENTAL como uma MÁSCARA fixa.
-Lábios superior/inferior, gengiva, pele = COPIE da original sem alteração.
-Use técnica de "inpainting" apenas na área dos DENTES.
+DENTES COM RESTAURAÇÕES ANTIGAS: ${restorationTeeth || 'incisivos anteriores superiores'}
 
-REGRA #2 - GENGIVA INTOCÁVEL:
-NÃO crie, estenda ou modifique gengiva.
-Se a gengiva está coberta pelo lábio, deve continuar coberta.
+EDIÇÕES PERMITIDAS (APENAS ESTAS):
+1. Remover LINHA DE INTERFACE (transição resina/esmalte) - apenas cor
+2. Uniformizar COR com dentes adjacentes
+3. Remover MANCHAMENTO marginal (linhas amareladas/acinzentadas)
+4. Clarear para tom A1/A2 uniforme
+5. Uniformizar brilho/reflexos
 
-REGRA #3 - SUBSTITUIÇÃO DE RESTAURAÇÕES:
-DENTES COM RESTAURAÇÕES ANTIGAS A CORRIGIR: ${restorationTeeth || 'incisivos centrais superiores'}
+O que NÃO fazer (mesmo que pareça melhorar):
+- NÃO altere o FORMATO da restauração ou dente
+- NÃO modifique o CONTORNO do dente
+- NÃO mude a PROPORÇÃO do dente
+- NÃO "harmonize" bordos incisais
+- NÃO feche espaços ou diastemas
 
-Para estes dentes, você deve:
-1. REMOVER visualmente as linhas de interface (margem da restauração antiga)
-2. UNIFORMIZAR a cor com os dentes naturais adjacentes
-3. ELIMINAR manchamentos marginais (linhas amareladas/acinzentadas)
-4. HARMONIZAR translucidez - igual aos dentes naturais vizinhos
-5. MANTER o formato/tamanho original do dente
-
-O objetivo é mostrar como estes dentes ficariam COM NOVAS RESTAURAÇÕES de alta qualidade,
-sem interfaces visíveis, cor natural uniforme, e integração perfeita.
-
-COR OBRIGATÓRIA (TODOS os dentes):
-- Tom uniforme A1/A2 (branco natural)
-- REMOVA todas as manchas, linhas de interface e descolorações
-- Todos os dentes devem ter a MESMA cor e translucidez
+TÉCNICA DE EDIÇÃO:
+Aplique um "filtro de clareamento dental" que:
+- Muda APENAS a cor e textura superficial dos dentes
+- NÃO altera geometria ou silhueta
+- Preserva micro-textura natural
+- Remove apenas manchas e interfaces de cor
 ${patientDesires}
-FORMATO: ${toothShape.toUpperCase()} - ${shapeInstruction}
+TESTE DE VALIDAÇÃO:
+Se você sobrepor a silhueta dos dentes originais sobre a simulação,
+elas devem ser IDÊNTICAS. Se não forem, a edição foi excessiva.
 
-VERIFICAÇÃO FINAL:
-[ ] Lábios IDÊNTICOS à original? (textura, linhas, cor, volume)
-[ ] Pele perioral inalterada?
-[ ] Dimensões idênticas?
-[ ] Só os dentes foram modificados?
-[ ] Interfaces de restauração removidas?
-
-RESULTADO: Sorriso com restaurações novas invisíveis, cor uniforme natural.`;
+RESULTADO: Mesmos dentes, mesma forma, apenas cor corrigida e uniforme.`;
 
   } else if (isIntraoralPhoto) {
-    // INTRAORAL PROMPT - Simplificado com preservação de dimensões
-    simulationPrompt = `TAREFA: Melhore SUTILMENTE os dentes nesta foto intraoral.
+    // INTRAORAL PROMPT - CONSERVADOR (apenas cor, preservar morfologia)
+    simulationPrompt = `TAREFA: RECOLORIR dentes - NÃO alterar estrutura.
 
 === DIMENSÕES (CRÍTICO) ===
 - SAÍDA = mesmas dimensões que ENTRADA
@@ -404,80 +400,77 @@ RESULTADO: Sorriso com restaurações novas invisíveis, cor uniforme natural.`;
 
 MOLDURA CONGELADA: Não altere gengiva, fundo ou estruturas não-dentais.
 
-EDIÇÕES PERMITIDAS:
-- Uniformizar cor para A1/A2
-- Suavizar contorno levemente
-- Remover manchas visíveis
-- Remover linhas de interface de restaurações antigas
-${patientDesires}
-FORMATO: ${toothShape.toUpperCase()} - ${shapeInstruction}
+PROIBIDO ALTERAR (TOLERÂNCIA ZERO):
+- Formato/contorno de qualquer dente
+- Bordos incisais
+- Tamanho ou proporção dos dentes
 
-Retorne a imagem com dentes harmonizados, MESMAS dimensões.`;
+EDIÇÕES PERMITIDAS (APENAS):
+- Uniformizar COR para A1/A2
+- Remover MANCHAS de superfície
+- Remover linhas de INTERFACE de restaurações antigas
+- Uniformizar BRILHO/reflexos
+${patientDesires}
+TÉCNICA: Aplique um "filtro de clareamento" que muda apenas cor, não geometria.
+
+Retorne a imagem com dentes mais claros, MESMA silhueta/forma.`;
 
   } else {
-    // STANDARD PROMPT - Com preservação explícita de lábios e dimensões
-    simulationPrompt = `TAREFA: Editar APENAS os dentes visíveis nesta foto de sorriso.
+    // STANDARD PROMPT - CONSERVADOR (apenas cor, preservar morfologia dental)
+    simulationPrompt = `TAREFA: RECOLORIR dentes - NÃO alterar estrutura.
 
-=== PRESERVAÇÃO ABSOLUTA DE LÁBIOS/PELE (CRÍTICO) ===
-COPIE PIXEL POR PIXEL toda a área não-dental:
-- Lábio superior: cada linha, textura, brilho, volume
-- Lábio inferior: formato exato, cor, volume
-- Pele perioral: tons, texturas, pelos
-- Cantos da boca: posição idêntica
+=== PRESERVAÇÃO DE LÁBIOS/PELE (CRÍTICO) ===
+Lábios e pele = IDÊNTICOS à foto original (pixel por pixel).
+Copie EXATAMENTE: textura dos lábios, linhas de expressão, cor da pele, pelos.
 
-TÉCNICA: Trate lábios como MÁSCARA IMUTÁVEL.
-Qualquer alteração nos lábios = resultado rejeitado.
+=== PRESERVAÇÃO DE MORFOLOGIA DENTAL (CRÍTICO) ===
+A ESTRUTURA dos dentes deve ser 100% preservada.
 
-=== DIMENSÕES E ENQUADRAMENTO (CRÍTICO) ===
-- SAÍDA = mesmas dimensões que ENTRADA
-- NÃO fazer zoom, crop, pan
-- Bordas da imagem (lábios, pele) = IDÊNTICAS
+PROIBIDO ALTERAR (TOLERÂNCIA ZERO):
+- Formato/contorno de qualquer dente
+- Tamanho (largura, altura) de qualquer dente
+- Bordos incisais (silhueta deve ser IDÊNTICA)
+- Posição relativa dos dentes
+- Pontos de contato entre dentes
+- Espaçamentos/diastemas existentes
+- Angulação dos dentes
 
-REGRA ABSOLUTA #1 - ENQUADRAMENTO CONGELADO:
-Copie a foto original PIXEL POR PIXEL para áreas não-dentais.
-Lábios, gengiva, pele e fundo = IDÊNTICOS à original.
-NÃO altere posição ou formato dos lábios.
-NÃO amplie ou reduza a área dos dentes.
+ÚNICAS EDIÇÕES PERMITIDAS:
+1. COR: Clarear para tom uniforme A1/A2
+2. MANCHAS: Remover manchas de superfície
+3. INTERFACES: Suavizar linhas de restaurações antigas (apenas cor)
+4. BRILHO: Uniformizar reflexos
 
-REGRA ABSOLUTA #2 - GENGIVA/LÁBIO INTOCÁVEIS:
-NÃO crie gengiva onde não existe.
-Se o lábio cobre a gengiva, ela deve continuar coberta.
-
-EDIÇÕES PERMITIDAS nos dentes VISÍVEIS:
-${analysis.suggestions.slice(0, 4).map((s) => `- ${s.tooth}: ${s.proposed_change}`).join("\n")}
-
-CORREÇÃO DE RESTAURAÇÕES EXISTENTES (se visíveis):
-Se algum dente visível possui restauração antiga (interface visível, manchamento marginal):
-- REMOVA a linha de interface para integração perfeita
-- UNIFORMIZE a cor com dentes naturais adjacentes
-- ELIMINE manchamentos marginais
-
-COR OBRIGATÓRIA:
-- Tom uniforme A1/A2 natural
-- REMOVA manchas e descolorações
-- Todos os dentes com MESMA cor
+TÉCNICA DE EDIÇÃO:
+Aplique um "filtro de clareamento dental" que:
+- Muda APENAS a cor dos dentes
+- NÃO altera geometria ou silhueta
+- Preserva micro-textura natural
 ${patientDesires}
-FORMATO: ${toothShape.toUpperCase()} - ${shapeInstruction}
+=== DIMENSÕES ===
+SAÍDA = mesmas dimensões que ENTRADA
+NÃO fazer zoom, crop ou pan
 
-VERIFICAÇÃO FINAL:
-[ ] Lábios IDÊNTICOS à original? (textura, linhas, cor)
-[ ] Pele perioral inalterada?
-[ ] Dimensões idênticas?
+TESTE DE VALIDAÇÃO:
+Sobreponha a silhueta original → deve ser IDÊNTICA.
+Qualquer alteração de formato = resultado rejeitado.
 
-RESULTADO: Sorriso harmonioso, lábios e gengiva INALTERADOS, MESMAS dimensões.`;
+RESULTADO: Mesmos dentes, mesma forma, apenas mais claros e uniformes.`;
   }
 
+  const promptType = needsReconstruction ? 'reconstruction' : 
+                     (needsRestorationReplacement ? 'restoration-replacement' : 
+                     (isIntraoralPhoto ? 'intraoral' : 'standard'));
+  
   console.log("DSD Simulation Request:", {
-    promptType: needsReconstruction ? 'reconstruction' : 
-                (needsRestorationReplacement ? 'restoration-replacement' : 
-                (isIntraoralPhoto ? 'intraoral' : 'standard')),
+    promptType,
+    approach: "CONSERVADOR - apenas cor, sem alteração estrutural",
     promptLength: simulationPrompt.length,
     imageDataLength: imageBase64.length,
     analysisConfidence: analysis.confidence,
     suggestionsCount: analysis.suggestions.length,
     needsRestorationReplacement,
-    restorationTeeth: restorationTeeth || 'none',
-    patientDesires: patientPreferences?.desiredChanges
+    restorationTeeth: restorationTeeth || 'none'
   });
 
   // Generate 3 variations and auto-select
