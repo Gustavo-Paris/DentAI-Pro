@@ -351,6 +351,7 @@ AÇÕES ESPECÍFICAS:
 3. INTERFACES: Nos dentes ${restorationTeeth || '11 e 21'}, ELIMINE as linhas de transição entre resina e esmalte
 4. UNIFORMIZAR: Todos os dentes devem ter a MESMA cor (sem variações)
 5. BRILHO: Adicione reflexos naturais uniformes
+6. SIMETRIA: Harmonize contornos de laterais assimétricos (12 vs 22)
 
 O RESULTADO deve ser um sorriso VISIVELMENTE mais branco e limpo.
 Compare: antes = dentes amarelados com manchas, depois = dentes brancos uniformes.
@@ -394,6 +395,11 @@ AÇÕES ESPECÍFICAS:
 2. MANCHAS: REMOVA qualquer mancha amarela, marrom ou descoloração
 3. UNIFORMIZAR: Todos os dentes devem ter a MESMA cor e brilho
 4. REFLEXOS: Adicione reflexos naturais que indicam dentes saudáveis
+5. SIMETRIA BILATERAL: Se os LATERAIS (12 e 22) tiverem formas DIFERENTES:
+   - Um mais quadrado, outro mais arredondado
+   - Um mais largo, outro mais estreito
+   VOCÊ PODE harmonizar os contornos para ficarem SIMÉTRICOS
+   Use o lateral mais harmônico como referência para o outro
 ${patientDesires}
 === PRESERVAÇÃO ===
 - Lábios e pele: copie EXATAMENTE da foto original
@@ -646,11 +652,33 @@ B) TRATAMENTO CONSERVADOR (para dentes naturais sem restauração):
    - current_issue: "Bordo incisal irregular"
    - proposed_change: "Aumentar 1mm com lente de contato"
 
+=== IDENTIFICAÇÃO PRECISA DE DENTES (OBRIGATÓRIO) ===
+ANTES de listar sugestões, identifique CADA dente CORRETAMENTE:
+
+CRITÉRIOS DE IDENTIFICAÇÃO FDI - MEMORIZE:
+- CENTRAIS (11, 21): MAIORES, mais LARGOS, bordos mais RETOS
+- LATERAIS (12, 22): MENORES (~20-30% mais estreitos), contorno mais ARREDONDADO/OVAL
+- CANINOS (13, 23): PONTIAGUDOS, proeminência vestibular
+
+ERRO COMUM A EVITAR:
+Se detectar 2 dentes com restauração lado a lado, pergunte-se:
+- São dois CENTRAIS (11 e 21)? → Estão um de cada lado da linha média
+- São CENTRAL + LATERAL (11 e 12)? → Estão do MESMO lado, lateral é MENOR
+
+DICA VISUAL: O lateral é visivelmente MAIS ESTREITO que o central ao lado.
+Se dois dentes têm o MESMO tamanho = provavelmente são os dois centrais.
+Se um é claramente MENOR = é o lateral.
+
 LIMITES PARA SUGESTÕES:
 - MÁXIMO de 1-2mm de extensão incisal por dente
 - Fechamento de diastemas de até 2mm por lado
 - Harmonização SUTIL de contorno (não transformações)
 - NÃO sugira clareamento extremo ou cor artificial
+
+✅ OBRIGATÓRIO: Listar TODOS os dentes que precisam de intervenção (mesmo 6-8 dentes)
+   - Se o paciente tem múltiplos dentes com restaurações antigas, liste TODOS
+   - Ordene por prioridade: problemas de saúde > estética funcional > refinamento
+   - O dentista precisa ver o escopo COMPLETO para planejar orçamento
 
 REGRAS ESTRITAS:
 ✅ PERMITIDO: identificar e sugerir substituição de restaurações antigas
@@ -661,7 +689,6 @@ REGRAS ESTRITAS:
 ❌ PROIBIDO: focar em melhorias sutis quando restaurações precisam ser substituídas
 ❌ PROIBIDO: diminuir, encurtar, mudanças dramáticas de forma
 ❌ PROIBIDO: sugerir "dentes brancos", "clareamento Hollywood" ou cor artificial
-❌ PROIBIDO: sugerir mais de 3-4 dentes por arcada (foque nos essenciais)
 ❌ PROIBIDO: sugerir tratamentos para dentes AUSENTES ou com destruição severa
 
 Exemplo BOM (substituição): "Restauração classe IV do 11 com interface visível" → "Substituir por nova restauração com melhor adaptação"

@@ -14,7 +14,7 @@ import {
   BreadcrumbSeparator,
   BreadcrumbPage,
 } from '@/components/ui/breadcrumb';
-import { ArrowLeft, Download, Plus, CheckCircle, Image, Package, Sparkles, Layers, Loader2, Smile, Crown, Stethoscope, ArrowUpRight, CircleX, MapPin, Heart } from 'lucide-react';
+import { ArrowLeft, Download, Plus, CheckCircle, Image, Package, Sparkles, Layers, Loader2, Smile, Crown, Stethoscope, ArrowUpRight, CircleX, MapPin, Heart, Palette } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -808,6 +808,28 @@ export default function Result() {
                   Protocolo de Estratificação
                 </h3>
                 <ProtocolTable layers={layers} />
+                
+                {/* Resin Summary Card */}
+                {layers.length > 0 && (
+                  <Card className="mt-4 border-primary/20">
+                    <CardHeader className="py-3">
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <Palette className="w-4 h-4" />
+                        Resinas Utilizadas
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="py-2">
+                      <div className="flex flex-wrap gap-2">
+                        {/* Deduplicate resins by brand + shade */}
+                        {[...new Set(layers.map(l => `${l.resin_brand} ${l.shade}`))].map((resin, i) => (
+                          <Badge key={i} variant="secondary" className="text-xs">
+                            {resin}
+                          </Badge>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </section>
             )}
             

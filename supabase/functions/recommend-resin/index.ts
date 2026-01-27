@@ -275,6 +275,26 @@ INSTRUÇÕES PARA PROTOCOLO DE ESTRATIFICAÇÃO:
 4. Para posteriores simples, pode recomendar técnica bulk ou incrementos simples
 5. Adapte as cores das camadas baseado na cor VITA informada (ex: A2 → OA2 opaco, A2D dentina, A2E esmalte)
 
+=== TÉCNICAS OBSOLETAS - NÃO INCLUIR NO CHECKLIST ===
+❌ "Bisel em esmalte" ou "Biselamento" → Técnica ultrapassada, NÃO USE
+❌ "Bisel amplo" ou "Bisel longo" → NÃO USE
+❌ "Ácido fosfórico por 30 segundos em dentina" → Tempo excessivo
+
+✅ TÉCNICAS ATUALIZADAS PARA USAR:
+- "Acabamento em chanfro suave" ou "Transição suave entre resina e esmalte"
+- "Sem preparo adicional em esmalte" (técnicas minimamente invasivas)
+- "Condicionamento ácido conforme indicação do substrato"
+- "Sistema adesivo conforme protocolo do fabricante"
+
+REGRA CRÍTICA: O checklist NÃO DEVE conter as palavras "bisel" ou "biselamento".
+
+=== PROTOCOLO ADESIVO FLEXÍVEL ===
+Para o passo de sistema adesivo no checklist, use:
+"Sistema adesivo conforme protocolo do fabricante (verificar tempo de aplicação, camadas e fotoativação específicos)"
+
+Nos alerts, inclua:
+"O protocolo adesivo varia entre fabricantes - consulte as instruções do sistema utilizado"
+
 Responda em formato JSON:
 {
   "recommended_resin_name": "nome exato da resina recomendada (DEVE respeitar o orçamento!)",
@@ -309,12 +329,15 @@ Responda em formato JSON:
       "tradeoff": "O que se perde com esta alternativa"
     },
     "checklist": [
-      "Passo 1: Profilaxia...",
-      "Passo 2: Seleção de cor...",
+      "Passo 1: Profilaxia com pasta sem flúor",
+      "Passo 2: Seleção de cor sob luz natural",
+      "Passo 3: Isolamento absoluto ou relativo",
+      "Passo 4: Condicionamento ácido conforme substrato",
+      "Passo 5: Sistema adesivo conforme protocolo do fabricante",
       "..."
     ],
     "alerts": [
-      "Alerta condicional 1",
+      "O protocolo adesivo varia entre fabricantes - consulte as instruções do sistema utilizado",
       "Alerta condicional 2"
     ],
     "warnings": [
