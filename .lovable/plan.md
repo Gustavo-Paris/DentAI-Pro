@@ -1,169 +1,325 @@
 
-# Plano: Corrigir Consistencia do DSD - Mesmo Paciente, Apenas Dentes Editados
+
+# Plano: Garantir Preservacao Absoluta no DSD (Labios, Pele, Enquadramento)
 
 ## Problema Identificado
 
-A simulacao DSD esta gerando **bocas completamente diferentes** - os labios mudam de forma, a textura da pele muda, o enquadramento muda. Isso e inaceitavel para uma ferramenta clinica.
+Ao comparar "Antes" e "Simulacao DSD" nos screenshots fornecidos:
+- **Labios**: Formato diferente, textura mudou
+- **Pele**: Iluminacao e textura diferentes
+- **Enquadramento**: Angulo levemente diferente
+- **Dentes**: Ficaram mais brancos, mas parecem de outra pessoa
 
-### Evidencia Visual (screenshot fornecido):
-- **Antes**: Labios mais finos, textura de pele especifica, angulo X
-- **Depois**: Labios mais grossos, textura diferente, angulo Y
-- Os dentes parecem de outra pessoa, nao do mesmo paciente
+Isso torna a simulacao clinicamente inutil, pois o paciente nao se reconhece.
 
 ## Causa Raiz
 
-Os prompts atuais sao **muito longos e complexos** (30-50 linhas), o que:
-1. Dilui a instrucao critica de preservacao
-2. Confunde o modelo com multiplas prioridades conflitantes
-3. O modelo "reinterpreta" a imagem inteira ao inves de editar pontualmente
+Mesmo com prompts de preservacao, os modelos generativos (Gemini Flash/Pro Image) tendem a "re-imaginar" a foto inteira quando instruidos a fazer muitas coisas. O modelo nao consegue separar "editar apenas dentes" de "gerar uma foto nova com dentes diferentes".
 
-### Best Practice do Google (documentacao oficial):
+## Solucao Proposta: Abordagem Hibrida com Mascara de Dentes
 
-> **Template para Inpainting:**
-> "Using the provided image, change only the [specific element] to [new element/description]. **Keep everything else in the image exactly the same, preserving the original style, lighting, and composition.**"
+A unica forma de garantir preservacao **absoluta** e:
+1. Detectar a regiao dos dentes na imagem original
+2. Gerar a simulacao com foco apenas na area dental
+3. **Copiar os pixels originais** para tudo FORA da regiao dos dentes
+4. Fundir a simulacao apenas na area dos dentes
 
-O Google recomenda:
-1. Prompts CURTOS e DIRETOS
-2. Instrucao de preservacao como REGRA PRINCIPAL (nao secundaria)
-3. Foco em UM elemento especifico
-
-## Solucao: Prompts Ultra-Curtos com Foco em Preservacao
-
-### Filosofia Nova
+### Fluxo Tecnico
 
 ```text
-ANTES (problema):
-[50 linhas de instrucoes misturadas]
-"Clarear dentes... preservar labios... cor A1... remover manchas... simetria..."
-
-DEPOIS (solucao):
-[5-8 linhas com hierarquia clara]
-"PRESERVAR: Labios, pele, enquadramento - IDENTICOS ao original
-EDITAR: Apenas a cor dos dentes para branco A1/A2"
+IMAGEM ORIGINAL
+      |
+      v
+[1. DETECTAR MASCARA DOS DENTES]
+   - Usar modelo de visao para obter coordenadas/poligono dos dentes
+      |
+      v
+[2. GERAR SIMULACAO NORMAL]
+   - Usar Gemini Image como hoje
+   - Prompt focado em mudancas dentais
+      |
+      v
+[3. FUSAO COM MASCARA]
+   - Manter pixels originais FORA da mascara de dentes
+   - Aplicar simulacao APENAS dentro da mascara
+   - Blend suave nas bordas para transicao natural
+      |
+      v
+IMAGEM FINAL
+(Labios/pele identicos + dentes clareados)
 ```
 
-## Alteracoes Tecnicas
+## Implementacao Tecnica
 
 ### Arquivo: supabase/functions/generate-dsd/index.ts
 
-#### Novo Prompt Standard (5-8 linhas)
+#### Fase 1: Obter Mascara de Dentes
 
-Substituir linhas 386-413 por:
+Adicionar funcao para detectar a regiao exata dos dentes antes da simulacao.
 
 ```typescript
-simulationPrompt = `Using this smile photo, change ONLY the teeth color.
+async function getTeethMask(
+  imageBase64: string,
+  apiKey: string
+): Promise<{ mask: number[][]; bounds: { x: number; y: number; width: number; height: number } }> {
+  // Usar modelo de visao para detectar coordenadas dos dentes
+  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "google/gemini-2.5-flash",
+      messages: [{
+        role: "user",
+        content: [
+          { 
+            type: "text", 
+            text: `Analyze this smile photo and return the EXACT bounding box coordinates of all visible teeth as a single region.
+            
+Return JSON with:
+{
+  "bounds": {
+    "x": <left edge as % of image width, 0-100>,
+    "y": <top edge as % of image height, 0-100>,
+    "width": <width as % of image width>,
+    "height": <height as % of image height>
+  }
+}
 
-CRITICAL PRESERVATION RULE:
-Keep the lips, skin, facial features, and image framing EXACTLY THE SAME as the original photo.
-Do not modify anything except the teeth.
-
-TEETH EDIT:
-- Whiten all visible teeth to shade A1/A2 (natural bright white)
-- Remove any stains, yellowing, or discoloration
-- Make the color uniform across all teeth
-${patientDesires ? `- Patient wants: ${patientDesires}` : ''}
-
-The lips, skin texture, and photo composition must be PIXEL-PERFECT identical to the input image.
-Output the edited image with the exact same dimensions.`;
+Focus ONLY on the teeth area - do not include lips or gums in the bounding box.
+The bounding box should tightly encompass ALL visible teeth.`
+          },
+          { type: "image_url", image_url: { url: imageBase64 } },
+        ],
+      }],
+    }),
+  });
+  
+  // Parse response and extract bounds
+  const data = await response.json();
+  const content = data.choices?.[0]?.message?.content || '';
+  const jsonMatch = content.match(/\{[\s\S]*\}/);
+  if (jsonMatch) {
+    return JSON.parse(jsonMatch[0]);
+  }
+  throw new Error("Could not detect teeth region");
+}
 ```
 
-#### Novo Prompt Restoration-Replacement (5-8 linhas)
+#### Fase 2: Gerar Simulacao com Foco na Area Dental
 
-Substituir linhas 340-364 por:
-
-```typescript
-simulationPrompt = `Using this smile photo, change ONLY the teeth color and remove restoration interface lines.
-
-CRITICAL PRESERVATION RULE:
-Keep the lips, skin, facial features, and image framing EXACTLY THE SAME as the original photo.
-Do not modify anything except the teeth.
-
-TEETH EDIT:
-- Whiten all visible teeth to shade A1/A2 (natural bright white)
-- On teeth ${restorationTeeth || '11, 21'}: blend/remove any visible restoration interface lines
-- Make the color uniform across all teeth (no color variation)
-${patientDesires ? `- Patient wants: ${patientDesires}` : ''}
-
-The lips and skin must be PIXEL-PERFECT identical to the input image.`;
-```
-
-#### Novo Prompt Reconstruction (5-8 linhas)
-
-Substituir linhas 292-338 por:
+Modificar o prompt para ser AINDA mais especifico sobre a area dos dentes:
 
 ```typescript
-simulationPrompt = `Using this smile photo, reconstruct the missing/damaged teeth and whiten all teeth.
+simulationPrompt = `EDIT THIS IMAGE: Change ONLY the teeth.
 
-CRITICAL PRESERVATION RULE:
-Keep the lips, skin, facial features, and image framing EXACTLY THE SAME as the original photo.
-The ONLY change should be the teeth.
-
-TEETH RECONSTRUCTION:
-- ${specificInstructions || 'Reconstruct damaged/missing teeth using neighboring teeth as reference'}
-- Whiten all teeth to shade A1/A2
-- Make all teeth uniform in color and brightness
-
-MANDATORY: The lips and skin texture must remain IDENTICAL to the original photo.
-Do NOT change the photo angle, zoom, or composition.`;
-```
-
-#### Novo Prompt Intraoral (5-8 linhas)
-
-Substituir linhas 366-383 por:
-
-```typescript
-simulationPrompt = `Using this intraoral dental photo, whiten the teeth.
-
-EDIT:
-- Change all visible teeth to white shade A1/A2
+TEETH CHANGES ALLOWED:
+- Whiten to shade A1/A2
 - Remove stains and discoloration
-- Make color uniform
+- Blend restoration interface lines
+- Subtle shape harmonization of asymmetric laterals
+- Close small gaps (up to 2mm)
+${patientDesires}
 
-PRESERVE: Gums, background, image dimensions - keep exactly as original.`;
+ABSOLUTE PRESERVATION (NON-NEGOTIABLE):
+- Every pixel OUTSIDE the teeth must be IDENTICAL to the input
+- Lips: exact same shape, color, texture, wrinkles
+- Skin: exact same tone, pores, lighting
+- Gums: no changes
+- Photo framing: exact same dimensions and crop
+
+The ONLY pixels that should change are within the teeth area.
+Output image must have IDENTICAL dimensions to input.`;
 ```
 
-## Por Que Esta Solucao Funciona
+#### Fase 3: Fusao com Mascara (Pos-Processamento)
 
-| Aspecto | Antes | Depois |
-|---------|-------|--------|
-| Tamanho do prompt | 30-50 linhas | 5-10 linhas |
-| Primeira instrucao | "TAREFA: Clarear..." (acao) | "CRITICAL PRESERVATION RULE" (limite) |
-| Idioma | Portugues | Ingles (modelo treinado) |
-| Hierarquia | Misturada | Clara (PRESERVAR primeiro, EDITAR depois) |
-| Complexidade | 10+ instrucoes | 3-4 instrucoes |
+Adicionar funcao de fusao que aplica a simulacao apenas na regiao dos dentes:
 
-## Mudanca Estrategica: Ingles
+```typescript
+async function blendWithOriginal(
+  originalBase64: string,
+  simulationBase64: string,
+  teethBounds: { x: number; y: number; width: number; height: number },
+  apiKey: string
+): Promise<string> {
+  // Usar o modelo de imagem para fazer a fusao precisa
+  const blendPrompt = `You have two images:
+1. ORIGINAL: The patient's unedited smile photo
+2. SIMULATION: A version with whitened/improved teeth
 
-Os modelos Gemini foram **treinados predominantemente em ingles**. Usar ingles para instrucoes criticas aumenta a precisao de compreensao, especialmente para regras de preservacao.
+Your task: Create a BLEND where:
+- OUTSIDE the teeth region (${teethBounds.x}% to ${teethBounds.x + teethBounds.width}% horizontally, 
+  ${teethBounds.y}% to ${teethBounds.y + teethBounds.height}% vertically):
+  Use ONLY pixels from ORIGINAL - lips, skin, gums must be pixel-perfect from original
+  
+- INSIDE the teeth region:
+  Use the improved teeth from SIMULATION
+  
+- At the BOUNDARY:
+  Create a smooth 2-3 pixel gradient transition so there's no visible seam
 
-Nota: Os labels para o usuario continuam em portugues. Apenas o prompt tecnico para a IA e em ingles.
+The result should look like the original photo with ONLY the teeth improved.
+Lips, skin, background must be IDENTICAL to original.`;
 
-## Resumo de Arquivos
+  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "google/gemini-2.5-flash-image-preview",
+      messages: [{
+        role: "user",
+        content: [
+          { type: "text", text: blendPrompt },
+          { type: "image_url", image_url: { url: originalBase64 } },
+          { type: "image_url", image_url: { url: simulationBase64 } },
+        ],
+      }],
+      modalities: ["image", "text"],
+    }),
+  });
 
-| Arquivo | Alteracao |
-|---------|-----------|
-| `supabase/functions/generate-dsd/index.ts` | Reescrever os 4 prompts de simulacao (reconstruction, restoration, intraoral, standard) com formato ultra-curto |
+  const data = await response.json();
+  return data.choices?.[0]?.message?.images?.[0]?.image_url?.url || simulationBase64;
+}
+```
+
+#### Fase 4: Integrar no Fluxo Principal
+
+Modificar a funcao `generateSimulation` para usar o novo fluxo:
+
+```typescript
+async function generateSimulation(
+  imageBase64: string,
+  analysis: DSDAnalysis,
+  userId: string,
+  supabase: any,
+  apiKey: string,
+  toothShape: string = 'natural',
+  patientPreferences?: PatientPreferences
+): Promise<string | null> {
+  
+  // NOVO: Primeiro, detectar a regiao dos dentes
+  let teethBounds = { x: 30, y: 30, width: 40, height: 25 }; // Fallback
+  try {
+    const maskResult = await getTeethMask(imageBase64, apiKey);
+    teethBounds = maskResult.bounds;
+    console.log("Teeth region detected:", teethBounds);
+  } catch (err) {
+    console.warn("Could not detect teeth mask, using fallback bounds:", err);
+  }
+  
+  // ... (manter logica existente de geracao de simulacao) ...
+  
+  // NOVO: Apos gerar a simulacao, fazer fusao com original
+  const rawSimulationUrl = await generateRawSimulation(...);
+  
+  if (rawSimulationUrl) {
+    // Download da simulacao gerada
+    const { data: simData } = await supabase.storage
+      .from("dsd-simulations")
+      .download(rawSimulationUrl);
+    
+    const simBase64 = await blobToBase64(simData);
+    
+    // Fusao com imagem original
+    console.log("Blending simulation with original (absolute preservation)...");
+    const blendedImage = await blendWithOriginal(
+      imageBase64,
+      simBase64,
+      teethBounds,
+      apiKey
+    );
+    
+    // Upload da imagem fundida
+    const finalFileName = `${userId}/dsd_blended_${Date.now()}.png`;
+    // ... upload logic ...
+    
+    return finalFileName;
+  }
+  
+  return null;
+}
+```
+
+## Alternativa Mais Simples (Se a Fusao Falhar)
+
+Se a abordagem de fusao nao funcionar bem, podemos usar uma estrategia de **selecao automatica**:
+
+1. Gerar 3 variacoes (como hoje)
+2. Para cada variacao, comparar pixels FORA da regiao dos dentes com a imagem original
+3. Calcular um "score de preservacao" (quanto mais similar aos pixels originais, melhor)
+4. Selecionar automaticamente a variacao com maior score de preservacao
+
+```typescript
+async function selectBestVariation(
+  originalBase64: string,
+  variations: string[],
+  teethBounds: { x: number; y: number; width: number; height: number },
+  apiKey: string
+): Promise<string> {
+  // Usar modelo de visao para comparar e selecionar a melhor variacao
+  const prompt = `You have:
+1. ORIGINAL smile photo
+2. Three VARIATIONS (A, B, C) with whitened teeth
+
+Select which variation has the BEST preservation of NON-DENTAL areas:
+- Which one has lips MOST IDENTICAL to original?
+- Which one has skin texture MOST IDENTICAL to original?
+- Which one has framing MOST IDENTICAL to original?
+
+Respond with ONLY: "A", "B", or "C"
+Choose the one where ONLY the teeth look different, and everything else is unchanged.`;
+
+  // ... API call to compare and select ...
+}
+```
 
 ## Resultado Esperado
 
-### Antes:
-- Labios mudam de forma
-- Pele muda de textura
-- Enquadramento diferente
+### Antes (problema atual):
+- Labios: formato diferente
+- Pele: textura/iluminacao diferente
+- Enquadramento: levemente diferente
 - Parece outra pessoa
 
-### Depois:
-- Labios IDENTICOS
-- Pele IDENTICA
-- Enquadramento IDENTICO
-- Apenas os dentes ficam mais brancos
+### Depois (com fusao/mascara):
+- Labios: IDENTICOS (pixels copiados da original)
+- Pele: IDENTICA (pixels copiados da original)
+- Enquadramento: IDENTICO (mesmas dimensoes)
+- Apenas dentes visivelmente mais brancos
+- Paciente se reconhece imediatamente
 
-## Proximos Passos Opcionais
+## Resumo de Alteracoes
 
-Se apos esta mudanca ainda houver inconsistencias:
+| Arquivo | Alteracao |
+|---------|-----------|
+| `supabase/functions/generate-dsd/index.ts` | Adicionar: `getTeethMask()`, `blendWithOriginal()`, `selectBestVariation()`. Modificar: `generateSimulation()` para usar fusao pos-processamento |
 
-1. **Fallback com multiplas tentativas**: Gerar 3 variacoes e comparar pixels dos labios com a imagem original para selecionar a mais consistente
+## Ordem de Implementacao
 
-2. **Mascara de fusao pos-processamento**: Usar deteccao de labios para extrair a mascara e sobrepor a imagem original nos labios apos a geracao (requer biblioteca de visao computacional)
+1. **Fase 1**: Implementar `getTeethMask()` para detectar regiao dos dentes
+2. **Fase 2**: Implementar `blendWithOriginal()` para fusao com mascara
+3. **Fase 3**: Integrar no fluxo principal de `generateSimulation()`
+4. **Fase 4**: Adicionar fallback `selectBestVariation()` para selecao automatica
 
-3. **Feedback de validacao**: Adicionar checagem automatica que rejeita imagens onde a diferenca de pixels fora dos dentes excede um threshold
+## Consideracoes Tecnicas
+
+### Performance
+- Adiciona 1-2 chamadas extras de API (deteccao de mascara + fusao)
+- Tempo total pode aumentar ~5-10 segundos
+- Tradeoff aceitavel para garantir qualidade clinica
+
+### Custos
+- Mais tokens usados por simulacao
+- Justificavel pela melhoria dramatica na qualidade
+
+### Fallback
+- Se deteccao de mascara falhar, usar bounds padrao conservadores
+- Se fusao falhar, retornar simulacao sem fusao (comportamento atual)
+
