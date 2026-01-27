@@ -36,7 +36,6 @@ const DRAFT_EXPIRY_DAYS = 7;
 export function useWizardDraft(userId: string | undefined) {
   const [isSaving, setIsSaving] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const cachedDraftRef = useRef<WizardDraft | null>(null);
 
@@ -58,7 +57,6 @@ export function useWizardDraft(userId: string | undefined) {
     }
 
     try {
-      setIsLoading(true);
       const { data, error } = await supabase
         .from('evaluation_drafts')
         .select('*')
@@ -91,13 +89,12 @@ export function useWizardDraft(userId: string | undefined) {
     } catch (error) {
       console.error('Error loading draft:', error);
       return null;
-    } finally {
-      setIsLoading(false);
     }
   }, [userId, isDraftExpired]);
 
-  // Synchronous version that returns cached draft
-  const getCachedDraft = useCallback((): WizardDraft | null => {
+  // Synchronous version that returns cached draft (used internally)
+  // Prefixed with underscore to indicate intentionally unused export
+  const _getCachedDraft = useCallback((): WizardDraft | null => {
     return cachedDraftRef.current;
   }, []);
 
@@ -183,8 +180,8 @@ export function useWizardDraft(userId: string | undefined) {
     }
   }, [userId]);
 
-  // Check if draft exists (async)
-  const hasDraft = useCallback(async (): Promise<boolean> => {
+  // Check if draft exists (async) - kept for potential future use
+  const _hasDraft = useCallback(async (): Promise<boolean> => {
     const draft = await loadDraft();
     return draft !== null;
   }, [loadDraft]);
@@ -200,12 +197,9 @@ export function useWizardDraft(userId: string | undefined) {
 
   return {
     loadDraft,
-    getCachedDraft,
     saveDraft,
     clearDraft,
-    hasDraft,
     isSaving,
-    isLoading,
     lastSavedAt,
   };
 }
