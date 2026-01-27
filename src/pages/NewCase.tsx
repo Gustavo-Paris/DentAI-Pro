@@ -266,17 +266,18 @@ export default function NewCase() {
       } else {
         throw new Error('Análise não retornou dados');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { message?: string; code?: string };
       console.error('Analysis error:', error);
       
       // Determine error message
       let errorMessage = 'Não foi possível analisar a foto. Verifique se a imagem está nítida e tente novamente.';
       
-      if (error?.message?.includes('429') || error?.code === 'RATE_LIMITED') {
+      if (err.message?.includes('429') || err.code === 'RATE_LIMITED') {
         errorMessage = 'Limite de requisições excedido. Aguarde alguns minutos e tente novamente.';
-      } else if (error?.message?.includes('402') || error?.code === 'PAYMENT_REQUIRED') {
+      } else if (err.message?.includes('402') || err.code === 'PAYMENT_REQUIRED') {
         errorMessage = 'Créditos insuficientes. Adicione créditos à sua conta para continuar.';
-      } else if (error?.message?.includes('não retornou dados')) {
+      } else if (err.message?.includes('não retornou dados')) {
         errorMessage = 'A IA não conseguiu identificar estruturas dentárias na foto. Tente uma foto com melhor iluminação.';
       }
       
@@ -354,10 +355,11 @@ export default function NewCase() {
 
         toast.success(`Reanálise concluída: ${analysis.detected_teeth?.length || 0} dente(s) detectado(s)`);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { message?: string; code?: string };
       console.error('Reanalysis error:', error);
       
-      if (error?.message?.includes('429') || error?.code === 'RATE_LIMITED') {
+      if (err.message?.includes('429') || err.code === 'RATE_LIMITED') {
         toast.error('Limite de requisições excedido. Aguarde alguns minutos.');
       } else {
         toast.error('Erro na reanálise. Tente novamente.');
@@ -524,11 +526,12 @@ export default function NewCase() {
           // Patient aesthetic preferences
           patient_aesthetic_goals: patientPreferences.aestheticGoals || null,
           patient_desired_changes: patientPreferences.desiredChanges.length > 0 ? patientPreferences.desiredChanges : null,
-        } as Record<string, unknown>;
+        };
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase typing requires cast for dynamic data
         const { data: evaluation, error: evalError } = await supabase
           .from('evaluations')
-          .insert(insertData as any)
+          .insert(insertData as never)
           .select()
           .single();
 
@@ -646,40 +649,41 @@ export default function NewCase() {
       clearDraft();
       
       navigate(`/evaluation/${sessionId}`);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { message?: string; code?: string };
       console.error('Error creating case:', error);
       
       let errorMessage = 'Erro ao criar caso';
       let shouldGoBack = true;
       
       // Erros de banco de dados
-      if (error?.code === '23505') {
+      if (err.code === '23505') {
         errorMessage = 'Paciente já cadastrado com este nome. Selecione o paciente existente.';
-      } else if (error?.code === '23503') {
+      } else if (err.code === '23503') {
         errorMessage = 'Erro de referência no banco de dados. Verifique os dados do paciente.';
       } 
       // Erros de Edge Functions
-      else if (error?.message?.includes('recommend-resin')) {
+      else if (err.message?.includes('recommend-resin')) {
         errorMessage = 'Erro ao gerar protocolo de resina. Verifique a cor VITA e tente novamente.';
-      } else if (error?.message?.includes('recommend-cementation')) {
+      } else if (err.message?.includes('recommend-cementation')) {
         errorMessage = 'Erro ao gerar protocolo de cimentação. Tente novamente.';
       }
       // Erros de validação
-      else if (error?.message?.includes('Cor VITA') || error?.message?.includes('VITA inválida')) {
+      else if (err.message?.includes('Cor VITA') || err.message?.includes('VITA inválida')) {
         errorMessage = 'Cor VITA inválida. Selecione uma cor válida (ex: A1, A2, B1).';
       }
       // Erros de rede
-      else if (error?.message?.includes('network') || error?.message?.includes('fetch') || error?.message?.includes('Failed to fetch')) {
+      else if (err.message?.includes('network') || err.message?.includes('fetch') || err.message?.includes('Failed to fetch')) {
         errorMessage = 'Erro de conexão. Verifique sua internet e tente novamente.';
       }
       // Erros de rate limit
-      else if (error?.message?.includes('429') || error?.code === 'RATE_LIMITED') {
+      else if (err.message?.includes('429') || err.code === 'RATE_LIMITED') {
         errorMessage = 'Muitas requisições. Aguarde alguns minutos.';
         shouldGoBack = false;
       }
       // Erro genérico com detalhes
-      else if (error?.message && error.message.length < 100) {
-        errorMessage = `Erro: ${error.message}`;
+      else if (err.message && err.message.length < 100) {
+        errorMessage = `Erro: ${err.message}`;
       }
       
       toast.error(errorMessage, { duration: 5000 });
