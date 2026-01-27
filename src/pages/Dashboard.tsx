@@ -66,7 +66,7 @@ export default function Dashboard() {
 
   const firstName = profile?.full_name?.split(' ')[0] || 'Usuário';
 
-  const getInitials = (name: string | null) => {
+  const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
     return name
       .split(' ')
