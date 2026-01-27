@@ -1,10 +1,12 @@
 // Shared CORS configuration for all edge functions
 // Restricts API access to known origins for defense-in-depth
 
-const ALLOWED_ORIGINS = [
+const PRODUCTION_ORIGINS = [
   "https://resinmatch-ai.lovable.app",
   "https://id-preview--103c514c-01d4-492f-b5ae-b2ea6b76bdf3.lovable.app",
-  // Development origins
+];
+
+const DEVELOPMENT_ORIGINS = [
   "http://localhost:8080",
   "http://localhost:5173",
   "http://localhost:3000",
@@ -12,6 +14,13 @@ const ALLOWED_ORIGINS = [
   "http://127.0.0.1:5173",
   "http://127.0.0.1:3000",
 ];
+
+// Check environment - only allow localhost origins in development
+const isDevelopment = Deno.env.get("ENVIRONMENT") !== "production";
+
+const ALLOWED_ORIGINS = isDevelopment 
+  ? [...PRODUCTION_ORIGINS, ...DEVELOPMENT_ORIGINS]
+  : PRODUCTION_ORIGINS;
 
 export function getCorsHeaders(req: Request): Record<string, string> {
   const origin = req.headers.get("origin") || "";

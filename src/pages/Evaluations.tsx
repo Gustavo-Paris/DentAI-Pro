@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { LogOut, ArrowLeft, ChevronRight, CheckCircle, FileText, Calendar } from 'lucide-react';
+import { LogOut, ArrowLeft, ChevronRight, CheckCircle, FileText, Calendar, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -45,6 +45,8 @@ interface LocationState {
   teethCount?: number;
 }
 
+const PAGE_SIZE = 20;
+
 export default function Evaluations() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
@@ -55,7 +57,11 @@ export default function Evaluations() {
   
   const [sessions, setSessions] = useState<SessionGroup[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [filter, setFilter] = useState<FilterStatus>('all');
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
 
   // Clear state after viewing to prevent stale highlights on refresh
   useEffect(() => {
@@ -64,56 +70,73 @@ export default function Evaluations() {
     }
   }, [newSessionId]);
 
-  useEffect(() => {
-    fetchEvaluations();
-  }, [user]);
+  const groupBySession = useCallback((data: Evaluation[]): SessionGroup[] => {
+    const sessionMap = new Map<string, Evaluation[]>();
+    
+    data.forEach(evaluation => {
+      const sessionKey = evaluation.session_id || evaluation.id;
+      if (!sessionMap.has(sessionKey)) {
+        sessionMap.set(sessionKey, []);
+      }
+      sessionMap.get(sessionKey)!.push(evaluation);
+    });
 
-  const fetchEvaluations = async () => {
+    return Array.from(sessionMap.entries())
+      .map(([sessionId, evals]) => ({
+        session_id: sessionId,
+        patient_name: evals[0].patient_name,
+        created_at: evals[0].created_at,
+        teeth: evals.map(e => e.tooth),
+        evaluationCount: evals.length,
+        completedCount: evals.filter(e => e.status === 'completed').length,
+      }));
+  }, []);
+
+  const fetchEvaluations = useCallback(async (pageNumber: number = 0, append: boolean = false) => {
     if (!user) return;
 
-    const { data, error } = await supabase
+    if (!append) {
+      setLoading(true);
+    } else {
+      setLoadingMore(true);
+    }
+
+    const { data, error, count } = await supabase
       .from('evaluations')
-      .select(`
-        id,
-        created_at,
-        patient_name,
-        tooth,
-        cavity_class,
-        status,
-        session_id
-      `)
+      .select('id, created_at, patient_name, tooth, cavity_class, status, session_id', { count: 'exact' })
       .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .range(pageNumber * PAGE_SIZE, (pageNumber + 1) * PAGE_SIZE - 1);
 
     if (error) {
-      console.error('Error fetching evaluations:', error);
       toast.error('Erro ao carregar avaliações');
     } else if (data) {
-      // Group by session_id
-      const sessionMap = new Map<string, Evaluation[]>();
+      const newSessions = groupBySession(data);
       
-      data.forEach(evaluation => {
-        const sessionKey = evaluation.session_id || evaluation.id;
-        if (!sessionMap.has(sessionKey)) {
-          sessionMap.set(sessionKey, []);
-        }
-        sessionMap.get(sessionKey)!.push(evaluation);
-      });
-
-      // Convert to array
-      const sessionsArray: SessionGroup[] = Array.from(sessionMap.entries())
-        .map(([sessionId, evals]) => ({
-          session_id: sessionId,
-          patient_name: evals[0].patient_name,
-          created_at: evals[0].created_at,
-          teeth: evals.map(e => e.tooth),
-          evaluationCount: evals.length,
-          completedCount: evals.filter(e => e.status === 'completed').length,
-        }));
-
-      setSessions(sessionsArray);
+      if (append) {
+        setSessions(prev => [...prev, ...newSessions]);
+      } else {
+        setSessions(newSessions);
+      }
+      
+      setTotalCount(count || 0);
+      setHasMore((count || 0) > (pageNumber + 1) * PAGE_SIZE);
     }
+    
     setLoading(false);
+    setLoadingMore(false);
+  }, [user, groupBySession]);
+
+  useEffect(() => {
+    if (user) {
+      fetchEvaluations(0, false);
+    }
+  }, [user, fetchEvaluations]);
+
+  const handleLoadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchEvaluations(nextPage, true);
   };
 
   const handleSignOut = async () => {
@@ -197,7 +220,7 @@ export default function Evaluations() {
             </Select>
           </div>
           <p className="text-sm text-muted-foreground">
-            {filteredSessions.length} avaliação(ões)
+            {filteredSessions.length} de {totalCount} avaliação(ões)
           </p>
         </div>
 
@@ -277,6 +300,25 @@ export default function Evaluations() {
                 </Card>
               </Link>
             ))}
+
+            {/* Load More Button */}
+            {hasMore && (
+              <Button 
+                variant="outline" 
+                onClick={handleLoadMore}
+                disabled={loadingMore}
+                className="w-full mt-4"
+              >
+                {loadingMore ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Carregando...
+                  </>
+                ) : (
+                  'Carregar mais'
+                )}
+              </Button>
+            )}
           </div>
         )}
       </main>

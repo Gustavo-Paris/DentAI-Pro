@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { registerSchema, type RegisterFormData } from '@/lib/schemas/auth';
+import { PasswordRequirements } from '@/components/PasswordRequirements';
 import {
   Form,
   FormControl,
@@ -33,6 +34,8 @@ export default function Register() {
       acceptedTerms: false,
     },
   });
+
+  const password = form.watch('password');
 
   const onSubmit = async (data: RegisterFormData) => {
     setLoading(true);
@@ -127,10 +130,11 @@ export default function Register() {
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder="••••••••"
+                      placeholder="••••••••••••"
                       {...field}
                     />
                   </FormControl>
+                  <PasswordRequirements password={password} className="mt-2" />
                   <FormMessage />
                 </FormItem>
               )}
@@ -145,7 +149,7 @@ export default function Register() {
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder="••••••••"
+                      placeholder="••••••••••••"
                       {...field}
                     />
                   </FormControl>
