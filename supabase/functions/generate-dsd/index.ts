@@ -338,124 +338,73 @@ VERIFICAÇÃO FINAL:
 [ ] Só os dentes foram alterados?`;
 
   } else if (needsRestorationReplacement) {
-    // RESTORATION REPLACEMENT PROMPT - CONSERVADOR (apenas cor, preservar morfologia)
-    simulationPrompt = `TAREFA: Corrigir COR de restaurações antigas - NÃO alterar formato dos dentes.
+    // RESTORATION REPLACEMENT PROMPT - BALANCEADO (ação positiva + limites)
+    simulationPrompt = `TAREFA: Aplicar clareamento dental profissional e remover manchas.
 
-=== PRESERVAÇÃO TOTAL (CRÍTICO) ===
-- Lábios/pele: IDÊNTICOS (pixel por pixel)
-- FORMATO dos dentes: IDÊNTICO (silhueta 100% preservada)
-- TAMANHO dos dentes: IDÊNTICO (nenhuma alteração de proporção)
-- POSIÇÃO dos dentes: IDÊNTICA (não mover nenhum dente)
+=== AÇÃO PRINCIPAL (OBRIGATÓRIA) ===
+CLAREAR TODOS OS DENTES para tom A1/A2 (branco natural brilhante).
+Isso é um CLAREAMENTO DENTAL - os dentes devem ficar VISIVELMENTE mais brancos.
 
-PROIBIDO ALTERAR (TOLERÂNCIA ZERO):
-- Contorno/formato de QUALQUER dente
-- Bordos incisais (a silhueta da borda deve ser IDÊNTICA)
-- Largura ou altura de qualquer dente
-- Espaçamentos/diastemas existentes
-- Pontos de contato entre dentes
-- Angulação dos dentes
-- "Harmonizar" ou "suavizar" a geometria
+AÇÕES ESPECÍFICAS:
+1. CLAREAR: Mude a cor de todos os dentes para branco natural A1/A2
+2. MANCHAS: REMOVA todas as manchas amarelas, marrons ou acinzentadas
+3. INTERFACES: Nos dentes ${restorationTeeth || '11 e 21'}, ELIMINE as linhas de transição entre resina e esmalte
+4. UNIFORMIZAR: Todos os dentes devem ter a MESMA cor (sem variações)
+5. BRILHO: Adicione reflexos naturais uniformes
 
-DIMENSÕES OBRIGATÓRIAS:
-- SAÍDA = mesmas dimensões que ENTRADA
-- NÃO fazer zoom, crop ou pan
-- Bordas da imagem = IDÊNTICAS
-
-DENTES COM RESTAURAÇÕES ANTIGAS: ${restorationTeeth || 'incisivos anteriores superiores'}
-
-EDIÇÕES PERMITIDAS (APENAS ESTAS):
-1. Remover LINHA DE INTERFACE (transição resina/esmalte) - apenas cor
-2. Uniformizar COR com dentes adjacentes
-3. Remover MANCHAMENTO marginal (linhas amareladas/acinzentadas)
-4. Clarear para tom A1/A2 uniforme
-5. Uniformizar brilho/reflexos
-
-O que NÃO fazer (mesmo que pareça melhorar):
-- NÃO altere o FORMATO da restauração ou dente
-- NÃO modifique o CONTORNO do dente
-- NÃO mude a PROPORÇÃO do dente
-- NÃO "harmonize" bordos incisais
-- NÃO feche espaços ou diastemas
-
-TÉCNICA DE EDIÇÃO:
-Aplique um "filtro de clareamento dental" que:
-- Muda APENAS a cor e textura superficial dos dentes
-- NÃO altera geometria ou silhueta
-- Preserva micro-textura natural
-- Remove apenas manchas e interfaces de cor
+O RESULTADO deve ser um sorriso VISIVELMENTE mais branco e limpo.
+Compare: antes = dentes amarelados com manchas, depois = dentes brancos uniformes.
 ${patientDesires}
-TESTE DE VALIDAÇÃO:
-Se você sobrepor a silhueta dos dentes originais sobre a simulação,
-elas devem ser IDÊNTICAS. Se não forem, a edição foi excessiva.
+=== PRESERVAÇÃO ===
+- Lábios e pele: IDÊNTICOS à foto original
+- Formato dos dentes: manter silhueta original
+- Dimensões da imagem: SAÍDA = ENTRADA
 
-RESULTADO: Mesmos dentes, mesma forma, apenas cor corrigida e uniforme.`;
+VERIFICAÇÃO: Os dentes devem estar CLARAMENTE mais brancos que na foto original.`;
 
   } else if (isIntraoralPhoto) {
-    // INTRAORAL PROMPT - CONSERVADOR (apenas cor, preservar morfologia)
-    simulationPrompt = `TAREFA: RECOLORIR dentes - NÃO alterar estrutura.
+    // INTRAORAL PROMPT - BALANCEADO (ação positiva + limites)
+    simulationPrompt = `TAREFA: Aplicar clareamento dental profissional em foto intraoral.
 
-=== DIMENSÕES (CRÍTICO) ===
-- SAÍDA = mesmas dimensões que ENTRADA
-- NÃO fazer zoom, crop ou pan
+=== AÇÃO PRINCIPAL ===
+CLAREAR TODOS OS DENTES para tom A1/A2 (branco natural).
+Os dentes devem ficar VISIVELMENTE mais brancos.
 
-MOLDURA CONGELADA: Não altere gengiva, fundo ou estruturas não-dentais.
-
-PROIBIDO ALTERAR (TOLERÂNCIA ZERO):
-- Formato/contorno de qualquer dente
-- Bordos incisais
-- Tamanho ou proporção dos dentes
-
-EDIÇÕES PERMITIDAS (APENAS):
-- Uniformizar COR para A1/A2
-- Remover MANCHAS de superfície
-- Remover linhas de INTERFACE de restaurações antigas
-- Uniformizar BRILHO/reflexos
+AÇÕES:
+1. CLAREAR todos os dentes para branco natural
+2. REMOVER todas as manchas e descolorações
+3. UNIFORMIZAR cor e brilho
+4. SUAVIZAR linhas de interface de restaurações
 ${patientDesires}
-TÉCNICA: Aplique um "filtro de clareamento" que muda apenas cor, não geometria.
+PRESERVAR: Gengiva, fundo, dimensões da imagem.
+Manter silhueta dental original.
 
-Retorne a imagem com dentes mais claros, MESMA silhueta/forma.`;
+RESULTADO: Dentes CLARAMENTE mais brancos que na foto original.`;
 
   } else {
-    // STANDARD PROMPT - CONSERVADOR (apenas cor, preservar morfologia dental)
-    simulationPrompt = `TAREFA: RECOLORIR dentes - NÃO alterar estrutura.
+    // STANDARD PROMPT - BALANCEADO (ação positiva + limites)
+    simulationPrompt = `TAREFA: Aplicar clareamento dental profissional.
 
-=== PRESERVAÇÃO DE LÁBIOS/PELE (CRÍTICO) ===
-Lábios e pele = IDÊNTICOS à foto original (pixel por pixel).
-Copie EXATAMENTE: textura dos lábios, linhas de expressão, cor da pele, pelos.
+=== AÇÃO PRINCIPAL (OBRIGATÓRIA) ===
+CLAREAR TODOS OS DENTES para tom A1/A2 (branco natural brilhante).
+O resultado deve ser um CLAREAMENTO VISÍVEL - dentes significativamente mais brancos.
 
-=== PRESERVAÇÃO DE MORFOLOGIA DENTAL (CRÍTICO) ===
-A ESTRUTURA dos dentes deve ser 100% preservada.
-
-PROIBIDO ALTERAR (TOLERÂNCIA ZERO):
-- Formato/contorno de qualquer dente
-- Tamanho (largura, altura) de qualquer dente
-- Bordos incisais (silhueta deve ser IDÊNTICA)
-- Posição relativa dos dentes
-- Pontos de contato entre dentes
-- Espaçamentos/diastemas existentes
-- Angulação dos dentes
-
-ÚNICAS EDIÇÕES PERMITIDAS:
-1. COR: Clarear para tom uniforme A1/A2
-2. MANCHAS: Remover manchas de superfície
-3. INTERFACES: Suavizar linhas de restaurações antigas (apenas cor)
-4. BRILHO: Uniformizar reflexos
-
-TÉCNICA DE EDIÇÃO:
-Aplique um "filtro de clareamento dental" que:
-- Muda APENAS a cor dos dentes
-- NÃO altera geometria ou silhueta
-- Preserva micro-textura natural
+AÇÕES ESPECÍFICAS:
+1. CLAREAR: Mude a cor de TODOS os dentes visíveis para branco A1/A2
+2. MANCHAS: REMOVA qualquer mancha amarela, marrom ou descoloração
+3. UNIFORMIZAR: Todos os dentes devem ter a MESMA cor e brilho
+4. REFLEXOS: Adicione reflexos naturais que indicam dentes saudáveis
 ${patientDesires}
-=== DIMENSÕES ===
-SAÍDA = mesmas dimensões que ENTRADA
-NÃO fazer zoom, crop ou pan
+=== PRESERVAÇÃO ===
+- Lábios e pele: copie EXATAMENTE da foto original
+- Formato dos dentes: mantenha a silhueta natural
+- Dimensões: SAÍDA = mesmas dimensões da ENTRADA
 
-TESTE DE VALIDAÇÃO:
-Sobreponha a silhueta original → deve ser IDÊNTICA.
-Qualquer alteração de formato = resultado rejeitado.
-
-RESULTADO: Mesmos dentes, mesma forma, apenas mais claros e uniformes.`;
+RESULTADO ESPERADO:
+- Dentes VISIVELMENTE mais brancos (diferença clara do original)
+- Cor uniforme A1/A2 em todos os dentes
+- Sem manchas ou descolorações
+- Lábios e rosto inalterados`;
   }
 
   const promptType = needsReconstruction ? 'reconstruction' : 
@@ -464,7 +413,7 @@ RESULTADO: Mesmos dentes, mesma forma, apenas mais claros e uniformes.`;
   
   console.log("DSD Simulation Request:", {
     promptType,
-    approach: "CONSERVADOR - apenas cor, sem alteração estrutural",
+    approach: "BALANCEADO - ação positiva (clarear) + limites (preservar formato)",
     promptLength: simulationPrompt.length,
     imageDataLength: imageBase64.length,
     analysisConfidence: analysis.confidence,
