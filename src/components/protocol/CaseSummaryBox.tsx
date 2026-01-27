@@ -1,3 +1,4 @@
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { User, MapPin, Layers, Palette, Crown, Stethoscope, ArrowUpRight, CircleX } from "lucide-react";
@@ -5,7 +6,7 @@ import { User, MapPin, Layers, Palette, Crown, Stethoscope, ArrowUpRight, Circle
 // Treatment type configuration
 const treatmentConfig: Record<string, { 
   label: string; 
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
   showCavityInfo: boolean;
 }> = {
   resina: { label: 'Resina Composta', icon: Layers, showCavityInfo: true },

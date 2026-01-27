@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -43,6 +43,7 @@ interface Alternative {
 interface Evaluation {
   id: string;
   created_at: string;
+  patient_name: string | null;
   patient_age: number;
   tooth: string;
   region: string;
@@ -183,7 +184,7 @@ export default function Result() {
         setPhotoUrls(urls);
 
         // Load DSD simulation URL
-        const dsdUrl = (data as any).dsd_simulation_url;
+        const dsdUrl = data.dsd_simulation_url;
         if (dsdUrl) {
           const { data: dsdSigned } = await supabase.storage
             .from('dsd-simulations')
@@ -260,7 +261,7 @@ export default function Result() {
         dentistCRO: dentistProfile?.cro || undefined,
         clinicName: dentistProfile?.clinic_name || undefined,
         clinicLogo: clinicLogoBase64 || undefined,
-        patientName: (evaluation as any).patient_name || undefined,
+        patientName: evaluation.patient_name || undefined,
         patientAge: evaluation.patient_age,
         tooth: evaluation.tooth,
         region: evaluation.region,
@@ -383,7 +384,7 @@ export default function Result() {
   // Treatment type display info with styling
   const treatmentStyles: Record<string, { 
     label: string; 
-    icon: any; 
+    icon: React.ComponentType<{ className?: string }>; 
     bgClass: string;
     borderClass: string;
     iconClass: string;

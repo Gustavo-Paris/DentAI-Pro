@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -63,7 +63,7 @@ import { ClinicalPhotoThumbnail } from '@/components/OptimizedImage';
 const treatmentConfig: Record<string, { 
   label: string; 
   shortLabel: string;
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
   variant: 'default' | 'secondary' | 'destructive' | 'outline';
   showCavityInfo: boolean;
 }> = {
@@ -236,7 +236,7 @@ export default function EvaluationDetails() {
     const treatmentType = evaluation.treatment_type || 'resina';
     switch (treatmentType) {
       case 'porcelana':
-        return (evaluation.cementation_protocol as any)?.checklist || [];
+        return (evaluation.cementation_protocol as CementationProtocol)?.checklist || [];
       case 'coroa':
       case 'implante':
       case 'endodontia':

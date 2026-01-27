@@ -155,18 +155,20 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
       } else {
         throw new Error('Dados de análise não retornados');
       }
-    } catch (err: any) {
+    } catch (error: unknown) {
       clearInterval(stepInterval);
-      console.error('DSD error:', err);
+      console.error('DSD error:', error);
+      
+      const err = error as { name?: string; message?: string; code?: string };
       
       // Check if it's a connection/timeout error that can be retried
       const isConnectionError = 
-        err?.name === 'AbortError' ||
-        err?.message?.includes('Failed to fetch') ||
-        err?.message?.includes('fetch') ||
-        err?.message?.includes('timeout') ||
-        err?.message?.includes('network') ||
-        err?.message?.includes('500');
+        err.name === 'AbortError' ||
+        err.message?.includes('Failed to fetch') ||
+        err.message?.includes('fetch') ||
+        err.message?.includes('timeout') ||
+        err.message?.includes('network') ||
+        err.message?.includes('500');
       
       if (isConnectionError && retryCount < MAX_RETRIES) {
         console.log(`DSD retry ${retryCount + 1}/${MAX_RETRIES}...`);
@@ -177,9 +179,9 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
       }
       
       hasError = true;
-      if (err?.message?.includes('429') || err?.code === 'RATE_LIMITED') {
+      if (err.message?.includes('429') || err.code === 'RATE_LIMITED') {
         setError('Limite de requisições excedido. Aguarde alguns minutos.');
-      } else if (err?.message?.includes('402') || err?.code === 'PAYMENT_REQUIRED') {
+      } else if (err.message?.includes('402') || err.code === 'PAYMENT_REQUIRED') {
         setError('Créditos insuficientes. Adicione créditos à sua conta.');
       } else if (isConnectionError) {
         setError('Erro de conexão. Verifique sua internet e tente novamente.');
@@ -244,8 +246,8 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
       } else {
         throw new Error('Simulação não gerada');
       }
-    } catch (err: any) {
-      console.error('Regenerate simulation error:', err);
+    } catch (error: unknown) {
+      console.error('Regenerate simulation error:', error);
       toast.error('Erro ao regenerar simulação. Tente novamente.');
     } finally {
       setIsRegeneratingSimulation(false);
