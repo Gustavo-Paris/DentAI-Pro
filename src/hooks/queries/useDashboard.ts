@@ -3,16 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { subDays } from 'date-fns';
 
-interface Evaluation {
-  id: string;
-  created_at: string;
-  tooth: string;
-  cavity_class: string;
-  patient_name: string | null;
-  session_id: string | null;
-  status: string | null;
-}
-
 interface Session {
   session_id: string;
   patient_name: string | null;
@@ -80,49 +70,66 @@ export function useDashboardData() {
     queryFn: async () => {
       if (!user) throw new Error('User not authenticated');
 
-      const { data: evaluationsData, error } = await supabase
-        .from('evaluations')
-        .select(`
-          id, created_at, tooth, cavity_class, patient_name,
-          session_id, status
-        `)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+      const oneWeekAgo = subDays(new Date(), 7).toISOString();
 
-      if (error) throw error;
-      if (!evaluationsData) {
-        return {
-          metrics: { pendingCases: 0, weeklyEvaluations: 0, completionRate: 0, totalPatients: 0 },
-          sessions: [],
-        };
-      }
+      // Parallel COUNT queries for metrics - optimized to not load all data
+      const [totalResult, completedResult, weeklyResult, patientsResult, recentResult] = await Promise.all([
+        // Total evaluations count
+        supabase
+          .from('evaluations')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id),
+        
+        // Completed evaluations count
+        supabase
+          .from('evaluations')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('status', 'completed'),
+        
+        // Weekly evaluations count
+        supabase
+          .from('evaluations')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .gte('created_at', oneWeekAgo),
+        
+        // Unique patients count
+        supabase
+          .from('patients')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id),
+        
+        // Recent evaluations - limited to 50 for grouping into 5 sessions
+        supabase
+          .from('evaluations')
+          .select('id, created_at, tooth, patient_name, session_id, status')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(50),
+      ]);
+
+      const totalCount = totalResult.count || 0;
+      const completedCount = completedResult.count || 0;
+      const weeklyCount = weeklyResult.count || 0;
+      const totalPatients = patientsResult.count || 0;
+      const recentData = recentResult.data || [];
 
       // Calculate metrics
-      const totalCases = evaluationsData.length;
-      const completedCases = evaluationsData.filter(e => e.status === 'completed').length;
-      const pendingCount = totalCases - completedCases;
-      const completionRate = totalCases > 0 ? Math.round((completedCases / totalCases) * 100) : 0;
-
-      // Weekly evaluations
-      const oneWeekAgo = subDays(new Date(), 7);
-      const weeklyCount = evaluationsData.filter(e => new Date(e.created_at) > oneWeekAgo).length;
-
-      // Unique patients
-      const uniquePatients = new Set(
-        evaluationsData.map(e => e.patient_name).filter(Boolean)
-      ).size;
+      const pendingCount = totalCount - completedCount;
+      const completionRate = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
       const metrics: DashboardMetrics = {
         pendingCases: pendingCount,
         weeklyEvaluations: weeklyCount,
         completionRate,
-        totalPatients: uniquePatients,
+        totalPatients,
       };
 
-      // Group by session_id
-      const sessionMap = new Map<string, Evaluation[]>();
+      // Group recent evaluations by session_id
+      const sessionMap = new Map<string, typeof recentData>();
 
-      evaluationsData.forEach(evaluation => {
+      recentData.forEach(evaluation => {
         const sessionKey = evaluation.session_id || evaluation.id;
         if (!sessionMap.has(sessionKey)) {
           sessionMap.set(sessionKey, []);
