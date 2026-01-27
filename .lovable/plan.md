@@ -1,237 +1,351 @@
 
+# Plano de Implementacao: Bloqueadores e Melhorias
 
-# Plano: Integrar Preferências do Paciente no Protocolo de Estratificação
+## Resumo Geral
 
-## Resumo
-
-Atualmente, as preferências do paciente (como "dentes mais brancos") são coletadas no wizard e salvas no banco de dados, mas **não são enviadas** para a Edge Function `recommend-resin`. Isso resulta em um desalinhamento entre a simulação DSD (que já considera o clareamento) e o protocolo técnico de estratificação.
-
-Este plano corrige essa lacuna, fazendo com que a IA sugira cores 1-2 tons mais claras quando o paciente deseja dentes mais brancos.
+Este plano endereca 6 demandas organizadas por prioridade:
+- **P0 (Bloqueadores)**: 2 vulnerabilidades de seguranca criticas
+- **P1 (Alta Prioridade)**: 4 melhorias de performance e qualidade
 
 ---
 
-## Arquitetura Atual vs. Proposta
+## P0 - Bloqueadores Restantes
 
-```text
-FLUXO ATUAL:
-+------------------+    +-------------------+    +------------------+
-| PatientPrefs     | -> | evaluations table | -> | recommend-resin  |
-| (desiredChanges) |    | patient_desired_  |    | (ignora prefs)   |
-|                  |    | changes: saved    |    |                  |
-+------------------+    +-------------------+    +------------------+
-                                                          |
-                                                          v
-                                                 Cores baseadas apenas
-                                                 na cor VITA detectada
+### 1. Adicionar `.env` ao `.gitignore`
 
-FLUXO PROPOSTO:
-+------------------+    +-------------------+    +------------------+
-| PatientPrefs     | -> | evaluations table | -> | recommend-resin  |
-| (desiredChanges) |    | patient_desired_  |    | (recebe prefs)   |
-|                  |    | changes: saved    |    |                  |
-+------------------+    +-------------------+    +------------------+
-                                                          |
-                                                          v
-                                                 Cores ajustadas 1-2
-                                                 tons mais claras se
-                                                 "whiter" selecionado
+**Problema Identificado**
+O arquivo `.gitignore` atual **NAO inclui o `.env`**. Isso significa que credenciais sensíveis podem ter sido commitadas se o repositório estiver conectado ao GitHub.
+
+**Situacao Atual do `.gitignore`**
+```
+node_modules
+dist
+dist-ssr
+*.local
+```
+
+**Solucao**
+1. Adicionar `.env` e variacoes ao `.gitignore`:
+   - `.env`
+   - `.env.local`
+   - `.env.*.local`
+
+2. Se o repositório for público ou já tiver histórico:
+   - Regenerar as credenciais Supabase no painel Cloud
+   - Considerar `git filter-branch` para limpar histórico (opcional, complexo)
+
+---
+
+### 2. Corrigir IDOR no Result.tsx
+
+**Problema Identificado**
+Na página `Result.tsx`, a query de avaliacao usa apenas o ID do URL sem verificar propriedade:
+
+```typescript
+// Linha 132-140 - VULNERAVEL
+const { data } = await supabase
+  .from('evaluations')
+  .select(`*,
+    resins:resins!recommended_resin_id (*),
+    ideal_resin:resins!ideal_resin_id (*)
+  `)
+  .eq('id', id)  // Apenas ID, sem user_id!
+  .single();
+```
+
+Um atacante poderia acessar avaliacoes de outros usuarios simplesmente alterando o ID na URL.
+
+**Locais Afetados**
+1. **Fetch inicial** (linha 132-140) - leitura de dados
+2. **handleChecklistChange** (linha 208-211) - update de dados
+
+**Solucao**
+Adicionar `.eq('user_id', user.id)` em todas as queries:
+
+```typescript
+// Fetch - com verificacao de propriedade
+const { data } = await supabase
+  .from('evaluations')
+  .select(`*,
+    resins:resins!recommended_resin_id (*),
+    ideal_resin:resins!ideal_resin_id (*)
+  `)
+  .eq('id', id)
+  .eq('user_id', user.id)  // ADICIONAR
+  .single();
+
+// Update - com verificacao de propriedade
+const { error } = await supabase
+  .from('evaluations')
+  .update({ checklist_progress: indices })
+  .eq('id', id)
+  .eq('user_id', user.id);  // ADICIONAR
+```
+
+**Nota**: RLS já existe na tabela, mas defense-in-depth exige validacao no código também.
+
+---
+
+## P1 - Alta Prioridade
+
+### 3. Paginacao no useDashboardData()
+
+**Problema Identificado**
+O hook `useDashboardData()` carrega TODAS as avaliacoes do usuario sem limite:
+
+```typescript
+// Linha 67-75 - SEM LIMITE
+const { data: evaluationsData } = await supabase
+  .from('evaluations')
+  .select(`id, created_at, tooth, cavity_class, patient_name, session_id, status`)
+  .eq('user_id', user.id)
+  .order('created_at', { ascending: false });
+```
+
+Com crescimento de dados, isso causará lentidao progressiva.
+
+**Solucao**
+
+1. **Separar métricas de sessoes**:
+   - Métricas podem usar queries agregadas (COUNT)
+   - Sessoes recentes limitadas a 5 (já existente, mas carrega tudo antes)
+
+2. **Criar query otimizada para métricas**:
+```typescript
+// Metricas com COUNT em vez de carregar todos
+const { count: totalCount } = await supabase
+  .from('evaluations')
+  .select('*', { count: 'exact', head: true })
+  .eq('user_id', user.id);
+
+const { count: completedCount } = await supabase
+  .from('evaluations')
+  .select('*', { count: 'exact', head: true })
+  .eq('user_id', user.id)
+  .eq('status', 'completed');
+
+// Contagem semanal
+const { count: weeklyCount } = await supabase
+  .from('evaluations')
+  .select('*', { count: 'exact', head: true })
+  .eq('user_id', user.id)
+  .gte('created_at', subDays(new Date(), 7).toISOString());
+```
+
+3. **Sessoes recentes com LIMIT**:
+```typescript
+const { data: recentData } = await supabase
+  .from('evaluations')
+  .select('id, created_at, tooth, patient_name, session_id, status')
+  .eq('user_id', user.id)
+  .order('created_at', { ascending: false })
+  .limit(50); // Carregar apenas o necessario para 5 sessoes
 ```
 
 ---
 
-## Mudanças Necessárias
+### 4. Paginacao de Sessoes no PatientProfile
 
-### 1. Atualizar Schema de Validação (Edge Function)
-
-**Arquivo:** `supabase/functions/_shared/validation.ts`
-
-Adicionar campo opcional `desiredChanges` na interface `EvaluationData`:
+**Problema Identificado**
+O hook `usePatientSessions()` carrega todas as sessoes do paciente:
 
 ```typescript
-export interface EvaluationData {
-  // ... campos existentes
-  desiredChanges?: string[]; // ['whiter', 'spacing', 'asymmetry', etc.]
-}
+// usePatients.ts - SEM LIMITE
+const { data } = await supabase
+  .from('evaluations')
+  .select('session_id, tooth, status, created_at')
+  .eq('patient_id', patientId)
+  .order('created_at', { ascending: false });
 ```
 
-Atualizar função `validateEvaluationData` para aceitar o novo campo:
+**Solucao**
 
+1. **Adicionar paginacao com cursor**:
 ```typescript
-// Optional array of strings
-if (obj.desiredChanges !== undefined) {
-  if (!Array.isArray(obj.desiredChanges)) {
-    return { success: false, error: "Preferências do paciente inválidas" };
-  }
-  // Validate each item is a string
-  for (const change of obj.desiredChanges) {
-    if (typeof change !== "string") {
-      return { success: false, error: "Preferência inválida" };
+export function usePatientSessions(patientId: string, page: number = 0, pageSize: number = 10) {
+  return useQuery({
+    queryKey: patientKeys.sessions(patientId, page),
+    queryFn: async () => {
+      const { data, count } = await supabase
+        .from('evaluations')
+        .select('session_id, tooth, status, created_at', { count: 'exact' })
+        .eq('patient_id', patientId)
+        .order('created_at', { ascending: false })
+        .range(page * pageSize, (page + 1) * pageSize - 1);
+      
+      // ... grouping logic
+      return { sessions, totalCount: count, hasMore: (count || 0) > (page + 1) * pageSize };
     }
-  }
+  });
 }
 ```
 
----
-
-### 2. Enviar Preferências para a Edge Function
-
-**Arquivo:** `src/pages/NewCase.tsx`
-
-Modificar a chamada da função `recommend-resin` (linhas 562-579) para incluir as preferências do paciente:
-
-```typescript
-case 'resina':
-  const { error: aiError } = await supabase.functions.invoke('recommend-resin', {
-    body: {
-      evaluationId: evaluation.id,
-      userId: user.id,
-      patientAge: formData.patientAge,
-      tooth: tooth,
-      region: getFullRegion(tooth),
-      cavityClass: toothData?.cavity_class || formData.cavityClass,
-      restorationSize: toothData?.restoration_size || formData.restorationSize,
-      substrate: toothData?.substrate || formData.substrate,
-      bruxism: formData.bruxism,
-      aestheticLevel: formData.aestheticLevel,
-      toothColor: formData.vitaShade,
-      stratificationNeeded: true,
-      budget: formData.budget,
-      longevityExpectation: formData.longevityExpectation,
-      // NOVO: Adicionar preferências do paciente
-      desiredChanges: patientPreferences.desiredChanges,
-    },
-  });
-```
+2. **Adicionar botao "Carregar mais" no PatientProfile.tsx**
 
 ---
 
-### 3. Modificar o Prompt da AI na Edge Function
+### 5. Integracao Sentry para Monitoramento de Erros
 
-**Arquivo:** `supabase/functions/recommend-resin/index.ts`
+**Situacao Atual**
+Nao há monitoramento de erros em producao. Erros sao capturados pelo `ErrorBoundary` mas nao reportados.
 
-#### 3.1 Adicionar seção de preferências do paciente no prompt
+**Solucao**
 
-Criar uma nova seção condicional no prompt após os dados clínicos:
-
-```typescript
-// Build patient preferences section
-const hasWhiteningPreference = data.desiredChanges?.includes('whiter');
-const patientPreferencesSection = data.desiredChanges && data.desiredChanges.length > 0 
-  ? `
-=== PREFERÊNCIAS ESTÉTICAS DO PACIENTE ===
-${data.desiredChanges.map(pref => {
-  const labels: Record<string, string> = {
-    'whiter': 'Deseja dentes mais brancos',
-    'spacing': 'Deseja corrigir espaçamentos',
-    'asymmetry': 'Deseja corrigir assimetria',
-    'stains': 'Deseja remover manchas',
-    'shape': 'Deseja melhorar formato dos dentes',
-  };
-  return `- ${labels[pref] || pref}`;
-}).join('\n')}
-
-${hasWhiteningPreference ? `
-⚠️ REGRA DE COR PARA CLAREAMENTO:
-Como o paciente deseja dentes mais brancos, as cores das camadas devem ser 
-1-2 tons mais claras que a cor VITA detectada (${data.toothColor}).
-
-MAPEAMENTO DE CLAREAMENTO:
-- A3 → usar cores A2 ou A1
-- A2 → usar cores A1 ou BL4  
-- A1 → usar cores BL4 ou BL3
-- B2 → usar cores B1 ou A1
-- C2 → usar cores C1 ou B1
-
-Exemplo: Se cor detectada é A2 e paciente quer mais branco:
-- Opaco: OA1 (não OA2)
-- Dentina: A1D (não A2D)
-- Esmalte: A1E ou BL4 (não A2E)
-
-IMPORTANTE: 
-- Incluir no checklist "Seleção de cor 1-2 tons mais clara conforme preferência do paciente"
-- Incluir alerta sobre expectativa de clareamento progressivo com próximos tratamentos
-` : ''}
-`
-  : '';
+1. **Instalar Sentry SDK**:
+```bash
+npm install @sentry/react
 ```
 
-#### 3.2 Inserir seção no prompt principal
-
+2. **Configurar em `main.tsx`**:
 ```typescript
-const prompt = `Você é um especialista em materiais dentários...
+import * as Sentry from "@sentry/react";
 
-${budgetRulesSection}
-
-CASO CLÍNICO:
-- Idade do paciente: ${data.patientAge} anos
-... (dados existentes)
-${data.clinicalNotes ? `- Observações clínicas: ${data.clinicalNotes}` : ''}
-
-${patientPreferencesSection}
-
-${resinsByPriceSection}
-...
-`;
+Sentry.init({
+  dsn: import.meta.env.VITE_SENTRY_DSN,
+  environment: import.meta.env.MODE,
+  enabled: import.meta.env.PROD,
+  integrations: [
+    Sentry.browserTracingIntegration(),
+    Sentry.replayIntegration(),
+  ],
+  tracesSampleRate: 0.1,
+  replaysSessionSampleRate: 0.1,
+  replaysOnErrorSampleRate: 1.0,
+});
 ```
 
-#### 3.3 Atualizar instruções de estratificação
-
-Modificar a seção "INSTRUÇÕES PARA PROTOCOLO DE ESTRATIFICAÇÃO":
-
+3. **Integrar com ErrorBoundary**:
 ```typescript
-INSTRUÇÕES PARA PROTOCOLO DE ESTRATIFICAÇÃO:
-1. Se o substrato estiver escurecido/manchado, SEMPRE inclua camada de opaco
-2. Para casos estéticos (anteriores), use 3 camadas: Opaco (se necessário), Dentina, Esmalte
-3. Para posteriores com alta demanda estética, considere estratificação
-4. Para posteriores simples, pode recomendar técnica bulk ou incrementos simples
-5. Adapte as cores das camadas baseado na cor VITA informada (ex: A2 → OA2 opaco, A2D dentina, A2E esmalte)
-6. **SE O PACIENTE DESEJA DENTES MAIS BRANCOS**: Usar cores 1-2 tons mais claras que a cor VITA detectada
+componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  Sentry.captureException(error, { extra: errorInfo });
+}
 ```
+
+4. **Adicionar secret `VITE_SENTRY_DSN`** (chave publica, pode ficar no .env)
 
 ---
 
-## Seção Técnica
+### 6. CI/CD para Rodar Testes Automaticamente
 
-### Arquivos Modificados
+**Situacao Atual**
+Nao existe diretório `.github` nem workflows configurados.
 
-| Arquivo | Tipo de Mudança |
-|---------|-----------------|
-| `supabase/functions/_shared/validation.ts` | Adicionar campo `desiredChanges` na interface e validação |
-| `src/pages/NewCase.tsx` | Passar `desiredChanges` na chamada da edge function |
-| `supabase/functions/recommend-resin/index.ts` | Construir seção de preferências e ajustar prompt |
+**Solucao**
 
-### Impacto no Banco de Dados
+Criar arquivo `.github/workflows/test.yml`:
 
-**Nenhuma migração necessária** - o campo `patient_desired_changes` já existe na tabela `evaluations` e já está sendo preenchido.
+```yaml
+name: Tests
 
-### Testes Recomendados
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
-1. Criar caso com preferência "whiter" e verificar se cores são mais claras
-2. Criar caso sem preferências e verificar comportamento padrão
-3. Criar caso com A3 + "whiter" → esperar cores A2/A1
-4. Criar caso com A1 + "whiter" → esperar cores BL4/BL3
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run tests
+        run: npm test
+      
+      - name: Type check
+        run: npx tsc --noEmit
+```
 
-### Edge Cases
-
-- Se a cor detectada já é BL1 (mais clara possível), manter BL1
-- Se múltiplas preferências conflitantes, priorizar clareamento
-- Alertar no protocolo sobre limitações de clareamento apenas com resina
+**Benefícios**:
+- Testes rodam em cada push/PR
+- Bloqueia merge se testes falharem
+- Type checking incluído
 
 ---
 
-## Resultado Esperado
+### 7. Code Splitting para Libs Pesadas
 
-Após implementação, quando um paciente selecionar "Dentes mais brancos":
+**Problema Identificado**
+Bibliotecas pesadas sao importadas diretamente:
 
-**Antes:**
-```
-Camada 1: Opaco OA2, Camada 2: Dentina A2D, Camada 3: Esmalte A2E
+| Biblioteca | Tamanho (gzip) | Uso |
+|------------|----------------|-----|
+| recharts | ~45KB | Dashboard (graficos) |
+| jspdf | ~80KB | Result (exportar PDF) |
+| html2canvas | ~40KB | Result (captura de tela) |
+
+**Solucao**
+
+1. **Lazy import para jspdf e html2canvas** (usados apenas no export PDF):
+```typescript
+// Antes - import estatico
+import { generateProtocolPDF } from '@/lib/generatePDF';
+
+// Depois - import dinamico quando necessario
+const handleExportPDF = async () => {
+  const { generateProtocolPDF } = await import('@/lib/generatePDF');
+  await generateProtocolPDF({...});
+};
 ```
 
-**Depois:**
-```
-Camada 1: Opaco OA1, Camada 2: Dentina A1D, Camada 3: Esmalte A1E
-+ Alerta: "Cor selecionada 1 tom mais clara conforme preferência do paciente"
-+ Checklist: "Confirmar expectativa de cor mais clara com paciente"
+2. **Separar componentes de graficos**:
+```typescript
+// Antes
+import { LineChart, ... } from 'recharts';
+
+// Depois - criar wrapper lazy
+const LazyChart = lazy(() => import('@/components/charts/DashboardChart'));
 ```
 
+3. **Verificar bundle com vite-bundle-visualizer** (opcional para analise)
+
+---
+
+## Secao Tecnica
+
+### Arquivos a Modificar
+
+| Arquivo | Mudanca | Prioridade |
+|---------|---------|------------|
+| `.gitignore` | Adicionar `.env*` | P0 |
+| `src/pages/Result.tsx` | Adicionar `.eq('user_id')` | P0 |
+| `src/hooks/queries/useDashboard.ts` | Otimizar queries com COUNT | P1 |
+| `src/hooks/queries/usePatients.ts` | Adicionar paginacao em sessions | P1 |
+| `src/pages/PatientProfile.tsx` | UI de paginacao | P1 |
+| `src/main.tsx` | Inicializar Sentry | P1 |
+| `src/components/ErrorBoundary.tsx` | Integrar Sentry.captureException | P1 |
+| `.github/workflows/test.yml` | Criar (arquivo novo) | P1 |
+| `src/lib/generatePDF.ts` | Export dinamico | P1 |
+
+### Dependencias a Instalar
+
+```bash
+npm install @sentry/react
+```
+
+### Secrets Necessarios
+
+- `VITE_SENTRY_DSN` - DSN do projeto Sentry (chave publica)
+
+### Ordem de Implementacao Recomendada
+
+1. **Primeiro**: `.gitignore` + IDOR (bloqueadores de seguranca)
+2. **Segundo**: Paginacao Dashboard + PatientProfile
+3. **Terceiro**: Sentry + CI/CD
+4. **Quarto**: Code splitting (otimizacao)
+
+### Testes de Validacao
+
+- **IDOR**: Tentar acessar `/result/{id-de-outro-usuario}` deve retornar "Avaliacao nao encontrada"
+- **Paginacao**: Dashboard deve carregar <1s mesmo com 1000+ avaliacoes
+- **Sentry**: Forcar erro e verificar no dashboard Sentry
+- **CI**: Fazer PR e verificar que testes rodam automaticamente
