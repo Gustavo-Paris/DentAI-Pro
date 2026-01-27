@@ -18,7 +18,7 @@ import { ArrowLeft, Download, Plus, CheckCircle, Image, Package, Sparkles, Layer
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
-import { generateProtocolPDF } from '@/lib/generatePDF';
+// Dynamic import for code splitting - jspdf is only loaded when PDF export is triggered
 import type { Resin, StratificationProtocol, ProtocolLayer, CementationProtocol } from '@/types/protocol';
 
 // Protocol components
@@ -126,9 +126,9 @@ export default function Result() {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!id) return;
+      if (!id || !user) return;
 
-      // Fetch evaluation
+      // Fetch evaluation with user ownership check (defense-in-depth alongside RLS)
       const { data } = await supabase
         .from('evaluations')
         .select(`
@@ -137,7 +137,8 @@ export default function Result() {
           ideal_resin:resins!ideal_resin_id (*)
         `)
         .eq('id', id)
-        .single();
+        .eq('user_id', user.id)
+        .maybeSingle();
 
       setEvaluation(data as unknown as Evaluation);
       setLoading(false);
@@ -199,16 +200,17 @@ export default function Result() {
   }, [id, user]);
 
   const handleChecklistChange = async (indices: number[]) => {
-    if (!evaluation || !id) return;
+    if (!evaluation || !id || !user) return;
 
     // Update local state immediately for responsiveness
     setEvaluation(prev => prev ? { ...prev, checklist_progress: indices } : null);
 
-    // Persist to database
+    // Persist to database with user ownership check (defense-in-depth)
     const { error } = await supabase
       .from('evaluations')
       .update({ checklist_progress: indices })
-      .eq('id', id);
+      .eq('id', id)
+      .eq('user_id', user.id);
 
     if (error) {
       console.error('Error saving checklist progress:', error);
@@ -255,6 +257,9 @@ export default function Result() {
         photoUrls.face ? fetchImageAsBase64(photoUrls.face) : Promise.resolve(null),
         dsdSimulationUrl ? fetchImageAsBase64(dsdSimulationUrl) : Promise.resolve(null),
       ]);
+      
+      // Dynamic import for code splitting - jspdf/html2canvas only load when needed
+      const { generateProtocolPDF } = await import('@/lib/generatePDF');
       
       await generateProtocolPDF({
         createdAt: evaluation.created_at,

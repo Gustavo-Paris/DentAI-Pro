@@ -35,6 +35,7 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
+  Loader2,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -44,9 +45,17 @@ const PatientProfile = () => {
   const { patientId } = useParams<{ patientId: string }>();
   const navigate = useNavigate();
 
+  const [sessionsPage, setSessionsPage] = useState(0);
+
   const { data: patient, isLoading: loadingPatient } = usePatientDetail(patientId || '');
-  const { data: sessions = [], isLoading: loadingSessions } = usePatientSessions(patientId || '');
+  const { data: sessionsData, isLoading: loadingSessions, isFetching: fetchingSessions } = usePatientSessions(
+    patientId || '',
+    sessionsPage
+  );
   const updatePatientMutation = useUpdatePatient();
+
+  const sessions = sessionsData?.sessions || [];
+  const hasMoreSessions = sessionsData?.hasMore || false;
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editName, setEditName] = useState("");
@@ -100,7 +109,7 @@ const PatientProfile = () => {
   const completedCases = sessions.reduce((sum, s) => sum + s.completedCount, 0);
   const firstVisit = sessions.length > 0 ? sessions[sessions.length - 1].created_at : null;
 
-  if (loading) {
+  if (loading && sessionsPage === 0) {
     return (
       <div className="min-h-screen bg-background">
         <header className="bg-card border-b border-border px-4 py-4">
@@ -383,6 +392,26 @@ const PatientProfile = () => {
                   </Link>
                 );
               })}
+
+              {/* Load more button */}
+              {hasMoreSessions && (
+                <div className="pt-4 text-center">
+                  <Button
+                    variant="outline"
+                    onClick={() => setSessionsPage(prev => prev + 1)}
+                    disabled={fetchingSessions}
+                  >
+                    {fetchingSessions ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Carregando...
+                      </>
+                    ) : (
+                      "Carregar mais sessões"
+                    )}
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </div>

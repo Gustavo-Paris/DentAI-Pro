@@ -19,13 +19,21 @@ interface PatientWithStats extends Patient {
   lastVisit: string | null;
 }
 
+interface PatientSession {
+  session_id: string;
+  teeth: string[];
+  evaluationCount: number;
+  completedCount: number;
+  created_at: string;
+}
+
 export const patientKeys = {
   all: ['patients'] as const,
   lists: () => [...patientKeys.all, 'list'] as const,
   list: (filters: Record<string, unknown>) => [...patientKeys.lists(), filters] as const,
   details: () => [...patientKeys.all, 'detail'] as const,
   detail: (id: string) => [...patientKeys.details(), id] as const,
-  sessions: (id: string) => [...patientKeys.detail(id), 'sessions'] as const,
+  sessions: (id: string, page?: number) => [...patientKeys.detail(id), 'sessions', page] as const,
 };
 
 export function usePatientsList(page: number = 0, pageSize: number = 20) {
@@ -124,20 +132,22 @@ export function usePatientDetail(patientId: string) {
   });
 }
 
-export function usePatientSessions(patientId: string) {
+export function usePatientSessions(patientId: string, page: number = 0, pageSize: number = 20) {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: patientKeys.sessions(patientId),
+    queryKey: patientKeys.sessions(patientId, page),
     queryFn: async () => {
       if (!user) throw new Error('User not authenticated');
 
-      const { data, error } = await supabase
+      // Use pagination with range instead of loading all
+      const { data, error, count } = await supabase
         .from('evaluations')
-        .select('session_id, tooth, status, created_at')
+        .select('session_id, tooth, status, created_at', { count: 'exact' })
         .eq('patient_id', patientId)
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range(page * pageSize, (page + 1) * pageSize - 1);
 
       if (error) throw error;
 
@@ -154,13 +164,19 @@ export function usePatientSessions(patientId: string) {
         session.statuses.push(evaluation.status || 'draft');
       });
 
-      return Array.from(sessionMap.entries()).map(([sessionId, sessionData]) => ({
+      const sessions: PatientSession[] = Array.from(sessionMap.entries()).map(([sessionId, sessionData]) => ({
         session_id: sessionId,
         teeth: sessionData.teeth,
         evaluationCount: sessionData.teeth.length,
         completedCount: sessionData.statuses.filter((s) => s === 'completed').length,
         created_at: sessionData.created_at,
       }));
+
+      return {
+        sessions,
+        totalCount: count || 0,
+        hasMore: (count || 0) > (page + 1) * pageSize,
+      };
     },
     enabled: !!user && !!patientId,
     staleTime: 30 * 1000,

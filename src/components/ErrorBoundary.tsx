@@ -1,4 +1,5 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
+import * as Sentry from '@sentry/react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, RefreshCw, Home } from 'lucide-react';
@@ -23,8 +24,15 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Log to console (could be extended to analytics/error tracking service)
+    // Log to console for development
     console.error('ErrorBoundary caught an error:', error, errorInfo);
+    
+    // Report to Sentry in production
+    Sentry.captureException(error, {
+      extra: {
+        componentStack: errorInfo.componentStack,
+      },
+    });
   }
 
   handleReload = () => {
@@ -51,7 +59,7 @@ class ErrorBoundary extends Component<Props, State> {
                 Ocorreu um erro inesperado. Por favor, recarregue a página ou volte ao início.
               </p>
               
-              {process.env.NODE_ENV === 'development' && this.state.error && (
+              {import.meta.env.DEV && this.state.error && (
                 <div className="mb-6 p-3 rounded-md bg-muted text-left">
                   <p className="text-xs font-mono text-muted-foreground break-all">
                     {this.state.error.message}
