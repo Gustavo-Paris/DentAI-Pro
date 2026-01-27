@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthenticatedFetch } from '@/hooks/useAuthenticatedFetch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +10,7 @@ import { Smile, Sparkles, Loader2, RefreshCw, ChevronRight, Lightbulb, AlertCirc
 import { toast } from 'sonner';
 import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
 import { ProportionsCard } from '@/components/dsd/ProportionsCard';
+import { LoadingOverlay } from '@/components/LoadingOverlay';
 
 // Tooth shape is now fixed as 'natural' - removed manual selection per market research
 const TOOTH_SHAPE = 'natural' as const;
@@ -255,62 +256,29 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
     onComplete(result);
   };
 
-  // Loading state
+  // Build loading steps for LoadingOverlay
+  const loadingSteps = useMemo(() => {
+    return analysisSteps.map((step, index) => ({
+      label: step.label,
+      completed: index < currentStep,
+    }));
+  }, [currentStep]);
+
+  // Loading state - now uses LoadingOverlay
   if (isAnalyzing) {
     return (
-      <div className="space-y-6">
-        <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-            <Smile className="w-8 h-8 text-primary animate-pulse" />
-          </div>
-          <h2 className="text-xl font-semibold mb-2">Planejamento Digital do Sorriso</h2>
-          <p className="text-muted-foreground">Analisando proporções faciais e gerando simulação...</p>
-        </div>
-
-        {/* Progress visualization */}
-        <Card>
-          <CardContent className="py-6">
-            {imageBase64 && (
-              <div className="relative aspect-[4/3] mb-6 rounded-lg overflow-hidden">
-                <img
-                  src={imageBase64}
-                  alt="Foto sendo analisada"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center">
-                  <Loader2 className="w-12 h-12 text-primary animate-spin" />
-                </div>
-              </div>
-            )}
-
-            <div className="space-y-3">
-              {analysisSteps.map((step, index) => (
-                <div
-                  key={step.label}
-                  className={`flex items-center gap-3 transition-opacity ${
-                    index <= currentStep ? 'opacity-100' : 'opacity-40'
-                  }`}
-                >
-                  {index < currentStep ? (
-                    <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                      <Sparkles className="w-3 h-3 text-primary-foreground" />
-                    </div>
-                  ) : index === currentStep ? (
-                    <Loader2 className="w-5 h-5 text-primary animate-spin" />
-                  ) : (
-                    <div className="w-5 h-5 rounded-full bg-secondary" />
-                  )}
-                  <span className="text-sm">{step.label}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="text-center">
+      <>
+        <LoadingOverlay
+          isLoading={true}
+          message="Planejamento Digital do Sorriso"
+          steps={loadingSteps}
+        />
+        <div className="flex flex-col items-center justify-center py-12 space-y-4">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-64 w-full" />
           <p className="text-xs text-muted-foreground">Powered by Gemini Vision + Image Generation</p>
         </div>
-      </div>
+      </>
     );
   }
 
