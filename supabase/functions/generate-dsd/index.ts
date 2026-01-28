@@ -133,30 +133,42 @@ async function blendWithOriginal(
   logger.log("Blending simulation with original (absolute preservation)...");
   logger.log("Teeth bounds for blend:", teethBounds);
   
-  const blendPrompt = `You have TWO images of the SAME person:
+const blendPrompt = `CRITICAL IMAGE COMPOSITING TASK - DENTAL ONLY
 
-IMAGE 1 (ORIGINAL): The patient's unedited smile photo
-IMAGE 2 (SIMULATION): A version with whitened/improved teeth
+You have exactly TWO reference images of the SAME patient:
+1. ORIGINAL PHOTO (first image) - the unmodified source
+2. SIMULATION (second image) - has whitened teeth
 
-YOUR TASK: Create a PERFECT BLEND where:
+YOUR MISSION: Create a PRECISE COMPOSITE that uses ONLY the teeth from the simulation.
 
-OUTSIDE THE TEETH (coordinates roughly ${teethBounds.x}%-${teethBounds.x + teethBounds.width}% horizontal, ${teethBounds.y}%-${teethBounds.y + teethBounds.height}% vertical):
-- Use ONLY pixels from the ORIGINAL image
-- Lips must be PIXEL-PERFECT identical to original
-- Skin texture must be IDENTICAL to original
-- Gums must be IDENTICAL to original
-- Photo framing/dimensions must be IDENTICAL
+=== PIXEL-PERFECT COPY FROM ORIGINAL (MANDATORY) ===
+The following elements MUST be copied EXACTLY from the ORIGINAL with NO modifications:
+- LIPS: Every pixel of lip color, shape, texture, gloss, and outline
+- GUMS: 100% original gum tissue, color, and contours
+- SKIN: All facial skin including around mouth, cheeks, chin
+- BACKGROUND: Any visible background elements
+- LIGHTING: Original lighting and shadows on all non-dental surfaces
+- DIMENSIONS: Output MUST be exactly the same pixel dimensions as original
 
-INSIDE THE TEETH AREA:
-- Use the improved/whitened teeth from the SIMULATION image
+=== TEETH REGION ONLY (approximate area: ${Math.round(teethBounds.x)}%-${Math.round(teethBounds.x + teethBounds.width)}% horizontal, ${Math.round(teethBounds.y)}%-${Math.round(teethBounds.y + teethBounds.height)}% vertical) ===
+From the SIMULATION image, take ONLY:
+- The whitened tooth surfaces (enamel color improvement)
+- Stain removal results
+Keep tooth SIZE and SHAPE from original - only take the COLOR improvement.
 
-AT THE BOUNDARY:
-- Create a smooth 2-3 pixel gradient for seamless transition
+=== BLENDING TECHNIQUE ===
+- Feather the transition at tooth/gum boundary with 2-3 pixel gradient
+- Ensure no visible seams between original and simulation content
+- Match brightness/contrast between composited elements
 
-CRITICAL: The result must look like the ORIGINAL photo with ONLY the teeth improved.
-The lips, skin, and all non-dental areas must be INDISTINGUISHABLE from the original.
+=== QUALITY VERIFICATION ===
+Before outputting, verify:
+✓ Lips are IDENTICAL to original (overlay test would show 0% difference)
+✓ Gums are IDENTICAL to original
+✓ Only teeth COLOR has changed, not tooth SIZE or SHAPE
+✓ Image dimensions match original exactly
 
-Output the blended image with EXACT same dimensions as the original.`;
+Output the composited image.`;
 
   try {
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -545,110 +557,137 @@ async function generateSimulation(
       return `Dente ${s.tooth}: COPIE do ${contralateral || 'vizinho'}`;
     }).join(', ');
 
-    simulationPrompt = `Using this smile photo, reconstruct the missing/damaged teeth and whiten all teeth.
+    simulationPrompt = `DENTAL RECONSTRUCTION - PIXEL-PERFECT PRESERVATION OF NON-DENTAL AREAS
 
-=== ABSOLUTE PRESERVATION RULES ===
-1. LIPS: Keep lips PIXEL-PERFECT identical to original - do NOT change shape, color, texture, or position
-2. GUMS: Do NOT modify gum level, shape, contour, or color in ANY way
-3. TOOTH WIDTH: Do NOT change the width or proportions of any tooth
-4. TOOTH LENGTH: Only modify length if specifically listed in ALLOWED CHANGES below
-5. SKIN/FACE: Keep all non-dental areas IDENTICAL to original
-6. FRAMING: Keep exact same dimensions, angle, and zoom
+This is a dental reconstruction simulation for missing/damaged teeth.
 
-=== CHANGES ALLOWED ===
-- Whiten all visible teeth to shade A1/A2 (natural bright white)
-- Remove stains, yellowing, or discoloration
-- Make color uniform across all teeth
+=== WHAT YOU MUST COPY EXACTLY FROM THE INPUT (PIXEL-PERFECT) ===
+These elements MUST NOT CHANGE AT ALL:
+1. LIPS - Copy EXACTLY: same color, shape, texture, outline, position
+2. GUMS - Copy EXACTLY: same gum line, color, contours, tissue
+3. SKIN - Copy all skin areas EXACTLY as-is
+4. EXISTING TOOTH SIZE - Do NOT change width/proportions of existing teeth
+5. IMAGE DIMENSIONS - Output MUST be same size as input
+
+=== RECONSTRUCTION ALLOWED ===
+- Fill in missing tooth spaces by copying from neighboring teeth
+- ${specificInstructions || 'Reconstruct missing teeth using adjacent teeth as reference'}
+- Whiten all teeth to shade A1/A2 (natural white)
+- Remove stains from existing teeth
 ${allowedChangesFromAnalysis}
 ${patientDesires}
 
-TEETH RECONSTRUCTION:
-- ${specificInstructions || 'Reconstruct damaged/missing teeth using neighboring teeth as reference'}
+=== TECHNIQUE ===
+For reconstruction: Copy size, shape, and proportions from the contralateral tooth.
+For whitening: Change only surface color, not structure.
+Every non-dental pixel stays IDENTICAL.
 
-=== STRICTLY FORBIDDEN ===
-- Changing gum levels or contours
-- Modifying tooth width or proportions
-- Any changes to lips, skin, or face
-- Extreme whitening (Hollywood white)
+=== FORBIDDEN ===
+❌ Changing lip color, shape, or position
+❌ Changing gum levels or color
+❌ Resizing existing teeth
+❌ Hollywood-white unnatural color
+❌ ANY changes to skin or face
 
-Output the edited image with EXACT same dimensions as input.`;
+OUTPUT: Same photo with reconstructed teeth and whitening ONLY.`;
 
   } else if (needsRestorationReplacement) {
-    // RESTORATION REPLACEMENT PROMPT - Preservation-first with analysis guidance
-    simulationPrompt = `Using this smile photo, improve ONLY the teeth appearance.
+    // RESTORATION REPLACEMENT PROMPT - Ultra-strict preservation
+    simulationPrompt = `RESTORATION BLENDING - PIXEL-PERFECT PRESERVATION
 
-=== ABSOLUTE PRESERVATION RULES ===
-1. LIPS: Keep lips PIXEL-PERFECT identical to original - do NOT change shape, color, texture, or position
-2. GUMS: Do NOT modify gum level, shape, contour, or color in ANY way
-3. TOOTH WIDTH: Maintain the EXACT width and proportions of each tooth
-4. TOOTH SHAPE: Only apply changes from the ALLOWED list below
-5. FRAMING: Keep exact same dimensions, angle, and zoom
+This is a dental simulation to blend/hide existing restoration interfaces.
 
-=== CHANGES ALLOWED ===
-- Whiten all visible teeth to shade A1/A2 (natural bright white)
-- Remove stains, yellowing, or discoloration
-- Make color uniform across all teeth
-- On teeth ${restorationTeeth || '11, 21'}: blend/remove visible restoration interface lines
+=== WHAT YOU MUST COPY EXACTLY FROM THE INPUT (PIXEL-PERFECT) ===
+These elements MUST NOT CHANGE AT ALL:
+1. LIPS - Copy EXACTLY: same color, shape, texture, outline
+2. GUMS - Copy EXACTLY: same gum line, color, contours
+3. SKIN - Copy all skin EXACTLY as-is
+4. TOOTH SIZE - Do NOT change any tooth width, length, or proportions
+5. IMAGE DIMENSIONS - Output MUST be same size as input
+
+=== THE ONLY CHANGES ALLOWED ===
+- Whiten tooth surfaces to shade A1/A2 (natural white)
+- Remove stains and discoloration
+- On teeth ${restorationTeeth || '11, 21'}: smooth the visible interface lines
+- Blend restoration margins for seamless appearance
 ${allowedChangesFromAnalysis}
 ${patientDesires}
 
-=== STRICTLY FORBIDDEN ===
-- Changing gum levels or contours
-- Modifying tooth width or proportions
-- Any changes to lips, skin, or face
-- Extreme whitening (Hollywood white)
+=== FORBIDDEN ===
+❌ Changing lip color or shape
+❌ Changing gum levels or color
+❌ Changing tooth size or proportions
+❌ Hollywood-white color
+❌ ANY changes to face or skin
 
-Output the edited image with EXACT same dimensions as input.`;
+OUTPUT: Same photo with whitened teeth and blended restorations ONLY.`;
 
   } else if (isIntraoralPhoto) {
-    // INTRAORAL PROMPT - Preservation-first
-    simulationPrompt = `Using this intraoral dental photo, improve ONLY the teeth appearance.
+    // INTRAORAL PROMPT - Ultra-strict preservation
+    simulationPrompt = `INTRAORAL PHOTO - DENTAL WHITENING ONLY
 
-=== ABSOLUTE PRESERVATION RULES ===
-1. GUMS: Do NOT modify gum level, shape, contour, or color
-2. TOOTH WIDTH: Do NOT change the width or proportions of any tooth
-3. TOOTH SHAPE: Only apply changes from the ALLOWED list below
-4. FRAMING: Keep exact same dimensions
+This is an intraoral dental photo (no lips visible).
 
-=== CHANGES ALLOWED ===
-- Whiten all visible teeth to shade A1/A2 (natural bright white)
-- Remove stains and discoloration
-- Make color uniform across all teeth
+=== WHAT YOU MUST COPY EXACTLY (PIXEL-PERFECT) ===
+1. GUMS - Copy EXACTLY: same gum line, color, contours, tissue
+2. TOOTH SIZE - Do NOT change any tooth width, length, or proportions
+3. ALL OTHER TISSUES - Copy exactly as-is
+4. IMAGE DIMENSIONS - Output MUST be same size as input
+
+=== THE ONLY CHANGE ALLOWED ===
+- Whiten the SURFACE COLOR of teeth to A1/A2
+- Remove stains from tooth surfaces
+- Even out the color across teeth
 ${allowedChangesFromAnalysis}
 ${patientDesires}
 
-=== STRICTLY FORBIDDEN ===
-- Changing gum levels or contours
-- Modifying tooth width or proportions
+=== FORBIDDEN ===
+❌ Changing gum levels or color
+❌ Changing tooth size or proportions
+❌ Changing any non-enamel surfaces
 
-Output the edited image with EXACT same dimensions as input.`;
+OUTPUT: Same photo with ONLY tooth surface color whitened.`;
 
   } else {
-    // STANDARD PROMPT - Preservation-first with analysis guidance
-    simulationPrompt = `Using this smile photo, improve ONLY the teeth appearance.
+    // STANDARD PROMPT - Ultra-strict preservation with explicit pixel copy instructions
+    simulationPrompt = `DENTAL WHITENING ONLY - PIXEL-PERFECT PRESERVATION
 
-=== ABSOLUTE PRESERVATION RULES ===
-1. LIPS: Keep lips PIXEL-PERFECT identical to original - do NOT change shape, color, texture, or position
-2. GUMS: Do NOT modify gum level, shape, contour, or color in ANY way
-3. TOOTH WIDTH: Maintain the EXACT width and proportions of each tooth
-4. TOOTH SHAPE: Only apply changes from the ALLOWED list below
-5. FRAMING: Keep exact same dimensions, angle, and zoom
+This is a dental simulation. Your ONLY task is to whiten the teeth.
 
-=== CHANGES ALLOWED ===
-- Whiten all visible teeth to shade A1/A2 (natural bright white)
-- Remove stains, yellowing, or discoloration
-- Make color uniform across all teeth
+=== WHAT YOU MUST COPY EXACTLY FROM THE INPUT (PIXEL-PERFECT) ===
+These elements MUST NOT CHANGE AT ALL - copy every pixel exactly:
+1. LIPS - Do NOT touch the lips. Copy them EXACTLY as they are.
+   - Same color, same shape, same texture, same gloss
+   - Same outline, same position, same shadows
+2. GUMS - Do NOT touch the gums. Copy them EXACTLY.
+   - Same gum line, same color, same contours
+3. SKIN - Copy all skin EXACTLY as-is
+4. TOOTH SIZE - Do NOT change tooth width, length, or proportions
+5. TOOTH SHAPE - Do NOT change tooth shapes or contours
+6. IMAGE DIMENSIONS - Output MUST be same size as input
+
+=== THE ONLY CHANGE ALLOWED ===
+- Make the SURFACE COLOR of teeth whiter (shade A1/A2)
+- Remove yellow/brown stains from tooth surfaces
+- Even out the color across all teeth
 ${allowedChangesFromAnalysis}
 ${patientDesires}
 
-=== STRICTLY FORBIDDEN ===
-- Changing gum levels or contours
-- Modifying tooth width or proportions (keep original proportions)
-- Any changes to lips, skin, or face
-- Extreme whitening (Hollywood white)
+=== TECHNIQUE ===
+Think of this as changing ONLY the color/texture of the enamel surface.
+The underlying structure (size, shape, proportions) stays IDENTICAL.
+Every other pixel in the image stays IDENTICAL.
 
-If a change is NOT listed in CHANGES ALLOWED above, do NOT apply it.
-Output the edited image with EXACT same dimensions as input.`;
+=== FORBIDDEN (will cause rejection) ===
+❌ Changing lip color or shape
+❌ Changing gum levels or color
+❌ Making teeth wider or narrower
+❌ Making teeth longer or shorter
+❌ Changing face or skin
+❌ Hollywood-white unnatural color
+❌ ANY structural changes to teeth
+
+OUTPUT: The exact same photo with ONLY the teeth surface color whitened.`;
   }
 
   const promptType = needsReconstruction ? 'reconstruction' : 
