@@ -76,9 +76,9 @@ async function getTeethMask(
         content: [
           { 
             type: "text", 
-            text: `Analyze this smile photo and return the EXACT bounding box coordinates of all visible teeth as a single region.
+            text: `Analyze this smile photo. Return the bounding box of the TEETH ONLY (not lips, not gums).
 
-Return ONLY valid JSON with this exact structure:
+Return ONLY valid JSON:
 {
   "bounds": {
     "x": <left edge as % of image width, 0-100>,
@@ -88,9 +88,7 @@ Return ONLY valid JSON with this exact structure:
   }
 }
 
-Focus ONLY on the teeth area - do not include lips or gums in the bounding box.
-The bounding box should tightly encompass ALL visible teeth.
-Be precise - this will be used for image masking.`
+The box should tightly contain just the visible tooth surfaces.`
           },
           { type: "image_url", image_url: { url: imageBase64 } },
         ],
@@ -106,7 +104,6 @@ Be precise - this will be used for image masking.`
   const data = await response.json();
   const content = data.choices?.[0]?.message?.content || '';
   
-  // Parse JSON from response
   const jsonMatch = content.match(/\{[\s\S]*\}/);
   if (jsonMatch) {
     try {
@@ -123,52 +120,32 @@ Be precise - this will be used for image masking.`
   throw new Error("Could not parse teeth region coordinates");
 }
 
-// Blend simulation with original image - ONLY teeth from simulation, EVERYTHING ELSE from original
-async function blendWithOriginal(
+// Quality check: verify simulation preserved structure
+async function verifySimulationQuality(
   originalBase64: string,
   simulationBase64: string,
-  teethBounds: TeethBounds,
   apiKey: string
-): Promise<string | null> {
-  logger.log("Blending simulation with original (absolute preservation)...");
-  logger.log("Teeth bounds for blend:", teethBounds);
+): Promise<{ passed: boolean; issues: string[] }> {
+  logger.log("Verifying simulation quality...");
   
-const blendPrompt = `CRITICAL IMAGE COMPOSITING TASK - DENTAL ONLY
+  const verifyPrompt = `Compare these TWO dental photos and check if the simulation (second image) correctly preserves the original structure.
 
-You have exactly TWO reference images of the SAME patient:
-1. ORIGINAL PHOTO (first image) - the unmodified source
-2. SIMULATION (second image) - has whitened teeth
+CHECK EACH ELEMENT:
+1. LIPS - Are they IDENTICAL in color, shape, texture, and outline? (Yes/No)
+2. GUMS - Are they IDENTICAL in level, color, and contour? (Yes/No)
+3. TOOTH SIZE - Are teeth the SAME width and length? (Yes/No)
+4. SKIN - Is facial skin IDENTICAL? (Yes/No)
+5. FRAMING - Is the image crop/zoom IDENTICAL? (Yes/No)
 
-YOUR MISSION: Create a PRECISE COMPOSITE that uses ONLY the teeth from the simulation.
-
-=== PIXEL-PERFECT COPY FROM ORIGINAL (MANDATORY) ===
-The following elements MUST be copied EXACTLY from the ORIGINAL with NO modifications:
-- LIPS: Every pixel of lip color, shape, texture, gloss, and outline
-- GUMS: 100% original gum tissue, color, and contours
-- SKIN: All facial skin including around mouth, cheeks, chin
-- BACKGROUND: Any visible background elements
-- LIGHTING: Original lighting and shadows on all non-dental surfaces
-- DIMENSIONS: Output MUST be exactly the same pixel dimensions as original
-
-=== TEETH REGION ONLY (approximate area: ${Math.round(teethBounds.x)}%-${Math.round(teethBounds.x + teethBounds.width)}% horizontal, ${Math.round(teethBounds.y)}%-${Math.round(teethBounds.y + teethBounds.height)}% vertical) ===
-From the SIMULATION image, take ONLY:
-- The whitened tooth surfaces (enamel color improvement)
-- Stain removal results
-Keep tooth SIZE and SHAPE from original - only take the COLOR improvement.
-
-=== BLENDING TECHNIQUE ===
-- Feather the transition at tooth/gum boundary with 2-3 pixel gradient
-- Ensure no visible seams between original and simulation content
-- Match brightness/contrast between composited elements
-
-=== QUALITY VERIFICATION ===
-Before outputting, verify:
-✓ Lips are IDENTICAL to original (overlay test would show 0% difference)
-✓ Gums are IDENTICAL to original
-✓ Only teeth COLOR has changed, not tooth SIZE or SHAPE
-✓ Image dimensions match original exactly
-
-Output the composited image.`;
+Return ONLY valid JSON:
+{
+  "lips_identical": true/false,
+  "gums_identical": true/false,
+  "tooth_size_identical": true/false,
+  "skin_identical": true/false,
+  "framing_identical": true/false,
+  "issues": ["list of specific differences found, or empty array if all identical"]
+}`;
 
   try {
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -178,38 +155,125 @@ Output the composited image.`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash-image-preview",
+        model: "google/gemini-2.5-flash",
         messages: [{
           role: "user",
           content: [
-            { type: "text", text: blendPrompt },
+            { type: "text", text: verifyPrompt },
             { type: "image_url", image_url: { url: originalBase64 } },
             { type: "image_url", image_url: { url: simulationBase64 } },
           ],
         }],
-        modalities: ["image", "text"],
       }),
     });
 
     if (!response.ok) {
-      logger.warn("Blend API call failed:", response.status);
-      return null;
+      logger.warn("Quality verification failed:", response.status);
+      return { passed: false, issues: ["Could not verify quality"] };
     }
 
     const data = await response.json();
-    const blendedImage = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    const content = data.choices?.[0]?.message?.content || '';
     
-    if (blendedImage) {
-      logger.log("Blend successful - lips/skin preserved from original");
-      return blendedImage;
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      try {
+        const parsed = JSON.parse(jsonMatch[0]);
+        const passed = parsed.lips_identical && 
+                       parsed.gums_identical && 
+                       parsed.tooth_size_identical && 
+                       parsed.skin_identical &&
+                       parsed.framing_identical;
+        
+        logger.log("Quality check result:", { passed, issues: parsed.issues || [] });
+        return { 
+          passed, 
+          issues: parsed.issues || [] 
+        };
+      } catch (e) {
+        logger.warn("Failed to parse quality check JSON:", e);
+      }
     }
     
-    logger.warn("No blended image in response");
-    return null;
+    return { passed: false, issues: ["Could not parse quality response"] };
   } catch (err) {
-    logger.error("Blend error:", err);
-    return null;
+    logger.error("Quality check error:", err);
+    return { passed: false, issues: ["Quality check failed"] };
   }
+}
+
+// Blend simulation with original image - ONLY teeth color from simulation
+async function blendWithOriginal(
+  originalBase64: string,
+  simulationBase64: string,
+  teethBounds: TeethBounds,
+  apiKey: string
+): Promise<string | null> {
+  logger.log("Blending simulation with original...");
+  logger.log("Teeth bounds:", teethBounds);
+  
+  // Super minimal prompt - just ask to composite
+  const blendPrompt = `IMAGE COMPOSITING TASK:
+
+IMAGE 1 = Original patient photo (MASTER - use for everything except teeth color)
+IMAGE 2 = Simulation with whitened teeth (use ONLY for tooth enamel color)
+
+Create composite where:
+- Take 100% of IMAGE 1 (lips, gums, skin, background, framing)
+- Replace ONLY the tooth enamel color with the whiter color from IMAGE 2
+- Teeth SIZE and SHAPE must stay identical to IMAGE 1
+- Blend edges seamlessly at tooth-gum border
+
+Output: Same photo as IMAGE 1 but with whiter tooth enamel from IMAGE 2.`;
+
+  // Try multiple models for best result
+  const modelsToTry = ["google/gemini-3-pro-image-preview", "google/gemini-2.5-flash-image-preview"];
+  
+  for (const model of modelsToTry) {
+    try {
+      logger.log(`Blend attempt with ${model}`);
+      
+      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: [{
+            role: "user",
+            content: [
+              { type: "text", text: blendPrompt },
+              { type: "image_url", image_url: { url: originalBase64 } },
+              { type: "image_url", image_url: { url: simulationBase64 } },
+            ],
+          }],
+          modalities: ["image", "text"],
+        }),
+      });
+
+      if (!response.ok) {
+        logger.warn(`Blend with ${model} failed:`, response.status);
+        continue;
+      }
+
+      const data = await response.json();
+      const blendedImage = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+      
+      if (blendedImage) {
+        logger.log(`Blend successful with ${model}`);
+        return blendedImage;
+      }
+      
+      logger.warn(`No image from ${model}`);
+    } catch (err) {
+      logger.warn(`Blend error with ${model}:`, err);
+    }
+  }
+  
+  logger.warn("All blend attempts failed");
+  return null;
 }
 
 // Select best variation based on preservation of non-dental areas
@@ -557,137 +621,82 @@ async function generateSimulation(
       return `Dente ${s.tooth}: COPIE do ${contralateral || 'vizinho'}`;
     }).join(', ');
 
-    simulationPrompt = `DENTAL RECONSTRUCTION - PIXEL-PERFECT PRESERVATION OF NON-DENTAL AREAS
+    simulationPrompt = `TEETH RECONSTRUCTION
 
-This is a dental reconstruction simulation for missing/damaged teeth.
+Task: Reconstruct missing/damaged teeth and whiten all teeth.
 
-=== WHAT YOU MUST COPY EXACTLY FROM THE INPUT (PIXEL-PERFECT) ===
-These elements MUST NOT CHANGE AT ALL:
-1. LIPS - Copy EXACTLY: same color, shape, texture, outline, position
-2. GUMS - Copy EXACTLY: same gum line, color, contours, tissue
-3. SKIN - Copy all skin areas EXACTLY as-is
-4. EXISTING TOOTH SIZE - Do NOT change width/proportions of existing teeth
-5. IMAGE DIMENSIONS - Output MUST be same size as input
+COPY EXACTLY (unchanged):
+- Lips (same color, shape, texture)
+- Gums (same level, color)
+- Skin (unchanged)
+- Existing tooth size
+- Image dimensions
 
-=== RECONSTRUCTION ALLOWED ===
-- Fill in missing tooth spaces by copying from neighboring teeth
-- ${specificInstructions || 'Reconstruct missing teeth using adjacent teeth as reference'}
-- Whiten all teeth to shade A1/A2 (natural white)
-- Remove stains from existing teeth
+CHANGES ALLOWED:
+- Reconstruct: ${specificInstructions || 'Fill missing teeth using adjacent teeth as reference'}
+- Whiten all teeth to A1/A2
+- Remove stains
 ${allowedChangesFromAnalysis}
-${patientDesires}
 
-=== TECHNIQUE ===
-For reconstruction: Copy size, shape, and proportions from the contralateral tooth.
-For whitening: Change only surface color, not structure.
-Every non-dental pixel stays IDENTICAL.
-
-=== FORBIDDEN ===
-❌ Changing lip color, shape, or position
-❌ Changing gum levels or color
-❌ Resizing existing teeth
-❌ Hollywood-white unnatural color
-❌ ANY changes to skin or face
-
-OUTPUT: Same photo with reconstructed teeth and whitening ONLY.`;
+Output: Same photo with reconstructed + whitened teeth only.`;
 
   } else if (needsRestorationReplacement) {
-    // RESTORATION REPLACEMENT PROMPT - Ultra-strict preservation
-    simulationPrompt = `RESTORATION BLENDING - PIXEL-PERFECT PRESERVATION
+    simulationPrompt = `RESTORATION BLEND
 
-This is a dental simulation to blend/hide existing restoration interfaces.
+Task: Blend restoration margins and whiten teeth.
 
-=== WHAT YOU MUST COPY EXACTLY FROM THE INPUT (PIXEL-PERFECT) ===
-These elements MUST NOT CHANGE AT ALL:
-1. LIPS - Copy EXACTLY: same color, shape, texture, outline
-2. GUMS - Copy EXACTLY: same gum line, color, contours
-3. SKIN - Copy all skin EXACTLY as-is
-4. TOOTH SIZE - Do NOT change any tooth width, length, or proportions
-5. IMAGE DIMENSIONS - Output MUST be same size as input
+COPY EXACTLY (unchanged):
+- Lips (same color, shape, texture)
+- Gums (same level, color)
+- Skin (unchanged)
+- Tooth size (same width, length)
+- Image dimensions
 
-=== THE ONLY CHANGES ALLOWED ===
-- Whiten tooth surfaces to shade A1/A2 (natural white)
-- Remove stains and discoloration
-- On teeth ${restorationTeeth || '11, 21'}: smooth the visible interface lines
-- Blend restoration margins for seamless appearance
+CHANGES ALLOWED:
+- Whiten teeth to A1/A2
+- Blend interface lines on teeth ${restorationTeeth || '11, 21'}
+- Remove stains
 ${allowedChangesFromAnalysis}
-${patientDesires}
 
-=== FORBIDDEN ===
-❌ Changing lip color or shape
-❌ Changing gum levels or color
-❌ Changing tooth size or proportions
-❌ Hollywood-white color
-❌ ANY changes to face or skin
-
-OUTPUT: Same photo with whitened teeth and blended restorations ONLY.`;
+Output: Same photo with blended restorations and whiter teeth.`;
 
   } else if (isIntraoralPhoto) {
-    // INTRAORAL PROMPT - Ultra-strict preservation
-    simulationPrompt = `INTRAORAL PHOTO - DENTAL WHITENING ONLY
+    simulationPrompt = `INTRAORAL TEETH COLOR EDIT
 
-This is an intraoral dental photo (no lips visible).
+Task: Whiten the teeth in this intraoral photo.
 
-=== WHAT YOU MUST COPY EXACTLY (PIXEL-PERFECT) ===
-1. GUMS - Copy EXACTLY: same gum line, color, contours, tissue
-2. TOOTH SIZE - Do NOT change any tooth width, length, or proportions
-3. ALL OTHER TISSUES - Copy exactly as-is
-4. IMAGE DIMENSIONS - Output MUST be same size as input
+COPY EXACTLY (unchanged):
+- Gums (same level, color)
+- Tooth size (same width, length)
+- All other tissues
+- Image dimensions
 
-=== THE ONLY CHANGE ALLOWED ===
-- Whiten the SURFACE COLOR of teeth to A1/A2
-- Remove stains from tooth surfaces
-- Even out the color across teeth
+CHANGE ONLY:
+- Tooth color → shade A1/A2
+- Remove stains
 ${allowedChangesFromAnalysis}
-${patientDesires}
 
-=== FORBIDDEN ===
-❌ Changing gum levels or color
-❌ Changing tooth size or proportions
-❌ Changing any non-enamel surfaces
-
-OUTPUT: Same photo with ONLY tooth surface color whitened.`;
+Output: Same photo with whiter teeth only.`;
 
   } else {
-    // STANDARD PROMPT - Ultra-strict preservation with explicit pixel copy instructions
-    simulationPrompt = `DENTAL WHITENING ONLY - PIXEL-PERFECT PRESERVATION
+    // STANDARD PROMPT - Ultra-minimal for maximum compliance
+    simulationPrompt = `TEETH COLOR EDIT ONLY
 
-This is a dental simulation. Your ONLY task is to whiten the teeth.
+Task: Whiten the teeth in this photo. Do NOT change anything else.
 
-=== WHAT YOU MUST COPY EXACTLY FROM THE INPUT (PIXEL-PERFECT) ===
-These elements MUST NOT CHANGE AT ALL - copy every pixel exactly:
-1. LIPS - Do NOT touch the lips. Copy them EXACTLY as they are.
-   - Same color, same shape, same texture, same gloss
-   - Same outline, same position, same shadows
-2. GUMS - Do NOT touch the gums. Copy them EXACTLY.
-   - Same gum line, same color, same contours
-3. SKIN - Copy all skin EXACTLY as-is
-4. TOOTH SIZE - Do NOT change tooth width, length, or proportions
-5. TOOTH SHAPE - Do NOT change tooth shapes or contours
-6. IMAGE DIMENSIONS - Output MUST be same size as input
+COPY EXACTLY (unchanged):
+- Lips (same color, shape, texture)
+- Gums (same level, color)
+- Skin (unchanged)
+- Tooth size (same width, length)
+- Image dimensions
 
-=== THE ONLY CHANGE ALLOWED ===
-- Make the SURFACE COLOR of teeth whiter (shade A1/A2)
-- Remove yellow/brown stains from tooth surfaces
-- Even out the color across all teeth
+CHANGE ONLY:
+- Tooth enamel color → shade A1/A2 (natural white)
+- Remove stains
 ${allowedChangesFromAnalysis}
-${patientDesires}
 
-=== TECHNIQUE ===
-Think of this as changing ONLY the color/texture of the enamel surface.
-The underlying structure (size, shape, proportions) stays IDENTICAL.
-Every other pixel in the image stays IDENTICAL.
-
-=== FORBIDDEN (will cause rejection) ===
-❌ Changing lip color or shape
-❌ Changing gum levels or color
-❌ Making teeth wider or narrower
-❌ Making teeth longer or shorter
-❌ Changing face or skin
-❌ Hollywood-white unnatural color
-❌ ANY structural changes to teeth
-
-OUTPUT: The exact same photo with ONLY the teeth surface color whitened.`;
+Output: Same photo with whiter teeth only.`;
   }
 
   const promptType = needsReconstruction ? 'reconstruction' : 
@@ -806,46 +815,63 @@ OUTPUT: The exact same photo with ONLY the teeth surface color whitened.`;
   
   logger.log(`${successfulVariations.length} variations generated successfully`);
   
-  // STEP 3: Blend best variation with original (ABSOLUTE PRESERVATION)
-  // Use first successful variation for blending
-  const bestVariation = successfulVariations[0];
-  
-  try {
-    const blendedImageBase64 = await blendWithOriginal(
-      imageBase64,
-      bestVariation.imageBase64,
-      teethBounds,
-      apiKey
-    );
+  // STEP 3: Try each variation with blend + quality verification
+  // Keep trying until we get a result that passes quality check
+  for (let i = 0; i < successfulVariations.length; i++) {
+    const variation = successfulVariations[i];
+    logger.log(`Attempting blend with variation ${i}...`);
     
-    if (blendedImageBase64) {
-      // Upload blended result
-      const base64Data = blendedImageBase64.replace(/^data:image\/\w+;base64,/, "");
-      const binaryData = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
+    try {
+      const blendedImageBase64 = await blendWithOriginal(
+        imageBase64,
+        variation.imageBase64,
+        teethBounds,
+        apiKey
+      );
       
-      const blendedFileName = `${userId}/dsd_blended_${Date.now()}.png`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from("dsd-simulations")
-        .upload(blendedFileName, binaryData, {
-          contentType: "image/png",
-          upsert: true,
-        });
-      
-      if (!uploadError) {
-        logger.log("DSD simulation ready (blended with original for absolute preservation)");
-        return blendedFileName;
-      } else {
-        logger.warn("Blended upload failed, returning raw variation:", uploadError);
+      if (blendedImageBase64) {
+        // Verify quality before accepting
+        const qualityResult = await verifySimulationQuality(
+          imageBase64,
+          blendedImageBase64,
+          apiKey
+        );
+        
+        if (qualityResult.passed) {
+          // Quality check passed - upload and return
+          const base64Data = blendedImageBase64.replace(/^data:image\/\w+;base64,/, "");
+          const binaryData = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
+          
+          const blendedFileName = `${userId}/dsd_verified_${Date.now()}.png`;
+          
+          const { error: uploadError } = await supabase.storage
+            .from("dsd-simulations")
+            .upload(blendedFileName, binaryData, {
+              contentType: "image/png",
+              upsert: true,
+            });
+          
+          if (!uploadError) {
+            logger.log("DSD simulation ready (verified quality)");
+            return blendedFileName;
+          }
+        } else {
+          logger.warn(`Variation ${i} failed quality check:`, qualityResult.issues);
+          // Continue to next variation
+        }
       }
+    } catch (err) {
+      logger.warn(`Blend error on variation ${i}:`, err);
     }
-  } catch (blendErr) {
-    logger.warn("Blend step failed, returning raw variation:", blendErr);
   }
   
-  // Fallback: return raw variation if blend fails
-  logger.log("DSD simulation ready (raw variation, blend unavailable)");
-  return bestVariation.fileName;
+  // If all blends failed quality check, try returning best raw variation
+  // (with a warning logged)
+  logger.warn("All blends failed quality check. Returning best raw variation as fallback.");
+  
+  // Upload first raw variation as fallback
+  const fallbackVariation = successfulVariations[0];
+  return fallbackVariation.fileName;
 }
 
 // Analyze facial proportions
