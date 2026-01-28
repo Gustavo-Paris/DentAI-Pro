@@ -508,6 +508,13 @@ async function generateSimulation(
   
   let simulationPrompt: string;
   
+  // Build allowed changes from analysis suggestions (used in all prompt types)
+  const allowedChangesFromAnalysis = analysis.suggestions?.length > 0 
+    ? `\nSPECIFIC CORRECTIONS FROM ANALYSIS (apply these changes):\n${analysis.suggestions.map(s => 
+        `- Tooth ${s.tooth}: ${s.proposed_change}`
+      ).join('\n')}`
+    : '';
+  
   if (needsReconstruction) {
     // RECONSTRUCTION PROMPT - MINIMALISTA
     const teethToReconstruct = analysis.suggestions
@@ -537,70 +544,111 @@ async function generateSimulation(
       }
       return `Dente ${s.tooth}: COPIE do ${contralateral || 'vizinho'}`;
     }).join(', ');
-    
+
     simulationPrompt = `Using this smile photo, reconstruct the missing/damaged teeth and whiten all teeth.
 
-CRITICAL PRESERVATION RULE:
-Keep the lips, skin, facial features, and image framing EXACTLY THE SAME as the original photo.
-The ONLY change should be the teeth.
+=== ABSOLUTE PRESERVATION RULES ===
+1. LIPS: Keep lips PIXEL-PERFECT identical to original - do NOT change shape, color, texture, or position
+2. GUMS: Do NOT modify gum level, shape, contour, or color in ANY way
+3. TOOTH WIDTH: Do NOT change the width or proportions of any tooth
+4. TOOTH LENGTH: Only modify length if specifically listed in ALLOWED CHANGES below
+5. SKIN/FACE: Keep all non-dental areas IDENTICAL to original
+6. FRAMING: Keep exact same dimensions, angle, and zoom
+
+=== CHANGES ALLOWED ===
+- Whiten all visible teeth to shade A1/A2 (natural bright white)
+- Remove stains, yellowing, or discoloration
+- Make color uniform across all teeth
+${allowedChangesFromAnalysis}
+${patientDesires}
 
 TEETH RECONSTRUCTION:
 - ${specificInstructions || 'Reconstruct damaged/missing teeth using neighboring teeth as reference'}
-- Whiten all teeth to shade A1/A2 (natural bright white)
-- Make all teeth uniform in color and brightness
-${patientDesires ? `- Patient wants: ${patientDesires}` : ''}
 
-MANDATORY: The lips and skin texture must remain IDENTICAL to the original photo.
-Do NOT change the photo angle, zoom, or composition.
-Output the edited image with the exact same dimensions.`;
+=== STRICTLY FORBIDDEN ===
+- Changing gum levels or contours
+- Modifying tooth width or proportions
+- Any changes to lips, skin, or face
+- Extreme whitening (Hollywood white)
+
+Output the edited image with EXACT same dimensions as input.`;
 
   } else if (needsRestorationReplacement) {
-    // RESTORATION REPLACEMENT PROMPT - Ultra-short, preservation-first
-    simulationPrompt = `Using this smile photo, change ONLY the teeth color and remove restoration interface lines.
+    // RESTORATION REPLACEMENT PROMPT - Preservation-first with analysis guidance
+    simulationPrompt = `Using this smile photo, improve ONLY the teeth appearance.
 
-CRITICAL PRESERVATION RULE:
-Keep the lips, skin, facial features, and image framing EXACTLY THE SAME as the original photo.
-Do not modify anything except the teeth.
+=== ABSOLUTE PRESERVATION RULES ===
+1. LIPS: Keep lips PIXEL-PERFECT identical to original - do NOT change shape, color, texture, or position
+2. GUMS: Do NOT modify gum level, shape, contour, or color in ANY way
+3. TOOTH WIDTH: Maintain the EXACT width and proportions of each tooth
+4. TOOTH SHAPE: Only apply changes from the ALLOWED list below
+5. FRAMING: Keep exact same dimensions, angle, and zoom
 
-TEETH EDIT:
+=== CHANGES ALLOWED ===
 - Whiten all visible teeth to shade A1/A2 (natural bright white)
-- On teeth ${restorationTeeth || '11, 21'}: blend/remove any visible restoration interface lines
-- Make the color uniform across all teeth (no color variation)
-- Harmonize asymmetric lateral incisors (12 vs 22) if needed
-${patientDesires ? `- Patient wants: ${patientDesires}` : ''}
+- Remove stains, yellowing, or discoloration
+- Make color uniform across all teeth
+- On teeth ${restorationTeeth || '11, 21'}: blend/remove visible restoration interface lines
+${allowedChangesFromAnalysis}
+${patientDesires}
 
-The lips and skin must be PIXEL-PERFECT identical to the input image.
-Output the edited image with the exact same dimensions.`;
+=== STRICTLY FORBIDDEN ===
+- Changing gum levels or contours
+- Modifying tooth width or proportions
+- Any changes to lips, skin, or face
+- Extreme whitening (Hollywood white)
+
+Output the edited image with EXACT same dimensions as input.`;
 
   } else if (isIntraoralPhoto) {
-    // INTRAORAL PROMPT - Ultra-short
-    simulationPrompt = `Using this intraoral dental photo, whiten the teeth.
+    // INTRAORAL PROMPT - Preservation-first
+    simulationPrompt = `Using this intraoral dental photo, improve ONLY the teeth appearance.
 
-EDIT:
-- Change all visible teeth to white shade A1/A2
+=== ABSOLUTE PRESERVATION RULES ===
+1. GUMS: Do NOT modify gum level, shape, contour, or color
+2. TOOTH WIDTH: Do NOT change the width or proportions of any tooth
+3. TOOTH SHAPE: Only apply changes from the ALLOWED list below
+4. FRAMING: Keep exact same dimensions
+
+=== CHANGES ALLOWED ===
+- Whiten all visible teeth to shade A1/A2 (natural bright white)
 - Remove stains and discoloration
-- Make color uniform
-${patientDesires ? `- Patient wants: ${patientDesires}` : ''}
+- Make color uniform across all teeth
+${allowedChangesFromAnalysis}
+${patientDesires}
 
-PRESERVE: Gums, background, image dimensions - keep exactly as original.`;
+=== STRICTLY FORBIDDEN ===
+- Changing gum levels or contours
+- Modifying tooth width or proportions
+
+Output the edited image with EXACT same dimensions as input.`;
 
   } else {
-    // STANDARD PROMPT - Ultra-short, preservation-first
-    simulationPrompt = `Using this smile photo, change ONLY the teeth color.
+    // STANDARD PROMPT - Preservation-first with analysis guidance
+    simulationPrompt = `Using this smile photo, improve ONLY the teeth appearance.
 
-CRITICAL PRESERVATION RULE:
-Keep the lips, skin, facial features, and image framing EXACTLY THE SAME as the original photo.
-Do not modify anything except the teeth.
+=== ABSOLUTE PRESERVATION RULES ===
+1. LIPS: Keep lips PIXEL-PERFECT identical to original - do NOT change shape, color, texture, or position
+2. GUMS: Do NOT modify gum level, shape, contour, or color in ANY way
+3. TOOTH WIDTH: Maintain the EXACT width and proportions of each tooth
+4. TOOTH SHAPE: Only apply changes from the ALLOWED list below
+5. FRAMING: Keep exact same dimensions, angle, and zoom
 
-TEETH EDIT:
+=== CHANGES ALLOWED ===
 - Whiten all visible teeth to shade A1/A2 (natural bright white)
-- Remove any stains, yellowing, or discoloration
-- Make the color uniform across all teeth
-- Harmonize asymmetric lateral incisors (12 vs 22) if shapes differ
-${patientDesires ? `- Patient wants: ${patientDesires}` : ''}
+- Remove stains, yellowing, or discoloration
+- Make color uniform across all teeth
+${allowedChangesFromAnalysis}
+${patientDesires}
 
-The lips, skin texture, and photo composition must be PIXEL-PERFECT identical to the input image.
-Output the edited image with the exact same dimensions.`;
+=== STRICTLY FORBIDDEN ===
+- Changing gum levels or contours
+- Modifying tooth width or proportions (keep original proportions)
+- Any changes to lips, skin, or face
+- Extreme whitening (Hollywood white)
+
+If a change is NOT listed in CHANGES ALLOWED above, do NOT apply it.
+Output the edited image with EXACT same dimensions as input.`;
   }
 
   const promptType = needsReconstruction ? 'reconstruction' : 
@@ -823,39 +871,52 @@ ANÁLISE OBRIGATÓRIA:
 6. **Proporção Dourada**: Calcule a conformidade com a proporção áurea (0-100%)
 7. **Simetria**: Avalie a simetria geral do sorriso (0-100%)
 
-=== DETECÇÃO CRÍTICA DE RESTAURAÇÕES EXISTENTES ===
-ANTES de fazer qualquer elogio estético, você DEVE examinar CADA dente visível para sinais de restaurações prévias.
+=== DETECÇÃO DE RESTAURAÇÕES - CRITÉRIOS RIGOROSOS ===
+IMPORTANTE: Seja CONSERVADOR. Falsos positivos são PIORES que falsos negativos.
+Inventar restaurações inexistentes prejudica o planejamento clínico e a confiança do paciente.
 
-SINAIS DE RESTAURAÇÕES DE RESINA (procure atentamente):
-- Interface visível (linha onde a resina encontra o esmalte natural)
-- Diferença de cor/translucidez DENTRO do mesmo dente
-- Manchamento marginal (linha amarelada/acinzentada na borda da restauração)
-- Textura diferente entre superfícies (áreas mais lisas ou mais opacas)
-- Contorno artificial ou excessivamente uniforme
-- Perda de polimento em partes do dente
-- Cor mais opaca/artificial comparada a dentes adjacentes naturais
+DIAGNOSTIQUE RESTAURAÇÃO APENAS SE HOUVER:
+☑️ Interface de demarcação CLARAMENTE visível (linha nítida entre materiais)
+☑️ Diferença de cor/opacidade ÓBVIA e INEQUÍVOCA (não sutil)
+☑️ PELO MENOS 2 dos seguintes sinais adicionais:
+   - Manchamento marginal EVIDENTE (linha escura/amarelada clara na borda)
+   - Textura superficial VISIVELMENTE diferente
+   - Contorno artificial ou excessivamente uniforme
+   - Perda de polimento LOCALIZADA
 
-DIFERENCIAÇÃO CRÍTICA:
-- Dente NATURAL saudável: gradiente de cor cervical→incisal, translucidez uniforme, micro-textura orgânica
-- Dente com RESINA: cor mais uniforme/artificial, interface visível, possível manchamento marginal
+REGRA DE OURO: SE NÃO TIVER ABSOLUTA CERTEZA → NÃO MENCIONE RESTAURAÇÃO
 
-REGRAS PARA RESTAURAÇÕES DETECTADAS:
-1. NÃO diga "excelente resultado estético" se restaurações com defeitos estão presentes
-2. NÃO elogie "translucidez natural" em dentes claramente restaurados
-3. IDENTIFIQUE cada dente restaurado com problema específico
-4. PRIORIZE sugestão de "Substituição de restauração" sobre mudanças cosméticas sutis
+❌ NÃO confunda variação NATURAL de cor (cervical mais amarela, incisal translúcida) com restauração
+❌ NÃO confunda hipoplasia/fluorose com restauração
+❌ NÃO confunda sombra/iluminação com interface de restauração
+❌ NUNCA diga "Substituir restauração" se não houver PROVA VISUAL INEQUÍVOCA de restauração anterior
+❌ É preferível NÃO MENCIONAR uma restauração existente do que INVENTAR uma inexistente
 
-TIPOS DE PROBLEMAS EM RESTAURAÇÕES ANTIGAS:
-- "Restauração com manchamento marginal"
-- "Interface visível entre resina e esmalte"
-- "Restauração com cor inadequada"
-- "Restauração com perda de anatomia"
-- "Restauração classe IV com contorno artificial"
-- "Restauração com perda de polimento"
+=== REGRAS PARA GENGIVOPLASTIA ===
+❌ NUNCA sugira gengivoplastia se:
+- A linha do sorriso for "média" ou "baixa" (pouca exposição gengival)
+- Os zênites gengivais estiverem SIMÉTRICOS bilateralmente
+- A proporção largura/altura dos dentes estiver NORMAL (75-80%)
+- Não houver sorriso gengival evidente
 
-OBSERVAÇÃO OBRIGATÓRIA:
-Se detectar restaurações com problemas, DEVE incluir nas observações:
-"ATENÇÃO: Restauração(ões) de resina detectada(s) em [dentes]. Apresentam [problema]. Recomenda-se substituição."
+✅ Sugira gengivoplastia APENAS se:
+- Sorriso gengival EVIDENTE (>3mm de exposição gengival acima dos incisivos)
+- Zênites CLARAMENTE assimétricos que afetam a estética visivelmente
+- Dentes parecem "curtos" devido a excesso de gengiva visível
+
+=== AVALIAÇÃO COMPLETA DO ARCO DO SORRISO ===
+Quando identificar necessidade de tratamento em incisivos (11, 12, 21, 22), AVALIAÇÃO OBRIGATÓRIA:
+
+1. CANINOS (13, 23) - SEMPRE avaliar:
+   - Corredor bucal excessivo (espaço escuro lateral)? → Considerar volume vestibular
+   - Proeminência adequada para suporte do arco? → Avaliar harmonização
+
+2. PRÉ-MOLARES (14, 15, 24, 25) - Avaliar se visíveis:
+   - Visíveis ao sorrir? → Avaliar integração no arco
+   - Corredor escuro lateral extenso? → Considerar adição de volume
+
+REGRA: Se ≥4 dentes anteriores precisam de intervenção, SEMPRE avalie os 6-8 dentes visíveis no arco.
+Inclua caninos/pré-molares com prioridade "baixa" se a melhoria for apenas para harmonização estética.
 
 === AVALIAÇÃO DE VIABILIDADE DO DSD ===
 Antes de sugerir tratamentos, avalie se o caso É ADEQUADO para simulação visual:
@@ -878,19 +939,23 @@ Use confidence="média" ou "alta" para fotos de sorriso com lábios.
 APENAS use confidence="baixa" por tipo de foto se for uma foto INTRAORAL VERDADEIRA (com afastador, sem lábios externos).
 
 === SUGESTÕES - PRIORIDADE DE TRATAMENTOS ===
-PRIORIDADE 1: Restaurações com infiltração/manchamento (saúde bucal)
-PRIORIDADE 2: Restaurações com cor/anatomia inadequada (estética funcional)
+PRIORIDADE 1: Restaurações com infiltração/manchamento EVIDENTE (saúde bucal)
+PRIORIDADE 2: Restaurações com cor/anatomia inadequada ÓBVIA (estética funcional)
 PRIORIDADE 3: Melhorias em dentes naturais (refinamento estético)
 
 TIPOS DE SUGESTÕES PERMITIDAS:
 
-A) SUBSTITUIÇÃO DE RESTAURAÇÃO (prioridade alta):
-   - current_issue: "Restauração classe IV com manchamento marginal e interface visível"
+A) SUBSTITUIÇÃO DE RESTAURAÇÃO (prioridade alta) - APENAS com evidência clara:
+   - current_issue: "Restauração classe IV com manchamento marginal EVIDENTE e interface CLARAMENTE visível"
    - proposed_change: "Substituir por nova restauração com melhor adaptação de cor e contorno"
 
 B) TRATAMENTO CONSERVADOR (para dentes naturais sem restauração):
    - current_issue: "Bordo incisal irregular"
    - proposed_change: "Aumentar 1mm com lente de contato"
+
+C) HARMONIZAÇÃO DE ARCO (incluir dentes adjacentes):
+   - current_issue: "Corredor bucal excessivo - canino com volume reduzido"
+   - proposed_change: "Adicionar faceta para preencher corredor bucal"
 
 === IDENTIFICAÇÃO PRECISA DE DENTES (OBRIGATÓRIO) ===
 ANTES de listar sugestões, identifique CADA dente CORRETAMENTE:
@@ -899,6 +964,7 @@ CRITÉRIOS DE IDENTIFICAÇÃO FDI - MEMORIZE:
 - CENTRAIS (11, 21): MAIORES, mais LARGOS, bordos mais RETOS
 - LATERAIS (12, 22): MENORES (~20-30% mais estreitos), contorno mais ARREDONDADO/OVAL
 - CANINOS (13, 23): PONTIAGUDOS, proeminência vestibular
+- PRÉ-MOLARES (14, 15, 24, 25): Duas cúspides, visíveis em sorrisos amplos
 
 ERRO COMUM A EVITAR:
 Se detectar 2 dentes com restauração lado a lado, pergunte-se:
@@ -916,35 +982,37 @@ LIMITES PARA SUGESTÕES:
 - NÃO sugira clareamento extremo ou cor artificial
 
 ✅ OBRIGATÓRIO: Listar TODOS os dentes que precisam de intervenção (mesmo 6-8 dentes)
-   - Se o paciente tem múltiplos dentes com restaurações antigas, liste TODOS
+   - Se o paciente tem múltiplos dentes com problemas, liste TODOS
    - Ordene por prioridade: problemas de saúde > estética funcional > refinamento
    - O dentista precisa ver o escopo COMPLETO para planejar orçamento
+   - Se 4 dentes anteriores precisam de tratamento, AVALIE também caninos e pré-molares
 
 REGRAS ESTRITAS:
-✅ PERMITIDO: identificar e sugerir substituição de restaurações antigas
+✅ PERMITIDO: identificar e sugerir substituição de restaurações com EVIDÊNCIA CLARA
 ✅ PERMITIDO: aumentar levemente comprimento, fechar pequenos espaços, harmonizar contorno
-❌ PROIBIDO: elogiar restaurações que claramente têm problemas
-❌ PROIBIDO: ignorar diferenças de cor/textura entre áreas do dente
-❌ PROIBIDO: dizer "excelente resultado" se restaurações antigas com defeitos estão presentes
-❌ PROIBIDO: focar em melhorias sutis quando restaurações precisam ser substituídas
+✅ PERMITIDO: incluir caninos/pré-molares para harmonização completa do arco
+❌ PROIBIDO: inventar restaurações sem prova visual inequívoca
+❌ PROIBIDO: sugerir gengivoplastia sem sorriso gengival evidente
+❌ PROIBIDO: dizer "excelente resultado" se problemas estéticos óbvios estão presentes
+❌ PROIBIDO: focar apenas em 4 dentes quando o arco completo precisa de harmonização
 ❌ PROIBIDO: diminuir, encurtar, mudanças dramáticas de forma
-❌ PROIBIDO: sugerir "dentes brancos", "clareamento Hollywood" ou cor artificial
-❌ PROIBIDO: sugerir tratamentos para dentes AUSENTES ou com destruição severa
+❌ PROIBIDO: sugerir "dentes brancos Hollywood" ou cor artificial
 
-Exemplo BOM (substituição): "Restauração classe IV do 11 com interface visível" → "Substituir por nova restauração com melhor adaptação"
+Exemplo BOM (substituição com evidência): "Restauração classe IV do 11 com interface CLARAMENTE visível e manchamento marginal" → "Substituir por nova restauração"
 Exemplo BOM (conservador): "Aumentar bordo incisal do 21 em 1mm para harmonizar altura com 11"
-Exemplo RUIM: "Excelente translucidez natural" em dente com restauração visível - NÃO USAR
+Exemplo BOM (arco completo): Listar 11, 12, 13, 21, 22, 23 quando todos precisam de harmonização
+Exemplo RUIM: "Substituir restauração" sem evidência visual clara - NÃO USAR
+Exemplo RUIM: Listar apenas 4 dentes quando caninos também precisam de volume - INCOMPLETO
 
-FILOSOFIA: Primeiro identifique problemas em restaurações existentes, depois considere melhorias em dentes naturais.
+FILOSOFIA: Seja conservador na detecção de restaurações, mas completo na avaliação do arco do sorriso.
 
 OBSERVAÇÕES:
 Inclua 2-3 observações clínicas objetivas sobre o sorriso.
-Se detectar restaurações com problemas, PRIORIZE alertar sobre elas.
 Se identificar limitações para simulação, inclua uma observação com "ATENÇÃO:" explicando.
 
 IMPORTANTE:
-- Seja CRÍTICO ao avaliar restaurações existentes
-- Priorize identificar problemas em trabalhos anteriores
+- Seja CONSERVADOR ao diagnosticar restaurações existentes
+- Seja COMPLETO ao avaliar o arco do sorriso (inclua todos os dentes visíveis)
 - TODAS as sugestões devem ser clinicamente realizáveis
 - Se o caso NÃO for adequado para DSD, AINDA forneça a análise de proporções mas marque confidence="baixa"`;
 
