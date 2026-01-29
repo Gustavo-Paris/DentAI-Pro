@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Smile, Sparkles, Loader2, RefreshCw, ChevronRight, Lightbulb, AlertCircle } from 'lucide-react';
+import { Smile, Loader2, RefreshCw, ChevronRight, Lightbulb, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
 import { ProportionsCard } from '@/components/dsd/ProportionsCard';
@@ -62,7 +62,6 @@ const analysisSteps = [
   { label: 'Analisando proporções dentárias...', duration: 3000 },
   { label: 'Calculando proporção dourada...', duration: 2000 },
   { label: 'Avaliando simetria...', duration: 2000 },
-  { label: 'Gerando simulação do sorriso...', duration: 5000 },
 ];
 
 export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, patientPreferences }: DSDStepProps) {
@@ -72,6 +71,11 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
   const [error, setError] = useState<string | null>(null);
   const [simulationImageUrl, setSimulationImageUrl] = useState<string | null>(null);
   const [isRegeneratingSimulation, setIsRegeneratingSimulation] = useState(false);
+  
+  // NEW: Background simulation states
+  const [isSimulationGenerating, setIsSimulationGenerating] = useState(false);
+  const [simulationError, setSimulationError] = useState(false);
+  
   const { invokeFunction } = useAuthenticatedFetch();
   
   // Ref to prevent multiple simultaneous analysis calls
@@ -94,6 +98,51 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
     loadSimulationUrl();
   }, [result?.simulation_url]);
 
+  // NEW: Background simulation generation
+  const generateSimulationBackground = async () => {
+    if (!imageBase64 || !result?.analysis) return;
+
+    setIsSimulationGenerating(true);
+    setSimulationError(false);
+
+    try {
+      const { data, error: fnError } = await invokeFunction<DSDResult>('generate-dsd', {
+        body: {
+          imageBase64,
+          toothShape: TOOTH_SHAPE,
+          regenerateSimulationOnly: true,
+          existingAnalysis: result.analysis,
+        },
+      });
+
+      if (fnError || !data?.simulation_url) {
+        setSimulationError(true);
+        return;
+      }
+
+      // Update result with new simulation URL
+      setResult((prev) => prev ? { 
+        ...prev, 
+        simulation_url: data.simulation_url 
+      } : prev);
+
+      // Load signed URL
+      const { data: signedData } = await supabase.storage
+        .from('dsd-simulations')
+        .createSignedUrl(data.simulation_url, 3600);
+
+      if (signedData?.signedUrl) {
+        setSimulationImageUrl(signedData.signedUrl);
+        toast.success('Simulação visual pronta!');
+      }
+    } catch (err) {
+      console.error('Background simulation error:', err);
+      setSimulationError(true);
+    } finally {
+      setIsSimulationGenerating(false);
+    }
+  };
+
   const analyzeDSD = async (retryCount = 0) => {
     const MAX_RETRIES = 2;
     let didRetry = false;
@@ -108,7 +157,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
     setError(null);
     setCurrentStep(0);
 
-    // Simulate progress steps
+    // Simulate progress steps (only for analysis phase now)
     const stepInterval = setInterval(() => {
       setCurrentStep((prev) => {
         if (prev < analysisSteps.length - 1) {
@@ -123,6 +172,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
       const requestBody: Record<string, unknown> = {
         imageBase64,
         toothShape: TOOTH_SHAPE,
+        analysisOnly: true, // NEW: Request only analysis, simulation will be background
       };
       
       // Add additional photos if available (for enriching analysis context)
@@ -141,6 +191,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
         };
       }
       
+      // PHASE 1: Get analysis quickly (~25s)
       const { data, error: fnError } = await invokeFunction<DSDResult>('generate-dsd', {
         body: requestBody,
       });
@@ -152,9 +203,13 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
       }
 
       if (data?.analysis) {
+        // Show analysis immediately
         setResult(data);
         setIsAnalyzing(false);
-        toast.success('Análise DSD concluída!');
+        toast.success('Análise de proporções concluída!');
+        
+        // PHASE 2: Generate simulation in background
+        generateSimulationBackground();
       } else {
         throw new Error('Dados de análise não retornados');
       }
@@ -213,6 +268,8 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
     setResult(null);
     setError(null);
     setSimulationImageUrl(null);
+    setSimulationError(false);
+    setIsSimulationGenerating(false);
     analysisStartedRef.current = false; // Allow retry
     analyzeDSD();
   };
@@ -221,6 +278,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
     if (!imageBase64 || !result?.analysis) return;
 
     setIsRegeneratingSimulation(true);
+    setSimulationError(false);
 
     try {
       const { data, error: fnError } = await invokeFunction<DSDResult>('generate-dsd', {
@@ -277,13 +335,13 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
       <>
         <LoadingOverlay
           isLoading={true}
-          message="Planejamento Digital do Sorriso"
+          message="Analisando proporções do sorriso"
           steps={loadingSteps}
         />
         <div className="flex flex-col items-center justify-center py-12 space-y-4">
           <Skeleton className="h-8 w-48" />
           <Skeleton className="h-64 w-full" />
-          <p className="text-xs text-muted-foreground">Powered by Gemini Vision + Image Generation</p>
+          <p className="text-xs text-muted-foreground">Powered by Gemini Vision</p>
         </div>
       </>
     );
@@ -384,7 +442,50 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
           </Card>
         )}
 
-        {/* Comparison Slider */}
+        {/* NEW: Background simulation generating card */}
+        {isSimulationGenerating && !simulationImageUrl && (
+          <Card className="border-primary/30 bg-primary/5">
+            <CardContent className="py-6">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-medium">Gerando simulação visual...</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Você pode continuar revisando a análise enquanto processamos
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* NEW: Background simulation error card */}
+        {simulationError && !simulationImageUrl && !isSimulationGenerating && (
+          <Card className="border-amber-400 bg-amber-50/50">
+            <CardContent className="py-4">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <AlertCircle className="w-5 h-5 text-amber-600" />
+                  <span className="text-sm text-amber-700">
+                    Simulação não pôde ser gerada automaticamente
+                  </span>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={generateSimulationBackground}
+                >
+                  <RefreshCw className="w-3 h-3 mr-1" />
+                  Tentar novamente
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Comparison Slider - when simulation is ready */}
         {imageBase64 && simulationImageUrl && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -415,33 +516,15 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
           </div>
         )}
 
-        {/* If no simulation, show button to generate */}
-        {imageBase64 && !simulationImageUrl && (
+        {/* If no simulation and not generating, show button to generate */}
+        {imageBase64 && !simulationImageUrl && !isSimulationGenerating && !simulationError && (
           <div className="space-y-3">
             <Alert>
               <AlertCircle className="w-4 h-4" />
               <AlertDescription>
-                A simulação visual não pôde ser gerada, mas a análise de proporções está disponível abaixo.
+                A simulação visual está sendo preparada. A análise de proporções está disponível abaixo.
               </AlertDescription>
             </Alert>
-            <Button
-              variant="outline"
-              onClick={handleRegenerateSimulation}
-              disabled={isRegeneratingSimulation}
-              className="w-full"
-            >
-              {isRegeneratingSimulation ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Gerando simulação...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  Tentar Gerar Simulação
-                </>
-              )}
-            </Button>
           </div>
         )}
 
