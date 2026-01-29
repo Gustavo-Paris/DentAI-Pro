@@ -1,7 +1,12 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { User, MapPin, Layers, Palette, Crown, Stethoscope, ArrowUpRight, CircleX } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { User, MapPin, Layers, Palette, Crown, Stethoscope, ArrowUpRight, CircleX, Info } from "lucide-react";
 
 // Treatment type configuration
 const treatmentConfig: Record<string, { 
@@ -15,6 +20,21 @@ const treatmentConfig: Record<string, {
   implante: { label: 'Implante', icon: CircleX, showCavityInfo: false },
   endodontia: { label: 'Endodontia', icon: Stethoscope, showCavityInfo: false },
   encaminhamento: { label: 'Encaminhamento', icon: ArrowUpRight, showCavityInfo: false },
+};
+
+// Procedimentos estéticos que não usam classificação de cavidade tradicional
+const AESTHETIC_PROCEDURES = [
+  'Faceta Direta', 
+  'Recontorno Estético', 
+  'Fechamento de Diastema', 
+  'Reparo de Restauração'
+];
+
+// Explicações dos níveis estéticos
+const aestheticExplanations: Record<string, string> = {
+  'básico': 'Restauração funcional, estética secundária',
+  'alto': 'Mimetismo natural exigido, paciente atento aos detalhes',
+  'muito alto': 'DSD ativo, harmonização completa, estética de excelência'
 };
 
 interface CaseSummaryBoxProps {
@@ -82,10 +102,12 @@ export default function CaseSummaryBox({
             <div className="space-y-0.5 sm:space-y-1">
               <div className="flex items-center gap-1 sm:gap-1.5 text-muted-foreground text-xs">
                 <Layers className="w-3 h-3" />
-                Cavidade
+                {AESTHETIC_PROCEDURES.includes(cavityClass) ? 'Procedimento' : 'Classificação (Black)'}
               </div>
               <p className="font-medium text-sm sm:text-base">{cavityClass}</p>
-              <p className="text-xs text-muted-foreground capitalize">{restorationSize}</p>
+              {!AESTHETIC_PROCEDURES.includes(cavityClass) && (
+                <p className="text-xs text-muted-foreground capitalize">{restorationSize}</p>
+              )}
             </div>
           )}
           
@@ -114,9 +136,19 @@ export default function CaseSummaryBox({
         
         {/* Tags */}
         <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-3 sm:mt-4 pt-2 sm:pt-3 border-t border-border">
-          <Badge variant="outline" className="capitalize text-xs">
-            Estética: {aestheticLevel}
-          </Badge>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Badge variant="outline" className="capitalize text-xs cursor-help gap-1">
+                <Info className="w-3 h-3" />
+                Estética: {aestheticLevel}
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              <p className="text-xs max-w-[200px]">
+                {aestheticExplanations[aestheticLevel.toLowerCase()] || 'Nível estético selecionado'}
+              </p>
+            </TooltipContent>
+          </Tooltip>
           {bruxism && (
             <Badge variant="destructive" className="text-xs">
               Bruxismo

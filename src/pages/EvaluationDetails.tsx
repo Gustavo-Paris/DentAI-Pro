@@ -341,7 +341,11 @@ export default function EvaluationDetails() {
       if (AESTHETIC_PROCEDURES.includes(evaluation.cavity_class)) {
         return evaluation.cavity_class; // Mostra "Faceta Direta" diretamente
       }
-      return `Classe ${evaluation.cavity_class} • ${evaluation.restoration_size}`;
+      // Evitar duplicação "Classe Classe" - o DB já pode ter "Classe IV"
+      const cavityLabel = evaluation.cavity_class.startsWith('Classe ') 
+        ? evaluation.cavity_class 
+        : `Classe ${evaluation.cavity_class}`;
+      return `${cavityLabel} • ${evaluation.restoration_size}`;
     }
     
     // For other treatments, show AI indication or short description
