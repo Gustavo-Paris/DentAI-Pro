@@ -203,12 +203,10 @@ async function generateSimulation(
     ? '- Tooth color → shade A1/A2 (natural white)'
     : '- Keep natural tooth color (remove stains only)';
 
-  // Mandatory corrections - always applied regardless of preferences
-  const mandatoryCorrections = `- Remove stains and discolorations
-- Fill small holes, chips or defects on tooth edges
-- Close small gaps between teeth (up to 2mm)
-- Remove visible dark lines at restoration margins
-- Smooth irregular enamel surfaces`;
+  // Base corrections - focused and specific (avoid over-smoothing)
+  const baseCorrections = `1. Fill visible holes, chips or defects on tooth edges
+2. Remove dark stain spots
+3. Close small gaps between teeth (up to 2mm)`;
   
   // Check if case needs reconstruction (missing/destroyed teeth)
   const needsReconstruction = analysis.suggestions.some(s => {
@@ -306,94 +304,94 @@ async function generateSimulation(
       return `Dente ${s.tooth}: COPIE do ${contralateral || 'vizinho'}`;
     }).join(', ');
 
-    simulationPrompt = `TEETH RECONSTRUCTION
+    simulationPrompt = `DENTAL PHOTO EDIT - RECONSTRUCTION
 
-Task: Reconstruct missing/damaged teeth and improve all teeth.
+Edit ONLY the teeth in this photo. Keep everything else IDENTICAL.
 
-COPY EXACTLY (unchanged):
-- Lips (same color, shape, texture)
-- Gums (same level, color)
+PRESERVE (do not change):
+- Lips (exact color, shape, texture, position)
+- Gums (exact level, color, shape)
 - Skin (unchanged)
-- Existing tooth size
-- Image dimensions
+- Tooth natural texture and surface details
+- Image dimensions and framing
 
-MANDATORY CORRECTIONS (always apply):
-${mandatoryCorrections}
+CORRECTIONS TO APPLY:
+${baseCorrections}
+${colorInstruction}
 
 RECONSTRUCTION:
 - ${specificInstructions || 'Fill missing teeth using adjacent teeth as reference'}
-
-COLOR ADJUSTMENT:
-${colorInstruction}
 ${allowedChangesFromAnalysis}
 
-Output: Same photo with reconstructed + improved teeth only.`;
+CRITICAL: Maintain natural enamel texture. Do NOT make teeth look plastic or artificial.
+
+Output: Same photo with corrected teeth only.`;
 
   } else if (needsRestorationReplacement) {
-    simulationPrompt = `RESTORATION BLEND
+    simulationPrompt = `DENTAL PHOTO EDIT - RESTORATION
 
-Task: Blend restoration margins and improve teeth.
+Edit ONLY the teeth in this photo. Keep everything else IDENTICAL.
 
-COPY EXACTLY (unchanged):
-- Lips (same color, shape, texture)
-- Gums (same level, color)
+PRESERVE (do not change):
+- Lips (exact color, shape, texture, position)
+- Gums (exact level, color, shape)
 - Skin (unchanged)
-- Tooth size (same width, length)
-- Image dimensions
+- Tooth natural texture and surface details
+- Image dimensions and framing
 
-MANDATORY CORRECTIONS (always apply):
-${mandatoryCorrections}
+CORRECTIONS TO APPLY:
+${baseCorrections}
+${colorInstruction}
 
 RESTORATION FOCUS:
 - Blend interface lines on teeth ${restorationTeeth || '11, 21'}
-
-COLOR ADJUSTMENT:
-${colorInstruction}
 ${allowedChangesFromAnalysis}
 
-Output: Same photo with blended restorations and improved teeth.`;
+CRITICAL: Maintain natural enamel texture. Do NOT make teeth look plastic or artificial.
+
+Output: Same photo with corrected teeth only.`;
 
   } else if (isIntraoralPhoto) {
-    simulationPrompt = `INTRAORAL TEETH EDIT
+    simulationPrompt = `DENTAL PHOTO EDIT - INTRAORAL
 
-Task: Improve the teeth in this intraoral photo.
+Edit ONLY the teeth in this intraoral photo. Keep everything else IDENTICAL.
 
-COPY EXACTLY (unchanged):
-- Gums (same level, color)
-- Tooth size (same width, length)
+PRESERVE (do not change):
+- Gums (exact level, color, shape)
+- Tooth natural texture and surface details
 - All other tissues
-- Image dimensions
+- Image dimensions and framing
 
-MANDATORY CORRECTIONS (always apply):
-${mandatoryCorrections}
-
-COLOR ADJUSTMENT:
+CORRECTIONS TO APPLY:
+${baseCorrections}
 ${colorInstruction}
 ${allowedChangesFromAnalysis}
 
-Output: Same photo with improved teeth only.`;
+CRITICAL: Maintain natural enamel texture. Do NOT make teeth look plastic or artificial.
+
+Output: Same photo with corrected teeth only.`;
 
   } else {
-    // STANDARD PROMPT - Conservative with mandatory corrections
-    simulationPrompt = `TEETH EDIT ONLY
+    // STANDARD PROMPT - Focused corrections with texture preservation
+    simulationPrompt = `DENTAL PHOTO EDIT
 
-Task: Improve the teeth in this photo. Do NOT change anything else.
+Edit ONLY the teeth in this photo. Keep everything else IDENTICAL.
 
-COPY EXACTLY (unchanged):
-- Lips (same color, shape, texture)
-- Gums (same level, color)
+PRESERVE (do not change):
+- Lips (exact color, shape, texture, position)
+- Gums (exact level, color, shape)
 - Skin (unchanged)
-- Tooth size (same width, length)
-- Image dimensions
+- Tooth natural texture and surface details
+- Image dimensions and framing
 
-MANDATORY CORRECTIONS (always apply):
-${mandatoryCorrections}
-
-COLOR ADJUSTMENT:
+CORRECTIONS TO APPLY:
+${baseCorrections}
 ${colorInstruction}
 ${allowedChangesFromAnalysis}
 
-Output: Same photo with improved teeth only.`;
+CRITICAL: Maintain natural enamel texture. Do NOT make teeth look plastic or artificial.
+
+Output: Same photo with corrected teeth only.`;
   }
 
   const promptType = needsReconstruction ? 'reconstruction' : 
@@ -408,8 +406,8 @@ Output: Same photo with improved teeth only.`;
     suggestionsCount: analysis.suggestions.length,
   });
 
-  // Single attempt with optimized model
-  const model = "google/gemini-2.5-flash-image-preview";
+  // High-quality model for realistic results
+  const model = "google/gemini-3-pro-image-preview";
   
   try {
     const response = await fetchWithTimeout(
