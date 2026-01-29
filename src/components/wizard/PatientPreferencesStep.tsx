@@ -1,12 +1,10 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Heart, Sparkles, ArrowRight, SkipForward } from 'lucide-react';
 
 export interface PatientPreferences {
-  aestheticGoals: string;
   desiredChanges: string[];
 }
 
@@ -19,11 +17,7 @@ interface PatientPreferencesStepProps {
 
 const DESIRED_CHANGES_OPTIONS = [
   { id: 'whiter', label: 'Dentes mais brancos' },
-  { id: 'harmonious', label: 'Sorriso mais harmonioso' },
   { id: 'spacing', label: 'Corrigir espaçamentos/diastemas' },
-  { id: 'alignment', label: 'Dentes mais alinhados' },
-  { id: 'natural', label: 'Formato mais natural' },
-  { id: 'asymmetry', label: 'Corrigir assimetrias' },
 ];
 
 export function PatientPreferencesStep({
@@ -32,13 +26,6 @@ export function PatientPreferencesStep({
   onContinue,
   onSkip,
 }: PatientPreferencesStepProps) {
-  const handleGoalsChange = (value: string) => {
-    onPreferencesChange({
-      ...preferences,
-      aestheticGoals: value.slice(0, 300),
-    });
-  };
-
   const handleCheckboxChange = (optionId: string, checked: boolean) => {
     const newChanges = checked
       ? [...preferences.desiredChanges, optionId]
@@ -50,7 +37,7 @@ export function PatientPreferencesStep({
     });
   };
 
-  const hasAnyPreference = preferences.aestheticGoals.trim() || preferences.desiredChanges.length > 0;
+  const hasAnyPreference = preferences.desiredChanges.length > 0;
 
   return (
     <div className="w-full max-w-2xl mx-auto">
@@ -69,28 +56,10 @@ export function PatientPreferencesStep({
         </CardHeader>
         
         <CardContent className="space-y-6">
-          {/* Textarea for free-form goals */}
-          <div className="space-y-2">
-            <Label htmlFor="aesthetic-goals" className="text-sm font-medium">
-              O que você gostaria de mudar no seu sorriso?
-            </Label>
-            <Textarea
-              id="aesthetic-goals"
-              placeholder="Ex: Gostaria de ter dentes mais brancos e uniformes, com um formato mais natural..."
-              value={preferences.aestheticGoals}
-              onChange={(e) => handleGoalsChange(e.target.value)}
-              className="min-h-[100px] resize-none"
-              maxLength={300}
-            />
-            <p className="text-xs text-muted-foreground text-right">
-              {preferences.aestheticGoals.length}/300 caracteres
-            </p>
-          </div>
-
-          {/* Checkboxes for common desires */}
+          {/* Checkboxes for desires */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">Desejos comuns</Label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Label className="text-sm font-medium">O que o paciente deseja?</Label>
+            <div className="grid grid-cols-1 gap-3">
               {DESIRED_CHANGES_OPTIONS.map((option) => (
                 <div
                   key={option.id}
