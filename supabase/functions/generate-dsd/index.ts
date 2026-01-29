@@ -389,6 +389,7 @@ CHANGE ONLY:
 - Tooth enamel color → shade A1/A2 (natural white)
 - Remove stains
 - Remove visible dark lines at restoration edges
+- Fill small chips or defects on tooth edges
 ${allowedChangesFromAnalysis}
 
 Output: Same photo with improved teeth only.`;
