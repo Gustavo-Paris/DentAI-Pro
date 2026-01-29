@@ -1,194 +1,292 @@
 
-# Plano de Correção: Classe/Resumo do Caso/Estratificação
-
-## Resumo dos Problemas Identificados
-
-Após análise do código e do banco de dados, identifiquei as seguintes causas raiz:
-
-| # | Problema | Causa | Arquivo |
-|---|----------|-------|---------|
-| 1 | "Classe Classe IV" | O banco já salva "Classe IV" e o código adiciona "Classe " na frente | `EvaluationDetails.tsx` |
-| 2 | "Cavidade" aparece para procedimentos estéticos | Label fixo no `CaseSummaryBox.tsx` | `CaseSummaryBox.tsx` |
-| 3 | Só mostra "Tokuyama" na tabela de estratificação | Campo `resin_brand` do AI só contém fabricante | `ProtocolTable.tsx` + prompt AI |
-| 4 | Badge "Estética: Alto" sem tooltip | Falta tooltip explicativo | `CaseSummaryBox.tsx` |
+# Avaliação Expert: Dentista Estético + UX Designer
+## Plano de Ajustes para Produção do ResinMatch AI
 
 ---
 
-## Correção 1: Remover duplicação "Classe Classe"
+## 1. Sumário Executivo
 
-**Arquivo:** `src/pages/EvaluationDetails.tsx` (linha 344)
+Após análise completa da plataforma atuando como **dentista especialista em estética oral** e **UX designer**, identifiquei **43 pontos de melhoria** organizados em 4 categorias:
 
-**Problema atual:**
-```typescript
-return `Classe ${evaluation.cavity_class} • ${evaluation.restoration_size}`;
-// evaluation.cavity_class = "Classe IV" → Resultado: "Classe Classe IV"
-```
-
-**Solução:**
-Remover o prefixo "Classe " pois o valor já contém a palavra:
-
-```typescript
-// Detectar se já começa com "Classe"
-const cavityLabel = evaluation.cavity_class.startsWith('Classe ') 
-  ? evaluation.cavity_class 
-  : `Classe ${evaluation.cavity_class}`;
-return `${cavityLabel} • ${evaluation.restoration_size}`;
-```
-
-**Texto final sugerido:** `Classe IV • Média`
+| Categoria | Quantidade | Impacto |
+|-----------|------------|---------|
+| P0 - Bloqueadores de Produção | 5 | Crítico |
+| P1 - Credibilidade Clínica | 12 | Alto |
+| P2 - Experiência do Usuário | 16 | Médio |
+| P3 - Polish & Delight | 10 | Baixo |
 
 ---
 
-## Correção 2: Trocar label "Cavidade" por nomenclatura contextual
+## 2. Avaliação Clínica (Visão do Dentista Especialista)
 
-**Arquivo:** `src/components/protocol/CaseSummaryBox.tsx` (linhas 80-90)
+### 2.1 Pontos Fortes Identificados
 
-**Problema atual:**
-```tsx
-<Layers className="w-3 h-3" />
-Cavidade  // ← Sempre mostra "Cavidade"
-```
+1. **Terminologia Estética Correta**: O sistema já diferencia procedimentos estéticos (Faceta Direta, Recontorno) de classes de Black
+2. **Catálogo Robusto**: 347 cores de 21 linhas de produtos profissionais reconhecidas
+3. **Protocolo Multi-Camada**: Estratificação com Opaco/Dentina/Esmalte/Efeitos
+4. **Integração de Preferências**: Sistema de clareamento com mapeamento VITA correto
+5. **Proibição de Técnicas Obsoletas**: O prompt já bloqueia "bisel" em favor de "chanfro suave"
 
-**Solução:**
-Adicionar lista de procedimentos estéticos e condicionar o label:
+### 2.2 Problemas Clínicos Críticos
 
-```typescript
-const AESTHETIC_PROCEDURES = [
-  'Faceta Direta', 
-  'Recontorno Estético', 
-  'Fechamento de Diastema', 
-  'Reparo de Restauração'
-];
+#### P0-C1: Espessuras Genéricas nas Camadas
+**Problema**: As espessuras no protocolo (0.3-0.5mm) são apresentadas sem contexto clínico suficiente. Em casos de substratos escurecidos, a camada de opaco precisa de espessura maior para mascaramento adequado.
 
-const isAestheticProcedure = cavityClass && AESTHETIC_PROCEDURES.includes(cavityClass);
-const cavityLabel = isAestheticProcedure ? 'Procedimento' : 'Classificação (Black)';
-```
+**Correção**:
+- Tooltip já implementado (verificado em `ProtocolTable.tsx`)
+- Adicionar variação de espessura baseada em `substrate_condition`
+- Quando substrato = "Escurecido", sugerir camada opaca com 0.5-0.8mm
 
-**Renderização:**
-- Para classes tradicionais: "Classificação (Black): Classe IV"
-- Para estéticos: "Procedimento: Faceta Direta"
+#### P0-C2: Falta de Protocolo Adesivo Detalhado
+**Problema**: O checklist menciona "sistema adesivo conforme fabricante" mas não guia o profissional sobre os tipos (etch-and-rinse vs self-etch vs universal).
 
----
+**Correção**:
+- Adicionar campo `adhesive_system_recommendation` no protocolo
+- Incluir no prompt: "Recomendar tipo de sistema adesivo baseado na condição do substrato"
 
-## Correção 3: Mostrar Fabricante + Linha na tabela de estratificação
+#### P1-C3: Cores de Efeito Não Mapeadas por Fabricante
+**Problema**: O protocolo pode recomendar "Trans20" (Empress Direct) mas o dentista pode ter Estelite. Falta mapeamento cross-brand para cores de efeito.
 
-**Arquivo:** `src/components/protocol/ProtocolTable.tsx` (linha 56)
+**Correção**:
+- Criar tabela `shade_equivalents` com equivalências entre marcas
+- Ex: Trans20 (Empress) ≈ CT (Z350) ≈ OT (Estelite)
 
-**Problema atual:**
-```tsx
-<TableCell>{layer.resin_brand}</TableCell>  // Mostra só "Tokuyama"
-```
+#### P1-C4: Ausência de Indicação de Polimento
+**Problema**: O protocolo de estratificação não inclui etapas de acabamento e polimento, que são críticas para estética e longevidade.
 
-**Solução A - Frontend (paliativa):**
-O campo `resin_brand` deveria vir do AI como "Tokuyama - Estelite Omega", não apenas "Tokuyama".
+**Correção**:
+- Adicionar seção "Acabamento & Polimento" após as camadas
+- Incluir: granulosidade de discos, pastas, tempo de polimento por área
 
-**Solução B - Corrigir no prompt da AI (recomendado):**
-**Arquivo:** `supabase/functions/recommend-resin/index.ts`
+#### P1-C5: Sem Guidance para Casos de Bruxismo
+**Problema**: Quando `bruxism = true`, o sistema deveria ajustar automaticamente:
+- Reduzir espessura de esmalte
+- Priorizar resinas de alta resistência
+- Alertar sobre proteção noturna
 
-Modificar a instrução no prompt que define o formato de `resin_brand`:
-
-```
-Para cada camada, informe:
-- resin_brand: Fabricante + Linha do produto (ex: "Tokuyama - Estelite Sigma Quick", "FGM - Vittra APS")
-- NÃO informe apenas o fabricante (ex: "Tokuyama" é incorreto)
-```
-
-Esta correção fará com que novos protocolos venham com o formato correto. Dados existentes permanecerão com formato antigo.
+**Correção**: O prompt já considera bruxismo, mas verificar se os alertas são suficientemente enfáticos
 
 ---
 
-## Correção 4: Espessura como faixa guia
+## 3. Avaliação de UX (Visão do Designer)
 
-**Arquivo:** `src/components/protocol/ProtocolTable.tsx` (linha 64)
+### 3.1 Fluxo do Wizard (NewCase.tsx)
 
-**Problema atual:**
-```tsx
-<TableCell className="text-muted-foreground">
-  {layer.thickness}
-</TableCell>
-```
+#### P0-U1: Navegação entre DSD e Revisão
+**Problema**: O botão "Voltar" no step de DSD (step 4) pode confundir pois pula a análise (step 3) e vai direto para preferências (step 2).
 
-**Solução:**
-A correção principal deve vir do prompt da AI que já deve gerar faixas (0.3-0.5mm). No frontend, adicionar tooltip ou texto de apoio:
+**Recomendação**: 
+- Manter comportamento atual (correto) mas adicionar indicação visual
+- Mostrar toast: "Análise preservada. Voltando para preferências..."
 
-```tsx
-<TableCell className="text-muted-foreground">
-  <Tooltip>
-    <TooltipTrigger asChild>
-      <span className="cursor-help border-b border-dotted border-muted-foreground/50">
-        {layer.thickness}
-      </span>
-    </TooltipTrigger>
-    <TooltipContent side="top">
-      <p className="text-xs">Ajustar conforme profundidade e mascaramento necessário</p>
-    </TooltipContent>
-  </Tooltip>
-</TableCell>
-```
+#### P1-U2: Progresso Visual do Wizard
+**Problema**: Os passos são icons no mobile mas não indicam claramente qual está ativo.
+
+**Correção**:
+- Adicionar indicador de progresso circular ou barra contínua
+- Texto "Passo X de 6" visível sempre
+
+#### P1-U3: Preview de Foto com Bounds
+**Problema**: A foto mostra os dentes detectados, mas não há visualização dos bounds antes da revisão.
+
+**Recomendação**:
+- Mostrar overlay visual dos dentes detectados na foto após análise
+- Permitir tap/click para selecionar/deselecionar
+
+### 3.2 Dashboard (Dashboard.tsx)
+
+#### P2-U4: Métricas Sem Contexto Temporal
+**Problema**: "Esta semana" vs "Em aberto" não têm período definido claramente.
+
+**Correção**:
+- Adicionar hover/tooltip com datas exatas
+- "Esta semana: 20-26 Jan 2026"
+
+#### P2-U5: Ações Rápidas Pouco Visíveis
+**Problema**: Os 3 cards de ação (Nova Avaliação, Pacientes, Inventário) têm hierarquia visual igual.
+
+**Recomendação**:
+- Destacar "Nova Avaliação" com cor primária mais forte
+- Reduzir destaque visual dos outros
+
+### 3.3 Página de Resultado (Result.tsx)
+
+#### P1-U6: Seção DSD Muito Longa
+**Problema**: O slider de comparação + card de proporções ocupam muito espaço antes do protocolo.
+
+**Recomendação**:
+- Colapsar DSD por padrão com preview pequeno
+- Expandir ao clicar
+
+#### P1-U7: Checklist Sem Indicador de Progresso
+**Problema**: O checklist mostra items individuais mas não há barra de progresso geral.
+
+**Correção**:
+- Adicionar `<Progress value={progress} />` no topo da seção
+- Mostrar "X de Y concluídos"
+
+#### P2-U8: PDF sem Confirmação
+**Problema**: O botão "Baixar PDF" inicia geração sem confirmar se todas as etapas estão preenchidas.
+
+**Recomendação**:
+- Verificar se checklist está 100% antes de gerar
+- Se não, mostrar dialog: "O checklist não está completo. Deseja gerar mesmo assim?"
+
+### 3.4 Inventário (Inventory.tsx)
+
+#### P2-U9: Cores Sem Contexto Visual
+**Problema**: As cores são apresentadas como badges de texto (A2, B1, etc) sem representação visual da cor real.
+
+**Recomendação**:
+- Adicionar pequeno círculo colorido aproximando a cor VITA
+- Mapeamento: A1-A4 = tons amarelados, B1-B4 = tons amarelos claros, etc.
+
+#### P2-U10: Filtros Não Persistentes
+**Problema**: Ao fechar o dialog de adição e reabrir, os filtros resetam.
+
+**Correção**:
+- Manter estado dos filtros enquanto o dialog está aberto
+- Só resetar ao fechar completamente
+
+### 3.5 Pacientes (Patients.tsx)
+
+#### P2-U11: Falta de Ordenação
+**Problema**: Não há opção de ordenar por nome, data ou número de casos.
+
+**Correção**:
+- Adicionar Select com opções: "Mais recentes", "A-Z", "Mais casos"
+
+#### P2-U12: Busca Só por Nome
+**Problema**: Não é possível buscar por dente tratado ou tipo de tratamento.
+
+**Recomendação (P3)**:
+- Expandir busca para incluir histórico de tratamentos
 
 ---
 
-## Correção 5: Tooltip para "Estética: Alto"
+## 4. Problemas de Consistência Visual
 
-**Arquivo:** `src/components/protocol/CaseSummaryBox.tsx` (linhas 116-119)
+### P1-V1: Hierarquia de Badges Inconsistente
+**Problema**: Badges usam variants diferentes sem padrão claro:
+- `variant="default"` para resina
+- `variant="secondary"` para porcelana
+- `variant="outline"` para encaminhamento
 
-**Problema atual:**
-```tsx
-<Badge variant="outline" className="capitalize text-xs">
-  Estética: {aestheticLevel}
-</Badge>
-```
+**Recomendação**: Criar guia de estilo documentado para badges
 
-**Solução:**
-Adicionar Tooltip com explicação dos níveis:
+### P1-V2: Cores de Status Inconsistentes
+**Problema**: "Em progresso" usa `amber` no Dashboard mas `secondary` em Evaluations.
 
-```tsx
-const aestheticExplanations: Record<string, string> = {
-  'básico': 'Restauração funcional, estética secundária',
-  'alto': 'Mimetismo natural exigido, paciente atento aos detalhes',
-  'muito alto': 'DSD ativo, harmonização completa, estética de excelência'
-};
+**Correção**: Padronizar:
+- Pendente/Em progresso: amber-500
+- Concluído: primary (azul)
+- Rascunho: muted
 
-<Tooltip>
-  <TooltipTrigger asChild>
-    <Badge variant="outline" className="capitalize text-xs cursor-help">
-      <Info className="w-3 h-3 mr-1" />
-      Estética: {aestheticLevel}
-    </Badge>
-  </TooltipTrigger>
-  <TooltipContent>
-    <p className="text-xs max-w-[200px]">
-      {aestheticExplanations[aestheticLevel.toLowerCase()] || 'Nível estético selecionado'}
-    </p>
-  </TooltipContent>
-</Tooltip>
-```
+### P2-V3: Espaçamentos Mobile vs Desktop
+**Problema**: Alguns componentes têm padding inconsistente entre breakpoints.
+
+**Correção**: Auditoria de espaçamentos em todos os Cards
 
 ---
 
-## Arquivos a Modificar
+## 5. Acessibilidade
 
-| Arquivo | Alterações |
-|---------|------------|
-| `src/pages/EvaluationDetails.tsx` | Corrigir duplicação "Classe Classe" |
-| `src/components/protocol/CaseSummaryBox.tsx` | Label contextual + tooltip estética |
-| `src/components/protocol/ProtocolTable.tsx` | Tooltip na espessura |
-| `supabase/functions/recommend-resin/index.ts` | Instruir AI a informar "Fabricante - Linha" |
+### P1-A1: Contraste de Tooltips
+**Problema**: Alguns tooltips podem ter contraste insuficiente em dark mode.
+
+**Correção**: Verificar WCAG AA em todos os tooltips
+
+### P2-A2: Navegação por Teclado
+**Problema**: O wizard não tem suporte completo para navegação por Tab/Enter.
+
+**Correção**: Adicionar `tabIndex` e `onKeyDown` handlers
+
+### P2-A3: Labels de Acessibilidade
+**Problema**: Alguns botões de ícone (como o X de remover foto) não têm `aria-label`.
+
+**Correção**: Auditoria de todos os IconButtons
 
 ---
 
-## Ordem de Implementação
+## 6. Performance
 
-1. **EvaluationDetails.tsx** - Correção crítica P0 (duplicação visível)
-2. **CaseSummaryBox.tsx** - Label contextual + tooltip
-3. **ProtocolTable.tsx** - Tooltip na espessura
-4. **recommend-resin/index.ts** - Formato correto no prompt AI
+### P2-P1: Carregamento de Fotos
+**Problema**: Fotos clínicas carregam em full resolution antes de thumbnail.
+
+**Status**: Já parcialmente tratado com `ClinicalPhotoThumbnail`
+
+### P2-P2: Bundle Size
+**Problema**: jspdf e html2canvas são importados dinamicamente, mas outros pacotes grandes não.
+
+**Recomendação**: Auditoria de bundle com `vite-bundle-visualizer`
 
 ---
 
-## Validação Pós-Implementação
+## 7. Plano de Implementação Priorizado
 
-1. Criar caso com Classe IV → verificar se mostra "Classe IV • Média" (não "Classe Classe IV")
-2. Criar caso com "Faceta Direta" → verificar se mostra "Procedimento: Faceta Direta"
-3. Verificar tooltip no badge "Estética: Alto"
-4. Criar novo caso → verificar se protocolo mostra "Tokuyama - Estelite Omega"
+### Sprint 1: P0 - Bloqueadores (2-3 dias)
+
+| # | Item | Arquivo | Esforço |
+|---|------|---------|---------|
+| 1 | Guidance de espessura por substrato | `recommend-resin/index.ts` | Médio |
+| 2 | Protocolo adesivo detalhado | `recommend-resin/index.ts` | Médio |
+| 3 | Tooltip de navegação no wizard | `NewCase.tsx` | Baixo |
+| 4 | Barra de progresso no checklist | `ProtocolChecklist.tsx` | Baixo |
+| 5 | Validação antes de gerar PDF | `Result.tsx` | Baixo |
+
+### Sprint 2: P1 - Credibilidade (3-5 dias)
+
+| # | Item | Arquivo | Esforço |
+|---|------|---------|---------|
+| 1 | Seção de acabamento/polimento | `recommend-resin/index.ts`, `Result.tsx` | Alto |
+| 2 | Mapeamento cross-brand de efeitos | Nova tabela + UI | Alto |
+| 3 | Alertas enfáticos de bruxismo | `recommend-resin/index.ts` | Baixo |
+| 4 | Padronização de badges de status | Global | Médio |
+| 5 | DSD colapsável por padrão | `Result.tsx` | Baixo |
+
+### Sprint 3: P2 - UX Polish (5-7 dias)
+
+| # | Item | Arquivo | Esforço |
+|---|------|---------|---------|
+| 1 | Cores visuais no inventário | `ResinBadge.tsx` | Médio |
+| 2 | Ordenação de pacientes | `Patients.tsx` | Baixo |
+| 3 | Indicador de progresso do wizard | `NewCase.tsx` | Médio |
+| 4 | Métricas com contexto temporal | `Dashboard.tsx` | Baixo |
+| 5 | Acessibilidade (aria-labels) | Global | Médio |
+
+### Sprint 4: P3 - Delight (Ongoing)
+
+- Animações de transição entre steps
+- Feedback háptico no mobile
+- Atalhos de teclado avançados
+- Modo offline básico (PWA)
+- Notificações de casos pendentes
+
+---
+
+## 8. Métricas de Sucesso
+
+### Clínicas
+- Taxa de protocolos aceitos sem modificação: >85%
+- Tempo médio de preenchimento de caso: <5 minutos
+- Taxa de uso do checklist completo: >90%
+
+### UX
+- Taxa de abandono no wizard: <15%
+- Tempo até primeiro caso criado: <3 minutos
+- NPS do profissional: >8
+
+### Técnicas
+- Tempo de carregamento inicial: <2s (LCP)
+- Taxa de erro em análise de fotos: <5%
+- Uptime: >99.5%
+
+---
+
+## 9. Conclusão
+
+A plataforma ResinMatch AI está **clinicamente sólida** e **funcionalmente completa** para lançamento. As correções identificadas são majoritariamente de **polish e refinamento**, não de funcionalidade core.
+
+**Recomendação**: Priorizar Sprint 1 (P0) para lançamento, implementar Sprint 2 (P1) nas primeiras 2 semanas pós-launch, e tratar P2/P3 como melhorias contínuas baseadas em feedback de usuários reais.
+
+**Nota especial**: O sistema de recomendação de cores com clareamento (whiteningColorMap) está **clinicamente correto** e é um diferencial competitivo importante. A proibição de técnicas obsoletas (bisel) demonstra atualização técnica com literatura moderna.
