@@ -111,6 +111,14 @@ const treatmentConfig: Record<string, {
   },
 };
 
+// Procedimentos estéticos que não usam classificação de cavidade tradicional
+const AESTHETIC_PROCEDURES = [
+  'Faceta Direta', 
+  'Recontorno Estético', 
+  'Fechamento de Diastema', 
+  'Reparo de Restauração'
+];
+
 interface EvaluationItem {
   id: string;
   created_at: string;
@@ -329,7 +337,11 @@ export default function EvaluationDetails() {
     const config = treatmentConfig[treatmentType];
     
     if (config?.showCavityInfo) {
-      return `${evaluation.cavity_class} • ${evaluation.restoration_size}`;
+      // Verificar se é procedimento estético (não classe de cavidade tradicional)
+      if (AESTHETIC_PROCEDURES.includes(evaluation.cavity_class)) {
+        return evaluation.cavity_class; // Mostra "Faceta Direta" diretamente
+      }
+      return `Classe ${evaluation.cavity_class} • ${evaluation.restoration_size}`;
     }
     
     // For other treatments, show AI indication or short description

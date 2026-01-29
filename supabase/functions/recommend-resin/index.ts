@@ -31,6 +31,36 @@ interface StratificationProtocol {
   confidence: "alta" | "média" | "baixa";
 }
 
+// Mapeamento de cores VITA para clareamento (sincronizado com frontend)
+const whiteningColorMap: Record<string, string[]> = {
+  'A4': ['A3', 'A2'],
+  'A3.5': ['A2', 'A1'],
+  'A3': ['A2', 'A1'],
+  'A2': ['A1', 'BL4'],
+  'A1': ['BL4', 'BL3'],
+  'B4': ['B3', 'B2'],
+  'B3': ['B2', 'B1'],
+  'B2': ['B1', 'A1'],
+  'B1': ['A1', 'BL4'],
+  'C4': ['C3', 'C2'],
+  'C3': ['C2', 'C1'],
+  'C2': ['C1', 'B1'],
+  'C1': ['B1', 'A1'],
+  'D4': ['D3', 'D2'],
+  'D3': ['D2', 'A3'],
+  'D2': ['A2', 'A1'],
+  'BL4': ['BL3', 'BL2'],
+  'BL3': ['BL2', 'BL1'],
+  'BL2': ['BL1'],
+  'BL1': [],
+};
+
+// Helper to get adjusted whitening colors
+const getWhiteningColors = (baseColor: string): string[] => {
+  const normalized = baseColor.toUpperCase().trim();
+  return whiteningColorMap[normalized] || [];
+}
+
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   
@@ -264,7 +294,27 @@ CASO CLÍNICO:
 - Expectativa de longevidade: ${data.longevityExpectation}
 - Orçamento: ${data.budget} ⚠️ RESPEITAR ESTA FAIXA!
 ${data.clinicalNotes ? `- Observações clínicas: ${data.clinicalNotes}` : ''}
-${data.desiredChanges?.includes('whiter') ? `- Preferência do paciente: Dentes mais brancos (ajustar cor 1-2 tons mais claros)` : ''}
+${(() => {
+  const wantsWhiter = data.desiredChanges?.includes('whiter');
+  if (!wantsWhiter) return '';
+  const adjustedColors = getWhiteningColors(data.toothColor);
+  if (adjustedColors.length === 0) return '- Preferência do paciente: Dentes mais brancos (cor já é a mais clara disponível)';
+  return `
+⚠️⚠️⚠️ PREFERÊNCIA DE CLAREAMENTO - REGRA OBRIGATÓRIA ⚠️⚠️⚠️
+O paciente deseja dentes mais brancos.
+- Cor detectada ORIGINAL: ${data.toothColor}
+- CORES OBRIGATÓRIAS NO PROTOCOLO: ${adjustedColors.join(' ou ')}
+
+VOCÊ DEVE USAR ESTAS CORES NAS CAMADAS:
+- Camada Opaco/Dentina: Usar O${adjustedColors[0]} ou D${adjustedColors[0]} ou OA${adjustedColors[0]?.replace('BL', '')}
+- Camada Esmalte: Usar E${adjustedColors[0]} ou ${adjustedColors[1] || adjustedColors[0]}
+
+❌ NÃO USE ESTAS CORES (são muito escuras para a preferência do paciente):
+   - ${data.toothColor}, O${data.toothColor}, D${data.toothColor}, E${data.toothColor}, OA${data.toothColor.replace('BL', '')}
+
+✅ USE APENAS: ${adjustedColors.join(', ')} e suas variações (O, D, E, OA)
+`;
+})()}
 
 ${resinsByPriceSection}
 ${inventorySection}

@@ -232,6 +232,72 @@ Além de patologias, identifique oportunidades de melhoria estética mesmo em de
    - width: largura aproximada do dente como % da imagem
    - height: altura aproximada do dente como % da imagem
 
+## ANÁLISE GENGIVAL E PERIODONTAL
+
+Avalie o contorno gengival para CADA dente visível:
+
+1. **Coroas Clínicas Curtas**
+   - Identifique dentes com proporção altura/largura inadequada
+   - Se incisivos laterais parecem "pequenos", considere se gengivoplastia aumentaria a coroa clínica
+   - Inclua em notes: "Gengivoplastia recomendada para aumentar coroa clínica"
+
+2. **Assimetria Gengival**
+   - Compare dentes homólogos (12 vs 22, 13 vs 23)
+   - Note diferenças de altura gengival > 1mm
+   - Inclua em observations: "Assimetria gengival entre [dentes]"
+
+3. **Exposição Gengival Excessiva (Sorriso Gengival)**
+   - Sorriso gengival > 3mm: considerar encaminhamento para periodontia
+   - Inclua em warnings se detectado
+
+Se gengivoplastia melhoraria proporções:
+- Inclua em notes do dente: "Considerar gengivoplastia prévia"
+- Inclua em observations gerais: "Avaliação periodontal recomendada para otimizar proporções"
+
+## DETECÇÃO DE RESTAURAÇÕES EXISTENTES (CRÍTICO)
+
+OBSERVE atentamente por sinais de restaurações prévias:
+
+1. **Sinais Visuais**
+   - Linhas de interface (fronteira resina-esmalte)
+   - Diferença de cor entre regiões do mesmo dente
+   - Diferença de textura (mais opaco, mais liso)
+   - Manchamento localizado ou escurecimento marginal
+
+2. **Como Registrar**
+   Se detectar restauração existente:
+   - enamel_condition: "Restauração prévia" (adicione esta opção se necessário)
+   - notes: "Restauração em resina existente - avaliar necessidade de substituição"
+   - treatment_indication: "resina" (para reparo/substituição)
+   - indication_reason: "Restauração antiga com [descrever problema: manchamento/infiltração/fratura marginal]"
+
+3. **Implicações Clínicas**
+   - Restaurações antigas podem mascarar o tamanho real do dente
+   - Não confundir dente restaurado com "micro-dente"
+   - Considerar remoção da resina antiga no planejamento
+
+## CUIDADO COM DIAGNÓSTICOS PRECIPITADOS
+
+⚠️ NUNCA diagnostique "micro-dente" ou "dente anômalo" se:
+
+1. O dente apresenta FRATURA visível (incisal, proximal)
+2. Há sinais de RESTAURAÇÃO antiga (linhas de interface, manchamento)
+3. A proporção menor é devido a DESGASTE ou EROSÃO
+4. Houve FRATURA + restauração prévia que encurtou o dente
+
+✅ Nesses casos, indique:
+- cavity_class: Classe apropriada para a restauração (IV para incisal, III para proximal)
+- notes: "Fratura presente - não confundir com anomalia dental"
+- notes: "Restauração antiga visível - tamanho real pode ser maior"
+- treatment_indication: "resina" (reparo/reconstrução)
+
+❌ Apenas use "micro-dente" ou "dente anômalo" se:
+- O dente claramente nunca erupcionou em tamanho normal
+- Não há evidência de trauma ou restauração prévia
+- A forma é uniformemente pequena (não apenas encurtado)
+
+---
+
 Adicionalmente, identifique:
 - A cor VITA geral da arcada (A1, A2, A3, A3.5, B1, B2, etc.)
 - O dente que deve ser tratado primeiro (primary_tooth) baseado na prioridade clínica
