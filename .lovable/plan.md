@@ -1,115 +1,136 @@
 
-# Plano Final: Prompt DSD Dinâmico + Simplificação do Formulário
+# Plano: Melhorias no DSD - Formulário Simplificado + Correções Básicas Consistentes
 
-## Resumo Executivo
+## Problemas Identificados
 
-Este plano alinha o formulário de preferências do paciente com a lógica de simulação DSD, removendo opções que causam alucinações e implementando um prompt dinâmico que respeita as escolhas do paciente.
+### 1. Formulário de Preferências
+O usuário identificou que:
+- **"Corrigir espaçamentos/diastemas"** não faz sentido como opção — sempre deve ser corrigido automaticamente
+- Apenas **"Dentes mais brancos"** é uma preferência real do paciente (natural vs branco)
 
----
+### 2. Correções Básicas Não Aplicadas
+A simulação está:
+- ✅ Mantendo proporções da boca (lábios, gengiva)
+- ❌ **NÃO** corrigindo defeitos estruturais básicos (ex: "buraquinho" no dente lateral)
+- ❌ Apenas clareando os dentes sem fazer o "feijão com arroz"
 
-## Parte 1: Simplificação do Formulário
+### 3. "Nova Simulação" Gerando Resultados Distorcidos
+Quando clica em **"Nova Simulação"**, o resultado fica distorcido porque:
+- O `handleRegenerateSimulation` não está passando as `patientPreferences`
+- Sem as preferências, a instrução de cor fica diferente
+- A simulação perde contexto e gera resultados inconsistentes
 
-### Componente PatientPreferencesStep.tsx
+## Solução Proposta
 
-**Antes (6 opções + textarea):**
-- Dentes mais brancos
-- Sorriso mais harmonioso
-- Corrigir espaçamentos/diastemas
-- Dentes mais alinhados
-- Formato mais natural
-- Corrigir assimetrias
-- Campo de texto livre
+### Parte 1: Simplificar Formulário
 
-**Depois (2 opções, sem textarea):**
-- Dentes mais brancos
-- Corrigir espaçamentos/diastemas
+Remover completamente a opção "Corrigir espaçamentos/diastemas" e deixar apenas:
+- ☐ **Dentes mais brancos** — Se marcado, clareia para A1/A2; se não, mantém cor natural
 
-### Mudanças Específicas
+O fechamento de diastemas será sempre aplicado automaticamente (não é preferência, é correção clínica).
+
+### Parte 2: Melhorar Prompt de Correções Básicas
+
+Atualizar o prompt `STANDARD` para ser mais explícito sobre correções estruturais:
+
+```text
+MANDATORY BASIC CORRECTIONS (always apply):
+- Remove stains and discolorations
+- Fill small chips, holes, or defects on tooth edges
+- Close small gaps between teeth (up to 2mm)
+- Remove visible dark lines at restoration margins
+- Smooth irregular enamel surfaces
+```
+
+Isso garante que o "feijão com arroz" sempre seja feito, independente das preferências.
+
+### Parte 3: Corrigir "Nova Simulação"
+
+O problema está no `handleRegenerateSimulation` (linha 277-318) que **não passa as `patientPreferences`** para a Edge Function:
+
+```typescript
+// ATUAL - SEM preferências
+const { data, error: fnError } = await invokeFunction<DSDResult>('generate-dsd', {
+  body: {
+    imageBase64,
+    regenerateSimulationOnly: true,
+    existingAnalysis: result.analysis,
+    toothShape: TOOTH_SHAPE,
+    // ❌ FALTA: patientPreferences
+  },
+});
+```
+
+Isso faz com que na regeneração, a variável `wantsWhiter` seja `false` (mesmo que o usuário tenha marcado), gerando um resultado diferente.
+
+## Arquivos a Modificar
 
 | Arquivo | Modificação |
 |---------|-------------|
-| `src/components/wizard/PatientPreferencesStep.tsx` | Remover textarea, reduzir para 2 opções, atualizar interface |
-| `src/components/wizard/DSDStep.tsx` | Atualizar interface local `PatientPreferences` |
-| `src/lib/schemas/evaluation.ts` | Remover `aestheticGoals` do schema |
-| `src/lib/__tests__/evaluation.test.ts` | Atualizar testes para remover referências a `aestheticGoals` |
-| `src/pages/NewCase.tsx` | Atualizar estado inicial e handlers |
+| `src/components/wizard/PatientPreferencesStep.tsx` | Remover opção "spacing", deixar apenas "whiter" |
+| `src/components/wizard/DSDStep.tsx` | Passar `patientPreferences` no `handleRegenerateSimulation` |
+| `supabase/functions/generate-dsd/index.ts` | Atualizar prompt para aplicar correções básicas sempre |
 
-### Nova Interface PatientPreferences
+## Detalhes Técnicos
 
-```typescript
-export interface PatientPreferences {
-  desiredChanges: string[];
-}
-```
-
-### Novo Formulário (Visual)
-
-```text
-┌─────────────────────────────────────────────────┐
-│  ❤️ Preferências do Paciente                    │
-│  ✨ Opcional — personaliza a simulação visual   │
-├─────────────────────────────────────────────────┤
-│                                                 │
-│  O que o paciente deseja?                       │
-│                                                 │
-│  ☐ Dentes mais brancos                          │
-│  ☐ Corrigir espaçamentos/diastemas              │
-│                                                 │
-│  [Pular esta etapa]     [Continuar]             │
-│                                                 │
-└─────────────────────────────────────────────────┘
-```
-
----
-
-## Parte 2: Prompt DSD Dinâmico
-
-### Arquivo: supabase/functions/generate-dsd/index.ts
-
-**Mudança 1**: Criar variáveis de instrução baseadas nas preferências (após linha ~220)
+### PatientPreferencesStep.tsx
 
 ```typescript
-// Determinar instrução de COR baseada nas preferências
-const wantsWhiter = patientPreferences?.desiredChanges?.includes('whiter');
-const colorInstruction = wantsWhiter 
-  ? '- Tooth color → shade A1/A2 (natural white)'
-  : '- Keep natural tooth color (remove stains only)';
+// ANTES: 2 opções
+const DESIRED_CHANGES_OPTIONS = [
+  { id: 'whiter', label: 'Dentes mais brancos' },
+  { id: 'spacing', label: 'Corrigir espaçamentos/diastemas' },
+];
 
-// Determinar instrução de ESPAÇAMENTO
-const wantsSpacing = patientPreferences?.desiredChanges?.includes('spacing');
+// DEPOIS: 1 opção apenas
+const DESIRED_CHANGES_OPTIONS = [
+  { id: 'whiter', label: 'Dentes mais brancos' },
+];
+```
+
+### DSDStep.tsx - handleRegenerateSimulation
+
+```typescript
+// CORRIGIR - Adicionar patientPreferences
+const handleRegenerateSimulation = async () => {
+  if (!imageBase64 || !result?.analysis) return;
+
+  setIsRegeneratingSimulation(true);
+  setSimulationError(false);
+
+  try {
+    const { data, error: fnError } = await invokeFunction<DSDResult>('generate-dsd', {
+      body: {
+        imageBase64,
+        regenerateSimulationOnly: true,
+        existingAnalysis: result.analysis,
+        toothShape: TOOTH_SHAPE,
+        patientPreferences, // ✅ ADICIONAR ISSO
+      },
+    });
+    // ...
+  }
+};
+```
+
+### generate-dsd/index.ts - Prompt Standard
+
+```typescript
+// ANTES: Correções dependiam de preferências
 const spacingInstruction = wantsSpacing 
-  ? '- Close small gaps between teeth (max 2mm)'
+  ? '\n- Close small gaps between teeth (max 2mm)'
   : '';
-```
 
-**Mudança 2**: Remover código não utilizado
+// DEPOIS: Correções básicas SEMPRE aplicadas
+const mandatoryCorrections = `
+- Remove stains and discolorations
+- Fill small holes, chips or defects on tooth edges
+- Close small gaps between teeth (up to 2mm)
+- Remove visible dark lines at restoration margins
+- Smooth irregular enamel surfaces`;
 
-Remover as linhas 201-220 que constroem a variável `patientDesires` que nunca é usada:
-```typescript
-// REMOVER ESTE BLOCO (não é mais necessário)
-let patientDesires = '';
-if (patientPreferences?.desiredChanges?.length) {
-  const desireLabels: Record<string, string> = { ... };
-  // ...
-}
-if (patientPreferences?.aestheticGoals) {
-  patientDesires += ...
-}
-```
-
-**Mudança 3**: Atualizar os 4 branches de prompt
-
-| Branch | Linha Aprox. | Mudança |
-|--------|--------------|---------|
-| Reconstruction (~331) | `Whiten all teeth to A1/A2` | `${colorInstruction}` |
-| Restoration (~350) | `Whiten teeth to A1/A2` | `${colorInstruction}` |
-| Intraoral (~369) | `Tooth color → shade A1/A2` | `${colorInstruction}` |
-| Standard (~389) | `Tooth enamel color → shade A1/A2` | `${colorInstruction}` + `${spacingInstruction}` |
-
-### Exemplo do Prompt Standard Atualizado
-
-```typescript
-simulationPrompt = `TEETH COLOR EDIT ONLY
+// Prompt atualizado
+simulationPrompt = `TEETH EDIT ONLY
 
 Task: Improve the teeth in this photo. Do NOT change anything else.
 
@@ -120,110 +141,53 @@ COPY EXACTLY (unchanged):
 - Tooth size (same width, length)
 - Image dimensions
 
-CHANGE ONLY:
+MANDATORY CORRECTIONS (always apply):
+${mandatoryCorrections}
+
+COLOR ADJUSTMENT:
 ${colorInstruction}
-- Remove visible dark lines at restoration edges
-- Fill small chips or defects on tooth edges
-${spacingInstruction}
+
+SPECIFIC CORRECTIONS FROM ANALYSIS:
 ${allowedChangesFromAnalysis}
 
 Output: Same photo with improved teeth only.`;
 ```
 
----
-
-## Parte 3: Lógica de Comportamento
-
-### Cenários de Uso
-
-| Preferências Selecionadas | Instrução de Cor | Instrução de Espaçamento |
-|---------------------------|------------------|--------------------------|
-| Nenhuma | Manter cor natural (remove manchas) | (vazio) |
-| Só "whiter" | Clarear para A1/A2 | (vazio) |
-| Só "spacing" | Manter cor natural | Fechar espaços (max 2mm) |
-| Ambos | Clarear para A1/A2 | Fechar espaços (max 2mm) |
-
-### Fluxo de Dados
+## Fluxo Visual Atualizado
 
 ```text
-PatientPreferencesStep
-        │
-        ▼
-  desiredChanges: ['whiter', 'spacing']
-        │
-        ▼
-   NewCase.tsx (estado)
-        │
-        ▼
-    DSDStep.tsx
-        │
-        ▼
-  generate-dsd Edge Function
-        │
-        ▼
-  ┌─────────────────────────────────┐
-  │ wantsWhiter = true              │
-  │ colorInstruction = "A1/A2"      │
-  │                                 │
-  │ wantsSpacing = true             │
-  │ spacingInstruction = "Close..." │
-  └─────────────────────────────────┘
-        │
-        ▼
-   Prompt Dinâmico → IA
+┌─────────────────────────────────────────────────┐
+│  ❤️ Preferências do Paciente                    │
+│  ✨ Opcional — personaliza a simulação visual   │
+├─────────────────────────────────────────────────┤
+│                                                 │
+│  O paciente deseja dentes mais brancos?         │
+│                                                 │
+│  ☐ Sim, clarear para tom natural A1/A2          │
+│                                                 │
+│  [Pular esta etapa]     [Continuar]             │
+│                                                 │
+└─────────────────────────────────────────────────┘
 ```
 
----
+## Comportamento Final
 
-## Parte 4: Atualizações de Testes
+| Preferência | Cor | Correções Básicas |
+|-------------|-----|-------------------|
+| Nenhuma | Manter natural | ✅ Sempre aplicadas |
+| "Whiter" | Clarear A1/A2 | ✅ Sempre aplicadas |
 
-### evaluation.test.ts
-
-Atualizar os testes do `patientPreferencesSchema` para refletir a remoção do campo `aestheticGoals`:
-
-```typescript
-describe('patientPreferencesSchema', () => {
-  it('should accept valid preferences', () => {
-    const result = patientPreferencesSchema.safeParse({
-      desiredChanges: ['whiter', 'spacing'],
-    });
-    expect(result.success).toBe(true);
-  });
-
-  it('should accept empty preferences', () => {
-    const result = patientPreferencesSchema.safeParse({});
-    expect(result.success).toBe(true);
-  });
-
-  it('should default desiredChanges to empty array', () => {
-    const result = patientPreferencesSchema.safeParse({});
-    expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.data.desiredChanges).toEqual([]);
-    }
-  });
-});
-```
-
----
-
-## Parte 5: Resumo de Arquivos a Modificar
-
-| Arquivo | Tipo | Modificação |
-|---------|------|-------------|
-| `src/components/wizard/PatientPreferencesStep.tsx` | Frontend | Remover textarea, reduzir para 2 opções |
-| `src/components/wizard/DSDStep.tsx` | Frontend | Atualizar interface `PatientPreferences` |
-| `src/lib/schemas/evaluation.ts` | Schema | Remover campo `aestheticGoals` |
-| `src/lib/__tests__/evaluation.test.ts` | Testes | Atualizar testes do schema |
-| `src/pages/NewCase.tsx` | Frontend | Atualizar estado inicial e handlers |
-| `supabase/functions/generate-dsd/index.ts` | Backend | Criar variáveis dinâmicas e atualizar prompts |
-
----
+### Correções que SEMPRE serão aplicadas:
+1. Remover manchas e descolorações
+2. Preencher buracos, chips ou defeitos nas bordas dos dentes
+3. Fechar pequenos espaços (até 2mm)
+4. Remover linhas escuras em margens de restaurações
+5. Suavizar superfícies irregulares do esmalte
 
 ## Benefícios
 
-1. **Formulário simplificado** - Apenas opções que funcionam
-2. **Prompt permanece curto** - Apenas 1-2 linhas adicionais por preferência
-3. **Respeita a escolha do paciente** - Se não marcou clareamento, mantém cor natural
-4. **Sem risco de alucinação** - Removidas opções ambíguas e texto livre
-5. **Retrocompatível** - Comportamento padrão mantido quando não há preferências
+1. **Formulário ultra-simplificado** — apenas 1 opção binária (branco ou natural)
+2. **"Feijão com arroz" garantido** — correções básicas sempre aplicadas
+3. **"Nova Simulação" consistente** — mesmo resultado que a primeira geração
+4. **Menos confusão para o usuário** — menos opções = menos dúvidas
+5. **Resultados mais realistas** — defeitos estruturais sempre corrigidos
