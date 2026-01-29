@@ -3,6 +3,25 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsPreFlight, createErrorResponse, ERROR_MESSAGES } from "../_shared/cors.ts";
 import { logger } from "../_shared/logger.ts";
 
+// Prevent indefinite hangs on external calls (AI gateway / storage downloads)
+async function fetchWithTimeout(
+  input: string,
+  init: RequestInit,
+  timeoutMs: number,
+  label: string
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(input, { ...init, signal: controller.signal });
+  } catch (err) {
+    logger.warn(`${label} request failed`, err);
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 // DSD Analysis interface
 interface DSDAnalysis {
   facial_midline: "centrada" | "desviada_esquerda" | "desviada_direita";
@@ -63,20 +82,22 @@ async function getTeethMask(
 ): Promise<{ bounds: TeethBounds }> {
   logger.log("Detecting teeth region for mask...");
   
-  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "google/gemini-2.5-flash",
-      messages: [{
-        role: "user",
-        content: [
-          { 
-            type: "text", 
-            text: `Analyze this smile photo. Return the bounding box of the TEETH ONLY (not lips, not gums).
+  const response = await fetchWithTimeout(
+    "https://ai.gateway.lovable.dev/v1/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [{
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: `Analyze this smile photo. Return the bounding box of the TEETH ONLY (not lips, not gums).
 
 Return ONLY valid JSON:
 {
@@ -89,12 +110,15 @@ Return ONLY valid JSON:
 }
 
 The box should tightly contain just the visible tooth surfaces.`
-          },
-          { type: "image_url", image_url: { url: imageBase64 } },
-        ],
-      }],
-    }),
-  });
+            },
+            { type: "image_url", image_url: { url: imageBase64 } },
+          ],
+        }],
+      }),
+    },
+    20_000,
+    "getTeethMask"
+  );
   
   if (!response.ok) {
     logger.warn("Teeth mask detection failed:", response.status);
@@ -148,24 +172,29 @@ Return ONLY valid JSON:
 }`;
 
   try {
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
+    const response = await fetchWithTimeout(
+      "https://ai.gateway.lovable.dev/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [{
+            role: "user",
+            content: [
+              { type: "text", text: verifyPrompt },
+              { type: "image_url", image_url: { url: originalBase64 } },
+              { type: "image_url", image_url: { url: simulationBase64 } },
+            ],
+          }],
+        }),
       },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [{
-          role: "user",
-          content: [
-            { type: "text", text: verifyPrompt },
-            { type: "image_url", image_url: { url: originalBase64 } },
-            { type: "image_url", image_url: { url: simulationBase64 } },
-          ],
-        }],
-      }),
-    });
+      25_000,
+      "verifySimulationQuality"
+    );
 
     if (!response.ok) {
       logger.warn("Quality verification failed:", response.status);
@@ -233,25 +262,30 @@ Output: Same photo as IMAGE 1 but with whiter tooth enamel from IMAGE 2.`;
     try {
       logger.log(`Blend attempt with ${model}`);
       
-      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
+      const response = await fetchWithTimeout(
+        "https://ai.gateway.lovable.dev/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: model,
+            messages: [{
+              role: "user",
+              content: [
+                { type: "text", text: blendPrompt },
+                { type: "image_url", image_url: { url: originalBase64 } },
+                { type: "image_url", image_url: { url: simulationBase64 } },
+              ],
+            }],
+            modalities: ["image", "text"],
+          }),
         },
-        body: JSON.stringify({
-          model: model,
-          messages: [{
-            role: "user",
-            content: [
-              { type: "text", text: blendPrompt },
-              { type: "image_url", image_url: { url: originalBase64 } },
-              { type: "image_url", image_url: { url: simulationBase64 } },
-            ],
-          }],
-          modalities: ["image", "text"],
-        }),
-      });
+        60_000,
+        `blendWithOriginal:${model}`
+      );
 
       if (!response.ok) {
         logger.warn(`Blend with ${model} failed:`, response.status);
@@ -324,24 +358,29 @@ Respond with ONLY the letter: "A", "B"${variationImages.length > 2 ? ', or "C"' 
 Choose the variation where ONLY the teeth look different, and everything else is unchanged.`;
 
   try {
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
+    const response = await fetchWithTimeout(
+      "https://ai.gateway.lovable.dev/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [{
+            role: "user",
+            content: [
+              { type: "text", text: comparePrompt },
+              { type: "image_url", image_url: { url: originalBase64 } },
+              ...variationImages.map(img => ({ type: "image_url", image_url: { url: img } })),
+            ],
+          }],
+        }),
       },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [{
-          role: "user",
-          content: [
-            { type: "text", text: comparePrompt },
-            { type: "image_url", image_url: { url: originalBase64 } },
-            ...variationImages.map(img => ({ type: "image_url", image_url: { url: img } })),
-          ],
-        }],
-      }),
-    });
+      25_000,
+      "selectBestVariation"
+    );
 
     if (response.ok) {
       const data = await response.json();
@@ -732,26 +771,31 @@ Output: Same photo with whiter teeth only.`;
       try {
         logger.log(`Variation ${variationIndex}: Trying ${model}`);
         
-        const simulationResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            "Content-Type": "application/json",
+        const simulationResponse = await fetchWithTimeout(
+          "https://ai.gateway.lovable.dev/v1/chat/completions",
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              model: model,
+              messages: [
+                {
+                  role: "user",
+                  content: [
+                    { type: "text", text: simulationPrompt },
+                    { type: "image_url", image_url: { url: imageBase64 } },
+                  ],
+                },
+              ],
+              modalities: ["image", "text"],
+            }),
           },
-          body: JSON.stringify({
-            model: model,
-            messages: [
-              {
-                role: "user",
-                content: [
-                  { type: "text", text: simulationPrompt },
-                  { type: "image_url", image_url: { url: imageBase64 } },
-                ],
-              },
-            ],
-            modalities: ["image", "text"],
-          }),
-        });
+          75_000,
+          `generateSingleVariation:${variationIndex}:${model}`
+        );
 
         if (!simulationResponse.ok) {
           logger.warn(`Variation ${variationIndex} - ${model} failed:`, simulationResponse.status);
@@ -1081,104 +1125,109 @@ IMPORTANTE:
 - TODAS as sugestões devem ser clinicamente realizáveis
 - Se o caso NÃO for adequado para DSD, AINDA forneça a análise de proporções mas marque confidence="baixa"`;
 
-  const analysisResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "google/gemini-2.5-pro",
-      messages: [
-        { role: "system", content: analysisPrompt },
-        {
-          role: "user",
-          content: [
-            { type: "text", text: "Analise esta foto e retorne a análise DSD completa usando a ferramenta analyze_dsd." },
-            { type: "image_url", image_url: { url: imageBase64 } },
-          ],
-        },
-      ],
-      tools: [
-        {
-          type: "function",
-          function: {
-            name: "analyze_dsd",
-            description: "Retorna a análise completa do Digital Smile Design",
-            parameters: {
-              type: "object",
-              properties: {
-                facial_midline: {
-                  type: "string",
-                  enum: ["centrada", "desviada_esquerda", "desviada_direita"],
-                },
-                dental_midline: {
-                  type: "string",
-                  enum: ["alinhada", "desviada_esquerda", "desviada_direita"],
-                },
-                smile_line: {
-                  type: "string",
-                  enum: ["alta", "média", "baixa"],
-                },
-                buccal_corridor: {
-                  type: "string",
-                  enum: ["adequado", "excessivo", "ausente"],
-                },
-                occlusal_plane: {
-                  type: "string",
-                  enum: ["nivelado", "inclinado_esquerda", "inclinado_direita"],
-                },
-                golden_ratio_compliance: {
-                  type: "number",
-                  minimum: 0,
-                  maximum: 100,
-                },
-                symmetry_score: {
-                  type: "number",
-                  minimum: 0,
-                  maximum: 100,
-                },
-                suggestions: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      tooth: { type: "string" },
-                      current_issue: { type: "string" },
-                      proposed_change: { type: "string" },
+  const analysisResponse = await fetchWithTimeout(
+    "https://ai.gateway.lovable.dev/v1/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-pro",
+        messages: [
+          { role: "system", content: analysisPrompt },
+          {
+            role: "user",
+            content: [
+              { type: "text", text: "Analise esta foto e retorne a análise DSD completa usando a ferramenta analyze_dsd." },
+              { type: "image_url", image_url: { url: imageBase64 } },
+            ],
+          },
+        ],
+        tools: [
+          {
+            type: "function",
+            function: {
+              name: "analyze_dsd",
+              description: "Retorna a análise completa do Digital Smile Design",
+              parameters: {
+                type: "object",
+                properties: {
+                  facial_midline: {
+                    type: "string",
+                    enum: ["centrada", "desviada_esquerda", "desviada_direita"],
+                  },
+                  dental_midline: {
+                    type: "string",
+                    enum: ["alinhada", "desviada_esquerda", "desviada_direita"],
+                  },
+                  smile_line: {
+                    type: "string",
+                    enum: ["alta", "média", "baixa"],
+                  },
+                  buccal_corridor: {
+                    type: "string",
+                    enum: ["adequado", "excessivo", "ausente"],
+                  },
+                  occlusal_plane: {
+                    type: "string",
+                    enum: ["nivelado", "inclinado_esquerda", "inclinado_direita"],
+                  },
+                  golden_ratio_compliance: {
+                    type: "number",
+                    minimum: 0,
+                    maximum: 100,
+                  },
+                  symmetry_score: {
+                    type: "number",
+                    minimum: 0,
+                    maximum: 100,
+                  },
+                  suggestions: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        tooth: { type: "string" },
+                        current_issue: { type: "string" },
+                        proposed_change: { type: "string" },
+                      },
+                      required: ["tooth", "current_issue", "proposed_change"],
                     },
-                    required: ["tooth", "current_issue", "proposed_change"],
+                  },
+                  observations: {
+                    type: "array",
+                    items: { type: "string" },
+                  },
+                  confidence: {
+                    type: "string",
+                    enum: ["alta", "média", "baixa"],
                   },
                 },
-                observations: {
-                  type: "array",
-                  items: { type: "string" },
-                },
-                confidence: {
-                  type: "string",
-                  enum: ["alta", "média", "baixa"],
-                },
+                required: [
+                  "facial_midline",
+                  "dental_midline",
+                  "smile_line",
+                  "buccal_corridor",
+                  "occlusal_plane",
+                  "golden_ratio_compliance",
+                  "symmetry_score",
+                  "suggestions",
+                  "observations",
+                  "confidence",
+                ],
+                additionalProperties: false,
               },
-              required: [
-                "facial_midline",
-                "dental_midline",
-                "smile_line",
-                "buccal_corridor",
-                "occlusal_plane",
-                "golden_ratio_compliance",
-                "symmetry_score",
-                "suggestions",
-                "observations",
-                "confidence",
-              ],
-              additionalProperties: false,
             },
           },
-        },
-      ],
-      tool_choice: { type: "function", function: { name: "analyze_dsd" } },
-    }),
-  });
+        ],
+        tool_choice: { type: "function", function: { name: "analyze_dsd" } },
+      }),
+    },
+    70_000,
+    "analyzeProportions"
+  );
 
   if (!analysisResponse.ok) {
     const status = analysisResponse.status;
