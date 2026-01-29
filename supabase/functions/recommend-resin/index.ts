@@ -396,9 +396,9 @@ Responda em formato JSON:
       {
         "order": 1,
         "name": "Nome da camada (Opaco/Dentina/Esmalte/Body/Bulk)",
-        "resin_brand": "Marca da resina",
+        "resin_brand": "Fabricante - Linha do produto (ex: Tokuyama - Estelite Omega, FGM - Vittra APS, Solventum - Filtek Z350 XT). NUNCA informe apenas o fabricante!",
         "shade": "Cor específica (ex: OA2, A2D, A2E)",
-        "thickness": "Espessura recomendada (ex: 0.3-0.5mm)",
+        "thickness": "Faixa de espessura guia (ex: 0.3-0.5mm)",
         "purpose": "Objetivo desta camada",
         "technique": "Técnica de aplicação"
       }

@@ -6,6 +6,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { ProtocolLayer } from "@/types/protocol";
 
 export type { ProtocolLayer };
@@ -60,7 +65,16 @@ export default function ProtocolTable({ layers }: ProtocolTableProps) {
                   </span>
                 </TableCell>
                 <TableCell className="text-muted-foreground">
-                  {layer.thickness}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="cursor-help border-b border-dotted border-muted-foreground/50">
+                        {layer.thickness}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      <p className="text-xs">Ajustar conforme profundidade e mascaramento necessário</p>
+                    </TooltipContent>
+                  </Tooltip>
                 </TableCell>
               </TableRow>
             ))}
