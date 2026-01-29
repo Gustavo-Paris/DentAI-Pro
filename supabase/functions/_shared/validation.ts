@@ -62,9 +62,16 @@ function isValidTooth(value: unknown): boolean {
 
 function isValidVitaShade(value: unknown): boolean {
   if (typeof value !== "string") return false;
-  // Allow VITA shades and variations like "A2D", "A2E", etc.
-  const baseShade = value.replace(/[DE]$/, "");
-  return VITA_SHADES.includes(baseShade) || VITA_SHADES.includes(value);
+  
+  // Normalize the shade: remove spaces, "VITA" prefix, and convert to uppercase
+  let shade = value.trim().toUpperCase();
+  shade = shade.replace(/^VITA\s*/i, "").replace(/\s+/g, "");
+  
+  // Handle common variations like "A2D", "A2E", "A2 Dentina", etc.
+  const baseShade = shade.replace(/[DE]$/, "").replace(/\s*(DENTINA|ESMALTE|BODY|INCISAL|OPACO)$/i, "");
+  
+  // Check if it matches any valid VITA shade
+  return VITA_SHADES.includes(baseShade) || VITA_SHADES.includes(shade);
 }
 
 // EvaluationData validation for recommend-resin
