@@ -384,7 +384,12 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
       obs.toUpperCase().includes('ATENÇÃO') || obs.toUpperCase().includes('ATENCAO')
     ) || [];
     
-    const hasLimitations = analysis.confidence === 'baixa' || attentionObservations.length > 0 || result.simulation_note;
+    // Only consider clinical limitation notes, not informational background processing messages
+    const hasClinicalLimitationNote = result.simulation_note && 
+      !result.simulation_note.includes('segundo plano') &&
+      !result.simulation_note.includes('background');
+    
+    const hasLimitations = analysis.confidence === 'baixa' || attentionObservations.length > 0 || hasClinicalLimitationNote;
 
     return (
       <div className="space-y-6">
