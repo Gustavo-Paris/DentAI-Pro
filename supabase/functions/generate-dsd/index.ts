@@ -323,6 +323,12 @@ RECONSTRUCTION:
 - ${specificInstructions || 'Fill missing teeth using adjacent teeth as reference'}
 ${allowedChangesFromAnalysis}
 
+CRITICAL PROPORTION RULES:
+- Keep original tooth width proportions exactly
+- NEVER make teeth appear thinner or narrower than original
+- Only add material to fill defects - do NOT reshape tooth contours
+- Maintain the natural width-to-height ratio of each tooth
+
 CRITICAL: Maintain natural enamel texture. Do NOT make teeth look plastic or artificial.
 
 Output: Same photo with corrected teeth only.`;
@@ -347,6 +353,12 @@ RESTORATION FOCUS:
 - Blend interface lines on teeth ${restorationTeeth || '11, 21'}
 ${allowedChangesFromAnalysis}
 
+CRITICAL PROPORTION RULES:
+- Keep original tooth width proportions exactly
+- NEVER make teeth appear thinner or narrower than original
+- Only add material to fill defects - do NOT reshape tooth contours
+- Maintain the natural width-to-height ratio of each tooth
+
 CRITICAL: Maintain natural enamel texture. Do NOT make teeth look plastic or artificial.
 
 Output: Same photo with corrected teeth only.`;
@@ -366,6 +378,12 @@ CORRECTIONS TO APPLY:
 ${baseCorrections}
 ${colorInstruction}
 ${allowedChangesFromAnalysis}
+
+CRITICAL PROPORTION RULES:
+- Keep original tooth width proportions exactly
+- NEVER make teeth appear thinner or narrower than original
+- Only add material to fill defects - do NOT reshape tooth contours
+- Maintain the natural width-to-height ratio of each tooth
 
 CRITICAL: Maintain natural enamel texture. Do NOT make teeth look plastic or artificial.
 
@@ -388,6 +406,12 @@ CORRECTIONS TO APPLY:
 ${baseCorrections}
 ${colorInstruction}
 ${allowedChangesFromAnalysis}
+
+CRITICAL PROPORTION RULES:
+- Keep original tooth width proportions exactly
+- NEVER make teeth appear thinner or narrower than original
+- Only add material to fill defects - do NOT reshape tooth contours
+- Maintain the natural width-to-height ratio of each tooth
 
 CRITICAL: Maintain natural enamel texture. Do NOT make teeth look plastic or artificial.
 

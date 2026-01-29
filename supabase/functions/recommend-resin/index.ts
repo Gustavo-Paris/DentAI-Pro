@@ -264,10 +264,40 @@ CASO CLÍNICO:
 - Expectativa de longevidade: ${data.longevityExpectation}
 - Orçamento: ${data.budget} ⚠️ RESPEITAR ESTA FAIXA!
 ${data.clinicalNotes ? `- Observações clínicas: ${data.clinicalNotes}` : ''}
+${data.desiredChanges?.includes('whiter') ? `- Preferência do paciente: Dentes mais brancos (ajustar cor 1-2 tons mais claros)` : ''}
 
 ${resinsByPriceSection}
 ${inventorySection}
 ${inventoryInstructions}
+
+${data.aestheticLevel === 'muito alto' ? `
+=== ESTRATIFICAÇÃO AVANÇADA (NÍVEL ESTÉTICO MUITO ALTO) ===
+
+Para máxima excelência estética, você pode COMBINAR DIFERENTES MARCAS por camada:
+
+TABELA DE REFERÊNCIA PARA COMBINAÇÕES:
+┌─────────────────────┬─────────────────────────────────────────────────┐
+│ Camada              │ Resinas Recomendadas                            │
+├─────────────────────┼─────────────────────────────────────────────────┤
+│ Aumento Incisal     │ Trans-forma (Ultradent), CT (Z350), Trans20     │
+│ (Efeito)            │ (Empress Direct)                                │
+├─────────────────────┼─────────────────────────────────────────────────┤
+│ Interface Opaca     │ D BL-L (Empress), WB (Forma), OA (Z350)         │
+├─────────────────────┼─────────────────────────────────────────────────┤
+│ Proximais/Esmalte   │ XLE (Harmonize), E BL-L (Empress), JE (Z350)    │
+├─────────────────────┼─────────────────────────────────────────────────┤
+│ Esmalte Final       │ MW (Estelite) - excelente polimento             │
+│ (acabamento)        │                                                 │
+├─────────────────────┼─────────────────────────────────────────────────┤
+│ Dentes Clareados    │ WE (Estelite Bianco), BL (Forma)                │
+└─────────────────────┴─────────────────────────────────────────────────┘
+
+REGRAS DE COMBINAÇÃO:
+1. PRIORIZE resinas do inventário do usuário para o maior número de camadas possível
+2. Sugira resinas externas APENAS para camadas críticas onde fazem diferença real
+3. Na alternativa, indique opção mais simples usando UMA marca só
+4. Inclua na justificativa o benefício específico de cada marca escolhida
+` : ''}
 
 INSTRUÇÕES PARA PROTOCOLO DE ESTRATIFICAÇÃO:
 1. Se o substrato estiver escurecido/manchado, SEMPRE inclua camada de opaco
