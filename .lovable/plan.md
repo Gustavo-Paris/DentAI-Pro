@@ -1,189 +1,402 @@
 
-# Plano: Correções Baseadas no Feedback da Dentista (Caso Leticia)
+# Plano: Simplificar DSD + Processamento em Background
 
-## Resumo dos Problemas Identificados
+## Resumo Executivo
 
-A especialista identificou **4 categorias de problemas críticos**:
+Este plano combina duas estratégias para resolver o problema de timeout/loop:
 
-1. **Simulação DSD alterou gengiva e largura dos dentes** sem necessidade clínica
-2. **DSD apenas clareou os dentes** sem executar as correções necessárias (alinhamento incisal, formato dos laterais)
-3. **Sugeriu tratamento para apenas 4 dentes** quando deveria incluir caninos e pré-molares
-4. **Sugestões falsas**: gengivoplastia desnecessária e substituição de restaurações inexistentes
+1. **Simplificar a Edge Function**: Remover verificação automática de qualidade, múltiplas variações e blend programático
+2. **Processamento em Background**: Entregar análise clínica imediatamente (~25s) enquanto simulação visual gera em segundo plano
 
----
-
-## Análise Técnica das Causas
-
-### Problema 1: Alteração de Gengiva/Largura dos Dentes
-
-**Causa Raiz**: Os prompts de simulação não têm instruções suficientemente rígidas sobre preservação de gengiva e largura dental. A instrução "Keep the lips, skin, facial features" não menciona explicitamente GENGIVA e PROPORÇÃO dos dentes.
-
-**Evidência no código** (`generate-dsd/index.ts`, linha 589-603):
-```typescript
-simulationPrompt = `Using this smile photo, change ONLY the teeth color.
-CRITICAL PRESERVATION RULE:
-Keep the lips, skin, facial features, and image framing EXACTLY THE SAME...
-```
-A gengiva não é mencionada, e não há regra sobre manter a LARGURA/PROPORÇÃO dos dentes.
+**Resultado esperado**: Usuário vê análise útil em ~25 segundos + simulação aparece automaticamente quando pronta (sem travar UI)
 
 ---
 
-### Problema 2: DSD só Clareou sem Fazer Correções Necessárias
+## Diagnóstico do Problema Atual
 
-**Causa Raiz**: O prompt padrão foca excessivamente em clareamento. Não há instrução para MANTER proporções quando o paciente não pede mudanças estruturais.
+### Fluxo Atual (Causa Timeouts)
 
-**Código Atual** (`generate-dsd/index.ts`, linha 596-599):
-```typescript
-TEETH EDIT:
-- Whiten all visible teeth to shade A1/A2 (natural bright white)
-- Remove any stains, yellowing, or discoloration
-- Make the color uniform across all teeth
-- Harmonize asymmetric lateral incisors (12 vs 22) if shapes differ
+```text
+1. analyzeProportions()         ~20-25s
+2. getTeethMask()               ~10-15s  
+3. generateSingleVariation() x3 ~45-60s cada (em paralelo = ~60s)
+4. blendWithOriginal()          ~30-45s
+5. verifySimulationQuality()    ~20-25s
+6. Se falhar → repetir passos 4-5 para próxima variação
+
+TEMPO TOTAL: 2-4 minutos (excede limite de 90s do navegador)
 ```
 
-O problema: A IA está sendo instruída a "harmonizar" formas mesmo quando isso não é apropriado, e não recebe instrução para focar nas correções ESPECÍFICAS identificadas na análise.
+### Evidência nos Logs
 
----
-
-### Problema 3: Sugestões Incompletas (4 dentes em vez de 6+)
-
-**Causa Raiz**: O prompt de análise (`generate-dsd/index.ts`, linha 918) já tem instrução de listar todos os dentes, mas falta enforcement mais forte e exemplos específicos de quando incluir caninos/pré-molares para harmonização.
-
-**Código Atual**:
-```typescript
-✅ OBRIGATÓRIO: Listar TODOS os dentes que precisam de intervenção (mesmo 6-8 dentes)
+```text
+"Variation 0 failed quality check: [
+  'Gums in the simulation appear to be at a slightly different level...',
+  'The central upper incisors in the simulation appear slightly wider...'
+]"
 ```
 
-A instrução existe, mas precisa de contexto mais claro sobre quando incluir dentes adjacentes para harmonização do arco.
+A verificação de qualidade está **rejeitando resultados aceitáveis**, forçando retentativas até timeout.
 
 ---
 
-### Problema 4: Sugestões Falsas (Restaurações/Gengivoplastia)
+## Solução Proposta
 
-**Causa Raiz CRÍTICA**: A IA está "alucinando" problemas que não existem. O prompt enfatiza tanto a detecção de restaurações antigas que a IA está vendo restaurações onde não existem.
+### Novo Fluxo (Rápido + Resiliente)
 
-**Código Atual** (`generate-dsd/index.ts`, linha 826-858):
-```typescript
-=== DETECÇÃO CRÍTICA DE RESTAURAÇÕES EXISTENTES ===
-ANTES de fazer qualquer elogio estético, você DEVE examinar CADA dente visível para sinais de restaurações prévias.
-...
-PRIORIZE sugestão de "Substituição de restauração" sobre mudanças cosméticas sutis
+```text
+FASE 1 - IMEDIATA (~25s):
+├─ analyzeProportions() → Retorna análise clínica
+├─ Frontend mostra: Proporções + Sugestões + "Gerando simulação..."
+└─ Usuário já pode revisar dados úteis
+
+FASE 2 - BACKGROUND (~40-50s):
+├─ generateSimulation() SIMPLIFICADO (1 tentativa, sem blend/verificação)
+├─ Upload para Storage
+├─ Atualiza UI automaticamente quando pronto
+└─ Se falhar: botão "Tentar Gerar Simulação" (já existe)
 ```
 
-Este prompt é agressivo demais na detecção de restaurações, causando falsos positivos.
-
 ---
 
-## Correções Propostas
+## Mudanças Detalhadas
 
-### 1. Atualizar Prompts de Simulação - Preservação de Gengiva e Proporções
+### 1. Edge Function: Novo Parâmetro `analysisOnly`
 
 **Arquivo**: `supabase/functions/generate-dsd/index.ts`
 
-Modificar TODOS os prompts de simulação (reconstruction, restoration-replacement, intraoral, standard) para incluir:
+Adicionar suporte para retornar apenas análise, sem esperar simulação:
 
 ```typescript
-ABSOLUTE PRESERVATION RULES:
-1. LIPS: Keep lips PIXEL-PERFECT identical to original
-2. GUMS: Do NOT modify gum level, shape, or contour in ANY way
-3. TOOTH WIDTH: Do NOT change the width or proportions of any tooth
-4. TOOTH LENGTH: Only modify if specifically requested in analysis
-5. SKIN/FACE: Keep all non-dental areas identical
+interface RequestData {
+  // ... campos existentes
+  analysisOnly?: boolean;  // NOVO: retorna só análise
+}
+```
 
-ONLY ALLOWED CHANGES:
-- Tooth COLOR (whitening to A1/A2)
-- Stain REMOVAL
-- MINOR contour smoothing (NOT width changes)
+**Na função validateRequest():**
+```typescript
+return {
+  success: true,
+  data: {
+    // ... campos existentes
+    analysisOnly: req.analysisOnly === true,
+  },
+};
+```
+
+**No handler principal (serve):**
+```typescript
+// Se analysisOnly, retorna imediatamente após análise
+if (validation.data.analysisOnly) {
+  const result: DSDResult = {
+    analysis,
+    simulation_url: null,
+    simulation_note: "Simulação será gerada em segundo plano",
+  };
+  return new Response(JSON.stringify(result), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+```
+
+### 2. Simplificar generateSimulation()
+
+**Remover funções complexas** (linhas 78-399):
+- `getTeethMask()` - Detecção de máscara
+- `verifySimulationQuality()` - Verificação automática de qualidade
+- `blendWithOriginal()` - Composição programática
+- `selectBestVariation()` - Seleção entre variações
+
+**Nova versão simplificada:**
+
+```typescript
+async function generateSimulation(
+  imageBase64: string,
+  analysis: DSDAnalysis,
+  userId: string,
+  supabase: any,
+  apiKey: string,
+  toothShape: string = 'natural',
+  patientPreferences?: PatientPreferences
+): Promise<string | null> {
+  const SIMULATION_TIMEOUT = 50_000; // 50s máximo
+  
+  // Build prompt (mesma lógica de prompts condicionais existente)
+  const simulationPrompt = buildSimulationPrompt(analysis, toothShape, patientPreferences);
+  
+  // Single attempt with optimized model
+  const model = "google/gemini-2.5-flash-image-preview";
+  
+  try {
+    const response = await fetchWithTimeout(
+      "https://ai.gateway.lovable.dev/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model,
+          messages: [{
+            role: "user",
+            content: [
+              { type: "text", text: simulationPrompt },
+              { type: "image_url", image_url: { url: imageBase64 } },
+            ],
+          }],
+          modalities: ["image", "text"],
+        }),
+      },
+      SIMULATION_TIMEOUT,
+      "generateSimulation"
+    );
+
+    if (!response.ok) {
+      logger.warn("Simulation request failed:", response.status);
+      return null;
+    }
+
+    const data = await response.json();
+    const generatedImage = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+
+    if (!generatedImage) {
+      logger.warn("No image in simulation response");
+      return null;
+    }
+
+    // Upload directly (no blend, no verification)
+    const base64Data = generatedImage.replace(/^data:image\/\w+;base64,/, "");
+    const binaryData = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
+    
+    const fileName = `${userId}/dsd_${Date.now()}.png`;
+    
+    const { error: uploadError } = await supabase.storage
+      .from("dsd-simulations")
+      .upload(fileName, binaryData, {
+        contentType: "image/png",
+        upsert: true,
+      });
+
+    if (uploadError) {
+      logger.error("Upload error:", uploadError);
+      return null;
+    }
+
+    logger.log("Simulation generated and uploaded:", fileName);
+    return fileName;
+  } catch (err) {
+    logger.warn("Simulation error:", err);
+    return null;
+  }
+}
+```
+
+### 3. Frontend: Fluxo de Duas Chamadas
+
+**Arquivo**: `src/components/wizard/DSDStep.tsx`
+
+**Novos estados:**
+```typescript
+const [isSimulationGenerating, setIsSimulationGenerating] = useState(false);
+const [simulationError, setSimulationError] = useState(false);
+```
+
+**Nova função analyzeDSD() com duas fases:**
+```typescript
+const analyzeDSD = async (retryCount = 0) => {
+  if (!imageBase64) {
+    setError('Nenhuma imagem disponível');
+    return;
+  }
+
+  setIsAnalyzing(true);
+  setError(null);
+  setCurrentStep(0);
+
+  const stepInterval = setInterval(() => {
+    setCurrentStep((prev) => Math.min(prev + 1, 3)); // Só até passo 4 (análise)
+  }, 2500);
+
+  try {
+    // FASE 1: Apenas análise (rápida)
+    const { data, error: fnError } = await invokeFunction<DSDResult>('generate-dsd', {
+      body: {
+        imageBase64,
+        toothShape: TOOTH_SHAPE,
+        analysisOnly: true, // NOVO
+        additionalPhotos,
+        patientPreferences,
+      },
+    });
+
+    clearInterval(stepInterval);
+
+    if (fnError) throw fnError;
+
+    if (data?.analysis) {
+      // Mostrar análise imediatamente
+      setResult(data);
+      setIsAnalyzing(false);
+      toast.success('Análise de proporções concluída!');
+      
+      // FASE 2: Gerar simulação em background
+      generateSimulationBackground();
+    } else {
+      throw new Error('Análise não retornada');
+    }
+  } catch (error) {
+    clearInterval(stepInterval);
+    // ... tratamento de erro existente
+  }
+};
+```
+
+**Nova função para simulação em background:**
+```typescript
+const generateSimulationBackground = async () => {
+  if (!imageBase64 || !result?.analysis) return;
+
+  setIsSimulationGenerating(true);
+  setSimulationError(false);
+
+  try {
+    const { data, error: fnError } = await invokeFunction<DSDResult>('generate-dsd', {
+      body: {
+        imageBase64,
+        toothShape: TOOTH_SHAPE,
+        regenerateSimulationOnly: true,
+        existingAnalysis: result.analysis,
+      },
+    });
+
+    if (fnError || !data?.simulation_url) {
+      setSimulationError(true);
+      return;
+    }
+
+    // Atualizar result com URL da simulação
+    setResult((prev) => prev ? { 
+      ...prev, 
+      simulation_url: data.simulation_url 
+    } : prev);
+
+    // Carregar signed URL
+    const { data: signedData } = await supabase.storage
+      .from('dsd-simulations')
+      .createSignedUrl(data.simulation_url, 3600);
+
+    if (signedData?.signedUrl) {
+      setSimulationImageUrl(signedData.signedUrl);
+      toast.success('Simulação visual pronta!');
+    }
+  } catch (err) {
+    console.error('Background simulation error:', err);
+    setSimulationError(true);
+  } finally {
+    setIsSimulationGenerating(false);
+  }
+};
+```
+
+### 4. Nova UI Durante Geração em Background
+
+**Quando análise chegou mas simulação está gerando:**
+
+```tsx
+{/* Card de simulação em progresso */}
+{isSimulationGenerating && !simulationImageUrl && (
+  <Card className="border-primary/30 bg-primary/5">
+    <CardContent className="py-6">
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+          <Loader2 className="w-6 h-6 text-primary animate-spin" />
+        </div>
+        <div className="flex-1">
+          <h4 className="font-medium">Gerando simulação visual...</h4>
+          <p className="text-sm text-muted-foreground">
+            Você pode continuar revisando a análise enquanto processamos
+          </p>
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+)}
+
+{/* Card de erro na simulação (com botão retry) */}
+{simulationError && !simulationImageUrl && !isSimulationGenerating && (
+  <Card className="border-amber-400 bg-amber-50/50">
+    <CardContent className="py-4">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-amber-600" />
+          <span className="text-sm text-amber-700">
+            Simulação não pôde ser gerada
+          </span>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={generateSimulationBackground}
+        >
+          <RefreshCw className="w-3 h-3 mr-1" />
+          Tentar novamente
+        </Button>
+      </div>
+    </CardContent>
+  </Card>
+)}
 ```
 
 ---
 
-### 2. Vincular Simulação às Sugestões da Análise
+## Diagrama do Novo Fluxo
 
-**Arquivo**: `supabase/functions/generate-dsd/index.ts`
-
-Modificar a lógica de simulação para usar as sugestões da análise como guia:
-
-```typescript
-// Build specific changes from analysis suggestions
-const allowedChanges = analysis.suggestions.map(s => 
-  `Tooth ${s.tooth}: ${s.proposed_change}`
-).join('\n');
-
-simulationPrompt = `...
-SPECIFIC CHANGES ALLOWED (from analysis):
-${allowedChanges}
-
-If a change is NOT listed above, do NOT apply it.
-...`;
-```
-
----
-
-### 3. Reduzir Falsos Positivos de Restaurações
-
-**Arquivo**: `supabase/functions/generate-dsd/index.ts`
-
-Modificar o prompt de análise para ser mais conservador:
-
-**Antes** (agressivo):
-```typescript
-ANTES de fazer qualquer elogio estético, você DEVE examinar CADA dente...
-PRIORIZE sugestão de "Substituição de restauração" sobre mudanças cosméticas
-```
-
-**Depois** (conservador):
-```typescript
-DETECÇÃO DE RESTAURAÇÕES - SEJA CONSERVADOR:
-- Apenas identifique restaurações se houver EVIDÊNCIA CLARA e INEQUÍVOCA
-- Sinais OBRIGATÓRIOS para diagnosticar restauração:
-  1. Interface CLARAMENTE visível (linha de demarcação nítida)
-  2. Diferença de cor/opacidade ÓBVIA (não sutil)
-  3. Pelo menos 2 dos seguintes: manchamento marginal, textura diferente, contorno artificial
-
-SE NÃO TIVER CERTEZA, NÃO DIAGNOSTIQUE RESTAURAÇÃO.
-É preferível não mencionar uma restauração existente do que inventar uma inexistente.
-
-NUNCA DIGA: "Substituir restauração" se não houver PROVA VISUAL de restauração anterior.
-```
-
----
-
-### 4. Instruções para Incluir Dentes Adjacentes na Harmonização
-
-**Arquivo**: `supabase/functions/generate-dsd/index.ts`
-
-Adicionar ao prompt de análise:
-
-```typescript
-REGRA DE HARMONIZAÇÃO DO ARCO:
-Quando identificar problemas nos incisivos centrais e laterais (11, 12, 21, 22), SEMPRE avalie:
-- CANINOS (13, 23): Frequentemente precisam de volume vestibular para harmonizar corredor bucal
-- PRÉ-MOLARES (14, 15, 24, 25): Avaliar se precisam de volume para preencher corredor bucal excessivo
-
-Se 4 dentes anteriores precisam de tratamento, há alta probabilidade de que os caninos também precisem.
-Inclua-os com prioridade "baixa" se a melhoria for apenas estética.
-```
-
----
-
-### 5. Remover Sugestão de Gengivoplastia Quando Não Indicada
-
-**Arquivo**: `supabase/functions/generate-dsd/index.ts`
-
-Adicionar regra explícita:
-
-```typescript
-REGRAS PARA GENGIVOPLASTIA:
-❌ NUNCA sugira gengivoplastia se:
-- A linha do sorriso for "média" ou "baixa" (pouca exposição gengival)
-- Os zênites gengivais estiverem simétricos
-- A proporção largura/altura dos dentes estiver normal (75-80%)
-
-✅ Sugira gengivoplastia APENAS se:
-- Sorriso gengival EVIDENTE (>3mm de exposição gengival)
-- Zênites claramente assimétricos que afetam estética
-- Dentes parecem "curtos" devido a excesso de gengiva
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│                      USUÁRIO ENVIA FOTO                         │
+└──────────────────────────┬──────────────────────────────────────┘
+                           ↓
+┌──────────────────────────────────────────────────────────────────┐
+│  FASE 1 - CHAMADA RÁPIDA (~25s)                                  │
+│  ┌──────────────────────────────────────────────────────────┐    │
+│  │  POST /generate-dsd { analysisOnly: true }               │    │
+│  │  → analyzeProportions() ~20-25s                          │    │
+│  │  → Return { analysis, simulation_url: null }             │    │
+│  └──────────────────────────────────────────────────────────┘    │
+└──────────────────────────┬───────────────────────────────────────┘
+                           ↓
+┌──────────────────────────────────────────────────────────────────┐
+│  FRONTEND MOSTRA IMEDIATAMENTE                                   │
+│  ┌─────────────────────────────────────────────────────────────┐ │
+│  │  ✓ Badge "Confiança alta/média"                             │ │
+│  │  ✓ ProportionsCard (proporção dourada, simetria, etc.)      │ │
+│  │  ✓ Sugestões de Tratamento (lista de dentes)                │ │
+│  │  ⏳ Card: "Gerando simulação visual..." [spinner]           │ │
+│  │  [Continuar para Revisão →]                                 │ │
+│  └─────────────────────────────────────────────────────────────┘ │
+└──────────────────────────┬───────────────────────────────────────┘
+                           ↓ (em paralelo)
+┌──────────────────────────────────────────────────────────────────┐
+│  FASE 2 - BACKGROUND (~40-50s)                                   │
+│  ┌──────────────────────────────────────────────────────────┐    │
+│  │  POST /generate-dsd { regenerateSimulationOnly: true }   │    │
+│  │  → generateSimulation() SIMPLIFICADO                     │    │
+│  │  → 1 tentativa, sem blend, sem verificação               │    │
+│  │  → Upload direto para Storage                            │    │
+│  │  → Return { simulation_url }                             │    │
+│  └──────────────────────────────────────────────────────────┘    │
+└──────────────────────────┬───────────────────────────────────────┘
+                           ↓
+┌──────────────────────────────────────────────────────────────────┐
+│  UI ATUALIZA AUTOMATICAMENTE                                     │
+│  ┌─────────────────────────────────────────────────────────────┐ │
+│  │  ✓ ComparisonSlider aparece (Antes/Depois)                  │ │
+│  │  ✓ Toast: "Simulação visual pronta!"                        │ │
+│  │  ✓ Botão "Nova Simulação" disponível                        │ │
+│  └─────────────────────────────────────────────────────────────┘ │
+└──────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -192,101 +405,216 @@ REGRAS PARA GENGIVOPLASTIA:
 
 | Arquivo | Alteração |
 |---------|-----------|
-| `supabase/functions/generate-dsd/index.ts` | Atualizar 4 prompts de simulação + prompt de análise |
+| `supabase/functions/generate-dsd/index.ts` | Adicionar `analysisOnly`, simplificar `generateSimulation()`, remover funções de blend/verificação |
+| `src/components/wizard/DSDStep.tsx` | Fluxo de duas chamadas + UI de background |
+
+---
+
+## Código Removido (Simplificação)
+
+### Funções a REMOVER da Edge Function
+
+| Função | Linhas | Motivo |
+|--------|--------|--------|
+| `getTeethMask()` | 78-145 | Não necessário sem blend |
+| `verifySimulationQuality()` | 147-231 | Causava rejeição de resultados aceitáveis |
+| `blendWithOriginal()` | 234-311 | Adicionava complexidade sem garantia de melhora |
+| `selectBestVariation()` | 313-399 | Não necessário com 1 tentativa |
+
+### Lógica a SIMPLIFICAR
+
+| Código Atual | Novo |
+|--------------|------|
+| `NUM_VARIATIONS = 3` + paralelo | `1 tentativa direta` |
+| Loop com blend + verificação (linhas 862-918) | Upload direto |
+| Fallback para "raw variation" | Fallback para `null` (botão retry na UI) |
+
+---
+
+## Comparação de Tempo
+
+| Etapa | Antes | Depois |
+|-------|-------|--------|
+| Análise de proporções | 20-25s | 20-25s |
+| Detecção de máscara | 10-15s | **REMOVIDO** |
+| Geração (3 variações) | ~60s | ~40s (1 variação) |
+| Blend | 30-45s | **REMOVIDO** |
+| Verificação qualidade | 20-25s x N | **REMOVIDO** |
+| **TEMPO ATÉ ANÁLISE** | 2-4 min | **~25s** |
+| **TEMPO ATÉ SIMULAÇÃO** | 2-4 min | **~65s (background)** |
+
+---
+
+## Benefícios
+
+1. **UX Drasticamente Melhor**: Usuário vê resultado útil em 25s vs 2-4 min
+2. **Sem Timeout/Loop**: Conexão principal dura só 25s
+3. **Não Bloqueia Fluxo**: Pode continuar para revisão enquanto simulação gera
+4. **Fallback Elegante**: Se simulação falhar, análise está disponível + botão retry
+5. **Menos Chamadas de IA**: 2-3 chamadas vs 8-12 chamadas
+6. **Código Mais Simples**: ~400 linhas removidas da Edge Function
+
+---
+
+## Riscos e Mitigações
+
+| Risco | Mitigação |
+|-------|-----------|
+| Simulação sem blend pode ter qualidade inferior | Prompt otimizado compensa; usuário pode regenerar |
+| Usuário navega antes de simulação terminar | Simulação fica no Storage; pode regenerar depois |
+| Duas chamadas = duplicação de código | Reutilização via `regenerateSimulationOnly` existente |
+
+---
+
+## Ordem de Implementação
+
+1. **Edge Function**: Adicionar `analysisOnly` + simplificar `generateSimulation()`
+2. **Deploy** da Edge Function
+3. **Frontend**: Refatorar `analyzeDSD()` para duas fases
+4. **Frontend**: Adicionar UI de "simulação em progresso"
+5. **Teste** end-to-end com caso real
 
 ---
 
 ## Seção Técnica: Mudanças Específicas
 
-### Prompt de Simulação Padrão (Novo)
+### Edge Function - Remoção de Funções
 
 ```typescript
-simulationPrompt = `Using this smile photo, improve ONLY the teeth appearance.
-
-=== ABSOLUTE PRESERVATION RULES ===
-1. LIPS: Keep lips PIXEL-PERFECT identical to original
-2. GUMS: Do NOT modify gum level, shape, contour, or color
-3. TOOTH WIDTH: Maintain the exact width and proportions of each tooth
-4. TOOTH SHAPE: Only apply changes from the ALLOWED list below
-5. FRAMING: Keep exact same dimensions, angle, and zoom
-
-=== CHANGES ALLOWED ===
-- Whiten teeth to shade A1/A2 (natural bright white)
-- Remove stains, yellowing, or discoloration
-- Make color uniform across all teeth
-${analysis.suggestions?.length > 0 ? 
-  `\nSPECIFIC CORRECTIONS FROM ANALYSIS:\n${analysis.suggestions.map(s => 
-    `- Tooth ${s.tooth}: ${s.proposed_change}`
-  ).join('\n')}` : ''}
-${patientDesires || ''}
-
-=== STRICTLY FORBIDDEN ===
-- Changing gum levels or contours
-- Modifying tooth width or proportions
-- Any changes to lips, skin, or face
-- Extreme whitening (Hollywood white)
-
-Output the edited image with EXACT same dimensions as input.`;
+// REMOVER COMPLETAMENTE (linhas 78-399):
+// - getTeethMask()
+// - verifySimulationQuality()
+// - blendWithOriginal()
+// - selectBestVariation()
+// - blobToBase64()
 ```
 
-### Prompt de Análise - Seção de Restaurações (Novo)
+### Edge Function - Nova generateSimulation()
+
+A nova versão terá ~80 linhas vs ~400 linhas atuais:
 
 ```typescript
-=== DETECÇÃO DE RESTAURAÇÕES - CRITÉRIOS RIGOROSOS ===
-IMPORTANTE: Seja CONSERVADOR. Falsos positivos são piores que falsos negativos.
+async function generateSimulation(
+  imageBase64: string,
+  analysis: DSDAnalysis,
+  userId: string,
+  supabase: any,
+  apiKey: string,
+  toothShape: string = 'natural',
+  patientPreferences?: PatientPreferences
+): Promise<string | null> {
+  const TIMEOUT = 50_000;
+  
+  // Manter lógica de prompts condicionais (reconstruction, restoration, intraoral, standard)
+  const simulationPrompt = buildPrompt(analysis, toothShape, patientPreferences);
+  
+  try {
+    const response = await fetchWithTimeout(
+      "https://ai.gateway.lovable.dev/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash-image-preview",
+          messages: [{
+            role: "user",
+            content: [
+              { type: "text", text: simulationPrompt },
+              { type: "image_url", image_url: { url: imageBase64 } },
+            ],
+          }],
+          modalities: ["image", "text"],
+        }),
+      },
+      TIMEOUT,
+      "generateSimulation"
+    );
 
-DIAGNOSTIQUE RESTAURAÇÃO APENAS SE:
-☑️ Interface de demarcação CLARAMENTE visível (linha nítida entre materiais)
-☑️ Diferença de cor/opacidade ÓBVIA e INEQUÍVOCA
-☑️ PELO MENOS 2 sinais adicionais:
-   - Manchamento marginal evidente
-   - Textura superficial visivelmente diferente
-   - Contorno artificial ou excessivamente uniforme
-   - Perda de polimento localizada
+    if (!response.ok) return null;
 
-SE NÃO TIVER ABSOLUTA CERTEZA → NÃO MENCIONE RESTAURAÇÃO
+    const data = await response.json();
+    const image = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    
+    if (!image) return null;
 
-❌ NÃO confunda variação natural de cor com restauração
-❌ NÃO confunda hipoplasia/fluorose com restauração
-❌ NÃO invente restaurações - isso prejudica o planejamento clínico
+    // Upload direto
+    const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
+    const binary = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+    const fileName = `${userId}/dsd_${Date.now()}.png`;
+
+    const { error } = await supabase.storage
+      .from("dsd-simulations")
+      .upload(fileName, binary, { contentType: "image/png", upsert: true });
+
+    return error ? null : fileName;
+  } catch {
+    return null;
+  }
+}
 ```
 
-### Prompt de Análise - Seção de Harmonização (Novo)
+### Frontend - Estados e Refs
 
 ```typescript
-=== AVALIAÇÃO COMPLETA DO ARCO DO SORRISO ===
-Quando identificar necessidade de tratamento em incisivos (11, 12, 21, 22):
+// Novos estados
+const [isSimulationGenerating, setIsSimulationGenerating] = useState(false);
+const [simulationError, setSimulationError] = useState(false);
 
-AVALIAÇÃO OBRIGATÓRIA DE DENTES ADJACENTES:
-1. CANINOS (13, 23):
-   - Corredor bucal excessivo? → Considerar volume vestibular
-   - Proeminência adequada? → Avaliar harmonização
-   
-2. PRÉ-MOLARES (14, 15, 24, 25):
-   - Visíveis ao sorrir? → Avaliar integração no arco
-   - Corredor escuro lateral? → Considerar volume
-
-REGRA: Se ≥4 dentes anteriores precisam de intervenção, SEMPRE avalie os 6-8 dentes visíveis.
+// Ref existente mantido
+const analysisStartedRef = useRef(false);
 ```
 
----
+### Frontend - Fluxo analyzeDSD()
 
-## Validação Esperada
+```typescript
+const analyzeDSD = async (retryCount = 0) => {
+  // ... validação existente ...
+  
+  try {
+    // FASE 1: Análise apenas
+    const { data, error: fnError } = await invokeFunction<DSDResult>('generate-dsd', {
+      body: {
+        imageBase64,
+        toothShape: TOOTH_SHAPE,
+        analysisOnly: true, // <-- NOVO
+        additionalPhotos: { ... },
+        patientPreferences: { ... },
+      },
+    });
 
-Após as correções:
+    if (data?.analysis) {
+      setResult(data);
+      setIsAnalyzing(false);
+      toast.success('Análise concluída!');
+      
+      // FASE 2: Background
+      generateSimulationBackground();
+    }
+  } catch { ... }
+};
 
-1. **Simulação DSD**: Deve manter gengiva e largura dos dentes idênticas à foto original
-2. **Sugestões**: Deve incluir caninos/pré-molares quando relevante para harmonização
-3. **Restaurações**: Não deve diagnosticar restaurações sem evidência clara
-4. **Gengivoplastia**: Não deve sugerir para casos com exposição gengival normal
+const generateSimulationBackground = async () => {
+  setIsSimulationGenerating(true);
+  
+  try {
+    const { data } = await invokeFunction<DSDResult>('generate-dsd', {
+      body: {
+        imageBase64,
+        regenerateSimulationOnly: true,
+        existingAnalysis: result.analysis,
+      },
+    });
 
----
-
-## Testes Recomendados
-
-1. Testar com foto do "Caso Leticia" e verificar:
-   - [ ] Simulação não altera gengiva
-   - [ ] Simulação não altera largura dos dentes
-   - [ ] Sugestões incluem 6+ dentes se necessário
-   - [ ] Não menciona restaurações inexistentes
-   - [ ] Não sugere gengivoplastia sem indicação
+    if (data?.simulation_url) {
+      setResult(prev => ({ ...prev, simulation_url: data.simulation_url }));
+      // Load signed URL...
+      toast.success('Simulação pronta!');
+    }
+  } finally {
+    setIsSimulationGenerating(false);
+  }
+};
+```
