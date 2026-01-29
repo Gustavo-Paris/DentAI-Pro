@@ -54,6 +54,7 @@ interface DSDStepProps {
   onSkip: () => void;
   additionalPhotos?: AdditionalPhotos;
   patientPreferences?: PatientPreferences;
+  initialResult?: DSDResult | null; // For restoring from draft
 }
 
 const analysisSteps = [
@@ -63,10 +64,11 @@ const analysisSteps = [
   { label: 'Avaliando simetria...', duration: 2000 },
 ];
 
-export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, patientPreferences }: DSDStepProps) {
+export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, patientPreferences, initialResult }: DSDStepProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
-  const [result, setResult] = useState<DSDResult | null>(null);
+  // Initialize with draft result if available
+  const [result, setResult] = useState<DSDResult | null>(initialResult || null);
   const [error, setError] = useState<string | null>(null);
   const [simulationImageUrl, setSimulationImageUrl] = useState<string | null>(null);
   const [isRegeneratingSimulation, setIsRegeneratingSimulation] = useState(false);
@@ -77,8 +79,8 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
   
   const { invokeFunction } = useAuthenticatedFetch();
   
-  // Ref to prevent multiple simultaneous analysis calls
-  const analysisStartedRef = useRef(false);
+  // Ref to prevent multiple simultaneous analysis calls - skip if we have initial result
+  const analysisStartedRef = useRef(!!initialResult);
 
   // Load signed URL for simulation
   useEffect(() => {
