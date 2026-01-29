@@ -99,8 +99,9 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
   }, [result?.simulation_url]);
 
   // NEW: Background simulation generation
-  const generateSimulationBackground = async () => {
-    if (!imageBase64 || !result?.analysis) return;
+  const generateSimulationBackground = async (analysisData?: DSDAnalysis) => {
+    const analysis = analysisData || result?.analysis;
+    if (!imageBase64 || !analysis) return;
 
     setIsSimulationGenerating(true);
     setSimulationError(false);
@@ -111,7 +112,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
           imageBase64,
           toothShape: TOOTH_SHAPE,
           regenerateSimulationOnly: true,
-          existingAnalysis: result.analysis,
+          existingAnalysis: analysis,
         },
       });
 
@@ -209,7 +210,8 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
         toast.success('Análise de proporções concluída!');
         
         // PHASE 2: Generate simulation in background
-        generateSimulationBackground();
+        // Note: We pass analysis directly since state update is async
+        generateSimulationBackground(data.analysis);
       } else {
         throw new Error('Dados de análise não retornados');
       }
@@ -475,7 +477,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={generateSimulationBackground}
+                  onClick={() => generateSimulationBackground()}
                 >
                   <RefreshCw className="w-3 h-3 mr-1" />
                   Tentar novamente
