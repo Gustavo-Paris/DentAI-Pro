@@ -373,24 +373,25 @@ ${allowedChangesFromAnalysis}
 Output: Same photo with whiter teeth only.`;
 
   } else {
-    // STANDARD PROMPT - Balanced: whitening + subtle corrections
-    simulationPrompt = `DENTAL SMILE IMPROVEMENT
+    // STANDARD PROMPT - Conservative with ONE small fix
+    simulationPrompt = `TEETH COLOR EDIT ONLY
 
-Task: Improve this smile photo with subtle, natural corrections.
+Task: Whiten the teeth in this photo. Do NOT change anything else.
 
-PRESERVE EXACTLY:
-- Lips, gums, skin (unchanged)
-- Tooth proportions and size
-- Image framing and dimensions
+COPY EXACTLY (unchanged):
+- Lips (same color, shape, texture)
+- Gums (same level, color)
+- Skin (unchanged)
+- Tooth size (same width, length)
+- Image dimensions
 
-APPLY THESE CORRECTIONS:
-1. Whiten teeth to natural A1/A2 shade
-2. Remove stains and discoloration
-3. Smooth visible restoration edges
-4. Blend any color mismatches between teeth
+CHANGE ONLY:
+- Tooth enamel color → shade A1/A2 (natural white)
+- Remove stains
+- Remove visible dark lines at restoration edges
 ${allowedChangesFromAnalysis}
 
-Keep result NATURAL and REALISTIC.`;
+Output: Same photo with improved teeth only.`;
   }
 
   const promptType = needsReconstruction ? 'reconstruction' : 
