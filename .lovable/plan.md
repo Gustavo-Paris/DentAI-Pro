@@ -1,193 +1,198 @@
 
-# Plano: Melhorias no DSD - Formulário Simplificado + Correções Básicas Consistentes
+# Plano: Melhorar Qualidade da Simulação DSD
 
-## Problemas Identificados
+## Problemas Identificados na Imagem
 
-### 1. Formulário de Preferências
-O usuário identificou que:
-- **"Corrigir espaçamentos/diastemas"** não faz sentido como opção — sempre deve ser corrigido automaticamente
-- Apenas **"Dentes mais brancos"** é uma preferência real do paciente (natural vs branco)
+Analisando a simulação gerada:
 
-### 2. Correções Básicas Não Aplicadas
-A simulação está:
-- ✅ Mantendo proporções da boca (lábios, gengiva)
-- ❌ **NÃO** corrigindo defeitos estruturais básicos (ex: "buraquinho" no dente lateral)
-- ❌ Apenas clareando os dentes sem fazer o "feijão com arroz"
+| Aspecto | Antes (Original) | Depois (Simulação) | Problema |
+|---------|------------------|-------------------|----------|
+| Textura | Natural, com variações | Plastificada, uniforme | ❌ Perdeu realismo |
+| Cor | Tons naturais variados | Muito uniforme/artificial | ❌ Parece "fake" |
+| Defeitos | Buraquinho no lateral | NÃO foi corrigido | ❌ Feijão com arroz não feito |
+| Proporções | Boca original | Manteve bem | ✅ OK |
 
-### 3. "Nova Simulação" Gerando Resultados Distorcidos
-Quando clica em **"Nova Simulação"**, o resultado fica distorcido porque:
-- O `handleRegenerateSimulation` não está passando as `patientPreferences`
-- Sem as preferências, a instrução de cor fica diferente
-- A simulação perde contexto e gera resultados inconsistentes
+## Causas Raiz
 
-## Solução Proposta
+### 1. Modelo de Baixa Qualidade
+```typescript
+// ATUAL - modelo "flash" (mais rápido, menor qualidade)
+const model = "google/gemini-2.5-flash-image-preview";
 
-### Parte 1: Simplificar Formulário
+// DEVERIA - modelo "pro" (mais lento, maior qualidade)
+const model = "google/gemini-3-pro-image-preview";
+```
 
-Remover completamente a opção "Corrigir espaçamentos/diastemas" e deixar apenas:
-- ☐ **Dentes mais brancos** — Se marcado, clareia para A1/A2; se não, mantém cor natural
+O modelo `gemini-2.5-flash` é otimizado para velocidade, não para qualidade de edição de imagem. O `gemini-3-pro-image-preview` produz resultados muito mais realistas.
 
-O fechamento de diastemas será sempre aplicado automaticamente (não é preferência, é correção clínica).
-
-### Parte 2: Melhorar Prompt de Correções Básicas
-
-Atualizar o prompt `STANDARD` para ser mais explícito sobre correções estruturais:
-
+### 2. Prompt Muito Genérico
+O prompt atual lista muitas instruções genéricas que confundem a IA:
 ```text
-MANDATORY BASIC CORRECTIONS (always apply):
+MANDATORY CORRECTIONS (always apply):
 - Remove stains and discolorations
-- Fill small chips, holes, or defects on tooth edges
+- Fill small holes, chips or defects on tooth edges
 - Close small gaps between teeth (up to 2mm)
 - Remove visible dark lines at restoration margins
 - Smooth irregular enamel surfaces
 ```
 
-Isso garante que o "feijão com arroz" sempre seja feito, independente das preferências.
+Isso faz a IA tentar "suavizar" tudo, perdendo a textura natural.
 
-### Parte 3: Corrigir "Nova Simulação"
+### 3. Falta de Instrução de Preservação de Textura
+O prompt não enfatiza que a **textura natural do esmalte** deve ser preservada.
 
-O problema está no `handleRegenerateSimulation` (linha 277-318) que **não passa as `patientPreferences`** para a Edge Function:
+## Solução Proposta
 
+### Mudança 1: Usar Modelo Pro
 ```typescript
-// ATUAL - SEM preferências
-const { data, error: fnError } = await invokeFunction<DSDResult>('generate-dsd', {
-  body: {
-    imageBase64,
-    regenerateSimulationOnly: true,
-    existingAnalysis: result.analysis,
-    toothShape: TOOTH_SHAPE,
-    // ❌ FALTA: patientPreferences
-  },
-});
+// Usar modelo de maior qualidade para simulação
+const model = "google/gemini-3-pro-image-preview";
 ```
 
-Isso faz com que na regeneração, a variável `wantsWhiter` seja `false` (mesmo que o usuário tenha marcado), gerando um resultado diferente.
+### Mudança 2: Simplificar e Focar o Prompt
+Voltar para um prompt mais direto e específico:
+
+```text
+DENTAL PHOTO EDIT
+
+Edit ONLY the teeth in this photo. Keep everything else IDENTICAL.
+
+PRESERVE (do not change):
+- Lips (exact color, shape, texture, position)
+- Gums (exact level, color, shape)
+- Skin (unchanged)
+- Tooth natural texture and surface details
+- Image dimensions and framing
+
+CORRECTIONS TO APPLY:
+1. Fill visible holes, chips or defects on tooth edges
+2. Remove dark stain spots
+3. ${colorInstruction}
+${specificCorrectionsFromAnalysis}
+
+CRITICAL: Maintain natural enamel texture. Do NOT make teeth look plastic or artificial.
+
+Output: Same photo with corrected teeth only.
+```
+
+### Mudança 3: Adicionar Instrução Explícita Anti-Plastificação
+```text
+CRITICAL: Maintain natural enamel texture. Do NOT make teeth look plastic or artificial.
+```
+
+## Comparação de Prompts
+
+| Aspecto | Prompt Atual | Prompt Proposto |
+|---------|--------------|-----------------|
+| Linhas | ~25 | ~15 |
+| Correções listadas | 5 genéricas | 2-3 específicas |
+| Preservação textura | Não menciona | Explícito |
+| Anti-artificial | Não tem | Tem instrução clara |
+| Modelo | Flash (rápido) | Pro (qualidade) |
 
 ## Arquivos a Modificar
 
 | Arquivo | Modificação |
 |---------|-------------|
-| `src/components/wizard/PatientPreferencesStep.tsx` | Remover opção "spacing", deixar apenas "whiter" |
-| `src/components/wizard/DSDStep.tsx` | Passar `patientPreferences` no `handleRegenerateSimulation` |
-| `supabase/functions/generate-dsd/index.ts` | Atualizar prompt para aplicar correções básicas sempre |
+| `supabase/functions/generate-dsd/index.ts` | Trocar modelo + simplificar prompts |
 
 ## Detalhes Técnicos
 
-### PatientPreferencesStep.tsx
-
+### Linha ~412 - Trocar Modelo
 ```typescript
-// ANTES: 2 opções
-const DESIRED_CHANGES_OPTIONS = [
-  { id: 'whiter', label: 'Dentes mais brancos' },
-  { id: 'spacing', label: 'Corrigir espaçamentos/diastemas' },
-];
+// ANTES
+const model = "google/gemini-2.5-flash-image-preview";
 
-// DEPOIS: 1 opção apenas
-const DESIRED_CHANGES_OPTIONS = [
-  { id: 'whiter', label: 'Dentes mais brancos' },
-];
+// DEPOIS
+const model = "google/gemini-3-pro-image-preview";
 ```
 
-### DSDStep.tsx - handleRegenerateSimulation
-
+### Linhas ~206-211 - Simplificar Correções
 ```typescript
-// CORRIGIR - Adicionar patientPreferences
-const handleRegenerateSimulation = async () => {
-  if (!imageBase64 || !result?.analysis) return;
-
-  setIsRegeneratingSimulation(true);
-  setSimulationError(false);
-
-  try {
-    const { data, error: fnError } = await invokeFunction<DSDResult>('generate-dsd', {
-      body: {
-        imageBase64,
-        regenerateSimulationOnly: true,
-        existingAnalysis: result.analysis,
-        toothShape: TOOTH_SHAPE,
-        patientPreferences, // ✅ ADICIONAR ISSO
-      },
-    });
-    // ...
-  }
-};
-```
-
-### generate-dsd/index.ts - Prompt Standard
-
-```typescript
-// ANTES: Correções dependiam de preferências
-const spacingInstruction = wantsSpacing 
-  ? '\n- Close small gaps between teeth (max 2mm)'
-  : '';
-
-// DEPOIS: Correções básicas SEMPRE aplicadas
-const mandatoryCorrections = `
-- Remove stains and discolorations
+// ANTES - muito genérico
+const mandatoryCorrections = `- Remove stains and discolorations
 - Fill small holes, chips or defects on tooth edges
 - Close small gaps between teeth (up to 2mm)
 - Remove visible dark lines at restoration margins
 - Smooth irregular enamel surfaces`;
 
-// Prompt atualizado
-simulationPrompt = `TEETH EDIT ONLY
+// DEPOIS - mais específico e focado
+const baseCorrections = `1. Fill visible holes, chips or defects on tooth edges
+2. Remove dark stain spots`;
+```
 
-Task: Improve the teeth in this photo. Do NOT change anything else.
+### Prompts Atualizados (todos os 4 branches)
 
-COPY EXACTLY (unchanged):
-- Lips (same color, shape, texture)
-- Gums (same level, color)
+**Standard Prompt:**
+```typescript
+simulationPrompt = `DENTAL PHOTO EDIT
+
+Edit ONLY the teeth in this photo. Keep everything else IDENTICAL.
+
+PRESERVE (do not change):
+- Lips (exact color, shape, texture, position)
+- Gums (exact level, color, shape)
 - Skin (unchanged)
-- Tooth size (same width, length)
-- Image dimensions
+- Tooth natural texture and surface details
+- Image dimensions and framing
 
-MANDATORY CORRECTIONS (always apply):
-${mandatoryCorrections}
-
-COLOR ADJUSTMENT:
+CORRECTIONS TO APPLY:
+${baseCorrections}
 ${colorInstruction}
-
-SPECIFIC CORRECTIONS FROM ANALYSIS:
 ${allowedChangesFromAnalysis}
 
-Output: Same photo with improved teeth only.`;
+CRITICAL: Maintain natural enamel texture. Do NOT make teeth look plastic or artificial.
+
+Output: Same photo with corrected teeth only.`;
 ```
 
-## Fluxo Visual Atualizado
+**Reconstruction/Restoration/Intraoral:** 
+Mesma estrutura simplificada, adicionando instruções específicas para cada caso.
+
+## Fluxo de Qualidade
 
 ```text
-┌─────────────────────────────────────────────────┐
-│  ❤️ Preferências do Paciente                    │
-│  ✨ Opcional — personaliza a simulação visual   │
-├─────────────────────────────────────────────────┤
-│                                                 │
-│  O paciente deseja dentes mais brancos?         │
-│                                                 │
-│  ☐ Sim, clarear para tom natural A1/A2          │
-│                                                 │
-│  [Pular esta etapa]     [Continuar]             │
-│                                                 │
-└─────────────────────────────────────────────────┘
+Foto Original
+     │
+     ▼
+┌─────────────────────────────────────┐
+│  Modelo: gemini-3-pro-image-preview │
+│  (Alta qualidade, mais lento)       │
+└─────────────────────────────────────┘
+     │
+     ▼
+┌─────────────────────────────────────┐
+│  Prompt Simplificado               │
+│  • 2-3 correções específicas       │
+│  • Instrução anti-plastificação    │
+│  • Preservar textura natural       │
+└─────────────────────────────────────┘
+     │
+     ▼
+Simulação Realista
 ```
 
-## Comportamento Final
+## Resultados Esperados
 
-| Preferência | Cor | Correções Básicas |
-|-------------|-----|-------------------|
-| Nenhuma | Manter natural | ✅ Sempre aplicadas |
-| "Whiter" | Clarear A1/A2 | ✅ Sempre aplicadas |
+| Antes (Atual) | Depois (Proposto) |
+|---------------|-------------------|
+| Dentes plastificados | Textura natural preservada |
+| Buraquinho não corrigido | Defeitos corrigidos |
+| Cor muito uniforme | Variação natural de cor |
+| Tempo: ~15s | Tempo: ~25-30s (mais lento, mas melhor) |
 
-### Correções que SEMPRE serão aplicadas:
-1. Remover manchas e descolorações
-2. Preencher buracos, chips ou defeitos nas bordas dos dentes
-3. Fechar pequenos espaços (até 2mm)
-4. Remover linhas escuras em margens de restaurações
-5. Suavizar superfícies irregulares do esmalte
+## Trade-offs
 
-## Benefícios
+| Aspecto | Flash | Pro |
+|---------|-------|-----|
+| Velocidade | ✅ Rápido (~15s) | ❌ Mais lento (~30s) |
+| Qualidade | ❌ Artificial | ✅ Realista |
+| Custo | ✅ Menor | ❌ Maior |
+| **Recomendação** | Para testes | **Para produção** |
 
-1. **Formulário ultra-simplificado** — apenas 1 opção binária (branco ou natural)
-2. **"Feijão com arroz" garantido** — correções básicas sempre aplicadas
-3. **"Nova Simulação" consistente** — mesmo resultado que a primeira geração
-4. **Menos confusão para o usuário** — menos opções = menos dúvidas
-5. **Resultados mais realistas** — defeitos estruturais sempre corrigidos
+## Benefícios Finais
+
+1. **Resultado realista** - textura natural preservada
+2. **Correções efetivas** - defeitos realmente corrigidos
+3. **Prompt mais limpo** - menos confusão para a IA
+4. **Qualidade profissional** - adequado para sistema de saúde
