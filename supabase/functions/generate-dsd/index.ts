@@ -373,24 +373,89 @@ ${allowedChangesFromAnalysis}
 Output: Same photo with whiter teeth only.`;
 
   } else {
-    // STANDARD PROMPT
-    simulationPrompt = `TEETH COLOR EDIT ONLY
+    // STANDARD PROMPT - Apply analysis corrections + whitening
+    // Build specific corrections based on analysis
+    const hasAlignmentIssues = analysis.suggestions?.some(s => 
+      s.proposed_change.toLowerCase().includes('alinhar') ||
+      s.proposed_change.toLowerCase().includes('harmonizar') ||
+      s.proposed_change.toLowerCase().includes('simetria')
+    );
+    const hasSpacingIssues = analysis.suggestions?.some(s => 
+      s.proposed_change.toLowerCase().includes('diastema') ||
+      s.proposed_change.toLowerCase().includes('espaço') ||
+      s.current_issue.toLowerCase().includes('espaço')
+    );
+    const hasContourIssues = analysis.suggestions?.some(s => 
+      s.proposed_change.toLowerCase().includes('contorno') ||
+      s.proposed_change.toLowerCase().includes('volume') ||
+      s.proposed_change.toLowerCase().includes('borda')
+    );
+    
+    // Build mandatory corrections list
+    let mandatoryCorrections = '1. WHITEN all teeth to bright A1/A2 shade (visibly whiter)\n';
+    mandatoryCorrections += '2. REMOVE all stains, discoloration, and yellow tones\n';
+    
+    let correctionIndex = 3;
+    if (hasSpacingIssues) {
+      mandatoryCorrections += `${correctionIndex}. CLOSE small gaps/diastemas (up to 2mm) between teeth\n`;
+      correctionIndex++;
+    }
+    if (hasAlignmentIssues) {
+      mandatoryCorrections += `${correctionIndex}. HARMONIZE subtle asymmetries for better symmetry\n`;
+      correctionIndex++;
+    }
+    if (hasContourIssues) {
+      mandatoryCorrections += `${correctionIndex}. SMOOTH and refine tooth contours/edges\n`;
+      correctionIndex++;
+    }
+    
+    // Add patient preferences
+    let patientInstructions = '';
+    if (patientPreferences?.desiredChanges?.length) {
+      if (patientPreferences.desiredChanges.includes('whiter')) {
+        patientInstructions += '- EXTRA WHITENING: Make teeth even whiter (pure white A1)\n';
+      }
+      if (patientPreferences.desiredChanges.includes('spacing')) {
+        patientInstructions += '- CLOSE all visible gaps between teeth\n';
+      }
+      if (patientPreferences.desiredChanges.includes('alignment')) {
+        patientInstructions += '- ALIGN teeth for perfect symmetry\n';
+      }
+    }
+    
+    simulationPrompt = `DENTAL SMILE ENHANCEMENT SIMULATION
 
-Task: Whiten the teeth in this photo. Do NOT change anything else.
+You are generating a BEFORE/AFTER dental simulation. The result must show VISIBLE IMPROVEMENT.
 
-COPY EXACTLY (unchanged):
-- Lips (same color, shape, texture)
-- Gums (same level, color)
-- Skin (unchanged)
-- Tooth size (same width, length)
-- Image dimensions
+MANDATORY ACTIONS (do ALL of these):
+${mandatoryCorrections}${patientInstructions}
+SPECIFIC CORRECTIONS FROM ANALYSIS:
+${analysis.suggestions?.map(s => `- Tooth ${s.tooth}: ${s.proposed_change}`).join('\n') || 'Apply general harmonization'}
 
-CHANGE ONLY:
-- Tooth enamel color → shade A1/A2 (natural white)
-- Remove stains
-${allowedChangesFromAnalysis}
+ABSOLUTE PRESERVATION (pixel-perfect copy):
+- Lips: exact same color, shape, texture, position
+- Gums: same level, color, contour (no gum changes)
+- Skin: unchanged
+- Image dimensions and framing: identical
+- Background: unchanged
 
-Output: Same photo with whiter teeth only.`;
+DENTAL CHANGES ALLOWED:
+- Tooth COLOR: whiten to A1/A2
+- Tooth SURFACE: remove stains, smooth texture
+- Small GAPS: close diastemas up to 2mm
+- Subtle CONTOUR: minor harmonization of edges
+- Restoration INTERFACES: blend visible lines
+
+NOT ALLOWED:
+- Changing tooth SIZE significantly
+- Modifying gum level/shape
+- Altering lips
+- Cropping or zooming
+
+The simulation must be NOTICEABLY IMPROVED but REALISTIC. 
+If the original smile is already good, still apply whitening for visible difference.
+
+Output: Enhanced smile photo with all corrections applied.`;
   }
 
   const promptType = needsReconstruction ? 'reconstruction' : 
