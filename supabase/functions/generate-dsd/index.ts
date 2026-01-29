@@ -38,18 +38,18 @@ interface DSDAnalysis {
   }[];
   observations: string[];
   confidence: "alta" | "média" | "baixa";
-  simulation_limitation?: string; // New: explains why simulation may be limited
+  simulation_limitation?: string;
 }
 
 interface DSDResult {
   analysis: DSDAnalysis;
   simulation_url: string | null;
-  simulation_note?: string; // New: message when simulation is not possible
+  simulation_note?: string;
 }
 
 interface AdditionalPhotos {
-  smile45?: string;  // 45° smile photo for buccal corridor analysis
-  face?: string;     // Full face photo for facial proportions
+  smile45?: string;
+  face?: string;
 }
 
 interface PatientPreferences {
@@ -65,350 +65,7 @@ interface RequestData {
   toothShape?: 'natural' | 'quadrado' | 'triangular' | 'oval' | 'retangular';
   additionalPhotos?: AdditionalPhotos;
   patientPreferences?: PatientPreferences;
-}
-
-// Teeth bounding box for mask-based blending
-interface TeethBounds {
-  x: number;      // left edge as % of image width (0-100)
-  y: number;      // top edge as % of image height (0-100)
-  width: number;  // width as % of image width
-  height: number; // height as % of image height
-}
-
-// Detect teeth region for mask-based blending
-async function getTeethMask(
-  imageBase64: string,
-  apiKey: string
-): Promise<{ bounds: TeethBounds }> {
-  logger.log("Detecting teeth region for mask...");
-  
-  const response = await fetchWithTimeout(
-    "https://ai.gateway.lovable.dev/v1/chat/completions",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [{
-          role: "user",
-          content: [
-            {
-              type: "text",
-              text: `Analyze this smile photo. Return the bounding box of the TEETH ONLY (not lips, not gums).
-
-Return ONLY valid JSON:
-{
-  "bounds": {
-    "x": <left edge as % of image width, 0-100>,
-    "y": <top edge as % of image height, 0-100>,
-    "width": <width as % of image width>,
-    "height": <height as % of image height>
-  }
-}
-
-The box should tightly contain just the visible tooth surfaces.`
-            },
-            { type: "image_url", image_url: { url: imageBase64 } },
-          ],
-        }],
-      }),
-    },
-    20_000,
-    "getTeethMask"
-  );
-  
-  if (!response.ok) {
-    logger.warn("Teeth mask detection failed:", response.status);
-    throw new Error("Could not detect teeth region");
-  }
-  
-  const data = await response.json();
-  const content = data.choices?.[0]?.message?.content || '';
-  
-  const jsonMatch = content.match(/\{[\s\S]*\}/);
-  if (jsonMatch) {
-    try {
-      const parsed = JSON.parse(jsonMatch[0]);
-      if (parsed.bounds && typeof parsed.bounds.x === 'number') {
-        logger.log("Teeth region detected:", parsed.bounds);
-        return { bounds: parsed.bounds };
-      }
-    } catch (e) {
-      logger.warn("Failed to parse teeth bounds JSON:", e);
-    }
-  }
-  
-  throw new Error("Could not parse teeth region coordinates");
-}
-
-// Quality check: verify simulation preserved structure
-async function verifySimulationQuality(
-  originalBase64: string,
-  simulationBase64: string,
-  apiKey: string
-): Promise<{ passed: boolean; issues: string[] }> {
-  logger.log("Verifying simulation quality...");
-  
-  const verifyPrompt = `Compare these TWO dental photos and check if the simulation (second image) correctly preserves the original structure.
-
-CHECK EACH ELEMENT:
-1. LIPS - Are they IDENTICAL in color, shape, texture, and outline? (Yes/No)
-2. GUMS - Are they IDENTICAL in level, color, and contour? (Yes/No)
-3. TOOTH SIZE - Are teeth the SAME width and length? (Yes/No)
-4. SKIN - Is facial skin IDENTICAL? (Yes/No)
-5. FRAMING - Is the image crop/zoom IDENTICAL? (Yes/No)
-
-Return ONLY valid JSON:
-{
-  "lips_identical": true/false,
-  "gums_identical": true/false,
-  "tooth_size_identical": true/false,
-  "skin_identical": true/false,
-  "framing_identical": true/false,
-  "issues": ["list of specific differences found, or empty array if all identical"]
-}`;
-
-  try {
-    const response = await fetchWithTimeout(
-      "https://ai.gateway.lovable.dev/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
-          messages: [{
-            role: "user",
-            content: [
-              { type: "text", text: verifyPrompt },
-              { type: "image_url", image_url: { url: originalBase64 } },
-              { type: "image_url", image_url: { url: simulationBase64 } },
-            ],
-          }],
-        }),
-      },
-      25_000,
-      "verifySimulationQuality"
-    );
-
-    if (!response.ok) {
-      logger.warn("Quality verification failed:", response.status);
-      return { passed: false, issues: ["Could not verify quality"] };
-    }
-
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || '';
-    
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      try {
-        const parsed = JSON.parse(jsonMatch[0]);
-        const passed = parsed.lips_identical && 
-                       parsed.gums_identical && 
-                       parsed.tooth_size_identical && 
-                       parsed.skin_identical &&
-                       parsed.framing_identical;
-        
-        logger.log("Quality check result:", { passed, issues: parsed.issues || [] });
-        return { 
-          passed, 
-          issues: parsed.issues || [] 
-        };
-      } catch (e) {
-        logger.warn("Failed to parse quality check JSON:", e);
-      }
-    }
-    
-    return { passed: false, issues: ["Could not parse quality response"] };
-  } catch (err) {
-    logger.error("Quality check error:", err);
-    return { passed: false, issues: ["Quality check failed"] };
-  }
-}
-
-// Blend simulation with original image - ONLY teeth color from simulation
-async function blendWithOriginal(
-  originalBase64: string,
-  simulationBase64: string,
-  teethBounds: TeethBounds,
-  apiKey: string
-): Promise<string | null> {
-  logger.log("Blending simulation with original...");
-  logger.log("Teeth bounds:", teethBounds);
-  
-  // Super minimal prompt - just ask to composite
-  const blendPrompt = `IMAGE COMPOSITING TASK:
-
-IMAGE 1 = Original patient photo (MASTER - use for everything except teeth color)
-IMAGE 2 = Simulation with whitened teeth (use ONLY for tooth enamel color)
-
-Create composite where:
-- Take 100% of IMAGE 1 (lips, gums, skin, background, framing)
-- Replace ONLY the tooth enamel color with the whiter color from IMAGE 2
-- Teeth SIZE and SHAPE must stay identical to IMAGE 1
-- Blend edges seamlessly at tooth-gum border
-
-Output: Same photo as IMAGE 1 but with whiter tooth enamel from IMAGE 2.`;
-
-  // Try multiple models for best result
-  const modelsToTry = ["google/gemini-3-pro-image-preview", "google/gemini-2.5-flash-image-preview"];
-  
-  for (const model of modelsToTry) {
-    try {
-      logger.log(`Blend attempt with ${model}`);
-      
-      const response = await fetchWithTimeout(
-        "https://ai.gateway.lovable.dev/v1/chat/completions",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: model,
-            messages: [{
-              role: "user",
-              content: [
-                { type: "text", text: blendPrompt },
-                { type: "image_url", image_url: { url: originalBase64 } },
-                { type: "image_url", image_url: { url: simulationBase64 } },
-              ],
-            }],
-            modalities: ["image", "text"],
-          }),
-        },
-        60_000,
-        `blendWithOriginal:${model}`
-      );
-
-      if (!response.ok) {
-        logger.warn(`Blend with ${model} failed:`, response.status);
-        continue;
-      }
-
-      const data = await response.json();
-      const blendedImage = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-      
-      if (blendedImage) {
-        logger.log(`Blend successful with ${model}`);
-        return blendedImage;
-      }
-      
-      logger.warn(`No image from ${model}`);
-    } catch (err) {
-      logger.warn(`Blend error with ${model}:`, err);
-    }
-  }
-  
-  logger.warn("All blend attempts failed");
-  return null;
-}
-
-// Select best variation based on preservation of non-dental areas
-async function selectBestVariation(
-  originalBase64: string,
-  variationUrls: string[],
-  supabase: any,
-  apiKey: string
-): Promise<string> {
-  if (variationUrls.length <= 1) {
-    return variationUrls[0];
-  }
-  
-  logger.log(`Selecting best variation from ${variationUrls.length} options...`);
-  
-  // Download variations to compare
-  const variationImages: string[] = [];
-  for (const url of variationUrls.slice(0, 3)) {
-    try {
-      const { data } = await supabase.storage
-        .from("dsd-simulations")
-        .download(url);
-      if (data) {
-        const base64 = await blobToBase64(data);
-        variationImages.push(base64);
-      }
-    } catch (e) {
-      logger.warn("Failed to download variation for comparison:", e);
-    }
-  }
-  
-  if (variationImages.length < 2) {
-    return variationUrls[0];
-  }
-  
-  const comparePrompt = `You have:
-1. ORIGINAL smile photo (first image)
-2. VARIATION A (second image) - teeth whitened
-3. VARIATION B (third image) - teeth whitened
-${variationImages.length > 2 ? '4. VARIATION C (fourth image) - teeth whitened' : ''}
-
-Compare the variations to the ORIGINAL and select which one has the BEST preservation of NON-DENTAL areas:
-- Which one has lips MOST IDENTICAL to original?
-- Which one has skin texture MOST IDENTICAL to original?
-- Which one has framing/angle MOST IDENTICAL to original?
-
-Respond with ONLY the letter: "A", "B"${variationImages.length > 2 ? ', or "C"' : ''}
-Choose the variation where ONLY the teeth look different, and everything else is unchanged.`;
-
-  try {
-    const response = await fetchWithTimeout(
-      "https://ai.gateway.lovable.dev/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
-          messages: [{
-            role: "user",
-            content: [
-              { type: "text", text: comparePrompt },
-              { type: "image_url", image_url: { url: originalBase64 } },
-              ...variationImages.map(img => ({ type: "image_url", image_url: { url: img } })),
-            ],
-          }],
-        }),
-      },
-      25_000,
-      "selectBestVariation"
-    );
-
-    if (response.ok) {
-      const data = await response.json();
-      const choice = data.choices?.[0]?.message?.content?.trim().toUpperCase();
-      
-      if (choice === 'A') return variationUrls[0];
-      if (choice === 'B' && variationUrls.length > 1) return variationUrls[1];
-      if (choice === 'C' && variationUrls.length > 2) return variationUrls[2];
-    }
-  } catch (e) {
-    logger.warn("Variation comparison failed:", e);
-  }
-  
-  // Default to first variation
-  return variationUrls[0];
-}
-
-// Helper to convert blob to base64
-async function blobToBase64(blob: Blob): Promise<string> {
-  const buffer = await blob.arrayBuffer();
-  const bytes = new Uint8Array(buffer);
-  let binary = '';
-  for (let i = 0; i < bytes.length; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  const base64 = btoa(binary);
-  const mimeType = blob.type || 'image/png';
-  return `data:${mimeType};base64,${base64}`;
+  analysisOnly?: boolean; // NEW: Return only analysis, skip simulation
 }
 
 // Validate request
@@ -468,6 +125,7 @@ function validateRequest(data: unknown): { success: boolean; error?: string; dat
       toothShape: toothShape as RequestData['toothShape'],
       additionalPhotos,
       patientPreferences,
+      analysisOnly: req.analysisOnly === true, // NEW
     },
   };
 }
@@ -508,10 +166,8 @@ function hasSevereDestruction(analysis: DSDAnalysis): { isLimited: boolean; reas
   
   // Check if confidence is low due to photo quality or case complexity
   if (analysis.confidence === 'baixa') {
-    // Only flag as limited if it's a TRUE intraoral photo (with retractor, no visible lips)
     const hasTrueIntraoralIssue = analysis.observations?.some(obs => {
       const lower = obs.toLowerCase();
-      // Must have "intraoral" AND specific markers like "afastador", "sem lábio", "interna"
       return (lower.includes('afastador') || 
               (lower.includes('intraoral') && (lower.includes('interna') || lower.includes('sem lábio') || lower.includes('retrator'))) ||
               lower.includes('close-up extremo'));
@@ -528,7 +184,7 @@ function hasSevereDestruction(analysis: DSDAnalysis): { isLimited: boolean; reas
   return { isLimited: false, reason: null };
 }
 
-// Generate simulation image with retry logic
+// SIMPLIFIED: Generate simulation image - single attempt, no blend, no verification
 async function generateSimulation(
   imageBase64: string,
   analysis: DSDAnalysis,
@@ -538,6 +194,7 @@ async function generateSimulation(
   toothShape: string = 'natural',
   patientPreferences?: PatientPreferences
 ): Promise<string | null> {
+  const SIMULATION_TIMEOUT = 50_000; // 50s max
   const shapeInstruction = toothShapeDescriptions[toothShape] || toothShapeDescriptions.natural;
   
   // Build patient preferences instruction for simulation
@@ -610,11 +267,9 @@ async function generateSimulation(
       .join(', ');
   }
   
-  // Check if it's a TRUE intraoral photo (simpler prompt needed)
-  // Only trigger for actual intraoral photos with retractors, not smile photos with lips visible
+  // Check if it's a TRUE intraoral photo
   const isIntraoralPhoto = analysis.observations?.some(obs => {
     const lower = obs.toLowerCase();
-    // Require specific intraoral markers - NOT just "intraoral detectada"
     return lower.includes('afastador') || 
            lower.includes('retrator') ||
            (lower.includes('intraoral') && (lower.includes('interna') || lower.includes('sem lábio'))) ||
@@ -623,7 +278,7 @@ async function generateSimulation(
   
   let simulationPrompt: string;
   
-  // Build allowed changes from analysis suggestions (used in all prompt types)
+  // Build allowed changes from analysis suggestions
   const allowedChangesFromAnalysis = analysis.suggestions?.length > 0 
     ? `\nSPECIFIC CORRECTIONS FROM ANALYSIS (apply these changes):\n${analysis.suggestions.map(s => 
         `- Tooth ${s.tooth}: ${s.proposed_change}`
@@ -631,7 +286,7 @@ async function generateSimulation(
     : '';
   
   if (needsReconstruction) {
-    // RECONSTRUCTION PROMPT - MINIMALISTA
+    // RECONSTRUCTION PROMPT
     const teethToReconstruct = analysis.suggestions
       .filter(s => {
         const issue = s.current_issue.toLowerCase();
@@ -718,7 +373,7 @@ ${allowedChangesFromAnalysis}
 Output: Same photo with whiter teeth only.`;
 
   } else {
-    // STANDARD PROMPT - Ultra-minimal for maximum compliance
+    // STANDARD PROMPT
     simulationPrompt = `TEETH COLOR EDIT ONLY
 
 Task: Whiten the teeth in this photo. Do NOT change anything else.
@@ -744,178 +399,77 @@ Output: Same photo with whiter teeth only.`;
   
   logger.log("DSD Simulation Request:", {
     promptType,
-    approach: "HYBRID - mask detection + generation + blend",
+    approach: "SIMPLIFIED - single attempt, direct upload",
     promptLength: simulationPrompt.length,
-    imageDataLength: imageBase64.length,
     analysisConfidence: analysis.confidence,
     suggestionsCount: analysis.suggestions.length,
-    needsRestorationReplacement,
-    restorationTeeth: restorationTeeth || 'none'
   });
 
-  // STEP 1: Detect teeth region for mask-based blending
-  let teethBounds: TeethBounds = { x: 25, y: 35, width: 50, height: 30 }; // Fallback
+  // Single attempt with optimized model
+  const model = "google/gemini-2.5-flash-image-preview";
+  
   try {
-    const maskResult = await getTeethMask(imageBase64, apiKey);
-    teethBounds = maskResult.bounds;
-  } catch (err) {
-    logger.warn("Could not detect teeth mask, using fallback bounds:", err);
-  }
+    const response = await fetchWithTimeout(
+      "https://ai.gateway.lovable.dev/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model,
+          messages: [{
+            role: "user",
+            content: [
+              { type: "text", text: simulationPrompt },
+              { type: "image_url", image_url: { url: imageBase64 } },
+            ],
+          }],
+          modalities: ["image", "text"],
+        }),
+      },
+      SIMULATION_TIMEOUT,
+      "generateSimulation"
+    );
 
-  // STEP 2: Generate simulation variations
-  const NUM_VARIATIONS = 3;
-  const modelsToTry = ["google/gemini-2.5-flash-image-preview", "google/gemini-3-pro-image-preview"];
-  
-  const generateSingleVariation = async (variationIndex: number): Promise<{ fileName: string; imageBase64: string } | null> => {
-    for (const model of modelsToTry) {
-      try {
-        logger.log(`Variation ${variationIndex}: Trying ${model}`);
-        
-        const simulationResponse = await fetchWithTimeout(
-          "https://ai.gateway.lovable.dev/v1/chat/completions",
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${apiKey}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              model: model,
-              messages: [
-                {
-                  role: "user",
-                  content: [
-                    { type: "text", text: simulationPrompt },
-                    { type: "image_url", image_url: { url: imageBase64 } },
-                  ],
-                },
-              ],
-              modalities: ["image", "text"],
-            }),
-          },
-          75_000,
-          `generateSingleVariation:${variationIndex}:${model}`
-        );
-
-        if (!simulationResponse.ok) {
-          logger.warn(`Variation ${variationIndex} - ${model} failed:`, simulationResponse.status);
-          continue;
-        }
-
-        const simData = await simulationResponse.json();
-        const generatedImage = simData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-
-        if (!generatedImage) {
-          logger.warn(`Variation ${variationIndex} - No image from ${model}`);
-          continue;
-        }
-
-        // Upload raw variation
-        const base64Data = generatedImage.replace(/^data:image\/\w+;base64,/, "");
-        const binaryData = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
-        
-        const fileName = `${userId}/dsd_raw_${Date.now()}_v${variationIndex}.png`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from("dsd-simulations")
-          .upload(fileName, binaryData, {
-            contentType: "image/png",
-            upsert: true,
-          });
-
-        if (uploadError) {
-          logger.error(`Variation ${variationIndex} upload error:`, uploadError);
-          return null;
-        }
-
-        logger.log(`Variation ${variationIndex} generated successfully with ${model}`);
-        return { fileName, imageBase64: generatedImage };
-      } catch (err) {
-        logger.warn(`Variation ${variationIndex} - ${model} error:`, err);
-        continue;
-      }
+    if (!response.ok) {
+      logger.warn("Simulation request failed:", response.status);
+      return null;
     }
-    return null;
-  };
 
-  // Generate variations in parallel
-  logger.log(`Generating ${NUM_VARIATIONS} DSD variations in parallel...`);
-  
-  const variationPromises = Array(NUM_VARIATIONS).fill(null).map((_, i) => generateSingleVariation(i));
-  const variationResults = await Promise.allSettled(variationPromises);
-  
-  // Collect successful variations
-  const successfulVariations: { fileName: string; imageBase64: string }[] = [];
-  for (const result of variationResults) {
-    if (result.status === 'fulfilled' && result.value) {
-      successfulVariations.push(result.value);
+    const data = await response.json();
+    const generatedImage = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+
+    if (!generatedImage) {
+      logger.warn("No image in simulation response");
+      return null;
     }
-  }
-  
-  if (successfulVariations.length === 0) {
-    logger.warn("All DSD simulation variations failed");
-    return null;
-  }
-  
-  logger.log(`${successfulVariations.length} variations generated successfully`);
-  
-  // STEP 3: Try each variation with blend + quality verification
-  // Keep trying until we get a result that passes quality check
-  for (let i = 0; i < successfulVariations.length; i++) {
-    const variation = successfulVariations[i];
-    logger.log(`Attempting blend with variation ${i}...`);
+
+    // Upload directly (no blend, no verification)
+    const base64Data = generatedImage.replace(/^data:image\/\w+;base64,/, "");
+    const binaryData = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
     
-    try {
-      const blendedImageBase64 = await blendWithOriginal(
-        imageBase64,
-        variation.imageBase64,
-        teethBounds,
-        apiKey
-      );
-      
-      if (blendedImageBase64) {
-        // Verify quality before accepting
-        const qualityResult = await verifySimulationQuality(
-          imageBase64,
-          blendedImageBase64,
-          apiKey
-        );
-        
-        if (qualityResult.passed) {
-          // Quality check passed - upload and return
-          const base64Data = blendedImageBase64.replace(/^data:image\/\w+;base64,/, "");
-          const binaryData = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
-          
-          const blendedFileName = `${userId}/dsd_verified_${Date.now()}.png`;
-          
-          const { error: uploadError } = await supabase.storage
-            .from("dsd-simulations")
-            .upload(blendedFileName, binaryData, {
-              contentType: "image/png",
-              upsert: true,
-            });
-          
-          if (!uploadError) {
-            logger.log("DSD simulation ready (verified quality)");
-            return blendedFileName;
-          }
-        } else {
-          logger.warn(`Variation ${i} failed quality check:`, qualityResult.issues);
-          // Continue to next variation
-        }
-      }
-    } catch (err) {
-      logger.warn(`Blend error on variation ${i}:`, err);
+    const fileName = `${userId}/dsd_${Date.now()}.png`;
+    
+    const { error: uploadError } = await supabase.storage
+      .from("dsd-simulations")
+      .upload(fileName, binaryData, {
+        contentType: "image/png",
+        upsert: true,
+      });
+
+    if (uploadError) {
+      logger.error("Upload error:", uploadError);
+      return null;
     }
+
+    logger.log("Simulation generated and uploaded:", fileName);
+    return fileName;
+  } catch (err) {
+    logger.warn("Simulation error:", err);
+    return null;
   }
-  
-  // If all blends failed quality check, try returning best raw variation
-  // (with a warning logged)
-  logger.warn("All blends failed quality check. Returning best raw variation as fallback.");
-  
-  // Upload first raw variation as fallback
-  const fallbackVariation = successfulVariations[0];
-  return fallbackVariation.fileName;
 }
 
 // Analyze facial proportions
@@ -975,28 +529,24 @@ ANÁLISE OBRIGATÓRIA:
 1. **Linha Média Facial**: Determine se a linha média facial está centrada ou desviada
 2. **Linha Média Dental**: Avalie se os incisivos centrais superiores estão alinhados com a linha média facial
 3. **Linha do Sorriso**: Classifique a exposição gengival (alta, média, baixa)
-4. **Corredor Bucal**: Avalie o espaço escuro lateral ao sorrir
+4. **Corredor Bucal**: Avalie se há espaço escuro excessivo nas laterais do sorriso
 5. **Plano Oclusal**: Verifique se está nivelado ou inclinado
-6. **Proporção Dourada**: Calcule a conformidade com a proporção áurea (0-100%)
-7. **Simetria**: Avalie a simetria geral do sorriso (0-100%)
+6. **Proporção Dourada**: Calcule a conformidade com a proporção dourada (0-100%)
+7. **Simetria**: Avalie a simetria do sorriso (0-100%)
 
-=== DETECÇÃO DE RESTAURAÇÕES - CRITÉRIOS RIGOROSOS ===
-IMPORTANTE: Seja CONSERVADOR. Falsos positivos são PIORES que falsos negativos.
-Inventar restaurações inexistentes prejudica o planejamento clínico e a confiança do paciente.
+=== DETECÇÃO ULTRA-CONSERVADORA DE RESTAURAÇÕES ===
+CRITÉRIOS OBRIGATÓRIOS para diagnosticar restauração existente:
+✅ Diferença de COR clara e inequívoca (não apenas iluminação)
+✅ Interface/margem CLARAMENTE VISÍVEL entre material e dente natural
+✅ Textura ou reflexo de luz DIFERENTE do esmalte adjacente
+✅ Forma anatômica ALTERADA (perda de caracterização natural)
 
-DIAGNOSTIQUE RESTAURAÇÃO APENAS SE HOUVER:
-☑️ Interface de demarcação CLARAMENTE visível (linha nítida entre materiais)
-☑️ Diferença de cor/opacidade ÓBVIA e INEQUÍVOCA (não sutil)
-☑️ PELO MENOS 2 dos seguintes sinais adicionais:
-   - Manchamento marginal EVIDENTE (linha escura/amarelada clara na borda)
-   - Textura superficial VISIVELMENTE diferente
-   - Contorno artificial ou excessivamente uniforme
-   - Perda de polimento LOCALIZADA
+❌ NÃO diagnosticar restauração baseado apenas em:
+❌ Bordos incisais translúcidos (característica NATURAL)
+❌ Manchas de esmalte sem interface visível
+❌ Variação sutil de cor (pode ser calcificação, fluorose ou iluminação)
+❌ Desgaste incisal leve
 
-REGRA DE OURO: SE NÃO TIVER ABSOLUTA CERTEZA → NÃO MENCIONE RESTAURAÇÃO
-
-❌ NÃO confunda variação NATURAL de cor (cervical mais amarela, incisal translúcida) com restauração
-❌ NÃO confunda hipoplasia/fluorose com restauração
 ❌ NÃO confunda sombra/iluminação com interface de restauração
 ❌ NUNCA diga "Substituir restauração" se não houver PROVA VISUAL INEQUÍVOCA de restauração anterior
 ❌ É preferível NÃO MENCIONAR uma restauração existente do que INVENTAR uma inexistente
@@ -1300,7 +850,16 @@ serve(async (req: Request) => {
       return createErrorResponse(validation.error || ERROR_MESSAGES.INVALID_REQUEST, 400, corsHeaders);
     }
 
-    const { imageBase64, evaluationId, regenerateSimulationOnly, existingAnalysis, toothShape, additionalPhotos, patientPreferences } = validation.data;
+    const { 
+      imageBase64, 
+      evaluationId, 
+      regenerateSimulationOnly, 
+      existingAnalysis, 
+      toothShape, 
+      additionalPhotos, 
+      patientPreferences,
+      analysisOnly // NEW
+    } = validation.data;
 
     // Log if additional photos or preferences were provided
     if (additionalPhotos) {
@@ -1325,6 +884,24 @@ serve(async (req: Request) => {
       }
       
       analysis = analysisResult;
+    }
+
+    // NEW: If analysisOnly, return immediately without generating simulation
+    if (analysisOnly) {
+      const destructionCheck = hasSevereDestruction(analysis);
+      const result: DSDResult = {
+        analysis,
+        simulation_url: null,
+        simulation_note: destructionCheck.isLimited 
+          ? destructionCheck.reason || undefined
+          : "Simulação será gerada em segundo plano",
+      };
+      
+      logger.log("Returning analysis only (simulation will be generated in background)");
+      
+      return new Response(JSON.stringify(result), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // Check for severe destruction that limits simulation value
