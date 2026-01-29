@@ -378,19 +378,21 @@ Output: Same photo with whiter teeth only.`;
 
 Task: Whiten the teeth in this photo. Do NOT change anything else.
 
-COPY EXACTLY (unchanged):
+COPY EXACTLY (pixel-perfect preservation):
 - Lips (same color, shape, texture)
 - Gums (same level, color)
 - Skin (unchanged)
-- Tooth size (same width, length)
+- TOOTH SHAPE (exact same contour, width, length, proportions - DO NOT round or alter edges)
 - Image dimensions
 
-CHANGE ONLY:
+CHANGE ONLY (surface adjustments):
 - Tooth enamel color → shade A1/A2 (natural white)
-- Remove stains
+- Remove stains on tooth surface
 - Remove visible dark lines at restoration edges
-- Fill small chips or defects on tooth edges
+- Fill small chips or defects WITHOUT changing tooth shape
 ${allowedChangesFromAnalysis}
+
+CRITICAL: Teeth must keep their EXACT original shape and contour. Only change the surface color/texture.
 
 Output: Same photo with improved teeth only.`;
   }
