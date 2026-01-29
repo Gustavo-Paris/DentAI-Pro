@@ -406,71 +406,81 @@ Output: Same photo with corrected teeth only.`;
     suggestionsCount: analysis.suggestions.length,
   });
 
-  // High-quality model for realistic results
-  const model = "google/gemini-3-pro-image-preview";
+  // Models to try - Pro first for quality, Flash as fallback
+  const models = [
+    "google/gemini-3-pro-image-preview",
+    "google/gemini-2.5-flash-image",
+  ];
   
-  try {
-    const response = await fetchWithTimeout(
-      "https://ai.gateway.lovable.dev/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
+  for (const model of models) {
+    try {
+      logger.log(`Trying simulation with model: ${model}`);
+      
+      const response = await fetchWithTimeout(
+        "https://ai.gateway.lovable.dev/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model,
+            messages: [{
+              role: "user",
+              content: [
+                { type: "text", text: simulationPrompt },
+                { type: "image_url", image_url: { url: imageBase64 } },
+              ],
+            }],
+            modalities: ["image", "text"],
+          }),
         },
-        body: JSON.stringify({
-          model,
-          messages: [{
-            role: "user",
-            content: [
-              { type: "text", text: simulationPrompt },
-              { type: "image_url", image_url: { url: imageBase64 } },
-            ],
-          }],
-          modalities: ["image", "text"],
-        }),
-      },
-      SIMULATION_TIMEOUT,
-      "generateSimulation"
-    );
+        SIMULATION_TIMEOUT,
+        "generateSimulation"
+      );
 
-    if (!response.ok) {
-      logger.warn("Simulation request failed:", response.status);
-      return null;
+      if (!response.ok) {
+        logger.warn(`Simulation request failed with ${model}:`, response.status);
+        continue; // Try next model
+      }
+
+      const data = await response.json();
+      const generatedImage = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+
+      if (!generatedImage) {
+        logger.warn(`No image in response from ${model}, trying next...`);
+        continue; // Try next model
+      }
+
+      // Upload directly (no blend, no verification)
+      const base64Data = generatedImage.replace(/^data:image\/\w+;base64,/, "");
+      const binaryData = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
+      
+      const fileName = `${userId}/dsd_${Date.now()}.png`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from("dsd-simulations")
+        .upload(fileName, binaryData, {
+          contentType: "image/png",
+          upsert: true,
+        });
+
+      if (uploadError) {
+        logger.error("Upload error:", uploadError);
+        return null;
+      }
+
+      logger.log(`Simulation generated with ${model} and uploaded:`, fileName);
+      return fileName;
+    } catch (err) {
+      logger.warn(`Simulation error with ${model}:`, err);
+      continue; // Try next model
     }
-
-    const data = await response.json();
-    const generatedImage = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-
-    if (!generatedImage) {
-      logger.warn("No image in simulation response");
-      return null;
-    }
-
-    // Upload directly (no blend, no verification)
-    const base64Data = generatedImage.replace(/^data:image\/\w+;base64,/, "");
-    const binaryData = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
-    
-    const fileName = `${userId}/dsd_${Date.now()}.png`;
-    
-    const { error: uploadError } = await supabase.storage
-      .from("dsd-simulations")
-      .upload(fileName, binaryData, {
-        contentType: "image/png",
-        upsert: true,
-      });
-
-    if (uploadError) {
-      logger.error("Upload error:", uploadError);
-      return null;
-    }
-
-    logger.log("Simulation generated and uploaded:", fileName);
-    return fileName;
-  } catch (err) {
-    logger.warn("Simulation error:", err);
-    return null;
   }
+  
+  logger.warn("All simulation models failed");
+  return null;
 }
 
 // Analyze facial proportions
