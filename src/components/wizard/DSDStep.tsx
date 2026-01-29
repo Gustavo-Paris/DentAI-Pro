@@ -112,6 +112,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
           toothShape: TOOTH_SHAPE,
           regenerateSimulationOnly: true,
           existingAnalysis: analysis,
+          patientPreferences, // Pass preferences for consistent background generation
         },
       });
 
@@ -287,6 +288,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
           regenerateSimulationOnly: true,
           existingAnalysis: result.analysis,
           toothShape: TOOTH_SHAPE,
+          patientPreferences, // Pass preferences for consistent regeneration
         },
       });
 
