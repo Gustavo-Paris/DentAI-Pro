@@ -1,71 +1,194 @@
-# Plano de Validação: Status Atualizado
 
-## ✅ Correções Implementadas
+# Plano de Correção: Classe/Resumo do Caso/Estratificação
 
-| # | Issue | Status |
-|---|-------|--------|
-| 1 | Validação DOB inline + destaque visual | ✅ Implementado |
-| 2 | Bloquear datas futuras no Calendar | ✅ Já estava implementado (linha 642) |
-| 3 | Redirect /cases para /evaluations | ✅ Implementado |
-| 4 | Exibir tipo junto à cor no catálogo | ✅ Implementado |
+## Resumo dos Problemas Identificados
 
-## Detalhes das Implementações
+Após análise do código e do banco de dados, identifiquei as seguintes causas raiz:
 
-### 1. DOB Validation (ReviewAnalysisStep.tsx + NewCase.tsx)
-- Adicionado estado `dobValidationError` no NewCase
-- Props `dobError` e `onDobErrorChange` passadas para ReviewAnalysisStep
-- Borda vermelha + mensagem de erro inline quando DOB não preenchido
-- Validação mais rigorosa: verifica `patientBirthDate` além de `patientAge`
-
-### 2. Future Dates (já existia)
-- Calendar já tinha `disabled={(date) => date > new Date() || date < new Date("1900-01-01")}`
-
-### 3. Redirect /cases (App.tsx)
-- Adicionado `<Route path="/cases" element={<Navigate to="/evaluations" replace />} />`
-
-### 4. Tipo no Badge (ResinBadge.tsx)
-- Badge agora exibe: `{shade} ({type})` ex: "A2 (Esmalte)"
+| # | Problema | Causa | Arquivo |
+|---|----------|-------|---------|
+| 1 | "Classe Classe IV" | O banco já salva "Classe IV" e o código adiciona "Classe " na frente | `EvaluationDetails.tsx` |
+| 2 | "Cavidade" aparece para procedimentos estéticos | Label fixo no `CaseSummaryBox.tsx` | `CaseSummaryBox.tsx` |
+| 3 | Só mostra "Tokuyama" na tabela de estratificação | Campo `resin_brand` do AI só contém fabricante | `ProtocolTable.tsx` + prompt AI |
+| 4 | Badge "Estética: Alto" sem tooltip | Falta tooltip explicativo | `CaseSummaryBox.tsx` |
 
 ---
 
-## ✅ Auditoria do Catálogo (Supabase)
+## Correção 1: Remover duplicação "Classe Classe"
 
-Verificação realizada - catálogo bem organizado:
+**Arquivo:** `src/pages/EvaluationDetails.tsx` (linha 344)
 
-| Marca | Linha | Qtd |
-|-------|-------|-----|
-| 3M | Filtek Z350 XT | 21 |
-| FGM | Opallis | 39 |
-| FGM | Vittra APS | 17 |
-| GC | Gradia Direct | 28 |
-| Ivoclar | IPS Empress Direct | 36 |
-| Kerr | Harmonize | 30 |
-| Tokuyama | Palfique LX5 | 21 |
-| Tokuyama | Estelite Omega | 9 |
-| Ultradent | Forma | 12 |
+**Problema atual:**
+```typescript
+return `Classe ${evaluation.cavity_class} • ${evaluation.restoration_size}`;
+// evaluation.cavity_class = "Classe IV" → Resultado: "Classe Classe IV"
+```
 
-**Nota:** Palfique e Estelite estão CORRETAMENTE separados (linhas distintas da Tokuyama).
+**Solução:**
+Remover o prefixo "Classe " pois o valor já contém a palavra:
 
----
+```typescript
+// Detectar se já começa com "Classe"
+const cavityLabel = evaluation.cavity_class.startsWith('Classe ') 
+  ? evaluation.cavity_class 
+  : `Classe ${evaluation.cavity_class}`;
+return `${cavityLabel} • ${evaluation.restoration_size}`;
+```
 
-## Itens Já Resolvidos (do relatório original)
-
-Os seguintes itens foram reportados como bugs mas já funcionavam:
-
-1. ✅ Inventário salva corretamente (código OK)
-2. ✅ Upload de fotos robusto (HEIC, compressão, timeout)
-3. ✅ DSD tem estados de erro e retry
-4. ✅ Preview de imagem com botão remover
-5. ✅ Múltiplos dentes funciona
-6. ✅ Breadcrumbs implementados
-7. ✅ Taxonomia estética existe
-8. ✅ Dashboard usa nome cadastrado
-9. ✅ Sem duplicação "Classe Classe"
+**Texto final sugerido:** `Classe IV • Média`
 
 ---
 
-## Próximos Passos (Observabilidade - P3)
+## Correção 2: Trocar label "Cavidade" por nomenclatura contextual
 
-Para implementar quando solicitado:
-1. Eventos de tracking por etapa (upload, análise, DSD, geração)
-2. Dashboard interno de métricas
+**Arquivo:** `src/components/protocol/CaseSummaryBox.tsx` (linhas 80-90)
+
+**Problema atual:**
+```tsx
+<Layers className="w-3 h-3" />
+Cavidade  // ← Sempre mostra "Cavidade"
+```
+
+**Solução:**
+Adicionar lista de procedimentos estéticos e condicionar o label:
+
+```typescript
+const AESTHETIC_PROCEDURES = [
+  'Faceta Direta', 
+  'Recontorno Estético', 
+  'Fechamento de Diastema', 
+  'Reparo de Restauração'
+];
+
+const isAestheticProcedure = cavityClass && AESTHETIC_PROCEDURES.includes(cavityClass);
+const cavityLabel = isAestheticProcedure ? 'Procedimento' : 'Classificação (Black)';
+```
+
+**Renderização:**
+- Para classes tradicionais: "Classificação (Black): Classe IV"
+- Para estéticos: "Procedimento: Faceta Direta"
+
+---
+
+## Correção 3: Mostrar Fabricante + Linha na tabela de estratificação
+
+**Arquivo:** `src/components/protocol/ProtocolTable.tsx` (linha 56)
+
+**Problema atual:**
+```tsx
+<TableCell>{layer.resin_brand}</TableCell>  // Mostra só "Tokuyama"
+```
+
+**Solução A - Frontend (paliativa):**
+O campo `resin_brand` deveria vir do AI como "Tokuyama - Estelite Omega", não apenas "Tokuyama".
+
+**Solução B - Corrigir no prompt da AI (recomendado):**
+**Arquivo:** `supabase/functions/recommend-resin/index.ts`
+
+Modificar a instrução no prompt que define o formato de `resin_brand`:
+
+```
+Para cada camada, informe:
+- resin_brand: Fabricante + Linha do produto (ex: "Tokuyama - Estelite Sigma Quick", "FGM - Vittra APS")
+- NÃO informe apenas o fabricante (ex: "Tokuyama" é incorreto)
+```
+
+Esta correção fará com que novos protocolos venham com o formato correto. Dados existentes permanecerão com formato antigo.
+
+---
+
+## Correção 4: Espessura como faixa guia
+
+**Arquivo:** `src/components/protocol/ProtocolTable.tsx` (linha 64)
+
+**Problema atual:**
+```tsx
+<TableCell className="text-muted-foreground">
+  {layer.thickness}
+</TableCell>
+```
+
+**Solução:**
+A correção principal deve vir do prompt da AI que já deve gerar faixas (0.3-0.5mm). No frontend, adicionar tooltip ou texto de apoio:
+
+```tsx
+<TableCell className="text-muted-foreground">
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <span className="cursor-help border-b border-dotted border-muted-foreground/50">
+        {layer.thickness}
+      </span>
+    </TooltipTrigger>
+    <TooltipContent side="top">
+      <p className="text-xs">Ajustar conforme profundidade e mascaramento necessário</p>
+    </TooltipContent>
+  </Tooltip>
+</TableCell>
+```
+
+---
+
+## Correção 5: Tooltip para "Estética: Alto"
+
+**Arquivo:** `src/components/protocol/CaseSummaryBox.tsx` (linhas 116-119)
+
+**Problema atual:**
+```tsx
+<Badge variant="outline" className="capitalize text-xs">
+  Estética: {aestheticLevel}
+</Badge>
+```
+
+**Solução:**
+Adicionar Tooltip com explicação dos níveis:
+
+```tsx
+const aestheticExplanations: Record<string, string> = {
+  'básico': 'Restauração funcional, estética secundária',
+  'alto': 'Mimetismo natural exigido, paciente atento aos detalhes',
+  'muito alto': 'DSD ativo, harmonização completa, estética de excelência'
+};
+
+<Tooltip>
+  <TooltipTrigger asChild>
+    <Badge variant="outline" className="capitalize text-xs cursor-help">
+      <Info className="w-3 h-3 mr-1" />
+      Estética: {aestheticLevel}
+    </Badge>
+  </TooltipTrigger>
+  <TooltipContent>
+    <p className="text-xs max-w-[200px]">
+      {aestheticExplanations[aestheticLevel.toLowerCase()] || 'Nível estético selecionado'}
+    </p>
+  </TooltipContent>
+</Tooltip>
+```
+
+---
+
+## Arquivos a Modificar
+
+| Arquivo | Alterações |
+|---------|------------|
+| `src/pages/EvaluationDetails.tsx` | Corrigir duplicação "Classe Classe" |
+| `src/components/protocol/CaseSummaryBox.tsx` | Label contextual + tooltip estética |
+| `src/components/protocol/ProtocolTable.tsx` | Tooltip na espessura |
+| `supabase/functions/recommend-resin/index.ts` | Instruir AI a informar "Fabricante - Linha" |
+
+---
+
+## Ordem de Implementação
+
+1. **EvaluationDetails.tsx** - Correção crítica P0 (duplicação visível)
+2. **CaseSummaryBox.tsx** - Label contextual + tooltip
+3. **ProtocolTable.tsx** - Tooltip na espessura
+4. **recommend-resin/index.ts** - Formato correto no prompt AI
+
+---
+
+## Validação Pós-Implementação
+
+1. Criar caso com Classe IV → verificar se mostra "Classe IV • Média" (não "Classe Classe IV")
+2. Criar caso com "Faceta Direta" → verificar se mostra "Procedimento: Faceta Direta"
+3. Verificar tooltip no badge "Estética: Alto"
+4. Criar novo caso → verificar se protocolo mostra "Tokuyama - Estelite Omega"
