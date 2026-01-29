@@ -1,198 +1,201 @@
 
-# Plano: Melhorar Qualidade da Simulação DSD
+# Análise do Relatório de Melhorias da Especialista
 
-## Problemas Identificados na Imagem
+## Resumo dos Problemas Identificados
 
-Analisando a simulação gerada:
+| # | Problema | Gravidade | Status Atual | Ação Sugerida |
+|---|----------|-----------|--------------|---------------|
+| 1 | Protocolo simplista (uma marca só) | Média | Sistema usa inventário OU recomenda | Melhorar prompt da IA |
+| 2 | Resinas de baixa qualidade para detalhes | Média | Respeita orçamento definido | Ajustar lógica de casos estéticos |
+| 3 | Classificação incorreta (Classe IV vs Faceta) | Alta | Termos incorretos | Atualizar terminologia |
+| 4 | DSD com distorções | Alta | Já melhorado recentemente | Monitorar |
 
-| Aspecto | Antes (Original) | Depois (Simulação) | Problema |
-|---------|------------------|-------------------|----------|
-| Textura | Natural, com variações | Plastificada, uniforme | ❌ Perdeu realismo |
-| Cor | Tons naturais variados | Muito uniforme/artificial | ❌ Parece "fake" |
-| Defeitos | Buraquinho no lateral | NÃO foi corrigido | ❌ Feijão com arroz não feito |
-| Proporções | Boca original | Manteve bem | ✅ OK |
+---
 
-## Causas Raiz
+## Análise Detalhada de Cada Ponto
 
-### 1. Modelo de Baixa Qualidade
+### 1. Protocolo de Estratificação Simplista
+
+**Feedback**: "O sistema sugere uso de uma única marca (Tokuyama) para todas as camadas"
+
+**Análise do código atual**:
+O prompt atual (linha 272-277 do `recommend-resin/index.ts`) instrui:
+```
+Para casos estéticos (anteriores), use 3 camadas: Opaco, Dentina, Esmalte
+```
+
+Porém, não há instrução explícita para **combinar marcas diferentes** quando benéfico.
+
+**Avaliação**: 
+- **Parcialmente válido** - O sistema prioriza o inventário do usuário, então se o usuário só tem Tokuyama, faz sentido usar Tokuyama
+- **Melhoria possível**: Para casos de alta estética, permitir combinar marcas quando isso melhora o resultado
+
+**Sugestão de implementação**:
+Adicionar ao prompt da IA uma seção específica sobre **combinação de marcas para alta estética**, incluindo a tabela da especialista como referência:
+
+```
+=== ESTRATIFICAÇÃO AVANÇADA (para nível estético "muito alto") ===
+
+Você pode combinar diferentes marcas para otimizar cada camada:
+- Aumento Incisal (Efeito): Trans-forma, CT-Z350, Trans20 (Empress)
+- Interface Opaca: D BL-L (Empress), WB (Forma)
+- Proximais (Esmalte): XLE (Harmonize), E BL-L (Empress)
+- Esmalte Final: MW (Estelite) - excelente polimento
+- Detalhes (Dentes Clareados): WE (Estelite Bianco)
+
+NOTA: Só sugira combinações quando o nível estético for "muito alto" e o orçamento permitir.
+```
+
+---
+
+### 2. Resinas de Baixa Qualidade para Detalhes Estéticos
+
+**Feedback**: "Para detalhes pequenos, sugere Z350 quando deveria sugerir resina de alta qualidade"
+
+**Análise**:
+- A Z350 É uma resina premium de alta qualidade
+- A especialista pode estar se referindo a usar resinas especializadas para acabamento (como Estelite MW para polimento superior)
+
+**Avaliação**:
+- **Parcialmente válido** - Para detalhes específicos, resinas especializadas podem ser melhores
+- O sistema atual já considera a categoria "estética" da resina
+
+**Sugestão de implementação**:
+Para restaurações pequenas de refinamento estético, priorizar resinas com:
+- Polimento "Excelente"
+- Estética "Muito Alta"
+
+---
+
+### 3. Classificação Incorreta do Tipo de Tratamento
+
+**Feedback**: "Não seria Classe IV, seria faceta ou recontorno estético"
+
+**Análise do código**:
+O campo `cavity_class` (Classe I, II, III, IV, V) é usado para **qualquer restauração**, mas a especialista aponta que procedimentos puramente estéticos (sem cavidade) devem ter terminologia diferente.
+
+**Avaliação**: 
+- **Válido e importante** - A terminologia está incorreta para casos estéticos puros
+
+**Situação atual**:
+- `ReviewAnalysisStep` força seleção de "Classe" mesmo para recontorno estético
+- O schema `evaluation.ts` define `cavityClass: z.string().min(1, 'Classe é obrigatória')`
+
+**Sugestão de implementação**:
+1. Adicionar opções específicas ao campo `cavityClass`:
+   - Para procedimentos restauradores: Classe I, II, III, IV, V
+   - Para procedimentos estéticos: "Faceta Direta", "Recontorno Estético", "Fechamento de Diastema"
+
+2. Condicionar as opções ao tipo de tratamento:
+   ```typescript
+   const CAVITY_OPTIONS_RESIN_RESTORATIVE = [
+     { value: 'I', label: 'Classe I' },
+     { value: 'II', label: 'Classe II' },
+     { value: 'III', label: 'Classe III' },
+     { value: 'IV', label: 'Classe IV' },
+     { value: 'V', label: 'Classe V' },
+   ];
+   
+   const CAVITY_OPTIONS_AESTHETIC = [
+     { value: 'faceta_direta', label: 'Faceta Direta' },
+     { value: 'recontorno', label: 'Recontorno Estético' },
+     { value: 'fechamento_diastema', label: 'Fechamento de Diastema' },
+     { value: 'reparo', label: 'Reparo de Restauração' },
+   ];
+   ```
+
+---
+
+### 4. Simulação DSD com Distorções
+
+**Feedback**: "O DSD emagreceu demais os centrais, difícil de reproduzir clinicamente"
+
+**Análise**:
+- Este problema já foi parcialmente resolvido nas últimas atualizações
+- O sistema agora usa `gemini-3-pro-image-preview` com prompt anti-distorção
+- O prompt atual inclui: "Tooth size (same width, length)" e "CRITICAL: Maintain natural enamel texture"
+
+**Avaliação**:
+- **Já abordado** - As melhorias recentes devem resolver este problema
+- Monitorar feedback contínuo
+
+**Sugestão de implementação**:
+Adicionar ao prompt do DSD uma instrução mais explícita:
+```
+PROPORTION CONSTRAINT:
+- Keep original tooth width proportions
+- Never make teeth appear thinner or narrower than original
+- Only add/fill defects, do not reshape tooth contours
+```
+
+---
+
+## Plano de Implementação
+
+### Prioridade 1: Terminologia Correta (Alto Impacto)
+
+**Arquivo**: `src/components/wizard/ReviewAnalysisStep.tsx`
+
+Modificar o campo "Classe" para exibir opções contextuais baseadas no tipo de caso:
+- Se indicação IA inclui "recontorno", "faceta", "estético" → Mostrar opções estéticas
+- Caso contrário → Mostrar classes tradicionais (I-V)
+
+**Lógica**:
 ```typescript
-// ATUAL - modelo "flash" (mais rápido, menor qualidade)
-const model = "google/gemini-2.5-flash-image-preview";
-
-// DEVERIA - modelo "pro" (mais lento, maior qualidade)
-const model = "google/gemini-3-pro-image-preview";
+const isAestheticProcedure = (indication: string) => {
+  const aestheticKeywords = ['faceta', 'recontorno', 'diastema', 'estético', 'harmonia'];
+  return aestheticKeywords.some(kw => indication?.toLowerCase().includes(kw));
+};
 ```
 
-O modelo `gemini-2.5-flash` é otimizado para velocidade, não para qualidade de edição de imagem. O `gemini-3-pro-image-preview` produz resultados muito mais realistas.
+### Prioridade 2: Estratificação Avançada para Alta Estética
 
-### 2. Prompt Muito Genérico
-O prompt atual lista muitas instruções genéricas que confundem a IA:
-```text
-MANDATORY CORRECTIONS (always apply):
-- Remove stains and discolorations
-- Fill small holes, chips or defects on tooth edges
-- Close small gaps between teeth (up to 2mm)
-- Remove visible dark lines at restoration margins
-- Smooth irregular enamel surfaces
+**Arquivo**: `supabase/functions/recommend-resin/index.ts`
+
+Adicionar ao prompt uma seção condicional que é ativada quando `aestheticLevel === 'muito alto'`:
+- Incluir tabela de referência de combinações de marcas
+- Permitir que a IA sugira diferentes marcas por camada
+- Manter respeito ao inventário do usuário como primeira opção
+
+### Prioridade 3: Melhoria no Prompt DSD
+
+**Arquivo**: `supabase/functions/generate-dsd/index.ts`
+
+Adicionar constraint de proporção para evitar "emagrecimento" dos dentes:
+```
+CRITICAL PROPORTION RULE:
+- Maintain original tooth width proportions
+- Do NOT make teeth narrower or thinner
+- Only correct defects, do not reshape contours
 ```
 
-Isso faz a IA tentar "suavizar" tudo, perdendo a textura natural.
-
-### 3. Falta de Instrução de Preservação de Textura
-O prompt não enfatiza que a **textura natural do esmalte** deve ser preservada.
-
-## Solução Proposta
-
-### Mudança 1: Usar Modelo Pro
-```typescript
-// Usar modelo de maior qualidade para simulação
-const model = "google/gemini-3-pro-image-preview";
-```
-
-### Mudança 2: Simplificar e Focar o Prompt
-Voltar para um prompt mais direto e específico:
-
-```text
-DENTAL PHOTO EDIT
-
-Edit ONLY the teeth in this photo. Keep everything else IDENTICAL.
-
-PRESERVE (do not change):
-- Lips (exact color, shape, texture, position)
-- Gums (exact level, color, shape)
-- Skin (unchanged)
-- Tooth natural texture and surface details
-- Image dimensions and framing
-
-CORRECTIONS TO APPLY:
-1. Fill visible holes, chips or defects on tooth edges
-2. Remove dark stain spots
-3. ${colorInstruction}
-${specificCorrectionsFromAnalysis}
-
-CRITICAL: Maintain natural enamel texture. Do NOT make teeth look plastic or artificial.
-
-Output: Same photo with corrected teeth only.
-```
-
-### Mudança 3: Adicionar Instrução Explícita Anti-Plastificação
-```text
-CRITICAL: Maintain natural enamel texture. Do NOT make teeth look plastic or artificial.
-```
-
-## Comparação de Prompts
-
-| Aspecto | Prompt Atual | Prompt Proposto |
-|---------|--------------|-----------------|
-| Linhas | ~25 | ~15 |
-| Correções listadas | 5 genéricas | 2-3 específicas |
-| Preservação textura | Não menciona | Explícito |
-| Anti-artificial | Não tem | Tem instrução clara |
-| Modelo | Flash (rápido) | Pro (qualidade) |
+---
 
 ## Arquivos a Modificar
 
 | Arquivo | Modificação |
 |---------|-------------|
-| `supabase/functions/generate-dsd/index.ts` | Trocar modelo + simplificar prompts |
+| `src/components/wizard/ReviewAnalysisStep.tsx` | Adicionar opções de "tipo de procedimento" estético |
+| `supabase/functions/recommend-resin/index.ts` | Adicionar seção de estratificação avançada no prompt |
+| `supabase/functions/generate-dsd/index.ts` | Adicionar constraint de proporção |
+| `src/lib/schemas/evaluation.ts` | Expandir valores aceitos para `cavityClass` |
 
-## Detalhes Técnicos
+---
 
-### Linha ~412 - Trocar Modelo
-```typescript
-// ANTES
-const model = "google/gemini-2.5-flash-image-preview";
+## O Que NÃO Modificar (Já Está Bom)
 
-// DEPOIS
-const model = "google/gemini-3-pro-image-preview";
-```
+1. **Sistema de inventário** - Funciona bem, prioriza resinas do usuário
+2. **Lógica de orçamento** - Respeita as faixas de preço corretamente
+3. **Estrutura do protocolo de camadas** - A tabela visual está clara e informativa
+4. **Modelo DSD atual** - O `gemini-3-pro-image-preview` está produzindo bons resultados
 
-### Linhas ~206-211 - Simplificar Correções
-```typescript
-// ANTES - muito genérico
-const mandatoryCorrections = `- Remove stains and discolorations
-- Fill small holes, chips or defects on tooth edges
-- Close small gaps between teeth (up to 2mm)
-- Remove visible dark lines at restoration margins
-- Smooth irregular enamel surfaces`;
+---
 
-// DEPOIS - mais específico e focado
-const baseCorrections = `1. Fill visible holes, chips or defects on tooth edges
-2. Remove dark stain spots`;
-```
+## Resumo das Mudanças
 
-### Prompts Atualizados (todos os 4 branches)
+1. **Terminologia**: Adicionar "Faceta Direta", "Recontorno Estético" como opções além das classes I-V
+2. **Estratificação**: Para casos "muito alto" estético, permitir combinação de marcas com guia de referência
+3. **DSD**: Adicionar constraint explícito de manter proporções originais dos dentes
+4. **Catálogo**: Verificar se resinas especializadas (Estelite MW, Empress BL-L) estão no banco
 
-**Standard Prompt:**
-```typescript
-simulationPrompt = `DENTAL PHOTO EDIT
-
-Edit ONLY the teeth in this photo. Keep everything else IDENTICAL.
-
-PRESERVE (do not change):
-- Lips (exact color, shape, texture, position)
-- Gums (exact level, color, shape)
-- Skin (unchanged)
-- Tooth natural texture and surface details
-- Image dimensions and framing
-
-CORRECTIONS TO APPLY:
-${baseCorrections}
-${colorInstruction}
-${allowedChangesFromAnalysis}
-
-CRITICAL: Maintain natural enamel texture. Do NOT make teeth look plastic or artificial.
-
-Output: Same photo with corrected teeth only.`;
-```
-
-**Reconstruction/Restoration/Intraoral:** 
-Mesma estrutura simplificada, adicionando instruções específicas para cada caso.
-
-## Fluxo de Qualidade
-
-```text
-Foto Original
-     │
-     ▼
-┌─────────────────────────────────────┐
-│  Modelo: gemini-3-pro-image-preview │
-│  (Alta qualidade, mais lento)       │
-└─────────────────────────────────────┘
-     │
-     ▼
-┌─────────────────────────────────────┐
-│  Prompt Simplificado               │
-│  • 2-3 correções específicas       │
-│  • Instrução anti-plastificação    │
-│  • Preservar textura natural       │
-└─────────────────────────────────────┘
-     │
-     ▼
-Simulação Realista
-```
-
-## Resultados Esperados
-
-| Antes (Atual) | Depois (Proposto) |
-|---------------|-------------------|
-| Dentes plastificados | Textura natural preservada |
-| Buraquinho não corrigido | Defeitos corrigidos |
-| Cor muito uniforme | Variação natural de cor |
-| Tempo: ~15s | Tempo: ~25-30s (mais lento, mas melhor) |
-
-## Trade-offs
-
-| Aspecto | Flash | Pro |
-|---------|-------|-----|
-| Velocidade | ✅ Rápido (~15s) | ❌ Mais lento (~30s) |
-| Qualidade | ❌ Artificial | ✅ Realista |
-| Custo | ✅ Menor | ❌ Maior |
-| **Recomendação** | Para testes | **Para produção** |
-
-## Benefícios Finais
-
-1. **Resultado realista** - textura natural preservada
-2. **Correções efetivas** - defeitos realmente corrigidos
-3. **Prompt mais limpo** - menos confusão para a IA
-4. **Qualidade profissional** - adequado para sistema de saúde
+Estas mudanças são incrementais e não quebram a funcionalidade existente que está funcionando bem.
