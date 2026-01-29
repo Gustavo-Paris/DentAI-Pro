@@ -15,7 +15,13 @@ export const reviewFormSchema = z.object({
   tooth: z.string()
     .min(1, 'Selecione um dente'),
   toothRegion: z.enum(['anterior', 'posterior']),
-  cavityClass: z.string().min(1, 'Classe é obrigatória'),
+  cavityClass: z.string().min(1, 'Tipo de procedimento é obrigatório')
+    .refine((val) => [
+      // Restaurador tradicional
+      'Classe I', 'Classe II', 'Classe III', 'Classe IV', 'Classe V', 'Classe VI',
+      // Procedimentos estéticos
+      'Faceta Direta', 'Recontorno Estético', 'Fechamento de Diastema', 'Reparo de Restauração'
+    ].includes(val), 'Tipo de procedimento inválido'),
   restorationSize: z.enum(['Pequena', 'Média', 'Grande', 'Extensa']),
   vitaShade: z.string().min(1, 'Cor é obrigatória'),
   substrate: z.string().min(1, 'Substrato é obrigatório'),

@@ -28,7 +28,12 @@ const VITA_SHADES = [
 
 // Valid enum values
 const VALID_REGIONS = ["anterior-superior", "anterior-inferior", "posterior-superior", "posterior-inferior"];
-const VALID_CAVITY_CLASSES = ["Classe I", "Classe II", "Classe III", "Classe IV", "Classe V", "Classe VI"];
+const VALID_CAVITY_CLASSES = [
+  // Restaurador tradicional
+  "Classe I", "Classe II", "Classe III", "Classe IV", "Classe V", "Classe VI",
+  // Procedimentos estéticos
+  "Faceta Direta", "Recontorno Estético", "Fechamento de Diastema", "Reparo de Restauração"
+];
 const VALID_RESTORATION_SIZES = ["Pequena", "Média", "Grande", "Extensa"];
 const VALID_SUBSTRATES = ["Esmalte", "Dentina", "Esmalte e Dentina", "Dentina profunda"];
 const VALID_AESTHETIC_LEVELS = ["baixo", "médio", "alto", "muito alto"];
@@ -82,6 +87,7 @@ export interface EvaluationData {
   substrateCondition?: string;
   enamelCondition?: string;
   clinicalNotes?: string;
+  desiredChanges?: string[];
 }
 
 export function validateEvaluationData(data: unknown): ValidationResult<EvaluationData> {
@@ -166,6 +172,18 @@ export function validateEvaluationData(data: unknown): ValidationResult<Evaluati
     return { success: false, error: "Notas clínicas muito longas" };
   }
 
+  // Validate desiredChanges array
+  let desiredChanges: string[] | undefined;
+  if (obj.desiredChanges !== undefined) {
+    if (!Array.isArray(obj.desiredChanges)) {
+      return { success: false, error: "desiredChanges deve ser um array" };
+    }
+    if (!obj.desiredChanges.every((item: unknown) => typeof item === "string")) {
+      return { success: false, error: "desiredChanges deve conter apenas strings" };
+    }
+    desiredChanges = obj.desiredChanges as string[];
+  }
+
   return {
     success: true,
     data: {
@@ -187,6 +205,7 @@ export function validateEvaluationData(data: unknown): ValidationResult<Evaluati
       substrateCondition: obj.substrateCondition as string | undefined,
       enamelCondition: obj.enamelCondition as string | undefined,
       clinicalNotes: obj.clinicalNotes as string | undefined,
+      desiredChanges,
     },
   };
 }

@@ -128,6 +128,32 @@ const TEETH = {
   lower: ['48', '47', '46', '45', '44', '43', '42', '41', '31', '32', '33', '34', '35', '36', '37', '38'],
 };
 
+// Cavity class options for restorative procedures
+const CAVITY_OPTIONS_RESTORATIVE = [
+  { value: 'Classe I', label: 'Classe I' },
+  { value: 'Classe II', label: 'Classe II' },
+  { value: 'Classe III', label: 'Classe III' },
+  { value: 'Classe IV', label: 'Classe IV' },
+  { value: 'Classe V', label: 'Classe V' },
+  { value: 'Classe VI', label: 'Classe VI' },
+];
+
+// Procedure options for purely aesthetic cases (no cavity)
+const PROCEDURE_OPTIONS_AESTHETIC = [
+  { value: 'Faceta Direta', label: 'Faceta Direta' },
+  { value: 'Recontorno Estético', label: 'Recontorno Estético' },
+  { value: 'Fechamento de Diastema', label: 'Fechamento de Diastema' },
+  { value: 'Reparo de Restauração', label: 'Reparo de Restauração' },
+];
+
+// Helper to detect if AI indication suggests aesthetic procedure
+const isAestheticProcedure = (indicationReason: string | undefined | null, priority: string | undefined | null): boolean => {
+  if (!indicationReason) return priority === 'baixa';
+  const lower = indicationReason.toLowerCase();
+  const aestheticKeywords = ['faceta', 'recontorno', 'diastema', 'estético', 'estética', 'harmonia', 'melhoria estética', 'textura'];
+  return aestheticKeywords.some(kw => lower.includes(kw)) || priority === 'baixa';
+};
+
 export function ReviewAnalysisStep({
   analysisResult,
   formData,
@@ -679,7 +705,7 @@ export function ReviewAnalysisStep({
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Classe</Label>
+                  <Label>Tipo de Procedimento</Label>
                   <Select
                     value={formData.cavityClass}
                     onValueChange={(value) => onFormChange({ cavityClass: value })}
@@ -688,9 +714,29 @@ export function ReviewAnalysisStep({
                       <SelectValue placeholder="Selecionar" />
                     </SelectTrigger>
                     <SelectContent>
-                      {['Classe I', 'Classe II', 'Classe III', 'Classe IV', 'Classe V', 'Classe VI'].map((c) => (
-                        <SelectItem key={c} value={c}>{c}</SelectItem>
-                      ))}
+                      {/* Check if it's an aesthetic case based on AI analysis */}
+                      {(() => {
+                        const primaryTooth = analysisResult?.detected_teeth?.find(t => t.tooth === formData.tooth);
+                        const showAesthetic = isAestheticProcedure(primaryTooth?.indication_reason, primaryTooth?.priority);
+                        
+                        return (
+                          <>
+                            <div className="px-2 py-1 text-xs font-medium text-muted-foreground">
+                              {showAesthetic ? 'Estético' : 'Restaurador'}
+                            </div>
+                            {(showAesthetic ? PROCEDURE_OPTIONS_AESTHETIC : CAVITY_OPTIONS_RESTORATIVE).map((opt) => (
+                              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                            ))}
+                            <div className="border-t my-1" />
+                            <div className="px-2 py-1 text-xs font-medium text-muted-foreground">
+                              {showAesthetic ? 'Restaurador' : 'Estético'}
+                            </div>
+                            {(showAesthetic ? CAVITY_OPTIONS_RESTORATIVE : PROCEDURE_OPTIONS_AESTHETIC).map((opt) => (
+                              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                            ))}
+                          </>
+                        );
+                      })()}
                     </SelectContent>
                   </Select>
                 </div>
