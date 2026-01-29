@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthenticatedFetch } from '@/hooks/useAuthenticatedFetch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -73,6 +73,9 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
   const [simulationImageUrl, setSimulationImageUrl] = useState<string | null>(null);
   const [isRegeneratingSimulation, setIsRegeneratingSimulation] = useState(false);
   const { invokeFunction } = useAuthenticatedFetch();
+  
+  // Ref to prevent multiple simultaneous analysis calls
+  const analysisStartedRef = useRef(false);
 
   // Load signed URL for simulation
   useEffect(() => {
@@ -198,9 +201,10 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
     }
   };
 
-  // Auto-start analysis when component mounts with image
+  // Auto-start analysis when component mounts with image - use ref to prevent loops
   useEffect(() => {
-    if (imageBase64 && !result && !isAnalyzing && !error) {
+    if (imageBase64 && !analysisStartedRef.current) {
+      analysisStartedRef.current = true;
       analyzeDSD();
     }
   }, [imageBase64]);
@@ -209,6 +213,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
     setResult(null);
     setError(null);
     setSimulationImageUrl(null);
+    analysisStartedRef.current = false; // Allow retry
     analyzeDSD();
   };
 
