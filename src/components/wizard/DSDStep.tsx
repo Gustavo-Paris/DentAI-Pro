@@ -45,7 +45,6 @@ interface AdditionalPhotos {
 }
 
 interface PatientPreferences {
-  aestheticGoals: string;
   desiredChanges: string[];
 }
 
@@ -185,10 +184,9 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
       }
       
       // Add patient preferences if available (for personalized suggestions)
-      if (patientPreferences?.aestheticGoals || patientPreferences?.desiredChanges?.length) {
+      if (patientPreferences?.desiredChanges?.length) {
         requestBody.patientPreferences = {
-          aestheticGoals: patientPreferences.aestheticGoals || undefined,
-          desiredChanges: patientPreferences.desiredChanges || undefined,
+          desiredChanges: patientPreferences.desiredChanges,
         };
       }
       

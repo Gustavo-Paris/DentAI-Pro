@@ -262,8 +262,7 @@ describe('reviewFormSchema', () => {
 describe('patientPreferencesSchema', () => {
   it('should accept valid preferences', () => {
     const result = patientPreferencesSchema.safeParse({
-      aestheticGoals: 'Dentes mais brancos e alinhados',
-      desiredChanges: ['forma', 'cor'],
+      desiredChanges: ['whiter', 'spacing'],
     });
     expect(result.success).toBe(true);
   });
@@ -271,20 +270,6 @@ describe('patientPreferencesSchema', () => {
   it('should accept empty preferences', () => {
     const result = patientPreferencesSchema.safeParse({});
     expect(result.success).toBe(true);
-  });
-
-  it('should accept empty aesthetic goals', () => {
-    const result = patientPreferencesSchema.safeParse({
-      aestheticGoals: '',
-    });
-    expect(result.success).toBe(true);
-  });
-
-  it('should reject aesthetic goals longer than 500 characters', () => {
-    const result = patientPreferencesSchema.safeParse({
-      aestheticGoals: 'A'.repeat(501),
-    });
-    expect(result.success).toBe(false);
   });
 
   it('should default desiredChanges to empty array', () => {

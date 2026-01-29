@@ -197,27 +197,16 @@ async function generateSimulation(
   const SIMULATION_TIMEOUT = 50_000; // 50s max
   const shapeInstruction = toothShapeDescriptions[toothShape] || toothShapeDescriptions.natural;
   
-  // Build patient preferences instruction for simulation
-  let patientDesires = '';
-  if (patientPreferences?.desiredChanges?.length) {
-    const desireLabels: Record<string, string> = {
-      'whiter': 'dentes mais brancos (tom A1/B1)',
-      'harmonious': 'sorriso mais harmonioso e natural',
-      'spacing': 'fechar espaços/diastemas',
-      'alignment': 'dentes mais alinhados',
-      'natural': 'formato mais natural',
-      'asymmetry': 'corrigir assimetrias'
-    };
-    
-    const desires = patientPreferences.desiredChanges
-      .map(id => desireLabels[id] || id)
-      .join(', ');
-    
-    patientDesires = `\nOBJETIVO DO PACIENTE: ${desires}.\n`;
-  }
-  if (patientPreferences?.aestheticGoals) {
-    patientDesires += `DESCRIÇÃO DO PACIENTE: "${patientPreferences.aestheticGoals}"\n`;
-  }
+  // Build dynamic instructions based on patient preferences
+  const wantsWhiter = patientPreferences?.desiredChanges?.includes('whiter');
+  const colorInstruction = wantsWhiter 
+    ? '- Tooth color → shade A1/A2 (natural white)'
+    : '- Keep natural tooth color (remove stains only)';
+
+  const wantsSpacing = patientPreferences?.desiredChanges?.includes('spacing');
+  const spacingInstruction = wantsSpacing 
+    ? '\n- Close small gaps between teeth (max 2mm)'
+    : '';
   
   // Check if case needs reconstruction (missing/destroyed teeth)
   const needsReconstruction = analysis.suggestions.some(s => {
@@ -317,7 +306,7 @@ async function generateSimulation(
 
     simulationPrompt = `TEETH RECONSTRUCTION
 
-Task: Reconstruct missing/damaged teeth and whiten all teeth.
+Task: Reconstruct missing/damaged teeth and improve all teeth.
 
 COPY EXACTLY (unchanged):
 - Lips (same color, shape, texture)
@@ -328,16 +317,16 @@ COPY EXACTLY (unchanged):
 
 CHANGES ALLOWED:
 - Reconstruct: ${specificInstructions || 'Fill missing teeth using adjacent teeth as reference'}
-- Whiten all teeth to A1/A2
-- Remove stains
+${colorInstruction}
+- Remove stains${spacingInstruction}
 ${allowedChangesFromAnalysis}
 
-Output: Same photo with reconstructed + whitened teeth only.`;
+Output: Same photo with reconstructed + improved teeth only.`;
 
   } else if (needsRestorationReplacement) {
     simulationPrompt = `RESTORATION BLEND
 
-Task: Blend restoration margins and whiten teeth.
+Task: Blend restoration margins and improve teeth.
 
 COPY EXACTLY (unchanged):
 - Lips (same color, shape, texture)
@@ -347,17 +336,17 @@ COPY EXACTLY (unchanged):
 - Image dimensions
 
 CHANGES ALLOWED:
-- Whiten teeth to A1/A2
+${colorInstruction}
 - Blend interface lines on teeth ${restorationTeeth || '11, 21'}
-- Remove stains
+- Remove stains${spacingInstruction}
 ${allowedChangesFromAnalysis}
 
-Output: Same photo with blended restorations and whiter teeth.`;
+Output: Same photo with blended restorations and improved teeth.`;
 
   } else if (isIntraoralPhoto) {
-    simulationPrompt = `INTRAORAL TEETH COLOR EDIT
+    simulationPrompt = `INTRAORAL TEETH EDIT
 
-Task: Whiten the teeth in this intraoral photo.
+Task: Improve the teeth in this intraoral photo.
 
 COPY EXACTLY (unchanged):
 - Gums (same level, color)
@@ -366,17 +355,17 @@ COPY EXACTLY (unchanged):
 - Image dimensions
 
 CHANGE ONLY:
-- Tooth color → shade A1/A2
-- Remove stains
+${colorInstruction}
+- Remove stains${spacingInstruction}
 ${allowedChangesFromAnalysis}
 
-Output: Same photo with whiter teeth only.`;
+Output: Same photo with improved teeth only.`;
 
   } else {
-    // STANDARD PROMPT - Conservative with ONE small fix
-    simulationPrompt = `TEETH COLOR EDIT ONLY
+    // STANDARD PROMPT - Conservative with dynamic preferences
+    simulationPrompt = `TEETH EDIT ONLY
 
-Task: Whiten the teeth in this photo. Do NOT change anything else.
+Task: Improve the teeth in this photo. Do NOT change anything else.
 
 COPY EXACTLY (unchanged):
 - Lips (same color, shape, texture)
@@ -386,10 +375,10 @@ COPY EXACTLY (unchanged):
 - Image dimensions
 
 CHANGE ONLY:
-- Tooth enamel color → shade A1/A2 (natural white)
+${colorInstruction}
 - Remove stains
 - Remove visible dark lines at restoration edges
-- Fill small chips or defects on tooth edges
+- Fill small chips or defects on tooth edges${spacingInstruction}
 ${allowedChangesFromAnalysis}
 
 Output: Same photo with improved teeth only.`;

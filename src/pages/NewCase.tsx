@@ -66,7 +66,7 @@ export default function NewCase() {
   // Removed tooth shape selection - now uses 'natural' as default internally
   const [toothTreatments, setToothTreatments] = useState<Record<string, TreatmentType>>({});
   const [additionalPhotos, setAdditionalPhotos] = useState<AdditionalPhotos>({ smile45: null, face: null });
-  const [patientPreferences, setPatientPreferences] = useState<PatientPreferences>({ aestheticGoals: '', desiredChanges: [] });
+  const [patientPreferences, setPatientPreferences] = useState<PatientPreferences>({ desiredChanges: [] });
   
   // Draft restoration state
   const [showRestoreModal, setShowRestoreModal] = useState(false);
@@ -129,7 +129,7 @@ export default function NewCase() {
     setDsdResult(pendingDraft.dsdResult);
     setUploadedPhotoPath(pendingDraft.uploadedPhotoPath);
     setAdditionalPhotos(pendingDraft.additionalPhotos || { smile45: null, face: null });
-    setPatientPreferences(pendingDraft.patientPreferences || { aestheticGoals: '', desiredChanges: [] });
+    setPatientPreferences(pendingDraft.patientPreferences || { desiredChanges: [] });
     
     setShowRestoreModal(false);
     setPendingDraft(null);
@@ -294,7 +294,7 @@ export default function NewCase() {
   };
 
   const handlePreferencesSkip = () => {
-    setPatientPreferences({ aestheticGoals: '', desiredChanges: [] });
+    setPatientPreferences({ desiredChanges: [] });
     analyzePhoto();
   };
 
@@ -524,7 +524,7 @@ export default function NewCase() {
           // Tooth position for visual highlight overlay
           tooth_bounds: toothData?.tooth_bounds || null,
           // Patient aesthetic preferences
-          patient_aesthetic_goals: patientPreferences.aestheticGoals || null,
+          patient_aesthetic_goals: null,
           patient_desired_changes: patientPreferences.desiredChanges.length > 0 ? patientPreferences.desiredChanges : null,
         };
 

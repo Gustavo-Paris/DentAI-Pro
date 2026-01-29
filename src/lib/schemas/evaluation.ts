@@ -41,10 +41,6 @@ export const reviewFormSchema = z.object({
 });
 
 export const patientPreferencesSchema = z.object({
-  aestheticGoals: z.string()
-    .max(500, 'Texto muito longo')
-    .optional()
-    .or(z.literal('')),
   desiredChanges: z.array(z.string()).default([]),
 });
 
