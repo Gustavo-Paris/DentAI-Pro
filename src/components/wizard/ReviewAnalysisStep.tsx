@@ -121,6 +121,8 @@ interface ReviewAnalysisStepProps {
   onPatientSelect?: (name: string, patientId?: string, birthDate?: string | null) => void;
   patientBirthDate?: string | null;
   onPatientBirthDateChange?: (date: string | null) => void;
+  dobError?: boolean;
+  onDobErrorChange?: (hasError: boolean) => void;
 }
 
 const TEETH = {
@@ -169,9 +171,25 @@ export function ReviewAnalysisStep({
   onPatientSelect,
   patientBirthDate,
   onPatientBirthDateChange,
+  dobError: externalDobError,
+  onDobErrorChange,
 }: Omit<ReviewAnalysisStepProps, 'onToothSelect'>) {
   const [showManualAdd, setShowManualAdd] = useState(false);
   const [manualTooth, setManualTooth] = useState('');
+  const [internalDobError, setInternalDobError] = useState(false);
+  
+  // Use external dobError if provided, otherwise use internal state
+  const dobError = externalDobError ?? internalDobError;
+  const setDobError = (value: boolean) => {
+    setInternalDobError(value);
+    onDobErrorChange?.(value);
+  };
+  
+  // Clear DOB error when date is provided
+  const handleBirthDateChange = (date: string | null) => {
+    if (date) setDobError(false);
+    onPatientBirthDateChange?.(date);
+  };
   
   const confidence = analysisResult?.confidence ?? 0;
   const confidenceColor = confidence >= 80 ? 'text-green-600' : confidence >= 60 ? 'text-yellow-600' : 'text-red-600';
@@ -607,7 +625,9 @@ export function ReviewAnalysisStep({
                 
                 {/* Birth date + calculated age */}
                 <div className="space-y-2">
-                  <Label>Data de Nascimento *</Label>
+                  <Label className="flex items-center gap-1">
+                    Data de Nascimento <span className="text-destructive">*</span>
+                  </Label>
                   <div className="flex gap-2 items-start">
                     <Popover>
                       <PopoverTrigger asChild>
@@ -615,7 +635,8 @@ export function ReviewAnalysisStep({
                           variant="outline"
                           className={cn(
                             "flex-1 justify-start text-left font-normal",
-                            !patientBirthDate && "text-muted-foreground"
+                            !patientBirthDate && "text-muted-foreground",
+                            dobError && "border-destructive ring-1 ring-destructive"
                           )}
                           disabled={!!selectedPatientId && !!patientBirthDate}
                         >
@@ -633,7 +654,7 @@ export function ReviewAnalysisStep({
                           onSelect={(date) => {
                             if (date) {
                               const isoDate = date.toISOString().split('T')[0];
-                              onPatientBirthDateChange?.(isoDate);
+                              handleBirthDateChange(isoDate);
                               // Auto-calculate and set age
                               const age = calculateAge(isoDate);
                               onFormChange({ patientAge: String(age) });
@@ -659,8 +680,16 @@ export function ReviewAnalysisStep({
                     )}
                   </div>
                   
+                  {/* Error message for DOB */}
+                  {dobError && (
+                    <p className="text-xs text-destructive flex items-center gap-1">
+                      <AlertTriangle className="w-3 h-3" />
+                      Informe a data de nascimento para gerar o caso
+                    </p>
+                  )}
+                  
                   {/* Hint for existing patients */}
-                  {selectedPatientId && !patientBirthDate && (
+                  {selectedPatientId && !patientBirthDate && !dobError && (
                     <p className="text-xs text-muted-foreground">
                       Adicione para preencher automaticamente nas próximas vezes
                     </p>

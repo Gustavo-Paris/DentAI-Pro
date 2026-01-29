@@ -67,6 +67,7 @@ export default function NewCase() {
   const [toothTreatments, setToothTreatments] = useState<Record<string, TreatmentType>>({});
   const [additionalPhotos, setAdditionalPhotos] = useState<AdditionalPhotos>({ smile45: null, face: null });
   const [patientPreferences, setPatientPreferences] = useState<PatientPreferences>({ desiredChanges: [] });
+  const [dobValidationError, setDobValidationError] = useState(false);
   
   // Draft restoration state
   const [showRestoreModal, setShowRestoreModal] = useState(false);
@@ -396,8 +397,9 @@ export default function NewCase() {
 
   // Validate form before submission
   const validateForm = (): boolean => {
-    if (!formData.patientAge) {
-      toast.error('Informe a idade do paciente');
+    if (!formData.patientAge || !patientBirthDate) {
+      setDobValidationError(true);
+      toast.error('Informe a data de nascimento do paciente');
       return false;
     }
     // For multi-tooth, we need at least one selected
@@ -406,6 +408,7 @@ export default function NewCase() {
       toast.error('Selecione pelo menos um dente');
       return false;
     }
+    setDobValidationError(false);
     return true;
   };
 
@@ -966,11 +969,17 @@ export default function NewCase() {
             onToothTreatmentChange={handleToothTreatmentChange}
             selectedPatientId={selectedPatientId}
             patientBirthDate={patientBirthDate}
-            onPatientBirthDateChange={setPatientBirthDate}
+            onPatientBirthDateChange={(date) => {
+              setPatientBirthDate(date);
+              if (date) setDobValidationError(false);
+            }}
+            dobError={dobValidationError}
+            onDobErrorChange={setDobValidationError}
             onPatientSelect={(_name, patientId, birthDate) => {
               setSelectedPatientId(patientId || null);
               setPatientBirthDate(birthDate || null);
               setOriginalPatientBirthDate(birthDate || null);
+              if (birthDate) setDobValidationError(false);
               
               // Auto-calculate age if birth date exists
               if (birthDate) {
