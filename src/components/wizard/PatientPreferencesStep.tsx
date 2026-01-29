@@ -17,7 +17,6 @@ interface PatientPreferencesStepProps {
 
 const DESIRED_CHANGES_OPTIONS = [
   { id: 'whiter', label: 'Dentes mais brancos' },
-  { id: 'spacing', label: 'Corrigir espaçamentos/diastemas' },
 ];
 
 export function PatientPreferencesStep({

@@ -203,10 +203,12 @@ async function generateSimulation(
     ? '- Tooth color → shade A1/A2 (natural white)'
     : '- Keep natural tooth color (remove stains only)';
 
-  const wantsSpacing = patientPreferences?.desiredChanges?.includes('spacing');
-  const spacingInstruction = wantsSpacing 
-    ? '\n- Close small gaps between teeth (max 2mm)'
-    : '';
+  // Mandatory corrections - always applied regardless of preferences
+  const mandatoryCorrections = `- Remove stains and discolorations
+- Fill small holes, chips or defects on tooth edges
+- Close small gaps between teeth (up to 2mm)
+- Remove visible dark lines at restoration margins
+- Smooth irregular enamel surfaces`;
   
   // Check if case needs reconstruction (missing/destroyed teeth)
   const needsReconstruction = analysis.suggestions.some(s => {
@@ -315,10 +317,14 @@ COPY EXACTLY (unchanged):
 - Existing tooth size
 - Image dimensions
 
-CHANGES ALLOWED:
-- Reconstruct: ${specificInstructions || 'Fill missing teeth using adjacent teeth as reference'}
+MANDATORY CORRECTIONS (always apply):
+${mandatoryCorrections}
+
+RECONSTRUCTION:
+- ${specificInstructions || 'Fill missing teeth using adjacent teeth as reference'}
+
+COLOR ADJUSTMENT:
 ${colorInstruction}
-- Remove stains${spacingInstruction}
 ${allowedChangesFromAnalysis}
 
 Output: Same photo with reconstructed + improved teeth only.`;
@@ -335,10 +341,14 @@ COPY EXACTLY (unchanged):
 - Tooth size (same width, length)
 - Image dimensions
 
-CHANGES ALLOWED:
-${colorInstruction}
+MANDATORY CORRECTIONS (always apply):
+${mandatoryCorrections}
+
+RESTORATION FOCUS:
 - Blend interface lines on teeth ${restorationTeeth || '11, 21'}
-- Remove stains${spacingInstruction}
+
+COLOR ADJUSTMENT:
+${colorInstruction}
 ${allowedChangesFromAnalysis}
 
 Output: Same photo with blended restorations and improved teeth.`;
@@ -354,15 +364,17 @@ COPY EXACTLY (unchanged):
 - All other tissues
 - Image dimensions
 
-CHANGE ONLY:
+MANDATORY CORRECTIONS (always apply):
+${mandatoryCorrections}
+
+COLOR ADJUSTMENT:
 ${colorInstruction}
-- Remove stains${spacingInstruction}
 ${allowedChangesFromAnalysis}
 
 Output: Same photo with improved teeth only.`;
 
   } else {
-    // STANDARD PROMPT - Conservative with dynamic preferences
+    // STANDARD PROMPT - Conservative with mandatory corrections
     simulationPrompt = `TEETH EDIT ONLY
 
 Task: Improve the teeth in this photo. Do NOT change anything else.
@@ -374,11 +386,11 @@ COPY EXACTLY (unchanged):
 - Tooth size (same width, length)
 - Image dimensions
 
-CHANGE ONLY:
+MANDATORY CORRECTIONS (always apply):
+${mandatoryCorrections}
+
+COLOR ADJUSTMENT:
 ${colorInstruction}
-- Remove stains
-- Remove visible dark lines at restoration edges
-- Fill small chips or defects on tooth edges${spacingInstruction}
 ${allowedChangesFromAnalysis}
 
 Output: Same photo with improved teeth only.`;
