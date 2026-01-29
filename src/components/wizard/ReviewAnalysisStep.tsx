@@ -742,32 +742,43 @@ export function ReviewAnalysisStep({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Cor VITA</Label>
-                  <Input
-                    value={formData.vitaShade}
-                    onChange={(e) => onFormChange({ vitaShade: e.target.value })}
-                    placeholder="Ex: A2"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Tamanho</Label>
-                  <Select
-                    value={formData.restorationSize}
-                    onValueChange={(value) => onFormChange({ restorationSize: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecionar" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {['Pequena', 'Média', 'Grande', 'Extensa'].map((s) => (
-                        <SelectItem key={s} value={s}>{s}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+              {/* Cor VITA + Tamanho (ocultar tamanho para procedimentos estéticos) */}
+              {(() => {
+                const primaryTooth = analysisResult?.detected_teeth?.find(t => t.tooth === formData.tooth);
+                const isAesthetic = isAestheticProcedure(primaryTooth?.indication_reason, primaryTooth?.priority) 
+                  || PROCEDURE_OPTIONS_AESTHETIC.some(p => p.value === formData.cavityClass);
+                
+                return (
+                  <div className={`grid gap-4 ${isAesthetic ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                    <div className="space-y-2">
+                      <Label>Cor VITA</Label>
+                      <Input
+                        value={formData.vitaShade}
+                        onChange={(e) => onFormChange({ vitaShade: e.target.value })}
+                        placeholder="Ex: A2"
+                      />
+                    </div>
+                    {!isAesthetic && (
+                      <div className="space-y-2">
+                        <Label>Tamanho</Label>
+                        <Select
+                          value={formData.restorationSize}
+                          onValueChange={(value) => onFormChange({ restorationSize: value })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecionar" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {['Pequena', 'Média', 'Grande', 'Extensa'].map((s) => (
+                              <SelectItem key={s} value={s}>{s}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
