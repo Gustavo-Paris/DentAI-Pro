@@ -40,7 +40,8 @@ export function ResinBadge({
       )}
     >
       {selected && <Check className="h-3 w-3" />}
-      {shade}
+      <span>{shade}</span>
+      <span className="text-[10px] opacity-70">({type})</span>
     </button>
   );
 }
