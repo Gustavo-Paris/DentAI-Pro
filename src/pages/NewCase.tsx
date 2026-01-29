@@ -117,8 +117,8 @@ export default function NewCase() {
     }
   }, [step, formData, selectedTeeth, toothTreatments, analysisResult, dsdResult, uploadedPhotoPath, additionalPhotos, patientPreferences, saveDraft, user]);
 
-  // Handle draft restoration
-  const handleRestoreDraft = useCallback(() => {
+  // Handle draft restoration - also load image from storage
+  const handleRestoreDraft = useCallback(async () => {
     if (!pendingDraft) return;
     
     setStep(pendingDraft.step);
@@ -130,6 +130,26 @@ export default function NewCase() {
     setUploadedPhotoPath(pendingDraft.uploadedPhotoPath);
     setAdditionalPhotos(pendingDraft.additionalPhotos || { smile45: null, face: null });
     setPatientPreferences(pendingDraft.patientPreferences || { desiredChanges: [] });
+    
+    // Load image from storage if available
+    if (pendingDraft.uploadedPhotoPath) {
+      try {
+        const { data } = await supabase.storage
+          .from('clinical-photos')
+          .download(pendingDraft.uploadedPhotoPath);
+        
+        if (data) {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            setImageBase64(reader.result as string);
+          };
+          reader.readAsDataURL(data);
+        }
+      } catch (err) {
+        console.error('Error loading draft image:', err);
+        // Image load failed, but continue with draft restoration
+      }
+    }
     
     setShowRestoreModal(false);
     setPendingDraft(null);
@@ -928,6 +948,7 @@ export default function NewCase() {
             onSkip={handleDSDSkip}
             additionalPhotos={additionalPhotos}
             patientPreferences={patientPreferences}
+            initialResult={dsdResult}
           />
         )}
 
