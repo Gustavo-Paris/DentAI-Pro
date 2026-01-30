@@ -1,154 +1,296 @@
 
-# Plano: Campo de Texto Livre para Preferências do Paciente
 
-## Contexto
+# Plano Completo: Análise Inteligente + Consistência de Qualidade DSD
 
-A proposta é substituir os checkboxes limitados por um **campo de texto livre** onde o dentista pode escrever o que o paciente deseja em suas próprias palavras. O modelo Pro analisará este texto e aplicará as preferências clinicamente.
+## Problemas Identificados
 
-**Vantagens:**
-- Flexibilidade total (não limitado a opções predefinidas)
-- Aproveita a capacidade de compreensão contextual do modelo Pro
-- Captura nuances que checkboxes não conseguem ("quer parecer mais jovem mas natural")
-- Já existe coluna `patient_aesthetic_goals` (text) pronta no banco
+### Problema 1: Clareamento Não Aplicado
+**Causa:** Linha 201 ainda usa o formato antigo:
+```typescript
+const wantsWhiter = patientPreferences?.desiredChanges?.includes('whiter');
+```
+Resultado: preferências do texto livre são ignoradas, clareamento nunca aplicado.
+
+### Problema 2: Qualidade Inconsistente (precisa gerar 3x)
+**Causas identificadas:**
+1. **Prompts muito genéricos** - Modelo de imagem recebe instruções vagas
+2. **Sem contexto específico** - Preferências do paciente não enriquecem o prompt
+3. **Fallback entre modelos** - Se Gemini Pro falha, Flash gera resultado inferior
+4. **Sem validação de qualidade** - Aceita qualquer resultado sem verificar
 
 ---
 
-## Arquivos a Modificar
+## Solução: Dupla Camada de Inteligência
 
-### 1. Componente de Preferências
-**Arquivo:** `src/components/wizard/PatientPreferencesStep.tsx`
-
-Substituir os checkboxes por um textarea:
-- Remover array `desiredChanges` 
-- Adicionar campo `aestheticGoals` (string)
-- Placeholder com exemplos para guiar o dentista
-- Limite de 500 caracteres
-- Botão "Continuar" habilitado quando há texto
-
-### 2. Schema de Validação
-**Arquivo:** `src/lib/schemas/evaluation.ts`
-
-Atualizar o schema de preferências:
-- Remover `desiredChanges: z.array(z.string())`
-- Adicionar `aestheticGoals: z.string().max(500).optional()`
-
-### 3. Interface do Componente
-**Arquivo:** `src/components/wizard/PatientPreferencesStep.tsx`
-
-Atualizar a interface:
 ```text
-PatientPreferences {
-  aestheticGoals: string;  // Nova estrutura
+┌──────────────────────────────────────────────────────────────────────────┐
+│  TEXTO LIVRE DO PACIENTE                                                 │
+│  "Gostaria de dentes mais brancos e naturais, tenho sensibilidade."      │
+└──────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌──────────────────────────────────────────────────────────────────────────┐
+│  CAMADA 1: GEMINI FLASH (análise de preferências ~2s)                    │
+│                                                                          │
+│  Input: texto livre                                                      │
+│  Output: instruções estruturadas para o prompt de simulação              │
+│                                                                          │
+│  {                                                                       │
+│    whiteningLevel: "natural",        // none | natural | intense         │
+│    colorInstruction: "ALL teeth → A1/A2 shade (1-2 tons mais claro)",    │
+│    textureInstruction: "Manter translucidez natural do esmalte",         │
+│    styleNotes: "Resultado discreto, evitar aparência artificial",        │
+│    sensitivityNote: "Paciente reporta sensibilidade"                     │
+│  }                                                                       │
+└──────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌──────────────────────────────────────────────────────────────────────────┐
+│  CAMADA 2: GEMINI PRO IMAGE (geração de simulação ~40s)                  │
+│                                                                          │
+│  Prompt ENRIQUECIDO com instruções específicas:                          │
+│                                                                          │
+│  DENTAL PHOTO EDIT - WHITENING NATURAL                                   │
+│                                                                          │
+│  COLOR INSTRUCTION (from AI analysis):                                   │
+│  "Change ALL visible teeth to natural white A1/A2 shade..."              │
+│                                                                          │
+│  TEXTURE INSTRUCTION (from AI analysis):                                 │
+│  "Maintain natural enamel translucency and texture..."                   │
+│                                                                          │
+│  STYLE NOTES (from AI analysis):                                         │
+│  "Avoid artificial appearance, patient wants natural look..."            │
+│                                                                          │
+│  [+ instruções existentes de proporção, preservação, etc.]               │
+└──────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Arquivo a Modificar
+
+**Arquivo:** `supabase/functions/generate-dsd/index.ts`
+
+### 1. Nova Interface de Preferências Analisadas (após linha 58)
+
+```typescript
+interface AnalyzedPreferences {
+  whiteningLevel: 'none' | 'natural' | 'intense';
+  colorInstruction: string;
+  textureInstruction: string;
+  styleNotes: string;
+  sensitivityNote: string | null;
 }
 ```
 
-### 4. Página NewCase
-**Arquivo:** `src/pages/NewCase.tsx`
+### 2. Nova Função: `analyzePatientPreferences` (após linha 185)
 
-- Atualizar estado inicial de `patientPreferences`
-- Alterar mapeamento para `patient_aesthetic_goals` no insert
-- Passar `aestheticGoals` para a Edge Function em vez de `desiredChanges`
+Funcionalidade:
+- Recebe o texto livre do paciente
+- Chama **Gemini 3 Flash** (rápido, ~2s, barato)
+- Usa tool calling para garantir resposta estruturada
+- Retorna instruções prontas para o prompt de simulação
+- Timeout de 8 segundos
+- Fallback para valores padrão se falhar
 
-### 5. Edge Function (Validação)
-**Arquivo:** `supabase/functions/_shared/validation.ts`
+**Prompt para Gemini Flash:**
+```text
+Você é um especialista em odontologia estética.
+Analise o texto do paciente e extraia preferências para uma simulação de sorriso.
 
-- Alterar validação de `desiredChanges` (array) para `aestheticGoals` (string)
-- Limite de 1000 caracteres
+TEXTO DO PACIENTE:
+"{{aestheticGoals}}"
 
-### 6. Edge Function (Prompt)
-**Arquivo:** `supabase/functions/recommend-resin/index.ts`
+Determine:
 
-Substituir a seção de preferências no prompt:
-- Remover lógica de `desiredChanges.includes('whiter')`
-- Inserir o texto livre diretamente no contexto da IA
-- Instruir a IA a extrair e aplicar as preferências descritas
+1. whiteningLevel (nível de clareamento desejado):
+   - "intense" se menciona: hollywood, bem branco, muito branco, bleach, BL, super branco
+   - "natural" se menciona: branco, claro, clarear, mais claro (sem intensificador)
+   - "none" se não menciona clareamento ou cor
 
-### 7. Página de Resultado
-**Arquivo:** `src/pages/Result.tsx`
+2. colorInstruction (instrução ESPECÍFICA para o prompt de imagem):
+   - Para intense: "Change ALL visible teeth (including adjacent) to bright white/bleach BL2/BL3 shade. Uniform bright appearance."
+   - Para natural: "Change ALL visible teeth to natural white A1/A2 shade (1-2 shades lighter than original). Maintain subtle color variations."
+   - Para none: "Keep original tooth color. Only remove surface stains if visible."
 
-- Remover mapeamento de labels (`whiter` → "Dentes mais brancos")
-- Exibir o texto livre diretamente como citação
-- Manter o alerta de clareamento detectando palavras-chave no texto
+3. textureInstruction (instrução de textura baseada no estilo):
+   - Se menciona "natural", "discreto", "não artificial": "Preserve natural enamel texture, translucency, and micro-surface details. Avoid over-smoothing."
+   - Se menciona "perfeito", "uniforme": "Slight smoothing allowed, maintain realistic enamel appearance."
+   - Padrão: "Maintain natural tooth texture and surface characteristics."
 
-### 8. Alerta de Clareamento
-**Arquivo:** `src/components/protocol/WhiteningPreferenceAlert.tsx`
+4. styleNotes (notas adicionais para o prompt):
+   - Extraia quaisquer preferências específicas mencionadas
+   - Ex: "Patient wants younger appearance" ou "Avoid artificial Hollywood look"
 
-- Atualizar prop para receber texto em vez de boolean
-- Detectar preferência de clareamento por palavras-chave no texto ("branco", "claro", "clarear")
+5. sensitivityNote:
+   - Se menciona sensibilidade: "Patient reports tooth sensitivity - note for clinical planning"
+   - Senão: null
+```
 
-### 9. Testes
-**Arquivo:** `src/lib/__tests__/evaluation.test.ts`
+**Tool Definition:**
+```typescript
+{
+  type: "function",
+  function: {
+    name: "extract_preferences",
+    parameters: {
+      type: "object",
+      properties: {
+        whiteningLevel: { 
+          type: "string", 
+          enum: ["none", "natural", "intense"] 
+        },
+        colorInstruction: { type: "string" },
+        textureInstruction: { type: "string" },
+        styleNotes: { type: "string" },
+        sensitivityNote: { type: "string", nullable: true }
+      },
+      required: ["whiteningLevel", "colorInstruction", "textureInstruction", "styleNotes"]
+    }
+  }
+}
+```
 
-- Atualizar testes para nova estrutura
-- Testar validação de texto livre
+### 3. Atualizar `generateSimulation` (linhas 188-420)
+
+**Mudança principal - Substituir linhas 200-204:**
+
+Antes:
+```typescript
+const wantsWhiter = patientPreferences?.desiredChanges?.includes('whiter');
+const colorInstruction = wantsWhiter 
+  ? '- Tooth color → shade A1/A2 (natural white)'
+  : '- Keep natural tooth color (remove stains only)';
+```
+
+Depois:
+```typescript
+// Analyze patient preferences with Gemini Flash (fast ~2s)
+let analyzedPrefs: AnalyzedPreferences | null = null;
+if (patientPreferences?.aestheticGoals) {
+  try {
+    analyzedPrefs = await analyzePatientPreferences(
+      patientPreferences.aestheticGoals, 
+      apiKey
+    );
+    logger.log("Patient preferences analyzed:", {
+      whiteningLevel: analyzedPrefs.whiteningLevel,
+      hasStyleNotes: !!analyzedPrefs.styleNotes
+    });
+  } catch (err) {
+    logger.warn("Failed to analyze preferences, using defaults:", err);
+  }
+}
+
+// Fallback for legacy format or if analysis failed
+const legacyWantsWhiter = patientPreferences?.desiredChanges?.includes('whiter');
+
+// Build dynamic instructions
+const colorInstruction = analyzedPrefs?.colorInstruction 
+  || (legacyWantsWhiter 
+      ? '- Change ALL visible teeth to natural white A1/A2 shade' 
+      : '- Keep original tooth color (remove stains only)');
+
+const textureInstruction = analyzedPrefs?.textureInstruction
+  || '- Maintain natural enamel texture and surface details';
+
+const styleContext = analyzedPrefs?.styleNotes
+  ? `\nPATIENT STYLE PREFERENCE: ${analyzedPrefs.styleNotes}`
+  : '';
+```
+
+### 4. Integrar no Prompt de Simulação
+
+Adicionar as instruções analisadas em cada variante do prompt (standard, reconstruction, restoration, intraoral):
+
+```typescript
+CORRECTIONS TO APPLY:
+${baseCorrections}
+${colorInstruction}    // ← Agora vem da análise com IA
+${textureInstruction}  // ← NOVO!
+${allowedChangesFromAnalysis}
+${styleContext}        // ← NOVO! Notas de estilo do paciente
+
+QUALITY REQUIREMENTS:
+- Output must show VISIBLE difference from input (especially if whitening requested)
+- Color change must be applied to ALL visible teeth uniformly
+- Changes must be natural and realistic, not artificial
+```
+
+### 5. Melhorar Consistência de Qualidade
+
+Adicionar ao prompt de cada variante instruções mais explícitas:
+
+```typescript
+MANDATORY OUTPUT QUALITY:
+1. If whitening was requested, teeth MUST be visibly lighter in the output
+2. Color change must be uniform across ALL visible teeth
+3. Lips, gums, skin must be PIXEL-PERFECT identical to input
+4. Tooth texture must remain natural (not plastic/smooth)
+5. The "before vs after" must show clear, visible improvement
+```
 
 ---
 
-## Detalhes Técnicos
+## Lógica de Detecção por IA (vs Keywords)
 
-### Exemplo de UI do Textarea
+| Texto do Paciente | Análise IA | Instrução de Cor |
+|-------------------|------------|------------------|
+| "Dentes mais brancos e naturais" | whiteningLevel=natural | ALL teeth → A1/A2 |
+| "Hollywood smile, bem branco" | whiteningLevel=intense | ALL teeth → BL2/BL3 |
+| "Quero parecer mais jovem" | whiteningLevel=natural | ALL teeth → A1/A2 + style notes |
+| "Natural, sem artifício" | whiteningLevel=none | Keep original + texture note |
+| (sem texto) | null | Keep original |
 
-```text
-┌─────────────────────────────────────────────────────────────┐
-│  💬 O que o paciente deseja?                                │
-│                                                             │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │ Exemplo: "Gostaria de dentes mais brancos e         │   │
-│  │ naturais, sem parecer artificial. Preocupado com    │   │
-│  │ sensibilidade."                                     │   │
-│  └─────────────────────────────────────────────────────┘   │
-│                                                             │
-│  0/500 caracteres                                           │
-└─────────────────────────────────────────────────────────────┘
-```
+---
 
-### Exemplo de Prompt para IA
+## Fallback e Robustez
 
-```text
-═══════════════════════════════════════════════════════════════
-  PREFERÊNCIAS ESTÉTICAS DO PACIENTE
-═══════════════════════════════════════════════════════════════
-
-O paciente expressou os seguintes desejos:
-"Gostaria de dentes mais brancos mas naturais, sem parecer 
-artificial. Tenho sensibilidade."
-
-INSTRUÇÕES:
-- Analise o texto acima e extraia as preferências estéticas
-- Se mencionar clareamento/branco: ajuste cores 1-2 tons mais claros
-- Se mencionar natural: priorize translucidez e mimetismo
-- Se mencionar sensibilidade: considere sistemas self-etch
-- Aplique todas as preferências identificadas no protocolo
-═══════════════════════════════════════════════════════════════
-```
-
-### Detecção de Clareamento para Alerta Visual
-
-A função detectará palavras-chave para mostrar o alerta:
-- "branco", "brancos", "branca"
-- "claro", "claros", "clarear", "clareamento"
-- "mais claro", "mais branco"
+Se a análise com Gemini Flash falhar:
+- Timeout de 8s para não bloquear
+- Fallback para comportamento padrão
+- Log do erro para debug
+- Mantém retrocompatibilidade com `desiredChanges` (formato antigo)
+- Continua com a simulação normalmente
 
 ---
 
 ## Fluxo de Implementação
 
-1. Atualizar interface e componente `PatientPreferencesStep`
-2. Atualizar schema Zod
-3. Atualizar `NewCase.tsx` para usar nova estrutura
-4. Atualizar validação na Edge Function
-5. Atualizar prompt da IA na Edge Function
-6. Atualizar `WhiteningPreferenceAlert` para detectar por texto
-7. Atualizar exibição em `Result.tsx`
-8. Atualizar testes
-9. Deploy da Edge Function
-10. Testar fluxo completo
+1. Adicionar interface `AnalyzedPreferences`
+2. Criar função `analyzePatientPreferences` com Gemini Flash
+3. Atualizar `generateSimulation` para chamar a análise
+4. Integrar instruções analisadas nos 4 tipos de prompts
+5. Adicionar instruções de qualidade obrigatória
+6. Manter retrocompatibilidade com `desiredChanges`
+7. Adicionar logs para debug
+8. Deploy da Edge Function
+9. Testar com diferentes textos de preferência
 
 ---
 
-## Considerações
+## Resultado Esperado
 
-- **Retrocompatibilidade**: Casos antigos que usam `patient_desired_changes` continuam funcionando
-- **Banco de dados**: Já existe a coluna `patient_aesthetic_goals` (text) - não precisa migração
-- **Limite**: 500 caracteres é suficiente para descrição detalhada sem ser verboso
-- **UX**: Placeholder com exemplos guia o dentista sem limitar criatividade
+### Antes (problema atual)
+- Preferências ignoradas (clareamento nunca aplicado)
+- Qualidade inconsistente (precisa regenerar 3x)
+- Prompts genéricos sem contexto do paciente
+
+### Depois (solução)
+- Preferências analisadas por IA e convertidas em instruções específicas
+- Prompts enriquecidos com contexto detalhado
+- Instruções de qualidade obrigatória no prompt
+- Primeira geração já com qualidade adequada
+- Clareamento aplicado quando solicitado (natural ou intenso)
+- Textura e estilo respeitados conforme preferências
+
+---
+
+## Custo e Performance
+
+| Etapa | Modelo | Tempo | Custo |
+|-------|--------|-------|-------|
+| Análise de preferências | Gemini 3 Flash | ~2s | Muito baixo (~500 tokens) |
+| Geração de simulação | Gemini Pro Image | ~40s | Normal |
+| **Total adicional** | - | **+2s** | **Insignificante** |
+
