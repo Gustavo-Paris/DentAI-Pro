@@ -314,59 +314,27 @@ ${data.clinicalNotes ? `- Observações clínicas: ${data.clinicalNotes}` : ''}
 ${(() => {
   const wantsWhiter = data.desiredChanges?.includes('whiter');
   if (!wantsWhiter) return '';
-  const adjustedColors = getWhiteningColors(data.toothColor);
-  if (adjustedColors.length === 0) return '- Preferência do paciente: Dentes mais brancos (cor já é a mais clara disponível)';
-  
-  // Build explicit forbidden shades list
-  const forbiddenBase = data.toothColor.toUpperCase();
-  const forbiddenShades = [
-    forbiddenBase,
-    `O${forbiddenBase}`,
-    `D${forbiddenBase}`,
-    `E${forbiddenBase}`,
-    `OA${forbiddenBase.replace('BL', '')}`,
-    `PA${forbiddenBase.replace('BL', '')}`,
-  ].join(', ');
-  
-  // Build explicit allowed shades
-  const allowedShades = adjustedColors.flatMap(c => [
-    c,
-    `O${c}`,
-    `D${c}`,
-    `E${c}`,
-    `OA${c.replace('BL', '')}`,
-    `OBL${c.replace('BL', '')}`,
-    `BL${c.replace('BL', '')}`,
-  ]).join(', ');
-  
   return `
-╔══════════════════════════════════════════════════════════════════════════════╗
-║  ⚠️⚠️⚠️  CLAREAMENTO OBRIGATÓRIO - REGRA QUE NÃO PODE SER IGNORADA  ⚠️⚠️⚠️   ║
-╠══════════════════════════════════════════════════════════════════════════════╣
-║  O paciente deseja DENTES MAIS BRANCOS.                                      ║
-║                                                                              ║
-║  COR DETECTADA (NÃO USAR): ${forbiddenBase.padEnd(50)}║
-║  CORES CLAREADAS (USAR): ${adjustedColors.join(' ou ').padEnd(52)}║
-╚══════════════════════════════════════════════════════════════════════════════╝
+═══════════════════════════════════════════════════════════════════════════════
+  PREFERÊNCIA DE CLAREAMENTO ATIVA
+═══════════════════════════════════════════════════════════════════════════════
 
-🚫 PROIBIDO - SE VOCÊ USAR QUALQUER UMA DESTAS CORES, A RESPOSTA SERÁ REJEITADA:
-   ${forbiddenShades}
+O paciente indicou preferência por DENTES MAIS BRANCOS.
 
-✅ OBRIGATÓRIO - USE APENAS ESTAS CORES OU VARIAÇÕES:
-   ${allowedShades}
+Cor atual detectada: ${data.toothColor}
 
-REGRA PARA CADA CAMADA:
-┌──────────────────┬─────────────────────────────────────────────────────────┐
-│ Camada           │ Cor que DEVE ser usada                                  │
-├──────────────────┼─────────────────────────────────────────────────────────┤
-│ Opaco/Dentine    │ O${adjustedColors[0]} ou OA${adjustedColors[0].replace('BL', '')} ou OBL${adjustedColors[0].replace('BL', '')}                                      │
-├──────────────────┼─────────────────────────────────────────────────────────┤
-│ Body/Universal   │ ${adjustedColors[0]} ou B${adjustedColors[0]}                                             │
-├──────────────────┼─────────────────────────────────────────────────────────┤
-│ Esmalte          │ E${adjustedColors[0]} ou ${adjustedColors[1] || adjustedColors[0]}                                               │
-└──────────────────┴─────────────────────────────────────────────────────────┘
+INSTRUÇÃO: Você deve recomendar cores de resina 1-2 tons mais claros que a cor 
+detectada. Use sua análise clínica para escolher as melhores opções da escala 
+VITA que sejam mais claras (ex: se detectou A3, use A2 ou A1; se detectou A1, 
+use BL4 ou BL3).
 
-⚠️ VALIDAÇÃO: Se alguma camada tiver shade "${forbiddenBase}" ou "O${forbiddenBase}" ou "A1", a resposta está ERRADA.
+Aplique este clareamento em TODAS as camadas do protocolo de estratificação:
+- Camada Opaco/Dentina: versão opaca do tom clareado
+- Camada Body: tom clareado
+- Camada Esmalte: versão esmalte do tom clareado ou um tom ainda mais claro
+
+O resultado final deve ser visivelmente mais claro que a cor ${data.toothColor} detectada.
+═══════════════════════════════════════════════════════════════════════════════
 `;
 })()}
 
