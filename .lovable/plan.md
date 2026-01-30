@@ -1,223 +1,184 @@
 
-# Plano: Corrigir Simulação DSD - Preservar Lábios + Aplicar Clareamento
+# Plano: Simplificar DSD - Preferencias Diretas + Prompt Limpo
 
-## Problemas Diagnosticados
+## Problema Diagnosticado
 
-### Problema 1: Boca/Lábios Mudando
-**Causa:** A instrução "PRESERVE: Lips" está no meio do prompt, não como prioridade absoluta.
-**Resultado:** O modelo Gemini modifica lábios, textura de pele, e formato da boca.
+Voce esta certo: estamos **complicando demais** os prompts e ficando pior. O fluxo atual:
 
-### Problema 2: Clareamento Nunca Aplicado
-**Causa:** O `colorInstruction` está "enterrado" após `baseCorrections` no prompt.
-**Estrutura atual:**
-```
-CORRECTIONS TO APPLY:
-1. Fill visible holes...    ← Modelo foca aqui
-2. Remove dark stains...    ← E aqui
-3. Close small gaps...      ← E aqui
-- Change ALL teeth to A1/A2  ← Clareamento ignorado
-```
+1. Paciente escreve texto livre ("dentes mais brancos e harmonicos")
+2. AI analisa texto e extrai instrucoes complexas (colorInstruction, textureInstruction, styleNotes)
+3. Prompt fica gigante com muitas regras conflitantes
+4. Modelo de imagem se confunde e executa correcoes erradas
 
-**Resultado:** Mesmo gerando 2-3x, o clareamento nunca é aplicado porque está em posição secundária.
+### Problemas Especificos:
+- `allowedChangesFromAnalysis` FORCA todas as sugestoes da analise na simulacao
+- Texto livre cria ambiguidade ("harmonico" vira "fechar diastema")
+- Prompt muito longo com muitas instrucoes = modelo ignora as importantes
 
 ---
 
-## Solução: Reestruturação Completa do Prompt
+## Solucao: Simplificar para 3 Opcoes Claras
 
-### Arquivo a Modificar
-`supabase/functions/generate-dsd/index.ts`
+### Novo Fluxo:
 
----
-
-### Mudança 1: Criar Bloco de Preservação Absoluta
-
-**Localização:** Antes de todos os prompts (linha ~445)
-
-Criar uma constante de preservação que será colocada NO TOPO de todos os prompts:
-
-```typescript
-const absolutePreservation = `⚠️ ABSOLUTE RULES - VIOLATION = FAILURE ⚠️
-
-DO NOT CHANGE (pixel-perfect preservation required):
-- LIPS: Shape, color, texture, position, contour EXACTLY as input
-- GUMS: Level, color, shape EXACTLY as input
-- SKIN: All facial skin EXACTLY as input
-- BACKGROUND: All non-dental areas EXACTLY as input
-- IMAGE SIZE: Exact same dimensions and framing
-
-If any of these elements differ from input, the output is REJECTED.
-Only TEETH may be modified.`;
+```text
+1. FOTO → Analise DSD (visagismo, sugestoes, proporcoes)
+   
+2. PREFERENCIAS → Usuario escolhe APENAS nivel de clareamento:
+   □ Natural (A1/A2 - sutil)
+   □ Branco (BL1/BL2 - notavel)  
+   □ Hollywood (BL3 - intenso)
+   
+3. SIMULACAO → Prompt simples e direto:
+   - Aplicar visagismo sugerido pela analise
+   - Aplicar nivel de clareamento escolhido
+   - PRESERVAR: labios, gengiva, pele
+   - NAO criar dente onde nao existe
+   - NAO aumentar largura alem do clinicamente possivel
 ```
 
 ---
 
-### Mudança 2: Reestruturar Ordem das Instruções
+## Mudancas Tecnicas
 
-**Problema atual:** Clareamento está DEPOIS das correções base.
-**Solução:** Colocar clareamento ANTES, como prioridade #1.
+### Arquivo 1: `src/components/wizard/PatientPreferencesStep.tsx`
 
-**Antes (linha 578-582):**
-```typescript
-CORRECTIONS TO APPLY:
-${baseCorrections}
-${colorInstruction}
+Trocar textarea por 3 botoes simples:
+
+```tsx
+export interface PatientPreferences {
+  whiteningLevel: 'natural' | 'white' | 'hollywood';
+}
+
+// Interface com 3 cards clicaveis:
+// [Natural] [Branco] [Hollywood]
+// Com imagens de exemplo de cada nivel
 ```
 
-**Depois:**
-```typescript
-${colorInstruction ? `#1 PRIORITY - COLOR CHANGE (${analyzedPrefs?.whiteningLevel || 'natural'} whitening):
-${colorInstruction}
+### Arquivo 2: `src/pages/NewCase.tsx`
 
-The teeth MUST be visibly lighter than input. This is the PRIMARY goal.
-` : ''}
-ADDITIONAL CORRECTIONS:
-${baseCorrections}
+Atualizar estado para novo formato:
+
+```tsx
+const [patientPreferences, setPatientPreferences] = useState<PatientPreferences>({ 
+  whiteningLevel: 'natural' 
+});
 ```
 
----
+### Arquivo 3: `supabase/functions/generate-dsd/index.ts`
 
-### Mudança 3: Reformatar Prompt Padrão (Standard)
+**Mudanca 1**: Remover `analyzePatientPreferences()` - nao precisa mais de AI para interpretar texto
 
-**Antes (linhas 567-592):**
+**Mudanca 2**: Simplificar prompt para ser CURTO e DIRETO:
+
 ```typescript
-simulationPrompt = `DENTAL PHOTO EDIT
+// Mapear nivel escolhido para instrucao SIMPLES
+const whiteningInstructions = {
+  natural: "Make teeth 1-2 shades lighter (A1/A2). Subtle, natural whitening.",
+  white: "Make teeth clearly whiter (BL1/BL2). Noticeable but not extreme.",
+  hollywood: "Make teeth bright white (BL3). Hollywood smile effect."
+};
 
-Edit ONLY the teeth in this photo. Keep everything else IDENTICAL.
+const whiteningLevel = patientPreferences?.whiteningLevel || 'natural';
+const whiteningText = whiteningInstructions[whiteningLevel];
 
-PRESERVE (do not change):
-- Lips (exact color, shape, texture, position)
-...
+// PROMPT SIMPLIFICADO (muito mais curto)
+simulationPrompt = `DENTAL SMILE SIMULATION
+
+PRESERVE EXACTLY (do not modify):
+- Lips, gums, skin, background
+- Image dimensions and framing
+
+APPLY THESE CHANGES TO TEETH ONLY:
+1. WHITENING: ${whiteningText}
+2. Apply the smile design improvements suggested in the analysis (close small gaps, level edges, harmonize proportions)
+
+CONSTRAINTS:
+- Do NOT create teeth where none exist
+- Do NOT make teeth wider than clinically possible
+- Keep natural tooth anatomy
+
+Output: Same photo with improved teeth only.`;
 ```
 
-**Depois:**
-```typescript
-const wantsWhitening = analyzedPrefs?.whiteningLevel !== 'none';
-
-simulationPrompt = `DENTAL PHOTO EDIT${wantsWhitening ? ' - WHITENING REQUESTED' : ''}
-
-${absolutePreservation}
-
-TASK: Edit ONLY the teeth. Everything else must be IDENTICAL to input.
-
-${wantsWhitening ? `#1 PRIORITY - WHITENING (${analyzedPrefs?.whiteningLevel === 'intense' ? 'INTENSE' : 'NATURAL'}):
-${colorInstruction}
-
-⚠️ VERIFICATION: In the output, teeth MUST be CLEARLY LIGHTER than input.
-If teeth look the same color, you have FAILED the primary task.
-
-` : ''}DENTAL CORRECTIONS:
-${baseCorrections}
-${textureInstruction}
-${allowedChangesFromAnalysis}${styleContext}
-
-PROPORTION RULES:
-- Keep original tooth width proportions exactly
-- NEVER make teeth appear thinner or narrower
-- Only add material to fill defects
-
-FINAL CHECK:
-[✓] Lips IDENTICAL to input? Required
-[✓] Gums IDENTICAL to input? Required
-[✓] Skin IDENTICAL to input? Required
-${wantsWhitening ? '[✓] Teeth VISIBLY WHITER than input? Required' : ''}
-
-Output: Same photo with ONLY teeth corrected.`;
-```
-
----
-
-### Mudança 4: Aplicar Mesma Estrutura nos Outros Prompts
-
-Aplicar a mesma estrutura reformatada nos 3 outros tipos de prompt:
-- **Reconstruction** (linhas 484-510)
-- **Restoration** (linhas 512-539)
-- **Intraoral** (linhas 541-564)
-
-Cada um deve ter:
-1. `absolutePreservation` no topo
-2. Clareamento como "#1 PRIORITY" (se solicitado)
-3. Outras correções como secundárias
-4. Checklist de verificação no final
-
----
-
-### Mudança 5: Adicionar Log de Debug do Prompt Final
-
-Para debug futuro, logar os primeiros 500 caracteres do prompt:
+**Mudanca 3**: Manter `allowedChangesFromAnalysis` mas FILTRAR para nao incluir mudancas impossiveis:
 
 ```typescript
-logger.log("DSD Simulation Request:", {
-  promptType,
-  wantsWhitening: analyzedPrefs?.whiteningLevel !== 'none',
-  whiteningLevel: analyzedPrefs?.whiteningLevel || 'none',
-  promptPreview: simulationPrompt.substring(0, 500) + '...',
+// Filtrar sugestoes para remover as clinicamente impossiveis
+const clinicallyPossibleChanges = analysis.suggestions.filter(s => {
+  const change = s.proposed_change.toLowerCase();
+  // Remover: criar dente onde nao existe, alargar alem do possivel
+  return !change.includes('implante') && 
+         !change.includes('protese') &&
+         !change.includes('coroa total');
 });
 ```
 
 ---
 
-## Fluxo Atualizado
-
-```text
-TEXTO: "Gostaria de dentes mais brancos e harmoniosos"
-                         │
-                         ▼
-GEMINI FLASH ANALYSIS:
-  whiteningLevel: "natural"
-  colorInstruction: "Change ALL teeth to A1/A2 shade..."
-                         │
-                         ▼
-PROMPT REFORMATADO:
-  ⚠️ ABSOLUTE RULES - VIOLATION = FAILURE ⚠️
-  DO NOT CHANGE: Lips, Gums, Skin, Background, Image Size
-  
-  #1 PRIORITY - WHITENING (NATURAL):
-  Change ALL visible teeth to natural white A1/A2 shade...
-  ⚠️ VERIFICATION: Teeth MUST be CLEARLY LIGHTER than input.
-  
-  DENTAL CORRECTIONS:
-  1. Fill visible holes...
-  2. Remove dark stains...
-  
-  FINAL CHECK:
-  [✓] Lips IDENTICAL to input? Required
-  [✓] Teeth VISIBLY WHITER than input? Required
-                         │
-                         ▼
-GEMINI PRO IMAGE:
-  → Lábios preservados (regra absoluta no topo)
-  → Dentes visivelmente mais brancos (prioridade #1)
-```
-
----
-
-## Comparação Antes vs Depois
+## Comparacao: Antes vs Depois
 
 | Aspecto | Antes | Depois |
 |---------|-------|--------|
-| Preservação de lábios | Lista simples no meio do prompt | "ABSOLUTE RULES - VIOLATION = FAILURE" no topo |
-| Posição do clareamento | Enterrado após `baseCorrections` | "#1 PRIORITY" antes de tudo |
-| Verificação | Não tinha | Checklist explícito no final |
-| Ênfase | Instruções genéricas | Instruções com emojis ⚠️ e "FAILURE" para enforcement |
+| Entrada do usuario | Texto livre (500 chars) | 3 opcoes claras |
+| Processamento | AI analisa texto (8s extra) | Direto, sem AI |
+| Tamanho do prompt | ~2000 caracteres | ~500 caracteres |
+| Instrucoes | Multiplas regras conflitantes | Poucas regras claras |
+| Clareamento | Pode ser ignorado | Sempre aplicado |
+| Correcoes estruturais | Todas aplicadas | Filtradas clinicamente |
+
+---
+
+## UI Nova - PatientPreferencesStep
+
+Tres cards visuais:
+
+```text
+┌─────────────────────────────────────────────────────────┐
+│                 Nivel de Clareamento                    │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  ┌───────────┐  ┌───────────┐  ┌───────────┐           │
+│  │           │  │           │  │           │           │
+│  │  [img]    │  │  [img]    │  │  [img]    │           │
+│  │           │  │           │  │           │           │
+│  │  Natural  │  │  Branco   │  │ Hollywood │           │
+│  │  (A1/A2)  │  │ (BL1/BL2) │  │  (BL3)    │           │
+│  └───────────┘  └───────────┘  └───────────┘           │
+│                                                         │
+│  [ Continuar ]                                          │
+└─────────────────────────────────────────────────────────┘
+```
 
 ---
 
 ## Resultado Esperado
 
-1. **Lábios preservados**: A regra absoluta no topo impede modificações
-2. **Clareamento aplicado na primeira tentativa**: Prioridade #1 força o modelo a aplicar
-3. **Qualidade consistente**: Checklist de verificação reforça expectativas
+1. **Clareamento sempre aplicado**: Opcao clara, sem interpretacao de texto
+2. **Estrutura preservada**: Prompt nao manda "fechar gaps" automaticamente
+3. **Visagismo aplicado**: Sugestoes da analise ainda sao usadas, mas filtradas
+4. **Prompt curto**: Modelo entende melhor instrucoes simples
+5. **Menos variacao**: Resultado mais consistente entre regeneracoes
 
 ---
 
-## Implementação Técnica
+## Implementacao Tecnica
 
-Arquivos a modificar: `supabase/functions/generate-dsd/index.ts`
+### Arquivos a Modificar:
 
-Seções a alterar:
-- Linha ~375: Adicionar constante `absolutePreservation`
-- Linhas 484-510: Reformatar prompt de Reconstruction
-- Linhas 512-539: Reformatar prompt de Restoration
-- Linhas 541-564: Reformatar prompt de Intraoral
-- Linhas 567-592: Reformatar prompt Standard
-- Linha 598-606: Melhorar logging
+1. **`src/components/wizard/PatientPreferencesStep.tsx`**
+   - Substituir textarea por 3 cards de selecao
+   - Atualizar interface `PatientPreferences`
+
+2. **`src/pages/NewCase.tsx`**
+   - Atualizar estado inicial de `patientPreferences`
+   - Ajustar tipo para novo formato
+
+3. **`supabase/functions/generate-dsd/index.ts`**
+   - Remover funcao `analyzePatientPreferences()` (linhas 196-323)
+   - Simplificar prompts de simulacao (linhas 380-612)
+   - Adicionar mapeamento direto de nivel → instrucao
+   - Filtrar `allowedChangesFromAnalysis` para remover impossibilidades clinicas
+
+4. **`src/components/wizard/DSDStep.tsx`**
+   - Atualizar interface para novo formato de preferencias
