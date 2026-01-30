@@ -599,7 +599,7 @@ export default function NewCase() {
                 budget: formData.budget,
                 longevityExpectation: formData.longevityExpectation,
                 // Patient preferences - critical for whitening adjustments
-                desiredChanges: patientPreferences.desiredChanges.length > 0 ? patientPreferences.desiredChanges : null,
+                desiredChanges: patientPreferences.desiredChanges.length > 0 ? patientPreferences.desiredChanges : undefined,
               },
             });
             if (aiError) throw aiError;
