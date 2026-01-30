@@ -124,6 +124,7 @@ export default function PhotoUploader({
                 <button
                   onClick={handleRemove}
                   className="absolute -top-2 -right-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center hover:bg-destructive/90"
+                  aria-label="Remover foto"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -133,6 +134,7 @@ export default function PhotoUploader({
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
                 className="w-full h-full bg-secondary rounded-lg flex items-center justify-center hover:bg-secondary/80 transition-colors"
+                aria-label={uploading ? 'Carregando foto...' : `Adicionar foto: ${label}`}
               >
                 {uploading ? (
                   <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
