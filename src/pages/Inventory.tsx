@@ -29,7 +29,7 @@ import { ArrowLeft, Plus, Search, Package, Loader2, X } from 'lucide-react';
 import { useInventoryList, useResinCatalog, useAddToInventory, useRemoveFromInventory } from '@/hooks/queries/useInventory';
 import { toast } from 'sonner';
 import { ResinBadge } from '@/components/ResinBadge';
-import { ResinTypeLegend, getTypeColorClasses } from '@/components/ResinTypeLegend';
+import { ResinTypeLegend } from '@/components/ResinTypeLegend';
 
 interface CatalogResin {
   id: string;
@@ -474,24 +474,24 @@ export default function Inventory() {
                                 key={resin.id}
                                 className="group relative"
                               >
-                                <Badge
-                                  variant="secondary"
-                                  className={`${getTypeColorClasses(resin.type)} pr-7 py-1.5 text-sm`}
+                                <ResinBadge
+                                  shade={resin.shade}
+                                  type={resin.type}
+                                  size="md"
+                                  showColorSwatch
+                                />
+                                <button
+                                  onClick={() => inventoryItemId && removeFromInventory(inventoryItemId)}
+                                  disabled={isRemoving}
+                                  className="absolute -top-1 -right-1 p-0.5 rounded-full bg-destructive/10 hover:bg-destructive/20 transition-colors opacity-0 group-hover:opacity-100"
+                                  title="Remover"
                                 >
-                                  {resin.shade}
-                                  <button
-                                    onClick={() => inventoryItemId && removeFromInventory(inventoryItemId)}
-                                    disabled={isRemoving}
-                                    className="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-destructive/20 transition-colors"
-                                    title="Remover"
-                                  >
-                                    {isRemoving ? (
-                                      <Loader2 className="h-3 w-3 animate-spin" />
-                                    ) : (
-                                      <X className="h-3 w-3 opacity-50 group-hover:opacity-100" />
-                                    )}
-                                  </button>
-                                </Badge>
+                                  {isRemoving ? (
+                                    <Loader2 className="h-3 w-3 animate-spin text-destructive" />
+                                  ) : (
+                                    <X className="h-3 w-3 text-destructive" />
+                                  )}
+                                </button>
                               </div>
                             );
                           })}

@@ -892,7 +892,21 @@ export default function NewCase() {
       <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-2xl">
         {/* Progress Steps */}
         <div className="mb-6 sm:mb-8">
-          <div className="flex justify-between mb-4">
+          {/* Step counter - always visible */}
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-medium text-muted-foreground">
+              Passo {step} de {totalSteps}
+            </span>
+            <span className="text-sm font-medium text-primary">
+              {steps.find(s => s.id === step)?.name}
+            </span>
+          </div>
+          
+          {/* Progress bar */}
+          <Progress value={progress} className="h-2 mb-4" />
+          
+          {/* Step icons */}
+          <div className="flex justify-between">
             {steps.map((s) => (
               <div
                 key={s.id}
@@ -900,16 +914,23 @@ export default function NewCase() {
               >
                 <div
                   className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center mb-1 sm:mb-2 transition-colors ${
-                    step >= s.id ? 'bg-primary text-primary-foreground' : 'bg-secondary'
+                    step > s.id 
+                      ? 'bg-primary/20 text-primary' 
+                      : step === s.id 
+                        ? 'bg-primary text-primary-foreground ring-2 ring-primary ring-offset-2 ring-offset-background' 
+                        : 'bg-secondary'
                   }`}
                 >
-                  <s.icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                  {step > s.id ? (
+                    <Check className="w-4 h-4 sm:w-5 sm:h-5" />
+                  ) : (
+                    <s.icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                  )}
                 </div>
                 <span className="text-xs hidden sm:block">{s.name}</span>
               </div>
             ))}
           </div>
-          <Progress value={progress} className="h-1" />
         </div>
 
         {/* Step Content */}

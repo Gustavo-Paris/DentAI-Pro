@@ -1,17 +1,27 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { usePatientsList } from "@/hooks/queries/usePatients";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Search, Users, Plus, ChevronRight, Loader2 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ArrowLeft, Search, Users, Plus, ChevronRight, Loader2, ArrowUpDown } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+
+type SortOption = 'recent' | 'name-asc' | 'name-desc' | 'cases';
 
 const Patients = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<SortOption>('recent');
   const [page, setPage] = useState(0);
   const [allPatients, setAllPatients] = useState<Array<{
     id: string;
@@ -41,9 +51,29 @@ const Patients = () => {
     setPage(p => p + 1);
   };
 
-  const filteredPatients = allPatients.filter((p) =>
-    p.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter and sort patients
+  const filteredAndSortedPatients = useMemo(() => {
+    const filtered = allPatients.filter((p) =>
+      p.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    
+    return [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case 'name-asc':
+          return a.name.localeCompare(b.name, 'pt-BR');
+        case 'name-desc':
+          return b.name.localeCompare(a.name, 'pt-BR');
+        case 'cases':
+          return b.caseCount - a.caseCount;
+        case 'recent':
+        default:
+          if (!a.lastVisit && !b.lastVisit) return 0;
+          if (!a.lastVisit) return 1;
+          if (!b.lastVisit) return -1;
+          return new Date(b.lastVisit).getTime() - new Date(a.lastVisit).getTime();
+      }
+    });
+  }, [allPatients, searchQuery, sortBy]);
 
   const getInitials = (name: string) => {
     return name
@@ -78,15 +108,29 @@ const Patients = () => {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-6">
-        {/* Search */}
-        <div className="relative mb-6">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar paciente..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
+        {/* Search and Sort */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-6">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar paciente..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <ArrowUpDown className="w-4 h-4 mr-2 opacity-50" />
+              <SelectValue placeholder="Ordenar por" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="recent">Mais recentes</SelectItem>
+              <SelectItem value="name-asc">Nome (A-Z)</SelectItem>
+              <SelectItem value="name-desc">Nome (Z-A)</SelectItem>
+              <SelectItem value="cases">Mais casos</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Loading State */}
@@ -116,7 +160,7 @@ const Patients = () => {
         )}
 
         {/* No Results */}
-        {!isLoading && allPatients.length > 0 && filteredPatients.length === 0 && (
+        {!isLoading && allPatients.length > 0 && filteredAndSortedPatients.length === 0 && (
           <Card className="p-8 text-center">
             <Search className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="font-medium mb-2">Nenhum paciente encontrado</h3>
@@ -127,9 +171,9 @@ const Patients = () => {
         )}
 
         {/* Patients List */}
-        {!isLoading && filteredPatients.length > 0 && (
+        {!isLoading && filteredAndSortedPatients.length > 0 && (
           <div className="space-y-3">
-            {filteredPatients.map((patient) => (
+            {filteredAndSortedPatients.map((patient) => (
               <Link key={patient.id} to={`/patient/${patient.id}`}>
                 <Card className="p-4 hover:bg-accent/50 transition-colors cursor-pointer">
                   <div className="flex items-center gap-4">

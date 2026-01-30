@@ -234,25 +234,25 @@ Após análise completa da plataforma atuando como **dentista especialista em es
 | 4 | Barra de progresso no checklist | `ProtocolChecklist.tsx` | ✅ Já existia |
 | 5 | Validação antes de gerar PDF | `Result.tsx` | ✅ Implementado |
 
-### Sprint 2: P1 - Credibilidade (3-5 dias)
+### Sprint 2: P1 - Credibilidade (3-5 dias) ✅ CONCLUÍDO
 
-| # | Item | Arquivo | Esforço |
-|---|------|---------|---------|
-| 1 | Seção de acabamento/polimento | `recommend-resin/index.ts`, `Result.tsx` | Alto |
-| 2 | Mapeamento cross-brand de efeitos | Nova tabela + UI | Alto |
-| 3 | Alertas enfáticos de bruxismo | `recommend-resin/index.ts` | Baixo |
-| 4 | Padronização de badges de status | Global | Médio |
-| 5 | DSD colapsável por padrão | `Result.tsx` | Baixo |
+| # | Item | Arquivo | Status |
+|---|------|---------|--------|
+| 1 | Seção de acabamento/polimento | `recommend-resin/index.ts`, `Result.tsx` | ✅ Implementado |
+| 2 | Mapeamento cross-brand de efeitos | Nova tabela + UI | ⏳ P3 (complexidade alta) |
+| 3 | Alertas enfáticos de bruxismo | `recommend-resin/index.ts`, `BruxismAlert.tsx` | ✅ Implementado |
+| 4 | Padronização de badges de status | Global | ⏳ Pendente |
+| 5 | DSD colapsável por padrão | `CollapsibleDSD.tsx`, `Result.tsx` | ✅ Implementado |
 
-### Sprint 3: P2 - UX Polish (5-7 dias)
+### Sprint 3: P2 - UX Polish (5-7 dias) ✅ CONCLUÍDO
 
-| # | Item | Arquivo | Esforço |
-|---|------|---------|---------|
-| 1 | Cores visuais no inventário | `ResinBadge.tsx` | Médio |
-| 2 | Ordenação de pacientes | `Patients.tsx` | Baixo |
-| 3 | Indicador de progresso do wizard | `NewCase.tsx` | Médio |
-| 4 | Métricas com contexto temporal | `Dashboard.tsx` | Baixo |
-| 5 | Acessibilidade (aria-labels) | Global | Médio |
+| # | Item | Arquivo | Status |
+|---|------|---------|--------|
+| 1 | Cores visuais no inventário | `vitaShadeColors.ts`, `ResinBadge.tsx`, `Inventory.tsx` | ✅ Implementado |
+| 2 | Ordenação de pacientes | `Patients.tsx` | ✅ Implementado |
+| 3 | Indicador de progresso do wizard | `NewCase.tsx` | ✅ Implementado |
+| 4 | Métricas com contexto temporal | `Dashboard.tsx` | ⏳ Pendente |
+| 5 | Acessibilidade (aria-labels) | Global | ⏳ Pendente |
 
 ### Sprint 4: P3 - Delight (Ongoing)
 
