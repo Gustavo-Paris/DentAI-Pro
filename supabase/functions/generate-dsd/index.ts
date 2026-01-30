@@ -232,17 +232,25 @@ async function generateSimulation(
   const whiteningIntensity = whiteningConfig.intensity;
   
   // ABSOLUTE PRESERVATION RULES - Must be at TOP of every prompt
-  const absolutePreservation = `⚠️ ABSOLUTE RULES - VIOLATION = FAILURE ⚠️
+  const absolutePreservation = `⚠️⚠️⚠️ ABSOLUTE PRESERVATION - ZERO TOLERANCE ⚠️⚠️⚠️
 
-DO NOT CHANGE (pixel-perfect preservation REQUIRED):
-- LIPS: Shape, color, texture, position, contour EXACTLY as input
-- GUMS: Level, color, shape EXACTLY as input  
-- SKIN: All facial skin EXACTLY as input
-- BACKGROUND: All non-dental areas EXACTLY as input
-- IMAGE SIZE: Exact same dimensions and framing
+CRITICAL: The ENTIRE MOUTH STRUCTURE must remain PIXEL-PERFECT IDENTICAL to input:
 
-If ANY of these elements differ from input, the output is REJECTED.
-Only TEETH may be modified.`;
+🚫 NEVER CHANGE - ANY MODIFICATION = AUTOMATIC FAILURE:
+• LIPS: Exact same shape, position, opening, color, texture, contour, highlights, shadows
+• MOUTH OPENING: Exact same aperture angle and width - DO NOT make mouth appear more/less open
+• GUMS: Exact same visibility, color, texture, gum line position
+• TONGUE: If visible, exact same position and appearance
+• INNER CHEEKS: Exact same visibility and appearance
+• SKIN: All facial skin EXACTLY as input - same lighting, texture, shadows
+• BACKGROUND: All non-dental areas EXACTLY as input
+• IMAGE FRAMING: Exact same dimensions, crop, zoom level
+
+⚠️ VALIDATION TEST: 
+If you overlay the output on the input, ONLY the teeth should differ.
+The lip outline, gum line, and all soft tissues must align PERFECTLY.
+
+✅ ONLY TEETH MAY BE MODIFIED - nothing else.`;
 
   // Whitening priority section (if requested)
   const whiteningPrioritySection = wantsWhitening ? `
@@ -259,15 +267,17 @@ ${colorInstruction}
 
   // Quality requirements section for consistent output
   const qualityRequirements = `
-FINAL VERIFICATION CHECKLIST:
-[✓] Lips IDENTICAL to input? REQUIRED
-[✓] Gums IDENTICAL to input? REQUIRED
-[✓] Skin IDENTICAL to input? REQUIRED
-[✓] Background IDENTICAL to input? REQUIRED
-${wantsWhitening ? '[✓] Teeth VISIBLY WHITER than input? REQUIRED' : '[✓] Tooth color natural and consistent? REQUIRED'}
-[✓] Tooth proportions maintained (not thinner)? REQUIRED
+⚠️ FINAL VERIFICATION - ALL MUST PASS:
+[✓] Lips PIXEL-PERFECT identical to input? (overlay test) - REQUIRED
+[✓] Mouth opening angle IDENTICAL to input? - REQUIRED  
+[✓] Gums PIXEL-PERFECT identical to input? - REQUIRED
+[✓] Skin tone and texture IDENTICAL to input? - REQUIRED
+[✓] Background IDENTICAL to input? - REQUIRED
+${wantsWhitening ? '[✓] Teeth VISIBLY WHITER than input? - REQUIRED' : '[✓] Tooth color natural and consistent? - REQUIRED'}
+[✓] Tooth proportions maintained (not thinner)? - REQUIRED
 
-If any check fails, regenerate.`;
+🚫 If lips, gums, or mouth shape differ AT ALL from input → REGENERATE.
+Only teeth should change.`;
 
   // Base corrections - focused and specific (avoid over-smoothing)
   const baseCorrections = `1. Fill visible holes, chips or defects on tooth edges
