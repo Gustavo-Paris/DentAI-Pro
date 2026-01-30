@@ -14,6 +14,16 @@ import {
   BreadcrumbSeparator,
   BreadcrumbPage,
 } from '@/components/ui/breadcrumb';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { ArrowLeft, Download, Plus, CheckCircle, Image, Package, Sparkles, Layers, Loader2, Smile, Crown, Stethoscope, ArrowUpRight, CircleX, Heart, Palette } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -116,6 +126,7 @@ export default function Result() {
   const [evaluation, setEvaluation] = useState<Evaluation | null>(null);
   const [loading, setLoading] = useState(true);
   const [generatingPDF, setGeneratingPDF] = useState(false);
+  const [showPdfConfirmDialog, setShowPdfConfirmDialog] = useState(false);
   const [dentistProfile, setDentistProfile] = useState<DentistProfile | null>(null);
   const [photoUrls, setPhotoUrls] = useState<{
     frontal: string | null;
@@ -234,9 +245,45 @@ export default function Result() {
     }
   };
 
+  // Check if checklist is complete - calculates checklist inline to avoid reference issues
+  const getChecklistCompletionStatus = () => {
+    if (!evaluation) return { complete: true, total: 0, progress: 0 };
+    
+    const treatmentType = evaluation.treatment_type || 'resina';
+    const isPorcelain = treatmentType === 'porcelana';
+    const isSpecial = ['implante', 'coroa', 'endodontia', 'encaminhamento'].includes(treatmentType);
+    const cementation = evaluation.cementation_protocol as CementationProtocol | null;
+    const generic = evaluation.generic_protocol;
+    const protocol = evaluation.stratification_protocol;
+    
+    const checklistItems = isPorcelain 
+      ? (cementation?.checklist || []) 
+      : isSpecial && generic
+      ? generic.checklist
+      : (protocol?.checklist || []);
+    
+    const progressIndices = evaluation.checklist_progress || [];
+    return {
+      complete: checklistItems.length === 0 || progressIndices.length === checklistItems.length,
+      total: checklistItems.length,
+      progress: progressIndices.length
+    };
+  };
+
+  // Handler for PDF button click - validates checklist first
+  const handlePdfButtonClick = () => {
+    const status = getChecklistCompletionStatus();
+    if (!status.complete) {
+      setShowPdfConfirmDialog(true);
+    } else {
+      handleExportPDF();
+    }
+  };
+
   const handleExportPDF = async () => {
     if (!evaluation) return;
     
+    setShowPdfConfirmDialog(false);
     setGeneratingPDF(true);
     
     try {
@@ -970,9 +1017,28 @@ export default function Result() {
           </section>
         )}
 
+        {/* PDF Confirmation Dialog */}
+        <AlertDialog open={showPdfConfirmDialog} onOpenChange={setShowPdfConfirmDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Checklist incompleto</AlertDialogTitle>
+              <AlertDialogDescription>
+                O checklist do protocolo ainda não está 100% concluído. 
+                Deseja gerar o PDF mesmo assim?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={handleExportPDF}>
+                Gerar PDF
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
         {/* Actions */}
         <div className="flex gap-3 print:hidden">
-          <Button variant="outline" onClick={handleExportPDF} disabled={generatingPDF}>
+          <Button variant="outline" onClick={handlePdfButtonClick} disabled={generatingPDF}>
             {generatingPDF ? (
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
             ) : (
