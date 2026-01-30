@@ -66,7 +66,7 @@ export default function NewCase() {
   // Removed tooth shape selection - now uses 'natural' as default internally
   const [toothTreatments, setToothTreatments] = useState<Record<string, TreatmentType>>({});
   const [additionalPhotos, setAdditionalPhotos] = useState<AdditionalPhotos>({ smile45: null, face: null });
-  const [patientPreferences, setPatientPreferences] = useState<PatientPreferences>({ aestheticGoals: '' });
+  const [patientPreferences, setPatientPreferences] = useState<PatientPreferences>({ whiteningLevel: 'natural' });
   const [dobValidationError, setDobValidationError] = useState(false);
   
   // Draft restoration state
@@ -130,7 +130,7 @@ export default function NewCase() {
     setDsdResult(pendingDraft.dsdResult);
     setUploadedPhotoPath(pendingDraft.uploadedPhotoPath);
     setAdditionalPhotos(pendingDraft.additionalPhotos || { smile45: null, face: null });
-    setPatientPreferences(pendingDraft.patientPreferences || { aestheticGoals: '' });
+    setPatientPreferences(pendingDraft.patientPreferences || { whiteningLevel: 'natural' });
     
     // Load image from storage if available
     if (pendingDraft.uploadedPhotoPath) {
@@ -311,11 +311,6 @@ export default function NewCase() {
 
   // Handle preferences step navigation
   const handlePreferencesContinue = () => {
-    analyzePhoto();
-  };
-
-  const handlePreferencesSkip = () => {
-    setPatientPreferences({ aestheticGoals: '' });
     analyzePhoto();
   };
 
@@ -547,7 +542,7 @@ export default function NewCase() {
           // Tooth position for visual highlight overlay
           tooth_bounds: toothData?.tooth_bounds || null,
           // Patient aesthetic preferences
-          patient_aesthetic_goals: patientPreferences.aestheticGoals.trim() || null,
+          patient_aesthetic_goals: patientPreferences.whiteningLevel || null,
           patient_desired_changes: null, // Legacy field - now using patient_aesthetic_goals
         };
 
@@ -599,7 +594,7 @@ export default function NewCase() {
                 budget: formData.budget,
                 longevityExpectation: formData.longevityExpectation,
                 // Patient preferences - free text for AI to analyze
-                aestheticGoals: patientPreferences.aestheticGoals.trim() || undefined,
+                aestheticGoals: patientPreferences.whiteningLevel || undefined,
               },
             });
             if (aiError) throw aiError;
@@ -952,7 +947,6 @@ export default function NewCase() {
             preferences={patientPreferences}
             onPreferencesChange={setPatientPreferences}
             onContinue={handlePreferencesContinue}
-            onSkip={handlePreferencesSkip}
           />
         )}
 

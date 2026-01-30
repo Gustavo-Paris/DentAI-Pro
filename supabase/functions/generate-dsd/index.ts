@@ -53,18 +53,27 @@ interface AdditionalPhotos {
 }
 
 interface PatientPreferences {
+  whiteningLevel?: 'natural' | 'white' | 'hollywood';
+  // Legacy fields (deprecated)
   aestheticGoals?: string;
   desiredChanges?: string[];
 }
 
-// AI-analyzed patient preferences for simulation prompts
-interface AnalyzedPreferences {
-  whiteningLevel: 'none' | 'natural' | 'intense';
-  colorInstruction: string;
-  textureInstruction: string;
-  styleNotes: string;
-  sensitivityNote: string | null;
-}
+// Whitening level to instruction mapping (direct, no AI analysis needed)
+const WHITENING_INSTRUCTIONS: Record<string, { instruction: string; intensity: string }> = {
+  natural: {
+    instruction: "Make ALL visible teeth 1-2 shades lighter (A1/A2). Subtle, natural whitening that looks realistic.",
+    intensity: "NATURAL"
+  },
+  white: {
+    instruction: "Make ALL visible teeth clearly whiter (BL1/BL2). Noticeable whitening but not extreme.",
+    intensity: "NOTICEABLE"
+  },
+  hollywood: {
+    instruction: "Make ALL visible teeth bright white (BL3). Hollywood smile effect, uniform bright appearance.",
+    intensity: "INTENSE"
+  }
+};
 
 interface RequestData {
   imageBase64: string;
@@ -193,134 +202,7 @@ function hasSevereDestruction(analysis: DSDAnalysis): { isLimited: boolean; reas
   return { isLimited: false, reason: null };
 }
 
-// Analyze patient preferences with Gemini Flash for structured instructions
-async function analyzePatientPreferences(
-  aestheticGoals: string,
-  apiKey: string
-): Promise<AnalyzedPreferences> {
-  const ANALYSIS_TIMEOUT = 8_000; // 8s max for fast analysis
-  
-  const systemPrompt = `Você é um especialista em odontologia estética.
-Analise o texto do paciente e extraia preferências para uma simulação de sorriso.
-
-REGRAS DE ANÁLISE:
-
-1. whiteningLevel (nível de clareamento desejado):
-   - "intense" se menciona: hollywood, bem branco, muito branco, bleach, BL, super branco, celebridade
-   - "natural" se menciona: branco, claro, clarear, mais claro, branquinho (sem intensificador forte)
-   - "none" se não menciona clareamento ou cor
-
-2. colorInstruction (instrução ESPECÍFICA para o prompt de imagem):
-   - Para intense: "Change ALL visible teeth (including adjacent) to bright white/bleach BL2/BL3 shade. Uniform bright appearance across entire visible dentition."
-   - Para natural: "Change ALL visible teeth to natural white A1/A2 shade (1-2 shades lighter than original). Maintain subtle natural color variations between teeth."
-   - Para none: "Keep original tooth color. Only remove surface stains if visible."
-
-3. textureInstruction (instrução de textura baseada no estilo):
-   - Se menciona "natural", "discreto", "não artificial": "Preserve natural enamel texture, translucency, and micro-surface details. Avoid over-smoothing."
-   - Se menciona "perfeito", "uniforme", "liso": "Slight smoothing allowed, maintain realistic enamel appearance."
-   - Padrão: "Maintain natural tooth texture and surface characteristics."
-
-4. styleNotes (notas adicionais para o prompt):
-   - Extraia quaisquer preferências específicas mencionadas
-   - Exemplos: "Patient wants younger appearance", "Avoid artificial Hollywood look", "Prefer subtle changes"
-
-5. sensitivityNote:
-   - Se menciona sensibilidade, sensível, dor, desconforto: "Patient reports tooth sensitivity - note for clinical planning"
-   - Senão: null`;
-
-  try {
-    const response = await fetchWithTimeout(
-      "https://ai.gateway.lovable.dev/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-3-flash-preview",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: `Analise o seguinte texto do paciente e extraia as preferências estéticas:\n\n"${aestheticGoals}"` },
-          ],
-          tools: [
-            {
-              type: "function",
-              function: {
-                name: "extract_preferences",
-                description: "Extrai preferências estéticas estruturadas do texto do paciente",
-                parameters: {
-                  type: "object",
-                  properties: {
-                    whiteningLevel: {
-                      type: "string",
-                      enum: ["none", "natural", "intense"],
-                      description: "Nível de clareamento desejado"
-                    },
-                    colorInstruction: {
-                      type: "string",
-                      description: "Instrução específica de cor para o prompt de simulação (em inglês)"
-                    },
-                    textureInstruction: {
-                      type: "string",
-                      description: "Instrução de textura para o prompt de simulação (em inglês)"
-                    },
-                    styleNotes: {
-                      type: "string",
-                      description: "Notas adicionais de estilo extraídas do texto do paciente (em inglês)"
-                    },
-                    sensitivityNote: {
-                      type: "string",
-                      nullable: true,
-                      description: "Nota sobre sensibilidade se mencionada, ou null"
-                    }
-                  },
-                  required: ["whiteningLevel", "colorInstruction", "textureInstruction", "styleNotes"]
-                }
-              }
-            }
-          ],
-          tool_choice: { type: "function", function: { name: "extract_preferences" } }
-        }),
-      },
-      ANALYSIS_TIMEOUT,
-      "analyzePatientPreferences"
-    );
-
-    if (!response.ok) {
-      logger.warn("Preference analysis request failed:", response.status);
-      throw new Error(`Analysis request failed: ${response.status}`);
-    }
-
-    const data = await response.json();
-    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-    
-    if (!toolCall?.function?.arguments) {
-      logger.warn("No tool call in preference analysis response");
-      throw new Error("No tool call response");
-    }
-
-    const args = JSON.parse(toolCall.function.arguments);
-    
-    return {
-      whiteningLevel: args.whiteningLevel || 'none',
-      colorInstruction: args.colorInstruction || 'Keep original tooth color. Only remove surface stains if visible.',
-      textureInstruction: args.textureInstruction || 'Maintain natural tooth texture and surface characteristics.',
-      styleNotes: args.styleNotes || '',
-      sensitivityNote: args.sensitivityNote || null
-    };
-  } catch (err) {
-    logger.warn("Failed to analyze patient preferences:", err);
-    // Return sensible defaults on error
-    return {
-      whiteningLevel: 'none',
-      colorInstruction: 'Keep original tooth color. Only remove surface stains if visible.',
-      textureInstruction: 'Maintain natural tooth texture and surface characteristics.',
-      styleNotes: '',
-      sensitivityNote: null
-    };
-  }
-}
+// REMOVED: analyzePatientPreferences function - now using direct mapping from UI selection
 
 // SIMPLIFIED: Generate simulation image - single attempt, no blend, no verification
 async function generateSimulation(
@@ -333,47 +215,21 @@ async function generateSimulation(
   patientPreferences?: PatientPreferences
 ): Promise<string | null> {
   const SIMULATION_TIMEOUT = 50_000; // 50s max
-  const shapeInstruction = toothShapeDescriptions[toothShape] || toothShapeDescriptions.natural;
   
-  // Analyze patient preferences with Gemini Flash (fast ~2s)
-  let analyzedPrefs: AnalyzedPreferences | null = null;
-  if (patientPreferences?.aestheticGoals) {
-    try {
-      analyzedPrefs = await analyzePatientPreferences(
-        patientPreferences.aestheticGoals, 
-        apiKey
-      );
-      logger.log("Patient preferences analyzed:", {
-        whiteningLevel: analyzedPrefs.whiteningLevel,
-        hasStyleNotes: !!analyzedPrefs.styleNotes,
-        sensitivityNote: !!analyzedPrefs.sensitivityNote
-      });
-    } catch (err) {
-      logger.warn("Failed to analyze preferences, using defaults:", err);
-    }
-  }
-
-  // Fallback for legacy format or if analysis failed
-  const legacyWantsWhiter = patientPreferences?.desiredChanges?.includes('whiter');
-
-  // Build dynamic instructions from AI analysis or fallback
-  const colorInstruction = analyzedPrefs?.colorInstruction 
-    ? `- ${analyzedPrefs.colorInstruction}`
-    : (legacyWantsWhiter 
-        ? '- Change ALL visible teeth to natural white A1/A2 shade (1-2 shades lighter)' 
-        : '- Keep original tooth color (remove stains only)');
-
-  const textureInstruction = analyzedPrefs?.textureInstruction
-    ? `- ${analyzedPrefs.textureInstruction}`
-    : '- Maintain natural enamel texture and surface details';
-
-  const styleContext = analyzedPrefs?.styleNotes
-    ? `\nPATIENT STYLE PREFERENCE: ${analyzedPrefs.styleNotes}`
-    : '';
+  // Get whitening level from direct UI selection (no AI analysis needed!)
+  const whiteningLevel = patientPreferences?.whiteningLevel || 'natural';
+  const whiteningConfig = WHITENING_INSTRUCTIONS[whiteningLevel] || WHITENING_INSTRUCTIONS.natural;
   
-  // Determine if whitening was requested
-  const wantsWhitening = analyzedPrefs?.whiteningLevel !== 'none' || legacyWantsWhiter;
-  const whiteningIntensity = analyzedPrefs?.whiteningLevel === 'intense' ? 'INTENSE' : 'NATURAL';
+  logger.log("Whitening config from UI selection:", {
+    selectedLevel: whiteningLevel,
+    intensity: whiteningConfig.intensity
+  });
+
+  // Build simple, direct instructions
+  const colorInstruction = `- ${whiteningConfig.instruction}`;
+  const textureInstruction = '- Maintain natural enamel texture and surface details';
+  const wantsWhitening = true; // Always apply whitening (user always selects a level)
+  const whiteningIntensity = whiteningConfig.intensity;
   
   // ABSOLUTE PRESERVATION RULES - Must be at TOP of every prompt
   const absolutePreservation = `⚠️ ABSOLUTE RULES - VIOLATION = FAILURE ⚠️
@@ -525,7 +381,7 @@ ${textureInstruction}
 
 RECONSTRUCTION:
 - ${specificInstructions || 'Fill missing teeth using adjacent teeth as reference'}
-${allowedChangesFromAnalysis}${styleContext}
+${allowedChangesFromAnalysis}
 
 PROPORTION RULES:
 - Keep original tooth width proportions exactly
@@ -549,7 +405,7 @@ ${textureInstruction}
 
 RESTORATION FOCUS:
 - Blend interface lines on teeth ${restorationTeeth || '11, 21'}
-${allowedChangesFromAnalysis}${styleContext}
+${allowedChangesFromAnalysis}
 
 PROPORTION RULES:
 - Keep original tooth width proportions exactly
@@ -577,7 +433,7 @@ TASK: Edit ONLY the teeth. Everything else must be IDENTICAL to input.
 ${whiteningPrioritySection}DENTAL CORRECTIONS:
 ${baseCorrections}
 ${textureInstruction}
-${allowedChangesFromAnalysis}${styleContext}
+${allowedChangesFromAnalysis}
 
 PROPORTION RULES:
 - Keep original tooth width proportions exactly
@@ -599,7 +455,7 @@ TASK: Edit ONLY the teeth. Everything else must be IDENTICAL to input.
 ${whiteningPrioritySection}DENTAL CORRECTIONS:
 ${baseCorrections}
 ${textureInstruction}
-${allowedChangesFromAnalysis}${styleContext}
+${allowedChangesFromAnalysis}
 
 PROPORTION RULES:
 - Keep original tooth width proportions exactly
@@ -621,7 +477,7 @@ Output: Same photo with ONLY teeth corrected.`;
     approach: "absolutePreservation + whiteningPriority",
     wantsWhitening,
     whiteningIntensity: wantsWhitening ? whiteningIntensity : 'none',
-    whiteningLevel: analyzedPrefs?.whiteningLevel || 'none',
+    whiteningLevel: whiteningLevel,
     colorInstruction: colorInstruction.substring(0, 80) + '...',
     promptLength: simulationPrompt.length,
     promptPreview: simulationPrompt.substring(0, 400) + '...',
