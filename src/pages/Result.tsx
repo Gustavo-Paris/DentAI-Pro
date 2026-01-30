@@ -714,6 +714,7 @@ export default function Result() {
             <WhiteningPreferenceAlert
               originalColor={evaluation.tooth_color}
               hasWhiteningPreference={true}
+              protocolLayers={layers}
             />
           </section>
         )}
