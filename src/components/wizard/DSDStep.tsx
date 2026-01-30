@@ -45,7 +45,7 @@ interface AdditionalPhotos {
 }
 
 interface PatientPreferences {
-  aestheticGoals: string;
+  whiteningLevel: 'natural' | 'white' | 'hollywood';
 }
 
 interface DSDStepProps {
@@ -186,10 +186,10 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
         };
       }
       
-      // Add patient preferences if available (for personalized suggestions)
-      if (patientPreferences?.aestheticGoals?.trim()) {
+      // Add patient preferences if available (whitening level selection)
+      if (patientPreferences?.whiteningLevel) {
         requestBody.patientPreferences = {
-          aestheticGoals: patientPreferences.aestheticGoals,
+          whiteningLevel: patientPreferences.whiteningLevel,
         };
       }
       
