@@ -538,7 +538,7 @@ Responda APENAS com o JSON, sem texto adicional.`;
               content: prompt,
             },
           ],
-          max_tokens: 1500,
+          max_tokens: 4096,
         }),
       }
     );
