@@ -1,161 +1,320 @@
 
+# Analise de Consistencia do Wizard - Ponta a Ponta
 
-# Plano: Reforcar Preservacao de Labios + Intensificar Clareamento
+## Resumo Executivo
 
-## Problema Confirmado
-
-A imagem mostra claramente:
-1. **Labio inferior DIFERENTE** - textura/forma alterada (mais suave/liso)
-2. **Clareamento insuficiente** para nivel "Hollywood" (deveria ser BL3, branco intenso)
-
-### Causa Raiz Tecnica
-
-O modelo Gemini gera uma **imagem NOVA** ao inves de editar pontualmente. Mesmo com instrucoes de preservacao, ele "recria" a imagem inteira, causando variacoes em labios/pele/gengiva.
+Analisei o fluxo completo do wizard (6 etapas) e identifiquei **inconsistencias criticas** na passagem de dados entre camadas, especialmente relacionadas as preferencias do paciente (nivel de clareamento).
 
 ---
 
-## Solucao: Tecnica de "Inpainting" via Prompt
+## Fluxo Atual do Wizard
 
-### Estrategia: Forcar o modelo a pensar em "mascara"
-
-Em vez de dizer "preserve os labios", instruir o modelo a:
-1. **Copiar pixels** dos labios da imagem original
-2. **Apenas modificar a area dos dentes**
-3. Usar linguagem de "inpainting/mask" que modelos de imagem entendem melhor
+```text
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ETAPA 1: Foto                                                                │
+│ PhotoUploadStep.tsx                                                          │
+│ - Captura: imageBase64, additionalPhotos (smile45, face)                     │
+│ - Saida: Imagem comprimida em base64                                         │
+└──────────────────────────────────────────────────────────────────────────────┘
+                                    ↓
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ETAPA 2: Preferencias do Paciente                                            │
+│ PatientPreferencesStep.tsx                                                   │
+│ - Captura: whiteningLevel (natural | white | hollywood)                      │
+│ - Saida: PatientPreferences { whiteningLevel: 'natural'|'white'|'hollywood'} │
+└──────────────────────────────────────────────────────────────────────────────┘
+                                    ↓
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ETAPA 3: Analise IA                                                          │
+│ AnalyzingStep.tsx + analyze-dental-photo Edge Function                       │
+│ - Entrada: imageBase64                                                       │
+│ - Saida: PhotoAnalysisResult (detected_teeth, vita_shade, observations...)   │
+│ ⚠️ NAO RECEBE patientPreferences - analise desconhece nivel de clareamento   │
+└──────────────────────────────────────────────────────────────────────────────┘
+                                    ↓
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ETAPA 4: DSD (Simulacao)                                                     │
+│ DSDStep.tsx + generate-dsd Edge Function                                     │
+│ - Entrada: imageBase64, patientPreferences.whiteningLevel, analysisResult    │
+│ - Processamento: Mapeia whiteningLevel para instrucoes de cor                │
+│ - Saida: DSDResult { analysis, simulation_url }                              │
+│ ✅ RECEBE whiteningLevel corretamente                                        │
+└──────────────────────────────────────────────────────────────────────────────┘
+                                    ↓
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ETAPA 5: Revisao                                                             │
+│ ReviewAnalysisStep.tsx                                                       │
+│ - Entrada: analysisResult, formData, selectedTeeth, toothTreatments          │
+│ - Usuario ajusta: patientName, patientAge, bruxism, aestheticLevel, etc.     │
+│ ⚠️ NAO EXIBE whiteningLevel selecionado na Etapa 2                           │
+└──────────────────────────────────────────────────────────────────────────────┘
+                                    ↓
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ETAPA 6: Resultado                                                           │
+│ NewCase.tsx handleSubmit → recommend-resin Edge Function → Result.tsx        │
+│ - Salva no banco: patient_aesthetic_goals = whiteningLevel (string simples)  │
+│ - Envia para recommend-resin: aestheticGoals = whiteningLevel                │
+│ ⚠️ INCONSISTENCIA: recommend-resin espera texto livre, recebe enum           │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
-## Mudancas Tecnicas
+## Inconsistencias Encontradas
 
-### Arquivo: `supabase/functions/generate-dsd/index.ts`
+### 1. **Campo patient_aesthetic_goals Recebe Valor Errado**
 
-### Mudanca 1: Reformular Instrucao de Preservacao
+**Localizacao:** `NewCase.tsx` linha 545
 
-**De** (instrucao abstrata):
+**Problema:**
 ```typescript
-const absolutePreservation = `⚠️ ABSOLUTE PRESERVATION - ZERO TOLERANCE
-CRITICAL: The ENTIRE MOUTH STRUCTURE must remain PIXEL-PERFECT IDENTICAL...
-🚫 NEVER CHANGE: LIPS...`;
+// O que esta sendo salvo:
+patient_aesthetic_goals: patientPreferences.whiteningLevel || null,
+// Resultado: "natural", "white" ou "hollywood" (enum)
+
+// O que o Result.tsx espera mostrar:
+<p className="text-sm text-muted-foreground italic">
+  "{evaluation.patient_aesthetic_goals}"  // Mostra "hollywood" como texto
+</p>
 ```
 
-**Para** (instrucao tecnica de inpainting):
+**Impacto:** A tela de resultado mostra literalmente "hollywood" ou "natural" ao inves de um texto descritivo como "Clareamento intenso - nivel Hollywood".
+
+---
+
+### 2. **WhiteningPreferenceAlert Busca Keywords Erradas**
+
+**Localizacao:** `WhiteningPreferenceAlert.tsx` linhas 12-18 e 21-24
+
+**Problema:**
 ```typescript
-const absolutePreservation = `🔒 INPAINTING MODE - STRICT MASK 🔒
+// O componente espera texto livre com keywords:
+const WHITENING_KEYWORDS = [
+  'branco', 'brancos', 'claro', 'claros', 'clarear', 'clareamento'...
+];
 
-WORKFLOW:
-1. COPY the ENTIRE input image exactly as-is
-2. IDENTIFY teeth area only (white/ivory colored enamel surfaces)
-3. MODIFY ONLY pixels within the teeth boundary
-4. ALL pixels OUTSIDE teeth boundary = EXACT COPY from input
-
-⚠️ MASK DEFINITION:
-- INSIDE MASK (can modify): Teeth enamel surfaces only
-- OUTSIDE MASK (copy exactly): Lips, gums, tongue, skin, background, shadows, highlights
-
-PIXEL-LEVEL REQUIREMENT:
-- Every lip pixel in output = exact same RGB value as input
-- Every gum pixel in output = exact same RGB value as input
-- Every skin pixel in output = exact same RGB value as input
-
-This is image EDITING (inpainting), NOT image GENERATION.
-Output dimensions MUST equal input dimensions exactly.`;
-```
-
-### Mudanca 2: Intensificar Hollywood Whitening
-
-**De**:
-```typescript
-hollywood: {
-  instruction: "Make ALL visible teeth bright white (BL3). Hollywood smile effect, uniform bright appearance.",
-  intensity: "INTENSE"
+function hasWhiteningKeywords(text: string): boolean {
+  const normalized = text.toLowerCase();
+  return WHITENING_KEYWORDS.some(keyword => normalized.includes(keyword));
 }
 ```
 
-**Para**:
+**Mas recebe:** "hollywood", "white" ou "natural" (que nao contem essas keywords)
+
+**Impacto:** O alerta de clareamento **NUNCA aparece** porque "hollywood".includes("branco") = false
+
+---
+
+### 3. **recommend-resin Recebe Enum em Vez de Texto**
+
+**Localizacao:** `NewCase.tsx` linha 597
+
+**Problema:**
 ```typescript
-hollywood: {
-  instruction: "Make ALL visible teeth EXTREMELY WHITE (BL3/0M1). Pure bright white like porcelain veneers. The teeth should appear DRAMATICALLY lighter - almost glowing white. This is the maximum possible whitening.",
-  intensity: "MAXIMUM"
+// O que esta sendo enviado:
+aestheticGoals: patientPreferences.whiteningLevel || undefined,
+// Resultado: "hollywood"
+
+// O que o prompt em recommend-resin espera (linhas 314-336):
+// "${data.aestheticGoals}" → Mostra no prompt como texto livre para IA analisar
+// O prompt diz: "Analise o texto acima e extraia as preferencias esteticas"
+```
+
+**Impacto:** A IA recebe apenas "hollywood" sem contexto, em vez de "Paciente deseja dentes bem brancos, nivel Hollywood (BL3)"
+
+---
+
+### 4. **Nivel de Clareamento Nao Aparece na Revisao (Etapa 5)**
+
+**Localizacao:** `ReviewAnalysisStep.tsx`
+
+**Problema:** O componente nao recebe nem exibe `patientPreferences.whiteningLevel`. O usuario escolhe o nivel na Etapa 2, mas nao ve essa escolha durante a revisao final.
+
+**Impacto:** Usuario pode esquecer o que selecionou e nao tem como confirmar antes de gerar o protocolo.
+
+---
+
+### 5. **Nao Ha Mapeamento de whiteningLevel para Cor no recommend-resin**
+
+**Localizacao:** `recommend-resin/index.ts`
+
+**Problema:** Apesar de ter um `whiteningColorMap` (linhas 52-79), ele **NAO e utilizado** para ajustar as cores do protocolo com base no nivel de clareamento escolhido. A logica depende da IA interpretar o texto "hollywood".
+
+**Impacto:** O protocolo de resina pode nao refletir o nivel de clareamento escolhido, especialmente se a IA ignorar o campo.
+
+---
+
+## Plano de Correcoes
+
+### Correcao 1: Mapear whiteningLevel para Texto Descritivo
+
+**Arquivo:** `NewCase.tsx`
+
+Criar mapeamento de enum para texto legivel:
+
+```typescript
+const WHITENING_LEVEL_DESCRIPTIONS: Record<string, string> = {
+  natural: 'Clareamento natural e sutil (A1/A2)',
+  white: 'Clareamento notavel - dentes mais brancos (BL1/BL2)',
+  hollywood: 'Clareamento intenso - sorriso Hollywood (BL3)',
+};
+
+// Ao salvar:
+patient_aesthetic_goals: WHITENING_LEVEL_DESCRIPTIONS[patientPreferences.whiteningLevel] || null,
+```
+
+---
+
+### Correcao 2: Atualizar WhiteningPreferenceAlert
+
+**Arquivo:** `WhiteningPreferenceAlert.tsx`
+
+Adicionar deteccao direta do nivel:
+
+```typescript
+// Detectar pelo enum diretamente
+const WHITENING_LEVEL_KEYWORDS = ['natural', 'white', 'hollywood'];
+
+function detectsWhiteningLevel(text: string): 'natural' | 'white' | 'hollywood' | null {
+  const lower = text.toLowerCase();
+  if (lower.includes('hollywood') || lower.includes('bl3')) return 'hollywood';
+  if (lower.includes('white') || lower.includes('notavel') || lower.includes('bl1') || lower.includes('bl2')) return 'white';
+  if (lower.includes('natural') || lower.includes('sutil') || lower.includes('a1') || lower.includes('a2')) return 'natural';
+  // Fallback para keywords antigas
+  if (WHITENING_KEYWORDS.some(kw => lower.includes(kw))) return 'white';
+  return null;
 }
 ```
 
-### Mudanca 3: Adicionar Instrucao Explicita de Compositing
+---
 
-Adicionar antes do prompt final:
-```typescript
-const compositingInstruction = `
-COMPOSITING REQUIREMENT:
-Think of this as a Photoshop layer operation:
-1. Bottom layer: Original input image (locked, unchanged)
-2. Top layer: Your modifications to teeth ONLY
-3. Final: Composite where only teeth differ
+### Correcao 3: Enriquecer Dados para recommend-resin
 
-The final image must pass this test:
-- Take input image
-- Take output image  
-- Difference map should show changes ONLY on teeth
-- Any difference on lips/gums/skin = FAILURE`;
-```
+**Arquivo:** `NewCase.tsx` (linha 597)
 
-### Mudanca 4: Simplificar Prompt (Menos Regras, Mais Direto)
-
-Prompts muito longos confundem o modelo. Reduzir para o essencial:
+Enviar instrucao completa:
 
 ```typescript
-simulationPrompt = `DENTAL INPAINTING - EDIT TEETH ONLY
-
-${absolutePreservation}
-
-TASK: Change ONLY the teeth color and surface.
-${whiteningLevel === 'hollywood' 
-  ? `WHITENING: Make teeth EXTREMELY WHITE (BL3). Maximum brightness. Porcelain-like.` 
-  : whiteningPrioritySection}
-
-DO NOT TOUCH: Lips, gums, tongue, skin, background.
-COPY EXACTLY from input: All non-tooth areas.
-
-Output: Same photo with whiter teeth. Nothing else changes.`;
+aestheticGoals: patientPreferences.whiteningLevel === 'hollywood'
+  ? 'Paciente deseja clareamento INTENSO - nivel Hollywood (BL3). Ajustar todas as camadas 2-3 tons mais claras que a cor detectada.'
+  : patientPreferences.whiteningLevel === 'white'
+  ? 'Paciente deseja clareamento NOTAVEL (BL1/BL2). Ajustar camadas 1-2 tons mais claras.'
+  : patientPreferences.whiteningLevel === 'natural'
+  ? 'Paciente prefere aparencia NATURAL com clareamento sutil (A1/A2).'
+  : undefined,
 ```
 
 ---
 
-## Comparacao de Prompts
+### Correcao 4: Exibir Nivel de Clareamento na Revisao
 
-| Aspecto | Antes | Depois |
-|---------|-------|--------|
-| Abordagem | "Preserve" (abstrato) | "Inpainting/Mask" (tecnico) |
-| Linguagem | Regras longas | Workflow curto e direto |
-| Hollywood | "bright white BL3" | "EXTREMELY WHITE, porcelain, maximum" |
-| Tamanho | ~2000 chars | ~800 chars |
-| Semantica | "Nao mude" | "Copie exatamente" |
+**Arquivo:** `ReviewAnalysisStep.tsx`
+
+Adicionar props e exibicao:
+
+```typescript
+interface ReviewAnalysisStepProps {
+  // ... props existentes
+  whiteningLevel?: 'natural' | 'white' | 'hollywood';
+}
+
+// No componente, adicionar badge visual:
+{whiteningLevel && (
+  <Card className="border-primary/20 bg-primary/5 mb-4">
+    <CardContent className="py-3 flex items-center gap-2">
+      <Sparkles className="w-4 h-4 text-primary" />
+      <span className="text-sm">Nivel de clareamento:</span>
+      <Badge variant="secondary">
+        {whiteningLevel === 'hollywood' ? 'Hollywood (BL3)' :
+         whiteningLevel === 'white' ? 'Branco (BL1/BL2)' : 'Natural (A1/A2)'}
+      </Badge>
+    </CardContent>
+  </Card>
+)}
+```
 
 ---
 
-## Resultado Esperado
+### Correcao 5: Usar Mapeamento de Cores no recommend-resin
 
-1. **Labios preservados**: Modelo entende "copiar pixels" melhor que "preservar"
-2. **Hollywood mais branco**: Linguagem intensificada (EXTREMELY, MAXIMUM, porcelain)
-3. **Menos confusao**: Prompt mais curto = menos regras conflitantes
-4. **Melhor consistencia**: Abordagem de inpainting e mais padronizada
+**Arquivo:** `recommend-resin/index.ts`
+
+Aplicar `whiteningColorMap` baseado no nivel:
+
+```typescript
+// No inicio do processamento:
+let targetColor = data.toothColor;
+
+if (data.aestheticGoals) {
+  const goals = data.aestheticGoals.toLowerCase();
+  if (goals.includes('hollywood') || goals.includes('bl3')) {
+    // Hollywood: ir para BL3 ou o mais claro possivel
+    const colors = getWhiteningColors(data.toothColor);
+    targetColor = colors.length >= 2 ? colors[1] : colors[0] || 'BL3';
+  } else if (goals.includes('white') || goals.includes('notavel')) {
+    // Branco: ir 1-2 tons mais claro
+    const colors = getWhiteningColors(data.toothColor);
+    targetColor = colors[0] || data.toothColor;
+  }
+  // Natural: manter cor original
+}
+
+// Usar targetColor no prompt em vez de data.toothColor
+```
 
 ---
 
-## Nota Importante
+## Outras Observacoes de Consistencia
 
-Se apos essas mudancas os labios AINDA mudarem, a limitacao e do **modelo de imagem** em si (Gemini nao tem suporte nativo a inpainting com mascara). Nesse caso, as opcoes seriam:
+### Fluxo de Dados OK
 
-1. Aceitar pequenas variacoes como limitacao do sistema
-2. Implementar inpainting real com API dedicada (ex: Stability AI Inpainting)
-3. Fazer blend automatico no frontend (manter labios originais, so sobrepor dentes)
+1. **Foto → Analise:** imageBase64 passa corretamente
+2. **DSD recebe whiteningLevel:** generate-dsd usa WHITENING_INSTRUCTIONS corretamente
+3. **Compositing determinisitco:** Funciona para preservar labios
+4. **Tratamentos por dente:** toothTreatments mapeado corretamente para cada dente
+5. **Session ID:** Agrupamento de avaliacoes funciona corretamente
 
-Mas vamos tentar o reforco de prompt primeiro.
+### Campos Salvos Corretamente no Banco
+
+| Campo | Fonte | Status |
+|-------|-------|--------|
+| tooth | analysisResult ou formData | ✅ OK |
+| region | getFullRegion() | ✅ OK |
+| cavity_class | toothData ou formData | ✅ OK |
+| tooth_color | formData.vitaShade | ✅ OK |
+| bruxism | formData | ✅ OK |
+| treatment_type | toothTreatments[tooth] | ✅ OK |
+| dsd_analysis | dsdResult.analysis | ✅ OK |
+| dsd_simulation_url | dsdResult.simulation_url | ✅ OK |
+| patient_aesthetic_goals | whiteningLevel (enum) | ⚠️ Precisa enriquecimento |
 
 ---
 
 ## Arquivos a Modificar
 
-1. **`supabase/functions/generate-dsd/index.ts`**
-   - Linhas 62-76: Intensificar `hollywood` instruction
-   - Linhas 234-253: Reformular `absolutePreservation` para inpainting
-   - Linhas 460-478: Simplificar prompt principal
+1. **`src/pages/NewCase.tsx`** (linhas 545, 597)
+   - Mapear whiteningLevel para texto descritivo
+   - Enriquecer aestheticGoals para recommend-resin
+
+2. **`src/components/wizard/ReviewAnalysisStep.tsx`**
+   - Adicionar prop whiteningLevel
+   - Exibir badge com nivel selecionado
+
+3. **`src/components/protocol/WhiteningPreferenceAlert.tsx`**
+   - Atualizar logica de deteccao para incluir enum
+
+4. **`supabase/functions/recommend-resin/index.ts`** (opcional)
+   - Usar whiteningColorMap para ajustar targetColor no prompt
+
+---
+
+## Impacto das Correcoes
+
+| Problema | Antes | Depois |
+|----------|-------|--------|
+| Exibicao de preferencia | "hollywood" | "Clareamento intenso - Hollywood (BL3)" |
+| Alerta de clareamento | Nunca aparece | Aparece quando whiteningLevel != natural |
+| IA entende preferencia | Depende de interpretar "hollywood" | Instrucao clara com cores especificas |
+| Usuario confirma escolha | Nao ve na revisao | Badge visivel na Etapa 5 |
+| Protocolo ajusta cores | Inconsistente | Determinístico baseado no nivel |
 
