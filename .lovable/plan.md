@@ -1,296 +1,154 @@
 
-# Avaliação Expert: Dentista Estético + UX Designer
-## Plano de Ajustes para Produção do ResinMatch AI
+# Plano: Campo de Texto Livre para Preferências do Paciente
+
+## Contexto
+
+A proposta é substituir os checkboxes limitados por um **campo de texto livre** onde o dentista pode escrever o que o paciente deseja em suas próprias palavras. O modelo Pro analisará este texto e aplicará as preferências clinicamente.
+
+**Vantagens:**
+- Flexibilidade total (não limitado a opções predefinidas)
+- Aproveita a capacidade de compreensão contextual do modelo Pro
+- Captura nuances que checkboxes não conseguem ("quer parecer mais jovem mas natural")
+- Já existe coluna `patient_aesthetic_goals` (text) pronta no banco
 
 ---
 
-## 1. Sumário Executivo
+## Arquivos a Modificar
 
-Após análise completa da plataforma atuando como **dentista especialista em estética oral** e **UX designer**, identifiquei **43 pontos de melhoria** organizados em 4 categorias:
+### 1. Componente de Preferências
+**Arquivo:** `src/components/wizard/PatientPreferencesStep.tsx`
 
-| Categoria | Quantidade | Impacto |
-|-----------|------------|---------|
-| P0 - Bloqueadores de Produção | 5 | Crítico |
-| P1 - Credibilidade Clínica | 12 | Alto |
-| P2 - Experiência do Usuário | 16 | Médio |
-| P3 - Polish & Delight | 10 | Baixo |
+Substituir os checkboxes por um textarea:
+- Remover array `desiredChanges` 
+- Adicionar campo `aestheticGoals` (string)
+- Placeholder com exemplos para guiar o dentista
+- Limite de 500 caracteres
+- Botão "Continuar" habilitado quando há texto
 
----
+### 2. Schema de Validação
+**Arquivo:** `src/lib/schemas/evaluation.ts`
 
-## 2. Avaliação Clínica (Visão do Dentista Especialista)
+Atualizar o schema de preferências:
+- Remover `desiredChanges: z.array(z.string())`
+- Adicionar `aestheticGoals: z.string().max(500).optional()`
 
-### 2.1 Pontos Fortes Identificados
+### 3. Interface do Componente
+**Arquivo:** `src/components/wizard/PatientPreferencesStep.tsx`
 
-1. **Terminologia Estética Correta**: O sistema já diferencia procedimentos estéticos (Faceta Direta, Recontorno) de classes de Black
-2. **Catálogo Robusto**: 347 cores de 21 linhas de produtos profissionais reconhecidas
-3. **Protocolo Multi-Camada**: Estratificação com Opaco/Dentina/Esmalte/Efeitos
-4. **Integração de Preferências**: Sistema de clareamento com mapeamento VITA correto
-5. **Proibição de Técnicas Obsoletas**: O prompt já bloqueia "bisel" em favor de "chanfro suave"
+Atualizar a interface:
+```text
+PatientPreferences {
+  aestheticGoals: string;  // Nova estrutura
+}
+```
 
-### 2.2 Problemas Clínicos Críticos
+### 4. Página NewCase
+**Arquivo:** `src/pages/NewCase.tsx`
 
-#### P0-C1: Espessuras Genéricas nas Camadas
-**Problema**: As espessuras no protocolo (0.3-0.5mm) são apresentadas sem contexto clínico suficiente. Em casos de substratos escurecidos, a camada de opaco precisa de espessura maior para mascaramento adequado.
+- Atualizar estado inicial de `patientPreferences`
+- Alterar mapeamento para `patient_aesthetic_goals` no insert
+- Passar `aestheticGoals` para a Edge Function em vez de `desiredChanges`
 
-**Correção**:
-- Tooltip já implementado (verificado em `ProtocolTable.tsx`)
-- Adicionar variação de espessura baseada em `substrate_condition`
-- Quando substrato = "Escurecido", sugerir camada opaca com 0.5-0.8mm
+### 5. Edge Function (Validação)
+**Arquivo:** `supabase/functions/_shared/validation.ts`
 
-#### P0-C2: Falta de Protocolo Adesivo Detalhado
-**Problema**: O checklist menciona "sistema adesivo conforme fabricante" mas não guia o profissional sobre os tipos (etch-and-rinse vs self-etch vs universal).
+- Alterar validação de `desiredChanges` (array) para `aestheticGoals` (string)
+- Limite de 1000 caracteres
 
-**Correção**:
-- Adicionar campo `adhesive_system_recommendation` no protocolo
-- Incluir no prompt: "Recomendar tipo de sistema adesivo baseado na condição do substrato"
+### 6. Edge Function (Prompt)
+**Arquivo:** `supabase/functions/recommend-resin/index.ts`
 
-#### P1-C3: Cores de Efeito Não Mapeadas por Fabricante
-**Problema**: O protocolo pode recomendar "Trans20" (Empress Direct) mas o dentista pode ter Estelite. Falta mapeamento cross-brand para cores de efeito.
+Substituir a seção de preferências no prompt:
+- Remover lógica de `desiredChanges.includes('whiter')`
+- Inserir o texto livre diretamente no contexto da IA
+- Instruir a IA a extrair e aplicar as preferências descritas
 
-**Correção**:
-- Criar tabela `shade_equivalents` com equivalências entre marcas
-- Ex: Trans20 (Empress) ≈ CT (Z350) ≈ OT (Estelite)
+### 7. Página de Resultado
+**Arquivo:** `src/pages/Result.tsx`
 
-#### P1-C4: Ausência de Indicação de Polimento
-**Problema**: O protocolo de estratificação não inclui etapas de acabamento e polimento, que são críticas para estética e longevidade.
+- Remover mapeamento de labels (`whiter` → "Dentes mais brancos")
+- Exibir o texto livre diretamente como citação
+- Manter o alerta de clareamento detectando palavras-chave no texto
 
-**Correção**:
-- Adicionar seção "Acabamento & Polimento" após as camadas
-- Incluir: granulosidade de discos, pastas, tempo de polimento por área
+### 8. Alerta de Clareamento
+**Arquivo:** `src/components/protocol/WhiteningPreferenceAlert.tsx`
 
-#### P1-C5: Sem Guidance para Casos de Bruxismo
-**Problema**: Quando `bruxism = true`, o sistema deveria ajustar automaticamente:
-- Reduzir espessura de esmalte
-- Priorizar resinas de alta resistência
-- Alertar sobre proteção noturna
+- Atualizar prop para receber texto em vez de boolean
+- Detectar preferência de clareamento por palavras-chave no texto ("branco", "claro", "clarear")
 
-**Correção**: O prompt já considera bruxismo, mas verificar se os alertas são suficientemente enfáticos
+### 9. Testes
+**Arquivo:** `src/lib/__tests__/evaluation.test.ts`
 
----
-
-## 3. Avaliação de UX (Visão do Designer)
-
-### 3.1 Fluxo do Wizard (NewCase.tsx)
-
-#### P0-U1: Navegação entre DSD e Revisão
-**Problema**: O botão "Voltar" no step de DSD (step 4) pode confundir pois pula a análise (step 3) e vai direto para preferências (step 2).
-
-**Recomendação**: 
-- Manter comportamento atual (correto) mas adicionar indicação visual
-- Mostrar toast: "Análise preservada. Voltando para preferências..."
-
-#### P1-U2: Progresso Visual do Wizard
-**Problema**: Os passos são icons no mobile mas não indicam claramente qual está ativo.
-
-**Correção**:
-- Adicionar indicador de progresso circular ou barra contínua
-- Texto "Passo X de 6" visível sempre
-
-#### P1-U3: Preview de Foto com Bounds
-**Problema**: A foto mostra os dentes detectados, mas não há visualização dos bounds antes da revisão.
-
-**Recomendação**:
-- Mostrar overlay visual dos dentes detectados na foto após análise
-- Permitir tap/click para selecionar/deselecionar
-
-### 3.2 Dashboard (Dashboard.tsx)
-
-#### P2-U4: Métricas Sem Contexto Temporal
-**Problema**: "Esta semana" vs "Em aberto" não têm período definido claramente.
-
-**Correção**:
-- Adicionar hover/tooltip com datas exatas
-- "Esta semana: 20-26 Jan 2026"
-
-#### P2-U5: Ações Rápidas Pouco Visíveis
-**Problema**: Os 3 cards de ação (Nova Avaliação, Pacientes, Inventário) têm hierarquia visual igual.
-
-**Recomendação**:
-- Destacar "Nova Avaliação" com cor primária mais forte
-- Reduzir destaque visual dos outros
-
-### 3.3 Página de Resultado (Result.tsx)
-
-#### P1-U6: Seção DSD Muito Longa
-**Problema**: O slider de comparação + card de proporções ocupam muito espaço antes do protocolo.
-
-**Recomendação**:
-- Colapsar DSD por padrão com preview pequeno
-- Expandir ao clicar
-
-#### P1-U7: Checklist Sem Indicador de Progresso
-**Problema**: O checklist mostra items individuais mas não há barra de progresso geral.
-
-**Correção**:
-- Adicionar `<Progress value={progress} />` no topo da seção
-- Mostrar "X de Y concluídos"
-
-#### P2-U8: PDF sem Confirmação
-**Problema**: O botão "Baixar PDF" inicia geração sem confirmar se todas as etapas estão preenchidas.
-
-**Recomendação**:
-- Verificar se checklist está 100% antes de gerar
-- Se não, mostrar dialog: "O checklist não está completo. Deseja gerar mesmo assim?"
-
-### 3.4 Inventário (Inventory.tsx)
-
-#### P2-U9: Cores Sem Contexto Visual
-**Problema**: As cores são apresentadas como badges de texto (A2, B1, etc) sem representação visual da cor real.
-
-**Recomendação**:
-- Adicionar pequeno círculo colorido aproximando a cor VITA
-- Mapeamento: A1-A4 = tons amarelados, B1-B4 = tons amarelos claros, etc.
-
-#### P2-U10: Filtros Não Persistentes
-**Problema**: Ao fechar o dialog de adição e reabrir, os filtros resetam.
-
-**Correção**:
-- Manter estado dos filtros enquanto o dialog está aberto
-- Só resetar ao fechar completamente
-
-### 3.5 Pacientes (Patients.tsx)
-
-#### P2-U11: Falta de Ordenação
-**Problema**: Não há opção de ordenar por nome, data ou número de casos.
-
-**Correção**:
-- Adicionar Select com opções: "Mais recentes", "A-Z", "Mais casos"
-
-#### P2-U12: Busca Só por Nome
-**Problema**: Não é possível buscar por dente tratado ou tipo de tratamento.
-
-**Recomendação (P3)**:
-- Expandir busca para incluir histórico de tratamentos
+- Atualizar testes para nova estrutura
+- Testar validação de texto livre
 
 ---
 
-## 4. Problemas de Consistência Visual
+## Detalhes Técnicos
 
-### P1-V1: Hierarquia de Badges Inconsistente
-**Problema**: Badges usam variants diferentes sem padrão claro:
-- `variant="default"` para resina
-- `variant="secondary"` para porcelana
-- `variant="outline"` para encaminhamento
+### Exemplo de UI do Textarea
 
-**Recomendação**: Criar guia de estilo documentado para badges
+```text
+┌─────────────────────────────────────────────────────────────┐
+│  💬 O que o paciente deseja?                                │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ Exemplo: "Gostaria de dentes mais brancos e         │   │
+│  │ naturais, sem parecer artificial. Preocupado com    │   │
+│  │ sensibilidade."                                     │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+│  0/500 caracteres                                           │
+└─────────────────────────────────────────────────────────────┘
+```
 
-### P1-V2: Cores de Status Inconsistentes
-**Problema**: "Em progresso" usa `amber` no Dashboard mas `secondary` em Evaluations.
+### Exemplo de Prompt para IA
 
-**Correção**: Padronizar:
-- Pendente/Em progresso: amber-500
-- Concluído: primary (azul)
-- Rascunho: muted
+```text
+═══════════════════════════════════════════════════════════════
+  PREFERÊNCIAS ESTÉTICAS DO PACIENTE
+═══════════════════════════════════════════════════════════════
 
-### P2-V3: Espaçamentos Mobile vs Desktop
-**Problema**: Alguns componentes têm padding inconsistente entre breakpoints.
+O paciente expressou os seguintes desejos:
+"Gostaria de dentes mais brancos mas naturais, sem parecer 
+artificial. Tenho sensibilidade."
 
-**Correção**: Auditoria de espaçamentos em todos os Cards
+INSTRUÇÕES:
+- Analise o texto acima e extraia as preferências estéticas
+- Se mencionar clareamento/branco: ajuste cores 1-2 tons mais claros
+- Se mencionar natural: priorize translucidez e mimetismo
+- Se mencionar sensibilidade: considere sistemas self-etch
+- Aplique todas as preferências identificadas no protocolo
+═══════════════════════════════════════════════════════════════
+```
 
----
+### Detecção de Clareamento para Alerta Visual
 
-## 5. Acessibilidade
-
-### P1-A1: Contraste de Tooltips
-**Problema**: Alguns tooltips podem ter contraste insuficiente em dark mode.
-
-**Correção**: Verificar WCAG AA em todos os tooltips
-
-### P2-A2: Navegação por Teclado
-**Problema**: O wizard não tem suporte completo para navegação por Tab/Enter.
-
-**Correção**: Adicionar `tabIndex` e `onKeyDown` handlers
-
-### P2-A3: Labels de Acessibilidade
-**Problema**: Alguns botões de ícone (como o X de remover foto) não têm `aria-label`.
-
-**Correção**: Auditoria de todos os IconButtons
-
----
-
-## 6. Performance
-
-### P2-P1: Carregamento de Fotos
-**Problema**: Fotos clínicas carregam em full resolution antes de thumbnail.
-
-**Status**: Já parcialmente tratado com `ClinicalPhotoThumbnail`
-
-### P2-P2: Bundle Size
-**Problema**: jspdf e html2canvas são importados dinamicamente, mas outros pacotes grandes não.
-
-**Recomendação**: Auditoria de bundle com `vite-bundle-visualizer`
+A função detectará palavras-chave para mostrar o alerta:
+- "branco", "brancos", "branca"
+- "claro", "claros", "clarear", "clareamento"
+- "mais claro", "mais branco"
 
 ---
 
-## 7. Plano de Implementação Priorizado
+## Fluxo de Implementação
 
-### Sprint 1: P0 - Bloqueadores (2-3 dias) ✅ CONCLUÍDO
-
-| # | Item | Arquivo | Status |
-|---|------|---------|--------|
-| 1 | Guidance de espessura por substrato | `recommend-resin/index.ts` | ✅ Implementado |
-| 2 | Protocolo adesivo detalhado | `recommend-resin/index.ts` | ✅ Implementado |
-| 3 | Tooltip de navegação no wizard | `NewCase.tsx` | ⏳ Pendente (menor prioridade) |
-| 4 | Barra de progresso no checklist | `ProtocolChecklist.tsx` | ✅ Já existia |
-| 5 | Validação antes de gerar PDF | `Result.tsx` | ✅ Implementado |
-
-### Sprint 2: P1 - Credibilidade (3-5 dias) ✅ CONCLUÍDO
-
-| # | Item | Arquivo | Status |
-|---|------|---------|--------|
-| 1 | Seção de acabamento/polimento | `recommend-resin/index.ts`, `Result.tsx` | ✅ Implementado |
-| 2 | Mapeamento cross-brand de efeitos | Nova tabela + UI | ⏳ P3 (complexidade alta) |
-| 3 | Alertas enfáticos de bruxismo | `recommend-resin/index.ts`, `BruxismAlert.tsx` | ✅ Implementado |
-| 4 | Padronização de badges de status | Global | ⏳ Pendente |
-| 5 | DSD colapsável por padrão | `CollapsibleDSD.tsx`, `Result.tsx` | ✅ Implementado |
-
-### Sprint 3: P2 - UX Polish (5-7 dias) ✅ CONCLUÍDO
-
-| # | Item | Arquivo | Status |
-|---|------|---------|--------|
-| 1 | Cores visuais no inventário | `vitaShadeColors.ts`, `ResinBadge.tsx`, `Inventory.tsx` | ✅ Implementado |
-| 2 | Ordenação de pacientes | `Patients.tsx` | ✅ Implementado |
-| 3 | Indicador de progresso do wizard | `NewCase.tsx` | ✅ Implementado |
-| 4 | Métricas com contexto temporal | `Dashboard.tsx` | ⏳ Pendente |
-| 5 | Acessibilidade (aria-labels) | Global | ⏳ Pendente |
-
-### Sprint 4: P3 - Delight (Ongoing) ✅ PARCIALMENTE CONCLUÍDO
-
-| # | Item | Status |
-|---|------|--------|
-| 1 | Animações de transição (fade-in, scale-in, hover-scale) | ✅ Implementado |
-| 2 | Tooltips com contexto temporal no Dashboard | ✅ Implementado |
-| 3 | Aria-labels de acessibilidade | ✅ Implementado |
-| 4 | Feedback háptico no mobile | ⏳ Pendente |
-| 5 | Atalhos de teclado avançados | ⏳ Pendente |
-| 6 | Modo offline básico (PWA) | ⏳ Pendente |
-| 7 | Notificações de casos pendentes | ⏳ Pendente |
+1. Atualizar interface e componente `PatientPreferencesStep`
+2. Atualizar schema Zod
+3. Atualizar `NewCase.tsx` para usar nova estrutura
+4. Atualizar validação na Edge Function
+5. Atualizar prompt da IA na Edge Function
+6. Atualizar `WhiteningPreferenceAlert` para detectar por texto
+7. Atualizar exibição em `Result.tsx`
+8. Atualizar testes
+9. Deploy da Edge Function
+10. Testar fluxo completo
 
 ---
 
-## 8. Métricas de Sucesso
+## Considerações
 
-### Clínicas
-- Taxa de protocolos aceitos sem modificação: >85%
-- Tempo médio de preenchimento de caso: <5 minutos
-- Taxa de uso do checklist completo: >90%
-
-### UX
-- Taxa de abandono no wizard: <15%
-- Tempo até primeiro caso criado: <3 minutos
-- NPS do profissional: >8
-
-### Técnicas
-- Tempo de carregamento inicial: <2s (LCP)
-- Taxa de erro em análise de fotos: <5%
-- Uptime: >99.5%
-
----
-
-## 9. Conclusão
-
-A plataforma ResinMatch AI está **clinicamente sólida** e **funcionalmente completa** para lançamento. As correções identificadas são majoritariamente de **polish e refinamento**, não de funcionalidade core.
-
-**Recomendação**: Priorizar Sprint 1 (P0) para lançamento, implementar Sprint 2 (P1) nas primeiras 2 semanas pós-launch, e tratar P2/P3 como melhorias contínuas baseadas em feedback de usuários reais.
-
-**Nota especial**: O sistema de recomendação de cores com clareamento (whiteningColorMap) está **clinicamente correto** e é um diferencial competitivo importante. A proibição de técnicas obsoletas (bisel) demonstra atualização técnica com literatura moderna.
+- **Retrocompatibilidade**: Casos antigos que usam `patient_desired_changes` continuam funcionando
+- **Banco de dados**: Já existe a coluna `patient_aesthetic_goals` (text) - não precisa migração
+- **Limite**: 500 caracteres é suficiente para descrição detalhada sem ser verboso
+- **UX**: Placeholder com exemplos guia o dentista sem limitar criatividade
