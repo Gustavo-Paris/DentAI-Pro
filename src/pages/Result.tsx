@@ -24,7 +24,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { ArrowLeft, Download, Plus, CheckCircle, Image, Package, Sparkles, Layers, Loader2, Smile, Crown, Stethoscope, ArrowUpRight, CircleX, Heart, Palette } from 'lucide-react';
+import { ArrowLeft, Download, Plus, CheckCircle, Image, Package, Sparkles, Layers, Loader2, Crown, Stethoscope, ArrowUpRight, CircleX, Heart, Palette } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -40,10 +40,11 @@ import ConfidenceIndicator from '@/components/protocol/ConfidenceIndicator';
 import AlternativeBox from '@/components/protocol/AlternativeBox';
 import CaseSummaryBox from '@/components/protocol/CaseSummaryBox';
 import WhiteningPreferenceAlert from '@/components/protocol/WhiteningPreferenceAlert';
-import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
-import { ProportionsCard } from '@/components/dsd/ProportionsCard';
 import { DSDAnalysis } from '@/components/wizard/DSDStep';
 import { CementationProtocolCard } from '@/components/protocol/CementationProtocolCard';
+import { FinishingPolishingCard } from '@/components/protocol/FinishingPolishingCard';
+import { BruxismAlert } from '@/components/protocol/BruxismAlert';
+import { CollapsibleDSD } from '@/components/dsd/CollapsibleDSD';
 
 interface Alternative {
   name: string;
@@ -655,26 +656,15 @@ export default function Result() {
           />
         </section>
 
-        {/* DSD Section */}
+        {/* DSD Section - Collapsible */}
         {evaluation.dsd_analysis && (
           <section className="mb-8">
-            <h3 className="font-medium mb-3 flex items-center gap-2">
-              <Smile className="w-4 h-4" />
-              Planejamento Digital do Sorriso (DSD)
-            </h3>
-            
-            {/* Comparison Slider */}
-            {photoUrls.frontal && dsdSimulationUrl && (
-              <div className="mb-4">
-                <ComparisonSlider
-                  beforeImage={photoUrls.frontal}
-                  afterImage={dsdSimulationUrl}
-                />
-              </div>
-            )}
-            
-            {/* Proportions */}
-            <ProportionsCard analysis={evaluation.dsd_analysis} />
+            <CollapsibleDSD
+              analysis={evaluation.dsd_analysis}
+              beforeImage={photoUrls.frontal}
+              afterImage={dsdSimulationUrl}
+              defaultOpen={false}
+            />
           </section>
         )}
 
@@ -725,6 +715,13 @@ export default function Result() {
               originalColor={evaluation.tooth_color}
               hasWhiteningPreference={true}
             />
+          </section>
+        )}
+
+        {/* Bruxism Alert - Emphatic warning */}
+        {evaluation.bruxism && (
+          <section className="mb-8">
+            <BruxismAlert show={true} treatmentType={treatmentType} />
           </section>
         )}
 
@@ -894,6 +891,13 @@ export default function Result() {
                     </CardContent>
                   </Card>
                 )}
+              </section>
+            )}
+            
+            {/* Finishing & Polishing Section - Only for resin */}
+            {treatmentType === 'resina' && protocol?.finishing && (
+              <section className="mb-8">
+                <FinishingPolishingCard protocol={protocol.finishing} />
               </section>
             )}
             

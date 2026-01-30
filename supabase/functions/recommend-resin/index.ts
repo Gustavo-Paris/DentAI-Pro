@@ -21,9 +21,26 @@ interface ProtocolAlternative {
   tradeoff: string;
 }
 
+interface PolishingStep {
+  order: number;
+  tool: string;
+  grit?: string;
+  speed: string;
+  time: string;
+  tip: string;
+}
+
+interface FinishingProtocol {
+  contouring: PolishingStep[];
+  polishing: PolishingStep[];
+  final_glaze?: string;
+  maintenance_advice: string;
+}
+
 interface StratificationProtocol {
   layers: ProtocolLayer[];
   alternative: ProtocolAlternative;
+  finishing?: FinishingProtocol;
   checklist: string[];
   alerts: string[];
   warnings: string[];
@@ -406,6 +423,36 @@ No checklist, especifique o tipo de sistema adesivo recomendado, não apenas "si
 
 REGRA CRÍTICA: O checklist NÃO DEVE conter as palavras "bisel" ou "biselamento".
 
+=== ACABAMENTO E POLIMENTO (OBRIGATÓRIO) ===
+Você DEVE incluir a seção "finishing" no protocolo com passos detalhados de:
+1. CONTORNO ANATÔMICO: 
+   - Pontas diamantadas finas (FF) para ajuste de anatomia
+   - Discos de granulação grossa para contorno inicial
+2. POLIMENTO SEQUENCIAL:
+   - Discos: Grossa → Média → Fina → Ultrafina (ex: Sof-Lex, OptiDisc)
+   - Pontas siliconadas/borrachas polidoras para faces livres
+   - Pasta diamantada ou óxido de alumínio para brilho
+3. BRILHO FINAL:
+   - Escova de feltro + pasta de polimento de alta performance
+
+Especificar para cada passo: ferramenta, granulação, velocidade (alta/baixa), tempo, e dica técnica.
+
+${data.bruxism ? `
+=== ALERTAS ENFÁTICOS DE BRUXISMO ===
+⚠️⚠️⚠️ PACIENTE BRUXISTA - ATENÇÃO REDOBRADA! ⚠️⚠️⚠️
+
+REGRAS OBRIGATÓRIAS PARA BRUXISTAS:
+1. RESINAS: Priorize nano-híbridas ou micro-híbridas de alta resistência (Ex: Filtek Z350, Estelite Omega, Harmonize)
+2. CAMADA DE ESMALTE: Reduza espessura para 0.2-0.3mm (menos tensão)
+3. OCLUSÃO: Verificar e ajustar contatos prematuros antes do procedimento
+4. PROTEÇÃO: Placa oclusal noturna é OBRIGATÓRIA - incluir no checklist
+
+INCLUIR NOS ALERTAS/WARNINGS:
+- "BRUXISMO: Prescreva placa de proteção noturna obrigatoriamente"
+- "BRUXISMO: Documente orientação no prontuário"
+- "BRUXISMO: Agendar retorno em 7 dias para verificar desgaste"
+` : ''}
+
 Responda em formato JSON:
 {
   "recommended_resin_name": "nome exato da resina recomendada (DEVE respeitar o orçamento!)",
@@ -438,6 +485,19 @@ Responda em formato JSON:
       "shade": "Cor única",
       "technique": "Descrição da técnica alternativa",
       "tradeoff": "O que se perde com esta alternativa"
+    },
+    "finishing": {
+      "contouring": [
+        {"order": 1, "tool": "Ponta diamantada FF 2135FF", "grit": "Fina", "speed": "Alta rotação com spray", "time": "20-30s", "tip": "Movimentos leves de varredura"}
+      ],
+      "polishing": [
+        {"order": 1, "tool": "Disco Sof-Lex Laranja", "grit": "Grossa", "speed": "Baixa rotação", "time": "30s", "tip": "Sentido cervical-incisal"},
+        {"order": 2, "tool": "Disco Sof-Lex Amarelo", "grit": "Média", "speed": "Baixa rotação", "time": "30s", "tip": "Manter disco úmido"},
+        {"order": 3, "tool": "Disco Sof-Lex Verde", "grit": "Fina", "speed": "Baixa rotação", "time": "30s", "tip": "Evitar pressão excessiva"},
+        {"order": 4, "tool": "Disco Sof-Lex Azul Claro", "grit": "Ultrafina", "speed": "Baixa rotação", "time": "30s", "tip": "Polimento final"}
+      ],
+      "final_glaze": "Pasta Diamond Excel com feltro em baixa rotação por 40s",
+      "maintenance_advice": "Polimento de retoque a cada 6 meses para manter brilho"
     },
     "checklist": [
       "Passo 1: Profilaxia com pasta sem flúor",
@@ -560,6 +620,7 @@ Responda APENAS com o JSON, sem texto adicional.`;
         stratification_protocol: protocol ? {
           layers: protocol.layers,
           alternative: protocol.alternative,
+          finishing: protocol.finishing,
           checklist: protocol.checklist,
           confidence: protocol.confidence,
         } : null,
