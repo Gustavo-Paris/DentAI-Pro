@@ -369,12 +369,33 @@ REGRAS DE COMBINAÇÃO:
 4. Inclua na justificativa o benefício específico de cada marca escolhida
 ` : ''}
 
+=== REGRAS DE COR POR TIPO DE CAMADA (OBRIGATÓRIO!) ===
+⚠️ CRÍTICO: A cor escolhida DEVE corresponder ao tipo da camada!
+
+CAMADA OPACO/MASCARAMENTO:
+- USAR: Cores com prefixo O (OA1, OA2, OA3, OB1, OB2, WO) ou White Opaquer
+- OBJETIVO: Bloquear substrato escuro, criar barreira óptica
+- NUNCA use cores opacas para camadas de dentina ou body!
+
+CAMADA DENTINA/BODY:
+- USAR: Cores universais/body (A1, A2, A3, B1, B2, C1, D2) ou Dentina específica (DA1, DA2, DA3)
+- NÃO USAR: Cores com prefixo O (OA1, OA2) - resultam em aparência artificial "morta"
+- OBJETIVO: Reproduzir corpo do dente com profundidade e naturalidade
+
+CAMADA ESMALTE:
+- USAR: Cores de esmalte (EA1, EA2, WE, CE, JE) ou translúcidos (Trans, CT, IT, T-Neutral)
+- OBJETIVO: Brilho superficial, translucidez e mimetismo natural
+
+EXEMPLO CORRETO para cor A2:
+❌ ERRADO: Opaco=OA1, Dentina=OA1, Esmalte=B1 (OA1 na dentina!)
+✅ CERTO: Opaco=OA2, Dentina=A2 ou DA2, Esmalte=A2E ou WE
+
 INSTRUÇÕES PARA PROTOCOLO DE ESTRATIFICAÇÃO:
 1. Se o substrato estiver escurecido/manchado, SEMPRE inclua camada de opaco
 2. Para casos estéticos (anteriores), use 3 camadas: Opaco (se necessário), Dentina, Esmalte
 3. Para posteriores com alta demanda estética, considere estratificação
 4. Para posteriores simples, pode recomendar técnica bulk ou incrementos simples
-5. Adapte as cores das camadas baseado na cor VITA informada (ex: A2 → OA2 opaco, A2D dentina, A2E esmalte)
+5. Adapte as cores das camadas baseado na cor VITA informada SEGUINDO AS REGRAS ACIMA
 
 === ESPESSURAS DE CAMADA POR CONDIÇÃO DO SUBSTRATO ===
 As espessuras das camadas são faixas-guia que devem ser adaptadas clinicamente conforme a profundidade e mascaramento necessário.
@@ -574,6 +595,85 @@ Responda APENAS com o JSON, sem texto adicional.`;
     } catch (parseError) {
       console.error("Failed to parse AI response");
       return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
+    }
+
+    // Validate and fix protocol layers against resin_catalog
+    if (recommendation.protocol?.layers && Array.isArray(recommendation.protocol.layers)) {
+      const validatedLayers = [];
+      const validationAlerts: string[] = [];
+      
+      for (const layer of recommendation.protocol.layers) {
+        // Extract product line from resin_brand (format: "Fabricante - Linha")
+        const brandMatch = layer.resin_brand?.match(/^(.+?)\s*-\s*(.+)$/);
+        const productLine = brandMatch ? brandMatch[2].trim() : layer.resin_brand;
+        
+        if (productLine && layer.shade) {
+          // Check if shade exists in the product line
+          const { data: catalogMatch } = await supabase
+            .from('resin_catalog')
+            .select('shade, type, product_line')
+            .ilike('product_line', `%${productLine}%`)
+            .eq('shade', layer.shade)
+            .limit(1);
+          
+          if (!catalogMatch || catalogMatch.length === 0) {
+            // Shade doesn't exist - find appropriate alternative
+            const layerType = layer.name?.toLowerCase() || '';
+            let typeFilter = '';
+            
+            // Determine appropriate type based on layer name
+            if (layerType.includes('opaco') || layerType.includes('mascaramento')) {
+              typeFilter = 'Opaco';
+            } else if (layerType.includes('dentina') || layerType.includes('body')) {
+              typeFilter = 'Universal'; // Universal/Body shades for dentin
+            } else if (layerType.includes('esmalte') || layerType.includes('enamel')) {
+              typeFilter = 'Esmalte';
+            }
+            
+            // Find alternative shades in the same product line
+            let alternativeQuery = supabase
+              .from('resin_catalog')
+              .select('shade, type, product_line')
+              .ilike('product_line', `%${productLine}%`);
+            
+            if (typeFilter) {
+              alternativeQuery = alternativeQuery.ilike('type', `%${typeFilter}%`);
+            }
+            
+            const { data: alternatives } = await alternativeQuery.limit(5);
+            
+            if (alternatives && alternatives.length > 0) {
+              const originalShade = layer.shade;
+              
+              // Try to find the closest shade based on the original
+              const baseShade = originalShade.replace(/^O/, '').replace(/[DE]$/, '');
+              const closestAlt = alternatives.find(a => a.shade.includes(baseShade)) || alternatives[0];
+              
+              layer.shade = closestAlt.shade;
+              validationAlerts.push(
+                `Cor ${originalShade} substituída por ${closestAlt.shade}: a cor original não está disponível na linha ${productLine}.`
+              );
+              logger.warn(`Shade validation: ${originalShade} → ${closestAlt.shade} for ${productLine}`);
+            } else {
+              // No alternatives found in this product line - log warning
+              logger.warn(`No valid shades found for ${productLine}, keeping original: ${layer.shade}`);
+            }
+          }
+        }
+        
+        validatedLayers.push(layer);
+      }
+      
+      // Update layers with validated versions
+      recommendation.protocol.layers = validatedLayers;
+      
+      // Add validation alerts to protocol alerts
+      if (validationAlerts.length > 0) {
+        recommendation.protocol.alerts = [
+          ...(recommendation.protocol.alerts || []),
+          ...validationAlerts
+        ];
+      }
     }
 
     // Log budget compliance for debugging
