@@ -94,7 +94,7 @@ export interface EvaluationData {
   substrateCondition?: string;
   enamelCondition?: string;
   clinicalNotes?: string;
-  desiredChanges?: string[];
+  aestheticGoals?: string;
 }
 
 export function validateEvaluationData(data: unknown): ValidationResult<EvaluationData> {
@@ -179,16 +179,14 @@ export function validateEvaluationData(data: unknown): ValidationResult<Evaluati
     return { success: false, error: "Notas clínicas muito longas" };
   }
 
-  // Validate desiredChanges array
-  let desiredChanges: string[] | undefined;
-  if (obj.desiredChanges !== undefined) {
-    if (!Array.isArray(obj.desiredChanges)) {
-      return { success: false, error: "desiredChanges deve ser um array" };
+  // Validate aestheticGoals (optional string, max 1000 chars)
+  if (obj.aestheticGoals !== undefined && obj.aestheticGoals !== null && obj.aestheticGoals !== '') {
+    if (typeof obj.aestheticGoals !== 'string') {
+      return { success: false, error: "aestheticGoals deve ser uma string" };
     }
-    if (!obj.desiredChanges.every((item: unknown) => typeof item === "string")) {
-      return { success: false, error: "desiredChanges deve conter apenas strings" };
+    if (obj.aestheticGoals.length > 1000) {
+      return { success: false, error: "aestheticGoals muito longo (máx 1000 caracteres)" };
     }
-    desiredChanges = obj.desiredChanges as string[];
   }
 
   return {
@@ -212,7 +210,7 @@ export function validateEvaluationData(data: unknown): ValidationResult<Evaluati
       substrateCondition: obj.substrateCondition as string | undefined,
       enamelCondition: obj.enamelCondition as string | undefined,
       clinicalNotes: obj.clinicalNotes as string | undefined,
-      desiredChanges,
+      aestheticGoals: obj.aestheticGoals as string | undefined,
     },
   };
 }

@@ -4,8 +4,23 @@ import { ProtocolLayer } from "@/types/protocol";
 
 interface WhiteningPreferenceAlertProps {
   originalColor: string;
-  hasWhiteningPreference: boolean;
+  aestheticGoals?: string | null;
   protocolLayers?: ProtocolLayer[];
+}
+
+// Keywords that indicate whitening preference
+const WHITENING_KEYWORDS = [
+  'branco', 'brancos', 'branca', 'brancas',
+  'claro', 'claros', 'clara', 'claras',
+  'clarear', 'clareamento', 'clareado',
+  'mais claro', 'mais branco',
+  'whiter', 'lighter', 'bleach',
+];
+
+// Check if text contains whitening preference keywords
+function hasWhiteningKeywords(text: string): boolean {
+  const normalized = text.toLowerCase();
+  return WHITENING_KEYWORDS.some(keyword => normalized.includes(keyword));
 }
 
 // Extract unique shades from protocol layers
@@ -26,10 +41,11 @@ function extractProtocolShades(layers: ProtocolLayer[]): string[] {
 
 export default function WhiteningPreferenceAlert({ 
   originalColor, 
-  hasWhiteningPreference,
+  aestheticGoals,
   protocolLayers = [],
 }: WhiteningPreferenceAlertProps) {
-  if (!hasWhiteningPreference) return null;
+  // Only show if there's aesthetic goals text with whitening keywords
+  if (!aestheticGoals || !hasWhiteningKeywords(aestheticGoals)) return null;
 
   // Get the actual shades used in the protocol
   const usedShades = extractProtocolShades(protocolLayers);
