@@ -1,43 +1,47 @@
 import { Palette, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { ProtocolLayer } from "@/types/protocol";
 
 interface WhiteningPreferenceAlertProps {
   originalColor: string;
   hasWhiteningPreference: boolean;
+  protocolLayers?: ProtocolLayer[];
 }
 
-// Map VITA shades to lighter alternatives
-const whiteningColorMap: Record<string, string[]> = {
-  'A4': ['A3', 'A2'],
-  'A3.5': ['A2', 'A1'],
-  'A3': ['A2', 'A1'],
-  'A2': ['A1', 'BL4'],
-  'A1': ['BL4', 'BL3'],
-  'B4': ['B3', 'B2'],
-  'B3': ['B2', 'B1'],
-  'B2': ['B1', 'A1'],
-  'B1': ['A1', 'BL4'],
-  'C4': ['C3', 'C2'],
-  'C3': ['C2', 'C1'],
-  'C2': ['C1', 'B1'],
-  'C1': ['B1', 'A1'],
-  'D4': ['D3', 'D2'],
-  'D3': ['D2', 'A3'],
-  'D2': ['A2', 'A1'],
-  'BL4': ['BL3', 'BL2'],
-  'BL3': ['BL2', 'BL1'],
-  'BL2': ['BL1'],
-  'BL1': [],
-};
+// Extract unique shades from protocol layers
+function extractProtocolShades(layers: ProtocolLayer[]): string[] {
+  const shades = new Set<string>();
+  
+  for (const layer of layers) {
+    if (layer.shade) {
+      // Normalize shade: extract base color (e.g., OA1 -> A1, EA2 -> A2)
+      const shade = layer.shade.toUpperCase();
+      // Add the actual shade used
+      shades.add(shade);
+    }
+  }
+  
+  return Array.from(shades);
+}
 
 export default function WhiteningPreferenceAlert({ 
   originalColor, 
-  hasWhiteningPreference 
+  hasWhiteningPreference,
+  protocolLayers = [],
 }: WhiteningPreferenceAlertProps) {
   if (!hasWhiteningPreference) return null;
 
-  const suggestedColors = whiteningColorMap[originalColor.toUpperCase()] || [];
-  const isAlreadyLightest = suggestedColors.length === 0;
+  // Get the actual shades used in the protocol
+  const usedShades = extractProtocolShades(protocolLayers);
+  
+  // Check if any shade is different from the original (indicating whitening was applied)
+  const originalNormalized = originalColor.toUpperCase();
+  const hasWhiteningApplied = usedShades.length > 0 && 
+    usedShades.some(shade => {
+      // Extract base shade for comparison (OA1 -> A1, DA2 -> A2, BL4 -> BL4)
+      const baseShade = shade.replace(/^[ODE]/, '');
+      return baseShade !== originalNormalized && !shade.includes(originalNormalized);
+    });
 
   return (
     <div className="rounded-lg bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 border border-primary/20 p-4">
@@ -68,19 +72,19 @@ export default function WhiteningPreferenceAlert({
               </Badge>
             </div>
             
-            {!isAlreadyLightest && (
+            {usedShades.length > 0 && (
               <>
                 <span className="text-muted-foreground">→</span>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-muted-foreground">Protocolo usa:</span>
-                  <div className="flex gap-1">
-                    {suggestedColors.map((color) => (
+                  <div className="flex gap-1 flex-wrap">
+                    {usedShades.map((shade) => (
                       <Badge 
-                        key={color} 
+                        key={shade} 
                         variant="default" 
                         className="font-mono"
                       >
-                        {color}
+                        {shade}
                       </Badge>
                     ))}
                   </div>
@@ -88,7 +92,7 @@ export default function WhiteningPreferenceAlert({
               </>
             )}
             
-            {isAlreadyLightest && (
+            {!hasWhiteningApplied && usedShades.length === 0 && (
               <span className="text-xs text-primary">
                 Cor mais clara disponível - mantida no protocolo
               </span>
