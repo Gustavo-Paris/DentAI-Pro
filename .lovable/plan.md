@@ -254,13 +254,17 @@ Após análise completa da plataforma atuando como **dentista especialista em es
 | 4 | Métricas com contexto temporal | `Dashboard.tsx` | ⏳ Pendente |
 | 5 | Acessibilidade (aria-labels) | Global | ⏳ Pendente |
 
-### Sprint 4: P3 - Delight (Ongoing)
+### Sprint 4: P3 - Delight (Ongoing) ✅ PARCIALMENTE CONCLUÍDO
 
-- Animações de transição entre steps
-- Feedback háptico no mobile
-- Atalhos de teclado avançados
-- Modo offline básico (PWA)
-- Notificações de casos pendentes
+| # | Item | Status |
+|---|------|--------|
+| 1 | Animações de transição (fade-in, scale-in, hover-scale) | ✅ Implementado |
+| 2 | Tooltips com contexto temporal no Dashboard | ✅ Implementado |
+| 3 | Aria-labels de acessibilidade | ✅ Implementado |
+| 4 | Feedback háptico no mobile | ⏳ Pendente |
+| 5 | Atalhos de teclado avançados | ⏳ Pendente |
+| 6 | Modo offline básico (PWA) | ⏳ Pendente |
+| 7 | Notificações de casos pendentes | ⏳ Pendente |
 
 ---
 

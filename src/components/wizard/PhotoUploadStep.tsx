@@ -408,6 +408,7 @@ export function PhotoUploadStep({
                 size="icon"
                 className="absolute top-2 right-2"
                 onClick={handleRemove}
+                aria-label="Remover foto intraoral"
               >
                 <X className="w-4 h-4" />
               </Button>
@@ -487,6 +488,7 @@ export function PhotoUploadStep({
                         size="icon"
                         className="absolute top-1 right-1 h-6 w-6"
                         onClick={() => removeOptionalPhoto('smile45')}
+                        aria-label="Remover foto 45°"
                       >
                         <X className="w-3 h-3" />
                       </Button>
