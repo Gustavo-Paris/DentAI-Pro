@@ -8,19 +8,36 @@ interface WhiteningPreferenceAlertProps {
   protocolLayers?: ProtocolLayer[];
 }
 
-// Keywords that indicate whitening preference
+// Keywords that indicate whitening preference (expanded)
 const WHITENING_KEYWORDS = [
   'branco', 'brancos', 'branca', 'brancas',
   'claro', 'claros', 'clara', 'claras',
   'clarear', 'clareamento', 'clareado',
   'mais claro', 'mais branco',
   'whiter', 'lighter', 'bleach',
+  // Enum values and new descriptive text
+  'hollywood', 'white', 'notável', 'intenso',
+  'bl1', 'bl2', 'bl3', 'bl4',
 ];
 
-// Check if text contains whitening preference keywords
+// Detect whitening level from text (supports both enum and descriptive text)
+function detectWhiteningLevel(text: string): 'natural' | 'white' | 'hollywood' | null {
+  const lower = text.toLowerCase();
+  // Hollywood level
+  if (lower.includes('hollywood') || lower.includes('intenso') || lower.includes('bl3')) return 'hollywood';
+  // White level
+  if (lower.includes('notável') || lower.includes('bl1') || lower.includes('bl2') || lower === 'white') return 'white';
+  // Natural level
+  if ((lower.includes('natural') && lower.includes('sutil')) || lower === 'natural') return 'natural';
+  // Fallback to keyword detection for legacy data
+  if (WHITENING_KEYWORDS.some(kw => lower.includes(kw))) return 'white';
+  return null;
+}
+
+// Check if text contains whitening preference keywords (non-natural)
 function hasWhiteningKeywords(text: string): boolean {
-  const normalized = text.toLowerCase();
-  return WHITENING_KEYWORDS.some(keyword => normalized.includes(keyword));
+  const level = detectWhiteningLevel(text);
+  return level === 'white' || level === 'hollywood';
 }
 
 // Extract unique shades from protocol layers

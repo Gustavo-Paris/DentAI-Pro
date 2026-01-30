@@ -541,8 +541,14 @@ export default function NewCase() {
           dsd_simulation_url: dsdResult?.simulation_url || null,
           // Tooth position for visual highlight overlay
           tooth_bounds: toothData?.tooth_bounds || null,
-          // Patient aesthetic preferences
-          patient_aesthetic_goals: patientPreferences.whiteningLevel || null,
+          // Patient aesthetic preferences - descriptive text
+          patient_aesthetic_goals: patientPreferences.whiteningLevel === 'hollywood'
+            ? 'Clareamento intenso - nível Hollywood (BL3)'
+            : patientPreferences.whiteningLevel === 'white'
+            ? 'Clareamento notável - dentes mais brancos (BL1/BL2)'
+            : patientPreferences.whiteningLevel === 'natural'
+            ? 'Aparência natural e sutil (A1/A2)'
+            : null,
           patient_desired_changes: null, // Legacy field - now using patient_aesthetic_goals
         };
 
@@ -593,8 +599,14 @@ export default function NewCase() {
                 stratificationNeeded: true,
                 budget: formData.budget,
                 longevityExpectation: formData.longevityExpectation,
-                // Patient preferences - free text for AI to analyze
-                aestheticGoals: patientPreferences.whiteningLevel || undefined,
+          // Patient preferences - enriched text for AI
+                aestheticGoals: patientPreferences.whiteningLevel === 'hollywood'
+                  ? 'Paciente deseja clareamento INTENSO - nível Hollywood (BL3). Ajustar todas as camadas 2-3 tons mais claras que a cor detectada.'
+                  : patientPreferences.whiteningLevel === 'white'
+                  ? 'Paciente deseja clareamento NOTÁVEL (BL1/BL2). Ajustar camadas 1-2 tons mais claras.'
+                  : patientPreferences.whiteningLevel === 'natural'
+                  ? 'Paciente prefere aparência NATURAL com clareamento sutil (A1/A2).'
+                  : undefined,
               },
             });
             if (aiError) throw aiError;
@@ -993,6 +1005,7 @@ export default function NewCase() {
             }}
             dobError={dobValidationError}
             onDobErrorChange={setDobValidationError}
+            whiteningLevel={patientPreferences.whiteningLevel}
             onPatientSelect={(_name, patientId, birthDate) => {
               setSelectedPatientId(patientId || null);
               setPatientBirthDate(birthDate || null);

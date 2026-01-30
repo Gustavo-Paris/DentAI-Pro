@@ -123,6 +123,8 @@ interface ReviewAnalysisStepProps {
   onPatientBirthDateChange?: (date: string | null) => void;
   dobError?: boolean;
   onDobErrorChange?: (hasError: boolean) => void;
+  /** Patient's whitening preference from step 2 */
+  whiteningLevel?: 'natural' | 'white' | 'hollywood';
 }
 
 const TEETH = {
@@ -173,6 +175,7 @@ export function ReviewAnalysisStep({
   onPatientBirthDateChange,
   dobError: externalDobError,
   onDobErrorChange,
+  whiteningLevel,
 }: Omit<ReviewAnalysisStepProps, 'onToothSelect'>) {
   const [showManualAdd, setShowManualAdd] = useState(false);
   const [manualTooth, setManualTooth] = useState('');
@@ -243,6 +246,20 @@ export function ReviewAnalysisStep({
           }
         </p>
       </div>
+
+      {/* Whitening Level Badge */}
+      {whiteningLevel && whiteningLevel !== 'natural' && (
+        <Card className="border-primary/30 bg-gradient-to-r from-primary/5 to-accent/5">
+          <CardContent className="py-3 flex items-center gap-3">
+            <Sparkles className="w-5 h-5 text-primary" />
+            <span className="text-sm text-muted-foreground">Nível de clareamento:</span>
+            <Badge variant="secondary" className="font-medium">
+              {whiteningLevel === 'hollywood' ? '✨ Hollywood (BL3)' :
+               whiteningLevel === 'white' ? '🦷 Branco (BL1/BL2)' : 'Natural (A1/A2)'}
+            </Badge>
+          </CardContent>
+        </Card>
+      )}
 
       {/* AI Confidence Banner */}
       {analysisResult && (
