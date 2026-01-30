@@ -356,6 +356,43 @@ INSTRUÇÕES PARA PROTOCOLO DE ESTRATIFICAÇÃO:
 4. Para posteriores simples, pode recomendar técnica bulk ou incrementos simples
 5. Adapte as cores das camadas baseado na cor VITA informada (ex: A2 → OA2 opaco, A2D dentina, A2E esmalte)
 
+=== ESPESSURAS DE CAMADA POR CONDIÇÃO DO SUBSTRATO ===
+As espessuras das camadas são faixas-guia que devem ser adaptadas clinicamente conforme a profundidade e mascaramento necessário.
+
+REGRAS OBRIGATÓRIAS DE ESPESSURA:
+┌─────────────────────────┬───────────────────────────────────────────────────────┐
+│ Condição do Substrato   │ Espessuras Recomendadas                               │
+├─────────────────────────┼───────────────────────────────────────────────────────┤
+│ Normal/Saudável         │ Opaco: 0.2-0.3mm, Dentina: 0.5-1.0mm, Esmalte: 0.3mm  │
+├─────────────────────────┼───────────────────────────────────────────────────────┤
+│ Escurecido/Manchado     │ Opaco: 0.5-0.8mm (crítico!), Dentina: 0.5mm, Esmalte: 0.3mm │
+├─────────────────────────┼───────────────────────────────────────────────────────┤
+│ Restauração prévia      │ Opaco: 0.3-0.5mm, Dentina: 0.5mm, Esmalte: 0.3mm      │
+└─────────────────────────┴───────────────────────────────────────────────────────┘
+
+A condição do substrato atual é: "${data.substrateCondition || 'Normal'}"
+${data.substrateCondition === 'Escurecido' ? '⚠️ SUBSTRATO ESCURECIDO: Use camada de opaco espessa (0.5-0.8mm) para mascaramento adequado!' : ''}
+
+=== PROTOCOLO ADESIVO DETALHADO ===
+VOCÊ DEVE recomendar o tipo de sistema adesivo baseado no caso clínico:
+
+TABELA DE RECOMENDAÇÃO ADESIVA:
+┌─────────────────────────┬───────────────────────────────────────────────────────┐
+│ Situação Clínica        │ Sistema Adesivo Recomendado                           │
+├─────────────────────────┼───────────────────────────────────────────────────────┤
+│ Esmalte abundante       │ Etch-and-rinse (convencional 2/3 passos)              │
+│ Predominância dentina   │ Self-etch ou Universal (modo self-etch)               │
+│ Substrato escurecido    │ Universal com etching seletivo em esmalte             │
+│ Dentes jovens/vitais    │ Self-etch (menor sensibilidade pós-operatória)        │
+│ Dentes despolpados      │ Etch-and-rinse (melhor adesão em dentina esclerótica) │
+│ Recobrimento de pino    │ Universal com silano (se pino de fibra)               │
+└─────────────────────────┴───────────────────────────────────────────────────────┘
+
+Substrato atual: "${data.substrate}"
+Condição do esmalte: "${data.enamelCondition || 'Íntegro'}"
+
+No checklist, especifique o tipo de sistema adesivo recomendado, não apenas "sistema adesivo conforme fabricante".
+
 === TÉCNICAS OBSOLETAS - NÃO INCLUIR NO CHECKLIST ===
 ❌ "Bisel em esmalte" ou "Biselamento" → Técnica ultrapassada, NÃO USE
 ❌ "Bisel amplo" ou "Bisel longo" → NÃO USE
@@ -365,16 +402,9 @@ INSTRUÇÕES PARA PROTOCOLO DE ESTRATIFICAÇÃO:
 - "Acabamento em chanfro suave" ou "Transição suave entre resina e esmalte"
 - "Sem preparo adicional em esmalte" (técnicas minimamente invasivas)
 - "Condicionamento ácido conforme indicação do substrato"
-- "Sistema adesivo conforme protocolo do fabricante"
+- Especificar tipo de adesivo (Etch-and-rinse, Self-etch ou Universal)
 
 REGRA CRÍTICA: O checklist NÃO DEVE conter as palavras "bisel" ou "biselamento".
-
-=== PROTOCOLO ADESIVO FLEXÍVEL ===
-Para o passo de sistema adesivo no checklist, use:
-"Sistema adesivo conforme protocolo do fabricante (verificar tempo de aplicação, camadas e fotoativação específicos)"
-
-Nos alerts, inclua:
-"O protocolo adesivo varia entre fabricantes - consulte as instruções do sistema utilizado"
 
 Responda em formato JSON:
 {

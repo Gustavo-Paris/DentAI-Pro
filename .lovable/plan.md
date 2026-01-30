@@ -224,15 +224,15 @@ Após análise completa da plataforma atuando como **dentista especialista em es
 
 ## 7. Plano de Implementação Priorizado
 
-### Sprint 1: P0 - Bloqueadores (2-3 dias)
+### Sprint 1: P0 - Bloqueadores (2-3 dias) ✅ CONCLUÍDO
 
-| # | Item | Arquivo | Esforço |
-|---|------|---------|---------|
-| 1 | Guidance de espessura por substrato | `recommend-resin/index.ts` | Médio |
-| 2 | Protocolo adesivo detalhado | `recommend-resin/index.ts` | Médio |
-| 3 | Tooltip de navegação no wizard | `NewCase.tsx` | Baixo |
-| 4 | Barra de progresso no checklist | `ProtocolChecklist.tsx` | Baixo |
-| 5 | Validação antes de gerar PDF | `Result.tsx` | Baixo |
+| # | Item | Arquivo | Status |
+|---|------|---------|--------|
+| 1 | Guidance de espessura por substrato | `recommend-resin/index.ts` | ✅ Implementado |
+| 2 | Protocolo adesivo detalhado | `recommend-resin/index.ts` | ✅ Implementado |
+| 3 | Tooltip de navegação no wizard | `NewCase.tsx` | ⏳ Pendente (menor prioridade) |
+| 4 | Barra de progresso no checklist | `ProtocolChecklist.tsx` | ✅ Já existia |
+| 5 | Validação antes de gerar PDF | `Result.tsx` | ✅ Implementado |
 
 ### Sprint 2: P1 - Credibilidade (3-5 dias)
 
