@@ -968,6 +968,7 @@ export default function NewCase() {
             onSkip={handleDSDSkip}
             additionalPhotos={additionalPhotos}
             patientPreferences={patientPreferences}
+            detectedTeeth={analysisResult?.detected_teeth}
             initialResult={dsdResult}
           />
         )}

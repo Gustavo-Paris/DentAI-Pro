@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthenticatedFetch } from '@/hooks/useAuthenticatedFetch';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -48,12 +49,29 @@ interface PatientPreferences {
   whiteningLevel: 'natural' | 'white' | 'hollywood';
 }
 
+type ToothBoundsPct = {
+  /** center X in % */
+  x: number;
+  /** center Y in % */
+  y: number;
+  /** width in % */
+  width: number;
+  /** height in % */
+  height: number;
+};
+
+type DetectedToothForMask = {
+  tooth_bounds?: ToothBoundsPct;
+};
+
 interface DSDStepProps {
   imageBase64: string | null;
   onComplete: (result: DSDResult | null) => void;
   onSkip: () => void;
   additionalPhotos?: AdditionalPhotos;
   patientPreferences?: PatientPreferences;
+  /** Optional: used to post-process the simulation by compositing ONLY the teeth onto the original photo */
+  detectedTeeth?: DetectedToothForMask[];
   initialResult?: DSDResult | null; // For restoring from draft
 }
 
@@ -64,7 +82,7 @@ const analysisSteps = [
   { label: 'Avaliando simetria...', duration: 2000 },
 ];
 
-export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, patientPreferences, initialResult }: DSDStepProps) {
+export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, patientPreferences, detectedTeeth, initialResult }: DSDStepProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   // Initialize with draft result if available
@@ -72,12 +90,16 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
   const [error, setError] = useState<string | null>(null);
   const [simulationImageUrl, setSimulationImageUrl] = useState<string | null>(null);
   const [isRegeneratingSimulation, setIsRegeneratingSimulation] = useState(false);
+  const [isCompositing, setIsCompositing] = useState(false);
   
   // NEW: Background simulation states
   const [isSimulationGenerating, setIsSimulationGenerating] = useState(false);
   const [simulationError, setSimulationError] = useState(false);
   
   const { invokeFunction } = useAuthenticatedFetch();
+  const { user } = useAuth();
+
+  const lastCompositeSourcePathRef = useRef<string | null>(null);
   
   // Ref to prevent multiple simultaneous analysis calls - skip if we have initial result
   const analysisStartedRef = useRef(!!initialResult);
@@ -98,6 +120,171 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
 
     loadSimulationUrl();
   }, [result?.simulation_url]);
+
+  const toothBounds = useMemo(() => {
+    const bounds = (detectedTeeth || [])
+      .map((t) => t.tooth_bounds)
+      .filter(Boolean) as ToothBoundsPct[];
+
+    // Filter obviously invalid boxes
+    return bounds.filter((b) =>
+      Number.isFinite(b.x) && Number.isFinite(b.y) && Number.isFinite(b.width) && Number.isFinite(b.height) &&
+      b.width > 0 && b.height > 0
+    );
+  }, [detectedTeeth]);
+
+  const createCompositeTeethOnly = async (params: {
+    beforeDataUrl: string;
+    afterUrl: string;
+    bounds: ToothBoundsPct[];
+  }): Promise<Blob> => {
+    const { beforeDataUrl, afterUrl, bounds } = params;
+
+    const [beforeRes, afterRes] = await Promise.all([
+      fetch(beforeDataUrl),
+      fetch(afterUrl),
+    ]);
+
+    if (!beforeRes.ok || !afterRes.ok) {
+      throw new Error('Falha ao baixar imagens para composição');
+    }
+
+    const [beforeBlob, afterBlob] = await Promise.all([
+      beforeRes.blob(),
+      afterRes.blob(),
+    ]);
+
+    const [beforeBitmap, afterBitmap] = await Promise.all([
+      createImageBitmap(beforeBlob),
+      createImageBitmap(afterBlob),
+    ]);
+
+    const w = beforeBitmap.width;
+    const h = beforeBitmap.height;
+
+    // Base canvas (original)
+    const base = document.createElement('canvas');
+    base.width = w;
+    base.height = h;
+    const baseCtx = base.getContext('2d');
+    if (!baseCtx) throw new Error('Canvas não suportado');
+    baseCtx.drawImage(beforeBitmap, 0, 0);
+
+    // Overlay canvas (AI output)
+    const overlay = document.createElement('canvas');
+    overlay.width = w;
+    overlay.height = h;
+    const overlayCtx = overlay.getContext('2d');
+    if (!overlayCtx) throw new Error('Canvas não suportado');
+    overlayCtx.drawImage(afterBitmap, 0, 0);
+
+    // Mask canvas
+    const mask = document.createElement('canvas');
+    mask.width = w;
+    mask.height = h;
+    const maskCtx = mask.getContext('2d');
+    if (!maskCtx) throw new Error('Canvas não suportado');
+
+    // Draw ellipses over teeth bounds (slightly shrunk to avoid gums/lips)
+    const scaleX = 0.9;
+    const scaleY = 0.7;
+
+    maskCtx.fillStyle = 'rgba(255,255,255,1)';
+    for (const b of bounds) {
+      const cx = (b.x / 100) * w;
+      const cy = (b.y / 100) * h;
+      const bw = (b.width / 100) * w;
+      const bh = (b.height / 100) * h;
+      const rx = (bw * scaleX) / 2;
+      const ry = (bh * scaleY) / 2;
+
+      maskCtx.beginPath();
+      maskCtx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+      maskCtx.fill();
+    }
+
+    // Soft edges (second blurred pass)
+    maskCtx.save();
+    maskCtx.filter = 'blur(10px)';
+    maskCtx.globalAlpha = 0.55;
+    for (const b of bounds) {
+      const cx = (b.x / 100) * w;
+      const cy = (b.y / 100) * h;
+      const bw = (b.width / 100) * w;
+      const bh = (b.height / 100) * h;
+      const rx = (bw * (scaleX * 1.15)) / 2;
+      const ry = (bh * (scaleY * 1.15)) / 2;
+      maskCtx.beginPath();
+      maskCtx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+      maskCtx.fill();
+    }
+    maskCtx.restore();
+
+    // Apply mask to overlay (keep only teeth region)
+    overlayCtx.globalCompositeOperation = 'destination-in';
+    overlayCtx.drawImage(mask, 0, 0);
+    overlayCtx.globalCompositeOperation = 'source-over';
+
+    // Merge overlay on top of base
+    baseCtx.drawImage(overlay, 0, 0);
+
+    return await new Promise<Blob>((resolve, reject) => {
+      base.toBlob(
+        (blob) => (blob ? resolve(blob) : reject(new Error('Falha ao gerar imagem final'))),
+        'image/jpeg',
+        0.92
+      );
+    });
+  };
+
+  // Deterministic post-processing: copy original pixels everywhere except teeth bounds
+  useEffect(() => {
+    const run = async () => {
+      if (!user) return;
+      if (!imageBase64) return;
+      if (!simulationImageUrl) return;
+      if (!result?.simulation_url) return;
+      if (!toothBounds.length) return;
+
+      // Avoid infinite loops: if it's already a composited file, do nothing
+      if (result.simulation_url.includes('dsd_composited_')) return;
+
+      // Avoid re-processing the same source path multiple times
+      if (lastCompositeSourcePathRef.current === result.simulation_url) return;
+      lastCompositeSourcePathRef.current = result.simulation_url;
+
+      setIsCompositing(true);
+      try {
+        const compositeBlob = await createCompositeTeethOnly({
+          beforeDataUrl: imageBase64,
+          afterUrl: simulationImageUrl,
+          bounds: toothBounds,
+        });
+
+        const compositePath = `${user.id}/dsd_composited_${Date.now()}.jpg`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('dsd-simulations')
+          .upload(compositePath, compositeBlob, {
+            upsert: true,
+            contentType: 'image/jpeg',
+          });
+
+        if (uploadError) throw uploadError;
+
+        // Replace the simulation URL with the composited version so later screens/PDF use the preserved image.
+        setResult((prev) => (prev ? { ...prev, simulation_url: compositePath } : prev));
+        toast.success('Simulação refinada (lábios preservados)');
+      } catch (err) {
+        console.error('DSD compositing error:', err);
+        // Keep the original simulation if compositing fails
+      } finally {
+        setIsCompositing(false);
+      }
+    };
+
+    run();
+  }, [user, imageBase64, simulationImageUrl, result?.simulation_url, toothBounds]);
 
   // NEW: Background simulation generation
   const generateSimulationBackground = async (analysisData?: DSDAnalysis) => {
@@ -273,6 +460,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
     setSimulationImageUrl(null);
     setSimulationError(false);
     setIsSimulationGenerating(false);
+    lastCompositeSourcePathRef.current = null;
     analysisStartedRef.current = false; // Allow retry
     analyzeDSD();
   };
@@ -284,6 +472,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
     setSimulationError(false);
 
     try {
+      lastCompositeSourcePathRef.current = null;
       const { data, error: fnError } = await invokeFunction<DSDResult>('generate-dsd', {
         body: {
           imageBase64,
@@ -503,12 +692,12 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
                 variant="outline"
                 size="sm"
                 onClick={handleRegenerateSimulation}
-                disabled={isRegeneratingSimulation}
+                disabled={isRegeneratingSimulation || isCompositing}
               >
-                {isRegeneratingSimulation ? (
+                {isRegeneratingSimulation || isCompositing ? (
                   <>
                     <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                    Gerando...
+                    {isCompositing ? 'Ajustando...' : 'Gerando...'}
                   </>
                 ) : (
                   <>

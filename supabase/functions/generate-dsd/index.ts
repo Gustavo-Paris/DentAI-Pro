@@ -124,11 +124,16 @@ function validateRequest(data: unknown): { success: boolean; error?: string; dat
   let patientPreferences: PatientPreferences | undefined;
   if (req.patientPreferences && typeof req.patientPreferences === 'object') {
     const prefs = req.patientPreferences as Record<string, unknown>;
+    const whiteningLevelRaw = typeof prefs.whiteningLevel === 'string' ? prefs.whiteningLevel : undefined;
+    const whiteningLevel = (whiteningLevelRaw === 'natural' || whiteningLevelRaw === 'white' || whiteningLevelRaw === 'hollywood')
+      ? (whiteningLevelRaw as PatientPreferences['whiteningLevel'])
+      : undefined;
     patientPreferences = {
+      whiteningLevel,
       aestheticGoals: typeof prefs.aestheticGoals === 'string' ? prefs.aestheticGoals : undefined,
       desiredChanges: Array.isArray(prefs.desiredChanges) ? prefs.desiredChanges : undefined,
     };
-    if (!patientPreferences.aestheticGoals && !patientPreferences.desiredChanges?.length) {
+    if (!patientPreferences.whiteningLevel && !patientPreferences.aestheticGoals && !patientPreferences.desiredChanges?.length) {
       patientPreferences = undefined;
     }
   }
