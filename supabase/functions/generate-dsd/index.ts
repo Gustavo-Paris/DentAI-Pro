@@ -371,18 +371,51 @@ async function generateSimulation(
     ? `\nPATIENT STYLE PREFERENCE: ${analyzedPrefs.styleNotes}`
     : '';
   
+  // Determine if whitening was requested
+  const wantsWhitening = analyzedPrefs?.whiteningLevel !== 'none' || legacyWantsWhiter;
+  const whiteningIntensity = analyzedPrefs?.whiteningLevel === 'intense' ? 'INTENSE' : 'NATURAL';
+  
+  // ABSOLUTE PRESERVATION RULES - Must be at TOP of every prompt
+  const absolutePreservation = `⚠️ ABSOLUTE RULES - VIOLATION = FAILURE ⚠️
+
+DO NOT CHANGE (pixel-perfect preservation REQUIRED):
+- LIPS: Shape, color, texture, position, contour EXACTLY as input
+- GUMS: Level, color, shape EXACTLY as input  
+- SKIN: All facial skin EXACTLY as input
+- BACKGROUND: All non-dental areas EXACTLY as input
+- IMAGE SIZE: Exact same dimensions and framing
+
+If ANY of these elements differ from input, the output is REJECTED.
+Only TEETH may be modified.`;
+
+  // Whitening priority section (if requested)
+  const whiteningPrioritySection = wantsWhitening ? `
+#1 PRIORITY - WHITENING (${whiteningIntensity}) - NON-NEGOTIABLE:
+${colorInstruction}
+
+⚠️ CRITICAL VERIFICATION:
+- In the output, teeth MUST be CLEARLY and VISIBLY LIGHTER than input
+- The before/after comparison must show OBVIOUS whitening
+- If teeth look the same color as input, you have FAILED the PRIMARY task
+- This is the MOST IMPORTANT change to apply
+
+` : '';
+
   // Quality requirements section for consistent output
   const qualityRequirements = `
-MANDATORY OUTPUT QUALITY:
-1. If whitening was requested, teeth MUST be visibly lighter in the output
-2. Color change must be uniform across ALL visible teeth (not just some)
-3. Lips, gums, skin must be PIXEL-PERFECT identical to input
-4. Tooth texture must remain natural (not plastic/smooth)
-5. The "before vs after" must show clear, visible improvement`;
+FINAL VERIFICATION CHECKLIST:
+[✓] Lips IDENTICAL to input? REQUIRED
+[✓] Gums IDENTICAL to input? REQUIRED
+[✓] Skin IDENTICAL to input? REQUIRED
+[✓] Background IDENTICAL to input? REQUIRED
+${wantsWhitening ? '[✓] Teeth VISIBLY WHITER than input? REQUIRED' : '[✓] Tooth color natural and consistent? REQUIRED'}
+[✓] Tooth proportions maintained (not thinner)? REQUIRED
+
+If any check fails, regenerate.`;
 
   // Base corrections - focused and specific (avoid over-smoothing)
   const baseCorrections = `1. Fill visible holes, chips or defects on tooth edges
-2. Remove dark stain spots
+2. Remove dark stain spots  
 3. Close small gaps between teeth (up to 2mm)`;
   
   // Check if case needs reconstruction (missing/destroyed teeth)
@@ -481,114 +514,102 @@ MANDATORY OUTPUT QUALITY:
       return `Dente ${s.tooth}: COPIE do ${contralateral || 'vizinho'}`;
     }).join(', ');
 
-    simulationPrompt = `DENTAL PHOTO EDIT - RECONSTRUCTION
+    simulationPrompt = `DENTAL PHOTO EDIT - RECONSTRUCTION${wantsWhitening ? ' + WHITENING' : ''}
 
-Edit ONLY the teeth in this photo. Keep everything else IDENTICAL.
+${absolutePreservation}
 
-PRESERVE (do not change):
-- Lips (exact color, shape, texture, position)
-- Gums (exact level, color, shape)
-- Skin (unchanged)
-- Image dimensions and framing
-
-CORRECTIONS TO APPLY:
+TASK: Edit ONLY the teeth. Everything else must be IDENTICAL to input.
+${whiteningPrioritySection}DENTAL CORRECTIONS:
 ${baseCorrections}
-${colorInstruction}
 ${textureInstruction}
 
 RECONSTRUCTION:
 - ${specificInstructions || 'Fill missing teeth using adjacent teeth as reference'}
 ${allowedChangesFromAnalysis}${styleContext}
 
-CRITICAL PROPORTION RULES:
+PROPORTION RULES:
 - Keep original tooth width proportions exactly
 - NEVER make teeth appear thinner or narrower than original
 - Only add material to fill defects - do NOT reshape tooth contours
 - Maintain the natural width-to-height ratio of each tooth
+
 ${qualityRequirements}
 
-Output: Same photo with corrected teeth only.`;
+Output: Same photo with ONLY teeth corrected.`;
 
   } else if (needsRestorationReplacement) {
-    simulationPrompt = `DENTAL PHOTO EDIT - RESTORATION
+    simulationPrompt = `DENTAL PHOTO EDIT - RESTORATION${wantsWhitening ? ' + WHITENING' : ''}
 
-Edit ONLY the teeth in this photo. Keep everything else IDENTICAL.
+${absolutePreservation}
 
-PRESERVE (do not change):
-- Lips (exact color, shape, texture, position)
-- Gums (exact level, color, shape)
-- Skin (unchanged)
-- Image dimensions and framing
-
-CORRECTIONS TO APPLY:
+TASK: Edit ONLY the teeth. Everything else must be IDENTICAL to input.
+${whiteningPrioritySection}DENTAL CORRECTIONS:
 ${baseCorrections}
-${colorInstruction}
 ${textureInstruction}
 
 RESTORATION FOCUS:
 - Blend interface lines on teeth ${restorationTeeth || '11, 21'}
 ${allowedChangesFromAnalysis}${styleContext}
 
-CRITICAL PROPORTION RULES:
+PROPORTION RULES:
 - Keep original tooth width proportions exactly
 - NEVER make teeth appear thinner or narrower than original
 - Only add material to fill defects - do NOT reshape tooth contours
 - Maintain the natural width-to-height ratio of each tooth
+
 ${qualityRequirements}
 
-Output: Same photo with corrected teeth only.`;
+Output: Same photo with ONLY teeth corrected.`;
 
   } else if (isIntraoralPhoto) {
-    simulationPrompt = `DENTAL PHOTO EDIT - INTRAORAL
+    simulationPrompt = `DENTAL PHOTO EDIT - INTRAORAL${wantsWhitening ? ' + WHITENING' : ''}
 
-Edit ONLY the teeth in this intraoral photo. Keep everything else IDENTICAL.
+⚠️ ABSOLUTE RULES - VIOLATION = FAILURE ⚠️
 
-PRESERVE (do not change):
-- Gums (exact level, color, shape)
-- All other tissues
-- Image dimensions and framing
+DO NOT CHANGE (pixel-perfect preservation REQUIRED):
+- GUMS: Level, color, shape EXACTLY as input
+- ALL OTHER TISSUES: Exactly as input
+- IMAGE SIZE: Exact same dimensions and framing
 
-CORRECTIONS TO APPLY:
+Only TEETH may be modified.
+
+TASK: Edit ONLY the teeth. Everything else must be IDENTICAL to input.
+${whiteningPrioritySection}DENTAL CORRECTIONS:
 ${baseCorrections}
-${colorInstruction}
 ${textureInstruction}
 ${allowedChangesFromAnalysis}${styleContext}
 
-CRITICAL PROPORTION RULES:
+PROPORTION RULES:
 - Keep original tooth width proportions exactly
 - NEVER make teeth appear thinner or narrower than original
 - Only add material to fill defects - do NOT reshape tooth contours
 - Maintain the natural width-to-height ratio of each tooth
+
 ${qualityRequirements}
 
-Output: Same photo with corrected teeth only.`;
+Output: Same photo with ONLY teeth corrected.`;
 
   } else {
     // STANDARD PROMPT - Focused corrections with texture preservation
-    simulationPrompt = `DENTAL PHOTO EDIT
+    simulationPrompt = `DENTAL PHOTO EDIT${wantsWhitening ? ' - WHITENING REQUESTED' : ''}
 
-Edit ONLY the teeth in this photo. Keep everything else IDENTICAL.
+${absolutePreservation}
 
-PRESERVE (do not change):
-- Lips (exact color, shape, texture, position)
-- Gums (exact level, color, shape)
-- Skin (unchanged)
-- Image dimensions and framing
-
-CORRECTIONS TO APPLY:
+TASK: Edit ONLY the teeth. Everything else must be IDENTICAL to input.
+${whiteningPrioritySection}DENTAL CORRECTIONS:
 ${baseCorrections}
-${colorInstruction}
 ${textureInstruction}
 ${allowedChangesFromAnalysis}${styleContext}
 
-CRITICAL PROPORTION RULES:
+PROPORTION RULES:
 - Keep original tooth width proportions exactly
 - NEVER make teeth appear thinner or narrower than original
 - Only add material to fill defects - do NOT reshape tooth contours
 - Maintain the natural width-to-height ratio of each tooth
+
 ${qualityRequirements}
 
-Output: Same photo with corrected teeth only.`;
+Output: Same photo with ONLY teeth corrected.`;
   }
 
   const promptType = needsReconstruction ? 'reconstruction' : 
@@ -597,12 +618,13 @@ Output: Same photo with corrected teeth only.`;
   
   logger.log("DSD Simulation Request:", {
     promptType,
-    approach: "AI-analyzed preferences + quality requirements",
+    approach: "absolutePreservation + whiteningPriority",
+    wantsWhitening,
+    whiteningIntensity: wantsWhitening ? whiteningIntensity : 'none',
+    whiteningLevel: analyzedPrefs?.whiteningLevel || 'none',
+    colorInstruction: colorInstruction.substring(0, 80) + '...',
     promptLength: simulationPrompt.length,
-    analysisConfidence: analysis.confidence,
-    suggestionsCount: analysis.suggestions.length,
-    whiteningLevel: analyzedPrefs?.whiteningLevel || 'none (default)',
-    hasStyleNotes: !!analyzedPrefs?.styleNotes,
+    promptPreview: simulationPrompt.substring(0, 400) + '...',
   });
 
   // Models to try - Pro first for quality, Flash as fallback
