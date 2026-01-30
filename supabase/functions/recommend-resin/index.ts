@@ -316,20 +316,57 @@ ${(() => {
   if (!wantsWhiter) return '';
   const adjustedColors = getWhiteningColors(data.toothColor);
   if (adjustedColors.length === 0) return '- Preferência do paciente: Dentes mais brancos (cor já é a mais clara disponível)';
+  
+  // Build explicit forbidden shades list
+  const forbiddenBase = data.toothColor.toUpperCase();
+  const forbiddenShades = [
+    forbiddenBase,
+    `O${forbiddenBase}`,
+    `D${forbiddenBase}`,
+    `E${forbiddenBase}`,
+    `OA${forbiddenBase.replace('BL', '')}`,
+    `PA${forbiddenBase.replace('BL', '')}`,
+  ].join(', ');
+  
+  // Build explicit allowed shades
+  const allowedShades = adjustedColors.flatMap(c => [
+    c,
+    `O${c}`,
+    `D${c}`,
+    `E${c}`,
+    `OA${c.replace('BL', '')}`,
+    `OBL${c.replace('BL', '')}`,
+    `BL${c.replace('BL', '')}`,
+  ]).join(', ');
+  
   return `
-⚠️⚠️⚠️ PREFERÊNCIA DE CLAREAMENTO - REGRA OBRIGATÓRIA ⚠️⚠️⚠️
-O paciente deseja dentes mais brancos.
-- Cor detectada ORIGINAL: ${data.toothColor}
-- CORES OBRIGATÓRIAS NO PROTOCOLO: ${adjustedColors.join(' ou ')}
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  ⚠️⚠️⚠️  CLAREAMENTO OBRIGATÓRIO - REGRA QUE NÃO PODE SER IGNORADA  ⚠️⚠️⚠️   ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║  O paciente deseja DENTES MAIS BRANCOS.                                      ║
+║                                                                              ║
+║  COR DETECTADA (NÃO USAR): ${forbiddenBase.padEnd(50)}║
+║  CORES CLAREADAS (USAR): ${adjustedColors.join(' ou ').padEnd(52)}║
+╚══════════════════════════════════════════════════════════════════════════════╝
 
-VOCÊ DEVE USAR ESTAS CORES NAS CAMADAS:
-- Camada Opaco/Dentina: Usar O${adjustedColors[0]} ou D${adjustedColors[0]} ou OA${adjustedColors[0]?.replace('BL', '')}
-- Camada Esmalte: Usar E${adjustedColors[0]} ou ${adjustedColors[1] || adjustedColors[0]}
+🚫 PROIBIDO - SE VOCÊ USAR QUALQUER UMA DESTAS CORES, A RESPOSTA SERÁ REJEITADA:
+   ${forbiddenShades}
 
-❌ NÃO USE ESTAS CORES (são muito escuras para a preferência do paciente):
-   - ${data.toothColor}, O${data.toothColor}, D${data.toothColor}, E${data.toothColor}, OA${data.toothColor.replace('BL', '')}
+✅ OBRIGATÓRIO - USE APENAS ESTAS CORES OU VARIAÇÕES:
+   ${allowedShades}
 
-✅ USE APENAS: ${adjustedColors.join(', ')} e suas variações (O, D, E, OA)
+REGRA PARA CADA CAMADA:
+┌──────────────────┬─────────────────────────────────────────────────────────┐
+│ Camada           │ Cor que DEVE ser usada                                  │
+├──────────────────┼─────────────────────────────────────────────────────────┤
+│ Opaco/Dentine    │ O${adjustedColors[0]} ou OA${adjustedColors[0].replace('BL', '')} ou OBL${adjustedColors[0].replace('BL', '')}                                      │
+├──────────────────┼─────────────────────────────────────────────────────────┤
+│ Body/Universal   │ ${adjustedColors[0]} ou B${adjustedColors[0]}                                             │
+├──────────────────┼─────────────────────────────────────────────────────────┤
+│ Esmalte          │ E${adjustedColors[0]} ou ${adjustedColors[1] || adjustedColors[0]}                                               │
+└──────────────────┴─────────────────────────────────────────────────────────┘
+
+⚠️ VALIDAÇÃO: Se alguma camada tiver shade "${forbiddenBase}" ou "O${forbiddenBase}" ou "A1", a resposta está ERRADA.
 `;
 })()}
 
