@@ -57,6 +57,15 @@ interface PatientPreferences {
   desiredChanges?: string[];
 }
 
+// AI-analyzed patient preferences for simulation prompts
+interface AnalyzedPreferences {
+  whiteningLevel: 'none' | 'natural' | 'intense';
+  colorInstruction: string;
+  textureInstruction: string;
+  styleNotes: string;
+  sensitivityNote: string | null;
+}
+
 interface RequestData {
   imageBase64: string;
   evaluationId?: string;
@@ -184,6 +193,135 @@ function hasSevereDestruction(analysis: DSDAnalysis): { isLimited: boolean; reas
   return { isLimited: false, reason: null };
 }
 
+// Analyze patient preferences with Gemini Flash for structured instructions
+async function analyzePatientPreferences(
+  aestheticGoals: string,
+  apiKey: string
+): Promise<AnalyzedPreferences> {
+  const ANALYSIS_TIMEOUT = 8_000; // 8s max for fast analysis
+  
+  const systemPrompt = `Você é um especialista em odontologia estética.
+Analise o texto do paciente e extraia preferências para uma simulação de sorriso.
+
+REGRAS DE ANÁLISE:
+
+1. whiteningLevel (nível de clareamento desejado):
+   - "intense" se menciona: hollywood, bem branco, muito branco, bleach, BL, super branco, celebridade
+   - "natural" se menciona: branco, claro, clarear, mais claro, branquinho (sem intensificador forte)
+   - "none" se não menciona clareamento ou cor
+
+2. colorInstruction (instrução ESPECÍFICA para o prompt de imagem):
+   - Para intense: "Change ALL visible teeth (including adjacent) to bright white/bleach BL2/BL3 shade. Uniform bright appearance across entire visible dentition."
+   - Para natural: "Change ALL visible teeth to natural white A1/A2 shade (1-2 shades lighter than original). Maintain subtle natural color variations between teeth."
+   - Para none: "Keep original tooth color. Only remove surface stains if visible."
+
+3. textureInstruction (instrução de textura baseada no estilo):
+   - Se menciona "natural", "discreto", "não artificial": "Preserve natural enamel texture, translucency, and micro-surface details. Avoid over-smoothing."
+   - Se menciona "perfeito", "uniforme", "liso": "Slight smoothing allowed, maintain realistic enamel appearance."
+   - Padrão: "Maintain natural tooth texture and surface characteristics."
+
+4. styleNotes (notas adicionais para o prompt):
+   - Extraia quaisquer preferências específicas mencionadas
+   - Exemplos: "Patient wants younger appearance", "Avoid artificial Hollywood look", "Prefer subtle changes"
+
+5. sensitivityNote:
+   - Se menciona sensibilidade, sensível, dor, desconforto: "Patient reports tooth sensitivity - note for clinical planning"
+   - Senão: null`;
+
+  try {
+    const response = await fetchWithTimeout(
+      "https://ai.gateway.lovable.dev/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-3-flash-preview",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: `Analise o seguinte texto do paciente e extraia as preferências estéticas:\n\n"${aestheticGoals}"` },
+          ],
+          tools: [
+            {
+              type: "function",
+              function: {
+                name: "extract_preferences",
+                description: "Extrai preferências estéticas estruturadas do texto do paciente",
+                parameters: {
+                  type: "object",
+                  properties: {
+                    whiteningLevel: {
+                      type: "string",
+                      enum: ["none", "natural", "intense"],
+                      description: "Nível de clareamento desejado"
+                    },
+                    colorInstruction: {
+                      type: "string",
+                      description: "Instrução específica de cor para o prompt de simulação (em inglês)"
+                    },
+                    textureInstruction: {
+                      type: "string",
+                      description: "Instrução de textura para o prompt de simulação (em inglês)"
+                    },
+                    styleNotes: {
+                      type: "string",
+                      description: "Notas adicionais de estilo extraídas do texto do paciente (em inglês)"
+                    },
+                    sensitivityNote: {
+                      type: "string",
+                      nullable: true,
+                      description: "Nota sobre sensibilidade se mencionada, ou null"
+                    }
+                  },
+                  required: ["whiteningLevel", "colorInstruction", "textureInstruction", "styleNotes"]
+                }
+              }
+            }
+          ],
+          tool_choice: { type: "function", function: { name: "extract_preferences" } }
+        }),
+      },
+      ANALYSIS_TIMEOUT,
+      "analyzePatientPreferences"
+    );
+
+    if (!response.ok) {
+      logger.warn("Preference analysis request failed:", response.status);
+      throw new Error(`Analysis request failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+    
+    if (!toolCall?.function?.arguments) {
+      logger.warn("No tool call in preference analysis response");
+      throw new Error("No tool call response");
+    }
+
+    const args = JSON.parse(toolCall.function.arguments);
+    
+    return {
+      whiteningLevel: args.whiteningLevel || 'none',
+      colorInstruction: args.colorInstruction || 'Keep original tooth color. Only remove surface stains if visible.',
+      textureInstruction: args.textureInstruction || 'Maintain natural tooth texture and surface characteristics.',
+      styleNotes: args.styleNotes || '',
+      sensitivityNote: args.sensitivityNote || null
+    };
+  } catch (err) {
+    logger.warn("Failed to analyze patient preferences:", err);
+    // Return sensible defaults on error
+    return {
+      whiteningLevel: 'none',
+      colorInstruction: 'Keep original tooth color. Only remove surface stains if visible.',
+      textureInstruction: 'Maintain natural tooth texture and surface characteristics.',
+      styleNotes: '',
+      sensitivityNote: null
+    };
+  }
+}
+
 // SIMPLIFIED: Generate simulation image - single attempt, no blend, no verification
 async function generateSimulation(
   imageBase64: string,
@@ -197,11 +335,50 @@ async function generateSimulation(
   const SIMULATION_TIMEOUT = 50_000; // 50s max
   const shapeInstruction = toothShapeDescriptions[toothShape] || toothShapeDescriptions.natural;
   
-  // Build dynamic instructions based on patient preferences
-  const wantsWhiter = patientPreferences?.desiredChanges?.includes('whiter');
-  const colorInstruction = wantsWhiter 
-    ? '- Tooth color → shade A1/A2 (natural white)'
-    : '- Keep natural tooth color (remove stains only)';
+  // Analyze patient preferences with Gemini Flash (fast ~2s)
+  let analyzedPrefs: AnalyzedPreferences | null = null;
+  if (patientPreferences?.aestheticGoals) {
+    try {
+      analyzedPrefs = await analyzePatientPreferences(
+        patientPreferences.aestheticGoals, 
+        apiKey
+      );
+      logger.log("Patient preferences analyzed:", {
+        whiteningLevel: analyzedPrefs.whiteningLevel,
+        hasStyleNotes: !!analyzedPrefs.styleNotes,
+        sensitivityNote: !!analyzedPrefs.sensitivityNote
+      });
+    } catch (err) {
+      logger.warn("Failed to analyze preferences, using defaults:", err);
+    }
+  }
+
+  // Fallback for legacy format or if analysis failed
+  const legacyWantsWhiter = patientPreferences?.desiredChanges?.includes('whiter');
+
+  // Build dynamic instructions from AI analysis or fallback
+  const colorInstruction = analyzedPrefs?.colorInstruction 
+    ? `- ${analyzedPrefs.colorInstruction}`
+    : (legacyWantsWhiter 
+        ? '- Change ALL visible teeth to natural white A1/A2 shade (1-2 shades lighter)' 
+        : '- Keep original tooth color (remove stains only)');
+
+  const textureInstruction = analyzedPrefs?.textureInstruction
+    ? `- ${analyzedPrefs.textureInstruction}`
+    : '- Maintain natural enamel texture and surface details';
+
+  const styleContext = analyzedPrefs?.styleNotes
+    ? `\nPATIENT STYLE PREFERENCE: ${analyzedPrefs.styleNotes}`
+    : '';
+  
+  // Quality requirements section for consistent output
+  const qualityRequirements = `
+MANDATORY OUTPUT QUALITY:
+1. If whitening was requested, teeth MUST be visibly lighter in the output
+2. Color change must be uniform across ALL visible teeth (not just some)
+3. Lips, gums, skin must be PIXEL-PERFECT identical to input
+4. Tooth texture must remain natural (not plastic/smooth)
+5. The "before vs after" must show clear, visible improvement`;
 
   // Base corrections - focused and specific (avoid over-smoothing)
   const baseCorrections = `1. Fill visible holes, chips or defects on tooth edges
@@ -312,24 +489,23 @@ PRESERVE (do not change):
 - Lips (exact color, shape, texture, position)
 - Gums (exact level, color, shape)
 - Skin (unchanged)
-- Tooth natural texture and surface details
 - Image dimensions and framing
 
 CORRECTIONS TO APPLY:
 ${baseCorrections}
 ${colorInstruction}
+${textureInstruction}
 
 RECONSTRUCTION:
 - ${specificInstructions || 'Fill missing teeth using adjacent teeth as reference'}
-${allowedChangesFromAnalysis}
+${allowedChangesFromAnalysis}${styleContext}
 
 CRITICAL PROPORTION RULES:
 - Keep original tooth width proportions exactly
 - NEVER make teeth appear thinner or narrower than original
 - Only add material to fill defects - do NOT reshape tooth contours
 - Maintain the natural width-to-height ratio of each tooth
-
-CRITICAL: Maintain natural enamel texture. Do NOT make teeth look plastic or artificial.
+${qualityRequirements}
 
 Output: Same photo with corrected teeth only.`;
 
@@ -342,24 +518,23 @@ PRESERVE (do not change):
 - Lips (exact color, shape, texture, position)
 - Gums (exact level, color, shape)
 - Skin (unchanged)
-- Tooth natural texture and surface details
 - Image dimensions and framing
 
 CORRECTIONS TO APPLY:
 ${baseCorrections}
 ${colorInstruction}
+${textureInstruction}
 
 RESTORATION FOCUS:
 - Blend interface lines on teeth ${restorationTeeth || '11, 21'}
-${allowedChangesFromAnalysis}
+${allowedChangesFromAnalysis}${styleContext}
 
 CRITICAL PROPORTION RULES:
 - Keep original tooth width proportions exactly
 - NEVER make teeth appear thinner or narrower than original
 - Only add material to fill defects - do NOT reshape tooth contours
 - Maintain the natural width-to-height ratio of each tooth
-
-CRITICAL: Maintain natural enamel texture. Do NOT make teeth look plastic or artificial.
+${qualityRequirements}
 
 Output: Same photo with corrected teeth only.`;
 
@@ -370,22 +545,21 @@ Edit ONLY the teeth in this intraoral photo. Keep everything else IDENTICAL.
 
 PRESERVE (do not change):
 - Gums (exact level, color, shape)
-- Tooth natural texture and surface details
 - All other tissues
 - Image dimensions and framing
 
 CORRECTIONS TO APPLY:
 ${baseCorrections}
 ${colorInstruction}
-${allowedChangesFromAnalysis}
+${textureInstruction}
+${allowedChangesFromAnalysis}${styleContext}
 
 CRITICAL PROPORTION RULES:
 - Keep original tooth width proportions exactly
 - NEVER make teeth appear thinner or narrower than original
 - Only add material to fill defects - do NOT reshape tooth contours
 - Maintain the natural width-to-height ratio of each tooth
-
-CRITICAL: Maintain natural enamel texture. Do NOT make teeth look plastic or artificial.
+${qualityRequirements}
 
 Output: Same photo with corrected teeth only.`;
 
@@ -399,21 +573,20 @@ PRESERVE (do not change):
 - Lips (exact color, shape, texture, position)
 - Gums (exact level, color, shape)
 - Skin (unchanged)
-- Tooth natural texture and surface details
 - Image dimensions and framing
 
 CORRECTIONS TO APPLY:
 ${baseCorrections}
 ${colorInstruction}
-${allowedChangesFromAnalysis}
+${textureInstruction}
+${allowedChangesFromAnalysis}${styleContext}
 
 CRITICAL PROPORTION RULES:
 - Keep original tooth width proportions exactly
 - NEVER make teeth appear thinner or narrower than original
 - Only add material to fill defects - do NOT reshape tooth contours
 - Maintain the natural width-to-height ratio of each tooth
-
-CRITICAL: Maintain natural enamel texture. Do NOT make teeth look plastic or artificial.
+${qualityRequirements}
 
 Output: Same photo with corrected teeth only.`;
   }
@@ -424,10 +597,12 @@ Output: Same photo with corrected teeth only.`;
   
   logger.log("DSD Simulation Request:", {
     promptType,
-    approach: "SIMPLIFIED - single attempt, direct upload",
+    approach: "AI-analyzed preferences + quality requirements",
     promptLength: simulationPrompt.length,
     analysisConfidence: analysis.confidence,
     suggestionsCount: analysis.suggestions.length,
+    whiteningLevel: analyzedPrefs?.whiteningLevel || 'none (default)',
+    hasStyleNotes: !!analyzedPrefs?.styleNotes,
   });
 
   // Models to try - Pro first for quality, Flash as fallback
