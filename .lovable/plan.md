@@ -1,184 +1,161 @@
 
-# Plano: Simplificar DSD - Preferencias Diretas + Prompt Limpo
 
-## Problema Diagnosticado
+# Plano: Reforcar Preservacao de Labios + Intensificar Clareamento
 
-Voce esta certo: estamos **complicando demais** os prompts e ficando pior. O fluxo atual:
+## Problema Confirmado
 
-1. Paciente escreve texto livre ("dentes mais brancos e harmonicos")
-2. AI analisa texto e extrai instrucoes complexas (colorInstruction, textureInstruction, styleNotes)
-3. Prompt fica gigante com muitas regras conflitantes
-4. Modelo de imagem se confunde e executa correcoes erradas
+A imagem mostra claramente:
+1. **Labio inferior DIFERENTE** - textura/forma alterada (mais suave/liso)
+2. **Clareamento insuficiente** para nivel "Hollywood" (deveria ser BL3, branco intenso)
 
-### Problemas Especificos:
-- `allowedChangesFromAnalysis` FORCA todas as sugestoes da analise na simulacao
-- Texto livre cria ambiguidade ("harmonico" vira "fechar diastema")
-- Prompt muito longo com muitas instrucoes = modelo ignora as importantes
+### Causa Raiz Tecnica
+
+O modelo Gemini gera uma **imagem NOVA** ao inves de editar pontualmente. Mesmo com instrucoes de preservacao, ele "recria" a imagem inteira, causando variacoes em labios/pele/gengiva.
 
 ---
 
-## Solucao: Simplificar para 3 Opcoes Claras
+## Solucao: Tecnica de "Inpainting" via Prompt
 
-### Novo Fluxo:
+### Estrategia: Forcar o modelo a pensar em "mascara"
 
-```text
-1. FOTO → Analise DSD (visagismo, sugestoes, proporcoes)
-   
-2. PREFERENCIAS → Usuario escolhe APENAS nivel de clareamento:
-   □ Natural (A1/A2 - sutil)
-   □ Branco (BL1/BL2 - notavel)  
-   □ Hollywood (BL3 - intenso)
-   
-3. SIMULACAO → Prompt simples e direto:
-   - Aplicar visagismo sugerido pela analise
-   - Aplicar nivel de clareamento escolhido
-   - PRESERVAR: labios, gengiva, pele
-   - NAO criar dente onde nao existe
-   - NAO aumentar largura alem do clinicamente possivel
-```
+Em vez de dizer "preserve os labios", instruir o modelo a:
+1. **Copiar pixels** dos labios da imagem original
+2. **Apenas modificar a area dos dentes**
+3. Usar linguagem de "inpainting/mask" que modelos de imagem entendem melhor
 
 ---
 
 ## Mudancas Tecnicas
 
-### Arquivo 1: `src/components/wizard/PatientPreferencesStep.tsx`
+### Arquivo: `supabase/functions/generate-dsd/index.ts`
 
-Trocar textarea por 3 botoes simples:
+### Mudanca 1: Reformular Instrucao de Preservacao
 
-```tsx
-export interface PatientPreferences {
-  whiteningLevel: 'natural' | 'white' | 'hollywood';
+**De** (instrucao abstrata):
+```typescript
+const absolutePreservation = `⚠️ ABSOLUTE PRESERVATION - ZERO TOLERANCE
+CRITICAL: The ENTIRE MOUTH STRUCTURE must remain PIXEL-PERFECT IDENTICAL...
+🚫 NEVER CHANGE: LIPS...`;
+```
+
+**Para** (instrucao tecnica de inpainting):
+```typescript
+const absolutePreservation = `🔒 INPAINTING MODE - STRICT MASK 🔒
+
+WORKFLOW:
+1. COPY the ENTIRE input image exactly as-is
+2. IDENTIFY teeth area only (white/ivory colored enamel surfaces)
+3. MODIFY ONLY pixels within the teeth boundary
+4. ALL pixels OUTSIDE teeth boundary = EXACT COPY from input
+
+⚠️ MASK DEFINITION:
+- INSIDE MASK (can modify): Teeth enamel surfaces only
+- OUTSIDE MASK (copy exactly): Lips, gums, tongue, skin, background, shadows, highlights
+
+PIXEL-LEVEL REQUIREMENT:
+- Every lip pixel in output = exact same RGB value as input
+- Every gum pixel in output = exact same RGB value as input
+- Every skin pixel in output = exact same RGB value as input
+
+This is image EDITING (inpainting), NOT image GENERATION.
+Output dimensions MUST equal input dimensions exactly.`;
+```
+
+### Mudanca 2: Intensificar Hollywood Whitening
+
+**De**:
+```typescript
+hollywood: {
+  instruction: "Make ALL visible teeth bright white (BL3). Hollywood smile effect, uniform bright appearance.",
+  intensity: "INTENSE"
 }
-
-// Interface com 3 cards clicaveis:
-// [Natural] [Branco] [Hollywood]
-// Com imagens de exemplo de cada nivel
 ```
 
-### Arquivo 2: `src/pages/NewCase.tsx`
-
-Atualizar estado para novo formato:
-
-```tsx
-const [patientPreferences, setPatientPreferences] = useState<PatientPreferences>({ 
-  whiteningLevel: 'natural' 
-});
+**Para**:
+```typescript
+hollywood: {
+  instruction: "Make ALL visible teeth EXTREMELY WHITE (BL3/0M1). Pure bright white like porcelain veneers. The teeth should appear DRAMATICALLY lighter - almost glowing white. This is the maximum possible whitening.",
+  intensity: "MAXIMUM"
+}
 ```
 
-### Arquivo 3: `supabase/functions/generate-dsd/index.ts`
+### Mudanca 3: Adicionar Instrucao Explicita de Compositing
 
-**Mudanca 1**: Remover `analyzePatientPreferences()` - nao precisa mais de AI para interpretar texto
+Adicionar antes do prompt final:
+```typescript
+const compositingInstruction = `
+COMPOSITING REQUIREMENT:
+Think of this as a Photoshop layer operation:
+1. Bottom layer: Original input image (locked, unchanged)
+2. Top layer: Your modifications to teeth ONLY
+3. Final: Composite where only teeth differ
 
-**Mudanca 2**: Simplificar prompt para ser CURTO e DIRETO:
+The final image must pass this test:
+- Take input image
+- Take output image  
+- Difference map should show changes ONLY on teeth
+- Any difference on lips/gums/skin = FAILURE`;
+```
+
+### Mudanca 4: Simplificar Prompt (Menos Regras, Mais Direto)
+
+Prompts muito longos confundem o modelo. Reduzir para o essencial:
 
 ```typescript
-// Mapear nivel escolhido para instrucao SIMPLES
-const whiteningInstructions = {
-  natural: "Make teeth 1-2 shades lighter (A1/A2). Subtle, natural whitening.",
-  white: "Make teeth clearly whiter (BL1/BL2). Noticeable but not extreme.",
-  hollywood: "Make teeth bright white (BL3). Hollywood smile effect."
-};
+simulationPrompt = `DENTAL INPAINTING - EDIT TEETH ONLY
 
-const whiteningLevel = patientPreferences?.whiteningLevel || 'natural';
-const whiteningText = whiteningInstructions[whiteningLevel];
+${absolutePreservation}
 
-// PROMPT SIMPLIFICADO (muito mais curto)
-simulationPrompt = `DENTAL SMILE SIMULATION
+TASK: Change ONLY the teeth color and surface.
+${whiteningLevel === 'hollywood' 
+  ? `WHITENING: Make teeth EXTREMELY WHITE (BL3). Maximum brightness. Porcelain-like.` 
+  : whiteningPrioritySection}
 
-PRESERVE EXACTLY (do not modify):
-- Lips, gums, skin, background
-- Image dimensions and framing
+DO NOT TOUCH: Lips, gums, tongue, skin, background.
+COPY EXACTLY from input: All non-tooth areas.
 
-APPLY THESE CHANGES TO TEETH ONLY:
-1. WHITENING: ${whiteningText}
-2. Apply the smile design improvements suggested in the analysis (close small gaps, level edges, harmonize proportions)
-
-CONSTRAINTS:
-- Do NOT create teeth where none exist
-- Do NOT make teeth wider than clinically possible
-- Keep natural tooth anatomy
-
-Output: Same photo with improved teeth only.`;
-```
-
-**Mudanca 3**: Manter `allowedChangesFromAnalysis` mas FILTRAR para nao incluir mudancas impossiveis:
-
-```typescript
-// Filtrar sugestoes para remover as clinicamente impossiveis
-const clinicallyPossibleChanges = analysis.suggestions.filter(s => {
-  const change = s.proposed_change.toLowerCase();
-  // Remover: criar dente onde nao existe, alargar alem do possivel
-  return !change.includes('implante') && 
-         !change.includes('protese') &&
-         !change.includes('coroa total');
-});
+Output: Same photo with whiter teeth. Nothing else changes.`;
 ```
 
 ---
 
-## Comparacao: Antes vs Depois
+## Comparacao de Prompts
 
 | Aspecto | Antes | Depois |
 |---------|-------|--------|
-| Entrada do usuario | Texto livre (500 chars) | 3 opcoes claras |
-| Processamento | AI analisa texto (8s extra) | Direto, sem AI |
-| Tamanho do prompt | ~2000 caracteres | ~500 caracteres |
-| Instrucoes | Multiplas regras conflitantes | Poucas regras claras |
-| Clareamento | Pode ser ignorado | Sempre aplicado |
-| Correcoes estruturais | Todas aplicadas | Filtradas clinicamente |
-
----
-
-## UI Nova - PatientPreferencesStep
-
-Tres cards visuais:
-
-```text
-┌─────────────────────────────────────────────────────────┐
-│                 Nivel de Clareamento                    │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│  ┌───────────┐  ┌───────────┐  ┌───────────┐           │
-│  │           │  │           │  │           │           │
-│  │  [img]    │  │  [img]    │  │  [img]    │           │
-│  │           │  │           │  │           │           │
-│  │  Natural  │  │  Branco   │  │ Hollywood │           │
-│  │  (A1/A2)  │  │ (BL1/BL2) │  │  (BL3)    │           │
-│  └───────────┘  └───────────┘  └───────────┘           │
-│                                                         │
-│  [ Continuar ]                                          │
-└─────────────────────────────────────────────────────────┘
-```
+| Abordagem | "Preserve" (abstrato) | "Inpainting/Mask" (tecnico) |
+| Linguagem | Regras longas | Workflow curto e direto |
+| Hollywood | "bright white BL3" | "EXTREMELY WHITE, porcelain, maximum" |
+| Tamanho | ~2000 chars | ~800 chars |
+| Semantica | "Nao mude" | "Copie exatamente" |
 
 ---
 
 ## Resultado Esperado
 
-1. **Clareamento sempre aplicado**: Opcao clara, sem interpretacao de texto
-2. **Estrutura preservada**: Prompt nao manda "fechar gaps" automaticamente
-3. **Visagismo aplicado**: Sugestoes da analise ainda sao usadas, mas filtradas
-4. **Prompt curto**: Modelo entende melhor instrucoes simples
-5. **Menos variacao**: Resultado mais consistente entre regeneracoes
+1. **Labios preservados**: Modelo entende "copiar pixels" melhor que "preservar"
+2. **Hollywood mais branco**: Linguagem intensificada (EXTREMELY, MAXIMUM, porcelain)
+3. **Menos confusao**: Prompt mais curto = menos regras conflitantes
+4. **Melhor consistencia**: Abordagem de inpainting e mais padronizada
 
 ---
 
-## Implementacao Tecnica
+## Nota Importante
 
-### Arquivos a Modificar:
+Se apos essas mudancas os labios AINDA mudarem, a limitacao e do **modelo de imagem** em si (Gemini nao tem suporte nativo a inpainting com mascara). Nesse caso, as opcoes seriam:
 
-1. **`src/components/wizard/PatientPreferencesStep.tsx`**
-   - Substituir textarea por 3 cards de selecao
-   - Atualizar interface `PatientPreferences`
+1. Aceitar pequenas variacoes como limitacao do sistema
+2. Implementar inpainting real com API dedicada (ex: Stability AI Inpainting)
+3. Fazer blend automatico no frontend (manter labios originais, so sobrepor dentes)
 
-2. **`src/pages/NewCase.tsx`**
-   - Atualizar estado inicial de `patientPreferences`
-   - Ajustar tipo para novo formato
+Mas vamos tentar o reforco de prompt primeiro.
 
-3. **`supabase/functions/generate-dsd/index.ts`**
-   - Remover funcao `analyzePatientPreferences()` (linhas 196-323)
-   - Simplificar prompts de simulacao (linhas 380-612)
-   - Adicionar mapeamento direto de nivel → instrucao
-   - Filtrar `allowedChangesFromAnalysis` para remover impossibilidades clinicas
+---
 
-4. **`src/components/wizard/DSDStep.tsx`**
-   - Atualizar interface para novo formato de preferencias
+## Arquivos a Modificar
+
+1. **`supabase/functions/generate-dsd/index.ts`**
+   - Linhas 62-76: Intensificar `hollywood` instruction
+   - Linhas 234-253: Reformular `absolutePreservation` para inpainting
+   - Linhas 460-478: Simplificar prompt principal
+
