@@ -31,9 +31,27 @@ export interface Resin {
   indications?: string[];
 }
 
+// Finishing and polishing protocol
+export interface PolishingStep {
+  order: number;
+  tool: string;
+  grit?: string;
+  speed: string;
+  time: string;
+  tip: string;
+}
+
+export interface FinishingProtocol {
+  contouring: PolishingStep[];
+  polishing: PolishingStep[];
+  final_glaze?: string;
+  maintenance_advice: string;
+}
+
 export interface StratificationProtocol {
   layers?: ProtocolLayer[];
   alternative?: ProtocolAlternative;
+  finishing?: FinishingProtocol;
   checklist?: string[];
   confidence?: "alta" | "média" | "baixa" | string;
   [key: string]: unknown;
