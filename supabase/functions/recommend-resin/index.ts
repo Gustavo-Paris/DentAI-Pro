@@ -370,7 +370,7 @@ REGRAS DE COMBINAÇÃO:
 ` : ''}
 
 === REGRAS DE COR POR TIPO DE CAMADA (OBRIGATÓRIO!) ===
-⚠️ CRÍTICO: A cor escolhida DEVE corresponder ao tipo da camada!
+⚠️ CRÍTICO: A cor escolhida DEVE corresponder ao tipo da camada E existir na linha de produto!
 
 CAMADA OPACO/MASCARAMENTO:
 - USAR: Cores com prefixo O (OA1, OA2, OA3, OB1, OB2, WO) ou White Opaquer
@@ -382,20 +382,57 @@ CAMADA DENTINA/BODY:
 - NÃO USAR: Cores com prefixo O (OA1, OA2) - resultam em aparência artificial "morta"
 - OBJETIVO: Reproduzir corpo do dente com profundidade e naturalidade
 
-CAMADA ESMALTE:
-- USAR: Cores de esmalte (EA1, EA2, WE, CE, JE) ou translúcidos (Trans, CT, IT, T-Neutral)
-- OBJETIVO: Brilho superficial, translucidez e mimetismo natural
+CAMADA ESMALTE (REGRA CRÍTICA!):
+- PRIORIDADE 1: Cores ESPECÍFICAS de esmalte (WE, CE, JE, EA1, EA2, Trans) se disponíveis na linha
+- PRIORIDADE 2: Cores translúcidas (CT, IT, T-Neutral) como segunda opção
+- PRIORIDADE 3: APENAS se a linha NÃO tiver esmalte específico, usar cor Universal mais clara (B1, A1)
+- OBJETIVO: Máxima translucidez incisal e mimetismo natural para estética anterior
+- ⚠️ Para dentes anteriores (Classe III, IV), cores específicas de esmalte são ESSENCIAIS!
 
-EXEMPLO CORRETO para cor A2:
-❌ ERRADO: Opaco=OA1, Dentina=OA1, Esmalte=B1 (OA1 na dentina!)
-✅ CERTO: Opaco=OA2, Dentina=A2 ou DA2, Esmalte=A2E ou WE
+TABELA DE CORES DE ESMALTE POR LINHA:
+┌─────────────────────┬─────────────────────────────────────┐
+│ Linha de Produto    │ Cores de Esmalte Disponíveis        │
+├─────────────────────┼─────────────────────────────────────┤
+│ Estelite Sigma Quick│ WE (White Enamel), CE (Clear Enamel)│
+│ Estelite Omega      │ WE, JE (Jet Enamel), CT, MW         │
+│ Filtek Z350 XT      │ CT, GT, WE, WT                      │
+│ Harmonize           │ Incisal, TN (Trans Neutral)         │
+│ IPS Empress Direct  │ Trans 20, Trans 30, Opal            │
+│ Vittra APS          │ Trans, INC                          │
+│ Palfique LX5        │ Enamel shades, CE                   │
+└─────────────────────┴─────────────────────────────────────┘
+
+EXEMPLO CORRETO para cor A2 em Classe IV com Estelite Sigma Quick:
+❌ ERRADO: Opaco=OA1, Dentina=OA1, Esmalte=B1 (OA1 na dentina! B1 não é esmalte!)
+✅ CERTO: Opaco=OA2, Dentina=A2, Esmalte=WE ou CE (cores específicas de esmalte!)
+
+=== REGRAS PARA CLAREAMENTO (BLEACH SHADES) ===
+Se o paciente pede clareamento (BL1, BL2, BL3, Hollywood):
+
+1. VERIFICAR se a linha recomendada possui cores BL no catálogo
+2. Se NÃO possui cores BL:
+   - ADICIONAR ALERTA: "A linha [nome] não possui cores BL. Para atingir nível Hollywood, considere [linha alternativa com BL]."
+   - Usar a cor mais clara disponível (ex: B1, A1) como aproximação
+3. Se POSSUI cores BL:
+   - Usar BL4, BL3, BL2, BL1 conforme nível de clareamento desejado
+
+LINHAS COM CORES BL DISPONÍVEIS:
+- Palfique LX5: BL1, BL2, BL3
+- Forma (Ultradent): BL
+- Filtek Z350 XT: WB, WE (aproximação)
+- Estelite Bianco: específica para clareados
+
+LINHAS SEM CORES BL:
+- Estelite Sigma Quick (usar B1/A1 como aproximação)
+- Vittra APS (usar A1 como aproximação)
 
 INSTRUÇÕES PARA PROTOCOLO DE ESTRATIFICAÇÃO:
 1. Se o substrato estiver escurecido/manchado, SEMPRE inclua camada de opaco
 2. Para casos estéticos (anteriores), use 3 camadas: Opaco (se necessário), Dentina, Esmalte
-3. Para posteriores com alta demanda estética, considere estratificação
-4. Para posteriores simples, pode recomendar técnica bulk ou incrementos simples
-5. Adapte as cores das camadas baseado na cor VITA informada SEGUINDO AS REGRAS ACIMA
+3. Para dentes anteriores, SEMPRE use cor específica de esmalte na camada final!
+4. Para posteriores com alta demanda estética, considere estratificação
+5. Para posteriores simples, pode recomendar técnica bulk ou incrementos simples
+6. Adapte as cores das camadas baseado na cor VITA informada SEGUINDO AS REGRAS ACIMA
 
 === ESPESSURAS DE CAMADA POR CONDIÇÃO DO SUBSTRATO ===
 As espessuras das camadas são faixas-guia que devem ser adaptadas clinicamente conforme a profundidade e mascaramento necessário.
@@ -602,10 +639,21 @@ Responda APENAS com o JSON, sem texto adicional.`;
       const validatedLayers = [];
       const validationAlerts: string[] = [];
       
+      // Check if patient requested whitening (BL shades)
+      const wantsWhitening = data.aestheticGoals?.toLowerCase().includes('clareamento') ||
+                             data.aestheticGoals?.toLowerCase().includes('bl1') ||
+                             data.aestheticGoals?.toLowerCase().includes('bl2') ||
+                             data.aestheticGoals?.toLowerCase().includes('hollywood') ||
+                             data.aestheticGoals?.toLowerCase().includes('branco');
+      
+      // Track if any layer uses a product line without BL shades
+      let productLineWithoutBL: string | null = null;
+      
       for (const layer of recommendation.protocol.layers) {
         // Extract product line from resin_brand (format: "Fabricante - Linha")
         const brandMatch = layer.resin_brand?.match(/^(.+?)\s*-\s*(.+)$/);
         const productLine = brandMatch ? brandMatch[2].trim() : layer.resin_brand;
+        const layerType = layer.name?.toLowerCase() || '';
         
         if (productLine && layer.shade) {
           // Check if shade exists in the product line
@@ -616,9 +664,63 @@ Responda APENAS com o JSON, sem texto adicional.`;
             .eq('shade', layer.shade)
             .limit(1);
           
+          // For enamel layer, ensure we use specific enamel shades when available
+          const isEnamelLayer = layerType.includes('esmalte') || layerType.includes('enamel');
+          
+          if (isEnamelLayer) {
+            // Check if the product line has specific enamel shades
+            const { data: enamelShades } = await supabase
+              .from('resin_catalog')
+              .select('shade, type')
+              .ilike('product_line', `%${productLine}%`)
+              .ilike('type', '%Esmalte%')
+              .limit(10);
+            
+            // If enamel shades exist but current shade is Universal, suggest enamel shade
+            if (enamelShades && enamelShades.length > 0) {
+              const currentIsUniversal = !['WE', 'CE', 'JE', 'CT', 'Trans', 'IT', 'TN', 'Opal', 'INC'].some(
+                prefix => layer.shade.toUpperCase().includes(prefix)
+              );
+              
+              if (currentIsUniversal) {
+                // Find preferred enamel shade (WE > CE > others)
+                const preferredOrder = ['WE', 'CE', 'JE', 'CT', 'Trans'];
+                let bestEnamel = enamelShades[0];
+                
+                for (const pref of preferredOrder) {
+                  const found = enamelShades.find(e => e.shade.toUpperCase().includes(pref));
+                  if (found) {
+                    bestEnamel = found;
+                    break;
+                  }
+                }
+                
+                const originalShade = layer.shade;
+                layer.shade = bestEnamel.shade;
+                validationAlerts.push(
+                  `Camada de esmalte otimizada: ${originalShade} → ${bestEnamel.shade} para máxima translucidez incisal.`
+                );
+                logger.warn(`Enamel optimization: ${originalShade} → ${bestEnamel.shade} for ${productLine}`);
+              }
+            }
+          }
+          
+          // Check if patient wants BL but product line doesn't have it
+          if (wantsWhitening && !productLineWithoutBL) {
+            const { data: blShades } = await supabase
+              .from('resin_catalog')
+              .select('shade')
+              .ilike('product_line', `%${productLine}%`)
+              .or('shade.ilike.%BL%,shade.ilike.%Bianco%')
+              .limit(1);
+            
+            if (!blShades || blShades.length === 0) {
+              productLineWithoutBL = productLine;
+            }
+          }
+          
           if (!catalogMatch || catalogMatch.length === 0) {
             // Shade doesn't exist - find appropriate alternative
-            const layerType = layer.name?.toLowerCase() || '';
             let typeFilter = '';
             
             // Determine appropriate type based on layer name
@@ -626,7 +728,7 @@ Responda APENAS com o JSON, sem texto adicional.`;
               typeFilter = 'Opaco';
             } else if (layerType.includes('dentina') || layerType.includes('body')) {
               typeFilter = 'Universal'; // Universal/Body shades for dentin
-            } else if (layerType.includes('esmalte') || layerType.includes('enamel')) {
+            } else if (isEnamelLayer) {
               typeFilter = 'Esmalte';
             }
             
@@ -662,6 +764,14 @@ Responda APENAS com o JSON, sem texto adicional.`;
         }
         
         validatedLayers.push(layer);
+      }
+      
+      // Add BL availability alert if needed
+      if (wantsWhitening && productLineWithoutBL) {
+        validationAlerts.push(
+          `A linha ${productLineWithoutBL} não possui cores BL (Bleach). Para atingir nível de clareamento Hollywood, considere linhas como Palfique LX5, Forma (Ultradent) ou Estelite Bianco que oferecem cores BL.`
+        );
+        logger.warn(`BL shades not available in ${productLineWithoutBL}, patient wants whitening`);
       }
       
       // Update layers with validated versions
