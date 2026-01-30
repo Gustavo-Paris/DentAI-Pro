@@ -1,11 +1,11 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Heart, Sparkles, ArrowRight, SkipForward } from 'lucide-react';
 
 export interface PatientPreferences {
-  desiredChanges: string[];
+  aestheticGoals: string;
 }
 
 interface PatientPreferencesStepProps {
@@ -15,9 +15,11 @@ interface PatientPreferencesStepProps {
   onSkip: () => void;
 }
 
-const DESIRED_CHANGES_OPTIONS = [
-  { id: 'whiter', label: 'Dentes mais brancos' },
-];
+const PLACEHOLDER_TEXT = `Exemplo: "Gostaria de dentes mais brancos e naturais, sem parecer artificial. Tenho sensibilidade."
+
+Descreva o que o paciente deseja em suas próprias palavras...`;
+
+const MAX_CHARS = 500;
 
 export function PatientPreferencesStep({
   preferences,
@@ -25,18 +27,16 @@ export function PatientPreferencesStep({
   onContinue,
   onSkip,
 }: PatientPreferencesStepProps) {
-  const handleCheckboxChange = (optionId: string, checked: boolean) => {
-    const newChanges = checked
-      ? [...preferences.desiredChanges, optionId]
-      : preferences.desiredChanges.filter((id) => id !== optionId);
-    
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value.slice(0, MAX_CHARS);
     onPreferencesChange({
       ...preferences,
-      desiredChanges: newChanges,
+      aestheticGoals: value,
     });
   };
 
-  const hasAnyPreference = preferences.desiredChanges.length > 0;
+  const hasText = preferences.aestheticGoals.trim().length > 0;
+  const charCount = preferences.aestheticGoals.length;
 
   return (
     <div className="w-full max-w-2xl mx-auto">
@@ -49,36 +49,29 @@ export function PatientPreferencesStep({
           <CardDescription className="text-base">
             <span className="inline-flex items-center gap-1.5">
               <Sparkles className="w-4 h-4" />
-              Opcional — ajuda a IA a personalizar as sugestões
+              Opcional — a IA analisará e aplicará clinicamente
             </span>
           </CardDescription>
         </CardHeader>
         
         <CardContent className="space-y-6">
-          {/* Checkboxes for desires */}
+          {/* Textarea for free-text input */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">O que o paciente deseja?</Label>
-            <div className="grid grid-cols-1 gap-3">
-              {DESIRED_CHANGES_OPTIONS.map((option) => (
-                <div
-                  key={option.id}
-                  className="flex items-center space-x-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
-                >
-                  <Checkbox
-                    id={option.id}
-                    checked={preferences.desiredChanges.includes(option.id)}
-                    onCheckedChange={(checked) => 
-                      handleCheckboxChange(option.id, checked as boolean)
-                    }
-                  />
-                  <Label
-                    htmlFor={option.id}
-                    className="text-sm font-normal cursor-pointer flex-1"
-                  >
-                    {option.label}
-                  </Label>
-                </div>
-              ))}
+            <Label htmlFor="aesthetic-goals" className="text-sm font-medium">
+              O que o paciente deseja?
+            </Label>
+            <Textarea
+              id="aesthetic-goals"
+              value={preferences.aestheticGoals}
+              onChange={handleTextChange}
+              placeholder={PLACEHOLDER_TEXT}
+              className="min-h-[120px] resize-none"
+              maxLength={MAX_CHARS}
+            />
+            <div className="flex justify-end">
+              <span className={`text-xs ${charCount >= MAX_CHARS ? 'text-destructive' : 'text-muted-foreground'}`}>
+                {charCount}/{MAX_CHARS} caracteres
+              </span>
             </div>
           </div>
 
@@ -95,16 +88,16 @@ export function PatientPreferencesStep({
             <Button
               onClick={onContinue}
               className="flex-1 gap-2"
-              disabled={!hasAnyPreference}
+              disabled={!hasText}
             >
               Continuar com preferências
               <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
 
-          {!hasAnyPreference && (
+          {!hasText && (
             <p className="text-xs text-muted-foreground text-center">
-              Preencha pelo menos um campo ou clique em "Pular" para continuar
+              Descreva as preferências do paciente ou clique em "Pular" para continuar
             </p>
           )}
         </CardContent>

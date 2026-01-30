@@ -47,7 +47,7 @@ export const reviewFormSchema = z.object({
 });
 
 export const patientPreferencesSchema = z.object({
-  desiredChanges: z.array(z.string()).default([]),
+  aestheticGoals: z.string().max(500, 'Texto muito longo').optional().or(z.literal('')),
 });
 
 export type ReviewFormData = z.infer<typeof reviewFormSchema>;

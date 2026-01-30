@@ -7,7 +7,7 @@ describe('reviewFormSchema', () => {
     patientAge: '35',
     tooth: '11',
     toothRegion: 'anterior' as const,
-    cavityClass: 'III',
+    cavityClass: 'Classe III',
     restorationSize: 'Média' as const,
     vitaShade: 'A2',
     substrate: 'Esmalte',
@@ -260,9 +260,9 @@ describe('reviewFormSchema', () => {
 });
 
 describe('patientPreferencesSchema', () => {
-  it('should accept valid preferences', () => {
+  it('should accept valid aesthetic goals', () => {
     const result = patientPreferencesSchema.safeParse({
-      desiredChanges: ['whiter', 'spacing'],
+      aestheticGoals: 'Gostaria de dentes mais brancos e naturais',
     });
     expect(result.success).toBe(true);
   });
@@ -272,11 +272,15 @@ describe('patientPreferencesSchema', () => {
     expect(result.success).toBe(true);
   });
 
-  it('should default desiredChanges to empty array', () => {
-    const result = patientPreferencesSchema.safeParse({});
+  it('should accept empty string for aestheticGoals', () => {
+    const result = patientPreferencesSchema.safeParse({ aestheticGoals: '' });
     expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.data.desiredChanges).toEqual([]);
-    }
+  });
+
+  it('should reject aestheticGoals longer than 500 characters', () => {
+    const result = patientPreferencesSchema.safeParse({
+      aestheticGoals: 'A'.repeat(501),
+    });
+    expect(result.success).toBe(false);
   });
 });

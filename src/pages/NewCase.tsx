@@ -66,7 +66,7 @@ export default function NewCase() {
   // Removed tooth shape selection - now uses 'natural' as default internally
   const [toothTreatments, setToothTreatments] = useState<Record<string, TreatmentType>>({});
   const [additionalPhotos, setAdditionalPhotos] = useState<AdditionalPhotos>({ smile45: null, face: null });
-  const [patientPreferences, setPatientPreferences] = useState<PatientPreferences>({ desiredChanges: [] });
+  const [patientPreferences, setPatientPreferences] = useState<PatientPreferences>({ aestheticGoals: '' });
   const [dobValidationError, setDobValidationError] = useState(false);
   
   // Draft restoration state
@@ -130,7 +130,7 @@ export default function NewCase() {
     setDsdResult(pendingDraft.dsdResult);
     setUploadedPhotoPath(pendingDraft.uploadedPhotoPath);
     setAdditionalPhotos(pendingDraft.additionalPhotos || { smile45: null, face: null });
-    setPatientPreferences(pendingDraft.patientPreferences || { desiredChanges: [] });
+    setPatientPreferences(pendingDraft.patientPreferences || { aestheticGoals: '' });
     
     // Load image from storage if available
     if (pendingDraft.uploadedPhotoPath) {
@@ -315,7 +315,7 @@ export default function NewCase() {
   };
 
   const handlePreferencesSkip = () => {
-    setPatientPreferences({ desiredChanges: [] });
+    setPatientPreferences({ aestheticGoals: '' });
     analyzePhoto();
   };
 
@@ -547,8 +547,8 @@ export default function NewCase() {
           // Tooth position for visual highlight overlay
           tooth_bounds: toothData?.tooth_bounds || null,
           // Patient aesthetic preferences
-          patient_aesthetic_goals: null,
-          patient_desired_changes: patientPreferences.desiredChanges.length > 0 ? patientPreferences.desiredChanges : null,
+          patient_aesthetic_goals: patientPreferences.aestheticGoals.trim() || null,
+          patient_desired_changes: null, // Legacy field - now using patient_aesthetic_goals
         };
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase typing requires cast for dynamic data
@@ -598,8 +598,8 @@ export default function NewCase() {
                 stratificationNeeded: true,
                 budget: formData.budget,
                 longevityExpectation: formData.longevityExpectation,
-                // Patient preferences - critical for whitening adjustments
-                desiredChanges: patientPreferences.desiredChanges.length > 0 ? patientPreferences.desiredChanges : undefined,
+                // Patient preferences - free text for AI to analyze
+                aestheticGoals: patientPreferences.aestheticGoals.trim() || undefined,
               },
             });
             if (aiError) throw aiError;

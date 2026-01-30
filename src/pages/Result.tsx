@@ -668,8 +668,8 @@ export default function Result() {
           </section>
         )}
 
-        {/* Patient Preferences */}
-        {(evaluation.patient_aesthetic_goals || (evaluation.patient_desired_changes && evaluation.patient_desired_changes.length > 0)) && (
+        {/* Patient Preferences - show text from patient_aesthetic_goals */}
+        {evaluation.patient_aesthetic_goals && (
           <section className="mb-8">
             <Card className="border-primary/20 bg-primary/5">
               <CardHeader className="pb-3">
@@ -678,42 +678,21 @@ export default function Result() {
                   Preferências do Paciente
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                {evaluation.patient_aesthetic_goals && (
-                  <p className="text-sm text-muted-foreground italic">
-                    "{evaluation.patient_aesthetic_goals}"
-                  </p>
-                )}
-                {evaluation.patient_desired_changes && evaluation.patient_desired_changes.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {evaluation.patient_desired_changes.map((change) => {
-                      const labels: Record<string, string> = {
-                        whiter: 'Dentes mais brancos',
-                        harmonious: 'Sorriso mais harmonioso',
-                        spacing: 'Corrigir espaçamentos',
-                        alignment: 'Dentes mais alinhados',
-                        natural: 'Formato mais natural',
-                        asymmetry: 'Corrigir assimetrias',
-                      };
-                      return (
-                        <Badge key={change} variant="secondary" className="text-xs">
-                          {labels[change] || change}
-                        </Badge>
-                      );
-                    })}
-                  </div>
-                )}
+              <CardContent>
+                <p className="text-sm text-muted-foreground italic">
+                  "{evaluation.patient_aesthetic_goals}"
+                </p>
               </CardContent>
             </Card>
           </section>
         )}
 
-        {/* Whitening Preference Alert - Only for resin treatments */}
-        {treatmentType === 'resina' && evaluation.patient_desired_changes?.includes('whiter') && (
+        {/* Whitening Preference Alert - Only for resin treatments with aesthetic goals mentioning whitening */}
+        {treatmentType === 'resina' && (
           <section className="mb-8">
             <WhiteningPreferenceAlert
               originalColor={evaluation.tooth_color}
-              hasWhiteningPreference={true}
+              aestheticGoals={evaluation.patient_aesthetic_goals}
               protocolLayers={layers}
             />
           </section>

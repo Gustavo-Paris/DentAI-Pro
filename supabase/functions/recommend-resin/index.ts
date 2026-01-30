@@ -311,32 +311,30 @@ CASO CLÍNICO:
 - Expectativa de longevidade: ${data.longevityExpectation}
 - Orçamento: ${data.budget} ⚠️ RESPEITAR ESTA FAIXA!
 ${data.clinicalNotes ? `- Observações clínicas: ${data.clinicalNotes}` : ''}
-${(() => {
-  const wantsWhiter = data.desiredChanges?.includes('whiter');
-  if (!wantsWhiter) return '';
-  return `
+${data.aestheticGoals ? `
 ═══════════════════════════════════════════════════════════════════════════════
-  PREFERÊNCIA DE CLAREAMENTO ATIVA
+  PREFERÊNCIAS ESTÉTICAS DO PACIENTE
 ═══════════════════════════════════════════════════════════════════════════════
 
-O paciente indicou preferência por DENTES MAIS BRANCOS.
+O paciente expressou os seguintes desejos:
+"${data.aestheticGoals}"
 
-Cor atual detectada: ${data.toothColor}
+INSTRUÇÕES PARA ANÁLISE DAS PREFERÊNCIAS:
+- Analise o texto acima e extraia as preferências estéticas do paciente
+- Se mencionar clareamento/branco/mais claro: ajuste cores 1-2 tons mais claros
+  (ex: se detectou A3, use A2 ou A1; se detectou A1, use BL4 ou BL3)
+- Se mencionar natural/discreto: priorize translucidez e mimetismo natural
+- Se mencionar sensibilidade: considere sistemas self-etch e protetores pulpares
+- Se mencionar durabilidade/longevidade: priorize resinas de alta resistência
+- Se mencionar conservador/minimamente invasivo: técnicas conservadoras
 
-INSTRUÇÃO: Você deve recomendar cores de resina 1-2 tons mais claros que a cor 
-detectada. Use sua análise clínica para escolher as melhores opções da escala 
-VITA que sejam mais claras (ex: se detectou A3, use A2 ou A1; se detectou A1, 
-use BL4 ou BL3).
-
-Aplique este clareamento em TODAS as camadas do protocolo de estratificação:
+Aplique TODAS as preferências identificadas no protocolo de estratificação.
+Quando aplicar clareamento, use cores mais claras em TODAS as camadas:
 - Camada Opaco/Dentina: versão opaca do tom clareado
 - Camada Body: tom clareado
 - Camada Esmalte: versão esmalte do tom clareado ou um tom ainda mais claro
-
-O resultado final deve ser visivelmente mais claro que a cor ${data.toothColor} detectada.
 ═══════════════════════════════════════════════════════════════════════════════
-`;
-})()}
+` : ''}
 
 ${resinsByPriceSection}
 ${inventorySection}
