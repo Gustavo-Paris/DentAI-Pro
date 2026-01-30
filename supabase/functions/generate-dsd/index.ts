@@ -70,8 +70,8 @@ const WHITENING_INSTRUCTIONS: Record<string, { instruction: string; intensity: s
     intensity: "NOTICEABLE"
   },
   hollywood: {
-    instruction: "Make ALL visible teeth bright white (BL3). Hollywood smile effect, uniform bright appearance.",
-    intensity: "INTENSE"
+    instruction: "Make ALL visible teeth EXTREMELY WHITE (BL3/0M1). Pure bright white like porcelain veneers. The teeth should appear DRAMATICALLY lighter - almost glowing white. This is the MAXIMUM possible whitening.",
+    intensity: "MAXIMUM"
   }
 };
 
@@ -231,53 +231,48 @@ async function generateSimulation(
   const wantsWhitening = true; // Always apply whitening (user always selects a level)
   const whiteningIntensity = whiteningConfig.intensity;
   
-  // ABSOLUTE PRESERVATION RULES - Must be at TOP of every prompt
-  const absolutePreservation = `⚠️⚠️⚠️ ABSOLUTE PRESERVATION - ZERO TOLERANCE ⚠️⚠️⚠️
+  // INPAINTING MODE - Technical approach for pixel-perfect preservation
+  const absolutePreservation = `🔒 INPAINTING MODE - STRICT MASK 🔒
 
-CRITICAL: The ENTIRE MOUTH STRUCTURE must remain PIXEL-PERFECT IDENTICAL to input:
+WORKFLOW (follow exactly):
+1. COPY the ENTIRE input image exactly as-is
+2. IDENTIFY teeth area only (white/ivory colored enamel surfaces)
+3. MODIFY ONLY pixels within the teeth boundary
+4. ALL pixels OUTSIDE teeth boundary = EXACT COPY from input
 
-🚫 NEVER CHANGE - ANY MODIFICATION = AUTOMATIC FAILURE:
-• LIPS: Exact same shape, position, opening, color, texture, contour, highlights, shadows
-• MOUTH OPENING: Exact same aperture angle and width - DO NOT make mouth appear more/less open
-• GUMS: Exact same visibility, color, texture, gum line position
-• TONGUE: If visible, exact same position and appearance
-• INNER CHEEKS: Exact same visibility and appearance
-• SKIN: All facial skin EXACTLY as input - same lighting, texture, shadows
-• BACKGROUND: All non-dental areas EXACTLY as input
-• IMAGE FRAMING: Exact same dimensions, crop, zoom level
+⚠️ MASK DEFINITION:
+- INSIDE MASK (can modify): Teeth enamel surfaces ONLY
+- OUTSIDE MASK (copy exactly): Lips, gums, tongue, skin, background, shadows, highlights
 
-⚠️ VALIDATION TEST: 
-If you overlay the output on the input, ONLY the teeth should differ.
-The lip outline, gum line, and all soft tissues must align PERFECTLY.
+PIXEL-LEVEL REQUIREMENT:
+- Every lip pixel in output = EXACT SAME RGB value as input
+- Every gum pixel in output = EXACT SAME RGB value as input
+- Every skin pixel in output = EXACT SAME RGB value as input
+- Lip texture, contour, highlights = IDENTICAL to input
 
-✅ ONLY TEETH MAY BE MODIFIED - nothing else.`;
+This is image EDITING (inpainting), NOT image GENERATION.
+Output dimensions MUST equal input dimensions exactly.`;
 
-  // Whitening priority section (if requested)
+  // Whitening priority section - FIRST task, direct and emphatic
   const whiteningPrioritySection = wantsWhitening ? `
-#1 PRIORITY - WHITENING (${whiteningIntensity}) - NON-NEGOTIABLE:
+#1 TASK - WHITENING (${whiteningIntensity}):
 ${colorInstruction}
-
-⚠️ CRITICAL VERIFICATION:
-- In the output, teeth MUST be CLEARLY and VISIBLY LIGHTER than input
-- The before/after comparison must show OBVIOUS whitening
-- If teeth look the same color as input, you have FAILED the PRIMARY task
-- This is the MOST IMPORTANT change to apply
+${whiteningLevel === 'hollywood' ? '⚠️ HOLLYWOOD = MAXIMUM BRIGHTNESS. Teeth must be DRAMATICALLY WHITE like porcelain veneers.' : ''}
 
 ` : '';
 
-  // Quality requirements section for consistent output
+  // Quality requirements - simplified compositing instruction
   const qualityRequirements = `
-⚠️ FINAL VERIFICATION - ALL MUST PASS:
-[✓] Lips PIXEL-PERFECT identical to input? (overlay test) - REQUIRED
-[✓] Mouth opening angle IDENTICAL to input? - REQUIRED  
-[✓] Gums PIXEL-PERFECT identical to input? - REQUIRED
-[✓] Skin tone and texture IDENTICAL to input? - REQUIRED
-[✓] Background IDENTICAL to input? - REQUIRED
-${wantsWhitening ? '[✓] Teeth VISIBLY WHITER than input? - REQUIRED' : '[✓] Tooth color natural and consistent? - REQUIRED'}
-[✓] Tooth proportions maintained (not thinner)? - REQUIRED
+COMPOSITING CHECK:
+Think of this as Photoshop layers:
+- Bottom layer: Original input (LOCKED, unchanged)
+- Top layer: Your teeth modifications ONLY
+- Result: Composite where ONLY teeth differ
 
-🚫 If lips, gums, or mouth shape differ AT ALL from input → REGENERATE.
-Only teeth should change.`;
+VALIDATION:
+- Overlay output on input → difference should show ONLY on teeth
+- Any change to lips, gums, skin = FAILURE
+${wantsWhitening ? '- Teeth must be VISIBLY WHITER than input' : ''}`;
 
   // Base corrections - focused and specific (avoid over-smoothing)
   const baseCorrections = `1. Fill visible holes, chips or defects on tooth edges
