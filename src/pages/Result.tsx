@@ -383,7 +383,7 @@ export default function Result() {
       <div className="min-h-screen bg-background">
         <header className="border-b border-border">
           <div className="container mx-auto px-6 py-4">
-            <span className="text-xl font-semibold tracking-tight">ResinMatch AI</span>
+            <span className="text-xl font-semibold tracking-tight">DentAI Pro</span>
           </div>
         </header>
         <main className="container mx-auto px-6 py-8 max-w-3xl">

@@ -8,7 +8,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Sparkles, Target, Clock, BookOpen, Star, Quote } from 'lucide-react';
+import { Sparkles, Camera, Smile, Layers, FileText, Star, Quote } from 'lucide-react';
+import { BRAND_NAME } from '@/lib/branding';
 
 export default function Landing() {
   return (
@@ -16,7 +17,7 @@ export default function Landing() {
       {/* Header */}
       <header className="border-b border-border">
         <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
-          <span className="text-lg sm:text-xl font-semibold tracking-tight">ResinMatch AI</span>
+          <span className="text-lg sm:text-xl font-semibold tracking-tight">{BRAND_NAME}</span>
           <div className="flex items-center gap-2 sm:gap-4">
             <Link to="/login">
               <Button variant="ghost" size="sm">Entrar</Button>
@@ -36,10 +37,10 @@ export default function Landing() {
             Potencializado por IA
           </Badge>
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight leading-tight mb-4 sm:mb-6">
-            A resina ideal para cada caso clínico
+            Planejamento clínico inteligente para seu consultório
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground mb-8 sm:mb-10 max-w-xl mx-auto">
-            Inteligência artificial que analisa seu caso e recomenda a melhor resina composta com justificativa técnica detalhada.
+            IA que analisa fotos, sugere tratamentos e gera protocolos personalizados em segundos.
           </p>
           <Link to="/register">
             <Button size="lg" className="px-6 sm:px-8">
@@ -52,7 +53,7 @@ export default function Landing() {
       {/* Stats */}
       <section className="py-8 sm:py-12 border-t border-border bg-secondary/30">
         <div className="container mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-3 gap-4 text-center">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
             <div>
               <p className="text-2xl sm:text-3xl font-semibold">500+</p>
               <p className="text-xs sm:text-sm text-muted-foreground">Avaliações realizadas</p>
@@ -65,42 +66,49 @@ export default function Landing() {
               <p className="text-2xl sm:text-3xl font-semibold">15+</p>
               <p className="text-xs sm:text-sm text-muted-foreground">Marcas disponíveis</p>
             </div>
+            <div>
+              <p className="text-2xl sm:text-3xl font-semibold">6</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Tipos de tratamento</p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Benefits */}
+      {/* Features */}
       <section className="py-12 sm:py-20 border-t border-border">
         <div className="container mx-auto px-4 sm:px-6">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-8 sm:mb-12">
+            Tudo que você precisa em um só lugar
+          </h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
             {[
               {
-                icon: Clock,
-                title: 'Rápido',
-                description: 'Recomendação em segundos, não horas de pesquisa.',
+                icon: Camera,
+                title: 'Análise Visual com IA',
+                description: 'Tire uma foto e a IA identifica dentes, classifica cavidades e detecta cor VITA.',
               },
               {
-                icon: Sparkles,
-                title: 'IA Avançada',
-                description: 'Análise inteligente baseada em evidências científicas.',
+                icon: Smile,
+                title: 'Simulação de Sorriso',
+                description: 'Visualize o resultado antes de iniciar com simulação DSD e níveis de clareamento.',
               },
               {
-                icon: Target,
-                title: 'Preciso',
-                description: 'Considera todas as variáveis do caso clínico.',
+                icon: Layers,
+                title: 'Protocolo de Estratificação',
+                description: 'Receba camada por camada qual resina usar do seu inventário pessoal.',
               },
               {
-                icon: BookOpen,
-                title: 'Educativo',
-                description: 'Justificativas detalhadas para cada recomendação.',
+                icon: FileText,
+                title: 'Relatório Profissional',
+                description: 'Exporte PDF personalizado com logo do consultório e protocolo completo.',
               },
-            ].map((benefit, index) => (
+            ].map((feature, index) => (
               <div key={index} className="text-center">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-secondary flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                  <benefit.icon className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
+                  <feature.icon className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
                 </div>
-                <h3 className="font-medium text-sm sm:text-base mb-1 sm:mb-2">{benefit.title}</h3>
-                <p className="text-xs sm:text-sm text-muted-foreground">{benefit.description}</p>
+                <h3 className="font-medium text-sm sm:text-base mb-1 sm:mb-2">{feature.title}</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -116,25 +124,25 @@ export default function Landing() {
           <div className="grid md:grid-cols-2 gap-6">
             {[
               {
-                quote: "Economizo horas de pesquisa em cada caso. A IA realmente entende as nuances da seleção de resinas e me dá confiança nas minhas escolhas.",
+                quote: "Economizo horas de pesquisa em cada caso. A IA realmente entende as nuances do planejamento clínico e me dá confiança nas minhas escolhas.",
                 author: "Dr. Carlos Mendonça",
                 role: "Dentista Estético • São Paulo, SP",
                 rating: 5
               },
               {
-                quote: "O protocolo de estratificação que a ferramenta gera é excelente. Meus resultados estéticos melhoraram significativamente desde que comecei a usar.",
+                quote: "O protocolo de estratificação é excelente, mas o que mais me impressionou foi a simulação DSD. Meus pacientes adoram visualizar o resultado.",
                 author: "Dra. Ana Paula Ribeiro",
                 role: "Clínica Geral • Rio de Janeiro, RJ",
                 rating: 5
               },
               {
-                quote: "Ferramenta essencial para quem trabalha com estética dental. A análise de cor e a sugestão de camadas é impressionantemente precisa.",
+                quote: "Ferramenta essencial para quem trabalha com estética dental. A análise de cor e a indicação automática de tratamento economizam muito tempo.",
                 author: "Dr. Fernando Costa",
                 role: "Especialista em Dentística • Belo Horizonte, MG",
                 rating: 5
               },
               {
-                quote: "Uso diariamente no meu consultório. A integração com meu inventário pessoal torna as recomendações ainda mais práticas e aplicáveis.",
+                quote: "Uso diariamente no meu consultório. A integração com meu inventário pessoal e a gestão de pacientes tornaram meu fluxo de trabalho muito mais eficiente.",
                 author: "Dra. Juliana Santos",
                 role: "Cirurgiã-Dentista • Curitiba, PR",
                 rating: 5
@@ -168,18 +176,23 @@ export default function Landing() {
             {[
               {
                 step: '01',
-                title: 'Preencha o formulário',
-                description: 'Informe os dados do paciente, características do caso e requisitos estéticos.',
+                title: 'Tire a foto intraoral',
+                description: 'Faça upload da foto clínica e fotos adicionais (sorriso, face) para análise completa.',
               },
               {
                 step: '02',
-                title: 'IA analisa seu caso',
-                description: 'Nossa inteligência artificial processa as informações e consulta o banco de resinas.',
+                title: 'IA analisa o caso completo',
+                description: 'Detecta múltiplos dentes, classifica tratamentos (resina, porcelana, coroa...) e identifica cor VITA.',
               },
               {
                 step: '03',
-                title: 'Receba a recomendação',
-                description: 'Obtenha a resina ideal com justificativa técnica e alternativas.',
+                title: 'Visualize o resultado',
+                description: 'Simulação de clareamento (Natural, White, Hollywood) e análise de proporções ideais do sorriso.',
+              },
+              {
+                step: '04',
+                title: 'Receba o protocolo',
+                description: 'Protocolo de estratificação ou cimentação personalizado com suas resinas disponíveis.',
               },
             ].map((item, index) => (
               <div key={index} className="flex gap-4 sm:gap-6">
@@ -204,31 +217,43 @@ export default function Landing() {
             <AccordionItem value="item-1">
               <AccordionTrigger>Como a IA faz a recomendação?</AccordionTrigger>
               <AccordionContent>
-                Nossa IA analisa os dados do seu caso clínico (tipo de cavidade, região, requisitos estéticos, etc.) e cruza com um banco de dados de resinas compostas, considerando as indicações de cada material para fornecer a melhor recomendação.
+                Nossa IA analisa a foto clínica detectando múltiplos dentes, classificando o tipo de tratamento indicado (resina, porcelana, coroa, implante, etc.), identificando a cor VITA e gerando um protocolo personalizado baseado no seu inventário de resinas.
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-2">
-              <AccordionTrigger>Quais resinas estão no banco de dados?</AccordionTrigger>
+              <AccordionTrigger>O que é a simulação DSD?</AccordionTrigger>
               <AccordionContent>
-                Temos as principais marcas do mercado como 3M ESPE, Ivoclar Vivadent, Kulzer, FGM, Dentsply, SDI, Tokuyama e Shofu. O banco é constantemente atualizado com mais de 250 cores disponíveis.
+                O Digital Smile Design (DSD) analisa proporções faciais e dentais, permitindo simular diferentes níveis de clareamento (Natural, White, Hollywood) para que você e seu paciente visualizem o resultado antes de iniciar o tratamento.
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-3">
-              <AccordionTrigger>Posso exportar as recomendações?</AccordionTrigger>
+              <AccordionTrigger>Quais tipos de tratamento são suportados?</AccordionTrigger>
               <AccordionContent>
-                Sim, todas as recomendações podem ser exportadas em PDF com os dados do caso, a resina recomendada, justificativa técnica, protocolo de aplicação e alternativas.
+                A plataforma suporta 6 tipos de tratamento: Resina Composta (com protocolo de estratificação), Faceta de Porcelana (com protocolo de cimentação), Coroa, Implante, Endodontia e Encaminhamento para especialistas.
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-4">
+              <AccordionTrigger>Como funciona a gestão de pacientes?</AccordionTrigger>
+              <AccordionContent>
+                Você pode cadastrar pacientes com informações de contato e notas clínicas. Cada paciente tem um histórico de sessões e casos, com acompanhamento de progresso através de checklists interativos.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-5">
+              <AccordionTrigger>Posso exportar as recomendações?</AccordionTrigger>
+              <AccordionContent>
+                Sim, todas as avaliações podem ser exportadas em PDF profissional com os dados do caso, fotos clínicas, análise DSD, protocolo completo e logo do seu consultório.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-6">
               <AccordionTrigger>É gratuito?</AccordionTrigger>
               <AccordionContent>
                 Sim, você pode criar uma conta e fazer avaliações gratuitamente. O histórico de avaliações fica salvo na sua conta.
               </AccordionContent>
             </AccordionItem>
-            <AccordionItem value="item-5">
+            <AccordionItem value="item-7">
               <AccordionTrigger>A ferramenta substitui meu julgamento clínico?</AccordionTrigger>
               <AccordionContent>
-                Não. O ResinMatch AI é uma ferramenta de apoio à decisão clínica. As recomendações são sugestões baseadas em evidências e devem ser validadas pelo profissional de acordo com cada caso específico.
+                Não. O {BRAND_NAME} é uma ferramenta de apoio à decisão clínica. As recomendações são sugestões baseadas em evidências e devem ser validadas pelo profissional de acordo com cada caso específico.
               </AccordionContent>
             </AccordionItem>
           </Accordion>
@@ -258,7 +283,7 @@ export default function Landing() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-center sm:text-left">
               <span className="text-xs sm:text-sm text-muted-foreground">
-                © {new Date().getFullYear()} ResinMatch AI. Ferramenta de apoio à decisão clínica.
+                © {new Date().getFullYear()} {BRAND_NAME}. Ferramenta de apoio à decisão clínica.
               </span>
             </div>
             <div className="flex items-center gap-4 text-xs sm:text-sm text-muted-foreground">
