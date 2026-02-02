@@ -2,25 +2,12 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsPreFlight, createErrorResponse, ERROR_MESSAGES } from "../_shared/cors.ts";
 import { logger } from "../_shared/logger.ts";
-
-// Prevent indefinite hangs on external calls (AI gateway / storage downloads)
-async function fetchWithTimeout(
-  input: string,
-  init: RequestInit,
-  timeoutMs: number,
-  label: string
-): Promise<Response> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    return await fetch(input, { ...init, signal: controller.signal });
-  } catch (err) {
-    logger.warn(`${label} request failed`, err);
-    throw err;
-  } finally {
-    clearTimeout(timeoutId);
-  }
-}
+import {
+  callGeminiVisionWithTools,
+  callGeminiImageEdit,
+  GeminiError,
+  type OpenAITool
+} from "../_shared/gemini.ts";
 
 // DSD Analysis interface
 interface DSDAnalysis {
@@ -215,11 +202,10 @@ async function generateSimulation(
   analysis: DSDAnalysis,
   userId: string,
   supabase: any,
-  apiKey: string,
   toothShape: string = 'natural',
   patientPreferences?: PatientPreferences
 ): Promise<string | null> {
-  const SIMULATION_TIMEOUT = 50_000; // 50s max
+  const SIMULATION_TIMEOUT = 55_000; // 55s max
   
   // Get whitening level from direct UI selection (no AI analysis needed!)
   const whiteningLevel = patientPreferences?.whiteningLevel || 'natural';
@@ -518,87 +504,65 @@ Output: Same photo with ONLY teeth corrected.`;
     promptPreview: simulationPrompt.substring(0, 400) + '...',
   });
 
-  // Models to try - Pro first for quality, Flash as fallback
-  const models = [
-    "google/gemini-3-pro-image-preview",
-    "google/gemini-2.5-flash-image",
-  ];
-  
-  for (const model of models) {
-    try {
-      logger.log(`Trying simulation with model: ${model}`);
-      
-      const response = await fetchWithTimeout(
-        "https://ai.gateway.lovable.dev/v1/chat/completions",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model,
-            messages: [{
-              role: "user",
-              content: [
-                { type: "text", text: simulationPrompt },
-                { type: "image_url", image_url: { url: imageBase64 } },
-              ],
-            }],
-            modalities: ["image", "text"],
-          }),
-        },
-        SIMULATION_TIMEOUT,
-        "generateSimulation"
-      );
-
-      if (!response.ok) {
-        logger.warn(`Simulation request failed with ${model}:`, response.status);
-        continue; // Try next model
-      }
-
-      const data = await response.json();
-      const generatedImage = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-
-      if (!generatedImage) {
-        logger.warn(`No image in response from ${model}, trying next...`);
-        continue; // Try next model
-      }
-
-      // Upload directly (no blend, no verification)
-      const base64Data = generatedImage.replace(/^data:image\/\w+;base64,/, "");
-      const binaryData = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
-      
-      const fileName = `${userId}/dsd_${Date.now()}.png`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from("dsd-simulations")
-        .upload(fileName, binaryData, {
-          contentType: "image/png",
-          upsert: true,
-        });
-
-      if (uploadError) {
-        logger.error("Upload error:", uploadError);
-        return null;
-      }
-
-      logger.log(`Simulation generated with ${model} and uploaded:`, fileName);
-      return fileName;
-    } catch (err) {
-      logger.warn(`Simulation error with ${model}:`, err);
-      continue; // Try next model
-    }
+  // Extract base64 data and mime type from data URL
+  const dataUrlMatch = imageBase64.match(/^data:([^;]+);base64,(.+)$/);
+  if (!dataUrlMatch) {
+    logger.error("Invalid image data URL format");
+    return null;
   }
-  
-  logger.warn("All simulation models failed");
-  return null;
+  const [, inputMimeType, inputBase64Data] = dataUrlMatch;
+
+  try {
+    logger.log("Calling Gemini Image Edit for simulation...");
+
+    const result = await callGeminiImageEdit(
+      simulationPrompt,
+      inputBase64Data,
+      inputMimeType,
+      {
+        temperature: 0.4,
+        timeoutMs: SIMULATION_TIMEOUT,
+      }
+    );
+
+    if (!result.imageUrl) {
+      logger.warn("No image in Gemini response");
+      return null;
+    }
+
+    // Upload generated image
+    const base64Data = result.imageUrl.replace(/^data:image\/\w+;base64,/, "");
+    const binaryData = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
+
+    const fileName = `${userId}/dsd_${Date.now()}.png`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("dsd-simulations")
+      .upload(fileName, binaryData, {
+        contentType: "image/png",
+        upsert: true,
+      });
+
+    if (uploadError) {
+      logger.error("Upload error:", uploadError);
+      return null;
+    }
+
+    logger.log("Simulation generated and uploaded:", fileName);
+    return fileName;
+  } catch (err) {
+    if (err instanceof GeminiError) {
+      logger.warn(`Gemini simulation error (${err.statusCode}):`, err.message);
+    } else {
+      logger.warn("Simulation error:", err);
+    }
+    return null;
+  }
 }
 
 // Analyze facial proportions
 async function analyzeProportions(
   imageBase64: string,
-  apiKey: string,
   corsHeaders: Record<string, string>,
   additionalPhotos?: AdditionalPhotos,
   patientPreferences?: PatientPreferences
@@ -798,136 +762,125 @@ IMPORTANTE:
 - TODAS as sugestões devem ser clinicamente realizáveis
 - Se o caso NÃO for adequado para DSD, AINDA forneça a análise de proporções mas marque confidence="baixa"`;
 
-  const analysisResponse = await fetchWithTimeout(
-    "https://ai.gateway.lovable.dev/v1/chat/completions",
+  // Tool definition for DSD analysis
+  const tools: OpenAITool[] = [
     {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-pro",
-        messages: [
-          { role: "system", content: analysisPrompt },
-          {
-            role: "user",
-            content: [
-              { type: "text", text: "Analise esta foto e retorne a análise DSD completa usando a ferramenta analyze_dsd." },
-              { type: "image_url", image_url: { url: imageBase64 } },
-            ],
-          },
-        ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "analyze_dsd",
-              description: "Retorna a análise completa do Digital Smile Design",
-              parameters: {
+      type: "function",
+      function: {
+        name: "analyze_dsd",
+        description: "Retorna a análise completa do Digital Smile Design",
+        parameters: {
+          type: "object",
+          properties: {
+            facial_midline: {
+              type: "string",
+              enum: ["centrada", "desviada_esquerda", "desviada_direita"],
+            },
+            dental_midline: {
+              type: "string",
+              enum: ["alinhada", "desviada_esquerda", "desviada_direita"],
+            },
+            smile_line: {
+              type: "string",
+              enum: ["alta", "média", "baixa"],
+            },
+            buccal_corridor: {
+              type: "string",
+              enum: ["adequado", "excessivo", "ausente"],
+            },
+            occlusal_plane: {
+              type: "string",
+              enum: ["nivelado", "inclinado_esquerda", "inclinado_direita"],
+            },
+            golden_ratio_compliance: {
+              type: "number",
+              minimum: 0,
+              maximum: 100,
+            },
+            symmetry_score: {
+              type: "number",
+              minimum: 0,
+              maximum: 100,
+            },
+            suggestions: {
+              type: "array",
+              items: {
                 type: "object",
                 properties: {
-                  facial_midline: {
-                    type: "string",
-                    enum: ["centrada", "desviada_esquerda", "desviada_direita"],
-                  },
-                  dental_midline: {
-                    type: "string",
-                    enum: ["alinhada", "desviada_esquerda", "desviada_direita"],
-                  },
-                  smile_line: {
-                    type: "string",
-                    enum: ["alta", "média", "baixa"],
-                  },
-                  buccal_corridor: {
-                    type: "string",
-                    enum: ["adequado", "excessivo", "ausente"],
-                  },
-                  occlusal_plane: {
-                    type: "string",
-                    enum: ["nivelado", "inclinado_esquerda", "inclinado_direita"],
-                  },
-                  golden_ratio_compliance: {
-                    type: "number",
-                    minimum: 0,
-                    maximum: 100,
-                  },
-                  symmetry_score: {
-                    type: "number",
-                    minimum: 0,
-                    maximum: 100,
-                  },
-                  suggestions: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: {
-                        tooth: { type: "string" },
-                        current_issue: { type: "string" },
-                        proposed_change: { type: "string" },
-                      },
-                      required: ["tooth", "current_issue", "proposed_change"],
-                    },
-                  },
-                  observations: {
-                    type: "array",
-                    items: { type: "string" },
-                  },
-                  confidence: {
-                    type: "string",
-                    enum: ["alta", "média", "baixa"],
-                  },
+                  tooth: { type: "string" },
+                  current_issue: { type: "string" },
+                  proposed_change: { type: "string" },
                 },
-                required: [
-                  "facial_midline",
-                  "dental_midline",
-                  "smile_line",
-                  "buccal_corridor",
-                  "occlusal_plane",
-                  "golden_ratio_compliance",
-                  "symmetry_score",
-                  "suggestions",
-                  "observations",
-                  "confidence",
-                ],
-                additionalProperties: false,
+                required: ["tooth", "current_issue", "proposed_change"],
               },
             },
+            observations: {
+              type: "array",
+              items: { type: "string" },
+            },
+            confidence: {
+              type: "string",
+              enum: ["alta", "média", "baixa"],
+            },
           },
-        ],
-        tool_choice: { type: "function", function: { name: "analyze_dsd" } },
-      }),
+          required: [
+            "facial_midline",
+            "dental_midline",
+            "smile_line",
+            "buccal_corridor",
+            "occlusal_plane",
+            "golden_ratio_compliance",
+            "symmetry_score",
+            "suggestions",
+            "observations",
+            "confidence",
+          ],
+          additionalProperties: false,
+        },
+      },
     },
-    70_000,
-    "analyzeProportions"
-  );
+  ];
 
-  if (!analysisResponse.ok) {
-    const status = analysisResponse.status;
-    if (status === 429) {
-      return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
+  // Extract base64 and mime type from data URL
+  const dataUrlMatch = imageBase64.match(/^data:([^;]+);base64,(.+)$/);
+  if (!dataUrlMatch) {
+    logger.error("Invalid image data URL for analysis");
+    return createErrorResponse(ERROR_MESSAGES.IMAGE_INVALID, 400, corsHeaders);
+  }
+  const [, mimeType, base64Data] = dataUrlMatch;
+
+  try {
+    const result = await callGeminiVisionWithTools(
+      "gemini-2.0-flash-exp",
+      "Analise esta foto e retorne a análise DSD completa usando a ferramenta analyze_dsd.",
+      base64Data,
+      mimeType,
+      tools,
+      {
+        systemPrompt: analysisPrompt,
+        temperature: 0.1,
+        maxTokens: 4000,
+        forceFunctionName: "analyze_dsd",
+      }
+    );
+
+    if (result.functionCall) {
+      return result.functionCall.args as unknown as DSDAnalysis;
     }
-    if (status === 402) {
-      return createErrorResponse(ERROR_MESSAGES.PAYMENT_REQUIRED, 402, corsHeaders, "PAYMENT_REQUIRED");
+
+    logger.error("No function call in Gemini response");
+    return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
+  } catch (error) {
+    if (error instanceof GeminiError) {
+      if (error.statusCode === 429) {
+        return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
+      }
+      logger.error("Gemini analysis error:", error.message);
+    } else {
+      logger.error("AI analysis error:", error);
     }
-    logger.error("AI analysis error:", status, await analysisResponse.text());
     return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
   }
-
-  const analysisData = await analysisResponse.json();
-  const toolCall = analysisData.choices?.[0]?.message?.tool_calls?.[0];
-
-  if (toolCall?.function?.arguments) {
-    try {
-      return JSON.parse(toolCall.function.arguments) as DSDAnalysis;
-    } catch {
-      logger.error("Failed to parse tool call arguments");
-      return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
-    }
-  }
-
-  logger.error("No tool call in response");
-  return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
 }
 
 serve(async (req: Request) => {
@@ -938,12 +891,11 @@ serve(async (req: Request) => {
   const corsHeaders = getCorsHeaders(req);
 
   try {
-    // Get API keys
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    // Get environment variables
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-    if (!LOVABLE_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
       logger.error("Missing required environment variables");
       return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
     }
@@ -999,7 +951,7 @@ serve(async (req: Request) => {
       analysis = existingAnalysis;
     } else {
       // Run full analysis - pass additional photos and preferences for context enrichment
-      const analysisResult = await analyzeProportions(imageBase64, LOVABLE_API_KEY, corsHeaders, additionalPhotos, patientPreferences);
+      const analysisResult = await analyzeProportions(imageBase64, corsHeaders, additionalPhotos, patientPreferences);
       
       // Check if it's an error response
       if (analysisResult instanceof Response) {
@@ -1039,7 +991,7 @@ serve(async (req: Request) => {
     // Generate simulation image
     let simulationUrl: string | null = null;
     try {
-      simulationUrl = await generateSimulation(imageBase64, analysis, user.id, supabase, LOVABLE_API_KEY, toothShape || 'natural', patientPreferences);
+      simulationUrl = await generateSimulation(imageBase64, analysis, user.id, supabase, toothShape || 'natural', patientPreferences);
     } catch (simError) {
       logger.error("Simulation error:", simError);
       // Continue without simulation - analysis is still valid

@@ -558,5 +558,129 @@ export async function callGeminiVisionWithTools(
   return { text, functionCall, finishReason };
 }
 
+/**
+ * Image editing/generation with Gemini (for DSD simulation)
+ * Uses Gemini 2.0 Flash with image output capability
+ * @param prompt - Text prompt describing the edit
+ * @param imageBase64 - Base64-encoded input image (without data URL prefix)
+ * @param mimeType - Input image MIME type
+ * @param options - Additional options
+ * @returns Generated image as base64 data URL or null
+ */
+export async function callGeminiImageEdit(
+  prompt: string,
+  imageBase64: string,
+  mimeType: string,
+  options: {
+    temperature?: number;
+    timeoutMs?: number;
+  } = {}
+): Promise<{ imageUrl: string | null; text: string | null }> {
+  const apiKey = getApiKey();
+  const model = "gemini-2.0-flash-exp"; // Model with image generation capability
+  const url = `${GEMINI_API_BASE}/${model}:generateContent?key=${apiKey}`;
+
+  const request = {
+    contents: [
+      {
+        role: "user",
+        parts: [
+          { text: prompt },
+          {
+            inlineData: {
+              mimeType,
+              data: imageBase64,
+            },
+          },
+        ],
+      },
+    ],
+    generationConfig: {
+      temperature: options.temperature ?? 0.4,
+      responseModalities: ["TEXT", "IMAGE"],
+    },
+  };
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(
+    () => controller.abort(),
+    options.timeoutMs ?? 60000
+  );
+
+  try {
+    logger.log(`Calling Gemini Image Edit API...`);
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(request),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorBody = await response.text();
+      logger.error(`Gemini Image API error: ${response.status}`, errorBody);
+
+      if (response.status === 429) {
+        throw new GeminiError(
+          "Taxa de requisições excedida. Tente novamente.",
+          429,
+          true
+        );
+      }
+
+      throw new GeminiError(
+        `Erro na geração de imagem: ${response.status}`,
+        response.status,
+        response.status >= 500
+      );
+    }
+
+    const data = await response.json();
+    const candidate = data.candidates?.[0];
+
+    if (!candidate?.content?.parts) {
+      logger.warn("No parts in Gemini image response");
+      return { imageUrl: null, text: null };
+    }
+
+    let imageUrl: string | null = null;
+    let text: string | null = null;
+
+    for (const part of candidate.content.parts) {
+      if (part.inlineData?.data) {
+        const imgMimeType = part.inlineData.mimeType || "image/png";
+        imageUrl = `data:${imgMimeType};base64,${part.inlineData.data}`;
+      }
+      if (part.text) {
+        text = part.text;
+      }
+    }
+
+    return { imageUrl, text };
+  } catch (error) {
+    clearTimeout(timeoutId);
+
+    if (error instanceof GeminiError) {
+      throw error;
+    }
+
+    if ((error as Error).name === "AbortError") {
+      throw new GeminiError("Timeout na geração de imagem", 408, true);
+    }
+
+    logger.error("Gemini Image Edit error:", error);
+    throw new GeminiError(
+      "Erro na comunicação com Gemini API",
+      500,
+      true
+    );
+  }
+}
+
 // Export default model for convenience
 export { DEFAULT_MODEL as GEMINI_DEFAULT_MODEL };
