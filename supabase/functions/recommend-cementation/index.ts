@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsPreFlight, createErrorResponse, ERROR_MESSAGES } from "../_shared/cors.ts";
 import { logger } from "../_shared/logger.ts";
+import { callGeminiWithTools, GeminiError, type OpenAIMessage, type OpenAITool } from "../_shared/gemini.ts";
 
 // Cementation protocol interfaces
 interface CementationStep {
@@ -85,12 +86,11 @@ serve(async (req: Request) => {
   const corsHeaders = getCorsHeaders(req);
 
   try {
-    // Get API keys
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    // Get environment variables
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-    if (!LOVABLE_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
       logger.error("Missing required environment variables");
       return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
     }
@@ -276,49 +276,40 @@ Retorne o protocolo usando a função generate_cementation_protocol.`;
       },
     ];
 
-    // Call AI for protocol generation
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-pro",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        tools,
-        tool_choice: { type: "function", function: { name: "generate_cementation_protocol" } },
-      }),
-    });
-
-    if (!response.ok) {
-      const status = response.status;
-      if (status === 429) {
-        return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
-      }
-      if (status === 402) {
-        return createErrorResponse(ERROR_MESSAGES.PAYMENT_REQUIRED, 402, corsHeaders, "PAYMENT_REQUIRED");
-      }
-      logger.error("AI error:", status);
-      return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
-    }
-
-    const aiResult = await response.json();
-    const toolCall = aiResult.choices?.[0]?.message?.tool_calls?.[0];
-
-    if (!toolCall?.function?.arguments) {
-      logger.error("No tool call in response");
-      return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
-    }
+    // Call Gemini for protocol generation
+    const messages: OpenAIMessage[] = [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt },
+    ];
 
     let protocol: CementationProtocol;
     try {
-      protocol = JSON.parse(toolCall.function.arguments);
-    } catch {
-      console.error("Failed to parse protocol");
+      const result = await callGeminiWithTools(
+        "gemini-2.0-flash-exp",
+        messages,
+        tools as OpenAITool[],
+        {
+          temperature: 0.3,
+          maxTokens: 4000,
+          forceFunctionName: "generate_cementation_protocol",
+        }
+      );
+
+      if (!result.functionCall) {
+        logger.error("No function call in Gemini response");
+        return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
+      }
+
+      protocol = result.functionCall.args as unknown as CementationProtocol;
+    } catch (error) {
+      if (error instanceof GeminiError) {
+        if (error.statusCode === 429) {
+          return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
+        }
+        logger.error("Gemini API error:", error.message);
+      } else {
+        logger.error("AI error:", error);
+      }
       return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     }
 
