@@ -282,7 +282,7 @@ ${wantsWhitening ? '- Teeth must be VISIBLY WHITER than input' : ''}`;
   // Base corrections - focused and specific (avoid over-smoothing)
   const baseCorrections = `1. Fill visible holes, chips or defects on tooth edges
 2. Remove dark stain spots  
-3. Close small gaps between teeth (up to 2mm)`;
+3. Close small gaps by adding MINIMAL material at contact points - NOT by widening teeth`;
   
   // Check if case needs reconstruction (missing/destroyed teeth)
   const needsReconstruction = analysis.suggestions.some(s => {
@@ -343,9 +343,26 @@ ${wantsWhitening ? '- Teeth must be VISIBLY WHITER than input' : ''}`;
   
   let simulationPrompt: string;
   
-  // Build allowed changes from analysis suggestions
-  const allowedChangesFromAnalysis = analysis.suggestions?.length > 0 
-    ? `\nSPECIFIC CORRECTIONS FROM ANALYSIS (apply these changes):\n${analysis.suggestions.map(s => 
+  // Filter out structural changes that would alter tooth dimensions
+  const structuralKeywords = [
+    'alargar', 'widen', 'larger', 'maior', 'aumentar largura',
+    'aumentar volume', 'add volume', 'volume', 'bulk',
+    'expandir', 'expand', 'extend', 'estender',
+    'reconstruir', 'reconstruct', 'rebuild',
+    'mudar formato', 'change shape', 'reshape'
+  ];
+
+  const filteredSuggestions = analysis.suggestions?.filter(s => {
+    const change = s.proposed_change.toLowerCase();
+    const issue = s.current_issue.toLowerCase();
+    const isStructural = structuralKeywords.some(kw => 
+      change.includes(kw) || issue.includes(kw)
+    );
+    return !isStructural;
+  }) || [];
+
+  const allowedChangesFromAnalysis = filteredSuggestions.length > 0 
+    ? `\nSPECIFIC CORRECTIONS FROM ANALYSIS (apply these changes):\n${filteredSuggestions.map(s => 
         `- Tooth ${s.tooth}: ${s.proposed_change}`
       ).join('\n')}`
     : '';
@@ -396,6 +413,8 @@ ${allowedChangesFromAnalysis}
 PROPORTION RULES:
 - Keep original tooth width proportions exactly
 - NEVER make teeth appear thinner or narrower than original
+- NEVER make teeth appear WIDER or LARGER than original
+- DO NOT change the overall tooth silhouette or outline
 - Only add material to fill defects - do NOT reshape tooth contours
 - Maintain the natural width-to-height ratio of each tooth
 
@@ -420,6 +439,8 @@ ${allowedChangesFromAnalysis}
 PROPORTION RULES:
 - Keep original tooth width proportions exactly
 - NEVER make teeth appear thinner or narrower than original
+- NEVER make teeth appear WIDER or LARGER than original
+- DO NOT change the overall tooth silhouette or outline
 - Only add material to fill defects - do NOT reshape tooth contours
 - Maintain the natural width-to-height ratio of each tooth
 
@@ -448,6 +469,8 @@ ${allowedChangesFromAnalysis}
 PROPORTION RULES:
 - Keep original tooth width proportions exactly
 - NEVER make teeth appear thinner or narrower than original
+- NEVER make teeth appear WIDER or LARGER than original
+- DO NOT change the overall tooth silhouette or outline
 - Only add material to fill defects - do NOT reshape tooth contours
 - Maintain the natural width-to-height ratio of each tooth
 
@@ -470,6 +493,8 @@ ${allowedChangesFromAnalysis}
 PROPORTION RULES:
 - Keep original tooth width proportions exactly
 - NEVER make teeth appear thinner or narrower than original
+- NEVER make teeth appear WIDER or LARGER than original
+- DO NOT change the overall tooth silhouette or outline
 - Only add material to fill defects - do NOT reshape tooth contours
 - Maintain the natural width-to-height ratio of each tooth
 
