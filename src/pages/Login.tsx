@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { loginSchema, type LoginFormData } from '@/lib/schemas/auth';
+import { BRAND_NAME } from '@/lib/branding';
 import {
   Form,
   FormControl,
@@ -51,7 +52,7 @@ export default function Login() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-6 sm:mb-8">
           <Link to="/" className="text-lg sm:text-xl font-semibold tracking-tight">
-            ResinMatch AI
+            {BRAND_NAME}
           </Link>
           <h1 className="text-xl sm:text-2xl font-semibold mt-6 sm:mt-8 mb-2">Entrar</h1>
           <p className="text-sm text-muted-foreground">
