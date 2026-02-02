@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { registerSchema, type RegisterFormData } from '@/lib/schemas/auth';
 import { PasswordRequirements } from '@/components/PasswordRequirements';
+import { BRAND_NAME } from '@/lib/branding';
 import {
   Form,
   FormControl,
@@ -59,7 +60,7 @@ export default function Register() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-6 sm:mb-8">
           <Link to="/" className="text-lg sm:text-xl font-semibold tracking-tight">
-            ResinMatch AI
+            {BRAND_NAME}
           </Link>
           <h1 className="text-xl sm:text-2xl font-semibold mt-6 sm:mt-8 mb-2">Criar conta</h1>
           <p className="text-sm text-muted-foreground">

@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { CheckCircle } from 'lucide-react';
 import { resetPasswordSchema, type ResetPasswordFormData } from '@/lib/schemas/auth';
 import { PasswordRequirements } from '@/components/PasswordRequirements';
+import { BRAND_NAME } from '@/lib/branding';
 import {
   Form,
   FormControl,
@@ -80,7 +81,7 @@ export default function ResetPassword() {
       <div className="min-h-screen bg-background flex items-center justify-center px-4 sm:px-6 py-8">
         <div className="w-full max-w-sm text-center">
           <Link to="/" className="text-lg sm:text-xl font-semibold tracking-tight">
-            ResinMatch AI
+            {BRAND_NAME}
           </Link>
           <h1 className="text-xl sm:text-2xl font-semibold mt-6 sm:mt-8 mb-2">
             Link inválido ou expirado
@@ -101,7 +102,7 @@ export default function ResetPassword() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-6 sm:mb-8">
           <Link to="/" className="text-lg sm:text-xl font-semibold tracking-tight">
-            ResinMatch AI
+            {BRAND_NAME}
           </Link>
           <h1 className="text-xl sm:text-2xl font-semibold mt-6 sm:mt-8 mb-2">
             {success ? 'Senha atualizada!' : 'Nova senha'}

@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { ArrowLeft, Mail } from 'lucide-react';
+import { BRAND_NAME } from '@/lib/branding';
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
@@ -39,7 +40,7 @@ export default function ForgotPassword() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-6 sm:mb-8">
           <Link to="/" className="text-lg sm:text-xl font-semibold tracking-tight">
-            ResinMatch AI
+            {BRAND_NAME}
           </Link>
           <h1 className="text-xl sm:text-2xl font-semibold mt-6 sm:mt-8 mb-2">
             Recuperar senha
