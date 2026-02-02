@@ -17,6 +17,7 @@ import { LogOut, Plus, FileText, Package, ChevronRight, Search, FileWarning, Tre
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { format, formatDistanceToNow, startOfWeek, endOfWeek } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { BRAND_NAME } from '@/lib/branding';
 
 interface Session {
   session_id: string;
@@ -113,7 +114,7 @@ export default function Dashboard() {
       <div className="min-h-screen bg-background">
         <header className="border-b border-border animate-fade-in">
           <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
-            <span className="text-lg sm:text-xl font-semibold tracking-tight">ResinMatch AI</span>
+            <span className="text-lg sm:text-xl font-semibold tracking-tight">{BRAND_NAME}</span>
             <div className="flex items-center gap-2">
               <Tooltip>
                 <TooltipTrigger asChild>
