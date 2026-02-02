@@ -1,207 +1,146 @@
 
 
-# Análise Clínica de Consistência - Página de Resultado
+# Análise das Funcionalidades e Proposta de Novo Nome + Landing Page
 
-## Resumo da Análise
+## Análise das Funcionalidades Atuais
 
-Analisei os dados clínicos do caso `f18a75ad-733d-4117-9162-2fe90d29c44a` e encontrei **2 inconsistências clínicas reais** que precisam ser corrigidas.
+Após revisar todo o código da plataforma, identifiquei as seguintes funcionalidades:
 
----
+### Funcionalidades Principais
 
-## Dados do Caso Analisado
-
-| Campo | Valor |
-|-------|-------|
-| Dente | 11 (Incisivo Central Superior) |
-| Classe | Classe IV |
-| Cor Detectada | A2 |
-| Preferência | "Clareamento notável - dentes mais brancos (BL1/BL2)" |
-| Resina Recomendada | Tokuyama - Estelite Sigma Quick |
-
-### Protocolo Gerado pela IA
-
-| Camada | Resina | Cor | Espessura |
-|--------|--------|-----|-----------|
-| 1. Opaco | Estelite Sigma Quick | **OA1** | 0.3mm |
-| 2. Dentina | Estelite Sigma Quick | **OA1** | 0.5-1.0mm |
-| 3. Esmalte | Estelite Sigma Quick | **B1** | 0.3mm |
+| Funcionalidade | Descrição |
+|---|---|
+| **Análise de Foto Dental com IA** | Upload de foto intraoral que é analisada por IA para detectar múltiplos dentes, classificar cavidades, identificar cor VITA e determinar tipo de tratamento |
+| **Design Digital do Sorriso (DSD)** | Análise de proporções faciais/dentais + simulação visual de clareamento (Natural/White/Hollywood) |
+| **Recomendação de Resina por IA** | Protocolo de estratificação personalizado com camadas (Opaque/Dentin/Enamel) baseado no inventário do dentista |
+| **Protocolo de Cimentação (Porcelana)** | Protocolo completo para facetas cerâmicas quando indicado |
+| **Multi-tratamento** | Suporte a resina, porcelana, coroa, implante, endodontia e encaminhamento |
+| **Gestão de Inventário** | Catálogo de 250+ cores de resina (15+ marcas) com inventário pessoal |
+| **Gestão de Pacientes** | Cadastro, histórico de sessões, notas clínicas |
+| **Checklist de Protocolo** | Checklist interativo por caso para acompanhar execução clínica |
+| **Exportação PDF** | Relatório profissional com logo da clínica, fotos e protocolo completo |
+| **Busca Global** | Comando ⌘K para buscar pacientes e avaliações rapidamente |
 
 ---
 
-## Inconsistência 1: Cor OA1 Não Existe na Linha Estelite Sigma Quick
+## Proposta de Novo Nome
 
-### Problema Crítico
+O nome atual "ResinMatch AI" é limitante porque:
+- Foca apenas em resinas (a plataforma faz muito mais)
+- Não comunica a análise visual/DSD
+- Não reflete os múltiplos tipos de tratamento
 
-O protocolo recomenda a cor **OA1** para a camada de Opaco e Dentina usando a resina **Estelite Sigma Quick**. No entanto, ao verificar o catálogo de resinas no banco de dados:
+### Sugestões de Nomes
 
-**Cores disponíveis na Estelite Sigma Quick:**
-- Esmalte: CE, WE
-- Opaco: **OA2, OA3** (não existe OA1!)
-- Universal: A1, A2, A3, A3.5, B1, B2
+| Nome | Justificativa |
+|---|---|
+| **DentAI Pro** | Simples, direto, comunica IA + odontologia profissional |
+| **SmileOS** | "Sistema Operacional do Sorriso" - moderno, tech-forward |
+| **Odontolytics** | Análise dental inteligente - soa científico e premium |
+| **ProtocolAI** | Foco em protocolos clínicos com IA |
+| **ClinicalAI Dental** | Enfatiza o uso clínico profissional |
 
-**A cor OA1 só existe na linha Palfique LX5**, também da Tokuyama:
-- Palfique LX5: OA1, OA2, OA3, OPA2
-
-### Impacto Clínico
-
-O dentista pode:
-1. Procurar uma resina que não existe no mercado
-2. Fazer um pedido incorreto ao distribuidor
-3. Ficar confuso ao não encontrar o produto
-
-### Solução
-
-Adicionar validação no `recommend-resin` para verificar se a combinação (linha de produto + cor) existe no catálogo. Se a IA recomendar uma cor inexistente, o sistema deve:
-
-1. Consultar o catálogo para cores disponíveis naquela linha
-2. Substituir pela cor mais próxima disponível (OA2)
-3. OU recomendar a linha que possui a cor desejada (Palfique LX5 OA1)
+**Recomendação Principal: DentAI Pro**
+- Curto e memorável
+- Comunica IA claramente
+- "Pro" indica ferramenta profissional
+- Funciona bem em português e inglês
 
 ---
 
-## Inconsistência 2: Camada de Dentina Usando Cor Opaca
+## Atualização da Landing Page
 
-### Problema Clínico
+A landing page atual menciona apenas "recomendação de resina", mas a plataforma oferece muito mais. Proponho:
 
-O protocolo usa **OA1** (Opaco) para a camada de **Dentina** (camada 2):
+### 1. Atualização do Header/Branding
+- Mudar de "ResinMatch AI" para o novo nome
+- Atualizar meta tags no index.html
 
-```
-2. Dentina | Estelite Sigma Quick | OA1 | 0.5-1.0mm
-```
+### 2. Nova Seção Hero
+- Título: "Planejamento clínico inteligente para seu consultório"
+- Subtítulo: "IA que analisa fotos, sugere tratamentos e gera protocolos personalizados em segundos"
 
-Tecnicamente, cores com prefixo "O" (Opaco) são para mascaramento e não para reproduzir a estrutura da dentina. A nomenclatura correta seria:
+### 3. Seção de Funcionalidades (substituir "Benefits")
+Destacar as 4 principais capacidades:
 
-- **Camada Opaco**: OA1/OA2 (mascaramento)
-- **Camada Dentina**: DA1/DA2 ou simplesmente A1/A2 (corpo da dentina)
+| Feature | Título | Descrição |
+|---|---|---|
+| Camera + Brain | Análise Visual com IA | Tire uma foto e a IA identifica dentes, classifica cavidades e detecta cores |
+| Smile | Simulação de Sorriso | Visualize o resultado antes de iniciar com simulação DSD |
+| Layers | Protocolo de Estratificação | Receba camada por camada qual resina usar do seu inventário |
+| FileText | Relatório Profissional | Exporte PDF personalizado com logo do consultório |
 
-### Impacto Clínico
-
-Usar uma resina opaca em toda a camada de dentina pode resultar em:
-1. Aparência artificial e "morta" do dente
-2. Perda de profundidade óptica
-3. Dificuldade em atingir o mimetismo natural
-
-### Solução
-
-Ajustar o prompt do `recommend-resin` para diferenciar claramente:
-
+### 4. Nova Seção "Como Funciona" (mais detalhada)
 ```text
-REGRAS DE COR POR CAMADA:
-- Camada OPACO: Cores com prefixo O (OA1, OA2, OB1) - para mascarar substrato
-- Camada DENTINA/BODY: Cores universais (A1, A2, B1) ou Dentina (DA1, DA2)
-- Camada ESMALTE: Cores com prefixo E ou esmalte (EA1, EA2, WE, CE)
+01 - Tire a foto intraoral
+     Faça upload da foto clínica e fotos adicionais (sorriso, face)
+
+02 - IA analisa o caso completo
+     Detecta múltiplos dentes, classifica tratamentos, identifica cor VITA
+
+03 - Visualize o resultado
+     Simulação de clareamento e proporções ideais do sorriso
+
+04 - Receba o protocolo
+     Protocolo de estratificação ou cimentação com suas resinas disponíveis
 ```
 
----
+### 5. Atualizar Estatísticas
+- Manter "500+ Avaliações realizadas"
+- Manter "250+ Cores de resinas"
+- Manter "15+ Marcas disponíveis"
+- Adicionar: "6 Tipos de tratamento" (se houver espaço)
 
-## O Que Está Correto
+### 6. Atualizar FAQ
+Adicionar perguntas sobre:
+- DSD e simulação de sorriso
+- Tipos de tratamento além de resina
+- Gestão de pacientes
 
-### 1. Direção do Clareamento
-A preferência era "Clareamento notável (BL1/BL2)" e a IA ajustou:
-- De A2 (cor detectada) → Para B1 no esmalte
-- Isso está na direção certa (B1 é mais claro que A2)
-
-### 2. Protocolo de 3 Camadas para Classe IV
-Correto para uma restauração estética anterior de tamanho médio.
-
-### 3. Espessuras Adequadas
-- Opaco: 0.3mm (OK para substrato normal)
-- Dentina: 0.5-1.0mm (adequado)
-- Esmalte: 0.3mm (correto para translucidez)
-
-### 4. Técnicas de Acabamento
-O protocolo de polimento está completo e correto (Sof-Lex, Twist Gloss, pasta Diamond).
-
-### 5. Checklist Atualizado
-Não menciona "bisel" (técnica ultrapassada) e inclui sistema adesivo adequado.
-
----
-
-## Plano de Correções
-
-### Correção 1: Validação de Combinação Resina + Cor
-
-**Arquivo:** `supabase/functions/recommend-resin/index.ts`
-
-Adicionar uma etapa de pós-processamento que valida as cores recomendadas:
-
-```typescript
-// Após receber resposta da IA
-async function validateAndFixProtocol(
-  protocol: StratificationProtocol, 
-  supabase: SupabaseClient
-): Promise<StratificationProtocol> {
-  // Para cada camada, verificar se a cor existe na linha recomendada
-  for (const layer of protocol.layers) {
-    const [manufacturer, productLine] = layer.resin_brand.split(' - ');
-    
-    // Consultar catálogo
-    const { data: available } = await supabase
-      .from('resin_catalog')
-      .select('shade')
-      .ilike('product_line', `%${productLine}%`)
-      .eq('shade', layer.shade);
-    
-    if (!available || available.length === 0) {
-      // Cor não existe - buscar alternativa
-      const { data: alternatives } = await supabase
-        .from('resin_catalog')
-        .select('shade, type')
-        .ilike('product_line', `%${productLine}%`)
-        .ilike('type', `%${getLayerType(layer.name)}%`)
-        .limit(3);
-      
-      if (alternatives?.length > 0) {
-        layer.shade = alternatives[0].shade;
-        // Adicionar alerta sobre substituição
-        protocol.alerts.push(
-          `Cor ${layer.shade} substituída: a cor original não está disponível nesta linha.`
-        );
-      }
-    }
-  }
-  
-  return protocol;
-}
-```
-
-### Correção 2: Regras Claras de Cor por Tipo de Camada
-
-**Arquivo:** `supabase/functions/recommend-resin/index.ts`
-
-Adicionar ao prompt (antes do JSON de resposta):
-
-```text
-=== REGRAS DE COR POR TIPO DE CAMADA (OBRIGATÓRIO) ===
-
-CAMADA OPACO/MASCARAMENTO:
-- USAR: Cores com prefixo O (OA1, OA2, OB1, WO) ou White Opaquer
-- OBJETIVO: Bloquear substrato escuro, criar barreira
-
-CAMADA DENTINA/BODY:
-- USAR: Cores universais (A1, A2, B1) ou Dentina específica (DA1, DA2)
-- NÃO USAR: Cores opacas (OA1) para dentina - resultado artificial
-- OBJETIVO: Reproduzir corpo do dente com profundidade
-
-CAMADA ESMALTE:
-- USAR: Cores de esmalte (EA1, WE, CE) ou translúcidos (Trans, CT, IT)
-- OBJETIVO: Brilho superficial e mimetismo
-```
-
----
-
-## Resumo de Impacto
-
-| Problema | Severidade | Impacto Clínico |
-|----------|------------|-----------------|
-| Cor inexistente (OA1 na Sigma Quick) | **Alta** | Produto não encontrado, confusão |
-| Opaco na camada de dentina | **Média** | Estética sub-ótima, mas funcional |
+### 7. Atualizar Depoimentos
+Manter os depoimentos atuais mas verificar se mencionam apenas "resina" - podem precisar de ajustes para refletir a amplitude da ferramenta.
 
 ---
 
 ## Arquivos a Modificar
 
-1. **`supabase/functions/recommend-resin/index.ts`**
-   - Adicionar validação de cor vs linha de produto no catálogo
-   - Refinar regras de cor por tipo de camada no prompt
+| Arquivo | Alterações |
+|---|---|
+| `index.html` | Atualizar title, meta tags (og:title, description) para novo nome |
+| `src/pages/Landing.tsx` | Hero, stats, features, how it works, FAQ |
+| `src/pages/Dashboard.tsx` | Logo/nome no header |
+| `src/pages/Result.tsx` | Logo/nome no header |
+| Todos os headers | Atualizar referências a "ResinMatch AI" |
+
+---
+
+## Seção Técnica
+
+### Implementação
+
+1. **Atualizar index.html**
+   - `<title>DentAI Pro</title>`
+   - Atualizar og:title, og:description, description
+
+2. **Atualizar Landing.tsx**
+   - Novo conteúdo hero com messaging expandido
+   - Nova seção de features (4 cards com ícones)
+   - Expandir "Como funciona" para 4 passos
+   - Atualizar FAQ com 2-3 novas perguntas
+   - Atualizar referências do nome no header e footer
+
+3. **Atualizar headers em todas as páginas**
+   - Dashboard.tsx
+   - Result.tsx
+   - Profile.tsx
+   - EvaluationDetails.tsx
+   - Inventory.tsx
+   - Patients.tsx
+   - PatientProfile.tsx
+   - NewCase.tsx
+   - Evaluations.tsx
+
+4. **Considerar componente de branding reutilizável**
+   - Criar constante para o nome em um arquivo central
+   - Facilitar futuras mudanças de branding
 
