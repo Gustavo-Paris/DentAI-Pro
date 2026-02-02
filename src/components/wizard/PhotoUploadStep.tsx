@@ -147,7 +147,7 @@ export function PhotoUploadStep({
     return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   }, []);
 
-  // Detecta tela pequena para funcionar no preview do Lovable
+  // Detecta tela pequena para layout responsivo
   useEffect(() => {
     const checkScreen = () => {
       setIsSmallScreen(window.innerWidth < 768);

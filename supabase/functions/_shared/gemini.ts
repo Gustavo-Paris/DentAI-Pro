@@ -1,5 +1,4 @@
-// Google Gemini API client for Supabase Edge Functions
-// Replaces Lovable AI Gateway with direct Gemini API calls
+// Google Gemini API client for DentAI Pro Supabase Edge Functions
 
 import { logger } from "./logger.ts";
 
