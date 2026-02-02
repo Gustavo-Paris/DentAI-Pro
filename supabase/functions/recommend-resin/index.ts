@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsPreFlight, ERROR_MESSAGES, createErrorResponse } from "../_shared/cors.ts";
 import { validateEvaluationData, type EvaluationData } from "../_shared/validation.ts";
 import { logger } from "../_shared/logger.ts";
+import { callGemini, GeminiError, type OpenAIMessage } from "../_shared/gemini.ts";
 
 interface ProtocolLayer {
   order: number;
@@ -89,7 +90,6 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY")!;
 
     // Validate authentication
     const authHeader = req.headers.get("Authorization");
@@ -582,43 +582,39 @@ Responda em formato JSON:
 
 Responda APENAS com o JSON, sem texto adicional.`;
 
-    // Call Lovable AI Gateway
-    const aiResponse = await fetch(
-      "https://ai.gateway.lovable.dev/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${lovableApiKey}`,
-        },
-        body: JSON.stringify({
-          model: "google/gemini-3-flash-preview",
-          messages: [
-            {
-              role: "user",
-              content: prompt,
-            },
-          ],
-          max_tokens: 4096,
-        }),
-      }
-    );
+    // Call Gemini API
+    const messages: OpenAIMessage[] = [
+      { role: "user", content: prompt },
+    ];
 
-    if (!aiResponse.ok) {
-      console.error("AI API error:", aiResponse.status);
-      
-      if (aiResponse.status === 429) {
-        return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
+    let content: string;
+    try {
+      const result = await callGemini(
+        "gemini-2.0-flash-exp",
+        messages,
+        {
+          temperature: 0.3,
+          maxTokens: 4096,
+        }
+      );
+
+      if (!result.text) {
+        logger.error("Empty response from Gemini");
+        return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
       }
-      if (aiResponse.status === 402) {
-        return createErrorResponse(ERROR_MESSAGES.PAYMENT_REQUIRED, 402, corsHeaders, "PAYMENT_REQUIRED");
+
+      content = result.text;
+    } catch (error) {
+      if (error instanceof GeminiError) {
+        if (error.statusCode === 429) {
+          return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
+        }
+        logger.error("Gemini API error:", error.message);
+      } else {
+        logger.error("AI error:", error);
       }
-      
       return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     }
-
-    const aiResult = await aiResponse.json();
-    const content = aiResult.choices[0].message.content;
 
     // Parse JSON from AI response
     let recommendation;
@@ -630,7 +626,7 @@ Responda APENAS com o JSON, sem texto adicional.`;
         throw new Error("No JSON found in response");
       }
     } catch (parseError) {
-      console.error("Failed to parse AI response");
+      logger.error("Failed to parse AI response");
       return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     }
 
