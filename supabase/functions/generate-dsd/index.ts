@@ -71,6 +71,12 @@ const WHITENING_INSTRUCTIONS: Record<string, { instruction: string; intensity: s
   }
 };
 
+interface ClinicalToothFinding {
+  tooth: string;
+  indication_reason?: string;
+  treatment_indication?: string;
+}
+
 interface RequestData {
   imageBase64: string;
   evaluationId?: string;
@@ -80,6 +86,8 @@ interface RequestData {
   additionalPhotos?: AdditionalPhotos;
   patientPreferences?: PatientPreferences;
   analysisOnly?: boolean; // NEW: Return only analysis, skip simulation
+  clinicalObservations?: string[]; // Observations from analyze-dental-photo to prevent contradictions
+  clinicalTeethFindings?: ClinicalToothFinding[]; // Per-tooth findings to prevent false restoration claims
 }
 
 // Validate request
@@ -134,6 +142,18 @@ function validateRequest(data: unknown): { success: boolean; error?: string; dat
     }
   }
 
+  // Parse clinical observations if provided (from analyze-dental-photo)
+  const clinicalObservations = Array.isArray(req.clinicalObservations)
+    ? (req.clinicalObservations as string[]).filter(o => typeof o === 'string')
+    : undefined;
+
+  // Parse per-tooth clinical findings if provided
+  const clinicalTeethFindings = Array.isArray(req.clinicalTeethFindings)
+    ? (req.clinicalTeethFindings as ClinicalToothFinding[]).filter(
+        (f): f is ClinicalToothFinding => typeof f === 'object' && f !== null && typeof f.tooth === 'string'
+      )
+    : undefined;
+
   return {
     success: true,
     data: {
@@ -145,6 +165,8 @@ function validateRequest(data: unknown): { success: boolean; error?: string; dat
       additionalPhotos,
       patientPreferences,
       analysisOnly: req.analysisOnly === true, // NEW
+      clinicalObservations,
+      clinicalTeethFindings,
     },
   };
 }
@@ -627,7 +649,9 @@ async function analyzeProportions(
   imageBase64: string,
   corsHeaders: Record<string, string>,
   additionalPhotos?: AdditionalPhotos,
-  patientPreferences?: PatientPreferences
+  patientPreferences?: PatientPreferences,
+  clinicalObservations?: string[],
+  clinicalTeethFindings?: ClinicalToothFinding[],
 ): Promise<DSDAnalysis | Response> {
   // Build additional context based on available photos
   let additionalContext = '';
@@ -670,10 +694,44 @@ O paciente expressou os seguintes desejos estéticos. PRIORIZE sugestões que at
 IMPORTANTE: Use as preferências do paciente para PRIORIZAR sugestões, mas NÃO sugira tratamentos clinicamente inadequados apenas para atender desejos. Sempre mantenha o foco em resultados conservadores e naturais.`;
   }
 
+  // Build clinical context from prior analysis to prevent contradictions
+  let clinicalContext = '';
+  if (clinicalObservations?.length || clinicalTeethFindings?.length) {
+    clinicalContext = `
+
+=== ANÁLISE CLÍNICA PRÉVIA (RESPEITAR OBRIGATORIAMENTE) ===
+A análise clínica inicial já foi realizada sobre esta mesma foto por outro modelo de IA.
+Você DEVE manter CONSISTÊNCIA com os achados clínicos abaixo.
+`;
+    if (clinicalObservations?.length) {
+      clinicalContext += `
+Observações clínicas prévias:
+${clinicalObservations.map(o => `- ${o}`).join('\n')}
+
+REGRA: Sua classificação de arco do sorriso, corredor bucal e desgaste incisal DEVE ser
+CONSISTENTE com as observações acima. Se houver discordância, justifique nas observations.
+`;
+    }
+    if (clinicalTeethFindings?.length) {
+      clinicalContext += `
+Achados clínicos POR DENTE (diagnóstico já realizado):
+${clinicalTeethFindings.map(f => `- Dente ${f.tooth}: ${f.indication_reason || 'sem observação específica'} (indicação: ${f.treatment_indication || 'não definida'})`).join('\n')}
+
+⚠️ REGRA CRÍTICA - NÃO INVENTAR RESTAURAÇÕES:
+Se a análise clínica acima identificou o problema de um dente como "diastema", "fechamento de diastema",
+"desgaste", "microdontia" ou "conoide", você NÃO PODE dizer "Substituir restauração" para esse dente.
+Apenas diga "Substituir restauração" se a análise clínica EXPLICITAMENTE mencionar "restauração existente",
+"restauração antiga", "interface de restauração" ou "manchamento de restauração" para aquele dente específico.
+Se o problema clínico é diastema → sua sugestão deve ser "Fechar diastema com..." ou "Adicionar faceta para..."
+Se o problema clínico é microdontia/conoide → sua sugestão deve ser "Aumentar volume com..." ou "Reabilitar morfologia com..."
+`;
+    }
+  }
+
   const analysisPrompt = `Você é um especialista em Digital Smile Design (DSD), Visagismo e Odontologia Estética com mais de 20 anos de experiência em planejamento de sorrisos naturais e personalizados.
 
 Analise esta foto de sorriso/face do paciente e forneça uma análise COMPLETA das proporções faciais e dentárias, aplicando princípios de VISAGISMO para criar um sorriso PERSONALIZADO ao paciente.
-${additionalContext}${preferencesContext}
+${additionalContext}${preferencesContext}${clinicalContext}
 
 === PRINCÍPIOS DE VISAGISMO (APLICAR OBRIGATORIAMENTE) ===
 
@@ -1161,7 +1219,9 @@ serve(async (req: Request) => {
       toothShape,
       additionalPhotos,
       patientPreferences,
-      analysisOnly // NEW
+      analysisOnly, // NEW
+      clinicalObservations,
+      clinicalTeethFindings,
     } = validation.data;
 
     // Check and consume credits only for the initial DSD call (not regeneration)
@@ -1188,8 +1248,8 @@ serve(async (req: Request) => {
     if (regenerateSimulationOnly && existingAnalysis) {
       analysis = existingAnalysis;
     } else {
-      // Run full analysis - pass additional photos and preferences for context enrichment
-      const analysisResult = await analyzeProportions(imageBase64, corsHeaders, additionalPhotos, patientPreferences);
+      // Run full analysis - pass additional photos, preferences, clinical observations, and per-tooth findings
+      const analysisResult = await analyzeProportions(imageBase64, corsHeaders, additionalPhotos, patientPreferences, clinicalObservations, clinicalTeethFindings);
       
       // Check if it's an error response
       if (analysisResult instanceof Response) {
