@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { ArrowLeft, ArrowRight, Camera, Brain, ClipboardCheck, FileText, Loader2, Smile, Check, Save, Heart } from 'lucide-react';
 
+import { useSubscription } from '@/hooks/useSubscription';
 import { PhotoUploadStep, AdditionalPhotos } from '@/components/wizard/PhotoUploadStep';
 import { PatientPreferencesStep, PatientPreferences } from '@/components/wizard/PatientPreferencesStep';
 import { AnalyzingStep } from '@/components/wizard/AnalyzingStep';
@@ -76,6 +77,7 @@ export default function NewCase() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { invokeFunction } = useAuthenticatedFetch();
+  const { canUseCredits, refreshSubscription } = useSubscription();
   
   // Auto-save hook
   const { loadDraft, saveDraft, clearDraft, isSaving, lastSavedAt } = useWizardDraft(user?.id);
@@ -230,6 +232,17 @@ export default function NewCase() {
   const analyzePhoto = async () => {
     if (!imageBase64) return;
 
+    // Pre-check credits before starting analysis
+    if (!canUseCredits('case_analysis')) {
+      toast.error('Créditos insuficientes. Faça upgrade do seu plano para continuar.', {
+        action: {
+          label: 'Ver Planos',
+          onClick: () => navigate('/pricing'),
+        },
+      });
+      return;
+    }
+
     setStep(3); // Go to analyzing step (step 3 now)
     setIsAnalyzing(true);
     setAnalysisError(null); // Clear any previous error
@@ -283,6 +296,7 @@ export default function NewCase() {
 
         // Move to DSD step after successful analysis
         setIsAnalyzing(false);
+        refreshSubscription(); // Update credit count after consumption
         setStep(4); // DSD step (step 4 now)
       } else {
         throw new Error('Análise não retornou dados');
@@ -296,8 +310,9 @@ export default function NewCase() {
       
       if (err.message?.includes('429') || err.code === 'RATE_LIMITED') {
         errorMessage = 'Limite de requisições excedido. Aguarde alguns minutos e tente novamente.';
-      } else if (err.message?.includes('402') || err.code === 'PAYMENT_REQUIRED') {
-        errorMessage = 'Créditos insuficientes. Adicione créditos à sua conta para continuar.';
+      } else if (err.message?.includes('402') || err.code === 'INSUFFICIENT_CREDITS' || err.code === 'PAYMENT_REQUIRED') {
+        errorMessage = 'Créditos insuficientes. Faça upgrade do seu plano para continuar.';
+        refreshSubscription(); // Sync credit state
       } else if (err.message?.includes('não retornou dados')) {
         errorMessage = 'A IA não conseguiu identificar estruturas dentárias na foto. Tente uma foto com melhor iluminação.';
       }

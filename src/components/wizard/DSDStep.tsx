@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Smile, Loader2, RefreshCw, ChevronRight, Lightbulb, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { useSubscription } from '@/hooks/useSubscription';
 import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
 import { ProportionsCard } from '@/components/dsd/ProportionsCard';
 import { LoadingOverlay } from '@/components/LoadingOverlay';
@@ -109,6 +110,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
   
   const { invokeFunction } = useAuthenticatedFetch();
   const { user } = useAuth();
+  const { canUseCredits, refreshSubscription } = useSubscription();
 
   const lastCompositeSourcePathRef = useRef<string | null>(null);
   
@@ -348,9 +350,15 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
     const MAX_RETRIES = 2;
     let didRetry = false;
     let hasError = false;
-    
+
     if (!imageBase64) {
       setError('Nenhuma imagem disponível para análise');
+      return;
+    }
+
+    // Pre-check credits before starting DSD
+    if (!canUseCredits('dsd_simulation')) {
+      setError('Créditos insuficientes para simulação DSD. Faça upgrade do seu plano.');
       return;
     }
 
@@ -406,6 +414,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
         // Show analysis immediately
         setResult(data);
         setIsAnalyzing(false);
+        refreshSubscription(); // Update credit count after consumption
         toast.success('Análise de proporções concluída!');
         
         // PHASE 2: Generate simulation in background
@@ -440,8 +449,9 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
       hasError = true;
       if (err.message?.includes('429') || err.code === 'RATE_LIMITED') {
         setError('Limite de requisições excedido. Aguarde alguns minutos.');
-      } else if (err.message?.includes('402') || err.code === 'PAYMENT_REQUIRED') {
-        setError('Créditos insuficientes. Adicione créditos à sua conta.');
+      } else if (err.message?.includes('402') || err.code === 'INSUFFICIENT_CREDITS' || err.code === 'PAYMENT_REQUIRED') {
+        setError('Créditos insuficientes para simulação DSD. Faça upgrade do seu plano.');
+        refreshSubscription();
       } else if (isConnectionError) {
         setError('Erro de conexão. Verifique sua internet e tente novamente.');
       } else {

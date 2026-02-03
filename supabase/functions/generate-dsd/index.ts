@@ -9,6 +9,7 @@ import {
   type OpenAITool
 } from "../_shared/gemini.ts";
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
+import { checkAndUseCredits, createInsufficientCreditsResponse } from "../_shared/credits.ts";
 
 // DSD Analysis interface
 interface DSDAnalysis {
@@ -1144,7 +1145,7 @@ serve(async (req: Request) => {
       return createRateLimitResponse(rateLimitResult, corsHeaders);
     }
 
-    // Parse and validate request body
+    // Parse and validate request body (need to parse before credit check)
     const body = await req.json();
     const validation = validateRequest(body);
 
@@ -1152,16 +1153,26 @@ serve(async (req: Request) => {
       return createErrorResponse(validation.error || ERROR_MESSAGES.INVALID_REQUEST, 400, corsHeaders);
     }
 
-    const { 
-      imageBase64, 
-      evaluationId, 
-      regenerateSimulationOnly, 
-      existingAnalysis, 
-      toothShape, 
-      additionalPhotos, 
+    const {
+      imageBase64,
+      evaluationId,
+      regenerateSimulationOnly,
+      existingAnalysis,
+      toothShape,
+      additionalPhotos,
       patientPreferences,
       analysisOnly // NEW
     } = validation.data;
+
+    // Check and consume credits only for the initial DSD call (not regeneration)
+    // regenerateSimulationOnly = phase 2 of same DSD, already charged
+    if (!regenerateSimulationOnly) {
+      const creditResult = await checkAndUseCredits(supabase, user.id, "dsd_simulation");
+      if (!creditResult.allowed) {
+        logger.warn(`Insufficient credits for user ${user.id} on dsd_simulation`);
+        return createInsufficientCreditsResponse(creditResult, corsHeaders);
+      }
+    }
 
     // Log if additional photos or preferences were provided
     if (additionalPhotos) {

@@ -4,6 +4,7 @@ import { getCorsHeaders, handleCorsPreFlight, ERROR_MESSAGES, createErrorRespons
 import { logger } from "../_shared/logger.ts";
 import { callGeminiVisionWithTools, GeminiError, type OpenAITool } from "../_shared/gemini.ts";
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
+import { checkAndUseCredits, createInsufficientCreditsResponse } from "../_shared/credits.ts";
 
 interface AnalyzePhotoRequest {
   imageBase64: string;
@@ -120,6 +121,13 @@ serve(async (req) => {
     if (!rateLimitResult.allowed) {
       logger.warn(`Rate limit exceeded for user ${userId} on analyze-dental-photo`);
       return createRateLimitResponse(rateLimitResult, corsHeaders);
+    }
+
+    // Check and consume credits (1 credit for case_analysis)
+    const creditResult = await checkAndUseCredits(supabaseService, userId, "case_analysis");
+    if (!creditResult.allowed) {
+      logger.warn(`Insufficient credits for user ${userId} on case_analysis`);
+      return createInsufficientCreditsResponse(creditResult, corsHeaders);
     }
 
     // Parse and validate request
