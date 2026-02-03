@@ -328,23 +328,31 @@ export function ReviewAnalysisStep({
       )}
 
       {/* Warnings */}
-      {analysisResult?.warnings && analysisResult.warnings.length > 0 && (
-        <Card className="border-yellow-500/50 bg-yellow-50 dark:bg-yellow-950/20">
-          <CardContent className="py-4">
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5" />
-              <div>
-                <h4 className="font-medium text-yellow-800 dark:text-yellow-200">Pontos de atenção</h4>
-                <ul className="mt-2 space-y-1">
-                  {analysisResult.warnings.map((warning, i) => (
-                    <li key={i} className="text-sm text-yellow-700 dark:text-yellow-300">• {warning}</li>
-                  ))}
-                </ul>
+      {analysisResult?.warnings && analysisResult.warnings.length > 0 && (() => {
+        // Fix stale tooth count in warnings (clinical analysis wrote "6 dentes"
+        // but DSD union may have added more, making actual count 8)
+        const actualCount = detectedTeeth.length;
+        const correctedWarnings = analysisResult.warnings.map(w =>
+          w.replace(/Detectados?\s+\d+\s+dentes?/i, `Detectados ${actualCount} dentes`)
+        );
+        return (
+          <Card className="border-yellow-500/50 bg-yellow-50 dark:bg-yellow-950/20">
+            <CardContent className="py-4">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5" />
+                <div>
+                  <h4 className="font-medium text-yellow-800 dark:text-yellow-200">Pontos de atenção</h4>
+                  <ul className="mt-2 space-y-1">
+                    {correctedWarnings.map((warning, i) => (
+                      <li key={i} className="text-sm text-yellow-700 dark:text-yellow-300">• {warning}</li>
+                    ))}
+                  </ul>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            </CardContent>
+          </Card>
+        );
+      })()}
 
       {/* Multi-tooth Selection with Categories */}
       {hasMultipleTeeth && (
