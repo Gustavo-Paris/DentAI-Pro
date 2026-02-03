@@ -658,7 +658,7 @@ Responda APENAS com o JSON, sem texto adicional.`;
         messages,
         {
           temperature: 0.3,
-          maxTokens: 4096,
+          maxTokens: 8192,
         }
       );
 
@@ -683,14 +683,23 @@ Responda APENAS com o JSON, sem texto adicional.`;
     // Parse JSON from AI response
     let recommendation;
     try {
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        recommendation = JSON.parse(jsonMatch[0]);
-      } else {
-        throw new Error("No JSON found in response");
+      // Strip markdown code fences if present (```json ... ```)
+      let cleaned = content.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '');
+
+      // Try direct parse first
+      try {
+        recommendation = JSON.parse(cleaned);
+      } catch {
+        // Fallback: extract first JSON object from response
+        const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          recommendation = JSON.parse(jsonMatch[0]);
+        } else {
+          throw new Error("No JSON found in response");
+        }
       }
     } catch (parseError) {
-      logger.error("Failed to parse AI response");
+      logger.error("Failed to parse AI response. Raw content:", content.substring(0, 500));
       return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     }
 
