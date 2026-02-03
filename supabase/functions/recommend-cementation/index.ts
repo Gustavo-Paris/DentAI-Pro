@@ -2,6 +2,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsPreFlight, createErrorResponse, ERROR_MESSAGES } from "../_shared/cors.ts";
 import { logger } from "../_shared/logger.ts";
+import { callGeminiWithTools, GeminiError, type OpenAIMessage, type OpenAITool } from "../_shared/gemini.ts";
+import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 
 // Cementation protocol interfaces
 interface CementationStep {
@@ -85,12 +87,11 @@ serve(async (req: Request) => {
   const corsHeaders = getCorsHeaders(req);
 
   try {
-    // Get API keys
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    // Get environment variables
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-    if (!LOVABLE_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
       logger.error("Missing required environment variables");
       return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
     }
@@ -110,6 +111,19 @@ serve(async (req: Request) => {
 
     if (authError || !user) {
       return createErrorResponse(ERROR_MESSAGES.INVALID_TOKEN, 401, corsHeaders);
+    }
+
+    // Check rate limit (AI_LIGHT: 20/min, 100/hour, 500/day)
+    const rateLimitResult = await checkRateLimit(
+      supabase,
+      user.id,
+      "recommend-cementation",
+      RATE_LIMITS.AI_LIGHT
+    );
+
+    if (!rateLimitResult.allowed) {
+      logger.warn(`Rate limit exceeded for user ${user.id} on recommend-cementation`);
+      return createRateLimitResponse(rateLimitResult, corsHeaders);
     }
 
     // Parse and validate request body
@@ -134,14 +148,37 @@ serve(async (req: Request) => {
     }
 
     // AI prompt for cementation protocol
-    const systemPrompt = `Você é um especialista em cimentação de facetas de porcelana com mais de 15 anos de experiência clínica.
-Gere um protocolo COMPLETO e DETALHADO de cimentação para facetas cerâmicas.
+    const systemPrompt = `Você é um especialista em cimentação de facetas de porcelana com mais de 15 anos de experiência clínica em casos estéticos de alta complexidade.
+Gere um protocolo COMPLETO e DETALHADO de cimentação para facetas cerâmicas, com FOCO em obter resultado estético NATURAL e PREVISÍVEL.
+
+=== PRINCÍPIOS ESTÉTICOS PARA CIMENTAÇÃO ===
+
+1. **INFLUÊNCIA DA COR DO CIMENTO**:
+   - Cimentos muito opacos podem criar efeito "morto" na faceta
+   - Cimentos muito translúcidos podem deixar substrato escuro transparecer
+   - A cor do cimento AFETA DIRETAMENTE o resultado final
+
+2. **SELEÇÃO DE COR DO CIMENTO** (baseada no substrato):
+   - Substrato CLARO (A1-A2): Cimentos translúcidos ou clear
+   - Substrato MÉDIO (A3-A3.5): Cimentos A1 ou Universal
+   - Substrato ESCURECIDO: Cimentos opacos (White Opaque) + mascarador
+
+3. **PROVA DO CIMENTO (TRY-IN)**:
+   - SEMPRE usar pasta try-in antes da cimentação definitiva
+   - Avaliar cor com iluminação NATURAL
+   - Verificar se o substrato está transparecendo
+
+4. **TÉCNICA DE ASSENTAMENTO**:
+   - Pressão uniforme para evitar linhas de cimento visíveis
+   - Remoção de excessos ANTES da polimerização (cimento fotopolimerizável)
+   - Verificar margens cervicais sob ampliação
 
 IMPORTANTE:
 - Seja específico com marcas e materiais brasileiros quando possível
 - Inclua tempos precisos para cada etapa
 - Considere o tipo de cerâmica e substrato informados
-- Priorize técnicas atualizadas e baseadas em evidências`;
+- Priorize técnicas atualizadas e baseadas em evidências
+- O resultado deve parecer NATURAL, integrado aos dentes adjacentes`;
 
     const userPrompt = `Gere um protocolo de cimentação de facetas de porcelana para o seguinte caso:
 
@@ -276,49 +313,40 @@ Retorne o protocolo usando a função generate_cementation_protocol.`;
       },
     ];
 
-    // Call AI for protocol generation
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-pro",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        tools,
-        tool_choice: { type: "function", function: { name: "generate_cementation_protocol" } },
-      }),
-    });
-
-    if (!response.ok) {
-      const status = response.status;
-      if (status === 429) {
-        return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
-      }
-      if (status === 402) {
-        return createErrorResponse(ERROR_MESSAGES.PAYMENT_REQUIRED, 402, corsHeaders, "PAYMENT_REQUIRED");
-      }
-      logger.error("AI error:", status);
-      return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
-    }
-
-    const aiResult = await response.json();
-    const toolCall = aiResult.choices?.[0]?.message?.tool_calls?.[0];
-
-    if (!toolCall?.function?.arguments) {
-      logger.error("No tool call in response");
-      return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
-    }
+    // Call Gemini for protocol generation
+    const messages: OpenAIMessage[] = [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt },
+    ];
 
     let protocol: CementationProtocol;
     try {
-      protocol = JSON.parse(toolCall.function.arguments);
-    } catch {
-      console.error("Failed to parse protocol");
+      const result = await callGeminiWithTools(
+        "gemini-2.5-pro",
+        messages,
+        tools as OpenAITool[],
+        {
+          temperature: 0.3,
+          maxTokens: 4000,
+          forceFunctionName: "generate_cementation_protocol",
+        }
+      );
+
+      if (!result.functionCall) {
+        logger.error("No function call in Gemini response");
+        return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
+      }
+
+      protocol = result.functionCall.args as unknown as CementationProtocol;
+    } catch (error) {
+      if (error instanceof GeminiError) {
+        if (error.statusCode === 429) {
+          return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
+        }
+        logger.error("Gemini API error:", error.message);
+      } else {
+        logger.error("AI error:", error);
+      }
       return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     }
 

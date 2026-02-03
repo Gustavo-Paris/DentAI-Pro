@@ -16,8 +16,17 @@ export function calculateAge(birthDate: string): number {
 
 /**
  * Format a date string to Brazilian format (DD/MM/YYYY)
+ * Handles YYYY-MM-DD strings without timezone conversion issues
  */
 export function formatDateBR(dateString: string): string {
+  // For YYYY-MM-DD format, parse directly to avoid UTC conversion
+  const isoDateMatch = dateString.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (isoDateMatch) {
+    const [, year, month, day] = isoDateMatch;
+    return `${day}/${month}/${year}`;
+  }
+
+  // For other formats (with time), use standard parsing
   const date = new Date(dateString);
   return date.toLocaleDateString('pt-BR');
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -7,8 +7,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowLeft, Camera, Loader2, Save, Building2, ImageIcon } from 'lucide-react';
+import { ArrowLeft, Camera, Loader2, Save, Building2, ImageIcon, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
+import { SubscriptionStatus } from '@/components/pricing/SubscriptionStatus';
+import { useSubscription } from '@/hooks/useSubscription';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface ProfileData {
   full_name: string | null;
@@ -22,9 +25,11 @@ interface ProfileData {
 export default function Profile() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { refreshSubscription } = useSubscription();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
-  
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -73,6 +78,30 @@ export default function Profile() {
 
     fetchProfile();
   }, [user]);
+
+  // Handle redirect from Stripe checkout
+  useEffect(() => {
+    const status = searchParams.get('subscription');
+    if (status === 'success') {
+      toast.success('Assinatura ativada com sucesso!');
+      // Sync subscription from Stripe (bypasses webhook timing issues)
+      const syncSubscription = async () => {
+        try {
+          await supabase.functions.invoke('sync-subscription', { body: {} });
+        } catch (e) {
+          console.error('Sync error:', e);
+        }
+        refreshSubscription();
+      };
+      syncSubscription();
+      // Retry in case of delay
+      setTimeout(syncSubscription, 3000);
+      navigate('/profile', { replace: true });
+    } else if (status === 'canceled') {
+      toast.info('Checkout cancelado');
+      navigate('/profile', { replace: true });
+    }
+  }, [searchParams, navigate, refreshSubscription]);
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
@@ -237,11 +266,12 @@ export default function Profile() {
           <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <span className="text-lg sm:text-xl font-semibold tracking-tight">Meu Perfil</span>
+          <span className="text-lg sm:text-xl font-semibold tracking-tight flex-1">Meu Perfil</span>
+          <ThemeToggle />
         </div>
       </header>
 
-      <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-lg">
+      <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-2xl space-y-6">
         <Card>
           <CardHeader className="text-center pb-2">
             {/* Avatar and Logo side by side */}
@@ -376,7 +406,41 @@ export default function Profile() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Subscription Section */}
+        <SubscriptionStatus />
+
+        {/* Upgrade CTA */}
+        <UpgradeCTA />
       </main>
     </div>
+  );
+}
+
+function UpgradeCTA() {
+  const { isFree, isActive } = useSubscription();
+
+  // Only show for free users
+  if (!isFree || isActive) return null;
+
+  return (
+    <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
+      <CardContent className="flex items-center justify-between py-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-full bg-primary/10">
+            <Sparkles className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <p className="font-medium">Desbloqueie todo o potencial</p>
+            <p className="text-sm text-muted-foreground">
+              Mais casos, simulações ilimitadas e suporte prioritário
+            </p>
+          </div>
+        </div>
+        <Button asChild>
+          <Link to="/pricing">Ver Planos</Link>
+        </Button>
+      </CardContent>
+    </Card>
   );
 }

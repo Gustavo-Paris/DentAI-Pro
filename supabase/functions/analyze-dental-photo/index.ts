@@ -2,6 +2,9 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsPreFlight, ERROR_MESSAGES, createErrorResponse } from "../_shared/cors.ts";
 import { logger } from "../_shared/logger.ts";
+import { callGeminiVisionWithTools, GeminiError, type OpenAITool } from "../_shared/gemini.ts";
+import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
+import { checkAndUseCredits, createInsufficientCreditsResponse } from "../_shared/credits.ts";
 
 interface AnalyzePhotoRequest {
   imageBase64: string;
@@ -85,12 +88,6 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
-    
-    if (!lovableApiKey) {
-      logger.error("LOVABLE_API_KEY not configured");
-      return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
-    }
 
     // Validate authentication
     const authHeader = req.headers.get("Authorization");
@@ -108,6 +105,29 @@ serve(async (req) => {
     
     if (claimsError || !claimsData?.claims) {
       return createErrorResponse(ERROR_MESSAGES.INVALID_TOKEN, 401, corsHeaders);
+    }
+
+    const userId = claimsData.claims.sub as string;
+
+    // Check rate limit (AI_HEAVY: 10/min, 50/hour, 200/day)
+    const supabaseService = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "");
+    const rateLimitResult = await checkRateLimit(
+      supabaseService,
+      userId,
+      "analyze-dental-photo",
+      RATE_LIMITS.AI_HEAVY
+    );
+
+    if (!rateLimitResult.allowed) {
+      logger.warn(`Rate limit exceeded for user ${userId} on analyze-dental-photo`);
+      return createRateLimitResponse(rateLimitResult, corsHeaders);
+    }
+
+    // Check and consume credits (1 credit for case_analysis)
+    const creditResult = await checkAndUseCredits(supabaseService, userId, "case_analysis");
+    if (!creditResult.allowed) {
+      logger.warn(`Insufficient credits for user ${userId} on case_analysis`);
+      return createInsufficientCreditsResponse(creditResult, corsHeaders);
     }
 
     // Parse and validate request
@@ -153,10 +173,36 @@ serve(async (req) => {
     // Use the validated base64 data
     const base64Image = base64Data;
 
-    // System prompt for dental photo analysis - MULTI-TOOTH + EXPANDED TREATMENT TYPES
-    const systemPrompt = `Você é um especialista em odontologia restauradora e estética com 20 anos de experiência em análise de casos clínicos e planejamento de sorrisos.
+    // System prompt for dental photo analysis - MULTI-TOOTH + EXPANDED TREATMENT TYPES + VISAGISM
+    const systemPrompt = `Você é um especialista em odontologia restauradora e estética com 20 anos de experiência em análise de casos clínicos, planejamento de sorrisos e VISAGISMO aplicado à odontologia.
 
-REGRA CRÍTICA E OBRIGATÓRIA: Você DEVE analisar o SORRISO COMO UM TODO, identificando TODOS os tipos de tratamento necessários.
+REGRA CRÍTICA E OBRIGATÓRIA: Você DEVE analisar o SORRISO COMO UM TODO, identificando TODOS os tipos de tratamento necessários E oportunidades de HARMONIZAÇÃO ESTÉTICA baseada em princípios de visagismo.
+
+=== PRINCÍPIOS DE VISAGISMO NA ANÁLISE ===
+
+Ao analisar a foto, considere:
+
+1. **PROPORÇÕES DENTÁRIAS vs CARACTERÍSTICAS FACIAIS**:
+   - Dentes devem harmonizar com o formato do rosto visível
+   - Incisivos centrais muito pequenos em rosto grande = desarmonia
+   - Incisivos centrais muito grandes em rosto delicado = desarmonia
+
+2. **ARCO DO SORRISO** (se lábios visíveis):
+   - CONSONANTE: Bordos incisais seguem curva do lábio inferior (ideal)
+   - PLANO: Bordos formam linha reta (menos estético)
+   - REVERSO: Bordos côncavos (problema estético)
+
+3. **CORREDOR BUCAL**:
+   - Espaço escuro lateral ao sorrir
+   - Excessivo = sorriso "vazio"
+   - Ausente = sorriso "apertado"
+
+4. **LINHA DO SORRISO**:
+   - Alta (>3mm gengiva): Considerar tratamento gengival
+   - Média (0-3mm): Ideal para tratamentos estéticos
+   - Baixa: Dentes parcialmente cobertos
+
+Inclua observações de visagismo nas "observations" quando relevante.
 
 ## ANÁLISE MULTI-DENTE (Problemas Restauradores)
 - Analise SISTEMATICAMENTE cada quadrante: superior-direito (Q1: 11-18), superior-esquerdo (Q2: 21-28), inferior-esquerdo (Q3: 31-38), inferior-direito (Q4: 41-48)
@@ -304,7 +350,24 @@ Adicionalmente, identifique:
 - Observações sobre harmonização geral do sorriso
 - INDICAÇÃO GERAL predominante do caso
 
-IMPORTANTE: Seja ABRANGENTE na detecção. Cada dente pode ter um tipo de tratamento diferente.`;
+=== OBSERVAÇÕES OBRIGATÓRIAS ===
+
+Nas "observations", SEMPRE inclua:
+1. **Proporção dos incisivos centrais**: Largura x Altura (ideal ~75-80%)
+2. **Simetria entre homólogos**: 11 vs 21, 12 vs 22, 13 vs 23
+3. **Arco do sorriso** (se lábios visíveis): consonante/plano/reverso
+4. **Corredor bucal**: adequado/excessivo/ausente
+5. **Desgaste incisal**: ausente/leve/moderado/severo
+6. **Caracterizações naturais**: mamelons, translucidez, manchas de esmalte
+
+Nos "warnings", inclua se houver:
+- Desarmonia de proporções significativa
+- Arco do sorriso reverso
+- Desgaste severo sugestivo de bruxismo
+- Qualquer achado que limite tratamentos conservadores
+
+IMPORTANTE: Seja ABRANGENTE na detecção. Cada dente pode ter um tipo de tratamento diferente.
+IMPORTANTE: Considere o RESULTADO ESTÉTICO FINAL, não apenas patologias isoladas.`;
 
     const userPrompt = `Analise esta foto e identifique TODOS os dentes que necessitam de tratamento OU que poderiam se beneficiar de melhorias estéticas.
 
@@ -326,7 +389,7 @@ INSTRUÇÕES OBRIGATÓRIAS - ANÁLISE COMPLETA DO SORRISO:
 Use a função analyze_dental_photo para retornar a análise estruturada completa.`;
 
     // Tool definition for structured output - MULTI-TOOTH SUPPORT
-    const tools = [
+    const tools: OpenAITool[] = [
       {
         type: "function",
         function: {
@@ -467,127 +530,55 @@ Use a função analyze_dental_photo para retornar a análise estruturada complet
       }
     ];
 
-    // Helper function to call AI with a specific model
-    const callAI = async (model: string): Promise<PhotoAnalysisResult | null> => {
-      logger.log(`Calling AI Gateway with model: ${model}...`);
-      
-      const response = await fetch(
-        "https://ai.gateway.lovable.dev/v1/chat/completions",
+    // Determine MIME type from magic bytes
+    const mimeType = isJPEG ? "image/jpeg" : isPNG ? "image/png" : "image/webp";
+
+    // Call Gemini Vision with tools
+    let analysisResult: PhotoAnalysisResult | null = null;
+
+    try {
+      logger.log("Calling Gemini Vision API...");
+
+      const result = await callGeminiVisionWithTools(
+        "gemini-3-flash-preview",
+        userPrompt,
+        base64Image,
+        mimeType,
+        tools,
         {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${lovableApiKey}`,
-          },
-          body: JSON.stringify({
-            model,
-            temperature: 0.1,
-            messages: [
-              {
-                role: "system",
-                content: systemPrompt
-              },
-              {
-                role: "user",
-                content: [
-                  { type: "text", text: userPrompt },
-                  {
-                    type: "image_url",
-                    image_url: {
-                      url: `data:image/jpeg;base64,${base64Image}`,
-                    },
-                  },
-                ],
-              },
-            ],
-            tools,
-            tool_choice: { type: "function", function: { name: "analyze_dental_photo" } },
-            max_tokens: 3000,
-          }),
+          systemPrompt,
+          temperature: 0.1,
+          maxTokens: 3000,
+          forceFunctionName: "analyze_dental_photo",
         }
       );
 
-      if (!response.ok) {
-        logger.error(`AI API error (${model}):`, response.status);
-
-        // For 429 and 402, return null to try next model instead of throwing immediately
-        if (response.status === 429) {
-          logger.log(`Model ${model} rate limited, trying next model...`);
-          return null;
-        }
-        if (response.status === 402) {
-          logger.log(`Model ${model} payment required, trying next model...`);
-          return null;
-        }
-        return null;
-      }
-
-      const result = await response.json();
-      logger.log(`AI Response (${model}): success`);
-
-      // Check for malformed function call
-      const finishReason = result.choices?.[0]?.native_finish_reason || result.choices?.[0]?.finish_reason;
-      if (finishReason === "MALFORMED_FUNCTION_CALL") {
-        logger.log(`Model ${model} returned MALFORMED_FUNCTION_CALL, will retry with different model`);
-        return null;
-      }
-
-      // Extract tool call
-      const toolCall = result.choices?.[0]?.message?.tool_calls?.[0];
-      if (toolCall && toolCall.function?.arguments) {
-        logger.log("Found tool call, parsing arguments...");
-        try {
-          return JSON.parse(toolCall.function.arguments);
-        } catch {
-          logger.error("Failed to parse tool call arguments");
-          return null;
-        }
-      }
-
-      // Fallback: try to extract from content
-      const content = result.choices?.[0]?.message?.content;
-      if (content) {
-        logger.log("Checking content for JSON...");
-        const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/) || content.match(/\{[\s\S]*\}/);
+      if (result.functionCall) {
+        logger.log("Successfully got analysis from Gemini");
+        analysisResult = result.functionCall.args as unknown as PhotoAnalysisResult;
+      } else if (result.text) {
+        // Fallback: try to extract JSON from text response
+        logger.log("No function call, checking text for JSON...");
+        const jsonMatch = result.text.match(/```json\s*([\s\S]*?)\s*```/) || result.text.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           try {
             const jsonStr = jsonMatch[1] || jsonMatch[0];
-            return JSON.parse(jsonStr);
+            analysisResult = JSON.parse(jsonStr);
           } catch {
-            logger.log("Failed to parse JSON from content");
+            logger.error("Failed to parse JSON from text response");
           }
         }
       }
-
-      return null;
-    };
-
-    // Try models in order of reliability for tool calling
-    const modelsToTry = [
-      "google/gemini-2.5-flash",         // Most reliable, good balance
-      "google/gemini-3-flash-preview",   // Fast, good at tool calling
-      "openai/gpt-5-mini",               // Strong fallback
-    ];
-
-    let analysisResult: PhotoAnalysisResult | null = null;
-
-    for (const model of modelsToTry) {
-      try {
-        analysisResult = await callAI(model);
-        if (analysisResult) {
-          logger.log(`Successfully got analysis from ${model}`);
-          break;
-        }
-      } catch (error: unknown) {
-        const err = error as { status?: number };
-        if (err?.status === 429) {
+    } catch (error) {
+      if (error instanceof GeminiError) {
+        if (error.statusCode === 429) {
           return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
         }
-        if (err?.status === 402) {
-          return createErrorResponse(ERROR_MESSAGES.PAYMENT_REQUIRED, 402, corsHeaders, "PAYMENT_REQUIRED");
-        }
-        logger.error(`Error with model ${model}`);
+        logger.error("Gemini API error:", error.message);
+      } else {
+        logger.error("AI error:", error);
       }
+      return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     }
 
     if (!analysisResult) {

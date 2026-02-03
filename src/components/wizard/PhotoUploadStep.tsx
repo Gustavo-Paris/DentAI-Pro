@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Camera, Upload, X, Image as ImageIcon, Loader2, ChevronDown, ChevronUp, User, Smile } from 'lucide-react';
 import { toast } from 'sonner';
-import { isHeic, heicTo } from 'heic-to';
+// heic-to is dynamically imported to reduce initial bundle size (20MB library)
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
 
@@ -22,8 +22,11 @@ interface PhotoUploadStepProps {
 }
 
 // Detecção robusta de HEIC usando a biblioteca heic-to + fallback
+// Dynamic import to reduce initial bundle size
 const checkIsHeic = async (file: File): Promise<boolean> => {
   try {
+    // Dynamic import - heic-to only loads when checking HEIC files
+    const { isHeic } = await import('heic-to');
     return await isHeic(file);
   } catch {
     // Fallback para detecção por nome/tipo (Safari iOS pode retornar type vazio)
@@ -35,17 +38,16 @@ const checkIsHeic = async (file: File): Promise<boolean> => {
 };
 
 // Converter HEIC para JPEG usando heic-to (suporta iOS 18)
+// Dynamic import to reduce initial bundle size
 const convertHeicToJpeg = async (file: File): Promise<Blob> => {
-  try {
-    const jpegBlob = await heicTo({
-      blob: file,
-      type: 'image/jpeg',
-      quality: 0.7,
-    });
-    return jpegBlob;
-  } catch (error) {
-    throw error;
-  }
+  // Dynamic import - heic-to only loads when converting HEIC files
+  const { heicTo } = await import('heic-to');
+  const jpegBlob = await heicTo({
+    blob: file,
+    type: 'image/jpeg',
+    quality: 0.7,
+  });
+  return jpegBlob;
 };
 
 // Read file as base64 without compression (fallback for problematic formats)
@@ -147,7 +149,7 @@ export function PhotoUploadStep({
     return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   }, []);
 
-  // Detecta tela pequena para funcionar no preview do Lovable
+  // Detecta tela pequena para layout responsivo
   useEffect(() => {
     const checkScreen = () => {
       setIsSmallScreen(window.innerWidth < 768);

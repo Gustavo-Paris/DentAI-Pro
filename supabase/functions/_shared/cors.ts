@@ -2,15 +2,23 @@
 // Restricts API access to known origins for defense-in-depth
 
 const PRODUCTION_ORIGINS = [
+  // New production domains
+  "https://dentai.pro",
+  "https://www.dentai.pro",
+  // Lovable domains (transition period - remove after migration)
   "https://resinmatch-ai.lovable.app",
   "https://id-preview--103c514c-01d4-492f-b5ae-b2ea6b76bdf3.lovable.app",
 ];
 
 const DEVELOPMENT_ORIGINS = [
   "http://localhost:8080",
+  "http://localhost:8081",
+  "http://localhost:8082",
   "http://localhost:5173",
   "http://localhost:3000",
   "http://127.0.0.1:8080",
+  "http://127.0.0.1:8081",
+  "http://127.0.0.1:8082",
   "http://127.0.0.1:5173",
   "http://127.0.0.1:3000",
 ];
@@ -29,8 +37,11 @@ export function getCorsHeaders(req: Request): Record<string, string> {
   const isAllowed =
     !!origin &&
     (ALLOWED_ORIGINS.includes(origin) ||
+      // New production domain and subdomains
+      origin.endsWith(".dentai.pro") ||
+      origin === "https://dentai.pro" ||
+      // Lovable domains (transition period)
       origin.endsWith(".lovable.app") ||
-      // Preview domains (iframe) can be hosted under *.lovableproject.com
       origin.endsWith(".lovableproject.com"));
   
   return {

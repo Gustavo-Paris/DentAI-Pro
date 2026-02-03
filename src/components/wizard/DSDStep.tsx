@@ -7,14 +7,24 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Smile, Loader2, RefreshCw, ChevronRight, Lightbulb, AlertCircle } from 'lucide-react';
+import { Smile, Loader2, RefreshCw, ChevronRight, Lightbulb, AlertCircle, Zap } from 'lucide-react';
 import { toast } from 'sonner';
+import { useSubscription } from '@/hooks/useSubscription';
 import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
 import { ProportionsCard } from '@/components/dsd/ProportionsCard';
 import { LoadingOverlay } from '@/components/LoadingOverlay';
 
 // Tooth shape is now fixed as 'natural' - removed manual selection per market research
 const TOOTH_SHAPE = 'natural' as const;
+
+export type TreatmentIndication = "resina" | "porcelana" | "coroa" | "implante" | "endodontia" | "encaminhamento";
+
+export interface DSDSuggestion {
+  tooth: string;
+  current_issue: string;
+  proposed_change: string;
+  treatment_indication?: TreatmentIndication;
+}
 
 export interface DSDAnalysis {
   facial_midline: "centrada" | "desviada_esquerda" | "desviada_direita";
@@ -24,14 +34,16 @@ export interface DSDAnalysis {
   occlusal_plane: "nivelado" | "inclinado_esquerda" | "inclinado_direita";
   golden_ratio_compliance: number;
   symmetry_score: number;
-  suggestions: {
-    tooth: string;
-    current_issue: string;
-    proposed_change: string;
-  }[];
+  suggestions: DSDSuggestion[];
   observations: string[];
   confidence: "alta" | "média" | "baixa";
   simulation_limitation?: string;
+  // Visagism fields
+  face_shape?: "oval" | "quadrado" | "triangular" | "retangular" | "redondo";
+  perceived_temperament?: "colérico" | "sanguíneo" | "melancólico" | "fleumático" | "misto";
+  smile_arc?: "consonante" | "plano" | "reverso";
+  recommended_tooth_shape?: "quadrado" | "oval" | "triangular" | "retangular" | "natural";
+  visagism_notes?: string;
 }
 
 export interface DSDResult {
@@ -98,6 +110,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
   
   const { invokeFunction } = useAuthenticatedFetch();
   const { user } = useAuth();
+  const { canUseCredits, refreshSubscription, creditsRemaining, getCreditCost } = useSubscription();
 
   const lastCompositeSourcePathRef = useRef<string | null>(null);
   
@@ -337,9 +350,15 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
     const MAX_RETRIES = 2;
     let didRetry = false;
     let hasError = false;
-    
+
     if (!imageBase64) {
       setError('Nenhuma imagem disponível para análise');
+      return;
+    }
+
+    // Pre-check credits before starting DSD
+    if (!canUseCredits('dsd_simulation')) {
+      setError('Créditos insuficientes para simulação DSD. Faça upgrade do seu plano.');
       return;
     }
 
@@ -395,7 +414,11 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
         // Show analysis immediately
         setResult(data);
         setIsAnalyzing(false);
-        toast.success('Análise de proporções concluída!');
+        const dsdCost = getCreditCost('dsd_simulation');
+        toast.success('Análise de proporções concluída!', {
+          description: `${dsdCost} créditos utilizados.`,
+        });
+        refreshSubscription(); // Update credit count after consumption
         
         // PHASE 2: Generate simulation in background
         // Note: We pass analysis directly since state update is async
@@ -429,8 +452,9 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
       hasError = true;
       if (err.message?.includes('429') || err.code === 'RATE_LIMITED') {
         setError('Limite de requisições excedido. Aguarde alguns minutos.');
-      } else if (err.message?.includes('402') || err.code === 'PAYMENT_REQUIRED') {
-        setError('Créditos insuficientes. Adicione créditos à sua conta.');
+      } else if (err.message?.includes('402') || err.code === 'INSUFFICIENT_CREDITS' || err.code === 'PAYMENT_REQUIRED') {
+        setError('Créditos insuficientes para simulação DSD. Faça upgrade do seu plano.');
+        refreshSubscription();
       } else if (isConnectionError) {
         setError('Erro de conexão. Verifique sua internet e tente novamente.');
       } else {
@@ -542,22 +566,41 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
 
   // Error state
   if (error) {
+    const isCreditError = error.includes('Créditos insuficientes');
     return (
       <div className="space-y-6">
         <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-destructive/10 flex items-center justify-center">
-            <AlertCircle className="w-8 h-8 text-destructive" />
+          <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
+            isCreditError ? 'bg-amber-100 dark:bg-amber-950/30' : 'bg-destructive/10 dark:bg-destructive/20'
+          }`}>
+            {isCreditError ? (
+              <Zap className="w-8 h-8 text-amber-600" />
+            ) : (
+              <AlertCircle className="w-8 h-8 text-destructive" />
+            )}
           </div>
-          <h2 className="text-xl font-semibold mb-2">Erro na Análise DSD</h2>
+          <h2 className="text-xl font-semibold mb-2">
+            {isCreditError ? 'Créditos Insuficientes' : 'Erro na Análise DSD'}
+          </h2>
           <p className="text-muted-foreground">{error}</p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Button variant="outline" onClick={handleRetry}>
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Tentar novamente
-          </Button>
-          <Button onClick={onSkip}>
+          {isCreditError ? (
+            <Button onClick={() => window.location.href = '/pricing'}>
+              <Zap className="w-4 h-4 mr-2" />
+              Ver Planos
+            </Button>
+          ) : (
+            <Button variant="outline" onClick={handleRetry}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Tentar novamente
+              <span className="inline-flex items-center gap-0.5 text-xs opacity-60 ml-1">
+                <Zap className="w-3 h-3" />2
+              </span>
+            </Button>
+          )}
+          <Button variant={isCreditError ? 'outline' : 'default'} onClick={onSkip}>
             Pular DSD
             <ChevronRight className="w-4 h-4 ml-2" />
           </Button>
@@ -594,10 +637,10 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
             <Badge 
               variant={analysis.confidence === 'alta' ? 'default' : analysis.confidence === 'média' ? 'secondary' : 'outline'}
               className={
-                analysis.confidence === 'alta' 
-                  ? 'bg-emerald-500' 
-                  : analysis.confidence === 'baixa' 
-                    ? 'border-amber-500 text-amber-700 bg-amber-50' 
+                analysis.confidence === 'alta'
+                  ? 'bg-emerald-500'
+                  : analysis.confidence === 'baixa'
+                    ? 'border-amber-500 text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30'
                     : ''
               }
             >
@@ -608,10 +651,10 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
 
         {/* Alert for low confidence or limitations */}
         {hasLimitations && (
-          <Alert variant="default" className="border-amber-500 bg-amber-50">
-            <AlertCircle className="h-4 w-4 text-amber-600" />
-            <AlertTitle className="text-amber-800">Caso com Limitações para Simulação</AlertTitle>
-            <AlertDescription className="text-amber-700">
+          <Alert variant="default" className="border-amber-500 bg-amber-50 dark:bg-amber-950/30">
+            <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            <AlertTitle className="text-amber-800 dark:text-amber-200">Caso com Limitações para Simulação</AlertTitle>
+            <AlertDescription className="text-amber-700 dark:text-amber-300">
               {result.simulation_note || 
                 'Este caso apresenta características que limitam a precisão da simulação visual. A análise de proporções está disponível, mas o resultado final pode variar significativamente.'}
             </AlertDescription>
@@ -620,9 +663,9 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
 
         {/* Attention observations from AI */}
         {attentionObservations.length > 0 && (
-          <Card className="border-amber-400 bg-amber-50/50">
+          <Card className="border-amber-400 bg-amber-50/50 dark:bg-amber-950/20">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center gap-2 text-amber-800">
+              <CardTitle className="text-base flex items-center gap-2 text-amber-800 dark:text-amber-200">
                 <AlertCircle className="w-4 h-4" />
                 Pontos de Atenção
               </CardTitle>
@@ -630,8 +673,8 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
             <CardContent>
               <ul className="space-y-2">
                 {attentionObservations.map((obs, index) => (
-                  <li key={index} className="text-sm text-amber-700 flex items-start gap-2">
-                    <span className="text-amber-600 mt-0.5">•</span>
+                  <li key={index} className="text-sm text-amber-700 dark:text-amber-300 flex items-start gap-2">
+                    <span className="text-amber-600 dark:text-amber-400 mt-0.5">•</span>
                     {obs.replace(/^ATENÇÃO:\s*/i, '')}
                   </li>
                 ))}
@@ -661,12 +704,12 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
 
         {/* NEW: Background simulation error card */}
         {simulationError && !simulationImageUrl && !isSimulationGenerating && (
-          <Card className="border-amber-400 bg-amber-50/50">
+          <Card className="border-amber-400 bg-amber-50/50 dark:bg-amber-950/20">
             <CardContent className="py-4">
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <AlertCircle className="w-5 h-5 text-amber-600" />
-                  <span className="text-sm text-amber-700">
+                  <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                  <span className="text-sm text-amber-700 dark:text-amber-300">
                     Simulação não pôde ser gerada automaticamente
                   </span>
                 </div>
@@ -703,6 +746,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
                   <>
                     <RefreshCw className="w-3 h-3 mr-1" />
                     Nova Simulação
+                    <span className="text-xs opacity-60 ml-0.5">(grátis)</span>
                   </>
                 )}
               </Button>
@@ -789,6 +833,9 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
           <Button variant="outline" onClick={handleRetry} className="sm:flex-1">
             <RefreshCw className="w-4 h-4 mr-2" />
             Refazer Análise
+            <span className="inline-flex items-center gap-0.5 text-xs opacity-60 ml-1">
+              <Zap className="w-3 h-3" />2
+            </span>
           </Button>
           <Button onClick={handleContinue} className="sm:flex-1">
             Continuar para Revisão

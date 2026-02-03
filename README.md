@@ -1,73 +1,104 @@
-# Welcome to your Lovable project
+# DentAI Pro
 
-## Project info
+Sistema de apoio à decisão clínica odontológica com Inteligência Artificial.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Funcionalidades
 
-## How can I edit this code?
+- **Análise de Fotos Dentais**: IA analisa fotografias intraorais e identifica cores VITA
+- **Recomendação de Resina**: Sugere protocolo de estratificação personalizado com resinas compatíveis
+- **Recomendação de Cimentação**: Indica cimentos e técnicas ideais para cada caso
+- **DSD (Digital Smile Design)**: Gera simulações de tratamento com análise de proporções dentais
 
-There are several ways of editing your application.
+## Tecnologias
 
-**Use Lovable**
+- React 18 + TypeScript
+- Vite
+- Tailwind CSS + shadcn/ui
+- Supabase (Auth, Database, Edge Functions)
+- Google Gemini AI
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## Setup Local
 
-Changes made via Lovable will be committed automatically to this repo.
+### Pré-requisitos
 
-**Use your preferred IDE**
+- Node.js 18+
+- npm ou pnpm
+- Conta no Supabase
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Instalação
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+```bash
+# Clonar o repositório
+git clone <URL_DO_REPO>
+cd dentai-pro
 
-Follow these steps:
+# Instalar dependências
+npm install
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Configurar variáveis de ambiente
+cp .env.example .env
+# Edite .env com suas credenciais do Supabase
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Iniciar servidor de desenvolvimento
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### Variáveis de Ambiente
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```env
+VITE_SUPABASE_URL=https://seu-projeto.supabase.co
+VITE_SUPABASE_ANON_KEY=sua-anon-key
+```
 
-**Use GitHub Codespaces**
+### Supabase Edge Functions
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+As Edge Functions requerem configuração adicional:
 
-## What technologies are used for this project?
+```bash
+# Instalar Supabase CLI
+npm install -g supabase
 
-This project is built with:
+# Login no Supabase
+supabase login
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+# Linkar projeto
+supabase link --project-ref SEU_PROJECT_REF
 
-## How can I deploy this project?
+# Configurar secrets
+supabase secrets set GOOGLE_AI_API_KEY=sua-api-key
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+# Deploy das functions
+supabase functions deploy
+```
 
-## Can I connect a custom domain to my Lovable project?
+## Scripts
 
-Yes, you can!
+- `npm run dev` - Servidor de desenvolvimento
+- `npm run build` - Build de produção
+- `npm run preview` - Preview do build
+- `npm test` - Executar testes
+- `npm run lint` - Verificar código
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## Estrutura do Projeto
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+```
+src/
+├── components/     # Componentes React reutilizáveis
+├── pages/          # Páginas da aplicação
+├── hooks/          # Custom hooks
+├── lib/            # Utilitários e configurações
+├── integrations/   # Integrações (Supabase)
+└── types/          # Definições TypeScript
+
+supabase/
+└── functions/      # Edge Functions
+    ├── analyze-dental-photo/
+    ├── recommend-resin/
+    ├── recommend-cementation/
+    ├── generate-dsd/
+    └── _shared/    # Código compartilhado
+```
+
+## Licença
+
+Proprietário - Todos os direitos reservados

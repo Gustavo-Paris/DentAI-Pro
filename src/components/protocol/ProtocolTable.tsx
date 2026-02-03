@@ -22,16 +22,16 @@ interface ProtocolTableProps {
 const getLayerStyles = (layerName: string): string => {
   const name = layerName.toLowerCase();
   if (name.includes("opaco")) {
-    return "bg-amber-500/20 border-l-4 border-l-amber-500";
+    return "bg-amber-500/20 dark:bg-amber-500/10 border-l-4 border-l-amber-500";
   }
   if (name.includes("dentina") || name.includes("body")) {
-    return "bg-orange-500/20 border-l-4 border-l-orange-500";
+    return "bg-orange-500/20 dark:bg-orange-500/10 border-l-4 border-l-orange-500";
   }
   if (name.includes("esmalte") || name.includes("enamel")) {
-    return "bg-blue-400/20 border-l-4 border-l-blue-400";
+    return "bg-blue-400/20 dark:bg-blue-400/10 border-l-4 border-l-blue-400";
   }
   if (name.includes("bulk")) {
-    return "bg-purple-500/20 border-l-4 border-l-purple-500";
+    return "bg-purple-500/20 dark:bg-purple-500/10 border-l-4 border-l-purple-500";
   }
   return "bg-muted/50";
 };

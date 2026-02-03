@@ -7,8 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { ArrowLeft, ArrowRight, Camera, Brain, ClipboardCheck, FileText, Loader2, Smile, Check, Save, Heart } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Camera, Brain, ClipboardCheck, FileText, Loader2, Smile, Check, Save, Heart, Zap } from 'lucide-react';
 
+import { useSubscription } from '@/hooks/useSubscription';
 import { PhotoUploadStep, AdditionalPhotos } from '@/components/wizard/PhotoUploadStep';
 import { PatientPreferencesStep, PatientPreferences } from '@/components/wizard/PatientPreferencesStep';
 import { AnalyzingStep } from '@/components/wizard/AnalyzingStep';
@@ -17,6 +18,7 @@ import { ReviewAnalysisStep, PhotoAnalysisResult, ReviewFormData, DetectedTooth,
 import { DraftRestoreModal } from '@/components/wizard/DraftRestoreModal';
 import { useWizardDraft, WizardDraft } from '@/hooks/useWizardDraft';
 import { LoadingOverlay } from '@/components/LoadingOverlay';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 const steps = [
   { id: 1, name: 'Foto', icon: Camera },
@@ -76,6 +78,7 @@ export default function NewCase() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { invokeFunction } = useAuthenticatedFetch();
+  const { canUseCredits, refreshSubscription, creditsRemaining, creditsTotal, getCreditCost } = useSubscription();
   
   // Auto-save hook
   const { loadDraft, saveDraft, clearDraft, isSaving, lastSavedAt } = useWizardDraft(user?.id);
@@ -85,6 +88,30 @@ export default function NewCase() {
 
   // Ref to ensure draft check only runs once
   const hasCheckedDraftRef = useRef(false);
+  const hasShownCreditWarningRef = useRef(false);
+
+  // Proactive low-credit warning on mount
+  useEffect(() => {
+    if (hasShownCreditWarningRef.current) return;
+    hasShownCreditWarningRef.current = true;
+
+    const fullWorkflowCost = getCreditCost('case_analysis') + getCreditCost('dsd_simulation');
+    if (creditsRemaining < fullWorkflowCost && creditsRemaining > 0) {
+      toast.warning(`Você tem ${creditsRemaining} crédito${creditsRemaining !== 1 ? 's' : ''}. O fluxo completo (análise + DSD) requer ${fullWorkflowCost}.`, {
+        duration: 6000,
+        description: 'Você pode pular o DSD para economizar créditos.',
+      });
+    } else if (creditsRemaining === 0) {
+      toast.error('Sem créditos disponíveis.', {
+        description: 'Faça upgrade do seu plano para criar novos casos.',
+        action: {
+          label: 'Ver Planos',
+          onClick: () => navigate('/pricing'),
+        },
+        duration: 8000,
+      });
+    }
+  }, [creditsRemaining, getCreditCost, navigate]);
 
   // Check for pending draft on mount (only once)
   useEffect(() => {
@@ -165,19 +192,22 @@ export default function NewCase() {
   }, [clearDraft]);
 
   // Auto-select all detected teeth and initialize per-tooth treatments when analysis completes
+  // Preserves user overrides for teeth that already had a treatment set
   useEffect(() => {
     if (analysisResult?.detected_teeth && analysisResult.detected_teeth.length > 0) {
       const allTeeth = analysisResult.detected_teeth.map(t => t.tooth);
       setSelectedTeeth(allTeeth);
-      
-      // Initialize per-tooth treatments from AI indications
-      const initialTreatments: Record<string, TreatmentType> = {};
-      analysisResult.detected_teeth.forEach(t => {
-        initialTreatments[t.tooth] = t.treatment_indication || 'resina';
+
+      // Merge: keep existing user overrides, only initialize NEW teeth from AI
+      setToothTreatments(prev => {
+        const merged: Record<string, TreatmentType> = {};
+        analysisResult.detected_teeth.forEach(t => {
+          merged[t.tooth] = prev[t.tooth] || t.treatment_indication || 'resina';
+        });
+        return merged;
       });
-      setToothTreatments(initialTreatments);
     }
-    
+
     // CRITICAL: Sync global treatment type with AI indication (for form-level default)
     if (analysisResult?.treatment_indication) {
       setFormData(prev => ({
@@ -208,9 +238,15 @@ export default function NewCase() {
     if (!user) return null;
 
     try {
-      // Convert base64 to blob
-      const response = await fetch(base64);
-      const blob = await response.blob();
+      // Convert base64 to blob without fetch (CSP blocks data: in connect-src)
+      const byteString = atob(base64.split(',')[1]);
+      const mimeType = base64.split(',')[0].split(':')[1].split(';')[0];
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+      }
+      const blob = new Blob([ab], { type: mimeType });
       
       const fileName = `${user.id}/intraoral_${Date.now()}.jpg`;
       
@@ -229,6 +265,17 @@ export default function NewCase() {
   // Call AI to analyze the photo
   const analyzePhoto = async () => {
     if (!imageBase64) return;
+
+    // Pre-check credits before starting analysis
+    if (!canUseCredits('case_analysis')) {
+      toast.error('Créditos insuficientes. Faça upgrade do seu plano para continuar.', {
+        action: {
+          label: 'Ver Planos',
+          onClick: () => navigate('/pricing'),
+        },
+      });
+      return;
+    }
 
     setStep(3); // Go to analyzing step (step 3 now)
     setIsAnalyzing(true);
@@ -283,6 +330,11 @@ export default function NewCase() {
 
         // Move to DSD step after successful analysis
         setIsAnalyzing(false);
+        const cost = getCreditCost('case_analysis');
+        toast.success('Análise concluída', {
+          description: `${cost} crédito utilizado.`,
+        });
+        refreshSubscription(); // Update credit count after consumption
         setStep(4); // DSD step (step 4 now)
       } else {
         throw new Error('Análise não retornou dados');
@@ -296,8 +348,9 @@ export default function NewCase() {
       
       if (err.message?.includes('429') || err.code === 'RATE_LIMITED') {
         errorMessage = 'Limite de requisições excedido. Aguarde alguns minutos e tente novamente.';
-      } else if (err.message?.includes('402') || err.code === 'PAYMENT_REQUIRED') {
-        errorMessage = 'Créditos insuficientes. Adicione créditos à sua conta para continuar.';
+      } else if (err.message?.includes('402') || err.code === 'INSUFFICIENT_CREDITS' || err.code === 'PAYMENT_REQUIRED') {
+        errorMessage = 'Créditos insuficientes. Faça upgrade do seu plano para continuar.';
+        refreshSubscription(); // Sync credit state
       } else if (err.message?.includes('não retornou dados')) {
         errorMessage = 'A IA não conseguiu identificar estruturas dentárias na foto. Tente uma foto com melhor iluminação.';
       }
@@ -331,6 +384,17 @@ export default function NewCase() {
   // Reanalyze photo (force new AI analysis)
   const handleReanalyze = async () => {
     if (!imageBase64) return;
+
+    // Pre-check credits before reanalysis
+    if (!canUseCredits('case_analysis')) {
+      toast.error('Créditos insuficientes. Faça upgrade do seu plano para reanalisar.', {
+        action: {
+          label: 'Ver Planos',
+          onClick: () => navigate('/pricing'),
+        },
+      });
+      return;
+    }
 
     setIsReanalyzing(true);
 
@@ -369,14 +433,25 @@ export default function NewCase() {
           }));
         }
 
-        toast.success(`Reanálise concluída: ${analysis.detected_teeth?.length || 0} dente(s) detectado(s)`);
+        refreshSubscription();
+        toast.success('Reanálise concluída', {
+          description: `${analysis.detected_teeth?.length || 0} dente(s) detectado(s). 1 crédito utilizado.`,
+        });
       }
     } catch (error: unknown) {
       const err = error as { message?: string; code?: string };
       console.error('Reanalysis error:', error);
-      
+
       if (err.message?.includes('429') || err.code === 'RATE_LIMITED') {
         toast.error('Limite de requisições excedido. Aguarde alguns minutos.');
+      } else if (err.message?.includes('402') || err.code === 'INSUFFICIENT_CREDITS' || err.code === 'PAYMENT_REQUIRED') {
+        toast.error('Créditos insuficientes para reanálise.', {
+          action: {
+            label: 'Ver Planos',
+            onClick: () => navigate('/pricing'),
+          },
+        });
+        refreshSubscription();
       } else {
         toast.error('Erro na reanálise. Tente novamente.');
       }
@@ -832,9 +907,53 @@ export default function NewCase() {
     };
   };
 
-  // DSD handlers - simplified (tooth shape is now automatic)
+  // DSD handlers - union of clinical + DSD teeth for review
+  // Clinical analysis is the base, DSD adds any teeth it found that clinical missed
   const handleDSDComplete = (result: DSDResult | null) => {
     setDsdResult(result);
+
+    if (result?.analysis?.suggestions?.length && analysisResult) {
+      const clinicalTeeth = analysisResult.detected_teeth || [];
+      const existingNumbers = new Set(clinicalTeeth.map(t => t.tooth));
+
+      // Add DSD-only teeth to the clinical list
+      const dsdAdditions: DetectedTooth[] = [];
+      for (const s of result.analysis.suggestions) {
+        if (!existingNumbers.has(s.tooth)) {
+          const toothNum = parseInt(s.tooth);
+          const isUpper = toothNum >= 10 && toothNum <= 28;
+          const isAnteriorTooth = ['11','12','13','21','22','23','31','32','33','41','42','43'].includes(s.tooth);
+
+          dsdAdditions.push({
+            tooth: s.tooth,
+            tooth_region: isAnteriorTooth
+              ? (isUpper ? 'anterior-superior' : 'anterior-inferior')
+              : (isUpper ? 'posterior-superior' : 'posterior-inferior'),
+            cavity_class: null,
+            restoration_size: null,
+            substrate: null,
+            substrate_condition: null,
+            enamel_condition: null,
+            depth: null,
+            priority: 'média',
+            notes: `DSD: ${s.current_issue} → ${s.proposed_change}`,
+            treatment_indication: s.treatment_indication || 'resina',
+            indication_reason: s.proposed_change,
+          });
+          existingNumbers.add(s.tooth);
+        }
+      }
+
+      if (dsdAdditions.length > 0) {
+        const unified = [...clinicalTeeth, ...dsdAdditions].sort(
+          (a, b) => (parseInt(a.tooth) || 0) - (parseInt(b.tooth) || 0)
+        );
+
+        setAnalysisResult(prev => prev ? { ...prev, detected_teeth: unified } : null);
+        // selectedTeeth and toothTreatments will update via the useEffect on analysisResult
+      }
+    }
+
     setStep(5); // Move to review (step 5)
   };
 
@@ -864,7 +983,7 @@ export default function NewCase() {
   const canGoBack = step >= 1 && step <= 5;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div id="main-content" className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border">
         <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
@@ -878,22 +997,41 @@ export default function NewCase() {
               <span className="text-lg sm:text-xl font-semibold tracking-tight">Novo Caso</span>
             </div>
             
-            {/* Auto-save indicator */}
-            {step >= 4 && (
-              <Badge variant="outline" className="text-xs gap-1.5">
-                {isSaving ? (
-                  <>
-                    <Save className="w-3 h-3 animate-pulse" />
-                    <span className="hidden sm:inline">Salvando...</span>
-                  </>
-                ) : lastSavedAt ? (
-                  <>
-                    <Check className="w-3 h-3 text-primary" />
-                    <span className="hidden sm:inline">Salvo</span>
-                  </>
-                ) : null}
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              {/* Credit indicator */}
+              <Badge
+                variant="outline"
+                className={`text-xs gap-1 ${
+                  creditsRemaining <= 2
+                    ? 'border-red-300 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30'
+                    : creditsRemaining <= 5
+                      ? 'border-amber-300 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30'
+                      : ''
+                }`}
+              >
+                <Zap className="w-3 h-3" />
+                <span>{creditsRemaining}</span>
+                <span className="hidden sm:inline">crédito{creditsRemaining !== 1 ? 's' : ''}</span>
               </Badge>
-            )}
+
+              {/* Auto-save indicator */}
+              {step >= 4 && (
+                <Badge variant="outline" className="text-xs gap-1.5">
+                  {isSaving ? (
+                    <>
+                      <Save className="w-3 h-3 animate-pulse" />
+                      <span className="hidden sm:inline">Salvando...</span>
+                    </>
+                  ) : lastSavedAt ? (
+                    <>
+                      <Check className="w-3 h-3 text-primary" />
+                      <span className="hidden sm:inline">Salvo</span>
+                    </>
+                  ) : null}
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
       </header>
@@ -997,6 +1135,8 @@ export default function NewCase() {
             onSelectedTeethChange={setSelectedTeeth}
             toothTreatments={toothTreatments}
             onToothTreatmentChange={handleToothTreatmentChange}
+            dsdObservations={dsdResult?.analysis?.observations}
+            dsdSuggestions={dsdResult?.analysis?.suggestions}
             selectedPatientId={selectedPatientId}
             patientBirthDate={patientBirthDate}
             onPatientBirthDateChange={(date) => {
