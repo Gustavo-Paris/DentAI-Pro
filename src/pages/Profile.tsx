@@ -11,6 +11,7 @@ import { ArrowLeft, Camera, Loader2, Save, Building2, ImageIcon, Sparkles } from
 import { toast } from 'sonner';
 import { SubscriptionStatus } from '@/components/pricing/SubscriptionStatus';
 import { useSubscription } from '@/hooks/useSubscription';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface ProfileData {
   full_name: string | null;
@@ -265,7 +266,8 @@ export default function Profile() {
           <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <span className="text-lg sm:text-xl font-semibold tracking-tight">Meu Perfil</span>
+          <span className="text-lg sm:text-xl font-semibold tracking-tight flex-1">Meu Perfil</span>
+          <ThemeToggle />
         </div>
       </header>
 

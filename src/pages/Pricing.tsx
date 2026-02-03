@@ -6,6 +6,7 @@ import { PricingSection } from '@/components/pricing/PricingSection';
 import { useSubscription } from '@/hooks/useSubscription';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function Pricing() {
   const navigate = useNavigate();
@@ -43,7 +44,8 @@ export default function Pricing() {
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <span className="text-lg sm:text-xl font-semibold tracking-tight">Planos</span>
+          <span className="text-lg sm:text-xl font-semibold tracking-tight flex-1">Planos</span>
+          <ThemeToggle />
         </div>
       </header>
 

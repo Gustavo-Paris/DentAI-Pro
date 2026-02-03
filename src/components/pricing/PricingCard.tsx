@@ -30,7 +30,7 @@ export function PricingCard({
       className={cn(
         'relative flex flex-col',
         isPopular && 'border-primary shadow-lg scale-105',
-        isCurrentPlan && 'border-green-500'
+        isCurrentPlan && 'border-green-500 dark:border-green-400'
       )}
     >
       {isPopular && (
@@ -40,7 +40,7 @@ export function PricingCard({
       )}
 
       {isCurrentPlan && (
-        <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500">
+        <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500 dark:bg-green-600">
           Plano Atual
         </Badge>
       )}
@@ -97,7 +97,7 @@ export function PricingCard({
         <ul className="space-y-2">
           {features.map((feature: string, index: number) => (
             <li key={index} className="flex items-start gap-2">
-              <Check className="h-4 w-4 text-green-500 shrink-0 mt-0.5" />
+              <Check className="h-4 w-4 text-green-500 dark:text-green-400 shrink-0 mt-0.5" />
               <span className="text-sm">{feature}</span>
             </li>
           ))}

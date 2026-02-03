@@ -448,11 +448,11 @@ export default function Result() {
     glowClass: string;
     overlayColor: string;
   }> = {
-    resina: { 
-      label: 'Restauração em Resina', 
-      icon: Layers, 
-      bgClass: 'bg-primary/5',
-      borderClass: 'border-primary/20',
+    resina: {
+      label: 'Restauração em Resina',
+      icon: Layers,
+      bgClass: 'bg-primary/5 dark:bg-primary/10',
+      borderClass: 'border-primary/20 dark:border-primary/30',
       iconClass: 'text-primary',
       badgeVariant: 'default',
       ringClass: 'ring-blue-500',
@@ -460,48 +460,48 @@ export default function Result() {
       glowClass: 'bg-blue-400',
       overlayColor: 'rgba(59, 130, 246, 0.45)',
     },
-    porcelana: { 
-      label: 'Faceta de Porcelana', 
-      icon: Crown, 
+    porcelana: {
+      label: 'Faceta de Porcelana',
+      icon: Crown,
       bgClass: 'bg-amber-50 dark:bg-amber-950/20',
       borderClass: 'border-amber-200 dark:border-amber-800',
-      iconClass: 'text-amber-600',
+      iconClass: 'text-amber-600 dark:text-amber-400',
       badgeVariant: 'secondary',
       ringClass: 'ring-amber-500',
       solidBgClass: 'bg-amber-600',
       glowClass: 'bg-amber-400',
       overlayColor: 'rgba(249, 115, 22, 0.45)',
     },
-    coroa: { 
-      label: 'Coroa Protética', 
-      icon: Crown, 
+    coroa: {
+      label: 'Coroa Protética',
+      icon: Crown,
       bgClass: 'bg-purple-50 dark:bg-purple-950/20',
       borderClass: 'border-purple-200 dark:border-purple-800',
-      iconClass: 'text-purple-600',
+      iconClass: 'text-purple-600 dark:text-purple-400',
       badgeVariant: 'secondary',
       ringClass: 'ring-purple-500',
       solidBgClass: 'bg-purple-600',
       glowClass: 'bg-purple-400',
       overlayColor: 'rgba(147, 51, 234, 0.45)',
     },
-    implante: { 
-      label: 'Indicação de Implante', 
-      icon: CircleX, 
+    implante: {
+      label: 'Indicação de Implante',
+      icon: CircleX,
       bgClass: 'bg-orange-50 dark:bg-orange-950/20',
       borderClass: 'border-orange-200 dark:border-orange-800',
-      iconClass: 'text-orange-600',
+      iconClass: 'text-orange-600 dark:text-orange-400',
       badgeVariant: 'secondary',
       ringClass: 'ring-orange-500',
       solidBgClass: 'bg-orange-600',
       glowClass: 'bg-orange-400',
       overlayColor: 'rgba(239, 68, 68, 0.45)',
     },
-    endodontia: { 
-      label: 'Tratamento de Canal', 
-      icon: Stethoscope, 
+    endodontia: {
+      label: 'Tratamento de Canal',
+      icon: Stethoscope,
       bgClass: 'bg-rose-50 dark:bg-rose-950/20',
       borderClass: 'border-rose-200 dark:border-rose-800',
-      iconClass: 'text-rose-600',
+      iconClass: 'text-rose-600 dark:text-rose-400',
       badgeVariant: 'destructive',
       ringClass: 'ring-rose-500',
       solidBgClass: 'bg-rose-600',
@@ -603,7 +603,7 @@ export default function Result() {
 
         {/* Inventory Banner - Only for resin treatments */}
         {treatmentType === 'resina' && !evaluation.has_inventory_at_creation && (
-          <Card className="mb-6 border-primary/20 bg-primary/5 print:hidden">
+          <Card className="mb-6 border-primary/20 bg-primary/5 dark:bg-primary/10 print:hidden">
             <CardContent className="py-4">
               <div className="flex items-center gap-3">
                 <Package className="w-5 h-5 text-primary" />
@@ -671,7 +671,7 @@ export default function Result() {
         {/* Patient Preferences - show text from patient_aesthetic_goals */}
         {evaluation.patient_aesthetic_goals && (
           <section className="mb-8">
-            <Card className="border-primary/20 bg-primary/5">
+            <Card className="border-primary/20 bg-primary/5 dark:bg-primary/10">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
                   <Heart className="w-4 h-4 text-primary" />

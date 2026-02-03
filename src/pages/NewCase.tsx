@@ -18,6 +18,7 @@ import { ReviewAnalysisStep, PhotoAnalysisResult, ReviewFormData, DetectedTooth,
 import { DraftRestoreModal } from '@/components/wizard/DraftRestoreModal';
 import { useWizardDraft, WizardDraft } from '@/hooks/useWizardDraft';
 import { LoadingOverlay } from '@/components/LoadingOverlay';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 const steps = [
   { id: 1, name: 'Foto', icon: Camera },
@@ -991,14 +992,15 @@ export default function NewCase() {
             </div>
             
             <div className="flex items-center gap-2">
+              <ThemeToggle />
               {/* Credit indicator */}
               <Badge
                 variant="outline"
                 className={`text-xs gap-1 ${
                   creditsRemaining <= 2
-                    ? 'border-red-300 text-red-600 bg-red-50 dark:bg-red-950/30'
+                    ? 'border-red-300 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30'
                     : creditsRemaining <= 5
-                      ? 'border-amber-300 text-amber-600 bg-amber-50 dark:bg-amber-950/30'
+                      ? 'border-amber-300 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30'
                       : ''
                 }`}
               >

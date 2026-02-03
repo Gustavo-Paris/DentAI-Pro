@@ -105,10 +105,10 @@ export function CementationProtocolCard({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <Card className="border-warning/20 bg-warning/5">
+      <Card className="border-amber-400/30 bg-amber-50 dark:bg-amber-950/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Crown className="w-5 h-5 text-warning" />
+            <Crown className="w-5 h-5 text-amber-600 dark:text-amber-400" />
             Protocolo de Cimentação de Facetas
             <Badge 
               variant={protocol.confidence === 'alta' ? 'default' : 'secondary'}
@@ -246,7 +246,7 @@ export function CementationProtocolCard({
 
       {/* Alerts */}
       {protocol.alerts && protocol.alerts.length > 0 && (
-        <Card className="border-destructive/50 bg-destructive/5">
+        <Card className="border-destructive/50 bg-red-50 dark:bg-red-950/20">
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2 text-destructive">
               <AlertTriangle className="w-4 h-4" />
@@ -268,9 +268,9 @@ export function CementationProtocolCard({
 
       {/* Warnings */}
       {protocol.warnings && protocol.warnings.length > 0 && (
-        <Card className="border-warning/50 bg-warning/10">
+        <Card className="border-amber-400/50 bg-amber-50 dark:bg-amber-950/20">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2 text-warning">
+            <CardTitle className="text-base flex items-center gap-2 text-amber-600 dark:text-amber-400">
               <AlertTriangle className="w-4 h-4" />
               Pontos de Atenção
             </CardTitle>
@@ -278,7 +278,7 @@ export function CementationProtocolCard({
           <CardContent>
             <ul className="space-y-2">
               {protocol.warnings.map((warning, index) => (
-                <li key={index} className="flex items-start gap-2 text-sm text-warning">
+                <li key={index} className="flex items-start gap-2 text-sm text-amber-600 dark:text-amber-400">
                   <span className="mt-0.5">⚠️</span>
                   {warning}
                 </li>

@@ -201,7 +201,7 @@ export function ReviewAnalysisStep({
   };
   
   const confidence = analysisResult?.confidence ?? 0;
-  const confidenceColor = confidence >= 80 ? 'text-green-600' : confidence >= 60 ? 'text-yellow-600' : 'text-red-600';
+  const confidenceColor = confidence >= 80 ? 'text-green-600 dark:text-green-400' : confidence >= 60 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400';
   const detectedTeeth = analysisResult?.detected_teeth || [];
   const hasMultipleTeeth = detectedTeeth.length > 1;
 
@@ -270,7 +270,7 @@ export function ReviewAnalysisStep({
       {/* AI Confidence Banner */}
       {analysisResult && (
         <Card className={`border-l-4 ${confidence >= 80 ? 'border-l-green-500' : confidence >= 60 ? 'border-l-yellow-500' : 'border-l-red-500'}`}>
-          <CardContent className="py-3 flex items-center justify-between">
+          <CardContent className="py-3 flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-primary" />
               <span className="text-sm">Análise por IA</span>
@@ -313,7 +313,7 @@ export function ReviewAnalysisStep({
         <Card className="border-amber-500/50 bg-amber-50 dark:bg-amber-950/20">
           <CardContent className="py-4">
             <div className="flex items-start gap-3">
-              <Crown className="w-5 h-5 text-amber-600 mt-0.5" />
+              <Crown className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5" />
               <div className="flex-1">
                 <h4 className="font-medium text-amber-800 dark:text-amber-200">
                   Indicação: Facetas de Porcelana
@@ -339,7 +339,7 @@ export function ReviewAnalysisStep({
           <Card className="border-yellow-500/50 bg-yellow-50 dark:bg-yellow-950/20">
             <CardContent className="py-4">
               <div className="flex items-start gap-3">
-                <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5" />
+                <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5" />
                 <div>
                   <h4 className="font-medium text-yellow-800 dark:text-yellow-200">Pontos de atenção</h4>
                   <ul className="mt-2 space-y-1">

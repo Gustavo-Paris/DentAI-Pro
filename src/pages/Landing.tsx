@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/accordion';
 import { Sparkles, Camera, Smile, Layers, FileText, Star, Quote } from 'lucide-react';
 import { BRAND_NAME } from '@/lib/branding';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function Landing() {
   return (
@@ -19,6 +20,7 @@ export default function Landing() {
         <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
           <span className="text-lg sm:text-xl font-semibold tracking-tight">{BRAND_NAME}</span>
           <div className="flex items-center gap-2 sm:gap-4">
+            <ThemeToggle />
             <Link to="/login">
               <Button variant="ghost" size="sm">Entrar</Button>
             </Link>

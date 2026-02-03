@@ -20,6 +20,7 @@ import { ptBR } from 'date-fns/locale';
 import { BRAND_NAME } from '@/lib/branding';
 import { useSubscription } from '@/hooks/useSubscription';
 import { CreditBadge } from '@/components/CreditBadge';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface Session {
   session_id: string;
@@ -106,7 +107,7 @@ export default function Dashboard() {
       );
     }
     return (
-      <Badge variant="outline" className="text-xs border-amber-500/30 text-amber-600 bg-amber-50 dark:bg-amber-950/30">
+      <Badge variant="outline" className="text-xs border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30">
         Em progresso
       </Badge>
     );
@@ -145,6 +146,7 @@ export default function Dashboard() {
                 </TooltipContent>
               </Tooltip>
               <CreditBadge variant="compact" />
+              <ThemeToggle />
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Link to="/profile" aria-label="Acessar meu perfil">
@@ -193,7 +195,7 @@ export default function Dashboard() {
                   {loading ? (
                     <Skeleton className="h-7 w-10" />
                   ) : (
-                    <p className={`text-xl sm:text-2xl font-semibold ${metrics.pendingCases > 0 ? 'text-amber-600' : 'text-primary'}`}>
+                    <p className={`text-xl sm:text-2xl font-semibold ${metrics.pendingCases > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-primary'}`}>
                       {metrics.pendingCases}
                     </p>
                   )}
@@ -356,11 +358,11 @@ export default function Dashboard() {
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <FileWarning className="w-4 h-4 text-amber-600" aria-hidden="true" />
+                          <FileWarning className="w-4 h-4 text-amber-600 dark:text-amber-400" aria-hidden="true" />
                           <p className="font-medium text-sm sm:text-base">
                             {pendingDraft.formData?.patientName || 'Paciente sem nome'}
                           </p>
-                          <Badge variant="outline" className="text-xs border-amber-500/30 text-amber-600 bg-amber-100 dark:bg-amber-900/50">
+                          <Badge variant="outline" className="text-xs border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/50">
                             Rascunho
                           </Badge>
                         </div>
@@ -388,7 +390,7 @@ export default function Dashboard() {
                           Descartar
                         </Button>
                         <Link to="/new-case">
-                          <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white" aria-label="Continuar avaliação">
+                          <Button size="sm" className="bg-amber-600 hover:bg-amber-700 dark:bg-amber-600 dark:hover:bg-amber-500 text-white" aria-label="Continuar avaliação">
                             Continuar
                           </Button>
                         </Link>

@@ -571,7 +571,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
       <div className="space-y-6">
         <div className="text-center">
           <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
-            isCreditError ? 'bg-amber-100 dark:bg-amber-950/30' : 'bg-destructive/10'
+            isCreditError ? 'bg-amber-100 dark:bg-amber-950/30' : 'bg-destructive/10 dark:bg-destructive/20'
           }`}>
             {isCreditError ? (
               <Zap className="w-8 h-8 text-amber-600" />
@@ -637,10 +637,10 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
             <Badge 
               variant={analysis.confidence === 'alta' ? 'default' : analysis.confidence === 'média' ? 'secondary' : 'outline'}
               className={
-                analysis.confidence === 'alta' 
-                  ? 'bg-emerald-500' 
-                  : analysis.confidence === 'baixa' 
-                    ? 'border-amber-500 text-amber-700 bg-amber-50' 
+                analysis.confidence === 'alta'
+                  ? 'bg-emerald-500'
+                  : analysis.confidence === 'baixa'
+                    ? 'border-amber-500 text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30'
                     : ''
               }
             >
@@ -651,10 +651,10 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
 
         {/* Alert for low confidence or limitations */}
         {hasLimitations && (
-          <Alert variant="default" className="border-amber-500 bg-amber-50">
-            <AlertCircle className="h-4 w-4 text-amber-600" />
-            <AlertTitle className="text-amber-800">Caso com Limitações para Simulação</AlertTitle>
-            <AlertDescription className="text-amber-700">
+          <Alert variant="default" className="border-amber-500 bg-amber-50 dark:bg-amber-950/30">
+            <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            <AlertTitle className="text-amber-800 dark:text-amber-200">Caso com Limitações para Simulação</AlertTitle>
+            <AlertDescription className="text-amber-700 dark:text-amber-300">
               {result.simulation_note || 
                 'Este caso apresenta características que limitam a precisão da simulação visual. A análise de proporções está disponível, mas o resultado final pode variar significativamente.'}
             </AlertDescription>
@@ -663,9 +663,9 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
 
         {/* Attention observations from AI */}
         {attentionObservations.length > 0 && (
-          <Card className="border-amber-400 bg-amber-50/50">
+          <Card className="border-amber-400 bg-amber-50/50 dark:bg-amber-950/20">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center gap-2 text-amber-800">
+              <CardTitle className="text-base flex items-center gap-2 text-amber-800 dark:text-amber-200">
                 <AlertCircle className="w-4 h-4" />
                 Pontos de Atenção
               </CardTitle>
@@ -673,8 +673,8 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
             <CardContent>
               <ul className="space-y-2">
                 {attentionObservations.map((obs, index) => (
-                  <li key={index} className="text-sm text-amber-700 flex items-start gap-2">
-                    <span className="text-amber-600 mt-0.5">•</span>
+                  <li key={index} className="text-sm text-amber-700 dark:text-amber-300 flex items-start gap-2">
+                    <span className="text-amber-600 dark:text-amber-400 mt-0.5">•</span>
                     {obs.replace(/^ATENÇÃO:\s*/i, '')}
                   </li>
                 ))}
@@ -704,12 +704,12 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
 
         {/* NEW: Background simulation error card */}
         {simulationError && !simulationImageUrl && !isSimulationGenerating && (
-          <Card className="border-amber-400 bg-amber-50/50">
+          <Card className="border-amber-400 bg-amber-50/50 dark:bg-amber-950/20">
             <CardContent className="py-4">
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <AlertCircle className="w-5 h-5 text-amber-600" />
-                  <span className="text-sm text-amber-700">
+                  <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                  <span className="text-sm text-amber-700 dark:text-amber-300">
                     Simulação não pôde ser gerada automaticamente
                   </span>
                 </div>
