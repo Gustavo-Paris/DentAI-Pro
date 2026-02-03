@@ -590,8 +590,8 @@ Use a função analyze_dental_photo para retornar a análise estruturada complet
     // This prevents the inconsistency where the case-level banner says "Facetas de Porcelana"
     // but every individual tooth shows "Resina Composta"
     const globalIndication = analysisResult.treatment_indication ?? "resina";
-    const detectedTeeth: DetectedTooth[] = (analysisResult.detected_teeth || []).map((tooth: Partial<DetectedTooth>) => ({
-      tooth: tooth.tooth || "desconhecido",
+    const rawTeeth: DetectedTooth[] = (analysisResult.detected_teeth || []).map((tooth: Partial<DetectedTooth>) => ({
+      tooth: String(tooth.tooth || "desconhecido"),
       tooth_region: tooth.tooth_region ?? null,
       cavity_class: tooth.cavity_class ?? null,
       restoration_size: tooth.restoration_size ?? null,
@@ -604,6 +604,16 @@ Use a função analyze_dental_photo para retornar a análise estruturada complet
       treatment_indication: tooth.treatment_indication ?? globalIndication,
       indication_reason: tooth.indication_reason ?? undefined,
     }));
+
+    // Deduplicate: Gemini can return the same tooth number multiple times
+    // (e.g., once for mesial diastema and once for distal). Keep the first occurrence
+    // which has the highest priority since the AI orders by urgency.
+    const seenToothNumbers = new Set<string>();
+    const detectedTeeth: DetectedTooth[] = rawTeeth.filter(t => {
+      if (seenToothNumbers.has(t.tooth)) return false;
+      seenToothNumbers.add(t.tooth);
+      return true;
+    });
 
     // Sort by priority: alta > média > baixa
     const priorityOrder = { alta: 0, média: 1, baixa: 2 };
