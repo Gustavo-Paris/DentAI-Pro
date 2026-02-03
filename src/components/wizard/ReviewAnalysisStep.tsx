@@ -22,7 +22,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { AlertTriangle, Check, Info, Sparkles, CircleDot, RefreshCw, Loader2, Plus, Wrench, Wand2, Crown, CalendarIcon } from 'lucide-react';
+import { AlertTriangle, Check, Info, Sparkles, CircleDot, RefreshCw, Loader2, Plus, Wrench, Wand2, Crown, CalendarIcon, Zap } from 'lucide-react';
 import { PatientAutocomplete } from '@/components/PatientAutocomplete';
 import { calculateAge } from '@/lib/dateUtils';
 import { format } from 'date-fns';
@@ -298,6 +298,9 @@ export function ReviewAnalysisStep({
                     <RefreshCw className="w-4 h-4" />
                   )}
                   <span className="ml-1 hidden sm:inline">Reanalisar</span>
+                  <span className="inline-flex items-center gap-0.5 text-xs opacity-60 ml-0.5">
+                    <Zap className="w-2.5 h-2.5" />1
+                  </span>
                 </Button>
               )}
             </div>

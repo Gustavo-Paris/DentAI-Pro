@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Smile, Loader2, RefreshCw, ChevronRight, Lightbulb, AlertCircle } from 'lucide-react';
+import { Smile, Loader2, RefreshCw, ChevronRight, Lightbulb, AlertCircle, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSubscription } from '@/hooks/useSubscription';
 import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
@@ -110,7 +110,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
   
   const { invokeFunction } = useAuthenticatedFetch();
   const { user } = useAuth();
-  const { canUseCredits, refreshSubscription } = useSubscription();
+  const { canUseCredits, refreshSubscription, creditsRemaining, getCreditCost } = useSubscription();
 
   const lastCompositeSourcePathRef = useRef<string | null>(null);
   
@@ -415,7 +415,10 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
         setResult(data);
         setIsAnalyzing(false);
         refreshSubscription(); // Update credit count after consumption
-        toast.success('Análise de proporções concluída!');
+        const dsdCost = getCreditCost('dsd_simulation');
+        toast.success('Análise de proporções concluída!', {
+          description: `${dsdCost} créditos utilizados. Restam ${Math.max(0, creditsRemaining - dsdCost)} créditos.`,
+        });
         
         // PHASE 2: Generate simulation in background
         // Note: We pass analysis directly since state update is async
@@ -563,22 +566,41 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
 
   // Error state
   if (error) {
+    const isCreditError = error.includes('Créditos insuficientes');
     return (
       <div className="space-y-6">
         <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-destructive/10 flex items-center justify-center">
-            <AlertCircle className="w-8 h-8 text-destructive" />
+          <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
+            isCreditError ? 'bg-amber-100 dark:bg-amber-950/30' : 'bg-destructive/10'
+          }`}>
+            {isCreditError ? (
+              <Zap className="w-8 h-8 text-amber-600" />
+            ) : (
+              <AlertCircle className="w-8 h-8 text-destructive" />
+            )}
           </div>
-          <h2 className="text-xl font-semibold mb-2">Erro na Análise DSD</h2>
+          <h2 className="text-xl font-semibold mb-2">
+            {isCreditError ? 'Créditos Insuficientes' : 'Erro na Análise DSD'}
+          </h2>
           <p className="text-muted-foreground">{error}</p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Button variant="outline" onClick={handleRetry}>
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Tentar novamente
-          </Button>
-          <Button onClick={onSkip}>
+          {isCreditError ? (
+            <Button onClick={() => window.location.href = '/pricing'}>
+              <Zap className="w-4 h-4 mr-2" />
+              Ver Planos
+            </Button>
+          ) : (
+            <Button variant="outline" onClick={handleRetry}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Tentar novamente
+              <span className="inline-flex items-center gap-0.5 text-xs opacity-60 ml-1">
+                <Zap className="w-3 h-3" />2
+              </span>
+            </Button>
+          )}
+          <Button variant={isCreditError ? 'outline' : 'default'} onClick={onSkip}>
             Pular DSD
             <ChevronRight className="w-4 h-4 ml-2" />
           </Button>
@@ -810,6 +832,9 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
           <Button variant="outline" onClick={handleRetry} className="sm:flex-1">
             <RefreshCw className="w-4 h-4 mr-2" />
             Refazer Análise
+            <span className="inline-flex items-center gap-0.5 text-xs opacity-60 ml-1">
+              <Zap className="w-3 h-3" />2
+            </span>
           </Button>
           <Button onClick={handleContinue} className="sm:flex-1">
             Continuar para Revisão

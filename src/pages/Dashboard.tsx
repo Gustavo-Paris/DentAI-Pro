@@ -13,11 +13,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { LogOut, Plus, FileText, Package, ChevronRight, Search, FileWarning, TrendingUp, Users, CheckCircle2 } from 'lucide-react';
+import { LogOut, Plus, FileText, Package, ChevronRight, Search, FileWarning, TrendingUp, Users, CheckCircle2, Zap } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { format, formatDistanceToNow, startOfWeek, endOfWeek } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { BRAND_NAME } from '@/lib/branding';
+import { useSubscription } from '@/hooks/useSubscription';
+import { CreditBadge } from '@/components/CreditBadge';
 
 interface Session {
   session_id: string;
@@ -35,6 +37,7 @@ export default function Dashboard() {
 
   const { data: profileData, isLoading: loadingProfile } = useProfile();
   const { data: dashboardData, isLoading: loadingDashboard } = useDashboardData();
+  const { creditsRemaining, creditsTotal, isLoading: loadingCredits } = useSubscription();
   const { loadDraft, clearDraft } = useWizardDraft(user?.id);
 
   const loading = loadingProfile || loadingDashboard;
@@ -141,6 +144,7 @@ export default function Dashboard() {
                   <p>Buscar pacientes, avaliações e ações</p>
                 </TooltipContent>
               </Tooltip>
+              <CreditBadge variant="compact" />
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Link to="/profile" aria-label="Acessar meu perfil">
@@ -270,7 +274,12 @@ export default function Dashboard() {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                   <h3 className="font-medium mb-1">Nova Avaliação</h3>
-                  <p className="text-sm text-muted-foreground">Análise com IA</p>
+                  <p className="text-sm text-muted-foreground">
+                    Análise com IA
+                    <span className="inline-flex items-center gap-1 ml-2 text-xs text-primary font-medium">
+                      <Zap className="w-3 h-3" /> 3 créditos
+                    </span>
+                  </p>
                 </div>
                 <Link to="/new-case" className="w-full sm:w-auto">
                   <Button className="w-full sm:w-auto" aria-label="Iniciar nova avaliação">

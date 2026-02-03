@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { ArrowLeft, ArrowRight, Camera, Brain, ClipboardCheck, FileText, Loader2, Smile, Check, Save, Heart } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Camera, Brain, ClipboardCheck, FileText, Loader2, Smile, Check, Save, Heart, Zap } from 'lucide-react';
 
 import { useSubscription } from '@/hooks/useSubscription';
 import { PhotoUploadStep, AdditionalPhotos } from '@/components/wizard/PhotoUploadStep';
@@ -77,7 +77,7 @@ export default function NewCase() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { invokeFunction } = useAuthenticatedFetch();
-  const { canUseCredits, refreshSubscription } = useSubscription();
+  const { canUseCredits, refreshSubscription, creditsRemaining, creditsTotal, getCreditCost } = useSubscription();
   
   // Auto-save hook
   const { loadDraft, saveDraft, clearDraft, isSaving, lastSavedAt } = useWizardDraft(user?.id);
@@ -87,6 +87,30 @@ export default function NewCase() {
 
   // Ref to ensure draft check only runs once
   const hasCheckedDraftRef = useRef(false);
+  const hasShownCreditWarningRef = useRef(false);
+
+  // Proactive low-credit warning on mount
+  useEffect(() => {
+    if (hasShownCreditWarningRef.current) return;
+    hasShownCreditWarningRef.current = true;
+
+    const fullWorkflowCost = getCreditCost('case_analysis') + getCreditCost('dsd_simulation');
+    if (creditsRemaining < fullWorkflowCost && creditsRemaining > 0) {
+      toast.warning(`Você tem ${creditsRemaining} crédito${creditsRemaining !== 1 ? 's' : ''}. O fluxo completo (análise + DSD) requer ${fullWorkflowCost}.`, {
+        duration: 6000,
+        description: 'Você pode pular o DSD para economizar créditos.',
+      });
+    } else if (creditsRemaining === 0) {
+      toast.error('Sem créditos disponíveis.', {
+        description: 'Faça upgrade do seu plano para criar novos casos.',
+        action: {
+          label: 'Ver Planos',
+          onClick: () => navigate('/pricing'),
+        },
+        duration: 8000,
+      });
+    }
+  }, [creditsRemaining, getCreditCost, navigate]);
 
   // Check for pending draft on mount (only once)
   useEffect(() => {
@@ -297,6 +321,9 @@ export default function NewCase() {
         // Move to DSD step after successful analysis
         setIsAnalyzing(false);
         refreshSubscription(); // Update credit count after consumption
+        toast.success('Análise concluída', {
+          description: `1 crédito utilizado. Restam ${Math.max(0, creditsRemaining - getCreditCost('case_analysis'))} créditos.`,
+        });
         setStep(4); // DSD step (step 4 now)
       } else {
         throw new Error('Análise não retornou dados');
@@ -347,6 +374,17 @@ export default function NewCase() {
   const handleReanalyze = async () => {
     if (!imageBase64) return;
 
+    // Pre-check credits before reanalysis
+    if (!canUseCredits('case_analysis')) {
+      toast.error('Créditos insuficientes. Faça upgrade do seu plano para reanalisar.', {
+        action: {
+          label: 'Ver Planos',
+          onClick: () => navigate('/pricing'),
+        },
+      });
+      return;
+    }
+
     setIsReanalyzing(true);
 
     try {
@@ -384,14 +422,25 @@ export default function NewCase() {
           }));
         }
 
-        toast.success(`Reanálise concluída: ${analysis.detected_teeth?.length || 0} dente(s) detectado(s)`);
+        refreshSubscription();
+        toast.success('Reanálise concluída', {
+          description: `${analysis.detected_teeth?.length || 0} dente(s) detectado(s). 1 crédito utilizado.`,
+        });
       }
     } catch (error: unknown) {
       const err = error as { message?: string; code?: string };
       console.error('Reanalysis error:', error);
-      
+
       if (err.message?.includes('429') || err.code === 'RATE_LIMITED') {
         toast.error('Limite de requisições excedido. Aguarde alguns minutos.');
+      } else if (err.message?.includes('402') || err.code === 'INSUFFICIENT_CREDITS' || err.code === 'PAYMENT_REQUIRED') {
+        toast.error('Créditos insuficientes para reanálise.', {
+          action: {
+            label: 'Ver Planos',
+            onClick: () => navigate('/pricing'),
+          },
+        });
+        refreshSubscription();
       } else {
         toast.error('Erro na reanálise. Tente novamente.');
       }
@@ -937,22 +986,40 @@ export default function NewCase() {
               <span className="text-lg sm:text-xl font-semibold tracking-tight">Novo Caso</span>
             </div>
             
-            {/* Auto-save indicator */}
-            {step >= 4 && (
-              <Badge variant="outline" className="text-xs gap-1.5">
-                {isSaving ? (
-                  <>
-                    <Save className="w-3 h-3 animate-pulse" />
-                    <span className="hidden sm:inline">Salvando...</span>
-                  </>
-                ) : lastSavedAt ? (
-                  <>
-                    <Check className="w-3 h-3 text-primary" />
-                    <span className="hidden sm:inline">Salvo</span>
-                  </>
-                ) : null}
+            <div className="flex items-center gap-2">
+              {/* Credit indicator */}
+              <Badge
+                variant="outline"
+                className={`text-xs gap-1 ${
+                  creditsRemaining <= 2
+                    ? 'border-red-300 text-red-600 bg-red-50 dark:bg-red-950/30'
+                    : creditsRemaining <= 5
+                      ? 'border-amber-300 text-amber-600 bg-amber-50 dark:bg-amber-950/30'
+                      : ''
+                }`}
+              >
+                <Zap className="w-3 h-3" />
+                <span>{creditsRemaining}</span>
+                <span className="hidden sm:inline">crédito{creditsRemaining !== 1 ? 's' : ''}</span>
               </Badge>
-            )}
+
+              {/* Auto-save indicator */}
+              {step >= 4 && (
+                <Badge variant="outline" className="text-xs gap-1.5">
+                  {isSaving ? (
+                    <>
+                      <Save className="w-3 h-3 animate-pulse" />
+                      <span className="hidden sm:inline">Salvando...</span>
+                    </>
+                  ) : lastSavedAt ? (
+                    <>
+                      <Check className="w-3 h-3 text-primary" />
+                      <span className="hidden sm:inline">Salvo</span>
+                    </>
+                  ) : null}
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
       </header>

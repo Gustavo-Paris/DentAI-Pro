@@ -1,7 +1,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Sparkles, ArrowRight, Sun, Zap, Star, Check } from 'lucide-react';
+import { Sparkles, ArrowRight, Sun, Zap, Star, Check, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useSubscription } from '@/hooks/useSubscription';
 
 export type WhiteningLevel = 'natural' | 'white' | 'hollywood';
 
@@ -50,6 +51,10 @@ export function PatientPreferencesStep({
   onPreferencesChange,
   onContinue,
 }: PatientPreferencesStepProps) {
+  const { creditsRemaining, getCreditCost } = useSubscription();
+  const totalCost = getCreditCost('case_analysis') + getCreditCost('dsd_simulation');
+  const hasEnoughCredits = creditsRemaining >= totalCost;
+
   const handleSelect = (level: WhiteningLevel) => {
     onPreferencesChange({ whiteningLevel: level });
   };
@@ -130,14 +135,33 @@ export function PatientPreferencesStep({
             })}
           </div>
 
+          {/* Credit cost disclosure */}
+          <div className="rounded-lg border border-border bg-muted/30 p-3">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Zap className="w-4 h-4 text-primary shrink-0" />
+              <span>
+                As próximas etapas consumirão <strong className="text-foreground">{totalCost} créditos</strong> (análise + DSD)
+              </span>
+            </div>
+            {!hasEnoughCredits && (
+              <div className="flex items-center gap-2 mt-2 text-sm text-amber-600 dark:text-amber-400">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <span>Você tem apenas {creditsRemaining} crédito{creditsRemaining !== 1 ? 's' : ''}. Créditos insuficientes para o fluxo completo.</span>
+              </div>
+            )}
+          </div>
+
           {/* Continue button */}
-          <div className="pt-4">
+          <div className="pt-2">
             <Button
               onClick={onContinue}
               className="w-full gap-2"
               size="lg"
             >
               Continuar com simulação
+              <span className="inline-flex items-center gap-0.5 text-xs opacity-80 ml-1">
+                <Zap className="w-3 h-3" />{totalCost}
+              </span>
               <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
