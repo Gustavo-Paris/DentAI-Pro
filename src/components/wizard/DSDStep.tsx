@@ -746,6 +746,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
                   <>
                     <RefreshCw className="w-3 h-3 mr-1" />
                     Nova Simulação
+                    <span className="text-xs opacity-60 ml-0.5">(grátis)</span>
                   </>
                 )}
               </Button>
