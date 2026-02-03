@@ -414,11 +414,11 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
         // Show analysis immediately
         setResult(data);
         setIsAnalyzing(false);
-        refreshSubscription(); // Update credit count after consumption
         const dsdCost = getCreditCost('dsd_simulation');
         toast.success('Análise de proporções concluída!', {
-          description: `${dsdCost} créditos utilizados. Restam ${Math.max(0, creditsRemaining - dsdCost)} créditos.`,
+          description: `${dsdCost} créditos utilizados.`,
         });
+        refreshSubscription(); // Update credit count after consumption
         
         // PHASE 2: Generate simulation in background
         // Note: We pass analysis directly since state update is async

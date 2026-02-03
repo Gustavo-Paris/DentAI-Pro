@@ -155,6 +155,7 @@ export function PatientPreferencesStep({
           <div className="pt-2">
             <Button
               onClick={onContinue}
+              disabled={creditsRemaining === 0}
               className="w-full gap-2"
               size="lg"
             >

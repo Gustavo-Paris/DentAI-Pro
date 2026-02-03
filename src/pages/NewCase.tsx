@@ -191,19 +191,22 @@ export default function NewCase() {
   }, [clearDraft]);
 
   // Auto-select all detected teeth and initialize per-tooth treatments when analysis completes
+  // Preserves user overrides for teeth that already had a treatment set
   useEffect(() => {
     if (analysisResult?.detected_teeth && analysisResult.detected_teeth.length > 0) {
       const allTeeth = analysisResult.detected_teeth.map(t => t.tooth);
       setSelectedTeeth(allTeeth);
-      
-      // Initialize per-tooth treatments from AI indications
-      const initialTreatments: Record<string, TreatmentType> = {};
-      analysisResult.detected_teeth.forEach(t => {
-        initialTreatments[t.tooth] = t.treatment_indication || 'resina';
+
+      // Merge: keep existing user overrides, only initialize NEW teeth from AI
+      setToothTreatments(prev => {
+        const merged: Record<string, TreatmentType> = {};
+        analysisResult.detected_teeth.forEach(t => {
+          merged[t.tooth] = prev[t.tooth] || t.treatment_indication || 'resina';
+        });
+        return merged;
       });
-      setToothTreatments(initialTreatments);
     }
-    
+
     // CRITICAL: Sync global treatment type with AI indication (for form-level default)
     if (analysisResult?.treatment_indication) {
       setFormData(prev => ({
@@ -320,10 +323,11 @@ export default function NewCase() {
 
         // Move to DSD step after successful analysis
         setIsAnalyzing(false);
-        refreshSubscription(); // Update credit count after consumption
+        const cost = getCreditCost('case_analysis');
         toast.success('Análise concluída', {
-          description: `1 crédito utilizado. Restam ${Math.max(0, creditsRemaining - getCreditCost('case_analysis'))} créditos.`,
+          description: `${cost} crédito utilizado.`,
         });
+        refreshSubscription(); // Update credit count after consumption
         setStep(4); // DSD step (step 4 now)
       } else {
         throw new Error('Análise não retornou dados');
