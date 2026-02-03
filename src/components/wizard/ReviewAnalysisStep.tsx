@@ -125,6 +125,10 @@ interface ReviewAnalysisStepProps {
   onDobErrorChange?: (hasError: boolean) => void;
   /** Patient's whitening preference from step 2 */
   whiteningLevel?: 'natural' | 'white' | 'hollywood';
+  /** DSD aesthetic observations (complementary info, not a separate tooth list) */
+  dsdObservations?: string[];
+  /** DSD suggestions for context (displayed as aesthetic notes) */
+  dsdSuggestions?: { tooth: string; current_issue: string; proposed_change: string }[];
 }
 
 const TEETH = {
@@ -176,6 +180,8 @@ export function ReviewAnalysisStep({
   dobError: externalDobError,
   onDobErrorChange,
   whiteningLevel,
+  dsdObservations,
+  dsdSuggestions,
 }: Omit<ReviewAnalysisStepProps, 'onToothSelect'>) {
   const [showManualAdd, setShowManualAdd] = useState(false);
   const [manualTooth, setManualTooth] = useState('');
@@ -616,6 +622,32 @@ export function ReviewAnalysisStep({
                   </ul>
                 </div>
               )}
+
+              {/* DSD Aesthetic Notes */}
+              {(dsdObservations?.length || dsdSuggestions?.length) ? (
+                <div className="mt-4 p-3 bg-primary/5 border border-primary/20 rounded-lg">
+                  <h4 className="text-sm font-medium mb-2 flex items-center gap-2 text-primary">
+                    <Sparkles className="w-4 h-4" />
+                    Notas Estéticas (DSD)
+                  </h4>
+                  {dsdSuggestions && dsdSuggestions.length > 0 && (
+                    <ul className="space-y-1 mb-2">
+                      {dsdSuggestions.map((s, i) => (
+                        <li key={i} className="text-sm text-muted-foreground">
+                          • <span className="font-medium">Dente {s.tooth}:</span> {s.proposed_change}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {dsdObservations && dsdObservations.length > 0 && (
+                    <ul className="space-y-1">
+                      {dsdObservations.map((obs, i) => (
+                        <li key={i} className="text-sm text-muted-foreground">• {obs}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ) : null}
             </CardContent>
           </Card>
         )}
