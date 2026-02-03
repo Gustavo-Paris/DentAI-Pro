@@ -929,10 +929,24 @@ export default function NewCase() {
       }
     }
 
-    // Filter detected teeth - remove those that DSD says to keep
+    // Build set of teeth that DSD actively mentions (for treatment, not "keep")
+    const dsdMentionedTeeth = new Set<string>();
+    for (const suggestion of dsdSuggestions) {
+      if (!teethToKeep.has(suggestion.tooth)) {
+        dsdMentionedTeeth.add(suggestion.tooth);
+      }
+    }
+
+    // Filter detected teeth:
+    // - Remove those that DSD says to keep
+    // - Remove those that DSD didn't mention at all (DSD is the refined analysis)
     let mergedTeeth = detectedTeeth.filter(tooth => {
       if (teethToKeep.has(tooth.tooth)) {
-        console.log(`[DSD Merge] Removing tooth ${tooth.tooth} from treatment list (DSD says keep)`);
+        console.log(`[DSD Merge] Removing tooth ${tooth.tooth} - DSD says keep`);
+        return false;
+      }
+      if (!dsdMentionedTeeth.has(tooth.tooth)) {
+        console.log(`[DSD Merge] Removing tooth ${tooth.tooth} - not mentioned in DSD analysis`);
         return false;
       }
       return true;
