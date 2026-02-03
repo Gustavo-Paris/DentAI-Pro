@@ -9,6 +9,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import CookieConsent from "@/components/CookieConsent";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Eager load auth pages (needed immediately)
@@ -171,6 +172,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
           <GlobalSearch />
+          <CookieConsent />
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
