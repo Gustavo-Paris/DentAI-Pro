@@ -30,6 +30,7 @@ const EvaluationDetails = lazy(() => import("@/pages/EvaluationDetails"));
 const Patients = lazy(() => import("@/pages/Patients"));
 const PatientProfile = lazy(() => import("@/pages/PatientProfile"));
 const Profile = lazy(() => import("@/pages/Profile"));
+const Pricing = lazy(() => import("@/pages/Pricing"));
 
 const queryClient = new QueryClient();
 
@@ -151,6 +152,16 @@ const App = () => (
                 <ProtectedRoute>
                   <Suspense fallback={<PageLoader />}>
                     <PatientProfile />
+                  </Suspense>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/pricing"
+              element={
+                <ProtectedRoute>
+                  <Suspense fallback={<PageLoader />}>
+                    <Pricing />
                   </Suspense>
                 </ProtectedRoute>
               }

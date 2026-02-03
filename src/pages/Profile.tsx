@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -7,8 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowLeft, Camera, Loader2, Save, Building2, ImageIcon } from 'lucide-react';
+import { ArrowLeft, Camera, Loader2, Save, Building2, ImageIcon, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
+import { SubscriptionStatus } from '@/components/pricing/SubscriptionStatus';
+import { useSubscription } from '@/hooks/useSubscription';
 
 interface ProfileData {
   full_name: string | null;
@@ -241,7 +243,7 @@ export default function Profile() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-lg">
+      <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-2xl space-y-6">
         <Card>
           <CardHeader className="text-center pb-2">
             {/* Avatar and Logo side by side */}
@@ -376,7 +378,41 @@ export default function Profile() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Subscription Section */}
+        <SubscriptionStatus />
+
+        {/* Upgrade CTA */}
+        <UpgradeCTA />
       </main>
     </div>
+  );
+}
+
+function UpgradeCTA() {
+  const { isFree, isActive } = useSubscription();
+
+  // Only show for free users
+  if (!isFree || isActive) return null;
+
+  return (
+    <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
+      <CardContent className="flex items-center justify-between py-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-full bg-primary/10">
+            <Sparkles className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <p className="font-medium">Desbloqueie todo o potencial</p>
+            <p className="text-sm text-muted-foreground">
+              Mais casos, simulações ilimitadas e suporte prioritário
+            </p>
+          </div>
+        </div>
+        <Button asChild>
+          <Link to="/pricing">Ver Planos</Link>
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
