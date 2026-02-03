@@ -847,12 +847,53 @@ export default function NewCase() {
     };
   };
 
-  // DSD handlers - DSD only stores visual simulation + proportion scores
-  // Teeth for review come exclusively from the clinical analysis (analyze-dental-photo)
+  // DSD handlers - union of clinical + DSD teeth for review
+  // Clinical analysis is the base, DSD adds any teeth it found that clinical missed
   const handleDSDComplete = (result: DSDResult | null) => {
     setDsdResult(result);
-    // No teeth merge - review uses clinical analysis teeth only
-    // selectedTeeth and toothTreatments are already set by the useEffect on analysisResult
+
+    if (result?.analysis?.suggestions?.length && analysisResult) {
+      const clinicalTeeth = analysisResult.detected_teeth || [];
+      const existingNumbers = new Set(clinicalTeeth.map(t => t.tooth));
+
+      // Add DSD-only teeth to the clinical list
+      const dsdAdditions: DetectedTooth[] = [];
+      for (const s of result.analysis.suggestions) {
+        if (!existingNumbers.has(s.tooth)) {
+          const toothNum = parseInt(s.tooth);
+          const isUpper = toothNum >= 10 && toothNum <= 28;
+          const isAnteriorTooth = ['11','12','13','21','22','23','31','32','33','41','42','43'].includes(s.tooth);
+
+          dsdAdditions.push({
+            tooth: s.tooth,
+            tooth_region: isAnteriorTooth
+              ? (isUpper ? 'anterior-superior' : 'anterior-inferior')
+              : (isUpper ? 'posterior-superior' : 'posterior-inferior'),
+            cavity_class: null,
+            restoration_size: null,
+            substrate: null,
+            substrate_condition: null,
+            enamel_condition: null,
+            depth: null,
+            priority: 'média',
+            notes: `DSD: ${s.current_issue} → ${s.proposed_change}`,
+            treatment_indication: s.treatment_indication || 'resina',
+            indication_reason: s.proposed_change,
+          });
+          existingNumbers.add(s.tooth);
+        }
+      }
+
+      if (dsdAdditions.length > 0) {
+        const unified = [...clinicalTeeth, ...dsdAdditions].sort(
+          (a, b) => (parseInt(a.tooth) || 0) - (parseInt(b.tooth) || 0)
+        );
+
+        setAnalysisResult(prev => prev ? { ...prev, detected_teeth: unified } : null);
+        // selectedTeeth and toothTreatments will update via the useEffect on analysisResult
+      }
+    }
+
     setStep(5); // Move to review (step 5)
   };
 
