@@ -684,7 +684,7 @@ Responda APENAS com o JSON, sem texto adicional.`;
     let recommendation;
     try {
       // Strip markdown code fences if present (```json ... ```)
-      let cleaned = content.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '');
+      const cleaned = content.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '');
 
       // Try direct parse first
       try {

@@ -286,7 +286,7 @@ export function AddTeethModal({
 
         // Call appropriate edge function based on treatment type
         switch (treatmentType) {
-          case 'porcelana':
+          case 'porcelana': {
             const { error: cementError } = await supabase.functions.invoke('recommend-cementation', {
               body: {
                 evaluationId: evaluation.id,
@@ -299,8 +299,9 @@ export function AddTeethModal({
             });
             if (cementError) throw cementError;
             break;
+          }
 
-          case 'resina':
+          case 'resina': {
             const { error: aiError } = await supabase.functions.invoke('recommend-resin', {
               body: {
                 evaluationId: evaluation.id,
@@ -321,20 +322,22 @@ export function AddTeethModal({
             });
             if (aiError) throw aiError;
             break;
+          }
 
           case 'implante':
           case 'coroa':
           case 'endodontia':
-          case 'encaminhamento':
+          case 'encaminhamento': {
             const genericProtocol = getGenericProtocol(treatmentType, toothNumber, toothData);
             await supabase
               .from('evaluations')
-              .update({ 
+              .update({
                 generic_protocol: genericProtocol,
                 recommendation_text: genericProtocol.summary,
               })
               .eq('id', evaluation.id);
             break;
+          }
         }
 
         // Update status to draft

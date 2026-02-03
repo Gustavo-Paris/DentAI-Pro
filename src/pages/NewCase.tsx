@@ -641,7 +641,7 @@ export default function NewCase() {
         setSubmissionStep(3);
         // CRITICAL: Call the correct edge function based on EACH TOOTH'S treatment type
         switch (treatmentType) {
-          case 'porcelana':
+          case 'porcelana': {
             // Call recommend-cementation for porcelain veneers
             const { error: cementError } = await supabase.functions.invoke('recommend-cementation', {
               body: {
@@ -655,8 +655,9 @@ export default function NewCase() {
             });
             if (cementError) throw cementError;
             break;
+          }
 
-          case 'resina':
+          case 'resina': {
             // Call recommend-resin for composite restorations
             const { error: aiError } = await supabase.functions.invoke('recommend-resin', {
               body: {
@@ -686,21 +687,23 @@ export default function NewCase() {
             });
             if (aiError) throw aiError;
             break;
+          }
 
           case 'implante':
           case 'coroa':
           case 'endodontia':
-          case 'encaminhamento':
+          case 'encaminhamento': {
             // For these treatment types, save a generic protocol with reference checklist
             const genericProtocol = getGenericProtocol(treatmentType, tooth, toothData);
             await supabase
               .from('evaluations')
-              .update({ 
+              .update({
                 generic_protocol: genericProtocol,
                 recommendation_text: genericProtocol.summary,
               })
               .eq('id', evaluation.id);
             break;
+          }
         }
 
         // Update status to draft (ready for checklist completion)
