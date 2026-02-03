@@ -10,25 +10,17 @@ const PRODUCTION_ORIGINS = [
   "https://id-preview--103c514c-01d4-492f-b5ae-b2ea6b76bdf3.lovable.app",
 ];
 
-const DEVELOPMENT_ORIGINS = [
-  "http://localhost:8080",
-  "http://localhost:8081",
-  "http://localhost:8082",
-  "http://localhost:5173",
-  "http://localhost:3000",
-  "http://127.0.0.1:8080",
-  "http://127.0.0.1:8081",
-  "http://127.0.0.1:8082",
-  "http://127.0.0.1:5173",
-  "http://127.0.0.1:3000",
-];
-
 // Check environment - only allow localhost origins in development
 const isDevelopment = Deno.env.get("ENVIRONMENT") !== "production";
 
-const ALLOWED_ORIGINS = isDevelopment 
-  ? [...PRODUCTION_ORIGINS, ...DEVELOPMENT_ORIGINS]
-  : PRODUCTION_ORIGINS;
+function isLocalhostOrigin(origin: string): boolean {
+  try {
+    const url = new URL(origin);
+    return url.hostname === "localhost" || url.hostname === "127.0.0.1";
+  } catch {
+    return false;
+  }
+}
 
 export function getCorsHeaders(req: Request): Record<string, string> {
   const origin = req.headers.get("origin") || "";
@@ -36,16 +28,20 @@ export function getCorsHeaders(req: Request): Record<string, string> {
   // Check if origin is in allowed list
   const isAllowed =
     !!origin &&
-    (ALLOWED_ORIGINS.includes(origin) ||
+    (PRODUCTION_ORIGINS.includes(origin) ||
       // New production domain and subdomains
       origin.endsWith(".dentai.pro") ||
       origin === "https://dentai.pro" ||
+      // Vercel preview deploys
+      origin.endsWith(".vercel.app") ||
       // Lovable domains (transition period)
       origin.endsWith(".lovable.app") ||
-      origin.endsWith(".lovableproject.com"));
-  
+      origin.endsWith(".lovableproject.com") ||
+      // Localhost in development (any port)
+      (isDevelopment && isLocalhostOrigin(origin)));
+
   return {
-    "Access-Control-Allow-Origin": isAllowed ? origin : ALLOWED_ORIGINS[0],
+    "Access-Control-Allow-Origin": isAllowed ? origin : PRODUCTION_ORIGINS[0],
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
     "Access-Control-Allow-Credentials": "true",
   };

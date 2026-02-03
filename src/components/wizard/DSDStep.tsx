@@ -76,6 +76,13 @@ type DetectedToothForMask = {
   tooth_bounds?: ToothBoundsPct;
 };
 
+/** Summary of clinical findings per tooth, passed to DSD for cross-referencing */
+interface ClinicalToothFinding {
+  tooth: string;
+  indication_reason?: string;
+  treatment_indication?: string;
+}
+
 interface DSDStepProps {
   imageBase64: string | null;
   onComplete: (result: DSDResult | null) => void;
@@ -85,6 +92,10 @@ interface DSDStepProps {
   /** Optional: used to post-process the simulation by compositing ONLY the teeth onto the original photo */
   detectedTeeth?: DetectedToothForMask[];
   initialResult?: DSDResult | null; // For restoring from draft
+  /** Clinical observations from analyze-dental-photo, passed as context to prevent contradictions */
+  clinicalObservations?: string[];
+  /** Per-tooth clinical findings to prevent DSD from inventing restorations */
+  clinicalTeethFindings?: ClinicalToothFinding[];
 }
 
 const analysisSteps = [
@@ -94,7 +105,7 @@ const analysisSteps = [
   { label: 'Avaliando simetria...', duration: 2000 },
 ];
 
-export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, patientPreferences, detectedTeeth, initialResult }: DSDStepProps) {
+export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, patientPreferences, detectedTeeth, initialResult, clinicalObservations, clinicalTeethFindings }: DSDStepProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   // Initialize with draft result if available
@@ -397,6 +408,17 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
         requestBody.patientPreferences = {
           whiteningLevel: patientPreferences.whiteningLevel,
         };
+      }
+
+      // Pass clinical observations from initial analysis to prevent contradictions
+      // (e.g., smile arc classified differently by each AI call)
+      if (clinicalObservations?.length) {
+        requestBody.clinicalObservations = clinicalObservations;
+      }
+
+      // Pass per-tooth clinical findings so DSD doesn't invent restorations
+      if (clinicalTeethFindings?.length) {
+        requestBody.clinicalTeethFindings = clinicalTeethFindings;
       }
       
       // PHASE 1: Get analysis quickly (~25s)

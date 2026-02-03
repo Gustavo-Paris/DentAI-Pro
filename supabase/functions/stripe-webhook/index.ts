@@ -13,6 +13,7 @@ const WEBHOOK_SECRET = Deno.env.get("STRIPE_WEBHOOK_SECRET") || "";
  * Resolve our internal plan ID from a Stripe price ID.
  * Falls back to the Stripe price ID if no mapping found.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function resolveInternalPlanId(supabase: any, stripePriceId: string): Promise<string> {
   const { data } = await supabase
     .from("subscription_plans")
@@ -107,6 +108,7 @@ serve(async (req: Request) => {
   }
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function handleCheckoutCompleted(supabase: any, session: Stripe.Checkout.Session) {
   const customerId = session.customer as string;
   const subscriptionId = session.subscription as string;
@@ -115,11 +117,23 @@ async function handleCheckoutCompleted(supabase: any, session: Stripe.Checkout.S
 
   // Get the subscription details from Stripe
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-  const userId = subscription.metadata.supabase_user_id;
+  let userId = subscription.metadata.supabase_user_id;
 
   if (!userId) {
-    console.error("No supabase_user_id in subscription metadata");
-    return;
+    // Fallback: find user by customer ID from existing subscription record
+    const { data: existingSub } = await supabase
+      .from("subscriptions")
+      .select("user_id")
+      .eq("stripe_customer_id", customerId)
+      .maybeSingle();
+
+    if (existingSub) {
+      userId = existingSub.user_id;
+      console.log(`Resolved user ${userId} from customer ${customerId} (metadata missing)`);
+    } else {
+      console.error(`No supabase_user_id in metadata and no existing subscription for customer ${customerId}`);
+      return;
+    }
   }
 
   // Resolve internal plan ID from Stripe price ID
@@ -152,9 +166,10 @@ async function handleCheckoutCompleted(supabase: any, session: Stripe.Checkout.S
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function handleSubscriptionUpdate(supabase: any, subscription: Stripe.Subscription) {
-  const userId = subscription.metadata.supabase_user_id;
   const customerId = subscription.customer as string;
+  let userId = subscription.metadata.supabase_user_id;
 
   if (!userId) {
     // Try to find user by customer ID
@@ -165,17 +180,21 @@ async function handleSubscriptionUpdate(supabase: any, subscription: Stripe.Subs
       .maybeSingle();
 
     if (!existingSub) {
-      console.error("Could not find user for subscription update");
+      console.error(`Could not find user for subscription update. customer=${customerId}, sub=${subscription.id}`);
       return;
     }
+    userId = existingSub.user_id;
   }
 
   const stripePriceId = subscription.items.data[0]?.price.id;
   const planId = await resolveInternalPlanId(supabase, stripePriceId);
 
+  // Upsert to handle both new and existing subscriptions
   const { error } = await supabase
     .from("subscriptions")
-    .update({
+    .upsert({
+      user_id: userId,
+      stripe_customer_id: customerId,
       stripe_subscription_id: subscription.id,
       plan_id: planId,
       status: subscription.status,
@@ -183,8 +202,9 @@ async function handleSubscriptionUpdate(supabase: any, subscription: Stripe.Subs
       current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
       cancel_at_period_end: subscription.cancel_at_period_end,
       canceled_at: subscription.canceled_at ? new Date(subscription.canceled_at * 1000).toISOString() : null,
-    })
-    .eq("stripe_customer_id", customerId);
+    }, {
+      onConflict: "user_id",
+    });
 
   if (error) {
     console.error("Error updating subscription:", error);
@@ -193,6 +213,7 @@ async function handleSubscriptionUpdate(supabase: any, subscription: Stripe.Subs
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function handleSubscriptionDeleted(supabase: any, subscription: Stripe.Subscription) {
   const customerId = subscription.customer as string;
 
@@ -211,6 +232,7 @@ async function handleSubscriptionDeleted(supabase: any, subscription: Stripe.Sub
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function handleInvoicePaid(supabase: any, invoice: Stripe.Invoice) {
   const customerId = invoice.customer as string;
 
@@ -226,10 +248,10 @@ async function handleInvoicePaid(supabase: any, invoice: Stripe.Invoice) {
     return;
   }
 
-  // Record payment
+  // Record payment (upsert by stripe_invoice_id for idempotency)
   const { error } = await supabase
     .from("payment_history")
-    .insert({
+    .upsert({
       user_id: sub.user_id,
       subscription_id: sub.id,
       stripe_invoice_id: invoice.id,
@@ -240,6 +262,8 @@ async function handleInvoicePaid(supabase: any, invoice: Stripe.Invoice) {
       invoice_url: invoice.hosted_invoice_url,
       invoice_pdf: invoice.invoice_pdf,
       description: invoice.description || `Pagamento - ${invoice.lines.data[0]?.description || 'Assinatura'}`,
+    }, {
+      onConflict: "stripe_invoice_id",
     });
 
   if (error) {
@@ -249,6 +273,7 @@ async function handleInvoicePaid(supabase: any, invoice: Stripe.Invoice) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function handleInvoiceFailed(supabase: any, invoice: Stripe.Invoice) {
   const customerId = invoice.customer as string;
 

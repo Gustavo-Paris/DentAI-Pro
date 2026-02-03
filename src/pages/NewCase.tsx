@@ -641,7 +641,7 @@ export default function NewCase() {
         setSubmissionStep(3);
         // CRITICAL: Call the correct edge function based on EACH TOOTH'S treatment type
         switch (treatmentType) {
-          case 'porcelana':
+          case 'porcelana': {
             // Call recommend-cementation for porcelain veneers
             const { error: cementError } = await supabase.functions.invoke('recommend-cementation', {
               body: {
@@ -655,8 +655,9 @@ export default function NewCase() {
             });
             if (cementError) throw cementError;
             break;
+          }
 
-          case 'resina':
+          case 'resina': {
             // Call recommend-resin for composite restorations
             const { error: aiError } = await supabase.functions.invoke('recommend-resin', {
               body: {
@@ -686,21 +687,23 @@ export default function NewCase() {
             });
             if (aiError) throw aiError;
             break;
+          }
 
           case 'implante':
           case 'coroa':
           case 'endodontia':
-          case 'encaminhamento':
+          case 'encaminhamento': {
             // For these treatment types, save a generic protocol with reference checklist
             const genericProtocol = getGenericProtocol(treatmentType, tooth, toothData);
             await supabase
               .from('evaluations')
-              .update({ 
+              .update({
                 generic_protocol: genericProtocol,
                 recommendation_text: genericProtocol.summary,
               })
               .eq('id', evaluation.id);
             break;
+          }
         }
 
         // Update status to draft (ready for checklist completion)
@@ -914,18 +917,20 @@ export default function NewCase() {
 
     if (result?.analysis?.suggestions?.length && analysisResult) {
       const clinicalTeeth = analysisResult.detected_teeth || [];
-      const existingNumbers = new Set(clinicalTeeth.map(t => t.tooth));
+      // Coerce to string for safe comparison (Gemini may return number or string)
+      const existingNumbers = new Set(clinicalTeeth.map(t => String(t.tooth)));
 
       // Add DSD-only teeth to the clinical list
       const dsdAdditions: DetectedTooth[] = [];
       for (const s of result.analysis.suggestions) {
-        if (!existingNumbers.has(s.tooth)) {
-          const toothNum = parseInt(s.tooth);
+        const toothId = String(s.tooth);
+        if (!existingNumbers.has(toothId)) {
+          const toothNum = parseInt(toothId);
           const isUpper = toothNum >= 10 && toothNum <= 28;
-          const isAnteriorTooth = ['11','12','13','21','22','23','31','32','33','41','42','43'].includes(s.tooth);
+          const isAnteriorTooth = ['11','12','13','21','22','23','31','32','33','41','42','43'].includes(toothId);
 
           dsdAdditions.push({
-            tooth: s.tooth,
+            tooth: toothId,
             tooth_region: isAnteriorTooth
               ? (isUpper ? 'anterior-superior' : 'anterior-inferior')
               : (isUpper ? 'posterior-superior' : 'posterior-inferior'),
@@ -940,7 +945,7 @@ export default function NewCase() {
             treatment_indication: s.treatment_indication || 'resina',
             indication_reason: s.proposed_change,
           });
-          existingNumbers.add(s.tooth);
+          existingNumbers.add(toothId);
         }
       }
 
@@ -952,6 +957,22 @@ export default function NewCase() {
         setAnalysisResult(prev => prev ? { ...prev, detected_teeth: unified } : null);
         // selectedTeeth and toothTreatments will update via the useEffect on analysisResult
       }
+
+      // Sync DSD treatment recommendations with per-tooth treatments
+      // If DSD suggests "porcelana" for a tooth that was set to "resina" (default),
+      // upgrade the treatment to match the DSD recommendation
+      setToothTreatments(prev => {
+        const updated = { ...prev };
+        for (const s of result.analysis.suggestions) {
+          if (s.treatment_indication && s.treatment_indication !== 'resina') {
+            // Only upgrade if user hasn't manually changed it (still at default "resina")
+            if (!prev[s.tooth] || prev[s.tooth] === 'resina') {
+              updated[s.tooth] = s.treatment_indication as TreatmentType;
+            }
+          }
+        }
+        return updated;
+      });
     }
 
     setStep(5); // Move to review (step 5)
@@ -1120,6 +1141,12 @@ export default function NewCase() {
             patientPreferences={patientPreferences}
             detectedTeeth={analysisResult?.detected_teeth}
             initialResult={dsdResult}
+            clinicalObservations={analysisResult?.observations}
+            clinicalTeethFindings={analysisResult?.detected_teeth?.map(t => ({
+              tooth: t.tooth,
+              indication_reason: t.indication_reason,
+              treatment_indication: t.treatment_indication,
+            }))}
           />
         )}
 

@@ -247,9 +247,9 @@ export default function Landing() {
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-6">
-              <AccordionTrigger>É gratuito?</AccordionTrigger>
+              <AccordionTrigger>Quanto custa?</AccordionTrigger>
               <AccordionContent>
-                Sim, você pode criar uma conta e fazer avaliações gratuitamente. O histórico de avaliações fica salvo na sua conta.
+                O {BRAND_NAME} oferece um plano gratuito com créditos limitados para você experimentar. Para uso contínuo, temos planos pagos com mais créditos para análises e simulações DSD. Consulte a página de preços após criar sua conta.
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-7">
