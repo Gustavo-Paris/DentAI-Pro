@@ -9,6 +9,20 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
 
 const WEBHOOK_SECRET = Deno.env.get("STRIPE_WEBHOOK_SECRET") || "";
 
+/**
+ * Resolve our internal plan ID from a Stripe price ID.
+ * Falls back to the Stripe price ID if no mapping found.
+ */
+async function resolveInternalPlanId(supabase: any, stripePriceId: string): Promise<string> {
+  const { data } = await supabase
+    .from("subscription_plans")
+    .select("id")
+    .eq("stripe_price_id", stripePriceId)
+    .maybeSingle();
+
+  return data?.id || stripePriceId;
+}
+
 serve(async (req: Request) => {
   // Only allow POST
   if (req.method !== "POST") {
@@ -108,8 +122,10 @@ async function handleCheckoutCompleted(supabase: any, session: Stripe.Checkout.S
     return;
   }
 
-  // Get plan ID from the subscription's price
-  const priceId = subscription.items.data[0]?.price.id;
+  // Resolve internal plan ID from Stripe price ID
+  const stripePriceId = subscription.items.data[0]?.price.id;
+  const planId = await resolveInternalPlanId(supabase, stripePriceId);
+  console.log(`Resolved plan: ${stripePriceId} -> ${planId}`);
 
   // Update subscription in database
   const { error } = await supabase
@@ -118,7 +134,7 @@ async function handleCheckoutCompleted(supabase: any, session: Stripe.Checkout.S
       user_id: userId,
       stripe_customer_id: customerId,
       stripe_subscription_id: subscriptionId,
-      plan_id: priceId,
+      plan_id: planId,
       status: subscription.status,
       current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
       current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
@@ -154,13 +170,14 @@ async function handleSubscriptionUpdate(supabase: any, subscription: Stripe.Subs
     }
   }
 
-  const priceId = subscription.items.data[0]?.price.id;
+  const stripePriceId = subscription.items.data[0]?.price.id;
+  const planId = await resolveInternalPlanId(supabase, stripePriceId);
 
   const { error } = await supabase
     .from("subscriptions")
     .update({
       stripe_subscription_id: subscription.id,
-      plan_id: priceId,
+      plan_id: planId,
       status: subscription.status,
       current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
       current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),

@@ -56,6 +56,15 @@ serve(async (req: Request) => {
       return createErrorResponse("ID do plano não fornecido", 400, corsHeaders);
     }
 
+    // Resolve Stripe Price ID from our internal plan ID
+    const { data: planData } = await supabase
+      .from("subscription_plans")
+      .select("stripe_price_id")
+      .eq("id", priceId)
+      .maybeSingle();
+
+    const stripePriceId = planData?.stripe_price_id || priceId;
+
     // Get or create Stripe customer
     let customerId: string;
 
@@ -111,7 +120,7 @@ serve(async (req: Request) => {
       payment_method_types: ["card"],
       line_items: [
         {
-          price: priceId,
+          price: stripePriceId,
           quantity: 1,
         },
       ],
