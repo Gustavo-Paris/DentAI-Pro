@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CreditCard, Calendar, BarChart3, Settings, AlertTriangle, Loader2 } from 'lucide-react';
+import { CreditCard, Calendar, Zap, Settings, AlertTriangle, Loader2, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -23,12 +23,12 @@ export function SubscriptionStatus() {
     currentPlan,
     isLoading,
     isActive,
-    casesLimit,
-    casesUsed,
-    casesRemaining,
-    dsdLimit,
-    dsdUsed,
-    dsdRemaining,
+    creditsPerMonth,
+    creditsUsed,
+    creditsRollover,
+    creditsTotal,
+    creditsRemaining,
+    creditsPercentUsed,
     openPortal,
     isOpeningPortal,
   } = useSubscription();
@@ -55,9 +55,6 @@ export function SubscriptionStatus() {
   const status = subscription?.status || 'inactive';
   const statusConfig = statusLabels[status] || statusLabels.inactive;
 
-  const casesPercentage = casesLimit === -1 ? 0 : (casesUsed / casesLimit) * 100;
-  const dsdPercentage = dsdLimit === -1 ? 0 : (dsdUsed / dsdLimit) * 100;
-
   return (
     <Card>
       <CardHeader>
@@ -69,7 +66,7 @@ export function SubscriptionStatus() {
           <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>
         </div>
         <CardDescription>
-          Gerencie sua assinatura e uso
+          Gerencie sua assinatura e créditos
         </CardDescription>
       </CardHeader>
 
@@ -77,11 +74,11 @@ export function SubscriptionStatus() {
         {/* Current Plan */}
         <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
           <div>
-            <p className="font-medium">{currentPlan?.name || 'Gratuito'}</p>
+            <p className="font-medium">{currentPlan?.name || 'Starter'}</p>
             <p className="text-sm text-muted-foreground">
               {currentPlan?.price_monthly
                 ? `${formatPrice(currentPlan.price_monthly)}/mês`
-                : 'Sem custo'}
+                : 'Gratuito'}
             </p>
           </div>
           {subscription?.stripe_customer_id && (
@@ -128,57 +125,55 @@ export function SubscriptionStatus() {
           </div>
         )}
 
-        {/* Usage */}
+        {/* Credits Usage */}
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium">Uso Mensal</span>
+            <Zap className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium">Créditos</span>
           </div>
 
-          {/* Cases Usage */}
+          {/* Main Credit Bar */}
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span>Casos</span>
-              <span className={cn(casesRemaining <= 2 && casesLimit !== -1 && 'text-orange-500 font-medium')}>
-                {casesLimit === -1 ? (
-                  `${casesUsed} (ilimitado)`
-                ) : (
-                  `${casesUsed} / ${casesLimit}`
-                )}
+              <span>Uso mensal</span>
+              <span className={cn(
+                creditsRemaining <= 5 && creditsTotal > 0 && 'text-orange-500 font-medium'
+              )}>
+                {creditsUsed} / {creditsTotal} créditos
               </span>
             </div>
-            {casesLimit !== -1 && (
-              <Progress
-                value={casesPercentage}
-                className={cn(casesPercentage > 80 && '[&>div]:bg-orange-500')}
-              />
+            <Progress
+              value={creditsPercentUsed}
+              className={cn(creditsPercentUsed > 80 && '[&>div]:bg-orange-500')}
+            />
+          </div>
+
+          {/* Credit Breakdown */}
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="p-3 bg-muted/30 rounded-lg">
+              <div className="text-muted-foreground">Créditos do plano</div>
+              <div className="font-semibold">{creditsPerMonth}</div>
+            </div>
+            {creditsRollover > 0 && (
+              <div className="p-3 bg-muted/30 rounded-lg">
+                <div className="flex items-center gap-1 text-muted-foreground">
+                  <RefreshCw className="h-3 w-3" />
+                  <span>Rollover</span>
+                </div>
+                <div className="font-semibold text-green-600">+{creditsRollover}</div>
+              </div>
             )}
           </div>
 
-          {/* DSD Usage */}
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span>Simulações DSD</span>
-              <span className={cn(dsdRemaining <= 1 && dsdLimit !== -1 && 'text-orange-500 font-medium')}>
-                {dsdLimit === -1 ? (
-                  `${dsdUsed} (ilimitado)`
-                ) : (
-                  `${dsdUsed} / ${dsdLimit}`
-                )}
-              </span>
-            </div>
-            {dsdLimit !== -1 && (
-              <Progress
-                value={dsdPercentage}
-                className={cn(dsdPercentage > 80 && '[&>div]:bg-orange-500')}
-              />
-            )}
+          {/* Credit Costs Reference */}
+          <div className="text-xs text-muted-foreground bg-muted/30 p-2 rounded">
+            <strong>Custos:</strong> Análise de caso = 1 crédito | Simulação DSD = 2 créditos
           </div>
 
-          {/* Low Usage Warning */}
-          {(casesRemaining <= 2 || dsdRemaining <= 1) && casesLimit !== -1 && (
+          {/* Low Credits Warning */}
+          {creditsRemaining <= 5 && creditsTotal > 0 && (
             <p className="text-xs text-orange-500">
-              Você está chegando ao limite do seu plano. Considere fazer upgrade.
+              Você está chegando ao limite de créditos. Considere fazer upgrade.
             </p>
           )}
         </div>

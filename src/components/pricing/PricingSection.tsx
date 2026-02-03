@@ -30,13 +30,13 @@ export function PricingSection() {
         </p>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-6 items-start">
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
         {plans.map((plan) => (
           <PricingCard
             key={plan.id}
             plan={plan}
             isCurrentPlan={subscription?.plan_id === plan.id}
-            isPopular={plan.id.includes('pro')}
+            isPopular={plan.id === 'price_pro_monthly_v2'}
             onSelect={checkout}
             isLoading={isCheckingOut}
           />

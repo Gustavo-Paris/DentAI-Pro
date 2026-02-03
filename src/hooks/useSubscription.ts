@@ -12,6 +12,10 @@ export interface SubscriptionPlan {
   currency: string;
   cases_per_month: number;
   dsd_simulations_per_month: number;
+  credits_per_month: number;
+  max_users: number;
+  allows_rollover: boolean;
+  rollover_max: number | null;
   priority_support: boolean;
   features: string[];
   sort_order: number;
@@ -32,11 +36,25 @@ export interface Subscription {
   trial_end: string | null;
   cases_used_this_month: number;
   dsd_used_this_month: number;
+  credits_used_this_month: number;
+  credits_rollover: number;
   plan?: SubscriptionPlan;
 }
 
+export interface CreditCost {
+  operation: string;
+  credits: number;
+  description: string;
+}
+
+// Default credit costs (fallback if DB not available)
+const DEFAULT_CREDIT_COSTS: Record<string, number> = {
+  case_analysis: 1,
+  dsd_simulation: 2,
+};
+
 /**
- * Hook for managing user subscriptions
+ * Hook for managing user subscriptions with credit-based pricing
  */
 export function useSubscription() {
   const { user } = useAuth();
@@ -51,6 +69,20 @@ export function useSubscription() {
         .select('*')
         .eq('is_active', true)
         .order('sort_order');
+
+      if (error) throw error;
+      return data || [];
+    },
+    staleTime: 1000 * 60 * 60, // 1 hour
+  });
+
+  // Fetch credit costs
+  const creditCostsQuery = useQuery({
+    queryKey: ['credit-costs'],
+    queryFn: async (): Promise<CreditCost[]> => {
+      const { data, error } = await supabase
+        .from('credit_costs')
+        .select('*');
 
       if (error) throw error;
       return data || [];
@@ -125,23 +157,52 @@ export function useSubscription() {
   // Computed values
   const subscription = subscriptionQuery.data;
   const plans = plansQuery.data || [];
+  const creditCosts = creditCostsQuery.data || [];
+
+  // Build credit costs map
+  const creditCostsMap: Record<string, number> = {};
+  creditCosts.forEach(c => {
+    creditCostsMap[c.operation] = c.credits;
+  });
 
   const isActive = subscription?.status === 'active' || subscription?.status === 'trialing';
-  const isPro = isActive && subscription?.plan_id?.includes('pro');
-  const isClinic = isActive && subscription?.plan_id?.includes('clinic');
-  const isFree = !isActive || subscription?.plan_id === 'free';
+  const isFree = !isActive || subscription?.plan_id === 'starter' || !subscription?.plan_id;
+  const isEssencial = isActive && subscription?.plan_id === 'price_essencial_monthly';
+  const isPro = isActive && subscription?.plan_id === 'price_pro_monthly_v2';
+  const isElite = isActive && subscription?.plan_id === 'price_elite_monthly';
 
-  const currentPlan = subscription?.plan || plans.find(p => p.id === 'free');
+  // Get current plan (default to starter/free)
+  const currentPlan = subscription?.plan || plans.find(p => p.id === 'starter');
 
-  // Usage limits
-  const casesLimit = currentPlan?.cases_per_month || 5;
+  // Credit calculations
+  const creditsPerMonth = currentPlan?.credits_per_month || 5; // Free tier: 5 credits
+  const creditsUsed = subscription?.credits_used_this_month || 0;
+  const creditsRollover = subscription?.credits_rollover || 0;
+  const creditsTotal = creditsPerMonth + creditsRollover;
+  const creditsRemaining = Math.max(0, creditsTotal - creditsUsed);
+  const creditsPercentUsed = creditsTotal > 0 ? (creditsUsed / creditsTotal) * 100 : 0;
+
+  // Get cost for an operation
+  const getCreditCost = (operation: string): number => {
+    return creditCostsMap[operation] || DEFAULT_CREDIT_COSTS[operation] || 1;
+  };
+
+  // Check if user can perform an operation
+  const canUseCredits = (operation: string): boolean => {
+    const cost = getCreditCost(operation);
+    return creditsRemaining >= cost;
+  };
+
+  // Legacy usage tracking (for backwards compatibility)
+  const casesLimit = currentPlan?.cases_per_month || 3;
   const casesUsed = subscription?.cases_used_this_month || 0;
   const casesRemaining = casesLimit === -1 ? Infinity : Math.max(0, casesLimit - casesUsed);
-  const canCreateCase = casesLimit === -1 || casesUsed < casesLimit;
+  const canCreateCase = canUseCredits('case_analysis');
 
-  const dsdLimit = currentPlan?.dsd_simulations_per_month || 3;
+  const dsdLimit = currentPlan?.dsd_simulations_per_month || 2;
   const dsdUsed = subscription?.dsd_used_this_month || 0;
   const dsdRemaining = dsdLimit === -1 ? Infinity : Math.max(0, dsdLimit - dsdUsed);
+  const canCreateDsd = canUseCredits('dsd_simulation');
 
   // Refetch subscription after checkout
   const refreshSubscription = () => {
@@ -153,15 +214,27 @@ export function useSubscription() {
     subscription,
     plans,
     currentPlan,
+    creditCosts: creditCostsMap,
 
     // Status
     isLoading: subscriptionQuery.isLoading || plansQuery.isLoading,
     isActive,
-    isPro,
-    isClinic,
     isFree,
+    isEssencial,
+    isPro,
+    isElite,
 
-    // Usage
+    // Credits (new system)
+    creditsPerMonth,
+    creditsUsed,
+    creditsRollover,
+    creditsTotal,
+    creditsRemaining,
+    creditsPercentUsed,
+    getCreditCost,
+    canUseCredits,
+
+    // Legacy usage (backwards compatibility)
     casesLimit,
     casesUsed,
     casesRemaining,
@@ -169,6 +242,7 @@ export function useSubscription() {
     dsdLimit,
     dsdUsed,
     dsdRemaining,
+    canCreateDsd,
 
     // Actions
     checkout: checkoutMutation.mutate,
@@ -189,4 +263,17 @@ export function formatPrice(cents: number, currency = 'BRL'): string {
     style: 'currency',
     currency,
   }).format(cents / 100);
+}
+
+/**
+ * Format credits with operation context
+ */
+export function formatCredits(credits: number, operation?: string): string {
+  if (operation === 'case_analysis') {
+    return `${credits} análise${credits !== 1 ? 's' : ''}`;
+  }
+  if (operation === 'dsd_simulation') {
+    return `${Math.floor(credits / 2)} simulaç${Math.floor(credits / 2) !== 1 ? 'ões' : 'ão'} DSD`;
+  }
+  return `${credits} crédito${credits !== 1 ? 's' : ''}`;
 }
