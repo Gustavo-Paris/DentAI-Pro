@@ -21,6 +21,22 @@ Sentry.init({
   replaysOnErrorSampleRate: 1.0,
 });
 
+// Capture unhandled errors outside the React tree
+window.addEventListener("unhandledrejection", (event) => {
+  Sentry.captureException(event.reason ?? new Error("Unhandled promise rejection"), {
+    tags: { mechanism: "unhandledrejection" },
+  });
+});
+
+window.addEventListener("error", (event) => {
+  // Only capture errors not already caught by React's ErrorBoundary
+  if (event.error) {
+    Sentry.captureException(event.error, {
+      tags: { mechanism: "window.onerror" },
+    });
+  }
+});
+
 // Initialize Web Vitals monitoring (LCP, FID, CLS, etc.)
 initWebVitals();
 
