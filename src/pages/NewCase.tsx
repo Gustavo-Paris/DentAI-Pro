@@ -1133,6 +1133,11 @@ export default function NewCase() {
             detectedTeeth={analysisResult?.detected_teeth}
             initialResult={dsdResult}
             clinicalObservations={analysisResult?.observations}
+            clinicalTeethFindings={analysisResult?.detected_teeth?.map(t => ({
+              tooth: t.tooth,
+              indication_reason: t.indication_reason,
+              treatment_indication: t.treatment_indication,
+            }))}
           />
         )}
 
