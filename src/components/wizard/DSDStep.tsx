@@ -16,6 +16,15 @@ import { LoadingOverlay } from '@/components/LoadingOverlay';
 // Tooth shape is now fixed as 'natural' - removed manual selection per market research
 const TOOTH_SHAPE = 'natural' as const;
 
+export type TreatmentIndication = "resina" | "porcelana" | "coroa" | "implante" | "endodontia" | "encaminhamento";
+
+export interface DSDSuggestion {
+  tooth: string;
+  current_issue: string;
+  proposed_change: string;
+  treatment_indication?: TreatmentIndication;
+}
+
 export interface DSDAnalysis {
   facial_midline: "centrada" | "desviada_esquerda" | "desviada_direita";
   dental_midline: "alinhada" | "desviada_esquerda" | "desviada_direita";
@@ -24,14 +33,16 @@ export interface DSDAnalysis {
   occlusal_plane: "nivelado" | "inclinado_esquerda" | "inclinado_direita";
   golden_ratio_compliance: number;
   symmetry_score: number;
-  suggestions: {
-    tooth: string;
-    current_issue: string;
-    proposed_change: string;
-  }[];
+  suggestions: DSDSuggestion[];
   observations: string[];
   confidence: "alta" | "média" | "baixa";
   simulation_limitation?: string;
+  // Visagism fields
+  face_shape?: "oval" | "quadrado" | "triangular" | "retangular" | "redondo";
+  perceived_temperament?: "colérico" | "sanguíneo" | "melancólico" | "fleumático" | "misto";
+  smile_arc?: "consonante" | "plano" | "reverso";
+  recommended_tooth_shape?: "quadrado" | "oval" | "triangular" | "retangular" | "natural";
+  visagism_notes?: string;
 }
 
 export interface DSDResult {
