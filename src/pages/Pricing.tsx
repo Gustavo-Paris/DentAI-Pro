@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PricingSection } from '@/components/pricing/PricingSection';
 import { useSubscription } from '@/hooks/useSubscription';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export default function Pricing() {
@@ -17,8 +18,17 @@ export default function Pricing() {
 
     if (status === 'success') {
       toast.success('Assinatura ativada com sucesso!');
-      refreshSubscription();
-      // Clean URL
+      // Sync subscription from Stripe (bypasses webhook timing issues)
+      const syncSubscription = async () => {
+        try {
+          await supabase.functions.invoke('sync-subscription', { body: {} });
+        } catch (e) {
+          console.error('Sync error:', e);
+        }
+        refreshSubscription();
+      };
+      syncSubscription();
+      setTimeout(syncSubscription, 3000);
       navigate('/pricing', { replace: true });
     } else if (status === 'canceled') {
       toast.info('Checkout cancelado');

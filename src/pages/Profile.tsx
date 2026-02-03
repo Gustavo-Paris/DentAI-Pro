@@ -83,10 +83,18 @@ export default function Profile() {
     const status = searchParams.get('subscription');
     if (status === 'success') {
       toast.success('Assinatura ativada com sucesso!');
-      // Retry refresh to handle webhook delay
-      refreshSubscription();
-      setTimeout(() => refreshSubscription(), 3000);
-      setTimeout(() => refreshSubscription(), 8000);
+      // Sync subscription from Stripe (bypasses webhook timing issues)
+      const syncSubscription = async () => {
+        try {
+          await supabase.functions.invoke('sync-subscription', { body: {} });
+        } catch (e) {
+          console.error('Sync error:', e);
+        }
+        refreshSubscription();
+      };
+      syncSubscription();
+      // Retry in case of delay
+      setTimeout(syncSubscription, 3000);
       navigate('/profile', { replace: true });
     } else if (status === 'canceled') {
       toast.info('Checkout cancelado');
