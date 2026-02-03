@@ -586,6 +586,10 @@ Use a função analyze_dental_photo para retornar a análise estruturada complet
     }
 
     // Ensure required fields have defaults and normalize detected_teeth
+    // Use the global treatment_indication as fallback instead of always defaulting to "resina"
+    // This prevents the inconsistency where the case-level banner says "Facetas de Porcelana"
+    // but every individual tooth shows "Resina Composta"
+    const globalIndication = analysisResult.treatment_indication ?? "resina";
     const detectedTeeth: DetectedTooth[] = (analysisResult.detected_teeth || []).map((tooth: Partial<DetectedTooth>) => ({
       tooth: tooth.tooth || "desconhecido",
       tooth_region: tooth.tooth_region ?? null,
@@ -597,7 +601,7 @@ Use a função analyze_dental_photo para retornar a análise estruturada complet
       depth: tooth.depth ?? null,
       priority: tooth.priority || "média",
       notes: tooth.notes ?? null,
-      treatment_indication: tooth.treatment_indication ?? "resina",
+      treatment_indication: tooth.treatment_indication ?? globalIndication,
       indication_reason: tooth.indication_reason ?? undefined,
     }));
 

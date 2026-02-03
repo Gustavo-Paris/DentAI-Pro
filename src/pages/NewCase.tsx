@@ -946,6 +946,22 @@ export default function NewCase() {
         setAnalysisResult(prev => prev ? { ...prev, detected_teeth: unified } : null);
         // selectedTeeth and toothTreatments will update via the useEffect on analysisResult
       }
+
+      // Sync DSD treatment recommendations with per-tooth treatments
+      // If DSD suggests "porcelana" for a tooth that was set to "resina" (default),
+      // upgrade the treatment to match the DSD recommendation
+      setToothTreatments(prev => {
+        const updated = { ...prev };
+        for (const s of result.analysis.suggestions) {
+          if (s.treatment_indication && s.treatment_indication !== 'resina') {
+            // Only upgrade if user hasn't manually changed it (still at default "resina")
+            if (!prev[s.tooth] || prev[s.tooth] === 'resina') {
+              updated[s.tooth] = s.treatment_indication as TreatmentType;
+            }
+          }
+        }
+        return updated;
+      });
     }
 
     setStep(5); // Move to review (step 5)
@@ -1114,6 +1130,7 @@ export default function NewCase() {
             patientPreferences={patientPreferences}
             detectedTeeth={analysisResult?.detected_teeth}
             initialResult={dsdResult}
+            clinicalObservations={analysisResult?.observations}
           />
         )}
 

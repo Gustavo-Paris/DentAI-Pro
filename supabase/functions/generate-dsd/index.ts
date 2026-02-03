@@ -80,6 +80,7 @@ interface RequestData {
   additionalPhotos?: AdditionalPhotos;
   patientPreferences?: PatientPreferences;
   analysisOnly?: boolean; // NEW: Return only analysis, skip simulation
+  clinicalObservations?: string[]; // Observations from analyze-dental-photo to prevent contradictions
 }
 
 // Validate request
@@ -134,6 +135,11 @@ function validateRequest(data: unknown): { success: boolean; error?: string; dat
     }
   }
 
+  // Parse clinical observations if provided (from analyze-dental-photo)
+  const clinicalObservations = Array.isArray(req.clinicalObservations)
+    ? (req.clinicalObservations as string[]).filter(o => typeof o === 'string')
+    : undefined;
+
   return {
     success: true,
     data: {
@@ -145,6 +151,7 @@ function validateRequest(data: unknown): { success: boolean; error?: string; dat
       additionalPhotos,
       patientPreferences,
       analysisOnly: req.analysisOnly === true, // NEW
+      clinicalObservations,
     },
   };
 }
@@ -627,7 +634,8 @@ async function analyzeProportions(
   imageBase64: string,
   corsHeaders: Record<string, string>,
   additionalPhotos?: AdditionalPhotos,
-  patientPreferences?: PatientPreferences
+  patientPreferences?: PatientPreferences,
+  clinicalObservations?: string[],
 ): Promise<DSDAnalysis | Response> {
   // Build additional context based on available photos
   let additionalContext = '';
@@ -670,10 +678,28 @@ O paciente expressou os seguintes desejos estéticos. PRIORIZE sugestões que at
 IMPORTANTE: Use as preferências do paciente para PRIORIZAR sugestões, mas NÃO sugira tratamentos clinicamente inadequados apenas para atender desejos. Sempre mantenha o foco em resultados conservadores e naturais.`;
   }
 
+  // Build clinical context from prior analysis to prevent contradictions
+  let clinicalContext = '';
+  if (clinicalObservations?.length) {
+    clinicalContext = `
+
+=== OBSERVAÇÕES DA ANÁLISE CLÍNICA PRÉVIA (RESPEITAR) ===
+A análise clínica inicial já identificou as seguintes observações sobre esta mesma foto.
+Você DEVE manter CONSISTÊNCIA com estas classificações. Se a análise clínica classificou
+o arco do sorriso como "reverso", você NÃO deve classificar como "plano" ou vice-versa.
+
+Observações clínicas prévias:
+${clinicalObservations.map(o => `- ${o}`).join('\n')}
+
+REGRA: Sua classificação de arco do sorriso, corredor bucal e desgaste incisal DEVE ser
+CONSISTENTE com as observações acima. Se houver discordância, justifique nas observations.
+`;
+  }
+
   const analysisPrompt = `Você é um especialista em Digital Smile Design (DSD), Visagismo e Odontologia Estética com mais de 20 anos de experiência em planejamento de sorrisos naturais e personalizados.
 
 Analise esta foto de sorriso/face do paciente e forneça uma análise COMPLETA das proporções faciais e dentárias, aplicando princípios de VISAGISMO para criar um sorriso PERSONALIZADO ao paciente.
-${additionalContext}${preferencesContext}
+${additionalContext}${preferencesContext}${clinicalContext}
 
 === PRINCÍPIOS DE VISAGISMO (APLICAR OBRIGATORIAMENTE) ===
 
@@ -1161,7 +1187,8 @@ serve(async (req: Request) => {
       toothShape,
       additionalPhotos,
       patientPreferences,
-      analysisOnly // NEW
+      analysisOnly, // NEW
+      clinicalObservations,
     } = validation.data;
 
     // Check and consume credits only for the initial DSD call (not regeneration)
@@ -1188,8 +1215,8 @@ serve(async (req: Request) => {
     if (regenerateSimulationOnly && existingAnalysis) {
       analysis = existingAnalysis;
     } else {
-      // Run full analysis - pass additional photos and preferences for context enrichment
-      const analysisResult = await analyzeProportions(imageBase64, corsHeaders, additionalPhotos, patientPreferences);
+      // Run full analysis - pass additional photos, preferences, and clinical observations for context enrichment
+      const analysisResult = await analyzeProportions(imageBase64, corsHeaders, additionalPhotos, patientPreferences, clinicalObservations);
       
       // Check if it's an error response
       if (analysisResult instanceof Response) {
