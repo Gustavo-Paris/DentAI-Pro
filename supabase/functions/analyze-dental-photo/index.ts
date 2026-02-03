@@ -148,10 +148,36 @@ serve(async (req) => {
     // Use the validated base64 data
     const base64Image = base64Data;
 
-    // System prompt for dental photo analysis - MULTI-TOOTH + EXPANDED TREATMENT TYPES
-    const systemPrompt = `Você é um especialista em odontologia restauradora e estética com 20 anos de experiência em análise de casos clínicos e planejamento de sorrisos.
+    // System prompt for dental photo analysis - MULTI-TOOTH + EXPANDED TREATMENT TYPES + VISAGISM
+    const systemPrompt = `Você é um especialista em odontologia restauradora e estética com 20 anos de experiência em análise de casos clínicos, planejamento de sorrisos e VISAGISMO aplicado à odontologia.
 
-REGRA CRÍTICA E OBRIGATÓRIA: Você DEVE analisar o SORRISO COMO UM TODO, identificando TODOS os tipos de tratamento necessários.
+REGRA CRÍTICA E OBRIGATÓRIA: Você DEVE analisar o SORRISO COMO UM TODO, identificando TODOS os tipos de tratamento necessários E oportunidades de HARMONIZAÇÃO ESTÉTICA baseada em princípios de visagismo.
+
+=== PRINCÍPIOS DE VISAGISMO NA ANÁLISE ===
+
+Ao analisar a foto, considere:
+
+1. **PROPORÇÕES DENTÁRIAS vs CARACTERÍSTICAS FACIAIS**:
+   - Dentes devem harmonizar com o formato do rosto visível
+   - Incisivos centrais muito pequenos em rosto grande = desarmonia
+   - Incisivos centrais muito grandes em rosto delicado = desarmonia
+
+2. **ARCO DO SORRISO** (se lábios visíveis):
+   - CONSONANTE: Bordos incisais seguem curva do lábio inferior (ideal)
+   - PLANO: Bordos formam linha reta (menos estético)
+   - REVERSO: Bordos côncavos (problema estético)
+
+3. **CORREDOR BUCAL**:
+   - Espaço escuro lateral ao sorrir
+   - Excessivo = sorriso "vazio"
+   - Ausente = sorriso "apertado"
+
+4. **LINHA DO SORRISO**:
+   - Alta (>3mm gengiva): Considerar tratamento gengival
+   - Média (0-3mm): Ideal para tratamentos estéticos
+   - Baixa: Dentes parcialmente cobertos
+
+Inclua observações de visagismo nas "observations" quando relevante.
 
 ## ANÁLISE MULTI-DENTE (Problemas Restauradores)
 - Analise SISTEMATICAMENTE cada quadrante: superior-direito (Q1: 11-18), superior-esquerdo (Q2: 21-28), inferior-esquerdo (Q3: 31-38), inferior-direito (Q4: 41-48)
@@ -299,7 +325,24 @@ Adicionalmente, identifique:
 - Observações sobre harmonização geral do sorriso
 - INDICAÇÃO GERAL predominante do caso
 
-IMPORTANTE: Seja ABRANGENTE na detecção. Cada dente pode ter um tipo de tratamento diferente.`;
+=== OBSERVAÇÕES OBRIGATÓRIAS ===
+
+Nas "observations", SEMPRE inclua:
+1. **Proporção dos incisivos centrais**: Largura x Altura (ideal ~75-80%)
+2. **Simetria entre homólogos**: 11 vs 21, 12 vs 22, 13 vs 23
+3. **Arco do sorriso** (se lábios visíveis): consonante/plano/reverso
+4. **Corredor bucal**: adequado/excessivo/ausente
+5. **Desgaste incisal**: ausente/leve/moderado/severo
+6. **Caracterizações naturais**: mamelons, translucidez, manchas de esmalte
+
+Nos "warnings", inclua se houver:
+- Desarmonia de proporções significativa
+- Arco do sorriso reverso
+- Desgaste severo sugestivo de bruxismo
+- Qualquer achado que limite tratamentos conservadores
+
+IMPORTANTE: Seja ABRANGENTE na detecção. Cada dente pode ter um tipo de tratamento diferente.
+IMPORTANTE: Considere o RESULTADO ESTÉTICO FINAL, não apenas patologias isoladas.`;
 
     const userPrompt = `Analise esta foto e identifique TODOS os dentes que necessitam de tratamento OU que poderiam se beneficiar de melhorias estéticas.
 
@@ -472,7 +515,7 @@ Use a função analyze_dental_photo para retornar a análise estruturada complet
       logger.log("Calling Gemini Vision API...");
 
       const result = await callGeminiVisionWithTools(
-        "gemini-2.0-flash-exp",
+        "gemini-3-flash-preview",
         userPrompt,
         base64Image,
         mimeType,
