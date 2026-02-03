@@ -362,6 +362,26 @@ TABELA DE REFERÊNCIA PARA COMBINAÇÕES:
 │ Dentes Clareados    │ WE (Estelite Bianco), BL (Forma)                │
 └─────────────────────┴─────────────────────────────────────────────────┘
 
+=== CAMADAS DE CARACTERIZAÇÃO (OPCIONAL PARA MÁXIMA NATURALIDADE) ===
+
+Para restaurações que pareçam INDISTINGUÍVEIS de dentes naturais:
+
+CARACTERIZAÇÃO COM TINTS/STAINS:
+┌─────────────────────┬─────────────────────────────────────────────────┐
+│ Caracterização      │ Como Aplicar                                    │
+├─────────────────────┼─────────────────────────────────────────────────┤
+│ White spots         │ Micro-pontos de tint branco no terço médio      │
+│ Craze lines         │ Linhas finas de tint âmbar/marrom               │
+│ Mamelons            │ Projeções de dentina na borda incisal           │
+│ Halo incisal        │ Fina linha de esmalte ultra-translúcido na borda│
+│ Foseta proximal     │ Depressão sutil nas faces proximais             │
+└─────────────────────┴─────────────────────────────────────────────────┘
+
+IMPORTANTE: Caracterização excessiva = resultado artificial
+- Use com MODERAÇÃO - menos é mais
+- Copie as características dos dentes ADJACENTES do paciente
+- Evite criar "dente perfeito" ao lado de dentes naturais com caracterizações
+
 REGRAS DE COMBINAÇÃO:
 1. PRIORIZE resinas do inventário do usuário para o maior número de camadas possível
 2. Sugira resinas externas APENAS para camadas críticas onde fazem diferença real
@@ -433,6 +453,35 @@ INSTRUÇÕES PARA PROTOCOLO DE ESTRATIFICAÇÃO:
 4. Para posteriores com alta demanda estética, considere estratificação
 5. Para posteriores simples, pode recomendar técnica bulk ou incrementos simples
 6. Adapte as cores das camadas baseado na cor VITA informada SEGUINDO AS REGRAS ACIMA
+
+=== NATURALIDADE DO RESULTADO (CRÍTICO PARA ESTÉTICA ANTERIOR) ===
+
+Para restaurações que pareçam NATURAIS e não "dentes de porcelana artificial":
+
+1. **GRADIENTE DE COR**:
+   - Terço cervical: Mais saturado e opaco (tons mais escuros)
+   - Terço médio: Cor principal (VITA selecionada)
+   - Terço incisal: Menos saturado, mais translúcido
+
+2. **TRANSLUCIDEZ INCISAL**:
+   - NUNCA deixar borda incisal 100% opaca em dentes anteriores
+   - Usar esmalte translúcido (CT, CE, WE, Trans) para efeito natural
+   - Efeito "halo" na borda incisal = naturalidade
+
+3. **CARACTERIZAÇÃO OPCIONAL** (nível estético muito alto):
+   - Manchas brancas sutis (White spots artificiais)
+   - Linhas de trinca de esmalte (craze lines)
+   - Mamelons (projeções incisais em pacientes jovens)
+   - ATENÇÃO: Caracterização exagerada = resultado artificial
+
+4. **OPALESCÊNCIA E FLUORESCÊNCIA**:
+   - Resinas com opalescência simulam efeito natural da luz no esmalte
+   - Fluorescência adequada evita aspecto "morto" sob luz UV
+
+5. **INTEGRAÇÃO COM DENTES ADJACENTES**:
+   - A restauração deve "sumir" entre os dentes vizinhos
+   - Cor e translucidez devem harmonizar com os adjacentes
+   - Evitar contraste de brilho (restauração muito polida vs dentes naturais opacos)
 
 === ESPESSURAS DE CAMADA POR CONDIÇÃO DO SUBSTRATO ===
 As espessuras das camadas são faixas-guia que devem ser adaptadas clinicamente conforme a profundidade e mascaramento necessário.
@@ -590,7 +639,7 @@ Responda APENAS com o JSON, sem texto adicional.`;
     let content: string;
     try {
       const result = await callGemini(
-        "gemini-2.0-flash-exp",
+        "gemini-3-flash-preview",
         messages,
         {
           temperature: 0.3,
