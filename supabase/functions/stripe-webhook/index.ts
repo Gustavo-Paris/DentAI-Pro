@@ -13,6 +13,7 @@ const WEBHOOK_SECRET = Deno.env.get("STRIPE_WEBHOOK_SECRET") || "";
  * Resolve our internal plan ID from a Stripe price ID.
  * Falls back to the Stripe price ID if no mapping found.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function resolveInternalPlanId(supabase: any, stripePriceId: string): Promise<string> {
   const { data } = await supabase
     .from("subscription_plans")
@@ -107,6 +108,7 @@ serve(async (req: Request) => {
   }
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function handleCheckoutCompleted(supabase: any, session: Stripe.Checkout.Session) {
   const customerId = session.customer as string;
   const subscriptionId = session.subscription as string;
@@ -164,6 +166,7 @@ async function handleCheckoutCompleted(supabase: any, session: Stripe.Checkout.S
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function handleSubscriptionUpdate(supabase: any, subscription: Stripe.Subscription) {
   const customerId = subscription.customer as string;
   let userId = subscription.metadata.supabase_user_id;
@@ -210,6 +213,7 @@ async function handleSubscriptionUpdate(supabase: any, subscription: Stripe.Subs
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function handleSubscriptionDeleted(supabase: any, subscription: Stripe.Subscription) {
   const customerId = subscription.customer as string;
 
@@ -228,6 +232,7 @@ async function handleSubscriptionDeleted(supabase: any, subscription: Stripe.Sub
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function handleInvoicePaid(supabase: any, invoice: Stripe.Invoice) {
   const customerId = invoice.customer as string;
 
@@ -268,6 +273,7 @@ async function handleInvoicePaid(supabase: any, invoice: Stripe.Invoice) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function handleInvoiceFailed(supabase: any, invoice: Stripe.Invoice) {
   const customerId = invoice.customer as string;
 

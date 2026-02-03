@@ -232,6 +232,7 @@ async function generateSimulation(
   imageBase64: string,
   analysis: DSDAnalysis,
   userId: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabase: any,
   toothShape: string = 'natural',
   patientPreferences?: PatientPreferences
