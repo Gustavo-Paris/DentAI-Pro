@@ -13,8 +13,8 @@ export function PricingSection() {
 
   if (isLoading) {
     return (
-      <div className="grid md:grid-cols-3 gap-6">
-        {[1, 2, 3].map((i) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 max-w-6xl mx-auto">
+        {[1, 2, 3, 4].map((i) => (
           <Skeleton key={i} className="h-[450px] rounded-xl" />
         ))}
       </div>
@@ -30,7 +30,7 @@ export function PricingSection() {
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 max-w-6xl mx-auto">
         {plans.map((plan) => (
           <PricingCard
             key={plan.id}
