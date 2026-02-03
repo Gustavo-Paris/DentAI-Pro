@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -24,9 +24,11 @@ interface ProfileData {
 export default function Profile() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { refreshSubscription } = useSubscription();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
-  
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -75,6 +77,22 @@ export default function Profile() {
 
     fetchProfile();
   }, [user]);
+
+  // Handle redirect from Stripe checkout
+  useEffect(() => {
+    const status = searchParams.get('subscription');
+    if (status === 'success') {
+      toast.success('Assinatura ativada com sucesso!');
+      // Retry refresh to handle webhook delay
+      refreshSubscription();
+      setTimeout(() => refreshSubscription(), 3000);
+      setTimeout(() => refreshSubscription(), 8000);
+      navigate('/profile', { replace: true });
+    } else if (status === 'canceled') {
+      toast.info('Checkout cancelado');
+      navigate('/profile', { replace: true });
+    }
+  }, [searchParams, navigate, refreshSubscription]);
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
