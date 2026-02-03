@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsPreFlight, createErrorResponse, ERROR_MESSAGES } from "../_shared/cors.ts";
 import { logger } from "../_shared/logger.ts";
 import { callGeminiWithTools, GeminiError, type OpenAIMessage, type OpenAITool } from "../_shared/gemini.ts";
+import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 
 // Cementation protocol interfaces
 interface CementationStep {
@@ -110,6 +111,19 @@ serve(async (req: Request) => {
 
     if (authError || !user) {
       return createErrorResponse(ERROR_MESSAGES.INVALID_TOKEN, 401, corsHeaders);
+    }
+
+    // Check rate limit (AI_LIGHT: 20/min, 100/hour, 500/day)
+    const rateLimitResult = await checkRateLimit(
+      supabase,
+      user.id,
+      "recommend-cementation",
+      RATE_LIMITS.AI_LIGHT
+    );
+
+    if (!rateLimitResult.allowed) {
+      logger.warn(`Rate limit exceeded for user ${user.id} on recommend-cementation`);
+      return createRateLimitResponse(rateLimitResult, corsHeaders);
     }
 
     // Parse and validate request body

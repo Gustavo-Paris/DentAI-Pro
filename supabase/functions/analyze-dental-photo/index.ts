@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsPreFlight, ERROR_MESSAGES, createErrorResponse } from "../_shared/cors.ts";
 import { logger } from "../_shared/logger.ts";
 import { callGeminiVisionWithTools, GeminiError, type OpenAITool } from "../_shared/gemini.ts";
+import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 
 interface AnalyzePhotoRequest {
   imageBase64: string;
@@ -103,6 +104,22 @@ serve(async (req) => {
     
     if (claimsError || !claimsData?.claims) {
       return createErrorResponse(ERROR_MESSAGES.INVALID_TOKEN, 401, corsHeaders);
+    }
+
+    const userId = claimsData.claims.sub as string;
+
+    // Check rate limit (AI_HEAVY: 10/min, 50/hour, 200/day)
+    const supabaseService = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "");
+    const rateLimitResult = await checkRateLimit(
+      supabaseService,
+      userId,
+      "analyze-dental-photo",
+      RATE_LIMITS.AI_HEAVY
+    );
+
+    if (!rateLimitResult.allowed) {
+      logger.warn(`Rate limit exceeded for user ${userId} on analyze-dental-photo`);
+      return createRateLimitResponse(rateLimitResult, corsHeaders);
     }
 
     // Parse and validate request

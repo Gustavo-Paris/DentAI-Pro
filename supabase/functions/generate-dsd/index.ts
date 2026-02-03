@@ -8,6 +8,7 @@ import {
   GeminiError,
   type OpenAITool
 } from "../_shared/gemini.ts";
+import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 
 // DSD Analysis interface
 interface DSDAnalysis {
@@ -1128,6 +1129,19 @@ serve(async (req: Request) => {
 
     if (authError || !user) {
       return createErrorResponse(ERROR_MESSAGES.INVALID_TOKEN, 401, corsHeaders);
+    }
+
+    // Check rate limit (AI_HEAVY: 10/min, 50/hour, 200/day)
+    const rateLimitResult = await checkRateLimit(
+      supabase,
+      user.id,
+      "generate-dsd",
+      RATE_LIMITS.AI_HEAVY
+    );
+
+    if (!rateLimitResult.allowed) {
+      logger.warn(`Rate limit exceeded for user ${user.id} on generate-dsd`);
+      return createRateLimitResponse(rateLimitResult, corsHeaders);
     }
 
     // Parse and validate request body

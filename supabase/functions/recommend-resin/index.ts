@@ -4,6 +4,7 @@ import { getCorsHeaders, handleCorsPreFlight, ERROR_MESSAGES, createErrorRespons
 import { validateEvaluationData, type EvaluationData } from "../_shared/validation.ts";
 import { logger } from "../_shared/logger.ts";
 import { callGemini, GeminiError, type OpenAIMessage } from "../_shared/gemini.ts";
+import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 
 interface ProtocolLayer {
   order: number;
@@ -110,6 +111,20 @@ serve(async (req) => {
     }
 
     const userId = claimsData.claims.sub as string;
+
+    // Check rate limit (AI_LIGHT: 20/min, 100/hour, 500/day)
+    const supabaseService = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "");
+    const rateLimitResult = await checkRateLimit(
+      supabaseService,
+      userId,
+      "recommend-resin",
+      RATE_LIMITS.AI_LIGHT
+    );
+
+    if (!rateLimitResult.allowed) {
+      logger.warn(`Rate limit exceeded for user ${userId} on recommend-resin`);
+      return createRateLimitResponse(rateLimitResult, corsHeaders);
+    }
 
     // Parse and validate input
     let rawData: unknown;
