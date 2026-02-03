@@ -3,7 +3,7 @@
 import { logger } from "./logger.ts";
 
 const GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
-const DEFAULT_MODEL = "gemini-2.0-flash-exp";
+const DEFAULT_MODEL = "gemini-2.0-flash";
 
 // Types for OpenAI-style messages (input format)
 export interface OpenAIMessage {
@@ -184,6 +184,32 @@ function parseDataUrl(url: string): { mimeType: string; data: string } | null {
   return null;
 }
 
+// Remove incompatible fields from JSON schema for Gemini API
+function cleanSchemaForGemini(schema: Record<string, unknown>): Record<string, unknown> {
+  const cleaned: Record<string, unknown> = {};
+
+  // Fields not supported by Gemini function calling
+  const unsupportedFields = ["additionalProperties", "nullable", "$schema"];
+
+  for (const [key, value] of Object.entries(schema)) {
+    // Skip unsupported fields
+    if (unsupportedFields.includes(key)) continue;
+
+    // Recursively clean nested objects
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      cleaned[key] = cleanSchemaForGemini(value as Record<string, unknown>);
+    } else if (Array.isArray(value)) {
+      cleaned[key] = value.map((item) =>
+        item && typeof item === "object" ? cleanSchemaForGemini(item as Record<string, unknown>) : item
+      );
+    } else {
+      cleaned[key] = value;
+    }
+  }
+
+  return cleaned;
+}
+
 // Convert OpenAI tools to Gemini format
 function convertToGeminiTools(tools: OpenAITool[]): GeminiTool[] {
   const functionDeclarations: GeminiFunctionDeclaration[] = tools
@@ -191,7 +217,7 @@ function convertToGeminiTools(tools: OpenAITool[]): GeminiTool[] {
     .map((t) => ({
       name: t.function.name,
       description: t.function.description,
-      parameters: t.function.parameters,
+      parameters: cleanSchemaForGemini(t.function.parameters as Record<string, unknown>),
     }));
 
   return [{ functionDeclarations }];
@@ -312,7 +338,10 @@ async function makeGeminiRequest(
 // Extract text response from Gemini response
 function extractTextResponse(response: GeminiResponse): string | null {
   const candidate = response.candidates?.[0];
-  if (!candidate) return null;
+  if (!candidate?.content?.parts) {
+    logger.log("No content parts in response:", JSON.stringify(response, null, 2));
+    return null;
+  }
 
   const textParts = candidate.content.parts
     .filter((p) => p.text)
@@ -326,7 +355,7 @@ function extractFunctionCall(
   response: GeminiResponse
 ): { name: string; args: Record<string, unknown> } | null {
   const candidate = response.candidates?.[0];
-  if (!candidate) return null;
+  if (!candidate?.content?.parts) return null;
 
   const functionCallPart = candidate.content.parts.find((p) => p.functionCall);
   if (functionCallPart?.functionCall) {
@@ -341,7 +370,7 @@ function extractFunctionCall(
 
 /**
  * Basic chat completion with Gemini
- * @param model - Gemini model name (default: gemini-2.0-flash-exp)
+ * @param model - Gemini model name (default: gemini-2.0-flash)
  * @param messages - OpenAI-style messages array
  * @param options - Additional options (temperature, maxTokens)
  */
@@ -376,7 +405,7 @@ export async function callGemini(
 
 /**
  * Vision completion with Gemini (image analysis)
- * @param model - Gemini model name (default: gemini-2.0-flash-exp)
+ * @param model - Gemini model name (default: gemini-2.0-flash)
  * @param prompt - Text prompt for image analysis
  * @param imageBase64 - Base64-encoded image data (without data URL prefix)
  * @param mimeType - Image MIME type (e.g., "image/jpeg", "image/png")
@@ -426,7 +455,7 @@ export async function callGeminiVision(
 
 /**
  * Function calling with Gemini (tool use)
- * @param model - Gemini model name (default: gemini-2.0-flash-exp)
+ * @param model - Gemini model name (default: gemini-2.0-flash)
  * @param messages - OpenAI-style messages array
  * @param tools - OpenAI-style tools array
  * @param options - Additional options including forceFunctionName to force a specific function
@@ -576,7 +605,7 @@ export async function callGeminiImageEdit(
   } = {}
 ): Promise<{ imageUrl: string | null; text: string | null }> {
   const apiKey = getApiKey();
-  const model = "gemini-2.0-flash-exp"; // Model with image generation capability
+  const model = "gemini-3-pro-image-preview"; // Best quality model for image editing
   const url = `${GEMINI_API_BASE}/${model}:generateContent?key=${apiKey}`;
 
   const request = {
