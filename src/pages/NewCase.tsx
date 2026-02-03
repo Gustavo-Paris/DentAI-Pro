@@ -238,9 +238,15 @@ export default function NewCase() {
     if (!user) return null;
 
     try {
-      // Convert base64 to blob
-      const response = await fetch(base64);
-      const blob = await response.blob();
+      // Convert base64 to blob without fetch (CSP blocks data: in connect-src)
+      const byteString = atob(base64.split(',')[1]);
+      const mimeType = base64.split(',')[0].split(':')[1].split(';')[0];
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+      }
+      const blob = new Blob([ab], { type: mimeType });
       
       const fileName = `${user.id}/intraoral_${Date.now()}.jpg`;
       
