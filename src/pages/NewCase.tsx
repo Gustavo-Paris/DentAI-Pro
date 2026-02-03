@@ -908,18 +908,20 @@ export default function NewCase() {
 
     if (result?.analysis?.suggestions?.length && analysisResult) {
       const clinicalTeeth = analysisResult.detected_teeth || [];
-      const existingNumbers = new Set(clinicalTeeth.map(t => t.tooth));
+      // Coerce to string for safe comparison (Gemini may return number or string)
+      const existingNumbers = new Set(clinicalTeeth.map(t => String(t.tooth)));
 
       // Add DSD-only teeth to the clinical list
       const dsdAdditions: DetectedTooth[] = [];
       for (const s of result.analysis.suggestions) {
-        if (!existingNumbers.has(s.tooth)) {
-          const toothNum = parseInt(s.tooth);
+        const toothId = String(s.tooth);
+        if (!existingNumbers.has(toothId)) {
+          const toothNum = parseInt(toothId);
           const isUpper = toothNum >= 10 && toothNum <= 28;
-          const isAnteriorTooth = ['11','12','13','21','22','23','31','32','33','41','42','43'].includes(s.tooth);
+          const isAnteriorTooth = ['11','12','13','21','22','23','31','32','33','41','42','43'].includes(toothId);
 
           dsdAdditions.push({
-            tooth: s.tooth,
+            tooth: toothId,
             tooth_region: isAnteriorTooth
               ? (isUpper ? 'anterior-superior' : 'anterior-inferior')
               : (isUpper ? 'posterior-superior' : 'posterior-inferior'),
@@ -934,7 +936,7 @@ export default function NewCase() {
             treatment_indication: s.treatment_indication || 'resina',
             indication_reason: s.proposed_change,
           });
-          existingNumbers.add(s.tooth);
+          existingNumbers.add(toothId);
         }
       }
 
