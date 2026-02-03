@@ -19,17 +19,23 @@ export default function Pricing() {
 
     if (status === 'success') {
       toast.success('Assinatura ativada com sucesso!');
-      // Sync subscription from Stripe (bypasses webhook timing issues)
-      const syncSubscription = async () => {
-        try {
-          await supabase.functions.invoke('sync-subscription', { body: {} });
-        } catch (e) {
-          console.error('Sync error:', e);
+      // Sync subscription from Stripe with retry (bypasses webhook timing issues)
+      const syncWithRetry = async (attempts = 3, delay = 2000) => {
+        for (let i = 0; i < attempts; i++) {
+          try {
+            const { data } = await supabase.functions.invoke('sync-subscription', { body: {} });
+            if (data?.synced) {
+              refreshSubscription();
+              return;
+            }
+          } catch (e) {
+            console.error(`Sync attempt ${i + 1} failed:`, e);
+          }
+          if (i < attempts - 1) await new Promise(r => setTimeout(r, delay));
         }
         refreshSubscription();
       };
-      syncSubscription();
-      setTimeout(syncSubscription, 3000);
+      syncWithRetry();
       navigate('/pricing', { replace: true });
     } else if (status === 'canceled') {
       toast.info('Checkout cancelado');
