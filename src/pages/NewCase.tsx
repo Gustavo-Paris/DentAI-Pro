@@ -977,7 +977,7 @@ export default function NewCase() {
   const canGoBack = step >= 1 && step <= 5;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div id="main-content" className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border">
         <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4">

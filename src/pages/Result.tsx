@@ -525,7 +525,7 @@ export default function Result() {
   const TreatmentIcon = currentTreatmentStyle.icon;
 
   return (
-    <div className="min-h-screen bg-background print:bg-background">
+    <div id="main-content" className="min-h-screen bg-background print:bg-background">
       {/* Header */}
       <header className="border-b border-border print:hidden">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">

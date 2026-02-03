@@ -115,7 +115,7 @@ export default function Dashboard() {
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-background">
+      <div id="main-content" className="min-h-screen bg-background">
         <header className="border-b border-border animate-fade-in">
           <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
             <span className="text-lg sm:text-xl font-semibold tracking-tight">{BRAND_NAME}</span>
