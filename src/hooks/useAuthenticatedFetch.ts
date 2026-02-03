@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { trackTiming } from '@/lib/webVitals';
 
 const SESSION_REFRESH_THRESHOLD_MS = 60 * 1000; // Refresh if session expires in < 60s
 
@@ -48,11 +49,16 @@ export function useAuthenticatedFetch() {
         }
       }
 
-      // Invoke the edge function
+      // Invoke the edge function with timing
+      const startTime = performance.now();
       const { data, error } = await supabase.functions.invoke<T>(functionName, {
         body: options?.body,
         headers: options?.headers,
       });
+      const duration = performance.now() - startTime;
+
+      // Track function timing for performance monitoring
+      trackTiming(`edge-fn-${functionName}`, duration);
 
       if (error) {
         // Check if it's a 401 and try to refresh + retry once

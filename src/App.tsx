@@ -8,6 +8,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import CookieConsent from "@/components/CookieConsent";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Eager load auth pages (needed immediately)
@@ -30,6 +32,7 @@ const EvaluationDetails = lazy(() => import("@/pages/EvaluationDetails"));
 const Patients = lazy(() => import("@/pages/Patients"));
 const PatientProfile = lazy(() => import("@/pages/PatientProfile"));
 const Profile = lazy(() => import("@/pages/Profile"));
+const Pricing = lazy(() => import("@/pages/Pricing"));
 
 const queryClient = new QueryClient();
 
@@ -45,11 +48,18 @@ const PageLoader = () => (
 
 const App = () => (
   <ErrorBoundary>
+    <ThemeProvider>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground focus:shadow-lg"
+          >
+            Pular para conteúdo
+          </a>
           <AuthProvider>
           <Routes>
             {/* Public routes - eagerly loaded */}
@@ -155,13 +165,25 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/pricing"
+              element={
+                <ProtectedRoute>
+                  <Suspense fallback={<PageLoader />}>
+                    <Pricing />
+                  </Suspense>
+                </ProtectedRoute>
+              }
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <GlobalSearch />
+          <CookieConsent />
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
+    </ThemeProvider>
   </ErrorBoundary>
 );
 

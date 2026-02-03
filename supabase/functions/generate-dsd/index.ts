@@ -2,25 +2,14 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsPreFlight, createErrorResponse, ERROR_MESSAGES } from "../_shared/cors.ts";
 import { logger } from "../_shared/logger.ts";
-
-// Prevent indefinite hangs on external calls (AI gateway / storage downloads)
-async function fetchWithTimeout(
-  input: string,
-  init: RequestInit,
-  timeoutMs: number,
-  label: string
-): Promise<Response> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    return await fetch(input, { ...init, signal: controller.signal });
-  } catch (err) {
-    logger.warn(`${label} request failed`, err);
-    throw err;
-  } finally {
-    clearTimeout(timeoutId);
-  }
-}
+import {
+  callGeminiVisionWithTools,
+  callGeminiImageEdit,
+  GeminiError,
+  type OpenAITool
+} from "../_shared/gemini.ts";
+import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
+import { checkAndUseCredits, createInsufficientCreditsResponse } from "../_shared/credits.ts";
 
 // DSD Analysis interface
 interface DSDAnalysis {
@@ -35,10 +24,17 @@ interface DSDAnalysis {
     tooth: string;
     current_issue: string;
     proposed_change: string;
+    treatment_indication?: "resina" | "porcelana" | "coroa" | "implante" | "endodontia" | "encaminhamento";
   }[];
   observations: string[];
   confidence: "alta" | "média" | "baixa";
   simulation_limitation?: string;
+  // Visagism fields
+  face_shape?: "oval" | "quadrado" | "triangular" | "retangular" | "redondo";
+  perceived_temperament?: "colérico" | "sanguíneo" | "melancólico" | "fleumático" | "misto";
+  smile_arc?: "consonante" | "plano" | "reverso";
+  recommended_tooth_shape?: "quadrado" | "oval" | "triangular" | "retangular" | "natural";
+  visagism_notes?: string;
 }
 
 interface DSDResult {
@@ -215,11 +211,10 @@ async function generateSimulation(
   analysis: DSDAnalysis,
   userId: string,
   supabase: any,
-  apiKey: string,
   toothShape: string = 'natural',
   patientPreferences?: PatientPreferences
 ): Promise<string | null> {
-  const SIMULATION_TIMEOUT = 50_000; // 50s max
+  const SIMULATION_TIMEOUT = 55_000; // 55s max
   
   // Get whitening level from direct UI selection (no AI analysis needed!)
   const whiteningLevel = patientPreferences?.whiteningLevel || 'natural';
@@ -232,31 +227,59 @@ async function generateSimulation(
 
   // Build simple, direct instructions
   const colorInstruction = `- ${whiteningConfig.instruction}`;
-  const textureInstruction = '- Maintain natural enamel texture and surface details';
+  const textureInstruction = `TEXTURA NATURAL DO ESMALTE (CRÍTICO para realismo):
+- Manter/criar PERIQUIMÁCIES (linhas horizontais sutis no esmalte)
+- Preservar REFLEXOS DE LUZ naturais nos pontos de brilho
+- Criar GRADIENTE DE TRANSLUCIDEZ: opaco cervical → translúcido incisal
+- Manter variações sutis de cor entre dentes adjacentes (100% idênticos = artificial)
+- Preservar CARACTERIZAÇÕES naturais visíveis (manchas brancas sutis, craze lines)
+- NÃO criar aparência de "porcelana perfeita" ou "dentes de comercial de TV"`;
   const wantsWhitening = true; // Always apply whitening (user always selects a level)
   const whiteningIntensity = whiteningConfig.intensity;
   
+  // Get visagism data for context-aware simulation
+  const faceShape = analysis.face_shape || 'oval';
+  const toothShapeRecommendation = analysis.recommended_tooth_shape || toothShape || 'natural';
+  const smileArc = analysis.smile_arc || 'consonante';
+
   // INPAINTING MODE - Technical approach for pixel-perfect preservation
-  const absolutePreservation = `🔒 INPAINTING MODE - STRICT MASK 🔒
+  const absolutePreservation = `🔒 INPAINTING MODE - DENTAL SMILE ENHANCEMENT 🔒
 
-WORKFLOW (follow exactly):
-1. COPY the ENTIRE input image exactly as-is
-2. IDENTIFY teeth area only (white/ivory colored enamel surfaces)
-3. MODIFY ONLY pixels within the teeth boundary
-4. ALL pixels OUTSIDE teeth boundary = EXACT COPY from input
+=== IDENTIDADE DO PACIENTE - PRESERVAÇÃO ABSOLUTA ===
+Esta é uma foto REAL de um paciente REAL. A identidade facial deve ser 100% preservada.
 
-⚠️ MASK DEFINITION:
-- INSIDE MASK (can modify): Teeth enamel surfaces ONLY
-- OUTSIDE MASK (copy exactly): Lips, gums, tongue, skin, background, shadows, highlights
+WORKFLOW OBRIGATÓRIO (seguir exatamente):
+1. COPIAR a imagem de entrada INTEIRA como está
+2. IDENTIFICAR APENAS a área dos dentes (superfícies de esmalte branco/marfim)
+3. MODIFICAR APENAS pixels dentro do limite dos dentes
+4. TODOS os pixels FORA do limite dos dentes = CÓPIA EXATA da entrada
 
-PIXEL-LEVEL REQUIREMENT:
-- Every lip pixel in output = EXACT SAME RGB value as input
-- Every gum pixel in output = EXACT SAME RGB value as input
-- Every skin pixel in output = EXACT SAME RGB value as input
-- Lip texture, contour, highlights = IDENTICAL to input
+⚠️ DEFINIÇÃO DA MÁSCARA (CRÍTICO):
+- DENTRO DA MÁSCARA (pode modificar): Superfícies de esmalte dos dentes APENAS
+- FORA DA MÁSCARA (copiar exatamente):
+  • LÁBIOS: Formato, cor, textura, brilho, rugas, vermillion - INTOCÁVEIS
+  • GENGIVA: Cor rosa, contorno, papilas interdentais, zênites gengivais - PRESERVAR
+  • PELE: Textura, tom, pelos faciais, barba - IDÊNTICOS
+  • FUNDO: Qualquer elemento de fundo - INALTERADO
+  • SOMBRAS: Todas as sombras naturais da foto - MANTER
 
-This is image EDITING (inpainting), NOT image GENERATION.
-Output dimensions MUST equal input dimensions exactly.`;
+REQUISITO A NÍVEL DE PIXEL:
+- Cada pixel dos lábios na saída = EXATAMENTE MESMO valor RGB da entrada
+- Cada pixel de gengiva na saída = EXATAMENTE MESMO valor RGB da entrada
+- Cada pixel de pele na saída = EXATAMENTE MESMO valor RGB da entrada
+- Textura labial, contorno, destaques = IDÊNTICOS à entrada
+- NUNCA alterar o formato do rosto ou expressão facial
+
+=== CARACTERÍSTICAS NATURAIS DOS DENTES A PRESERVAR/CRIAR ===
+Para resultado REALISTA (não artificial):
+1. TEXTURA DE SUPERFÍCIE: Manter/criar micro-textura natural do esmalte (periquimácies)
+2. TRANSLUCIDEZ: Terço incisal mais translúcido, terço cervical mais opaco
+3. GRADIENTE DE COR: Mais saturado no cervical → menos saturado no incisal
+4. MAMELONS: Se visíveis na foto original, PRESERVAR as projeções incisais
+5. REFLEXOS DE LUZ: Manter os pontos de brilho naturais nos dentes
+
+Isto é EDIÇÃO de imagem (inpainting), NÃO GERAÇÃO de imagem.
+Dimensões de saída DEVEM ser iguais às dimensões de entrada.`;
 
   // Whitening priority section - FIRST task, direct and emphatic
   const whiteningPrioritySection = wantsWhitening ? `
@@ -266,23 +289,48 @@ ${whiteningLevel === 'hollywood' ? '⚠️ HOLLYWOOD = MAXIMUM BRIGHTNESS. Teeth
 
 ` : '';
 
-  // Quality requirements - simplified compositing instruction
-  const qualityRequirements = `
-COMPOSITING CHECK:
-Think of this as Photoshop layers:
-- Bottom layer: Original input (LOCKED, unchanged)
-- Top layer: Your teeth modifications ONLY
-- Result: Composite where ONLY teeth differ
+  // Visagism context for simulation
+  const visagismContext = `
+=== CONTEXTO DE VISAGISMO (GUIA ESTÉTICO) ===
+Formato facial do paciente: ${faceShape.toUpperCase()}
+Formato de dente recomendado: ${toothShapeRecommendation.toUpperCase()}
+Arco do sorriso: ${smileArc.toUpperCase()}
 
-VALIDATION:
-- Overlay output on input → difference should show ONLY on teeth
-- Any change to lips, gums, skin = FAILURE
-${wantsWhitening ? '- Teeth must be VISIBLY WHITER than input' : ''}`;
+REGRAS DE VISAGISMO PARA SIMULAÇÃO:
+${toothShapeRecommendation === 'quadrado' ? '- Manter/criar ângulos mais definidos nos incisivos, bordos mais retos' : ''}
+${toothShapeRecommendation === 'oval' ? '- Manter/criar contornos arredondados e suaves nos incisivos' : ''}
+${toothShapeRecommendation === 'triangular' ? '- Manter proporção mais larga incisal, convergindo para cervical' : ''}
+${toothShapeRecommendation === 'retangular' ? '- Manter proporção mais alongada, bordos paralelos' : ''}
+${toothShapeRecommendation === 'natural' ? '- PRESERVAR o formato atual dos dentes do paciente' : ''}
+${smileArc === 'plano' ? '- Considerar suavizar a curva incisal para acompanhar lábio inferior' : ''}
+${smileArc === 'reverso' ? '- ATENÇÃO: Arco reverso precisa de tratamento clínico real' : ''}
+`;
+
+  // Quality requirements - compositing + natural appearance
+  const qualityRequirements = `
+${visagismContext}
+VERIFICAÇÃO DE COMPOSIÇÃO:
+Pense nisso como camadas do Photoshop:
+- Camada inferior: Entrada original (BLOQUEADA, inalterada)
+- Camada superior: Suas modificações dos dentes APENAS
+- Resultado: Composição onde APENAS os dentes diferem
+
+VALIDAÇÃO DE QUALIDADE:
+- Sobrepor saída na entrada → diferença deve aparecer APENAS nos dentes
+- Qualquer mudança em lábios, gengiva, pele = FALHA
+- Os dentes devem parecer NATURAIS, não artificiais ou "de plástico"
+- A textura do esmalte deve ter micro-variações naturais
+- O gradiente de cor cervical→incisal deve ser suave e realista
+${wantsWhitening ? '- Os dentes devem ser VISIVELMENTE MAIS BRANCOS que a entrada, mas ainda naturais' : ''}`;
 
   // Base corrections - focused and specific (avoid over-smoothing)
-  const baseCorrections = `1. Fill visible holes, chips or defects on tooth edges
-2. Remove dark stain spots  
-3. Close small gaps by adding MINIMAL material at contact points - NOT by widening teeth`;
+  const baseCorrections = `CORREÇÕES DENTÁRIAS (manter aparência NATURAL):
+1. Preencher buracos, lascas ou defeitos visíveis nas bordas dos dentes
+2. Remover manchas escuras pontuais (mas manter variação natural de cor)
+3. Fechar pequenos espaços adicionando material MÍNIMO nos pontos de contato - NÃO alargando dentes
+4. PRESERVAR mamelons se visíveis (projeções naturais da borda incisal)
+5. MANTER micro-textura natural do esmalte - NÃO deixar dentes "lisos demais"
+6. PRESERVAR translucidez incisal natural - NÃO tornar dentes opacos uniformemente`;
   
   // Check if case needs reconstruction (missing/destroyed teeth)
   const needsReconstruction = analysis.suggestions.some(s => {
@@ -518,87 +566,65 @@ Output: Same photo with ONLY teeth corrected.`;
     promptPreview: simulationPrompt.substring(0, 400) + '...',
   });
 
-  // Models to try - Pro first for quality, Flash as fallback
-  const models = [
-    "google/gemini-3-pro-image-preview",
-    "google/gemini-2.5-flash-image",
-  ];
-  
-  for (const model of models) {
-    try {
-      logger.log(`Trying simulation with model: ${model}`);
-      
-      const response = await fetchWithTimeout(
-        "https://ai.gateway.lovable.dev/v1/chat/completions",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model,
-            messages: [{
-              role: "user",
-              content: [
-                { type: "text", text: simulationPrompt },
-                { type: "image_url", image_url: { url: imageBase64 } },
-              ],
-            }],
-            modalities: ["image", "text"],
-          }),
-        },
-        SIMULATION_TIMEOUT,
-        "generateSimulation"
-      );
-
-      if (!response.ok) {
-        logger.warn(`Simulation request failed with ${model}:`, response.status);
-        continue; // Try next model
-      }
-
-      const data = await response.json();
-      const generatedImage = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-
-      if (!generatedImage) {
-        logger.warn(`No image in response from ${model}, trying next...`);
-        continue; // Try next model
-      }
-
-      // Upload directly (no blend, no verification)
-      const base64Data = generatedImage.replace(/^data:image\/\w+;base64,/, "");
-      const binaryData = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
-      
-      const fileName = `${userId}/dsd_${Date.now()}.png`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from("dsd-simulations")
-        .upload(fileName, binaryData, {
-          contentType: "image/png",
-          upsert: true,
-        });
-
-      if (uploadError) {
-        logger.error("Upload error:", uploadError);
-        return null;
-      }
-
-      logger.log(`Simulation generated with ${model} and uploaded:`, fileName);
-      return fileName;
-    } catch (err) {
-      logger.warn(`Simulation error with ${model}:`, err);
-      continue; // Try next model
-    }
+  // Extract base64 data and mime type from data URL
+  const dataUrlMatch = imageBase64.match(/^data:([^;]+);base64,(.+)$/);
+  if (!dataUrlMatch) {
+    logger.error("Invalid image data URL format");
+    return null;
   }
-  
-  logger.warn("All simulation models failed");
-  return null;
+  const [, inputMimeType, inputBase64Data] = dataUrlMatch;
+
+  try {
+    logger.log("Calling Gemini Image Edit for simulation...");
+
+    const result = await callGeminiImageEdit(
+      simulationPrompt,
+      inputBase64Data,
+      inputMimeType,
+      {
+        temperature: 0.4,
+        timeoutMs: SIMULATION_TIMEOUT,
+      }
+    );
+
+    if (!result.imageUrl) {
+      logger.warn("No image in Gemini response");
+      return null;
+    }
+
+    // Upload generated image
+    const base64Data = result.imageUrl.replace(/^data:image\/\w+;base64,/, "");
+    const binaryData = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
+
+    const fileName = `${userId}/dsd_${Date.now()}.png`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("dsd-simulations")
+      .upload(fileName, binaryData, {
+        contentType: "image/png",
+        upsert: true,
+      });
+
+    if (uploadError) {
+      logger.error("Upload error:", uploadError);
+      return null;
+    }
+
+    logger.log("Simulation generated and uploaded:", fileName);
+    return fileName;
+  } catch (err) {
+    if (err instanceof GeminiError) {
+      logger.warn(`Gemini simulation error (${err.statusCode}):`, err.message);
+    } else {
+      logger.warn("Simulation error:", err);
+    }
+    return null;
+  }
 }
 
 // Analyze facial proportions
 async function analyzeProportions(
   imageBase64: string,
-  apiKey: string,
   corsHeaders: Record<string, string>,
   additionalPhotos?: AdditionalPhotos,
   patientPreferences?: PatientPreferences
@@ -644,11 +670,66 @@ O paciente expressou os seguintes desejos estéticos. PRIORIZE sugestões que at
 IMPORTANTE: Use as preferências do paciente para PRIORIZAR sugestões, mas NÃO sugira tratamentos clinicamente inadequados apenas para atender desejos. Sempre mantenha o foco em resultados conservadores e naturais.`;
   }
 
-  const analysisPrompt = `Você é um especialista em Digital Smile Design (DSD) e Odontologia Estética.
-Analise esta foto de sorriso/face do paciente e forneça uma análise detalhada das proporções faciais e dentárias.
+  const analysisPrompt = `Você é um especialista em Digital Smile Design (DSD), Visagismo e Odontologia Estética com mais de 20 anos de experiência em planejamento de sorrisos naturais e personalizados.
+
+Analise esta foto de sorriso/face do paciente e forneça uma análise COMPLETA das proporções faciais e dentárias, aplicando princípios de VISAGISMO para criar um sorriso PERSONALIZADO ao paciente.
 ${additionalContext}${preferencesContext}
 
-ANÁLISE OBRIGATÓRIA:
+=== PRINCÍPIOS DE VISAGISMO (APLICAR OBRIGATORIAMENTE) ===
+
+O VISAGISMO é a arte de criar uma imagem pessoal que expressa a identidade do indivíduo. Na odontologia, significa criar sorrisos que harmonizam com a personalidade e características faciais do paciente.
+
+ANÁLISE DO FORMATO FACIAL (identifique o predominante):
+- OVAL: Face equilibrada, testa ligeiramente mais larga que o queixo → Dentes ovais com contornos suaves
+- QUADRADO: Mandíbula marcada, ângulos definidos → Dentes mais retangulares com ângulos
+- TRIANGULAR: Testa larga, queixo fino → Dentes triangulares com bordos mais estreitos cervicalmente
+- RETANGULAR/LONGO: Face alongada → Dentes mais largos para compensar verticalmente
+- REDONDO: Bochechas proeminentes, contornos suaves → Dentes ovais com incisal levemente plano
+
+ANÁLISE DE TEMPERAMENTO PERCEBIDO (baseado em características faciais):
+- COLÉRICO (forte/dominante): Linhas retas, ângulos marcados → Incisivos centrais dominantes, bordos retos
+- SANGUÍNEO (extrovertido/alegre): Curvas suaves, simetria → Dentes arredondados, sorriso amplo
+- MELANCÓLICO (sensível/refinado): Linhas delicadas, assimetria sutil → Dentes com detalhes finos, caracterizações
+- FLEUMÁTICO (calmo/sereno): Formas equilibradas → Proporções clássicas, harmonia
+
+CORRELAÇÃO OBRIGATÓRIA:
+O formato do dente deve HARMONIZAR com o formato facial e temperamento percebido:
+- Paciente com rosto quadrado + expressão forte → NÃO recomendar dentes ovais delicados
+- Paciente com rosto oval + expressão suave → NÃO recomendar dentes quadrados angulosos
+
+=== ANÁLISE DO ARCO DO SORRISO (SMILE ARC) ===
+
+A CURVA INCISAL dos dentes anteriores deve seguir o CONTORNO DO LÁBIO INFERIOR durante o sorriso natural:
+- CONSONANTE (ideal): Bordos incisais acompanham a curvatura do lábio inferior
+- PLANO: Bordos incisais formam linha reta (menos estético, aparência mais "velha")
+- REVERSO: Bordos incisais côncavos em relação ao lábio (problema estético sério)
+
+Avalie e DOCUMENTE o tipo de arco do sorriso atual e se ele precisa de correção.
+
+=== ANÁLISE LABIAL (CRÍTICA PARA SIMULAÇÃO REALISTA) ===
+
+1. **Linha do Sorriso em Relação ao Lábio Superior**:
+   - Alta (>3mm de gengiva): Considerar gengivoplastia ou não alongar dentes demais
+   - Média (0-3mm): Ideal para facetas
+   - Baixa (dentes parcialmente cobertos): Alongamento incisal pode melhorar
+
+2. **Espessura Labial**:
+   - Lábios finos: Dentes mais proeminentes parecem excessivos
+   - Lábios grossos: Suportam dentes com mais volume vestibular
+
+3. **Vermillion (linha demarcatória do lábio)**:
+   - Observar e preservar na simulação
+
+=== CARACTERÍSTICAS DENTÁRIAS NATURAIS A PRESERVAR/CRIAR ===
+
+Para um resultado REALISTA e NATURAL, considere:
+1. **Mamelons**: Projeções incisais (mais visíveis em jovens)
+2. **Translucidez Incisal**: Terço incisal mais translúcido que cervical
+3. **Gradiente de Cor**: Mais saturado cervical → menos saturado incisal
+4. **Textura de Superfície**: Periquimácies, linhas de desenvolvimento
+5. **Caracterizações**: Manchas brancas sutis, trincas de esmalte (em dentes naturais)
+
+=== ANÁLISE OBRIGATÓRIA (TÉCNICA) ===
 1. **Linha Média Facial**: Determine se a linha média facial está centrada ou desviada
 2. **Linha Média Dental**: Avalie se os incisivos centrais superiores estão alinhados com a linha média facial
 3. **Linha do Sorriso**: Classifique a exposição gengival (alta, média, baixa)
@@ -674,17 +755,40 @@ CRITÉRIOS OBRIGATÓRIOS para diagnosticar restauração existente:
 ❌ NUNCA diga "Substituir restauração" se não houver PROVA VISUAL INEQUÍVOCA de restauração anterior
 ❌ É preferível NÃO MENCIONAR uma restauração existente do que INVENTAR uma inexistente
 
-=== REGRAS PARA GENGIVOPLASTIA ===
-❌ NUNCA sugira gengivoplastia se:
-- A linha do sorriso for "média" ou "baixa" (pouca exposição gengival)
-- Os zênites gengivais estiverem SIMÉTRICOS bilateralmente
-- A proporção largura/altura dos dentes estiver NORMAL (75-80%)
-- Não houver sorriso gengival evidente
+=== AVALIAÇÃO GENGIVAL - SAÚDE vs ESTÉTICA (IMPORTANTE!) ===
 
-✅ Sugira gengivoplastia APENAS se:
-- Sorriso gengival EVIDENTE (>3mm de exposição gengival acima dos incisivos)
-- Zênites CLARAMENTE assimétricos que afetam a estética visivelmente
-- Dentes parecem "curtos" devido a excesso de gengiva visível
+⚠️ DISTINGUIR DOIS CONCEITOS DIFERENTES:
+
+1. **SAÚDE GENGIVAL** (ausência de doença):
+   - Cor rosa saudável (sem vermelhidão)
+   - Sem sangramento ou inflamação
+   - Papilas íntegras
+   - Contorno firme
+   → Se saudável, mencione: "Saúde gengival adequada"
+
+2. **ESTÉTICA GENGIVAL** (proporções e exposição):
+   - Quantidade de gengiva exposta ao sorrir
+   - Simetria dos zênites gengivais
+   - Proporção coroa clínica (altura visível dos dentes)
+   → Avalie INDEPENDENTEMENTE da saúde
+
+=== REGRAS PARA GENGIVOPLASTIA ===
+
+A gengiva pode estar SAUDÁVEL mas ainda ter indicação de gengivoplastia ESTÉTICA.
+
+✅ INDIQUE gengivoplastia se QUALQUER um destes estiver presente:
+- Linha do sorriso ALTA (>3mm de exposição gengival acima dos incisivos)
+- Zênites gengivais ASSIMÉTRICOS entre dentes homólogos
+- Dentes parecem "curtos" - proporção largura/altura > 85%
+- Sorriso gengival que prejudica a estética
+
+❌ NÃO indique gengivoplastia apenas se:
+- Linha do sorriso "média" ou "baixa" E
+- Zênites simétricos E
+- Proporção largura/altura normal (75-80%)
+
+IMPORTANTE: Mesmo com "saúde gengival excelente", se houver exposição >3mm,
+MENCIONE nas observações: "Considerar gengivoplastia estética para otimizar proporções"
 
 === AVALIAÇÃO COMPLETA DO ARCO DO SORRISO ===
 Quando identificar necessidade de tratamento em incisivos (11, 12, 21, 22), AVALIAÇÃO OBRIGATÓRIA:
@@ -724,6 +828,29 @@ APENAS use confidence="baixa" por tipo de foto se for uma foto INTRAORAL VERDADE
 PRIORIDADE 1: Restaurações com infiltração/manchamento EVIDENTE (saúde bucal)
 PRIORIDADE 2: Restaurações com cor/anatomia inadequada ÓBVIA (estética funcional)
 PRIORIDADE 3: Melhorias em dentes naturais (refinamento estético)
+
+=== INDICAÇÃO DE TRATAMENTO POR SUGESTÃO (OBRIGATÓRIO) ===
+Para CADA sugestão, você DEVE indicar o tipo de tratamento:
+
+- "resina": Restauração direta, fechamento de diastema pequeno (até 2mm), correção pontual
+- "porcelana": Faceta/laminado cerâmico para 3+ dentes anteriores, harmonização extensa, clareamento extremo
+- "coroa": Destruição >60% da estrutura, pós-tratamento de canal em posteriores
+- "implante": Dente ausente, raiz residual, necessidade de extração
+- "endodontia": Escurecimento por necrose, lesão periapical, exposição pulpar
+- "encaminhamento": Ortodontia, periodontia avançada, cirurgia
+
+REGRA CRÍTICA:
+- Se 4+ dentes anteriores precisam de harmonização estética → "porcelana" para todos
+- Se 1-2 dentes precisam de correção pontual → "resina"
+- Se dente está ausente ou precisa ser extraído → "implante"
+- Se dente está escurecido por necrose → "endodontia" primeiro
+
+⚠️ IMPORTANTE - DENTES QUE NÃO PRECISAM DE TRATAMENTO:
+- NÃO inclua nas sugestões dentes que estão PERFEITOS ou serão usados como REFERÊNCIA
+- Se um dente está com "excelente estética natural" → NÃO adicione nas sugestões
+- Se um dente será usado como "guia" ou "referência" → NÃO adicione nas sugestões
+- APENAS inclua dentes que REALMENTE precisam de intervenção
+- A lista de sugestões deve conter APENAS dentes que receberão tratamento
 
 TIPOS DE SUGESTÕES PERMITIDAS:
 
@@ -788,146 +915,187 @@ Exemplo RUIM: Listar apenas 4 dentes quando caninos também precisam de volume -
 
 FILOSOFIA: Seja conservador na detecção de restaurações, mas completo na avaliação do arco do sorriso.
 
+=== RECOMENDAÇÃO DE FORMATO DENTÁRIO (OBRIGATÓRIO) ===
+
+Com base na análise de visagismo (formato facial + temperamento), RECOMENDE o formato ideal para os incisivos centrais:
+- "quadrado": Ângulos definidos, bordos retos
+- "oval": Contornos arredondados, suaves
+- "triangular": Convergência cervical, mais largo incisal
+- "retangular": Mais alto que largo, paralelo
+- "natural": Manter características atuais do paciente
+
+Justifique a recomendação baseada no formato facial e temperamento identificados.
+
 OBSERVAÇÕES:
-Inclua 2-3 observações clínicas objetivas sobre o sorriso.
+Inclua 3-5 observações clínicas objetivas sobre o sorriso, INCLUINDO:
+- Formato facial identificado
+- Temperamento percebido
+- Tipo de arco do sorriso (consonante/plano/reverso)
+- Qualquer desarmonia visagismo
+
 Se identificar limitações para simulação, inclua uma observação com "ATENÇÃO:" explicando.
 
 IMPORTANTE:
+- APLIQUE os princípios de visagismo na análise
 - Seja CONSERVADOR ao diagnosticar restaurações existentes
 - Seja COMPLETO ao avaliar o arco do sorriso (inclua todos os dentes visíveis)
 - TODAS as sugestões devem ser clinicamente realizáveis
+- Considere a PERSONALIDADE percebida ao sugerir mudanças
 - Se o caso NÃO for adequado para DSD, AINDA forneça a análise de proporções mas marque confidence="baixa"`;
 
-  const analysisResponse = await fetchWithTimeout(
-    "https://ai.gateway.lovable.dev/v1/chat/completions",
+  // Tool definition for DSD analysis
+  const tools: OpenAITool[] = [
     {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-pro",
-        messages: [
-          { role: "system", content: analysisPrompt },
-          {
-            role: "user",
-            content: [
-              { type: "text", text: "Analise esta foto e retorne a análise DSD completa usando a ferramenta analyze_dsd." },
-              { type: "image_url", image_url: { url: imageBase64 } },
-            ],
-          },
-        ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "analyze_dsd",
-              description: "Retorna a análise completa do Digital Smile Design",
-              parameters: {
+      type: "function",
+      function: {
+        name: "analyze_dsd",
+        description: "Retorna a análise completa do Digital Smile Design",
+        parameters: {
+          type: "object",
+          properties: {
+            facial_midline: {
+              type: "string",
+              enum: ["centrada", "desviada_esquerda", "desviada_direita"],
+            },
+            dental_midline: {
+              type: "string",
+              enum: ["alinhada", "desviada_esquerda", "desviada_direita"],
+            },
+            smile_line: {
+              type: "string",
+              enum: ["alta", "média", "baixa"],
+            },
+            buccal_corridor: {
+              type: "string",
+              enum: ["adequado", "excessivo", "ausente"],
+            },
+            occlusal_plane: {
+              type: "string",
+              enum: ["nivelado", "inclinado_esquerda", "inclinado_direita"],
+            },
+            golden_ratio_compliance: {
+              type: "number",
+              minimum: 0,
+              maximum: 100,
+            },
+            symmetry_score: {
+              type: "number",
+              minimum: 0,
+              maximum: 100,
+            },
+            suggestions: {
+              type: "array",
+              items: {
                 type: "object",
                 properties: {
-                  facial_midline: {
+                  tooth: { type: "string", description: "Número do dente (notação FDI)" },
+                  current_issue: { type: "string", description: "Problema identificado no dente" },
+                  proposed_change: { type: "string", description: "Mudança proposta para melhorar" },
+                  treatment_indication: {
                     type: "string",
-                    enum: ["centrada", "desviada_esquerda", "desviada_direita"],
-                  },
-                  dental_midline: {
-                    type: "string",
-                    enum: ["alinhada", "desviada_esquerda", "desviada_direita"],
-                  },
-                  smile_line: {
-                    type: "string",
-                    enum: ["alta", "média", "baixa"],
-                  },
-                  buccal_corridor: {
-                    type: "string",
-                    enum: ["adequado", "excessivo", "ausente"],
-                  },
-                  occlusal_plane: {
-                    type: "string",
-                    enum: ["nivelado", "inclinado_esquerda", "inclinado_direita"],
-                  },
-                  golden_ratio_compliance: {
-                    type: "number",
-                    minimum: 0,
-                    maximum: 100,
-                  },
-                  symmetry_score: {
-                    type: "number",
-                    minimum: 0,
-                    maximum: 100,
-                  },
-                  suggestions: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: {
-                        tooth: { type: "string" },
-                        current_issue: { type: "string" },
-                        proposed_change: { type: "string" },
-                      },
-                      required: ["tooth", "current_issue", "proposed_change"],
-                    },
-                  },
-                  observations: {
-                    type: "array",
-                    items: { type: "string" },
-                  },
-                  confidence: {
-                    type: "string",
-                    enum: ["alta", "média", "baixa"],
+                    enum: ["resina", "porcelana", "coroa", "implante", "endodontia", "encaminhamento"],
+                    description: "Tipo de tratamento indicado: resina (restauração direta, fechamento de diastema pequeno), porcelana (faceta/laminado para múltiplos dentes ou casos estéticos), coroa (destruição extensa), implante (dente ausente/extração), endodontia (canal), encaminhamento (especialista)",
                   },
                 },
-                required: [
-                  "facial_midline",
-                  "dental_midline",
-                  "smile_line",
-                  "buccal_corridor",
-                  "occlusal_plane",
-                  "golden_ratio_compliance",
-                  "symmetry_score",
-                  "suggestions",
-                  "observations",
-                  "confidence",
-                ],
-                additionalProperties: false,
+                required: ["tooth", "current_issue", "proposed_change", "treatment_indication"],
               },
             },
+            observations: {
+              type: "array",
+              items: { type: "string" },
+            },
+            confidence: {
+              type: "string",
+              enum: ["alta", "média", "baixa"],
+            },
+            // Visagism fields
+            face_shape: {
+              type: "string",
+              enum: ["oval", "quadrado", "triangular", "retangular", "redondo"],
+              description: "Formato facial predominante do paciente",
+            },
+            perceived_temperament: {
+              type: "string",
+              enum: ["colérico", "sanguíneo", "melancólico", "fleumático", "misto"],
+              description: "Temperamento percebido baseado nas características faciais",
+            },
+            smile_arc: {
+              type: "string",
+              enum: ["consonante", "plano", "reverso"],
+              description: "Relação entre bordos incisais e contorno do lábio inferior",
+            },
+            recommended_tooth_shape: {
+              type: "string",
+              enum: ["quadrado", "oval", "triangular", "retangular", "natural"],
+              description: "Formato de dente recomendado baseado no visagismo",
+            },
+            visagism_notes: {
+              type: "string",
+              description: "Justificativa da análise de visagismo e correlação face-dente",
+            },
           },
-        ],
-        tool_choice: { type: "function", function: { name: "analyze_dsd" } },
-      }),
+          required: [
+            "facial_midline",
+            "dental_midline",
+            "smile_line",
+            "buccal_corridor",
+            "occlusal_plane",
+            "golden_ratio_compliance",
+            "symmetry_score",
+            "suggestions",
+            "observations",
+            "confidence",
+            "face_shape",
+            "perceived_temperament",
+            "smile_arc",
+            "recommended_tooth_shape",
+          ],
+          additionalProperties: false,
+        },
+      },
     },
-    70_000,
-    "analyzeProportions"
-  );
+  ];
 
-  if (!analysisResponse.ok) {
-    const status = analysisResponse.status;
-    if (status === 429) {
-      return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
+  // Extract base64 and mime type from data URL
+  const dataUrlMatch = imageBase64.match(/^data:([^;]+);base64,(.+)$/);
+  if (!dataUrlMatch) {
+    logger.error("Invalid image data URL for analysis");
+    return createErrorResponse(ERROR_MESSAGES.IMAGE_INVALID, 400, corsHeaders);
+  }
+  const [, mimeType, base64Data] = dataUrlMatch;
+
+  try {
+    const result = await callGeminiVisionWithTools(
+      "gemini-2.5-pro",
+      "Analise esta foto e retorne a análise DSD completa usando a ferramenta analyze_dsd.",
+      base64Data,
+      mimeType,
+      tools,
+      {
+        systemPrompt: analysisPrompt,
+        temperature: 0.1,
+        maxTokens: 4000,
+        forceFunctionName: "analyze_dsd",
+      }
+    );
+
+    if (result.functionCall) {
+      return result.functionCall.args as unknown as DSDAnalysis;
     }
-    if (status === 402) {
-      return createErrorResponse(ERROR_MESSAGES.PAYMENT_REQUIRED, 402, corsHeaders, "PAYMENT_REQUIRED");
+
+    logger.error("No function call in Gemini response");
+    return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
+  } catch (error) {
+    if (error instanceof GeminiError) {
+      if (error.statusCode === 429) {
+        return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
+      }
+      logger.error("Gemini analysis error:", error.message);
+    } else {
+      logger.error("AI analysis error:", error);
     }
-    logger.error("AI analysis error:", status, await analysisResponse.text());
     return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
   }
-
-  const analysisData = await analysisResponse.json();
-  const toolCall = analysisData.choices?.[0]?.message?.tool_calls?.[0];
-
-  if (toolCall?.function?.arguments) {
-    try {
-      return JSON.parse(toolCall.function.arguments) as DSDAnalysis;
-    } catch {
-      logger.error("Failed to parse tool call arguments");
-      return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
-    }
-  }
-
-  logger.error("No tool call in response");
-  return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
 }
 
 serve(async (req: Request) => {
@@ -938,12 +1106,11 @@ serve(async (req: Request) => {
   const corsHeaders = getCorsHeaders(req);
 
   try {
-    // Get API keys
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    // Get environment variables
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-    if (!LOVABLE_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
       logger.error("Missing required environment variables");
       return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
     }
@@ -965,7 +1132,20 @@ serve(async (req: Request) => {
       return createErrorResponse(ERROR_MESSAGES.INVALID_TOKEN, 401, corsHeaders);
     }
 
-    // Parse and validate request body
+    // Check rate limit (AI_HEAVY: 10/min, 50/hour, 200/day)
+    const rateLimitResult = await checkRateLimit(
+      supabase,
+      user.id,
+      "generate-dsd",
+      RATE_LIMITS.AI_HEAVY
+    );
+
+    if (!rateLimitResult.allowed) {
+      logger.warn(`Rate limit exceeded for user ${user.id} on generate-dsd`);
+      return createRateLimitResponse(rateLimitResult, corsHeaders);
+    }
+
+    // Parse and validate request body (need to parse before credit check)
     const body = await req.json();
     const validation = validateRequest(body);
 
@@ -973,16 +1153,26 @@ serve(async (req: Request) => {
       return createErrorResponse(validation.error || ERROR_MESSAGES.INVALID_REQUEST, 400, corsHeaders);
     }
 
-    const { 
-      imageBase64, 
-      evaluationId, 
-      regenerateSimulationOnly, 
-      existingAnalysis, 
-      toothShape, 
-      additionalPhotos, 
+    const {
+      imageBase64,
+      evaluationId,
+      regenerateSimulationOnly,
+      existingAnalysis,
+      toothShape,
+      additionalPhotos,
       patientPreferences,
       analysisOnly // NEW
     } = validation.data;
+
+    // Check and consume credits only for the initial DSD call (not regeneration)
+    // regenerateSimulationOnly = phase 2 of same DSD, already charged
+    if (!regenerateSimulationOnly) {
+      const creditResult = await checkAndUseCredits(supabase, user.id, "dsd_simulation");
+      if (!creditResult.allowed) {
+        logger.warn(`Insufficient credits for user ${user.id} on dsd_simulation`);
+        return createInsufficientCreditsResponse(creditResult, corsHeaders);
+      }
+    }
 
     // Log if additional photos or preferences were provided
     if (additionalPhotos) {
@@ -999,7 +1189,7 @@ serve(async (req: Request) => {
       analysis = existingAnalysis;
     } else {
       // Run full analysis - pass additional photos and preferences for context enrichment
-      const analysisResult = await analyzeProportions(imageBase64, LOVABLE_API_KEY, corsHeaders, additionalPhotos, patientPreferences);
+      const analysisResult = await analyzeProportions(imageBase64, corsHeaders, additionalPhotos, patientPreferences);
       
       // Check if it's an error response
       if (analysisResult instanceof Response) {
@@ -1039,7 +1229,7 @@ serve(async (req: Request) => {
     // Generate simulation image
     let simulationUrl: string | null = null;
     try {
-      simulationUrl = await generateSimulation(imageBase64, analysis, user.id, supabase, LOVABLE_API_KEY, toothShape || 'natural', patientPreferences);
+      simulationUrl = await generateSimulation(imageBase64, analysis, user.id, supabase, toothShape || 'natural', patientPreferences);
     } catch (simError) {
       logger.error("Simulation error:", simError);
       // Continue without simulation - analysis is still valid

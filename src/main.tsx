@@ -2,12 +2,14 @@ import { createRoot } from "react-dom/client";
 import * as Sentry from "@sentry/react";
 import App from "./App.tsx";
 import "./index.css";
+import { initWebVitals } from "./lib/webVitals";
+import { env } from "./lib/env";
 
 // Initialize Sentry for error monitoring (only in production)
 Sentry.init({
-  dsn: import.meta.env.VITE_SENTRY_DSN,
+  dsn: env.VITE_SENTRY_DSN,
   environment: import.meta.env.MODE,
-  enabled: import.meta.env.PROD && !!import.meta.env.VITE_SENTRY_DSN,
+  enabled: import.meta.env.PROD && !!env.VITE_SENTRY_DSN,
   integrations: [
     Sentry.browserTracingIntegration(),
     Sentry.replayIntegration(),
@@ -18,5 +20,24 @@ Sentry.init({
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1.0,
 });
+
+// Capture unhandled errors outside the React tree
+window.addEventListener("unhandledrejection", (event) => {
+  Sentry.captureException(event.reason ?? new Error("Unhandled promise rejection"), {
+    tags: { mechanism: "unhandledrejection" },
+  });
+});
+
+window.addEventListener("error", (event) => {
+  // Only capture errors not already caught by React's ErrorBoundary
+  if (event.error) {
+    Sentry.captureException(event.error, {
+      tags: { mechanism: "window.onerror" },
+    });
+  }
+});
+
+// Initialize Web Vitals monitoring (LCP, FID, CLS, etc.)
+initWebVitals();
 
 createRoot(document.getElementById("root")!).render(<App />);

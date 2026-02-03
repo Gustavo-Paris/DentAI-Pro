@@ -97,8 +97,8 @@ export function ProportionsCard({ analysis }: ProportionsCardProps) {
   ];
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-emerald-500';
-    if (score >= 60) return 'text-amber-500';
+    if (score >= 80) return 'text-emerald-600 dark:text-emerald-400';
+    if (score >= 60) return 'text-amber-600 dark:text-amber-400';
     return 'text-destructive';
   };
 

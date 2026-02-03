@@ -13,11 +13,14 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { LogOut, Plus, FileText, Package, ChevronRight, Search, FileWarning, TrendingUp, Users, CheckCircle2 } from 'lucide-react';
+import { LogOut, Plus, FileText, Package, ChevronRight, Search, FileWarning, TrendingUp, Users, CheckCircle2, Zap } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { format, formatDistanceToNow, startOfWeek, endOfWeek } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { BRAND_NAME } from '@/lib/branding';
+import { useSubscription } from '@/hooks/useSubscription';
+import { CreditBadge } from '@/components/CreditBadge';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface Session {
   session_id: string;
@@ -35,6 +38,7 @@ export default function Dashboard() {
 
   const { data: profileData, isLoading: loadingProfile } = useProfile();
   const { data: dashboardData, isLoading: loadingDashboard } = useDashboardData();
+  const { creditsRemaining, creditsTotal, isLoading: loadingCredits } = useSubscription();
   const { loadDraft, clearDraft } = useWizardDraft(user?.id);
 
   const loading = loadingProfile || loadingDashboard;
@@ -103,7 +107,7 @@ export default function Dashboard() {
       );
     }
     return (
-      <Badge variant="outline" className="text-xs border-amber-500/30 text-amber-600 bg-amber-50 dark:bg-amber-950/30">
+      <Badge variant="outline" className="text-xs border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30">
         Em progresso
       </Badge>
     );
@@ -111,7 +115,7 @@ export default function Dashboard() {
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-background">
+      <div id="main-content" className="min-h-screen bg-background">
         <header className="border-b border-border animate-fade-in">
           <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
             <span className="text-lg sm:text-xl font-semibold tracking-tight">{BRAND_NAME}</span>
@@ -141,6 +145,8 @@ export default function Dashboard() {
                   <p>Buscar pacientes, avaliações e ações</p>
                 </TooltipContent>
               </Tooltip>
+              <CreditBadge variant="compact" />
+              <ThemeToggle />
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Link to="/profile" aria-label="Acessar meu perfil">
@@ -189,7 +195,7 @@ export default function Dashboard() {
                   {loading ? (
                     <Skeleton className="h-7 w-10" />
                   ) : (
-                    <p className={`text-xl sm:text-2xl font-semibold ${metrics.pendingCases > 0 ? 'text-amber-600' : 'text-primary'}`}>
+                    <p className={`text-xl sm:text-2xl font-semibold ${metrics.pendingCases > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-primary'}`}>
                       {metrics.pendingCases}
                     </p>
                   )}
@@ -270,7 +276,12 @@ export default function Dashboard() {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                   <h3 className="font-medium mb-1">Nova Avaliação</h3>
-                  <p className="text-sm text-muted-foreground">Análise com IA</p>
+                  <p className="text-sm text-muted-foreground">
+                    Análise com IA
+                    <span className="inline-flex items-center gap-1 ml-2 text-xs text-primary font-medium">
+                      <Zap className="w-3 h-3" /> 3 créditos
+                    </span>
+                  </p>
                 </div>
                 <Link to="/new-case" className="w-full sm:w-auto">
                   <Button className="w-full sm:w-auto" aria-label="Iniciar nova avaliação">
@@ -347,11 +358,11 @@ export default function Dashboard() {
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <FileWarning className="w-4 h-4 text-amber-600" aria-hidden="true" />
+                          <FileWarning className="w-4 h-4 text-amber-600 dark:text-amber-400" aria-hidden="true" />
                           <p className="font-medium text-sm sm:text-base">
                             {pendingDraft.formData?.patientName || 'Paciente sem nome'}
                           </p>
-                          <Badge variant="outline" className="text-xs border-amber-500/30 text-amber-600 bg-amber-100 dark:bg-amber-900/50">
+                          <Badge variant="outline" className="text-xs border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/50">
                             Rascunho
                           </Badge>
                         </div>
@@ -379,7 +390,7 @@ export default function Dashboard() {
                           Descartar
                         </Button>
                         <Link to="/new-case">
-                          <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white" aria-label="Continuar avaliação">
+                          <Button size="sm" className="bg-amber-600 hover:bg-amber-700 dark:bg-amber-600 dark:hover:bg-amber-500 text-white" aria-label="Continuar avaliação">
                             Continuar
                           </Button>
                         </Link>

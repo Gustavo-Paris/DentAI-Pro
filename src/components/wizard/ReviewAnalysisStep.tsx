@@ -22,7 +22,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { AlertTriangle, Check, Info, Sparkles, CircleDot, RefreshCw, Loader2, Plus, Wrench, Wand2, Crown, CalendarIcon } from 'lucide-react';
+import { AlertTriangle, Check, Info, Sparkles, CircleDot, RefreshCw, Loader2, Plus, Wrench, Wand2, Crown, CalendarIcon, Zap } from 'lucide-react';
 import { PatientAutocomplete } from '@/components/PatientAutocomplete';
 import { calculateAge } from '@/lib/dateUtils';
 import { format } from 'date-fns';
@@ -125,6 +125,10 @@ interface ReviewAnalysisStepProps {
   onDobErrorChange?: (hasError: boolean) => void;
   /** Patient's whitening preference from step 2 */
   whiteningLevel?: 'natural' | 'white' | 'hollywood';
+  /** DSD aesthetic observations (complementary info, not a separate tooth list) */
+  dsdObservations?: string[];
+  /** DSD suggestions for context (displayed as aesthetic notes) */
+  dsdSuggestions?: { tooth: string; current_issue: string; proposed_change: string }[];
 }
 
 const TEETH = {
@@ -176,6 +180,8 @@ export function ReviewAnalysisStep({
   dobError: externalDobError,
   onDobErrorChange,
   whiteningLevel,
+  dsdObservations,
+  dsdSuggestions,
 }: Omit<ReviewAnalysisStepProps, 'onToothSelect'>) {
   const [showManualAdd, setShowManualAdd] = useState(false);
   const [manualTooth, setManualTooth] = useState('');
@@ -195,7 +201,7 @@ export function ReviewAnalysisStep({
   };
   
   const confidence = analysisResult?.confidence ?? 0;
-  const confidenceColor = confidence >= 80 ? 'text-green-600' : confidence >= 60 ? 'text-yellow-600' : 'text-red-600';
+  const confidenceColor = confidence >= 80 ? 'text-green-600 dark:text-green-400' : confidence >= 60 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400';
   const detectedTeeth = analysisResult?.detected_teeth || [];
   const hasMultipleTeeth = detectedTeeth.length > 1;
 
@@ -264,7 +270,7 @@ export function ReviewAnalysisStep({
       {/* AI Confidence Banner */}
       {analysisResult && (
         <Card className={`border-l-4 ${confidence >= 80 ? 'border-l-green-500' : confidence >= 60 ? 'border-l-yellow-500' : 'border-l-red-500'}`}>
-          <CardContent className="py-3 flex items-center justify-between">
+          <CardContent className="py-3 flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-primary" />
               <span className="text-sm">Análise por IA</span>
@@ -292,6 +298,9 @@ export function ReviewAnalysisStep({
                     <RefreshCw className="w-4 h-4" />
                   )}
                   <span className="ml-1 hidden sm:inline">Reanalisar</span>
+                  <span className="inline-flex items-center gap-0.5 text-xs opacity-60 ml-0.5">
+                    <Zap className="w-2.5 h-2.5" />1
+                  </span>
                 </Button>
               )}
             </div>
@@ -304,7 +313,7 @@ export function ReviewAnalysisStep({
         <Card className="border-amber-500/50 bg-amber-50 dark:bg-amber-950/20">
           <CardContent className="py-4">
             <div className="flex items-start gap-3">
-              <Crown className="w-5 h-5 text-amber-600 mt-0.5" />
+              <Crown className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5" />
               <div className="flex-1">
                 <h4 className="font-medium text-amber-800 dark:text-amber-200">
                   Indicação: Facetas de Porcelana
@@ -319,23 +328,31 @@ export function ReviewAnalysisStep({
       )}
 
       {/* Warnings */}
-      {analysisResult?.warnings && analysisResult.warnings.length > 0 && (
-        <Card className="border-yellow-500/50 bg-yellow-50 dark:bg-yellow-950/20">
-          <CardContent className="py-4">
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5" />
-              <div>
-                <h4 className="font-medium text-yellow-800 dark:text-yellow-200">Pontos de atenção</h4>
-                <ul className="mt-2 space-y-1">
-                  {analysisResult.warnings.map((warning, i) => (
-                    <li key={i} className="text-sm text-yellow-700 dark:text-yellow-300">• {warning}</li>
-                  ))}
-                </ul>
+      {analysisResult?.warnings && analysisResult.warnings.length > 0 && (() => {
+        // Fix stale tooth count in warnings (clinical analysis wrote "6 dentes"
+        // but DSD union may have added more, making actual count 8)
+        const actualCount = detectedTeeth.length;
+        const correctedWarnings = analysisResult.warnings.map(w =>
+          w.replace(/Detectados?\s+\d+\s+dentes?/i, `Detectados ${actualCount} dentes`)
+        );
+        return (
+          <Card className="border-yellow-500/50 bg-yellow-50 dark:bg-yellow-950/20">
+            <CardContent className="py-4">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5" />
+                <div>
+                  <h4 className="font-medium text-yellow-800 dark:text-yellow-200">Pontos de atenção</h4>
+                  <ul className="mt-2 space-y-1">
+                    {correctedWarnings.map((warning, i) => (
+                      <li key={i} className="text-sm text-yellow-700 dark:text-yellow-300">• {warning}</li>
+                    ))}
+                  </ul>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            </CardContent>
+          </Card>
+        );
+      })()}
 
       {/* Multi-tooth Selection with Categories */}
       {hasMultipleTeeth && (
@@ -616,6 +633,32 @@ export function ReviewAnalysisStep({
                   </ul>
                 </div>
               )}
+
+              {/* DSD Aesthetic Notes */}
+              {(dsdObservations?.length || dsdSuggestions?.length) ? (
+                <div className="mt-4 p-3 bg-primary/5 border border-primary/20 rounded-lg">
+                  <h4 className="text-sm font-medium mb-2 flex items-center gap-2 text-primary">
+                    <Sparkles className="w-4 h-4" />
+                    Notas Estéticas (DSD)
+                  </h4>
+                  {dsdSuggestions && dsdSuggestions.length > 0 && (
+                    <ul className="space-y-1 mb-2">
+                      {dsdSuggestions.map((s, i) => (
+                        <li key={i} className="text-sm text-muted-foreground">
+                          • <span className="font-medium">Dente {s.tooth}:</span> {s.proposed_change}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {dsdObservations && dsdObservations.length > 0 && (
+                    <ul className="space-y-1">
+                      {dsdObservations.map((obs, i) => (
+                        <li key={i} className="text-sm text-muted-foreground">• {obs}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ) : null}
             </CardContent>
           </Card>
         )}
