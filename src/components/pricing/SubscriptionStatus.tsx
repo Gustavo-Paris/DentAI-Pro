@@ -28,6 +28,7 @@ export function SubscriptionStatus() {
     casesRemaining,
     dsdLimit,
     dsdUsed,
+    dsdRemaining,
     openPortal,
     isOpeningPortal,
   } = useSubscription();
