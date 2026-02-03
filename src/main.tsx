@@ -3,12 +3,13 @@ import * as Sentry from "@sentry/react";
 import App from "./App.tsx";
 import "./index.css";
 import { initWebVitals } from "./lib/webVitals";
+import { env } from "./lib/env";
 
 // Initialize Sentry for error monitoring (only in production)
 Sentry.init({
-  dsn: import.meta.env.VITE_SENTRY_DSN,
+  dsn: env.VITE_SENTRY_DSN,
   environment: import.meta.env.MODE,
-  enabled: import.meta.env.PROD && !!import.meta.env.VITE_SENTRY_DSN,
+  enabled: import.meta.env.PROD && !!env.VITE_SENTRY_DSN,
   integrations: [
     Sentry.browserTracingIntegration(),
     Sentry.replayIntegration(),
