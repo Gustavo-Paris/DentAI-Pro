@@ -22,7 +22,9 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { AlertTriangle, Check, Info, Sparkles, CircleDot, RefreshCw, Loader2, Plus, Wrench, Wand2, Crown, CalendarIcon, Zap } from 'lucide-react';
+import { AlertTriangle, Check, Info, Sparkles, CircleDot, RefreshCw, Loader2, Plus, Wrench, Wand2, Crown, CalendarIcon, Zap, Package } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { PatientAutocomplete } from '@/components/PatientAutocomplete';
 import { calculateAge } from '@/lib/dateUtils';
 import { format } from 'date-fns';
@@ -117,6 +119,12 @@ interface ReviewAnalysisStepProps {
   onSelectedTeethChange?: (teeth: string[]) => void;
   toothTreatments?: Record<string, TreatmentType>;
   onToothTreatmentChange?: (tooth: string, treatment: TreatmentType) => void;
+  /** Original AI-suggested treatments per tooth (for undo) */
+  originalToothTreatments?: Record<string, TreatmentType>;
+  /** Restore a tooth to its original AI suggestion */
+  onRestoreAiSuggestion?: (tooth: string) => void;
+  /** Whether the user has inventory items */
+  hasInventory?: boolean;
   selectedPatientId?: string | null;
   onPatientSelect?: (name: string, patientId?: string, birthDate?: string | null) => void;
   patientBirthDate?: string | null;
@@ -173,6 +181,9 @@ export function ReviewAnalysisStep({
   onSelectedTeethChange,
   toothTreatments = {},
   onToothTreatmentChange,
+  originalToothTreatments = {},
+  onRestoreAiSuggestion,
+  hasInventory = true,
   selectedPatientId,
   onPatientSelect,
   patientBirthDate,
@@ -263,6 +274,25 @@ export function ReviewAnalysisStep({
               {whiteningLevel === 'hollywood' ? '✨ Hollywood (BL3)' :
                whiteningLevel === 'white' ? '🦷 Branco (BL1/BL2)' : 'Natural (A1/A2)'}
             </Badge>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Inventory Warning Banner */}
+      {!hasInventory && (
+        <Card className="border-blue-500/50 bg-blue-50 dark:bg-blue-950/20">
+          <CardContent className="py-3 flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <Package className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              <span className="text-sm text-blue-700 dark:text-blue-300">
+                Você não tem resinas cadastradas. As recomendações são genéricas.
+              </span>
+            </div>
+            <Link to="/inventory">
+              <Button variant="outline" size="sm" className="text-xs border-blue-300 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50">
+                Cadastrar resinas
+              </Button>
+            </Link>
           </CardContent>
         </Card>
       )}
@@ -456,24 +486,49 @@ export function ReviewAnalysisStep({
                           
                           {/* Per-tooth treatment selector */}
                           {isSelected && onToothTreatmentChange && (
-                            <Select
-                              value={toothTreatments[tooth.tooth] || tooth.treatment_indication || 'resina'}
-                              onValueChange={(value) => onToothTreatmentChange(tooth.tooth, value as TreatmentType)}
-                            >
-                              <SelectTrigger className="h-8 text-xs">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="resina">🔧 Resina Composta</SelectItem>
-                                <SelectItem value="porcelana">👑 Faceta de Porcelana</SelectItem>
-                                <SelectItem value="coroa">💎 Coroa Total</SelectItem>
-                                <SelectItem value="implante">🦷 Implante</SelectItem>
-                                <SelectItem value="endodontia">🩺 Tratamento de Canal</SelectItem>
-                                <SelectItem value="encaminhamento">↗️ Encaminhamento</SelectItem>
-                              </SelectContent>
-                            </Select>
+                            <div className="flex items-center gap-1">
+                              <Select
+                                value={toothTreatments[tooth.tooth] || tooth.treatment_indication || 'resina'}
+                                onValueChange={(value) => onToothTreatmentChange(tooth.tooth, value as TreatmentType)}
+                              >
+                                <SelectTrigger className="h-8 text-xs">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="resina">🔧 Resina Composta</SelectItem>
+                                  <SelectItem value="porcelana">👑 Faceta de Porcelana</SelectItem>
+                                  <SelectItem value="coroa">💎 Coroa Total</SelectItem>
+                                  <SelectItem value="implante">🦷 Implante</SelectItem>
+                                  <SelectItem value="endodontia">🩺 Tratamento de Canal</SelectItem>
+                                  <SelectItem value="encaminhamento">↗️ Encaminhamento</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              {onRestoreAiSuggestion && originalToothTreatments[tooth.tooth] &&
+                               toothTreatments[tooth.tooth] !== originalToothTreatments[tooth.tooth] && (
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 shrink-0"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          onRestoreAiSuggestion(tooth.tooth);
+                                        }}
+                                      >
+                                        <Wand2 className="w-4 h-4 text-primary" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Restaurar sugestão da IA ({TREATMENT_LABELS[originalToothTreatments[tooth.tooth]]})</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              )}
+                            </div>
                           )}
-                          
+
                           {/* Treatment indication from AI */}
                           {tooth.indication_reason && (
                             <p className="text-xs text-muted-foreground mt-2 italic">
@@ -529,21 +584,46 @@ export function ReviewAnalysisStep({
                           
                           {/* Per-tooth treatment selector for aesthetic */}
                           {isSelected && onToothTreatmentChange && (
-                            <Select
-                              value={toothTreatments[tooth.tooth] || tooth.treatment_indication || 'resina'}
-                              onValueChange={(value) => onToothTreatmentChange(tooth.tooth, value as TreatmentType)}
-                            >
-                              <SelectTrigger className="h-8 text-xs">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="resina">🔧 Resina Composta</SelectItem>
-                                <SelectItem value="porcelana">👑 Faceta de Porcelana</SelectItem>
-                                <SelectItem value="coroa">💎 Coroa Total</SelectItem>
-                              </SelectContent>
-                            </Select>
+                            <div className="flex items-center gap-1">
+                              <Select
+                                value={toothTreatments[tooth.tooth] || tooth.treatment_indication || 'resina'}
+                                onValueChange={(value) => onToothTreatmentChange(tooth.tooth, value as TreatmentType)}
+                              >
+                                <SelectTrigger className="h-8 text-xs">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="resina">🔧 Resina Composta</SelectItem>
+                                  <SelectItem value="porcelana">👑 Faceta de Porcelana</SelectItem>
+                                  <SelectItem value="coroa">💎 Coroa Total</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              {onRestoreAiSuggestion && originalToothTreatments[tooth.tooth] &&
+                               toothTreatments[tooth.tooth] !== originalToothTreatments[tooth.tooth] && (
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 shrink-0"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          onRestoreAiSuggestion(tooth.tooth);
+                                        }}
+                                      >
+                                        <Wand2 className="w-4 h-4 text-primary" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Restaurar sugestão da IA ({TREATMENT_LABELS[originalToothTreatments[tooth.tooth]]})</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              )}
+                            </div>
                           )}
-                          
+
                           {tooth.indication_reason && (
                             <p className="text-xs text-muted-foreground mt-2 italic">
                               IA: {tooth.indication_reason}

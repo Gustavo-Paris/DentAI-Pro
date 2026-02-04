@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { ArrowLeft, ArrowRight, Camera, Brain, ClipboardCheck, FileText, Loader2, Smile, Check, Save, Heart, Zap } from 'lucide-react';
 
 import { useSubscription } from '@/hooks/useSubscription';
+import { useInventoryList } from '@/hooks/queries/useInventory';
 import { PhotoUploadStep, AdditionalPhotos } from '@/components/wizard/PhotoUploadStep';
 import { PatientPreferencesStep, PatientPreferences } from '@/components/wizard/PatientPreferencesStep';
 import { AnalyzingStep } from '@/components/wizard/AnalyzingStep';
@@ -75,10 +76,14 @@ export default function NewCase() {
   const [showRestoreModal, setShowRestoreModal] = useState(false);
   const [pendingDraft, setPendingDraft] = useState<WizardDraft | null>(null);
   
+  // Track original AI treatment suggestions for undo
+  const [originalToothTreatments, setOriginalToothTreatments] = useState<Record<string, TreatmentType>>({});
+
   const { user } = useAuth();
   const navigate = useNavigate();
   const { invokeFunction } = useAuthenticatedFetch();
   const { canUseCredits, refreshSubscription, creditsRemaining, creditsTotal, getCreditCost } = useSubscription();
+  const { data: inventoryData } = useInventoryList();
   
   // Auto-save hook
   const { loadDraft, saveDraft, clearDraft, isSaving, lastSavedAt } = useWizardDraft(user?.id);
@@ -205,6 +210,19 @@ export default function NewCase() {
           merged[t.tooth] = prev[t.tooth] || t.treatment_indication || 'resina';
         });
         return merged;
+      });
+
+      // Save original AI suggestions for undo functionality
+      setOriginalToothTreatments(prev => {
+        // Only set if not already set (preserve initial AI state)
+        if (Object.keys(prev).length === 0) {
+          const original: Record<string, TreatmentType> = {};
+          analysisResult.detected_teeth.forEach(t => {
+            original[t.tooth] = t.treatment_indication || 'resina';
+          });
+          return original;
+        }
+        return prev;
       });
     }
 
@@ -490,6 +508,14 @@ export default function NewCase() {
   // Handler for per-tooth treatment changes
   const handleToothTreatmentChange = (tooth: string, treatment: TreatmentType) => {
     setToothTreatments(prev => ({ ...prev, [tooth]: treatment }));
+  };
+
+  // Restore a single tooth to its original AI suggestion
+  const handleRestoreAiSuggestion = (tooth: string) => {
+    const original = originalToothTreatments[tooth];
+    if (original) {
+      setToothTreatments(prev => ({ ...prev, [tooth]: original }));
+    }
   };
 
   // Get treatment type for a specific tooth
@@ -1162,6 +1188,9 @@ export default function NewCase() {
             onSelectedTeethChange={setSelectedTeeth}
             toothTreatments={toothTreatments}
             onToothTreatmentChange={handleToothTreatmentChange}
+            originalToothTreatments={originalToothTreatments}
+            onRestoreAiSuggestion={handleRestoreAiSuggestion}
+            hasInventory={(inventoryData?.items?.length ?? 0) > 0}
             dsdObservations={dsdResult?.analysis?.observations}
             dsdSuggestions={dsdResult?.analysis?.suggestions}
             selectedPatientId={selectedPatientId}
