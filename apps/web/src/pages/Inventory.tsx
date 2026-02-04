@@ -47,17 +47,15 @@ export default function Inventory() {
 
   if (inv.isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="flex items-center justify-center py-20">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div>
-      {/* Header */}
-      <div className="container mx-auto px-4 py-6">
-        <div className="flex items-center justify-between mb-6">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-xl sm:text-2xl font-semibold">Meu Inventário</h1>
             <p className="text-sm text-muted-foreground">
@@ -318,7 +316,6 @@ export default function Inventory() {
             ))}
           </Accordion>
         )}
-      </div>
 
       {/* Remove Confirmation */}
       <AlertDialog open={!!inv.deletingItemId} onOpenChange={(open) => { if (!open) inv.setDeletingItemId(null); }}>

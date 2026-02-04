@@ -60,9 +60,8 @@ export default function Patients() {
   const { patients, total, isLoading } = usePatientList();
 
   return (
-    <div>
-      <div className="max-w-4xl mx-auto px-4 py-6">
-        <ListPage<PatientWithStats>
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <ListPage<PatientWithStats>
           title="Meus Pacientes"
           description={`${total} pacientes`}
           viewMode="cards"
@@ -119,7 +118,6 @@ export default function Patients() {
             pagination: { showing: 'Mostrando', of: 'de', items: 'pacientes' },
           }}
         />
-      </div>
     </div>
   );
 }

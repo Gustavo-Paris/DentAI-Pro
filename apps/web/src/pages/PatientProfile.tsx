@@ -49,18 +49,14 @@ const PatientProfile = () => {
 
   if (profile.isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <header className="bg-card border-b border-border px-4 py-4">
-          <div className="max-w-4xl mx-auto flex items-center gap-3">
-            <Skeleton className="w-10 h-10 rounded-full" />
-            <Skeleton className="h-6 w-40" />
-          </div>
-        </header>
-        <main className="max-w-4xl mx-auto px-4 py-6 space-y-4">
-          <Skeleton className="h-32 w-full rounded-lg" />
-          <Skeleton className="h-24 w-full rounded-lg" />
-          <Skeleton className="h-24 w-full rounded-lg" />
-        </main>
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <Skeleton className="w-10 h-10 rounded-full" />
+          <Skeleton className="h-6 w-40" />
+        </div>
+        <Skeleton className="h-32 w-full rounded-lg" />
+        <Skeleton className="h-24 w-full rounded-lg" />
+        <Skeleton className="h-24 w-full rounded-lg" />
       </div>
     );
   }
@@ -72,10 +68,10 @@ const PatientProfile = () => {
   const hasMoreSessions = sessions?.hasMore || false;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       {/* Header */}
-      <header className="bg-card border-b border-border px-4 py-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
+      <header className="bg-card border-b border-border -mx-4 sm:-mx-6 -mt-6 sm:-mt-8 px-4 sm:px-6 py-4 mb-6">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link to="/patients">
               <Button variant="ghost" size="icon">
@@ -160,7 +156,7 @@ const PatientProfile = () => {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+      <main className="space-y-6">
         {/* Breadcrumbs */}
         <Breadcrumb>
           <BreadcrumbList>

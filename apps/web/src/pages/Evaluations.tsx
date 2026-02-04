@@ -107,25 +107,24 @@ export default function Evaluations() {
   }, [newSessionId]);
 
   return (
-    <div>
-      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-4xl">
-        {/* Success Banner for New Session */}
-        {newSessionId && (
-          <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-primary/10 border border-primary/20 rounded-lg flex items-center gap-3">
-            <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
-            <div>
-              <p className="font-medium text-sm sm:text-base">
-                Avaliação criada com {newTeethCount} caso
-                {newTeethCount > 1 ? 's' : ''}!
-              </p>
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                A avaliação nova está destacada abaixo.
-              </p>
-            </div>
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      {/* Success Banner for New Session */}
+      {newSessionId && (
+        <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-primary/10 border border-primary/20 rounded-lg flex items-center gap-3">
+          <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
+          <div>
+            <p className="font-medium text-sm sm:text-base">
+              Avaliação criada com {newTeethCount} caso
+              {newTeethCount > 1 ? 's' : ''}!
+            </p>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              A avaliação nova está destacada abaixo.
+            </p>
           </div>
-        )}
+        </div>
+      )}
 
-        <ListPage<EvaluationSession>
+      <ListPage<EvaluationSession>
           title="Avaliações"
           viewMode="cards"
           items={sessions}
@@ -169,7 +168,6 @@ export default function Evaluations() {
             pagination: { showing: 'Mostrando', of: 'de', items: 'avaliações' },
           }}
         />
-      </div>
     </div>
   );
 }

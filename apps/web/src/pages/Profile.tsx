@@ -261,9 +261,10 @@ export default function Profile() {
 
   return (
     <div>
-      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-2xl">
-        <h1 className="text-xl sm:text-2xl font-semibold mb-6">Meu Perfil</h1>
-        <Tabs defaultValue={searchParams.get('tab') || 'perfil'}>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="max-w-2xl mx-auto">
+          <h1 className="text-xl sm:text-2xl font-semibold mb-6">Meu Perfil</h1>
+          <Tabs defaultValue={searchParams.get('tab') || 'perfil'}>
           <TabsList className="grid w-full grid-cols-3 mb-6">
             <TabsTrigger value="perfil">Perfil</TabsTrigger>
             <TabsTrigger value="assinatura">Assinatura</TabsTrigger>
@@ -416,6 +417,7 @@ export default function Profile() {
             <PaymentHistoryTab />
           </TabsContent>
         </Tabs>
+        </div>
       </div>
     </div>
   );
