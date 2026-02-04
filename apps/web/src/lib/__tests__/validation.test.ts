@@ -8,7 +8,7 @@ import {
   validateEvaluationData,
   validateCaseData,
   validateAnalyzePhotosData,
-} from '../../../supabase/functions/_shared/validation';
+} from '../../../../../supabase/functions/_shared/validation';
 
 // Helper: valid UUID
 const UUID = '550e8400-e29b-41d4-a716-446655440000';
