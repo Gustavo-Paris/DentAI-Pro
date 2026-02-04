@@ -1,11 +1,13 @@
 -- Shared links for public case viewing
 -- Allows dentists to share evaluation results with patients via a temporary link
 
+CREATE EXTENSION IF NOT EXISTS pgcrypto SCHEMA extensions;
+
 CREATE TABLE IF NOT EXISTS public.shared_links (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  session_id TEXT NOT NULL,
-  token TEXT NOT NULL UNIQUE DEFAULT encode(gen_random_bytes(32), 'hex'),
+  session_id UUID NOT NULL,
+  token TEXT NOT NULL UNIQUE DEFAULT encode(extensions.gen_random_bytes(32), 'hex'),
   expires_at TIMESTAMPTZ NOT NULL DEFAULT NOW() + INTERVAL '7 days',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
