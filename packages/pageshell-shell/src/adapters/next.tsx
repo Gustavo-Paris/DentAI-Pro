@@ -32,7 +32,7 @@ export type LinkComponent = ComponentType<LinkComponentProps>;
 export function NextLink({ href, className, children, onClick }: LinkComponentProps) {
   return (
     <Link href={href} className={className} onClick={onClick}>
-      {children}
+      {children as any}
     </Link>
   );
 }

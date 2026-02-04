@@ -30,7 +30,7 @@ import ReactFlow, {
   useEdgesState,
   MarkerType,
 } from 'reactflow';
-import type { Node, Edge, NodeMouseHandler, BackgroundVariant } from 'reactflow';
+import type { Node, Edge, NodeMouseHandler, BackgroundVariant, NodeTypes } from 'reactflow';
 import 'reactflow/dist/style.css';
 
 import type { GraphViewConfig, GraphEdge } from '../../types';
@@ -145,7 +145,7 @@ export function GraphView<TItem>({
     () => ({
       default: DefaultGraphNode,
       custom: CustomGraphNode,
-    }),
+    }) as NodeTypes,
     []
   );
 
