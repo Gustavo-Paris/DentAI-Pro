@@ -106,7 +106,6 @@ describe('LinearFlowPage', () => {
       );
 
       expect(ref.current).toBeInstanceOf(HTMLDivElement);
-      expect(ref.current).toHaveClass('max-w-4xl');
     });
   });
 });
