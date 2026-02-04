@@ -39,14 +39,14 @@ export function useAuthenticatedFetch() {
 
       // Proactively refresh if session is close to expiring
       if (timeUntilExpiry < SESSION_REFRESH_THRESHOLD_MS) {
-        console.log('Session expiring soon, refreshing token...');
+        logger.debug('Session expiring soon, refreshing token...');
         const { error: refreshError } = await supabase.auth.refreshSession();
         
         if (refreshError) {
           logger.error('Token refresh failed:', refreshError);
           // Continue anyway - the call might still work
         } else {
-          console.log('Token refreshed successfully');
+          logger.debug('Token refreshed successfully');
         }
       }
 
@@ -65,7 +65,7 @@ export function useAuthenticatedFetch() {
         // Check if it's a 401 and try to refresh + retry once
         const errorMessage = error.message || '';
         if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
-          console.log('Got 401, attempting token refresh and retry...');
+          logger.debug('Got 401, attempting token refresh and retry...');
           
           const { error: refreshError } = await supabase.auth.refreshSession();
           if (refreshError) {

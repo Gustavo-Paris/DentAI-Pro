@@ -465,7 +465,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
         err.message?.includes('500');
       
       if (isConnectionError && retryCount < MAX_RETRIES) {
-        console.log(`DSD retry ${retryCount + 1}/${MAX_RETRIES}...`);
+        logger.debug(`DSD retry ${retryCount + 1}/${MAX_RETRIES}...`);
         didRetry = true;
         toast.info(`Reconectando... (tentativa ${retryCount + 1})`);
         await new Promise(r => setTimeout(r, 2000)); // Wait 2s before retry

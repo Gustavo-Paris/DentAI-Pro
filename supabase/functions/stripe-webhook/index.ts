@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Stripe from "https://esm.sh/stripe@14.14.0?target=deno";
+import { logger } from "../_shared/logger.ts";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
   apiVersion: "2023-10-16",
@@ -34,7 +35,7 @@ serve(async (req: Request) => {
     // Get the signature from headers
     const signature = req.headers.get("stripe-signature");
     if (!signature) {
-      console.error("No Stripe signature found");
+      logger.error("No Stripe signature found");
       return new Response("No signature", { status: 400 });
     }
 
@@ -46,7 +47,7 @@ serve(async (req: Request) => {
     try {
       event = stripe.webhooks.constructEvent(body, signature, WEBHOOK_SECRET);
     } catch (err) {
-      console.error("Webhook signature verification failed:", err);
+      logger.error("Webhook signature verification failed:", err);
       return new Response(`Webhook Error: ${err instanceof Error ? err.message : 'Unknown error'}`, { status: 400 });
     }
 
@@ -56,7 +57,7 @@ serve(async (req: Request) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || ""
     );
 
-    console.log(`Processing webhook event: ${event.type}`);
+    logger.important(`Processing webhook event: ${event.type}`);
 
     // Handle different event types
     switch (event.type) {
@@ -92,7 +93,7 @@ serve(async (req: Request) => {
       }
 
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        logger.log(`Unhandled event type: ${event.type}`);
     }
 
     return new Response(JSON.stringify({ received: true }), {
@@ -100,7 +101,7 @@ serve(async (req: Request) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("Webhook error:", error);
+    logger.error("Webhook error:", error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
       { status: 500, headers: { "Content-Type": "application/json" } }
@@ -113,7 +114,7 @@ async function handleCheckoutCompleted(supabase: any, session: Stripe.Checkout.S
   const customerId = session.customer as string;
   const subscriptionId = session.subscription as string;
 
-  console.log(`Checkout completed for customer ${customerId}, subscription ${subscriptionId}`);
+  logger.important(`Checkout completed for customer ${customerId}, subscription ${subscriptionId}`);
 
   // Get the subscription details from Stripe
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
@@ -129,9 +130,9 @@ async function handleCheckoutCompleted(supabase: any, session: Stripe.Checkout.S
 
     if (existingSub) {
       userId = existingSub.user_id;
-      console.log(`Resolved user ${userId} from customer ${customerId} (metadata missing)`);
+      logger.important(`Resolved user ${userId} from customer ${customerId} (metadata missing)`);
     } else {
-      console.error(`No supabase_user_id in metadata and no existing subscription for customer ${customerId}`);
+      logger.error(`No supabase_user_id in metadata and no existing subscription for customer ${customerId}`);
       return;
     }
   }
@@ -139,7 +140,7 @@ async function handleCheckoutCompleted(supabase: any, session: Stripe.Checkout.S
   // Resolve internal plan ID from Stripe price ID
   const stripePriceId = subscription.items.data[0]?.price.id;
   const planId = await resolveInternalPlanId(supabase, stripePriceId);
-  console.log(`Resolved plan: ${stripePriceId} -> ${planId}`);
+  logger.important(`Resolved plan: ${stripePriceId} -> ${planId}`);
 
   // Update subscription in database
   const { error } = await supabase
@@ -160,9 +161,9 @@ async function handleCheckoutCompleted(supabase: any, session: Stripe.Checkout.S
     });
 
   if (error) {
-    console.error("Error updating subscription:", error);
+    logger.error("Error updating subscription:", error);
   } else {
-    console.log(`Subscription ${subscriptionId} saved for user ${userId}`);
+    logger.important(`Subscription ${subscriptionId} saved for user ${userId}`);
   }
 }
 
@@ -180,7 +181,7 @@ async function handleSubscriptionUpdate(supabase: any, subscription: Stripe.Subs
       .maybeSingle();
 
     if (!existingSub) {
-      console.error(`Could not find user for subscription update. customer=${customerId}, sub=${subscription.id}`);
+      logger.error(`Could not find user for subscription update. customer=${customerId}, sub=${subscription.id}`);
       return;
     }
     userId = existingSub.user_id;
@@ -207,9 +208,9 @@ async function handleSubscriptionUpdate(supabase: any, subscription: Stripe.Subs
     });
 
   if (error) {
-    console.error("Error updating subscription:", error);
+    logger.error("Error updating subscription:", error);
   } else {
-    console.log(`Subscription ${subscription.id} updated to status ${subscription.status}`);
+    logger.important(`Subscription ${subscription.id} updated to status ${subscription.status}`);
   }
 }
 
@@ -226,9 +227,9 @@ async function handleSubscriptionDeleted(supabase: any, subscription: Stripe.Sub
     .eq("stripe_customer_id", customerId);
 
   if (error) {
-    console.error("Error canceling subscription:", error);
+    logger.error("Error canceling subscription:", error);
   } else {
-    console.log(`Subscription ${subscription.id} marked as canceled`);
+    logger.important(`Subscription ${subscription.id} marked as canceled`);
   }
 }
 
@@ -244,7 +245,7 @@ async function handleInvoicePaid(supabase: any, invoice: Stripe.Invoice) {
     .maybeSingle();
 
   if (!sub) {
-    console.error("Could not find subscription for invoice");
+    logger.error("Could not find subscription for invoice");
     return;
   }
 
@@ -267,9 +268,9 @@ async function handleInvoicePaid(supabase: any, invoice: Stripe.Invoice) {
     });
 
   if (error) {
-    console.error("Error recording payment:", error);
+    logger.error("Error recording payment:", error);
   } else {
-    console.log(`Payment recorded for invoice ${invoice.id}`);
+    logger.important(`Payment recorded for invoice ${invoice.id}`);
   }
 }
 
@@ -285,7 +286,7 @@ async function handleInvoiceFailed(supabase: any, invoice: Stripe.Invoice) {
     .maybeSingle();
 
   if (!sub) {
-    console.error("Could not find subscription for failed invoice");
+    logger.error("Could not find subscription for failed invoice");
     return;
   }
 
@@ -308,5 +309,5 @@ async function handleInvoiceFailed(supabase: any, invoice: Stripe.Invoice) {
     .update({ status: "past_due" })
     .eq("stripe_customer_id", customerId);
 
-  console.log(`Payment failed for invoice ${invoice.id}`);
+  logger.warn(`Payment failed for invoice ${invoice.id}`);
 }
