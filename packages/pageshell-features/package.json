@@ -1,0 +1,73 @@
+{
+  "name": "@pageshell/features",
+  "version": "0.1.0",
+  "description": "Compound feature components for PageShell (Layer 4)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./chat/styles/chat.css": "./src/chat/styles/chat.css"
+  },
+  "files": [
+    "dist",
+    "src/chat/styles",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "watch": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
+  },
+  "dependencies": {
+    "@pageshell/core": "workspace:*",
+    "@pageshell/interactions": "workspace:*",
+    "@pageshell/layouts": "workspace:*",
+    "@pageshell/primitives": "workspace:*",
+    "@pageshell/theme": "workspace:*",
+    "lucide-react": "^0.563.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/react": "^19.2.11",
+    "@types/react-dom": "^19.2.3",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pageshell/pageshell.git",
+    "directory": "packages/pageshell-features"
+  },
+  "license": "MIT",
+  "keywords": [
+    "pageshell",
+    "ui",
+    "features",
+    "react",
+    "components"
+  ],
+  "sideEffects": [
+    "*.css"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "homepage": "https://github.com/pageshell/pageshell#readme",
+  "bugs": {
+    "url": "https://github.com/pageshell/pageshell/issues"
+  },
+  "author": "PageShell Contributors"
+}

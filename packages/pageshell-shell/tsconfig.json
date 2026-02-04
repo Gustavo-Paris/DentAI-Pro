@@ -1,0 +1,40 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "resolveJsonModule": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "paths": {
+      "@pageshell/core": ["../pageshell-core/src/index.ts"],
+      "@pageshell/core/*": ["../pageshell-core/src/*"],
+      "@pageshell/primitives": ["../pageshell-primitives/src/index.ts"],
+      "@pageshell/primitives/*": ["../pageshell-primitives/src/*"],
+      "@pageshell/layouts": ["../pageshell-layouts/src/index.ts"],
+      "@pageshell/layouts/*": ["../pageshell-layouts/src/*"],
+      "@pageshell/interactions": ["../pageshell-interactions/src/index.ts"],
+      "@pageshell/interactions/*": ["../pageshell-interactions/src/*"],
+      "@pageshell/features": ["../pageshell-features/src/index.ts"],
+      "@pageshell/features/*": ["../pageshell-features/src/*"],
+      "@pageshell/composites": ["../pageshell-composites/src/index.ts"],
+      "@pageshell/composites/*": ["../pageshell-composites/src/*"],
+      "@pageshell/theme": ["../pageshell-theme/src/index.ts"],
+      "@pageshell/theme/*": ["../pageshell-theme/src/*"],
+      "@pageshell/themes": ["../pageshell-themes/src/index.ts"],
+      "@pageshell/themes/*": ["../pageshell-themes/src/*"],
+      "@pageshell/domain": ["../pageshell-domain/src/index.ts"],
+      "@pageshell/domain/*": ["../pageshell-domain/src/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

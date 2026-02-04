@@ -1,0 +1,14 @@
+# Diretórios gerados
+node_modules/
+dist/
+build/
+.next/
+.turbo/
+coverage/
+
+# Git
+.git/
+
+# Cache e temporários
+.cache/
+*.tsbuildinfo
