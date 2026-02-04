@@ -1,0 +1,99 @@
+{
+  "name": "@pageshell/shell",
+  "version": "0.1.0",
+  "description": "PageShell facade and query handling components",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./wizard": {
+      "types": "./dist/wizard/index.d.ts",
+      "import": "./dist/wizard/index.js"
+    },
+    "./skeletons": {
+      "types": "./dist/skeletons/index.d.ts",
+      "import": "./dist/skeletons/index.js"
+    },
+    "./context": {
+      "types": "./dist/context/index.d.ts",
+      "import": "./dist/context/index.js"
+    },
+    "./adapters/react-router": {
+      "types": "./dist/adapters/react-router.d.ts",
+      "import": "./dist/adapters/react-router.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "watch": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@pageshell/composites": "workspace:*",
+    "@pageshell/core": "workspace:*",
+    "@pageshell/features": "workspace:*",
+    "@pageshell/interactions": "workspace:*",
+    "@pageshell/layouts": "workspace:*",
+    "@pageshell/primitives": "workspace:*",
+    "@pageshell/theme": "workspace:*",
+    "@repo/logger": "workspace:*"
+  },
+  "peerDependencies": {
+    "lucide-react": "^0.400.0",
+    "react-router-dom": "^6.0.0 || ^7.0.0",
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0",
+    "react-hook-form": "^7.71.1"
+  },
+  "peerDependenciesMeta": {
+    "react-router-dom": {
+      "optional": true
+    },
+    "react-hook-form": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@types/react": "^19.2.11",
+    "@types/react-dom": "^19.2.3",
+    "lucide-react": "^0.563.0",
+    "react-hook-form": "7.71.1",
+    "react-router-dom": "^7.6.1",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pageshell/pageshell.git",
+    "directory": "packages/pageshell-shell"
+  },
+  "license": "MIT",
+  "keywords": [
+    "pageshell",
+    "shell",
+    "facade",
+    "react",
+    "query"
+  ],
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "homepage": "https://github.com/pageshell/pageshell#readme",
+  "bugs": {
+    "url": "https://github.com/pageshell/pageshell/issues"
+  },
+  "author": "PageShell Contributors"
+}

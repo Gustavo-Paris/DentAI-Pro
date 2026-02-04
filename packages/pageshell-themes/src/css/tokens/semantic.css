@@ -1,0 +1,264 @@
+/**
+ * Semantic Design Tokens
+ *
+ * Maps primitive tokens to semantic meanings.
+ * These tokens describe "what" rather than specific colors.
+ *
+ * Theme presets override --theme-* variables to customize colors.
+ * Supports light and dark modes via next-themes.
+ *
+ * COMPATIBILITY: Uses hex fallbacks for iOS Safari < 15.4 and older browsers
+ * that don't support oklch() or color-mix(). Modern browsers will use oklch.
+ *
+ * MIGRATION GUIDE:
+ * ================
+ * Old Variable          -> New Variable
+ * --ui-bg               -> --surface-bg
+ * --ui-bg-elevated      -> --surface-elevated
+ * --ui-surface          -> --surface-default
+ * --ui-border           -> --border-default
+ * --ui-text             -> --text-primary
+ * --ui-text-muted       -> --text-secondary
+ * --ui-primary          -> --color-primary
+ *
+ * The --ui-* prefix is deprecated as of 2025-12-23.
+ * Use --surface-*, --border-*, --text-*, --color-* instead.
+ *
+ * @package @pageshell/themes
+ */
+
+/* ===== SEMANTIC TOKEN LAYER - LIGHT MODE (Default) ===== */
+/* Hex fallbacks for older browsers */
+.ui-theme {
+  /* ----- SURFACES - Light (hex fallbacks) ----- */
+  --surface-bg: var(--theme-bg, #f8fafc);
+  --surface-elevated: var(--theme-elevated, #ffffff);
+  --surface-default: var(--theme-surface, #f1f5f9);
+  --surface-hover: var(--theme-surface-hover, #e2e8f0);
+  --surface-active: var(--theme-surface-active, #cbd5e1);
+
+  /* ----- BORDERS - Light (hex fallbacks) ----- */
+  --border-subtle: var(--theme-border-subtle, #e2e8f0);
+  --border-default: var(--theme-border, #cbd5e1);
+  --border-emphasis: var(--theme-border-emphasis, #94a3b8);
+
+  /* ----- TEXT - Light (hex fallbacks) ----- */
+  --text-primary: var(--theme-text, #1e293b);
+  --text-secondary: var(--theme-text-muted, #64748b);
+  --text-tertiary: var(--theme-text-subtle, #94a3b8);
+  --text-disabled: #94a3b8;
+
+  /* ----- PRIMARY COLOR (hex fallbacks) ----- */
+  --color-primary: var(--theme-primary, #0891b2);
+  --color-primary-hover: var(--theme-primary-hover, #06b6d4);
+  --color-primary-muted: var(--theme-primary-muted, rgba(8, 145, 178, 0.10));
+  --color-primary-glow: var(--theme-primary-glow, rgba(8, 145, 178, 0.20));
+  --color-primary-text: var(--theme-primary-text, #ffffff);
+
+  /* ----- ACCENT COLOR (hex fallbacks) ----- */
+  --color-accent: var(--theme-accent, #d97706);
+  --color-accent-hover: var(--theme-accent-hover, #f59e0b);
+  --color-accent-muted: var(--theme-accent-muted, rgba(217, 119, 6, 0.10));
+
+  /* ----- SEMANTIC COLORS - Light (hex fallbacks) ----- */
+  --color-success: #059669;
+  --color-success-hover: #10b981;
+  --color-success-muted: rgba(5, 150, 105, 0.10);
+
+  --color-destructive: #dc2626;
+  --color-destructive-hover: #ef4444;
+  --color-destructive-muted: rgba(220, 38, 38, 0.10);
+
+  --color-warning: #d97706;
+  --color-warning-hover: #f59e0b;
+  --color-warning-muted: rgba(217, 119, 6, 0.10);
+
+  --color-info: #2563eb;
+  --color-info-hover: #3b82f6;
+  --color-info-muted: rgba(37, 99, 235, 0.10);
+
+  /* ----- EFFECTS - Light (hex fallbacks) ----- */
+  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-dropdown: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-modal: 0 12px 40px rgba(0, 0, 0, 0.15);
+
+  --glow-primary: 0 0 20px var(--color-primary-glow);
+  --glow-accent: 0 0 20px var(--color-accent-muted);
+}
+
+/* Modern browsers: oklch colors for light mode */
+@supports (color: oklch(0 0 0)) {
+  .ui-theme {
+    --surface-bg: var(--theme-bg, oklch(0.985 0.005 250));
+    --surface-elevated: var(--theme-elevated, oklch(1 0 0));
+    --surface-default: var(--theme-surface, oklch(0.97 0.005 250));
+    --surface-hover: var(--theme-surface-hover, oklch(0.93 0.008 250));
+    --surface-active: var(--theme-surface-active, oklch(0.87 0.01 250));
+    --border-subtle: var(--theme-border-subtle, oklch(0.93 0.008 250));
+    --border-default: var(--theme-border, oklch(0.87 0.01 250));
+    --border-emphasis: var(--theme-border-emphasis, oklch(0.70 0.015 250));
+    --text-primary: var(--theme-text, oklch(0.20 0.02 260));
+    --text-secondary: var(--theme-text-muted, oklch(0.40 0.015 260));
+    --text-tertiary: var(--theme-text-subtle, oklch(0.50 0.015 260));
+    --text-disabled: oklch(0.70 0.015 250);
+    --color-primary: var(--theme-primary, oklch(0.60 0.145 203));
+    --color-primary-hover: var(--theme-primary-hover, oklch(0.715 0.143 203));
+    --color-primary-text: var(--theme-primary-text, #ffffff);
+    --color-accent: var(--theme-accent, oklch(0.605 0.15 68));
+    --color-accent-hover: var(--theme-accent-hover, oklch(0.73 0.16 70));
+    --color-success: oklch(0.596 0.145 163);
+    --color-success-hover: oklch(0.68 0.145 163);
+    --color-destructive: oklch(0.505 0.213 27);
+    --color-destructive-hover: oklch(0.57 0.215 27);
+    --color-warning: oklch(0.605 0.15 68);
+    --color-warning-hover: oklch(0.73 0.16 70);
+    --color-info: oklch(0.52 0.195 260);
+    --color-info-hover: oklch(0.60 0.185 260);
+  }
+}
+
+/* Modern browsers: color-mix for muted variants and shadows */
+@supports (color: color-mix(in oklch, red 50%, blue)) {
+  .ui-theme {
+    --color-primary-muted: var(--theme-primary-muted, color-mix(in oklch, oklch(0.60 0.145 203) 10%, transparent));
+    --color-primary-glow: var(--theme-primary-glow, color-mix(in oklch, oklch(0.60 0.145 203) 20%, transparent));
+    --color-accent-muted: var(--theme-accent-muted, color-mix(in oklch, oklch(0.605 0.15 68) 10%, transparent));
+    --color-success-muted: color-mix(in oklch, oklch(0.596 0.145 163) 10%, transparent);
+    --color-destructive-muted: color-mix(in oklch, oklch(0.505 0.213 27) 10%, transparent);
+    --color-warning-muted: color-mix(in oklch, oklch(0.605 0.15 68) 10%, transparent);
+    --color-info-muted: color-mix(in oklch, oklch(0.52 0.195 260) 10%, transparent);
+    --shadow-card: 0 4px 12px color-mix(in oklch, oklch(0 0 0) 8%, transparent);
+    --shadow-dropdown: 0 8px 24px color-mix(in oklch, oklch(0 0 0) 12%, transparent);
+    --shadow-modal: 0 12px 40px color-mix(in oklch, oklch(0 0 0) 15%, transparent);
+  }
+}
+
+/* ===== SEMANTIC TOKEN LAYER - DARK MODE ===== */
+.dark .ui-theme {
+  /* ----- SURFACES - Dark ----- */
+  --surface-bg: var(--theme-bg, var(--color-neutral-950));
+  --surface-elevated: var(--theme-elevated, var(--color-neutral-900));
+  --surface-default: var(--theme-surface, var(--color-neutral-800));
+  --surface-hover: var(--theme-surface-hover, var(--color-neutral-700));
+  --surface-active: var(--theme-surface-active, var(--color-neutral-600));
+
+  /* ----- BORDERS - Dark ----- */
+  --border-subtle: var(--theme-border-subtle, var(--color-neutral-750));
+  --border-default: var(--theme-border, var(--color-neutral-650));
+  --border-emphasis: var(--theme-border-emphasis, var(--color-neutral-550));
+
+  /* ----- TEXT - Dark ----- */
+  --text-primary: var(--theme-text, var(--color-neutral-100));
+  --text-secondary: var(--theme-text-muted, var(--color-neutral-300));
+  --text-tertiary: var(--theme-text-subtle, var(--color-neutral-400));
+  --text-disabled: var(--color-neutral-500);
+
+  /* ----- PRIMARY COLOR - Dark ----- */
+  --color-primary: var(--theme-primary, var(--color-cyan-500));
+  --color-primary-hover: var(--theme-primary-hover, var(--color-cyan-400));
+  --color-primary-muted: var(--theme-primary-muted, var(--color-cyan-muted));
+  --color-primary-glow: var(--theme-primary-glow, var(--color-cyan-glow));
+  --color-primary-text: var(--theme-primary-text, #ffffff);
+
+  /* ----- ACCENT COLOR - Dark ----- */
+  --color-accent: var(--theme-accent, var(--color-amber-500));
+  --color-accent-hover: var(--theme-accent-hover, var(--color-amber-400));
+  --color-accent-muted: var(--theme-accent-muted, var(--color-amber-muted));
+
+  /* ----- SEMANTIC COLORS - Dark ----- */
+  --color-success: var(--color-emerald-500);
+  --color-success-hover: var(--color-emerald-400);
+  --color-success-muted: var(--color-emerald-muted);
+
+  --color-destructive: var(--color-red-500);
+  --color-destructive-hover: var(--color-red-400);
+  --color-destructive-muted: var(--color-red-muted);
+
+  --color-warning: var(--color-amber-500);
+  --color-warning-hover: var(--color-amber-400);
+  --color-warning-muted: var(--color-amber-muted);
+
+  --color-info: var(--color-blue-500);
+  --color-info-hover: var(--color-blue-400);
+  --color-info-muted: var(--color-blue-muted);
+
+  /* ----- EFFECTS - Dark ----- */
+  --shadow-card: var(--shadow-md);
+  --shadow-dropdown: var(--shadow-lg);
+  --shadow-modal: var(--shadow-xl);
+
+  --glow-primary: 0 0 20px var(--color-primary-glow);
+  --glow-accent: 0 0 20px var(--color-accent-muted);
+}
+
+/* ===== PORTAL THEMES - DARK MODE ===== */
+/* Creator, Admin, and Student portals now respect user theme choice */
+/* Dark mode is applied when .dark class is present on html element */
+.dark .ui-theme-creator,
+.dark .ui-theme-admin,
+.dark .ui-theme-student {
+  /* ----- SURFACES - Dark ----- */
+  --surface-bg: var(--theme-bg, var(--color-neutral-950));
+  --surface-elevated: var(--theme-elevated, var(--color-neutral-900));
+  --surface-default: var(--theme-surface, var(--color-neutral-800));
+  --surface-hover: var(--theme-surface-hover, var(--color-neutral-700));
+  --surface-active: var(--theme-surface-active, var(--color-neutral-600));
+
+  /* ----- BORDERS - Dark ----- */
+  --border-subtle: var(--theme-border-subtle, var(--color-neutral-750));
+  --border-default: var(--theme-border, var(--color-neutral-650));
+  --border-emphasis: var(--theme-border-emphasis, var(--color-neutral-550));
+
+  /* ----- TEXT - Dark ----- */
+  --text-primary: var(--theme-text, var(--color-neutral-100));
+  --text-secondary: var(--theme-text-muted, var(--color-neutral-300));
+  --text-tertiary: var(--theme-text-subtle, var(--color-neutral-400));
+  --text-disabled: var(--color-neutral-500);
+
+  /* ----- SEMANTIC COLORS - Dark ----- */
+  --color-success: var(--color-emerald-500);
+  --color-success-hover: var(--color-emerald-400);
+  --color-success-muted: var(--color-emerald-muted);
+
+  --color-destructive: var(--color-red-500);
+  --color-destructive-hover: var(--color-red-400);
+  --color-destructive-muted: var(--color-red-muted);
+
+  --color-warning: var(--color-amber-500);
+  --color-warning-hover: var(--color-amber-400);
+  --color-warning-muted: var(--color-amber-muted);
+
+  --color-info: var(--color-blue-500);
+  --color-info-hover: var(--color-blue-400);
+  --color-info-muted: var(--color-blue-muted);
+
+  /* ----- EFFECTS - Dark ----- */
+  --shadow-card: var(--shadow-md);
+  --shadow-dropdown: var(--shadow-lg);
+  --shadow-modal: var(--shadow-xl);
+}
+
+/* ===== FOCUS RING ===== */
+.ui-theme {
+  --focus-ring-color: var(--color-primary);
+  --focus-ring-offset: 2px;
+  --focus-ring-width: 2px;
+  --focus-ring: var(--focus-ring-width) solid var(--focus-ring-color);
+}
+
+/* ===== OVERLAY ===== */
+/* Hex fallbacks for older browsers */
+.ui-theme {
+  --overlay-light: rgba(0, 0, 0, 0.50);
+  --overlay-medium: rgba(0, 0, 0, 0.70);
+  --overlay-heavy: rgba(0, 0, 0, 0.85);
+}
+
+/* Modern browsers: color-mix overlays */
+@supports (color: color-mix(in oklch, red 50%, blue)) {
+  .ui-theme {
+    --overlay-light: color-mix(in oklch, oklch(0 0 0) 50%, transparent);
+    --overlay-medium: color-mix(in oklch, oklch(0 0 0) 70%, transparent);
+    --overlay-heavy: color-mix(in oklch, oklch(0 0 0) 85%, transparent);
+  }
+}

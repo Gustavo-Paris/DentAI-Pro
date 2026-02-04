@@ -1,0 +1,218 @@
+/**
+ * Spark Animations
+ *
+ * Keyframes and animation utilities for Spark theme.
+ *
+ * @package @pageshell/themes
+ */
+
+/* ===== KEYFRAME ANIMATIONS ===== */
+
+@keyframes spark-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spark-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes spark-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spark-avatar-ring {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes spark-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes spark-typing {
+  0%, 60%, 100% {
+    opacity: 0.25;
+    transform: scale(0.9);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes spark-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes spark-badge-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(212, 168, 83, 0);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(212, 168, 83, 0.15);
+  }
+}
+
+@keyframes spark-module-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes spark-activity-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+}
+
+@keyframes spark-blink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0;
+  }
+}
+
+@keyframes spark-streaming-glow {
+  0%, 100% {
+    box-shadow: 0 0 4px var(--spark-primary-muted);
+  }
+  50% {
+    box-shadow: 0 0 12px var(--spark-primary), 0 0 20px var(--spark-primary-muted);
+  }
+}
+
+@keyframes spark-streaming-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spark-streaming-bounce {
+  0%, 80%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  40% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+@keyframes spark-progress-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes spark-progress-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes spark-progress-indeterminate {
+  0% {
+    left: -40%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* ===== STAGGERED MESSAGE ENTRY ===== */
+.spark-message-enter {
+  opacity: 0;
+  animation: spark-fade-in 0.5s var(--spark-ease-out) forwards;
+}
+
+.spark-animate-delay-1 { animation-delay: 0.05s; }
+.spark-animate-delay-2 { animation-delay: 0.1s; }
+.spark-animate-delay-3 { animation-delay: 0.15s; }
+.spark-animate-delay-4 { animation-delay: 0.2s; }
+.spark-animate-delay-5 { animation-delay: 0.25s; }
+
+/* ===== REDUCED MOTION ===== */
+@media (prefers-reduced-motion: reduce) {
+  .spark-message-enter,
+  .spark-progress-active .spark-progress-fill::after,
+  .spark-typing-dot,
+  .spark-status-dot.online,
+  .spark-avatar::before,
+  .spark-badge-generating,
+  .spark-connection-dot,
+  .spark-activity-pulse,
+  .spark-progress-fill-pulse,
+  .spark-cursor-blink,
+  .spark-streaming-avatar,
+  .spark-streaming-icon,
+  .spark-streaming-dots span,
+  .spark-streaming-progress-fill::after {
+    animation: none;
+  }
+
+  .spark-card,
+  .spark-quick-reply,
+  .spark-input,
+  .spark-module-item,
+  .spark-avatar {
+    transition: none;
+  }
+}

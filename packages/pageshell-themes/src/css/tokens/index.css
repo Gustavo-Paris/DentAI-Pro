@@ -1,0 +1,20 @@
+/**
+ * Design Tokens Index
+ *
+ * Imports all token layers in the correct order.
+ * Import this file to get the complete token system.
+ *
+ * @package @pageshell/themes
+ */
+
+/* Layer 1: Primitive tokens (raw values) */
+@import './base.css';
+
+/* Layer 2: Typography tokens */
+@import './typography.css';
+
+/* Layer 3: Semantic tokens (contextual meaning) */
+@import './semantic.css';
+
+/* Layer 4: Component tokens (specific usage) */
+@import './components.css';

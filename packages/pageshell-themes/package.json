@@ -1,0 +1,89 @@
+{
+  "name": "@pageshell/themes",
+  "version": "0.1.0",
+  "description": "Theme system and presets for PageShell",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./presets": {
+      "types": "./dist/presets/index.d.ts",
+      "import": "./dist/presets/index.js"
+    },
+    "./hooks": {
+      "types": "./dist/hooks/index.d.ts",
+      "import": "./dist/hooks/index.js"
+    },
+    "./css": "./dist/themes.css",
+    "./theme/tokens.css": "./src/css/tokens.css",
+    "./theme/tokens/base.css": "./src/css/tokens/base.css",
+    "./theme/tokens/typography.css": "./src/css/tokens/typography.css",
+    "./theme/tokens/semantic.css": "./src/css/tokens/semantic.css",
+    "./theme/tokens/components.css": "./src/css/tokens/components.css",
+    "./theme/presets/admin.css": "./src/css/presets/admin.css",
+    "./theme/presets/creator.css": "./src/css/presets/creator.css",
+    "./theme/presets/student.css": "./src/css/presets/student.css",
+    "./theme/presets/marketplace.css": "./src/css/presets/marketplace.css",
+    "./theme/portal-base.css": "./src/css/portal-base.css",
+    "./theme/spark/index.css": "./src/css/spark/index.css",
+    "./theme/spark/variables.css": "./src/css/spark/variables.css",
+    "./theme/spark/animations.css": "./src/css/spark/animations.css",
+    "./theme/spark/components.css": "./src/css/spark/components.css",
+    "./theme/spark/streaming.css": "./src/css/spark/streaming.css"
+  },
+  "files": [
+    "dist",
+    "src/css",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "watch": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.11",
+    "react": "^19.2.4",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pageshell/pageshell.git",
+    "directory": "packages/pageshell-themes"
+  },
+  "license": "MIT",
+  "keywords": [
+    "pageshell",
+    "themes",
+    "css",
+    "design-system",
+    "tailwind"
+  ],
+  "sideEffects": [
+    "*.css"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "homepage": "https://github.com/pageshell/pageshell#readme",
+  "bugs": {
+    "url": "https://github.com/pageshell/pageshell/issues"
+  },
+  "author": "PageShell Contributors"
+}

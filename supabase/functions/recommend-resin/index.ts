@@ -856,7 +856,7 @@ Responda APENAS com o JSON, sem texto adicional.`;
     }
 
     // Log budget compliance for debugging
-    console.log(`Budget: ${data.budget}, Recommended: ${recommendation.recommended_resin_name}, Price Range: ${recommendation.price_range}, Budget Compliant: ${recommendation.budget_compliance}`);
+    logger.log(`Budget: ${data.budget}, Recommended: ${recommendation.recommended_resin_name}, Price Range: ${recommendation.price_range}, Budget Compliant: ${recommendation.budget_compliance}`);
 
     // Find the recommended resin in database
     const recommendedResin = resins.find(
