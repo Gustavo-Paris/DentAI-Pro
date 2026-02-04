@@ -122,8 +122,7 @@ export default function EvaluationDetails() {
   const navigate = useNavigate();
 
   return (
-    <div>
-      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-5xl">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* Breadcrumbs */}
         <Breadcrumb className="mb-4">
           <BreadcrumbList>
@@ -380,7 +379,6 @@ export default function EvaluationDetails() {
             </div>
           </>
         )}
-      </div>
 
       {/* Add Teeth Modal */}
       {detail.evaluations.length > 0 && detail.patientDataForModal && (

@@ -469,11 +469,11 @@ export default function Dashboard() {
 
   return (
     <TooltipProvider>
-      <div id="main-content">
+      <div id="main-content" className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <DashboardPage
           title={`${dashboard.greeting}, ${dashboard.firstName}`}
           description="Bem-vindo ao seu painel"
-          className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-4xl"
+          containerVariant="shell"
           modules={modules}
           slots={{
             afterHeader: dashboard.showCreditsBanner ? (
