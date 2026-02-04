@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { User, Plus, Check, CalendarDays } from 'lucide-react';
+import { User, Plus, Check } from 'lucide-react';
 
 interface Patient {
   id: string;
@@ -35,8 +35,6 @@ export function PatientAutocomplete({
   const [isOpen, setIsOpen] = useState(false);
   const [, setIsLoading] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
-  const [showBirthDateInput, setShowBirthDateInput] = useState(false);
-  const [newPatientBirthDate, setNewPatientBirthDate] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -81,8 +79,6 @@ export function PatientAutocomplete({
     const newValue = e.target.value;
     onChange(newValue, undefined); // Clear patient ID when typing
     setIsOpen(true);
-    setShowBirthDateInput(false);
-    setNewPatientBirthDate('');
   };
 
   // Handle selecting a patient
@@ -90,21 +86,12 @@ export function PatientAutocomplete({
     onChange(patient.name, patient.id, patient.birth_date);
     setIsOpen(false);
     setHighlightedIndex(-1);
-    setShowBirthDateInput(false);
-    setNewPatientBirthDate('');
   };
 
-  // Handle creating new patient - show birth date input
+  // Handle creating new patient (just use the typed name)
   const handleCreateNew = () => {
+    onChange(value, undefined, null);
     setIsOpen(false);
-    setShowBirthDateInput(true);
-  };
-
-  // Confirm new patient creation with optional birth date
-  const handleConfirmNewPatient = () => {
-    onChange(value, undefined, newPatientBirthDate || null);
-    setShowBirthDateInput(false);
-    setNewPatientBirthDate('');
   };
 
   // Handle keyboard navigation
@@ -240,35 +227,6 @@ export function PatientAutocomplete({
               Digite pelo menos 2 caracteres...
             </div>
           )}
-        </div>
-      )}
-
-      {/* Inline birth date input for new patient */}
-      {showBirthDateInput && !selectedPatientId && (
-        <div className="p-3 border border-border rounded-md bg-muted/30 space-y-2">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <CalendarDays className="w-4 h-4" />
-            <span>Data de nascimento de <span className="font-medium text-foreground">{value.trim()}</span></span>
-          </div>
-          <div className="flex gap-2 items-center">
-            <Input
-              type="date"
-              value={newPatientBirthDate}
-              onChange={(e) => setNewPatientBirthDate(e.target.value)}
-              max={new Date().toISOString().split('T')[0]}
-              className="flex-1"
-            />
-            <button
-              type="button"
-              onClick={handleConfirmNewPatient}
-              className="px-3 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-            >
-              Confirmar
-            </button>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Opcional — pode preencher depois
-          </p>
         </div>
       )}
     </div>
