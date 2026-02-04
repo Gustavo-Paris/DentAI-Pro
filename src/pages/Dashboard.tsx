@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile, useDashboardData } from '@/hooks/queries/useDashboard';
 import { useWizardDraft, WizardDraft } from '@/hooks/useWizardDraft';
@@ -23,15 +23,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { LogOut, Plus, FileText, Package, ChevronRight, Search, FileWarning, TrendingUp, Users, CheckCircle2, Zap, Camera } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Plus, FileText, Package, ChevronRight, Search, FileWarning, TrendingUp, Users, CheckCircle2, Zap, Camera, AlertTriangle, X } from 'lucide-react';
 import { format, formatDistanceToNow, startOfWeek, endOfWeek } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { BRAND_NAME } from '@/lib/branding';
 import { getInitials } from '@/lib/utils';
 import { useSubscription } from '@/hooks/useSubscription';
-import { CreditBadge } from '@/components/CreditBadge';
-import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface Session {
   session_id: string;
@@ -43,14 +39,23 @@ interface Session {
 }
 
 export default function Dashboard() {
-  const { user, signOut } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const [pendingDraft, setPendingDraft] = useState<WizardDraft | null>(null);
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
 
   const { data: profileData, isLoading: loadingProfile } = useProfile();
   const { data: dashboardData, isLoading: loadingDashboard } = useDashboardData();
-  const { creditsRemaining, creditsTotal, isLoading: loadingCredits } = useSubscription();
+  const { creditsRemaining, creditsTotal, isFree, isActive, isLoading: loadingCredits } = useSubscription();
+  const [creditsBannerDismissed, setCreditsBannerDismissed] = useState(
+    () => sessionStorage.getItem('credits-banner-dismissed') === 'true'
+  );
+
+  const showCreditsBanner =
+    !creditsBannerDismissed &&
+    !loadingCredits &&
+    isActive &&
+    !isFree &&
+    creditsRemaining <= 5;
   const { loadDraft, clearDraft } = useWizardDraft(user?.id);
 
   const loading = loadingProfile || loadingDashboard;
@@ -76,11 +81,6 @@ export default function Dashboard() {
     };
     checkDraft();
   }, [user, loadDraft]);
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
-  };
 
   const handleDiscardDraft = () => {
     clearDraft();
@@ -126,73 +126,42 @@ export default function Dashboard() {
 
   return (
     <TooltipProvider>
-      <div id="main-content" className="min-h-screen bg-background">
-        <header className="border-b border-border animate-fade-in">
-          <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
-            <span className="text-lg sm:text-xl font-semibold tracking-tight">{BRAND_NAME}</span>
-            <div className="flex items-center gap-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={() => {
-                      const event = new KeyboardEvent('keydown', {
-                        key: 'k',
-                        metaKey: true,
-                        bubbles: true,
-                      });
-                      document.dispatchEvent(event);
-                    }}
-                    className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground bg-secondary/50 hover:bg-secondary rounded-md border border-border transition-colors"
-                    aria-label="Abrir busca global (⌘K)"
-                  >
-                    <Search className="w-4 h-4" />
-                    <span>Buscar...</span>
-                    <kbd className="ml-1 px-1.5 py-0.5 text-xs bg-background rounded border border-border">
-                      ⌘K
-                    </kbd>
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Buscar pacientes, avaliações e ações</p>
-                </TooltipContent>
-              </Tooltip>
-              <CreditBadge variant="compact" />
-              <ThemeToggle />
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link to="/profile" aria-label="Acessar meu perfil">
-                    <Avatar className="w-8 h-8 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all">
-                      <AvatarImage src={avatarUrl || undefined} alt={profile?.full_name || 'Avatar'} />
-                      <AvatarFallback className="text-xs bg-primary/10">
-                        {getInitials(profile?.full_name)}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Meu perfil</p>
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="sm" onClick={handleSignOut} aria-label="Sair da conta">
-                    <LogOut className="w-4 h-4 sm:mr-2" />
-                    <span className="hidden sm:inline">Sair</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Encerrar sessão</p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-          </div>
-        </header>
-
+      <div id="main-content">
         <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-4xl">
           <div className="mb-6 sm:mb-8 animate-fade-in">
             <h1 className="text-xl sm:text-2xl font-semibold mb-1">Olá, {firstName}</h1>
             <p className="text-sm sm:text-base text-muted-foreground">Bem-vindo ao seu painel</p>
           </div>
+
+          {/* Low credits banner */}
+          {showCreditsBanner && (
+            <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg flex items-center gap-3 animate-fade-in">
+              <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                  Você tem apenas {creditsRemaining} crédito{creditsRemaining !== 1 ? 's' : ''} restante{creditsRemaining !== 1 ? 's' : ''}
+                </p>
+                <p className="text-xs text-amber-600 dark:text-amber-400">
+                  Faça upgrade do plano para continuar usando sem interrupção.
+                </p>
+              </div>
+              <Link to="/pricing">
+                <Button size="sm" variant="outline" className="border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/50 shrink-0">
+                  Ver planos
+                </Button>
+              </Link>
+              <button
+                onClick={() => {
+                  setCreditsBannerDismissed(true);
+                  sessionStorage.setItem('credits-banner-dismissed', 'true');
+                }}
+                className="p-1 text-amber-500 hover:text-amber-700 dark:hover:text-amber-300 shrink-0"
+                aria-label="Fechar aviso"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          )}
 
           {/* Value Indicators Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 sm:mb-8">

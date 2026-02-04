@@ -33,12 +33,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { 
-  LogOut, 
-  ArrowLeft, 
-  Eye, 
-  FileDown, 
-  CheckCircle, 
+import {
+  Eye,
+  FileDown,
+  CheckCircle,
   MoreHorizontal,
   Calendar,
   User,
@@ -49,7 +47,10 @@ import {
   Stethoscope,
   ArrowUpRight,
   CircleX,
-  Plus
+  Plus,
+  Share2,
+  Loader2 as ShareLoader,
+  Link2,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -150,13 +151,14 @@ interface EvaluationItem {
 
 export default function EvaluationDetails() {
   const { evaluationId } = useParams<{ evaluationId: string }>();
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   
   const [evaluations, setEvaluations] = useState<EvaluationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [pendingTeeth, setPendingTeeth] = useState<PendingTooth[]>([]);
   const [showAddTeethModal, setShowAddTeethModal] = useState(false);
+  const [sharing, setSharing] = useState(false);
 
   useEffect(() => {
     fetchEvaluationData();
@@ -235,9 +237,44 @@ export default function EvaluationDetails() {
     fetchPendingTeeth();
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
+  const handleShareCase = async () => {
+    if (!user || !evaluationId) return;
+    setSharing(true);
+
+    try {
+      // Check if there's already a valid link
+      const { data: existing } = await supabase
+        .from('shared_links')
+        .select('token')
+        .eq('session_id', evaluationId)
+        .eq('user_id', user.id)
+        .gt('expires_at', new Date().toISOString())
+        .maybeSingle();
+
+      let token = existing?.token;
+
+      if (!token) {
+        const { data: created, error } = await supabase
+          .from('shared_links')
+          .insert({ user_id: user.id, session_id: evaluationId })
+          .select('token')
+          .single();
+
+        if (error) throw error;
+        token = created.token;
+      }
+
+      const shareUrl = `${window.location.origin}/shared/${token}`;
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success('Link copiado!', {
+        description: 'O link expira em 7 dias.',
+      });
+    } catch (error) {
+      logger.error('Error sharing case:', error);
+      toast.error('Erro ao gerar link de compartilhamento');
+    }
+
+    setSharing(false);
   };
 
   // Get checklist based on treatment type
@@ -401,28 +438,8 @@ export default function EvaluationDetails() {
   const completedCount = evaluations.filter(e => e.status === 'completed').length;
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border">
-        <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2 sm:gap-4">
-            <Link to="/dashboard">
-              <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9">
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-            </Link>
-            <span className="text-lg sm:text-xl font-semibold tracking-tight">
-              <span className="hidden sm:inline">Detalhes da Avaliação</span>
-              <span className="sm:hidden">Detalhes</span>
-            </span>
-          </div>
-          <Button variant="ghost" size="sm" onClick={handleSignOut}>
-            <LogOut className="w-4 h-4 sm:mr-2" />
-            <span className="hidden sm:inline">Sair</span>
-          </Button>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-5xl">
+    <div>
+      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-5xl">
         {/* Breadcrumbs */}
         <Breadcrumb className="mb-4">
           <BreadcrumbList>
@@ -505,6 +522,20 @@ export default function EvaluationDetails() {
 
             {/* Actions */}
             <div className="flex flex-wrap justify-end gap-2 mb-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleShareCase}
+                disabled={sharing}
+                className="text-xs sm:text-sm"
+              >
+                {sharing ? (
+                  <ShareLoader className="w-4 h-4 sm:mr-2 animate-spin" />
+                ) : (
+                  <Share2 className="w-4 h-4 sm:mr-2" />
+                )}
+                <span className="hidden sm:inline">Compartilhar</span>
+              </Button>
               {pendingTeeth.length > 0 && (
                 <Button 
                   variant="outline" 
@@ -666,7 +697,7 @@ export default function EvaluationDetails() {
             </div>
           </>
         )}
-      </main>
+      </div>
       
       {/* Add Teeth Modal */}
       {evaluations.length > 0 && (

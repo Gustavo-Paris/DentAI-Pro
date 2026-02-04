@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { Link, useLocation } from 'react-router-dom';
 import { useEvaluationsList } from '@/hooks/queries/useEvaluations';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { LogOut, ArrowLeft, ChevronRight, CheckCircle, FileText, Calendar, Loader2 } from 'lucide-react';
+import { ChevronRight, CheckCircle, FileText, Calendar, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -24,16 +23,25 @@ interface LocationState {
 }
 
 type FilterStatus = 'all' | 'pending' | 'completed';
+type FilterTreatment = 'all' | 'resina' | 'porcelana' | 'coroa' | 'implante' | 'endodontia' | 'encaminhamento';
+
+const treatmentLabels: Record<string, string> = {
+  resina: 'Resina',
+  porcelana: 'Porcelana',
+  coroa: 'Coroa',
+  implante: 'Implante',
+  endodontia: 'Endodontia',
+  encaminhamento: 'Encaminhamento',
+};
 
 export default function Evaluations() {
-  const { signOut } = useAuth();
-  const navigate = useNavigate();
   const location = useLocation();
   const locationState = location.state as LocationState | null;
   const newSessionId = locationState?.newSessionId;
   const teethCount = locationState?.teethCount || 0;
 
   const [filter, setFilter] = useState<FilterStatus>('all');
+  const [treatmentFilter, setTreatmentFilter] = useState<FilterTreatment>('all');
   const [page, setPage] = useState(0);
   const [allSessions, setAllSessions] = useState<Array<{
     session_id: string;
@@ -42,6 +50,7 @@ export default function Evaluations() {
     teeth: string[];
     evaluationCount: number;
     completedCount: number;
+    treatmentTypes: string[];
   }>>([]);
 
   const { data, isLoading, isFetching } = useEvaluationsList(page, 20);
@@ -68,15 +77,12 @@ export default function Evaluations() {
     setPage(p => p + 1);
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
-  };
-
   const filteredSessions = allSessions.filter((session) => {
-    if (filter === 'all') return true;
-    if (filter === 'pending') return session.completedCount < session.evaluationCount;
-    if (filter === 'completed') return session.completedCount === session.evaluationCount;
+    // Status filter
+    if (filter === 'pending' && session.completedCount >= session.evaluationCount) return false;
+    if (filter === 'completed' && session.completedCount < session.evaluationCount) return false;
+    // Treatment type filter
+    if (treatmentFilter !== 'all' && !session.treatmentTypes.includes(treatmentFilter)) return false;
     return true;
   });
 
@@ -99,25 +105,9 @@ export default function Evaluations() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border">
-        <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2 sm:gap-4">
-            <Link to="/dashboard">
-              <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9">
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-            </Link>
-            <span className="text-lg sm:text-xl font-semibold tracking-tight">Avaliações</span>
-          </div>
-          <Button variant="ghost" size="sm" onClick={handleSignOut}>
-            <LogOut className="w-4 h-4 sm:mr-2" />
-            <span className="hidden sm:inline">Sair</span>
-          </Button>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-4xl">
+    <div>
+      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-4xl">
+        <h1 className="text-xl sm:text-2xl font-semibold mb-6">Avaliações</h1>
         {/* Success Banner for New Session */}
         {newSessionId && (
           <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-primary/10 border border-primary/20 rounded-lg flex items-center gap-3">
@@ -135,7 +125,7 @@ export default function Evaluations() {
 
         {/* Filter */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="text-sm text-muted-foreground">Filtrar:</span>
             <Select value={filter} onValueChange={(value: FilterStatus) => setFilter(value)}>
               <SelectTrigger className="w-[140px] sm:w-[160px]">
@@ -145,6 +135,17 @@ export default function Evaluations() {
                 <SelectItem value="all">Todas</SelectItem>
                 <SelectItem value="pending">Em progresso</SelectItem>
                 <SelectItem value="completed">Finalizadas</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={treatmentFilter} onValueChange={(value: FilterTreatment) => setTreatmentFilter(value)}>
+              <SelectTrigger className="w-[150px] sm:w-[170px]">
+                <SelectValue placeholder="Tratamento" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os tipos</SelectItem>
+                {Object.entries(treatmentLabels).map(([key, label]) => (
+                  <SelectItem key={key} value={key}>{label}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -250,7 +251,7 @@ export default function Evaluations() {
             )}
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
 }

@@ -10,15 +10,17 @@ interface Evaluation {
   cavity_class: string;
   status: string | null;
   session_id: string | null;
+  treatment_type: string | null;
 }
 
-interface SessionGroup {
+export interface SessionGroup {
   session_id: string;
   patient_name: string | null;
   created_at: string;
   teeth: string[];
   evaluationCount: number;
   completedCount: number;
+  treatmentTypes: string[];
 }
 
 export const evaluationKeys = {
@@ -50,6 +52,7 @@ function groupBySession(data: Evaluation[]): SessionGroup[] {
       teeth: evals.map(e => e.tooth),
       evaluationCount: evals.length,
       completedCount: evals.filter(e => e.status === 'completed').length,
+      treatmentTypes: [...new Set(evals.map(e => e.treatment_type).filter(Boolean))] as string[],
     }));
 }
 
@@ -63,7 +66,7 @@ export function useEvaluationsList(page: number = 0, pageSize: number = 20) {
 
       const { data, error, count } = await supabase
         .from('evaluations')
-        .select('id, created_at, patient_name, tooth, cavity_class, status, session_id', { count: 'exact' })
+        .select('id, created_at, patient_name, tooth, cavity_class, status, session_id, treatment_type', { count: 'exact' })
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .range(page * pageSize, (page + 1) * pageSize - 1);
