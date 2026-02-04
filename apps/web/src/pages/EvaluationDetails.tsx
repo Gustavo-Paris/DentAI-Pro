@@ -1,7 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -50,392 +48,78 @@ import {
   Plus,
   Share2,
   Loader2 as ShareLoader,
-  Link2,
 } from 'lucide-react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { toast } from 'sonner';
 
-import type { StratificationProtocol, CementationProtocol } from '@/types/protocol';
-import { AddTeethModal, PendingTooth } from '@/components/AddTeethModal';
+import { useEvaluationDetail } from '@/hooks/domain/useEvaluationDetail';
+import type { EvaluationItem } from '@/hooks/domain/useEvaluationDetail';
+import { AddTeethModal } from '@/components/AddTeethModal';
 import { ClinicalPhotoThumbnail } from '@/components/OptimizedImage';
-import { logger } from '@/lib/logger';
 
-// Treatment type configuration
-const treatmentConfig: Record<string, { 
-  label: string; 
+// =============================================================================
+// Treatment type configuration (presentation-only)
+// =============================================================================
+
+const treatmentConfig: Record<string, {
+  label: string;
   shortLabel: string;
   icon: React.ComponentType<{ className?: string }>;
   variant: 'default' | 'secondary' | 'destructive' | 'outline';
-  showCavityInfo: boolean;
 }> = {
-  resina: { 
-    label: 'Resina Composta', 
-    shortLabel: 'Resina',
-    icon: Layers,
-    variant: 'default',
-    showCavityInfo: true 
-  },
-  porcelana: { 
-    label: 'Faceta de Porcelana', 
-    shortLabel: 'Faceta',
-    icon: Crown,
-    variant: 'secondary',
-    showCavityInfo: false 
-  },
-  coroa: { 
-    label: 'Coroa Total', 
-    shortLabel: 'Coroa',
-    icon: Crown,
-    variant: 'secondary',
-    showCavityInfo: false 
-  },
-  implante: { 
-    label: 'Implante', 
-    shortLabel: 'Implante',
-    icon: CircleX,
-    variant: 'outline',
-    showCavityInfo: false 
-  },
-  endodontia: { 
-    label: 'Endodontia', 
-    shortLabel: 'Endo',
-    icon: Stethoscope,
-    variant: 'outline',
-    showCavityInfo: false 
-  },
-  encaminhamento: { 
-    label: 'Encaminhamento', 
-    shortLabel: 'Encaminhar',
-    icon: ArrowUpRight,
-    variant: 'outline',
-    showCavityInfo: false 
-  },
+  resina: { label: 'Resina Composta', shortLabel: 'Resina', icon: Layers, variant: 'default' },
+  porcelana: { label: 'Faceta de Porcelana', shortLabel: 'Faceta', icon: Crown, variant: 'secondary' },
+  coroa: { label: 'Coroa Total', shortLabel: 'Coroa', icon: Crown, variant: 'secondary' },
+  implante: { label: 'Implante', shortLabel: 'Implante', icon: CircleX, variant: 'outline' },
+  endodontia: { label: 'Endodontia', shortLabel: 'Endo', icon: Stethoscope, variant: 'outline' },
+  encaminhamento: { label: 'Encaminhamento', shortLabel: 'Encaminhar', icon: ArrowUpRight, variant: 'outline' },
 };
 
-// Procedimentos estéticos que não usam classificação de cavidade tradicional
-const AESTHETIC_PROCEDURES = [
-  'Faceta Direta', 
-  'Recontorno Estético', 
-  'Fechamento de Diastema', 
-  'Reparo de Restauração'
-];
+// =============================================================================
+// Presentation helpers
+// =============================================================================
 
-interface EvaluationItem {
-  id: string;
-  created_at: string;
-  patient_name: string | null;
-  patient_id: string | null;
-  patient_age: number;
-  tooth: string;
-  cavity_class: string;
-  restoration_size: string;
-  status: string | null;
-  photo_frontal: string | null;
-  checklist_progress: number[] | null;
-  stratification_protocol: StratificationProtocol | null;
-  treatment_type: string | null;
-  ai_treatment_indication: string | null;
-  cementation_protocol: CementationProtocol | null;
-  generic_protocol: { checklist?: string[] } | null;
-  tooth_color: string;
-  bruxism: boolean;
-  aesthetic_level: string;
-  budget: string;
-  longevity_expectation: string;
-  resins?: {
-    name: string;
-    manufacturer: string;
-  } | null;
+function getTreatmentBadge(evaluation: EvaluationItem) {
+  const treatmentType = evaluation.treatment_type || 'resina';
+  const config = treatmentConfig[treatmentType] || treatmentConfig.resina;
+  const IconComponent = config.icon;
+
+  return (
+    <Badge variant={config.variant} className="gap-1">
+      <IconComponent className="w-3 h-3" />
+      <span className="hidden md:inline">{config.shortLabel}</span>
+    </Badge>
+  );
 }
 
-export default function EvaluationDetails() {
-  const { evaluationId } = useParams<{ evaluationId: string }>();
-  const { user } = useAuth();
-  const navigate = useNavigate();
-  
-  const [evaluations, setEvaluations] = useState<EvaluationItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [pendingTeeth, setPendingTeeth] = useState<PendingTooth[]>([]);
-  const [showAddTeethModal, setShowAddTeethModal] = useState(false);
-  const [sharing, setSharing] = useState(false);
-
-  useEffect(() => {
-    fetchEvaluationData();
-    fetchPendingTeeth();
-  }, [user, evaluationId]);
-
-  const fetchEvaluationData = async () => {
-    if (!user || !evaluationId) return;
-
-    const { data, error } = await supabase
-      .from('evaluations')
-      .select(`
-        id,
-        created_at,
-        patient_name,
-        patient_id,
-        patient_age,
-        tooth,
-        cavity_class,
-        restoration_size,
-        status,
-        photo_frontal,
-        checklist_progress,
-        stratification_protocol,
-        treatment_type,
-        ai_treatment_indication,
-        cementation_protocol,
-        generic_protocol,
-        tooth_color,
-        bruxism,
-        aesthetic_level,
-        budget,
-        longevity_expectation,
-        resins!recommended_resin_id (
-          name,
-          manufacturer
-        )
-      `)
-      .eq('user_id', user.id)
-      .eq('session_id', evaluationId)
-      .order('tooth', { ascending: true });
-
-    if (error) {
-      logger.error('Error fetching evaluation:', error);
-      toast.error('Erro ao carregar avaliação');
-      navigate('/dashboard');
-    } else if (data && data.length > 0) {
-      setEvaluations(data as unknown as EvaluationItem[]);
-      // Photo is now handled by OptimizedImage component
-    } else {
-      toast.error('Avaliação não encontrada');
-      navigate('/dashboard');
-    }
-    setLoading(false);
-  };
-
-  const fetchPendingTeeth = async () => {
-    if (!user || !evaluationId) return;
-
-    const { data, error } = await supabase
-      .from('session_detected_teeth')
-      .select('*')
-      .eq('session_id', evaluationId)
-      .eq('user_id', user.id)
-      .order('tooth', { ascending: true });
-
-    if (error) {
-      logger.error('Error fetching pending teeth:', error);
-    } else if (data) {
-      setPendingTeeth(data as PendingTooth[]);
-    }
-  };
-
-  const handleAddTeethSuccess = () => {
-    fetchEvaluationData();
-    fetchPendingTeeth();
-  };
-
-  const handleShareCase = async () => {
-    if (!user || !evaluationId) return;
-    setSharing(true);
-
-    try {
-      // Check if there's already a valid link
-      const { data: existing } = await supabase
-        .from('shared_links')
-        .select('token')
-        .eq('session_id', evaluationId)
-        .eq('user_id', user.id)
-        .gt('expires_at', new Date().toISOString())
-        .maybeSingle();
-
-      let token = existing?.token;
-
-      if (!token) {
-        const { data: created, error } = await supabase
-          .from('shared_links')
-          .insert({ user_id: user.id, session_id: evaluationId })
-          .select('token')
-          .single();
-
-        if (error) throw error;
-        token = created.token;
-      }
-
-      const shareUrl = `${window.location.origin}/shared/${token}`;
-      await navigator.clipboard.writeText(shareUrl);
-      toast.success('Link copiado!', {
-        description: 'O link expira em 7 dias.',
-      });
-    } catch (error) {
-      logger.error('Error sharing case:', error);
-      toast.error('Erro ao gerar link de compartilhamento');
-    }
-
-    setSharing(false);
-  };
-
-  // Get checklist based on treatment type
-  const getChecklist = (evaluation: EvaluationItem): string[] => {
-    const treatmentType = evaluation.treatment_type || 'resina';
-    switch (treatmentType) {
-      case 'porcelana':
-        return (evaluation.cementation_protocol as CementationProtocol)?.checklist || [];
-      case 'coroa':
-      case 'implante':
-      case 'endodontia':
-      case 'encaminhamento':
-        return evaluation.generic_protocol?.checklist || [];
-      default: // resina
-        return evaluation.stratification_protocol?.checklist || [];
-    }
-  };
-
-  // Check if checklist is complete for a given evaluation
-  const isChecklistComplete = (evaluation: EvaluationItem): boolean => {
-    const checklist = getChecklist(evaluation);
-    const progress = evaluation.checklist_progress || [];
-    
-    // If there's no checklist, consider it complete
-    if (checklist.length === 0) return true;
-    
-    return progress.length >= checklist.length;
-  };
-
-  const handleMarkAsCompleted = async (id: string) => {
-    const evaluation = evaluations.find(e => e.id === id);
-    if (!evaluation) return;
-
-    if (!isChecklistComplete(evaluation)) {
-      toast.error('Complete todas as etapas do checklist antes de finalizar este caso');
-      return;
-    }
-
-    const { error } = await supabase
-      .from('evaluations')
-      .update({ status: 'completed' })
-      .eq('id', id);
-
-    if (error) {
-      toast.error('Erro ao atualizar status');
-    } else {
-      toast.success('Caso marcado como finalizado');
-      fetchEvaluationData();
-    }
-  };
-
-  const handleMarkAllAsCompleted = async () => {
-    const pending = evaluations.filter(e => e.status !== 'completed');
-    const completable = pending.filter(e => isChecklistComplete(e));
-
-    if (pending.length === 0) {
-      toast.info('Todos os casos já estão finalizados');
-      return;
-    }
-
-    if (completable.length === 0) {
-      toast.error('Nenhum caso pode ser finalizado. Complete os checklists primeiro.');
-      return;
-    }
-
-    const { error } = await supabase
-      .from('evaluations')
-      .update({ status: 'completed' })
-      .in('id', completable.map(e => e.id));
-
-    if (error) {
-      toast.error('Erro ao atualizar status');
-    } else {
-      const skipped = pending.length - completable.length;
-      if (skipped > 0) {
-        toast.success(`${completable.length} caso(s) finalizado(s). ${skipped} caso(s) aguardando checklist.`);
-      } else {
-        toast.success(`${completable.length} caso(s) marcado(s) como finalizado(s)`);
-      }
-      fetchEvaluationData();
-    }
-  };
-
-  const handleExportPDF = (id: string) => {
-    window.open(`/result/${id}?print=true`, '_blank');
-    toast.info('Abrindo página para impressão...');
-  };
-
-  const getChecklistProgress = (evaluation: EvaluationItem): { current: number; total: number } => {
-    const checklist = getChecklist(evaluation);
-    const progress = evaluation.checklist_progress || [];
-    return { current: progress.length, total: checklist.length };
-  };
-  
-  // Get clinical details based on treatment type
-  const getClinicalDetails = (evaluation: EvaluationItem): string => {
-    const treatmentType = evaluation.treatment_type || 'resina';
-    const config = treatmentConfig[treatmentType];
-    
-    if (config?.showCavityInfo) {
-      // Verificar se é procedimento estético (não classe de cavidade tradicional)
-      if (AESTHETIC_PROCEDURES.includes(evaluation.cavity_class)) {
-        return evaluation.cavity_class; // Mostra "Faceta Direta" diretamente
-      }
-      // Evitar duplicação "Classe Classe" - o DB já pode ter "Classe IV"
-      const cavityLabel = evaluation.cavity_class.startsWith('Classe ') 
-        ? evaluation.cavity_class 
-        : `Classe ${evaluation.cavity_class}`;
-      return `${cavityLabel} • ${evaluation.restoration_size}`;
-    }
-    
-    // For other treatments, show AI indication or short description
-    return evaluation.ai_treatment_indication || config?.label || '-';
-  };
-  
-  // Get treatment badge
-  const getTreatmentBadge = (evaluation: EvaluationItem) => {
-    const treatmentType = evaluation.treatment_type || 'resina';
-    const config = treatmentConfig[treatmentType] || treatmentConfig.resina;
-    const IconComponent = config.icon;
-    
+function getStatusBadge(evaluation: EvaluationItem, getChecklistProgress: (e: EvaluationItem) => { current: number; total: number }) {
+  if (evaluation.status === 'completed') {
     return (
-      <Badge variant={config.variant} className="gap-1">
-        <IconComponent className="w-3 h-3" />
-        <span className="hidden md:inline">{config.shortLabel}</span>
-      </Badge>
-    );
-  };
-
-  const getStatusBadge = (evaluation: EvaluationItem) => {
-    if (evaluation.status === 'completed') {
-      return (
-        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
-          <CheckCircle className="w-3 h-3" />
-          <span className="hidden sm:inline">Finalizado</span>
-        </span>
-      );
-    }
-    
-    const { current, total } = getChecklistProgress(evaluation);
-    const hasChecklist = total > 0;
-    
-    return (
-      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
-        <span className="hidden sm:inline">Planejado</span>
-        {hasChecklist && (
-          <span className="text-muted-foreground">({current}/{total})</span>
-        )}
+      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
+        <CheckCircle className="w-3 h-3" />
+        <span className="hidden sm:inline">Finalizado</span>
       </span>
     );
-  };
+  }
 
-  const canMarkAsCompleted = (evaluation: EvaluationItem): boolean => {
-    return evaluation.status !== 'completed' && isChecklistComplete(evaluation);
-  };
+  const { current, total } = getChecklistProgress(evaluation);
+  const hasChecklist = total > 0;
 
-  const patientName = evaluations[0]?.patient_name || 'Paciente sem nome';
-  const evaluationDate = evaluations[0]?.created_at 
-    ? format(new Date(evaluations[0].created_at), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })
-    : '';
-  const completedCount = evaluations.filter(e => e.status === 'completed').length;
+  return (
+    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
+      <span className="hidden sm:inline">Planejado</span>
+      {hasChecklist && (
+        <span className="text-muted-foreground">({current}/{total})</span>
+      )}
+    </span>
+  );
+}
+
+// =============================================================================
+// Page Adapter
+// =============================================================================
+
+export default function EvaluationDetails() {
+  const detail = useEvaluationDetail();
+  const navigate = useNavigate();
 
   return (
     <div>
@@ -450,12 +134,12 @@ export default function EvaluationDetails() {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>{patientName}</BreadcrumbPage>
+              <BreadcrumbPage>{detail.patientName}</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
 
-        {loading ? (
+        {detail.isLoading ? (
           <div className="space-y-4">
             <Skeleton className="h-32 w-full" />
             <Skeleton className="h-64 w-full" />
@@ -466,10 +150,10 @@ export default function EvaluationDetails() {
             <Card className="mb-4 sm:mb-6">
               <CardContent className="p-4 sm:p-6">
                 <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
-                  {/* Photo Preview - Using optimized thumbnail */}
-                  {evaluations[0]?.photo_frontal ? (
+                  {/* Photo Preview */}
+                  {detail.evaluations[0]?.photo_frontal ? (
                     <ClinicalPhotoThumbnail
-                      path={evaluations[0].photo_frontal}
+                      path={detail.evaluations[0].photo_frontal}
                       alt="Foto clínica"
                       size="grid"
                       className="w-full md:w-32 lg:w-48 h-32 sm:h-48 flex-shrink-0"
@@ -482,27 +166,22 @@ export default function EvaluationDetails() {
 
                   {/* Evaluation Info */}
                   <div className="flex-1">
-                    <h1 className="text-xl sm:text-2xl font-semibold mb-2">{patientName}</h1>
-                    
+                    <h1 className="text-xl sm:text-2xl font-semibold mb-2">{detail.patientName}</h1>
+
                     <div className="flex flex-wrap gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
                       <div className="flex items-center gap-1">
                         <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
-                        <span className="hidden sm:inline">{evaluationDate}</span>
-                        <span className="sm:hidden">
-                          {evaluations[0]?.created_at 
-                            ? format(new Date(evaluations[0].created_at), "dd/MM/yyyy", { locale: ptBR })
-                            : ''
-                          }
-                        </span>
+                        <span className="hidden sm:inline">{detail.evaluationDate}</span>
+                        <span className="sm:hidden">{detail.evaluationDateShort}</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <User className="w-3 h-3 sm:w-4 sm:h-4" />
-                        {evaluations.length} dente(s)
+                        {detail.evaluations.length} dente(s)
                       </div>
                     </div>
 
                     <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
-                      {evaluations.map(e => (
+                      {detail.evaluations.map((e) => (
                         <Badge key={e.id} variant="outline" className="text-xs">
                           Dente {e.tooth}
                         </Badge>
@@ -512,7 +191,7 @@ export default function EvaluationDetails() {
                     <div className="flex items-center gap-2 text-sm">
                       <span className="text-muted-foreground">Progresso:</span>
                       <span className="font-medium">
-                        {completedCount}/{evaluations.length} finalizados
+                        {detail.completedCount}/{detail.evaluations.length} finalizados
                       </span>
                     </div>
                   </div>
@@ -525,35 +204,37 @@ export default function EvaluationDetails() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={handleShareCase}
-                disabled={sharing}
+                onClick={detail.handleShareCase}
+                disabled={detail.isSharing}
                 className="text-xs sm:text-sm"
               >
-                {sharing ? (
+                {detail.isSharing ? (
                   <ShareLoader className="w-4 h-4 sm:mr-2 animate-spin" />
                 ) : (
                   <Share2 className="w-4 h-4 sm:mr-2" />
                 )}
                 <span className="hidden sm:inline">Compartilhar</span>
               </Button>
-              {pendingTeeth.length > 0 && (
-                <Button 
-                  variant="outline" 
+              {detail.pendingTeeth.length > 0 && (
+                <Button
+                  variant="outline"
                   size="sm"
-                  onClick={() => setShowAddTeethModal(true)}
+                  onClick={() => detail.setShowAddTeethModal(true)}
                   className="text-xs sm:text-sm border-primary/50 text-primary hover:bg-primary/5"
                 >
                   <Plus className="w-4 h-4 sm:mr-2" />
                   <span className="hidden sm:inline">Adicionar mais dentes</span>
                   <span className="sm:hidden">Adicionar</span>
-                  <Badge variant="secondary" className="ml-1.5 text-xs">{pendingTeeth.length}</Badge>
+                  <Badge variant="secondary" className="ml-1.5 text-xs">
+                    {detail.pendingTeeth.length}
+                  </Badge>
                 </Button>
               )}
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
-                onClick={handleMarkAllAsCompleted}
-                disabled={completedCount === evaluations.length}
+                onClick={detail.handleMarkAllAsCompleted}
+                disabled={detail.completedCount === detail.evaluations.length}
                 className="text-xs sm:text-sm"
               >
                 <CheckCircle className="w-4 h-4 sm:mr-2" />
@@ -579,16 +260,18 @@ export default function EvaluationDetails() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {evaluations.map((evaluation) => (
+                    {detail.evaluations.map((evaluation) => (
                       <TableRow key={evaluation.id}>
                         <TableCell className="font-medium">{evaluation.tooth}</TableCell>
                         <TableCell>{getTreatmentBadge(evaluation)}</TableCell>
                         <TableCell>
                           <span className="text-sm text-muted-foreground capitalize">
-                            {getClinicalDetails(evaluation)}
+                            {detail.getClinicalDetails(evaluation)}
                           </span>
                         </TableCell>
-                        <TableCell>{getStatusBadge(evaluation)}</TableCell>
+                        <TableCell>
+                          {getStatusBadge(evaluation, detail.getChecklistProgress)}
+                        </TableCell>
                         <TableCell className="text-right">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -601,19 +284,19 @@ export default function EvaluationDetails() {
                                 <Eye className="w-4 h-4 mr-2" />
                                 Ver caso
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleExportPDF(evaluation.id)}>
+                              <DropdownMenuItem onClick={() => detail.handleExportPDF(evaluation.id)}>
                                 <FileDown className="w-4 h-4 mr-2" />
                                 Exportar PDF
                               </DropdownMenuItem>
                               {evaluation.status !== 'completed' && (
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <DropdownMenuItem 
-                                      onClick={() => handleMarkAsCompleted(evaluation.id)}
-                                      disabled={!canMarkAsCompleted(evaluation)}
-                                      className={!canMarkAsCompleted(evaluation) ? 'opacity-50' : ''}
+                                    <DropdownMenuItem
+                                      onClick={() => detail.handleMarkAsCompleted(evaluation.id)}
+                                      disabled={!detail.canMarkAsCompleted(evaluation)}
+                                      className={!detail.canMarkAsCompleted(evaluation) ? 'opacity-50' : ''}
                                     >
-                                      {canMarkAsCompleted(evaluation) ? (
+                                      {detail.canMarkAsCompleted(evaluation) ? (
                                         <CheckCircle className="w-4 h-4 mr-2" />
                                       ) : (
                                         <AlertCircle className="w-4 h-4 mr-2" />
@@ -621,7 +304,7 @@ export default function EvaluationDetails() {
                                       Marcar como finalizado
                                     </DropdownMenuItem>
                                   </TooltipTrigger>
-                                  {!canMarkAsCompleted(evaluation) && (
+                                  {!detail.canMarkAsCompleted(evaluation) && (
                                     <TooltipContent>
                                       Complete o checklist para finalizar
                                     </TooltipContent>
@@ -641,31 +324,31 @@ export default function EvaluationDetails() {
             {/* Cases Cards - Mobile */}
             <div className="sm:hidden space-y-3">
               <h3 className="font-semibold text-lg">Casos Gerados</h3>
-              {evaluations.map((evaluation) => (
+              {detail.evaluations.map((evaluation) => (
                 <Card key={evaluation.id} className="p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
                       {getTreatmentBadge(evaluation)}
                       <p className="font-semibold">Dente {evaluation.tooth}</p>
                     </div>
-                    {getStatusBadge(evaluation)}
+                    {getStatusBadge(evaluation, detail.getChecklistProgress)}
                   </div>
-                  
+
                   <p className="text-sm text-muted-foreground mb-3 capitalize">
-                    {getClinicalDetails(evaluation)}
+                    {detail.getClinicalDetails(evaluation)}
                   </p>
-                  
+
                   {evaluation.treatment_type === 'resina' && evaluation.resins && (
                     <div className="mb-3 p-2 bg-muted/50 rounded">
                       <p className="text-sm font-medium">{evaluation.resins.name}</p>
                       <p className="text-xs text-muted-foreground">{evaluation.resins.manufacturer}</p>
                     </div>
                   )}
-                  
+
                   <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       className="flex-1"
                       onClick={() => navigate(`/result/${evaluation.id}`)}
                     >
@@ -679,12 +362,12 @@ export default function EvaluationDetails() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleExportPDF(evaluation.id)}>
+                        <DropdownMenuItem onClick={() => detail.handleExportPDF(evaluation.id)}>
                           <FileDown className="w-4 h-4 mr-2" />
                           Exportar PDF
                         </DropdownMenuItem>
-                        {evaluation.status !== 'completed' && canMarkAsCompleted(evaluation) && (
-                          <DropdownMenuItem onClick={() => handleMarkAsCompleted(evaluation.id)}>
+                        {evaluation.status !== 'completed' && detail.canMarkAsCompleted(evaluation) && (
+                          <DropdownMenuItem onClick={() => detail.handleMarkAsCompleted(evaluation.id)}>
                             <CheckCircle className="w-4 h-4 mr-2" />
                             Marcar como finalizado
                           </DropdownMenuItem>
@@ -698,26 +381,16 @@ export default function EvaluationDetails() {
           </>
         )}
       </div>
-      
+
       {/* Add Teeth Modal */}
-      {evaluations.length > 0 && (
+      {detail.evaluations.length > 0 && detail.patientDataForModal && (
         <AddTeethModal
-          open={showAddTeethModal}
-          onClose={() => setShowAddTeethModal(false)}
-          pendingTeeth={pendingTeeth}
-          sessionId={evaluationId || ''}
-          patientData={{
-            name: evaluations[0]?.patient_name || null,
-            age: evaluations[0]?.patient_age || 30,
-            id: evaluations[0]?.patient_id || null,
-            vitaShade: evaluations[0]?.tooth_color || 'A2',
-            bruxism: evaluations[0]?.bruxism || false,
-            aestheticLevel: evaluations[0]?.aesthetic_level || 'alto',
-            budget: evaluations[0]?.budget || 'moderado',
-            longevityExpectation: evaluations[0]?.longevity_expectation || 'médio',
-            photoPath: evaluations[0]?.photo_frontal || null,
-          }}
-          onSuccess={handleAddTeethSuccess}
+          open={detail.showAddTeethModal}
+          onClose={() => detail.setShowAddTeethModal(false)}
+          pendingTeeth={detail.pendingTeeth}
+          sessionId={detail.sessionId}
+          patientData={detail.patientDataForModal}
+          onSuccess={detail.handleAddTeethSuccess}
         />
       )}
     </div>

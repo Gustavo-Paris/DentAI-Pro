@@ -1,14 +1,12 @@
-import { useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
-import { usePatientDetail, usePatientSessions, useUpdatePatient } from "@/hooks/queries/usePatients";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Link } from 'react-router-dom';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -16,14 +14,14 @@ import {
   BreadcrumbLink,
   BreadcrumbSeparator,
   BreadcrumbPage,
-} from "@/components/ui/breadcrumb";
+} from '@/components/ui/breadcrumb';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   ArrowLeft,
   Phone,
@@ -36,80 +34,20 @@ import {
   CheckCircle2,
   Clock,
   Loader2,
-} from "lucide-react";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { toast } from "sonner";
+} from 'lucide-react';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+
+import { usePatientProfile } from '@/hooks/domain/usePatientProfile';
+
+// =============================================================================
+// Page Adapter
+// =============================================================================
 
 const PatientProfile = () => {
-  const { patientId } = useParams<{ patientId: string }>();
-  const navigate = useNavigate();
+  const profile = usePatientProfile();
 
-  const [sessionsPage, setSessionsPage] = useState(0);
-
-  const { data: patient, isLoading: loadingPatient } = usePatientDetail(patientId || '');
-  const { data: sessionsData, isLoading: loadingSessions, isFetching: fetchingSessions } = usePatientSessions(
-    patientId || '',
-    sessionsPage
-  );
-  const updatePatientMutation = useUpdatePatient();
-
-  const sessions = sessionsData?.sessions || [];
-  const hasMoreSessions = sessionsData?.hasMore || false;
-
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [editName, setEditName] = useState("");
-  const [editPhone, setEditPhone] = useState("");
-  const [editEmail, setEditEmail] = useState("");
-  const [editNotes, setEditNotes] = useState("");
-
-  // Initialize form when patient data loads
-  const initializeForm = () => {
-    if (patient) {
-      setEditName(patient.name);
-      setEditPhone(patient.phone || "");
-      setEditEmail(patient.email || "");
-      setEditNotes(patient.notes || "");
-    }
-  };
-
-  const handleSave = async () => {
-    if (!patient || !patientId) return;
-
-    try {
-      await updatePatientMutation.mutateAsync({
-        id: patientId,
-        name: editName.trim(),
-        phone: editPhone.trim() || null,
-        email: editEmail.trim() || null,
-        notes: editNotes.trim() || null,
-      });
-
-      toast.success("Dados do paciente atualizados");
-      setEditDialogOpen(false);
-    } catch {
-      toast.error("Erro ao salvar alterações");
-    }
-  };
-
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
-  const loading = loadingPatient || loadingSessions;
-
-  // Calculate metrics
-  const totalSessions = sessions.length;
-  const totalCases = sessions.reduce((sum, s) => sum + s.evaluationCount, 0);
-  const completedCases = sessions.reduce((sum, s) => sum + s.completedCount, 0);
-  const firstVisit = sessions.length > 0 ? sessions[sessions.length - 1].created_at : null;
-
-  if (loading && sessionsPage === 0) {
+  if (profile.isLoading) {
     return (
       <div className="min-h-screen bg-background">
         <header className="bg-card border-b border-border px-4 py-4">
@@ -127,10 +65,11 @@ const PatientProfile = () => {
     );
   }
 
-  if (!patient) {
-    navigate("/patients");
-    return null;
-  }
+  if (!profile.patient) return null;
+
+  const { patient, sessions, metrics, editForm, patientId } = profile;
+  const sessionsList = sessions?.sessions || [];
+  const hasMoreSessions = sessions?.hasMore || false;
 
   return (
     <div className="min-h-screen bg-background">
@@ -138,12 +77,14 @@ const PatientProfile = () => {
       <header className="bg-card border-b border-border px-4 py-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/patients")}>
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
+            <Link to="/patients">
+              <Button variant="ghost" size="icon">
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+            </Link>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
-                {getInitials(patient.name)}
+                {profile.getInitials(patient.name)}
               </div>
               <div>
                 <h1 className="text-lg font-semibold">{patient.name}</h1>
@@ -152,10 +93,7 @@ const PatientProfile = () => {
             </div>
           </div>
 
-          <Dialog open={editDialogOpen} onOpenChange={(open) => {
-            setEditDialogOpen(open);
-            if (open) initializeForm();
-          }}>
+          <Dialog open={profile.editDialogOpen} onOpenChange={profile.setEditDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm">
                 <Pencil className="w-4 h-4 mr-1" />
@@ -171,8 +109,8 @@ const PatientProfile = () => {
                   <Label htmlFor="name">Nome</Label>
                   <Input
                     id="name"
-                    value={editName}
-                    onChange={(e) => setEditName(e.target.value)}
+                    value={editForm.name}
+                    onChange={(e) => profile.updateEditField('name', e.target.value)}
                     placeholder="Nome do paciente"
                   />
                 </div>
@@ -180,8 +118,8 @@ const PatientProfile = () => {
                   <Label htmlFor="phone">Telefone</Label>
                   <Input
                     id="phone"
-                    value={editPhone}
-                    onChange={(e) => setEditPhone(e.target.value)}
+                    value={editForm.phone}
+                    onChange={(e) => profile.updateEditField('phone', e.target.value)}
                     placeholder="(00) 00000-0000"
                   />
                 </div>
@@ -190,8 +128,8 @@ const PatientProfile = () => {
                   <Input
                     id="email"
                     type="email"
-                    value={editEmail}
-                    onChange={(e) => setEditEmail(e.target.value)}
+                    value={editForm.email}
+                    onChange={(e) => profile.updateEditField('email', e.target.value)}
                     placeholder="email@exemplo.com"
                   />
                 </div>
@@ -199,21 +137,21 @@ const PatientProfile = () => {
                   <Label htmlFor="notes">Notas clínicas</Label>
                   <Textarea
                     id="notes"
-                    value={editNotes}
-                    onChange={(e) => setEditNotes(e.target.value)}
+                    value={editForm.notes}
+                    onChange={(e) => profile.updateEditField('notes', e.target.value)}
                     placeholder="Alergias, preferências, observações..."
                     rows={4}
                   />
                 </div>
                 <div className="flex justify-end gap-2 pt-2">
-                  <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+                  <Button variant="outline" onClick={profile.closeEditDialog}>
                     Cancelar
                   </Button>
                   <Button
-                    onClick={handleSave}
-                    disabled={updatePatientMutation.isPending || !editName.trim()}
+                    onClick={profile.handleSave}
+                    disabled={profile.isSaving || !editForm.name.trim()}
                   >
-                    {updatePatientMutation.isPending ? "Salvando..." : "Salvar"}
+                    {profile.isSaving ? 'Salvando...' : 'Salvar'}
                   </Button>
                 </div>
               </div>
@@ -267,14 +205,8 @@ const PatientProfile = () => {
             )}
             {!patient.phone && !patient.email && !patient.notes && (
               <p className="text-muted-foreground">
-                Nenhuma informação adicional.{" "}
-                <button
-                  className="text-primary hover:underline"
-                  onClick={() => {
-                    initializeForm();
-                    setEditDialogOpen(true);
-                  }}
-                >
+                Nenhuma informação adicional.{' '}
+                <button className="text-primary hover:underline" onClick={profile.openEditDialog}>
                   Adicionar dados
                 </button>
               </p>
@@ -285,21 +217,19 @@ const PatientProfile = () => {
         {/* Metrics */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Card className="p-4 text-center">
-            <p className="text-2xl font-semibold">{totalSessions}</p>
+            <p className="text-2xl font-semibold">{metrics.totalSessions}</p>
             <p className="text-xs text-muted-foreground">Sessões</p>
           </Card>
           <Card className="p-4 text-center">
-            <p className="text-2xl font-semibold">{totalCases}</p>
+            <p className="text-2xl font-semibold">{metrics.totalCases}</p>
             <p className="text-xs text-muted-foreground">Casos</p>
           </Card>
           <Card className="p-4 text-center">
-            <p className="text-2xl font-semibold text-primary">{completedCases}</p>
+            <p className="text-2xl font-semibold text-primary">{metrics.completedCases}</p>
             <p className="text-xs text-muted-foreground">Concluídos</p>
           </Card>
           <Card className="p-4 text-center">
-            <p className="text-2xl font-semibold">
-              {firstVisit ? format(new Date(firstVisit), "d/MMM", { locale: ptBR }) : "-"}
-            </p>
+            <p className="text-2xl font-semibold">{metrics.firstVisitFormatted}</p>
             <p className="text-xs text-muted-foreground">1ª Visita</p>
           </Card>
         </div>
@@ -316,7 +246,7 @@ const PatientProfile = () => {
             </Link>
           </div>
 
-          {sessions.length === 0 ? (
+          {sessionsList.length === 0 ? (
             <Card className="p-8 text-center">
               <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
               <h3 className="font-medium mb-2">Nenhuma avaliação ainda</h3>
@@ -332,7 +262,7 @@ const PatientProfile = () => {
             </Card>
           ) : (
             <div className="space-y-3">
-              {sessions.map((session) => {
+              {sessionsList.map((session) => {
                 const isCompleted = session.completedCount === session.evaluationCount;
                 const progressPercent = (session.completedCount / session.evaluationCount) * 100;
 
@@ -347,15 +277,15 @@ const PatientProfile = () => {
                             })}
                           </span>
                           <Badge
-                            variant={isCompleted ? "default" : "secondary"}
-                            className={isCompleted ? "bg-primary" : ""}
+                            variant={isCompleted ? 'default' : 'secondary'}
+                            className={isCompleted ? 'bg-primary' : ''}
                           >
                             {isCompleted ? (
                               <CheckCircle2 className="w-3 h-3 mr-1" />
                             ) : (
                               <Clock className="w-3 h-3 mr-1" />
                             )}
-                            {isCompleted ? "Concluído" : "Em progresso"}
+                            {isCompleted ? 'Concluído' : 'Em progresso'}
                           </Badge>
                         </div>
                         <ChevronRight className="w-5 h-5 text-muted-foreground" />
@@ -376,8 +306,8 @@ const PatientProfile = () => {
                             )}
                           </div>
                           <p className="text-xs text-muted-foreground">
-                            {session.evaluationCount}{" "}
-                            {session.evaluationCount === 1 ? "dente" : "dentes"}
+                            {session.evaluationCount}{' '}
+                            {session.evaluationCount === 1 ? 'dente' : 'dentes'}
                           </p>
                         </div>
 
@@ -398,16 +328,16 @@ const PatientProfile = () => {
                 <div className="pt-4 text-center">
                   <Button
                     variant="outline"
-                    onClick={() => setSessionsPage(prev => prev + 1)}
-                    disabled={fetchingSessions}
+                    onClick={profile.loadMoreSessions}
+                    disabled={profile.isFetchingSessions}
                   >
-                    {fetchingSessions ? (
+                    {profile.isFetchingSessions ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                         Carregando...
                       </>
                     ) : (
-                      "Carregar mais sessões"
+                      'Carregar mais sessões'
                     )}
                   </Button>
                 </div>
