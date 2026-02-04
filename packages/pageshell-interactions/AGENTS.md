@@ -1,15 +1,15 @@
 ---
 title: "AGENTS.md (packages/pageshell-interactions)"
 created: 2025-01-09
-updated: 2025-01-09
+updated: 2026-02-04
 status: active
 tags:
   - type/guide
   - status/active
   - package/pageshell-interactions
 related:
-  - "[[../AGENTS]]"
-  - "[[../../AGENTS]]"
+  - "[[../AGENTS.md]]"
+  - "[[../../AGENTS.md]]"
 ---
 
 # AGENTS.md (packages/pageshell-interactions)
@@ -22,10 +22,6 @@ It **inherits** the global rules and routing in the repo root `AGENTS.md`.
 ## Project Context
 
 `@pageshell/interactions` provides interactive UI components for PageShell (Layer 3). Contains forms, buttons, inputs, and other interactive elements.
-
-## Mandatory Startup (ToStudy)
-
-- If you are working in `packages/pageshell-interactions/`, you are in **ToStudy** context → follow the root `AGENTS.md` startup before implementation work.
 
 ## Key Locations
 
@@ -45,11 +41,12 @@ It **inherits** the global rules and routing in the repo root `AGENTS.md`.
 
 ---
 
-## Herança
+## Heranca
 
-- **Pai**: [[../AGENTS]] (packages)
-- **Root**: [[../../AGENTS]]
+- **Pai**: [[../AGENTS.md]] (packages)
+- **Root**: [[../../AGENTS.md]]
 
 ## Links
 
-- [[../AGENTS]] - Packages index
+- [[CLAUDE.md]] - Entry point
+- [[../AGENTS.md]] - Packages index

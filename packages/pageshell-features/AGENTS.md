@@ -1,15 +1,15 @@
 ---
 title: "AGENTS.md (packages/pageshell-features)"
 created: 2025-01-09
-updated: 2025-01-09
+updated: 2026-02-04
 status: active
 tags:
   - type/guide
   - status/active
   - package/pageshell-features
 related:
-  - "[[../AGENTS]]"
-  - "[[../../AGENTS]]"
+  - "[[../AGENTS.md]]"
+  - "[[../../AGENTS.md]]"
 ---
 
 # AGENTS.md (packages/pageshell-features)
@@ -22,10 +22,6 @@ It **inherits** the global rules and routing in the repo root `AGENTS.md`.
 ## Project Context
 
 `@pageshell/features` provides compound feature components for PageShell (Layer 4). These are higher-level components that combine interactions and layouts.
-
-## Mandatory Startup (ToStudy)
-
-- If you are working in `packages/pageshell-features/`, you are in **ToStudy** context → follow the root `AGENTS.md` startup before implementation work.
 
 ## Key Locations
 
@@ -44,11 +40,12 @@ It **inherits** the global rules and routing in the repo root `AGENTS.md`.
 
 ---
 
-## Herança
+## Heranca
 
-- **Pai**: [[../AGENTS]] (packages)
-- **Root**: [[../../AGENTS]]
+- **Pai**: [[../AGENTS.md]] (packages)
+- **Root**: [[../../AGENTS.md]]
 
 ## Links
 
-- [[../AGENTS]] - Packages index
+- [[CLAUDE.md]] - Entry point
+- [[../AGENTS.md]] - Packages index

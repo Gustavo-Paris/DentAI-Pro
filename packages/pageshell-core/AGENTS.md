@@ -1,15 +1,15 @@
 ---
 title: "AGENTS.md (packages/pageshell-core)"
 created: 2025-01-09
-updated: 2025-01-09
+updated: 2026-02-04
 status: active
 tags:
   - type/guide
   - status/active
   - package/pageshell-core
 related:
-  - "[[../AGENTS]]"
-  - "[[../../AGENTS]]"
+  - "[[../AGENTS.md]]"
+  - "[[../../AGENTS.md]]"
 ---
 
 # AGENTS.md (packages/pageshell-core)
@@ -22,10 +22,6 @@ It **inherits** the global rules and routing in the repo root `AGENTS.md`.
 ## Project Context
 
 `@pageshell/core` provides core hooks, utils, and types for PageShell composites. This is the foundation layer that other PageShell packages depend on.
-
-## Mandatory Startup (ToStudy)
-
-- If you are working in `packages/pageshell-core/`, you are in **ToStudy** context → follow the root `AGENTS.md` startup before implementation work.
 
 ## Key Locations
 
@@ -46,11 +42,12 @@ It **inherits** the global rules and routing in the repo root `AGENTS.md`.
 
 ---
 
-## Herança
+## Heranca
 
-- **Pai**: [[../AGENTS]] (packages)
-- **Root**: [[../../AGENTS]]
+- **Pai**: [[../AGENTS.md]] (packages)
+- **Root**: [[../../AGENTS.md]]
 
 ## Links
 
+- [[CLAUDE.md]] - Entry point
 - [[README.md]] - Package documentation

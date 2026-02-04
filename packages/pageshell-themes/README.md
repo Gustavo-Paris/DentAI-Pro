@@ -242,6 +242,12 @@ import { writeFileSync } from 'fs';
 writeFileSync('themes.css', generateThemeCSS(presetThemes));
 ```
 
+## Related
+
+- [AGENTS.md](./AGENTS.md) - Agent instructions
+- [@pageshell/theme](../pageshell-theme/README.md) - Theme context and hooks
+- [@pageshell/primitives](../pageshell-primitives/README.md) - UI primitives
+
 ## License
 
 MIT
