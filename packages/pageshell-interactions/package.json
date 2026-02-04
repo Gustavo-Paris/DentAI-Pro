@@ -1,0 +1,119 @@
+{
+  "name": "@pageshell/interactions",
+  "version": "0.1.0",
+  "description": "Interactive UI components for PageShell (Layer 3)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./modal": {
+      "types": "./dist/modal.d.ts",
+      "import": "./dist/modal.js"
+    },
+    "./drawer": {
+      "types": "./dist/drawer.d.ts",
+      "import": "./dist/drawer.js"
+    },
+    "./filters": {
+      "types": "./dist/filters.d.ts",
+      "import": "./dist/filters.js"
+    },
+    "./search": {
+      "types": "./dist/search.d.ts",
+      "import": "./dist/search.js"
+    },
+    "./list": {
+      "types": "./dist/list.d.ts",
+      "import": "./dist/list.js"
+    },
+    "./pagination": {
+      "types": "./dist/pagination.d.ts",
+      "import": "./dist/pagination.js"
+    },
+    "./infinite-scroll": {
+      "types": "./dist/infinite-scroll.d.ts",
+      "import": "./dist/infinite-scroll.js"
+    },
+    "./alert": {
+      "types": "./dist/alert.d.ts",
+      "import": "./dist/alert.js"
+    },
+    "./floating-action": {
+      "types": "./dist/floating-action.d.ts",
+      "import": "./dist/floating-action.js"
+    },
+    "./wizard": {
+      "types": "./dist/wizard.d.ts",
+      "import": "./dist/wizard.js"
+    },
+    "./form": {
+      "types": "./dist/form.d.ts",
+      "import": "./dist/form.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "watch": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "peerDependencies": {
+    "next": ">=14.0.0",
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0",
+    "react-hook-form": "^7.70.0"
+  },
+  "dependencies": {
+    "@pageshell/core": "workspace:*",
+    "@pageshell/primitives": "workspace:*",
+    "@pageshell/theme": "workspace:*",
+    "@radix-ui/react-alert-dialog": "^1.1.15",
+    "@radix-ui/react-dialog": "^1.1.15",
+    "@radix-ui/react-label": "^2.1.8",
+    "@radix-ui/react-slot": "^1.2.4",
+    "@repo/logger": "workspace:*",
+    "lucide-react": "^0.563.0",
+    "sonner": "^2.0.7"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/react": "^19.2.11",
+    "@types/react-dom": "^19.2.3",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pageshell/pageshell.git",
+    "directory": "packages/pageshell-interactions"
+  },
+  "license": "MIT",
+  "keywords": [
+    "pageshell",
+    "ui",
+    "interactions",
+    "react",
+    "components"
+  ],
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "homepage": "https://github.com/pageshell/pageshell#readme",
+  "bugs": {
+    "url": "https://github.com/pageshell/pageshell/issues"
+  },
+  "author": "PageShell Contributors"
+}

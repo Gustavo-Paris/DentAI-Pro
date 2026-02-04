@@ -1,0 +1,311 @@
+/**
+ * Component Tokens
+ *
+ * Design tokens specific to UI components.
+ * Built on top of semantic tokens.
+ *
+ * @package @pageshell/themes
+ */
+
+.ui-theme {
+  /* ===== BUTTON ===== */
+  --button-radius: var(--radius-md);
+  --button-font: var(--font-ui);
+  --button-weight: var(--font-medium);
+  --button-transition: var(--duration-fast) var(--ease-default);
+
+  /* Button Sizes */
+  --button-sm-height: 2rem;        /* 32px */
+  --button-sm-padding: var(--space-3);
+  --button-sm-font-size: var(--text-sm);
+
+  --button-md-height: 2.5rem;      /* 40px */
+  --button-md-padding: var(--space-4);
+  --button-md-font-size: var(--text-sm);
+
+  --button-lg-height: 3rem;        /* 48px */
+  --button-lg-padding: var(--space-6);
+  --button-lg-font-size: var(--text-base);
+
+  --button-icon-size: 2.5rem;      /* 40px for icon-only buttons */
+
+  /* Button Variants */
+  --button-primary-bg: var(--color-primary);
+  --button-primary-text: var(--color-primary-text);
+  --button-primary-hover-bg: var(--color-primary-hover);
+  --button-primary-glow: var(--glow-primary);
+
+  --button-secondary-bg: var(--surface-default);
+  --button-secondary-text: var(--text-primary);
+  --button-secondary-border: var(--border-default);
+  --button-secondary-hover-bg: var(--surface-hover);
+
+  --button-ghost-bg: transparent;
+  --button-ghost-text: var(--text-secondary);
+  --button-ghost-hover-bg: var(--surface-hover);
+  --button-ghost-hover-text: var(--text-primary);
+
+  --button-destructive-bg: var(--color-destructive);
+  --button-destructive-text: #ffffff;
+  --button-destructive-hover-bg: var(--color-destructive-hover);
+
+  --button-accent-bg: var(--color-accent);
+  --button-accent-text: #000000;
+  --button-accent-hover-bg: var(--color-accent-hover);
+
+  /* ===== CARD ===== */
+  --card-bg: var(--surface-default);
+  --card-border: var(--border-default);
+  --card-radius: var(--radius-lg);
+  --card-padding: var(--space-6);
+  --card-shadow: var(--shadow-card);
+  --card-hover-bg: var(--surface-hover);
+  --card-hover-border: var(--border-emphasis);
+  --card-transition: var(--duration-normal) var(--ease-default);
+
+  /* Card Variants */
+  --card-interactive-hover-transform: translateY(-2px);
+  --card-interactive-hover-shadow: var(--shadow-lg);
+
+  --card-glow-color: var(--color-primary-muted);
+  --card-glow-opacity: 0;
+  --card-glow-hover-opacity: 1;
+
+  /* ===== INPUT ===== */
+  --input-bg: var(--surface-elevated);
+  --input-border: var(--border-default);
+  --input-radius: var(--radius-md);
+  --input-height: 2.5rem;          /* 40px */
+  --input-padding-x: var(--space-3);
+  --input-font-size: var(--text-sm);
+  --input-text: var(--text-primary);
+  --input-placeholder: var(--text-tertiary);
+  --input-focus-border: var(--color-primary);
+  --input-focus-ring: var(--focus-ring);
+  --input-disabled-bg: var(--surface-default);
+  --input-disabled-text: var(--text-disabled);
+  --input-error-border: var(--color-destructive);
+
+  /* ===== SELECT ===== */
+  --select-bg: var(--input-bg);
+  --select-border: var(--input-border);
+  --select-radius: var(--input-radius);
+  --select-height: var(--input-height);
+
+  /* ===== TEXTAREA ===== */
+  --textarea-min-height: 5rem;     /* 80px */
+
+  /* ===== BADGE ===== */
+  --badge-radius: var(--radius-full);
+  --badge-padding-x: var(--space-2);
+  --badge-padding-y: var(--space-1);
+  --badge-font-size: var(--text-xs);
+  --badge-font-weight: var(--font-medium);
+
+  /* Badge Variants */
+  --badge-default-bg: var(--surface-default);
+  --badge-default-text: var(--text-secondary);
+
+  --badge-primary-bg: var(--color-primary-muted);
+  --badge-primary-text: var(--color-primary);
+
+  --badge-success-bg: var(--color-success-muted);
+  --badge-success-text: var(--color-success);
+
+  --badge-warning-bg: var(--color-warning-muted);
+  --badge-warning-text: var(--color-warning);
+
+  --badge-destructive-bg: var(--color-destructive-muted);
+  --badge-destructive-text: var(--color-destructive);
+
+  --badge-info-bg: var(--color-info-muted);
+  --badge-info-text: var(--color-info);
+
+  --badge-accent-bg: var(--color-accent-muted);
+  --badge-accent-text: var(--color-accent);
+
+  /* ===== TABLE ===== */
+  --table-header-bg: var(--surface-elevated);
+  --table-header-text: var(--text-secondary);
+  --table-row-bg: transparent;
+  --table-row-hover: var(--surface-hover);
+  --table-row-selected-bg: var(--color-primary-muted);
+  --table-border: var(--border-default);
+  --table-border-subtle: var(--border-subtle);
+  --table-cell-text: var(--text-primary);
+  --table-cell-padding-x: var(--space-4);
+  --table-cell-padding-y: var(--space-3);
+  --table-footer-bg: var(--surface-elevated);
+
+  /* ===== DIALOG / MODAL ===== */
+  --dialog-bg: var(--surface-default);
+  --dialog-border: var(--border-default);
+  --dialog-radius: var(--radius-xl);
+  --dialog-shadow: var(--shadow-modal);
+  --dialog-padding: var(--space-6);
+  --dialog-overlay: var(--overlay-medium);
+
+  /* ===== DROPDOWN ===== */
+  --dropdown-bg: var(--surface-default);
+  --dropdown-border: var(--border-default);
+  --dropdown-radius: var(--radius-md);
+  --dropdown-shadow: var(--shadow-dropdown);
+  --dropdown-item-hover-bg: var(--surface-hover);
+  --dropdown-item-padding-x: var(--space-3);
+  --dropdown-item-padding-y: var(--space-2);
+
+  /* ===== SIDEBAR ===== */
+  --sidebar-width: 260px;
+  --sidebar-collapsed-width: 64px;
+  --sidebar-bg: var(--sidebar, var(--surface-elevated));
+  --sidebar-border: var(--border-default);
+  --sidebar-item-radius: var(--radius-md);
+  --sidebar-item-padding-x: var(--space-3);
+  --sidebar-item-padding-y: var(--space-2);
+  --sidebar-item-hover-bg: var(--sidebar-accent, var(--surface-hover));
+  --sidebar-item-active-bg: var(--sidebar-primary, var(--color-primary));
+  --sidebar-item-active-text: var(--sidebar-primary-foreground, var(--color-primary-text));
+
+  /* Sidebar Typography */
+  --sidebar-section-label: 0.6875rem;   /* 11px */
+  --sidebar-item-text: 0.875rem;        /* 14px */
+  --sidebar-brand-text: 1rem;           /* 16px */
+
+  /* ===== HEADER ===== */
+  --header-height: 64px;
+  --header-bg: var(--surface-elevated);
+  --header-border: var(--border-default);
+
+  /* ===== TOOLTIP ===== */
+  --tooltip-bg: var(--color-neutral-800);
+  --tooltip-text: var(--text-primary);
+  --tooltip-radius: var(--radius-sm);
+  --tooltip-padding-x: var(--space-2);
+  --tooltip-padding-y: var(--space-1);
+  --tooltip-font-size: var(--text-xs);
+
+  /* ===== AVATAR ===== */
+  --avatar-sm: 2rem;           /* 32px */
+  --avatar-md: 2.5rem;         /* 40px */
+  --avatar-lg: 3rem;           /* 48px */
+  --avatar-xl: 4rem;           /* 64px */
+  --avatar-radius: var(--radius-full);
+  --avatar-border: 2px solid var(--border-default);
+
+  /* ===== SKELETON ===== */
+  --skeleton-bg: var(--surface-default);
+  /* Hex fallback for older browsers */
+  --skeleton-shimmer: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.05),
+    transparent
+  );
+
+  /* ===== PROGRESS ===== */
+  --progress-bg: var(--surface-default);
+  --progress-fill: var(--color-primary);
+  --progress-height: 0.5rem;   /* 8px */
+  --progress-radius: var(--radius-full);
+
+  /* ===== TABS ===== */
+  --tab-border: var(--border-default);
+  --tab-text: var(--text-secondary);
+  --tab-hover-text: var(--text-primary);
+  --tab-active-text: var(--color-primary);
+  --tab-active-border: var(--color-primary);
+  --tab-padding-x: var(--space-4);
+  --tab-padding-y: var(--space-2);
+}
+
+/* ===== BUTTON UTILITY CLASSES ===== */
+/* Explicit CSS rules for button backgrounds using CSS variables.
+ * These are needed because Tailwind v4 may not generate arbitrary value
+ * classes like bg-[var(--button-primary-bg)] in all contexts.
+ * The escaped class names match what cva generates in Button.tsx */
+
+.bg-\[var\(--button-primary-bg\)\] {
+  background-color: var(--button-primary-bg);
+}
+.text-\[var\(--button-primary-text\)\] {
+  color: var(--button-primary-text);
+}
+.hover\:bg-\[var\(--button-primary-hover-bg\)\]:hover {
+  background-color: var(--button-primary-hover-bg);
+}
+.hover\:shadow-\[var\(--button-primary-glow\)\]:hover {
+  box-shadow: var(--button-primary-glow);
+}
+
+.bg-\[var\(--button-secondary-bg\)\] {
+  background-color: var(--button-secondary-bg);
+}
+.text-\[var\(--button-secondary-text\)\] {
+  color: var(--button-secondary-text);
+}
+.border-\[var\(--button-secondary-border\)\] {
+  border-color: var(--button-secondary-border);
+}
+.hover\:bg-\[var\(--button-secondary-hover-bg\)\]:hover {
+  background-color: var(--button-secondary-hover-bg);
+}
+
+.bg-\[var\(--button-ghost-bg\)\] {
+  background-color: var(--button-ghost-bg);
+}
+.text-\[var\(--button-ghost-text\)\] {
+  color: var(--button-ghost-text);
+}
+.hover\:bg-\[var\(--button-ghost-hover-bg\)\]:hover {
+  background-color: var(--button-ghost-hover-bg);
+}
+.hover\:text-\[var\(--button-ghost-hover-text\)\]:hover {
+  color: var(--button-ghost-hover-text);
+}
+
+.bg-\[var\(--button-destructive-bg\)\] {
+  background-color: var(--button-destructive-bg);
+}
+.text-\[var\(--button-destructive-text\)\] {
+  color: var(--button-destructive-text);
+}
+.hover\:bg-\[var\(--button-destructive-hover-bg\)\]:hover {
+  background-color: var(--button-destructive-hover-bg);
+}
+
+.bg-\[var\(--button-accent-bg\)\] {
+  background-color: var(--button-accent-bg);
+}
+.text-\[var\(--button-accent-text\)\] {
+  color: var(--button-accent-text);
+}
+.hover\:bg-\[var\(--button-accent-hover-bg\)\]:hover {
+  background-color: var(--button-accent-hover-bg);
+}
+
+/* Outline variant uses semantic tokens directly */
+.text-\[var\(--text-primary\)\] {
+  color: var(--text-primary);
+}
+.border-\[var\(--border-default\)\] {
+  border-color: var(--border-default);
+}
+.hover\:bg-\[var\(--surface-hover\)\]:hover {
+  background-color: var(--surface-hover);
+}
+.hover\:border-\[var\(--border-emphasis\)\]:hover {
+  border-color: var(--border-emphasis);
+}
+
+/* Link variant */
+.text-\[var\(--color-primary\)\] {
+  color: var(--color-primary);
+}
+
+/* Focus ring */
+.focus-visible\:ring-\[var\(--focus-ring-color\)\]:focus-visible {
+  --tw-ring-color: var(--focus-ring-color);
+}
+.focus-visible\:ring-offset-\[var\(--surface-bg\)\]:focus-visible {
+  --tw-ring-offset-color: var(--surface-bg);
+}

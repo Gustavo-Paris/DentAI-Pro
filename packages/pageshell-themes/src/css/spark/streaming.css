@@ -1,0 +1,281 @@
+/**
+ * Spark Streaming & Transparency Components
+ *
+ * Connection status, activity indicators, timing displays,
+ * and streaming text components.
+ *
+ * @package @pageshell/themes
+ */
+
+/* ===== CONNECTION STATUS BANNER ===== */
+.spark-connection-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.875rem;
+  border-radius: 100px;
+  font-family: var(--spark-font-sans);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  transition: all 0.3s var(--spark-ease-out);
+}
+
+.spark-connection-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: spark-pulse 2s ease-in-out infinite;
+}
+
+.spark-connection-connected {
+  background: var(--spark-success-muted);
+  color: var(--spark-success);
+  border: 1px solid rgba(74, 222, 128, 0.2);
+}
+
+.spark-connection-connecting {
+  background: var(--spark-warning-muted);
+  color: var(--spark-warning);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+}
+
+.spark-connection-reconnecting {
+  background: rgba(251, 146, 60, 0.12);
+  color: rgb(251 146 60);
+  border: 1px solid rgba(251, 146, 60, 0.2);
+}
+
+.spark-connection-error {
+  background: var(--spark-error-muted);
+  color: var(--spark-error);
+  border: 1px solid rgba(248, 113, 113, 0.2);
+}
+
+/* ===== ACTIVITY INDICATOR ===== */
+.spark-activity {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 8px;
+  font-family: var(--spark-font-sans);
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.spark-activity-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--spark-success);
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.5);
+  animation: spark-activity-pulse 1.5s ease-in-out infinite;
+}
+
+.spark-activity-active {
+  background: var(--spark-success-muted);
+  color: var(--spark-success);
+}
+
+.spark-activity-idle {
+  background: var(--spark-surface);
+  color: var(--spark-text-muted);
+  border: 1px solid var(--spark-border-subtle);
+}
+
+.spark-activity-warning {
+  background: var(--spark-warning-muted);
+  color: var(--spark-warning);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+}
+
+/* ===== ELAPSED TIME DISPLAY ===== */
+.spark-elapsed-time {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--spark-surface);
+  border: 1px solid var(--spark-border-subtle);
+  border-radius: 8px;
+  font-family: var(--spark-font-mono);
+  font-size: 0.75rem;
+  color: var(--spark-text-muted);
+}
+
+.spark-elapsed-time svg {
+  color: var(--spark-primary);
+  opacity: 0.8;
+}
+
+.spark-estimated-time {
+  color: var(--spark-text-subtle);
+  margin-left: 0.25rem;
+}
+
+/* ===== PROGRESS BAR ENHANCEMENTS ===== */
+.spark-progress-fill-pulse {
+  animation: spark-progress-pulse 2s ease-in-out infinite;
+}
+
+/* ===== MODULE TIMING ===== */
+.spark-module-timing {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: var(--spark-font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.spark-module-timing-complete {
+  background: var(--spark-success-muted);
+  color: var(--spark-success);
+}
+
+.spark-module-timing-generating {
+  background: var(--spark-primary-muted);
+  color: var(--spark-primary);
+}
+
+/* ===== STREAMING TEXT - Blinking Cursor ===== */
+.spark-cursor-blink {
+  animation: spark-blink 1s step-end infinite;
+  color: var(--spark-primary);
+  font-weight: 400;
+}
+
+.spark-streaming-message {
+  background: var(--spark-surface);
+  border: 1px solid var(--spark-border-subtle);
+  border-radius: 16px;
+  border-top-left-radius: 4px;
+  padding: 1rem 1.25rem;
+  max-width: 88%;
+  position: relative;
+  box-shadow: var(--spark-shadow-sm);
+}
+
+.spark-streaming-message::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--spark-primary-subtle) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.spark-streaming-avatar {
+  background: linear-gradient(135deg, var(--spark-primary) 0%, var(--spark-accent) 100%);
+  animation: spark-streaming-glow 2s ease-in-out infinite;
+}
+
+.spark-streaming-icon {
+  animation: spark-streaming-spin 3s linear infinite;
+}
+
+.spark-streaming-context {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.75rem;
+  background: var(--spark-primary-muted);
+  color: var(--spark-primary);
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  width: fit-content;
+}
+
+.spark-streaming-content {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--spark-text);
+}
+
+.spark-streaming-placeholder {
+  color: var(--spark-text-muted);
+  font-style: italic;
+}
+
+.spark-streaming-progress-bar {
+  height: 6px;
+  background: var(--spark-border-subtle);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.spark-streaming-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--spark-primary) 0%, var(--spark-accent) 100%);
+  border-radius: 3px;
+  transition: width 0.5s ease-out;
+  position: relative;
+}
+
+.spark-streaming-progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 100%
+  );
+  animation: spark-progress-shimmer 1.5s ease-in-out infinite;
+}
+
+/* Indeterminate progress bar for outline phase */
+.spark-progress-indeterminate {
+  position: relative;
+}
+
+.spark-progress-indeterminate-fill {
+  position: absolute;
+  width: 40%;
+  animation: spark-progress-indeterminate 1.5s ease-in-out infinite;
+}
+
+.spark-streaming-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--spark-text-muted);
+}
+
+.spark-streaming-dots {
+  display: flex;
+  gap: 3px;
+}
+
+.spark-streaming-dots span {
+  width: 4px;
+  height: 4px;
+  background: var(--spark-primary);
+  border-radius: 50%;
+  animation: spark-streaming-bounce 1.4s ease-in-out infinite;
+}
+
+.spark-streaming-dots span:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.spark-streaming-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.spark-streaming-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
