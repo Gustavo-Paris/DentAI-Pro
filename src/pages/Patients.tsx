@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { usePatientsList } from "@/hooks/queries/usePatients";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Search, Users, Plus, ChevronRight, Loader2, ArrowUpDown } from "lucide-react";
+import { Search, Users, Plus, ChevronRight, Loader2, ArrowUpDown } from "lucide-react";
 import { getInitials } from "@/lib/utils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -20,7 +20,6 @@ import { ptBR } from "date-fns/locale";
 type SortOption = 'recent' | 'name-asc' | 'name-desc' | 'cases';
 
 const Patients = () => {
-  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>('recent');
   const [page, setPage] = useState(0);
@@ -80,18 +79,12 @@ const Patients = () => {
   }, [allPatients, searchQuery, sortBy]);
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="bg-card border-b border-border px-4 py-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")}>
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div>
-              <h1 className="text-lg font-semibold">Meus Pacientes</h1>
-              <p className="text-sm text-muted-foreground">{data?.totalCount ?? 0} pacientes</p>
-            </div>
+    <div>
+      <div className="max-w-4xl mx-auto px-4 py-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-semibold">Meus Pacientes</h1>
+            <p className="text-sm text-muted-foreground">{data?.totalCount ?? 0} pacientes</p>
           </div>
           <Link to="/new-case">
             <Button size="sm">
@@ -100,9 +93,6 @@ const Patients = () => {
             </Button>
           </Link>
         </div>
-      </header>
-
-      <main className="max-w-4xl mx-auto px-4 py-6">
         {/* Search and Sort */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <div className="relative flex-1">
@@ -224,7 +214,7 @@ const Patients = () => {
             )}
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
 };

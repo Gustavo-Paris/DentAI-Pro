@@ -1,5 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -35,7 +34,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { ArrowLeft, Plus, Search, Package, Loader2, X } from 'lucide-react';
+import { Plus, Search, Package, Loader2, X, Download, Upload, FileWarning, Check } from 'lucide-react';
 import { useInventoryList, useResinCatalog, useAddToInventory, useRemoveFromInventory } from '@/hooks/queries/useInventory';
 import { toast } from 'sonner';
 import { ResinBadge } from '@/components/ResinBadge';
@@ -69,6 +68,10 @@ export default function Inventory() {
   const [selectedResins, setSelectedResins] = useState<Set<string>>(new Set());
   const [removingResin, setRemovingResin] = useState<string | null>(null);
   const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [csvPreview, setCsvPreview] = useState<{ matched: CatalogResin[]; unmatched: string[] } | null>(null);
+  const [importing, setImporting] = useState(false);
+  const csvInputRef = useRef<HTMLInputElement>(null);
 
   const { data: inventoryData, isLoading, isFetching } = useInventoryList(page, 30);
   const { data: catalog = [] } = useResinCatalog();
@@ -126,6 +129,87 @@ export default function Inventory() {
       newSelection.add(resinId);
     }
     setSelectedResins(newSelection);
+  };
+
+  const handleExportCSV = () => {
+    const header = 'Marca,Linha,Cor,Tipo,Opacidade';
+    const rows = allItems.map((item) =>
+      [item.resin.brand, item.resin.product_line, item.resin.shade, item.resin.type, item.resin.opacity]
+        .map((v) => `"${(v || '').replace(/"/g, '""')}"`)
+        .join(',')
+    );
+    const csv = [header, ...rows].join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `inventario-resinas-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success('CSV exportado com sucesso');
+  };
+
+  const handleCSVFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result as string;
+      const lines = text.split(/\r?\n/).filter((line) => line.trim());
+
+      // Skip header if present
+      const dataLines = lines[0]?.toLowerCase().includes('marca') ? lines.slice(1) : lines;
+
+      const matched: CatalogResin[] = [];
+      const unmatched: string[] = [];
+
+      for (const line of dataLines) {
+        // Parse CSV (handle quoted values)
+        const cols = line.match(/("([^"]*("")?)*"|[^,]*)(,|$)/g)
+          ?.map((v) => v.replace(/,$/, '').replace(/^"|"$/g, '').replace(/""/g, '"').trim()) || [];
+
+        const [brand, productLine, shade] = cols;
+        if (!brand || !shade) {
+          unmatched.push(line);
+          continue;
+        }
+
+        const match = catalog.find(
+          (r) =>
+            r.brand.toLowerCase() === brand.toLowerCase() &&
+            r.shade.toLowerCase() === shade.toLowerCase() &&
+            (!productLine || r.product_line.toLowerCase() === productLine.toLowerCase())
+        );
+
+        if (match && !inventoryResinIds.has(match.id) && !matched.some((m) => m.id === match.id)) {
+          matched.push(match);
+        } else if (!match) {
+          unmatched.push(`${brand} - ${productLine || '?'} - ${shade}`);
+        }
+      }
+
+      setCsvPreview({ matched, unmatched });
+      setImportDialogOpen(true);
+    };
+    reader.readAsText(file);
+    // Reset input
+    if (csvInputRef.current) csvInputRef.current.value = '';
+  };
+
+  const handleImportConfirm = async () => {
+    if (!csvPreview?.matched.length) return;
+    setImporting(true);
+    try {
+      await addToInventoryMutation.mutateAsync(csvPreview.matched.map((r) => r.id));
+      toast.success(`${csvPreview.matched.length} resina(s) importada(s)`);
+      setCsvPreview(null);
+      setImportDialogOpen(false);
+      setPage(0);
+    } catch {
+      toast.error('Erro ao importar resinas');
+    }
+    setImporting(false);
   };
 
   const inventoryResinIds = useMemo(
@@ -228,22 +312,35 @@ export default function Inventory() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div>
       {/* Header */}
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link to="/dashboard">
-              <Button variant="ghost" size="icon">
-                <ArrowLeft className="h-5 w-5" />
+      <div className="container mx-auto px-4 py-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-semibold">Meu Inventário</h1>
+            <p className="text-sm text-muted-foreground">
+              Gerencie suas resinas disponíveis
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {allItems.length > 0 && (
+              <Button variant="outline" size="sm" onClick={handleExportCSV}>
+                <Download className="h-4 w-4 mr-1" />
+                <span className="hidden sm:inline">CSV</span>
               </Button>
-            </Link>
-            <div>
-              <h1 className="text-xl font-semibold">Meu Inventário</h1>
-              <p className="text-sm text-muted-foreground">
-                Gerencie suas resinas disponíveis
-              </p>
-            </div>
+            )}
+            <Button variant="outline" size="sm" onClick={() => csvInputRef.current?.click()}>
+              <Upload className="h-4 w-4 mr-1" />
+              <span className="hidden sm:inline">Importar</span>
+            </Button>
+            <input
+              ref={csvInputRef}
+              type="file"
+              accept=".csv,text/csv"
+              onChange={handleCSVFile}
+              className="hidden"
+            />
           </div>
 
           <Dialog open={dialogOpen} onOpenChange={(open) => {
@@ -372,9 +469,6 @@ export default function Inventory() {
             </DialogContent>
           </Dialog>
         </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-6">
         {/* Legend */}
         <ResinTypeLegend />
 
@@ -534,7 +628,7 @@ export default function Inventory() {
             )}
           </Button>
         )}
-      </main>
+      </div>
 
       <AlertDialog open={!!deletingItemId} onOpenChange={(open) => { if (!open) setDeletingItemId(null); }}>
         <AlertDialogContent>
@@ -559,6 +653,77 @@ export default function Inventory() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* CSV Import Preview Dialog */}
+      <Dialog open={importDialogOpen} onOpenChange={(open) => {
+        if (!open) {
+          setImportDialogOpen(false);
+          setCsvPreview(null);
+        }
+      }}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Importar Inventário via CSV</DialogTitle>
+          </DialogHeader>
+
+          {csvPreview && (
+            <div className="space-y-4">
+              {csvPreview.matched.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium flex items-center gap-2 mb-2">
+                    <Check className="w-4 h-4 text-green-500" />
+                    {csvPreview.matched.length} resina(s) encontrada(s)
+                  </p>
+                  <div className="max-h-40 overflow-y-auto space-y-1 border rounded-lg p-2">
+                    {csvPreview.matched.map((r) => (
+                      <p key={r.id} className="text-xs text-muted-foreground">
+                        {r.brand} &middot; {r.product_line} &middot; {r.shade}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {csvPreview.unmatched.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium flex items-center gap-2 mb-2 text-amber-600 dark:text-amber-400">
+                    <FileWarning className="w-4 h-4" />
+                    {csvPreview.unmatched.length} não encontrada(s) no catálogo
+                  </p>
+                  <div className="max-h-24 overflow-y-auto space-y-1 border rounded-lg p-2 border-amber-200 dark:border-amber-800">
+                    {csvPreview.unmatched.map((line, i) => (
+                      <p key={i} className="text-xs text-muted-foreground">{line}</p>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {csvPreview.matched.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  Nenhuma resina do CSV foi encontrada no catálogo.
+                </p>
+              )}
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setImportDialogOpen(false); setCsvPreview(null); }}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleImportConfirm}
+              disabled={!csvPreview?.matched.length || importing}
+            >
+              {importing ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Plus className="h-4 w-4 mr-2" />
+              )}
+              Adicionar {csvPreview?.matched.length || 0} resina(s)
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

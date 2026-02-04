@@ -11,6 +11,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import CookieConsent from "@/components/CookieConsent";
 import { Skeleton } from "@/components/ui/skeleton";
+import AppLayout from "@/components/AppLayout";
 
 // Eager load auth pages (needed immediately)
 import Landing from "@/pages/Landing";
@@ -21,6 +22,9 @@ import ResetPassword from "@/pages/ResetPassword";
 import Terms from "@/pages/Terms";
 import Privacy from "@/pages/Privacy";
 import NotFound from "@/pages/NotFound";
+
+// Lazy load public pages
+const SharedEvaluation = lazy(() => import("@/pages/SharedEvaluation"));
 
 // Lazy load protected pages
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
@@ -70,107 +74,31 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
+            <Route path="/shared/:token" element={<Suspense fallback={<PageLoader />}><SharedEvaluation /></Suspense>} />
             
             {/* Redirect legacy /cases route */}
             <Route path="/cases" element={<Navigate to="/evaluations" replace />} />
 
-            {/* Protected routes - lazy loaded */}
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Suspense fallback={<PageLoader />}>
-                    <Dashboard />
-                  </Suspense>
-                </ProtectedRoute>
-              }
-            />
+            {/* Protected routes WITH persistent nav layout */}
+            <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+              <Route path="/dashboard" element={<Suspense fallback={<PageLoader />}><Dashboard /></Suspense>} />
+              <Route path="/evaluations" element={<Suspense fallback={<PageLoader />}><Evaluations /></Suspense>} />
+              <Route path="/evaluation/:evaluationId" element={<Suspense fallback={<PageLoader />}><EvaluationDetails /></Suspense>} />
+              <Route path="/result/:id" element={<Suspense fallback={<PageLoader />}><Result /></Suspense>} />
+              <Route path="/inventory" element={<Suspense fallback={<PageLoader />}><Inventory /></Suspense>} />
+              <Route path="/patients" element={<Suspense fallback={<PageLoader />}><Patients /></Suspense>} />
+              <Route path="/patient/:patientId" element={<Suspense fallback={<PageLoader />}><PatientProfile /></Suspense>} />
+              <Route path="/profile" element={<Suspense fallback={<PageLoader />}><Profile /></Suspense>} />
+              <Route path="/pricing" element={<Suspense fallback={<PageLoader />}><Pricing /></Suspense>} />
+            </Route>
+
+            {/* Protected routes WITHOUT nav layout (full-screen) */}
             <Route
               path="/new-case"
               element={
                 <ProtectedRoute>
                   <Suspense fallback={<PageLoader />}>
                     <NewCase />
-                  </Suspense>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/inventory"
-              element={
-                <ProtectedRoute>
-                  <Suspense fallback={<PageLoader />}>
-                    <Inventory />
-                  </Suspense>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/evaluations"
-              element={
-                <ProtectedRoute>
-                  <Suspense fallback={<PageLoader />}>
-                    <Evaluations />
-                  </Suspense>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/evaluation/:evaluationId"
-              element={
-                <ProtectedRoute>
-                  <Suspense fallback={<PageLoader />}>
-                    <EvaluationDetails />
-                  </Suspense>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/result/:id"
-              element={
-                <ProtectedRoute>
-                  <Suspense fallback={<PageLoader />}>
-                    <Result />
-                  </Suspense>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <Suspense fallback={<PageLoader />}>
-                    <Profile />
-                  </Suspense>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/patients"
-              element={
-                <ProtectedRoute>
-                  <Suspense fallback={<PageLoader />}>
-                    <Patients />
-                  </Suspense>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/patient/:patientId"
-              element={
-                <ProtectedRoute>
-                  <Suspense fallback={<PageLoader />}>
-                    <PatientProfile />
-                  </Suspense>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/pricing"
-              element={
-                <ProtectedRoute>
-                  <Suspense fallback={<PageLoader />}>
-                    <Pricing />
                   </Suspense>
                 </ProtectedRoute>
               }
