@@ -89,6 +89,11 @@ export default function Inventory() {
     }
   }, [inventoryData, page]);
 
+  const inventoryResinIds = useMemo(
+    () => new Set(allItems.map((item) => item.resin_id)),
+    [allItems]
+  );
+
   const handleLoadMore = () => {
     setPage(p => p + 1);
   };
@@ -211,11 +216,6 @@ export default function Inventory() {
     }
     setImporting(false);
   };
-
-  const inventoryResinIds = useMemo(
-    () => new Set(allItems.map((item) => item.resin_id)),
-    [allItems]
-  );
 
   // Get unique brands and types from inventory
   const inventoryBrands = useMemo(
@@ -341,8 +341,6 @@ export default function Inventory() {
               onChange={handleCSVFile}
               className="hidden"
             />
-          </div>
-
           <Dialog open={dialogOpen} onOpenChange={(open) => {
             setDialogOpen(open);
             if (!open) {
@@ -468,6 +466,7 @@ export default function Inventory() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
         {/* Legend */}
         <ResinTypeLegend />

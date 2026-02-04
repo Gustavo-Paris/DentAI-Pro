@@ -34,3 +34,15 @@ CREATE INDEX IF NOT EXISTS idx_shared_links_user_id
   ON public.shared_links(user_id);
 
 COMMENT ON TABLE public.shared_links IS 'Temporary public links for sharing evaluation results with patients';
+
+-- Allow anonymous users to read evaluations that have a valid (non-expired) shared link
+CREATE POLICY "Anyone can view evaluations via shared link"
+  ON public.evaluations
+  FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.shared_links sl
+      WHERE sl.session_id = evaluations.session_id
+        AND sl.expires_at > NOW()
+    )
+  );
