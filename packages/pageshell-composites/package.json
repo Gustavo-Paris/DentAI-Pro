@@ -1,0 +1,158 @@
+{
+  "name": "@pageshell/composites",
+  "version": "0.1.0",
+  "description": "Declarative page composites built on PageShell primitives",
+  "type": "module",
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    },
+    "./list": {
+      "types": "./src/list/index.ts",
+      "import": "./src/list/index.ts"
+    },
+    "./tabbed-list": {
+      "types": "./src/tabbed-list/index.ts",
+      "import": "./src/tabbed-list/index.ts"
+    },
+    "./form": {
+      "types": "./src/form/index.ts",
+      "import": "./src/form/index.ts"
+    },
+    "./detail": {
+      "types": "./src/detail/index.ts",
+      "import": "./src/detail/index.ts"
+    },
+    "./dashboard": {
+      "types": "./src/dashboard/index.ts",
+      "import": "./src/dashboard/index.ts"
+    },
+    "./settings": {
+      "types": "./src/settings/index.ts",
+      "import": "./src/settings/index.ts"
+    },
+    "./card-settings": {
+      "types": "./src/card-settings/index.ts",
+      "import": "./src/card-settings/index.ts"
+    },
+    "./config": {
+      "types": "./src/config/index.ts",
+      "import": "./src/config/index.ts"
+    },
+    "./preferences": {
+      "types": "./src/preferences/index.ts",
+      "import": "./src/preferences/index.ts"
+    },
+    "./sectioned-form": {
+      "types": "./src/sectioned-form/index.ts",
+      "import": "./src/sectioned-form/index.ts"
+    },
+    "./help-center": {
+      "types": "./src/help-center/index.ts",
+      "import": "./src/help-center/index.ts"
+    },
+    "./split-panel": {
+      "types": "./src/split-panel/index.ts",
+      "import": "./src/split-panel/index.ts"
+    },
+    "./analytics": {
+      "types": "./src/analytics/index.ts",
+      "import": "./src/analytics/index.ts"
+    },
+    "./calendar": {
+      "types": "./src/calendar/index.ts",
+      "import": "./src/calendar/index.ts"
+    },
+    "./linear-flow": {
+      "types": "./src/linear-flow/index.ts",
+      "import": "./src/linear-flow/index.ts"
+    },
+    "./progressive-extraction": {
+      "types": "./src/progressive-extraction/index.ts",
+      "import": "./src/progressive-extraction/index.ts"
+    },
+    "./wizard": {
+      "types": "./src/wizard/index.ts",
+      "import": "./src/wizard/index.ts"
+    },
+    "./shared": {
+      "types": "./src/shared/index.ts",
+      "import": "./src/shared/index.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "watch": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@pageshell/core": "workspace:*",
+    "@pageshell/domain": "workspace:*",
+    "@pageshell/features": "workspace:*",
+    "@pageshell/interactions": "workspace:*",
+    "@pageshell/layouts": "workspace:*",
+    "@pageshell/primitives": "workspace:*",
+    "@pageshell/theme": "workspace:*",
+    "@repo/logger": "workspace:*",
+    "class-variance-authority": "^0.7.1"
+  },
+  "peerDependencies": {
+    "lucide-react": "^0.400.0",
+    "next": ">=14.0.0",
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0",
+    "react-hook-form": "^7.70.0",
+    "reactflow": "^11.0.0"
+  },
+  "peerDependenciesMeta": {
+    "reactflow": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/react": "^19.2.11",
+    "@types/react-dom": "^19.2.3",
+    "lucide-react": "^0.563.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pageshell/pageshell.git",
+    "directory": "packages/pageshell-composites"
+  },
+  "license": "MIT",
+  "keywords": [
+    "pageshell",
+    "ui",
+    "composites",
+    "react",
+    "declarative",
+    "crud"
+  ],
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "homepage": "https://github.com/pageshell/pageshell#readme",
+  "bugs": {
+    "url": "https://github.com/pageshell/pageshell/issues"
+  },
+  "author": "PageShell Contributors"
+}

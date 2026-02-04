@@ -1,0 +1,107 @@
+/**
+ * Spark Theme Variables
+ *
+ * Premium editorial/magazine-inspired aesthetic for AI-powered creation.
+ * Champagne gold on deep charcoal with sophisticated typography.
+ *
+ * @package @pageshell/themes
+ */
+
+/* ===== SPARK THEME VARIABLES ===== */
+.spark-theme,
+.ui-theme[data-spark="enabled"] {
+  /* Premium Color Palette - Champagne Gold on Deep Charcoal */
+  --spark-primary: rgb(212 168 83);
+  --spark-primary-hover: rgb(228 188 106);
+  --spark-primary-muted: rgba(212, 168, 83, 0.12);
+  --spark-primary-subtle: rgba(212, 168, 83, 0.06);
+  --spark-glow: 0 0 30px rgba(212, 168, 83, 0.15);
+  --spark-glow-strong: 0 0 40px rgba(212, 168, 83, 0.25);
+
+  /* Refined Surfaces - Warm Charcoal */
+  --spark-bg: rgb(12 12 16);
+  --spark-bg-elevated: rgb(17 17 22);
+  --spark-bg-chat: rgb(14 14 18);
+  --spark-surface: rgb(22 22 28);
+  --spark-surface-hover: rgb(28 28 36);
+  --spark-surface-active: rgb(34 34 48);
+
+  /* Sophisticated Borders */
+  --spark-border: rgb(35 35 48);
+  --spark-border-subtle: rgb(26 26 36);
+  --spark-border-emphasis: rgb(46 46 62);
+  --spark-rule: linear-gradient(90deg, transparent, var(--spark-border), transparent);
+
+  /* Premium Text Hierarchy */
+  --spark-text: rgb(245 245 247);
+  --spark-text-secondary: rgb(160 160 176);
+  --spark-text-muted: rgb(107 107 123);
+  --spark-text-subtle: rgb(74 74 88);
+
+  /* Typography - uses global Geist fonts */
+  --spark-font-serif: var(--font-sans);
+  --spark-font-sans: var(--font-sans);
+  --spark-font-mono: var(--font-mono);
+
+  /* Layered Shadows */
+  --spark-shadow-sm:
+    0 1px 2px rgba(0, 0, 0, 0.2),
+    0 1px 3px rgba(0, 0, 0, 0.1);
+  --spark-shadow-md:
+    0 4px 6px rgba(0, 0, 0, 0.15),
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    0 10px 20px rgba(0, 0, 0, 0.1);
+  --spark-shadow-lg:
+    0 10px 25px rgba(0, 0, 0, 0.2),
+    0 6px 10px rgba(0, 0, 0, 0.15),
+    0 20px 40px rgba(0, 0, 0, 0.15);
+  --spark-shadow-card:
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    0 8px 16px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.02);
+
+  /* Semantic Colors */
+  --spark-success: rgb(74 222 128);
+  --spark-success-muted: rgba(74, 222, 128, 0.12);
+  --spark-error: rgb(248 113 113);
+  --spark-error-muted: rgba(248, 113, 113, 0.12);
+  --spark-warning: rgb(251 191 36);
+  --spark-warning-muted: rgba(251, 191, 36, 0.12);
+
+  /* Animation Timing */
+  --spark-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --spark-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* Light mode - Elegant cream and charcoal */
+@media (prefers-color-scheme: light) {
+  .spark-theme,
+  .ui-theme[data-spark="enabled"] {
+    --spark-primary: rgb(184 148 47);
+    --spark-primary-hover: rgb(154 122 32);
+    --spark-primary-muted: rgba(184, 148, 47, 0.1);
+    --spark-primary-subtle: rgba(184, 148, 47, 0.05);
+    --spark-glow: 0 0 30px rgba(184, 148, 47, 0.1);
+
+    --spark-bg: rgb(250 249 247);
+    --spark-bg-elevated: rgb(255 255 255);
+    --spark-bg-chat: rgb(245 244 242);
+    --spark-surface: rgb(255 255 255);
+    --spark-surface-hover: rgb(248 247 245);
+    --spark-surface-active: rgb(240 239 237);
+
+    --spark-border: rgb(232 230 227);
+    --spark-border-subtle: rgb(240 239 237);
+    --spark-border-emphasis: rgb(219 217 214);
+
+    --spark-text: rgb(26 26 30);
+    --spark-text-secondary: rgb(74 74 82);
+    --spark-text-muted: rgb(113 113 122);
+    --spark-text-subtle: rgb(161 161 170);
+
+    --spark-shadow-card:
+      0 1px 3px rgba(0, 0, 0, 0.04),
+      0 4px 12px rgba(0, 0, 0, 0.03),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  }
+}
