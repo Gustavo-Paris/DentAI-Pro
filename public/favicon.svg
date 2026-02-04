@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Tooth shape -->
+  <path d="M32 4C24 4 18 10 16 18C14 26 12 34 16 42C18 46 22 56 24 60C25 62 27 62 28 60C30 54 31 48 32 48C33 48 34 54 36 60C37 62 39 62 40 60C42 56 46 46 48 42C52 34 50 26 48 18C46 10 40 4 32 4Z" fill="#2563eb"/>
+  <!-- Digital grid accent -->
+  <rect x="26" y="16" width="4" height="4" rx="0.5" fill="#93c5fd" opacity="0.9"/>
+  <rect x="34" y="16" width="4" height="4" rx="0.5" fill="#93c5fd" opacity="0.7"/>
+  <rect x="22" y="22" width="4" height="4" rx="0.5" fill="#93c5fd" opacity="0.5"/>
+  <rect x="30" y="22" width="4" height="4" rx="0.5" fill="#93c5fd" opacity="0.9"/>
+  <rect x="38" y="22" width="4" height="4" rx="0.5" fill="#93c5fd" opacity="0.6"/>
+  <rect x="26" y="28" width="4" height="4" rx="0.5" fill="#93c5fd" opacity="0.7"/>
+  <rect x="34" y="28" width="4" height="4" rx="0.5" fill="#93c5fd" opacity="0.8"/>
+</svg>

@@ -13,6 +13,16 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { LogOut, Plus, FileText, Package, ChevronRight, Search, FileWarning, TrendingUp, Users, CheckCircle2, Zap, Camera } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { format, formatDistanceToNow, startOfWeek, endOfWeek } from 'date-fns';
@@ -36,6 +46,7 @@ export default function Dashboard() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [pendingDraft, setPendingDraft] = useState<WizardDraft | null>(null);
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
 
   const { data: profileData, isLoading: loadingProfile } = useProfile();
   const { data: dashboardData, isLoading: loadingDashboard } = useDashboardData();
@@ -76,7 +87,16 @@ export default function Dashboard() {
     setPendingDraft(null);
   };
 
-  const firstName = profile?.full_name?.split(' ')[0] || 'Usuário';
+  const firstName = (() => {
+    const name = profile?.full_name;
+    if (!name) return 'Usuário';
+    const match = name.match(/^(Dra?\.\s*)(.+)/i);
+    if (match) {
+      const restFirst = match[2].split(' ')[0];
+      return `${match[1]}${restFirst}`;
+    }
+    return name.split(' ')[0];
+  })();
 
   // Compute week range for tooltip
   const weekRange = useMemo(() => {
@@ -420,7 +440,7 @@ export default function Dashboard() {
                           variant="ghost"
                           size="sm"
                           className="text-amber-700 hover:text-amber-900 hover:bg-amber-100 dark:text-amber-300 dark:hover:text-amber-100 dark:hover:bg-amber-900/50"
-                          onClick={handleDiscardDraft}
+                          onClick={() => setShowDiscardConfirm(true)}
                           aria-label="Descartar rascunho"
                         >
                           Descartar
@@ -483,6 +503,23 @@ export default function Dashboard() {
           )}
           </div>
         </main>
+
+        <AlertDialog open={showDiscardConfirm} onOpenChange={setShowDiscardConfirm}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Descartar rascunho?</AlertDialogTitle>
+              <AlertDialogDescription>
+                O rascunho será apagado permanentemente. Esta ação não pode ser desfeita.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDiscardDraft}>
+                Descartar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </TooltipProvider>
   );

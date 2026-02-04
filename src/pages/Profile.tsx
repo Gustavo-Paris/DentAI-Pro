@@ -14,6 +14,7 @@ import { getInitials } from '@/lib/utils';
 import { SubscriptionStatus } from '@/components/pricing/SubscriptionStatus';
 import { useSubscription } from '@/hooks/useSubscription';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface ProfileData {
   full_name: string | null;
@@ -268,147 +269,155 @@ export default function Profile() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-2xl space-y-6">
-        <Card>
-          <CardHeader className="text-center pb-2">
-            {/* Avatar and Logo side by side */}
-            <div className="flex justify-center items-start gap-8 mb-4">
-              {/* Avatar Section */}
-              <div className="flex flex-col items-center">
-                <div className="relative">
-                  <Avatar className="w-20 h-20 cursor-pointer" onClick={handleAvatarClick}>
-                    <AvatarImage src={avatarPreview || undefined} alt={profile.full_name || 'Avatar'} />
-                    <AvatarFallback className="text-xl bg-primary/10">
-                      {uploading ? (
-                        <Loader2 className="w-6 h-6 animate-spin" />
-                      ) : (
-                        getInitials(profile.full_name)
-                      )}
-                    </AvatarFallback>
-                  </Avatar>
-                  <button
-                    type="button"
-                    onClick={handleAvatarClick}
-                    disabled={uploading}
-                    className="absolute bottom-0 right-0 p-1.5 rounded-full bg-primary text-primary-foreground shadow-md hover:bg-primary/90 transition-colors"
-                  >
-                    <Camera className="w-3 h-3" />
-                  </button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAvatarChange}
-                    className="hidden"
-                  />
-                </div>
-                <span className="text-xs text-muted-foreground mt-2">Foto Pessoal</span>
-              </div>
+      <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-2xl">
+        <Tabs defaultValue={searchParams.get('tab') === 'assinatura' ? 'assinatura' : 'perfil'}>
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="perfil">Perfil</TabsTrigger>
+            <TabsTrigger value="assinatura">Assinatura</TabsTrigger>
+          </TabsList>
 
-              {/* Clinic Logo Section */}
-              <div className="flex flex-col items-center">
-                <div className="relative">
-                  <div 
-                    className="w-20 h-20 rounded-lg border-2 border-dashed border-border bg-muted/50 flex items-center justify-center cursor-pointer hover:border-primary/50 transition-colors overflow-hidden"
-                    onClick={handleLogoClick}
-                  >
-                    {uploadingLogo ? (
-                      <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-                    ) : logoPreview ? (
-                      <img src={logoPreview} alt="Logo" className="w-full h-full object-contain p-1" />
-                    ) : (
-                      <Building2 className="w-8 h-8 text-muted-foreground" />
-                    )}
+          <TabsContent value="perfil" className="space-y-6">
+            <Card>
+              <CardHeader className="text-center pb-2">
+                {/* Avatar and Logo side by side */}
+                <div className="flex justify-center items-start gap-8 mb-4">
+                  {/* Avatar Section */}
+                  <div className="flex flex-col items-center">
+                    <div className="relative">
+                      <Avatar className="w-20 h-20 cursor-pointer" onClick={handleAvatarClick}>
+                        <AvatarImage src={avatarPreview || undefined} alt={profile.full_name || 'Avatar'} />
+                        <AvatarFallback className="text-xl bg-primary/10">
+                          {uploading ? (
+                            <Loader2 className="w-6 h-6 animate-spin" />
+                          ) : (
+                            getInitials(profile.full_name)
+                          )}
+                        </AvatarFallback>
+                      </Avatar>
+                      <button
+                        type="button"
+                        onClick={handleAvatarClick}
+                        disabled={uploading}
+                        className="absolute bottom-0 right-0 p-1.5 rounded-full bg-primary text-primary-foreground shadow-md hover:bg-primary/90 transition-colors"
+                      >
+                        <Camera className="w-3 h-3" />
+                      </button>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarChange}
+                        className="hidden"
+                      />
+                    </div>
+                    <span className="text-xs text-muted-foreground mt-2">Foto Pessoal</span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={handleLogoClick}
-                    disabled={uploadingLogo}
-                    className="absolute bottom-0 right-0 p-1.5 rounded-full bg-primary text-primary-foreground shadow-md hover:bg-primary/90 transition-colors"
-                  >
-                    <ImageIcon className="w-3 h-3" />
-                  </button>
-                  <input
-                    ref={logoInputRef}
-                    type="file"
-                    accept="image/png,image/jpeg,image/svg+xml"
-                    onChange={handleLogoChange}
-                    className="hidden"
+
+                  {/* Clinic Logo Section */}
+                  <div className="flex flex-col items-center">
+                    <div className="relative">
+                      <div
+                        className="w-20 h-20 rounded-lg border-2 border-dashed border-border bg-muted/50 flex items-center justify-center cursor-pointer hover:border-primary/50 transition-colors overflow-hidden"
+                        onClick={handleLogoClick}
+                      >
+                        {uploadingLogo ? (
+                          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                        ) : logoPreview ? (
+                          <img src={logoPreview} alt="Logo" className="w-full h-full object-contain p-1" />
+                        ) : (
+                          <Building2 className="w-8 h-8 text-muted-foreground" />
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleLogoClick}
+                        disabled={uploadingLogo}
+                        className="absolute bottom-0 right-0 p-1.5 rounded-full bg-primary text-primary-foreground shadow-md hover:bg-primary/90 transition-colors"
+                      >
+                        <ImageIcon className="w-3 h-3" />
+                      </button>
+                      <input
+                        ref={logoInputRef}
+                        type="file"
+                        accept="image/png,image/jpeg,image/svg+xml"
+                        onChange={handleLogoChange}
+                        className="hidden"
+                      />
+                    </div>
+                    <span className="text-xs text-muted-foreground mt-2">Logo do Consultório</span>
+                  </div>
+                </div>
+
+                <CardTitle>Editar Perfil</CardTitle>
+                <CardDescription>Atualize suas informações pessoais e profissionais</CardDescription>
+              </CardHeader>
+
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="full_name">Nome completo</Label>
+                  <Input
+                    id="full_name"
+                    value={profile.full_name || ''}
+                    onChange={(e) => setProfile(prev => ({ ...prev, full_name: e.target.value }))}
+                    placeholder="Dr. João Silva"
                   />
                 </div>
-                <span className="text-xs text-muted-foreground mt-2">Logo do Consultório</span>
-              </div>
-            </div>
-            
-            <CardTitle>Editar Perfil</CardTitle>
-            <CardDescription>Atualize suas informações pessoais e profissionais</CardDescription>
-          </CardHeader>
 
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="full_name">Nome completo</Label>
-              <Input
-                id="full_name"
-                value={profile.full_name || ''}
-                onChange={(e) => setProfile(prev => ({ ...prev, full_name: e.target.value }))}
-                placeholder="Dr. João Silva"
-              />
-            </div>
+                <div className="space-y-2">
+                  <Label htmlFor="cro">CRO</Label>
+                  <Input
+                    id="cro"
+                    value={profile.cro || ''}
+                    onChange={(e) => setProfile(prev => ({ ...prev, cro: e.target.value }))}
+                    placeholder="CRO-SP 12345"
+                  />
+                </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="cro">CRO</Label>
-              <Input
-                id="cro"
-                value={profile.cro || ''}
-                onChange={(e) => setProfile(prev => ({ ...prev, cro: e.target.value }))}
-                placeholder="CRO-SP 12345"
-              />
-            </div>
+                <div className="space-y-2">
+                  <Label htmlFor="clinic_name">Nome da Clínica</Label>
+                  <Input
+                    id="clinic_name"
+                    value={profile.clinic_name || ''}
+                    onChange={(e) => setProfile(prev => ({ ...prev, clinic_name: e.target.value }))}
+                    placeholder="Clínica Odontológica Sorriso"
+                  />
+                </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="clinic_name">Nome da Clínica</Label>
-              <Input
-                id="clinic_name"
-                value={profile.clinic_name || ''}
-                onChange={(e) => setProfile(prev => ({ ...prev, clinic_name: e.target.value }))}
-                placeholder="Clínica Odontológica Sorriso"
-              />
-            </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Telefone</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={profile.phone || ''}
+                    onChange={(e) => setProfile(prev => ({ ...prev, phone: e.target.value }))}
+                    placeholder="(11) 99999-9999"
+                  />
+                </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="phone">Telefone</Label>
-              <Input
-                id="phone"
-                type="tel"
-                value={profile.phone || ''}
-                onChange={(e) => setProfile(prev => ({ ...prev, phone: e.target.value }))}
-                placeholder="(11) 99999-9999"
-              />
-            </div>
+                <div className="pt-4">
+                  <Button onClick={handleSave} disabled={saving} className="w-full">
+                    {saving ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Salvando...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4 mr-2" />
+                        Salvar Alterações
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-            <div className="pt-4">
-              <Button onClick={handleSave} disabled={saving} className="w-full">
-                {saving ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Salvando...
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-4 h-4 mr-2" />
-                    Salvar Alterações
-                  </>
-                )}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Subscription Section */}
-        <SubscriptionStatus />
-
-        {/* Upgrade CTA */}
-        <UpgradeCTA />
+          <TabsContent value="assinatura" className="space-y-6">
+            <SubscriptionStatus />
+            <UpgradeCTA />
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );
