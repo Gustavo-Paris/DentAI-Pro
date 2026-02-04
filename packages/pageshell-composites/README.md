@@ -714,6 +714,13 @@ Fields and stats support automatic formatting via `valueType`. See "Unified Fiel
 - @pageshell/core
 - @pageshell/primitives
 
+## Related
+
+- [AGENTS.md](./AGENTS.md) - Agent instructions
+- [@pageshell/core](../pageshell-core/README.md) - Core hooks and utilities
+- [@pageshell/primitives](../pageshell-primitives/README.md) - UI primitives
+- [@pageshell/interactions](../pageshell-interactions/README.md) - Interactive components
+
 ## License
 
 MIT

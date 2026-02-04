@@ -176,6 +176,13 @@ Primitives use CSS custom properties for theming. Override these in your theme:
 - React 18+ or 19+
 - Tailwind CSS (for utility classes)
 
+## Related
+
+- [AGENTS.md](./AGENTS.md) - Agent instructions
+- [@pageshell/core](../pageshell-core/README.md) - Core hooks and utilities
+- [@pageshell/interactions](../pageshell-interactions/README.md) - Layer 3 components
+- [@pageshell/themes](../pageshell-themes/README.md) - Theme presets
+
 ## License
 
 MIT

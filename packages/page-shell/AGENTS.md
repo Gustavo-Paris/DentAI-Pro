@@ -1,15 +1,15 @@
 ---
 title: "AGENTS.md (packages/page-shell)"
 created: 2025-01-10
-updated: 2025-01-10
+updated: 2026-02-04
 status: active
 tags:
   - type/guide
   - status/active
   - packages/page-shell
 related:
-  - "[[../AGENTS]]"
-  - "[[../../AGENTS]]"
+  - "[[../AGENTS.md]]"
+  - "[[../../AGENTS.md]]"
 ---
 
 # AGENTS.md (packages/page-shell)
@@ -81,24 +81,24 @@ pnpm -C packages/page-shell type-check
 ## Related Packages
 
 This package re-exports from:
-- [[../pageshell-core/AGENTS]] - Core hooks and utilities
-- [[../pageshell-primitives/AGENTS]] - Radix UI primitives
-- [[../pageshell-layouts/AGENTS]] - Layout components
-- [[../pageshell-interactions/AGENTS]] - Interactive components
-- [[../pageshell-features/AGENTS]] - Feature components
-- [[../pageshell-composites/AGENTS]] - Page composites
-- [[../pageshell-theme/AGENTS]] - Theme context
-- [[../pageshell-themes/AGENTS]] - Theme presets
-- [[../pageshell-domain/AGENTS]] - Domain components
+- [[../pageshell-core/AGENTS.md]] - Core hooks and utilities
+- [[../pageshell-primitives/AGENTS.md]] - Radix UI primitives
+- [[../pageshell-layouts/AGENTS.md]] - Layout components
+- [[../pageshell-interactions/AGENTS.md]] - Interactive components
+- [[../pageshell-features/AGENTS.md]] - Feature components
+- [[../pageshell-composites/AGENTS.md]] - Page composites
+- [[../pageshell-theme/AGENTS.md]] - Theme context
+- [[../pageshell-themes/AGENTS.md]] - Theme presets
+- [[../pageshell-domain/AGENTS.md]] - Domain components
 
 ---
 
 ## Heranca
 
-- **Pai**: [[../AGENTS]] (packages)
-- **Root**: [[../../AGENTS]]
+- **Pai**: [[../AGENTS.md]] (packages)
+- **Root**: [[../../AGENTS.md]]
 
 ## Links
 
 - [[CLAUDE.md]] - Entry point
-- [[../AGENTS]] - Packages index
+- [[../AGENTS.md]] - Packages index

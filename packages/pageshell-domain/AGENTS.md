@@ -1,15 +1,15 @@
 ---
 title: "AGENTS.md (packages/pageshell-domain)"
 created: 2025-01-09
-updated: 2025-01-09
+updated: 2026-02-04
 status: active
 tags:
   - type/guide
   - status/active
   - package/pageshell-domain
 related:
-  - "[[../AGENTS]]"
-  - "[[../../AGENTS]]"
+  - "[[../AGENTS.md]]"
+  - "[[../../AGENTS.md]]"
 ---
 
 # AGENTS.md (packages/pageshell-domain)
@@ -23,10 +23,6 @@ It **inherits** the global rules and routing in the repo root `AGENTS.md`.
 
 `@pageshell/domain` provides domain-specific UI components for PageShell. Contains components for courses, sessions, credits, gamification, dashboard, and mentorship.
 
-## Mandatory Startup (ToStudy)
-
-- If you are working in `packages/pageshell-domain/`, you are in **ToStudy** context → follow the root `AGENTS.md` startup before implementation work.
-
 ## Key Locations
 
 - Public entry: `packages/pageshell-domain/src/index.ts`
@@ -39,7 +35,7 @@ It **inherits** the global rules and routing in the repo root `AGENTS.md`.
 
 ## Safe Defaults (Local)
 
-- Domain components are ToStudy-specific (not generic).
+- Domain components are DentAI Pro-specific (not generic).
 - Follow Domain Primitives Pattern (ADR-0011, ADR-0033).
 - Components may depend on `@repo/types` for domain types.
 
@@ -49,11 +45,12 @@ It **inherits** the global rules and routing in the repo root `AGENTS.md`.
 
 ---
 
-## Herança
+## Heranca
 
-- **Pai**: [[../AGENTS]] (packages)
-- **Root**: [[../../AGENTS]]
+- **Pai**: [[../AGENTS.md]] (packages)
+- **Root**: [[../../AGENTS.md]]
 
 ## Links
 
-- [[../AGENTS]] - Packages index
+- [[CLAUDE.md]] - Entry point
+- [[../AGENTS.md]] - Packages index

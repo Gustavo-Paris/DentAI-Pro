@@ -98,4 +98,4 @@ Layouts automatically apply theme CSS variables:
 
 - [AGENTS.md](./AGENTS.md) - Agent instructions
 - [@pageshell/themes](../pageshell-themes/README.md) - Theme presets
-- [ADR-0030](../../docs/06-ADRs/ADR-0030-pageshell-layouts-package.md) - Architecture decision
+- [@pageshell/primitives](../pageshell-primitives/README.md) - UI primitives

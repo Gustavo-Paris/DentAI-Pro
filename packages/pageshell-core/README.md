@@ -214,6 +214,12 @@ const status = getCompletionStatus(7, 10);
 const fraction = formatProgressFraction(7, 10); // "7/10"
 ```
 
+## Related
+
+- [AGENTS.md](./AGENTS.md) - Agent instructions
+- [@pageshell/primitives](../pageshell-primitives/README.md) - UI primitives built on core
+- [@pageshell/composites](../pageshell-composites/README.md) - Page composites
+
 ## License
 
 MIT

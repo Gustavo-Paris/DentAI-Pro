@@ -1,15 +1,15 @@
 ---
 title: "AGENTS.md (packages/pageshell-themes)"
 created: 2025-01-09
-updated: 2025-01-09
+updated: 2026-02-04
 status: active
 tags:
   - type/guide
   - status/active
   - package/pageshell-themes
 related:
-  - "[[../AGENTS]]"
-  - "[[../../AGENTS]]"
+  - "[[../AGENTS.md]]"
+  - "[[../../AGENTS.md]]"
 ---
 
 # AGENTS.md (packages/pageshell-themes)
@@ -22,10 +22,6 @@ It **inherits** the global rules and routing in the repo root `AGENTS.md`.
 ## Project Context
 
 `@pageshell/themes` provides the theme system and presets for PageShell. Contains admin, creator, and student theme presets.
-
-## Mandatory Startup (ToStudy)
-
-- If you are working in `packages/pageshell-themes/`, you are in **ToStudy** context → follow the root `AGENTS.md` startup before implementation work.
 
 ## Key Locations
 
@@ -53,11 +49,12 @@ It **inherits** the global rules and routing in the repo root `AGENTS.md`.
 
 ---
 
-## Herança
+## Heranca
 
-- **Pai**: [[../AGENTS]] (packages)
-- **Root**: [[../../AGENTS]]
+- **Pai**: [[../AGENTS.md]] (packages)
+- **Root**: [[../../AGENTS.md]]
 
 ## Links
 
+- [[CLAUDE.md]] - Entry point
 - [[README.md]] - Package documentation
