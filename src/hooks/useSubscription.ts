@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 export interface SubscriptionPlan {
   id: string;
@@ -128,7 +129,7 @@ export function useSubscription() {
       }
     },
     onError: (error) => {
-      console.error('Checkout error:', error);
+      logger.error('Checkout error:', error);
       toast.error('Erro ao iniciar checkout. Tente novamente.');
     },
   });
@@ -149,7 +150,7 @@ export function useSubscription() {
       }
     },
     onError: (error) => {
-      console.error('Portal error:', error);
+      logger.error('Portal error:', error);
       toast.error('Erro ao acessar portal. Tente novamente.');
     },
   });

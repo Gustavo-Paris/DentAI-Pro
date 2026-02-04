@@ -20,6 +20,7 @@ import { DraftRestoreModal } from '@/components/wizard/DraftRestoreModal';
 import { useWizardDraft, WizardDraft } from '@/hooks/useWizardDraft';
 import { LoadingOverlay } from '@/components/LoadingOverlay';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { logger } from '@/lib/logger';
 
 const steps = [
   { id: 1, name: 'Foto', icon: Camera },
@@ -150,6 +151,19 @@ export default function NewCase() {
     }
   }, [step, formData, selectedTeeth, toothTreatments, analysisResult, dsdResult, uploadedPhotoPath, additionalPhotos, patientPreferences, saveDraft, user]);
 
+  // Warn user before leaving the page during wizard steps 2-5
+  useEffect(() => {
+    if (step < 2 || step > 5) return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [step]);
+
   // Handle draft restoration - also load image from storage
   const handleRestoreDraft = useCallback(async () => {
     if (!pendingDraft) return;
@@ -179,7 +193,7 @@ export default function NewCase() {
           reader.readAsDataURL(data);
         }
       } catch (err) {
-        console.error('Error loading draft image:', err);
+        logger.error('Error loading draft image:', err);
         // Image load failed, but continue with draft restoration
       }
     }
@@ -275,7 +289,7 @@ export default function NewCase() {
       if (error) throw error;
       return fileName;
     } catch (error) {
-      console.error('Upload error:', error);
+      logger.error('Upload error:', error);
       return null;
     }
   };
@@ -359,7 +373,7 @@ export default function NewCase() {
       }
     } catch (error: unknown) {
       const err = error as { message?: string; code?: string };
-      console.error('Analysis error:', error);
+      logger.error('Analysis error:', error);
       
       // Determine error message
       let errorMessage = 'Não foi possível analisar a foto. Verifique se a imagem está nítida e tente novamente.';
@@ -458,7 +472,7 @@ export default function NewCase() {
       }
     } catch (error: unknown) {
       const err = error as { message?: string; code?: string };
-      console.error('Reanalysis error:', error);
+      logger.error('Reanalysis error:', error);
 
       if (err.message?.includes('429') || err.code === 'RATE_LIMITED') {
         toast.error('Limite de requisições excedido. Aguarde alguns minutos.');
@@ -583,7 +597,7 @@ export default function NewCase() {
               patientId = existingPatient.id;
             }
           } else {
-            console.error('Error creating patient:', patientError);
+            logger.error('Error creating patient:', patientError);
           }
         } else if (newPatient) {
           patientId = newPatient.id;
@@ -769,7 +783,7 @@ export default function NewCase() {
           );
         
         if (pendingError) {
-          console.error('Error saving pending teeth:', pendingError);
+          logger.error('Error saving pending teeth:', pendingError);
           // Non-critical error, don't block the flow
         }
       }
@@ -787,7 +801,7 @@ export default function NewCase() {
       navigate(`/evaluation/${sessionId}`);
     } catch (error: unknown) {
       const err = error as { message?: string; code?: string };
-      console.error('Error creating case:', error);
+      logger.error('Error creating case:', error);
       
       let errorMessage = 'Erro ao criar caso';
       let shouldGoBack = true;

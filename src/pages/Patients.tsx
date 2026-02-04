@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ArrowLeft, Search, Users, Plus, ChevronRight, Loader2, ArrowUpDown } from "lucide-react";
+import { getInitials } from "@/lib/utils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -74,15 +75,6 @@ const Patients = () => {
       }
     });
   }, [allPatients, searchQuery, sortBy]);
-
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
 
   return (
     <div className="min-h-screen bg-background">

@@ -25,6 +25,16 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { ArrowLeft, Plus, Search, Package, Loader2, X } from 'lucide-react';
 import { useInventoryList, useResinCatalog, useAddToInventory, useRemoveFromInventory } from '@/hooks/queries/useInventory';
 import { toast } from 'sonner';
@@ -58,6 +68,7 @@ export default function Inventory() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedResins, setSelectedResins] = useState<Set<string>>(new Set());
   const [removingResin, setRemovingResin] = useState<string | null>(null);
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
 
   const { data: inventoryData, isLoading, isFetching } = useInventoryList(page, 30);
   const { data: catalog = [] } = useResinCatalog();
@@ -481,7 +492,7 @@ export default function Inventory() {
                                   showColorSwatch
                                 />
                                 <button
-                                  onClick={() => inventoryItemId && removeFromInventory(inventoryItemId)}
+                                  onClick={() => inventoryItemId && setDeletingItemId(inventoryItemId)}
                                   disabled={isRemoving}
                                   className="absolute -top-1 -right-1 p-0.5 rounded-full bg-destructive/10 hover:bg-destructive/20 transition-colors opacity-0 group-hover:opacity-100"
                                   title="Remover"
@@ -524,6 +535,30 @@ export default function Inventory() {
           </Button>
         )}
       </main>
+
+      <AlertDialog open={!!deletingItemId} onOpenChange={(open) => { if (!open) setDeletingItemId(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar remoção</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja remover esta resina do inventário? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (deletingItemId) {
+                  removeFromInventory(deletingItemId);
+                  setDeletingItemId(null);
+                }
+              }}
+            >
+              Remover
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

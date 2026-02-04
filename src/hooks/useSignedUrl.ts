@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
+import { SIGNED_URL_EXPIRY_SECONDS } from '@/lib/constants';
 
 interface ThumbnailOptions {
   width?: number;
@@ -28,7 +30,7 @@ interface UseSignedUrlResult {
 export function useSignedUrl({
   bucket,
   path,
-  expiresIn = 3600,
+  expiresIn = SIGNED_URL_EXPIRY_SECONDS,
   thumbnail,
 }: UseSignedUrlOptions): UseSignedUrlResult {
   const [url, setUrl] = useState<string | null>(null);
@@ -117,7 +119,7 @@ export async function getSignedUrl(
     thumbnail?: ThumbnailOptions;
   }
 ): Promise<string | null> {
-  const { expiresIn = 3600, thumbnail } = options || {};
+  const { expiresIn = SIGNED_URL_EXPIRY_SECONDS, thumbnail } = options || {};
 
   const transformOptions = thumbnail
     ? {
@@ -135,7 +137,7 @@ export async function getSignedUrl(
     .createSignedUrl(path, expiresIn, transformOptions);
 
   if (error) {
-    console.error('Error generating signed URL:', error);
+    logger.error('Error generating signed URL:', error);
     return null;
   }
 

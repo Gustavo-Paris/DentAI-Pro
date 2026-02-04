@@ -18,6 +18,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { format, formatDistanceToNow, startOfWeek, endOfWeek } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { BRAND_NAME } from '@/lib/branding';
+import { getInitials } from '@/lib/utils';
 import { useSubscription } from '@/hooks/useSubscription';
 import { CreditBadge } from '@/components/CreditBadge';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -87,16 +88,6 @@ export default function Dashboard() {
       end: format(end, "d 'de' MMM, yyyy", { locale: ptBR }),
     };
   }, []);
-
-  const getInitials = (name: string | null | undefined) => {
-    if (!name) return 'U';
-    return name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
 
   const getStatusBadge = (session: Session) => {
     if (session.completedCount === session.evaluationCount) {

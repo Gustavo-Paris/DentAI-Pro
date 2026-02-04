@@ -4,6 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Camera, X, Loader2, Upload } from 'lucide-react';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
+import { compressImage } from '@/lib/imageUtils';
+import { SIGNED_URL_EXPIRY_SECONDS } from '@/lib/constants';
 
 interface PhotoUploaderProps {
   label: string;
@@ -52,12 +55,21 @@ export default function PhotoUploader({
     setUploading(true);
 
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${userId}/${evaluationId || 'temp'}_${photoType}_${Date.now()}.${fileExt}`;
+      // Compress image before upload
+      const compressedBase64 = await compressImage(file, 1280, 0.7);
+      const byteString = atob(compressedBase64.split(',')[1]);
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+      }
+      const compressedBlob = new Blob([ab], { type: 'image/jpeg' });
+
+      const fileName = `${userId}/${evaluationId || 'temp'}_${photoType}_${Date.now()}.jpg`;
 
       const { error: uploadError } = await supabase.storage
         .from('clinical-photos')
-        .upload(fileName, file, { upsert: true });
+        .upload(fileName, compressedBlob, { upsert: true });
 
       if (uploadError) throw uploadError;
 
@@ -69,7 +81,7 @@ export default function PhotoUploader({
       onChange(fileName);
       toast.success('Foto carregada com sucesso');
     } catch (error) {
-      console.error('Upload error:', error);
+      logger.error('Upload error:', error);
       toast.error('Erro ao carregar foto');
       setPreview(null);
     } finally {
@@ -82,7 +94,7 @@ export default function PhotoUploader({
       try {
         await supabase.storage.from('clinical-photos').remove([value]);
       } catch (error) {
-        console.error('Error removing file:', error);
+        logger.error('Error removing file:', error);
       }
     }
     setPreview(null);
@@ -95,7 +107,7 @@ export default function PhotoUploader({
   const getSignedUrl = async (path: string) => {
     const { data } = await supabase.storage
       .from('clinical-photos')
-      .createSignedUrl(path, 3600);
+      .createSignedUrl(path, SIGNED_URL_EXPIRY_SECONDS);
     return data?.signedUrl;
   };
 

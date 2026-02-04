@@ -45,6 +45,9 @@ import { CementationProtocolCard } from '@/components/protocol/CementationProtoc
 import { FinishingPolishingCard } from '@/components/protocol/FinishingPolishingCard';
 import { BruxismAlert } from '@/components/protocol/BruxismAlert';
 import { CollapsibleDSD } from '@/components/dsd/CollapsibleDSD';
+import { logger } from '@/lib/logger';
+import { LoadingOverlay } from '@/components/LoadingOverlay';
+import { SIGNED_URL_EXPIRY_SECONDS } from '@/lib/constants';
 
 interface Alternative {
   name: string;
@@ -177,21 +180,21 @@ export default function Result() {
         if (data.photo_frontal) {
           const { data: signedData } = await supabase.storage
             .from('clinical-photos')
-            .createSignedUrl(data.photo_frontal, 3600);
+            .createSignedUrl(data.photo_frontal, SIGNED_URL_EXPIRY_SECONDS);
           urls.frontal = signedData?.signedUrl || null;
         }
 
         if (data.photo_45) {
           const { data: signedData } = await supabase.storage
             .from('clinical-photos')
-            .createSignedUrl(data.photo_45, 3600);
+            .createSignedUrl(data.photo_45, SIGNED_URL_EXPIRY_SECONDS);
           urls.angle45 = signedData?.signedUrl || null;
         }
 
         if (data.photo_face) {
           const { data: signedData } = await supabase.storage
             .from('clinical-photos')
-            .createSignedUrl(data.photo_face, 3600);
+            .createSignedUrl(data.photo_face, SIGNED_URL_EXPIRY_SECONDS);
           urls.face = signedData?.signedUrl || null;
         }
 
@@ -202,7 +205,7 @@ export default function Result() {
         if (dsdUrl) {
           const { data: dsdSigned } = await supabase.storage
             .from('dsd-simulations')
-            .createSignedUrl(dsdUrl, 3600);
+            .createSignedUrl(dsdUrl, SIGNED_URL_EXPIRY_SECONDS);
           setDsdSimulationUrl(dsdSigned?.signedUrl || null);
         }
       }
@@ -225,7 +228,7 @@ export default function Result() {
       .eq('user_id', user.id);
 
     if (error) {
-      console.error('Error saving checklist progress:', error);
+      logger.error('Error saving checklist progress:', error);
       toast.error('Erro ao salvar progresso');
     }
   };
@@ -370,7 +373,7 @@ export default function Result() {
       
       toast.success('PDF gerado com sucesso!');
     } catch (error) {
-      console.error('Error generating PDF:', error);
+      logger.error('Error generating PDF:', error);
       toast.error('Erro ao gerar PDF');
     } finally {
       setGeneratingPDF(false);
@@ -526,6 +529,7 @@ export default function Result() {
 
   return (
     <div id="main-content" className="min-h-screen bg-background print:bg-background">
+      <LoadingOverlay isLoading={generatingPDF} message="Gerando PDF..." />
       {/* Header */}
       <header className="border-b border-border print:hidden">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">

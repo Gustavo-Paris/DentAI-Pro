@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { trackTiming } from '@/lib/webVitals';
+import { logger } from '@/lib/logger';
 
 const SESSION_REFRESH_THRESHOLD_MS = 60 * 1000; // Refresh if session expires in < 60s
 
@@ -23,7 +24,7 @@ export function useAuthenticatedFetch() {
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError) {
-        console.error('Session error:', sessionError);
+        logger.error('Session error:', sessionError);
         return { data: null, error: sessionError };
       }
 
@@ -42,7 +43,7 @@ export function useAuthenticatedFetch() {
         const { error: refreshError } = await supabase.auth.refreshSession();
         
         if (refreshError) {
-          console.error('Token refresh failed:', refreshError);
+          logger.error('Token refresh failed:', refreshError);
           // Continue anyway - the call might still work
         } else {
           console.log('Token refreshed successfully');
@@ -68,7 +69,7 @@ export function useAuthenticatedFetch() {
           
           const { error: refreshError } = await supabase.auth.refreshSession();
           if (refreshError) {
-            console.error('Token refresh after 401 failed:', refreshError);
+            logger.error('Token refresh after 401 failed:', refreshError);
             return { data: null, error };
           }
 
@@ -86,7 +87,7 @@ export function useAuthenticatedFetch() {
 
       return { data, error: null };
     } catch (err) {
-      console.error('invokeFunction error:', err);
+      logger.error('invokeFunction error:', err);
       return { data: null, error: err instanceof Error ? err : new Error(String(err)) };
     }
   }, []);

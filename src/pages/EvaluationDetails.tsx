@@ -58,6 +58,7 @@ import { toast } from 'sonner';
 import type { StratificationProtocol, CementationProtocol } from '@/types/protocol';
 import { AddTeethModal, PendingTooth } from '@/components/AddTeethModal';
 import { ClinicalPhotoThumbnail } from '@/components/OptimizedImage';
+import { logger } from '@/lib/logger';
 
 // Treatment type configuration
 const treatmentConfig: Record<string, { 
@@ -199,7 +200,7 @@ export default function EvaluationDetails() {
       .order('tooth', { ascending: true });
 
     if (error) {
-      console.error('Error fetching evaluation:', error);
+      logger.error('Error fetching evaluation:', error);
       toast.error('Erro ao carregar avaliação');
       navigate('/dashboard');
     } else if (data && data.length > 0) {
@@ -223,7 +224,7 @@ export default function EvaluationDetails() {
       .order('tooth', { ascending: true });
 
     if (error) {
-      console.error('Error fetching pending teeth:', error);
+      logger.error('Error fetching pending teeth:', error);
     } else if (data) {
       setPendingTeeth(data as PendingTooth[]);
     }
