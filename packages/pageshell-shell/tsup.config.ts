@@ -11,7 +11,14 @@ export default defineConfig({
     'src/adapters/next.tsx',
   ],
   format: ['esm'],
-  dts: true,
+  dts: {
+    compilerOptions: {
+      typeRoots: ['./node_modules/@types'],
+      paths: {
+        'react': ['./node_modules/@types/react'],
+      },
+    },
+  },
   sourcemap: true,
   clean: true,
   external: [

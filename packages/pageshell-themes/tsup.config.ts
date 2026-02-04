@@ -7,7 +7,14 @@ export default defineConfig({
     'hooks/index': 'src/hooks.tsx',
   },
   format: ['esm'],
-  dts: true,
+  dts: {
+    compilerOptions: {
+      typeRoots: ['./node_modules/@types'],
+      paths: {
+        'react': ['./node_modules/@types/react'],
+      },
+    },
+  },
   splitting: true,
   sourcemap: true,
   clean: true,

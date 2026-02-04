@@ -120,7 +120,7 @@ function usePortalThemeStyles(): React.CSSProperties {
 
       if (accent) {
         setStyles({
-          // @ts-expect-error CSS custom properties
+          // @ts-ignore -- CSS custom properties; error depends on @types/react version
           '--color-accent': accent,
           '--color-accent-foreground':
             accentForeground || 'var(--color-foreground, #ffffff)',

@@ -61,7 +61,7 @@ function defaultRenderLink({
 }: LinkRenderProps): ReactNode {
   return (
     <Link href={item.href} className={className} onClick={onClick}>
-      {children}
+      {children as any}
     </Link>
   );
 }
