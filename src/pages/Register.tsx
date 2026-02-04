@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { registerSchema, type RegisterFormData } from '@/lib/schemas/auth';
 import { PasswordRequirements } from '@/components/PasswordRequirements';
 import { BRAND_NAME } from '@/lib/branding';
+import { GoogleIcon } from '@/components/GoogleIcon';
 import { Mail } from 'lucide-react';
 import {
   Form,
@@ -22,8 +23,9 @@ import {
 
 export default function Register() {
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
-  const { signUp } = useAuth();
+  const { signUp, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   const form = useForm<RegisterFormData>({
@@ -54,6 +56,17 @@ export default function Register() {
     }
     
     setLoading(false);
+  };
+
+  const handleGoogleRegister = async () => {
+    setGoogleLoading(true);
+    const { error } = await signInWithGoogle();
+    if (error) {
+      toast.error('Erro ao continuar com Google', {
+        description: error.message,
+      });
+      setGoogleLoading(false);
+    }
   };
 
   if (emailSent) {
@@ -93,6 +106,26 @@ export default function Register() {
           <p className="text-sm text-muted-foreground">
             Preencha os dados para começar
           </p>
+        </div>
+
+        <Button
+          variant="outline"
+          className="w-full mb-4"
+          onClick={handleGoogleRegister}
+          disabled={googleLoading}
+          type="button"
+        >
+          <GoogleIcon className="w-4 h-4 mr-2" />
+          {googleLoading ? 'Conectando...' : 'Continuar com Google'}
+        </Button>
+
+        <div className="relative mb-4">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-border" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">ou</span>
+          </div>
         </div>
 
         <Form {...form}>

@@ -54,8 +54,11 @@ const Patients = () => {
 
   // Filter and sort patients
   const filteredAndSortedPatients = useMemo(() => {
+    const query = searchQuery.toLowerCase();
     const filtered = allPatients.filter((p) =>
-      p.name.toLowerCase().includes(searchQuery.toLowerCase())
+      p.name.toLowerCase().includes(query) ||
+      (p.phone && p.phone.toLowerCase().includes(query)) ||
+      (p.email && p.email.toLowerCase().includes(query))
     );
     
     return [...filtered].sort((a, b) => {
@@ -105,7 +108,7 @@ const Patients = () => {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Buscar paciente..."
+              placeholder="Buscar por nome, telefone ou email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"

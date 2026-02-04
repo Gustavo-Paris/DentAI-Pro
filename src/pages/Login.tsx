@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { loginSchema, type LoginFormData } from '@/lib/schemas/auth';
 import { BRAND_NAME } from '@/lib/branding';
+import { GoogleIcon } from '@/components/GoogleIcon';
 import {
   Form,
   FormControl,
@@ -19,7 +20,8 @@ import {
 
 export default function Login() {
   const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const { signIn, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   const form = useForm<LoginFormData>({
@@ -36,15 +38,32 @@ export default function Login() {
     const { error } = await signIn(data.email, data.password);
     
     if (error) {
-      toast.error('Erro ao entrar', {
-        description: 'Email ou senha incorretos.',
-      });
+      if (error.message?.toLowerCase().includes('email not confirmed')) {
+        toast.error('Verifique seu email', {
+          description: 'Enviamos um link de confirmação para seu email. Clique no link para ativar sua conta.',
+        });
+      } else {
+        toast.error('Erro ao entrar', {
+          description: 'Email ou senha incorretos.',
+        });
+      }
     } else {
       toast.success('Bem-vindo de volta!');
       navigate('/dashboard');
     }
     
     setLoading(false);
+  };
+
+  const handleGoogleLogin = async () => {
+    setGoogleLoading(true);
+    const { error } = await signInWithGoogle();
+    if (error) {
+      toast.error('Erro ao entrar com Google', {
+        description: error.message,
+      });
+      setGoogleLoading(false);
+    }
   };
 
   return (
@@ -58,6 +77,26 @@ export default function Login() {
           <p className="text-sm text-muted-foreground">
             Acesse sua conta para continuar
           </p>
+        </div>
+
+        <Button
+          variant="outline"
+          className="w-full mb-4"
+          onClick={handleGoogleLogin}
+          disabled={googleLoading}
+          type="button"
+        >
+          <GoogleIcon className="w-4 h-4 mr-2" />
+          {googleLoading ? 'Conectando...' : 'Continuar com Google'}
+        </Button>
+
+        <div className="relative mb-4">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-border" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">ou</span>
+          </div>
         </div>
 
         <Form {...form}>

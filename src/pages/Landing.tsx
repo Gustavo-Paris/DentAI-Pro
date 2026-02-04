@@ -1,16 +1,21 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Sparkles, Camera, Smile, Layers, FileText, Star, Quote } from 'lucide-react';
+import { Sparkles, Camera, Smile, Layers, FileText, Star, Quote, Check, Zap, Users, RefreshCw } from 'lucide-react';
 import { BRAND_NAME } from '@/lib/branding';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import type { SubscriptionPlan } from '@/hooks/useSubscription';
+import { formatPrice } from '@/hooks/useSubscription';
 
 export default function Landing() {
   return (
@@ -249,7 +254,7 @@ export default function Landing() {
             <AccordionItem value="item-6">
               <AccordionTrigger>Quanto custa?</AccordionTrigger>
               <AccordionContent>
-                O {BRAND_NAME} oferece um plano gratuito com créditos limitados para você experimentar. Para uso contínuo, temos planos pagos com mais créditos para análises e simulações DSD. Consulte a página de preços após criar sua conta.
+                O {BRAND_NAME} oferece um plano gratuito com créditos limitados para você experimentar. Para uso contínuo, temos planos pagos com mais créditos para análises e simulações DSD. Veja os preços abaixo.
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-7">
@@ -261,6 +266,9 @@ export default function Landing() {
           </Accordion>
         </div>
       </section>
+
+      {/* Pricing */}
+      <LandingPricing />
 
       {/* CTA */}
       <section className="py-12 sm:py-20 border-t border-border">
@@ -300,5 +308,133 @@ export default function Landing() {
         </div>
       </footer>
     </div>
+  );
+}
+
+function LandingPricing() {
+  const { data: plans, isLoading } = useQuery({
+    queryKey: ['subscription-plans'],
+    queryFn: async (): Promise<SubscriptionPlan[]> => {
+      const { data, error } = await supabase
+        .from('subscription_plans')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order');
+      if (error) throw error;
+      return data || [];
+    },
+    staleTime: 1000 * 60 * 60,
+  });
+
+  return (
+    <section id="pricing" className="py-12 sm:py-20 border-t border-border bg-secondary/30">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="text-center mb-8 sm:mb-12">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold">
+            Planos e preços
+          </h2>
+          <p className="text-sm sm:text-base text-muted-foreground mt-2">
+            Comece gratuitamente e faça upgrade quando precisar
+          </p>
+        </div>
+
+        {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 max-w-6xl mx-auto">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-[400px] rounded-xl" />
+            ))}
+          </div>
+        ) : plans && plans.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 max-w-6xl mx-auto">
+            {plans.map((plan) => {
+              const isFree = plan.price_monthly === 0;
+              const isPopular = plan.name === 'Pro';
+              const features = Array.isArray(plan.features)
+                ? plan.features
+                : JSON.parse(plan.features as unknown as string);
+
+              return (
+                <Card
+                  key={plan.id}
+                  className={`relative flex flex-col ${isPopular ? 'border-primary shadow-lg scale-105' : ''}`}
+                >
+                  {isPopular && (
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary">
+                      Mais Popular
+                    </Badge>
+                  )}
+
+                  <CardHeader className="text-center pb-2">
+                    <CardTitle className="text-xl">{plan.name}</CardTitle>
+                    <CardDescription>{plan.description}</CardDescription>
+                  </CardHeader>
+
+                  <CardContent className="flex-1">
+                    <div className="text-center mb-4">
+                      <div className="flex items-baseline justify-center gap-1">
+                        <span className="text-4xl font-bold">
+                          {isFree ? 'Grátis' : formatPrice(plan.price_monthly)}
+                        </span>
+                        {!isFree && <span className="text-muted-foreground">/mês</span>}
+                      </div>
+                    </div>
+
+                    <div className="bg-primary/10 rounded-lg p-3 mb-4 text-center">
+                      <div className="flex items-center justify-center gap-2 text-primary font-semibold">
+                        <Zap className="h-4 w-4" />
+                        <span>{plan.credits_per_month} créditos/mês</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        1 crédito = 1 análise | 2 créditos = 1 simulação DSD
+                      </p>
+                    </div>
+
+                    <div className="flex justify-center gap-4 mb-4 text-sm">
+                      {plan.max_users > 1 && (
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          <Users className="h-4 w-4" />
+                          <span>{plan.max_users} usuários</span>
+                        </div>
+                      )}
+                      {plan.allows_rollover && (
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          <RefreshCw className="h-4 w-4" />
+                          <span>Rollover</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <ul className="space-y-2">
+                      {features.map((feature: string, index: number) => (
+                        <li key={index} className="flex items-start gap-2">
+                          <Check className="h-4 w-4 text-green-500 dark:text-green-400 shrink-0 mt-0.5" />
+                          <span className="text-sm">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+
+                  <CardFooter>
+                    <Button
+                      className="w-full"
+                      variant={isPopular ? 'default' : 'outline'}
+                      asChild
+                    >
+                      <Link to="/register">
+                        {isFree ? 'Começar Grátis' : 'Começar'}
+                      </Link>
+                    </Button>
+                  </CardFooter>
+                </Card>
+              );
+            })}
+          </div>
+        ) : null}
+
+        <p className="text-center text-sm text-muted-foreground mt-8">
+          Todos os planos incluem 7 dias de garantia. Cancele a qualquer momento.
+        </p>
+      </div>
+    </section>
   );
 }
