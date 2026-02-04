@@ -1,9 +1,9 @@
 import { useCallback, useRef, useState, useEffect } from 'react';
 import { PhotoAnalysisResult, ReviewFormData, TreatmentType } from '@/components/wizard/ReviewAnalysisStep';
 import { DSDResult } from '@/components/wizard/DSDStep';
-import { supabase } from '@/integrations/supabase/client';
 import { PatientPreferences } from '@/components/wizard/PatientPreferencesStep';
 import { logger } from '@/lib/logger';
+import { drafts } from '@/data';
 
 export interface AdditionalPhotos {
   smile45: string | null;
@@ -21,14 +21,6 @@ export interface WizardDraft {
   additionalPhotos?: AdditionalPhotos;
   patientPreferences?: PatientPreferences;
   lastSavedAt: string;
-}
-
-interface DraftRow {
-  id: string;
-  user_id: string;
-  draft_data: WizardDraft;
-  created_at: string;
-  updated_at: string;
 }
 
 const DEBOUNCE_MS = 2000;
@@ -58,29 +50,16 @@ export function useWizardDraft(userId: string | undefined) {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('evaluation_drafts')
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      if (error) {
-        logger.error('Error loading draft:', error);
-        return null;
-      }
+      const data = await drafts.load(userId);
 
       if (!data) return null;
 
-      const row = data as unknown as DraftRow;
-      const draft = row.draft_data;
-      
+      const draft = data.draft_data as WizardDraft;
+
       // Check expiry
       if (isDraftExpired(draft)) {
         // Delete expired draft
-        await supabase
-          .from('evaluation_drafts')
-          .delete()
-          .eq('user_id', userId);
+        await drafts.remove(userId);
         return null;
       }
 
@@ -112,41 +91,9 @@ export function useWizardDraft(userId: string | undefined) {
           lastSavedAt: new Date().toISOString(),
         };
 
-        // First check if draft exists
-        const { data: existingDraft } = await supabase
-          .from('evaluation_drafts')
-          .select('id')
-          .eq('user_id', userId)
-          .maybeSingle();
-
-        let error;
-        if (existingDraft) {
-          // Update existing draft
-          const result = await supabase
-            .from('evaluation_drafts')
-            .update({
-              draft_data: JSON.parse(JSON.stringify(draftWithTimestamp)),
-              updated_at: new Date().toISOString(),
-            })
-            .eq('user_id', userId);
-          error = result.error;
-        } else {
-          // Insert new draft - use raw query to bypass type checking
-          const result = await supabase
-            .from('evaluation_drafts')
-            .insert([{
-              user_id: userId,
-              draft_data: JSON.parse(JSON.stringify(draftWithTimestamp)),
-            }]);
-          error = result.error;
-        }
-
-        if (error) {
-          logger.error('Error saving draft:', error);
-        } else {
-          cachedDraftRef.current = draftWithTimestamp;
-          setLastSavedAt(draftWithTimestamp.lastSavedAt);
-        }
+        await drafts.save(userId, draftWithTimestamp);
+        cachedDraftRef.current = draftWithTimestamp;
+        setLastSavedAt(draftWithTimestamp.lastSavedAt);
       } catch (error) {
         logger.error('Error saving draft:', error);
       } finally {
@@ -160,17 +107,9 @@ export function useWizardDraft(userId: string | undefined) {
     if (!userId) return;
 
     try {
-      const { error } = await supabase
-        .from('evaluation_drafts')
-        .delete()
-        .eq('user_id', userId);
-
-      if (error) {
-        logger.error('Error clearing draft:', error);
-      } else {
-        cachedDraftRef.current = null;
-        setLastSavedAt(null);
-      }
+      await drafts.remove(userId);
+      cachedDraftRef.current = null;
+      setLastSavedAt(null);
     } catch (error) {
       logger.error('Error clearing draft:', error);
     }

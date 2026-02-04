@@ -1,52 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { subscriptions } from '@/data';
 
-export interface SubscriptionPlan {
-  id: string;
-  name: string;
-  description: string;
-  price_monthly: number;
-  price_yearly: number | null;
-  currency: string;
-  cases_per_month: number;
-  dsd_simulations_per_month: number;
-  credits_per_month: number;
-  max_users: number;
-  allows_rollover: boolean;
-  rollover_max: number | null;
-  priority_support: boolean;
-  features: string[];
-  sort_order: number;
-}
-
-export interface Subscription {
-  id: string;
-  user_id: string;
-  stripe_customer_id: string | null;
-  stripe_subscription_id: string | null;
-  plan_id: string | null;
-  status: 'active' | 'inactive' | 'past_due' | 'canceled' | 'trialing' | 'unpaid';
-  current_period_start: string | null;
-  current_period_end: string | null;
-  cancel_at_period_end: boolean;
-  canceled_at: string | null;
-  trial_start: string | null;
-  trial_end: string | null;
-  cases_used_this_month: number;
-  dsd_used_this_month: number;
-  credits_used_this_month: number;
-  credits_rollover: number;
-  plan?: SubscriptionPlan;
-}
-
-export interface CreditCost {
-  operation: string;
-  credits: number;
-  description: string;
-}
+export type { SubscriptionPlan, Subscription, CreditCost } from '@/data/subscriptions';
 
 // Default credit costs (fallback if DB not available)
 const DEFAULT_CREDIT_COSTS: Record<string, number> = {
@@ -64,64 +22,30 @@ export function useSubscription() {
   // Fetch available plans
   const plansQuery = useQuery({
     queryKey: ['subscription-plans'],
-    queryFn: async (): Promise<SubscriptionPlan[]> => {
-      const { data, error } = await supabase
-        .from('subscription_plans')
-        .select('*')
-        .eq('is_active', true)
-        .order('sort_order');
-
-      if (error) throw error;
-      return data || [];
-    },
+    queryFn: () => subscriptions.getPlans(),
     staleTime: 1000 * 60 * 60, // 1 hour
   });
 
   // Fetch credit costs
   const creditCostsQuery = useQuery({
     queryKey: ['credit-costs'],
-    queryFn: async (): Promise<CreditCost[]> => {
-      const { data, error } = await supabase
-        .from('credit_costs')
-        .select('*');
-
-      if (error) throw error;
-      return data || [];
-    },
+    queryFn: () => subscriptions.getCreditCosts(),
     staleTime: 1000 * 60 * 60, // 1 hour
   });
 
   // Fetch user's subscription
   const subscriptionQuery = useQuery({
     queryKey: ['subscription', user?.id],
-    queryFn: async (): Promise<Subscription | null> => {
+    queryFn: async () => {
       if (!user) return null;
-
-      const { data, error } = await supabase
-        .from('subscriptions')
-        .select(`
-          *,
-          plan:subscription_plans(*)
-        `)
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (error) throw error;
-      return data;
+      return subscriptions.getByUserId(user.id);
     },
     enabled: !!user,
   });
 
   // Create checkout session
   const checkoutMutation = useMutation({
-    mutationFn: async (priceId: string): Promise<{ url: string }> => {
-      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-        body: { priceId },
-      });
-
-      if (error) throw error;
-      return data;
-    },
+    mutationFn: (priceId: string) => subscriptions.createCheckoutSession(priceId),
     onSuccess: (data) => {
       // Redirect to Stripe Checkout
       if (data.url) {
@@ -136,14 +60,7 @@ export function useSubscription() {
 
   // Create portal session (manage subscription)
   const portalMutation = useMutation({
-    mutationFn: async (): Promise<{ url: string }> => {
-      const { data, error } = await supabase.functions.invoke('create-portal-session', {
-        body: {},
-      });
-
-      if (error) throw error;
-      return data;
-    },
+    mutationFn: () => subscriptions.createPortalSession(),
     onSuccess: (data) => {
       if (data.url) {
         window.location.href = data.url;

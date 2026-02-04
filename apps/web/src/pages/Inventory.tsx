@@ -1,4 +1,3 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -35,275 +34,18 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Plus, Search, Package, Loader2, X, Download, Upload, FileWarning, Check } from 'lucide-react';
-import { useInventoryList, useResinCatalog, useAddToInventory, useRemoveFromInventory } from '@/hooks/queries/useInventory';
-import { toast } from 'sonner';
+import { useInventoryManagement } from '@/hooks/domain/useInventoryManagement';
 import { ResinBadge } from '@/components/ResinBadge';
 import { ResinTypeLegend } from '@/components/ResinTypeLegend';
 
-interface CatalogResin {
-  id: string;
-  brand: string;
-  product_line: string;
-  shade: string;
-  type: string;
-  opacity: string;
-}
-
-interface GroupedResins {
-  [brand: string]: {
-    [productLine: string]: CatalogResin[];
-  };
-}
+// =============================================================================
+// Page Adapter — maps domain hook → custom UI
+// =============================================================================
 
 export default function Inventory() {
-  const [page, setPage] = useState(0);
-  const [allItems, setAllItems] = useState<Array<{ id: string; resin_id: string; resin: CatalogResin }>>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('all');
-  const [filterBrand, setFilterBrand] = useState('all');
-  const [catalogSearch, setCatalogSearch] = useState('');
-  const [catalogFilterBrand, setCatalogFilterBrand] = useState('all');
-  const [catalogFilterType, setCatalogFilterType] = useState('all');
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedResins, setSelectedResins] = useState<Set<string>>(new Set());
-  const [removingResin, setRemovingResin] = useState<string | null>(null);
-  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
-  const [importDialogOpen, setImportDialogOpen] = useState(false);
-  const [csvPreview, setCsvPreview] = useState<{ matched: CatalogResin[]; unmatched: string[] } | null>(null);
-  const [importing, setImporting] = useState(false);
-  const csvInputRef = useRef<HTMLInputElement>(null);
+  const inv = useInventoryManagement();
 
-  const { data: inventoryData, isLoading, isFetching } = useInventoryList(page, 30);
-  const { data: catalog = [] } = useResinCatalog();
-  const addToInventoryMutation = useAddToInventory();
-  const removeFromInventoryMutation = useRemoveFromInventory();
-
-  // Accumulate inventory items across pages
-  useEffect(() => {
-    if (inventoryData?.items) {
-      if (page === 0) {
-        setAllItems(inventoryData.items);
-      } else {
-        setAllItems(prev => [...prev, ...inventoryData.items]);
-      }
-    }
-  }, [inventoryData, page]);
-
-  const inventoryResinIds = useMemo(
-    () => new Set(allItems.map((item) => item.resin_id)),
-    [allItems]
-  );
-
-  const handleLoadMore = () => {
-    setPage(p => p + 1);
-  };
-
-  const addSelectedToInventory = async () => {
-    if (selectedResins.size === 0) return;
-
-    try {
-      await addToInventoryMutation.mutateAsync(Array.from(selectedResins));
-      toast.success(`${selectedResins.size} resina(s) adicionada(s) ao inventário`);
-      setSelectedResins(new Set());
-      setPage(0);
-      setDialogOpen(false);
-    } catch {
-      toast.error('Erro ao adicionar resinas');
-    }
-  };
-
-  const removeFromInventory = async (inventoryItemId: string) => {
-    setRemovingResin(inventoryItemId);
-
-    try {
-      await removeFromInventoryMutation.mutateAsync(inventoryItemId);
-      toast.success('Resina removida do inventário');
-      setAllItems(prev => prev.filter(item => item.id !== inventoryItemId));
-    } catch {
-      toast.error('Erro ao remover resina');
-    }
-
-    setRemovingResin(null);
-  };
-
-  const toggleResinSelection = (resinId: string) => {
-    const newSelection = new Set(selectedResins);
-    if (newSelection.has(resinId)) {
-      newSelection.delete(resinId);
-    } else {
-      newSelection.add(resinId);
-    }
-    setSelectedResins(newSelection);
-  };
-
-  const handleExportCSV = () => {
-    const header = 'Marca,Linha,Cor,Tipo,Opacidade';
-    const rows = allItems.map((item) =>
-      [item.resin.brand, item.resin.product_line, item.resin.shade, item.resin.type, item.resin.opacity]
-        .map((v) => `"${(v || '').replace(/"/g, '""')}"`)
-        .join(',')
-    );
-    const csv = [header, ...rows].join('\n');
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `inventario-resinas-${new Date().toISOString().slice(0, 10)}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
-    toast.success('CSV exportado com sucesso');
-  };
-
-  const handleCSVFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const text = event.target?.result as string;
-      const lines = text.split(/\r?\n/).filter((line) => line.trim());
-
-      // Skip header if present
-      const dataLines = lines[0]?.toLowerCase().includes('marca') ? lines.slice(1) : lines;
-
-      const matched: CatalogResin[] = [];
-      const unmatched: string[] = [];
-
-      for (const line of dataLines) {
-        // Parse CSV (handle quoted values)
-        const cols = line.match(/("([^"]*("")?)*"|[^,]*)(,|$)/g)
-          ?.map((v) => v.replace(/,$/, '').replace(/^"|"$/g, '').replace(/""/g, '"').trim()) || [];
-
-        const [brand, productLine, shade] = cols;
-        if (!brand || !shade) {
-          unmatched.push(line);
-          continue;
-        }
-
-        const match = catalog.find(
-          (r) =>
-            r.brand.toLowerCase() === brand.toLowerCase() &&
-            r.shade.toLowerCase() === shade.toLowerCase() &&
-            (!productLine || r.product_line.toLowerCase() === productLine.toLowerCase())
-        );
-
-        if (match && !inventoryResinIds.has(match.id) && !matched.some((m) => m.id === match.id)) {
-          matched.push(match);
-        } else if (!match) {
-          unmatched.push(`${brand} - ${productLine || '?'} - ${shade}`);
-        }
-      }
-
-      setCsvPreview({ matched, unmatched });
-      setImportDialogOpen(true);
-    };
-    reader.readAsText(file);
-    // Reset input
-    if (csvInputRef.current) csvInputRef.current.value = '';
-  };
-
-  const handleImportConfirm = async () => {
-    if (!csvPreview?.matched.length) return;
-    setImporting(true);
-    try {
-      await addToInventoryMutation.mutateAsync(csvPreview.matched.map((r) => r.id));
-      toast.success(`${csvPreview.matched.length} resina(s) importada(s)`);
-      setCsvPreview(null);
-      setImportDialogOpen(false);
-      setPage(0);
-    } catch {
-      toast.error('Erro ao importar resinas');
-    }
-    setImporting(false);
-  };
-
-  // Get unique brands and types from inventory
-  const inventoryBrands = useMemo(
-    () => [...new Set(allItems.map((item) => item.resin.brand))].sort(),
-    [allItems]
-  );
-
-  const inventoryTypes = useMemo(
-    () => [...new Set(allItems.map((item) => item.resin.type))].sort(),
-    [allItems]
-  );
-
-  // Get unique brands and types from catalog
-  const catalogBrands = useMemo(
-    () => [...new Set(catalog.map((r) => r.brand))].sort(),
-    [catalog]
-  );
-
-  const catalogTypes = useMemo(
-    () => [...new Set(catalog.map((r) => r.type))].sort(),
-    [catalog]
-  );
-
-  // Filter inventory
-  const filteredInventory = useMemo(() => {
-    return allItems.filter((item) => {
-      const matchesSearch =
-        item.resin.shade.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.resin.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.resin.product_line.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesType = filterType === 'all' || item.resin.type === filterType;
-      const matchesBrand = filterBrand === 'all' || item.resin.brand === filterBrand;
-      return matchesSearch && matchesType && matchesBrand;
-    });
-  }, [allItems, searchTerm, filterType, filterBrand]);
-
-  // Group filtered inventory by brand and product_line
-  const groupedInventory = useMemo(() => {
-    const grouped: GroupedResins = {};
-    filteredInventory.forEach((item) => {
-      const { brand, product_line } = item.resin;
-      if (!grouped[brand]) {
-        grouped[brand] = {};
-      }
-      if (!grouped[brand][product_line]) {
-        grouped[brand][product_line] = [];
-      }
-      grouped[brand][product_line].push(item.resin);
-    });
-    return grouped;
-  }, [filteredInventory]);
-
-  // Get inventory item by resin_id for removal
-  const getInventoryItemId = (resinId: string) => {
-    return allItems.find((item) => item.resin_id === resinId)?.id;
-  };
-
-  // Filter catalog for dialog (exclude already in inventory)
-  const filteredCatalog = useMemo(() => {
-    return catalog.filter((resin) => {
-      const notInInventory = !inventoryResinIds.has(resin.id);
-      const matchesSearch =
-        resin.shade.toLowerCase().includes(catalogSearch.toLowerCase()) ||
-        resin.brand.toLowerCase().includes(catalogSearch.toLowerCase()) ||
-        resin.product_line.toLowerCase().includes(catalogSearch.toLowerCase());
-      const matchesBrand = catalogFilterBrand === 'all' || resin.brand === catalogFilterBrand;
-      const matchesType = catalogFilterType === 'all' || resin.type === catalogFilterType;
-      return notInInventory && matchesSearch && matchesBrand && matchesType;
-    });
-  }, [catalog, inventoryResinIds, catalogSearch, catalogFilterBrand, catalogFilterType]);
-
-  // Group filtered catalog by brand and product_line
-  const groupedCatalog = useMemo(() => {
-    const grouped: GroupedResins = {};
-    filteredCatalog.forEach((resin) => {
-      const { brand, product_line } = resin;
-      if (!grouped[brand]) {
-        grouped[brand] = {};
-      }
-      if (!grouped[brand][product_line]) {
-        grouped[brand][product_line] = [];
-      }
-      grouped[brand][product_line].push(resin);
-    });
-    return grouped;
-  }, [filteredCatalog]);
-
-  if (isLoading && page === 0) {
+  if (inv.isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -324,151 +66,133 @@ export default function Inventory() {
           </div>
 
           <div className="flex items-center gap-2">
-            {allItems.length > 0 && (
-              <Button variant="outline" size="sm" onClick={handleExportCSV}>
+            {inv.allItems.length > 0 && (
+              <Button variant="outline" size="sm" onClick={inv.exportCSV}>
                 <Download className="h-4 w-4 mr-1" />
                 <span className="hidden sm:inline">CSV</span>
               </Button>
             )}
-            <Button variant="outline" size="sm" onClick={() => csvInputRef.current?.click()}>
+            <Button variant="outline" size="sm" onClick={() => inv.csvInputRef.current?.click()}>
               <Upload className="h-4 w-4 mr-1" />
               <span className="hidden sm:inline">Importar</span>
             </Button>
             <input
-              ref={csvInputRef}
+              ref={inv.csvInputRef}
               type="file"
               accept=".csv,text/csv"
-              onChange={handleCSVFile}
+              onChange={inv.handleCSVFile}
               className="hidden"
             />
-          <Dialog open={dialogOpen} onOpenChange={(open) => {
-            setDialogOpen(open);
-            if (!open) {
-              setSelectedResins(new Set());
-              setCatalogSearch('');
-              setCatalogFilterBrand('all');
-              setCatalogFilterType('all');
-            }
-          }}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Adicionar Resinas
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-3xl max-h-[85vh] overflow-hidden flex flex-col">
-              <DialogHeader>
-                <DialogTitle>Adicionar Resinas ao Inventário</DialogTitle>
-              </DialogHeader>
+            <Dialog open={inv.dialogOpen} onOpenChange={(open) => open ? inv.openDialog() : inv.closeDialog()}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Adicionar Resinas
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-3xl max-h-[85vh] overflow-hidden flex flex-col">
+                <DialogHeader>
+                  <DialogTitle>Adicionar Resinas ao Inventário</DialogTitle>
+                </DialogHeader>
 
-              {/* Legend */}
-              <ResinTypeLegend />
+                <ResinTypeLegend />
 
-              {/* Filters */}
-              <div className="flex flex-col sm:flex-row gap-3 mt-3">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Buscar cor, marca..."
-                    value={catalogSearch}
-                    onChange={(e) => setCatalogSearch(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-                <Select value={catalogFilterBrand} onValueChange={setCatalogFilterBrand}>
-                  <SelectTrigger className="w-full sm:w-[160px]">
-                    <SelectValue placeholder="Marca" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas as marcas</SelectItem>
-                    {catalogBrands.map((brand) => (
-                      <SelectItem key={brand} value={brand}>
-                        {brand}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select value={catalogFilterType} onValueChange={setCatalogFilterType}>
-                  <SelectTrigger className="w-full sm:w-[140px]">
-                    <SelectValue placeholder="Tipo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos os tipos</SelectItem>
-                    {catalogTypes.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Catalog Grid */}
-              <div className="overflow-y-auto flex-1 mt-4 pr-2">
-                {Object.keys(groupedCatalog).length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">
-                    {catalogSearch || catalogFilterBrand !== 'all' || catalogFilterType !== 'all'
-                      ? 'Nenhuma resina encontrada'
-                      : 'Todas as resinas já estão no inventário'}
-                  </p>
-                ) : (
-                  <Accordion type="multiple" defaultValue={Object.keys(groupedCatalog)} className="space-y-2">
-                    {Object.entries(groupedCatalog).map(([brand, productLines]) => (
-                      <AccordionItem key={brand} value={brand} className="border rounded-lg px-4">
-                        <AccordionTrigger className="hover:no-underline">
-                          <span className="font-semibold">{brand}</span>
-                        </AccordionTrigger>
-                        <AccordionContent>
-                          <div className="space-y-4 pb-2">
-                            {Object.entries(productLines).map(([productLine, resins]) => (
-                              <div key={productLine}>
-                                <p className="text-sm font-medium text-muted-foreground mb-2">
-                                  {productLine}
-                                </p>
-                                <div className="flex flex-wrap gap-2">
-                                  {resins.map((resin) => (
-                                    <ResinBadge
-                                      key={resin.id}
-                                      shade={resin.shade}
-                                      type={resin.type}
-                                      selected={selectedResins.has(resin.id)}
-                                      onClick={() => toggleResinSelection(resin.id)}
-                                    />
-                                  ))}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    ))}
-                  </Accordion>
-                )}
-              </div>
-
-              <DialogFooter className="mt-4 pt-4 border-t border-border">
-                <div className="flex items-center justify-between w-full">
-                  <span className="text-sm text-muted-foreground">
-                    {selectedResins.size} resina(s) selecionada(s)
-                  </span>
-                  <Button
-                    onClick={addSelectedToInventory}
-                    disabled={selectedResins.size === 0 || addToInventoryMutation.isPending}
+                <div className="flex flex-col sm:flex-row gap-3 mt-3">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Buscar cor, marca..."
+                      value={inv.catalogFilters.search}
+                      onChange={(e) => inv.setCatalogFilters((f) => ({ ...f, search: e.target.value }))}
+                      className="pl-10"
+                    />
+                  </div>
+                  <Select
+                    value={inv.catalogFilters.brand}
+                    onValueChange={(v) => inv.setCatalogFilters((f) => ({ ...f, brand: v }))}
                   >
-                    {addToInventoryMutation.isPending ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <Plus className="h-4 w-4 mr-2" />
-                    )}
-                    Adicionar ao Inventário
-                  </Button>
+                    <SelectTrigger className="w-full sm:w-[160px]">
+                      <SelectValue placeholder="Marca" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todas as marcas</SelectItem>
+                      {inv.catalogBrands.map((brand) => (
+                        <SelectItem key={brand} value={brand}>{brand}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={inv.catalogFilters.type}
+                    onValueChange={(v) => inv.setCatalogFilters((f) => ({ ...f, type: v }))}
+                  >
+                    <SelectTrigger className="w-full sm:w-[140px]">
+                      <SelectValue placeholder="Tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos os tipos</SelectItem>
+                      {inv.catalogTypes.map((type) => (
+                        <SelectItem key={type} value={type}>{type}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+
+                <div className="overflow-y-auto flex-1 mt-4 pr-2">
+                  {Object.keys(inv.groupedCatalog).length === 0 ? (
+                    <p className="text-center text-muted-foreground py-8">
+                      {inv.catalogFilters.search || inv.catalogFilters.brand !== 'all' || inv.catalogFilters.type !== 'all'
+                        ? 'Nenhuma resina encontrada'
+                        : 'Todas as resinas já estão no inventário'}
+                    </p>
+                  ) : (
+                    <Accordion type="multiple" defaultValue={Object.keys(inv.groupedCatalog)} className="space-y-2">
+                      {Object.entries(inv.groupedCatalog).map(([brand, productLines]) => (
+                        <AccordionItem key={brand} value={brand} className="border rounded-lg px-4">
+                          <AccordionTrigger className="hover:no-underline">
+                            <span className="font-semibold">{brand}</span>
+                          </AccordionTrigger>
+                          <AccordionContent>
+                            <div className="space-y-4 pb-2">
+                              {Object.entries(productLines).map(([productLine, resins]) => (
+                                <div key={productLine}>
+                                  <p className="text-sm font-medium text-muted-foreground mb-2">{productLine}</p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {resins.map((resin) => (
+                                      <ResinBadge
+                                        key={resin.id}
+                                        shade={resin.shade}
+                                        type={resin.type}
+                                        selected={inv.selectedResins.has(resin.id)}
+                                        onClick={() => inv.toggleResinSelection(resin.id)}
+                                      />
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      ))}
+                    </Accordion>
+                  )}
+                </div>
+
+                <DialogFooter className="mt-4 pt-4 border-t border-border">
+                  <div className="flex items-center justify-between w-full">
+                    <span className="text-sm text-muted-foreground">
+                      {inv.selectedResins.size} resina(s) selecionada(s)
+                    </span>
+                    <Button onClick={inv.addSelectedToInventory} disabled={inv.selectedResins.size === 0 || inv.isAdding}>
+                      {inv.isAdding ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />}
+                      Adicionar ao Inventário
+                    </Button>
+                  </div>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
-        {/* Legend */}
+
         <ResinTypeLegend />
 
         {/* Search and Filter */}
@@ -477,34 +201,36 @@ export default function Inventory() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Buscar no inventário..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={inv.inventoryFilters.search}
+              onChange={(e) => inv.setInventoryFilters((f) => ({ ...f, search: e.target.value }))}
               className="pl-10"
             />
           </div>
-          <Select value={filterBrand} onValueChange={setFilterBrand}>
+          <Select
+            value={inv.inventoryFilters.brand}
+            onValueChange={(v) => inv.setInventoryFilters((f) => ({ ...f, brand: v }))}
+          >
             <SelectTrigger className="w-full sm:w-[160px]">
               <SelectValue placeholder="Marca" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todas as marcas</SelectItem>
-              {inventoryBrands.map((brand) => (
-                <SelectItem key={brand} value={brand}>
-                  {brand}
-                </SelectItem>
+              {inv.inventoryBrands.map((brand) => (
+                <SelectItem key={brand} value={brand}>{brand}</SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <Select value={filterType} onValueChange={setFilterType}>
+          <Select
+            value={inv.inventoryFilters.type}
+            onValueChange={(v) => inv.setInventoryFilters((f) => ({ ...f, type: v }))}
+          >
             <SelectTrigger className="w-full sm:w-[140px]">
               <SelectValue placeholder="Tipo" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos os tipos</SelectItem>
-              {inventoryTypes.map((type) => (
-                <SelectItem key={type} value={type}>
-                  {type}
-                </SelectItem>
+              {inv.inventoryTypes.map((type) => (
+                <SelectItem key={type} value={type}>{type}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -518,28 +244,26 @@ export default function Inventory() {
                 <Package className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-semibold">{allItems.length}</p>
-                <p className="text-sm text-muted-foreground">
-                  cores de resina no inventário
-                </p>
+                <p className="text-2xl font-semibold">{inv.allItems.length}</p>
+                <p className="text-sm text-muted-foreground">cores de resina no inventário</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Inventory List - Grouped */}
-        {Object.keys(groupedInventory).length === 0 ? (
+        {Object.keys(inv.groupedInventory).length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
               <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
               <h3 className="text-lg font-medium mb-2">Inventário vazio</h3>
               <p className="text-muted-foreground mb-4">
-                {searchTerm || filterType !== 'all' || filterBrand !== 'all'
+                {inv.inventoryFilters.search || inv.inventoryFilters.type !== 'all' || inv.inventoryFilters.brand !== 'all'
                   ? 'Nenhuma resina encontrada com esses filtros'
                   : 'Adicione suas primeiras resinas ao inventário'}
               </p>
-              {!searchTerm && filterType === 'all' && filterBrand === 'all' && (
-                <Button onClick={() => setDialogOpen(true)}>
+              {!inv.inventoryFilters.search && inv.inventoryFilters.type === 'all' && inv.inventoryFilters.brand === 'all' && (
+                <Button onClick={inv.openDialog}>
                   <Plus className="h-4 w-4 mr-2" />
                   Adicionar Resinas
                 </Button>
@@ -547,13 +271,9 @@ export default function Inventory() {
             </CardContent>
           </Card>
         ) : (
-          <Accordion type="multiple" defaultValue={Object.keys(groupedInventory)} className="space-y-3">
-            {Object.entries(groupedInventory).map(([brand, productLines]) => (
-              <AccordionItem
-                key={brand}
-                value={brand}
-                className="border rounded-lg bg-card px-4"
-              >
+          <Accordion type="multiple" defaultValue={Object.keys(inv.groupedInventory)} className="space-y-3">
+            {Object.entries(inv.groupedInventory).map(([brand, productLines]) => (
+              <AccordionItem key={brand} value={brand} className="border rounded-lg bg-card px-4">
                 <AccordionTrigger className="hover:no-underline">
                   <div className="flex items-center gap-3">
                     <span className="font-semibold text-lg">{brand}</span>
@@ -566,26 +286,16 @@ export default function Inventory() {
                   <div className="space-y-6 pb-4">
                     {Object.entries(productLines).map(([productLine, resins]) => (
                       <div key={productLine}>
-                        <p className="text-sm font-medium text-muted-foreground mb-3">
-                          {productLine}
-                        </p>
+                        <p className="text-sm font-medium text-muted-foreground mb-3">{productLine}</p>
                         <div className="flex flex-wrap gap-2">
                           {resins.map((resin) => {
-                            const inventoryItemId = getInventoryItemId(resin.id);
-                            const isRemoving = removingResin === inventoryItemId;
+                            const inventoryItemId = inv.getInventoryItemId(resin.id);
+                            const isRemoving = inv.removingResin === inventoryItemId;
                             return (
-                              <div
-                                key={resin.id}
-                                className="group relative"
-                              >
-                                <ResinBadge
-                                  shade={resin.shade}
-                                  type={resin.type}
-                                  size="md"
-                                  showColorSwatch
-                                />
+                              <div key={resin.id} className="group relative">
+                                <ResinBadge shade={resin.shade} type={resin.type} size="md" showColorSwatch />
                                 <button
-                                  onClick={() => inventoryItemId && setDeletingItemId(inventoryItemId)}
+                                  onClick={() => inventoryItemId && inv.setDeletingItemId(inventoryItemId)}
                                   disabled={isRemoving}
                                   className="absolute -top-1 -right-1 p-0.5 rounded-full bg-destructive/10 hover:bg-destructive/20 transition-colors opacity-0 group-hover:opacity-100"
                                   title="Remover"
@@ -608,28 +318,10 @@ export default function Inventory() {
             ))}
           </Accordion>
         )}
-
-        {/* Load More Button */}
-        {inventoryData?.hasMore && (
-          <Button
-            variant="outline"
-            onClick={handleLoadMore}
-            disabled={isFetching}
-            className="w-full mt-6"
-          >
-            {isFetching ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Carregando...
-              </>
-            ) : (
-              `Carregar mais (${allItems.length} de ${inventoryData.totalCount})`
-            )}
-          </Button>
-        )}
       </div>
 
-      <AlertDialog open={!!deletingItemId} onOpenChange={(open) => { if (!open) setDeletingItemId(null); }}>
+      {/* Remove Confirmation */}
+      <AlertDialog open={!!inv.deletingItemId} onOpenChange={(open) => { if (!open) inv.setDeletingItemId(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar remoção</AlertDialogTitle>
@@ -641,9 +333,9 @@ export default function Inventory() {
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
-                if (deletingItemId) {
-                  removeFromInventory(deletingItemId);
-                  setDeletingItemId(null);
+                if (inv.deletingItemId) {
+                  inv.removeFromInventory(inv.deletingItemId);
+                  inv.setDeletingItemId(null);
                 }
               }}
             >
@@ -653,28 +345,23 @@ export default function Inventory() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* CSV Import Preview Dialog */}
-      <Dialog open={importDialogOpen} onOpenChange={(open) => {
-        if (!open) {
-          setImportDialogOpen(false);
-          setCsvPreview(null);
-        }
-      }}>
+      {/* CSV Import Preview */}
+      <Dialog open={inv.importDialogOpen} onOpenChange={(open) => { if (!open) inv.closeImportDialog(); }}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Importar Inventário via CSV</DialogTitle>
           </DialogHeader>
 
-          {csvPreview && (
+          {inv.csvPreview && (
             <div className="space-y-4">
-              {csvPreview.matched.length > 0 && (
+              {inv.csvPreview.matched.length > 0 && (
                 <div>
                   <p className="text-sm font-medium flex items-center gap-2 mb-2">
                     <Check className="w-4 h-4 text-green-500" />
-                    {csvPreview.matched.length} resina(s) encontrada(s)
+                    {inv.csvPreview.matched.length} resina(s) encontrada(s)
                   </p>
                   <div className="max-h-40 overflow-y-auto space-y-1 border rounded-lg p-2">
-                    {csvPreview.matched.map((r) => (
+                    {inv.csvPreview.matched.map((r) => (
                       <p key={r.id} className="text-xs text-muted-foreground">
                         {r.brand} &middot; {r.product_line} &middot; {r.shade}
                       </p>
@@ -682,22 +369,20 @@ export default function Inventory() {
                   </div>
                 </div>
               )}
-
-              {csvPreview.unmatched.length > 0 && (
+              {inv.csvPreview.unmatched.length > 0 && (
                 <div>
                   <p className="text-sm font-medium flex items-center gap-2 mb-2 text-amber-600 dark:text-amber-400">
                     <FileWarning className="w-4 h-4" />
-                    {csvPreview.unmatched.length} não encontrada(s) no catálogo
+                    {inv.csvPreview.unmatched.length} não encontrada(s) no catálogo
                   </p>
                   <div className="max-h-24 overflow-y-auto space-y-1 border rounded-lg p-2 border-amber-200 dark:border-amber-800">
-                    {csvPreview.unmatched.map((line, i) => (
+                    {inv.csvPreview.unmatched.map((line, i) => (
                       <p key={i} className="text-xs text-muted-foreground">{line}</p>
                     ))}
                   </div>
                 </div>
               )}
-
-              {csvPreview.matched.length === 0 && (
+              {inv.csvPreview.matched.length === 0 && (
                 <p className="text-sm text-muted-foreground text-center py-4">
                   Nenhuma resina do CSV foi encontrada no catálogo.
                 </p>
@@ -706,19 +391,12 @@ export default function Inventory() {
           )}
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setImportDialogOpen(false); setCsvPreview(null); }}>
+            <Button variant="outline" onClick={inv.closeImportDialog}>
               Cancelar
             </Button>
-            <Button
-              onClick={handleImportConfirm}
-              disabled={!csvPreview?.matched.length || importing}
-            >
-              {importing ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Plus className="h-4 w-4 mr-2" />
-              )}
-              Adicionar {csvPreview?.matched.length || 0} resina(s)
+            <Button onClick={inv.confirmImport} disabled={!inv.csvPreview?.matched.length || inv.importing}>
+              {inv.importing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />}
+              Adicionar {inv.csvPreview?.matched.length || 0} resina(s)
             </Button>
           </DialogFooter>
         </DialogContent>

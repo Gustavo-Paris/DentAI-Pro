@@ -14,7 +14,8 @@ import { logger } from '@/lib/logger';
 import { getInitials } from '@/lib/utils';
 import { SubscriptionStatus } from '@/components/pricing/SubscriptionStatus';
 import { useSubscription, formatPrice } from '@/hooks/useSubscription';
-import { usePaymentHistory } from '@/hooks/queries/usePaymentHistory';
+import { useQuery } from '@tanstack/react-query';
+import { payments } from '@/data';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface ProfileData {
@@ -421,7 +422,16 @@ export default function Profile() {
 }
 
 function PaymentHistoryTab() {
-  const { data: payments, isLoading } = usePaymentHistory();
+  const { user } = useAuth();
+  const { data: paymentRecords, isLoading } = useQuery({
+    queryKey: ['payment-history', user?.id],
+    queryFn: async () => {
+      if (!user) throw new Error('User not authenticated');
+      return payments.listByUserId(user.id);
+    },
+    enabled: !!user,
+    staleTime: 60 * 1000,
+  });
 
   const statusLabel: Record<string, string> = {
     succeeded: 'Pago',
@@ -447,7 +457,7 @@ function PaymentHistoryTab() {
     );
   }
 
-  if (!payments || payments.length === 0) {
+  if (!paymentRecords || paymentRecords.length === 0) {
     return (
       <Card>
         <CardContent className="py-12 text-center">
@@ -465,11 +475,11 @@ function PaymentHistoryTab() {
     <Card>
       <CardHeader>
         <CardTitle className="text-lg">Histórico de pagamentos</CardTitle>
-        <CardDescription>{payments.length} pagamento(s)</CardDescription>
+        <CardDescription>{paymentRecords.length} pagamento(s)</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {payments.map((payment) => (
+          {paymentRecords.map((payment) => (
             <div
               key={payment.id}
               className="flex items-center justify-between p-3 rounded-lg border border-border"
