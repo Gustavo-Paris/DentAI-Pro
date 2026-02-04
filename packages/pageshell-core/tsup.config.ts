@@ -1,6 +1,7 @@
 import { defineConfig } from 'tsup';
 import { readdir, readFile, writeFile, stat } from 'fs/promises';
-import { join } from 'path';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
 // Files that need "use client" directive (contain React hooks or client-side logic)
 // Note: index.js and hooks/index.js need this because they bundle React hooks
@@ -13,7 +14,8 @@ const CLIENT_ONLY_FILES = [
 ];
 
 async function addUseClientDirective() {
-  const distDir = join(import.meta.dirname, 'dist');
+  const __dirname = import.meta.dirname ?? dirname(fileURLToPath(import.meta.url));
+  const distDir = join(__dirname, 'dist');
 
   async function processDir(dir: string) {
     const entries = await readdir(dir, { withFileTypes: true });
@@ -52,7 +54,14 @@ export default defineConfig({
     'test-utils/index': 'src/test-utils/index.ts',
   },
   format: ['esm'],
-  dts: true,
+  dts: {
+    compilerOptions: {
+      typeRoots: ['./node_modules/@types'],
+      paths: {
+        'react': ['./node_modules/@types/react'],
+      },
+    },
+  },
   clean: true,
   external: ['react', 'react-dom', 'next', 'next/navigation', 'sonner', 'date-fns', 'date-fns/locale'],
   treeshake: true,

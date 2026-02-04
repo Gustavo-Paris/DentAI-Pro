@@ -162,6 +162,8 @@ function getMessageForCode(
 // Toast API
 // =============================================================================
 
+type ToastId = string | number;
+
 export const pageToast = {
   /**
    * Show a success notification
@@ -170,7 +172,7 @@ export const pageToast = {
    * pageToast.success('Perfil atualizado!');
    * pageToast.success('Curso publicado!', { duration: 5000 });
    */
-  success: (message: string, options?: ExternalToast) => {
+  success: (message: string, options?: ExternalToast): ToastId => {
     return sonnerToast.success(message, options);
   },
 
@@ -181,7 +183,7 @@ export const pageToast = {
    * pageToast.error('Erro ao salvar');
    * pageToast.error(error.message || 'Erro desconhecido');
    */
-  error: (message: string, options?: ExternalToast) => {
+  error: (message: string, options?: ExternalToast): ToastId => {
     return sonnerToast.error(message, options);
   },
 
@@ -191,7 +193,7 @@ export const pageToast = {
    * @example
    * pageToast.info('Nova versão disponível');
    */
-  info: (message: string, options?: ExternalToast) => {
+  info: (message: string, options?: ExternalToast): ToastId => {
     return sonnerToast.info(message, options);
   },
 
@@ -201,7 +203,7 @@ export const pageToast = {
    * @example
    * pageToast.warning('Sua sessão expira em 5 minutos');
    */
-  warning: (message: string, options?: ExternalToast) => {
+  warning: (message: string, options?: ExternalToast): ToastId => {
     return sonnerToast.warning(message, options);
   },
 
@@ -214,7 +216,7 @@ export const pageToast = {
    * // later...
    * pageToast.dismiss(id);
    */
-  loading: (message: string = DEFAULT_MESSAGES.loading, options?: ExternalToast) => {
+  loading: (message: string = DEFAULT_MESSAGES.loading, options?: ExternalToast): ToastId => {
     return sonnerToast.loading(message, options);
   },
 
@@ -225,7 +227,7 @@ export const pageToast = {
    * pageToast.dismiss(); // dismiss all
    * pageToast.dismiss(toastId); // dismiss specific
    */
-  dismiss: (toastId?: string | number) => {
+  dismiss: (toastId?: string | number): ToastId => {
     return sonnerToast.dismiss(toastId);
   },
 
@@ -252,7 +254,7 @@ export const pageToast = {
   trpcError: (
     error: unknown,
     customMessagesOrFallback?: ErrorCodeMessages | string
-  ) => {
+  ): ToastId => {
     // Handle legacy string fallback
     const customMessages =
       typeof customMessagesOrFallback === 'string'
@@ -289,7 +291,7 @@ export const pageToast = {
    *   onError: errorHandler,
    * });
    */
-  createErrorHandler: (customMessages?: ErrorCodeMessages) => {
+  createErrorHandler: (customMessages?: ErrorCodeMessages): ((error: unknown) => void) => {
     return (error: unknown) => {
       pageToast.trpcError(error, customMessages);
     };
@@ -338,7 +340,7 @@ export const pageToast = {
    *   </div>
    * ));
    */
-  custom: sonnerToast.custom,
+  custom: sonnerToast.custom as (...args: Parameters<typeof sonnerToast.custom>) => ToastId,
 
   /**
    * Show a message toast (neutral, no icon)
@@ -346,7 +348,7 @@ export const pageToast = {
    * @example
    * pageToast.message('Bem-vindo de volta!');
    */
-  message: sonnerToast.message,
+  message: sonnerToast.message as (...args: Parameters<typeof sonnerToast.message>) => ToastId,
 
   // =========================================================================
   // Convenience Methods (Common Actions)
@@ -360,7 +362,7 @@ export const pageToast = {
    * pageToast.copied();
    * pageToast.copied('Link copiado!');
    */
-  copied: (message: string = DEFAULT_MESSAGES.copied) => {
+  copied: (message: string = DEFAULT_MESSAGES.copied): ToastId => {
     return sonnerToast.success(message);
   },
 
@@ -371,7 +373,7 @@ export const pageToast = {
    * pageToast.saved();
    * pageToast.saved('Rascunho salvo!');
    */
-  saved: (message: string = DEFAULT_MESSAGES.saved) => {
+  saved: (message: string = DEFAULT_MESSAGES.saved): ToastId => {
     return sonnerToast.success(message);
   },
 
@@ -382,7 +384,7 @@ export const pageToast = {
    * pageToast.deleted();
    * pageToast.deleted('Curso excluído!');
    */
-  deleted: (message: string = DEFAULT_MESSAGES.deleted) => {
+  deleted: (message: string = DEFAULT_MESSAGES.deleted): ToastId => {
     return sonnerToast.success(message);
   },
 
@@ -393,7 +395,7 @@ export const pageToast = {
    * pageToast.updated();
    * pageToast.updated('Perfil atualizado!');
    */
-  updated: (message: string = DEFAULT_MESSAGES.updated) => {
+  updated: (message: string = DEFAULT_MESSAGES.updated): ToastId => {
     return sonnerToast.success(message);
   },
 };

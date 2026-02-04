@@ -1,9 +1,11 @@
 import { defineConfig } from 'tsup';
 import { readdir, readFile, writeFile } from 'fs/promises';
-import { join } from 'path';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
 async function addUseClientDirective() {
-  const distDir = join(import.meta.dirname, 'dist');
+  const __dirname = import.meta.dirname ?? dirname(fileURLToPath(import.meta.url));
+  const distDir = join(__dirname, 'dist');
 
   async function processDir(dir: string) {
     const entries = await readdir(dir, { withFileTypes: true });
@@ -41,7 +43,14 @@ export default defineConfig({
     form: 'src/form/index.ts',
   },
   format: ['esm'],
-  dts: true,
+  dts: {
+    compilerOptions: {
+      typeRoots: ['./node_modules/@types'],
+      paths: {
+        'react': ['./node_modules/@types/react'],
+      },
+    },
+  },
   clean: true,
   external: [
     'react',

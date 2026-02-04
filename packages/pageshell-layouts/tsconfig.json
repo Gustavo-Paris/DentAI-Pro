@@ -8,12 +8,11 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "typeRoots": ["./node_modules/@types"],
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "declaration": true,
-    "declarationMap": true,
     "outDir": "./dist",
     "rootDir": "./src"
   },

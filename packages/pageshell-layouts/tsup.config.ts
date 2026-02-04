@@ -1,9 +1,11 @@
 import { defineConfig } from 'tsup';
 import { readdir, readFile, writeFile, stat, mkdir } from 'fs/promises';
 import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
 async function addUseClientDirective() {
-  const distDir = join(import.meta.dirname, 'dist');
+  const __dirname = import.meta.dirname ?? dirname(fileURLToPath(import.meta.url));
+  const distDir = join(__dirname, 'dist');
 
   async function processDir(dir: string) {
     const entries = await readdir(dir, { withFileTypes: true });
@@ -31,7 +33,11 @@ export default defineConfig({
     'adapters/next': 'src/adapters/next.tsx',
   },
   format: ['esm'],
-  dts: true,
+  dts: {
+    compilerOptions: {
+      typeRoots: ['./node_modules/@types'],
+    },
+  },
   clean: true,
   external: ['react', 'react-dom', 'react/jsx-runtime', '@pageshell/core', '@pageshell/primitives', '@pageshell/theme', 'next', 'next/link', 'next/navigation', 'next/image'],
   treeshake: true,
