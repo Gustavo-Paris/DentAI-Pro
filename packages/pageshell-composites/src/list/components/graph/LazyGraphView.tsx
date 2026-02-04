@@ -95,7 +95,7 @@ export function LazyGraphView<TItem>({
 
   return (
     <React.Suspense fallback={fallback}>
-      {/* @ts-expect-error - Generic type covariance issue with React.lazy - safe because types match at runtime */}
+      {/* @ts-ignore -- Generic type covariance issue with React.lazy; error depends on type resolution context */}
       <GraphViewLazy config={config} {...graphViewProps} />
     </React.Suspense>
   );
