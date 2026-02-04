@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import { cn } from '@pageshell/core/utils';
 
@@ -19,7 +19,7 @@ export interface BackButtonProps {
 export function BackButton({ href, label = 'Back' }: BackButtonProps) {
   return (
     <Link
-      href={href}
+      to={href}
       className={cn(
         'inline-flex items-center gap-1.5 text-sm text-muted-foreground',
         'hover:text-foreground transition-colors group'

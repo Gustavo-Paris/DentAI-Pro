@@ -16,7 +16,7 @@
  * />
  *
  * @example With Link component:
- * import Link from 'next/link';
+ * import { Link } from 'react-router-dom';
  * <PageQuickActions
  *   actions={[...]}
  *   LinkComponent={Link}

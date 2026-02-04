@@ -9,7 +9,7 @@
 'use client';
 
 import * as React from 'react';
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import { cn } from '@pageshell/core';
 import { Button, Tabs, TabsList, TabsTrigger, TabsContent, resolveIcon, Badge } from '@pageshell/primitives';
 import type { DetailPageProps, DetailPageBadge, FooterActionConfig } from './types';
@@ -229,7 +229,7 @@ export function DetailPage<TData = unknown>(props: DetailPageProps<TData>) {
                   asChild
                   variant={action.variant || 'outline'}
                 >
-                  <Link href={action.href}>
+                  <Link to={action.href}>
                     {ActionIcon && <ActionIcon className="h-4 w-4 mr-2" />}
                     {action.label}
                   </Link>

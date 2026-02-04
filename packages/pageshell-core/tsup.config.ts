@@ -63,7 +63,7 @@ export default defineConfig({
     },
   },
   clean: true,
-  external: ['react', 'react-dom', 'next', 'next/navigation', 'sonner', 'date-fns', 'date-fns/locale'],
+  external: ['react', 'react-dom', 'react-router-dom', 'sonner', 'date-fns', 'date-fns/locale'],
   treeshake: true,
   splitting: false,
   sourcemap: true,

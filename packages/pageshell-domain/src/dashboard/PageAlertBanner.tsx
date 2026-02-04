@@ -20,7 +20,7 @@
  * ```
  */
 
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import { cn } from '@pageshell/core';
 import { PageIcon, PageButton, type IconName } from '@pageshell/primitives';
 
@@ -124,7 +124,7 @@ export function PageAlertBanner({
         {action && (
           action.href ? (
             <PageButton asChild>
-              <Link href={action.href}>{action.label}</Link>
+              <Link to={action.href}>{action.label}</Link>
             </PageButton>
           ) : (
             <PageButton onClick={action.onClick}>{action.label}</PageButton>

@@ -9,7 +9,7 @@
 'use client';
 
 import * as React from 'react';
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import { cn } from '@pageshell/core';
 import {
   resolveIcon,
@@ -82,7 +82,7 @@ export function DashboardModuleCard({ module, data }: DashboardModuleCardProps) 
 
   if (module.href) {
     return (
-      <Link href={module.href} className="block">
+      <Link to={module.href} className="block">
         {cardContent}
       </Link>
     );

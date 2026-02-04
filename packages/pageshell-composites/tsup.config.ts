@@ -52,7 +52,7 @@ export default defineConfig({
   splitting: true,
   sourcemap: true,
   clean: true,
-  external: ['react', 'react-dom', 'next', 'next/navigation', '@pageshell/core', '@pageshell/primitives', '@pageshell/interactions', '@pageshell/layouts', '@pageshell/theme'],
+  external: ['react', 'react-dom', 'react-router-dom', '@pageshell/core', '@pageshell/primitives', '@pageshell/interactions', '@pageshell/layouts', '@pageshell/theme'],
   treeshake: true,
   // Add 'use client' banner to all output files after build
   async onSuccess() {

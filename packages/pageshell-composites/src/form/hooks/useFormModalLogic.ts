@@ -11,7 +11,7 @@
 'use client';
 
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { useForm, type FieldValues, type DefaultValues, type UseFormReturn } from 'react-hook-form';
 import { useBottomSheet } from '@pageshell/core';
 import type { FormModalProps, MutationLike } from '../types';
@@ -151,7 +151,7 @@ export function useFormModalLogic<
   } = options;
 
   // Router for navigation
-  const router = useRouter();
+  const navigate = useNavigate();
 
   // ===========================================================================
   // Internal State
@@ -306,12 +306,12 @@ export function useFormModalLogic<
         onSuccessNavigate?.();
 
         if (refreshOnSuccess) {
-          router.refresh();
+          navigate(0);
         }
 
         if (redirectTo) {
           const url = interpolateUrl(redirectTo, routeParams);
-          router.push(url);
+          navigate(url);
         }
 
         if (closeOnSuccess) {
@@ -342,7 +342,7 @@ export function useFormModalLogic<
       handleOpenChange,
       onSuccess,
       onError,
-      router,
+      navigate,
     ]
   );
 

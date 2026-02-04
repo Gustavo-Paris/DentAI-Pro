@@ -11,7 +11,7 @@
 'use client';
 
 import * as React from 'react';
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import type {
   CardActionsConfig,
@@ -138,7 +138,7 @@ export function CardView<TItem = Record<string, unknown>>({
         return (
           <Link
             key={keyExtractor(item)}
-            href={href}
+            to={href}
             className="block transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             {cardContent}

@@ -1,18 +1,16 @@
 /**
- * Next.js Adapter for @pageshell/layouts
+ * React Router Adapter for @pageshell/layouts
  *
- * Provides pre-configured components that integrate with Next.js
- * routing and image optimization.
+ * Provides pre-configured components that integrate with React Router
+ * routing and standard image elements.
  *
- * @module adapters/next
+ * @module adapters/react-router
  */
 
 'use client';
 
 import type { ReactNode } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { Link, useLocation } from 'react-router-dom';
 
 import { AppShell } from '../composites/AppShell';
 import type { AppShellProps, SidebarFeaturesConfig } from '../composites/AppShell';
@@ -29,29 +27,29 @@ export {
 } from '../composites/ThemedShells';
 
 /**
- * Props for NextAppShell - extends AppShell but removes adapter props
- * since they're automatically provided by Next.js integration
+ * Props for RouterAppShell - extends AppShell but removes adapter props
+ * since they're automatically provided by React Router integration
  */
-export interface NextAppShellProps
+export interface RouterAppShellProps
   extends Omit<AppShellProps, 'renderLink' | 'renderAvatar' | 'isActive'> {
   /**
-   * Custom link renderer (optional - defaults to Next.js Link)
+   * Custom link renderer (optional - defaults to React Router Link)
    */
   renderLink?: AppShellProps['renderLink'];
 
   /**
-   * Custom avatar renderer (optional - defaults to Next.js Image)
+   * Custom avatar renderer (optional - defaults to standard img)
    */
   renderAvatar?: AppShellProps['renderAvatar'];
 
   /**
-   * Custom active state hook (optional - defaults to usePathname comparison)
+   * Custom active state hook (optional - defaults to useLocation comparison)
    */
   isActive?: AppShellProps['isActive'];
 }
 
 /**
- * Default link renderer using Next.js Link
+ * Default link renderer using React Router Link
  */
 function defaultRenderLink({
   item,
@@ -60,14 +58,14 @@ function defaultRenderLink({
   onClick,
 }: LinkRenderProps): ReactNode {
   return (
-    <Link href={item.href} className={className} onClick={onClick}>
+    <Link to={item.href} className={className} onClick={onClick}>
       {children as any}
     </Link>
   );
 }
 
 /**
- * Default avatar renderer using Next.js Image
+ * Default avatar renderer using standard img element
  */
 function defaultRenderAvatar({
   src,
@@ -96,7 +94,7 @@ function defaultRenderAvatar({
   }
 
   return (
-    <Image
+    <img
       src={src}
       alt={alt}
       width={width}
@@ -107,35 +105,36 @@ function defaultRenderAvatar({
 }
 
 /**
- * Next.js-integrated AppShell
+ * React Router-integrated AppShell
  *
- * Pre-configured with Next.js Link, Image, and usePathname for active state.
+ * Pre-configured with React Router Link, standard img, and useLocation for active state.
  *
  * @example
  * ```tsx
- * import { NextAppShell } from '@pageshell/layouts/adapters/next';
+ * import { RouterAppShell } from '@pageshell/layouts/adapters/react-router';
  *
  * export default function Layout({ children }) {
  *   return (
- *     <NextAppShell
+ *     <RouterAppShell
  *       theme="creator"
  *       brand={{ icon: 'sparkles', title: 'Creator Portal' }}
  *       navigation={sections}
  *       user={currentUser}
  *     >
  *       {children}
- *     </NextAppShell>
+ *     </RouterAppShell>
  *   );
  * }
  * ```
  */
-export function NextAppShell({
+export function RouterAppShell({
   renderLink,
   renderAvatar,
   isActive,
   ...props
-}: NextAppShellProps) {
-  const pathname = usePathname();
+}: RouterAppShellProps) {
+  const location = useLocation();
+  const pathname = location.pathname;
 
   const defaultIsActive = (href: string, exact?: boolean): boolean => {
     if (!pathname) return false;
@@ -145,7 +144,7 @@ export function NextAppShell({
   return (
     <AppShell
       {...props}
-      pathname={pathname ?? undefined}
+      pathname={pathname}
       renderLink={renderLink ?? defaultRenderLink}
       renderAvatar={renderAvatar ?? defaultRenderAvatar}
       isActive={isActive ?? defaultIsActive}
@@ -154,34 +153,37 @@ export function NextAppShell({
 }
 
 /**
- * Pre-configured Admin Shell for Next.js
+ * Pre-configured Admin Shell for React Router
  */
-export function NextAdminShell(
-  props: Omit<NextAppShellProps, 'theme'>
+export function RouterAdminShell(
+  props: Omit<RouterAppShellProps, 'theme'>
 ) {
-  return <NextAppShell {...props} theme="admin" />;
+  return <RouterAppShell {...props} theme="admin" />;
 }
 
 /**
- * Pre-configured Creator Shell for Next.js
+ * Pre-configured Creator Shell for React Router
  */
-export function NextCreatorShell(
-  props: Omit<NextAppShellProps, 'theme'>
+export function RouterCreatorShell(
+  props: Omit<RouterAppShellProps, 'theme'>
 ) {
-  return <NextAppShell {...props} theme="creator" />;
+  return <RouterAppShell {...props} theme="creator" />;
 }
 
 /**
- * Pre-configured Student Shell for Next.js
+ * Pre-configured Student Shell for React Router
  */
-export function NextStudentShell(
-  props: Omit<NextAppShellProps, 'theme'>
+export function RouterStudentShell(
+  props: Omit<RouterAppShellProps, 'theme'>
 ) {
-  return <NextAppShell {...props} theme="student" />;
+  return <RouterAppShell {...props} theme="student" />;
 }
 
 /**
- * Hook to get the current pathname for active state
- * Re-exported for convenience
+ * Hook to get the current pathname for active state detection.
+ * Wraps useLocation().pathname to provide a usePathname-compatible API.
  */
-export { usePathname } from 'next/navigation';
+export function usePathname(): string {
+  const location = useLocation();
+  return location.pathname;
+}

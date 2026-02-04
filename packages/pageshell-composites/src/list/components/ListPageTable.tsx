@@ -12,7 +12,7 @@
 'use client';
 
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { cn, formatValue, interpolateHref, formatRelativeTime } from '@pageshell/core';
 import {
   Button,
@@ -145,7 +145,7 @@ export function ListPageTable<TRow = Record<string, unknown>>({
   onConfirm,
   onRowClick,
 }: ListPageTableProps<TRow>) {
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const allSelected = rows.length > 0 && selectedIds.size === rows.length;
   const someSelected = selectedIds.size > 0 && selectedIds.size < rows.length;
@@ -404,7 +404,7 @@ export function ListPageTable<TRow = Record<string, unknown>>({
                                     const url = typeof action.href === 'function'
                                       ? action.href(row)
                                       : interpolateHref(action.href, row as Record<string, unknown>);
-                                    router.push(url);
+                                    navigate(url);
                                     return;
                                   }
 

@@ -158,12 +158,10 @@ export interface AppShellProps {
  * @example
  * ```tsx
  * import { AppShell } from '@pageshell/layouts';
- * import Link from 'next/link';
- * import Image from 'next/image';
- * import { usePathname } from 'next/navigation';
+ * import { Link, useLocation } from 'react-router-dom';
  *
  * function Layout({ children }) {
- *   const pathname = usePathname();
+ *   const { pathname } = useLocation();
  *
  *   return (
  *     <AppShell
@@ -185,12 +183,12 @@ export interface AppShellProps {
  *       user={currentUser}
  *       onSignOut={handleSignOut}
  *       renderLink={({ item, className, children, onClick }) => (
- *         <Link href={item.href} className={className} onClick={onClick}>
+ *         <Link to={item.href} className={className} onClick={onClick}>
  *           {children}
  *         </Link>
  *       )}
  *       renderAvatar={({ src, alt, width, height, className }) => (
- *         <Image src={src} alt={alt} width={width} height={height} className={className} />
+ *         <img src={src} alt={alt} width={width} height={height} className={className} />
  *       )}
  *       isActive={(href, exact) =>
  *         exact ? pathname === href : pathname?.startsWith(href)

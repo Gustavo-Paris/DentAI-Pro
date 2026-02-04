@@ -23,7 +23,7 @@
  * ```
  */
 
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import { cn } from '@pageshell/core';
 import { PageIcon, type IconName } from '@pageshell/primitives';
 
@@ -115,7 +115,7 @@ export function PageOnboardingChecklist({
           return (
             <Link
               key={item.key}
-              href={item.href}
+              to={item.href}
               className={cn(
                 'flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors group',
                 item.completed && 'opacity-60'

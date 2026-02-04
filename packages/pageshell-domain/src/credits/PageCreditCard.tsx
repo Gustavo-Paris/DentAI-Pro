@@ -33,7 +33,7 @@
  * ```
  */
 
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import { PageIcon } from '@pageshell/primitives';
 
 // =============================================================================
@@ -192,7 +192,7 @@ export function PageCreditCard({
 
         {isActive && (bookHref || onBook) && (
           bookHref ? (
-            <Link href={bookHref} className="portal-credit-item-book-btn">
+            <Link to={bookHref} className="portal-credit-item-book-btn">
               <PageIcon name="zap" className="w-4 h-4" />
               Agendar
             </Link>

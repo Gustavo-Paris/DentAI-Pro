@@ -10,7 +10,7 @@
 'use client';
 
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { cn, interpolateHref } from '@pageshell/core';
 import {
   resolveIcon,
@@ -49,7 +49,7 @@ export function CardActionsMenu<TRow = Record<string, unknown>>({
   onConfirm,
   refetch,
 }: CardActionsMenuProps<TRow>) {
-  const router = useRouter();
+  const navigate = useNavigate();
 
   return (
     <div className="absolute top-2 right-2 z-20">
@@ -85,7 +85,7 @@ export function CardActionsMenu<TRow = Record<string, unknown>>({
                 const url = typeof action.href === 'function'
                   ? action.href(item)
                   : interpolateHref(action.href, item as Record<string, unknown>);
-                router.push(url);
+                navigate(url);
                 return;
               }
 

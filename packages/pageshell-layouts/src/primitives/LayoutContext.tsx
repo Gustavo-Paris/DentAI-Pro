@@ -106,17 +106,16 @@ export interface LayoutProviderProps {
  * @example
  * ```tsx
  * import { LayoutProvider } from '@pageshell/layouts';
- * import Link from 'next/link';
- * import { usePathname } from 'next/navigation';
+ * import { Link, useLocation } from 'react-router-dom';
  *
  * function MyLayout({ children }) {
- *   const pathname = usePathname();
+ *   const { pathname } = useLocation();
  *
  *   return (
  *     <LayoutProvider
  *       theme="admin"
  *       renderLink={({ item, className, children, onClick }) => (
- *         <Link href={item.href} className={className} onClick={onClick}>
+ *         <Link to={item.href} className={className} onClick={onClick}>
  *           {children}
  *         </Link>
  *       )}

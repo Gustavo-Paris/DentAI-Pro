@@ -28,17 +28,15 @@
  * />
  * ```
  *
- * @example As link with Next.js
+ * @example As link with react-router-dom
  * ```tsx
- * import Link from 'next/link';
- * import Image from 'next/image';
+ * import { Link } from 'react-router-dom';
  *
  * <PageAvatar
  *   src={user.photoUrl}
  *   name={user.name}
  *   href={`/u/${user.username}`}
  *   LinkComponent={Link}
- *   ImageComponent={Image}
  * />
  * ```
  */
@@ -60,7 +58,7 @@ export type AvatarLinkComponent = React.ComponentType<{
   className?: string;
 }>;
 
-/** Image component type for framework-agnostic usage (e.g., Next.js Image) */
+/** Image component type for framework-agnostic usage (e.g., custom optimized Image) */
 export type AvatarImageComponent = React.ComponentType<{
   src: string;
   alt: string;
@@ -93,9 +91,9 @@ export interface PageAvatarProps {
   className?: string;
   /** Click handler */
   onClick?: () => void;
-  /** Custom Link component for framework-agnostic usage (e.g., Next.js Link) */
+  /** Custom Link component for framework-agnostic usage (e.g., Link from react-router-dom) */
   LinkComponent?: AvatarLinkComponent;
-  /** Custom Image component for optimized images (e.g., Next.js Image) */
+  /** Custom Image component for optimized images (e.g., custom <img> wrapper) */
   ImageComponent?: AvatarImageComponent;
 }
 
@@ -201,7 +199,7 @@ export const PageAvatar = React.forwardRef<HTMLDivElement, PageAvatarProps>(
             {initials}
           </span>
         ) : ImageComponent ? (
-          // Custom Image component (e.g., Next.js Image)
+          // Custom Image component
           <ImageComponent
             src={imageUrl}
             alt={alt ?? name ?? 'Avatar'}

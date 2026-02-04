@@ -34,7 +34,7 @@ export interface PageBackLinkProps {
   className?: string;
   /** Test ID for automated testing */
   testId?: string;
-  /** Custom Link component for framework-agnostic usage (e.g., Next.js Link) */
+  /** Custom Link component for framework-agnostic usage (e.g., Link from react-router-dom) */
   LinkComponent?: LinkComponentType;
 }
 
@@ -55,9 +55,9 @@ export interface PageBackLinkProps {
  * <PageBackLink onClick={() => { clearState(); router.back(); }} />
  * ```
  *
- * @example With Next.js Link
+ * @example With react-router-dom Link
  * ```tsx
- * import Link from 'next/link';
+ * import { Link } from 'react-router-dom';
  * <PageBackLink href="/dashboard" LinkComponent={Link} />
  * ```
  */
