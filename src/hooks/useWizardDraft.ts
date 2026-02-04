@@ -3,6 +3,7 @@ import { PhotoAnalysisResult, ReviewFormData, TreatmentType } from '@/components
 import { DSDResult } from '@/components/wizard/DSDStep';
 import { supabase } from '@/integrations/supabase/client';
 import { PatientPreferences } from '@/components/wizard/PatientPreferencesStep';
+import { logger } from '@/lib/logger';
 
 export interface AdditionalPhotos {
   smile45: string | null;
@@ -64,7 +65,7 @@ export function useWizardDraft(userId: string | undefined) {
         .maybeSingle();
 
       if (error) {
-        console.error('Error loading draft:', error);
+        logger.error('Error loading draft:', error);
         return null;
       }
 
@@ -87,7 +88,7 @@ export function useWizardDraft(userId: string | undefined) {
       setLastSavedAt(draft.lastSavedAt);
       return draft;
     } catch (error) {
-      console.error('Error loading draft:', error);
+      logger.error('Error loading draft:', error);
       return null;
     }
   }, [userId, isDraftExpired]);
@@ -141,13 +142,13 @@ export function useWizardDraft(userId: string | undefined) {
         }
 
         if (error) {
-          console.error('Error saving draft:', error);
+          logger.error('Error saving draft:', error);
         } else {
           cachedDraftRef.current = draftWithTimestamp;
           setLastSavedAt(draftWithTimestamp.lastSavedAt);
         }
       } catch (error) {
-        console.error('Error saving draft:', error);
+        logger.error('Error saving draft:', error);
       } finally {
         setIsSaving(false);
       }
@@ -165,13 +166,13 @@ export function useWizardDraft(userId: string | undefined) {
         .eq('user_id', userId);
 
       if (error) {
-        console.error('Error clearing draft:', error);
+        logger.error('Error clearing draft:', error);
       } else {
         cachedDraftRef.current = null;
         setLastSavedAt(null);
       }
     } catch (error) {
-      console.error('Error clearing draft:', error);
+      logger.error('Error clearing draft:', error);
     }
   }, [userId]);
 

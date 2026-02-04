@@ -9,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ArrowLeft, Camera, Loader2, Save, Building2, ImageIcon, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
+import { getInitials } from '@/lib/utils';
 import { SubscriptionStatus } from '@/components/pricing/SubscriptionStatus';
 import { useSubscription } from '@/hooks/useSubscription';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -56,7 +58,7 @@ export default function Profile() {
         .single();
 
       if (error) {
-        console.error('Error fetching profile:', error);
+        logger.error('Error fetching profile:', error);
         toast.error('Erro ao carregar perfil');
       } else if (data) {
         setProfile(data);
@@ -94,7 +96,7 @@ export default function Profile() {
               return;
             }
           } catch (e) {
-            console.error(`Sync attempt ${i + 1} failed:`, e);
+            logger.error(`Sync attempt ${i + 1} failed:`, e);
           }
           if (i < attempts - 1) await new Promise(r => setTimeout(r, delay));
         }
@@ -159,7 +161,7 @@ export default function Profile() {
       setProfile(prev => ({ ...prev, avatar_url: filePath }));
       toast.success('Foto atualizada!');
     } catch (error) {
-      console.error('Error uploading avatar:', error);
+      logger.error('Error uploading avatar:', error);
       toast.error('Erro ao enviar foto');
     } finally {
       setUploading(false);
@@ -209,7 +211,7 @@ export default function Profile() {
       setProfile(prev => ({ ...prev, clinic_logo_url: filePath }));
       toast.success('Logo atualizada!');
     } catch (error) {
-      console.error('Error uploading logo:', error);
+      logger.error('Error uploading logo:', error);
       toast.error('Erro ao enviar logo');
     } finally {
       setUploadingLogo(false);
@@ -239,21 +241,11 @@ export default function Profile() {
       toast.success('Perfil atualizado com sucesso!');
       navigate('/dashboard');
     } catch (error) {
-      console.error('Error saving profile:', error);
+      logger.error('Error saving profile:', error);
       toast.error('Erro ao salvar perfil');
     } finally {
       setSaving(false);
     }
-  };
-
-  const getInitials = (name: string | null) => {
-    if (!name) return 'U';
-    return name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
   };
 
   if (loading) {

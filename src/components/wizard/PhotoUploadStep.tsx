@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Camera, Upload, X, Image as ImageIcon, Loader2, ChevronDown, ChevronUp, User, Smile } from 'lucide-react';
 import { toast } from 'sonner';
+import { compressImage } from '@/lib/imageUtils';
 // heic-to is dynamically imported to reduce initial bundle size (20MB library)
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
@@ -57,71 +58,6 @@ const readFileAsDataURL = (file: File): Promise<string> => {
     reader.onload = () => resolve(reader.result as string);
     reader.onerror = () => reject(new Error('Failed to read file'));
     reader.readAsDataURL(file);
-  });
-};
-
-// Compress image to reduce payload size for API calls
-// Max 1280px and quality 0.7 to ensure payloads stay under Edge Function limits
-const compressImage = async (
-  file: File | Blob, 
-  maxWidth: number = 1280, 
-  quality: number = 0.7
-): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    
-    // Timeout de segurança para dispositivos móveis problemáticos
-    const timeout = setTimeout(() => {
-      URL.revokeObjectURL(img.src);
-      reject(new Error('Timeout loading image'));
-    }, 15000);
-    
-    img.onload = () => {
-      clearTimeout(timeout);
-      
-      try {
-        const canvas = document.createElement('canvas');
-        let width = img.width;
-        let height = img.height;
-        
-        // Resize maintaining aspect ratio
-        if (width > maxWidth) {
-          height = Math.round((height * maxWidth) / width);
-          width = maxWidth;
-        }
-        
-        canvas.width = width;
-        canvas.height = height;
-        
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          URL.revokeObjectURL(img.src);
-          reject(new Error('Could not get canvas context'));
-          return;
-        }
-        
-        ctx.drawImage(img, 0, 0, width, height);
-        
-        // Convert to JPEG with compression
-        const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
-        
-        // Clean up object URL
-        URL.revokeObjectURL(img.src);
-        
-        resolve(compressedBase64);
-      } catch (err) {
-        URL.revokeObjectURL(img.src);
-        reject(err);
-      }
-    };
-    
-    img.onerror = () => {
-      clearTimeout(timeout);
-      URL.revokeObjectURL(img.src);
-      reject(new Error('Failed to load image'));
-    };
-    
-    img.src = URL.createObjectURL(file);
   });
 };
 

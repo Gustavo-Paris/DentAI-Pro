@@ -7,6 +7,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { logger } from '@/lib/logger';
 
 export default function Pricing() {
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ export default function Pricing() {
               return;
             }
           } catch (e) {
-            console.error(`Sync attempt ${i + 1} failed:`, e);
+            logger.error(`Sync attempt ${i + 1} failed:`, e);
           }
           if (i < attempts - 1) await new Promise(r => setTimeout(r, delay));
         }

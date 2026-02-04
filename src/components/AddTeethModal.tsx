@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Loader2, Plus, Wrench, Wand2 } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 export type TreatmentType = 'resina' | 'porcelana' | 'coroa' | 'implante' | 'endodontia' | 'encaminhamento';
 
@@ -355,7 +356,7 @@ export function AddTeethModal({
         .in('tooth', selectedTeeth);
 
       if (deleteError) {
-        console.error('Error deleting pending teeth:', deleteError);
+        logger.error('Error deleting pending teeth:', deleteError);
       }
 
       // Build success message
@@ -367,7 +368,7 @@ export function AddTeethModal({
       onSuccess();
       onClose();
     } catch (error) {
-      console.error('Error adding teeth:', error);
+      logger.error('Error adding teeth:', error);
       toast.error('Erro ao adicionar casos');
     } finally {
       setIsSubmitting(false);

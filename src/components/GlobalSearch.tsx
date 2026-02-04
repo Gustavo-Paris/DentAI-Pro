@@ -13,6 +13,7 @@ import {
 import { User, Calendar, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { logger } from '@/lib/logger';
 
 interface SearchResult {
   id: string;
@@ -104,7 +105,7 @@ export function GlobalSearch() {
           .limit(100);
 
         if (error) {
-          console.error('Search error:', error);
+          logger.error('Search error:', error);
           setResults([]);
           return;
         }
@@ -136,7 +137,7 @@ export function GlobalSearch() {
           setResults(groupedResults.slice(0, 10));
         }
       } catch (err) {
-        console.error('Search error:', err);
+        logger.error('Search error:', err);
         setResults([]);
       } finally {
         setLoading(false);

@@ -13,6 +13,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
 import { ProportionsCard } from '@/components/dsd/ProportionsCard';
 import { LoadingOverlay } from '@/components/LoadingOverlay';
+import { logger } from '@/lib/logger';
 
 // Tooth shape is now fixed as 'natural' - removed manual selection per market research
 const TOOTH_SHAPE = 'natural' as const;
@@ -300,7 +301,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
         setResult((prev) => (prev ? { ...prev, simulation_url: compositePath } : prev));
         toast.success('Simulação refinada (lábios preservados)');
       } catch (err) {
-        console.error('DSD compositing error:', err);
+        logger.error('DSD compositing error:', err);
         // Keep the original simulation if compositing fails
       } finally {
         setIsCompositing(false);
@@ -350,7 +351,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
         toast.success('Simulação visual pronta!');
       }
     } catch (err) {
-      console.error('Background simulation error:', err);
+      logger.error('Background simulation error:', err);
       setSimulationError(true);
     } finally {
       setIsSimulationGenerating(false);
@@ -450,7 +451,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
       }
     } catch (error: unknown) {
       clearInterval(stepInterval);
-      console.error('DSD error:', error);
+      logger.error('DSD error:', error);
       
       const err = error as { name?: string; message?: string; code?: string };
       
@@ -549,7 +550,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
         throw new Error('Simulação não gerada');
       }
     } catch (error: unknown) {
-      console.error('Regenerate simulation error:', error);
+      logger.error('Regenerate simulation error:', error);
       toast.error('Erro ao regenerar simulação. Tente novamente.');
     } finally {
       setIsRegeneratingSimulation(false);
