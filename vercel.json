@@ -1,6 +1,7 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
+  "installCommand": "pnpm install",
+  "buildCommand": "pnpm turbo run build --filter=@dentai/web",
+  "outputDirectory": "apps/web/dist",
   "framework": "vite",
   "rewrites": [
     { "source": "/((?!api|assets|sitemap.xml|robots.txt|favicon.ico|manifest.json|favicon.svg|apple-touch-icon.png).*)", "destination": "/index.html" }
