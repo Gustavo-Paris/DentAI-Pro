@@ -48,6 +48,7 @@ import { CollapsibleDSD } from '@/components/dsd/CollapsibleDSD';
 import { logger } from '@/lib/logger';
 import { LoadingOverlay } from '@/components/LoadingOverlay';
 import { SIGNED_URL_EXPIRY_SECONDS } from '@/lib/constants';
+import { BRAND_NAME } from '@/lib/branding';
 
 interface Alternative {
   name: string;
@@ -533,7 +534,7 @@ export default function Result() {
       {/* Header */}
       <header className="border-b border-border print:hidden">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <span className="text-xl font-semibold tracking-tight">ResinMatch AI</span>
+          <span className="text-xl font-semibold tracking-tight">{BRAND_NAME}</span>
           <div className="flex items-center gap-2">
             <Link to={`/evaluation/${evaluation.session_id}`}>
               <Button variant="outline" size="sm">
@@ -574,7 +575,7 @@ export default function Result() {
 
         {/* Print header */}
         <div className="hidden print:block mb-8">
-          <h1 className="text-2xl font-semibold">ResinMatch AI</h1>
+          <h1 className="text-2xl font-semibold">{BRAND_NAME}</h1>
           <p className="text-sm text-muted-foreground">
             Relatório de Recomendação • {format(new Date(evaluation.created_at), "d 'de' MMMM 'de' yyyy", { locale: ptBR })}
           </p>

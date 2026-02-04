@@ -11,6 +11,8 @@ import { Switch } from '@/components/ui/switch';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
 import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
+import { BRAND_NAME } from '@/lib/branding';
+import { logger } from '@/lib/logger';
 
 interface FormData {
   patientAge: string;
@@ -115,7 +117,7 @@ export default function Evaluation() {
       toast.success('Análise concluída!');
       navigate(`/result/${evaluation.id}`);
     } catch (error) {
-      console.error('Error:', error);
+      logger.error('Error:', error);
       toast.error('Erro ao processar avaliação');
     } finally {
       setLoading(false);
@@ -127,7 +129,7 @@ export default function Evaluation() {
       {/* Header */}
       <header className="border-b border-border">
         <div className="container mx-auto px-6 py-4">
-          <span className="text-xl font-semibold tracking-tight">ResinMatch AI</span>
+          <span className="text-xl font-semibold tracking-tight">{BRAND_NAME}</span>
         </div>
       </header>
 

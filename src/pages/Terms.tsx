@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
+import { BRAND_NAME } from '@/lib/branding';
 
 export default function Terms() {
   return (
@@ -8,7 +9,7 @@ export default function Terms() {
       <header className="border-b border-border">
         <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
           <Link to="/" className="text-lg sm:text-xl font-semibold tracking-tight">
-            ResinMatch AI
+            {BRAND_NAME}
           </Link>
           <Link to="/">
             <Button variant="ghost" size="sm">
@@ -30,7 +31,7 @@ export default function Terms() {
           <section>
             <h2 className="text-xl font-semibold mb-3">1. Aceitação dos Termos</h2>
             <p className="text-muted-foreground">
-              Ao acessar e usar o ResinMatch AI, você concorda com estes Termos de Uso. 
+              Ao acessar e usar o {BRAND_NAME}, você concorda com estes Termos de Uso. 
               Se você não concordar com qualquer parte destes termos, não deve usar nosso serviço.
             </p>
           </section>
@@ -38,7 +39,7 @@ export default function Terms() {
           <section>
             <h2 className="text-xl font-semibold mb-3">2. Descrição do Serviço</h2>
             <p className="text-muted-foreground">
-              O ResinMatch AI é uma ferramenta de apoio à decisão clínica que utiliza inteligência artificial 
+              O {BRAND_NAME} é uma ferramenta de apoio à decisão clínica que utiliza inteligência artificial 
               para sugerir resinas compostas adequadas para casos odontológicos. O serviço fornece recomendações 
               baseadas em dados inseridos pelo usuário e um banco de dados de materiais restauradores.
             </p>
@@ -47,7 +48,7 @@ export default function Terms() {
           <section>
             <h2 className="text-xl font-semibold mb-3">3. Limitação de Responsabilidade</h2>
             <p className="text-muted-foreground">
-              <strong>IMPORTANTE:</strong> O ResinMatch AI é uma ferramenta de apoio e NÃO substitui o julgamento 
+              <strong>IMPORTANTE:</strong> O {BRAND_NAME} é uma ferramenta de apoio e NÃO substitui o julgamento 
               clínico profissional. As recomendações fornecidas são sugestões baseadas em algoritmos e não devem 
               ser consideradas como diagnóstico ou prescrição médica/odontológica.
             </p>
@@ -73,8 +74,8 @@ export default function Terms() {
           <section>
             <h2 className="text-xl font-semibold mb-3">5. Propriedade Intelectual</h2>
             <p className="text-muted-foreground">
-              Todo o conteúdo do ResinMatch AI, incluindo mas não limitado a textos, gráficos, logos, ícones, 
-              imagens, algoritmos e software, é propriedade exclusiva do ResinMatch AI ou de seus licenciadores 
+              Todo o conteúdo do {BRAND_NAME}, incluindo mas não limitado a textos, gráficos, logos, ícones, 
+              imagens, algoritmos e software, é propriedade exclusiva do {BRAND_NAME} ou de seus licenciadores 
               e é protegido por leis de propriedade intelectual.
             </p>
           </section>
@@ -116,7 +117,7 @@ export default function Terms() {
             <h2 className="text-xl font-semibold mb-3">10. Contato</h2>
             <p className="text-muted-foreground">
               Para dúvidas sobre estes Termos de Uso, entre em contato através do email: 
-              contato@resinmatch.ai
+              contato@dentai.pro
             </p>
           </section>
         </div>

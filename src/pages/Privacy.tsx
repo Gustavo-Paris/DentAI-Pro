@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
+import { BRAND_NAME } from '@/lib/branding';
 
 export default function Privacy() {
   return (
@@ -8,7 +9,7 @@ export default function Privacy() {
       <header className="border-b border-border">
         <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
           <Link to="/" className="text-lg sm:text-xl font-semibold tracking-tight">
-            ResinMatch AI
+            {BRAND_NAME}
           </Link>
           <Link to="/">
             <Button variant="ghost" size="sm">
@@ -30,7 +31,7 @@ export default function Privacy() {
           <section>
             <h2 className="text-xl font-semibold mb-3">1. Introdução</h2>
             <p className="text-muted-foreground">
-              O ResinMatch AI está comprometido com a proteção da privacidade e dos dados pessoais de seus 
+              O {BRAND_NAME} está comprometido com a proteção da privacidade e dos dados pessoais de seus 
               usuários, em conformidade com a Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/2018).
             </p>
           </section>
@@ -99,7 +100,7 @@ export default function Privacy() {
               <li><strong>Informação:</strong> Saber com quem seus dados foram compartilhados</li>
             </ul>
             <p className="text-muted-foreground mt-2">
-              Para exercer qualquer desses direitos, entre em contato através do email: privacidade@resinmatch.ai
+              Para exercer qualquer desses direitos, entre em contato através do email: privacidade@dentai.pro
             </p>
           </section>
 
@@ -123,7 +124,7 @@ export default function Privacy() {
           <section>
             <h2 className="text-xl font-semibold mb-3">9. Menores de Idade</h2>
             <p className="text-muted-foreground">
-              O ResinMatch AI é destinado exclusivamente a profissionais de odontologia. Não coletamos 
+              O {BRAND_NAME} é destinado exclusivamente a profissionais de odontologia. Não coletamos 
               intencionalmente dados de menores de 18 anos.
             </p>
           </section>
@@ -143,8 +144,8 @@ export default function Privacy() {
               entre em contato:
             </p>
             <ul className="list-none text-muted-foreground mt-2 space-y-1">
-              <li><strong>Email:</strong> privacidade@resinmatch.ai</li>
-              <li><strong>Encarregado de Dados (DPO):</strong> dpo@resinmatch.ai</li>
+              <li><strong>Email:</strong> privacidade@dentai.pro</li>
+              <li><strong>Encarregado de Dados (DPO):</strong> dpo@dentai.pro</li>
             </ul>
           </section>
         </div>
