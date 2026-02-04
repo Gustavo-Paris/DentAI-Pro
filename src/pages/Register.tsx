@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { registerSchema, type RegisterFormData } from '@/lib/schemas/auth';
 import { PasswordRequirements } from '@/components/PasswordRequirements';
 import { BRAND_NAME } from '@/lib/branding';
+import { Mail } from 'lucide-react';
 import {
   Form,
   FormControl,
@@ -21,6 +22,7 @@ import {
 
 export default function Register() {
   const [loading, setLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
   const { signUp } = useAuth();
   const navigate = useNavigate();
 
@@ -48,12 +50,37 @@ export default function Register() {
         description: error.message,
       });
     } else {
-      toast.success('Conta criada com sucesso!');
-      navigate('/dashboard');
+      setEmailSent(true);
     }
     
     setLoading(false);
   };
+
+  if (emailSent) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4 sm:px-6 py-8">
+        <div className="w-full max-w-sm text-center">
+          <Link to="/" className="text-lg sm:text-xl font-semibold tracking-tight">
+            {BRAND_NAME}
+          </Link>
+          <div className="mt-6 sm:mt-8">
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+              <Mail className="w-6 h-6 text-primary" />
+            </div>
+            <h1 className="text-xl sm:text-2xl font-semibold mb-2">Verifique seu email</h1>
+            <p className="text-sm text-muted-foreground mb-6">
+              Enviamos um link de confirmação para{' '}
+              <span className="font-medium text-foreground">{form.getValues('email')}</span>.
+              Clique no link para ativar sua conta.
+            </p>
+            <Link to="/login">
+              <Button className="w-full">Ir para Login</Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4 sm:px-6 py-8">

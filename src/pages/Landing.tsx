@@ -57,8 +57,8 @@ export default function Landing() {
         <div className="container mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
             <div>
-              <p className="text-2xl sm:text-3xl font-semibold">500+</p>
-              <p className="text-xs sm:text-sm text-muted-foreground">Avaliações realizadas</p>
+              <p className="text-2xl sm:text-3xl font-semibold">IA</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Análise automática</p>
             </div>
             <div>
               <p className="text-2xl sm:text-3xl font-semibold">250+</p>
