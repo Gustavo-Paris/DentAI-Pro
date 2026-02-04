@@ -9,7 +9,7 @@
 'use client';
 
 import * as React from 'react';
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import { Button, resolveIcon } from '@pageshell/primitives';
 import type { QuickActionConfig } from '../types';
 
@@ -46,7 +46,7 @@ export function DashboardQuickActions({ actions }: DashboardQuickActionsProps) {
 
         if (action.href) {
           return (
-            <Link key={index} href={action.href}>
+            <Link key={index} to={action.href}>
               {buttonContent}
             </Link>
           );

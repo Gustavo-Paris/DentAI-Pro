@@ -10,7 +10,7 @@
 'use client';
 
 import * as React from 'react';
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import { Button, resolveIcon } from '@pageshell/primitives';
 import { PageHeader } from '@pageshell/layouts';
 
@@ -97,7 +97,7 @@ export const ListPageHeader = React.memo(function ListPageHeader({
             variant={config.variant || 'outline'}
             disabled={config.disabled}
           >
-            <Link href={config.href}>
+            <Link to={config.href}>
               {ResolvedIcon && <ResolvedIcon className="h-4 w-4 mr-2" />}
               {config.label}
             </Link>
@@ -152,7 +152,7 @@ export const ListPageHeader = React.memo(function ListPageHeader({
       if (createAction.href) {
         actionElements.push(
           <Button key="create-action" asChild>
-            <Link href={createAction.href}>
+            <Link to={createAction.href}>
               {CreateIcon && <CreateIcon className="h-4 w-4 mr-2" />}
               {createAction.label || 'Add New'}
             </Link>

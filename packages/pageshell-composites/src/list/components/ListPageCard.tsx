@@ -13,7 +13,7 @@
 
 import * as React from 'react';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { cn, interpolateHref } from '@pageshell/core';
 import {
   Card,
@@ -130,7 +130,7 @@ interface FooterActionButtonProps<TRow> {
 }
 
 function FooterActionButton<TRow>({ config, item }: FooterActionButtonProps<TRow>) {
-  const router = useRouter();
+  const navigate = useNavigate();
   const ActionIcon = config.icon ? resolveIcon(config.icon) : null;
   const isDisabled = config.disabledWhen?.(item) ?? false;
 
@@ -142,7 +142,7 @@ function FooterActionButton<TRow>({ config, item }: FooterActionButtonProps<TRow
       const url = typeof config.href === 'function'
         ? config.href(item)
         : interpolateHref(config.href, item as Record<string, unknown>);
-      router.push(url);
+      navigate(url);
       return;
     }
 
@@ -183,7 +183,7 @@ export function ListPageCard<TRow = Record<string, unknown>>({
   onConfirm,
   refetch,
 }: ListPageCardProps<TRow>) {
-  const router = useRouter();
+  const navigate = useNavigate();
   const {
     variant = 'standard',
     showActions = true,
@@ -206,7 +206,7 @@ export function ListPageCard<TRow = Record<string, unknown>>({
   // Handle card click
   const handleClick = () => {
     if (clickable && resolvedHref) {
-      router.push(resolvedHref);
+      navigate(resolvedHref);
     }
   };
 

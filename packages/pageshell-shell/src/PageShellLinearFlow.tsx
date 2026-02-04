@@ -33,7 +33,7 @@
  * </PageShell.LinearFlow>
  */
 
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { cn } from '@pageshell/core/utils';
 import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
 import { Button, Card, QueryError, resolveIcon } from '@pageshell/primitives';
@@ -69,7 +69,7 @@ function PageShellLinearFlowInner<TData>({
   children,
   className,
 }: Omit<PageShellLinearFlowProps<TData>, 'theme'>) {
-  const router = useRouter();
+  const navigate = useNavigate();
   // Use context to get config (instead of calling getThemeConfig directly)
   const { theme, config } = usePageShellContext();
   const Icon = resolveIcon(icon);
@@ -81,7 +81,7 @@ function PageShellLinearFlowInner<TData>({
 
   const handleBack = () => {
     if (backHref) {
-      router.push(backHref);
+      navigate(backHref);
     }
   };
 
@@ -90,7 +90,7 @@ function PageShellLinearFlowInner<TData>({
       await onNext();
     }
     if (nextHref && !onNext) {
-      router.push(nextHref);
+      navigate(nextHref);
     }
   };
 

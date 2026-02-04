@@ -30,7 +30,7 @@ async function addUseClientDirective() {
 export default defineConfig({
   entry: {
     index: 'src/index.ts',
-    'adapters/next': 'src/adapters/next.tsx',
+    'adapters/react-router': 'src/adapters/react-router.tsx',
   },
   format: ['esm'],
   dts: {
@@ -39,7 +39,7 @@ export default defineConfig({
     },
   },
   clean: true,
-  external: ['react', 'react-dom', 'react/jsx-runtime', '@pageshell/core', '@pageshell/primitives', '@pageshell/theme', 'next', 'next/link', 'next/navigation', 'next/image'],
+  external: ['react', 'react-dom', 'react/jsx-runtime', '@pageshell/core', '@pageshell/primitives', '@pageshell/theme', 'react-router-dom'],
   treeshake: true,
   splitting: false,
   sourcemap: true,

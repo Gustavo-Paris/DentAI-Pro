@@ -25,9 +25,9 @@
  * />
  * ```
  *
- * @example Card layout (for grids) with Next.js
+ * @example Card layout (for grids) with react-router-dom
  * ```tsx
- * import Link from 'next/link';
+ * import { Link } from 'react-router-dom';
  *
  * <PageQuickAction
  *   layout="card"
@@ -127,7 +127,7 @@ export interface PageQuickActionProps {
   animationDelay?: number;
   /** Additional class name */
   className?: string;
-  /** Custom Link component for framework-agnostic usage (e.g., Next.js Link) */
+  /** Custom Link component for framework-agnostic usage (e.g., Link from react-router-dom) */
   LinkComponent?: QuickActionLinkComponent;
 }
 

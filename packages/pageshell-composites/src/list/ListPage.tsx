@@ -11,7 +11,7 @@
 'use client';
 
 import * as React from 'react';
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import { cn, useListLogic } from '@pageshell/core';
 import { Button, resolveIcon } from '@pageshell/primitives';
 import type {
@@ -725,7 +725,7 @@ export function ListPage<
                 if (createAction.href) {
                   return (
                     <Button asChild>
-                      <Link href={createAction.href}>
+                      <Link to={createAction.href}>
                         {CreateIcon && <CreateIcon className="h-4 w-4 mr-2" />}
                         {createAction.label || 'Add New'}
                       </Link>
@@ -751,7 +751,7 @@ export function ListPage<
               {emptyConfig.action && (
                 emptyConfig.action.href ? (
                   <Button className="mt-4" asChild>
-                    <Link href={emptyConfig.action.href}>
+                    <Link to={emptyConfig.action.href}>
                       {emptyConfig.action.label}
                     </Link>
                   </Button>
@@ -794,7 +794,7 @@ export function ListPage<
                       variant={action.variant || 'outline'}
                       disabled={action.disabled}
                     >
-                      <Link href={action.href}>
+                      <Link to={action.href}>
                         {ActionIcon && <ActionIcon className="h-4 w-4 mr-2" />}
                         {action.label}
                       </Link>
@@ -818,7 +818,7 @@ export function ListPage<
                 if (createAction.href) {
                   return (
                     <Button asChild>
-                      <Link href={createAction.href}>
+                      <Link to={createAction.href}>
                         {CreateIcon && <CreateIcon className="h-4 w-4 mr-2" />}
                         {createAction.label || 'Add New'}
                       </Link>

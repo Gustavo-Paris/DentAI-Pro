@@ -55,7 +55,7 @@
  */
 
 import * as React from 'react';
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import { cn } from '@pageshell/core';
 import { resolveIcon, Button } from '@pageshell/primitives';
 import { usePageShellContext } from '@pageshell/theme';
@@ -313,7 +313,7 @@ function WelcomeHero(props: Extract<PageHeroProps, { variant: 'welcome' }>) {
               const ActionIcon = primaryAction.icon ? resolveIcon(primaryAction.icon as IconProp) : undefined;
               return (
                 <Button asChild size="lg" variant="default" leftIcon={ActionIcon && <ActionIcon className="w-4 h-4" />}>
-                  <Link href={primaryAction.href}>{primaryAction.label}</Link>
+                  <Link to={primaryAction.href}>{primaryAction.label}</Link>
                 </Button>
               );
             })()}
@@ -321,7 +321,7 @@ function WelcomeHero(props: Extract<PageHeroProps, { variant: 'welcome' }>) {
               const ActionIcon = secondaryAction.icon ? resolveIcon(secondaryAction.icon as IconProp) : undefined;
               return (
                 <Button asChild size="lg" variant="outline" leftIcon={ActionIcon && <ActionIcon className="w-4 h-4" />}>
-                  <Link href={secondaryAction.href}>{secondaryAction.label}</Link>
+                  <Link to={secondaryAction.href}>{secondaryAction.label}</Link>
                 </Button>
               );
             })()}

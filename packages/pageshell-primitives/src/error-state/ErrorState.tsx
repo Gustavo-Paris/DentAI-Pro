@@ -48,7 +48,7 @@ export interface ErrorStateProps {
   className?: string;
   /** Test ID for automated testing */
   testId?: string;
-  /** Custom Link component for framework-agnostic usage (e.g., Next.js Link for prefetch) */
+  /** Custom Link component for framework-agnostic usage (e.g., Link from react-router-dom) */
   LinkComponent?: LinkComponentType;
   /** Callback for error logging (replaces direct logger dependency) */
   onError?: (error: Error & { digest?: string }, variant: ErrorVariant) => void;
@@ -136,8 +136,8 @@ const variantStyles: Record<
  *   onError={(err, variant) => logger.error('Page error', { err, variant })}
  * />
  *
- * @example With Next.js Link (for prefetch):
- * import Link from 'next/link';
+ * @example With react-router-dom Link:
+ * import { Link } from 'react-router-dom';
  * <ErrorState error={error} reset={reset} LinkComponent={Link} />
  */
 export const ErrorState = forwardRef<HTMLDivElement, ErrorStateProps>(

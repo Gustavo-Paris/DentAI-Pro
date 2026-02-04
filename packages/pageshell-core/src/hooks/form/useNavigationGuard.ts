@@ -10,7 +10,7 @@
  */
 
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 
 // =============================================================================
 // Types
@@ -21,8 +21,8 @@ export interface UseNavigationGuardOptions {
   enabled?: boolean;
   /** Whether the form has unsaved changes */
   isDirty: boolean;
-  /** Router instance (optional, uses Next.js router by default) */
-  router?: { push: (url: string) => void };
+  /** Navigate function (optional, uses react-router-dom useNavigate by default) */
+  navigate?: (url: string) => void;
 }
 
 export interface UseNavigationGuardReturn {
@@ -45,10 +45,10 @@ export interface UseNavigationGuardReturn {
 export function useNavigationGuard(
   options: UseNavigationGuardOptions
 ): UseNavigationGuardReturn {
-  const { enabled = true, isDirty, router: routerProp } = options;
+  const { enabled = true, isDirty, navigate: navigateProp } = options;
 
-  const nextRouter = useRouter();
-  const router = routerProp ?? nextRouter;
+  const defaultNavigate = useNavigate();
+  const nav = navigateProp ?? defaultNavigate;
 
   const [showLeaveDialog, setShowLeaveDialog] = React.useState(false);
   const [pendingHref, setPendingHref] = React.useState<string | null>(null);
@@ -59,19 +59,19 @@ export function useNavigationGuard(
         setPendingHref(href);
         setShowLeaveDialog(true);
       } else {
-        router.push(href);
+        nav(href);
       }
     },
-    [enabled, isDirty, router]
+    [enabled, isDirty, nav]
   );
 
   const confirmNavigation = React.useCallback(() => {
     setShowLeaveDialog(false);
     if (pendingHref) {
-      router.push(pendingHref);
+      nav(pendingHref);
       setPendingHref(null);
     }
-  }, [pendingHref, router]);
+  }, [pendingHref, nav]);
 
   const cancelNavigation = React.useCallback(() => {
     setShowLeaveDialog(false);

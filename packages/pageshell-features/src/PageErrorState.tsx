@@ -41,8 +41,8 @@ export type LinkComponentType = ComponentType<{
  * @example Creator-themed:
  * <PageErrorState error={error} reset={reset} variant="creator" />
  *
- * @example With Next.js Link (for prefetch):
- * import Link from 'next/link';
+ * @example With react-router-dom Link:
+ * import { Link } from 'react-router-dom';
  * <PageErrorState error={error} reset={reset} LinkComponent={Link} />
  */
 
@@ -69,7 +69,7 @@ interface PageErrorStateProps {
   className?: string;
   /** Test ID for automated testing */
   testId?: string;
-  /** Custom Link component for framework-agnostic usage (e.g., Next.js Link for prefetch) */
+  /** Custom Link component for framework-agnostic usage (e.g., Link from react-router-dom) */
   LinkComponent?: LinkComponentType;
 }
 

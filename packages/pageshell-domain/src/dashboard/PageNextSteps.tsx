@@ -23,7 +23,7 @@
  * ```
  */
 
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import { cn } from '@pageshell/core';
 import { PageIcon, type IconName } from '@pageshell/primitives';
 
@@ -98,7 +98,7 @@ export function PageNextSteps({
         {displayItems.map((item) => (
           <Link
             key={item.key}
-            href={item.href}
+            to={item.href}
             className="portal-next-action group"
           >
             <div className="portal-next-action-icon">

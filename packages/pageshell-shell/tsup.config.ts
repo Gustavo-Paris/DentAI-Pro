@@ -8,7 +8,7 @@ export default defineConfig({
     'src/wizard/index.ts',
     'src/skeletons/index.ts',
     'src/context/index.ts',
-    'src/adapters/next.tsx',
+    'src/adapters/react-router.tsx',
   ],
   format: ['esm'],
   dts: {
@@ -24,10 +24,7 @@ export default defineConfig({
   external: [
     'react',
     'react-dom',
-    'next',
-    'next/link',
-    'next/image',
-    'next/navigation',
+    'react-router-dom',
     'lucide-react',
   ],
   treeshake: true,

@@ -22,7 +22,7 @@
  * ```
  */
 
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import { cn } from '@pageshell/core';
 import { PageIcon, type IconName } from '@pageshell/primitives';
 
@@ -105,7 +105,7 @@ export function PageQuickActionsGrid({
         {items.map((item) => (
           <Link
             key={item.key}
-            href={item.href}
+            to={item.href}
             className="portal-quick-action group"
           >
             <div className="portal-quick-action-icon">

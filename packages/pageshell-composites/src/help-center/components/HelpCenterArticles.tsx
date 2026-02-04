@@ -9,7 +9,7 @@
 'use client';
 
 import * as React from 'react';
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import { FileText, ArrowRight } from 'lucide-react';
 import { cn } from '@pageshell/core';
 import { PageHeading } from '@pageshell/layouts';
@@ -49,7 +49,7 @@ function ArticleCard({ article }: { article: HelpCenterArticleConfig }) {
 
   return (
     <Link
-      href={article.href}
+      to={article.href}
       className={cn(
         'group flex items-start gap-4 p-4 rounded-lg',
         'border border-border bg-card',
@@ -113,7 +113,7 @@ export function HelpCenterArticles({
         )}
         {showViewAll && hasMore && viewAllHref && (
           <Link
-            href={viewAllHref}
+            to={viewAllHref}
             className="text-sm text-primary hover:underline"
           >
             {viewAllLabel}

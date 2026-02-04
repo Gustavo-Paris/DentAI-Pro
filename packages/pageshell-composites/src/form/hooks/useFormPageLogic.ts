@@ -11,7 +11,7 @@
 'use client';
 
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { useForm, type FieldValues, type DefaultValues, type UseFormReturn } from 'react-hook-form';
 import { interpolateHref, useAutoSave, type AutoSaveStatus } from '@pageshell/core';
 import { useNavigationGuard } from '@pageshell/core/hooks/form/useNavigationGuard';
@@ -102,7 +102,7 @@ export function useFormPageLogic<TValues extends FieldValues = FieldValues>(
     formatError,
   } = options;
 
-  const router = useRouter();
+  const navigate = useNavigate();
 
   // ===========================================================================
   // Form Setup
@@ -162,7 +162,7 @@ export function useFormPageLogic<TValues extends FieldValues = FieldValues>(
   const navigationGuard = useNavigationGuard({
     enabled: warnOnUnsavedChanges,
     isDirty,
-    router,
+    navigate,
   });
 
   const {
@@ -213,14 +213,14 @@ export function useFormPageLogic<TValues extends FieldValues = FieldValues>(
           onSuccess?.(result);
           if (successRedirect) {
             const resolvedHref = interpolateHref(successRedirect, result);
-            router.push(resolvedHref);
+            navigate(resolvedHref);
           }
         } else if (onSubmit) {
           // onSubmit receives original form data (TValues), not transformed payload
           await onSubmit(data);
           onSuccess?.();
           if (successRedirect) {
-            router.push(successRedirect);
+            navigate(successRedirect);
           }
         }
       } catch (error) {
@@ -228,7 +228,7 @@ export function useFormPageLogic<TValues extends FieldValues = FieldValues>(
         throw error;
       }
     })();
-  }, [form, mutation, onSubmit, onSuccess, onError, transformPayload, successRedirect, router]);
+  }, [form, mutation, onSubmit, onSuccess, onError, transformPayload, successRedirect, navigate]);
 
   const handleFieldChange = React.useCallback((name: string, value: unknown) => {
     if (form) {
