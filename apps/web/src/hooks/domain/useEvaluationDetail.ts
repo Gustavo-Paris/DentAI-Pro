@@ -89,8 +89,14 @@ export interface EvaluationDetailState {
   patientDataForModal: PatientDataForModal | null;
 }
 
+export interface PendingChecklistResult {
+  pending: true;
+  current: number;
+  total: number;
+}
+
 export interface EvaluationDetailActions {
-  handleMarkAsCompleted: (id: string) => void;
+  handleMarkAsCompleted: (id: string, force?: boolean) => PendingChecklistResult | void;
   handleMarkAllAsCompleted: () => void;
   handleExportPDF: (id: string) => void;
   handleShareCase: () => void;
@@ -256,9 +262,9 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
 
   const canMarkAsCompleted = useCallback(
     (evaluation: EvaluationItem): boolean => {
-      return evaluation.status !== 'completed' && isChecklistComplete(evaluation);
+      return evaluation.status !== 'completed';
     },
-    [isChecklistComplete],
+    [],
   );
 
   const getClinicalDetails = useCallback((evaluation: EvaluationItem): string => {
@@ -280,13 +286,13 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
 
   // ---- Actions ----
   const handleMarkAsCompleted = useCallback(
-    (id: string) => {
+    (id: string, force?: boolean): PendingChecklistResult | void => {
       const evaluation = evals.find((e) => e.id === id);
       if (!evaluation) return;
 
-      if (!isChecklistComplete(evaluation)) {
-        toast.error('Complete todas as etapas do checklist antes de finalizar este caso');
-        return;
+      if (!force && !isChecklistComplete(evaluation)) {
+        const progress = getChecklistProgressFn(evaluation);
+        return { pending: true, current: progress.current, total: progress.total };
       }
 
       updateStatusMutation.mutate(
@@ -301,34 +307,28 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
         },
       );
     },
-    [evals, isChecklistComplete, updateStatusMutation],
+    [evals, isChecklistComplete, getChecklistProgressFn, updateStatusMutation],
   );
 
   const handleMarkAllAsCompleted = useCallback(() => {
     const pending = evals.filter((e) => e.status !== 'completed');
-    const completable = pending.filter((e) => isChecklistComplete(e));
 
     if (pending.length === 0) {
       toast.info('Todos os casos já estão finalizados');
       return;
     }
 
-    if (completable.length === 0) {
-      toast.error('Nenhum caso pode ser finalizado. Complete os checklists primeiro.');
-      return;
-    }
+    const withIncompleteChecklist = pending.filter((e) => !isChecklistComplete(e)).length;
 
-    bulkCompleteMutation.mutate(completable.map((e) => e.id), {
+    bulkCompleteMutation.mutate(pending.map((e) => e.id), {
       onSuccess: () => {
-        const skipped = pending.length - completable.length;
-        if (skipped > 0) {
+        if (withIncompleteChecklist > 0) {
           toast.success(
-            `${completable.length} caso(s) finalizado(s). ${skipped} caso(s) aguardando checklist.`,
+            `${pending.length} caso(s) finalizado(s). ${withIncompleteChecklist} tinham checklist incompleto.`,
           );
         } else {
-          toast.success(`${completable.length} caso(s) marcado(s) como finalizado(s)`);
+          toast.success(`${pending.length} caso(s) marcado(s) como finalizado(s)`);
         }
-        // Invalidate session evaluations to refresh the list
         queryClient.invalidateQueries({ queryKey: evaluationKeys.session(sessionId) });
       },
       onError: () => {
