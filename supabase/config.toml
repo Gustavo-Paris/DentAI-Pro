@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.generate-dsd]
 verify_jwt = false
+
+[functions.recommend-cementation]
+verify_jwt = false
