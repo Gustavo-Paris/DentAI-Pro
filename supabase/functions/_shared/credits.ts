@@ -1,7 +1,7 @@
 // Shared credit checking and consumption for edge functions
 // Server-side enforcement - this is the source of truth
 
-import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { logger } from "./logger.ts";
 
 export interface CreditCheckResult {

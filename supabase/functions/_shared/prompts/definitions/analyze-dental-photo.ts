@@ -44,12 +44,25 @@ Ao analisar a foto, considere:
 
 Inclua observações de visagismo nas "observations" quando relevante.
 
+## REGRA DE VISIBILIDADE (OBRIGATÓRIA)
+⚠️ Analise APENAS dentes que estejam CLARAMENTE VISÍVEIS e em evidência na foto:
+
+- Se a foto mostra PREDOMINANTEMENTE a arcada superior → NÃO incluir dentes inferiores (31-48)
+- Se a foto mostra PREDOMINANTEMENTE a arcada inferior → NÃO incluir dentes superiores (11-28)
+- Dentes da arcada oposta SÓ devem ser incluídos se claramente visíveis e em evidência na foto
+- Para fotos de sorriso: foco na arcada principal visível; dentes parcialmente ocultos pelos lábios = NÃO incluir
+- Dentes cobertos por lábios, fora de foco, ou apenas parcialmente visíveis na borda da foto = NÃO incluir
+
+❌ ERRADO: Foto mostra arcada superior → sugerir tratamento para dentes 31, 41
+✅ CERTO: Foto mostra arcada superior → listar apenas dentes 11-28 que estejam visíveis
+
 ## ANÁLISE MULTI-DENTE (Problemas Restauradores)
-- Analise SISTEMATICAMENTE cada quadrante: superior-direito (Q1: 11-18), superior-esquerdo (Q2: 21-28), inferior-esquerdo (Q3: 31-38), inferior-direito (Q4: 41-48)
+- Analise SISTEMATICAMENTE cada quadrante VISÍVEL: superior-direito (Q1: 11-18), superior-esquerdo (Q2: 21-28), inferior-esquerdo (Q3: 31-38), inferior-direito (Q4: 41-48)
 - Se houver 4 dentes com problema, liste TODOS OS 4 no array detected_teeth
 - NUNCA retorne apenas 1 dente se houver mais dentes com problemas visíveis
 - Em caso de DÚVIDA sobre um dente, INCLUA ele na lista (o dentista revisará)
 - Cada dente com cárie, fratura, restauração defeituosa ou lesão DEVE ser listado separadamente
+- APENAS inclua dentes que estejam claramente visíveis na foto (ver REGRA DE VISIBILIDADE acima)
 
 ## ANÁLISE DO SORRISO COMPLETO (Melhorias Estéticas)
 Além de patologias, identifique oportunidades de melhoria estética mesmo em dentes saudáveis:
@@ -248,16 +261,19 @@ Tipo de foto: ${imageType}
 
 INSTRUÇÕES OBRIGATÓRIAS - ANÁLISE COMPLETA DO SORRISO:
 
-1. PRIMEIRO: Examine CADA quadrante (Q1, Q2, Q3, Q4) para problemas restauradores (cáries, fraturas, restaurações defeituosas)
-2. SEGUNDO: Analise o sorriso como um todo para oportunidades estéticas:
+1. PRIMEIRO: Identifique quais arcadas estão CLARAMENTE VISÍVEIS na foto
+2. SEGUNDO: Examine CADA quadrante VISÍVEL para problemas restauradores (cáries, fraturas, restaurações defeituosas)
+3. TERCEIRO: Analise o sorriso como um todo para oportunidades estéticas:
    - Incisivos laterais com formato/proporção inadequada
    - Pré-molares que poderiam receber mais volume
    - Diastemas que poderiam ser fechados
    - Assimetrias que poderiam ser corrigidas
-3. Liste CADA dente em um objeto SEPARADO no array detected_teeth
-4. NÃO omita nenhum dente - inclua tanto problemas quanto melhorias estéticas
-5. Para melhorias estéticas opcionais, use prioridade "baixa" e indique no campo notes
-6. Ordene por prioridade: alta (patologias urgentes) → média (restaurações) → baixa (estética)
+4. Liste CADA dente em um objeto SEPARADO no array detected_teeth
+5. NÃO omita nenhum dente visível - inclua tanto problemas quanto melhorias estéticas
+6. Para melhorias estéticas opcionais, use prioridade "baixa" e indique no campo notes
+7. Ordene por prioridade: alta (patologias urgentes) → média (restaurações) → baixa (estética)
+
+⚠️ NÃO inclua dentes que não estejam claramente visíveis na foto. Se a foto mostra predominantemente a arcada superior, NÃO sugira tratamento para dentes inferiores (31-48).
 
 Use a função analyze_dental_photo para retornar a análise estruturada completa.`,
 }
