@@ -1,6 +1,9 @@
 import type { PromptDefinition } from './types.ts'
+import { recommendCementation } from './definitions/recommend-cementation.ts'
 
-const registry: Record<string, PromptDefinition> = {}
+const registry: Record<string, PromptDefinition> = {
+  [recommendCementation.id]: recommendCementation,
+}
 
 export type PromptId = keyof typeof registry
 
