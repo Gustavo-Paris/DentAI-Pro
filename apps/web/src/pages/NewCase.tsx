@@ -191,6 +191,7 @@ export default function NewCase() {
               indication_reason: t.indication_reason,
               treatment_indication: t.treatment_indication,
             }))}
+            onResultChange={wizard.handleDSDResultChange}
           />
         )}
 

@@ -97,6 +97,8 @@ interface DSDStepProps {
   clinicalObservations?: string[];
   /** Per-tooth clinical findings to prevent DSD from inventing restorations */
   clinicalTeethFindings?: ClinicalToothFinding[];
+  /** Called whenever the DSD result changes (analysis complete, simulation ready, etc.) so the parent can persist it in drafts */
+  onResultChange?: (result: DSDResult | null) => void;
 }
 
 const analysisSteps = [
@@ -106,7 +108,7 @@ const analysisSteps = [
   { label: 'Avaliando simetria...', duration: 2000 },
 ];
 
-export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, patientPreferences, detectedTeeth, initialResult, clinicalObservations, clinicalTeethFindings }: DSDStepProps) {
+export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, patientPreferences, detectedTeeth, initialResult, clinicalObservations, clinicalTeethFindings, onResultChange }: DSDStepProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   // Initialize with draft result if available
@@ -128,6 +130,11 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
   
   // Ref to prevent multiple simultaneous analysis calls - skip if we have initial result
   const analysisStartedRef = useRef(!!initialResult);
+
+  // Propagate result changes to parent for draft auto-save
+  useEffect(() => {
+    onResultChange?.(result);
+  }, [result, onResultChange]);
 
   // Load signed URL for simulation
   useEffect(() => {
