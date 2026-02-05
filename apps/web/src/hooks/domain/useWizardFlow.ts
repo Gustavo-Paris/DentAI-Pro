@@ -656,7 +656,12 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
       for (const tooth of teethToProcess) {
         const toothData = getToothData(tooth);
         const treatmentType = getToothTreatment(tooth);
-        treatmentCounts[treatmentType] = (treatmentCounts[treatmentType] || 0) + 1;
+        // Normalize treatment type: Gemini sometimes returns English values (e.g. "porcelain" instead of "porcelana")
+        const normalizedTreatment = ({
+          porcelain: 'porcelana', resin: 'resina', crown: 'coroa',
+          implant: 'implante', endodontics: 'endodontia', referral: 'encaminhamento',
+        } as Record<string, TreatmentType>)[treatmentType] || treatmentType;
+        treatmentCounts[normalizedTreatment] = (treatmentCounts[normalizedTreatment] || 0) + 1;
 
         const insertData = {
           user_id: user.id,
@@ -711,11 +716,6 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
 
         // Step 3: Protocols
         setSubmissionStep(3);
-        // Normalize treatment type: Gemini sometimes returns English values (e.g. "porcelain" instead of "porcelana")
-        const normalizedTreatment = ({
-          porcelain: 'porcelana', resin: 'resina', crown: 'coroa',
-          implant: 'implante', endodontics: 'endodontia', referral: 'encaminhamento',
-        } as Record<string, TreatmentType>)[treatmentType] || treatmentType;
         switch (normalizedTreatment) {
           case 'porcelana': {
             const { error: cementError } = await supabase.functions.invoke(
