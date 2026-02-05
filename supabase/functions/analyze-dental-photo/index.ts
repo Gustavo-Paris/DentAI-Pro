@@ -341,7 +341,7 @@ serve(async (req) => {
     try {
       logger.log("Calling Gemini Vision API...");
 
-      const result = await withMetrics(metrics, promptDef.id, PROMPT_VERSION, promptDef.model)(async () => {
+      const result = await withMetrics<{ text: string | null; functionCall: { name: string; args: Record<string, unknown> } | null; finishReason: string }>(metrics, promptDef.id, PROMPT_VERSION, promptDef.model)(async () => {
         const response = await callGeminiVisionWithTools(
           "gemini-3-flash-preview",
           userPrompt,

@@ -292,7 +292,7 @@ serve(async (req: Request) => {
 
     let protocol: CementationProtocol;
     try {
-      const geminiResult = await withMetrics(metrics, prompt.id, PROMPT_VERSION, prompt.model)(async () => {
+      const geminiResult = await withMetrics<{ text: string | null; functionCall: { name: string; args: Record<string, unknown> } | null; finishReason: string }>(metrics, prompt.id, PROMPT_VERSION, prompt.model)(async () => {
         const response = await callGeminiWithTools(
           "gemini-2.5-pro",
           messages,

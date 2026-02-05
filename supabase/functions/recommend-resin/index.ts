@@ -263,7 +263,7 @@ serve(async (req) => {
 
     let content: string;
     try {
-      const geminiResult = await withMetrics(metrics, promptDef.id, PROMPT_VERSION, promptDef.model)(async () => {
+      const geminiResult = await withMetrics<{ text: string | null; finishReason: string }>(metrics, promptDef.id, PROMPT_VERSION, promptDef.model)(async () => {
         const response = await callGemini(
           "gemini-2.0-flash",
           messages,

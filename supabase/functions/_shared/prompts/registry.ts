@@ -5,7 +5,8 @@ import { recommendResin } from './definitions/recommend-resin.ts'
 import { dsdAnalysis } from './definitions/dsd-analysis.ts'
 import { dsdSimulation } from './definitions/dsd-simulation.ts'
 
-const registry: Record<string, PromptDefinition> = {
+// deno-lint-ignore no-explicit-any
+const registry: Record<string, PromptDefinition<any>> = {
   [recommendCementation.id]: recommendCementation,
   [analyzeDentalPhoto.id]: analyzeDentalPhoto,
   [recommendResin.id]: recommendResin,
@@ -15,20 +16,24 @@ const registry: Record<string, PromptDefinition> = {
 
 export type PromptId = keyof typeof registry
 
-export function getPrompt(id: string): PromptDefinition {
+// deno-lint-ignore no-explicit-any
+export function getPrompt(id: string): PromptDefinition<any> {
   const prompt = registry[id]
   if (!prompt) throw new Error(`Prompt not found: ${id}`)
   return prompt
 }
 
-export function listPrompts(): PromptDefinition[] {
+// deno-lint-ignore no-explicit-any
+export function listPrompts(): PromptDefinition<any>[] {
   return Object.values(registry)
 }
 
-export function listByMode(mode: PromptDefinition['mode']): PromptDefinition[] {
+// deno-lint-ignore no-explicit-any
+export function listByMode(mode: PromptDefinition<any>['mode']): PromptDefinition<any>[] {
   return Object.values(registry).filter(p => p.mode === mode)
 }
 
-export function listByTag(tag: string): PromptDefinition[] {
+// deno-lint-ignore no-explicit-any
+export function listByTag(tag: string): PromptDefinition<any>[] {
   return Object.values(registry).filter(p => p.tags?.includes(tag))
 }
