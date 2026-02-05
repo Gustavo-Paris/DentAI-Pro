@@ -21,7 +21,7 @@ function parseEnv() {
       .join('\n');
 
     throw new Error(
-      `[DentAI Pro] Variáveis de ambiente inválidas:\n${missing}\n\nVerifique o arquivo .env na raiz do projeto.`,
+      `[AURIA] Variáveis de ambiente inválidas:\n${missing}\n\nVerifique o arquivo .env na raiz do projeto.`,
     );
   }
 
