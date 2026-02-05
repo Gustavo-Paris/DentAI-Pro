@@ -83,8 +83,9 @@ export function ThemeProvider({
   }, [defaultTheme]);
 
   const [theme, setThemeState] = React.useState<ResolvedTheme>(initialTheme);
+  const isHydratedRef = React.useRef(false);
 
-  // Load persisted theme on mount
+  // Load persisted theme on mount (after hydration)
   React.useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -106,6 +107,7 @@ export function ThemeProvider({
         // Invalid stored value, use default
       }
     }
+    isHydratedRef.current = true;
   }, [storageKey]);
 
   // Apply theme to DOM
@@ -120,9 +122,10 @@ export function ThemeProvider({
     };
   }, [theme, target]);
 
-  // Persist theme preference
+  // Persist theme preference (only after hydration to avoid overwriting stored value)
   React.useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (!isHydratedRef.current) return;
 
     // Store just the name for preset themes
     const isPreset = presetThemes.some((t) => t.name === theme.name);

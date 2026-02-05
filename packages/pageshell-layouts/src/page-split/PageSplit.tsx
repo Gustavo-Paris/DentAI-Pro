@@ -169,15 +169,27 @@ export function PageSplit({
   masterClassName,
   detailClassName,
 }: PageSplitProps) {
-  // State
-  const initialSize = persistKey ? getPersistedSize(persistKey, defaultSize) : defaultSize;
-  const [size, setSize] = useState(initialSize);
+  // State - always initialize with defaultSize to avoid hydration mismatch.
+  // localStorage will be read in useEffect after hydration.
+  const [size, setSize] = useState(defaultSize);
   const [internalCollapsed, setInternalCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const dragStartRef = useRef<{ pos: number; size: number } | null>(null);
+  const isHydratedRef = useRef(false);
+
+  // Restore persisted size from localStorage AFTER hydration
+  useEffect(() => {
+    if (persistKey) {
+      const stored = getPersistedSize(persistKey, defaultSize);
+      if (stored !== defaultSize) {
+        setSize(stored);
+      }
+    }
+    isHydratedRef.current = true;
+  }, [persistKey, defaultSize]);
 
   // Collapsed state (controlled or uncontrolled)
   const isCollapsed = controlledCollapsed ?? internalCollapsed;
