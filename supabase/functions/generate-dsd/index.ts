@@ -835,6 +835,51 @@ serve(async (req: Request) => {
       analysis = analysisResult;
     }
 
+    // === POST-PROCESSING SAFETY NETS ===
+
+    // Safety net #1: Strip visagismo if no face photo was provided
+    // The AI prompt already instructs to skip visagismo without full face,
+    // but this ensures it deterministically even if the model ignores the instruction.
+    if (!additionalPhotos?.face) {
+      // Check if the AI returned any visagismo data (field exists and is set)
+      const hadVisagism = analysis.face_shape !== undefined && analysis.face_shape !== null;
+      if (hadVisagism) {
+        logger.log("Post-processing: resetting visagismo to neutral defaults (no face photo provided)");
+        analysis.face_shape = 'oval'; // neutral default
+        analysis.perceived_temperament = 'fleumático'; // neutral default
+        analysis.recommended_tooth_shape = 'natural';
+        analysis.visagism_notes = "Análise de visagismo requer foto da face completa para determinação precisa de formato facial e temperamento.";
+        // Replace visagism-specific observations (pattern: "Formato facial: X" or "Temperamento: X")
+        analysis.observations = (analysis.observations || []).map(obs => {
+          const lower = obs.toLowerCase();
+          // Only replace observations that ARE visagismo analysis results
+          if (lower.startsWith('formato facial') || lower.startsWith('temperamento percebido') ||
+              lower.startsWith('análise de visagismo') || lower.startsWith('visagismo:')) {
+            return null; // mark for removal
+          }
+          return obs;
+        }).filter((obs): obs is string => obs !== null);
+        analysis.observations.push("Análise de visagismo não realizada — foto da face completa não fornecida.");
+      }
+    }
+
+    // Safety net #2: Strip gengivoplastia suggestions if smile line is not "alta"
+    // Gengivoplastia only makes sense when gingiva is clearly visible (high smile line).
+    // For "média" smile line, the AI prompt already instructs conservatism —
+    // the post-processing only kicks in as a hard filter for non-alta lines.
+    if (analysis.smile_line !== 'alta') {
+      const before = analysis.suggestions.length;
+      analysis.suggestions = analysis.suggestions.filter(s => {
+        // Only filter suggestions that are specifically about gengivoplastia treatment
+        const proposed = s.proposed_change.toLowerCase();
+        return !proposed.includes('gengivoplastia');
+      });
+      const removed = before - analysis.suggestions.length;
+      if (removed > 0) {
+        logger.log(`Post-processing: removed ${removed} gengivoplastia suggestion(s) (smile_line=${analysis.smile_line})`);
+      }
+    }
+
     // NEW: If analysisOnly, return immediately without generating simulation
     if (analysisOnly) {
       const destructionCheck = hasSevereDestruction(analysis);

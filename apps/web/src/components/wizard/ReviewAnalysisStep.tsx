@@ -197,6 +197,8 @@ export function ReviewAnalysisStep({
   const [showManualAdd, setShowManualAdd] = useState(false);
   const [manualTooth, setManualTooth] = useState('');
   const [internalDobError, setInternalDobError] = useState(false);
+  const [dobInputText, setDobInputText] = useState('');
+  const [dobCalendarOpen, setDobCalendarOpen] = useState(false);
   
   // Use external dobError if provided, otherwise use internal state
   const dobError = externalDobError ?? internalDobError;
@@ -479,9 +481,14 @@ export function ReviewAnalysisStep({
                             </Badge>
                           </div>
                           <div className="text-xs text-muted-foreground mb-2">
-                            {tooth.cavity_class && <span>{tooth.cavity_class}</span>}
-                            {tooth.restoration_size && <span> • {tooth.restoration_size}</span>}
-                            {tooth.depth && <span> • {tooth.depth}</span>}
+                            {(() => {
+                              const showCavity = tooth.cavity_class && !['coroa', 'implante', 'encaminhamento'].includes(tooth.treatment_indication || '');
+                              const parts: string[] = [];
+                              if (showCavity) parts.push(tooth.cavity_class!);
+                              if (tooth.restoration_size) parts.push(tooth.restoration_size);
+                              if (tooth.depth) parts.push(tooth.depth);
+                              return parts.join(' • ');
+                            })()}
                           </div>
                           
                           {/* Per-tooth treatment selector */}
@@ -769,47 +776,97 @@ export function ReviewAnalysisStep({
                     Data de Nascimento <span className="text-destructive">*</span>
                   </Label>
                   <div className="flex gap-2 items-center">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "flex-1 justify-start text-left font-normal",
-                            !patientBirthDate && "text-muted-foreground",
-                            dobError && "border-destructive ring-1 ring-destructive"
-                          )}
-                          disabled={!!selectedPatientId && !!patientBirthDate}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {patientBirthDate 
+                    <div className="relative flex-1">
+                      <Input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="DD/MM/AAAA"
+                        className={cn(
+                          "pr-10",
+                          dobError && "border-destructive ring-1 ring-destructive"
+                        )}
+                        disabled={!!selectedPatientId && !!patientBirthDate}
+                        value={
+                          patientBirthDate && !dobInputText
                             ? format(new Date(patientBirthDate), "dd/MM/yyyy", { locale: ptBR })
-                            : "Selecionar data"
+                            : dobInputText
+                        }
+                        onChange={(e) => {
+                          let value = e.target.value.replace(/[^\d/]/g, '');
+                          // Auto-insert slashes as user types
+                          const digits = value.replace(/\//g, '');
+                          if (digits.length >= 4) {
+                            value = digits.slice(0, 2) + '/' + digits.slice(2, 4) + '/' + digits.slice(4, 8);
+                          } else if (digits.length >= 2) {
+                            value = digits.slice(0, 2) + '/' + digits.slice(2);
                           }
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={patientBirthDate ? new Date(patientBirthDate) : undefined}
-                          onSelect={(date) => {
-                            if (date) {
+                          setDobInputText(value);
+                          // Parse complete date (DD/MM/YYYY)
+                          const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+                          if (match) {
+                            const [, dd, mm, yyyy] = match;
+                            const day = parseInt(dd, 10);
+                            const month = parseInt(mm, 10);
+                            const year = parseInt(yyyy, 10);
+                            const date = new Date(year, month - 1, day);
+                            // Validate: real date, not in future, reasonable range
+                            if (
+                              date.getDate() === day &&
+                              date.getMonth() === month - 1 &&
+                              date.getFullYear() === year &&
+                              date <= new Date() &&
+                              year >= 1900
+                            ) {
                               const isoDate = date.toISOString().split('T')[0];
                               handleBirthDateChange(isoDate);
-                              // Auto-calculate and set age
                               const age = calculateAge(isoDate);
                               onFormChange({ patientAge: String(age) });
                             }
-                          }}
-                          disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
-                          initialFocus
-                          className={cn("p-3 pointer-events-auto")}
-                          captionLayout="dropdown-buttons"
-                          fromYear={1920}
-                          toYear={new Date().getFullYear()}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    
+                          }
+                        }}
+                        onBlur={() => {
+                          // On blur, if we have a valid date, clear the input text to show formatted value
+                          if (patientBirthDate) {
+                            setDobInputText('');
+                          }
+                        }}
+                      />
+                      <Popover open={dobCalendarOpen} onOpenChange={setDobCalendarOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                            disabled={!!selectedPatientId && !!patientBirthDate}
+                          >
+                            <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="end">
+                          <Calendar
+                            mode="single"
+                            selected={patientBirthDate ? new Date(patientBirthDate) : undefined}
+                            onSelect={(date) => {
+                              if (date) {
+                                const isoDate = date.toISOString().split('T')[0];
+                                handleBirthDateChange(isoDate);
+                                const age = calculateAge(isoDate);
+                                onFormChange({ patientAge: String(age) });
+                                setDobInputText('');
+                                setDobCalendarOpen(false);
+                              }
+                            }}
+                            disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                            initialFocus
+                            className={cn("p-3 pointer-events-auto")}
+                            captionLayout="dropdown-buttons"
+                            fromYear={1920}
+                            toYear={new Date().getFullYear()}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+
                     {/* Show calculated age */}
                     {patientBirthDate && (
                       <div className="flex items-center gap-1 px-3 py-2 rounded-md bg-primary/10 text-primary min-w-[80px] justify-center">
@@ -819,7 +876,7 @@ export function ReviewAnalysisStep({
                       </div>
                     )}
                   </div>
-                  
+
                   {/* Error message for DOB */}
                   {dobError && (
                     <p className="text-xs text-destructive flex items-center gap-1">
@@ -827,7 +884,7 @@ export function ReviewAnalysisStep({
                       Informe a data de nascimento para gerar o caso
                     </p>
                   )}
-                  
+
                   {/* Hint for existing patients */}
                   {selectedPatientId && !patientBirthDate && !dobError && (
                     <p className="text-xs text-muted-foreground">
