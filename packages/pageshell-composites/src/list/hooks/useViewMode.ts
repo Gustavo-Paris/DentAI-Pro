@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useMediaQuery } from '@pageshell/core';
 
 /**
@@ -129,16 +129,10 @@ function getStorageKey(persistViewMode: boolean | string | undefined): string | 
 }
 
 /**
- * Get initial view mode from localStorage or default
+ * Read view mode from localStorage (client-side only, after hydration)
  */
-function getInitialViewMode(
-  persistViewMode: boolean | string | undefined,
-  defaultViewMode: ResolvedViewMode
-): ResolvedViewMode {
-  if (typeof window === 'undefined') return defaultViewMode;
-
-  const storageKey = getStorageKey(persistViewMode);
-  if (!storageKey) return defaultViewMode;
+function getStoredViewMode(storageKey: string | null): ResolvedViewMode | null {
+  if (typeof window === 'undefined' || !storageKey) return null;
 
   try {
     const stored = localStorage.getItem(storageKey);
@@ -148,7 +142,7 @@ function getInitialViewMode(
   } catch {
     // localStorage not available
   }
-  return defaultViewMode;
+  return null;
 }
 
 /**
@@ -200,13 +194,24 @@ export function useViewMode({
   const isMobile = useMediaQuery(`(max-width: ${mobileBreakpoint}px)`);
   const isAuto = viewMode === 'auto';
 
-  // User-selected view mode (only used when toggle is enabled)
-  const [userViewMode, setUserViewMode] = useState<ResolvedViewMode>(() =>
-    getInitialViewMode(persistViewMode, defaultViewMode)
-  );
+  // Always initialize with defaultViewMode to avoid hydration mismatch.
+  // localStorage will be read in useEffect after hydration.
+  const [userViewMode, setUserViewMode] = useState<ResolvedViewMode>(defaultViewMode);
+  const isHydratedRef = useRef(false);
 
-  // Persist to localStorage when user changes view mode
+  // Restore from localStorage AFTER hydration completes
   useEffect(() => {
+    const storageKey = getStorageKey(persistViewMode);
+    const stored = getStoredViewMode(storageKey);
+    if (stored !== null) {
+      setUserViewMode(stored);
+    }
+    isHydratedRef.current = true;
+  }, [persistViewMode]);
+
+  // Persist to localStorage when user changes view mode (only after hydration)
+  useEffect(() => {
+    if (!isHydratedRef.current) return;
     if (!enableToggle) return;
 
     const storageKey = getStorageKey(persistViewMode);
