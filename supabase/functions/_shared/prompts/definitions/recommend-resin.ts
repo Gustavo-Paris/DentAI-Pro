@@ -455,6 +455,14 @@ REGRAS ADICIONAIS:
 - \u274c ERRADO: Dente 13 = "3M ESPE - Filtek Z350 XT", Dente 23 = "Solventum - Filtek Z350 XT"
 - \u2705 CERTO: Ambos = "Solventum - Filtek Z350 XT"
 
+\u26a0\ufe0f REGRA CR\u00cdTICA - DETERMINISMO CONTRALATERAL:
+- Dentes contralaterais com MESMO diagn\u00f3stico (mesma classe, mesmo tamanho, mesmo n\u00edvel est\u00e9tico) DEVEM receber protocolos ID\u00caNTICOS
+- MESMO n\u00famero de camadas, MESMOS shades, MESMA resina, MESMA t\u00e9cnica, MESMO n\u00edvel de confian\u00e7a
+- Se o dente 13 recebe 3 camadas (Dentina + Efeitos + Esmalte), o dente 23 com diagn\u00f3stico equivalente DEVE receber exatamente 3 camadas com os mesmos shades
+- A decis\u00e3o de incluir ou n\u00e3o a camada de Efeitos deve ser baseada APENAS nos crit\u00e9rios objetivos (n\u00edvel est\u00e9tico + regi\u00e3o) \u2014 n\u00e3o varie aleatoriamente
+- \u274c ERRADO: Dente 13 = 3 camadas (confian\u00e7a alta), Dente 23 = 2 camadas (confian\u00e7a m\u00e9dia) \u2014 para mesmo diagn\u00f3stico
+- \u2705 CERTO: Ambos = 3 camadas com mesmos shades e confian\u00e7a alta
+
 === NATURALIDADE DO RESULTADO (CR\u00cdTICO PARA EST\u00c9TICA ANTERIOR) ===
 
 Para restaura\u00e7\u00f5es que pare\u00e7am NATURAIS e n\u00e3o "dentes de porcelana artificial":
@@ -554,8 +562,8 @@ Responda em formato JSON:
 {
   "recommended_resin_name": "nome exato da resina recomendada (DEVE respeitar o or\u00e7amento!)",
   "is_from_inventory": true ou false,
-  "ideal_resin_name": "nome da resina ideal se diferente (null se igual)",
-  "ideal_reason": "explica\u00e7\u00e3o se ideal for diferente (null se n\u00e3o aplic\u00e1vel)",
+  "ideal_resin_name": "nome da resina ideal se diferente da recomendada (null se a recomendada J\u00c1 \u00c9 a ideal). \u26a0\ufe0f Se recommended_resin_name = ideal_resin_name, defina como null!",
+  "ideal_reason": "explica\u00e7\u00e3o se ideal for diferente (null se n\u00e3o aplic\u00e1vel). \u26a0\ufe0f N\u00c3O diga que a ideal 'est\u00e1 fora do or\u00e7amento' se ela j\u00e1 \u00e9 a recomenda\u00e7\u00e3o principal!",
   "budget_compliance": true ou false (a resina recomendada respeita o or\u00e7amento?),
   "price_range": "faixa de pre\u00e7o da resina recomendada (Econ\u00f4mico/Intermedi\u00e1rio/M\u00e9dio-alto/Premium)",
   "justification": "explica\u00e7\u00e3o detalhada de 2-3 frases incluindo por que esta resina foi escolhida considerando o or\u00e7amento",
@@ -578,10 +586,10 @@ Responda em formato JSON:
       }
     ],
     "alternative": {
-      "resin": "Resina alternativa para t\u00e9cnica simplificada",
-      "shade": "Cor \u00fanica",
-      "technique": "Descri\u00e7\u00e3o da t\u00e9cnica alternativa",
-      "tradeoff": "O que se perde com esta alternativa"
+      "resin": "Resina alternativa para t\u00e9cnica simplificada. \u26a0\ufe0f DEVE ser uma op\u00e7\u00e3o REAL e DIFERENTE do protocolo principal. Se n\u00e3o existe alternativa vi\u00e1vel mais simples, use a MESMA resina com t\u00e9cnica de MENOS camadas.",
+      "shade": "Cor \u00fanica para t\u00e9cnica simplificada",
+      "technique": "Descri\u00e7\u00e3o da t\u00e9cnica alternativa simplificada. \u26a0\ufe0f NUNCA diga 'n\u00e3o aplic\u00e1vel' \u2014 SEMPRE forne\u00e7a uma t\u00e9cnica simplificada real (ex: incremento \u00fanico, bulk fill, 2 camadas ao inv\u00e9s de 3).",
+      "tradeoff": "O que se perde com esta alternativa (perda est\u00e9tica espec\u00edfica, n\u00e3o gen\u00e9rico)"
     },
     "finishing": {
       "contouring": [

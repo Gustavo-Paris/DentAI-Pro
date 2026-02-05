@@ -47,7 +47,11 @@ Gere um protocolo COMPLETO e DETALHADO de cimentação para facetas cerâmicas, 
 5. **CONSISTÊNCIA ENTRE DENTES CONTRALATERAIS**:
    - Dentes simétricos (11 e 21, 13 e 23) DEVEM usar o MESMO protocolo de cimentação
    - Mesmo tipo de cimento, mesma cor, mesma técnica
+   - Mesma concentração de ácido fluorídrico (ex: se 11 usa HF 5%, 21 DEVE usar HF 5%)
+   - Mesmo silano, mesmo adesivo, mesmo tempo de condicionamento
    - Cimentos diferentes entre contralaterais = resultado assimétrico INACEITÁVEL
+   - ❌ ERRADO: Dente 11 = HF 5% (Condac Porcelana FGM), Dente 21 = HF 10% (genérico)
+   - ✅ CERTO: Ambos = HF 5% (Condac Porcelana FGM) com mesma marca e concentração
 
 6. **PREFERÊNCIA DE CLAREAMENTO DO PACIENTE**:
    - Se o paciente deseja clareamento, a cor ALVO da faceta deve refletir essa preferência
