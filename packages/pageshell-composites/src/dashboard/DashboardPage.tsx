@@ -307,7 +307,15 @@ export const DashboardPage = React.forwardRef<HTMLElement, DashboardPageProps>(
               resolveSlot(slots.modules)
             ) : modules && modules.length > 0 ? (
               <div
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                className={cn(
+                  'grid gap-4 auto-rows-fr',
+                  // Responsive: 1 col mobile, 2 cols for 2 items, 3 cols for 3+ items
+                  modules.length === 2
+                    ? 'grid-cols-1 sm:grid-cols-2'
+                    : modules.length >= 3
+                      ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3'
+                      : 'grid-cols-1'
+                )}
                 role="region"
                 aria-label="Dashboard modules"
               >
@@ -320,7 +328,7 @@ export const DashboardPage = React.forwardRef<HTMLElement, DashboardPageProps>(
             {/* Secondary Modules */}
             {secondaryModules && secondaryModules.length > 0 && (
               <div
-                className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3"
+                className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 auto-rows-fr gap-3"
                 role="region"
                 aria-label="Secondary modules"
               >
