@@ -98,6 +98,13 @@ Além de patologias, identifique oportunidades de melhoria estética mesmo em de
 - Lesões suspeitas (encaminhar para biópsia)
 - Casos que requerem especialista
 
+⚠️ REGRA OBRIGATÓRIA PARA ENCAMINHAMENTOS:
+- SEMPRE especificar a ESPECIALIDADE do encaminhamento (ex: "Ortodontia", "Periodontia", "Endodontia", "Cirurgia", "Prótese")
+- SEMPRE incluir o MOTIVO do encaminhamento (ex: "Má-oclusão classe II requer alinhamento prévio", "Recessão gengival severa com mobilidade grau 2")
+- Incluir nos campos: referral_specialty e referral_reason
+- ❌ ERRADO: "Dente requer avaliação especializada" (genérico, sem especialidade nem motivo)
+- ✅ CERTO: referral_specialty: "Periodontia", referral_reason: "Recessão gengival severa com perda óssea — requer avaliação periodontal antes de qualquer procedimento restaurador"
+
 ## Para CADA dente identificado, determine:
 1. Número do dente (notação FDI: 11-18, 21-28, 31-38, 41-48)
 2. A região do dente (anterior/posterior, superior/inferior)

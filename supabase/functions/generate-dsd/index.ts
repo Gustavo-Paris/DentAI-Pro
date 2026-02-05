@@ -12,6 +12,7 @@ import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared
 import { checkAndUseCredits, createInsufficientCreditsResponse } from "../_shared/credits.ts";
 import { getPrompt } from "../_shared/prompts/registry.ts";
 import type { Params as DsdAnalysisParams } from "../_shared/prompts/definitions/dsd-analysis.ts";
+import type { Params as DsdSimulationParams } from "../_shared/prompts/definitions/dsd-simulation.ts";
 
 // DSD Analysis interface
 interface DSDAnalysis {
@@ -252,117 +253,19 @@ async function generateSimulation(
 
   // Build simple, direct instructions
   const colorInstruction = `- ${whiteningConfig.instruction}`;
-  const textureInstruction = `TEXTURA NATURAL DO ESMALTE (CRÍTICO para realismo):
-- Manter/criar PERIQUIMÁCIES (linhas horizontais sutis no esmalte)
-- Preservar REFLEXOS DE LUZ naturais nos pontos de brilho
-- Criar GRADIENTE DE TRANSLUCIDEZ: opaco cervical → translúcido incisal
-- Manter variações sutis de cor entre dentes adjacentes (100% idênticos = artificial)
-- Preservar CARACTERIZAÇÕES naturais visíveis (manchas brancas sutis, craze lines)
-- NÃO criar aparência de "porcelana perfeita" ou "dentes de comercial de TV"`;
-  const wantsWhitening = true; // Always apply whitening (user always selects a level)
   const whiteningIntensity = whiteningConfig.intensity;
-  
+
   // Get visagism data for context-aware simulation
   const faceShape = analysis.face_shape || 'oval';
   const toothShapeRecommendation = analysis.recommended_tooth_shape || toothShape || 'natural';
   const smileArc = analysis.smile_arc || 'consonante';
 
-  // INPAINTING MODE - Technical approach for pixel-perfect preservation
-  const absolutePreservation = `🔒 INPAINTING MODE - DENTAL SMILE ENHANCEMENT 🔒
-
-=== IDENTIDADE DO PACIENTE - PRESERVAÇÃO ABSOLUTA ===
-Esta é uma foto REAL de um paciente REAL. A identidade facial deve ser 100% preservada.
-
-WORKFLOW OBRIGATÓRIO (seguir exatamente):
-1. COPIAR a imagem de entrada INTEIRA como está
-2. IDENTIFICAR APENAS a área dos dentes (superfícies de esmalte branco/marfim)
-3. MODIFICAR APENAS pixels dentro do limite dos dentes
-4. TODOS os pixels FORA do limite dos dentes = CÓPIA EXATA da entrada
-
-⚠️ DEFINIÇÃO DA MÁSCARA (CRÍTICO):
-- DENTRO DA MÁSCARA (pode modificar): Superfícies de esmalte dos dentes APENAS
-- FORA DA MÁSCARA (copiar exatamente):
-  • LÁBIOS: Formato, cor, textura, brilho, rugas, vermillion - INTOCÁVEIS
-  • GENGIVA: Cor rosa, contorno, papilas interdentais, zênites gengivais - PRESERVAR
-  • PELE: Textura, tom, pelos faciais, barba - IDÊNTICOS
-  • FUNDO: Qualquer elemento de fundo - INALTERADO
-  • SOMBRAS: Todas as sombras naturais da foto - MANTER
-
-REQUISITO A NÍVEL DE PIXEL:
-- Cada pixel dos lábios na saída = EXATAMENTE MESMO valor RGB da entrada
-- Cada pixel de gengiva na saída = EXATAMENTE MESMO valor RGB da entrada
-- Cada pixel de pele na saída = EXATAMENTE MESMO valor RGB da entrada
-- Textura labial, contorno, destaques = IDÊNTICOS à entrada
-- NUNCA alterar o formato do rosto ou expressão facial
-
-=== CARACTERÍSTICAS NATURAIS DOS DENTES A PRESERVAR/CRIAR ===
-Para resultado REALISTA (não artificial):
-1. TEXTURA DE SUPERFÍCIE: Manter/criar micro-textura natural do esmalte (periquimácies)
-2. TRANSLUCIDEZ: Terço incisal mais translúcido, terço cervical mais opaco
-3. GRADIENTE DE COR: Mais saturado no cervical → menos saturado no incisal
-4. MAMELONS: Se visíveis na foto original, PRESERVAR as projeções incisais
-5. REFLEXOS DE LUZ: Manter os pontos de brilho naturais nos dentes
-
-Isto é EDIÇÃO de imagem (inpainting), NÃO GERAÇÃO de imagem.
-Dimensões de saída DEVEM ser iguais às dimensões de entrada.`;
-
-  // Whitening priority section - FIRST task, direct and emphatic
-  const whiteningPrioritySection = wantsWhitening ? `
-#1 TASK - WHITENING (${whiteningIntensity}):
-${colorInstruction}
-${whiteningLevel === 'hollywood' ? '⚠️ HOLLYWOOD = MAXIMUM BRIGHTNESS. Teeth must be DRAMATICALLY WHITE like porcelain veneers.' : ''}
-
-` : '';
-
-  // Visagism context for simulation
-  const visagismContext = `
-=== CONTEXTO DE VISAGISMO (GUIA ESTÉTICO) ===
-Formato facial do paciente: ${faceShape.toUpperCase()}
-Formato de dente recomendado: ${toothShapeRecommendation.toUpperCase()}
-Arco do sorriso: ${smileArc.toUpperCase()}
-
-REGRAS DE VISAGISMO PARA SIMULAÇÃO:
-${toothShapeRecommendation === 'quadrado' ? '- Manter/criar ângulos mais definidos nos incisivos, bordos mais retos' : ''}
-${toothShapeRecommendation === 'oval' ? '- Manter/criar contornos arredondados e suaves nos incisivos' : ''}
-${toothShapeRecommendation === 'triangular' ? '- Manter proporção mais larga incisal, convergindo para cervical' : ''}
-${toothShapeRecommendation === 'retangular' ? '- Manter proporção mais alongada, bordos paralelos' : ''}
-${toothShapeRecommendation === 'natural' ? '- PRESERVAR o formato atual dos dentes do paciente' : ''}
-${smileArc === 'plano' ? '- Considerar suavizar a curva incisal para acompanhar lábio inferior' : ''}
-${smileArc === 'reverso' ? '- ATENÇÃO: Arco reverso precisa de tratamento clínico real' : ''}
-`;
-
-  // Quality requirements - compositing + natural appearance
-  const qualityRequirements = `
-${visagismContext}
-VERIFICAÇÃO DE COMPOSIÇÃO:
-Pense nisso como camadas do Photoshop:
-- Camada inferior: Entrada original (BLOQUEADA, inalterada)
-- Camada superior: Suas modificações dos dentes APENAS
-- Resultado: Composição onde APENAS os dentes diferem
-
-VALIDAÇÃO DE QUALIDADE:
-- Sobrepor saída na entrada → diferença deve aparecer APENAS nos dentes
-- Qualquer mudança em lábios, gengiva, pele = FALHA
-- Os dentes devem parecer NATURAIS, não artificiais ou "de plástico"
-- A textura do esmalte deve ter micro-variações naturais
-- O gradiente de cor cervical→incisal deve ser suave e realista
-${wantsWhitening ? '- Os dentes devem ser VISIVELMENTE MAIS BRANCOS que a entrada, mas ainda naturais' : ''}`;
-
-  // Base corrections - focused and specific (avoid over-smoothing)
-  const baseCorrections = `CORREÇÕES DENTÁRIAS (manter aparência NATURAL):
-1. Preencher buracos, lascas ou defeitos visíveis nas bordas dos dentes
-2. Remover manchas escuras pontuais (mas manter variação natural de cor)
-3. Fechar pequenos espaços adicionando material MÍNIMO nos pontos de contato - NÃO alargando dentes
-4. PRESERVAR mamelons se visíveis (projeções naturais da borda incisal)
-5. MANTER micro-textura natural do esmalte - NÃO deixar dentes "lisos demais"
-6. PRESERVAR translucidez incisal natural - NÃO tornar dentes opacos uniformemente`;
-  
   // Check if case needs reconstruction (missing/destroyed teeth)
   const needsReconstruction = analysis.suggestions.some(s => {
     const issue = s.current_issue.toLowerCase();
     const change = s.proposed_change.toLowerCase();
-    return issue.includes('ausente') || 
-           issue.includes('destruição') || 
+    return issue.includes('ausente') ||
+           issue.includes('destruição') ||
            issue.includes('destruído') ||
            issue.includes('fratura') ||
            issue.includes('raiz residual') ||
@@ -370,12 +273,12 @@ ${wantsWhitening ? '- Os dentes devem ser VISIVELMENTE MAIS BRANCOS que a entrad
            change.includes('coroa total') ||
            change.includes('extração');
   });
-  
+
   // Check if case has old restorations that need replacement
   const needsRestorationReplacement = analysis.suggestions.some(s => {
     const issue = s.current_issue.toLowerCase();
     const change = s.proposed_change.toLowerCase();
-    return issue.includes('restauração') || 
+    return issue.includes('restauração') ||
            issue.includes('restauracao') ||
            issue.includes('resina') ||
            issue.includes('manchamento') ||
@@ -395,7 +298,7 @@ ${wantsWhitening ? '- Os dentes devem ser VISIVELMENTE MAIS BRANCOS que a entrad
     restorationTeeth = analysis.suggestions
       .filter(s => {
         const issue = s.current_issue.toLowerCase();
-        return issue.includes('restauração') || 
+        return issue.includes('restauração') ||
                issue.includes('restauracao') ||
                issue.includes('resina') ||
                issue.includes('manchamento') ||
@@ -404,18 +307,16 @@ ${wantsWhitening ? '- Os dentes devem ser VISIVELMENTE MAIS BRANCOS que a entrad
       .map(s => s.tooth)
       .join(', ');
   }
-  
+
   // Check if it's a TRUE intraoral photo
   const isIntraoralPhoto = analysis.observations?.some(obs => {
     const lower = obs.toLowerCase();
-    return lower.includes('afastador') || 
+    return lower.includes('afastador') ||
            lower.includes('retrator') ||
            (lower.includes('intraoral') && (lower.includes('interna') || lower.includes('sem lábio'))) ||
            lower.includes('close-up extremo');
   });
-  
-  let simulationPrompt: string;
-  
+
   // Filter out structural changes that would alter tooth dimensions
   const structuralKeywords = [
     'alargar', 'widen', 'larger', 'maior', 'aumentar largura',
@@ -428,34 +329,40 @@ ${wantsWhitening ? '- Os dentes devem ser VISIVELMENTE MAIS BRANCOS que a entrad
   const filteredSuggestions = analysis.suggestions?.filter(s => {
     const change = s.proposed_change.toLowerCase();
     const issue = s.current_issue.toLowerCase();
-    const isStructural = structuralKeywords.some(kw => 
+    const isStructural = structuralKeywords.some(kw =>
       change.includes(kw) || issue.includes(kw)
     );
     return !isStructural;
   }) || [];
 
-  const allowedChangesFromAnalysis = filteredSuggestions.length > 0 
-    ? `\nSPECIFIC CORRECTIONS FROM ANALYSIS (apply these changes):\n${filteredSuggestions.map(s => 
+  const allowedChangesFromAnalysis = filteredSuggestions.length > 0
+    ? `\nSPECIFIC CORRECTIONS FROM ANALYSIS (apply these changes):\n${filteredSuggestions.map(s =>
         `- Tooth ${s.tooth}: ${s.proposed_change}`
       ).join('\n')}`
     : '';
-  
+
+  // Determine case type for prompt variant selection
+  const promptType = needsReconstruction ? 'reconstruction' :
+                     (needsRestorationReplacement ? 'restoration-replacement' :
+                     (isIntraoralPhoto ? 'intraoral' : 'standard')) as DsdSimulationParams['caseType'];
+
+  // Build specific instructions for reconstruction cases
+  let specificInstructions: string | undefined;
   if (needsReconstruction) {
-    // RECONSTRUCTION PROMPT
     const teethToReconstruct = analysis.suggestions
       .filter(s => {
         const issue = s.current_issue.toLowerCase();
         const change = s.proposed_change.toLowerCase();
-        return issue.includes('ausente') || 
-               issue.includes('destruição') || 
+        return issue.includes('ausente') ||
+               issue.includes('destruição') ||
                issue.includes('destruído') ||
                issue.includes('fratura') ||
                issue.includes('raiz') ||
                change.includes('implante') ||
                change.includes('coroa');
       });
-    
-    const specificInstructions = teethToReconstruct.map(s => {
+
+    specificInstructions = teethToReconstruct.map(s => {
       const toothNum = parseInt(s.tooth);
       let contralateral = '';
       if (toothNum >= 11 && toothNum <= 18) {
@@ -469,122 +376,28 @@ ${wantsWhitening ? '- Os dentes devem ser VISIVELMENTE MAIS BRANCOS que a entrad
       }
       return `Dente ${s.tooth}: COPIE do ${contralateral || 'vizinho'}`;
     }).join(', ');
-
-    simulationPrompt = `DENTAL PHOTO EDIT - RECONSTRUCTION${wantsWhitening ? ' + WHITENING' : ''}
-
-${absolutePreservation}
-
-TASK: Edit ONLY the teeth. Everything else must be IDENTICAL to input.
-${whiteningPrioritySection}DENTAL CORRECTIONS:
-${baseCorrections}
-${textureInstruction}
-
-RECONSTRUCTION:
-- ${specificInstructions || 'Fill missing teeth using adjacent teeth as reference'}
-${allowedChangesFromAnalysis}
-
-PROPORTION RULES:
-- Keep original tooth width proportions exactly
-- NEVER make teeth appear thinner or narrower than original
-- NEVER make teeth appear WIDER or LARGER than original
-- DO NOT change the overall tooth silhouette or outline
-- Only add material to fill defects - do NOT reshape tooth contours
-- Maintain the natural width-to-height ratio of each tooth
-
-${qualityRequirements}
-
-Output: Same photo with ONLY teeth corrected.`;
-
-  } else if (needsRestorationReplacement) {
-    simulationPrompt = `DENTAL PHOTO EDIT - RESTORATION${wantsWhitening ? ' + WHITENING' : ''}
-
-${absolutePreservation}
-
-TASK: Edit ONLY the teeth. Everything else must be IDENTICAL to input.
-${whiteningPrioritySection}DENTAL CORRECTIONS:
-${baseCorrections}
-${textureInstruction}
-
-RESTORATION FOCUS:
-- Blend interface lines on teeth ${restorationTeeth || '11, 21'}
-${allowedChangesFromAnalysis}
-
-PROPORTION RULES:
-- Keep original tooth width proportions exactly
-- NEVER make teeth appear thinner or narrower than original
-- NEVER make teeth appear WIDER or LARGER than original
-- DO NOT change the overall tooth silhouette or outline
-- Only add material to fill defects - do NOT reshape tooth contours
-- Maintain the natural width-to-height ratio of each tooth
-
-${qualityRequirements}
-
-Output: Same photo with ONLY teeth corrected.`;
-
-  } else if (isIntraoralPhoto) {
-    simulationPrompt = `DENTAL PHOTO EDIT - INTRAORAL${wantsWhitening ? ' + WHITENING' : ''}
-
-⚠️ ABSOLUTE RULES - VIOLATION = FAILURE ⚠️
-
-DO NOT CHANGE (pixel-perfect preservation REQUIRED):
-- GUMS: Level, color, shape EXACTLY as input
-- ALL OTHER TISSUES: Exactly as input
-- IMAGE SIZE: Exact same dimensions and framing
-
-Only TEETH may be modified.
-
-TASK: Edit ONLY the teeth. Everything else must be IDENTICAL to input.
-${whiteningPrioritySection}DENTAL CORRECTIONS:
-${baseCorrections}
-${textureInstruction}
-${allowedChangesFromAnalysis}
-
-PROPORTION RULES:
-- Keep original tooth width proportions exactly
-- NEVER make teeth appear thinner or narrower than original
-- NEVER make teeth appear WIDER or LARGER than original
-- DO NOT change the overall tooth silhouette or outline
-- Only add material to fill defects - do NOT reshape tooth contours
-- Maintain the natural width-to-height ratio of each tooth
-
-${qualityRequirements}
-
-Output: Same photo with ONLY teeth corrected.`;
-
-  } else {
-    // STANDARD PROMPT - Focused corrections with texture preservation
-    simulationPrompt = `DENTAL PHOTO EDIT${wantsWhitening ? ' - WHITENING REQUESTED' : ''}
-
-${absolutePreservation}
-
-TASK: Edit ONLY the teeth. Everything else must be IDENTICAL to input.
-${whiteningPrioritySection}DENTAL CORRECTIONS:
-${baseCorrections}
-${textureInstruction}
-${allowedChangesFromAnalysis}
-
-PROPORTION RULES:
-- Keep original tooth width proportions exactly
-- NEVER make teeth appear thinner or narrower than original
-- NEVER make teeth appear WIDER or LARGER than original
-- DO NOT change the overall tooth silhouette or outline
-- Only add material to fill defects - do NOT reshape tooth contours
-- Maintain the natural width-to-height ratio of each tooth
-
-${qualityRequirements}
-
-Output: Same photo with ONLY teeth corrected.`;
   }
 
-  const promptType = needsReconstruction ? 'reconstruction' : 
-                     (needsRestorationReplacement ? 'restoration-replacement' : 
-                     (isIntraoralPhoto ? 'intraoral' : 'standard'));
+  // Build prompt via prompt management module
+  const dsdSimulationPrompt = getPrompt('dsd-simulation');
+  const simulationPrompt = dsdSimulationPrompt.system({
+    whiteningLevel,
+    colorInstruction,
+    whiteningIntensity,
+    caseType: promptType,
+    faceShape,
+    toothShapeRecommendation,
+    smileArc,
+    specificInstructions,
+    restorationTeeth,
+    allowedChangesFromAnalysis,
+  } as DsdSimulationParams);
   
   logger.log("DSD Simulation Request:", {
     promptType,
     approach: "absolutePreservation + whiteningPriority",
-    wantsWhitening,
-    whiteningIntensity: wantsWhitening ? whiteningIntensity : 'none',
+    wantsWhitening: true,
+    whiteningIntensity,
     whiteningLevel: whiteningLevel,
     colorInstruction: colorInstruction.substring(0, 80) + '...',
     promptLength: simulationPrompt.length,

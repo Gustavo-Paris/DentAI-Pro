@@ -599,9 +599,11 @@ export default function Result() {
                   Dente {evaluation.tooth} • {evaluation.region.replace('-', ' ')}
                 </p>
               </div>
-              <Badge variant={currentTreatmentStyle.badgeVariant}>
-                {treatmentType === 'resina' ? 'Direta' : 'Indireta'}
-              </Badge>
+              {treatmentType !== 'encaminhamento' && (
+                <Badge variant={currentTreatmentStyle.badgeVariant}>
+                  {treatmentType === 'resina' ? 'Direta' : 'Indireta'}
+                </Badge>
+              )}
             </div>
           </CardContent>
         </Card>
