@@ -1,5 +1,20 @@
 project_id = "jknouttcuwbvygkobrff"
 
+[auth]
+site_url = "https://auria-ai.vercel.app"
+additional_redirect_urls = ["https://auria-ai.vercel.app/**", "https://dentai-pro.vercel.app/**", "http://localhost:3000/**"]
+
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = true
+max_frequency = "1m0s"
+otp_length = 8
+
 [functions.recommend-resin]
 verify_jwt = false
 
