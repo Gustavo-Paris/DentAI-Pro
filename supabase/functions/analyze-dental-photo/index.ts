@@ -6,8 +6,10 @@ import { callGeminiVisionWithTools, GeminiError, type OpenAITool } from "../_sha
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 import { checkAndUseCredits, createInsufficientCreditsResponse } from "../_shared/credits.ts";
 import { getPrompt } from "../_shared/prompts/registry.ts";
+import { withMetrics } from "../_shared/prompts/index.ts";
 import type { PromptDefinition } from "../_shared/prompts/types.ts";
 import type { Params as AnalyzePhotoParams } from "../_shared/prompts/definitions/analyze-dental-photo.ts";
+import { createSupabaseMetrics, PROMPT_VERSION } from "../_shared/metrics-adapter.ts";
 
 interface AnalyzePhotoRequest {
   imageBase64: string;
@@ -327,25 +329,38 @@ serve(async (req) => {
     // Determine MIME type from magic bytes
     const mimeType = isJPEG ? "image/jpeg" : isPNG ? "image/png" : "image/webp";
 
+    // Metrics setup
+    const metrics = createSupabaseMetrics(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
     // Call Gemini Vision with tools
     let analysisResult: PhotoAnalysisResult | null = null;
 
     try {
       logger.log("Calling Gemini Vision API...");
 
-      const result = await callGeminiVisionWithTools(
-        "gemini-3-flash-preview",
-        userPrompt,
-        base64Image,
-        mimeType,
-        tools,
-        {
-          systemPrompt,
-          temperature: 0.1,
-          maxTokens: 3000,
-          forceFunctionName: "analyze_dental_photo",
-        }
-      );
+      const result = await withMetrics(metrics, promptDef.id, PROMPT_VERSION, promptDef.model)(async () => {
+        const response = await callGeminiVisionWithTools(
+          "gemini-3-flash-preview",
+          userPrompt,
+          base64Image,
+          mimeType,
+          tools,
+          {
+            systemPrompt,
+            temperature: 0.1,
+            maxTokens: 3000,
+            forceFunctionName: "analyze_dental_photo",
+          }
+        );
+        return {
+          result: response,
+          tokensIn: 0,
+          tokensOut: 0,
+        };
+      });
 
       if (result.functionCall) {
         logger.log("Successfully got analysis from Gemini");
