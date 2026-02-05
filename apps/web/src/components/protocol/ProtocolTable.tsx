@@ -21,14 +21,20 @@ interface ProtocolTableProps {
 
 const getLayerStyles = (layerName: string): string => {
   const name = layerName.toLowerCase();
+  if (name.includes("aumento incisal") || name.includes("incisal edge")) {
+    return "bg-teal-500/20 dark:bg-teal-500/10 border-l-4 border-l-teal-500";
+  }
   if (name.includes("opaco") || name.includes("mascaramento")) {
     return "bg-amber-500/20 dark:bg-amber-500/10 border-l-4 border-l-amber-500";
   }
-  if (name.includes("dentina") || name.includes("body")) {
+  if (name.includes("dentina") || name.includes("body") || name.includes("corpo")) {
     return "bg-orange-500/20 dark:bg-orange-500/10 border-l-4 border-l-orange-500";
   }
   if (name.includes("efeito") || name.includes("effect") || name.includes("corante") || name.includes("opalescente")) {
     return "bg-violet-500/20 dark:bg-violet-500/10 border-l-4 border-l-violet-500";
+  }
+  if (name.includes("crista") || name.includes("proxima")) {
+    return "bg-emerald-500/20 dark:bg-emerald-500/10 border-l-4 border-l-emerald-500";
   }
   if (name.includes("esmalte") || name.includes("enamel")) {
     return "bg-blue-400/20 dark:bg-blue-400/10 border-l-4 border-l-blue-400";
@@ -60,6 +66,9 @@ export default function ProtocolTable({ layers }: ProtocolTableProps) {
               <TableRow key={layer.order} className={getLayerStyles(layer.name)}>
                 <TableCell className="font-medium">
                   {layer.order}. {layer.name}
+                  {layer.optional && (
+                    <span className="ml-1.5 text-xs font-normal text-muted-foreground">(opcional)</span>
+                  )}
                 </TableCell>
                 <TableCell>{layer.resin_brand}</TableCell>
                 <TableCell>
@@ -110,6 +119,9 @@ export default function ProtocolTable({ layers }: ProtocolTableProps) {
             <div className="flex items-center justify-between mb-2">
               <span className="font-medium text-sm">
                 {layer.order}. {layer.name}
+                {layer.optional && (
+                  <span className="ml-1 text-xs font-normal text-muted-foreground">(opcional)</span>
+                )}
               </span>
               <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-background font-mono text-xs">
                 {layer.shade}

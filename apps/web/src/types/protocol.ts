@@ -8,6 +8,7 @@ export interface ProtocolLayer {
   thickness: string;
   purpose: string;
   technique: string;
+  optional?: boolean;
 }
 
 export interface ProtocolAlternative {
