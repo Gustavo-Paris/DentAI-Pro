@@ -245,23 +245,35 @@ OBSERVE atentamente por sinais de restaurações prévias:
 
 ## CUIDADO COM DIAGNÓSTICOS PRECIPITADOS
 
+⚠️ REGRA CRÍTICA SOBRE INCISIVOS LATERAIS (12/22):
+Incisivos laterais com proporção reduzida são MUITO MAIS FREQUENTEMENTE restaurações em resina insatisfatórias do que microdontia verdadeira.
+- Microdontia verdadeira é RARA (prevalência <2%)
+- Restaurações em resina antigas com cor/forma inadequadas são COMUNS
+- Se o dente 12 ou 22 parece "pequeno" ou com proporção inadequada, o diagnóstico MAIS PROVÁVEL é:
+  → "Restauração em resina insatisfatória com cor e forma inadequadas"
+  → Proposta: "Substituir a restauração por nova restauração em resina ou faceta"
+- Só diagnostique microdontia se o dente é uniformemente pequeno SEM nenhum sinal de restauração
+
 ⚠️ NUNCA diagnostique "micro-dente" ou "dente anômalo" se:
 
 1. O dente apresenta FRATURA visível (incisal, proximal)
 2. Há sinais de RESTAURAÇÃO antiga (linhas de interface, manchamento)
 3. A proporção menor é devido a DESGASTE ou EROSÃO
 4. Houve FRATURA + restauração prévia que encurtou o dente
+5. O dente apresenta diferença de cor/textura entre regiões (indica restauração existente)
 
 ✅ Nesses casos, indique:
 - cavity_class: Classe apropriada para a restauração (IV para incisal, III para proximal)
 - notes: "Fratura presente - não confundir com anomalia dental"
 - notes: "Restauração antiga visível - tamanho real pode ser maior"
 - treatment_indication: "resina" (reparo/reconstrução)
+- indication_reason: "Restauração em resina insatisfatória com [descrever problema específico]"
 
 ❌ Apenas use "micro-dente" ou "dente anômalo" se:
 - O dente claramente nunca erupcionou em tamanho normal
 - Não há evidência de trauma ou restauração prévia
 - A forma é uniformemente pequena (não apenas encurtado)
+- NÃO há nenhuma diferença de cor ou textura entre áreas do dente
 
 ---
 

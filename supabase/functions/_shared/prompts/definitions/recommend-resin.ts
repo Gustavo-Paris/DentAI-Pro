@@ -169,12 +169,14 @@ TABELA DE REFER\u00caNCIA PARA COMBINA\u00c7\u00d5ES:
 \u2502 Aumento Incisal     \u2502 Trans-forma (Ultradent), CT (Z350), Trans20     \u2502
 \u2502 (Efeito)            \u2502 (Empress Direct)                                \u2502
 \u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524
-\u2502 Interface Opaca     \u2502 D BL-L (Empress), WB (Forma), OA (Z350)         \u2502
+\u2502 Cristas Proximais   \u2502 XLE (Harmonize), E BL-L (Empress), JE (Z350)    \u2502
 \u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524
-\u2502 Proximais/Esmalte   \u2502 XLE (Harmonize), E BL-L (Empress), JE (Z350)    \u2502
+\u2502 Dentina/Corpo       \u2502 D BL-L (Empress), WB (Forma), OA (Z350)         \u2502
 \u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524
-\u2502 Esmalte Final       \u2502 MW (Estelite) - excelente polimento             \u2502
-\u2502 (acabamento)        \u2502                                                 \u2502
+\u2502 Efeitos Incisais    \u2502 CT, GT, WT (Z350), Trans (Forma/Empress)        \u2502
+\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524
+\u2502 Esmalte Final       \u2502 WE (Palfique LX5), MW (Estelite)                \u2502
+\u2502 (acabamento)        \u2502 Priorizar polimento superior                    \u2502
 \u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524
 \u2502 Dentes Clareados    \u2502 WE (Estelite Bianco), BL (Forma)                \u2502
 \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518
@@ -323,7 +325,13 @@ ESTRUTURA OBRIGAT\u00d3RIA - 5 CAMADAS (simplificar para 3-4 se n\u00edvel est\u
    - Espessura: 0.2-0.3mm
    - T\u00e9cnica: Aplicar na regi\u00e3o da quebra incisal, criando base para os mamelons
 
-2. DENTINA/CORPO (estrutura principal):
+2. CRISTAS PROXIMAIS (defini\u00e7\u00e3o anat\u00f4mica - ANTES da dentina):
+   - Objetivo: Defini\u00e7\u00e3o das cristas mesial e distal
+   - Resinas: Esmalte um tom mais claro que o dente
+   - Espessura: 0.2mm
+   - T\u00e9cnica: Aplicar nas bordas proximais para criar profundidade
+
+3. DENTINA/CORPO (estrutura principal):
    - Objetivo: Estrutura principal da restaura\u00e7\u00e3o
    - Resinas: WB (Z350/Forma) ou Dentina clara (B1)
    - Espessura: 0.5-1.0mm
@@ -347,10 +355,11 @@ ESTRUTURA OBRIGAT\u00d3RIA - 5 CAMADAS (simplificar para 3-4 se n\u00edvel est\u
       - Usar shades de dentina com maior opacidade (DA3, A3) sem prefixo O
       - Evita necessidade de opaco dedicado
 
-3. EFEITOS INCISAIS (OPCIONAL - flag optional: true):
-   - Objetivo: Halo opaco e efeitos transl\u00facidos
-   - Resinas: Corante branco (halo opaco) ou Dentina clara
-   - Espessura: 0.1-0.2mm
+4. EFEITOS INCISAIS (OPCIONAL - flag optional: true):
+   - Objetivo: Confec\u00e7\u00e3o de halo opaco incisal
+   - Resinas: Corantes (White/Blue) ou Dentina clara
+   - Espessura: 0.1mm
+   - T\u00e9cnica: Aplicar corante branco na borda incisal para criar efeito de halo opaco natural
    - INCLUIR apenas para demanda est\u00e9tica alta/muito alta
    - Shade DEVE ser diferente do shade da camada de esmalte
 
@@ -368,25 +377,17 @@ ESTRUTURA OBRIGAT\u00d3RIA - 5 CAMADAS (simplificar para 3-4 se n\u00edvel est\u
 
    \u26a0\ufe0f Quando incluir esta camada no JSON, DEVE ter "optional": true
 
-4. CRISTAS PROXIMAIS (defini\u00e7\u00e3o anat\u00f4mica):
-   - Objetivo: Defini\u00e7\u00e3o das cristas mesial e distal
-   - Resinas: Esmalte um tom mais claro que o dente
-   - Espessura: 0.2mm
-   - T\u00e9cnica: Aplicar nas bordas proximais para criar profundidade
-
 5. ESMALTE VESTIBULAR FINAL (camada externa):
    - Objetivo: Camada externa com alto polimento
-   - Resinas: MW (Estelite), WE (Palfique), W3/W2 (Hollywood)
    - Espessura: 0.3mm
    - Priorizar resinas com melhor capacidade de polimento
 
-   PRIORIDADE 1 (melhor polimento - recomendado):
-   - Estelite Omega (MW, WE): nanopart\u00edculas esf\u00e9ricas, polimento superior
-   - Palfique LX5 (CE, Enamel): acabamento espelhado
-   - Estelite Sigma Quick (WE, CE): excelente polimento
+   PRIORIDADE 1 (melhor polimento - RECOMENDADO):
+   - Palfique LX5 (WE - White Enamel): acabamento espelhado, polimento superior
+   - Estelite Omega/Sigma Quick (MW, WE): nanopart\u00edculas esf\u00e9ricas, excelente polimento
 
    PRIORIDADE 2 (bom polimento):
-   - Filtek Z350 XT (CT, GT, WE, WT): nanocluster, bom polimento
+   - Filtek Z350 XT (A1E, CT, GT, WE, WT): nanocluster, bom polimento
    - FORMA Ultradent (Trans, Enamel): boa capacidade
 
    PRIORIDADE 3 (polimento adequado):
@@ -401,7 +402,7 @@ ESTRUTURA OBRIGAT\u00d3RIA - 5 CAMADAS (simplificar para 3-4 se n\u00edvel est\u
 SIMPLIFICA\u00c7\u00c3O POR N\u00cdVEL EST\u00c9TICO:
 - N\u00edvel "baixo": 2 camadas (Dentina/Corpo + Esmalte Vestibular Final)
 - N\u00edvel "m\u00e9dio": 3 camadas (Aumento Incisal + Dentina/Corpo + Esmalte Vestibular Final)
-- N\u00edvel "alto": 4 camadas (todas exceto Efeitos Incisais)
+- N\u00edvel "alto": 4 camadas (Aumento Incisal + Cristas Proximais + Dentina/Corpo + Esmalte Vestibular Final)
 - N\u00edvel "muito alto": 5 camadas (todas, incluindo Efeitos Incisais com optional: true)
 
 TABELA DE CORES DE ESMALTE POR LINHA:
@@ -456,15 +457,15 @@ N\u00cdVEL M\u00c9DIO (3 camadas):
 
 N\u00cdVEL ALTO (4 camadas):
 - Camada 1: Aumento Incisal
-- Camada 2: Dentina/Corpo
-- Camada 3: Cristas Proximais
+- Camada 2: Cristas Proximais
+- Camada 3: Dentina/Corpo
 - Camada 4: Esmalte Vestibular Final
 
 N\u00cdVEL MUITO ALTO (5 camadas):
 - Camada 1: Aumento Incisal
-- Camada 2: Dentina/Corpo
-- Camada 3: Efeitos Incisais (optional: true)
-- Camada 4: Cristas Proximais
+- Camada 2: Cristas Proximais
+- Camada 3: Dentina/Corpo
+- Camada 4: Efeitos Incisais (optional: true)
 - Camada 5: Esmalte Vestibular Final
 
 \u26a0\ufe0f CR\u00cdTICO: N\u00c3O criar camada separada chamada "Opaco" ou "Mascaramento"!
@@ -631,13 +632,13 @@ Responda em formato JSON:
     },
     "finishing": {
       "contouring": [
-        {"order": 1, "tool": "Ponta diamantada FF 2135FF", "grit": "Fina", "speed": "Alta rota\u00e7\u00e3o com spray", "time": "20-30s", "tip": "Movimentos leves de varredura"}
+        {"order": 1, "tool": "Ponta diamantada FF 2200FF", "grit": "Fina", "speed": "Alta rota\u00e7\u00e3o com spray", "time": "20-30s", "tip": "Remover excessos cervicais e vestibulares"}
       ],
       "polishing": [
-        {"order": 1, "tool": "Disco Sof-Lex Laranja", "grit": "Grossa", "speed": "Baixa rota\u00e7\u00e3o", "time": "30s", "tip": "Sentido cervical-incisal"},
-        {"order": 2, "tool": "Disco Sof-Lex Amarelo", "grit": "M\u00e9dia", "speed": "Baixa rota\u00e7\u00e3o", "time": "30s", "tip": "Manter disco \u00famido"},
-        {"order": 3, "tool": "Disco Sof-Lex Verde", "grit": "Fina", "speed": "Baixa rota\u00e7\u00e3o", "time": "30s", "tip": "Evitar press\u00e3o excessiva"},
-        {"order": 4, "tool": "Disco Sof-Lex Azul Claro", "grit": "Ultrafina", "speed": "Baixa rota\u00e7\u00e3o", "time": "30s", "tip": "Polimento final"}
+        {"order": 1, "tool": "Disco Sof-Lex Vermelho Escuro", "grit": "Grossa", "speed": "Baixa rota\u00e7\u00e3o", "time": "30s", "tip": "Sentido cervical-incisal"},
+        {"order": 2, "tool": "Disco Sof-Lex Vermelho Claro", "grit": "M\u00e9dia", "speed": "Baixa rota\u00e7\u00e3o", "time": "30s", "tip": "Manter disco \u00famido"},
+        {"order": 3, "tool": "Disco Sof-Lex Laranja", "grit": "Fina", "speed": "Baixa rota\u00e7\u00e3o", "time": "30s", "tip": "Evitar press\u00e3o excessiva"},
+        {"order": 4, "tool": "Disco Sof-Lex Amarelo", "grit": "Ultrafina", "speed": "Baixa rota\u00e7\u00e3o", "time": "30s", "tip": "Polimento final"}
       ],
       "final_glaze": "Pasta Diamond Excel com feltro em baixa rota\u00e7\u00e3o por 40s",
       "maintenance_advice": "Polimento de retoque a cada 6 meses para manter brilho"

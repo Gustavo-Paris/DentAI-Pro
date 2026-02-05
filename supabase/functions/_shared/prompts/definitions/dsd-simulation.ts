@@ -72,7 +72,18 @@ Para resultado REALISTA (não artificial):
 5. REFLEXOS DE LUZ: Manter os pontos de brilho naturais nos dentes
 
 Isto é EDIÇÃO de imagem (inpainting), NÃO GERAÇÃO de imagem.
-Dimensões de saída DEVEM ser iguais às dimensões de entrada.`
+Dimensões de saída DEVEM ser iguais às dimensões de entrada.
+
+=== PERSONALIZAÇÃO POR PACIENTE (CRÍTICO) ===
+⚠️ CADA PACIENTE É ÚNICO - NÃO APLIQUE UM TEMPLATE GENÉRICO!
+- Os dentes deste paciente têm contornos, proporções e características ÚNICAS
+- NÃO aplique um "sorriso ideal genérico" ou "template de sorriso perfeito"
+- A simulação DEVE respeitar a anatomia INDIVIDUAL deste paciente:
+  • Contorno gengival ORIGINAL (zênites, papilas, altura) — PRESERVAR EXATAMENTE
+  • Proporção largura/altura dos dentes ORIGINAIS — manter relação
+  • Características faciais únicas (formato labial, corredor bucal)
+- O resultado deve parecer uma MELHORIA NATURAL deste paciente específico
+- NÃO deve parecer que os dentes foram "copiados" de outra pessoa`
 }
 
 function buildWhiteningPrioritySection(params: Params): string {
