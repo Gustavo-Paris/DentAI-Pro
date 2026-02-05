@@ -19,6 +19,32 @@ interface AnalyzePhotoRequest {
 // Expanded treatment types
 type TreatmentIndication = "resina" | "porcelana" | "coroa" | "implante" | "endodontia" | "encaminhamento";
 
+// Gemini sometimes returns English values instead of Portuguese enum values.
+// This map normalizes them back to the expected Portuguese strings.
+const TREATMENT_INDICATION_MAP: Record<string, TreatmentIndication> = {
+  resin: "resina",
+  porcelain: "porcelana",
+  crown: "coroa",
+  implant: "implante",
+  endodontics: "endodontia",
+  referral: "encaminhamento",
+  // Also handle Portuguese values (pass-through)
+  resina: "resina",
+  porcelana: "porcelana",
+  coroa: "coroa",
+  implante: "implante",
+  endodontia: "endodontia",
+  encaminhamento: "encaminhamento",
+};
+
+function normalizeTreatmentIndication(value: string | undefined | null): TreatmentIndication {
+  if (!value) return "resina";
+  const normalized = TREATMENT_INDICATION_MAP[value.toLowerCase().trim()];
+  if (normalized) return normalized;
+  logger.warn(`Unknown treatment_indication: "${value}", defaulting to "resina"`);
+  return "resina";
+}
+
 interface ToothBounds {
   x: number;       // Center X position (0-100%)
   y: number;       // Center Y position (0-100%)
@@ -398,7 +424,7 @@ serve(async (req) => {
     // Use the global treatment_indication as fallback instead of always defaulting to "resina"
     // This prevents the inconsistency where the case-level banner says "Facetas de Porcelana"
     // but every individual tooth shows "Resina Composta"
-    const globalIndication = analysisResult.treatment_indication ?? "resina";
+    const globalIndication = normalizeTreatmentIndication(analysisResult.treatment_indication);
     const rawTeeth: DetectedTooth[] = (analysisResult.detected_teeth || []).map((tooth: Partial<DetectedTooth>) => ({
       tooth: String(tooth.tooth || "desconhecido"),
       tooth_region: tooth.tooth_region ?? null,
@@ -410,7 +436,7 @@ serve(async (req) => {
       depth: tooth.depth ?? null,
       priority: tooth.priority || "média",
       notes: tooth.notes ?? null,
-      treatment_indication: tooth.treatment_indication ?? globalIndication,
+      treatment_indication: normalizeTreatmentIndication(tooth.treatment_indication) || globalIndication,
       indication_reason: tooth.indication_reason ?? undefined,
     }));
 
@@ -436,7 +462,7 @@ serve(async (req) => {
       vita_shade: analysisResult.vita_shade ?? null,
       observations: analysisResult.observations ?? [],
       warnings: analysisResult.warnings ?? [],
-      treatment_indication: analysisResult.treatment_indication ?? "resina",
+      treatment_indication: normalizeTreatmentIndication(analysisResult.treatment_indication),
       indication_reason: analysisResult.indication_reason ?? undefined,
     };
 

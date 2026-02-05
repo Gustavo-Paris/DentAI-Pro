@@ -679,7 +679,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
           longevity_expectation: formData.longevityExpectation,
           photo_frontal: uploadedPhotoPath,
           status: 'analyzing',
-          treatment_type: treatmentType,
+          treatment_type: normalizedTreatment,
           desired_tooth_shape: 'natural',
           ai_treatment_indication:
             toothData?.treatment_indication || analysisResult?.treatment_indication || null,
@@ -711,7 +711,12 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
 
         // Step 3: Protocols
         setSubmissionStep(3);
-        switch (treatmentType) {
+        // Normalize treatment type: Gemini sometimes returns English values (e.g. "porcelain" instead of "porcelana")
+        const normalizedTreatment = ({
+          porcelain: 'porcelana', resin: 'resina', crown: 'coroa',
+          implant: 'implante', endodontics: 'endodontia', referral: 'encaminhamento',
+        } as Record<string, TreatmentType>)[treatmentType] || treatmentType;
+        switch (normalizedTreatment) {
           case 'porcelana': {
             const { error: cementError } = await supabase.functions.invoke(
               'recommend-cementation',
