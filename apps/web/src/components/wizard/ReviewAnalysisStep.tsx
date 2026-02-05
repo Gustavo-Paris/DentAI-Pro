@@ -839,18 +839,20 @@ export function ReviewAnalysisStep({
             </CardContent>
           </Card>
 
-          {/* Detected Data */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center gap-2">
-                Dados Detectados
-                <Badge variant="outline" className="font-normal">
-                  <Sparkles className="w-3 h-3 mr-1" />
-                  IA
-                </Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          {/* Technical Data - Collapsed by default */}
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="technical-data" className="border rounded-lg">
+              <AccordionTrigger className="px-4 text-sm text-muted-foreground hover:no-underline">
+                <span className="flex items-center gap-2">
+                  Dados técnicos (avançado)
+                  <Badge variant="outline" className="font-normal">
+                    <Sparkles className="w-3 h-3 mr-1" />
+                    IA
+                  </Badge>
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="px-4 pb-4">
+                <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Dente *</Label>
@@ -983,76 +985,75 @@ export function ReviewAnalysisStep({
                   </Select>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+                </div>
+
+                {/* Clinical Details (previously separate accordion) */}
+                <div className="space-y-4 mt-4 pt-4 border-t">
+                  <h4 className="text-sm font-medium text-muted-foreground">Detalhes Clínicos</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Condição do Substrato</Label>
+                      <Select
+                        value={formData.substrateCondition}
+                        onValueChange={(value) => onFormChange({ substrateCondition: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecionar" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {['Saudável', 'Esclerótico', 'Manchado', 'Cariado', 'Desidratado'].map((c) => (
+                            <SelectItem key={c} value={c}>{c}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Condição do Esmalte</Label>
+                      <Select
+                        value={formData.enamelCondition}
+                        onValueChange={(value) => onFormChange({ enamelCondition: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecionar" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {['Íntegro', 'Fraturado', 'Hipoplásico', 'Fluorose', 'Erosão'].map((c) => (
+                            <SelectItem key={c} value={c}>{c}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <Label>Paciente com bruxismo?</Label>
+                      <p className="text-sm text-muted-foreground">Ranger ou apertar os dentes</p>
+                    </div>
+                    <RadioGroup
+                      value={formData.bruxism ? 'yes' : 'no'}
+                      onValueChange={(value) => onFormChange({ bruxism: value === 'yes' })}
+                      className="flex gap-4"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="yes" id="brux-yes" />
+                        <Label htmlFor="brux-yes">Sim</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="no" id="brux-no" />
+                        <Label htmlFor="brux-no">Não</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </div>
       </div>
 
-      {/* Additional Details - Accordion */}
+      {/* Aesthetic and Budget - Separate Accordion */}
       <Accordion type="single" collapsible defaultValue="aesthetic" className="w-full">
-        <AccordionItem value="clinical">
-          <AccordionTrigger>Detalhes Clínicos Adicionais</AccordionTrigger>
-          <AccordionContent>
-            <div className="space-y-4 pt-2">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Condição do Substrato</Label>
-                  <Select
-                    value={formData.substrateCondition}
-                    onValueChange={(value) => onFormChange({ substrateCondition: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecionar" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {['Saudável', 'Esclerótico', 'Manchado', 'Cariado', 'Desidratado'].map((c) => (
-                        <SelectItem key={c} value={c}>{c}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Condição do Esmalte</Label>
-                  <Select
-                    value={formData.enamelCondition}
-                    onValueChange={(value) => onFormChange({ enamelCondition: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecionar" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {['Íntegro', 'Fraturado', 'Hipoplásico', 'Fluorose', 'Erosão'].map((c) => (
-                        <SelectItem key={c} value={c}>{c}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div>
-                  <Label>Paciente com bruxismo?</Label>
-                  <p className="text-sm text-muted-foreground">Ranger ou apertar os dentes</p>
-                </div>
-                <RadioGroup
-                  value={formData.bruxism ? 'yes' : 'no'}
-                  onValueChange={(value) => onFormChange({ bruxism: value === 'yes' })}
-                  className="flex gap-4"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="yes" id="brux-yes" />
-                    <Label htmlFor="brux-yes">Sim</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="brux-no" />
-                    <Label htmlFor="brux-no">Não</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-
         <AccordionItem value="aesthetic">
           <AccordionTrigger>Estética e Orçamento</AccordionTrigger>
           <AccordionContent>

@@ -70,6 +70,8 @@ export function PhotoUploadStep({
   onAdditionalPhotosChange,
 }: PhotoUploadStepProps) {
   const [dragActive, setDragActive] = useState(false);
+  const [dragActiveSmile45, setDragActiveSmile45] = useState(false);
+  const [dragActiveFace, setDragActiveFace] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [isCompressing, setIsCompressing] = useState(false);
   const [isOptionalOpen, setIsOptionalOpen] = useState(false);
@@ -412,13 +414,28 @@ export function PhotoUploadStep({
           <CollapsibleContent className="pt-2">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* Foto 45° */}
-              <Card className="border-dashed">
+              <Card
+                className={`border-dashed transition-colors ${
+                  dragActiveSmile45 ? 'border-primary bg-primary/5' : ''
+                }`}
+                onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setDragActiveSmile45(true); }}
+                onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setDragActiveSmile45(false); }}
+                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setDragActiveSmile45(false);
+                  if (e.dataTransfer.files?.[0]) {
+                    handleOptionalFile(e.dataTransfer.files[0], 'smile45');
+                  }
+                }}
+              >
                 <CardContent className="p-3">
                   {additionalPhotos.smile45 ? (
                     <div className="relative">
-                      <img 
-                        src={additionalPhotos.smile45} 
-                        alt="Sorriso 45°" 
+                      <img
+                        src={additionalPhotos.smile45}
+                        alt="Sorriso 45°"
                         className="w-full h-24 object-cover rounded"
                       />
                       <Button
@@ -446,7 +463,7 @@ export function PhotoUploadStep({
                         <>
                           <Smile className="w-5 h-5" />
                           <span className="text-xs font-medium">Sorriso 45°</span>
-                          <span className="text-[10px]">Corredor bucal</span>
+                          <span className="text-[10px]">Arraste ou clique</span>
                         </>
                       )}
                     </button>
@@ -455,13 +472,28 @@ export function PhotoUploadStep({
               </Card>
 
               {/* Foto Face */}
-              <Card className="border-dashed">
+              <Card
+                className={`border-dashed transition-colors ${
+                  dragActiveFace ? 'border-primary bg-primary/5' : ''
+                }`}
+                onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setDragActiveFace(true); }}
+                onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setDragActiveFace(false); }}
+                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setDragActiveFace(false);
+                  if (e.dataTransfer.files?.[0]) {
+                    handleOptionalFile(e.dataTransfer.files[0], 'face');
+                  }
+                }}
+              >
                 <CardContent className="p-3">
                   {additionalPhotos.face ? (
                     <div className="relative">
-                      <img 
-                        src={additionalPhotos.face} 
-                        alt="Face completa" 
+                      <img
+                        src={additionalPhotos.face}
+                        alt="Face completa"
                         className="w-full h-24 object-cover rounded"
                       />
                       <Button
@@ -488,7 +520,7 @@ export function PhotoUploadStep({
                         <>
                           <User className="w-5 h-5" />
                           <span className="text-xs font-medium">Face Completa</span>
-                          <span className="text-[10px]">Proporções faciais</span>
+                          <span className="text-[10px]">Arraste ou clique</span>
                         </>
                       )}
                     </button>

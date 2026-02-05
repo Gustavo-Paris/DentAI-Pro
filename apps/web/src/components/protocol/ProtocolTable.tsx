@@ -21,11 +21,14 @@ interface ProtocolTableProps {
 
 const getLayerStyles = (layerName: string): string => {
   const name = layerName.toLowerCase();
-  if (name.includes("opaco")) {
+  if (name.includes("opaco") || name.includes("mascaramento")) {
     return "bg-amber-500/20 dark:bg-amber-500/10 border-l-4 border-l-amber-500";
   }
   if (name.includes("dentina") || name.includes("body")) {
     return "bg-orange-500/20 dark:bg-orange-500/10 border-l-4 border-l-orange-500";
+  }
+  if (name.includes("efeito") || name.includes("effect") || name.includes("corante") || name.includes("opalescente")) {
+    return "bg-violet-500/20 dark:bg-violet-500/10 border-l-4 border-l-violet-500";
   }
   if (name.includes("esmalte") || name.includes("enamel")) {
     return "bg-blue-400/20 dark:bg-blue-400/10 border-l-4 border-l-blue-400";
