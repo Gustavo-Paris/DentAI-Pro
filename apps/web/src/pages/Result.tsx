@@ -660,6 +660,7 @@ export default function Result() {
             bruxism={evaluation.bruxism}
             stratificationNeeded={evaluation.stratification_needed}
             indicationReason={evaluation.ai_treatment_indication || genericProtocol?.ai_reason}
+            whiteningGoal={evaluation.patient_aesthetic_goals}
           />
         </section>
 

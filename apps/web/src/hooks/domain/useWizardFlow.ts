@@ -243,25 +243,42 @@ function getGenericProtocol(
         'Retornar imediatamente se houver dor intensa ou inchaço',
       ],
     },
-    encaminhamento: {
-      summary: `Dente ${tooth} requer avaliação especializada.`,
-      checklist: [
-        'Documentar achados clínicos',
-        'Realizar radiografias necessárias',
-        'Preparar relatório para o especialista',
-        'Identificar especialidade adequada',
-        'Orientar paciente sobre próximos passos',
-        'Agendar retorno para acompanhamento',
-      ],
-      alerts: [
-        'Urgência do encaminhamento depende do diagnóstico',
-        'Manter comunicação com especialista',
-      ],
-      recommendations: [
-        'Levar exames e relatório ao especialista',
-        'Informar sobre medicamentos em uso',
-      ],
-    },
+    encaminhamento: (() => {
+      // Infer specialty from indication_reason when available
+      const reason = (toothData?.indication_reason || '').toLowerCase();
+      let specialty = '';
+      if (reason.includes('apinhamento') || reason.includes('ortodon') || reason.includes('maloclusão') || reason.includes('alinhamento')) {
+        specialty = 'Ortodontia';
+      } else if (reason.includes('canal') || reason.includes('pulp') || reason.includes('periapical') || reason.includes('endodon')) {
+        specialty = 'Endodontia';
+      } else if (reason.includes('perio') || reason.includes('gengiv') || reason.includes('bolsa') || reason.includes('retração')) {
+        specialty = 'Periodontia';
+      } else if (reason.includes('implante') || reason.includes('cirurg') || reason.includes('extração') || reason.includes('terceiro molar')) {
+        specialty = 'Cirurgia Bucomaxilofacial';
+      } else if (reason.includes('dtm') || reason.includes('atm') || reason.includes('articulação')) {
+        specialty = 'DTM/Dor Orofacial';
+      }
+      const specialtyText = specialty ? ` Sugestão de encaminhamento: **${specialty}**.` : '';
+      return {
+        summary: `Dente ${tooth} requer avaliação especializada.${specialtyText}`,
+        checklist: [
+          'Documentar achados clínicos',
+          'Realizar radiografias necessárias',
+          'Preparar relatório para o especialista',
+          specialty ? `Encaminhar para ${specialty}` : 'Identificar especialidade adequada',
+          'Orientar paciente sobre próximos passos',
+          'Agendar retorno para acompanhamento',
+        ],
+        alerts: [
+          'Urgência do encaminhamento depende do diagnóstico',
+          'Manter comunicação com especialista',
+        ],
+        recommendations: [
+          'Levar exames e relatório ao especialista',
+          'Informar sobre medicamentos em uso',
+        ],
+      };
+    })(),
   };
 
   const protocol = protocols[treatmentType] || protocols.encaminhamento;
