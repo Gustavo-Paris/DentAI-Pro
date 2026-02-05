@@ -114,7 +114,7 @@ export function useFormModalLogic<
   TPayload = TValues,
 >(
   options: UseFormModalLogicOptions<TValues, TPayload>,
-  containerRef: React.RefObject<HTMLDivElement | null>
+  containerRef: React.RefObject<HTMLDivElement>
 ): UseFormModalLogicReturn<TValues> {
   const {
     // Modal state

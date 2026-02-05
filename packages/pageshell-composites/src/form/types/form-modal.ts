@@ -177,7 +177,7 @@ export interface FormModalProps<
   /**
    * Ref to the form container for focus management.
    */
-  containerRef?: RefObject<HTMLDivElement | null>;
+  containerRef?: RefObject<HTMLDivElement>;
 
   // ===========================================================================
   // Slots

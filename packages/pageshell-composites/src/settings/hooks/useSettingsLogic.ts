@@ -40,7 +40,7 @@ export interface UseSettingsLogicReturn<TValues extends Record<string, unknown>>
   /** Ref map for section buttons */
   sectionRefs: React.MutableRefObject<Map<string, HTMLButtonElement>>;
   /** Ref for content area (focus target) */
-  contentRef: React.RefObject<HTMLElement | null>;
+  contentRef: React.RefObject<HTMLElement>;
 }
 
 // =============================================================================
@@ -100,7 +100,8 @@ export function useSettingsLogic<TValues extends Record<string, unknown>>(
   // ===========================================================================
 
   const sectionRefs = React.useRef<Map<string, HTMLButtonElement>>(new Map());
-  const contentRef = React.useRef<HTMLElement>(null);
+  // Cast needed: React 19 useRef returns RefObject<T | null>, React 18 types expect RefObject<T>
+  const contentRef = React.useRef<HTMLElement>(null) as React.RefObject<HTMLElement>;
 
   // ===========================================================================
   // Keyboard Navigation

@@ -22,7 +22,7 @@ export interface SearchDropdownProps<T> {
   highlightedIndex: number;
   localValue: string;
   animateClass: string;
-  listRef: RefObject<HTMLUListElement | null>;
+  listRef: RefObject<HTMLUListElement>;
 
   // Recent searches
   recentSearches: string[];
