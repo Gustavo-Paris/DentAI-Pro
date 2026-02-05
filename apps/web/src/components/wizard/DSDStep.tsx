@@ -803,39 +803,89 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
         {/* Proportions Analysis */}
         <ProportionsCard analysis={analysis} />
 
-        {/* Suggestions */}
-        {analysis.suggestions && analysis.suggestions.length > 0 && (
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Lightbulb className="w-4 h-4" />
-                Sugestões de Tratamento
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {analysis.suggestions.map((suggestion, index) => (
-                  <div
-                    key={index}
-                    className="p-3 rounded-lg bg-secondary/50 border border-border"
-                  >
-                    <div className="flex items-center gap-2 mb-1">
-                      <Badge variant="outline" className="text-xs">
-                        Dente {suggestion.tooth}
-                      </Badge>
+        {/* Suggestions - grouped by tooth number */}
+        {analysis.suggestions && analysis.suggestions.length > 0 && (() => {
+          // Keywords that indicate a gengiva-related suggestion
+          const gengivaKeywords = ['gengiva', 'gengival', 'zênite', 'zenite', 'gengivoplastia', 'papila', 'contorno gengival'];
+          const isGingiSuggestion = (s: DSDSuggestion) => {
+            const text = `${s.current_issue} ${s.proposed_change} ${s.tooth}`.toLowerCase();
+            return gengivaKeywords.some(kw => text.includes(kw));
+          };
+
+          // Group suggestions by tooth number (strip "(Gengiva)" suffix for grouping)
+          const toothKey = (s: DSDSuggestion) => s.tooth.replace(/\s*\(.*\)\s*$/, '').trim();
+          const grouped = new Map<string, { tooth: DSDSuggestion[]; gengiva: DSDSuggestion[] }>();
+          for (const s of analysis.suggestions) {
+            const key = toothKey(s);
+            if (!grouped.has(key)) grouped.set(key, { tooth: [], gengiva: [] });
+            const group = grouped.get(key)!;
+            if (isGingiSuggestion(s)) {
+              group.gengiva.push(s);
+            } else {
+              group.tooth.push(s);
+            }
+          }
+
+          return (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Lightbulb className="w-4 h-4" />
+                  Sugestões de Tratamento
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {Array.from(grouped.entries()).map(([tooth, group]) => (
+                    <div
+                      key={tooth}
+                      className="p-3 rounded-lg bg-secondary/50 border border-border"
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge variant="outline" className="text-xs">
+                          Dente {tooth}
+                        </Badge>
+                      </div>
+
+                      {/* Tooth suggestions */}
+                      {group.tooth.map((s, i) => (
+                        <div key={`t-${i}`} className={group.gengiva.length > 0 ? 'mb-2' : ''}>
+                          {group.gengiva.length > 0 && (
+                            <p className="text-xs font-medium text-muted-foreground mb-0.5">Dente:</p>
+                          )}
+                          <p className="text-sm text-muted-foreground mb-1">
+                            <span className="font-medium text-foreground">Atual:</span> {s.current_issue}
+                          </p>
+                          <p className="text-sm">
+                            <span className="font-medium text-primary">Proposta:</span> {s.proposed_change}
+                          </p>
+                        </div>
+                      ))}
+
+                      {/* Gengiva suggestions */}
+                      {group.gengiva.length > 0 && (
+                        <>
+                          {group.tooth.length > 0 && <div className="border-t border-border my-2" />}
+                          {group.gengiva.map((s, i) => (
+                            <div key={`g-${i}`}>
+                              <p className="text-xs font-medium text-muted-foreground mb-0.5">Gengiva:</p>
+                              <p className="text-sm text-muted-foreground mb-1">
+                                <span className="font-medium text-foreground">Atual:</span> {s.current_issue}
+                              </p>
+                              <p className="text-sm">
+                                <span className="font-medium text-primary">Proposta:</span> {s.proposed_change}
+                              </p>
+                            </div>
+                          ))}
+                        </>
+                      )}
                     </div>
-                    <p className="text-sm text-muted-foreground mb-1">
-                      <span className="font-medium text-foreground">Atual:</span> {suggestion.current_issue}
-                    </p>
-                    <p className="text-sm">
-                      <span className="font-medium text-primary">Proposta:</span> {suggestion.proposed_change}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })()}
 
         {/* Observations - filter out attention ones already shown above */}
         {analysis.observations && analysis.observations.length > 0 && (
