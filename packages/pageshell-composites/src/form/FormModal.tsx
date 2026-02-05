@@ -176,7 +176,8 @@ export function FormModal<
   const isMobile = useIsMobile();
 
   // Container ref for focus management
-  const internalContainerRef = React.useRef<HTMLDivElement>(null);
+  // Cast needed: React 19 useRef returns RefObject<T | null>, React 18 types expect RefObject<T>
+  const internalContainerRef = React.useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
   const containerRef = containerRefProp ?? internalContainerRef;
 
   // ===========================================================================

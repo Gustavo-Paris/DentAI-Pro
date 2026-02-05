@@ -253,7 +253,6 @@ export default function EvaluationDetails() {
                     <TableRow>
                       <TableHead>Dente</TableHead>
                       <TableHead>Tratamento</TableHead>
-                      <TableHead>Detalhes</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Ações</TableHead>
                     </TableRow>
@@ -263,11 +262,6 @@ export default function EvaluationDetails() {
                       <TableRow key={evaluation.id}>
                         <TableCell className="font-medium">{evaluation.tooth}</TableCell>
                         <TableCell>{getTreatmentBadge(evaluation)}</TableCell>
-                        <TableCell>
-                          <span className="text-sm text-muted-foreground capitalize">
-                            {detail.getClinicalDetails(evaluation)}
-                          </span>
-                        </TableCell>
                         <TableCell>
                           {getStatusBadge(evaluation, detail.getChecklistProgress)}
                         </TableCell>
@@ -332,10 +326,6 @@ export default function EvaluationDetails() {
                     </div>
                     {getStatusBadge(evaluation, detail.getChecklistProgress)}
                   </div>
-
-                  <p className="text-sm text-muted-foreground mb-3 capitalize">
-                    {detail.getClinicalDetails(evaluation)}
-                  </p>
 
                   {evaluation.treatment_type === 'resina' && evaluation.resins && (
                     <div className="mb-3 p-2 bg-muted/50 rounded">

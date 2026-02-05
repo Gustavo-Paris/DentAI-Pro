@@ -69,7 +69,7 @@ export interface UseBottomSheetOptions {
 export interface UseBottomSheetReturn {
   /** Props for the sheet container */
   sheetProps: {
-    ref: RefObject<HTMLDivElement | null>;
+    ref: RefObject<HTMLDivElement>;
     style: CSSProperties;
     onTouchStart: (e: TouchEvent) => void;
     onTouchMove: (e: TouchEvent) => void;
@@ -97,7 +97,8 @@ export function useBottomSheet({
   onSnapChange,
   lockBodyScroll = true,
 }: UseBottomSheetOptions): UseBottomSheetReturn {
-  const sheetRef = useRef<HTMLDivElement | null>(null);
+  // Cast needed: React 19 useRef returns RefObject<T | null>, React 18 types expect RefObject<T>
+  const sheetRef = useRef<HTMLDivElement>(null) as RefObject<HTMLDivElement>;
   const [currentSnapIndex, setCurrentSnapIndex] = useState(
     defaultSnapIndex ?? snapPoints.length - 1
   );
