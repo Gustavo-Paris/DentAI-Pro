@@ -724,6 +724,14 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
                   substrate: toothData?.substrate || formData.substrate,
                   substrateCondition:
                     toothData?.substrate_condition || formData.substrateCondition,
+                  aestheticGoals:
+                    patientPreferences.whiteningLevel === 'hollywood'
+                      ? 'Paciente deseja clareamento INTENSO - nível Hollywood (BL3). A cor ALVO da faceta e do cimento deve ser BL3 ou compatível.'
+                      : patientPreferences.whiteningLevel === 'white'
+                        ? 'Paciente deseja clareamento NOTÁVEL (BL1/BL2). A cor ALVO da faceta e do cimento deve ser BL1/BL2 ou compatível.'
+                        : patientPreferences.whiteningLevel === 'natural'
+                          ? 'Paciente prefere aparência NATURAL (A1/A2).'
+                          : undefined,
                 },
               },
             );

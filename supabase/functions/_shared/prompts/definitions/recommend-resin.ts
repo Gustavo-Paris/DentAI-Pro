@@ -346,6 +346,13 @@ ${advancedStratification}
    - Corante Blue: translucidez incisal azulada
    - Opalescente: efeito de profundidade no ter\u00e7o incisal
 
+   \u26a0\ufe0f REGRA CR\u00cdTICA DE SHADE PARA EFEITOS:
+   - O shade da camada de efeitos DEVE SER DIFERENTE do shade da camada de esmalte!
+   - Efeitos deve usar shades TRANSLÚCIDOS/OPALESCENTES: CT, GT, WT, Trans, Opal
+   - \u274c ERRADO: Efeitos=A1E, Esmalte=A1E (shades id\u00eanticos = sem diferencia\u00e7\u00e3o \u00f3ptica)
+   - \u2705 CERTO: Efeitos=CT (translúcido), Esmalte=A1E (esmalte colorido)
+   - Se a linha n\u00e3o possuir shade translúcido diferente do esmalte, OMITA a camada de efeitos e use apenas 2 camadas (Dentina + Esmalte)
+
    \u274c OMITIR para:
    - Casos rotineiros de posteriores
    - Restaura\u00e7\u00f5es pequenas (Classe I, V)
@@ -432,6 +439,21 @@ REGRAS ADICIONAIS:
 2. Priorizar resinas com melhor polimento para camada de esmalte
 3. Para posteriores simples, pode recomendar t\u00e9cnica bulk ou incrementos simples
 4. Adapte as cores baseado na cor VITA informada
+
+\u26a0\ufe0f REGRA CRÍTICA - CHECKLIST/STEPS DEVEM USAR SHADES FINAIS:
+- O checklist e passo-a-passo DEVEM referenciar os shades FINAIS (após substituição)
+- Se a resina não possui shade WT mas você substituiu por A1E, o checklist deve dizer "A1E" e NÃO "WT"
+- \u274c ERRADO: Step diz "Aplicar shade WT" mas tabela de camadas mostra "A1E" (shade WT não existe na linha)
+- \u2705 CERTO: Step diz "Aplicar shade A1E" consistente com a tabela de camadas
+- Os steps, a tabela de camadas e os shades DEVEM ser 100% sincronizados
+
+\u26a0\ufe0f REGRA CRÍTICA - PADRONIZAÇÃO DE NOME DE MARCA:
+- Use SEMPRE o nome atual do fabricante conforme o catálogo de resinas fornecido
+- "3M ESPE" foi adquirida pela "Solventum" — use "Solventum" como fabricante para Filtek Z350 XT
+- O formato resin_brand DEVE ser "Fabricante - Linha" (ex: "Solventum - Filtek Z350 XT")
+- TODOS os dentes do mesmo caso que usam a mesma resina devem ter o MESMO resin_brand
+- \u274c ERRADO: Dente 13 = "3M ESPE - Filtek Z350 XT", Dente 23 = "Solventum - Filtek Z350 XT"
+- \u2705 CERTO: Ambos = "Solventum - Filtek Z350 XT"
 
 === NATURALIDADE DO RESULTADO (CR\u00cdTICO PARA EST\u00c9TICA ANTERIOR) ===
 
@@ -547,8 +569,8 @@ Responda em formato JSON:
     "layers": [
       {
         "order": 1,
-        "name": "Nome da camada (Opaco/Dentina/Esmalte/Body/Bulk)",
-        "resin_brand": "Fabricante - Linha do produto (ex: Tokuyama - Estelite Omega, FGM - Vittra APS, Solventum - Filtek Z350 XT). NUNCA informe apenas o fabricante!",
+        "name": "Nome da camada (Dentina/Efeitos/Esmalte/Body/Bulk). NÃO use 'Opaco' como nome de camada separada — integre o mascaramento na descrição da camada Dentina.",
+        "resin_brand": "Fabricante - Linha do produto (ex: Tokuyama - Estelite Omega, FGM - Vittra APS, Solventum - Filtek Z350 XT). NUNCA informe apenas o fabricante! Use o nome ATUAL do fabricante (Solventum, não 3M ESPE).",
         "shade": "Cor espec\u00edfica (ex: OA2, A2D, A2E)",
         "thickness": "Faixa de espessura guia (ex: 0.3-0.5mm)",
         "purpose": "Objetivo desta camada",

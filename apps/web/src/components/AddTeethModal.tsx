@@ -60,6 +60,7 @@ interface AddTeethModalProps {
     budget: string;
     longevityExpectation: string;
     photoPath: string | null;
+    aestheticGoals: string | null;
   };
   onSuccess: () => void;
 }
@@ -296,6 +297,7 @@ export function AddTeethModal({
                 ceramicType: 'Dissilicato de lítio',
                 substrate: toothData.substrate || 'Esmalte e Dentina',
                 substrateCondition: toothData.substrate_condition || 'Saudável',
+                aestheticGoals: patientData.aestheticGoals || undefined,
               },
             });
             if (cementError) throw cementError;

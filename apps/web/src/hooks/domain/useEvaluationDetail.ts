@@ -50,6 +50,7 @@ export interface EvaluationItem {
   aesthetic_level: string;
   budget: string;
   longevity_expectation: string;
+  patient_aesthetic_goals?: string | null;
   resins?: {
     name: string;
     manufacturer: string;
@@ -71,6 +72,7 @@ export interface PatientDataForModal {
   budget: string;
   longevityExpectation: string;
   photoPath: string | null;
+  aestheticGoals: string | null;
 }
 
 export interface EvaluationDetailState {
@@ -211,6 +213,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
       budget: first.budget || 'moderado',
       longevityExpectation: first.longevity_expectation || 'médio',
       photoPath: first.photo_frontal,
+      aestheticGoals: first.patient_aesthetic_goals ?? null,
     };
   }, [evals]);
 

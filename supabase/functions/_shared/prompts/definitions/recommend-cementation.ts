@@ -6,6 +6,7 @@ export interface Params {
   ceramicType: string
   substrate: string
   substrateCondition?: string
+  aestheticGoals?: string
 }
 
 export const recommendCementation: PromptDefinition<Params> = {
@@ -43,6 +44,16 @@ Gere um protocolo COMPLETO e DETALHADO de cimentação para facetas cerâmicas, 
    - Remoção de excessos ANTES da polimerização (cimento fotopolimerizável)
    - Verificar margens cervicais sob ampliação
 
+5. **CONSISTÊNCIA ENTRE DENTES CONTRALATERAIS**:
+   - Dentes simétricos (11 e 21, 13 e 23) DEVEM usar o MESMO protocolo de cimentação
+   - Mesmo tipo de cimento, mesma cor, mesma técnica
+   - Cimentos diferentes entre contralaterais = resultado assimétrico INACEITÁVEL
+
+6. **PREFERÊNCIA DE CLAREAMENTO DO PACIENTE**:
+   - Se o paciente deseja clareamento, a cor ALVO da faceta deve refletir essa preferência
+   - A cor do cimento deve ser compatível com a cor ALVO (não a cor ATUAL do substrato)
+   - Facetas com shade A2 quando paciente quer BL1/BL2 = resultado inaceitável
+
 IMPORTANTE:
 - Seja específico com marcas e materiais brasileiros quando possível
 - Inclua tempos precisos para cada etapa
@@ -50,7 +61,7 @@ IMPORTANTE:
 - Priorize técnicas atualizadas e baseadas em evidências
 - O resultado deve parecer NATURAL, integrado aos dentes adjacentes`,
 
-  user: ({ teeth, shade, ceramicType, substrate, substrateCondition }: Params) =>
+  user: ({ teeth, shade, ceramicType, substrate, substrateCondition, aestheticGoals }: Params) =>
     `Gere um protocolo de cimentação de facetas de porcelana para o seguinte caso:
 
 DADOS DO CASO:
@@ -59,6 +70,9 @@ DADOS DO CASO:
 - Tipo de cerâmica: ${ceramicType}
 - Substrato: ${substrate}
 ${substrateCondition ? `- Condição do substrato: ${substrateCondition}` : ""}
+${aestheticGoals ? `\n⚠️ PREFERÊNCIA ESTÉTICA DO PACIENTE:\n${aestheticGoals}\n\nATENÇÃO: A cor da faceta e do cimento devem refletir esta preferência. Se o paciente deseja clareamento (BL1/BL2/BL3), a cor ALVO deve ser ajustada para shades BL, independente da cor VITA detectada no substrato.` : ""}
+
+REGRA OBRIGATÓRIA: Se múltiplos dentes estão listados, use o MESMO protocolo de cimentação para todos. Dentes contralaterais (ex: 11 e 21) DEVEM ter cimento idêntico (mesma cor, mesmo tipo).
 
 Retorne o protocolo usando a função generate_cementation_protocol.`,
 }

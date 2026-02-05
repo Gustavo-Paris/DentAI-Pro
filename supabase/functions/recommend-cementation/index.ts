@@ -41,6 +41,7 @@ interface RequestData {
   ceramicType?: string;
   substrate: string;
   substrateCondition?: string;
+  aestheticGoals?: string;
 }
 
 // Validate request
@@ -76,6 +77,7 @@ function validateRequest(data: unknown): { success: boolean; error?: string; dat
       ceramicType: (req.ceramicType as string) || "Dissilicato de lítio",
       substrate: req.substrate as string,
       substrateCondition: req.substrateCondition as string | undefined,
+      aestheticGoals: req.aestheticGoals as string | undefined,
     },
   };
 }
@@ -135,7 +137,7 @@ serve(async (req: Request) => {
       return createErrorResponse(validation.error || ERROR_MESSAGES.INVALID_REQUEST, 400, corsHeaders);
     }
 
-    const { evaluationId, teeth, shade, ceramicType, substrate, substrateCondition } = validation.data;
+    const { evaluationId, teeth, shade, ceramicType, substrate, substrateCondition, aestheticGoals } = validation.data;
 
     // Verify evaluation ownership
     const { data: evalData, error: evalError } = await supabase
@@ -150,8 +152,8 @@ serve(async (req: Request) => {
 
     // AI prompt for cementation protocol (from prompt registry)
     const prompt = getPrompt('recommend-cementation');
-    const systemPrompt = prompt.system({ teeth, shade, ceramicType: ceramicType!, substrate, substrateCondition });
-    const userPrompt = prompt.user({ teeth, shade, ceramicType: ceramicType!, substrate, substrateCondition });
+    const systemPrompt = prompt.system({ teeth, shade, ceramicType: ceramicType!, substrate, substrateCondition, aestheticGoals });
+    const userPrompt = prompt.user({ teeth, shade, ceramicType: ceramicType!, substrate, substrateCondition, aestheticGoals });
 
     // Tool definition for structured output
     const tools = [

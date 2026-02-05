@@ -3,12 +3,14 @@ import { recommendCementation } from './definitions/recommend-cementation.ts'
 import { analyzeDentalPhoto } from './definitions/analyze-dental-photo.ts'
 import { recommendResin } from './definitions/recommend-resin.ts'
 import { dsdAnalysis } from './definitions/dsd-analysis.ts'
+import { dsdSimulation } from './definitions/dsd-simulation.ts'
 
 const registry: Record<string, PromptDefinition> = {
   [recommendCementation.id]: recommendCementation,
   [analyzeDentalPhoto.id]: analyzeDentalPhoto,
   [recommendResin.id]: recommendResin,
   [dsdAnalysis.id]: dsdAnalysis,
+  [dsdSimulation.id]: dsdSimulation,
 }
 
 export type PromptId = keyof typeof registry
