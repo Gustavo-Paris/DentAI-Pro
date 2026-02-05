@@ -126,6 +126,7 @@ export interface WizardFlowActions {
   // DSD
   handleDSDComplete: (result: DSDResult | null) => void;
   handleDSDSkip: () => void;
+  handleDSDResultChange: (result: DSDResult | null) => void;
 
   // Review
   updateFormData: (updates: Partial<ReviewFormData>) => void;
@@ -998,6 +999,11 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     setStep(5);
   }, []);
 
+  // Update dsdResult in parent state as the DSD analysis progresses (for draft auto-save)
+  const handleDSDResultChange = useCallback((result: DSDResult | null) => {
+    setDsdResult(result);
+  }, []);
+
   // -------------------------------------------------------------------------
   // Review Actions
   // -------------------------------------------------------------------------
@@ -1256,6 +1262,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     handleSkipToReview,
     handleDSDComplete,
     handleDSDSkip,
+    handleDSDResultChange,
     updateFormData,
     setSelectedTeeth,
     handleToothTreatmentChange,
