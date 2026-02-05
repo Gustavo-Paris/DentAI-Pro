@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -31,6 +31,16 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import {
   Eye,
   FileDown,
@@ -120,6 +130,24 @@ function getStatusBadge(evaluation: EvaluationItem, getChecklistProgress: (e: Ev
 export default function EvaluationDetails() {
   const detail = useEvaluationDetail();
   const navigate = useNavigate();
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    evaluationId: string;
+    current: number;
+    total: number;
+  }>({ open: false, evaluationId: '', current: 0, total: 0 });
+
+  const handleCompleteClick = (id: string) => {
+    const result = detail.handleMarkAsCompleted(id);
+    if (result?.pending) {
+      setConfirmDialog({ open: true, evaluationId: id, current: result.current, total: result.total });
+    }
+  };
+
+  const handleConfirmComplete = () => {
+    detail.handleMarkAsCompleted(confirmDialog.evaluationId, true);
+    setConfirmDialog({ open: false, evaluationId: '', current: 0, total: 0 });
+  };
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
@@ -285,21 +313,15 @@ export default function EvaluationDetails() {
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <DropdownMenuItem
-                                      onClick={() => detail.handleMarkAsCompleted(evaluation.id)}
-                                      disabled={!detail.canMarkAsCompleted(evaluation)}
-                                      className={!detail.canMarkAsCompleted(evaluation) ? 'opacity-50' : ''}
+                                      onClick={() => handleCompleteClick(evaluation.id)}
                                     >
-                                      {detail.canMarkAsCompleted(evaluation) ? (
-                                        <CheckCircle className="w-4 h-4 mr-2" />
-                                      ) : (
-                                        <AlertCircle className="w-4 h-4 mr-2" />
-                                      )}
+                                      <CheckCircle className="w-4 h-4 mr-2" />
                                       Marcar como finalizado
                                     </DropdownMenuItem>
                                   </TooltipTrigger>
-                                  {!detail.canMarkAsCompleted(evaluation) && (
+                                  {!detail.isChecklistComplete(evaluation) && (
                                     <TooltipContent>
-                                      Complete o checklist para finalizar
+                                      {detail.getChecklistProgress(evaluation).current} de {detail.getChecklistProgress(evaluation).total} itens completos no checklist
                                     </TooltipContent>
                                   )}
                                 </Tooltip>
@@ -355,8 +377,8 @@ export default function EvaluationDetails() {
                           <FileDown className="w-4 h-4 mr-2" />
                           Exportar PDF
                         </DropdownMenuItem>
-                        {evaluation.status !== 'completed' && detail.canMarkAsCompleted(evaluation) && (
-                          <DropdownMenuItem onClick={() => detail.handleMarkAsCompleted(evaluation.id)}>
+                        {evaluation.status !== 'completed' && (
+                          <DropdownMenuItem onClick={() => handleCompleteClick(evaluation.id)}>
                             <CheckCircle className="w-4 h-4 mr-2" />
                             Marcar como finalizado
                           </DropdownMenuItem>
@@ -381,6 +403,30 @@ export default function EvaluationDetails() {
           onSuccess={detail.handleAddTeethSuccess}
         />
       )}
+
+      {/* Confirm completion with incomplete checklist */}
+      <AlertDialog
+        open={confirmDialog.open}
+        onOpenChange={(open) => {
+          if (!open) setConfirmDialog({ open: false, evaluationId: '', current: 0, total: 0 });
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Checklist incompleto</AlertDialogTitle>
+            <AlertDialogDescription>
+              Existem {confirmDialog.current} de {confirmDialog.total} itens completos no checklist.
+              Deseja finalizar mesmo assim?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmComplete}>
+              Finalizar mesmo assim
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

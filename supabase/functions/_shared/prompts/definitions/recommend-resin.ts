@@ -312,10 +312,22 @@ ${inventoryInstructions}
 
 ${advancedStratification}
 
-=== PROTOCOLO DE ESTRATIFICA\u00c7\u00c3O - CAMADAS (ATUALIZADO) ===
+=== PROTOCOLO DE ESTRATIFICA\u00c7\u00c3O - CAMADAS (ATUALIZADO V2) ===
 \u26a0\ufe0f CR\u00cdTICO: A cor escolhida DEVE corresponder ao tipo da camada E existir na linha de produto!
 
-1. CAMADA DE DENTINA (Body) - CAMADA \u00daNICA QUE INCLUI MASCARAMENTO:
+ESTRUTURA OBRIGAT\u00d3RIA - 5 CAMADAS (simplificar para 3-4 se n\u00edvel est\u00e9tico baixo/m\u00e9dio):
+
+1. AUMENTO INCISAL (primeira etapa):
+   - Objetivo: Constru\u00e7\u00e3o da borda incisal
+   - Resinas: Esmalte transl\u00facido \u2014 CT (Z350), Trans (FORMA), Trans20 (Empress)
+   - Espessura: 0.2-0.3mm
+   - T\u00e9cnica: Aplicar na regi\u00e3o da quebra incisal, criando base para os mamelons
+
+2. DENTINA/CORPO (estrutura principal):
+   - Objetivo: Estrutura principal da restaura\u00e7\u00e3o
+   - Resinas: WB (Z350/Forma) ou Dentina clara (B1)
+   - Espessura: 0.5-1.0mm
+   - Com mascaramento integrado se substrato exigir (N\u00c3O criar camada separada de opaco)
 
    \u26a0\ufe0f IMPORTANTE: Opaco N\u00c3O \u00e9 camada separada - \u00e9 a sele\u00e7\u00e3o de SHADE dentro da dentina!
 
@@ -324,8 +336,8 @@ ${advancedStratification}
    a) Substrato ESCURECIDO ou endodonticamente tratado:
       - Usar shades opacos para mascaramento (OA1, OA2, OA3, OB1, WO)
       - Aplicar como PRIMEIRO incremento da camada de dentina com 0.5-1mm de espessura
-      - N\u00c3O listar como camada separada - incluir na descri\u00e7\u00e3o da camada Dentina
-      - Ex: "Dentina com mascaramento inicial (OA2 0.5mm + A2 body)"
+      - N\u00c3O listar como camada separada - incluir na descri\u00e7\u00e3o da camada Dentina/Corpo
+      - Ex: "Dentina/Corpo com mascaramento inicial (OA2 0.5mm + A2 body)"
 
    b) Substrato NORMAL (esmalte saud\u00e1vel, dentina clara):
       - Usar shades de dentina regulares (DA1, DA2, DA3, A1, A2, A3, B1, B2)
@@ -335,32 +347,38 @@ ${advancedStratification}
       - Usar shades de dentina com maior opacidade (DA3, A3) sem prefixo O
       - Evita necessidade de opaco dedicado
 
-2. CAMADA DE EFEITOS (opcional - apenas alta exig\u00eancia est\u00e9tica):
-
-   \u2705 INCLUIR quando:
-   - Dentes anteriores com demanda est\u00e9tica alta/muito alta
-   - Paciente solicitou n\u00edvel de naturalidade m\u00e1ximo
-
-   Op\u00e7\u00f5es de efeitos:
-   - Corante White: halo opaco incisal (simula naturalidade)
-   - Corante Blue: translucidez incisal azulada
-   - Opalescente: efeito de profundidade no ter\u00e7o incisal
+3. EFEITOS INCISAIS (OPCIONAL - flag optional: true):
+   - Objetivo: Halo opaco e efeitos transl\u00facidos
+   - Resinas: Corante branco (halo opaco) ou Dentina clara
+   - Espessura: 0.1-0.2mm
+   - INCLUIR apenas para demanda est\u00e9tica alta/muito alta
+   - Shade DEVE ser diferente do shade da camada de esmalte
 
    \u26a0\ufe0f REGRA CR\u00cdTICA DE SHADE PARA EFEITOS:
    - O shade da camada de efeitos DEVE SER DIFERENTE do shade da camada de esmalte!
-   - Efeitos deve usar shades TRANSLÚCIDOS/OPALESCENTES: CT, GT, WT, Trans, Opal
+   - Efeitos deve usar shades TRANSL\u00daCIDOS/OPALESCENTES: CT, GT, WT, Trans, Opal
    - \u274c ERRADO: Efeitos=A1E, Esmalte=A1E (shades id\u00eanticos = sem diferencia\u00e7\u00e3o \u00f3ptica)
-   - \u2705 CERTO: Efeitos=CT (translúcido), Esmalte=A1E (esmalte colorido)
-   - Se a linha n\u00e3o possuir shade translúcido diferente do esmalte, OMITA a camada de efeitos e use apenas 2 camadas (Dentina + Esmalte)
+   - \u2705 CERTO: Efeitos=CT (transl\u00facido), Esmalte=A1E (esmalte colorido)
+   - Se a linha n\u00e3o possuir shade transl\u00facido diferente do esmalte, OMITA esta camada
 
    \u274c OMITIR para:
    - Casos rotineiros de posteriores
    - Restaura\u00e7\u00f5es pequenas (Classe I, V)
    - N\u00edvel est\u00e9tico "m\u00e9dio" ou "baixo"
 
-3. CAMADA DE ESMALTE (Final) - COM PRIORIZA\u00c7\u00c3O POR POLIMENTO:
+   \u26a0\ufe0f Quando incluir esta camada no JSON, DEVE ter "optional": true
 
-   \u26a0\ufe0f NOVO: Priorizar resinas com MELHOR CAPACIDADE DE POLIMENTO!
+4. CRISTAS PROXIMAIS (defini\u00e7\u00e3o anat\u00f4mica):
+   - Objetivo: Defini\u00e7\u00e3o das cristas mesial e distal
+   - Resinas: Esmalte um tom mais claro que o dente
+   - Espessura: 0.2mm
+   - T\u00e9cnica: Aplicar nas bordas proximais para criar profundidade
+
+5. ESMALTE VESTIBULAR FINAL (camada externa):
+   - Objetivo: Camada externa com alto polimento
+   - Resinas: MW (Estelite), WE (Palfique), W3/W2 (Hollywood)
+   - Espessura: 0.3mm
+   - Priorizar resinas com melhor capacidade de polimento
 
    PRIORIDADE 1 (melhor polimento - recomendado):
    - Estelite Omega (MW, WE): nanopart\u00edculas esf\u00e9ricas, polimento superior
@@ -379,6 +397,12 @@ ${advancedStratification}
    - Verificar se linha possui shades BL
    - Linhas COM shades BL: Palfique LX5, Forma, Filtek Z350 XT, Estelite Bianco
    - Se linha N\u00c3O tem BL: alertar e sugerir shade mais pr\u00f3ximo (A1, B1)
+
+SIMPLIFICA\u00c7\u00c3O POR N\u00cdVEL EST\u00c9TICO:
+- N\u00edvel "baixo": 2 camadas (Dentina/Corpo + Esmalte Vestibular Final)
+- N\u00edvel "m\u00e9dio": 3 camadas (Aumento Incisal + Dentina/Corpo + Esmalte Vestibular Final)
+- N\u00edvel "alto": 4 camadas (todas exceto Efeitos Incisais)
+- N\u00edvel "muito alto": 5 camadas (todas, incluindo Efeitos Incisais com optional: true)
 
 TABELA DE CORES DE ESMALTE POR LINHA:
 \u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510
@@ -417,22 +441,35 @@ LINHAS SEM CORES BL:
 - Estelite Sigma Quick (usar B1/A1 como aproxima\u00e7\u00e3o)
 - Vittra APS (usar A1 como aproxima\u00e7\u00e3o)
 
-INSTRU\u00c7\u00d5ES PARA PROTOCOLO DE ESTRATIFICA\u00c7\u00c3O (ATUALIZADO):
+INSTRU\u00c7\u00d5ES PARA PROTOCOLO DE ESTRATIFICA\u00c7\u00c3O (V2):
 
-ESTRUTURA DO PROTOCOLO - 2 a 3 CAMADAS:
+ESTRUTURA DO PROTOCOLO - 2 a 5 CAMADAS conforme n\u00edvel est\u00e9tico (ver se\u00e7\u00e3o SIMPLIFICA\u00c7\u00c3O POR N\u00cdVEL EST\u00c9TICO acima):
 
-CASO B\u00c1SICO (2 camadas):
-- Camada 1: DENTINA (com nota sobre shade opaco se substrato exigir)
-- Camada 2: ESMALTE (priorizando polimento)
+N\u00cdVEL BAIXO (2 camadas):
+- Camada 1: Dentina/Corpo
+- Camada 2: Esmalte Vestibular Final
 
-CASO AVAN\u00c7ADO (3 camadas) - apenas se n\u00edvel est\u00e9tico "alto" ou "muito alto":
-- Camada 1: DENTINA (com mascaramento integrado se necess\u00e1rio)
-- Camada 2: EFEITOS (corantes, opalescente)
-- Camada 3: ESMALTE (priorizando polimento)
+N\u00cdVEL M\u00c9DIO (3 camadas):
+- Camada 1: Aumento Incisal
+- Camada 2: Dentina/Corpo
+- Camada 3: Esmalte Vestibular Final
+
+N\u00cdVEL ALTO (4 camadas):
+- Camada 1: Aumento Incisal
+- Camada 2: Dentina/Corpo
+- Camada 3: Cristas Proximais
+- Camada 4: Esmalte Vestibular Final
+
+N\u00cdVEL MUITO ALTO (5 camadas):
+- Camada 1: Aumento Incisal
+- Camada 2: Dentina/Corpo
+- Camada 3: Efeitos Incisais (optional: true)
+- Camada 4: Cristas Proximais
+- Camada 5: Esmalte Vestibular Final
 
 \u26a0\ufe0f CR\u00cdTICO: N\u00c3O criar camada separada chamada "Opaco" ou "Mascaramento"!
-- Integrar mascaramento na descri\u00e7\u00e3o da camada Dentina
-- Formato: "Dentina (shade A2, com opaco OA2 0.5mm no fundo se substrato escuro)"
+- Integrar mascaramento na descri\u00e7\u00e3o da camada Dentina/Corpo
+- Formato: "Dentina/Corpo (shade A2, com opaco OA2 0.5mm no fundo se substrato escuro)"
 
 REGRAS ADICIONAIS:
 1. Para dentes anteriores, SEMPRE usar cor espec\u00edfica de esmalte na camada final
@@ -577,12 +614,13 @@ Responda em formato JSON:
     "layers": [
       {
         "order": 1,
-        "name": "Nome da camada (Dentina/Efeitos/Esmalte/Body/Bulk). NÃO use 'Opaco' como nome de camada separada — integre o mascaramento na descrição da camada Dentina.",
+        "name": "Nome da camada (Aumento Incisal/Dentina-Corpo/Efeitos Incisais/Cristas Proximais/Esmalte Vestibular Final/Bulk). NÃO use 'Opaco' como nome de camada separada — integre o mascaramento na descrição da camada Dentina/Corpo.",
         "resin_brand": "Fabricante - Linha do produto (ex: Tokuyama - Estelite Omega, FGM - Vittra APS, Solventum - Filtek Z350 XT). NUNCA informe apenas o fabricante! Use o nome ATUAL do fabricante (Solventum, não 3M ESPE).",
         "shade": "Cor espec\u00edfica (ex: OA2, A2D, A2E)",
         "thickness": "Faixa de espessura guia (ex: 0.3-0.5mm)",
         "purpose": "Objetivo desta camada",
-        "technique": "T\u00e9cnica de aplica\u00e7\u00e3o"
+        "technique": "T\u00e9cnica de aplica\u00e7\u00e3o",
+        "optional": "true APENAS para camada Efeitos Incisais. Omitir para demais camadas."
       }
     ],
     "alternative": {
