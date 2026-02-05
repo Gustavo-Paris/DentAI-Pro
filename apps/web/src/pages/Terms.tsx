@@ -8,7 +8,7 @@ export default function Terms() {
     <div className="min-h-screen bg-background">
       <header className="border-b border-border">
         <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
-          <Link to="/" className="text-lg sm:text-xl font-semibold tracking-tight">
+          <Link to="/" className="text-lg sm:text-xl font-semibold tracking-widest font-display">
             {BRAND_NAME}
           </Link>
           <Link to="/">
@@ -117,7 +117,7 @@ export default function Terms() {
             <h2 className="text-xl font-semibold mb-3">10. Contato</h2>
             <p className="text-muted-foreground">
               Para dúvidas sobre estes Termos de Uso, entre em contato através do email: 
-              contato@dentai.pro
+              contato@auria.dental
             </p>
           </section>
         </div>
