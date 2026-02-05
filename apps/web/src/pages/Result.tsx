@@ -42,6 +42,7 @@ import CaseSummaryBox from '@/components/protocol/CaseSummaryBox';
 import WhiteningPreferenceAlert from '@/components/protocol/WhiteningPreferenceAlert';
 import { DSDAnalysis } from '@/components/wizard/DSDStep';
 import { CementationProtocolCard } from '@/components/protocol/CementationProtocolCard';
+import { VeneerPreparationCard } from '@/components/protocol/VeneerPreparationCard';
 import { FinishingPolishingCard } from '@/components/protocol/FinishingPolishingCard';
 import { BruxismAlert } from '@/components/protocol/BruxismAlert';
 import { CollapsibleDSD } from '@/components/dsd/CollapsibleDSD';
@@ -840,13 +841,21 @@ export default function Result() {
 
         {/* SECTION 3: Protocol - Conditional based on treatment type */}
         {isPorcelain && cementationProtocol ? (
-          <section className="mb-8">
-            <CementationProtocolCard 
-              protocol={cementationProtocol}
-              checkedIndices={evaluation.checklist_progress || []}
-              onProgressChange={handleChecklistChange}
-            />
-          </section>
+          <>
+            {/* Veneer Preparation Protocol (wax-up, mock-up, prep sequence) */}
+            <section className="mb-8">
+              <VeneerPreparationCard />
+            </section>
+
+            {/* Cementation Protocol */}
+            <section className="mb-8">
+              <CementationProtocolCard
+                protocol={cementationProtocol}
+                checkedIndices={evaluation.checklist_progress || []}
+                onProgressChange={handleChecklistChange}
+              />
+            </section>
+          </>
         ) : (
           <>
             {/* Resin Protocol Layers Table */}

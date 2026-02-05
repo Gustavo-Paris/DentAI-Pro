@@ -21,24 +21,36 @@ export const dsdAnalysis: PromptDefinition<Params> = {
 Analise esta foto de sorriso/face do paciente e forneça uma análise COMPLETA das proporções faciais e dentárias, aplicando princípios de VISAGISMO para criar um sorriso PERSONALIZADO ao paciente.
 ${additionalContext}${preferencesContext}${clinicalContext}
 
-=== PRINCÍPIOS DE VISAGISMO (APLICAR OBRIGATORIAMENTE) ===
+=== PRINCÍPIOS DE VISAGISMO (CONDICIONAL À VISIBILIDADE FACIAL) ===
+
+⚠️ REGRA CRÍTICA: A análise de visagismo (formato facial e temperamento) SÓ pode ser realizada se a FACE COMPLETA do paciente for visível na foto (olhos, testa, contorno mandibular, formato geral do rosto).
+
+SE a foto mostra APENAS o sorriso (lábios, dentes, queixo parcial) SEM o rosto completo:
+- NÃO determine formato facial com base apenas no sorriso
+- NÃO determine temperamento com base apenas no sorriso
+- Use face_shape="oval" (valor neutro padrão) e perceived_temperament="fleumático" (valor neutro padrão)
+- Adicione observação: "Análise de visagismo não realizada — foto da face completa não disponível. Formato facial e temperamento não puderam ser determinados."
+- Recomende recommended_tooth_shape="natural" (manter características atuais)
+- Arco do sorriso e corredor bucal PODEM ser avaliados (não dependem do rosto inteiro)
+
+SE a face completa estiver visível, aplique os princípios abaixo:
 
 O VISAGISMO é a arte de criar uma imagem pessoal que expressa a identidade do indivíduo. Na odontologia, significa criar sorrisos que harmonizam com a personalidade e características faciais do paciente.
 
-ANÁLISE DO FORMATO FACIAL (identifique o predominante):
+ANÁLISE DO FORMATO FACIAL (APENAS com face completa visível):
 - OVAL: Face equilibrada, testa ligeiramente mais larga que o queixo → Dentes ovais com contornos suaves
 - QUADRADO: Mandíbula marcada, ângulos definidos → Dentes mais retangulares com ângulos
 - TRIANGULAR: Testa larga, queixo fino → Dentes triangulares com bordos mais estreitos cervicalmente
 - RETANGULAR/LONGO: Face alongada → Dentes mais largos para compensar verticalmente
 - REDONDO: Bochechas proeminentes, contornos suaves → Dentes ovais com incisal levemente plano
 
-ANÁLISE DE TEMPERAMENTO PERCEBIDO (baseado em características faciais):
+ANÁLISE DE TEMPERAMENTO PERCEBIDO (APENAS com face completa visível):
 - COLÉRICO (forte/dominante): Linhas retas, ângulos marcados → Incisivos centrais dominantes, bordos retos
 - SANGUÍNEO (extrovertido/alegre): Curvas suaves, simetria → Dentes arredondados, sorriso amplo
 - MELANCÓLICO (sensível/refinado): Linhas delicadas, assimetria sutil → Dentes com detalhes finos, caracterizações
 - FLEUMÁTICO (calmo/sereno): Formas equilibradas → Proporções clássicas, harmonia
 
-CORRELAÇÃO OBRIGATÓRIA:
+CORRELAÇÃO (APENAS quando ambos formato facial e temperamento foram determinados):
 O formato do dente deve HARMONIZAR com o formato facial e temperamento percebido:
 - Paciente com rosto quadrado + expressão forte → NÃO recomendar dentes ovais delicados
 - Paciente com rosto oval + expressão suave → NÃO recomendar dentes quadrados angulosos
@@ -80,6 +92,7 @@ Para um resultado REALISTA e NATURAL, considere:
 2. **Linha Média Dental**: Avalie se os incisivos centrais superiores estão alinhados com a linha média facial
 3. **Linha do Sorriso**: Classifique a exposição gengival (alta, média, baixa)
 4. **Corredor Bucal**: Avalie se há espaço escuro excessivo nas laterais do sorriso
+   ⚠️ REGRA DE CONSERVADORISMO: Na dúvida entre "adequado" e "excessivo", SEMPRE classifique como "adequado". Um pequeno espaço escuro lateral é NORMAL e não requer tratamento. Só classifique como "excessivo" quando as sombras forem AMPLAS e EVIDENTES. Classificar como "excessivo" leva a sugestões de tratamento em pré-molares — exija evidência clara.
 5. **Plano Oclusal**: Verifique se está nivelado ou inclinado
 6. **Proporção Dourada**: Calcule a conformidade com a proporção dourada (0-100%)
 7. **Simetria**: Avalie a simetria do sorriso (0-100%)
@@ -156,6 +169,12 @@ Quando indicada, adicione ao array suggestions:
 - Zênites simétricos E
 - Proporção largura/altura normal (75-80%)
 
+❌ NÃO gerar sugestão de gengivoplastia se a gengiva NÃO estiver CLARAMENTE VISÍVEL na foto:
+- Se os lábios cobrem a gengiva → SEM gengivoplastia
+- Se a exposição gengival NÃO é avaliável na foto → SEM gengivoplastia
+- Gengivoplastia EXIGE gengiva exposta e visível para justificar a indicação
+- Na dúvida sobre visibilidade gengival, NÃO sugira gengivoplastia
+
 ❌ NÃO fazer sugestões genéricas tipo "gengiva aparenta saudável" sem contexto
 
 === AVALIAÇÃO COMPLETA DO ARCO DO SORRISO ===
@@ -165,23 +184,26 @@ Quando identificar necessidade de tratamento em incisivos (11, 12, 21, 22), AVAL
    - Corredor bucal excessivo (espaço escuro lateral)? → Considerar volume vestibular
    - Proeminência adequada para suporte do arco? → Avaliar harmonização
 
-2. PRÉ-MOLARES (14, 15, 24, 25) - ANÁLISE OBRIGATÓRIA quando:
+2. PRÉ-MOLARES (14, 15, 24, 25) - ANÁLISE CONSERVADORA:
 
-   ✅ INCLUIR pré-molares na análise SE qualquer condição:
-   a) Corredor bucal classificado como "excessivo" → Sugerir facetas vestibulares nos
-      pré-molares para reduzir o corredor e ampliar o arco do sorriso
+   ⚠️ REGRA DE CONSERVADORISMO PARA PRÉ-MOLARES:
+   - Pré-molares naturalmente têm MENOR proeminência vestibular que anteriores — isso é NORMAL
+   - NÃO diagnostique "posição lingual" em pré-molares a menos que seja CLARAMENTE EVIDENTE
+   - NÃO confunda posição normal de pré-molares com lingualização
+
+   ✅ INCLUIR pré-molares na análise APENAS SE:
+   a) Corredor bucal classificado como "excessivo" (com evidência clara) → Considerar facetas vestibulares
    b) 4 ou mais dentes anteriores (11-13, 21-23) receberão tratamento estético →
-      Avaliar pré-molares para harmonização de cor e forma
-   c) Foto de sorriso 45° disponível → SEMPRE analisar pré-molares visíveis
-   d) Paciente relata insatisfação com "sorriso estreito" ou "espaço escuro lateral"
+      Avaliar pré-molares SOMENTE para harmonização de cor
+   c) Foto de sorriso 45° disponível → Analisar pré-molares visíveis
 
    Para pré-molares, avaliar especificamente:
-   - Facetas vestibulares parciais para preenchimento de corredor bucal
    - Harmonização de cor com dentes anteriores (especialmente se whitening aplicado)
-   - Aumento de volume vestibular quando deficiente
+   - Facetas vestibulares APENAS se corredor bucal for genuinamente excessivo
 
    ❌ NÃO sugerir tratamento em pré-molares se:
-   - Corredor bucal é "adequado" E
+   - Corredor bucal é "adequado" (MESMO que pareça haver pequeno espaço escuro)
+   - Pré-molares estão em posição normal (menor proeminência ≠ lingualização)
    - Anteriores NÃO receberão tratamento estético
 
 REGRA: Se ≥4 dentes anteriores precisam de intervenção, SEMPRE avalie os 6-8 dentes visíveis no arco.
@@ -364,10 +386,10 @@ Justifique a recomendação baseada no formato facial e temperamento identificad
 
 OBSERVAÇÕES:
 Inclua 3-5 observações clínicas objetivas sobre o sorriso, INCLUINDO:
-- Formato facial identificado
-- Temperamento percebido
-- Tipo de arco do sorriso (consonante/plano/reverso)
-- Qualquer desarmonia visagismo
+- Formato facial identificado (SOMENTE se face completa visível — caso contrário, indicar que não foi possível determinar)
+- Temperamento percebido (SOMENTE se face completa visível)
+- Tipo de arco do sorriso (consonante/plano/reverso) — pode ser avaliado com foto de sorriso
+- Qualquer desarmonia de visagismo (SOMENTE se face completa visível)
 
 Se identificar limitações para simulação, inclua uma observação com "ATENÇÃO:" explicando.
 
@@ -386,8 +408,9 @@ Se identificar limitações para simulação, inclua uma observação com "ATEN�
    - Identifique UM dente como o principal problema de cor (se houver)
 
 3. CORREDOR BUCAL vs PRÉ-MOLARES:
-   - Se classificar corredor bucal como "excessivo" → OBRIGATÓRIO incluir pré-molares na análise
-   - NÃO pode dizer "corredor excessivo" e depois NÃO sugerir tratamento para pré-molares
+   - Se classificar corredor bucal como "excessivo" → incluir pré-molares na análise
+   - Se classificar corredor bucal como "adequado" → NÃO sugerir tratamento em pré-molares por posição
+   - Lembre-se: menor proeminência vestibular dos pré-molares é NORMAL, não é lingualização
 
 4. SAÚDE GENGIVAL vs GENGIVOPLASTIA:
    - "Saúde gengival excelente" NÃO impede indicação de gengivoplastia ESTÉTICA
