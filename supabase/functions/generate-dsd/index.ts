@@ -424,7 +424,7 @@ async function generateSimulation(
   try {
     logger.log("Calling Gemini Image Edit for simulation...");
 
-    const result = await withMetrics(metrics, dsdSimulationPromptDef.id, PROMPT_VERSION, dsdSimulationPromptDef.model)(async () => {
+    const result = await withMetrics<{ imageUrl: string | null; text: string | null }>(metrics, dsdSimulationPromptDef.id, PROMPT_VERSION, dsdSimulationPromptDef.model)(async () => {
       const response = await callGeminiImageEdit(
         simulationPrompt,
         inputBase64Data,
@@ -692,7 +692,7 @@ Se o problema clínico é microdontia/conoide → sua sugestão deve ser "Aument
   const dsdAnalysisPromptDef = getPrompt('dsd-analysis');
 
   try {
-    const result = await withMetrics(metrics, dsdAnalysisPromptDef.id, PROMPT_VERSION, dsdAnalysisPromptDef.model)(async () => {
+    const result = await withMetrics<{ text: string | null; functionCall: { name: string; args: Record<string, unknown> } | null; finishReason: string }>(metrics, dsdAnalysisPromptDef.id, PROMPT_VERSION, dsdAnalysisPromptDef.model)(async () => {
       const response = await callGeminiVisionWithTools(
         "gemini-2.5-pro",
         "Analise esta foto e retorne a análise DSD completa usando a ferramenta analyze_dsd.",
