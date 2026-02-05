@@ -3,7 +3,7 @@ import { BRAND_NAME, BRAND_TAGLINE, BRAND_DESCRIPTION } from '../branding';
 
 describe('branding constants', () => {
   it('should export BRAND_NAME', () => {
-    expect(BRAND_NAME).toBe('DentAI Pro');
+    expect(BRAND_NAME).toBe('AURIA');
   });
 
   it('should export BRAND_TAGLINE as a non-empty string', () => {

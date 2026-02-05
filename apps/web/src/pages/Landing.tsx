@@ -23,7 +23,7 @@ export default function Landing() {
       {/* Header */}
       <header className="border-b border-border">
         <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
-          <span className="text-lg sm:text-xl font-semibold tracking-tight">{BRAND_NAME}</span>
+          <span className="text-lg sm:text-xl font-semibold tracking-widest font-display">{BRAND_NAME}</span>
           <div className="flex items-center gap-2 sm:gap-4">
             <ThemeToggle />
             <Link to="/login">
@@ -37,17 +37,18 @@ export default function Landing() {
       </header>
 
       {/* Hero */}
-      <section className="py-16 sm:py-24 md:py-32">
-        <div className="container mx-auto px-4 sm:px-6 text-center max-w-3xl">
+      <section className="py-16 sm:py-24 md:py-32 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,hsl(42_52%_48%/0.08),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,hsl(42_55%_56%/0.12),transparent)]" />
+        <div className="container mx-auto px-4 sm:px-6 text-center max-w-3xl relative">
           <Badge variant="secondary" className="mb-4">
             <Sparkles className="w-3 h-3 mr-1" />
-            Potencializado por IA
+            Inteligência Clínica Estética
           </Badge>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight leading-tight mb-4 sm:mb-6">
-            Planejamento clínico inteligente para seu consultório
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight leading-tight mb-4 sm:mb-6 font-display">
+            O padrão ouro da odontologia estética
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground mb-8 sm:mb-10 max-w-xl mx-auto">
-            IA que analisa fotos, sugere tratamentos e gera protocolos personalizados em segundos.
+            IA que analisa, planeja e gera protocolos personalizados com precisão.
           </p>
           <Link to="/register">
             <Button size="lg" className="px-6 sm:px-8">
@@ -62,19 +63,19 @@ export default function Landing() {
         <div className="container mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
             <div>
-              <p className="text-2xl sm:text-3xl font-semibold">IA</p>
+              <p className="text-2xl sm:text-3xl font-semibold font-display text-primary">IA</p>
               <p className="text-xs sm:text-sm text-muted-foreground">Análise automática</p>
             </div>
             <div>
-              <p className="text-2xl sm:text-3xl font-semibold">250+</p>
+              <p className="text-2xl sm:text-3xl font-semibold font-display text-primary">250+</p>
               <p className="text-xs sm:text-sm text-muted-foreground">Cores de resinas</p>
             </div>
             <div>
-              <p className="text-2xl sm:text-3xl font-semibold">15+</p>
+              <p className="text-2xl sm:text-3xl font-semibold font-display text-primary">15+</p>
               <p className="text-xs sm:text-sm text-muted-foreground">Marcas disponíveis</p>
             </div>
             <div>
-              <p className="text-2xl sm:text-3xl font-semibold">6</p>
+              <p className="text-2xl sm:text-3xl font-semibold font-display text-primary">6</p>
               <p className="text-xs sm:text-sm text-muted-foreground">Tipos de tratamento</p>
             </div>
           </div>
@@ -84,7 +85,7 @@ export default function Landing() {
       {/* Features */}
       <section className="py-12 sm:py-20 border-t border-border">
         <div className="container mx-auto px-4 sm:px-6">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-8 sm:mb-12">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-8 sm:mb-12 font-display">
             Tudo que você precisa em um só lugar
           </h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
@@ -111,8 +112,8 @@ export default function Landing() {
               },
             ].map((feature, index) => (
               <div key={index} className="text-center">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-secondary flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                  <feature.icon className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <feature.icon className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                 </div>
                 <h3 className="font-medium text-sm sm:text-base mb-1 sm:mb-2">{feature.title}</h3>
                 <p className="text-xs sm:text-sm text-muted-foreground">{feature.description}</p>
@@ -125,7 +126,7 @@ export default function Landing() {
       {/* Testimonials */}
       <section className="py-12 sm:py-20 border-t border-border bg-secondary/30">
         <div className="container mx-auto px-4 sm:px-6 max-w-4xl">
-          <h2 className="text-xl sm:text-2xl font-semibold text-center mb-8 sm:mb-12">
+          <h2 className="text-xl sm:text-2xl font-semibold text-center mb-8 sm:mb-12 font-display">
             O que dizem os dentistas
           </h2>
           <div className="grid md:grid-cols-2 gap-6">
@@ -161,7 +162,7 @@ export default function Landing() {
                     <Star key={j} className="w-4 h-4 fill-primary text-primary" />
                   ))}
                 </div>
-                <Quote className="w-6 h-6 text-muted-foreground/30 mb-2" />
+                <Quote className="w-6 h-6 text-primary/30 mb-2" />
                 <p className="text-muted-foreground mb-4 text-sm sm:text-base">{testimonial.quote}</p>
                 <div>
                   <p className="font-medium text-sm">{testimonial.author}</p>
@@ -176,7 +177,7 @@ export default function Landing() {
       {/* How it works */}
       <section className="py-12 sm:py-20 border-t border-border">
         <div className="container mx-auto px-4 sm:px-6 max-w-3xl">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-8 sm:mb-16">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-8 sm:mb-16 font-display">
             Como funciona
           </h2>
           <div className="space-y-8 sm:space-y-12">
@@ -203,7 +204,7 @@ export default function Landing() {
               },
             ].map((item, index) => (
               <div key={index} className="flex gap-4 sm:gap-6">
-                <span className="text-2xl sm:text-4xl font-light text-muted-foreground/50">{item.step}</span>
+                <span className="text-2xl sm:text-4xl font-light text-primary/60 font-display">{item.step}</span>
                 <div>
                   <h3 className="font-medium text-sm sm:text-base mb-1">{item.title}</h3>
                   <p className="text-sm sm:text-base text-muted-foreground">{item.description}</p>
@@ -217,7 +218,7 @@ export default function Landing() {
       {/* FAQ */}
       <section className="py-12 sm:py-20 border-t border-border">
         <div className="container mx-auto px-4 sm:px-6 max-w-2xl">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-8 sm:mb-12">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-8 sm:mb-12 font-display">
             Perguntas frequentes
           </h2>
           <Accordion type="single" collapsible className="w-full">
@@ -271,9 +272,10 @@ export default function Landing() {
       <LandingPricing />
 
       {/* CTA */}
-      <section className="py-12 sm:py-20 border-t border-border">
-        <div className="container mx-auto px-4 sm:px-6 text-center">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold mb-3 sm:mb-4">
+      <section className="py-12 sm:py-20 border-t border-border relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_120%,hsl(42_52%_48%/0.06),transparent)] dark:bg-[radial-gradient(ellipse_60%_50%_at_50%_120%,hsl(42_55%_56%/0.10),transparent)]" />
+        <div className="container mx-auto px-4 sm:px-6 text-center relative">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold mb-3 sm:mb-4 font-display">
             Pronto para começar?
           </h2>
           <p className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-8">
@@ -330,7 +332,7 @@ function LandingPricing() {
     <section id="pricing" className="py-12 sm:py-20 border-t border-border bg-secondary/30">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="text-center mb-8 sm:mb-12">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold font-display">
             Planos e preços
           </h2>
           <p className="text-sm sm:text-base text-muted-foreground mt-2">
@@ -407,7 +409,7 @@ function LandingPricing() {
                     <ul className="space-y-2">
                       {features.map((feature: string, index: number) => (
                         <li key={index} className="flex items-start gap-2">
-                          <Check className="h-4 w-4 text-green-500 dark:text-green-400 shrink-0 mt-0.5" />
+                          <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                           <span className="text-sm">{feature}</span>
                         </li>
                       ))}

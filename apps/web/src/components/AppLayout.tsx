@@ -43,7 +43,7 @@ export default function AppLayout() {
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex fixed inset-y-0 left-0 z-30 w-56 flex-col border-r border-border bg-card">
         <div className="flex h-14 items-center px-4 border-b border-border">
-          <span className="text-lg font-semibold tracking-tight">{BRAND_NAME}</span>
+          <span className="text-lg font-semibold tracking-widest font-display">{BRAND_NAME}</span>
         </div>
 
         <nav className="flex-1 py-4 px-2 space-y-1">
@@ -93,7 +93,7 @@ export default function AppLayout() {
       {/* Mobile top bar */}
       <header className="lg:hidden sticky top-0 z-30 border-b border-border bg-card/95 backdrop-blur-sm">
         <div className="flex items-center justify-between px-4 h-14">
-          <span className="text-lg font-semibold tracking-tight">{BRAND_NAME}</span>
+          <span className="text-lg font-semibold tracking-widest font-display">{BRAND_NAME}</span>
           <div className="flex items-center gap-2">
             <button
               onClick={() => {
