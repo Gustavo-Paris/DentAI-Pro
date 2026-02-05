@@ -71,6 +71,13 @@ Gere um protocolo COMPLETO e DETALHADO de cimentação para facetas cerâmicas, 
    - ❌ ERRADO: shade = "Trans ou OW (dependendo do substrato)"
    - ✅ CERTO: shade = "WO (White Opaque) — necessário para mascarar substrato manchado"
 
+9. **ADESIVO NO DENTE — NÃO FOTOPOLIMERIZAR ANTES DO ASSENTAMENTO**:
+   - O adesivo aplicado no dente preparado NÃO deve ser fotopolimerizado separadamente antes do assentamento da peça
+   - A fotopolimerização do adesivo ocorre JUNTO com o cimento, após o assentamento
+   - Aplicar camada fina de adesivo, volatilizar solvente com jato de ar suave, e NÃO polimerizar
+   - ❌ ERRADO: "Aplicar adesivo e fotopolimerizar por 10 segundos"
+   - ✅ CERTO: "Aplicar adesivo em camada fina (NÃO fotopolimerizar)"
+
 IMPORTANTE:
 - Seja específico com marcas e materiais brasileiros quando possível
 - Inclua tempos precisos para cada etapa
