@@ -8,7 +8,7 @@ export default function Privacy() {
     <div className="min-h-screen bg-background">
       <header className="border-b border-border">
         <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
-          <Link to="/" className="text-lg sm:text-xl font-semibold tracking-tight">
+          <Link to="/" className="text-lg sm:text-xl font-semibold tracking-widest font-display">
             {BRAND_NAME}
           </Link>
           <Link to="/">
@@ -100,7 +100,7 @@ export default function Privacy() {
               <li><strong>Informação:</strong> Saber com quem seus dados foram compartilhados</li>
             </ul>
             <p className="text-muted-foreground mt-2">
-              Para exercer qualquer desses direitos, entre em contato através do email: privacidade@dentai.pro
+              Para exercer qualquer desses direitos, entre em contato através do email: privacidade@auria.dental
             </p>
           </section>
 
@@ -144,8 +144,8 @@ export default function Privacy() {
               entre em contato:
             </p>
             <ul className="list-none text-muted-foreground mt-2 space-y-1">
-              <li><strong>Email:</strong> privacidade@dentai.pro</li>
-              <li><strong>Encarregado de Dados (DPO):</strong> dpo@dentai.pro</li>
+              <li><strong>Email:</strong> privacidade@auria.dental</li>
+              <li><strong>Encarregado de Dados (DPO):</strong> dpo@auria.dental</li>
             </ul>
           </section>
         </div>
