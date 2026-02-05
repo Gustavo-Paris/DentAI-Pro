@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "jsr:@supabase/supabase-js@2";
 import type { MetricsPort } from './prompts/types.ts';
 
 const PROMPT_VERSION = Deno.env.get('PROMPT_VERSION') || '1.0.0';
