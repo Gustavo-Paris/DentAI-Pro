@@ -51,6 +51,21 @@ interface CaseSummaryBoxProps {
   restorationSize?: string;
   // Non-resina specific
   indicationReason?: string | null;
+  /** Patient whitening preference text — when present, used as target color for non-resin treatments */
+  whiteningGoal?: string | null;
+}
+
+// Map whitening preference text to target shade
+function getTargetShade(whiteningGoal: string | null | undefined, originalColor: string): { shade: string; isTarget: boolean } {
+  if (!whiteningGoal) return { shade: originalColor, isTarget: false };
+  const lower = whiteningGoal.toLowerCase();
+  if (lower.includes('bl1') || lower.includes('bl2') || lower.includes('hollywood') || lower.includes('notável') || lower.includes('branco')) {
+    return { shade: 'BL1/BL2', isTarget: true };
+  }
+  if (lower.includes('bl3') || lower.includes('bl4') || lower.includes('moderado')) {
+    return { shade: 'BL3/BL4', isTarget: true };
+  }
+  return { shade: originalColor, isTarget: false };
 }
 
 export default function CaseSummaryBox({
@@ -65,6 +80,7 @@ export default function CaseSummaryBox({
   bruxism,
   stratificationNeeded,
   indicationReason,
+  whiteningGoal,
 }: CaseSummaryBoxProps) {
   const config = treatmentConfig[treatmentType] || treatmentConfig.resina;
   const showCavityInfo = config.showCavityInfo;
@@ -126,11 +142,23 @@ export default function CaseSummaryBox({
           )}
           
           <div className="space-y-0.5 sm:space-y-1">
-            <div className="flex items-center gap-1 sm:gap-1.5 text-muted-foreground text-xs">
-              <Palette className="w-3 h-3" />
-              Cor {showCavityInfo ? 'VITA' : 'Alvo'}
-            </div>
-            <p className="font-mono font-medium text-sm sm:text-base">{toothColor}</p>
+            {(() => {
+              const { shade, isTarget } = !showCavityInfo
+                ? getTargetShade(whiteningGoal, toothColor)
+                : { shade: toothColor, isTarget: false };
+              return (
+                <>
+                  <div className="flex items-center gap-1 sm:gap-1.5 text-muted-foreground text-xs">
+                    <Palette className="w-3 h-3" />
+                    Cor {showCavityInfo ? 'VITA' : 'Alvo'}
+                  </div>
+                  <p className="font-mono font-medium text-sm sm:text-base">{shade}</p>
+                  {isTarget && (
+                    <p className="text-xs text-muted-foreground">Original: {toothColor}</p>
+                  )}
+                </>
+              );
+            })()}
           </div>
         </div>
         

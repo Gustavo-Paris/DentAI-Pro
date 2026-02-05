@@ -58,6 +58,19 @@ Gere um protocolo COMPLETO e DETALHADO de cimentação para facetas cerâmicas, 
    - A cor do cimento deve ser compatível com a cor ALVO (não a cor ATUAL do substrato)
    - Facetas com shade A2 quando paciente quer BL1/BL2 = resultado inaceitável
 
+7. **NOME EXATO DE MATERIAIS**:
+   - Use SEMPRE o nome COMPLETO do produto conforme catálogo do fabricante
+   - ✅ CERTO: "Ambar Universal APS (FGM)", "Condac Porcelana (FGM)", "Prosil (FGM)"
+   - ❌ ERRADO: "Ambar (FGM)", "Ambar APS (FGM)" — abreviações criam confusão
+   - TODOS os dentes devem referenciar o MESMO nome exato para o mesmo produto
+
+8. **SHADE DO CIMENTO — UMA ESCOLHA DEFINITIVA**:
+   - NUNCA forneça alternativas no campo shade (ex: "Trans ou OW")
+   - SEMPRE escolha UMA ÚNICA opção definitiva com justificativa
+   - O dentista precisa de assertividade, não de opções
+   - ❌ ERRADO: shade = "Trans ou OW (dependendo do substrato)"
+   - ✅ CERTO: shade = "WO (White Opaque) — necessário para mascarar substrato manchado"
+
 IMPORTANTE:
 - Seja específico com marcas e materiais brasileiros quando possível
 - Inclua tempos precisos para cada etapa
