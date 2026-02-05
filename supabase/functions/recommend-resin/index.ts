@@ -6,7 +6,9 @@ import { logger } from "../_shared/logger.ts";
 import { callGemini, GeminiError, type OpenAIMessage } from "../_shared/gemini.ts";
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 import { getPrompt } from "../_shared/prompts/registry.ts";
+import { withMetrics } from "../_shared/prompts/index.ts";
 import type { Params as RecommendResinParams } from "../_shared/prompts/definitions/recommend-resin.ts";
+import { createSupabaseMetrics, PROMPT_VERSION } from "../_shared/metrics-adapter.ts";
 
 interface ProtocolLayer {
   order: number;
@@ -248,6 +250,12 @@ serve(async (req) => {
 
     const prompt = promptDef.user(promptParams);
 
+    // Metrics setup
+    const metrics = createSupabaseMetrics(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
     // Call Gemini API
     const messages: OpenAIMessage[] = [
       { role: "user", content: prompt },
@@ -255,21 +263,28 @@ serve(async (req) => {
 
     let content: string;
     try {
-      const result = await callGemini(
-        "gemini-2.0-flash",
-        messages,
-        {
-          temperature: 0.3,
-          maxTokens: 8192,
-        }
-      );
+      const geminiResult = await withMetrics(metrics, promptDef.id, PROMPT_VERSION, promptDef.model)(async () => {
+        const response = await callGemini(
+          "gemini-2.0-flash",
+          messages,
+          {
+            temperature: 0.3,
+            maxTokens: 8192,
+          }
+        );
+        return {
+          result: response,
+          tokensIn: 0,
+          tokensOut: 0,
+        };
+      });
 
-      if (!result.text) {
+      if (!geminiResult.text) {
         logger.error("Empty response from Gemini");
         return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
       }
 
-      content = result.text;
+      content = geminiResult.text;
     } catch (error) {
       if (error instanceof GeminiError) {
         if (error.statusCode === 429) {

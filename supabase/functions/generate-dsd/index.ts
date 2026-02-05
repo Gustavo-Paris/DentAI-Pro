@@ -11,8 +11,10 @@ import {
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 import { checkAndUseCredits, createInsufficientCreditsResponse } from "../_shared/credits.ts";
 import { getPrompt } from "../_shared/prompts/registry.ts";
+import { withMetrics } from "../_shared/prompts/index.ts";
 import type { Params as DsdAnalysisParams } from "../_shared/prompts/definitions/dsd-analysis.ts";
 import type { Params as DsdSimulationParams } from "../_shared/prompts/definitions/dsd-simulation.ts";
+import { createSupabaseMetrics, PROMPT_VERSION } from "../_shared/metrics-adapter.ts";
 
 // DSD Analysis interface
 interface DSDAnalysis {
@@ -412,18 +414,32 @@ async function generateSimulation(
   }
   const [, inputMimeType, inputBase64Data] = dataUrlMatch;
 
+  // Metrics for DSD simulation
+  const metrics = createSupabaseMetrics(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  );
+  const dsdSimulationPromptDef = getPrompt('dsd-simulation');
+
   try {
     logger.log("Calling Gemini Image Edit for simulation...");
 
-    const result = await callGeminiImageEdit(
-      simulationPrompt,
-      inputBase64Data,
-      inputMimeType,
-      {
-        temperature: 0.4,
-        timeoutMs: SIMULATION_TIMEOUT,
-      }
-    );
+    const result = await withMetrics(metrics, dsdSimulationPromptDef.id, PROMPT_VERSION, dsdSimulationPromptDef.model)(async () => {
+      const response = await callGeminiImageEdit(
+        simulationPrompt,
+        inputBase64Data,
+        inputMimeType,
+        {
+          temperature: 0.4,
+          timeoutMs: SIMULATION_TIMEOUT,
+        }
+      );
+      return {
+        result: response,
+        tokensIn: 0,
+        tokensOut: 0,
+      };
+    });
 
     if (!result.imageUrl) {
       logger.warn("No image in Gemini response");
@@ -668,20 +684,34 @@ Se o problema clínico é microdontia/conoide → sua sugestão deve ser "Aument
   }
   const [, mimeType, base64Data] = dataUrlMatch;
 
+  // Metrics for DSD analysis
+  const metrics = createSupabaseMetrics(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  );
+  const dsdAnalysisPromptDef = getPrompt('dsd-analysis');
+
   try {
-    const result = await callGeminiVisionWithTools(
-      "gemini-2.5-pro",
-      "Analise esta foto e retorne a análise DSD completa usando a ferramenta analyze_dsd.",
-      base64Data,
-      mimeType,
-      tools,
-      {
-        systemPrompt: analysisPrompt,
-        temperature: 0.1,
-        maxTokens: 4000,
-        forceFunctionName: "analyze_dsd",
-      }
-    );
+    const result = await withMetrics(metrics, dsdAnalysisPromptDef.id, PROMPT_VERSION, dsdAnalysisPromptDef.model)(async () => {
+      const response = await callGeminiVisionWithTools(
+        "gemini-2.5-pro",
+        "Analise esta foto e retorne a análise DSD completa usando a ferramenta analyze_dsd.",
+        base64Data,
+        mimeType,
+        tools,
+        {
+          systemPrompt: analysisPrompt,
+          temperature: 0.1,
+          maxTokens: 4000,
+          forceFunctionName: "analyze_dsd",
+        }
+      );
+      return {
+        result: response,
+        tokensIn: 0,
+        tokensOut: 0,
+      };
+    });
 
     if (result.functionCall) {
       return result.functionCall.args as unknown as DSDAnalysis;

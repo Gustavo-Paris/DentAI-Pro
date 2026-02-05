@@ -4,7 +4,8 @@ import { getCorsHeaders, handleCorsPreFlight, createErrorResponse, ERROR_MESSAGE
 import { logger } from "../_shared/logger.ts";
 import { callGeminiWithTools, GeminiError, type OpenAIMessage, type OpenAITool } from "../_shared/gemini.ts";
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
-import { getPrompt } from "../_shared/prompts/index.ts";
+import { getPrompt, withMetrics } from "../_shared/prompts/index.ts";
+import { createSupabaseMetrics, PROMPT_VERSION } from "../_shared/metrics-adapter.ts";
 
 // Cementation protocol interfaces
 interface CementationStep {
@@ -277,6 +278,12 @@ serve(async (req: Request) => {
       },
     ];
 
+    // Metrics setup
+    const metrics = createSupabaseMetrics(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
     // Call Gemini for protocol generation
     const messages: OpenAIMessage[] = [
       { role: "system", content: systemPrompt },
@@ -285,23 +292,30 @@ serve(async (req: Request) => {
 
     let protocol: CementationProtocol;
     try {
-      const result = await callGeminiWithTools(
-        "gemini-2.5-pro",
-        messages,
-        tools as OpenAITool[],
-        {
-          temperature: 0.3,
-          maxTokens: 4000,
-          forceFunctionName: "generate_cementation_protocol",
-        }
-      );
+      const geminiResult = await withMetrics(metrics, prompt.id, PROMPT_VERSION, prompt.model)(async () => {
+        const response = await callGeminiWithTools(
+          "gemini-2.5-pro",
+          messages,
+          tools as OpenAITool[],
+          {
+            temperature: 0.3,
+            maxTokens: 4000,
+            forceFunctionName: "generate_cementation_protocol",
+          }
+        );
+        return {
+          result: response,
+          tokensIn: 0,
+          tokensOut: 0,
+        };
+      });
 
-      if (!result.functionCall) {
+      if (!geminiResult.functionCall) {
         logger.error("No function call in Gemini response");
         return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
       }
 
-      protocol = result.functionCall.args as unknown as CementationProtocol;
+      protocol = geminiResult.functionCall.args as unknown as CementationProtocol;
     } catch (error) {
       if (error instanceof GeminiError) {
         if (error.statusCode === 429) {
