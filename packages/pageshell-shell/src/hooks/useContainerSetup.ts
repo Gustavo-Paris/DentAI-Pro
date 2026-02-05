@@ -27,7 +27,7 @@ export interface ContainerSetupConfig {
  */
 export interface ContainerSetupResult {
   /** Ref to attach to the main container element */
-  containerRef: React.RefObject<HTMLElement | null>;
+  containerRef: React.RefObject<HTMLElement>;
   /** Generated ID for header-main association (SSR-safe) */
   headerId: string;
   /** Computed container CSS classes */
@@ -36,7 +36,7 @@ export interface ContainerSetupResult {
   headerAreaClasses: string;
   /** Props to spread on the main element */
   mainProps: {
-    ref: React.RefObject<HTMLElement | null>;
+    ref: React.RefObject<HTMLElement>;
     className: string;
     'aria-label'?: string;
     'aria-labelledby'?: string;
@@ -62,7 +62,8 @@ export function useContainerSetup({
   ariaLabel,
   testId,
 }: ContainerSetupConfig): ContainerSetupResult {
-  const containerRef = useRef<HTMLElement>(null);
+  // Cast needed: React 19 useRef returns RefObject<T | null>, React 18 types expect RefObject<T>
+  const containerRef = useRef<HTMLElement>(null) as React.RefObject<HTMLElement>;
   const headerId = useId();
 
   const containerClasses = cn(

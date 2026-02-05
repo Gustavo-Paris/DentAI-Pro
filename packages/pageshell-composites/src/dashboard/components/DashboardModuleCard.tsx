@@ -43,7 +43,7 @@ export function DashboardModuleCard({ module, data }: DashboardModuleCardProps) 
   const cardContent = (
     <Card
       className={cn(
-        'group relative overflow-hidden transition-all',
+        'group relative overflow-hidden transition-all flex-1',
         'hover:shadow-md hover:border-primary/50',
         module.disabled && 'opacity-50 pointer-events-none'
       )}
@@ -82,7 +82,7 @@ export function DashboardModuleCard({ module, data }: DashboardModuleCardProps) 
 
   if (module.href) {
     return (
-      <Link to={module.href} className="block">
+      <Link to={module.href} className="flex flex-col">
         {cardContent}
       </Link>
     );
@@ -90,7 +90,7 @@ export function DashboardModuleCard({ module, data }: DashboardModuleCardProps) 
 
   if (module.onClick) {
     return (
-      <button onClick={module.onClick} className="block w-full text-left">
+      <button onClick={module.onClick} className="flex flex-col w-full text-left">
         {cardContent}
       </button>
     );

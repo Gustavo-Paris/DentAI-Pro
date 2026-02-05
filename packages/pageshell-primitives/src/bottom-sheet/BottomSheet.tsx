@@ -78,7 +78,7 @@ export interface BottomSheetProps {
   /** Close handler */
   onClose: () => void;
   /** Sheet ref (from useBottomSheet) */
-  sheetRef?: RefObject<HTMLDivElement | null>;
+  sheetRef?: RefObject<HTMLDivElement>;
   /** Sheet style (from useBottomSheet) */
   style?: CSSProperties;
   /** Touch handlers (from useBottomSheet) */
