@@ -305,23 +305,12 @@ export function useResult() {
   const genericProtocol = evaluation?.generic_protocol ?? null;
   const protocol = evaluation?.stratification_protocol ?? null;
 
-  const rawLayers = protocol?.layers || evaluation?.protocol_layers || [];
-  // Normalize invalid Z350 shades: WT does not exist in Z350 XT line — replace with CT
-  const layers = rawLayers.map((l: ProtocolLayer) => {
-    if (l.shade === 'WT' && l.resin_brand?.includes('Z350')) {
-      return { ...l, shade: 'CT' };
-    }
-    return l;
-  });
-  const rawChecklist = isPorcelain
+  const layers = protocol?.layers || evaluation?.protocol_layers || [];
+  const checklist = isPorcelain
     ? (cementationProtocol?.checklist || [])
     : isSpecialTreatment && genericProtocol
       ? genericProtocol.checklist
       : (protocol?.checklist || []);
-  // Normalize WT references in checklist text to match corrected layers
-  const checklist = rawChecklist.map((item: string) =>
-    typeof item === 'string' ? item.replace(/\bWT\b/g, 'CT') : item
-  );
   const alerts = isPorcelain
     ? (cementationProtocol?.alerts || [])
     : isSpecialTreatment && genericProtocol

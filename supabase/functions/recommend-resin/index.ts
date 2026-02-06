@@ -382,6 +382,12 @@ serve(async (req) => {
       let productLineWithoutBL: string | null = null;
       
       for (const layer of recommendation.protocol.layers) {
+        // Normalize invalid Z350 shades: WT does not exist in Z350 XT line
+        if (layer.shade === 'WT' && layer.resin_brand?.includes('Z350')) {
+          logger.warn(`Shade normalization: WT → CT for ${layer.resin_brand} (WT does not exist in Z350 XT)`);
+          layer.shade = 'CT';
+        }
+
         // Extract product line from resin_brand (format: "Fabricante - Linha")
         const brandMatch = layer.resin_brand?.match(/^(.+?)\s*-\s*(.+)$/);
         const productLine = brandMatch ? brandMatch[2].trim() : layer.resin_brand;
@@ -508,7 +514,14 @@ serve(async (req) => {
       
       // Update layers with validated versions
       recommendation.protocol.layers = validatedLayers;
-      
+
+      // Normalize WT references in checklist text to match corrected layers
+      if (recommendation.protocol.checklist) {
+        recommendation.protocol.checklist = recommendation.protocol.checklist.map(
+          (item: string) => typeof item === 'string' ? item.replace(/\bWT\b/g, 'CT') : item
+        );
+      }
+
       // Add validation alerts to protocol alerts (with deduplication)
       if (validationAlerts.length > 0) {
         const existingAlerts: string[] = recommendation.protocol.alerts || [];

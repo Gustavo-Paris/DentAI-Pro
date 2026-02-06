@@ -34,7 +34,7 @@ const WHITENING_OPTIONS: {
     value: 'white',
     label: 'Branco',
     description: 'Clareamento notável, resultado evidente',
-    shade: 'BL1 / BL2',
+    shade: 'BL2 / BL3',
     icon: Zap,
   },
   {
