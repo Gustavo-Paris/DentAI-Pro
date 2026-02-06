@@ -2,7 +2,7 @@ import { useState, useMemo, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { inventory } from '@/data';
-import type { CatalogResin, InventoryItem } from '@/data/inventory';
+import type { CatalogResin } from '@/data/inventory';
 import { toast } from 'sonner';
 
 // ---------------------------------------------------------------------------
@@ -15,10 +15,14 @@ export interface GroupedResins {
   };
 }
 
-export interface InventoryFilters {
-  search: string;
-  type: string;
+export interface FlatInventoryItem {
+  id: string;
+  resinId: string;
+  shade: string;
   brand: string;
+  product_line: string;
+  type: string;
+  opacity: string;
 }
 
 export interface CatalogFilters {
@@ -30,21 +34,6 @@ export interface CatalogFilters {
 export interface CsvPreview {
   matched: CatalogResin[];
   unmatched: string[];
-}
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function groupResins(items: { resin: CatalogResin }[]): GroupedResins {
-  const grouped: GroupedResins = {};
-  items.forEach((item) => {
-    const { brand, product_line } = item.resin;
-    if (!grouped[brand]) grouped[brand] = {};
-    if (!grouped[brand][product_line]) grouped[brand][product_line] = [];
-    grouped[brand][product_line].push(item.resin);
-  });
-  return grouped;
 }
 
 // ---------------------------------------------------------------------------
@@ -99,13 +88,6 @@ export function useInventoryManagement() {
     },
   });
 
-  // --- Inventory filter state ---
-  const [inventoryFilters, setInventoryFilters] = useState<InventoryFilters>({
-    search: '',
-    type: 'all',
-    brand: 'all',
-  });
-
   // --- Catalog dialog state ---
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedResins, setSelectedResins] = useState<Set<string>>(new Set());
@@ -130,13 +112,33 @@ export function useInventoryManagement() {
     [allItems],
   );
 
-  const inventoryBrands = useMemo(
-    () => [...new Set(allItems.map((item) => item.resin.brand))].sort(),
+  const flatItems = useMemo<FlatInventoryItem[]>(
+    () =>
+      allItems.map((item) => ({
+        id: item.id,
+        resinId: item.resin_id,
+        shade: item.resin.shade,
+        brand: item.resin.brand,
+        product_line: item.resin.product_line,
+        type: item.resin.type,
+        opacity: item.resin.opacity,
+      })),
     [allItems],
   );
 
-  const inventoryTypes = useMemo(
-    () => [...new Set(allItems.map((item) => item.resin.type))].sort(),
+  const brandOptions = useMemo(
+    () =>
+      [...new Set(allItems.map((item) => item.resin.brand))]
+        .sort()
+        .map((b) => ({ value: b, label: b })),
+    [allItems],
+  );
+
+  const typeOptions = useMemo(
+    () =>
+      [...new Set(allItems.map((item) => item.resin.type))]
+        .sort()
+        .map((t) => ({ value: t, label: t })),
     [allItems],
   );
 
@@ -148,25 +150,6 @@ export function useInventoryManagement() {
   const catalogTypes = useMemo(
     () => [...new Set(catalog.map((r) => r.type))].sort(),
     [catalog],
-  );
-
-  const filteredInventory = useMemo(() => {
-    return allItems.filter((item) => {
-      const matchesSearch =
-        item.resin.shade.toLowerCase().includes(inventoryFilters.search.toLowerCase()) ||
-        item.resin.brand.toLowerCase().includes(inventoryFilters.search.toLowerCase()) ||
-        item.resin.product_line.toLowerCase().includes(inventoryFilters.search.toLowerCase());
-      const matchesType =
-        inventoryFilters.type === 'all' || item.resin.type === inventoryFilters.type;
-      const matchesBrand =
-        inventoryFilters.brand === 'all' || item.resin.brand === inventoryFilters.brand;
-      return matchesSearch && matchesType && matchesBrand;
-    });
-  }, [allItems, inventoryFilters]);
-
-  const groupedInventory = useMemo(
-    () => groupResins(filteredInventory),
-    [filteredInventory],
   );
 
   const filteredCatalog = useMemo(() => {
@@ -345,17 +328,14 @@ export function useInventoryManagement() {
   return {
     // Data
     allItems,
+    flatItems,
     total: inventoryQuery.data?.count ?? 0,
     isLoading: inventoryQuery.isLoading,
     catalog,
 
-    // Inventory display
-    filteredInventory,
-    groupedInventory,
-    inventoryBrands,
-    inventoryTypes,
-    inventoryFilters,
-    setInventoryFilters,
+    // ListPage filter options
+    brandOptions,
+    typeOptions,
 
     // Catalog dialog
     dialogOpen,
