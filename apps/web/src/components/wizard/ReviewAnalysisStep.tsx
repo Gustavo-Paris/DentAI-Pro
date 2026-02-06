@@ -274,7 +274,7 @@ export function ReviewAnalysisStep({
             <span className="text-sm text-muted-foreground">Nível de clareamento:</span>
             <Badge variant="secondary" className="font-medium">
               {whiteningLevel === 'hollywood' ? '✨ Hollywood (BL1)' :
-               whiteningLevel === 'white' ? '🦷 Branco (BL1/BL2)' : 'Natural (A1/A2)'}
+               whiteningLevel === 'white' ? '🦷 Branco (BL2/BL3)' : 'Natural (A1/A2)'}
             </Badge>
           </CardContent>
         </Card>

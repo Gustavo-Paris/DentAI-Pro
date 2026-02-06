@@ -45,10 +45,16 @@ interface CaseSummaryBoxProps {
 function getTargetShade(whiteningGoal: string | null | undefined, originalColor: string): { shade: string; isTarget: boolean } {
   if (!whiteningGoal) return { shade: originalColor, isTarget: false };
   const lower = whiteningGoal.toLowerCase();
-  if (lower.includes('bl1') || lower.includes('bl2') || lower.includes('hollywood') || lower.includes('notável') || lower.includes('branco')) {
-    return { shade: 'BL1/BL2', isTarget: true };
+  if (lower.includes('hollywood') || lower.includes('intenso')) {
+    return { shade: 'BL1', isTarget: true };
   }
-  if (lower.includes('bl3') || lower.includes('bl4') || lower.includes('moderado')) {
+  if (lower.includes('notável') || lower.includes('branco') || lower.includes('bl2') || lower.includes('bl3')) {
+    return { shade: 'BL2/BL3', isTarget: true };
+  }
+  if (lower.includes('bl1')) {
+    return { shade: 'BL1', isTarget: true };
+  }
+  if (lower.includes('bl4') || lower.includes('moderado')) {
     return { shade: 'BL3/BL4', isTarget: true };
   }
   if (lower.includes('natural') || lower.includes('a1') || lower.includes('a2') || lower.includes('sutil')) {

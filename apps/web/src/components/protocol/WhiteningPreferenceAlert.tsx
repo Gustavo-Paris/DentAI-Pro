@@ -23,10 +23,10 @@ const WHITENING_KEYWORDS = [
 // Detect whitening level from text (supports both enum and descriptive text)
 function detectWhiteningLevel(text: string): 'natural' | 'white' | 'hollywood' | null {
   const lower = text.toLowerCase();
-  // Hollywood level
+  // Hollywood level (BL1 is Hollywood-exclusive)
   if (lower.includes('hollywood') || lower.includes('intenso') || lower.includes('bl1')) return 'hollywood';
-  // White level
-  if (lower.includes('notável') || lower.includes('bl1') || lower.includes('bl2') || lower === 'white') return 'white';
+  // White level (BL2/BL3 range)
+  if (lower.includes('notável') || lower.includes('bl2') || lower.includes('bl3') || lower === 'white') return 'white';
   // Natural level
   if ((lower.includes('natural') && lower.includes('sutil')) || lower === 'natural') return 'natural';
   // Fallback to keyword detection for legacy data

@@ -768,7 +768,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
             patientPreferences.whiteningLevel === 'hollywood'
               ? 'Clareamento intenso - nível Hollywood (BL1)'
               : patientPreferences.whiteningLevel === 'white'
-                ? 'Clareamento notável - dentes mais brancos (BL1/BL2)'
+                ? 'Clareamento notável - dentes mais brancos (BL2/BL3)'
                 : patientPreferences.whiteningLevel === 'natural'
                   ? 'Aparência natural e sutil (A1/A2)'
                   : null,
@@ -804,7 +804,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
                     patientPreferences.whiteningLevel === 'hollywood'
                       ? 'Paciente deseja clareamento INTENSO - nível Hollywood (BL1). A cor ALVO da faceta e do cimento deve ser BL1 ou compatível.'
                       : patientPreferences.whiteningLevel === 'white'
-                        ? 'Paciente deseja clareamento NOTÁVEL (BL1/BL2). A cor ALVO da faceta e do cimento deve ser BL1/BL2 ou compatível.'
+                        ? 'Paciente deseja clareamento NOTÁVEL (BL2/BL3). A cor ALVO da faceta e do cimento deve ser BL2/BL3 ou compatível.'
                         : patientPreferences.whiteningLevel === 'natural'
                           ? 'Paciente prefere aparência NATURAL (A1/A2).'
                           : undefined,
@@ -835,7 +835,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
                   patientPreferences.whiteningLevel === 'hollywood'
                     ? 'Paciente deseja clareamento INTENSO - nível Hollywood (BL1). Ajustar todas as camadas 2-3 tons mais claras que a cor detectada.'
                     : patientPreferences.whiteningLevel === 'white'
-                      ? 'Paciente deseja clareamento NOTÁVEL (BL1/BL2). Ajustar camadas 1-2 tons mais claras.'
+                      ? 'Paciente deseja clareamento NOTÁVEL (BL2/BL3). Ajustar camadas 1-2 tons mais claras.'
                       : patientPreferences.whiteningLevel === 'natural'
                         ? 'Paciente prefere aparência NATURAL (A1/A2). Manter tons naturais.'
                         : undefined,
