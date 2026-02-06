@@ -53,6 +53,8 @@ export default defineConfig(() => ({
           'vendor-pdf': ['jspdf'],
           // HEIC conversion (lazy loaded)
           'vendor-heic': ['heic-to'],
+          // Charts (Dashboard only)
+          'vendor-recharts': ['recharts'],
         },
       },
     },
