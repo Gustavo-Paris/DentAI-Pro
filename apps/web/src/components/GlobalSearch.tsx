@@ -55,6 +55,13 @@ export function GlobalSearch() {
     return () => document.removeEventListener('keydown', down);
   }, []);
 
+  // Programmatic open via custom event (used by mobile search button)
+  useEffect(() => {
+    const handler = () => setOpen(true);
+    document.addEventListener('open-global-search', handler);
+    return () => document.removeEventListener('open-global-search', handler);
+  }, []);
+
   // Reset state when dialog closes
   useEffect(() => {
     if (!open) {
