@@ -12,17 +12,20 @@ import { ptBR } from 'date-fns/locale';
 // Card component (presentation only)
 // =============================================================================
 
-function PatientCard({ patient }: { patient: PatientWithStats }) {
+function PatientCard({ patient, index }: { patient: PatientWithStats; index: number }) {
   return (
     <Link to={`/patient/${patient.id}`}>
-      <Card className="p-4 hover:bg-accent/50 transition-colors cursor-pointer">
+      <Card
+        className="p-3 sm:p-4 shadow-sm hover:shadow-md rounded-xl transition-all duration-300 cursor-pointer border-l-[3px] border-l-primary animate-[fade-in-up_0.6s_ease-out_both]"
+        style={{ animationDelay: `${index * 0.05}s` }}
+      >
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold shrink-0">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold shrink-0 text-sm sm:text-base">
             {getInitials(patient.name)}
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-medium truncate">{patient.name}</h3>
-            <p className="text-sm text-muted-foreground">
+            <h3 className="font-medium text-sm sm:text-base truncate">{patient.name}</h3>
+            <p className="text-xs sm:text-sm text-muted-foreground">
               {patient.caseCount} {patient.caseCount === 1 ? 'caso' : 'casos'} •{' '}
               {patient.sessionCount}{' '}
               {patient.sessionCount === 1 ? 'sessão' : 'sessões'}
@@ -45,7 +48,7 @@ function PatientCard({ patient }: { patient: PatientWithStats }) {
               </p>
             )}
           </div>
-          <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
+          <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
         </div>
       </Card>
     </Link>
@@ -68,7 +71,7 @@ export default function Patients() {
           items={patients}
           isLoading={isLoading}
           keyExtractor={(p) => p.id}
-          renderCard={(patient) => <PatientCard patient={patient} />}
+          renderCard={(patient, index) => <PatientCard patient={patient} index={index ?? 0} />}
           gridClassName="grid grid-cols-1 gap-3"
           searchConfig={{
             fields: ['name', 'phone', 'email'],

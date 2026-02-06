@@ -113,22 +113,21 @@ export default function PatientProfile() {
             title: 'Métricas',
             content: () => (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <Card className="p-4 text-center">
-                  <p className="text-2xl font-semibold">{metrics.totalSessions}</p>
-                  <p className="text-xs text-muted-foreground">Sessões</p>
-                </Card>
-                <Card className="p-4 text-center">
-                  <p className="text-2xl font-semibold">{metrics.totalCases}</p>
-                  <p className="text-xs text-muted-foreground">Casos</p>
-                </Card>
-                <Card className="p-4 text-center">
-                  <p className="text-2xl font-semibold text-primary">{metrics.completedCases}</p>
-                  <p className="text-xs text-muted-foreground">Concluídos</p>
-                </Card>
-                <Card className="p-4 text-center">
-                  <p className="text-2xl font-semibold">{metrics.firstVisitFormatted}</p>
-                  <p className="text-xs text-muted-foreground">1ª Visita</p>
-                </Card>
+                {[
+                  { value: metrics.totalSessions, label: 'Sessões' },
+                  { value: metrics.totalCases, label: 'Casos' },
+                  { value: metrics.completedCases, label: 'Concluídos', highlight: true },
+                  { value: metrics.firstVisitFormatted, label: '1ª Visita' },
+                ].map((stat, i) => (
+                  <Card
+                    key={stat.label}
+                    className="p-3 sm:p-4 text-center shadow-sm rounded-xl animate-[fade-in-up_0.6s_ease-out_both]"
+                    style={{ animationDelay: `${i * 0.05}s` }}
+                  >
+                    <p className={`text-2xl font-semibold${stat.highlight ? ' text-primary' : ''}`}>{stat.value}</p>
+                    <p className="text-xs text-muted-foreground">{stat.label}</p>
+                  </Card>
+                ))}
               </div>
             ),
           },
@@ -162,13 +161,18 @@ export default function PatientProfile() {
                   </Card>
                 ) : (
                   <div className="space-y-3">
-                    {sessionsList.map((session) => {
+                    {sessionsList.map((session, index) => {
                       const isCompleted = session.completedCount === session.evaluationCount;
                       const progressPercent = (session.completedCount / session.evaluationCount) * 100;
 
                       return (
                         <Link key={session.session_id} to={`/evaluation/${session.session_id}`}>
-                          <Card className="p-4 hover:bg-accent/50 transition-colors cursor-pointer">
+                          <Card
+                            className={`p-3 sm:p-4 shadow-sm hover:shadow-md rounded-xl transition-all duration-300 cursor-pointer border-l-[3px] animate-[fade-in-up_0.6s_ease-out_both] ${
+                              isCompleted ? 'border-l-emerald-500' : 'border-l-primary'
+                            }`}
+                            style={{ animationDelay: `${index * 0.05}s` }}
+                          >
                             <div className="flex items-center justify-between mb-2">
                               <div className="flex items-center gap-2">
                                 <span className="text-sm font-medium">
@@ -188,7 +192,7 @@ export default function PatientProfile() {
                                   {isCompleted ? 'Concluído' : 'Em progresso'}
                                 </Badge>
                               </div>
-                              <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                              <ChevronRight className="w-4 h-4 text-muted-foreground" />
                             </div>
 
                             <div className="flex items-center gap-4">

@@ -252,10 +252,11 @@ function PaymentHistorySection({
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {paymentRecords.map((payment) => (
+          {paymentRecords.map((payment, index) => (
             <div
               key={payment.id}
-              className="flex items-center justify-between p-3 rounded-lg border border-border"
+              className="flex items-center justify-between p-3 rounded-xl border border-border shadow-sm animate-[fade-in-up_0.6s_ease-out_both]"
+              style={{ animationDelay: `${index * 0.05}s` }}
             >
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium">
