@@ -462,9 +462,11 @@ serve(async (req) => {
     });
 
     // If majority of detected teeth are upper arch, remove lower teeth
+    let filteredLowerWarning: string | null = null;
     if (upperTeeth.length > 0 && lowerTeeth.length > 0 && upperTeeth.length >= lowerTeeth.length) {
       const removedNumbers = lowerTeeth.map(t => t.tooth);
       logger.warn(`Removing lower teeth ${removedNumbers.join(', ')} — photo predominantly shows upper arch (${upperTeeth.length} upper vs ${lowerTeeth.length} lower)`);
+      filteredLowerWarning = `Dentes inferiores (${removedNumbers.join(', ')}) removidos da análise — foto mostra predominantemente a arcada superior.`;
       // Keep only upper teeth
       detectedTeeth.splice(0, detectedTeeth.length, ...upperTeeth);
     }
@@ -473,11 +475,17 @@ serve(async (req) => {
     const priorityOrder = { alta: 0, média: 1, baixa: 2 };
     detectedTeeth.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
 
+    // Fix primary_tooth if it was a filtered-out lower tooth
+    let primaryTooth = analysisResult.primary_tooth ?? (detectedTeeth.length > 0 ? detectedTeeth[0].tooth : null);
+    if (primaryTooth && !detectedTeeth.some(t => t.tooth === primaryTooth)) {
+      primaryTooth = detectedTeeth.length > 0 ? detectedTeeth[0].tooth : null;
+    }
+
     const result: PhotoAnalysisResult = {
       detected: analysisResult.detected ?? detectedTeeth.length > 0,
       confidence: analysisResult.confidence ?? 0,
       detected_teeth: detectedTeeth,
-      primary_tooth: analysisResult.primary_tooth ?? (detectedTeeth.length > 0 ? detectedTeeth[0].tooth : null),
+      primary_tooth: primaryTooth,
       vita_shade: analysisResult.vita_shade ?? null,
       observations: analysisResult.observations ?? [],
       warnings: analysisResult.warnings ?? [],
@@ -488,6 +496,11 @@ serve(async (req) => {
     // Log detection results for debugging
     logger.log(`Multi-tooth detection complete: ${detectedTeeth.length} teeth found`);
     logger.log(`Primary tooth: ${result.primary_tooth}, Confidence: ${result.confidence}%`);
+
+    // Add warning about filtered lower teeth
+    if (filteredLowerWarning) {
+      result.warnings.push(filteredLowerWarning);
+    }
 
     // Add warning if multiple teeth detected
     if (detectedTeeth.length > 1) {
