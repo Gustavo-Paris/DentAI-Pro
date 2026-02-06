@@ -12,7 +12,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Download, Plus, CheckCircle, Image, Package, Sparkles, Layers, Loader2, Crown, Stethoscope, ArrowUpRight, CircleX, Heart, Palette } from 'lucide-react';
+import { Download, Plus, CheckCircle, Image, Package, Sparkles, Layers, Loader2, Crown, Stethoscope, ArrowUpRight, CircleX, Heart, Palette, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -498,9 +498,14 @@ export default function Result() {
             )}
 
             {/* Disclaimer */}
-            <p className="text-xs text-muted-foreground text-center mt-8">
-              Esta é uma ferramenta de apoio à decisão clínica. A escolha final do material restaurador é de responsabilidade do profissional.
-            </p>
+            <div className="mt-8 p-4 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                <p className="text-xs text-amber-800 dark:text-amber-200">
+                  Este planejamento foi gerado por Inteligência Artificial e serve como ferramenta de apoio à decisão clínica. Não substitui uma avaliação clínica criteriosa realizada por Cirurgião-Dentista.
+                </p>
+              </div>
+            </div>
           </>
         )}
       </DetailPage>
