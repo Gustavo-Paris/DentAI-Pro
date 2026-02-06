@@ -28,7 +28,7 @@ function SessionCard({
     ? 'border-l-[3px] border-l-primary ring-1 ring-primary/20'
     : isCompleted
     ? 'border-l-[3px] border-l-emerald-500'
-    : 'border-l-[3px] border-l-amber-500';
+    : 'border-l-[3px] border-l-primary';
 
   return (
     <Link to={`/evaluation/${session.session_id}`}>

@@ -89,6 +89,7 @@ export interface WizardFlowState {
 
   // Submission
   isSubmitting: boolean;
+  submissionComplete: boolean;
   submissionStep: number;
   submissionSteps: SubmissionStep[];
 
@@ -383,6 +384,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isReanalyzing, setIsReanalyzing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionComplete, setSubmissionComplete] = useState(false);
   const [submissionStep, setSubmissionStep] = useState(0);
   const [uploadedPhotoPath, setUploadedPhotoPath] = useState<string | null>(null);
   const [selectedTeeth, setSelectedTeeth] = useState<string[]>([]);
@@ -948,9 +950,11 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
         toast.error(errorMessage, { duration: 5000 });
         setStep(5);
       } else {
-        // At least some succeeded — navigate to evaluation page
+        // At least some succeeded — show success animation then navigate
         clearDraft();
         toast.dismiss();
+        setIsSubmitting(false);
+        setSubmissionComplete(true);
 
         if (failedTeeth.length > 0) {
           // Partial success — warn about failures
@@ -966,6 +970,9 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
           );
         }
 
+        // Brief success animation before navigating
+        await new Promise((resolve) => setTimeout(resolve, 800));
+        setSubmissionComplete(false);
         navigate(`/evaluation/${sessionId}`);
       }
     } catch (error: unknown) {
@@ -1371,6 +1378,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     isReanalyzing,
     hasInventory,
     isSubmitting,
+    submissionComplete,
     submissionStep,
     submissionSteps,
     uploadedPhotoPath,

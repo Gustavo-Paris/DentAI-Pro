@@ -47,10 +47,10 @@ export default function Landing() {
       {/* Hero */}
       <section className="py-20 sm:py-28 md:py-36 relative overflow-hidden grain-overlay">
         {/* Gradient mesh background */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,hsl(42_52%_48%/0.10),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,hsl(42_55%_56%/0.15),transparent)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_80%_60%,hsl(38_60%_58%/0.06),transparent)] dark:bg-[radial-gradient(ellipse_60%_40%_at_80%_60%,hsl(38_65%_66%/0.08),transparent)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_50%_at_20%_80%,hsl(42_52%_48%/0.04),transparent)] dark:bg-[radial-gradient(ellipse_50%_50%_at_20%_80%,hsl(42_55%_56%/0.06),transparent)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_1px_at_20px_20px,hsl(42_52%_48%/0.08)_1px,transparent_0)] dark:bg-[radial-gradient(circle_1px_at_20px_20px,hsl(42_55%_56%/0.06)_1px,transparent_0)] bg-[length:40px_40px]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,hsl(235_56%_58%/0.08),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,hsl(235_60%_68%/0.10),transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_80%_60%,hsl(235_56%_58%/0.05),transparent)] dark:bg-[radial-gradient(ellipse_60%_40%_at_80%_60%,hsl(235_60%_68%/0.05),transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_50%_at_20%_80%,hsl(235_56%_58%/0.03),transparent)] dark:bg-[radial-gradient(ellipse_50%_50%_at_20%_80%,hsl(235_60%_68%/0.03),transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_1px_at_20px_20px,hsl(235_56%_58%/0.05)_1px,transparent_0)] dark:bg-[radial-gradient(circle_1px_at_20px_20px,hsl(235_60%_68%/0.03)_1px,transparent_0)] bg-[length:40px_40px]" />
 
         <div className="container mx-auto px-4 sm:px-6 text-center max-w-3xl relative">
           <Badge
@@ -304,8 +304,8 @@ export default function Landing() {
       {/* CTA */}
       <section className="py-16 sm:py-24 relative overflow-hidden grain-overlay">
         {/* Gradient mesh — inverted from hero (origin bottom) */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_120%,hsl(42_52%_48%/0.10),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_120%,hsl(42_55%_56%/0.15),transparent)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_20%_40%,hsl(38_60%_58%/0.06),transparent)] dark:bg-[radial-gradient(ellipse_60%_40%_at_20%_40%,hsl(38_65%_66%/0.08),transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_120%,hsl(235_56%_58%/0.08),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_120%,hsl(235_60%_68%/0.10),transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_20%_40%,hsl(235_56%_58%/0.05),transparent)] dark:bg-[radial-gradient(ellipse_60%_40%_at_20%_40%,hsl(235_60%_68%/0.05),transparent)]" />
 
         <div ref={ctaRef} className="scroll-reveal container mx-auto px-4 sm:px-6 text-center relative">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold mb-3 sm:mb-4 font-display">

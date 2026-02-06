@@ -56,27 +56,27 @@ function CreditsBanner({
 }) {
   return (
     <div
-      className="relative overflow-hidden rounded-xl border border-amber-200/60 dark:border-amber-700/40 shadow-sm scroll-reveal"
+      className="relative overflow-hidden rounded-xl border border-primary/20 dark:border-primary/15 shadow-sm scroll-reveal"
     >
-      <div className="absolute inset-0 bg-gradient-to-r from-amber-50 via-orange-50/80 to-amber-50 dark:from-amber-950/40 dark:via-orange-950/30 dark:to-amber-950/40" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(251,191,36,0.08),_transparent_60%)]" />
+      <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/3 to-primary/5 dark:from-primary/8 dark:via-primary/4 dark:to-primary/8" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_hsl(var(--primary)/0.06),_transparent_60%)]" />
 
       <div className="relative flex items-center gap-3 p-4">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/50">
-          <AlertTriangle className="w-4.5 h-4.5 text-amber-600 dark:text-amber-400" />
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/15">
+          <AlertTriangle className="w-4.5 h-4.5 text-primary" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
+          <p className="text-sm font-medium text-foreground">
             {creditsRemaining} crédito{creditsRemaining !== 1 ? 's' : ''} restante{creditsRemaining !== 1 ? 's' : ''}
           </p>
-          <p className="text-xs text-amber-700/80 dark:text-amber-300/70 mt-0.5">
+          <p className="text-xs text-muted-foreground mt-0.5">
             Faça upgrade para continuar sem interrupção
           </p>
         </div>
         <Link to="/pricing">
           <Button
             size="sm"
-            className="bg-amber-600 hover:bg-amber-700 text-white shadow-sm shadow-amber-600/20 shrink-0 btn-glow-gold"
+            className="btn-glow-gold shrink-0"
           >
             Ver planos
             <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
@@ -84,7 +84,7 @@ function CreditsBanner({
         </Link>
         <button
           onClick={onDismiss}
-          className="p-1 rounded-md text-amber-400 hover:text-amber-600 hover:bg-amber-100/50 dark:hover:bg-amber-800/30 transition-colors shrink-0"
+          className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors shrink-0"
           aria-label="Fechar aviso"
         >
           <X className="w-4 h-4" />
@@ -101,10 +101,10 @@ const statConfigs = [
     unit: 'avaliações',
     icon: FileWarning,
     tooltip: 'Avaliações com dentes ainda não concluídos',
-    accentColor: 'from-amber-400 to-orange-500',
-    darkAccentColor: 'dark:from-amber-500 dark:to-orange-400',
+    accentColor: 'from-primary to-primary/70',
+    darkAccentColor: 'dark:from-primary dark:to-primary/60',
     getValueColor: (v: number) =>
-      v > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-foreground',
+      v > 0 ? 'text-primary' : 'text-foreground',
   },
   {
     key: 'weeklySessions' as const,
@@ -113,7 +113,7 @@ const statConfigs = [
     icon: TrendingUp,
     tooltip: '',
     accentColor: 'from-blue-400 to-cyan-500',
-    darkAccentColor: 'dark:from-blue-400 dark:to-cyan-400',
+    darkAccentColor: 'dark:from-blue-400/80 dark:to-cyan-400/80',
     getValueColor: () => 'text-foreground',
   },
   {
@@ -123,7 +123,7 @@ const statConfigs = [
     icon: CheckCircle2,
     tooltip: 'Avaliações com todos os dentes concluídos',
     accentColor: 'from-emerald-400 to-teal-500',
-    darkAccentColor: 'dark:from-emerald-400 dark:to-teal-400',
+    darkAccentColor: 'dark:from-emerald-400/80 dark:to-teal-400/80',
     getValueColor: () => 'text-primary',
     suffix: '%',
   },
@@ -134,7 +134,7 @@ const statConfigs = [
     icon: FileText,
     tooltip: 'Total de dentes aguardando conclusão',
     accentColor: 'from-violet-400 to-purple-500',
-    darkAccentColor: 'dark:from-violet-400 dark:to-purple-400',
+    darkAccentColor: 'dark:from-violet-400/80 dark:to-purple-400/80',
     getValueColor: (v: number) =>
       v > 0 ? 'text-violet-600 dark:text-violet-400' : 'text-foreground',
   },
@@ -277,15 +277,15 @@ function DraftCard({
 }) {
   return (
     <Card className="relative overflow-hidden p-3 sm:p-4 animate-scale-in">
-      <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-gradient-to-b from-amber-400 to-orange-500" />
+      <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-gradient-to-b from-primary to-primary/70" />
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <FileWarning className="w-4 h-4 text-amber-600 dark:text-amber-400" aria-hidden="true" />
+            <FileWarning className="w-4 h-4 text-primary" aria-hidden="true" />
             <p className="font-semibold text-sm sm:text-base">
               {draft.formData?.patientName || 'Paciente sem nome'}
             </p>
-            <Badge variant="outline" className="text-[10px] border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 font-semibold uppercase tracking-wider">
+            <Badge variant="outline" className="text-[10px] border-primary/30 text-primary bg-primary/5 dark:bg-primary/10 font-semibold uppercase tracking-wider">
               Rascunho
             </Badge>
           </div>
@@ -306,14 +306,14 @@ function DraftCard({
           <Button
             variant="ghost"
             size="sm"
-            className="text-amber-700 hover:text-amber-900 hover:bg-amber-100 dark:text-amber-300 dark:hover:text-amber-100 dark:hover:bg-amber-900/50 text-xs"
+            className="text-muted-foreground hover:text-foreground hover:bg-muted text-xs"
             onClick={onDiscard}
             aria-label="Descartar rascunho"
           >
             Descartar
           </Button>
           <Link to="/new-case">
-            <Button size="sm" className="bg-amber-600 hover:bg-amber-700 dark:bg-amber-600 dark:hover:bg-amber-500 text-white text-xs shadow-sm" aria-label="Continuar avaliação">
+            <Button size="sm" className="btn-glow-gold text-xs shadow-sm" aria-label="Continuar avaliação">
               Continuar
               <ArrowRight className="w-3.5 h-3.5 ml-1" />
             </Button>
@@ -411,7 +411,7 @@ function SessionCard({ session }: { session: DashboardSession }) {
           className={`absolute left-0 top-0 bottom-0 w-[3px] ${
             isCompleted
               ? 'bg-gradient-to-b from-emerald-400 to-teal-500'
-              : 'bg-gradient-to-b from-amber-400 to-orange-400'
+              : 'bg-gradient-to-b from-primary to-primary/70'
           }`}
         />
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
@@ -425,7 +425,7 @@ function SessionCard({ session }: { session: DashboardSession }) {
                 className={`text-[10px] font-semibold uppercase tracking-wider shrink-0 ${
                   isCompleted
                     ? 'border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30'
-                    : 'border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30'
+                    : 'border-primary/30 text-primary bg-primary/5 dark:bg-primary/10'
                 }`}
               >
                 {isCompleted ? 'Concluído' : 'Em progresso'}
@@ -477,7 +477,7 @@ function SessionCard({ session }: { session: DashboardSession }) {
         {/* Progress bar */}
         <div className="mt-2 h-1 rounded-full bg-secondary overflow-hidden">
           <div
-            className={`h-full rounded-full transition-all duration-500 ${isCompleted ? 'bg-emerald-500' : 'bg-amber-500'}`}
+            className={`h-full rounded-full transition-all duration-500 ${isCompleted ? 'bg-emerald-500' : 'bg-primary'}`}
             style={{ width: `${progressPercent}%` }}
           />
         </div>
@@ -647,9 +647,9 @@ export default function Dashboard() {
                 <div className="flex items-center gap-3 mb-1">
                   {(() => {
                     const hour = new Date().getHours();
-                    if (hour >= 6 && hour < 12) return <Sun className="w-5 h-5 text-amber-500" />;
-                    if (hour >= 12 && hour < 18) return <Sunset className="w-5 h-5 text-orange-500" />;
-                    return <Moon className="w-5 h-5 text-indigo-400" />;
+                    if (hour >= 6 && hour < 12) return <Sun className="w-5 h-5 text-primary" />;
+                    if (hour >= 12 && hour < 18) return <Sunset className="w-5 h-5 text-primary/80" />;
+                    return <Moon className="w-5 h-5 text-muted-foreground" />;
                   })()}
                   <h1 className="text-2xl sm:text-3xl font-semibold font-display tracking-tight">
                     {dashboard.greeting}, <span className="text-gradient-gold">{dashboard.firstName}</span>

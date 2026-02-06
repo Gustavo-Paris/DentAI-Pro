@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, Brain, Sparkles, Check, AlertCircle, RefreshCw, ArrowRight, ArrowLeft } from 'lucide-react';
-import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import { Loader2, Sparkles, Check, RefreshCw, ArrowRight, ArrowLeft, Lightbulb, AlertCircle } from 'lucide-react';
 
 interface AnalyzingStepProps {
   imageBase64: string | null;
@@ -22,11 +21,11 @@ const analysisSteps = [
   { id: 6, label: 'Gerando diagnóstico...', duration: 1000 },
 ];
 
-export function AnalyzingStep({ 
-  imageBase64, 
-  isAnalyzing, 
-  analysisError, 
-  onRetry, 
+export function AnalyzingStep({
+  imageBase64,
+  isAnalyzing,
+  analysisError,
+  onRetry,
   onSkipToReview,
   onBack,
 }: AnalyzingStepProps) {
@@ -70,13 +69,13 @@ export function AnalyzingStep({
     };
   }, [isAnalyzing]);
 
-  // Show error state
+  // Friendly error state
   if (analysisError) {
     return (
       <div className="space-y-6">
         <div className="text-center">
-          <div className="w-20 h-20 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
-            <AlertCircle className="w-10 h-10 text-destructive" />
+          <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-950/30 flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-8 h-8 text-amber-600 dark:text-amber-400" />
           </div>
           <h2 className="text-2xl font-semibold font-display mb-2">Erro na Análise</h2>
           <p className="text-muted-foreground max-w-md mx-auto">
@@ -89,42 +88,42 @@ export function AnalyzingStep({
             <img
               src={imageBase64}
               alt="Foto enviada"
-              className="w-48 h-48 object-cover rounded-lg opacity-75"
+              className="w-48 h-48 object-cover rounded-xl opacity-75 ring-1 ring-border"
             />
           </div>
         )}
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground text-center">
-                Você pode tentar novamente ou prosseguir com a entrada manual dos dados clínicos.
-              </p>
-              
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                {onBack && (
-                  <Button variant="ghost" onClick={onBack} className="gap-2">
-                    <ArrowLeft className="w-4 h-4" />
-                    Voltar
-                  </Button>
-                )}
-                <Button onClick={onRetry} className="gap-2">
-                  <RefreshCw className="w-4 h-4" />
-                  Tentar Novamente
-                </Button>
-                <Button variant="outline" onClick={onSkipToReview} className="gap-2">
-                  <ArrowRight className="w-4 h-4" />
-                  Pular para Revisão Manual
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Contextual hint card with amber border */}
+        <div className="border-l-4 border-amber-500 bg-amber-50/50 dark:bg-amber-950/20 rounded-r-lg p-4">
+          <div className="flex items-start gap-3">
+            <Lightbulb className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+            <p className="text-sm text-amber-700 dark:text-amber-300">
+              Fotos com boa iluminação e foco nítido na cavidade funcionam melhor para a análise automática.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          {onBack && (
+            <Button variant="ghost" onClick={onBack} className="gap-2 btn-press">
+              <ArrowLeft className="w-4 h-4" />
+              Voltar
+            </Button>
+          )}
+          <Button onClick={onRetry} className="gap-2 btn-glow-gold btn-press font-semibold">
+            <RefreshCw className="w-4 h-4" />
+            Tentar Novamente
+          </Button>
+          <Button variant="outline" onClick={onSkipToReview} className="gap-2 btn-press border-primary/30 hover:border-primary/50">
+            <ArrowRight className="w-4 h-4" />
+            Pular para Revisão Manual
+          </Button>
+        </div>
       </div>
     );
   }
 
-  // Show loading state
+  // Loading state with scan-line + timeline
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -134,66 +133,79 @@ export function AnalyzingStep({
         </p>
       </div>
 
+      {/* Photo with scan-line animation */}
       <div className="flex justify-center">
-        <div className="relative">
-          {imageBase64 && (
+        {imageBase64 && (
+          <div className="relative w-full max-w-md scan-line-animation vignette-overlay rounded-xl overflow-hidden">
             <img
               src={imageBase64}
               alt="Foto sendo analisada"
-              className="w-64 h-64 object-cover rounded-lg opacity-50"
+              className="w-full object-cover rounded-xl"
             />
-          )}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center animate-pulse">
-              <Brain className="w-10 h-10 text-primary animate-pulse" />
-            </div>
           </div>
+        )}
+      </div>
+
+      {/* Gold progress bar */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium">Progresso da análise</span>
+          <Badge variant="outline" className="text-gradient-gold font-semibold text-xs">
+            {Math.round(progress)}%
+          </Badge>
+        </div>
+        <div className="progress-gold h-2 rounded-full">
+          <div
+            className="h-full rounded-full"
+            style={{ width: `${progress}%` }}
+          />
         </div>
       </div>
 
-      <Card>
-        <CardContent className="p-6">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">Progresso da análise</span>
-              <span className="text-sm text-muted-foreground">{Math.round(progress)}%</span>
-            </div>
-            <Progress value={progress} className="h-2" />
+      {/* Timeline progress steps */}
+      <div className="timeline-line pl-2 space-y-4">
+        {analysisSteps.map((step, index) => {
+          const isCompleted = currentStep > index + 1;
+          const isActive = currentStep === index + 1;
+          const isPending = currentStep < index + 1;
 
-            <div className="space-y-3 mt-6">
-              {analysisSteps.map((step, index) => (
-                <div
-                  key={step.id}
-                  className={`flex items-center gap-3 transition-opacity ${
-                    currentStep >= step.id ? 'opacity-100' : 'opacity-30'
-                  }`}
-                >
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                    currentStep > index + 1
-                      ? 'bg-primary text-primary-foreground'
-                      : currentStep === index + 1
-                      ? 'bg-primary/20 text-primary'
-                      : 'bg-muted text-muted-foreground'
-                  }`}>
-                    {currentStep > index + 1 ? (
-                      <Check className="w-4 h-4" />
-                    ) : currentStep === index + 1 ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <span className="text-xs">{step.id}</span>
-                    )}
-                  </div>
-                  <span className={`text-sm ${
-                    currentStep >= step.id ? 'text-foreground' : 'text-muted-foreground'
-                  }`}>
-                    {step.label}
-                  </span>
-                </div>
-              ))}
+          return (
+            <div
+              key={step.id}
+              className={`flex items-center gap-4 relative transition-all duration-300 ${
+                isPending ? 'opacity-30' : 'opacity-100'
+              }`}
+              style={{
+                animationDelay: `${index * 100}ms`,
+              }}
+            >
+              {/* Timeline node */}
+              <div className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 ${
+                isCompleted
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : isActive
+                    ? 'bg-primary/20 text-primary ring-2 ring-primary/30'
+                    : 'bg-muted text-muted-foreground'
+              }`}>
+                {isCompleted ? (
+                  <Check className="w-4 h-4 animate-scale-in" />
+                ) : isActive ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <span className="text-xs">{step.id}</span>
+                )}
+              </div>
+
+              {/* Label */}
+              <span className={`text-sm transition-colors ${
+                isCompleted || isActive ? 'text-foreground' : 'text-muted-foreground'
+              }`}>
+                {step.label}
+              </span>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          );
+        })}
+      </div>
 
       <div className="flex justify-center">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
