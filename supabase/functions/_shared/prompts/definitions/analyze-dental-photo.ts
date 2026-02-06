@@ -75,6 +75,12 @@ Regras adicionais de visibilidade:
 ❌ ERRADO: Foto mostra arcada superior → sugerir tratamento para dentes 31, 41
 ✅ CERTO: Foto mostra arcada superior → listar apenas dentes 11-28 que estejam visíveis
 
+## COMPLETUDE EM SUGESTÕES DE BORDO INCISAL
+Quando identificar necessidade de ajuste no bordo incisal (desgaste, aumento, recontorno):
+- Se 2+ dentes anteriores precisam de ajuste → avalie TODO o arco 13-23
+- LISTE TODOS os dentes afetados, não apenas 1-2
+- Cada dente com problema recebe seu próprio registro em detected_teeth
+
 ## ANÁLISE MULTI-DENTE (Problemas Restauradores)
 - Analise SISTEMATICAMENTE cada quadrante VISÍVEL: superior-direito (Q1: 11-18), superior-esquerdo (Q2: 21-28), inferior-esquerdo (Q3: 31-38), inferior-direito (Q4: 41-48)
 - Se houver 4 dentes com problema, liste TODOS OS 4 no array detected_teeth
