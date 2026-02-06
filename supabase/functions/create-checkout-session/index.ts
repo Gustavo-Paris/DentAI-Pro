@@ -167,7 +167,7 @@ serve(async (req: Request) => {
 
       await stripe.subscriptions.update(stripeSubId, {
         items: [{ id: currentItemId, price: stripePriceId }],
-        proration_behavior: "create_prorations",
+        proration_behavior: "always_invoice",
       });
 
       return new Response(
