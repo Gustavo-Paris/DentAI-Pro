@@ -713,7 +713,7 @@ export async function generateProtocolPDF(data: PDFData): Promise<void> {
   pdf.setFontSize(6);
   pdf.setTextColor(120, 120, 120);
   pdf.setFont('helvetica', 'italic');
-  const disclaimer = 'Esta e uma ferramenta de apoio a decisao clinica. A escolha final do material restaurador e de responsabilidade exclusiva do profissional.';
+  const disclaimer = 'Este planejamento foi gerado por Inteligencia Artificial e serve como ferramenta de apoio a decisao clinica. Nao substitui uma avaliacao clinica criteriosa realizada por Cirurgiao-Dentista.';
   const disclaimerLines = pdf.splitTextToSize(disclaimer, contentWidth);
   pdf.text(disclaimerLines, pageWidth / 2, footerY - 4, { align: 'center' });
   
