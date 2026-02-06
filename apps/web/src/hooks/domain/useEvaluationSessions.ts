@@ -97,6 +97,7 @@ export function useEvaluationSessions() {
     sessions: query.data?.sessions ?? [],
     total: query.data?.total ?? 0,
     isLoading: query.isLoading,
+    isError: query.isError,
     newSessionId: locationState?.newSessionId ?? null,
     newTeethCount: locationState?.teethCount ?? 0,
   };

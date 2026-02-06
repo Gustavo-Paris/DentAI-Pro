@@ -79,5 +79,6 @@ export function usePatientList() {
     patients: query.data?.patients ?? [],
     total: query.data?.total ?? 0,
     isLoading: query.isLoading,
+    isError: query.isError,
   };
 }
