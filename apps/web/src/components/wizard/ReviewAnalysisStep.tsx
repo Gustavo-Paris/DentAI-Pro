@@ -257,7 +257,7 @@ export function ReviewAnalysisStep({
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-semibold mb-2">Revisão da Análise</h2>
+        <h2 className="text-2xl font-semibold font-display mb-2">Revisão da Análise</h2>
         <p className="text-muted-foreground">
           {hasMultipleTeeth 
             ? `Detectados ${detectedTeeth.length} dentes com problema. Selecione qual tratar primeiro.`

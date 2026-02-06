@@ -609,7 +609,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
               <AlertCircle className="w-8 h-8 text-destructive" />
             )}
           </div>
-          <h2 className="text-xl font-semibold mb-2">
+          <h2 className="text-xl font-semibold font-display mb-2">
             {isCreditError ? 'Créditos Insuficientes' : 'Erro na Análise DSD'}
           </h2>
           <p className="text-muted-foreground">{error}</p>
@@ -662,7 +662,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
             <Smile className="w-8 h-8 text-primary" />
           </div>
-          <h2 className="text-xl font-semibold mb-2">Planejamento Digital do Sorriso</h2>
+          <h2 className="text-xl font-semibold font-display mb-2">Planejamento Digital do Sorriso</h2>
           <div className="flex items-center justify-center gap-2">
             <Badge 
               variant={analysis.confidence === 'alta' ? 'default' : analysis.confidence === 'média' ? 'secondary' : 'outline'}

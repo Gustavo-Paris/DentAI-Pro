@@ -78,7 +78,7 @@ export function AnalyzingStep({
           <div className="w-20 h-20 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
             <AlertCircle className="w-10 h-10 text-destructive" />
           </div>
-          <h2 className="text-2xl font-semibold mb-2">Erro na Análise</h2>
+          <h2 className="text-2xl font-semibold font-display mb-2">Erro na Análise</h2>
           <p className="text-muted-foreground max-w-md mx-auto">
             {analysisError}
           </p>
@@ -128,7 +128,7 @@ export function AnalyzingStep({
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-semibold mb-2">Analisando Foto</h2>
+        <h2 className="text-2xl font-semibold font-display mb-2">Analisando Foto</h2>
         <p className="text-muted-foreground">
           A IA está detectando os parâmetros clínicos automaticamente
         </p>

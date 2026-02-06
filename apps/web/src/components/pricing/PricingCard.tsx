@@ -46,7 +46,7 @@ export function PricingCard({
       )}
 
       <CardHeader className="text-center pb-2">
-        <CardTitle className="text-xl">{plan.name}</CardTitle>
+        <CardTitle className="text-xl font-display">{plan.name}</CardTitle>
         <CardDescription>{plan.description}</CardDescription>
       </CardHeader>
 
@@ -54,7 +54,7 @@ export function PricingCard({
         {/* Price */}
         <div className="text-center mb-4">
           <div className="flex items-baseline justify-center gap-1">
-            <span className="text-4xl font-bold">
+            <span className="text-4xl font-semibold">
               {isFree ? 'Grátis' : formatPrice(plan.price_monthly)}
             </span>
             {!isFree && <span className="text-muted-foreground">/mês</span>}

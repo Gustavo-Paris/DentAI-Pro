@@ -27,10 +27,11 @@ import {
 import {
   Plus, FileText, Package, ChevronRight, FileWarning,
   TrendingUp, Users, CheckCircle2, Zap, Camera, AlertTriangle,
-  X, ArrowRight, Sparkles,
+  X, ArrowRight, Sparkles, Sun, Moon, Sunset,
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useScrollReveal, useScrollRevealChildren } from '@/hooks/useScrollReveal';
 
 // =============================================================================
 // UI Sub-components (presentation only — no business logic)
@@ -45,8 +46,7 @@ function CreditsBanner({
 }) {
   return (
     <div
-      className="relative overflow-hidden rounded-xl border border-amber-200/60 dark:border-amber-700/40 animate-fade-in"
-      style={{ animationDelay: '0.1s' }}
+      className="relative overflow-hidden rounded-xl border border-amber-200/60 dark:border-amber-700/40 shadow-sm scroll-reveal"
     >
       <div className="absolute inset-0 bg-gradient-to-r from-amber-50 via-orange-50/80 to-amber-50 dark:from-amber-950/40 dark:via-orange-950/30 dark:to-amber-950/40" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(251,191,36,0.08),_transparent_60%)]" />
@@ -66,7 +66,7 @@ function CreditsBanner({
         <Link to="/pricing">
           <Button
             size="sm"
-            className="bg-amber-600 hover:bg-amber-700 text-white shadow-sm shadow-amber-600/20 shrink-0"
+            className="bg-amber-600 hover:bg-amber-700 text-white shadow-sm shadow-amber-600/20 shrink-0 btn-glow-gold"
           >
             Ver planos
             <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
@@ -134,8 +134,10 @@ function StatsGrid({
   loading: boolean;
   weekRange: { start: string; end: string };
 }) {
+  const containerRef = useScrollRevealChildren();
+
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div ref={containerRef} className="grid grid-cols-2 sm:grid-cols-4 gap-3">
       {statConfigs.map((stat, i) => {
         const Icon = stat.icon;
         const value = metrics[stat.key];
@@ -148,8 +150,7 @@ function StatsGrid({
           <Tooltip key={stat.key}>
             <TooltipTrigger asChild>
               <Card
-                className="group relative overflow-hidden p-3 sm:p-4 cursor-default transition-all duration-200 hover:shadow-md animate-fade-in"
-                style={{ animationDelay: `${0.05 + i * 0.05}s` }}
+                className={`scroll-reveal scroll-reveal-delay-${i + 1} group relative overflow-hidden p-3 sm:p-4 cursor-default shadow-sm hover:shadow-md rounded-xl transition-all duration-300`}
               >
                 <div
                   className={`absolute left-0 top-0 bottom-0 w-[3px] bg-gradient-to-b ${stat.accentColor} ${stat.darkAccentColor} opacity-60 group-hover:opacity-100 transition-opacity`}
@@ -161,9 +162,9 @@ function StatsGrid({
                   </p>
                 </div>
                 {loading ? (
-                  <Skeleton className="h-8 w-12" />
+                  <Skeleton className="h-10 w-14" />
                 ) : (
-                  <p className={`text-2xl sm:text-3xl font-bold tracking-tight tabular-nums ${stat.getValueColor(value)}`}>
+                  <p className={`text-3xl sm:text-4xl font-semibold tracking-tight tabular-nums ${stat.getValueColor(value)}`}>
                     {value}{'suffix' in stat ? stat.suffix : ''}
                   </p>
                 )}
@@ -180,6 +181,8 @@ function StatsGrid({
 }
 
 function OnboardingCards() {
+  const containerRef = useScrollRevealChildren();
+
   const steps = [
     {
       href: '/inventory',
@@ -211,23 +214,23 @@ function OnboardingCards() {
   ];
 
   return (
-    <div className="animate-fade-in" style={{ animationDelay: '0.25s' }}>
+    <div ref={containerRef}>
       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
         Primeiros passos
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {steps.map((step) => {
+        {steps.map((step, i) => {
           const Icon = step.icon;
           return (
             <Link key={step.href} to={step.href}>
-              <Card className="group relative overflow-hidden p-4 sm:p-5 border-dashed hover:border-solid hover:shadow-md transition-all duration-200 cursor-pointer h-full">
-                <div className={`absolute inset-0 bg-gradient-to-br ${step.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+              <Card className={`scroll-reveal scroll-reveal-delay-${i + 1} group relative overflow-hidden p-4 sm:p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 rounded-xl transition-all duration-300 cursor-pointer h-full`}>
+                <div className={`absolute inset-0 bg-gradient-to-br ${step.gradient} opacity-60 group-hover:opacity-100 transition-opacity duration-300`} />
                 <div className="relative flex flex-col gap-3">
                   <div className="flex items-center gap-3">
                     <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${step.iconBg} transition-transform duration-200 group-hover:scale-110`}>
                       <Icon className="w-4.5 h-4.5" />
                     </div>
-                    <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest">
+                    <span className="text-[10px] font-bold text-gradient-gold uppercase tracking-widest">
                       Passo {step.step}
                     </span>
                   </div>
@@ -303,10 +306,13 @@ function DraftCard({
 
 function SessionCard({ session }: { session: DashboardSession }) {
   const isCompleted = session.completedCount === session.evaluationCount;
+  const progressPercent = session.evaluationCount > 0
+    ? (session.completedCount / session.evaluationCount) * 100
+    : 0;
 
   return (
     <Link to={`/evaluation/${session.session_id}`}>
-      <Card className="group relative overflow-hidden p-3 sm:p-4 hover:shadow-md transition-all duration-200 cursor-pointer">
+      <Card className="group relative overflow-hidden p-3 sm:p-4 shadow-sm hover:shadow-md rounded-xl transition-all duration-300 cursor-pointer">
         <div
           className={`absolute left-0 top-0 bottom-0 w-[3px] ${
             isCompleted
@@ -360,6 +366,13 @@ function SessionCard({ session }: { session: DashboardSession }) {
             <ChevronRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-muted-foreground group-hover:translate-x-0.5 transition-all" aria-hidden="true" />
           </div>
         </div>
+        {/* Progress bar */}
+        <div className="mt-2 h-1 rounded-full bg-secondary overflow-hidden">
+          <div
+            className={`h-full rounded-full transition-all duration-500 ${isCompleted ? 'bg-emerald-500' : 'bg-amber-500'}`}
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
       </Card>
     </Link>
   );
@@ -376,10 +389,12 @@ function RecentSessions({
   pendingDraft: WizardDraft | null;
   onDiscardDraft: () => void;
 }) {
+  const containerRef = useScrollRevealChildren();
+
   return (
-    <div className="animate-fade-in" style={{ animationDelay: '0.35s' }}>
+    <div ref={containerRef} className="scroll-reveal">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+        <h2 className="text-sm font-semibold font-display uppercase tracking-wider text-muted-foreground">
           Avaliações recentes
         </h2>
         <Link to="/evaluations">
@@ -398,13 +413,13 @@ function RecentSessions({
           ))}
         </div>
       ) : sessions.length === 0 && !pendingDraft ? (
-        <Card className="p-8 sm:p-10 text-center">
-          <div className="flex flex-col items-center gap-3">
+        <Card className="grain-overlay p-8 sm:p-10 text-center">
+          <div className="relative flex flex-col items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
               <FileText className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
             </div>
             <div>
-              <p className="font-medium text-sm mb-1">Nenhuma avaliação ainda</p>
+              <p className="font-medium font-display text-sm mb-1 text-gradient-gold">Nenhuma avaliação ainda</p>
               <p className="text-xs text-muted-foreground mb-4">Comece criando sua primeira avaliação com IA</p>
             </div>
             <Link to="/new-case">
@@ -471,11 +486,28 @@ export default function Dashboard() {
     <TooltipProvider>
       <div id="main-content" className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <DashboardPage
-          title={`${dashboard.greeting}, ${dashboard.firstName}`}
-          description="Bem-vindo ao seu painel"
+          title=""
           containerVariant="shell"
           modules={modules}
           slots={{
+            header: (
+              <div className="mb-6">
+                <div className="flex items-center gap-3 mb-1">
+                  {(() => {
+                    const hour = new Date().getHours();
+                    if (hour >= 6 && hour < 12) return <Sun className="w-5 h-5 text-amber-500" />;
+                    if (hour >= 12 && hour < 18) return <Sunset className="w-5 h-5 text-orange-500" />;
+                    return <Moon className="w-5 h-5 text-indigo-400" />;
+                  })()}
+                  <h1 className="text-2xl sm:text-3xl font-semibold font-display tracking-tight">
+                    {dashboard.greeting}, <span className="text-gradient-gold">{dashboard.firstName}</span>
+                  </h1>
+                </div>
+                <p className="text-sm text-muted-foreground ml-8">
+                  {format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR }).replace(/^\w/, (c) => c.toUpperCase())}
+                </p>
+              </div>
+            ),
             afterHeader: dashboard.showCreditsBanner ? (
               <CreditsBanner
                 creditsRemaining={dashboard.creditsRemaining}

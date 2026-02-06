@@ -16,14 +16,22 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { SubscriptionPlan } from '@/hooks/useSubscription';
 import { formatPrice } from '@/hooks/useSubscription';
+import { getInitials } from '@/lib/utils';
+import { useScrollReveal, useScrollRevealChildren } from '@/hooks/useScrollReveal';
 
 export default function Landing() {
+  const statsRef = useScrollRevealChildren<HTMLDivElement>();
+  const featuresRef = useScrollRevealChildren<HTMLDivElement>();
+  const testimonialsRef = useScrollRevealChildren<HTMLDivElement>();
+  const howItWorksRef = useScrollRevealChildren<HTMLDivElement>();
+  const ctaRef = useScrollReveal<HTMLDivElement>();
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border">
+      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border/50">
         <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
-          <span className="text-lg sm:text-xl font-semibold tracking-widest font-display">{BRAND_NAME}</span>
+          <span className="text-lg sm:text-xl font-semibold tracking-[0.2em] font-display text-primary">{BRAND_NAME}</span>
           <div className="flex items-center gap-2 sm:gap-4">
             <ThemeToggle />
             <Link to="/login">
@@ -37,58 +45,67 @@ export default function Landing() {
       </header>
 
       {/* Hero */}
-      <section className="py-16 sm:py-24 md:py-32 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,hsl(42_52%_48%/0.08),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,hsl(42_55%_56%/0.12),transparent)]" />
+      <section className="py-20 sm:py-28 md:py-36 relative overflow-hidden grain-overlay">
+        {/* Gradient mesh background */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,hsl(42_52%_48%/0.10),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,hsl(42_55%_56%/0.15),transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_80%_60%,hsl(38_60%_58%/0.06),transparent)] dark:bg-[radial-gradient(ellipse_60%_40%_at_80%_60%,hsl(38_65%_66%/0.08),transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_50%_at_20%_80%,hsl(42_52%_48%/0.04),transparent)] dark:bg-[radial-gradient(ellipse_50%_50%_at_20%_80%,hsl(42_55%_56%/0.06),transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_1px_at_20px_20px,hsl(42_52%_48%/0.08)_1px,transparent_0)] dark:bg-[radial-gradient(circle_1px_at_20px_20px,hsl(42_55%_56%/0.06)_1px,transparent_0)] bg-[length:40px_40px]" />
+
         <div className="container mx-auto px-4 sm:px-6 text-center max-w-3xl relative">
-          <Badge variant="secondary" className="mb-4">
+          <Badge
+            variant="secondary"
+            className="mb-6 animate-[fade-in-up_0.6s_ease-out_0.2s_both]"
+            style={{ animation: 'badge-pulse-ring 3s ease-in-out infinite, fade-in-up 0.6s ease-out 0.2s both' }}
+          >
             <Sparkles className="w-3 h-3 mr-1" />
             Inteligência Clínica Estética
           </Badge>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight leading-tight mb-4 sm:mb-6 font-display">
-            O padrão ouro da odontologia estética
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-tight mb-4 sm:mb-6 font-display animate-[fade-in-up_0.6s_ease-out_0.4s_both]">
+            O padrão <span className="text-gradient-gold">ouro</span> da odontologia estética
           </h1>
-          <p className="text-base sm:text-lg text-muted-foreground mb-8 sm:mb-10 max-w-xl mx-auto">
+          <p className="text-base sm:text-lg text-muted-foreground mb-8 sm:mb-10 max-w-xl mx-auto animate-[fade-in-up_0.6s_ease-out_0.6s_both]">
             IA que analisa, planeja e gera protocolos personalizados com precisão.
           </p>
-          <Link to="/register">
-            <Button size="lg" className="px-6 sm:px-8">
-              Começar Avaliação Gratuita
-            </Button>
-          </Link>
+          <div className="animate-[fade-in-up_0.6s_ease-out_0.8s_both]">
+            <Link to="/register">
+              <Button size="lg" className="px-6 sm:px-8 h-12 text-base btn-glow-gold">
+                Começar Avaliação Gratuita
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
 
       {/* Stats */}
-      <section className="py-8 sm:py-12 border-t border-border bg-secondary/30">
+      <section className="py-10 sm:py-14 bg-gradient-to-b from-secondary/40 to-secondary/10">
         <div className="container mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
-            <div>
-              <p className="text-2xl sm:text-3xl font-semibold font-display text-primary">IA</p>
-              <p className="text-xs sm:text-sm text-muted-foreground">Análise automática</p>
-            </div>
-            <div>
-              <p className="text-2xl sm:text-3xl font-semibold font-display text-primary">250+</p>
-              <p className="text-xs sm:text-sm text-muted-foreground">Cores de resinas</p>
-            </div>
-            <div>
-              <p className="text-2xl sm:text-3xl font-semibold font-display text-primary">15+</p>
-              <p className="text-xs sm:text-sm text-muted-foreground">Marcas disponíveis</p>
-            </div>
-            <div>
-              <p className="text-2xl sm:text-3xl font-semibold font-display text-primary">6</p>
-              <p className="text-xs sm:text-sm text-muted-foreground">Tipos de tratamento</p>
-            </div>
+          <div ref={statsRef} className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+            {[
+              { value: 'IA', label: 'Análise automática' },
+              { value: '250+', label: 'Cores de resinas' },
+              { value: '15+', label: 'Marcas disponíveis' },
+              { value: '6', label: 'Tipos de tratamento' },
+            ].map((stat, i) => (
+              <div
+                key={i}
+                className={`scroll-reveal scroll-reveal-delay-${i + 1} ${i > 0 ? 'sm:border-l sm:border-primary/20' : ''}`}
+              >
+                <p className="text-4xl sm:text-5xl md:text-6xl font-semibold font-display text-primary">{stat.value}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">{stat.label}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Features */}
-      <section className="py-12 sm:py-20 border-t border-border">
+      <section className="py-16 sm:py-24 bg-background">
         <div className="container mx-auto px-4 sm:px-6">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-8 sm:mb-12 font-display">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-center mb-10 sm:mb-16 font-display">
             Tudo que você precisa em um só lugar
           </h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
+          <div ref={featuresRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {[
               {
                 icon: Camera,
@@ -111,9 +128,12 @@ export default function Landing() {
                 description: 'Exporte PDF personalizado com logo do consultório e protocolo completo.',
               },
             ].map((feature, index) => (
-              <div key={index} className="text-center">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                  <feature.icon className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+              <div
+                key={index}
+                className={`scroll-reveal scroll-reveal-delay-${index + 1} text-center border border-border rounded-xl p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md group`}
+              >
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center mx-auto mb-4 transition-transform duration-300 group-hover:scale-110">
+                  <feature.icon className="w-6 h-6 sm:w-7 sm:h-7 text-primary" />
                 </div>
                 <h3 className="font-medium text-sm sm:text-base mb-1 sm:mb-2">{feature.title}</h3>
                 <p className="text-xs sm:text-sm text-muted-foreground">{feature.description}</p>
@@ -124,12 +144,12 @@ export default function Landing() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-12 sm:py-20 border-t border-border bg-secondary/30">
+      <section className="py-16 sm:py-24 bg-secondary/20">
         <div className="container mx-auto px-4 sm:px-6 max-w-4xl">
-          <h2 className="text-xl sm:text-2xl font-semibold text-center mb-8 sm:mb-12 font-display">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-10 sm:mb-16 font-display">
             O que dizem os dentistas
           </h2>
-          <div className="grid md:grid-cols-2 gap-6">
+          <div ref={testimonialsRef} className="grid md:grid-cols-2 gap-6">
             {[
               {
                 quote: "Economizo horas de pesquisa em cada caso. A IA realmente entende as nuances do planejamento clínico e me dá confiança nas minhas escolhas.",
@@ -156,31 +176,39 @@ export default function Landing() {
                 rating: 5
               }
             ].map((testimonial, i) => (
-              <Card key={i} className="p-6">
+              <div
+                key={i}
+                className={`scroll-reveal scroll-reveal-delay-${i + 1} relative bg-background rounded-xl p-6 border-l-4 border-l-primary/40`}
+              >
+                <span className="absolute top-2 right-4 text-7xl leading-none font-serif text-primary/[0.05] select-none">"</span>
                 <div className="flex gap-1 mb-3">
                   {Array.from({ length: testimonial.rating }).map((_, j) => (
                     <Star key={j} className="w-4 h-4 fill-primary text-primary" />
                   ))}
                 </div>
-                <Quote className="w-6 h-6 text-primary/30 mb-2" />
-                <p className="text-muted-foreground mb-4 text-sm sm:text-base">{testimonial.quote}</p>
-                <div>
-                  <p className="font-medium text-sm">{testimonial.author}</p>
-                  <p className="text-xs text-muted-foreground">{testimonial.role}</p>
+                <p className="text-muted-foreground mb-4 text-sm sm:text-base">"{testimonial.quote}"</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm shrink-0">
+                    {getInitials(testimonial.author)}
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">{testimonial.author}</p>
+                    <p className="text-xs text-muted-foreground">{testimonial.role}</p>
+                  </div>
                 </div>
-              </Card>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* How it works */}
-      <section className="py-12 sm:py-20 border-t border-border">
+      {/* How it works — Timeline */}
+      <section className="py-16 sm:py-24 bg-background">
         <div className="container mx-auto px-4 sm:px-6 max-w-3xl">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-8 sm:mb-16 font-display">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-10 sm:mb-16 font-display">
             Como funciona
           </h2>
-          <div className="space-y-8 sm:space-y-12">
+          <div ref={howItWorksRef} className="space-y-8 sm:space-y-12 timeline-line">
             {[
               {
                 step: '01',
@@ -203,8 +231,10 @@ export default function Landing() {
                 description: 'Protocolo de estratificação ou cimentação personalizado com suas resinas disponíveis.',
               },
             ].map((item, index) => (
-              <div key={index} className="flex gap-4 sm:gap-6">
-                <span className="text-2xl sm:text-4xl font-light text-primary/60 font-display">{item.step}</span>
+              <div key={index} className={`scroll-reveal scroll-reveal-delay-${index + 1} flex items-start gap-4 pl-12 sm:pl-16 relative`}>
+                <div className="absolute left-[12px] sm:left-[16px] top-0 w-[18px] h-[18px] sm:w-[18px] sm:h-[18px] rounded-full bg-primary text-primary-foreground flex items-center justify-center text-[10px] font-semibold shrink-0">
+                  {index + 1}
+                </div>
                 <div>
                   <h3 className="font-medium text-sm sm:text-base mb-1">{item.title}</h3>
                   <p className="text-sm sm:text-base text-muted-foreground">{item.description}</p>
@@ -216,7 +246,7 @@ export default function Landing() {
       </section>
 
       {/* FAQ */}
-      <section className="py-12 sm:py-20 border-t border-border">
+      <section className="py-16 sm:py-24 bg-secondary/20">
         <div className="container mx-auto px-4 sm:px-6 max-w-2xl">
           <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-8 sm:mb-12 font-display">
             Perguntas frequentes
@@ -272,17 +302,20 @@ export default function Landing() {
       <LandingPricing />
 
       {/* CTA */}
-      <section className="py-12 sm:py-20 border-t border-border relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_120%,hsl(42_52%_48%/0.06),transparent)] dark:bg-[radial-gradient(ellipse_60%_50%_at_50%_120%,hsl(42_55%_56%/0.10),transparent)]" />
-        <div className="container mx-auto px-4 sm:px-6 text-center relative">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold mb-3 sm:mb-4 font-display">
+      <section className="py-16 sm:py-24 relative overflow-hidden grain-overlay">
+        {/* Gradient mesh — inverted from hero (origin bottom) */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_120%,hsl(42_52%_48%/0.10),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_120%,hsl(42_55%_56%/0.15),transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_20%_40%,hsl(38_60%_58%/0.06),transparent)] dark:bg-[radial-gradient(ellipse_60%_40%_at_20%_40%,hsl(38_65%_66%/0.08),transparent)]" />
+
+        <div ref={ctaRef} className="scroll-reveal container mx-auto px-4 sm:px-6 text-center relative">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold mb-3 sm:mb-4 font-display">
             Pronto para começar?
           </h2>
-          <p className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-8">
+          <p className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-8 max-w-lg mx-auto">
             Crie sua conta e faça sua primeira avaliação em minutos.
           </p>
           <Link to="/register">
-            <Button size="lg" className="px-6 sm:px-8">
+            <Button size="lg" className="px-6 sm:px-8 h-12 text-base btn-glow-gold">
               Criar Conta Gratuita
             </Button>
           </Link>
@@ -290,7 +323,7 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border py-6 sm:py-8">
+      <footer className="border-t border-border/50 py-6 sm:py-8 bg-background">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-center sm:text-left">
