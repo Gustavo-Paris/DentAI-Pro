@@ -45,7 +45,7 @@ export function CreditBadge({ variant = 'compact', className, showTooltip = true
   if (variant === 'compact') {
     const badge = (
       <Link
-        to="/profile"
+        to="/profile?tab=assinatura"
         className={cn(
           'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-medium transition-colors hover:bg-secondary',
           bgClass,
