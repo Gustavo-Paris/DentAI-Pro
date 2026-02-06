@@ -8,7 +8,7 @@ export { usePatientList } from './usePatientList';
 export type { PatientWithStats } from './usePatientList';
 
 export { useInventoryManagement } from './useInventoryManagement';
-export type { GroupedResins, InventoryFilters, CatalogFilters, CsvPreview } from './useInventoryManagement';
+export type { GroupedResins, FlatInventoryItem, CatalogFilters, CsvPreview } from './useInventoryManagement';
 
 export { useWizardFlow } from './useWizardFlow';
 export type { WizardFlowState, WizardFlowActions, SubmissionStep } from './useWizardFlow';
