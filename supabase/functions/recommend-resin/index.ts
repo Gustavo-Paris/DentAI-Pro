@@ -368,6 +368,7 @@ serve(async (req) => {
     if (recommendation.protocol?.layers && Array.isArray(recommendation.protocol.layers)) {
       const validatedLayers = [];
       const validationAlerts: string[] = [];
+      const shadeReplacements: Record<string, string> = {}; // Track all shade corrections for checklist sync
       
       // Check if patient requested whitening (BL shades)
       // Exclude broad terms like 'clareamento' and 'branco' that trigger for Natural level
@@ -385,6 +386,7 @@ serve(async (req) => {
         // Normalize invalid Z350 shades: WT does not exist in Z350 XT line
         if (layer.shade === 'WT' && layer.resin_brand?.includes('Z350')) {
           logger.warn(`Shade normalization: WT → CT for ${layer.resin_brand} (WT does not exist in Z350 XT)`);
+          shadeReplacements['WT'] = 'CT';
           layer.shade = 'CT';
         }
 
@@ -435,6 +437,7 @@ serve(async (req) => {
                 
                 const originalShade = layer.shade;
                 layer.shade = bestEnamel.shade;
+                shadeReplacements[originalShade] = bestEnamel.shade;
                 validationAlerts.push(
                   `Camada de esmalte otimizada: ${originalShade} → ${bestEnamel.shade} para máxima translucidez incisal.`
                 );
@@ -484,12 +487,13 @@ serve(async (req) => {
             
             if (alternatives && alternatives.length > 0) {
               const originalShade = layer.shade;
-              
+
               // Try to find the closest shade based on the original
               const baseShade = originalShade.replace(/^O/, '').replace(/[DE]$/, '');
               const closestAlt = alternatives.find(a => a.shade.includes(baseShade)) || alternatives[0];
-              
+
               layer.shade = closestAlt.shade;
+              shadeReplacements[originalShade] = closestAlt.shade;
               validationAlerts.push(
                 `Cor ${originalShade} substituída por ${closestAlt.shade}: a cor original não está disponível na linha ${productLine}.`
               );
@@ -515,10 +519,19 @@ serve(async (req) => {
       // Update layers with validated versions
       recommendation.protocol.layers = validatedLayers;
 
-      // Normalize WT references in checklist text to match corrected layers
-      if (recommendation.protocol.checklist) {
+      // Apply ALL shade replacements to checklist text so steps match validated layers
+      if (recommendation.protocol.checklist && Object.keys(shadeReplacements).length > 0) {
+        logger.log(`Applying ${Object.keys(shadeReplacements).length} shade replacements to checklist: ${JSON.stringify(shadeReplacements)}`);
         recommendation.protocol.checklist = recommendation.protocol.checklist.map(
-          (item: string) => typeof item === 'string' ? item.replace(/\bWT\b/g, 'CT') : item
+          (item: string) => {
+            if (typeof item !== 'string') return item;
+            let fixed = item;
+            for (const [original, replacement] of Object.entries(shadeReplacements)) {
+              // Use word-boundary regex to avoid partial matches (e.g., "A1E" inside "DA1E")
+              fixed = fixed.replace(new RegExp(`\\b${original}\\b`, 'g'), replacement);
+            }
+            return fixed;
+          }
         );
       }
 

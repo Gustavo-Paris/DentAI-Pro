@@ -450,6 +450,25 @@ serve(async (req) => {
       return true;
     });
 
+    // Filter out lower teeth when photo predominantly shows upper arch
+    // This is a backend guardrail because the AI sometimes ignores prompt rules
+    const upperTeeth = detectedTeeth.filter(t => {
+      const num = parseInt(t.tooth);
+      return num >= 11 && num <= 28;
+    });
+    const lowerTeeth = detectedTeeth.filter(t => {
+      const num = parseInt(t.tooth);
+      return num >= 31 && num <= 48;
+    });
+
+    // If majority of detected teeth are upper arch, remove lower teeth
+    if (upperTeeth.length > 0 && lowerTeeth.length > 0 && upperTeeth.length >= lowerTeeth.length) {
+      const removedNumbers = lowerTeeth.map(t => t.tooth);
+      logger.warn(`Removing lower teeth ${removedNumbers.join(', ')} — photo predominantly shows upper arch (${upperTeeth.length} upper vs ${lowerTeeth.length} lower)`);
+      // Keep only upper teeth
+      detectedTeeth.splice(0, detectedTeeth.length, ...upperTeeth);
+    }
+
     // Sort by priority: alta > média > baixa
     const priorityOrder = { alta: 0, média: 1, baixa: 2 };
     detectedTeeth.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
