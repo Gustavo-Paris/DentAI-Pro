@@ -180,6 +180,19 @@ export async function getDashboardInsights({ userId, weeksBack = 8 }: DashboardI
 }
 
 // ---------------------------------------------------------------------------
+// Total count (for dashboard stats)
+// ---------------------------------------------------------------------------
+
+export async function countByUserId(userId: string) {
+  const { count, error } = await supabase
+    .from('evaluations')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId);
+  if (error) throw error;
+  return count || 0;
+}
+
+// ---------------------------------------------------------------------------
 // Search (used by GlobalSearch)
 // ---------------------------------------------------------------------------
 

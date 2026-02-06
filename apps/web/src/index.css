@@ -422,6 +422,21 @@
   z-index: 1;
 }
 
+/* ─── Dashboard: Progress Ring ─── */
+
+@keyframes progress-ring {
+  from { stroke-dashoffset: var(--ring-circumference); }
+  to   { stroke-dashoffset: var(--ring-target); }
+}
+
+.progress-ring-circle {
+  animation: progress-ring 0.8s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress-ring-circle { animation: none; stroke-dashoffset: var(--ring-target); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .scan-line-animation::after { animation: none; opacity: 0; }
   .progress-gold::after { animation: none; }
