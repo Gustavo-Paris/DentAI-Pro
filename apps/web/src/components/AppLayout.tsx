@@ -5,7 +5,6 @@ import { cn } from '@/lib/utils';
 import { BRAND_NAME } from '@/lib/branding';
 import { CreditBadge } from '@/components/CreditBadge';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { GlobalSearch } from '@/components/GlobalSearch';
 import {
   LayoutDashboard,
   FileText,
@@ -38,37 +37,42 @@ export default function AppLayout() {
     await signOut();
   };
 
+  const openSearch = () => {
+    document.dispatchEvent(new CustomEvent('open-global-search'));
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex fixed inset-y-0 left-0 z-30 w-56 flex-col border-r border-border bg-card">
-        <div className="flex h-14 items-center px-4 border-b border-border">
+      <aside className="hidden lg:flex fixed inset-y-0 left-0 z-30 w-56 flex-col border-r border-border bg-sidebar">
+        {/* Logo — premium breathing room */}
+        <div className="flex h-16 items-center px-5 border-b border-border">
           <span className="text-lg font-semibold tracking-[0.2em] font-display text-gradient-gold">{BRAND_NAME}</span>
         </div>
 
-        <nav className="flex-1 py-4 px-2 space-y-1">
+        <nav className="flex-1 py-4 px-2.5 space-y-0.5">
           {navItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               className={({ isActive }) =>
                 cn(
-                  'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
                   isActive
                     ? 'bg-primary/10 text-primary shadow-2xs'
-                    : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                    : 'text-muted-foreground hover:bg-accent hover:text-foreground'
                 )
               }
             >
-              <item.icon className="w-4 h-4" />
+              <item.icon className="w-[18px] h-[18px]" />
               {item.label}
             </NavLink>
           ))}
         </nav>
 
-        <div className="border-t border-border p-3 space-y-2">
-          <CreditBadge variant="compact" />
-          <div className="flex items-center gap-2">
+        <div className="border-t border-border p-3 space-y-3">
+          <CreditBadge variant="compact" className="w-full justify-center" />
+          <div className="flex items-center justify-between">
             <ThemeToggle />
             <Tooltip>
               <TooltipTrigger asChild>
@@ -76,7 +80,7 @@ export default function AppLayout() {
                   variant="ghost"
                   size="icon"
                   onClick={handleSignOut}
-                  className="h-8 w-8"
+                  className="h-8 w-8 text-muted-foreground hover:text-destructive"
                   aria-label="Sair da conta"
                 >
                   <LogOut className="w-4 h-4" />
@@ -94,20 +98,13 @@ export default function AppLayout() {
       <header className="lg:hidden sticky top-0 z-30 border-b border-border bg-card/95 backdrop-blur-sm">
         <div className="flex items-center justify-between px-4 h-14">
           <span className="text-lg font-semibold tracking-[0.2em] font-display text-gradient-gold">{BRAND_NAME}</span>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <button
-              onClick={() => {
-                const event = new KeyboardEvent('keydown', {
-                  key: 'k',
-                  metaKey: true,
-                  bubbles: true,
-                });
-                document.dispatchEvent(event);
-              }}
-              className="p-2 text-muted-foreground hover:text-foreground transition-colors"
+              onClick={openSearch}
+              className="flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all duration-200 active:scale-95"
               aria-label="Buscar (⌘K)"
             >
-              <Search className="w-4 h-4" />
+              <Search className="w-[18px] h-[18px]" />
             </button>
             <CreditBadge variant="compact" />
             <ThemeToggle />
@@ -122,7 +119,7 @@ export default function AppLayout() {
 
       {/* Mobile bottom nav */}
       <nav className="lg:hidden fixed bottom-0 inset-x-0 z-30 border-t border-border bg-card/95 backdrop-blur-sm safe-area-bottom">
-        <div className="flex items-center justify-around h-16">
+        <div className="flex items-center justify-around h-[68px]">
           {navItems.map((item) => {
             const isActive =
               item.to === '/dashboard'
@@ -133,26 +130,26 @@ export default function AppLayout() {
                 key={item.to}
                 to={item.to}
                 className={cn(
-                  'relative flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors',
-                  isActive && 'bg-primary/5'
+                  'relative flex flex-col items-center justify-center gap-0.5 min-w-[56px] h-12 px-3 rounded-xl transition-all duration-200 active:scale-[0.92]',
+                  isActive ? 'bg-primary/12' : 'hover:bg-accent/50'
                 )}
               >
                 <item.icon
                   className={cn(
-                    'w-5 h-5 transition-colors',
+                    'w-[22px] h-[22px] transition-all duration-200',
                     isActive ? 'text-primary' : 'text-muted-foreground'
                   )}
                 />
                 <span
                   className={cn(
-                    'text-[10px] font-medium transition-colors',
+                    'text-[11px] font-medium leading-tight transition-all duration-200',
                     isActive ? 'text-primary' : 'text-muted-foreground'
                   )}
                 >
                   {item.label}
                 </span>
                 {isActive && (
-                  <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full bg-primary" />
+                  <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-5 h-[3px] rounded-full bg-primary" />
                 )}
               </NavLink>
             );
