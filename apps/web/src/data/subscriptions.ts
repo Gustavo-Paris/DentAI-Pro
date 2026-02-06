@@ -39,6 +39,7 @@ export interface Subscription {
   dsd_used_this_month: number;
   credits_used_this_month: number;
   credits_rollover: number;
+  credits_bonus: number;
   plan?: SubscriptionPlan;
 }
 
@@ -46,6 +47,15 @@ export interface CreditCost {
   operation: string;
   credits: number;
   description: string;
+}
+
+export interface CreditPack {
+  id: string;
+  name: string;
+  credits: number;
+  price: number;
+  is_active: boolean;
+  sort_order: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -96,12 +106,32 @@ export async function createCheckoutSession(priceId: string) {
   });
 
   if (error) throw error;
-  return data as { url: string };
+  return data as { sessionId?: string; url?: string; updated?: boolean };
 }
 
 export async function createPortalSession() {
   const { data, error } = await supabase.functions.invoke('create-portal-session', {
     body: {},
+  });
+
+  if (error) throw error;
+  return data as { url: string };
+}
+
+export async function getCreditPacks() {
+  const { data, error } = await supabase
+    .from('credit_packs')
+    .select('*')
+    .eq('is_active', true)
+    .order('sort_order');
+
+  if (error) throw error;
+  return (data as CreditPack[]) || [];
+}
+
+export async function purchaseCreditPack(packId: string) {
+  const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+    body: { packId },
   });
 
   if (error) throw error;

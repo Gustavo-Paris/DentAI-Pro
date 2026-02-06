@@ -9,7 +9,8 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
 });
 
 interface RequestBody {
-  priceId: string;
+  priceId?: string;   // for subscription
+  packId?: string;    // for credit pack (one-time)
   successUrl?: string;
   cancelUrl?: string;
 }
@@ -50,20 +51,11 @@ serve(async (req: Request) => {
 
     // Parse request
     const body: RequestBody = await req.json();
-    const { priceId, successUrl, cancelUrl } = body;
+    const { priceId, packId, successUrl, cancelUrl } = body;
 
-    if (!priceId) {
-      return createErrorResponse("ID do plano não fornecido", 400, corsHeaders);
+    if (!priceId && !packId) {
+      return createErrorResponse("ID do plano ou pacote não fornecido", 400, corsHeaders);
     }
-
-    // Resolve Stripe Price ID from our internal plan ID
-    const { data: planData } = await supabase
-      .from("subscription_plans")
-      .select("stripe_price_id")
-      .eq("id", priceId)
-      .maybeSingle();
-
-    const stripePriceId = planData?.stripe_price_id || priceId;
 
     // Get or create Stripe customer
     let customerId: string;
@@ -71,7 +63,7 @@ serve(async (req: Request) => {
     // Check if user already has a subscription record with Stripe customer
     const { data: existingSub } = await supabase
       .from("subscriptions")
-      .select("stripe_customer_id")
+      .select("stripe_customer_id, stripe_subscription_id, status")
       .eq("user_id", user.id)
       .maybeSingle();
 
@@ -108,12 +100,86 @@ serve(async (req: Request) => {
         });
     }
 
-    // Determine URLs
     const origin = req.headers.get("origin") || "https://dentai.pro";
+
+    // =========================================================================
+    // PATH 1: Credit pack purchase (one-time payment)
+    // =========================================================================
+    if (packId) {
+      // Credit packs require an active subscription
+      if (!existingSub?.status || !["active", "trialing"].includes(existingSub.status)) {
+        return createErrorResponse("Você precisa de uma assinatura ativa para comprar créditos extras", 400, corsHeaders);
+      }
+
+      const { data: pack } = await supabase
+        .from("credit_packs")
+        .select("*")
+        .eq("id", packId)
+        .eq("is_active", true)
+        .single();
+
+      if (!pack || !pack.stripe_price_id) {
+        return createErrorResponse("Pacote não encontrado ou sem preço configurado", 404, corsHeaders);
+      }
+
+      const session = await stripe.checkout.sessions.create({
+        customer: customerId,
+        mode: "payment",
+        line_items: [{ price: pack.stripe_price_id, quantity: 1 }],
+        success_url: `${origin}/profile?tab=assinatura&credits=success`,
+        cancel_url: `${origin}/profile?tab=assinatura`,
+        metadata: {
+          supabase_user_id: user.id,
+          pack_id: packId,
+          credits: String(pack.credits),
+          type: "credit_pack",
+        },
+      });
+
+      return new Response(
+        JSON.stringify({ url: session.url }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // =========================================================================
+    // PATH 2: Subscription (upgrade/downgrade or new)
+    // =========================================================================
+
+    // Resolve Stripe Price ID from our internal plan ID
+    const { data: planData } = await supabase
+      .from("subscription_plans")
+      .select("stripe_price_id")
+      .eq("id", priceId)
+      .maybeSingle();
+
+    const stripePriceId = planData?.stripe_price_id || priceId;
+
+    // Check if user already has an ACTIVE Stripe subscription → inline upgrade/downgrade
+    if (
+      existingSub?.stripe_subscription_id &&
+      existingSub.status &&
+      ["active", "trialing"].includes(existingSub.status)
+    ) {
+      const stripeSubId = existingSub.stripe_subscription_id;
+      const stripeSub = await stripe.subscriptions.retrieve(stripeSubId);
+      const currentItemId = stripeSub.items.data[0].id;
+
+      await stripe.subscriptions.update(stripeSubId, {
+        items: [{ id: currentItemId, price: stripePriceId }],
+        proration_behavior: "create_prorations",
+      });
+
+      return new Response(
+        JSON.stringify({ updated: true }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // New subscription — create checkout session
     const checkoutSuccessUrl = successUrl || `${origin}/profile?subscription=success`;
     const checkoutCancelUrl = cancelUrl || `${origin}/profile?subscription=canceled`;
 
-    // Create checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: "subscription",

@@ -9,6 +9,7 @@ import { Camera, Loader2, Save, Building2, ImageIcon, Sparkles, FileText, ArrowR
 import { getInitials } from '@/lib/utils';
 import { SubscriptionStatus } from '@/components/pricing/SubscriptionStatus';
 import { CreditUsageHistory } from '@/components/pricing/CreditUsageHistory';
+import { CreditPackSection } from '@/components/pricing/CreditPackSection';
 import { useSubscription, formatPrice } from '@/hooks/useSubscription';
 import { DetailPage } from '@pageshell/composites';
 
@@ -175,6 +176,7 @@ export default function Profile() {
           content: () => (
             <div className="space-y-6">
               <SubscriptionStatus />
+              <CreditPackSection />
               <CreditUsageHistory />
               <UpgradeCTA />
             </div>

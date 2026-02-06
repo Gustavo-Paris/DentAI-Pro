@@ -92,7 +92,7 @@ async function getCreditInfo(
   // Get subscription
   const { data: sub } = await supabase
     .from("subscriptions")
-    .select("credits_used_this_month, credits_rollover, plan_id, status, plan:subscription_plans(credits_per_month)")
+    .select("credits_used_this_month, credits_rollover, credits_bonus, plan_id, status, plan:subscription_plans(credits_per_month)")
     .eq("user_id", userId)
     .maybeSingle();
 
@@ -101,7 +101,7 @@ async function getCreditInfo(
   }
 
   const plan = sub.plan as { credits_per_month: number } | null;
-  const totalCredits = (plan?.credits_per_month || 0) + (sub.credits_rollover || 0);
+  const totalCredits = (plan?.credits_per_month || 0) + (sub.credits_rollover || 0) + (sub.credits_bonus || 0);
   const available = Math.max(0, totalCredits - (sub.credits_used_this_month || 0));
 
   return { available, cost, isFreeUser: sub.plan_id === "starter" || !sub.plan_id };
