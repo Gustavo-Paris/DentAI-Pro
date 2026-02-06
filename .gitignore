@@ -41,3 +41,21 @@ supabase/.temp/
 
 # Vercel
 .vercel
+
+# QA screenshots & test artifacts
+*.png
+*.jpeg
+test-photo.*
+wizard-audit/
+
+# Playwright MCP
+.playwright-mcp/
+
+# Test coverage
+coverage/
+
+# Obsidian workspace
+docs/.obsidian/
+
+# Deno lockfile
+deno.lock
