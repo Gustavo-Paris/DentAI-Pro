@@ -19,6 +19,7 @@ import type { DSDResult } from '@/components/wizard/DSDStep';
 import type { PatientPreferences } from '@/components/wizard/PatientPreferencesStep';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { withRetry } from '@/lib/retry';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -404,6 +405,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
   const [originalToothTreatments, setOriginalToothTreatments] = useState<
     Record<string, TreatmentType>
   >({});
+  const [currentToothIndex, setCurrentToothIndex] = useState(-1);
 
   // -------------------------------------------------------------------------
   // Refs
@@ -420,14 +422,25 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
   const hasInventory = (inventoryData?.items?.length ?? 0) > 0;
 
   const submissionSteps = useMemo(() => {
-    const teethCount = selectedTeeth.length > 0 ? selectedTeeth.length : 1;
-    return [
+    const teethToShow = selectedTeeth.length > 0 ? selectedTeeth : [formData.tooth].filter(Boolean);
+    const steps: SubmissionStep[] = [
       { label: 'Preparando dados do paciente...', completed: submissionStep >= 1 },
-      { label: `Criando ${teethCount} caso(s) clínico(s)...`, completed: submissionStep >= 2 },
-      { label: 'Gerando protocolos personalizados...', completed: submissionStep >= 3 },
-      { label: 'Finalizando e salvando...', completed: submissionStep >= 4 },
     ];
-  }, [submissionStep, selectedTeeth.length]);
+
+    if (submissionStep >= 2 && teethToShow.length > 0) {
+      for (let i = 0; i < teethToShow.length; i++) {
+        const isCompleted = i < currentToothIndex || submissionStep >= 4;
+        const isActive = i === currentToothIndex && submissionStep >= 2 && submissionStep < 4;
+        steps.push({
+          label: `Dente ${teethToShow[i]}${isActive ? ' — gerando protocolo...' : ''}`,
+          completed: isCompleted,
+        });
+      }
+    }
+
+    steps.push({ label: 'Finalizando e salvando...', completed: submissionStep >= 4 });
+    return steps;
+  }, [submissionStep, selectedTeeth, formData.tooth, currentToothIndex]);
 
   // -------------------------------------------------------------------------
   // Internal helpers
@@ -674,12 +687,15 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
 
     setIsSubmitting(true);
     setSubmissionStep(0);
+    setCurrentToothIndex(-1);
     setStep(6);
 
     const teethToProcess = selectedTeeth.length > 0 ? selectedTeeth : [formData.tooth];
     const createdEvaluationIds: string[] = [];
     const sessionId = crypto.randomUUID();
     const treatmentCounts: Record<string, number> = {};
+    let successCount = 0;
+    const failedTeeth: Array<{ tooth: string; error: unknown }> = [];
 
     try {
       // Step 1: Patient
@@ -721,146 +737,175 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
           .eq('id', patientId);
       }
 
-      // Step 2: Evaluations
+      // Step 2: Evaluations + Protocols (per-tooth with retry)
       setSubmissionStep(2);
 
-      for (const tooth of teethToProcess) {
+      for (const [index, tooth] of teethToProcess.entries()) {
+        setCurrentToothIndex(index);
         const toothData = getToothData(tooth);
         const treatmentType = getToothTreatment(tooth);
-        // Normalize treatment type: Gemini sometimes returns English values (e.g. "porcelain" instead of "porcelana")
+        // Normalize treatment type: Gemini sometimes returns English values
         const normalizedTreatment = ({
           porcelain: 'porcelana', resin: 'resina', crown: 'coroa',
           implant: 'implante', endodontics: 'endodontia', referral: 'encaminhamento',
         } as Record<string, TreatmentType>)[treatmentType] || treatmentType;
-        treatmentCounts[normalizedTreatment] = (treatmentCounts[normalizedTreatment] || 0) + 1;
 
-        const insertData = {
-          user_id: user.id,
-          session_id: sessionId,
-          patient_id: patientId || null,
-          patient_name: formData.patientName || null,
-          patient_age: parseInt(formData.patientAge),
-          tooth,
-          region: getFullRegion(tooth),
-          cavity_class: toothData?.cavity_class || formData.cavityClass,
-          restoration_size: toothData?.restoration_size || formData.restorationSize,
-          substrate: toothData?.substrate || formData.substrate,
-          tooth_color: formData.vitaShade,
-          depth: toothData?.depth || formData.depth,
-          substrate_condition: toothData?.substrate_condition || formData.substrateCondition,
-          enamel_condition: toothData?.enamel_condition || formData.enamelCondition,
-          bruxism: formData.bruxism,
-          aesthetic_level: formData.aestheticLevel,
-          budget: formData.budget,
-          longevity_expectation: formData.longevityExpectation,
-          photo_frontal: uploadedPhotoPath,
-          status: 'analyzing',
-          treatment_type: normalizedTreatment,
-          desired_tooth_shape: 'natural',
-          ai_treatment_indication:
-            toothData?.treatment_indication || analysisResult?.treatment_indication || null,
-          ai_indication_reason:
-            toothData?.indication_reason || analysisResult?.indication_reason || null,
-          dsd_analysis: dsdResult?.analysis || null,
-          dsd_simulation_url: dsdResult?.simulation_url || null,
-          tooth_bounds: toothData?.tooth_bounds || null,
-          patient_aesthetic_goals:
-            patientPreferences.whiteningLevel === 'hollywood'
-              ? 'Clareamento intenso - nível Hollywood (BL1)'
-              : patientPreferences.whiteningLevel === 'white'
-                ? 'Clareamento notável - dentes mais brancos (BL2/BL3)'
-                : patientPreferences.whiteningLevel === 'natural'
-                  ? 'Aparência natural e sutil (A1/A2)'
-                  : null,
-          patient_desired_changes: null,
-        };
+        let evaluationId: string | null = null;
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data: evaluation, error: evalError } = await supabase
-          .from('evaluations')
-          .insert(insertData as never)
-          .select()
-          .single();
+        try {
+          // Insert evaluation (DB is fast, no retry needed)
+          const insertData = {
+            user_id: user.id,
+            session_id: sessionId,
+            patient_id: patientId || null,
+            patient_name: formData.patientName || null,
+            patient_age: parseInt(formData.patientAge),
+            tooth,
+            region: getFullRegion(tooth),
+            cavity_class: toothData?.cavity_class || formData.cavityClass,
+            restoration_size: toothData?.restoration_size || formData.restorationSize,
+            substrate: toothData?.substrate || formData.substrate,
+            tooth_color: formData.vitaShade,
+            depth: toothData?.depth || formData.depth,
+            substrate_condition: toothData?.substrate_condition || formData.substrateCondition,
+            enamel_condition: toothData?.enamel_condition || formData.enamelCondition,
+            bruxism: formData.bruxism,
+            aesthetic_level: formData.aestheticLevel,
+            budget: formData.budget,
+            longevity_expectation: formData.longevityExpectation,
+            photo_frontal: uploadedPhotoPath,
+            status: 'analyzing',
+            treatment_type: normalizedTreatment,
+            desired_tooth_shape: 'natural',
+            ai_treatment_indication:
+              toothData?.treatment_indication || analysisResult?.treatment_indication || null,
+            ai_indication_reason:
+              toothData?.indication_reason || analysisResult?.indication_reason || null,
+            dsd_analysis: dsdResult?.analysis || null,
+            dsd_simulation_url: dsdResult?.simulation_url || null,
+            tooth_bounds: toothData?.tooth_bounds || null,
+            patient_aesthetic_goals:
+              patientPreferences.whiteningLevel === 'hollywood'
+                ? 'Clareamento intenso - nível Hollywood (BL1)'
+                : patientPreferences.whiteningLevel === 'white'
+                  ? 'Clareamento notável - dentes mais brancos (BL2/BL3)'
+                  : patientPreferences.whiteningLevel === 'natural'
+                    ? 'Aparência natural e sutil (A1/A2)'
+                    : null,
+            patient_desired_changes: null,
+          };
 
-        if (evalError) throw evalError;
-        createdEvaluationIds.push(evaluation.id);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { data: evaluation, error: evalError } = await supabase
+            .from('evaluations')
+            .insert(insertData as never)
+            .select()
+            .single();
 
-        // Step 3: Protocols
-        setSubmissionStep(3);
-        switch (normalizedTreatment) {
-          case 'porcelana': {
-            const { error: cementError } = await supabase.functions.invoke(
-              'recommend-cementation',
-              {
-                body: {
-                  evaluationId: evaluation.id,
-                  teeth: [tooth],
-                  shade: formData.vitaShade,
-                  ceramicType: 'Dissilicato de lítio',
-                  substrate: toothData?.substrate || formData.substrate,
-                  substrateCondition:
-                    toothData?.substrate_condition || formData.substrateCondition,
-                  aestheticGoals:
-                    patientPreferences.whiteningLevel === 'hollywood'
-                      ? 'Paciente deseja clareamento INTENSO - nível Hollywood (BL1). A cor ALVO da faceta e do cimento deve ser BL1 ou compatível.'
-                      : patientPreferences.whiteningLevel === 'white'
-                        ? 'Paciente deseja clareamento NOTÁVEL (BL2/BL3). A cor ALVO da faceta e do cimento deve ser BL2/BL3 ou compatível.'
-                        : patientPreferences.whiteningLevel === 'natural'
-                          ? 'Paciente prefere aparência NATURAL (A1/A2).'
-                          : undefined,
-                },
+          if (evalError) throw evalError;
+          evaluationId = evaluation.id;
+          createdEvaluationIds.push(evaluation.id);
+
+          // Generate protocol WITH retry (2 retries, 2s exponential backoff)
+          await withRetry(
+            async () => {
+              switch (normalizedTreatment) {
+                case 'porcelana': {
+                  const { error: cementError } = await supabase.functions.invoke(
+                    'recommend-cementation',
+                    {
+                      body: {
+                        evaluationId: evaluation.id,
+                        teeth: [tooth],
+                        shade: formData.vitaShade,
+                        ceramicType: 'Dissilicato de lítio',
+                        substrate: toothData?.substrate || formData.substrate,
+                        substrateCondition:
+                          toothData?.substrate_condition || formData.substrateCondition,
+                        aestheticGoals:
+                          patientPreferences.whiteningLevel === 'hollywood'
+                            ? 'Paciente deseja clareamento INTENSO - nível Hollywood (BL1). A cor ALVO da faceta e do cimento deve ser BL1 ou compatível.'
+                            : patientPreferences.whiteningLevel === 'white'
+                              ? 'Paciente deseja clareamento NOTÁVEL (BL2/BL3). A cor ALVO da faceta e do cimento deve ser BL2/BL3 ou compatível.'
+                              : patientPreferences.whiteningLevel === 'natural'
+                                ? 'Paciente prefere aparência NATURAL (A1/A2).'
+                                : undefined,
+                      },
+                    },
+                  );
+                  if (cementError) throw cementError;
+                  break;
+                }
+                case 'resina': {
+                  const { error: aiError } = await supabase.functions.invoke('recommend-resin', {
+                    body: {
+                      evaluationId: evaluation.id,
+                      userId: user.id,
+                      patientAge: formData.patientAge,
+                      tooth,
+                      region: getFullRegion(tooth),
+                      cavityClass: toothData?.cavity_class || formData.cavityClass,
+                      restorationSize: toothData?.restoration_size || formData.restorationSize,
+                      substrate: toothData?.substrate || formData.substrate,
+                      bruxism: formData.bruxism,
+                      aestheticLevel: formData.aestheticLevel,
+                      toothColor: formData.vitaShade,
+                      stratificationNeeded: true,
+                      budget: formData.budget,
+                      longevityExpectation: formData.longevityExpectation,
+                      aestheticGoals:
+                        patientPreferences.whiteningLevel === 'hollywood'
+                          ? 'Paciente deseja clareamento INTENSO - nível Hollywood (BL1). Ajustar todas as camadas 2-3 tons mais claras que a cor detectada.'
+                          : patientPreferences.whiteningLevel === 'white'
+                            ? 'Paciente deseja clareamento NOTÁVEL (BL2/BL3). Ajustar camadas 1-2 tons mais claras.'
+                            : patientPreferences.whiteningLevel === 'natural'
+                              ? 'Paciente prefere aparência NATURAL (A1/A2). Manter tons naturais.'
+                              : undefined,
+                    },
+                  });
+                  if (aiError) throw aiError;
+                  break;
+                }
+                case 'implante':
+                case 'coroa':
+                case 'endodontia':
+                case 'encaminhamento': {
+                  const genericProtocol = getGenericProtocol(treatmentType, tooth, toothData);
+                  await supabase
+                    .from('evaluations')
+                    .update({
+                      generic_protocol: genericProtocol,
+                      recommendation_text: genericProtocol.summary,
+                    })
+                    .eq('id', evaluation.id);
+                  break;
+                }
+              }
+            },
+            {
+              maxRetries: 2,
+              baseDelay: 2000,
+              onRetry: (attempt, err) => {
+                logger.warn(`Retry ${attempt} for tooth ${tooth}:`, err);
               },
-            );
-            if (cementError) throw cementError;
-            break;
-          }
-          case 'resina': {
-            const { error: aiError } = await supabase.functions.invoke('recommend-resin', {
-              body: {
-                evaluationId: evaluation.id,
-                userId: user.id,
-                patientAge: formData.patientAge,
-                tooth,
-                region: getFullRegion(tooth),
-                cavityClass: toothData?.cavity_class || formData.cavityClass,
-                restorationSize: toothData?.restoration_size || formData.restorationSize,
-                substrate: toothData?.substrate || formData.substrate,
-                bruxism: formData.bruxism,
-                aestheticLevel: formData.aestheticLevel,
-                toothColor: formData.vitaShade,
-                stratificationNeeded: true,
-                budget: formData.budget,
-                longevityExpectation: formData.longevityExpectation,
-                aestheticGoals:
-                  patientPreferences.whiteningLevel === 'hollywood'
-                    ? 'Paciente deseja clareamento INTENSO - nível Hollywood (BL1). Ajustar todas as camadas 2-3 tons mais claras que a cor detectada.'
-                    : patientPreferences.whiteningLevel === 'white'
-                      ? 'Paciente deseja clareamento NOTÁVEL (BL2/BL3). Ajustar camadas 1-2 tons mais claras.'
-                      : patientPreferences.whiteningLevel === 'natural'
-                        ? 'Paciente prefere aparência NATURAL (A1/A2). Manter tons naturais.'
-                        : undefined,
-              },
-            });
-            if (aiError) throw aiError;
-            break;
-          }
-          case 'implante':
-          case 'coroa':
-          case 'endodontia':
-          case 'encaminhamento': {
-            const genericProtocol = getGenericProtocol(treatmentType, tooth, toothData);
+            },
+          );
+
+          await supabase.from('evaluations').update({ status: 'draft' }).eq('id', evaluation.id);
+          treatmentCounts[normalizedTreatment] = (treatmentCounts[normalizedTreatment] || 0) + 1;
+          successCount++;
+        } catch (toothError) {
+          logger.error(`Error processing tooth ${tooth}:`, toothError);
+          failedTeeth.push({ tooth, error: toothError });
+
+          // Mark the evaluation as 'error' so the user can identify it
+          if (evaluationId) {
             await supabase
               .from('evaluations')
-              .update({
-                generic_protocol: genericProtocol,
-                recommendation_text: genericProtocol.summary,
-              })
-              .eq('id', evaluation.id);
-            break;
+              .update({ status: 'error' })
+              .eq('id', evaluationId);
           }
         }
-
-        await supabase.from('evaluations').update({ status: 'draft' }).eq('id', evaluation.id);
       }
 
       // Step 4: Save pending teeth
@@ -892,17 +937,39 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
         }
       }
 
-      const treatmentMessages = Object.entries(treatmentCounts)
-        .map(
-          ([type, count]) => `${count} ${TREATMENT_LABELS[type as TreatmentType] || type}`,
-        )
-        .join(', ');
-      clearDraft();
-      // Dismiss pending toasts before navigating to avoid DOM race condition
-      // (toast animations conflict with route unmount, causing insertBefore errors)
-      toast.dismiss();
-      navigate(`/evaluation/${sessionId}`);
+      // Determine outcome: all success, partial success, or all failed
+      if (successCount === 0) {
+        // ALL failed — stay on step 5
+        const firstErr = failedTeeth[0]?.error as { message?: string; code?: string } | undefined;
+        let errorMessage = 'Erro ao criar caso. Nenhum protocolo foi gerado.';
+        if (firstErr?.message?.includes('Failed to fetch') || firstErr?.message?.includes('edge function')) {
+          errorMessage = 'Erro de conexão com o servidor. Verifique sua internet e tente novamente.';
+        }
+        toast.error(errorMessage, { duration: 5000 });
+        setStep(5);
+      } else {
+        // At least some succeeded — navigate to evaluation page
+        clearDraft();
+        toast.dismiss();
+
+        if (failedTeeth.length > 0) {
+          // Partial success — warn about failures
+          const failedList = failedTeeth.map((f) => f.tooth).join(', ');
+          toast.warning(
+            `${successCount} de ${teethToProcess.length} protocolos gerados. Dentes ${failedList} falharam — tente novamente.`,
+            { duration: 8000 },
+          );
+        } else {
+          // All succeeded
+          toast.success(
+            `${successCount} protocolo${successCount > 1 ? 's' : ''} gerado${successCount > 1 ? 's' : ''} com sucesso`,
+          );
+        }
+
+        navigate(`/evaluation/${sessionId}`);
+      }
     } catch (error: unknown) {
+      // This catch handles errors BEFORE the loop (patient creation, etc.)
       const err = error as { message?: string; code?: string };
       logger.error('Error creating case:', error);
 
@@ -913,13 +980,6 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
         errorMessage = 'Paciente já cadastrado com este nome. Selecione o paciente existente.';
       } else if (err.code === '23503') {
         errorMessage = 'Erro de referência no banco de dados. Verifique os dados do paciente.';
-      } else if (err.message?.includes('recommend-resin')) {
-        errorMessage =
-          'Erro ao gerar protocolo de resina. Verifique a cor VITA e tente novamente.';
-      } else if (err.message?.includes('recommend-cementation')) {
-        errorMessage = 'Erro ao gerar protocolo de cimentação. Tente novamente.';
-      } else if (err.message?.includes('Cor VITA') || err.message?.includes('VITA inválida')) {
-        errorMessage = 'Cor VITA inválida. Selecione uma cor válida (ex: A1, A2, B1).';
       } else if (
         err.message?.includes('network') ||
         err.message?.includes('fetch') ||

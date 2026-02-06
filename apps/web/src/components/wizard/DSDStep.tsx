@@ -14,6 +14,7 @@ import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
 import { ProportionsCard } from '@/components/dsd/ProportionsCard';
 import { LoadingOverlay } from '@/components/LoadingOverlay';
 import { logger } from '@/lib/logger';
+import { withRetry } from '@/lib/retry';
 
 // Tooth shape is now fixed as 'natural' - removed manual selection per market research
 const TOOTH_SHAPE = 'natural' as const;
@@ -327,31 +328,41 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
     setSimulationError(false);
 
     try {
-      const { data, error: fnError } = await invokeFunction<DSDResult>('generate-dsd', {
-        body: {
-          imageBase64,
-          toothShape: TOOTH_SHAPE,
-          regenerateSimulationOnly: true,
-          existingAnalysis: analysis,
-          patientPreferences, // Pass preferences for consistent background generation
+      const { data, fnError } = await withRetry(
+        async () => {
+          const resp = await invokeFunction<DSDResult>('generate-dsd', {
+            body: {
+              imageBase64,
+              toothShape: TOOTH_SHAPE,
+              regenerateSimulationOnly: true,
+              existingAnalysis: analysis,
+              patientPreferences, // Pass preferences for consistent background generation
+            },
+          });
+          if (resp.error || !resp.data?.simulation_url) {
+            throw resp.error || new Error('Simulation returned no URL');
+          }
+          return { data: resp.data, fnError: resp.error };
         },
-      });
-
-      if (fnError || !data?.simulation_url) {
-        setSimulationError(true);
-        return;
-      }
+        {
+          maxRetries: 2,
+          baseDelay: 3000,
+          onRetry: (attempt, err) => {
+            logger.warn(`DSD simulation retry ${attempt}:`, err);
+          },
+        },
+      );
 
       // Update result with new simulation URL
-      setResult((prev) => prev ? { 
-        ...prev, 
-        simulation_url: data.simulation_url 
+      setResult((prev) => prev ? {
+        ...prev,
+        simulation_url: data!.simulation_url
       } : prev);
 
       // Load signed URL
       const { data: signedData } = await supabase.storage
         .from('dsd-simulations')
-        .createSignedUrl(data.simulation_url, 3600);
+        .createSignedUrl(data!.simulation_url, 3600);
 
       if (signedData?.signedUrl) {
         setSimulationImageUrl(signedData.signedUrl);
