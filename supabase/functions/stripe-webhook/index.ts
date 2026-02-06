@@ -111,6 +111,12 @@ serve(async (req: Request) => {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function handleCheckoutCompleted(supabase: any, session: Stripe.Checkout.Session) {
+  // Check if this is a credit pack purchase (one-time payment)
+  if (session.mode === "payment" && session.metadata?.type === "credit_pack") {
+    await handleCreditPackPurchase(supabase, session);
+    return;
+  }
+
   const customerId = session.customer as string;
   const subscriptionId = session.subscription as string;
 
@@ -310,4 +316,45 @@ async function handleInvoiceFailed(supabase: any, invoice: Stripe.Invoice) {
     .eq("stripe_customer_id", customerId);
 
   logger.warn(`Payment failed for invoice ${invoice.id}`);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function handleCreditPackPurchase(supabase: any, session: Stripe.Checkout.Session) {
+  const userId = session.metadata!.supabase_user_id;
+  const packId = session.metadata!.pack_id;
+  const credits = parseInt(session.metadata!.credits, 10);
+
+  logger.important(`Credit pack purchase: pack=${packId}, credits=${credits}, user=${userId}`);
+
+  // Record purchase (upsert by stripe_session_id for idempotency)
+  const { error: purchaseError } = await supabase
+    .from("credit_pack_purchases")
+    .upsert({
+      user_id: userId,
+      pack_id: packId,
+      credits: credits,
+      amount: session.amount_total,
+      stripe_session_id: session.id,
+      status: "completed",
+    }, {
+      onConflict: "stripe_session_id",
+    });
+
+  if (purchaseError) {
+    logger.error("Error recording credit pack purchase:", purchaseError);
+    return;
+  }
+
+  // Add bonus credits via SQL function
+  const { error: creditError } = await supabase.rpc("add_bonus_credits", {
+    p_user_id: userId,
+    p_credits: credits,
+  });
+
+  if (creditError) {
+    logger.error("Error adding bonus credits:", creditError);
+    return;
+  }
+
+  logger.important(`Credit pack ${packId} (+${credits} credits) applied for user ${userId}`);
 }

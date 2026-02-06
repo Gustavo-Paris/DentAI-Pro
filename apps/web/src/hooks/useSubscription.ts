@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { subscriptions, creditUsage } from '@/data';
 
-export type { SubscriptionPlan, Subscription, CreditCost } from '@/data/subscriptions';
+export type { SubscriptionPlan, Subscription, CreditCost, CreditPack } from '@/data/subscriptions';
 export type { CreditUsageRecord } from '@/data/credit-usage';
 
 // Default credit costs (fallback if DB not available)
@@ -44,11 +44,23 @@ export function useSubscription() {
     enabled: !!user,
   });
 
-  // Create checkout session
+  // Fetch available credit packs
+  const creditPacksQuery = useQuery({
+    queryKey: ['credit-packs'],
+    queryFn: () => subscriptions.getCreditPacks(),
+    staleTime: 1000 * 60 * 60, // 1 hour
+  });
+
+  // Create checkout session (subscription)
   const checkoutMutation = useMutation({
     mutationFn: (priceId: string) => subscriptions.createCheckoutSession(priceId),
     onSuccess: (data) => {
-      // Redirect to Stripe Checkout
+      if (data.updated) {
+        // Inline upgrade/downgrade — no redirect needed
+        toast.success('Plano alterado com sucesso!');
+        refreshSubscription();
+        return;
+      }
       if (data.url) {
         window.location.href = data.url;
       }
@@ -56,6 +68,17 @@ export function useSubscription() {
     onError: (error) => {
       logger.error('Checkout error:', error);
       toast.error('Erro ao iniciar checkout. Tente novamente.');
+    },
+  });
+
+  // Purchase credit pack (one-time)
+  const purchasePackMutation = useMutation({
+    mutationFn: (packId: string) => subscriptions.purchaseCreditPack(packId),
+    onSuccess: (data) => {
+      if (data.url) window.location.href = data.url;
+    },
+    onError: () => {
+      toast.error('Erro ao iniciar compra. Tente novamente.');
     },
   });
 
@@ -107,7 +130,8 @@ export function useSubscription() {
   const creditsPerMonth = currentPlan?.credits_per_month || 5; // Free tier: 5 credits
   const creditsUsed = subscription?.credits_used_this_month || 0;
   const creditsRollover = subscription?.credits_rollover || 0;
-  const creditsTotal = creditsPerMonth + creditsRollover;
+  const creditsBonus = subscription?.credits_bonus || 0;
+  const creditsTotal = creditsPerMonth + creditsRollover + creditsBonus;
   const creditsRemaining = Math.max(0, creditsTotal - creditsUsed);
   const creditsPercentUsed = creditsTotal > 0 ? (creditsUsed / creditsTotal) * 100 : 0;
 
@@ -161,6 +185,9 @@ export function useSubscription() {
     queryClient.invalidateQueries({ queryKey: ['subscription'] });
   };
 
+  // Credit packs
+  const creditPacks = creditPacksQuery.data || [];
+
   return {
     // Data
     subscription,
@@ -180,6 +207,7 @@ export function useSubscription() {
     creditsPerMonth,
     creditsUsed,
     creditsRollover,
+    creditsBonus,
     creditsTotal,
     creditsRemaining,
     creditsPercentUsed,
@@ -190,6 +218,9 @@ export function useSubscription() {
     creditUsageHistory,
     isCreditUsageLoading,
     estimatedDaysRemaining,
+
+    // Credit packs
+    creditPacks,
 
     // Legacy usage (backwards compatibility)
     casesLimit,
@@ -204,6 +235,9 @@ export function useSubscription() {
     // Actions
     checkout: checkoutMutation.mutate,
     isCheckingOut: checkoutMutation.isPending,
+
+    purchasePack: purchasePackMutation.mutate,
+    isPurchasingPack: purchasePackMutation.isPending,
 
     openPortal: portalMutation.mutate,
     isOpeningPortal: portalMutation.isPending,
