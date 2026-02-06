@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import {
   Table,
   TableBody,
@@ -45,7 +46,7 @@ const getLayerStyles = (layerName: string): string => {
   return "bg-muted/50";
 };
 
-export default function ProtocolTable({ layers }: ProtocolTableProps) {
+function ProtocolTable({ layers }: ProtocolTableProps) {
   if (!layers || layers.length === 0) return null;
 
   return (
@@ -140,3 +141,5 @@ export default function ProtocolTable({ layers }: ProtocolTableProps) {
     </div>
   );
 }
+
+export default memo(ProtocolTable);

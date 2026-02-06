@@ -1,10 +1,11 @@
+import { memo } from 'react';
 import { XCircle } from "lucide-react";
 
 interface WarningsSectionProps {
   warnings: string[];
 }
 
-export default function WarningsSection({ warnings }: WarningsSectionProps) {
+function WarningsSection({ warnings }: WarningsSectionProps) {
   if (!warnings || warnings.length === 0) return null;
 
   return (
@@ -24,3 +25,5 @@ export default function WarningsSection({ warnings }: WarningsSectionProps) {
     </div>
   );
 }
+
+export default memo(WarningsSection);

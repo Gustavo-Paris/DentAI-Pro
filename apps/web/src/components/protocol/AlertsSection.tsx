@@ -1,10 +1,11 @@
+import { memo } from 'react';
 import { AlertTriangle } from "lucide-react";
 
 interface AlertsSectionProps {
   alerts: string[];
 }
 
-export default function AlertsSection({ alerts }: AlertsSectionProps) {
+function AlertsSection({ alerts }: AlertsSectionProps) {
   if (!alerts || alerts.length === 0) return null;
 
   return (
@@ -24,3 +25,5 @@ export default function AlertsSection({ alerts }: AlertsSectionProps) {
     </div>
   );
 }
+
+export default memo(AlertsSection);

@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Badge } from '@/components/ui/badge';
 
 const typeColors: Record<string, { bg: string; text: string; label: string }> = {
@@ -17,7 +18,7 @@ export function getTypeColorClasses(type: string): string {
   return 'bg-muted text-muted-foreground';
 }
 
-export function ResinTypeLegend() {
+function ResinTypeLegendInner() {
   return (
     <div className="flex flex-wrap items-center gap-2 p-3 bg-muted/50 rounded-lg border border-border">
       <span className="text-sm font-medium text-muted-foreground mr-1">Legenda:</span>
@@ -33,3 +34,5 @@ export function ResinTypeLegend() {
     </div>
   );
 }
+
+export const ResinTypeLegend = memo(ResinTypeLegendInner);

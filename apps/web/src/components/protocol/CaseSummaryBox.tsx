@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -63,7 +64,7 @@ function getTargetShade(whiteningGoal: string | null | undefined, originalColor:
   return { shade: originalColor, isTarget: false };
 }
 
-export default function CaseSummaryBox({
+function CaseSummaryBox({
   treatmentType = 'resina',
   patientAge,
   tooth,
@@ -192,3 +193,5 @@ export default function CaseSummaryBox({
     </Card>
   );
 }
+
+export default memo(CaseSummaryBox);

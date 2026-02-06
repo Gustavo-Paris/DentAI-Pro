@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { cn } from "@/lib/utils";
 import { getConfidenceConfig } from "@/lib/confidence-config";
 
@@ -5,7 +6,7 @@ interface ConfidenceIndicatorProps {
   confidence: "alta" | "média" | "baixa" | string;
 }
 
-export default function ConfidenceIndicator({ confidence }: ConfidenceIndicatorProps) {
+function ConfidenceIndicator({ confidence }: ConfidenceIndicatorProps) {
   const current = getConfidenceConfig(confidence);
   const Icon = current.icon;
 
@@ -33,3 +34,5 @@ export default function ConfidenceIndicator({ confidence }: ConfidenceIndicatorP
     </div>
   );
 }
+
+export default memo(ConfidenceIndicator);

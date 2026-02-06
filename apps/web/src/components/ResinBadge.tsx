@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { cn } from '@/lib/utils';
 import { Check } from 'lucide-react';
 import { getTypeColorClasses } from './ResinTypeLegend';
@@ -15,7 +16,7 @@ interface ResinBadgeProps {
   showColorSwatch?: boolean;
 }
 
-export function ResinBadge({
+function ResinBadgeInner({
   shade,
   type,
   selected = false,
@@ -65,3 +66,5 @@ export function ResinBadge({
     </button>
   );
 }
+
+export const ResinBadge = memo(ResinBadgeInner);
