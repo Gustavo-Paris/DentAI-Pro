@@ -88,7 +88,7 @@ export function useSignedUrl({
     return () => {
       isMounted = false;
     };
-  }, [bucket, path, expiresIn, thumbnail?.width, thumbnail?.height, thumbnail?.quality, thumbnail?.resize]);
+  }, [bucket, path, expiresIn, thumbnail]);
 
   return { url, isLoading, error };
 }

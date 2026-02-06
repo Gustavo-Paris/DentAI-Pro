@@ -43,12 +43,12 @@ export function DashboardModuleCard({ module, data }: DashboardModuleCardProps) 
   const cardContent = (
     <Card
       className={cn(
-        'group relative overflow-hidden transition-all flex-1',
+        'group relative overflow-hidden transition-all flex-1 h-full',
         'hover:shadow-md hover:border-primary/50',
         module.disabled && 'opacity-50 pointer-events-none'
       )}
     >
-      <CardHeader className="pb-2">
+      <CardHeader className={module.render ? 'pb-2' : undefined}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {ModuleIcon && (

@@ -35,7 +35,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import {
   Plus, FileText, Package, ChevronRight, FileWarning,
-  TrendingUp, Users, CheckCircle2, Zap, Camera, AlertTriangle,
+  TrendingUp, Users, CheckCircle2, Camera, AlertTriangle,
   X, ArrowRight, Sparkles, Sun, Moon, Sunset,
   LayoutDashboard, BarChart3,
 } from 'lucide-react';
@@ -56,7 +56,7 @@ function CreditsBanner({
 }) {
   return (
     <div
-      className="relative overflow-hidden rounded-xl border border-primary/20 dark:border-primary/15 shadow-sm scroll-reveal"
+      className="relative overflow-hidden rounded-xl border border-primary/20 dark:border-primary/15 shadow-sm"
     >
       <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/3 to-primary/5 dark:from-primary/8 dark:via-primary/4 dark:to-primary/8" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_hsl(var(--primary)/0.06),_transparent_60%)]" />
@@ -563,16 +563,10 @@ export default function Dashboard() {
     {
       id: 'new-case',
       title: 'Nova Avaliação',
-      description: 'Análise com IA',
+      description: 'Análise com IA · 3 créditos',
       icon: Sparkles,
       href: '/new-case',
       variant: 'primary',
-      render: () => (
-        <div className="flex items-center gap-1.5 text-xs font-medium text-primary/80">
-          <Zap className="w-3 h-3" />
-          <span>3 créditos por avaliação</span>
-        </div>
-      ),
     },
     {
       id: 'patients',

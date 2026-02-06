@@ -276,7 +276,6 @@ export function AddTeethModal({
           tooth_bounds: toothData.tooth_bounds,
         };
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase typing requires cast for dynamic data
         const { data: evaluation, error: evalError } = await supabase
           .from('evaluations')
           .insert(insertData as never)

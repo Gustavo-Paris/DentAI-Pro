@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthenticatedFetch } from '@/hooks/useAuthenticatedFetch';
 import { useAuth } from '@/contexts/AuthContext';
@@ -324,7 +324,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
   }, [user, imageBase64, simulationImageUrl, result?.simulation_url, toothBounds]);
 
   // NEW: Background simulation generation
-  const generateSimulationBackground = async (analysisData?: DSDAnalysis) => {
+  const generateSimulationBackground = useCallback(async (analysisData?: DSDAnalysis) => {
     const analysis = analysisData || result?.analysis;
     if (!imageBase64 || !analysis) return;
 
@@ -378,9 +378,9 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
     } finally {
       setIsSimulationGenerating(false);
     }
-  };
+  }, [imageBase64, result?.analysis, invokeFunction, patientPreferences]);
 
-  const analyzeDSD = async (retryCount = 0) => {
+  const analyzeDSD = useCallback(async (retryCount = 0) => {
     const MAX_RETRIES = 2;
     let didRetry = false;
     let hasError = false;
@@ -513,7 +513,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
         setIsAnalyzing(false);
       }
     }
-  };
+  }, [imageBase64, canUseCredits, invokeFunction, refreshSubscription, getCreditCost, generateSimulationBackground, additionalPhotos, patientPreferences, clinicalObservations, clinicalTeethFindings]);
 
   // Auto-start analysis when component mounts with image - use ref to prevent loops
   useEffect(() => {
@@ -521,7 +521,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
       analysisStartedRef.current = true;
       analyzeDSD();
     }
-  }, [imageBase64]);
+  }, [imageBase64, analyzeDSD]);
 
   const handleRetry = () => {
     setResult(null);

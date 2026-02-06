@@ -108,6 +108,13 @@ export default function AppLayout() {
             </button>
             <CreditBadge variant="compact" />
             <ThemeToggle />
+            <button
+              onClick={handleSignOut}
+              className="flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200 active:scale-95"
+              aria-label="Sair da conta"
+            >
+              <LogOut className="w-[18px] h-[18px]" />
+            </button>
           </div>
         </div>
       </header>
