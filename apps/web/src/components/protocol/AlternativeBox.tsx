@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Zap } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProtocolAlternative } from "@/types/protocol";
@@ -8,7 +9,7 @@ interface AlternativeBoxProps {
   alternative: ProtocolAlternative;
 }
 
-export default function AlternativeBox({ alternative }: AlternativeBoxProps) {
+function AlternativeBox({ alternative }: AlternativeBoxProps) {
   if (!alternative) return null;
 
   return (
@@ -42,3 +43,5 @@ export default function AlternativeBox({ alternative }: AlternativeBoxProps) {
     </Card>
   );
 }
+
+export default memo(AlternativeBox);
