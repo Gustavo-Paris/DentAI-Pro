@@ -50,7 +50,7 @@ function SessionCard({
             </div>
             <div className="flex flex-wrap items-center gap-2 mt-1">
               <p className="text-xs sm:text-sm text-muted-foreground">
-                {session.evaluationCount} dente{session.evaluationCount > 1 ? 's' : ''}
+                {session.evaluationCount} {session.evaluationCount > 1 ? 'casos' : 'caso'}
               </p>
               <span className="text-muted-foreground hidden sm:inline">•</span>
               <div className="flex gap-1 flex-wrap">

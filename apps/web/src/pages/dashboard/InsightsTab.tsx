@@ -204,7 +204,7 @@ function ClinicalStatsCard({
         </div>
 
         <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">Total avaliados</span>
+          <span className="text-xs text-muted-foreground">Total de casos</span>
           <span className="text-xs font-medium tabular-nums">{insights.totalEvaluated}</span>
         </div>
 

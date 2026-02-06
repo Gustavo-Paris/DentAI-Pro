@@ -118,9 +118,9 @@ const statConfigs: StatConfig[] = [
   {
     key: 'totalCases',
     label: 'Total de Casos',
-    unit: 'avaliações realizadas',
+    unit: 'casos gerados',
     icon: FileText,
-    tooltip: 'Total de avaliações realizadas',
+    tooltip: 'Total de casos gerados por avaliações',
     accentColor: 'from-primary to-primary/70',
     darkAccentColor: 'dark:from-primary dark:to-primary/60',
     getValueColor: () => 'text-foreground',
@@ -151,7 +151,7 @@ const statConfigs: StatConfig[] = [
     label: 'Conclusão',
     unit: 'das avaliações concluídas',
     icon: CheckCircle2,
-    tooltip: 'Avaliações com todos os dentes concluídos',
+    tooltip: 'Avaliações com todos os casos concluídos',
     accentColor: 'from-emerald-400 to-teal-500',
     darkAccentColor: 'dark:from-emerald-400/80 dark:to-teal-400/80',
     getValueColor: () => 'text-foreground',
@@ -161,9 +161,9 @@ const statConfigs: StatConfig[] = [
   {
     key: 'pendingSessions',
     label: 'Em Aberto',
-    unit: 'avaliações',
+    unit: 'avaliações pendentes',
     icon: FileWarning,
-    tooltip: 'Avaliações com dentes ainda não concluídos',
+    tooltip: 'Avaliações com casos ainda não concluídos',
     accentColor: 'from-amber-400 to-orange-500',
     darkAccentColor: 'dark:from-amber-400/80 dark:to-orange-400/80',
     getValueColor: (v: number) =>
@@ -171,10 +171,10 @@ const statConfigs: StatConfig[] = [
   },
   {
     key: 'pendingTeeth',
-    label: 'Dentes Pendentes',
-    unit: 'dentes em aberto',
+    label: 'Casos Pendentes',
+    unit: 'casos em aberto',
     icon: Stethoscope,
-    tooltip: 'Total de dentes aguardando conclusão',
+    tooltip: 'Total de casos aguardando conclusão',
     accentColor: 'from-violet-400 to-purple-500',
     darkAccentColor: 'dark:from-violet-400/80 dark:to-purple-400/80',
     getValueColor: (v: number) =>

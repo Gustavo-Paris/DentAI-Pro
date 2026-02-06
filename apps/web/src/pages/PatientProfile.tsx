@@ -114,7 +114,7 @@ export default function PatientProfile() {
             content: () => (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
-                  { value: metrics.totalSessions, label: 'Sessões' },
+                  { value: metrics.totalSessions, label: 'Avaliações' },
                   { value: metrics.totalCases, label: 'Casos' },
                   { value: metrics.completedCases, label: 'Concluídos', highlight: true },
                   { value: metrics.firstVisitFormatted, label: '1ª Visita' },
@@ -133,7 +133,7 @@ export default function PatientProfile() {
           },
           {
             id: 'sessions',
-            title: 'Histórico de Sessões',
+            title: 'Histórico de Avaliações',
             content: () => (
               <div>
                 <div className="flex items-center justify-end mb-4">
@@ -211,7 +211,7 @@ export default function PatientProfile() {
                                 </div>
                                 <p className="text-xs text-muted-foreground">
                                   {session.evaluationCount}{' '}
-                                  {session.evaluationCount === 1 ? 'dente' : 'dentes'}
+                                  {session.evaluationCount === 1 ? 'caso' : 'casos'}
                                 </p>
                               </div>
 
@@ -240,7 +240,7 @@ export default function PatientProfile() {
                               Carregando...
                             </>
                           ) : (
-                            'Carregar mais sessões'
+                            'Carregar mais avaliações'
                           )}
                         </Button>
                       </div>

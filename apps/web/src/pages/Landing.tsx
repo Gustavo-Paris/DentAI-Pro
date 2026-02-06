@@ -273,7 +273,7 @@ export default function Landing() {
             <AccordionItem value="item-4">
               <AccordionTrigger>Como funciona a gestão de pacientes?</AccordionTrigger>
               <AccordionContent>
-                Você pode cadastrar pacientes com informações de contato e notas clínicas. Cada paciente tem um histórico de sessões e casos, com acompanhamento de progresso através de checklists interativos.
+                Você pode cadastrar pacientes com informações de contato e notas clínicas. Cada paciente tem um histórico de avaliações e casos, com acompanhamento de progresso através de checklists interativos.
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-5">
