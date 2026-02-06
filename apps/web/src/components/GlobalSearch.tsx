@@ -176,6 +176,7 @@ export function GlobalSearch() {
         placeholder="Buscar paciente, dente ou data..."
         value={query}
         onValueChange={setQuery}
+        aria-label="Buscar paciente, dente ou data"
       />
       <CommandList>
         <CommandEmpty>

@@ -31,7 +31,7 @@ function SessionCard({
     : 'border-l-[3px] border-l-primary';
 
   return (
-    <Link to={`/evaluation/${session.session_id}`}>
+    <Link to={`/evaluation/${session.session_id}`} aria-label={`Ver avaliação de ${session.patient_name || 'Paciente sem nome'}`}>
       <Card
         className={`p-3 sm:p-4 shadow-sm hover:shadow-md rounded-xl transition-all duration-300 cursor-pointer animate-[fade-in-up_0.6s_ease-out_both] ${borderClass}`}
         style={{ animationDelay: `${index * 0.05}s` }}
@@ -70,7 +70,7 @@ function SessionCard({
           <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4">
             {isCompleted ? (
               <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                <CheckCircle className="w-3 h-3" />
+                <CheckCircle className="w-3 h-3" aria-hidden="true" />
                 <span className="hidden sm:inline">Finalizado</span>
               </span>
             ) : (
@@ -82,14 +82,14 @@ function SessionCard({
               </span>
             )}
             <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
-              <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+              <Calendar className="w-3 h-3 sm:w-4 sm:h-4" aria-hidden="true" />
               <span className="hidden sm:inline">
                 {format(new Date(session.created_at), "d 'de' MMM", { locale: ptBR })}
               </span>
               <span className="sm:hidden">
                 {format(new Date(session.created_at), 'dd/MM', { locale: ptBR })}
               </span>
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-4 h-4" aria-hidden="true" />
             </div>
           </div>
         </div>
@@ -118,7 +118,7 @@ export default function Evaluations() {
       {/* Success Banner for New Session */}
       {newSessionId && (
         <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-primary/10 border border-primary/20 rounded-xl shadow-sm flex items-center gap-3 animate-[fade-in-up_0.6s_ease-out_both]">
-          <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
+          <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" aria-hidden="true" />
           <div>
             <p className="font-medium text-sm sm:text-base">
               Avaliação criada com {newTeethCount} caso
