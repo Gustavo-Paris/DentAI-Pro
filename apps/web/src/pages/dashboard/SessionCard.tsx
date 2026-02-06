@@ -42,7 +42,7 @@ export function SessionCard({ session }: { session: DashboardSession }) {
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <p className="text-xs text-muted-foreground">
-                {session.evaluationCount} dente{session.evaluationCount > 1 ? 's' : ''}
+                {session.evaluationCount} {session.evaluationCount > 1 ? 'casos' : 'caso'}
               </p>
               <span className="text-muted-foreground/40 hidden sm:inline">·</span>
               <div className="flex gap-1 flex-wrap">

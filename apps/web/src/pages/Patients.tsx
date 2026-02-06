@@ -28,7 +28,7 @@ function PatientCard({ patient, index }: { patient: PatientWithStats; index: num
             <p className="text-xs sm:text-sm text-muted-foreground">
               {patient.caseCount} {patient.caseCount === 1 ? 'caso' : 'casos'} •{' '}
               {patient.sessionCount}{' '}
-              {patient.sessionCount === 1 ? 'sessão' : 'sessões'}
+              {patient.sessionCount === 1 ? 'avaliação' : 'avaliações'}
               {patient.caseCount > 0 && (
                 <span className="ml-1">
                   •{' '}
