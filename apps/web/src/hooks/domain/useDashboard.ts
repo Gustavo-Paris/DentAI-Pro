@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
-import { evaluations, patients, profiles } from '@/data';
+import { evaluations, profiles } from '@/data';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useWizardDraft, WizardDraft } from '@/hooks/useWizardDraft';
 import { format, startOfWeek, endOfWeek, subDays } from 'date-fns';
@@ -11,6 +11,18 @@ import { ptBR } from 'date-fns/locale';
 // Types
 // ---------------------------------------------------------------------------
 
+export interface ClinicalInsights {
+  treatmentDistribution: Array<{ label: string; value: number; color: string }>;
+  topResin: string | null;
+  inventoryRate: number;
+  totalEvaluated: number;
+}
+
+export interface WeeklyTrendPoint {
+  label: string;
+  value: number;
+}
+
 export interface DashboardSession {
   session_id: string;
   patient_name: string | null;
@@ -18,13 +30,15 @@ export interface DashboardSession {
   teeth: string[];
   evaluationCount: number;
   completedCount: number;
+  treatmentTypes: string[];
+  patientAge: number | null;
 }
 
 export interface DashboardMetrics {
-  pendingCases: number;
-  weeklyEvaluations: number;
+  pendingSessions: number;
+  weeklySessions: number;
   completionRate: number;
-  totalPatients: number;
+  pendingTeeth: number;
 }
 
 export interface DashboardState {
@@ -57,6 +71,10 @@ export interface DashboardState {
   cancelDiscardDraft: () => void;
   showDiscardConfirm: boolean;
 
+  // Insights
+  clinicalInsights: ClinicalInsights | null;
+  weeklyTrends: WeeklyTrendPoint[];
+
   // Subscription tier
   creditsPerMonth: number;
   isActive: boolean;
@@ -85,8 +103,122 @@ function extractFirstName(fullName: string | null | undefined): string {
 }
 
 // ---------------------------------------------------------------------------
-// Hook
+// Insights computation (pure function)
 // ---------------------------------------------------------------------------
+
+// Gemini sometimes returns English enum values — normalize to Portuguese
+const TREATMENT_NORMALIZE: Record<string, string> = {
+  porcelain: 'porcelana',
+  resin: 'resina',
+  crown: 'coroa',
+  implant: 'implante',
+  endodontics: 'endodontia',
+  referral: 'encaminhamento',
+};
+
+const TREATMENT_COLORS: Record<string, string> = {
+  resina: '#3b82f6',
+  porcelana: '#a855f7',
+  coroa: '#f59e0b',
+  implante: '#ef4444',
+  endodontia: '#10b981',
+  encaminhamento: '#6b7280',
+};
+
+const TREATMENT_LABELS: Record<string, string> = {
+  resina: 'Resina',
+  porcelana: 'Porcelana',
+  coroa: 'Coroa',
+  implante: 'Implante',
+  endodontia: 'Endodontia',
+  encaminhamento: 'Encaminhamento',
+};
+
+interface RawInsightRow {
+  id: string;
+  created_at: string;
+  treatment_type: string | null;
+  is_from_inventory: boolean | null;
+  resins: { name: string } | null;
+}
+
+function computeInsights(
+  rows: RawInsightRow[],
+  weeksBack: number,
+): { clinicalInsights: ClinicalInsights; weeklyTrends: WeeklyTrendPoint[] } {
+  // 1. Treatment distribution
+  const typeCounts = new Map<string, number>();
+  let inventoryCount = 0;
+
+  for (const row of rows) {
+    const raw = row.treatment_type;
+    const t = raw ? (TREATMENT_NORMALIZE[raw.toLowerCase()] || raw.toLowerCase()) : null;
+    if (t) typeCounts.set(t, (typeCounts.get(t) || 0) + 1);
+    if (row.is_from_inventory) inventoryCount++;
+  }
+
+  const treatmentDistribution = Array.from(typeCounts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .map(([type, count]) => ({
+      label: TREATMENT_LABELS[type] || type,
+      value: count,
+      color: TREATMENT_COLORS[type] || '#6b7280',
+    }));
+
+  // 2. Top resin
+  const resinCounts = new Map<string, number>();
+  for (const row of rows) {
+    const name = row.resins?.name;
+    if (name) resinCounts.set(name, (resinCounts.get(name) || 0) + 1);
+  }
+  let topResin: string | null = null;
+  let maxResinCount = 0;
+  for (const [name, count] of resinCounts) {
+    if (count > maxResinCount) {
+      topResin = name;
+      maxResinCount = count;
+    }
+  }
+
+  // 3. Inventory rate
+  const inventoryRate = rows.length > 0 ? Math.round((inventoryCount / rows.length) * 100) : 0;
+
+  // 4. Weekly trends — fill all weeks (including empty ones)
+  const now = new Date();
+  const weekMap = new Map<string, number>();
+  const weekLabels: string[] = [];
+
+  for (let i = weeksBack - 1; i >= 0; i--) {
+    const weekStart = startOfWeek(subDays(now, i * 7), { weekStartsOn: 1 });
+    const key = weekStart.toISOString();
+    const label = format(weekStart, 'd MMM', { locale: ptBR });
+    weekMap.set(key, 0);
+    weekLabels.push(key);
+  }
+
+  for (const row of rows) {
+    const weekStart = startOfWeek(new Date(row.created_at), { weekStartsOn: 1 });
+    const key = weekStart.toISOString();
+    if (weekMap.has(key)) {
+      weekMap.set(key, weekMap.get(key)! + 1);
+    }
+  }
+
+  const weeklyTrends: WeeklyTrendPoint[] = weekLabels.map(key => ({
+    label: format(new Date(key), 'd MMM', { locale: ptBR }),
+    value: weekMap.get(key) || 0,
+  }));
+
+  return {
+    clinicalInsights: {
+      treatmentDistribution,
+      topResin,
+      inventoryRate,
+      totalEvaluated: rows.length,
+    },
+    weeklyTrends,
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Query key factory
@@ -96,6 +228,7 @@ const dashboardQueryKeys = {
   all: ['dashboard'] as const,
   profile: () => [...dashboardQueryKeys.all, 'profile'] as const,
   metrics: () => [...dashboardQueryKeys.all, 'metrics'] as const,
+  insights: () => [...dashboardQueryKeys.all, 'insights'] as const,
 };
 
 // ---------------------------------------------------------------------------
@@ -125,24 +258,17 @@ export function useDashboard(): DashboardState {
     queryKey: dashboardQueryKeys.metrics(),
     queryFn: async () => {
       if (!user) throw new Error('User not authenticated');
-      const oneWeekAgo = subDays(new Date(), 7).toISOString();
 
-      const [metrics, totalPatients, recentData] = await Promise.all([
-        evaluations.getDashboardMetrics({ userId: user.id, oneWeekAgo }),
-        patients.countByUserId(user.id),
+      const [metrics, recentData] = await Promise.all([
+        evaluations.getDashboardMetrics({ userId: user.id }),
         evaluations.getRecent({ userId: user.id, limit: 50 }),
       ]);
 
-      const pendingCount = metrics.pendingSessionCount;
-      const completionRate = metrics.totalCount > 0
-        ? Math.round((metrics.completedCount / metrics.totalCount) * 100)
-        : 0;
-
       const dashboardMetrics: DashboardMetrics = {
-        pendingCases: pendingCount,
-        weeklyEvaluations: metrics.weeklyCount,
-        completionRate,
-        totalPatients,
+        pendingSessions: metrics.pendingSessionCount,
+        weeklySessions: metrics.weeklySessionCount,
+        completionRate: metrics.completionRate,
+        pendingTeeth: metrics.pendingTeethCount,
       };
 
       // Group recent evaluations by session_id
@@ -164,6 +290,8 @@ export function useDashboard(): DashboardState {
           teeth: evals.map(e => e.tooth),
           evaluationCount: evals.length,
           completedCount: evals.filter(e => e.status === 'completed').length,
+          treatmentTypes: [...new Set(evals.map(e => e.treatment_type).filter(Boolean))] as string[],
+          patientAge: evals[0].patient_age ?? null,
         }));
 
       return { metrics: dashboardMetrics, sessions };
@@ -171,6 +299,17 @@ export function useDashboard(): DashboardState {
     enabled: !!user,
     staleTime: 30 * 1000,
   });
+  const { data: insightsData, isLoading: loadingInsights } = useQuery({
+    queryKey: dashboardQueryKeys.insights(),
+    queryFn: async () => {
+      if (!user) throw new Error('User not authenticated');
+      const raw = await evaluations.getDashboardInsights({ userId: user.id, weeksBack: 8 });
+      return computeInsights(raw as RawInsightRow[], 8);
+    },
+    enabled: !!user,
+    staleTime: 60 * 1000,
+  });
+
   const {
     creditsRemaining,
     creditsPerMonth,
@@ -201,17 +340,17 @@ export function useDashboard(): DashboardState {
   }, [user, loadDraft]);
 
   // --- Derived values ---
-  const loading = loadingProfile || loadingDashboard;
+  const loading = loadingProfile || loadingDashboard || loadingInsights;
   const profile = profileData?.profile;
   const avatarUrl = profileData?.avatarUrl ?? null;
   const firstName = extractFirstName(profile?.full_name);
   const greeting = getTimeGreeting();
 
   const metrics: DashboardMetrics = dashboardData?.metrics ?? {
-    pendingCases: 0,
-    weeklyEvaluations: 0,
+    pendingSessions: 0,
+    weeklySessions: 0,
     completionRate: 0,
-    totalPatients: 0,
+    pendingTeeth: 0,
   };
   const sessions: DashboardSession[] = dashboardData?.sessions ?? [];
 
@@ -225,7 +364,7 @@ export function useDashboard(): DashboardState {
     };
   }, []);
 
-  const isNewUser = !loading && sessions.length === 0 && metrics.totalPatients === 0;
+  const isNewUser = !loading && sessions.length === 0 && metrics.pendingSessions === 0;
 
   const showCreditsBanner =
     !creditsBannerDismissed &&
@@ -272,6 +411,8 @@ export function useDashboard(): DashboardState {
     confirmDiscardDraft,
     cancelDiscardDraft,
     showDiscardConfirm,
+    clinicalInsights: insightsData?.clinicalInsights ?? null,
+    weeklyTrends: insightsData?.weeklyTrends ?? [],
     creditsPerMonth,
     isActive,
     isFree,

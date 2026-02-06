@@ -33,8 +33,8 @@ export function useScrollReveal<T extends HTMLElement = HTMLDivElement>() {
       { threshold: THRESHOLD, rootMargin: ROOT_MARGIN },
     );
 
-    observer.observe(el);
-    return () => observer.disconnect();
+    const rafId = requestAnimationFrame(() => observer.observe(el));
+    return () => { cancelAnimationFrame(rafId); observer.disconnect(); };
   }, []);
 
   return ref;
@@ -72,8 +72,8 @@ export function useScrollRevealChildren<T extends HTMLElement = HTMLDivElement>(
       { threshold: THRESHOLD, rootMargin: ROOT_MARGIN },
     );
 
-    observer.observe(container);
-    return () => observer.disconnect();
+    const rafId = requestAnimationFrame(() => observer.observe(container));
+    return () => { cancelAnimationFrame(rafId); observer.disconnect(); };
   }, []);
 
   return ref;

@@ -1,13 +1,22 @@
 import { Link } from 'react-router-dom';
-import { DashboardPage } from '@pageshell/composites/dashboard';
-import type { ModuleConfig } from '@pageshell/composites/dashboard';
+import { DashboardPage, DashboardModuleCard } from '@pageshell/composites/dashboard';
+import type { ModuleConfig, DashboardTab } from '@pageshell/composites/dashboard';
 import { useDashboard } from '@/hooks/domain/useDashboard';
-import type { DashboardSession } from '@/hooks/domain/useDashboard';
+import type { DashboardSession, ClinicalInsights, WeeklyTrendPoint } from '@/hooks/domain/useDashboard';
 import { WizardDraft } from '@/hooks/useWizardDraft';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart';
+import type { ChartConfig } from '@/components/ui/chart';
+import { BarChart, Bar, XAxis, YAxis } from 'recharts';
+import { getTreatmentConfig } from '@/lib/treatment-config';
 import {
   Tooltip,
   TooltipContent,
@@ -28,6 +37,7 @@ import {
   Plus, FileText, Package, ChevronRight, FileWarning,
   TrendingUp, Users, CheckCircle2, Zap, Camera, AlertTriangle,
   X, ArrowRight, Sparkles, Sun, Moon, Sunset,
+  LayoutDashboard, BarChart3,
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -86,18 +96,20 @@ function CreditsBanner({
 
 const statConfigs = [
   {
-    key: 'pendingCases' as const,
+    key: 'pendingSessions' as const,
     label: 'Em aberto',
+    unit: 'avaliações',
     icon: FileWarning,
-    tooltip: 'Casos aguardando conclusão do checklist',
+    tooltip: 'Avaliações com dentes ainda não concluídos',
     accentColor: 'from-amber-400 to-orange-500',
     darkAccentColor: 'dark:from-amber-500 dark:to-orange-400',
     getValueColor: (v: number) =>
       v > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-foreground',
   },
   {
-    key: 'weeklyEvaluations' as const,
+    key: 'weeklySessions' as const,
     label: 'Esta semana',
+    unit: 'novas avaliações',
     icon: TrendingUp,
     tooltip: '',
     accentColor: 'from-blue-400 to-cyan-500',
@@ -107,21 +119,24 @@ const statConfigs = [
   {
     key: 'completionRate' as const,
     label: 'Conclusão',
+    unit: 'das avaliações concluídas',
     icon: CheckCircle2,
-    tooltip: 'Taxa de casos concluídos vs. total',
+    tooltip: 'Avaliações com todos os dentes concluídos',
     accentColor: 'from-emerald-400 to-teal-500',
     darkAccentColor: 'dark:from-emerald-400 dark:to-teal-400',
     getValueColor: () => 'text-primary',
     suffix: '%',
   },
   {
-    key: 'totalPatients' as const,
-    label: 'Pacientes',
-    icon: Users,
-    tooltip: 'Pacientes únicos cadastrados',
+    key: 'pendingTeeth' as const,
+    label: 'Casos pendentes',
+    unit: 'dentes em aberto',
+    icon: FileText,
+    tooltip: 'Total de dentes aguardando conclusão',
     accentColor: 'from-violet-400 to-purple-500',
     darkAccentColor: 'dark:from-violet-400 dark:to-purple-400',
-    getValueColor: () => 'text-foreground',
+    getValueColor: (v: number) =>
+      v > 0 ? 'text-violet-600 dark:text-violet-400' : 'text-foreground',
   },
 ] as const;
 
@@ -130,7 +145,7 @@ function StatsGrid({
   loading,
   weekRange,
 }: {
-  metrics: { pendingCases: number; weeklyEvaluations: number; completionRate: number; totalPatients: number };
+  metrics: { pendingSessions: number; weeklySessions: number; completionRate: number; pendingTeeth: number };
   loading: boolean;
   weekRange: { start: string; end: string };
 }) {
@@ -164,9 +179,14 @@ function StatsGrid({
                 {loading ? (
                   <Skeleton className="h-10 w-14" />
                 ) : (
-                  <p className={`text-3xl sm:text-4xl font-semibold tracking-tight tabular-nums ${stat.getValueColor(value)}`}>
-                    {value}{'suffix' in stat ? stat.suffix : ''}
-                  </p>
+                  <>
+                    <p className={`text-3xl sm:text-4xl font-semibold tracking-tight tabular-nums ${stat.getValueColor(value)}`}>
+                      {value}{'suffix' in stat ? stat.suffix : ''}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground/60 mt-0.5 leading-tight">
+                      {stat.unit}
+                    </p>
+                  </>
                 )}
               </Card>
             </TooltipTrigger>
@@ -304,6 +324,80 @@ function DraftCard({
   );
 }
 
+function WeeklyTrendsChart({ data, loading }: { data: WeeklyTrendPoint[]; loading: boolean }) {
+  const containerRef = useScrollReveal();
+  const chartConfig: ChartConfig = {
+    value: { label: 'Avaliações', color: 'hsl(var(--primary))' },
+  };
+  if (loading) return <Skeleton className="h-[200px] w-full rounded-xl" />;
+  return (
+    <div ref={containerRef} className="scroll-reveal">
+      <h2 className="text-sm font-semibold font-display uppercase tracking-wider text-muted-foreground mb-3">
+        Tendência semanal
+      </h2>
+      <Card className="p-4 shadow-sm rounded-xl">
+        <ChartContainer config={chartConfig} className="aspect-auto h-[180px] w-full">
+          <BarChart data={data}>
+            <XAxis dataKey="label" fontSize={11} tickLine={false} axisLine={false} />
+            <YAxis hide allowDecimals={false} />
+            <ChartTooltip content={<ChartTooltipContent />} />
+            <Bar dataKey="value" fill="var(--color-value)" radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ChartContainer>
+      </Card>
+    </div>
+  );
+}
+
+function ClinicalStatsCard({ insights }: { insights: ClinicalInsights }) {
+  const containerRef = useScrollReveal();
+  return (
+    <div ref={containerRef} className="scroll-reveal">
+      <Card className="p-4 space-y-3 shadow-sm rounded-xl">
+        <h3 className="text-sm font-semibold font-display text-muted-foreground">Resumo clínico</h3>
+        {insights.topResin && (
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">Resina mais usada</span>
+            <Badge variant="secondary" className="text-xs">{insights.topResin}</Badge>
+          </div>
+        )}
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-muted-foreground">Uso do inventário</span>
+          <div className="flex items-center gap-2">
+            <Progress value={insights.inventoryRate} className="w-20 h-2" />
+            <span className="text-xs font-medium tabular-nums">{insights.inventoryRate}%</span>
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+function TreatmentDistribution({ items }: { items: Array<{ label: string; value: number; color: string }> }) {
+  const total = items.reduce((sum, item) => sum + item.value, 0);
+  return (
+    <Card className="p-4 shadow-sm rounded-xl">
+      <h3 className="text-base font-semibold mb-4">Distribuição de Tratamentos</h3>
+      <div className="space-y-3">
+        {items.map((item, i) => {
+          const pct = total > 0 ? (item.value / total) * 100 : 0;
+          return (
+            <div key={i} className="space-y-1">
+              <div className="flex justify-between text-sm">
+                <span>{item.label}</span>
+                <span className="text-muted-foreground">{item.value} ({pct.toFixed(0)}%)</span>
+              </div>
+              <div className="h-2 rounded-full bg-muted overflow-hidden">
+                <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: item.color }} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </Card>
+  );
+}
+
 function SessionCard({ session }: { session: DashboardSession }) {
   const isCompleted = session.completedCount === session.evaluationCount;
   const progressPercent = session.evaluationCount > 0
@@ -354,11 +448,25 @@ function SessionCard({ session }: { session: DashboardSession }) {
                   </Badge>
                 )}
               </div>
+              {session.treatmentTypes.length > 0 && (
+                <div className="flex gap-1 flex-wrap">
+                  {session.treatmentTypes.map(type => {
+                    const config = getTreatmentConfig(type);
+                    return (
+                      <Badge key={type} variant="outline" className="text-[10px] px-1.5 gap-1">
+                        <config.icon className="w-2.5 h-2.5" />
+                        {config.shortLabel}
+                      </Badge>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground self-end sm:self-center">
             <span className="hidden sm:inline">
               {format(new Date(session.created_at), "d 'de' MMM", { locale: ptBR })}
+              {session.patientAge && <span> · {session.patientAge} anos</span>}
             </span>
             <span className="sm:hidden">
               {format(new Date(session.created_at), 'dd/MM', { locale: ptBR })}
@@ -389,7 +497,7 @@ function RecentSessions({
   pendingDraft: WizardDraft | null;
   onDiscardDraft: () => void;
 }) {
-  const containerRef = useScrollRevealChildren();
+  const containerRef = useScrollReveal();
 
   return (
     <div ref={containerRef} className="scroll-reveal">
@@ -469,7 +577,7 @@ export default function Dashboard() {
     {
       id: 'patients',
       title: 'Meus Pacientes',
-      description: `${dashboard.metrics.totalPatients} cadastrados`,
+      description: 'Gerenciar pacientes',
       icon: Users,
       href: '/patients',
     },
@@ -482,13 +590,57 @@ export default function Dashboard() {
     },
   ];
 
+  const isTabbed = !dashboard.isNewUser;
+
+  const tabsConfig: DashboardTab[] | undefined = isTabbed
+    ? [
+        {
+          id: 'principal',
+          label: 'Principal',
+          icon: LayoutDashboard,
+          content: (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+                {modules.map((mod) => (
+                  <DashboardModuleCard key={mod.id} module={mod} />
+                ))}
+              </div>
+              <RecentSessions
+                sessions={dashboard.sessions}
+                loading={dashboard.loading}
+                pendingDraft={dashboard.pendingDraft}
+                onDiscardDraft={dashboard.requestDiscardDraft}
+              />
+            </>
+          ),
+        },
+        {
+          id: 'insights',
+          label: 'Insights',
+          icon: BarChart3,
+          content: (
+            <div className="space-y-4">
+              <WeeklyTrendsChart data={dashboard.weeklyTrends} loading={dashboard.loading} />
+              {dashboard.clinicalInsights && (
+                <TreatmentDistribution items={dashboard.clinicalInsights.treatmentDistribution} />
+              )}
+              {dashboard.clinicalInsights && (
+                <ClinicalStatsCard insights={dashboard.clinicalInsights} />
+              )}
+            </div>
+          ),
+        },
+      ]
+    : undefined;
+
   return (
     <TooltipProvider>
-      <div id="main-content" className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <div id="main-content" className="max-w-[960px] mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <DashboardPage
           title=""
           containerVariant="shell"
-          modules={modules}
+          modules={isTabbed ? undefined : modules}
+          tabs={tabsConfig}
           slots={{
             header: (
               <div className="mb-6">
@@ -508,28 +660,43 @@ export default function Dashboard() {
                 </p>
               </div>
             ),
-            afterHeader: dashboard.showCreditsBanner ? (
-              <CreditsBanner
-                creditsRemaining={dashboard.creditsRemaining}
-                onDismiss={dashboard.dismissCreditsBanner}
-              />
-            ) : undefined,
-            stats: (
-              <StatsGrid
-                metrics={dashboard.metrics}
-                loading={dashboard.loading}
-                weekRange={dashboard.weekRange}
-              />
+            afterHeader: (
+              <>
+                {dashboard.showCreditsBanner && (
+                  <CreditsBanner
+                    creditsRemaining={dashboard.creditsRemaining}
+                    onDismiss={dashboard.dismissCreditsBanner}
+                  />
+                )}
+                {isTabbed && (
+                  <StatsGrid
+                    metrics={dashboard.metrics}
+                    loading={dashboard.loading}
+                    weekRange={dashboard.weekRange}
+                  />
+                )}
+              </>
             ),
-            afterStats: dashboard.isNewUser ? <OnboardingCards /> : undefined,
-            afterModules: (
-              <RecentSessions
-                sessions={dashboard.sessions}
-                loading={dashboard.loading}
-                pendingDraft={dashboard.pendingDraft}
-                onDiscardDraft={dashboard.requestDiscardDraft}
-              />
-            ),
+            ...(!isTabbed
+              ? {
+                  stats: (
+                    <StatsGrid
+                      metrics={dashboard.metrics}
+                      loading={dashboard.loading}
+                      weekRange={dashboard.weekRange}
+                    />
+                  ),
+                  afterStats: <OnboardingCards />,
+                  afterModules: (
+                    <RecentSessions
+                      sessions={dashboard.sessions}
+                      loading={dashboard.loading}
+                      pendingDraft={dashboard.pendingDraft}
+                      onDiscardDraft={dashboard.requestDiscardDraft}
+                    />
+                  ),
+                }
+              : {}),
           }}
         />
 
