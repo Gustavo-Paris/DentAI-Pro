@@ -10,6 +10,15 @@ import { withMetrics } from "../_shared/prompts/index.ts";
 import type { Params as RecommendResinParams } from "../_shared/prompts/definitions/recommend-resin.ts";
 import { createSupabaseMetrics, PROMPT_VERSION } from "../_shared/metrics-adapter.ts";
 
+function getContralateral(tooth: string): string | null {
+  const num = parseInt(tooth);
+  if (num >= 11 && num <= 18) return String(num + 10);
+  if (num >= 21 && num <= 28) return String(num - 10);
+  if (num >= 31 && num <= 38) return String(num + 10);
+  if (num >= 41 && num <= 48) return String(num - 10);
+  return null;
+}
+
 interface ProtocolLayer {
   order: number;
   name: string;
@@ -222,6 +231,33 @@ serve(async (req) => {
     // Group all resins by price for the prompt
     const allGroups = groupResinsByPrice(resins);
 
+    // Fetch contralateral protocol if available
+    let contralateralProtocol: unknown = null;
+    const contralateralTooth = getContralateral(data.tooth);
+    if (contralateralTooth) {
+      const { data: currentEval } = await supabase
+        .from('evaluations')
+        .select('session_id')
+        .eq('id', data.evaluationId)
+        .single();
+
+      if (currentEval?.session_id) {
+        const { data: contraEval } = await supabase
+          .from('evaluations')
+          .select('stratification_protocol, tooth')
+          .eq('session_id', currentEval.session_id)
+          .eq('tooth', contralateralTooth)
+          .eq('user_id', data.userId)
+          .not('stratification_protocol', 'is', null)
+          .maybeSingle();
+
+        if (contraEval?.stratification_protocol) {
+          contralateralProtocol = contraEval.stratification_protocol;
+          logger.log(`Found contralateral protocol for tooth ${contralateralTooth}`);
+        }
+      }
+    }
+
     // Build prompt using prompt management module
     const promptDef = getPrompt('recommend-resin');
     const promptParams: RecommendResinParams = {
@@ -246,6 +282,8 @@ serve(async (req) => {
       hasInventory,
       budgetAppropriateInventory,
       inventoryResins,
+      contralateralProtocol,
+      contralateralTooth,
     };
 
     const prompt = promptDef.user(promptParams);
@@ -320,17 +358,25 @@ serve(async (req) => {
       return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     }
 
+    // Validate that protocol is not empty
+    if (recommendation.protocol?.layers?.length === 0 || !recommendation.protocol?.checklist?.length) {
+      logger.error("AI returned empty protocol, protocol:", JSON.stringify(recommendation.protocol));
+      return createErrorResponse("Protocolo vazio — tente novamente", 500, corsHeaders);
+    }
+
     // Validate and fix protocol layers against resin_catalog
     if (recommendation.protocol?.layers && Array.isArray(recommendation.protocol.layers)) {
       const validatedLayers = [];
       const validationAlerts: string[] = [];
       
       // Check if patient requested whitening (BL shades)
-      const wantsWhitening = data.aestheticGoals?.toLowerCase().includes('clareamento') ||
+      // Exclude broad terms like 'clareamento' and 'branco' that trigger for Natural level
+      const wantsWhitening = data.aestheticGoals?.toLowerCase().includes('hollywood') ||
                              data.aestheticGoals?.toLowerCase().includes('bl1') ||
                              data.aestheticGoals?.toLowerCase().includes('bl2') ||
-                             data.aestheticGoals?.toLowerCase().includes('hollywood') ||
-                             data.aestheticGoals?.toLowerCase().includes('branco');
+                             data.aestheticGoals?.toLowerCase().includes('bl3') ||
+                             data.aestheticGoals?.toLowerCase().includes('intenso') ||
+                             data.aestheticGoals?.toLowerCase().includes('notável');
       
       // Track if any layer uses a product line without BL shades
       let productLineWithoutBL: string | null = null;
@@ -463,12 +509,20 @@ serve(async (req) => {
       // Update layers with validated versions
       recommendation.protocol.layers = validatedLayers;
       
-      // Add validation alerts to protocol alerts
+      // Add validation alerts to protocol alerts (with deduplication)
       if (validationAlerts.length > 0) {
-        recommendation.protocol.alerts = [
-          ...(recommendation.protocol.alerts || []),
-          ...validationAlerts
-        ];
+        const existingAlerts: string[] = recommendation.protocol.alerts || [];
+        // Filter out validation alerts that duplicate AI-generated ones
+        const newAlerts = validationAlerts.filter((va: string) => {
+          const vaLower = va.toLowerCase();
+          return !existingAlerts.some((ea: string) => {
+            const eaLower = ea.toLowerCase();
+            // Both mention BL/bleach for same concept = duplicate
+            return (vaLower.includes('bl') || vaLower.includes('bleach')) &&
+                   (eaLower.includes('bl') || eaLower.includes('bleach'));
+          });
+        });
+        recommendation.protocol.alerts = [...existingAlerts, ...newAlerts];
       }
     }
 

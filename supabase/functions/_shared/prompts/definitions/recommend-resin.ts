@@ -48,6 +48,10 @@ export interface Params {
   hasInventory: boolean
   budgetAppropriateInventory: ResinData[]
   inventoryResins: ResinData[]
+
+  // Contralateral protocol (if already processed)
+  contralateralProtocol?: unknown
+  contralateralTooth?: string | null
 }
 
 // ---------- helpers ----------
@@ -117,7 +121,8 @@ function buildInventorySection(
 === RESINAS NO INVENT\u00c1RIO DO DENTISTA ===
 ${budgetAppropriateInventory.length > 0
     ? `Resinas do invent\u00e1rio compat\u00edveis com or\u00e7amento "${budget}":\n${formatResinList(budgetAppropriateInventory)}`
-    : `Nenhuma resina do invent\u00e1rio \u00e9 compat\u00edvel com o or\u00e7amento "${budget}".`}
+    : `⚠️ Nenhuma resina do inventário é compatível com o orçamento "${budget}".
+INSTRUÇÃO OBRIGATÓRIA: Use as resinas do CATÁLOGO GERAL (seção "RESINAS ORGANIZADAS POR FAIXA DE PREÇO" acima) para gerar o protocolo completo. O protocolo NÃO pode ficar vazio.`}
 
 Outras resinas do invent\u00e1rio (fora do or\u00e7amento):
 ${inventoryResins.filter((r) => !budgetAppropriateInventory.includes(r)).length > 0
@@ -258,6 +263,28 @@ Quando aplicar clareamento, use cores mais claras em TODAS as camadas:
 `
 }
 
+function buildContralateralSection(
+  contralateralTooth: string | null | undefined,
+  contralateralProtocol: unknown
+): string {
+  if (!contralateralTooth || !contralateralProtocol) return ''
+
+  return `
+=== PROTOCOLO DO DENTE CONTRALATERAL (OBRIGATÓRIO COPIAR!) ===
+⚠️ O dente contralateral ${contralateralTooth} JÁ FOI PROCESSADO e recebeu este protocolo:
+
+${JSON.stringify(contralateralProtocol, null, 2)}
+
+REGRA OBRIGATÓRIA: O protocolo para ESTE dente DEVE ser IDÊNTICO ao do dente ${contralateralTooth}:
+- MESMO número de camadas
+- MESMOS shades em cada camada
+- MESMA resina (resin_brand)
+- MESMA técnica
+- MESMO nível de confiança
+- Adapte APENAS o número do dente nas referências textuais
+`
+}
+
 // ---------- prompt definition ----------
 
 export const recommendResin: PromptDefinition<Params> = {
@@ -284,6 +311,7 @@ export const recommendResin: PromptDefinition<Params> = {
     const advancedStratification = buildAdvancedStratificationSection(p.aestheticLevel)
     const bruxismSection = buildBruxismSection(p.bruxism)
     const aestheticGoalsSection = buildAestheticGoalsSection(p.aestheticGoals)
+    const contralateralSection = buildContralateralSection(p.contralateralTooth, p.contralateralProtocol)
 
     return `Voc\u00ea \u00e9 um especialista em materiais dent\u00e1rios e t\u00e9cnicas restauradoras. Analise o caso cl\u00ednico abaixo e forne\u00e7a uma recomenda\u00e7\u00e3o COMPLETA com protocolo de estratifica\u00e7\u00e3o.
 
@@ -311,6 +339,7 @@ ${aestheticGoalsSection}
 ${resinsByPriceSection}
 ${inventorySection}
 ${inventoryInstructions}
+${contralateralSection}
 
 ${advancedStratification}
 
@@ -427,8 +456,8 @@ Se o paciente pede clareamento (BL1, BL2, BL3, Hollywood):
 
 1. VERIFICAR se a linha recomendada possui cores BL no cat\u00e1logo
 2. Se N\u00c3O possui cores BL:
-   - ADICIONAR ALERTA: "A linha [nome] n\u00e3o possui cores BL. Para atingir n\u00edvel Hollywood, considere [linha alternativa com BL]."
    - Usar a cor mais clara dispon\u00edvel (ex: B1, A1) como aproxima\u00e7\u00e3o
+   - N\u00c3O gere alerta sobre BL — o sistema gera automaticamente
 3. Se POSSUI cores BL:
    - Usar BL4, BL3, BL2, BL1 conforme n\u00edvel de clareamento desejado
 
@@ -486,12 +515,12 @@ REGRAS ADICIONAIS:
 - Os steps, a tabela de camadas e os shades DEVEM ser 100% sincronizados
 
 \u26a0\ufe0f REGRA CRÍTICA - PADRONIZAÇÃO DE NOME DE MARCA:
-- Use SEMPRE o nome atual do fabricante conforme o catálogo de resinas fornecido
-- "3M ESPE" foi adquirida pela "Solventum" — use "Solventum" como fabricante para Filtek Z350 XT
-- O formato resin_brand DEVE ser "Fabricante - Linha" (ex: "Solventum - Filtek Z350 XT")
+- Use SEMPRE o nome do fabricante EXATAMENTE como aparece no catálogo de resinas fornecido acima
+- NÃO altere, corrija ou atualize nomes de fabricantes — use o que está no catálogo
+- O formato resin_brand DEVE ser "Fabricante - Linha" (ex: "3M ESPE - Filtek Z350 XT")
 - TODOS os dentes do mesmo caso que usam a mesma resina devem ter o MESMO resin_brand
 - \u274c ERRADO: Dente 13 = "3M ESPE - Filtek Z350 XT", Dente 23 = "Solventum - Filtek Z350 XT"
-- \u2705 CERTO: Ambos = "Solventum - Filtek Z350 XT"
+- \u2705 CERTO: Ambos = "3M ESPE - Filtek Z350 XT" (conforme catálogo)
 
 \u26a0\ufe0f REGRA CR\u00cdTICA - DETERMINISMO CONTRALATERAL:
 - Dentes contralaterais com MESMO diagn\u00f3stico (mesma classe, mesmo tamanho, mesmo n\u00edvel est\u00e9tico) DEVEM receber protocolos ID\u00caNTICOS
@@ -616,7 +645,7 @@ Responda em formato JSON:
       {
         "order": 1,
         "name": "Nome da camada (Aumento Incisal/Dentina-Corpo/Efeitos Incisais/Cristas Proximais/Esmalte Vestibular Final/Bulk). NÃO use 'Opaco' como nome de camada separada — integre o mascaramento na descrição da camada Dentina/Corpo.",
-        "resin_brand": "Fabricante - Linha do produto (ex: Tokuyama - Estelite Omega, FGM - Vittra APS, Solventum - Filtek Z350 XT). NUNCA informe apenas o fabricante! Use o nome ATUAL do fabricante (Solventum, não 3M ESPE).",
+        "resin_brand": "Fabricante - Linha do produto (ex: Tokuyama - Estelite Omega, FGM - Vittra APS, 3M ESPE - Filtek Z350 XT). NUNCA informe apenas o fabricante! Use o nome do fabricante EXATAMENTE como aparece no catálogo fornecido.",
         "shade": "Cor espec\u00edfica (ex: OA2, A2D, A2E)",
         "thickness": "Faixa de espessura guia (ex: 0.3-0.5mm)",
         "purpose": "Objetivo desta camada",

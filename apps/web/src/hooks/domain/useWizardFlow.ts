@@ -784,7 +784,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
                     : patientPreferences.whiteningLevel === 'white'
                       ? 'Paciente deseja clareamento NOTÁVEL (BL1/BL2). Ajustar camadas 1-2 tons mais claras.'
                       : patientPreferences.whiteningLevel === 'natural'
-                        ? 'Paciente prefere aparência NATURAL com clareamento sutil (A1/A2).'
+                        ? 'Paciente prefere aparência NATURAL (A1/A2). Manter tons naturais.'
                         : undefined,
               },
             });

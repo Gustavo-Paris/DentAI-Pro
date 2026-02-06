@@ -150,6 +150,17 @@ Para indicações protéticas sem lesão cariosa ativa, cavity_class DEVE ser nu
 - "endodontia" sem cavidade cariosa → cavity_class: null
 
 cavity_class deve ser preenchido APENAS quando existe uma lesão cariosa ativa ou restauração direta a ser realizada/substituída com formato de cavidade classificável.
+
+⚠️ REGRA CRÍTICA — DESGASTE INCISAL vs CLASSE IV:
+- Classe IV de Black = FRATURA ou CÁRIE que envolve o ângulo incisal COM destruição da face proximal
+- Desgaste incisal (erosão, atrição, abrasão) no bordo incisal SEM envolvimento proximal = NÃO É Classe IV
+- Se o DSD ou a foto indica apenas "leve desgaste no bordo incisal" ou "encurtamento incisal":
+  → cavity_class: null (não é lesão cariosa clássica)
+  → treatment_indication: "resina" (para reconstrução/aumento do bordo incisal)
+  → indication_reason: "Desgaste incisal com perda de comprimento — indicada restauração para recontorno"
+- ❌ ERRADO: Desgaste incisal leve → Classe IV Média
+- ✅ CERTO: Desgaste incisal leve → cavity_class: null, treatment: resina, note: "Aumento incisal"
+- Classe IV EXIGE evidência de envolvimento proximal (fratura do ângulo, cárie proximal atingindo incisal)
 5. O tipo de substrato visível (Esmalte, Dentina, Esmalte e Dentina, Dentina profunda)
 6. A condição do substrato (Saudável, Esclerótico, Manchado, Cariado, Desidratado)
 7. A condição do esmalte (Íntegro, Fraturado, Hipoplásico, Fluorose, Erosão)
