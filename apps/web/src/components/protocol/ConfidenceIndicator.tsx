@@ -1,44 +1,12 @@
 import { cn } from "@/lib/utils";
-import { Shield, ShieldAlert, ShieldCheck } from "lucide-react";
+import { getConfidenceConfig } from "@/lib/confidence-config";
 
 interface ConfidenceIndicatorProps {
   confidence: "alta" | "média" | "baixa" | string;
 }
 
 export default function ConfidenceIndicator({ confidence }: ConfidenceIndicatorProps) {
-  const level = confidence.toLowerCase();
-  
-  const config = {
-    alta: {
-      icon: ShieldCheck,
-      label: "Alta Confiança",
-      description: "Caso bem documentado, protocolo recomendado com segurança",
-      color: "text-green-600 dark:text-green-400",
-      bg: "bg-green-50 dark:bg-green-950/30",
-      border: "border-green-500/20 dark:border-green-500/30",
-      bars: 3,
-    },
-    média: {
-      icon: Shield,
-      label: "Confiança Média",
-      description: "Considere validar detalhes clínicos adicionais",
-      color: "text-amber-600 dark:text-amber-400",
-      bg: "bg-amber-50 dark:bg-amber-950/30",
-      border: "border-amber-500/20 dark:border-amber-500/30",
-      bars: 2,
-    },
-    baixa: {
-      icon: ShieldAlert,
-      label: "Baixa Confiança",
-      description: "Dados insuficientes, revise antes de aplicar",
-      color: "text-red-600 dark:text-red-400",
-      bg: "bg-red-50 dark:bg-red-950/30",
-      border: "border-red-500/20 dark:border-red-500/30",
-      bars: 1,
-    },
-  };
-
-  const current = config[level as keyof typeof config] || config.média;
+  const current = getConfidenceConfig(confidence);
   const Icon = current.icon;
 
   return (

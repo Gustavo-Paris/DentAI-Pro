@@ -1,4 +1,3 @@
-import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -6,21 +5,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { User, MapPin, Layers, Palette, Crown, Stethoscope, ArrowUpRight, CircleX, Info } from "lucide-react";
-
-// Treatment type configuration
-const treatmentConfig: Record<string, { 
-  label: string; 
-  icon: React.ComponentType<{ className?: string }>;
-  showCavityInfo: boolean;
-}> = {
-  resina: { label: 'Resina Composta', icon: Layers, showCavityInfo: true },
-  porcelana: { label: 'Faceta de Porcelana', icon: Crown, showCavityInfo: false },
-  coroa: { label: 'Coroa Total', icon: Crown, showCavityInfo: false },
-  implante: { label: 'Implante', icon: CircleX, showCavityInfo: false },
-  endodontia: { label: 'Endodontia', icon: Stethoscope, showCavityInfo: false },
-  encaminhamento: { label: 'Encaminhamento', icon: ArrowUpRight, showCavityInfo: false },
-};
+import { User, MapPin, Layers, Palette, Info } from "lucide-react";
+import { getTreatmentConfig } from "@/lib/treatment-config";
 
 // Procedimentos estéticos que não usam classificação de cavidade tradicional
 const AESTHETIC_PROCEDURES = [
@@ -65,6 +51,9 @@ function getTargetShade(whiteningGoal: string | null | undefined, originalColor:
   if (lower.includes('bl3') || lower.includes('bl4') || lower.includes('moderado')) {
     return { shade: 'BL3/BL4', isTarget: true };
   }
+  if (lower.includes('natural') || lower.includes('a1') || lower.includes('a2') || lower.includes('sutil')) {
+    return { shade: 'A1/A2', isTarget: true };
+  }
   return { shade: originalColor, isTarget: false };
 }
 
@@ -82,7 +71,7 @@ export default function CaseSummaryBox({
   indicationReason,
   whiteningGoal,
 }: CaseSummaryBoxProps) {
-  const config = treatmentConfig[treatmentType] || treatmentConfig.resina;
+  const config = getTreatmentConfig(treatmentType);
   const showCavityInfo = config.showCavityInfo;
   const TreatmentIcon = config.icon;
   

@@ -258,25 +258,78 @@ function getGenericProtocol(
       } else if (reason.includes('dtm') || reason.includes('atm') || reason.includes('articulação')) {
         specialty = 'DTM/Dor Orofacial';
       }
+
+      // Specialty-specific checklist and recommendations
+      const specialtyChecklist: Record<string, string[]> = {
+        'Ortodontia': [
+          'Documentar achados clínicos e fotografias intra/extraorais',
+          'Solicitar radiografia panorâmica e cefalometria lateral',
+          'Solicitar modelos de estudo ou escaneamento digital',
+          `Encaminhar para Ortodontia — motivo: ${toothData?.indication_reason || 'correção de posicionamento'}`,
+          'Informar ao ortodontista sobre o plano restaurador estético em andamento',
+          'Coordenar timing: alinhamento ortodôntico antes de finalizar restaurações anteriores',
+          'Orientar paciente sobre duração estimada e etapas do tratamento ortodôntico',
+          'Agendar retorno para acompanhamento e reavaliação do plano restaurador',
+        ],
+        'Endodontia': [
+          'Documentar achados clínicos e teste de vitalidade pulpar',
+          'Solicitar radiografia periapical do dente',
+          `Encaminhar para Endodontia — motivo: ${toothData?.indication_reason || 'comprometimento pulpar'}`,
+          'Informar ao endodontista sobre plano restaurador pós-tratamento',
+          'Orientar paciente sobre próximos passos',
+          'Agendar retorno para restauração definitiva após tratamento endodôntico',
+        ],
+        'Periodontia': [
+          'Documentar achados clínicos e profundidade de sondagem',
+          'Solicitar radiografia periapical ou panorâmica',
+          `Encaminhar para Periodontia — motivo: ${toothData?.indication_reason || 'comprometimento periodontal'}`,
+          'Informar ao periodontista sobre plano restaurador',
+          'Orientar paciente sobre importância do controle periodontal',
+          'Agendar retorno para reavaliação após tratamento periodontal',
+        ],
+      };
+
+      const specialtyRecommendations: Record<string, string[]> = {
+        'Ortodontia': [
+          'Levar exames radiográficos e relatório clínico ao ortodontista',
+          'Estabilidade oclusal a longo prazo depende do alinhamento prévio',
+          'Informar sobre medicamentos em uso e expectativas estéticas',
+        ],
+        'Endodontia': [
+          'Levar radiografias e relatório ao endodontista',
+          'Retornar imediatamente se houver dor intensa ou inchaço',
+          'Evitar mastigar do lado tratado até restauração definitiva',
+        ],
+        'Periodontia': [
+          'Levar exames e relatório ao periodontista',
+          'Manter higiene bucal rigorosa durante o tratamento',
+          'Retornar para controle periodontal trimestral',
+        ],
+      };
+
+      const checklist = specialtyChecklist[specialty] || [
+        'Documentar achados clínicos',
+        'Realizar radiografias necessárias',
+        'Preparar relatório para o especialista',
+        specialty ? `Encaminhar para ${specialty}` : 'Identificar especialidade adequada',
+        'Orientar paciente sobre próximos passos',
+        'Agendar retorno para acompanhamento',
+      ];
+
+      const recommendations = specialtyRecommendations[specialty] || [
+        'Levar exames e relatório ao especialista',
+        'Informar sobre medicamentos em uso',
+      ];
+
       const specialtyText = specialty ? ` Sugestão de encaminhamento: **${specialty}**.` : '';
       return {
         summary: `Dente ${tooth} requer avaliação especializada.${specialtyText}`,
-        checklist: [
-          'Documentar achados clínicos',
-          'Realizar radiografias necessárias',
-          'Preparar relatório para o especialista',
-          specialty ? `Encaminhar para ${specialty}` : 'Identificar especialidade adequada',
-          'Orientar paciente sobre próximos passos',
-          'Agendar retorno para acompanhamento',
-        ],
+        checklist,
         alerts: [
           'Urgência do encaminhamento depende do diagnóstico',
           'Manter comunicação com especialista',
         ],
-        recommendations: [
-          'Levar exames e relatório ao especialista',
-          'Informar sobre medicamentos em uso',
-        ],
+        recommendations,
       };
     })(),
   };
@@ -844,9 +897,10 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
           ([type, count]) => `${count} ${TREATMENT_LABELS[type as TreatmentType] || type}`,
         )
         .join(', ');
-      toast.success(`Casos criados: ${treatmentMessages}`);
-
       clearDraft();
+      // Dismiss pending toasts before navigating to avoid DOM race condition
+      // (toast animations conflict with route unmount, causing insertBefore errors)
+      toast.dismiss();
       navigate(`/evaluation/${sessionId}`);
     } catch (error: unknown) {
       const err = error as { message?: string; code?: string };

@@ -57,8 +57,8 @@ export default function Inventory() {
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-xl sm:text-2xl font-semibold">Meu Inventário</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Meu Inventário</h1>
+            <p className="text-sm text-muted-foreground mt-1">
               Gerencie suas resinas disponíveis
             </p>
           </div>

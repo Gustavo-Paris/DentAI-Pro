@@ -205,3 +205,23 @@ export async function getOrCreateShareLink(sessionId: string, userId: string) {
   if (error) throw error;
   return created.token as string;
 }
+
+// ---------------------------------------------------------------------------
+// Full evaluation with relations (for Result page)
+// ---------------------------------------------------------------------------
+
+export async function getByIdWithRelations(id: string, userId: string) {
+  const { data, error } = await supabase
+    .from('evaluations')
+    .select(`
+      *,
+      resins:resins!recommended_resin_id (*),
+      ideal_resin:resins!ideal_resin_id (*)
+    `)
+    .eq('id', id)
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+}

@@ -90,19 +90,9 @@ const App = () => (
               <Route path="/patient/:patientId" element={<Suspense fallback={<PageLoader />}><PatientProfile /></Suspense>} />
               <Route path="/profile" element={<Suspense fallback={<PageLoader />}><Profile /></Suspense>} />
               <Route path="/pricing" element={<Suspense fallback={<PageLoader />}><Pricing /></Suspense>} />
+              <Route path="/new-case" element={<Suspense fallback={<PageLoader />}><NewCase /></Suspense>} />
             </Route>
 
-            {/* Protected routes WITHOUT nav layout (full-screen) */}
-            <Route
-              path="/new-case"
-              element={
-                <ProtectedRoute>
-                  <Suspense fallback={<PageLoader />}>
-                    <NewCase />
-                  </Suspense>
-                </ProtectedRoute>
-              }
-            />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <GlobalSearch />

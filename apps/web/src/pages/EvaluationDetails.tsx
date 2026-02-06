@@ -1,17 +1,8 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbSeparator,
-  BreadcrumbPage,
-} from '@/components/ui/breadcrumb';
 import {
   Table,
   TableBody,
@@ -49,47 +40,24 @@ import {
   Calendar,
   User,
   Image as ImageIcon,
-  AlertCircle,
-  Layers,
-  Crown,
-  Stethoscope,
-  ArrowUpRight,
-  CircleX,
   Plus,
   Share2,
   Loader2 as ShareLoader,
 } from 'lucide-react';
 
+import { DetailPage } from '@pageshell/composites';
 import { useEvaluationDetail } from '@/hooks/domain/useEvaluationDetail';
 import type { EvaluationItem } from '@/hooks/domain/useEvaluationDetail';
 import { AddTeethModal } from '@/components/AddTeethModal';
 import { ClinicalPhotoThumbnail } from '@/components/OptimizedImage';
-
-// =============================================================================
-// Treatment type configuration (presentation-only)
-// =============================================================================
-
-const treatmentConfig: Record<string, {
-  label: string;
-  shortLabel: string;
-  icon: React.ComponentType<{ className?: string }>;
-  variant: 'default' | 'secondary' | 'destructive' | 'outline';
-}> = {
-  resina: { label: 'Resina Composta', shortLabel: 'Resina', icon: Layers, variant: 'default' },
-  porcelana: { label: 'Faceta de Porcelana', shortLabel: 'Faceta', icon: Crown, variant: 'secondary' },
-  coroa: { label: 'Coroa Total', shortLabel: 'Coroa', icon: Crown, variant: 'secondary' },
-  implante: { label: 'Implante', shortLabel: 'Implante', icon: CircleX, variant: 'outline' },
-  endodontia: { label: 'Endodontia', shortLabel: 'Endo', icon: Stethoscope, variant: 'outline' },
-  encaminhamento: { label: 'Encaminhamento', shortLabel: 'Encaminhar', icon: ArrowUpRight, variant: 'outline' },
-};
+import { getTreatmentConfig } from '@/lib/treatment-config';
 
 // =============================================================================
 // Presentation helpers
 // =============================================================================
 
 function getTreatmentBadge(evaluation: EvaluationItem) {
-  const treatmentType = evaluation.treatment_type || 'resina';
-  const config = treatmentConfig[treatmentType] || treatmentConfig.resina;
+  const config = getTreatmentConfig(evaluation.treatment_type);
   const IconComponent = config.icon;
 
   return (
@@ -150,34 +118,44 @@ export default function EvaluationDetails() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        {/* Breadcrumbs */}
-        <Breadcrumb className="mb-4">
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link to="/dashboard">Dashboard</Link>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>{detail.patientName}</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-
-        {detail.isLoading ? (
-          <div className="space-y-4">
-            <Skeleton className="h-32 w-full" />
-            <Skeleton className="h-64 w-full" />
-          </div>
-        ) : (
-          <>
-            {/* Evaluation Header */}
+    <>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <DetailPage
+        title={detail.patientName}
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/dashboard' },
+          { label: detail.patientName },
+        ]}
+        query={{ data: detail.evaluations, isLoading: detail.isLoading }}
+        headerActions={[
+          {
+            label: 'Compartilhar',
+            icon: detail.isSharing ? ShareLoader : Share2,
+            onClick: detail.handleShareCase,
+            disabled: detail.isSharing,
+            variant: 'outline',
+          },
+          ...(detail.pendingTeeth.length > 0
+            ? [{
+                label: `Adicionar mais dentes (${detail.pendingTeeth.length})`,
+                icon: Plus,
+                onClick: () => detail.setShowAddTeethModal(true),
+                variant: 'outline' as const,
+              }]
+            : []),
+          {
+            label: 'Marcar todos como concluídos',
+            icon: CheckCircle,
+            onClick: detail.handleMarkAllAsCompleted,
+            disabled: detail.completedCount === detail.evaluations.length,
+            variant: 'outline',
+          },
+        ]}
+        slots={{
+          beforeContent: (
             <Card className="mb-4 sm:mb-6">
               <CardContent className="p-4 sm:p-6">
                 <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
-                  {/* Photo Preview */}
                   {detail.evaluations[0]?.photo_frontal ? (
                     <ClinicalPhotoThumbnail
                       path={detail.evaluations[0].photo_frontal}
@@ -191,10 +169,7 @@ export default function EvaluationDetails() {
                     </div>
                   )}
 
-                  {/* Evaluation Info */}
                   <div className="flex-1">
-                    <h1 className="text-xl sm:text-2xl font-semibold mb-2">{detail.patientName}</h1>
-
                     <div className="flex flex-wrap gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
                       <div className="flex items-center gap-1">
                         <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -225,51 +200,11 @@ export default function EvaluationDetails() {
                 </div>
               </CardContent>
             </Card>
-
-            {/* Actions */}
-            <div className="flex flex-wrap justify-end gap-2 mb-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={detail.handleShareCase}
-                disabled={detail.isSharing}
-                className="text-xs sm:text-sm"
-              >
-                {detail.isSharing ? (
-                  <ShareLoader className="w-4 h-4 sm:mr-2 animate-spin" />
-                ) : (
-                  <Share2 className="w-4 h-4 sm:mr-2" />
-                )}
-                <span className="hidden sm:inline">Compartilhar</span>
-              </Button>
-              {detail.pendingTeeth.length > 0 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => detail.setShowAddTeethModal(true)}
-                  className="text-xs sm:text-sm border-primary/50 text-primary hover:bg-primary/5"
-                >
-                  <Plus className="w-4 h-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Adicionar mais dentes</span>
-                  <span className="sm:hidden">Adicionar</span>
-                  <Badge variant="secondary" className="ml-1.5 text-xs">
-                    {detail.pendingTeeth.length}
-                  </Badge>
-                </Button>
-              )}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={detail.handleMarkAllAsCompleted}
-                disabled={detail.completedCount === detail.evaluations.length}
-                className="text-xs sm:text-sm"
-              >
-                <CheckCircle className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Marcar todos como concluídos</span>
-                <span className="sm:hidden">Concluir todos</span>
-              </Button>
-            </div>
-
+          ),
+        }}
+      >
+        {() => (
+          <>
             {/* Cases Table - Desktop */}
             <Card className="hidden sm:block">
               <CardHeader>
@@ -391,6 +326,8 @@ export default function EvaluationDetails() {
             </div>
           </>
         )}
+      </DetailPage>
+      </div>
 
       {/* Add Teeth Modal */}
       {detail.evaluations.length > 0 && detail.patientDataForModal && (
@@ -427,6 +364,6 @@ export default function EvaluationDetails() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </>
   );
 }
