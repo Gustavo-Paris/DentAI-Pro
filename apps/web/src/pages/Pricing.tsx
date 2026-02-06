@@ -1,22 +1,33 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { CheckCircle2 } from 'lucide-react';
 import { PricingSection } from '@/components/pricing/PricingSection';
+import { PlanComparisonTable } from '@/components/pricing/PlanComparisonTable';
 import { useSubscription } from '@/hooks/useSubscription';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 export default function Pricing() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { refreshSubscription } = useSubscription();
+  const [showSuccess, setShowSuccess] = useState(false);
 
   // Handle redirect from Stripe
   useEffect(() => {
     const status = searchParams.get('subscription');
 
     if (status === 'success') {
-      toast.success('Assinatura ativada com sucesso!');
+      setShowSuccess(true);
       // Sync subscription from Stripe with retry (bypasses webhook timing issues)
       const syncWithRetry = async (attempts = 3, delay = 2000) => {
         for (let i = 0; i < attempts; i++) {
@@ -36,14 +47,33 @@ export default function Pricing() {
       syncWithRetry();
       navigate('/pricing', { replace: true });
     } else if (status === 'canceled') {
-      toast.info('Checkout cancelado');
       navigate('/pricing', { replace: true });
     }
   }, [searchParams, navigate, refreshSubscription]);
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-12">
       <PricingSection />
+      <PlanComparisonTable />
+
+      <Dialog open={showSuccess} onOpenChange={setShowSuccess}>
+        <DialogContent className="sm:max-w-md text-center">
+          <DialogHeader className="items-center">
+            <div className="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-950/40">
+              <CheckCircle2 className="h-10 w-10 text-green-600 dark:text-green-400" />
+            </div>
+            <DialogTitle className="text-xl font-display">Assinatura ativada!</DialogTitle>
+            <DialogDescription>
+              Seu plano foi ativado com sucesso. Agora você tem acesso a todos os recursos inclusos.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="sm:justify-center">
+            <Button onClick={() => { setShowSuccess(false); navigate('/dashboard'); }}>
+              Ir para o Dashboard
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -2,9 +2,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
-import { subscriptions } from '@/data';
+import { subscriptions, creditUsage } from '@/data';
 
 export type { SubscriptionPlan, Subscription, CreditCost } from '@/data/subscriptions';
+export type { CreditUsageRecord } from '@/data/credit-usage';
 
 // Default credit costs (fallback if DB not available)
 const DEFAULT_CREDIT_COSTS: Record<string, number> = {
@@ -72,6 +73,16 @@ export function useSubscription() {
     },
   });
 
+  // Fetch recent credit usage history
+  const creditUsageQuery = useQuery({
+    queryKey: ['credit-usage', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      return creditUsage.listByUserId(user.id, { limit: 20 });
+    },
+    enabled: !!user,
+  });
+
   // Computed values
   const subscription = subscriptionQuery.data;
   const plans = plansQuery.data || [];
@@ -99,6 +110,29 @@ export function useSubscription() {
   const creditsTotal = creditsPerMonth + creditsRollover;
   const creditsRemaining = Math.max(0, creditsTotal - creditsUsed);
   const creditsPercentUsed = creditsTotal > 0 ? (creditsUsed / creditsTotal) * 100 : 0;
+
+  // Estimate days remaining based on average daily usage (last 30 days)
+  const creditUsageHistory = creditUsageQuery.data || [];
+  const isCreditUsageLoading = creditUsageQuery.isLoading;
+
+  const estimatedDaysRemaining: number | null = (() => {
+    if (creditUsageHistory.length === 0 || creditsRemaining <= 0) return null;
+
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const recentEntries = creditUsageHistory.filter(
+      (entry) => new Date(entry.created_at) >= thirtyDaysAgo,
+    );
+
+    if (recentEntries.length === 0) return null;
+
+    const totalUsed = recentEntries.reduce((sum, entry) => sum + entry.credits_used, 0);
+    const avgPerDay = totalUsed / 30;
+
+    if (avgPerDay <= 0) return null;
+    return Math.floor(creditsRemaining / avgPerDay);
+  })();
 
   // Get cost for an operation
   const getCreditCost = (operation: string): number => {
@@ -151,6 +185,11 @@ export function useSubscription() {
     creditsPercentUsed,
     getCreditCost,
     canUseCredits,
+
+    // Credit usage history
+    creditUsageHistory,
+    isCreditUsageLoading,
+    estimatedDaysRemaining,
 
     // Legacy usage (backwards compatibility)
     casesLimit,

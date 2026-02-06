@@ -29,3 +29,15 @@ verify_jwt = false
 
 [functions.recommend-cementation]
 verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.create-checkout-session]
+verify_jwt = false
+
+[functions.create-portal-session]
+verify_jwt = false
+
+[functions.sync-subscription]
+verify_jwt = false

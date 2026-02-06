@@ -12,6 +12,8 @@ interface PricingCardProps {
   onSelect: (priceId: string) => void;
   isLoading?: boolean;
   disabled?: boolean;
+  currentPlanSortOrder?: number;
+  billingPeriod?: 'monthly' | 'yearly';
 }
 
 export function PricingCard({
@@ -21,14 +23,20 @@ export function PricingCard({
   onSelect,
   isLoading = false,
   disabled = false,
+  currentPlanSortOrder,
+  billingPeriod = 'monthly',
 }: PricingCardProps) {
   const isFree = plan.price_monthly === 0;
   const features = Array.isArray(plan.features) ? plan.features : JSON.parse(plan.features as unknown as string);
+  const isDowngrade = currentPlanSortOrder !== undefined && plan.sort_order < currentPlanSortOrder;
+  const isUpgrade = currentPlanSortOrder !== undefined && plan.sort_order > currentPlanSortOrder;
+  const displayPrice = billingPeriod === 'yearly' && plan.price_yearly ? plan.price_yearly : plan.price_monthly;
+  const isYearly = billingPeriod === 'yearly' && !!plan.price_yearly;
 
   return (
     <Card
       className={cn(
-        'relative flex flex-col',
+        'relative flex flex-col h-full',
         isPopular && 'border-primary shadow-lg scale-105',
         isCurrentPlan && 'border-green-500 dark:border-green-400'
       )}
@@ -55,11 +63,16 @@ export function PricingCard({
         <div className="text-center mb-4">
           <div className="flex items-baseline justify-center gap-1">
             <span className="text-4xl font-semibold">
-              {isFree ? 'Grátis' : formatPrice(plan.price_monthly)}
+              {isFree ? 'Grátis' : formatPrice(isYearly ? Math.round(displayPrice / 12) : displayPrice)}
             </span>
             {!isFree && <span className="text-muted-foreground">/mês</span>}
           </div>
-          {plan.price_yearly && (
+          {!isFree && isYearly && (
+            <p className="text-sm text-muted-foreground mt-1">
+              Cobrado {formatPrice(displayPrice)}/ano
+            </p>
+          )}
+          {!isFree && !isYearly && plan.price_yearly && (
             <p className="text-sm text-muted-foreground mt-1">
               ou {formatPrice(plan.price_yearly)}/ano (economia de 16%)
             </p>
@@ -107,7 +120,7 @@ export function PricingCard({
       <CardFooter>
         <Button
           className="w-full"
-          variant={isPopular ? 'default' : 'outline'}
+          variant={isCurrentPlan ? 'outline' : isPopular ? 'default' : 'outline'}
           onClick={() => onSelect(plan.id)}
           disabled={disabled || isLoading || isCurrentPlan || isFree}
         >
@@ -120,6 +133,10 @@ export function PricingCard({
             'Plano Atual'
           ) : isFree ? (
             'Plano Gratuito'
+          ) : isDowngrade ? (
+            'Alterar Plano'
+          ) : isUpgrade ? (
+            'Fazer Upgrade'
           ) : (
             'Assinar Agora'
           )}
