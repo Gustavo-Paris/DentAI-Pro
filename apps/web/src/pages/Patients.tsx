@@ -3,7 +3,7 @@ import { ListPage } from '@pageshell/composites/list';
 import { usePatientList } from '@/hooks/domain/usePatientList';
 import type { PatientWithStats } from '@/hooks/domain/usePatientList';
 import { Card } from '@/components/ui/card';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, AlertTriangle } from 'lucide-react';
 import { getInitials } from '@/lib/utils';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -60,7 +60,21 @@ function PatientCard({ patient, index }: { patient: PatientWithStats; index: num
 // =============================================================================
 
 export default function Patients() {
-  const { patients, total, isLoading } = usePatientList();
+  const { patients, total, isLoading, isError } = usePatientList();
+
+  if (isError) {
+    return (
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <Card className="p-6 text-center">
+          <AlertTriangle className="w-8 h-8 text-destructive mx-auto mb-3" />
+          <p className="font-medium">Erro ao carregar pacientes</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Tente recarregar a página. Se o problema persistir, entre em contato com o suporte.
+          </p>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">

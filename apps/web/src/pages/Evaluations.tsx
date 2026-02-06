@@ -5,7 +5,7 @@ import { useEvaluationSessions } from '@/hooks/domain/useEvaluationSessions';
 import type { EvaluationSession } from '@/hooks/domain/useEvaluationSessions';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { CheckCircle, ChevronRight, Calendar } from 'lucide-react';
+import { CheckCircle, ChevronRight, Calendar, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -103,7 +103,7 @@ function SessionCard({
 // =============================================================================
 
 export default function Evaluations() {
-  const { sessions, total, isLoading, newSessionId, newTeethCount } =
+  const { sessions, total, isLoading, isError, newSessionId, newTeethCount } =
     useEvaluationSessions();
 
   // Clear navigation state after viewing
@@ -112,6 +112,20 @@ export default function Evaluations() {
       window.history.replaceState({}, document.title);
     }
   }, [newSessionId]);
+
+  if (isError) {
+    return (
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <Card className="p-6 text-center">
+          <AlertTriangle className="w-8 h-8 text-destructive mx-auto mb-3" />
+          <p className="font-medium">Erro ao carregar avaliações</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Tente recarregar a página. Se o problema persistir, entre em contato com o suporte.
+          </p>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
