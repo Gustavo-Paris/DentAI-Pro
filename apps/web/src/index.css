@@ -3,134 +3,150 @@
 @tailwind components;
 @tailwind utilities;
 
-/* AURIA Design System — warm gold + clinical neutrals in HSL */
+/* AURIA Design System — "Clinical Intelligence"
+ *
+ * Primary: Indigo (#5E6AD2 family) — clinical trust + AI innovation
+ * Brand accent: Gold — ONLY for AURIA wordmark and premium CTAs
+ * Surfaces: Pure neutrals, slight cool undertone
+ * Dark-first: deep charcoal is the hero experience
+ */
 
 @layer base {
   :root {
-    --background: 45 14% 98%;
-    --foreground: 30 15% 10%;
+    --background: 0 0% 99%;
+    --foreground: 224 10% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 30 15% 10%;
+    --card-foreground: 224 10% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 30 15% 10%;
+    --popover-foreground: 224 10% 12%;
 
-    --primary: 42 52% 48%;
+    --primary: 235 56% 58%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 40 12% 94%;
-    --secondary-foreground: 30 15% 20%;
+    --secondary: 220 14% 94%;
+    --secondary-foreground: 224 10% 18%;
 
-    --muted: 40 12% 94%;
-    --muted-foreground: 30 8% 46%;
+    --muted: 220 12% 94%;
+    --muted-foreground: 220 6% 44%;
 
-    --accent: 40 12% 94%;
-    --accent-foreground: 30 15% 20%;
+    --accent: 220 14% 94%;
+    --accent-foreground: 224 10% 18%;
 
-    --destructive: 0 65% 48%;
+    --destructive: 0 68% 50%;
     --destructive-foreground: 0 0% 100%;
 
     --warning: 38 92% 50%;
     --warning-foreground: 38 92% 15%;
 
-    --border: 38 15% 88%;
-    --input: 38 15% 88%;
-    --ring: 42 52% 48%;
+    --border: 220 12% 90%;
+    --input: 220 10% 91%;
+    --ring: 235 56% 58%;
 
     --radius: 0.625rem;
 
-    --sidebar-background: 40 14% 96%;
-    --sidebar-foreground: 30 15% 10%;
-    --sidebar-primary: 42 52% 48%;
+    --sidebar-background: 220 14% 97%;
+    --sidebar-foreground: 224 10% 12%;
+    --sidebar-primary: 235 56% 58%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 40 12% 94%;
-    --sidebar-accent-foreground: 30 15% 20%;
-    --sidebar-border: 38 15% 88%;
-    --sidebar-ring: 42 52% 48%;
+    --sidebar-accent: 220 14% 94%;
+    --sidebar-accent-foreground: 224 10% 18%;
+    --sidebar-border: 220 12% 90%;
+    --sidebar-ring: 235 56% 58%;
 
-    --chart-1: 42 52% 48%;
-    --chart-2: 160 45% 42%;
-    --chart-3: 30 40% 55%;
-    --chart-4: 200 35% 50%;
-    --chart-5: 15 50% 55%;
+    --chart-1: 235 56% 58%;
+    --chart-2: 168 50% 42%;
+    --chart-3: 24 75% 50%;
+    --chart-4: 198 60% 48%;
+    --chart-5: 340 55% 52%;
 
-    --sidebar: 40 14% 96%;
+    --sidebar: 220 14% 97%;
+
+    /* Brand gold — used ONLY for AURIA wordmark + premium CTAs */
+    --brand-gold: 38 58% 52%;
+    --brand-gold-light: 36 65% 60%;
 
     --font-sans: 'DM Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
     --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
     --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
-    --shadow-2xs: 0 1px 3px 0px hsl(30 10% 10% / 0.04);
-    --shadow-xs: 0 1px 3px 0px hsl(30 10% 10% / 0.05);
-    --shadow-sm: 0 1px 3px 0px hsl(30 10% 10% / 0.08), 0 1px 2px -1px hsl(30 10% 10% / 0.08);
-    --shadow: 0 1px 3px 0px hsl(30 10% 10% / 0.08), 0 1px 2px -1px hsl(30 10% 10% / 0.08);
-    --shadow-md: 0 1px 3px 0px hsl(30 10% 10% / 0.08), 0 2px 4px -1px hsl(30 10% 10% / 0.08);
-    --shadow-lg: 0 1px 3px 0px hsl(30 10% 10% / 0.08), 0 4px 6px -1px hsl(30 10% 10% / 0.08);
-    --shadow-xl: 0 1px 3px 0px hsl(30 10% 10% / 0.08), 0 8px 10px -1px hsl(30 10% 10% / 0.08);
-    --shadow-2xl: 0 1px 3px 0px hsl(30 10% 10% / 0.2);
+    --shadow-2xs: 0 1px 2px 0px hsl(220 10% 20% / 0.03);
+    --shadow-xs: 0 1px 3px 0px hsl(220 10% 20% / 0.05);
+    --shadow-sm: 0 1px 3px 0px hsl(220 10% 20% / 0.07), 0 1px 2px -1px hsl(220 10% 20% / 0.05);
+    --shadow: 0 2px 4px 0px hsl(220 10% 20% / 0.07), 0 1px 2px -1px hsl(220 10% 20% / 0.05);
+    --shadow-md: 0 4px 8px -1px hsl(220 10% 20% / 0.09), 0 2px 4px -2px hsl(220 10% 20% / 0.05);
+    --shadow-lg: 0 8px 16px -2px hsl(220 10% 20% / 0.09), 0 4px 6px -2px hsl(220 10% 20% / 0.04);
+    --shadow-xl: 0 16px 32px -4px hsl(220 10% 20% / 0.11), 0 8px 12px -4px hsl(220 10% 20% / 0.05);
+    --shadow-2xl: 0 24px 48px -8px hsl(220 10% 20% / 0.16);
 
     --tracking-normal: 0em;
     --spacing: 0.25rem;
   }
 
   .dark {
-    --background: 30 10% 7%;
-    --foreground: 38 14% 94%;
+    /* Dark-first: deep charcoal, zero color cast */
+    --background: 228 8% 7%;
+    --foreground: 220 6% 93%;
 
-    --card: 30 10% 10%;
-    --card-foreground: 38 14% 94%;
+    --card: 228 6% 11%;
+    --card-foreground: 220 6% 93%;
 
-    --popover: 30 10% 10%;
-    --popover-foreground: 38 14% 94%;
+    --popover: 228 6% 11%;
+    --popover-foreground: 220 6% 93%;
 
-    --primary: 42 55% 56%;
-    --primary-foreground: 30 15% 7%;
+    /* Indigo lifted for dark — brighter to read on dark surfaces */
+    --primary: 235 60% 68%;
+    --primary-foreground: 228 8% 6%;
 
-    --secondary: 30 8% 16%;
-    --secondary-foreground: 38 14% 94%;
+    --secondary: 228 5% 15%;
+    --secondary-foreground: 220 6% 93%;
 
-    --muted: 30 8% 16%;
-    --muted-foreground: 30 10% 55%;
+    --muted: 228 5% 15%;
+    --muted-foreground: 220 4% 52%;
 
-    --accent: 30 8% 16%;
-    --accent-foreground: 38 14% 94%;
+    --accent: 228 5% 17%;
+    --accent-foreground: 220 6% 93%;
 
-    --destructive: 0 55% 52%;
+    --destructive: 0 60% 58%;
     --destructive-foreground: 0 0% 100%;
 
     --warning: 38 92% 50%;
     --warning-foreground: 38 92% 90%;
 
-    --border: 30 8% 18%;
-    --input: 30 8% 20%;
-    --ring: 42 55% 56%;
+    --border: 228 5% 18%;
+    --input: 228 5% 20%;
+    --ring: 235 60% 68%;
 
-    --sidebar-background: 30 10% 6%;
-    --sidebar-foreground: 38 14% 94%;
-    --sidebar-primary: 42 55% 56%;
-    --sidebar-primary-foreground: 30 15% 7%;
-    --sidebar-accent: 30 8% 16%;
-    --sidebar-accent-foreground: 38 14% 94%;
-    --sidebar-border: 30 8% 18%;
-    --sidebar-ring: 42 55% 56%;
+    --sidebar-background: 228 8% 6%;
+    --sidebar-foreground: 220 6% 93%;
+    --sidebar-primary: 235 60% 68%;
+    --sidebar-primary-foreground: 228 8% 6%;
+    --sidebar-accent: 228 5% 15%;
+    --sidebar-accent-foreground: 220 6% 93%;
+    --sidebar-border: 228 5% 18%;
+    --sidebar-ring: 235 60% 68%;
 
-    --chart-1: 42 55% 56%;
-    --chart-2: 160 40% 50%;
-    --chart-3: 30 35% 60%;
-    --chart-4: 200 30% 55%;
-    --chart-5: 15 45% 60%;
+    --chart-1: 235 60% 68%;
+    --chart-2: 168 45% 52%;
+    --chart-3: 24 65% 60%;
+    --chart-4: 198 55% 56%;
+    --chart-5: 340 50% 60%;
 
-    --sidebar: 30 10% 10%;
+    --sidebar: 228 6% 11%;
 
-    --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.15);
-    --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.15);
-    --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.2), 0 1px 2px -1px hsl(0 0% 0% / 0.2);
-    --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.2), 0 1px 2px -1px hsl(0 0% 0% / 0.2);
-    --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.2), 0 2px 4px -1px hsl(0 0% 0% / 0.2);
-    --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.2), 0 4px 6px -1px hsl(0 0% 0% / 0.2);
-    --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.2), 0 8px 10px -1px hsl(0 0% 0% / 0.2);
-    --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.35);
+    /* Brand gold — warm on dark for contrast */
+    --brand-gold: 38 65% 58%;
+    --brand-gold-light: 36 72% 66%;
+
+    --shadow-2xs: 0 1px 2px 0px hsl(0 0% 0% / 0.18);
+    --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.20);
+    --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.22), 0 1px 2px -1px hsl(0 0% 0% / 0.18);
+    --shadow: 0 2px 4px 0px hsl(0 0% 0% / 0.22), 0 1px 2px -1px hsl(0 0% 0% / 0.18);
+    --shadow-md: 0 4px 8px -1px hsl(0 0% 0% / 0.28), 0 2px 4px -2px hsl(0 0% 0% / 0.18);
+    --shadow-lg: 0 8px 16px -2px hsl(0 0% 0% / 0.28), 0 4px 6px -2px hsl(0 0% 0% / 0.18);
+    --shadow-xl: 0 16px 32px -4px hsl(0 0% 0% / 0.32), 0 8px 12px -4px hsl(0 0% 0% / 0.20);
+    --shadow-2xl: 0 24px 48px -8px hsl(0 0% 0% / 0.42);
   }
 }
 
@@ -186,8 +202,8 @@
 }
 
 @keyframes badge-pulse-ring {
-  0%, 100% { box-shadow: 0 0 0 0 hsl(42 52% 48% / 0.4); }
-  50%      { box-shadow: 0 0 0 8px hsl(42 52% 48% / 0); }
+  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.35); }
+  50%      { box-shadow: 0 0 0 8px hsl(var(--primary) / 0); }
 }
 
 @keyframes float {
@@ -254,26 +270,25 @@
   background-size: 128px 128px;
 }
 
+/* Gold gradient — BRAND ONLY: AURIA wordmark, premium moments */
 .text-gradient-gold {
-  background: linear-gradient(135deg, hsl(42 52% 48%), hsl(38 60% 58%), hsl(42 52% 48%));
+  background: linear-gradient(135deg, hsl(var(--brand-gold)), hsl(var(--brand-gold-light)), hsl(var(--brand-gold)));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-.dark .text-gradient-gold {
-  background: linear-gradient(135deg, hsl(42 55% 56%), hsl(38 65% 66%), hsl(42 55% 56%));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
+/* Primary glow — indigo-based for all functional buttons */
 .btn-glow-gold {
   transition: box-shadow 0.3s ease, transform 0.15s ease;
 }
 
 .btn-glow-gold:hover {
-  box-shadow: 0 0 20px hsl(42 52% 48% / 0.3), 0 0 40px hsl(42 52% 48% / 0.1);
+  box-shadow: 0 0 20px hsl(235 56% 58% / 0.30), 0 0 40px hsl(235 56% 58% / 0.10);
+}
+
+.dark .btn-glow-gold:hover {
+  box-shadow: 0 0 24px hsl(235 60% 68% / 0.25), 0 0 48px hsl(235 60% 68% / 0.08);
 }
 
 .btn-glow-gold:active {
@@ -291,11 +306,124 @@
   top: 0;
   bottom: 0;
   width: 2px;
-  background: linear-gradient(to bottom, hsl(42 52% 48% / 0.3), hsl(42 52% 48% / 0.05));
+  background: linear-gradient(to bottom, hsl(var(--primary) / 0.3), hsl(var(--primary) / 0.05));
 }
 
 @media (min-width: 640px) {
   .timeline-line::before {
     left: 24px;
   }
+}
+
+/* ─── Wizard: Scan-line animation (Step 3 photo overlay) ─── */
+
+@keyframes scan-line {
+  0%   { top: -4px; opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { top: calc(100% - 4px); opacity: 0; }
+}
+
+.scan-line-animation {
+  position: relative;
+  overflow: hidden;
+}
+
+.scan-line-animation::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.8), transparent);
+  border-radius: 2px;
+  box-shadow: 0 0 16px 4px hsl(var(--primary) / 0.25);
+  animation: scan-line 2.5s ease-in-out infinite;
+}
+
+/* ─── Wizard: Progress bar with primary shimmer ─── */
+
+.progress-gold {
+  position: relative;
+  overflow: hidden;
+  background: hsl(var(--muted));
+  border-radius: 9999px;
+}
+
+.progress-gold > div {
+  background: linear-gradient(90deg, hsl(var(--primary)), hsl(235 60% 65%), hsl(var(--primary)));
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}
+
+.progress-gold::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 30%, hsl(0 0% 100% / 0.25) 50%, transparent 70%);
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+/* ─── Wizard: Step enter transition ─── */
+
+.wizard-step-enter {
+  animation: fade-in-up 0.4s ease-out;
+}
+
+/* ─── Wizard: Sticky mobile navigation ─── */
+
+.wizard-nav-sticky {
+  position: relative;
+}
+
+@media (max-width: 639px) {
+  .wizard-nav-sticky {
+    position: sticky;
+    bottom: 0;
+    z-index: 40;
+    background: hsl(var(--background) / 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    border-top: 1px solid hsl(var(--border));
+    margin-left: -1rem;
+    margin-right: -1rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* ─── Wizard: Stepper connector ─── */
+
+.stepper-connector-gold {
+  height: 2px;
+  background: linear-gradient(90deg, hsl(var(--primary) / 0.35), hsl(var(--primary) / 0.12));
+  border-radius: 1px;
+}
+
+.stepper-connector-gold.completed {
+  background: linear-gradient(90deg, hsl(var(--primary)), hsl(235 60% 65%));
+}
+
+/* ─── Wizard: Vignette overlay for photo analysis ─── */
+
+.vignette-overlay {
+  position: relative;
+}
+
+.vignette-overlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle, transparent 40%, hsl(var(--background)) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scan-line-animation::after { animation: none; opacity: 0; }
+  .progress-gold::after { animation: none; }
+  .wizard-step-enter { animation: none; }
 }

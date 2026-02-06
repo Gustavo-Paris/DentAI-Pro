@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Smile, Loader2, RefreshCw, ChevronRight, Lightbulb, AlertCircle, Zap } from 'lucide-react';
+import { Smile, Loader2, RefreshCw, ChevronRight, Lightbulb, AlertCircle, Zap, ArrowRight, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSubscription } from '@/hooks/useSubscription';
 import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
@@ -587,7 +587,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
     }));
   }, [currentStep]);
 
-  // Loading state - now uses LoadingOverlay
+  // Loading state — inline card with timeline
   if (isAnalyzing) {
     return (
       <>
@@ -596,28 +596,58 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
           message="Analisando proporções do sorriso"
           steps={loadingSteps}
         />
-        <div className="flex flex-col items-center justify-center py-12 space-y-4">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-64 w-full" />
-          <p className="text-xs text-muted-foreground">Powered by Gemini Vision</p>
+        <div className="space-y-6">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold font-display mb-2 text-gradient-gold">Planejamento Digital do Sorriso</h2>
+            <p className="text-muted-foreground">Analisando proporções e simetria facial</p>
+          </div>
+
+          {/* Inline photo + gold border loading card */}
+          {imageBase64 && (
+            <Card className="card-elevated border-primary/30 overflow-hidden">
+              <CardContent className="p-0">
+                <div className="relative scan-line-animation">
+                  <img src={imageBase64} alt="Foto sendo analisada" className="w-full max-h-[300px] object-contain" />
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Timeline checklist */}
+          <div className="timeline-line pl-2 space-y-3">
+            {analysisSteps.map((step, index) => {
+              const isCompleted = index < currentStep;
+              const isActive = index === currentStep;
+              return (
+                <div key={index} className={`flex items-center gap-3 transition-opacity ${isActive || isCompleted ? 'opacity-100' : 'opacity-30'}`}>
+                  <div className={`relative z-10 w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
+                    isCompleted ? 'bg-primary text-primary-foreground' : isActive ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'
+                  }`}>
+                    {isCompleted ? <Check className="w-3.5 h-3.5 animate-scale-in" /> : isActive ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <span className="text-[10px]">{index + 1}</span>}
+                  </div>
+                  <span className={`text-sm ${isCompleted || isActive ? 'text-foreground' : 'text-muted-foreground'}`}>{step.label}</span>
+                </div>
+              );
+            })}
+          </div>
+
+          <p className="text-xs text-muted-foreground text-center">~15-25 segundos</p>
         </div>
       </>
     );
   }
 
-  // Error state
+  // Error state — amber-themed with contextual hints
   if (error) {
     const isCreditError = error.includes('Créditos insuficientes');
     return (
       <div className="space-y-6">
         <div className="text-center">
-          <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
-            isCreditError ? 'bg-amber-100 dark:bg-amber-950/30' : 'bg-destructive/10 dark:bg-destructive/20'
-          }`}>
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-amber-100 dark:bg-amber-950/30 flex items-center justify-center">
             {isCreditError ? (
-              <Zap className="w-8 h-8 text-amber-600" />
+              <Zap className="w-8 h-8 text-amber-600 dark:text-amber-400" />
             ) : (
-              <AlertCircle className="w-8 h-8 text-destructive" />
+              <AlertCircle className="w-8 h-8 text-amber-600 dark:text-amber-400" />
             )}
           </div>
           <h2 className="text-xl font-semibold font-display mb-2">
@@ -626,22 +656,34 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
           <p className="text-muted-foreground">{error}</p>
         </div>
 
+        {/* Contextual hint */}
+        {!isCreditError && (
+          <div className="border-l-4 border-amber-500 bg-amber-50/50 dark:bg-amber-950/20 rounded-r-lg p-4">
+            <div className="flex items-start gap-3">
+              <Lightbulb className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+              <p className="text-sm text-amber-700 dark:text-amber-300">
+                Fotos frontais com boa iluminação e sorriso aberto geram melhores resultados na análise de proporções.
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           {isCreditError ? (
-            <Button onClick={() => window.location.href = '/pricing'}>
+            <Button onClick={() => window.location.href = '/pricing'} className="btn-glow-gold btn-press font-semibold">
               <Zap className="w-4 h-4 mr-2" />
               Ver Planos
             </Button>
           ) : (
-            <Button variant="outline" onClick={handleRetry}>
-              <RefreshCw className="w-4 h-4 mr-2" />
+            <Button onClick={handleRetry} className="gap-2 btn-glow-gold btn-press font-semibold">
+              <RefreshCw className="w-4 h-4" />
               Tentar novamente
               <span className="inline-flex items-center gap-0.5 text-xs opacity-60 ml-1">
                 <Zap className="w-3 h-3" />2
               </span>
             </Button>
           )}
-          <Button variant={isCreditError ? 'outline' : 'default'} onClick={onSkip}>
+          <Button variant="outline" onClick={onSkip} className="btn-press border-primary/30 hover:border-primary/50">
             Pular DSD
             <ChevronRight className="w-4 h-4 ml-2" />
           </Button>
@@ -673,13 +715,13 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
             <Smile className="w-8 h-8 text-primary" />
           </div>
-          <h2 className="text-xl font-semibold font-display mb-2">Planejamento Digital do Sorriso</h2>
+          <h2 className="text-xl font-semibold font-display mb-2 text-gradient-gold">Planejamento Digital do Sorriso</h2>
           <div className="flex items-center justify-center gap-2">
-            <Badge 
+            <Badge
               variant={analysis.confidence === 'alta' ? 'default' : analysis.confidence === 'média' ? 'secondary' : 'outline'}
               className={
                 analysis.confidence === 'alta'
-                  ? 'bg-emerald-500'
+                  ? 'bg-primary text-primary-foreground'
                   : analysis.confidence === 'baixa'
                     ? 'border-amber-500 text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30'
                     : ''
@@ -921,16 +963,16 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
 
         {/* Action buttons */}
         <div className="flex flex-col sm:flex-row gap-3 pt-4">
-          <Button variant="outline" onClick={handleRetry} className="sm:flex-1">
+          <Button variant="outline" onClick={handleRetry} className="sm:flex-1 btn-press">
             <RefreshCw className="w-4 h-4 mr-2" />
             Refazer Análise
             <span className="inline-flex items-center gap-0.5 text-xs opacity-60 ml-1">
               <Zap className="w-3 h-3" />2
             </span>
           </Button>
-          <Button onClick={handleContinue} className="sm:flex-1">
+          <Button onClick={handleContinue} className="sm:flex-1 btn-glow-gold btn-press font-semibold group">
             Continuar para Revisão
-            <ChevronRight className="w-4 h-4 ml-2" />
+            <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
           </Button>
         </div>
       </div>

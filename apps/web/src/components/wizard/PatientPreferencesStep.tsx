@@ -22,6 +22,8 @@ const WHITENING_OPTIONS: {
   description: string;
   shade: string;
   icon: typeof Sun;
+  swatchGradient: string;
+  swatchGradientSelected: string;
 }[] = [
   {
     value: 'natural',
@@ -29,6 +31,8 @@ const WHITENING_OPTIONS: {
     description: 'Clareamento sutil, aparência discreta',
     shade: 'A1 / A2',
     icon: Sun,
+    swatchGradient: 'bg-gradient-to-r from-amber-200 to-amber-100',
+    swatchGradientSelected: 'bg-gradient-to-r from-amber-300 to-amber-200',
   },
   {
     value: 'white',
@@ -36,6 +40,8 @@ const WHITENING_OPTIONS: {
     description: 'Clareamento notável, resultado evidente',
     shade: 'BL2 / BL3',
     icon: Zap,
+    swatchGradient: 'bg-gradient-to-r from-gray-200 to-white',
+    swatchGradientSelected: 'bg-gradient-to-r from-gray-300 to-gray-100',
   },
   {
     value: 'hollywood',
@@ -43,6 +49,8 @@ const WHITENING_OPTIONS: {
     description: 'Clareamento intenso, sorriso de celebridade',
     shade: 'BL1',
     icon: Star,
+    swatchGradient: 'bg-gradient-to-r from-white to-blue-50',
+    swatchGradientSelected: 'bg-gradient-to-r from-white via-blue-50 to-blue-100',
   },
 ];
 
@@ -61,7 +69,7 @@ export function PatientPreferencesStep({
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      <Card className="border-primary/20">
+      <Card className="card-elevated border-primary/20">
         <CardHeader className="text-center pb-4">
           <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
             <Sparkles className="w-6 h-6 text-primary" />
@@ -71,76 +79,89 @@ export function PatientPreferencesStep({
             Escolha o tom desejado para a simulação do sorriso
           </CardDescription>
         </CardHeader>
-        
+
         <CardContent className="space-y-6">
-          {/* Whitening Level Cards */}
+          {/* Whitening Level Cards with Color Swatches */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {WHITENING_OPTIONS.map((option) => {
               const Icon = option.icon;
               const isSelected = preferences.whiteningLevel === option.value;
-              
+
               return (
                 <button
                   key={option.value}
                   type="button"
                   onClick={() => handleSelect(option.value)}
                   className={cn(
-                    "relative flex flex-col items-center p-4 rounded-xl border-2 transition-all duration-200",
-                    "hover:border-primary/50 hover:bg-primary/5",
-                    "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                    isSelected 
-                      ? "border-primary bg-primary/10 shadow-md" 
-                      : "border-border bg-card"
+                    'relative flex flex-col items-center rounded-xl border-2 transition-all duration-200 overflow-hidden btn-press',
+                    'hover:border-primary/50 hover:bg-primary/5',
+                    'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                    isSelected
+                      ? 'border-primary card-elevated shadow-md ring-2 ring-primary/20'
+                      : 'border-border bg-card'
                   )}
                 >
-                  {/* Selected indicator */}
-                  {isSelected && (
-                    <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                      <Check className="w-3 h-3 text-primary-foreground" />
+                  {/* Color swatch bar at top */}
+                  <div
+                    className={cn(
+                      'w-full transition-all duration-200',
+                      isSelected ? 'h-2' : 'h-1',
+                      isSelected ? option.swatchGradientSelected : option.swatchGradient,
+                    )}
+                  />
+
+                  <div className="p-4 flex flex-col items-center">
+                    {/* Selected indicator */}
+                    {isSelected && (
+                      <div className="absolute top-3 right-2 w-5 h-5 rounded-full bg-primary flex items-center justify-center animate-scale-in">
+                        <Check className="w-3 h-3 text-primary-foreground" />
+                      </div>
+                    )}
+
+                    {/* Icon */}
+                    <div className={cn(
+                      'w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-colors',
+                      isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                    )}>
+                      <Icon className="w-6 h-6" />
                     </div>
-                  )}
-                  
-                  {/* Icon */}
-                  <div className={cn(
-                    "w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-colors",
-                    isSelected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                  )}>
-                    <Icon className="w-6 h-6" />
+
+                    {/* Label */}
+                    <h3 className={cn(
+                      'font-semibold text-base mb-1',
+                      isSelected ? 'text-primary' : 'text-foreground'
+                    )}>
+                      {option.label}
+                    </h3>
+
+                    {/* Shade badge */}
+                    <span className={cn(
+                      'text-xs font-medium px-2 py-0.5 rounded-full mb-2',
+                      isSelected
+                        ? 'bg-primary/20 text-primary'
+                        : 'bg-muted text-muted-foreground'
+                    )}>
+                      {option.shade}
+                    </span>
+
+                    {/* Description */}
+                    <p className="text-xs text-muted-foreground text-center">
+                      {option.description}
+                    </p>
                   </div>
-                  
-                  {/* Label */}
-                  <h3 className={cn(
-                    "font-semibold text-base mb-1",
-                    isSelected ? "text-primary" : "text-foreground"
-                  )}>
-                    {option.label}
-                  </h3>
-                  
-                  {/* Shade badge */}
-                  <span className={cn(
-                    "text-xs font-medium px-2 py-0.5 rounded-full mb-2",
-                    isSelected 
-                      ? "bg-primary/20 text-primary" 
-                      : "bg-muted text-muted-foreground"
-                  )}>
-                    {option.shade}
-                  </span>
-                  
-                  {/* Description */}
-                  <p className="text-xs text-muted-foreground text-center">
-                    {option.description}
-                  </p>
                 </button>
               );
             })}
           </div>
 
-          {/* Credit cost disclosure */}
-          <div className="rounded-lg border border-border bg-muted/30 p-3">
+          {/* Credit cost disclosure — Premium */}
+          <div className="bg-gradient-to-r from-primary/5 to-accent/5 border border-primary/20 rounded-xl p-3">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Zap className="w-4 h-4 text-primary shrink-0" />
               <span>
-                As próximas etapas consumirão <strong className="text-foreground">{totalCost} créditos</strong> (análise + DSD)
+                As próximas etapas consumirão{' '}
+                <strong className="text-gradient-gold font-bold">{totalCost} créditos</strong>{' '}
+                (análise + DSD)
               </span>
             </div>
             {!hasEnoughCredits && (
@@ -151,19 +172,19 @@ export function PatientPreferencesStep({
             )}
           </div>
 
-          {/* Continue button */}
-          <div className="pt-2">
+          {/* Continue button — centered, gold glow */}
+          <div className="pt-2 flex justify-center">
             <Button
               onClick={onContinue}
               disabled={creditsRemaining === 0}
-              className="w-full gap-2"
+              className="w-auto min-w-[280px] gap-2 btn-glow-gold btn-press font-semibold group"
               size="lg"
             >
               Continuar com simulação
               <span className="inline-flex items-center gap-0.5 text-xs opacity-80 ml-1">
                 <Zap className="w-3 h-3" />{totalCost}
               </span>
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
         </CardContent>

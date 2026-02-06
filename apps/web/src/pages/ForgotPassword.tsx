@@ -39,9 +39,9 @@ export default function ForgotPassword() {
     <div className="min-h-screen bg-background flex">
       {/* Brand panel — desktop only */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden grain-overlay bg-background">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_hsl(42_52%_48%/0.12),_transparent_60%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_hsl(38_60%_58%/0.08),_transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_hsl(42_55%_56%/0.05),_transparent_40%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_hsl(235_56%_58%/0.08),_transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_hsl(235_60%_68%/0.05),_transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_hsl(235_56%_58%/0.03),_transparent_40%)]" />
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle, hsl(var(--foreground)) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
         <div className="relative flex flex-col justify-center px-12 xl:px-16">
           <span className="font-display tracking-[0.2em] text-gradient-gold text-2xl font-semibold mb-6 animate-[fade-in-up_0.6s_ease-out_0.2s_both]">{BRAND_NAME}</span>
