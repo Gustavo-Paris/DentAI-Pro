@@ -59,3 +59,6 @@ docs/.obsidian/
 
 # Deno lockfile
 deno.lock
+
+# QA artifacts
+qa-network-requests.txt
