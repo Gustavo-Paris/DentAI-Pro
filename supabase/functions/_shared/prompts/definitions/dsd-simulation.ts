@@ -136,7 +136,7 @@ function buildBaseCorrections(): string {
   return `CORREÇÕES DENTÁRIAS (manter aparência NATURAL):
 1. Preencher buracos, lascas ou defeitos visíveis nas bordas dos dentes
 2. Remover manchas escuras pontuais (mas manter variação natural de cor)
-3. Fechar pequenos espaços adicionando material MÍNIMO nos pontos de contato - NÃO alargando dentes
+3. Fechar pequenos espaços adicionando material nos pontos de contato (exceção: conoides e shape corrections devem ser aplicados com volume visível)
 4. PRESERVAR mamelons se visíveis (projeções naturais da borda incisal)
 5. MANTER micro-textura natural do esmalte - NÃO deixar dentes "lisos demais"
 6. PRESERVAR translucidez incisal natural - NÃO tornar dentes opacos uniformemente
@@ -150,12 +150,12 @@ SHAPE CORRECTIONS (quando análise sugere):
 }
 
 const PROPORTION_RULES = `PROPORTION RULES:
-- Keep original tooth width proportions exactly
-- NEVER make teeth appear thinner or narrower than original
-- NEVER make teeth appear WIDER or LARGER than original UNLESS the DSD analysis explicitly recommends contour improvement (e.g., conoid laterals, visagism shape change)
-- Only add material to fill defects - do NOT reshape tooth contours unless clinically indicated by analysis
-- Maintain the natural width-to-height ratio of each tooth
-- EXCEPTION: When allowedChangesFromAnalysis includes shape corrections, apply those contour changes`
+- Keep original tooth width proportions for teeth that DON'T need correction
+- For teeth identified in allowedChangesFromAnalysis or with conoid/microdontia diagnosis: APPLY VISIBLE volume increase (at least 15-20% width change for conoid laterals)
+- For dark/old crowns or restorations: REPLACE the color completely to match target whitening level
+- Only add material to fill defects on HEALTHY teeth - reshape contours when clinically indicated by analysis
+- Maintain natural width-to-height ratio EXCEPT when shape correction is prescribed
+- NEVER make teeth appear thinner or narrower than original`
 
 // --- Variant builders ---
 
@@ -205,7 +205,10 @@ ${baseCorrections}
 ${textureInstruction}
 
 RESTORATION FOCUS:
-- Blend interface lines on teeth ${params.restorationTeeth || '11, 21'}
+- For teeth ${params.restorationTeeth || '11, 21'}: REPLACE the restoration/crown color entirely to match surrounding teeth at target whitening level
+- Blend interface lines to be invisible
+- Dark or discolored crowns/restorations must become the SAME shade as adjacent natural teeth after whitening
+- This is the PRIMARY visual change — the color replacement must be CLEARLY VISIBLE in the output
 ${allowedChangesFromAnalysis}
 
 ${PROPORTION_RULES}

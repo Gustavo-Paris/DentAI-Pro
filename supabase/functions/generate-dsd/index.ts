@@ -427,7 +427,7 @@ async function generateSimulation(
         inputBase64Data,
         inputMimeType,
         {
-          temperature: 0.4,
+          temperature: 0.55,
           timeoutMs: SIMULATION_TIMEOUT,
         }
       );
