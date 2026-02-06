@@ -164,6 +164,14 @@ Quando indicada, adicione ao array suggestions:
 - SEMPRE incluir nota sobre ser procedimento PRÉVIO ao restaurador
 - Listar TODOS os dentes que serão beneficiados
 
+✅ PROTOCOLO DE GENGIVOPLASTIA (incluir quando indicada):
+Na sugestão de gengivoplastia, incluir em proposed_change:
+"Gengivoplastia para [justificativa]. Planejamento inclui:
+1. Enceramento prévio com confecção de guia cirúrgica
+2. Avaliação periodontal (sondagem, distâncias biológicas)
+3. Procedimento respeitando distâncias biológicas
+4. Aguardar 60-90 dias de maturação tecidual antes do tratamento restaurador"
+
 ❌ NÃO gerar sugestão de gengivoplastia se:
 - Linha do sorriso "média" ou "baixa" E
 - Zênites simétricos E
@@ -281,9 +289,18 @@ Para CADA sugestão, você DEVE indicar o tipo de tratamento:
 - "endodontia": Escurecimento por necrose, lesão periapical, exposição pulpar
 - "encaminhamento": Ortodontia, periodontia avançada, cirurgia
 
-REGRA CRÍTICA:
-- Se 4+ dentes anteriores precisam de harmonização estética → "porcelana" para todos
-- Se 1-2 dentes precisam de correção pontual → "resina"
+REGRA CRÍTICA - PRIORIDADE CONSERVADORA:
+SEMPRE sugira o tratamento MAIS CONSERVADOR que atenda à necessidade:
+1. Resina composta (1-3 dentes, correção pontual, diastema até 2mm)
+2. Faceta de porcelana (SOMENTE se resina não for suficiente: 4+ dentes simultâneos, escurecimento severo)
+
+⚠️ PORCELANA como primeira opção é PROIBIDO para:
+- Casos com 1-2 dentes → usar resina
+- Fechamento de diastema simples → usar resina
+- Recontorno estético em dentes íntegros → usar resina
+
+- Se 4+ dentes anteriores precisam de harmonização estética EXTENSIVA → "porcelana" para todos
+- Se 1-3 dentes precisam de correção pontual → "resina"
 - Se dente está ausente ou precisa ser extraído → "implante"
 - Se dente está escurecido por necrose → "endodontia" primeiro
 
@@ -325,6 +342,12 @@ Se detectar 2 dentes com restauração lado a lado, pergunte-se:
 DICA VISUAL: O lateral é visivelmente MAIS ESTREITO que o central ao lado.
 Se dois dentes têm o MESMO tamanho = provavelmente são os dois centrais.
 Se um é claramente MENOR = é o lateral.
+
+AGRUPAMENTO DE HOMÓLOGOS:
+- Se dentes homólogos (11/21, 12/22, 13/23) têm a MESMA sugestão:
+  → Crie sugestões separadas (um por dente) mas diferencie as notas
+  → Exemplo: Dente 12: "Incisivo lateral conoide - recontorno para proporção ideal"
+            Dente 22: "Mesmo tratamento do 12 para simetria bilateral"
 
 LIMITES PARA SUGESTÕES:
 - MÁXIMO de 1-2mm de extensão incisal por dente

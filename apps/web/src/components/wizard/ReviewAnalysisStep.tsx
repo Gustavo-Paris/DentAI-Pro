@@ -273,7 +273,7 @@ export function ReviewAnalysisStep({
             <Sparkles className="w-5 h-5 text-primary" />
             <span className="text-sm text-muted-foreground">Nível de clareamento:</span>
             <Badge variant="secondary" className="font-medium">
-              {whiteningLevel === 'hollywood' ? '✨ Hollywood (BL3)' :
+              {whiteningLevel === 'hollywood' ? '✨ Hollywood (BL1)' :
                whiteningLevel === 'white' ? '🦷 Branco (BL1/BL2)' : 'Natural (A1/A2)'}
             </Badge>
           </CardContent>
@@ -644,6 +644,59 @@ export function ReviewAnalysisStep({
               </div>
             )}
 
+            {/* Manually added teeth (not from AI detection) */}
+            {(() => {
+              const detectedToothNumbers = detectedTeeth.map(t => t.tooth);
+              const manualTeeth = selectedTeeth.filter(t => !detectedToothNumbers.includes(t));
+              if (manualTeeth.length === 0) return null;
+              return (
+                <div className="mt-4">
+                  <h4 className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2">
+                    <Plus className="w-3 h-3" />
+                    Dentes adicionados manualmente
+                  </h4>
+                  <div className="space-y-2">
+                    {manualTeeth.map((toothNum) => (
+                      <div
+                        key={toothNum}
+                        className="flex items-center gap-3 p-3 border rounded-lg border-primary bg-primary/5"
+                      >
+                        <Checkbox
+                          checked={true}
+                          onCheckedChange={() => handleToggleTooth(toothNum, false)}
+                          className="mt-0.5"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="font-semibold text-sm">Dente {toothNum}</span>
+                            <Badge variant="outline" className="text-xs">manual</Badge>
+                          </div>
+                          {onToothTreatmentChange && (
+                            <Select
+                              value={toothTreatments[toothNum] || 'resina'}
+                              onValueChange={(value) => onToothTreatmentChange(toothNum, value as TreatmentType)}
+                            >
+                              <SelectTrigger className="h-8 text-xs">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="resina">Resina Composta</SelectItem>
+                                <SelectItem value="porcelana">Faceta de Porcelana</SelectItem>
+                                <SelectItem value="coroa">Coroa Total</SelectItem>
+                                <SelectItem value="implante">Implante</SelectItem>
+                                <SelectItem value="endodontia">Tratamento de Canal</SelectItem>
+                                <SelectItem value="encaminhamento">Encaminhamento</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+
             {/* Add manual tooth button */}
             {!showManualAdd ? (
               <Button
@@ -896,216 +949,7 @@ export function ReviewAnalysisStep({
             </CardContent>
           </Card>
 
-          {/* Technical Data - Collapsed by default */}
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="technical-data" className="border rounded-lg">
-              <AccordionTrigger className="px-4 text-sm text-muted-foreground hover:no-underline">
-                <span className="flex items-center gap-2">
-                  Dados técnicos (avançado)
-                  <Badge variant="outline" className="font-normal">
-                    <Sparkles className="w-3 h-3 mr-1" />
-                    IA
-                  </Badge>
-                </span>
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pb-4">
-                <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Dente *</Label>
-                  <Select
-                    value={formData.tooth}
-                    onValueChange={(value) => onFormChange({ tooth: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecionar" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <div className="px-2 py-1 text-xs font-medium text-muted-foreground">Superior</div>
-                      {TEETH.upper.map((t) => (
-                        <SelectItem key={t} value={t}>{t}</SelectItem>
-                      ))}
-                      <div className="px-2 py-1 text-xs font-medium text-muted-foreground">Inferior</div>
-                      {TEETH.lower.map((t) => (
-                        <SelectItem key={t} value={t}>{t}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Tipo de Procedimento</Label>
-                  <Select
-                    value={formData.cavityClass}
-                    onValueChange={(value) => onFormChange({ cavityClass: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecionar" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {/* Check if it's an aesthetic case based on AI analysis */}
-                      {(() => {
-                        const primaryTooth = analysisResult?.detected_teeth?.find(t => t.tooth === formData.tooth);
-                        const showAesthetic = isAestheticProcedure(primaryTooth?.indication_reason, primaryTooth?.priority);
-                        
-                        return (
-                          <>
-                            <div className="px-2 py-1 text-xs font-medium text-muted-foreground">
-                              {showAesthetic ? 'Estético' : 'Restaurador'}
-                            </div>
-                            {(showAesthetic ? PROCEDURE_OPTIONS_AESTHETIC : CAVITY_OPTIONS_RESTORATIVE).map((opt) => (
-                              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                            ))}
-                            <div className="border-t my-1" />
-                            <div className="px-2 py-1 text-xs font-medium text-muted-foreground">
-                              {showAesthetic ? 'Restaurador' : 'Estético'}
-                            </div>
-                            {(showAesthetic ? CAVITY_OPTIONS_RESTORATIVE : PROCEDURE_OPTIONS_AESTHETIC).map((opt) => (
-                              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                            ))}
-                          </>
-                        );
-                      })()}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Cor VITA + Tamanho (ocultar tamanho para procedimentos estéticos) */}
-              {(() => {
-                const primaryTooth = analysisResult?.detected_teeth?.find(t => t.tooth === formData.tooth);
-                const isAesthetic = isAestheticProcedure(primaryTooth?.indication_reason, primaryTooth?.priority) 
-                  || PROCEDURE_OPTIONS_AESTHETIC.some(p => p.value === formData.cavityClass);
-                
-                return (
-                  <div className={`grid gap-4 ${isAesthetic ? 'grid-cols-1' : 'grid-cols-2'}`}>
-                    <div className="space-y-2">
-                      <Label>Cor VITA</Label>
-                      <Input
-                        value={formData.vitaShade}
-                        onChange={(e) => onFormChange({ vitaShade: e.target.value })}
-                        placeholder="Ex: A2"
-                      />
-                    </div>
-                    {!isAesthetic && (
-                      <div className="space-y-2">
-                        <Label>Tamanho</Label>
-                        <Select
-                          value={formData.restorationSize}
-                          onValueChange={(value) => onFormChange({ restorationSize: value })}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecionar" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {['Pequena', 'Média', 'Grande', 'Extensa'].map((s) => (
-                              <SelectItem key={s} value={s}>{s}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Substrato</Label>
-                  <Select
-                    value={formData.substrate}
-                    onValueChange={(value) => onFormChange({ substrate: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecionar" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {['Esmalte', 'Dentina', 'Esmalte e Dentina', 'Dentina profunda'].map((s) => (
-                        <SelectItem key={s} value={s}>{s}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Profundidade</Label>
-                  <Select
-                    value={formData.depth}
-                    onValueChange={(value) => onFormChange({ depth: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecionar" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {['Superficial', 'Média', 'Profunda'].map((d) => (
-                        <SelectItem key={d} value={d}>{d}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-                </div>
-
-                {/* Clinical Details (previously separate accordion) */}
-                <div className="space-y-4 mt-4 pt-4 border-t">
-                  <h4 className="text-sm font-medium text-muted-foreground">Detalhes Clínicos</h4>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Condição do Substrato</Label>
-                      <Select
-                        value={formData.substrateCondition}
-                        onValueChange={(value) => onFormChange({ substrateCondition: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecionar" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {['Saudável', 'Esclerótico', 'Manchado', 'Cariado', 'Desidratado'].map((c) => (
-                            <SelectItem key={c} value={c}>{c}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Condição do Esmalte</Label>
-                      <Select
-                        value={formData.enamelCondition}
-                        onValueChange={(value) => onFormChange({ enamelCondition: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecionar" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {['Íntegro', 'Fraturado', 'Hipoplásico', 'Fluorose', 'Erosão'].map((c) => (
-                            <SelectItem key={c} value={c}>{c}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <Label>Paciente com bruxismo?</Label>
-                      <p className="text-sm text-muted-foreground">Ranger ou apertar os dentes</p>
-                    </div>
-                    <RadioGroup
-                      value={formData.bruxism ? 'yes' : 'no'}
-                      onValueChange={(value) => onFormChange({ bruxism: value === 'yes' })}
-                      className="flex gap-4"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="yes" id="brux-yes" />
-                        <Label htmlFor="brux-yes">Sim</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="no" id="brux-no" />
-                        <Label htmlFor="brux-no">Não</Label>
-                      </div>
-                    </RadioGroup>
-                  </div>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+          {/* Technical data auto-filled from AI analysis */}
         </div>
       </div>
 
