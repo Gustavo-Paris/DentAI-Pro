@@ -102,7 +102,7 @@ export default function Profile() {
                     </div>
                   </div>
 
-                  <CardTitle>Editar Perfil</CardTitle>
+                  <CardTitle className="font-display">Editar Perfil</CardTitle>
                   <CardDescription>Atualize suas informações pessoais e profissionais</CardDescription>
                 </CardHeader>
 
@@ -235,7 +235,7 @@ function PaymentHistorySection({
       <Card>
         <CardContent className="py-12 text-center">
           <FileText className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-          <h3 className="font-medium mb-2">Nenhuma fatura encontrada</h3>
+          <h3 className="font-semibold font-display mb-2">Nenhuma fatura encontrada</h3>
           <p className="text-sm text-muted-foreground">
             Suas faturas aparecerão aqui após o primeiro pagamento.
           </p>
@@ -247,7 +247,7 @@ function PaymentHistorySection({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Histórico de pagamentos</CardTitle>
+        <CardTitle className="text-lg font-display">Histórico de pagamentos</CardTitle>
         <CardDescription>{paymentRecords.length} pagamento(s)</CardDescription>
       </CardHeader>
       <CardContent>

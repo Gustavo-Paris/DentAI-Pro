@@ -14,8 +14,8 @@ const NotFound = () => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="text-center">
-        <h1 className="text-6xl font-bold text-muted-foreground/50 mb-2">404</h1>
-        <p className="text-xl font-medium mb-2">Página não encontrada</p>
+        <h1 className="text-6xl font-semibold font-display text-muted-foreground/50 mb-2">404</h1>
+        <p className="text-xl font-semibold font-display mb-2">Página não encontrada</p>
         <p className="text-sm text-muted-foreground mb-6">
           O endereço que você tentou acessar não existe ou foi removido.
         </p>

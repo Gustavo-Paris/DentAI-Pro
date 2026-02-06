@@ -41,7 +41,7 @@ export default function CookieConsent() {
       aria-label="Consentimento de cookies"
       className="fixed bottom-0 inset-x-0 z-50 p-4 sm:p-6"
     >
-      <div className="mx-auto max-w-3xl rounded-lg border border-border bg-card p-4 sm:p-6 shadow-lg flex flex-col sm:flex-row items-start sm:items-center gap-4">
+      <div className="mx-auto max-w-3xl rounded-xl border border-border bg-card p-4 sm:p-6 shadow-lg flex flex-col sm:flex-row items-start sm:items-center gap-4">
         <p className="text-sm text-card-foreground flex-1">
           Utilizamos cookies essenciais para o funcionamento do site e cookies
           opcionais para monitoramento de erros (Sentry). Ao clicar em

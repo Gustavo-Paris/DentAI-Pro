@@ -34,6 +34,7 @@ import { LoadingOverlay } from '@/components/LoadingOverlay';
 import { DetailPage } from '@pageshell/composites';
 
 import { useResult } from '@/hooks/domain/useResult';
+import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { BRAND_NAME } from '@/lib/branding';
 
 // =============================================================================
@@ -53,6 +54,7 @@ export default function Result() {
 
   const evaluation = r.evaluation;
   const TreatmentIcon = r.currentTreatmentStyle.icon;
+  const headerRef = useScrollReveal();
 
   return (
     <>
@@ -75,6 +77,7 @@ export default function Result() {
             onClick: r.handlePdfButtonClick,
             disabled: r.generatingPDF,
             variant: 'outline',
+            className: 'btn-glow-gold',
           },
           {
             label: 'Novo Caso',
@@ -94,22 +97,20 @@ export default function Result() {
                 </p>
               </div>
 
-              {/* Date */}
-              <p className="text-sm text-muted-foreground mb-4 print:hidden">
-                {format(new Date(evaluation.created_at), "d 'de' MMMM 'de' yyyy, HH:mm", { locale: ptBR })}
-              </p>
-
               {/* Treatment Type Header */}
-              <Card className={`mb-6 ${r.currentTreatmentStyle.bgClass} ${r.currentTreatmentStyle.borderClass}`}>
+              <Card ref={headerRef} className={`scroll-reveal mb-6 grain-overlay shadow-md rounded-xl ${r.currentTreatmentStyle.bgClass} ${r.currentTreatmentStyle.borderClass}`}>
                 <CardContent className="py-4">
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-lg ${r.currentTreatmentStyle.bgClass}`}>
-                      <TreatmentIcon className={`w-6 h-6 ${r.currentTreatmentStyle.iconClass}`} />
+                  <div className="relative flex items-center gap-3">
+                    <div className={`p-3 rounded-lg ${r.currentTreatmentStyle.bgClass}`}>
+                      <TreatmentIcon className={`w-8 h-8 ${r.currentTreatmentStyle.iconClass}`} />
                     </div>
                     <div className="flex-1">
-                      <h2 className="text-lg font-semibold">{r.currentTreatmentStyle.label}</h2>
+                      <h2 className="text-xl sm:text-2xl font-semibold font-display">{r.currentTreatmentStyle.label}</h2>
                       <p className="text-sm text-muted-foreground">
                         Dente {evaluation.tooth} • {evaluation.region.replace('-', ' ')}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5 print:hidden">
+                        {format(new Date(evaluation.created_at), "d 'de' MMMM 'de' yyyy, HH:mm", { locale: ptBR })}
                       </p>
                     </div>
                     {r.treatmentType !== 'encaminhamento' && (
@@ -161,7 +162,7 @@ export default function Result() {
             )}
 
             {/* Case Summary */}
-            <section className="mb-8">
+            <section className="mb-8 scroll-reveal">
               <CaseSummaryBox
                 treatmentType={r.treatmentType}
                 patientAge={evaluation.patient_age}
@@ -229,8 +230,8 @@ export default function Result() {
 
             {/* Clinical Photos */}
             {r.hasPhotos && (
-              <section className="mb-8">
-                <h3 className="font-medium mb-3 flex items-center gap-2">
+              <section className="mb-8 scroll-reveal">
+                <h3 className="font-semibold font-display mb-3 flex items-center gap-2">
                   <Image className="w-4 h-4" />
                   Fotos Clínicas
                 </h3>
@@ -278,12 +279,12 @@ export default function Result() {
 
             {/* Main Recommendation */}
             {r.resin && (
-              <section className="mb-8">
-                <Card>
+              <section className="mb-8 scroll-reveal">
+                <Card className="shadow-sm hover:shadow-md rounded-xl transition-shadow duration-300">
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div>
-                        <CardTitle className="text-xl flex items-center gap-2">
+                        <CardTitle className="text-xl font-display flex items-center gap-2">
                           <CheckCircle className="w-5 h-5 text-foreground" />
                           {r.resin.name}
                         </CardTitle>
@@ -292,7 +293,7 @@ export default function Result() {
                       <div className="flex flex-col items-end gap-2">
                         <Badge variant="secondary">{r.resin.type}</Badge>
                         {evaluation.is_from_inventory && (
-                          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
+                          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 animate-[badge-pulse-ring_3s_ease-in-out_infinite]">
                             <Package className="w-3 h-3 mr-1" />
                             No seu estoque
                           </Badge>
@@ -302,19 +303,19 @@ export default function Result() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                      <div>
+                      <div className="bg-secondary/30 rounded-lg p-3">
                         <span className="text-muted-foreground">Opacidade</span>
                         <p className="font-medium">{r.resin.opacity}</p>
                       </div>
-                      <div>
+                      <div className="bg-secondary/30 rounded-lg p-3">
                         <span className="text-muted-foreground">Resistência</span>
                         <p className="font-medium">{r.resin.resistance}</p>
                       </div>
-                      <div>
+                      <div className="bg-secondary/30 rounded-lg p-3">
                         <span className="text-muted-foreground">Polimento</span>
                         <p className="font-medium">{r.resin.polishing}</p>
                       </div>
-                      <div>
+                      <div className="bg-secondary/30 rounded-lg p-3">
                         <span className="text-muted-foreground">Estética</span>
                         <p className="font-medium">{r.resin.aesthetics}</p>
                       </div>
@@ -350,7 +351,7 @@ export default function Result() {
               <>
                 {r.hasProtocol && r.treatmentType === 'resina' && (
                   <section className="mb-8">
-                    <h3 className="font-medium mb-3 flex items-center gap-2">
+                    <h3 className="font-semibold font-display mb-3 flex items-center gap-2">
                       <Layers className="w-4 h-4" />
                       Protocolo de Estratificação
                     </h3>
@@ -482,7 +483,7 @@ export default function Result() {
             {/* Alternatives */}
             {r.alternatives && r.alternatives.length > 0 && (
               <section className="mb-8">
-                <h3 className="font-medium mb-3">Outras Alternativas</h3>
+                <h3 className="font-semibold font-display mb-3">Outras Alternativas</h3>
                 <div className="space-y-3">
                   {r.alternatives.map((alt, index) => (
                     <Card key={index} className="p-4">
@@ -498,7 +499,7 @@ export default function Result() {
             )}
 
             {/* Disclaimer */}
-            <div className="mt-8 p-4 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30">
+            <div className="mt-8 p-4 rounded-xl shadow-sm border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30">
               <div className="flex items-start gap-3">
                 <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                 <p className="text-xs text-amber-800 dark:text-amber-200">

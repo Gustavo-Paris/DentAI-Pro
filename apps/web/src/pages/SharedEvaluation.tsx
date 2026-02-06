@@ -108,7 +108,7 @@ export default function SharedEvaluation() {
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
         <div className="text-center">
           <AlertTriangle className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-          <h1 className="text-xl font-semibold mb-2">Link expirado ou inválido</h1>
+          <h1 className="text-xl font-semibold font-display mb-2">Link expirado ou inválido</h1>
           <p className="text-sm text-muted-foreground mb-6">
             Este link de compartilhamento não está mais disponível.
           </p>
@@ -129,7 +129,7 @@ export default function SharedEvaluation() {
     <div className="min-h-screen bg-background">
       <header className="border-b border-border">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <span className="text-lg font-semibold tracking-tight">{BRAND_NAME}</span>
+          <span className="text-lg font-semibold tracking-[0.2em] font-display text-gradient-gold">{BRAND_NAME}</span>
           <Badge variant="outline" className="gap-1 text-xs">
             <Clock className="w-3 h-3" />
             Visualização compartilhada
@@ -138,9 +138,9 @@ export default function SharedEvaluation() {
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-2xl">
-        <Card className="mb-6">
+        <Card className="mb-6 shadow-sm rounded-xl">
           <CardHeader>
-            <CardTitle className="text-xl">{patientName}</CardTitle>
+            <CardTitle className="text-xl font-display">{patientName}</CardTitle>
             <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
                 <Calendar className="w-4 h-4" />
@@ -162,7 +162,7 @@ export default function SharedEvaluation() {
             const TreatmentIcon = treatment?.icon || Layers;
 
             return (
-              <Card key={index}>
+              <Card key={index} className="shadow-sm rounded-xl">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">

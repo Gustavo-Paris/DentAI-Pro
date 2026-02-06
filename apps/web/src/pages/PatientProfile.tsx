@@ -149,7 +149,7 @@ export default function PatientProfile() {
                 {sessionsList.length === 0 ? (
                   <Card className="p-8 text-center">
                     <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="font-medium mb-2">Nenhuma avaliação ainda</h3>
+                    <h3 className="font-semibold font-display mb-2">Nenhuma avaliação ainda</h3>
                     <p className="text-sm text-muted-foreground mb-4">
                       Crie a primeira avaliação para este paciente
                     </p>

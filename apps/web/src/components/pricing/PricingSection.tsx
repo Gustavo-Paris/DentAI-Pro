@@ -24,7 +24,7 @@ export function PricingSection() {
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h2 className="text-3xl font-bold tracking-tight">Escolha seu plano</h2>
+        <h2 className="text-3xl font-semibold font-display tracking-tight">Escolha seu plano</h2>
         <p className="text-muted-foreground mt-2">
           Comece gratuitamente e faça upgrade quando precisar
         </p>

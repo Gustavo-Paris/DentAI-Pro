@@ -51,7 +51,7 @@ export default function Pricing() {
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <span className="text-lg sm:text-xl font-semibold tracking-tight flex-1">Planos</span>
+          <span className="text-lg sm:text-xl font-semibold font-display tracking-tight flex-1">Planos</span>
           <ThemeToggle />
         </div>
       </header>

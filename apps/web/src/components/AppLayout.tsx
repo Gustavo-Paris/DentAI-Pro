@@ -43,7 +43,7 @@ export default function AppLayout() {
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex fixed inset-y-0 left-0 z-30 w-56 flex-col border-r border-border bg-card">
         <div className="flex h-14 items-center px-4 border-b border-border">
-          <span className="text-lg font-semibold tracking-widest font-display">{BRAND_NAME}</span>
+          <span className="text-lg font-semibold tracking-[0.2em] font-display text-gradient-gold">{BRAND_NAME}</span>
         </div>
 
         <nav className="flex-1 py-4 px-2 space-y-1">
@@ -55,7 +55,7 @@ export default function AppLayout() {
                 cn(
                   'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
                   isActive
-                    ? 'bg-primary/10 text-primary'
+                    ? 'bg-primary/10 text-primary shadow-2xs'
                     : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
                 )
               }
@@ -93,7 +93,7 @@ export default function AppLayout() {
       {/* Mobile top bar */}
       <header className="lg:hidden sticky top-0 z-30 border-b border-border bg-card/95 backdrop-blur-sm">
         <div className="flex items-center justify-between px-4 h-14">
-          <span className="text-lg font-semibold tracking-widest font-display">{BRAND_NAME}</span>
+          <span className="text-lg font-semibold tracking-[0.2em] font-display text-gradient-gold">{BRAND_NAME}</span>
           <div className="flex items-center gap-2">
             <button
               onClick={() => {
@@ -132,7 +132,10 @@ export default function AppLayout() {
               <NavLink
                 key={item.to}
                 to={item.to}
-                className="flex flex-col items-center gap-1 px-3 py-2"
+                className={cn(
+                  'relative flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors',
+                  isActive && 'bg-primary/5'
+                )}
               >
                 <item.icon
                   className={cn(
@@ -148,6 +151,9 @@ export default function AppLayout() {
                 >
                   {item.label}
                 </span>
+                {isActive && (
+                  <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full bg-primary" />
+                )}
               </NavLink>
             );
           })}

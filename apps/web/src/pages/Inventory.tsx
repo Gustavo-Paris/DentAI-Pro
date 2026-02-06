@@ -57,7 +57,7 @@ export default function Inventory() {
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Meu Inventário</h1>
+            <h1 className="text-xl sm:text-2xl font-semibold font-display tracking-tight">Meu Inventário</h1>
             <p className="text-sm text-muted-foreground mt-1">
               Gerencie suas resinas disponíveis
             </p>
@@ -254,7 +254,7 @@ export default function Inventory() {
           <Card>
             <CardContent className="py-12 text-center">
               <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-              <h3 className="text-lg font-medium mb-2">Inventário vazio</h3>
+              <h3 className="text-lg font-semibold font-display mb-2">Inventário vazio</h3>
               <p className="text-muted-foreground mb-4">
                 {inv.inventoryFilters.search || inv.inventoryFilters.type !== 'all' || inv.inventoryFilters.brand !== 'all'
                   ? 'Nenhuma resina encontrada com esses filtros'

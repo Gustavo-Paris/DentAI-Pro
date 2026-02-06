@@ -266,7 +266,7 @@ export function PhotoUploadStep({
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-semibold mb-2">Foto Intraoral</h2>
+        <h2 className="text-2xl font-semibold font-display mb-2">Foto Intraoral</h2>
         <p className="text-muted-foreground">
           Envie uma foto da cavidade para análise automática com IA
         </p>

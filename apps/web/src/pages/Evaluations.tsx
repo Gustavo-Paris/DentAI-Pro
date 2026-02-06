@@ -16,18 +16,25 @@ import { ptBR } from 'date-fns/locale';
 function SessionCard({
   session,
   isNew,
+  index,
 }: {
   session: EvaluationSession;
   isNew: boolean;
+  index: number;
 }) {
   const isCompleted = session.status === 'completed';
+
+  const borderClass = isNew
+    ? 'border-l-[3px] border-l-primary ring-1 ring-primary/20'
+    : isCompleted
+    ? 'border-l-[3px] border-l-emerald-500'
+    : 'border-l-[3px] border-l-amber-500';
 
   return (
     <Link to={`/evaluation/${session.session_id}`}>
       <Card
-        className={`p-3 sm:p-4 hover:bg-secondary/50 transition-colors cursor-pointer ${
-          isNew ? 'bg-primary/5 border-l-2 border-l-primary' : ''
-        }`}
+        className={`p-3 sm:p-4 shadow-sm hover:shadow-md rounded-xl transition-all duration-300 cursor-pointer animate-[fade-in-up_0.6s_ease-out_both] ${borderClass}`}
+        style={{ animationDelay: `${index * 0.05}s` }}
       >
         <div className="space-y-2 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
           <div className="flex-1">
@@ -110,7 +117,7 @@ export default function Evaluations() {
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       {/* Success Banner for New Session */}
       {newSessionId && (
-        <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-primary/10 border border-primary/20 rounded-lg flex items-center gap-3">
+        <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-primary/10 border border-primary/20 rounded-xl shadow-sm flex items-center gap-3 animate-[fade-in-up_0.6s_ease-out_both]">
           <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
           <div>
             <p className="font-medium text-sm sm:text-base">
@@ -130,10 +137,11 @@ export default function Evaluations() {
           items={sessions}
           isLoading={isLoading}
           keyExtractor={(s) => s.session_id}
-          renderCard={(session) => (
+          renderCard={(session, index) => (
             <SessionCard
               session={session}
               isNew={newSessionId === session.session_id}
+              index={index ?? 0}
             />
           )}
           gridClassName="grid grid-cols-1 gap-3"

@@ -129,7 +129,7 @@ export default function Evaluation() {
       {/* Header */}
       <header className="border-b border-border">
         <div className="container mx-auto px-6 py-4">
-          <span className="text-xl font-semibold tracking-tight">{BRAND_NAME}</span>
+          <span className="text-xl font-semibold tracking-[0.2em] font-display text-gradient-gold">{BRAND_NAME}</span>
         </div>
       </header>
 
@@ -147,7 +147,7 @@ export default function Evaluation() {
         {step === 1 && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-xl font-semibold mb-1">Informações do paciente</h2>
+              <h2 className="text-xl font-semibold font-display mb-1">Informações do paciente</h2>
               <p className="text-sm text-muted-foreground">Dados básicos do caso</p>
             </div>
 
@@ -197,7 +197,7 @@ export default function Evaluation() {
         {step === 2 && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-xl font-semibold mb-1">Características do caso</h2>
+              <h2 className="text-xl font-semibold font-display mb-1">Características do caso</h2>
               <p className="text-sm text-muted-foreground">Detalhes da cavidade e restauração</p>
             </div>
 
@@ -254,7 +254,7 @@ export default function Evaluation() {
         {step === 3 && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-xl font-semibold mb-1">Requisitos estéticos</h2>
+              <h2 className="text-xl font-semibold font-display mb-1">Requisitos estéticos</h2>
               <p className="text-sm text-muted-foreground">Expectativas de aparência</p>
             </div>
 
@@ -302,7 +302,7 @@ export default function Evaluation() {
         {step === 4 && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-xl font-semibold mb-1">Considerações adicionais</h2>
+              <h2 className="text-xl font-semibold font-display mb-1">Considerações adicionais</h2>
               <p className="text-sm text-muted-foreground">Fatores que influenciam a escolha</p>
             </div>
 

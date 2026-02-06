@@ -47,6 +47,7 @@ import {
 
 import { DetailPage } from '@pageshell/composites';
 import { useEvaluationDetail } from '@/hooks/domain/useEvaluationDetail';
+import { Progress } from '@/components/ui/progress';
 import type { EvaluationItem } from '@/hooks/domain/useEvaluationDetail';
 import { AddTeethModal } from '@/components/AddTeethModal';
 import { ClinicalPhotoThumbnail } from '@/components/OptimizedImage';
@@ -153,52 +154,58 @@ export default function EvaluationDetails() {
         ]}
         slots={{
           beforeContent: (
-            <Card className="mb-4 sm:mb-6">
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
-                  {detail.evaluations[0]?.photo_frontal ? (
-                    <ClinicalPhotoThumbnail
-                      path={detail.evaluations[0].photo_frontal}
-                      alt="Foto clínica"
-                      size="grid"
-                      className="w-full md:w-32 lg:w-48 h-32 sm:h-48 flex-shrink-0"
-                    />
-                  ) : (
-                    <div className="w-full md:w-32 lg:w-48 h-32 sm:h-48 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
-                      <ImageIcon className="w-8 sm:w-12 h-8 sm:h-12 text-muted-foreground" />
-                    </div>
-                  )}
-
-                  <div className="flex-1">
-                    <div className="flex flex-wrap gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
-                        <span className="hidden sm:inline">{detail.evaluationDate}</span>
-                        <span className="sm:hidden">{detail.evaluationDateShort}</span>
+            <Card className="mb-4 sm:mb-6 shadow-sm rounded-xl overflow-hidden scroll-reveal">
+              <div className="bg-gradient-to-br from-primary/5 to-transparent">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
+                    {detail.evaluations[0]?.photo_frontal ? (
+                      <ClinicalPhotoThumbnail
+                        path={detail.evaluations[0].photo_frontal}
+                        alt="Foto clínica"
+                        size="grid"
+                        className="w-full md:w-32 lg:w-48 h-32 sm:h-48 flex-shrink-0"
+                      />
+                    ) : (
+                      <div className="w-full md:w-32 lg:w-48 h-32 sm:h-48 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
+                        <ImageIcon className="w-8 sm:w-12 h-8 sm:h-12 text-muted-foreground" />
                       </div>
-                      <div className="flex items-center gap-1">
-                        <User className="w-3 h-3 sm:w-4 sm:h-4" />
-                        {detail.evaluations.length} dente(s)
+                    )}
+
+                    <div className="flex-1">
+                      <div className="flex flex-wrap gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+                          <span className="hidden sm:inline">{detail.evaluationDate}</span>
+                          <span className="sm:hidden">{detail.evaluationDateShort}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <User className="w-3 h-3 sm:w-4 sm:h-4" />
+                          {detail.evaluations.length} dente(s)
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
-                      {detail.evaluations.map((e) => (
-                        <Badge key={e.id} variant="outline" className="text-xs">
-                          Dente {e.tooth}
-                        </Badge>
-                      ))}
-                    </div>
+                      <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
+                        {detail.evaluations.map((e) => (
+                          <Badge key={e.id} variant="outline" className="text-xs">
+                            Dente {e.tooth}
+                          </Badge>
+                        ))}
+                      </div>
 
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="text-muted-foreground">Progresso:</span>
-                      <span className="font-medium">
-                        {detail.completedCount}/{detail.evaluations.length} finalizados
-                      </span>
+                      <div className="flex items-center gap-3 text-sm">
+                        <span className="text-muted-foreground">Progresso:</span>
+                        <Progress
+                          value={detail.evaluations.length > 0 ? (detail.completedCount / detail.evaluations.length) * 100 : 0}
+                          className="h-2 flex-1 max-w-[200px]"
+                        />
+                        <span className="font-medium text-xs tabular-nums">
+                          {detail.completedCount}/{detail.evaluations.length}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </CardContent>
+                </CardContent>
+              </div>
             </Card>
           ),
         }}
@@ -206,14 +213,14 @@ export default function EvaluationDetails() {
         {() => (
           <>
             {/* Cases Table - Desktop */}
-            <Card className="hidden sm:block">
+            <Card className="hidden sm:block shadow-sm rounded-xl">
               <CardHeader>
-                <CardTitle className="text-lg">Casos Gerados</CardTitle>
+                <CardTitle className="text-lg font-display">Casos Gerados</CardTitle>
               </CardHeader>
               <CardContent className="p-0">
                 <Table>
                   <TableHeader>
-                    <TableRow>
+                    <TableRow className="bg-secondary/50">
                       <TableHead>Dente</TableHead>
                       <TableHead>Tratamento</TableHead>
                       <TableHead>Status</TableHead>
@@ -222,7 +229,7 @@ export default function EvaluationDetails() {
                   </TableHeader>
                   <TableBody>
                     {detail.evaluations.map((evaluation) => (
-                      <TableRow key={evaluation.id}>
+                      <TableRow key={evaluation.id} className="hover:bg-secondary/30 transition-colors">
                         <TableCell className="font-medium">{evaluation.tooth}</TableCell>
                         <TableCell>{getTreatmentBadge(evaluation)}</TableCell>
                         <TableCell>
@@ -273,9 +280,12 @@ export default function EvaluationDetails() {
 
             {/* Cases Cards - Mobile */}
             <div className="sm:hidden space-y-3">
-              <h3 className="font-semibold text-lg">Casos Gerados</h3>
-              {detail.evaluations.map((evaluation) => (
-                <Card key={evaluation.id} className="p-4">
+              <h3 className="font-semibold font-display text-lg">Casos Gerados</h3>
+              {detail.evaluations.map((evaluation) => {
+                const treatmentConfig = getTreatmentConfig(evaluation.treatment_type);
+                const borderColor = treatmentConfig.variant === 'default' ? 'border-l-primary' : 'border-l-amber-500';
+                return (
+                <Card key={evaluation.id} className={`p-4 shadow-sm rounded-xl border-l-[3px] ${borderColor}`}>
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
                       {getTreatmentBadge(evaluation)}
@@ -322,7 +332,8 @@ export default function EvaluationDetails() {
                     </DropdownMenu>
                   </div>
                 </Card>
-              ))}
+                );
+              })}
             </div>
           </>
         )}
