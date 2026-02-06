@@ -1,12 +1,9 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { PricingSection } from '@/components/pricing/PricingSection';
 import { useSubscription } from '@/hooks/useSubscription';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { logger } from '@/lib/logger';
 
 export default function Pricing() {
@@ -45,20 +42,8 @@ export default function Pricing() {
   }, [searchParams, navigate, refreshSubscription]);
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border">
-        <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <span className="text-lg sm:text-xl font-semibold font-display tracking-tight flex-1">Planos</span>
-          <ThemeToggle />
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 sm:px-6 py-8 sm:py-12">
-        <PricingSection />
-      </main>
+    <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-12">
+      <PricingSection />
     </div>
   );
 }
