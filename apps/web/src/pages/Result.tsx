@@ -43,6 +43,7 @@ import { BRAND_NAME } from '@/lib/branding';
 
 export default function Result() {
   const r = useResult();
+  const headerRef = useScrollReveal();
 
   if (!r.evaluation && !r.isLoading) {
     return (
@@ -54,7 +55,6 @@ export default function Result() {
 
   const evaluation = r.evaluation;
   const TreatmentIcon = r.currentTreatmentStyle.icon;
-  const headerRef = useScrollReveal();
 
   return (
     <>

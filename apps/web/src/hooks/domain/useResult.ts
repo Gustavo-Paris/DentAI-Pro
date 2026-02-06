@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/data';
 import { evaluations, profiles } from '@/data';
 import type { Resin, StratificationProtocol, ProtocolLayer, CementationProtocol } from '@/types/protocol';
 import { toast } from 'sonner';
