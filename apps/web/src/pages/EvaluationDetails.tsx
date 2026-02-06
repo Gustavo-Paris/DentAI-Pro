@@ -154,7 +154,7 @@ export default function EvaluationDetails() {
         ]}
         slots={{
           beforeContent: (
-            <Card className="mb-4 sm:mb-6 shadow-sm rounded-xl overflow-hidden scroll-reveal">
+            <Card className="mb-4 sm:mb-6 shadow-sm rounded-xl overflow-hidden">
               <div className="bg-gradient-to-br from-primary/5 to-transparent">
                 <CardContent className="p-4 sm:p-6">
                   <div className="flex flex-col md:flex-row gap-4 sm:gap-6">

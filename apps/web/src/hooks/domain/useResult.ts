@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -306,11 +306,12 @@ export function useResult() {
   const protocol = evaluation?.stratification_protocol ?? null;
 
   const layers = protocol?.layers || evaluation?.protocol_layers || [];
-  const checklist = isPorcelain
+  const checklist = useMemo(() => isPorcelain
     ? (cementationProtocol?.checklist || [])
     : isSpecialTreatment && genericProtocol
       ? genericProtocol.checklist
-      : (protocol?.checklist || []);
+      : (protocol?.checklist || []),
+    [isPorcelain, cementationProtocol?.checklist, isSpecialTreatment, genericProtocol, protocol?.checklist]);
   const alerts = isPorcelain
     ? (cementationProtocol?.alerts || [])
     : isSpecialTreatment && genericProtocol
@@ -354,15 +355,6 @@ export function useResult() {
       progress: progressIndices.length,
     };
   }, [evaluation, checklist]);
-
-  const handlePdfButtonClick = useCallback(() => {
-    const status = getChecklistCompletionStatus();
-    if (!status.complete) {
-      setShowPdfConfirmDialog(true);
-    } else {
-      handleExportPDF();
-    }
-  }, [getChecklistCompletionStatus]);
 
   const handleExportPDF = useCallback(async () => {
     if (!evaluation) return;
@@ -447,6 +439,15 @@ export function useResult() {
       setGeneratingPDF(false);
     }
   }, [evaluation, dentistProfile, photoUrls, dsdSimulationUrl]);
+
+  const handlePdfButtonClick = useCallback(() => {
+    const status = getChecklistCompletionStatus();
+    if (!status.complete) {
+      setShowPdfConfirmDialog(true);
+    } else {
+      handleExportPDF();
+    }
+  }, [getChecklistCompletionStatus, handleExportPDF]);
 
   return {
     // Data

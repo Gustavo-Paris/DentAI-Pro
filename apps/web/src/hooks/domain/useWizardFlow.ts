@@ -821,7 +821,6 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
             patient_desired_changes: null,
           };
 
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const { data: evaluation, error: evalError } = await supabase
             .from('evaluations')
             .insert(insertData as never)

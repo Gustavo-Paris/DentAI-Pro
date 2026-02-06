@@ -34,7 +34,6 @@ import { LoadingOverlay } from '@/components/LoadingOverlay';
 import { DetailPage } from '@pageshell/composites';
 
 import { useResult } from '@/hooks/domain/useResult';
-import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { BRAND_NAME } from '@/lib/branding';
 
 // =============================================================================
@@ -43,7 +42,7 @@ import { BRAND_NAME } from '@/lib/branding';
 
 export default function Result() {
   const r = useResult();
-  const headerRef = useScrollReveal();
+
 
   if (!r.evaluation && !r.isLoading) {
     return (
@@ -98,7 +97,7 @@ export default function Result() {
               </div>
 
               {/* Treatment Type Header */}
-              <Card ref={headerRef} className={`scroll-reveal mb-6 grain-overlay shadow-md rounded-xl ${r.currentTreatmentStyle.bgClass} ${r.currentTreatmentStyle.borderClass}`}>
+              <Card className={`mb-6 grain-overlay shadow-md rounded-xl ${r.currentTreatmentStyle.bgClass} ${r.currentTreatmentStyle.borderClass}`}>
                 <CardContent className="py-4">
                   <div className="relative flex items-center gap-3">
                     <div className={`p-3 rounded-lg ${r.currentTreatmentStyle.bgClass}`}>
@@ -162,7 +161,7 @@ export default function Result() {
             )}
 
             {/* Case Summary */}
-            <section className="mb-8 scroll-reveal">
+            <section className="mb-8">
               <CaseSummaryBox
                 treatmentType={r.treatmentType}
                 patientAge={evaluation.patient_age}
@@ -230,7 +229,7 @@ export default function Result() {
 
             {/* Clinical Photos */}
             {r.hasPhotos && (
-              <section className="mb-8 scroll-reveal">
+              <section className="mb-8">
                 <h3 className="font-semibold font-display mb-3 flex items-center gap-2">
                   <Image className="w-4 h-4" />
                   Fotos Clínicas
@@ -279,7 +278,7 @@ export default function Result() {
 
             {/* Main Recommendation */}
             {r.resin && (
-              <section className="mb-8 scroll-reveal">
+              <section className="mb-8">
                 <Card className="shadow-sm hover:shadow-md rounded-xl transition-shadow duration-300">
                   <CardHeader>
                     <div className="flex items-start justify-between">

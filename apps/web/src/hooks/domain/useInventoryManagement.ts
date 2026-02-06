@@ -67,8 +67,8 @@ export function useInventoryManagement() {
     staleTime: 10 * 60 * 1000,
   });
 
-  const allItems = inventoryQuery.data?.items ?? [];
-  const catalog = catalogQuery.data ?? [];
+  const allItems = useMemo(() => inventoryQuery.data?.items ?? [], [inventoryQuery.data?.items]);
+  const catalog = useMemo(() => catalogQuery.data ?? [], [catalogQuery.data]);
 
   // --- Mutations ---
   const addMutation = useMutation({
