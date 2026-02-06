@@ -40,6 +40,10 @@ export interface DSDAnalysis {
   observations: string[];
   confidence: "alta" | "média" | "baixa";
   simulation_limitation?: string;
+  // Lip analysis
+  lip_thickness?: "fino" | "médio" | "volumoso";
+  // Overbite suspicion
+  overbite_suspicion?: "sim" | "não" | "indeterminado";
   // Visagism fields
   face_shape?: "oval" | "quadrado" | "triangular" | "retangular" | "redondo";
   perceived_temperament?: "colérico" | "sanguíneo" | "melancólico" | "fleumático" | "misto";
@@ -764,6 +768,17 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
               </ul>
             </CardContent>
           </Card>
+        )}
+
+        {/* Overbite suspicion alert */}
+        {analysis.overbite_suspicion === 'sim' && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Suspeita de Sobremordida Profunda</AlertTitle>
+            <AlertDescription>
+              A análise sugere possível sobremordida profunda (overbite). Recomenda-se avaliação ortodôntica antes de procedimentos restauradores anteriores. Gengivoplastia contraindicada até avaliação.
+            </AlertDescription>
+          </Alert>
         )}
 
         {/* NEW: Background simulation generating card */}

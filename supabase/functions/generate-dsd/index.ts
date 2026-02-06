@@ -34,6 +34,10 @@ interface DSDAnalysis {
   observations: string[];
   confidence: "alta" | "média" | "baixa";
   simulation_limitation?: string;
+  // Lip analysis
+  lip_thickness?: "fino" | "médio" | "volumoso";
+  // Overbite suspicion
+  overbite_suspicion?: "sim" | "não" | "indeterminado";
   // Visagism fields
   face_shape?: "oval" | "quadrado" | "triangular" | "retangular" | "redondo";
   perceived_temperament?: "colérico" | "sanguíneo" | "melancólico" | "fleumático" | "misto";
@@ -625,6 +629,18 @@ Se o problema clínico é microdontia/conoide → sua sugestão deve ser "Aument
               type: "string",
               enum: ["alta", "média", "baixa"],
             },
+            // Lip analysis
+            lip_thickness: {
+              type: "string",
+              enum: ["fino", "médio", "volumoso"],
+              description: "Espessura labial do paciente: fino, médio ou volumoso",
+            },
+            // Overbite suspicion
+            overbite_suspicion: {
+              type: "string",
+              enum: ["sim", "não", "indeterminado"],
+              description: "Suspeita de sobremordida profunda baseada na foto: sim, não ou indeterminado",
+            },
             // Visagism fields
             face_shape: {
               type: "string",
@@ -662,6 +678,8 @@ Se o problema clínico é microdontia/conoide → sua sugestão deve ser "Aument
             "suggestions",
             "observations",
             "confidence",
+            "lip_thickness",
+            "overbite_suspicion",
             "face_shape",
             "perceived_temperament",
             "smile_arc",
@@ -874,6 +892,26 @@ serve(async (req: Request) => {
       const removed = before - analysis.suggestions.length;
       if (removed > 0) {
         logger.log(`Post-processing: removed ${removed} gengivoplastia suggestion(s) (smile_line=${analysis.smile_line})`);
+      }
+    }
+
+    // Safety net #3: Filter gengivoplastia if overbite suspected
+    // Deep bite can cause compensatory eruption that mimics gummy smile — gengivoplastia contraindicated
+    if (analysis.overbite_suspicion === 'sim') {
+      const before = analysis.suggestions.length;
+      analysis.suggestions = analysis.suggestions.filter(s => {
+        const proposed = s.proposed_change.toLowerCase();
+        return !proposed.includes('gengivoplastia');
+      });
+      const removed = before - analysis.suggestions.length;
+      if (removed > 0) {
+        logger.log(`Post-processing: removed ${removed} gengivoplastia suggestion(s) (overbite_suspicion=sim)`);
+        // Add warning observation if not already present
+        const hasWarning = analysis.observations?.some(o => o.toLowerCase().includes('sobremordida'));
+        if (!hasWarning) {
+          analysis.observations = analysis.observations || [];
+          analysis.observations.push('ATENÇÃO: Suspeita de sobremordida profunda — gengivoplastia contraindicada até avaliação ortodôntica.');
+        }
       }
     }
 

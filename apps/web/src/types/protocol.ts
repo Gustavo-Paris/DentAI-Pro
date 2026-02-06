@@ -94,6 +94,8 @@ export interface DSDAnalysisPDF {
   occlusal_plane?: string;
   golden_ratio_compliance?: number;
   symmetry_score?: number;
+  lip_thickness?: string;
+  overbite_suspicion?: string;
   suggestions?: { tooth: string; current_issue: string; proposed_change: string }[];
   observations?: string[];
 }

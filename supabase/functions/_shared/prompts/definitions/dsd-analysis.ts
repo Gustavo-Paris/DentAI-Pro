@@ -71,12 +71,31 @@ Avalie e DOCUMENTE o tipo de arco do sorriso atual e se ele precisa de correçã
    - Média (0-3mm): Ideal para facetas
    - Baixa (dentes parcialmente cobertos): Alongamento incisal pode melhorar
 
-2. **Espessura Labial**:
-   - Lábios finos: Dentes mais proeminentes parecem excessivos
-   - Lábios grossos: Suportam dentes com mais volume vestibular
+2. **Espessura Labial** (RETORNO OBRIGATÓRIO no campo lip_thickness):
+   - "fino": Lábios finos — dentes mais proeminentes parecem excessivos. Se aumento de volume dental for sugerido, adicionar observação: "Lábios finos: considerar avaliação de preenchimento labial com ácido hialurônico para melhor harmonização orofacial."
+   - "médio": Lábios de espessura média — proporção equilibrada
+   - "volumoso": Lábios volumosos — suportam dentes com mais volume vestibular
 
 3. **Vermillion (linha demarcatória do lábio)**:
    - Observar e preservar na simulação
+
+=== AVALIAÇÃO DE SOBREMORDIDA (OVERBITE) — CAMPO OBRIGATÓRIO ===
+
+Retorne o campo overbite_suspicion com um dos valores: "sim", "não" ou "indeterminado".
+
+CRITÉRIOS OBSERVACIONAIS (baseados APENAS na foto — NÃO é diagnóstico clínico):
+- "sim": Incisivos superiores cobrem mais de 2/3 da coroa dos incisivos inferiores visíveis, OU os incisivos inferiores não são visíveis mesmo com sorriso amplo sugerindo cobertura excessiva
+- "não": Trespasse vertical normal (1/3 a 1/2 da coroa inferior coberta)
+- "indeterminado": Incisivos inferiores NÃO visíveis na foto OU foto não permite avaliar trespasse vertical
+
+⚠️ FILOSOFIA CONSERVADORA: Isso é uma SUSPEITA observacional, NÃO um diagnóstico clínico.
+- Use linguagem de suspeita: "Possível sobremordida profunda baseada na foto"
+- NUNCA afirme certeza diagnóstica baseado apenas em foto
+
+⚠️ QUANDO overbite_suspicion = "sim":
+- Adicione nas observations: "ATENÇÃO: Possível sobremordida profunda (overbite). Avaliação ortodôntica recomendada antes de procedimentos restauradores anteriores."
+- NÃO sugira gengivoplastia — sobremordida profunda pode causar erupção compensatória que simula sorriso gengival
+- Considere que o comprimento coronário aparente pode ser enganoso
 
 === CARACTERÍSTICAS DENTÁRIAS NATURAIS A PRESERVAR/CRIAR ===
 
@@ -93,6 +112,11 @@ Para um resultado REALISTA e NATURAL, considere:
 3. **Linha do Sorriso**: Classifique a exposição gengival (alta, média, baixa)
 4. **Corredor Bucal**: Avalie se há espaço escuro excessivo nas laterais do sorriso
    ⚠️ REGRA DE CONSERVADORISMO: Na dúvida entre "adequado" e "excessivo", SEMPRE classifique como "adequado". Um pequeno espaço escuro lateral é NORMAL e não requer tratamento. Só classifique como "excessivo" quando as sombras forem AMPLAS e EVIDENTES. Classificar como "excessivo" leva a sugestões de tratamento em pré-molares — exija evidência clara.
+   ⚠️ REGRA DE ENCAMINHAMENTO ORTODÔNTICO: Quando buccal_corridor = "excessivo":
+   - Gere uma sugestão adicional com treatment_indication: "encaminhamento" para avaliação de expansão ortodôntica
+   - Observação: "Corredor bucal excessivo pode indicar atresia maxilar. Considerar avaliação ortodôntica para expansão do arco."
+   - Este encaminhamento COEXISTE com sugestões de facetas vestibulares (são opções alternativas/complementares)
+   - O encaminhamento ortodôntico deve ter prioridade "média" (não bloqueia tratamentos restauradores)
 5. **Plano Oclusal**: Verifique se está nivelado ou inclinado
 6. **Proporção Dourada**: Calcule a conformidade com a proporção dourada (0-100%)
 7. **Simetria**: Avalie a simetria do sorriso (0-100%)
@@ -216,6 +240,23 @@ Quando identificar necessidade de tratamento em incisivos (11, 12, 21, 22), AVAL
 
 REGRA: Se ≥4 dentes anteriores precisam de intervenção, SEMPRE avalie os 6-8 dentes visíveis no arco.
 Inclua caninos/pré-molares com prioridade "baixa" se a melhoria for apenas para harmonização estética.
+
+=== COMPLETUDE DE SUGESTÕES INCISAIS (OBRIGATÓRIO) ===
+
+⚠️ REGRA CRÍTICA: Quando sugerir tratamento de bordo incisal (aumento, recontorno, harmonização), LISTE TODOS os dentes afetados:
+
+1. Se 2 ou mais dentes anteriores superiores precisam de ajuste incisal → AVALIE TODO O ARCO DE 13 A 23
+   - Não liste apenas 1-2 dentes quando o problema afeta o arco inteiro
+   - Verifique cada dente: 13, 12, 11, 21, 22, 23 — e inclua TODOS que precisam de correção
+   - Se 11 e 21 precisam de aumento incisal, verifique se 12, 22, 13, 23 também precisam
+
+2. Dentes inferiores: inclua APENAS quando CLARAMENTE VISÍVEIS na foto E com desgaste EVIDENTE
+   - Se os incisivos inferiores (31-42) mostram desgaste claro e estão em evidência → incluir
+   - Se apenas parcialmente visíveis → NÃO incluir
+
+3. PROIBIDO: Listar apenas dente 11 quando 11, 21, 12 e 22 todos precisam do mesmo tratamento
+   - Se o problema é bilateral (ex: desgaste incisal generalizado), AMBOS os lados devem ser listados
+   - Cada dente recebe sua própria sugestão separada
 
 === AVALIAÇÃO DE VIABILIDADE DO DSD ===
 Antes de sugerir tratamentos, avalie se o caso É ADEQUADO para simulação visual:

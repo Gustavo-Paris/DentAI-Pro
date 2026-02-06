@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
-import { GripVertical } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { GripVertical, ZoomIn, ZoomOut, Maximize } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface ComparisonSliderProps {
   beforeImage: string;
@@ -7,6 +8,10 @@ interface ComparisonSliderProps {
   beforeLabel?: string;
   afterLabel?: string;
 }
+
+const MIN_ZOOM = 1;
+const MAX_ZOOM = 3;
+const ZOOM_STEP = 0.25;
 
 export function ComparisonSlider({
   beforeImage,
@@ -16,93 +21,263 @@ export function ComparisonSlider({
 }: ComparisonSliderProps) {
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+  const panStartRef = useRef({ x: 0, y: 0 });
+  const panOriginRef = useRef({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
+  const pinchDistRef = useRef<number | null>(null);
+  const pinchZoomRef = useRef(1);
 
-  const handleMove = (clientX: number) => {
+  // Clamp pan to prevent going out of bounds
+  const clampPan = useCallback((p: { x: number; y: number }, z: number) => {
+    if (z <= 1) return { x: 0, y: 0 };
+    const maxPan = ((z - 1) / z) * 50; // % based
+    return {
+      x: Math.max(-maxPan, Math.min(maxPan, p.x)),
+      y: Math.max(-maxPan, Math.min(maxPan, p.y)),
+    };
+  }, []);
+
+  // Reset pan when zoom returns to 1
+  useEffect(() => {
+    if (zoom <= 1) {
+      setPan({ x: 0, y: 0 });
+    }
+  }, [zoom]);
+
+  // Slider drag handling
+  const handleSliderMove = useCallback((clientX: number) => {
     if (!containerRef.current) return;
-
     const rect = containerRef.current.getBoundingClientRect();
     const x = clientX - rect.left;
     const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
     setSliderPosition(percentage);
-  };
+  }, []);
 
-  const handleMouseMove = (e: MouseEvent) => {
-    if (!isDragging) return;
-    handleMove(e.clientX);
-  };
+  // Determine if a mousedown/touchstart is near the slider handle
+  const isNearSliderHandle = useCallback((clientX: number): boolean => {
+    if (!containerRef.current) return false;
+    const rect = containerRef.current.getBoundingClientRect();
+    const handleX = rect.left + (sliderPosition / 100) * rect.width;
+    return Math.abs(clientX - handleX) < 30; // 30px tolerance
+  }, [sliderPosition]);
 
-  const handleTouchMove = (e: TouchEvent) => {
-    if (!isDragging) return;
-    handleMove(e.touches[0].clientX);
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
+  // Mouse events
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (isNearSliderHandle(e.clientX)) {
+      setIsDragging(true);
+    } else if (zoom > 1) {
+      setIsPanning(true);
+      panStartRef.current = { x: e.clientX, y: e.clientY };
+      panOriginRef.current = { ...pan };
+    }
+  }, [zoom, pan, isNearSliderHandle]);
 
   useEffect(() => {
-    if (isDragging) {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isDragging) {
+        handleSliderMove(e.clientX);
+      } else if (isPanning && containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        const dx = ((e.clientX - panStartRef.current.x) / rect.width) * 100;
+        const dy = ((e.clientY - panStartRef.current.y) / rect.height) * 100;
+        const newPan = { x: panOriginRef.current.x + dx, y: panOriginRef.current.y + dy };
+        setPan(clampPan(newPan, zoom));
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+      setIsPanning(false);
+    };
+
+    if (isDragging || isPanning) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
-      document.addEventListener('touchmove', handleTouchMove);
-      document.addEventListener('touchend', handleMouseUp);
     }
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
-      document.removeEventListener('touchmove', handleTouchMove);
-      document.removeEventListener('touchend', handleMouseUp);
     };
-  }, [isDragging]);
+  }, [isDragging, isPanning, zoom, handleSliderMove, clampPan]);
+
+  // Touch events — handle slider drag, pan (1 finger when zoomed), pinch-to-zoom (2 fingers)
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      // Pinch start
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      pinchDistRef.current = Math.hypot(dx, dy);
+      pinchZoomRef.current = zoom;
+      return;
+    }
+
+    if (e.touches.length === 1) {
+      const touch = e.touches[0];
+      if (isNearSliderHandle(touch.clientX)) {
+        setIsDragging(true);
+      } else if (zoom > 1) {
+        setIsPanning(true);
+        panStartRef.current = { x: touch.clientX, y: touch.clientY };
+        panOriginRef.current = { ...pan };
+      }
+    }
+  }, [zoom, pan, isNearSliderHandle]);
+
+  useEffect(() => {
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2 && pinchDistRef.current !== null) {
+        // Pinch zoom
+        e.preventDefault();
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const dist = Math.hypot(dx, dy);
+        const scale = dist / pinchDistRef.current;
+        const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, pinchZoomRef.current * scale));
+        setZoom(newZoom);
+        return;
+      }
+
+      if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        if (isDragging) {
+          handleSliderMove(touch.clientX);
+        } else if (isPanning && containerRef.current) {
+          const rect = containerRef.current.getBoundingClientRect();
+          const dx = ((touch.clientX - panStartRef.current.x) / rect.width) * 100;
+          const dy = ((touch.clientY - panStartRef.current.y) / rect.height) * 100;
+          const newPan = { x: panOriginRef.current.x + dx, y: panOriginRef.current.y + dy };
+          setPan(clampPan(newPan, zoom));
+        }
+      }
+    };
+
+    const handleTouchEnd = () => {
+      setIsDragging(false);
+      setIsPanning(false);
+      pinchDistRef.current = null;
+    };
+
+    if (isDragging || isPanning || pinchDistRef.current !== null) {
+      document.addEventListener('touchmove', handleTouchMove, { passive: false });
+      document.addEventListener('touchend', handleTouchEnd);
+    }
+
+    return () => {
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [isDragging, isPanning, zoom, handleSliderMove, clampPan]);
+
+  // Scroll wheel zoom (desktop)
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
+    setZoom((prev) => Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, prev + delta)));
+  }, []);
+
+  // Zoom controls
+  const handleZoomIn = () => setZoom((prev) => Math.min(MAX_ZOOM, prev + ZOOM_STEP));
+  const handleZoomOut = () => setZoom((prev) => Math.max(MIN_ZOOM, prev - ZOOM_STEP));
+  const handleZoomReset = () => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  };
+
+  const imageTransform = `scale(${zoom}) translate(${pan.x / zoom}%, ${pan.y / zoom}%)`;
+  const cursorStyle = isDragging ? 'cursor-ew-resize' : isPanning ? 'cursor-grabbing' : zoom > 1 ? 'cursor-grab' : 'cursor-ew-resize';
 
   return (
-    <div
-      ref={containerRef}
-      className="relative w-full aspect-[4/3] rounded-xl overflow-hidden cursor-ew-resize select-none touch-none bg-secondary"
-      onMouseDown={() => setIsDragging(true)}
-      onTouchStart={() => setIsDragging(true)}
-    >
-      {/* After image (full width, underneath) */}
-      <div className="absolute inset-0">
-        <img
-          src={afterImage}
-          alt={afterLabel}
-          className="w-full h-full object-cover"
-          draggable={false}
-        />
-      </div>
-
-      {/* Before image (clipped) */}
+    <div className="relative">
       <div
-        className="absolute inset-0 overflow-hidden"
-        style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
+        ref={containerRef}
+        className={`relative w-full aspect-[4/3] rounded-xl overflow-hidden select-none touch-none bg-secondary ${cursorStyle}`}
+        onMouseDown={handleMouseDown}
+        onTouchStart={handleTouchStart}
+        onWheel={handleWheel}
       >
-        <img
-          src={beforeImage}
-          alt={beforeLabel}
-          className="w-full h-full object-cover"
-          draggable={false}
-        />
-      </div>
-
-      {/* Slider line and handle */}
-      <div
-        className="absolute top-0 bottom-0 w-1 bg-background shadow-lg"
-        style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
-      >
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-background rounded-full shadow-lg flex items-center justify-center border-2 border-primary">
-          <GripVertical className="w-5 h-5 text-primary" />
+        {/* After image (full width, underneath) */}
+        <div className="absolute inset-0 overflow-hidden">
+          <img
+            src={afterImage}
+            alt={afterLabel}
+            className="w-full h-full object-cover"
+            style={{ transform: imageTransform, transformOrigin: 'center center' }}
+            draggable={false}
+          />
         </div>
-      </div>
 
-      {/* Labels */}
-      <div className="absolute bottom-3 left-3 px-2 py-1 bg-background/90 rounded text-xs font-medium">
-        {beforeLabel}
-      </div>
-      <div className="absolute bottom-3 right-3 px-2 py-1 bg-primary text-primary-foreground rounded text-xs font-medium">
-        {afterLabel}
+        {/* Before image (clipped) */}
+        <div
+          className="absolute inset-0 overflow-hidden"
+          style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
+        >
+          <img
+            src={beforeImage}
+            alt={beforeLabel}
+            className="w-full h-full object-cover"
+            style={{ transform: imageTransform, transformOrigin: 'center center' }}
+            draggable={false}
+          />
+        </div>
+
+        {/* Slider line and handle */}
+        <div
+          className="absolute top-0 bottom-0 w-1 bg-background shadow-lg z-10"
+          style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
+        >
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-background rounded-full shadow-lg flex items-center justify-center border-2 border-primary">
+            <GripVertical className="w-5 h-5 text-primary" />
+          </div>
+        </div>
+
+        {/* Zoom controls */}
+        <div className="absolute top-2 right-2 flex items-center gap-1 z-20">
+          <Button
+            variant="secondary"
+            size="icon"
+            className="w-7 h-7 bg-background/80 backdrop-blur-sm hover:bg-background"
+            onClick={(e) => { e.stopPropagation(); handleZoomOut(); }}
+            disabled={zoom <= MIN_ZOOM}
+          >
+            <ZoomOut className="w-3.5 h-3.5" />
+          </Button>
+          <Button
+            variant="secondary"
+            size="icon"
+            className="w-7 h-7 bg-background/80 backdrop-blur-sm hover:bg-background text-[10px] font-mono"
+            onClick={(e) => { e.stopPropagation(); handleZoomReset(); }}
+          >
+            {zoom > 1 ? <Maximize className="w-3.5 h-3.5" /> : '1:1'}
+          </Button>
+          <Button
+            variant="secondary"
+            size="icon"
+            className="w-7 h-7 bg-background/80 backdrop-blur-sm hover:bg-background"
+            onClick={(e) => { e.stopPropagation(); handleZoomIn(); }}
+            disabled={zoom >= MAX_ZOOM}
+          >
+            <ZoomIn className="w-3.5 h-3.5" />
+          </Button>
+        </div>
+
+        {/* Zoom indicator */}
+        {zoom > 1 && (
+          <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-background/80 backdrop-blur-sm rounded text-[10px] font-mono text-muted-foreground z-20">
+            {zoom.toFixed(1)}x
+          </div>
+        )}
+
+        {/* Labels */}
+        <div className="absolute bottom-3 left-3 px-2 py-1 bg-background/90 rounded text-xs font-medium z-10">
+          {beforeLabel}
+        </div>
+        <div className="absolute bottom-3 right-3 px-2 py-1 bg-primary text-primary-foreground rounded text-xs font-medium z-10">
+          {afterLabel}
+        </div>
       </div>
     </div>
   );
