@@ -14,7 +14,7 @@ import { ptBR } from 'date-fns/locale';
 
 function PatientCard({ patient, index }: { patient: PatientWithStats; index: number }) {
   return (
-    <Link to={`/patient/${patient.id}`}>
+    <Link to={`/patient/${patient.id}`} aria-label={`Ver paciente ${patient.name}`}>
       <Card
         className="p-3 sm:p-4 shadow-sm hover:shadow-md rounded-xl transition-all duration-300 cursor-pointer border-l-[3px] border-l-primary animate-[fade-in-up_0.6s_ease-out_both]"
         style={{ animationDelay: `${index * 0.05}s` }}
@@ -48,7 +48,7 @@ function PatientCard({ patient, index }: { patient: PatientWithStats; index: num
               </p>
             )}
           </div>
-          <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+          <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" aria-hidden="true" />
         </div>
       </Card>
     </Link>
