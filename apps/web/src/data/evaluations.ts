@@ -1,3 +1,4 @@
+import { subDays, startOfWeek } from 'date-fns';
 import { supabase } from './client';
 
 // ---------------------------------------------------------------------------
@@ -23,12 +24,16 @@ export interface EvaluationListParams {
 
 export interface DashboardMetricsParams {
   userId: string;
-  oneWeekAgo: string;
 }
 
 export interface DashboardRecentParams {
   userId: string;
   limit?: number;
+}
+
+export interface DashboardInsightsParams {
+  userId: string;
+  weeksBack?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -97,51 +102,79 @@ export async function updateStatus(id: string, status: string) {
 // Dashboard-specific queries (parallel COUNT queries)
 // ---------------------------------------------------------------------------
 
-export async function getDashboardMetrics({ userId, oneWeekAgo }: DashboardMetricsParams) {
-  const [totalResult, completedResult, weeklyResult, pendingSessionsResult] = await Promise.all([
+export async function getDashboardMetrics({ userId }: DashboardMetricsParams) {
+  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 }).toISOString();
+
+  const [allEvalsResult, weeklyEvalsResult, pendingTeethResult] = await Promise.all([
+    // All evaluations: session_id + status (for session-level metrics)
     supabase
       .from('evaluations')
-      .select('*', { count: 'exact', head: true })
+      .select('session_id, status')
       .eq('user_id', userId),
-    supabase
-      .from('evaluations')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .eq('status', 'completed'),
-    supabase
-      .from('evaluations')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .gte('created_at', oneWeekAgo),
-    // Count distinct sessions (cases) with at least one non-completed evaluation
+    // This week's evaluations: session_id (for weekly session count)
     supabase
       .from('evaluations')
       .select('session_id')
       .eq('user_id', userId)
+      .gte('created_at', weekStart),
+    // Count individual pending teeth
+    supabase
+      .from('evaluations')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
       .neq('status', 'completed'),
   ]);
 
-  // Count unique session_ids for pending cases
-  const pendingSessionIds = new Set(
-    (pendingSessionsResult.data || []).map(e => e.session_id || e)
-  );
+  // Group by session to compute session-level stats
+  const sessionMap = new Map<string, { total: number; completed: number }>();
+  for (const row of allEvalsResult.data || []) {
+    const sid = row.session_id || row.status; // fallback for legacy rows without session_id
+    if (!sessionMap.has(sid)) sessionMap.set(sid, { total: 0, completed: 0 });
+    const entry = sessionMap.get(sid)!;
+    entry.total++;
+    if (row.status === 'completed') entry.completed++;
+  }
+
+  let completedSessions = 0;
+  let pendingSessions = 0;
+  for (const entry of sessionMap.values()) {
+    if (entry.completed === entry.total) completedSessions++;
+    else pendingSessions++;
+  }
+
+  const totalSessions = sessionMap.size;
+  const weeklySessions = new Set(
+    (weeklyEvalsResult.data || []).map(e => e.session_id)
+  ).size;
 
   return {
-    totalCount: totalResult.count || 0,
-    completedCount: completedResult.count || 0,
-    weeklyCount: weeklyResult.count || 0,
-    pendingSessionCount: pendingSessionIds.size,
+    pendingSessionCount: pendingSessions,
+    weeklySessionCount: weeklySessions,
+    completionRate: totalSessions > 0 ? Math.round((completedSessions / totalSessions) * 100) : 0,
+    pendingTeethCount: pendingTeethResult.count || 0,
   };
 }
 
 export async function getRecent({ userId, limit = 50 }: DashboardRecentParams) {
   const { data, error } = await supabase
     .from('evaluations')
-    .select('id, created_at, tooth, patient_name, session_id, status')
+    .select('id, created_at, tooth, patient_name, session_id, status, treatment_type, is_from_inventory, patient_age')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .limit(limit);
 
+  if (error) throw error;
+  return data || [];
+}
+
+export async function getDashboardInsights({ userId, weeksBack = 8 }: DashboardInsightsParams) {
+  const since = subDays(new Date(), weeksBack * 7).toISOString();
+  const { data, error } = await supabase
+    .from('evaluations')
+    .select('id, created_at, treatment_type, is_from_inventory, resins:resins!recommended_resin_id(name)')
+    .eq('user_id', userId)
+    .gte('created_at', since)
+    .order('created_at', { ascending: true });
   if (error) throw error;
   return data || [];
 }
