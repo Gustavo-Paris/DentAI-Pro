@@ -257,7 +257,7 @@ export function ProportionsCard({ analysis }: ProportionsCardProps) {
 
         {/* Measurable data from observations */}
         {(() => {
-          const numericPattern = /\d+[\.,]?\d*\s*(%|mm|°)/;
+          const numericPattern = /\d+[.,]?\d*\s*(%|mm|°)/;
           const measurableObs = (analysis.observations || []).filter(obs => numericPattern.test(obs));
           if (measurableObs.length === 0) return null;
           return (
