@@ -133,7 +133,7 @@ export function useDashboard(): DashboardState {
         evaluations.getRecent({ userId: user.id, limit: 50 }),
       ]);
 
-      const pendingCount = metrics.totalCount - metrics.completedCount;
+      const pendingCount = metrics.pendingSessionCount;
       const completionRate = metrics.totalCount > 0
         ? Math.round((metrics.completedCount / metrics.totalCount) * 100)
         : 0;
