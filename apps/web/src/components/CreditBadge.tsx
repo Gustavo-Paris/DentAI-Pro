@@ -54,7 +54,7 @@ export function CreditBadge({ variant = 'compact', className, showTooltip = true
         )}
       >
         <Zap className="w-3 h-3" />
-        <span>{creditsRemaining}</span>
+        <span>{creditsRemaining} cr</span>
       </Link>
     );
 

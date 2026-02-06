@@ -13,6 +13,7 @@ export * as inventory from './inventory';
 export * as subscriptions from './subscriptions';
 export * as drafts from './drafts';
 export * as payments from './payments';
+export * as creditUsage from './credit-usage';
 
 // Re-export client for edge cases where direct access is needed
 export { supabase } from './client';

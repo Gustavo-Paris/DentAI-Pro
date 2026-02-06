@@ -1,15 +1,24 @@
+import { useState } from 'react';
 import { useSubscription } from '@/hooks/useSubscription';
 import { PricingCard } from './PricingCard';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
 
 export function PricingSection() {
   const {
     plans,
     subscription,
+    currentPlan,
     isLoading,
     checkout,
     isCheckingOut,
   } = useSubscription();
+
+  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
+
+  const currentPlanSortOrder = currentPlan?.sort_order;
 
   if (isLoading) {
     return (
@@ -30,7 +39,27 @@ export function PricingSection() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 max-w-6xl mx-auto">
+      {/* Billing Period Toggle */}
+      <div className="flex items-center justify-center gap-3">
+        <Label htmlFor="billing-toggle" className={billingPeriod === 'monthly' ? 'font-semibold' : 'text-muted-foreground'}>
+          Mensal
+        </Label>
+        <Switch
+          id="billing-toggle"
+          checked={billingPeriod === 'yearly'}
+          onCheckedChange={(checked) => setBillingPeriod(checked ? 'yearly' : 'monthly')}
+        />
+        <Label htmlFor="billing-toggle" className={billingPeriod === 'yearly' ? 'font-semibold' : 'text-muted-foreground'}>
+          Anual
+        </Label>
+        {billingPeriod === 'yearly' && (
+          <Badge variant="secondary" className="text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/30">
+            -16%
+          </Badge>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 max-w-6xl mx-auto items-stretch">
         {plans.map((plan) => (
           <PricingCard
             key={plan.id}
@@ -39,6 +68,8 @@ export function PricingSection() {
             isPopular={plan.id === 'price_pro_monthly_v2'}
             onSelect={checkout}
             isLoading={isCheckingOut}
+            currentPlanSortOrder={currentPlanSortOrder}
+            billingPeriod={billingPeriod}
           />
         ))}
       </div>

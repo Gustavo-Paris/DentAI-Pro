@@ -5,9 +5,10 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Camera, Loader2, Save, Building2, ImageIcon, Sparkles, FileText } from 'lucide-react';
+import { Camera, Loader2, Save, Building2, ImageIcon, Sparkles, FileText, ArrowRight } from 'lucide-react';
 import { getInitials } from '@/lib/utils';
 import { SubscriptionStatus } from '@/components/pricing/SubscriptionStatus';
+import { CreditUsageHistory } from '@/components/pricing/CreditUsageHistory';
 import { useSubscription, formatPrice } from '@/hooks/useSubscription';
 import { DetailPage } from '@pageshell/composites';
 
@@ -174,6 +175,7 @@ export default function Profile() {
           content: () => (
             <div className="space-y-6">
               <SubscriptionStatus />
+              <CreditUsageHistory />
               <UpgradeCTA />
             </div>
           ),
@@ -206,6 +208,8 @@ function PaymentHistorySection({
   paymentRecords: Array<{ id: string; amount: number; currency: string; status: string; created_at: string; invoice_pdf: string | null }> | undefined;
   isLoading: boolean;
 }) {
+  const { isFree } = useSubscription();
+
   const statusLabel: Record<string, string> = {
     succeeded: 'Pago',
     failed: 'Falhou',
@@ -237,8 +241,18 @@ function PaymentHistorySection({
           <FileText className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
           <h3 className="font-semibold font-display mb-2">Nenhuma fatura encontrada</h3>
           <p className="text-sm text-muted-foreground">
-            Suas faturas aparecerão aqui após o primeiro pagamento.
+            {isFree
+              ? 'Assine um plano para começar a receber faturas.'
+              : 'Suas faturas aparecerão aqui após o primeiro pagamento.'}
           </p>
+          {isFree && (
+            <Button asChild variant="outline" size="sm" className="mt-4">
+              <Link to="/pricing">
+                Ver Planos
+                <ArrowRight className="h-4 w-4 ml-1" />
+              </Link>
+            </Button>
+          )}
         </CardContent>
       </Card>
     );
