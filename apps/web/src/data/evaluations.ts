@@ -98,7 +98,7 @@ export async function updateStatus(id: string, status: string) {
 // ---------------------------------------------------------------------------
 
 export async function getDashboardMetrics({ userId, oneWeekAgo }: DashboardMetricsParams) {
-  const [totalResult, completedResult, weeklyResult] = await Promise.all([
+  const [totalResult, completedResult, weeklyResult, pendingSessionsResult] = await Promise.all([
     supabase
       .from('evaluations')
       .select('*', { count: 'exact', head: true })
@@ -113,12 +113,24 @@ export async function getDashboardMetrics({ userId, oneWeekAgo }: DashboardMetri
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId)
       .gte('created_at', oneWeekAgo),
+    // Count distinct sessions (cases) with at least one non-completed evaluation
+    supabase
+      .from('evaluations')
+      .select('session_id')
+      .eq('user_id', userId)
+      .neq('status', 'completed'),
   ]);
+
+  // Count unique session_ids for pending cases
+  const pendingSessionIds = new Set(
+    (pendingSessionsResult.data || []).map(e => e.session_id || e)
+  );
 
   return {
     totalCount: totalResult.count || 0,
     completedCount: completedResult.count || 0,
     weeklyCount: weeklyResult.count || 0,
+    pendingSessionCount: pendingSessionIds.size,
   };
 }
 
