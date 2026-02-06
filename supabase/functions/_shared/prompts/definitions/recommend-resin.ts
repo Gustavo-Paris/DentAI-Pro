@@ -729,6 +729,15 @@ Responda em formato JSON:
   }
 }
 
+ALERTA DE GUIA DE SILICONE (quando aplic\u00e1vel):
+Se o tratamento \u00e9 reanatomiza\u00e7\u00e3o em dente ANTERIOR (11-13, 21-23) com aumento de volume significativo:
+- Adicionar ao array "alerts":
+  "Considerar confec\u00e7\u00e3o de guia de silicone (mock-up) para controle de espessura e previsibilidade do resultado final"
+- Este alerta \u00e9 OBRIGAT\u00d3RIO quando:
+  \u2022 O dente \u00e9 anterior E
+  \u2022 A indica\u00e7\u00e3o envolve reanatomiza\u00e7\u00e3o, aumento de volume ou corre\u00e7\u00e3o de propor\u00e7\u00e3o (conoide/microdontia) E
+  \u2022 O tamanho da restaura\u00e7\u00e3o \u00e9 "Grande" ou "Extensa"
+
 PRIMEIRA RECOMENDA\u00c7\u00c3O DO CHECKLIST (quando aplic\u00e1vel):
 Se o paciente deseja cor mais clara (BL1, BL2, Hollywood) E o tratamento \u00e9 resina:
 - Adicionar como PRIMEIRO item do checklist:

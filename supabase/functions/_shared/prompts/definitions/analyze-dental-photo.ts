@@ -181,6 +181,22 @@ Para indicações protéticas sem lesão cariosa ativa, cavity_class DEVE ser nu
 
 cavity_class deve ser preenchido APENAS quando existe uma lesão cariosa ativa ou restauração direta a ser realizada/substituída com formato de cavidade classificável.
 
+⚠️ REGRA CRÍTICA — MICRODONTIA E REANATOMIZAÇÃO:
+- Dentes com microdontia (especialmente incisivos laterais 12/22) que necessitam de AUMENTO DE VOLUME (reanatomização) NÃO possuem cavidade cariosa classificável.
+- A classificação de Black (Classes I-VI) aplica-se a CAVIDADES — não a aumento de volume em dentes íntegros ou com proporção reduzida.
+- Para microdontia verdadeira ou dentes conoides com indicação de reanatomização:
+  → cavity_class: null (não há cavidade)
+  → treatment_indication: "resina"
+  → indication_reason: "Reanatomização por proporção inadequada — dente com volume reduzido necessitando aumento de largura e/ou comprimento"
+  → restoration_size: "Extensa" (pois envolve reconstrução de volume)
+- Para restauração PRÉVIA insatisfatória em lateral com proporção reduzida:
+  → cavity_class: null (substituição estética, não cavidade cariosa)
+  → treatment_indication: "resina"
+  → indication_reason: "Substituição de restauração insatisfatória com reanatomização — [descrever problema específico]"
+- ❌ ERRADO: Dente 12 conoide → Classe I Extensa (Classe I = cavidade oclusal, não existe em anterior para volume)
+- ❌ ERRADO: Dente 12 reanatomização → Classe IV (Classe IV = fratura de ângulo, não aumento de volume)
+- ✅ CERTO: Dente 12 conoide → cavity_class: null, resina, "Reanatomização por microdontia"
+
 ⚠️ REGRA CRÍTICA — DESGASTE INCISAL vs CLASSE IV:
 - Classe IV de Black = FRATURA ou CÁRIE que envolve o ângulo incisal COM destruição da face proximal
 - Desgaste incisal (erosão, atrição, abrasão) no bordo incisal SEM envolvimento proximal = NÃO É Classe IV
@@ -321,7 +337,7 @@ Incisivos laterais com proporção reduzida são MUITO MAIS FREQUENTEMENTE resta
 5. O dente apresenta diferença de cor/textura entre regiões (indica restauração existente)
 
 ✅ Nesses casos, indique:
-- cavity_class: Classe apropriada para a restauração (IV para incisal, III para proximal)
+- cavity_class: Classe apropriada APENAS se existe cavidade cariosa real. Se é substituição estética sem cavidade → cavity_class: null (veja regra de reanatomização acima)
 - notes: "Fratura presente - não confundir com anomalia dental"
 - notes: "Restauração antiga visível - tamanho real pode ser maior"
 - treatment_indication: "resina" (reparo/reconstrução)
