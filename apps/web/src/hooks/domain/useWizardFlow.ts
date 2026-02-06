@@ -766,7 +766,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
           tooth_bounds: toothData?.tooth_bounds || null,
           patient_aesthetic_goals:
             patientPreferences.whiteningLevel === 'hollywood'
-              ? 'Clareamento intenso - nível Hollywood (BL3)'
+              ? 'Clareamento intenso - nível Hollywood (BL1)'
               : patientPreferences.whiteningLevel === 'white'
                 ? 'Clareamento notável - dentes mais brancos (BL1/BL2)'
                 : patientPreferences.whiteningLevel === 'natural'
@@ -802,7 +802,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
                     toothData?.substrate_condition || formData.substrateCondition,
                   aestheticGoals:
                     patientPreferences.whiteningLevel === 'hollywood'
-                      ? 'Paciente deseja clareamento INTENSO - nível Hollywood (BL3). A cor ALVO da faceta e do cimento deve ser BL3 ou compatível.'
+                      ? 'Paciente deseja clareamento INTENSO - nível Hollywood (BL1). A cor ALVO da faceta e do cimento deve ser BL1 ou compatível.'
                       : patientPreferences.whiteningLevel === 'white'
                         ? 'Paciente deseja clareamento NOTÁVEL (BL1/BL2). A cor ALVO da faceta e do cimento deve ser BL1/BL2 ou compatível.'
                         : patientPreferences.whiteningLevel === 'natural'
@@ -833,7 +833,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
                 longevityExpectation: formData.longevityExpectation,
                 aestheticGoals:
                   patientPreferences.whiteningLevel === 'hollywood'
-                    ? 'Paciente deseja clareamento INTENSO - nível Hollywood (BL3). Ajustar todas as camadas 2-3 tons mais claras que a cor detectada.'
+                    ? 'Paciente deseja clareamento INTENSO - nível Hollywood (BL1). Ajustar todas as camadas 2-3 tons mais claras que a cor detectada.'
                     : patientPreferences.whiteningLevel === 'white'
                       ? 'Paciente deseja clareamento NOTÁVEL (BL1/BL2). Ajustar camadas 1-2 tons mais claras.'
                       : patientPreferences.whiteningLevel === 'natural'
