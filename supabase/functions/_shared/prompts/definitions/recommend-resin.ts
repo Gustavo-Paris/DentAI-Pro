@@ -178,7 +178,7 @@ TABELA DE REFER\u00caNCIA PARA COMBINA\u00c7\u00d5ES:
 \u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524
 \u2502 Dentina/Corpo       \u2502 D BL-L (Empress), WB (Forma), OA (Z350)         \u2502
 \u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524
-\u2502 Efeitos Incisais    \u2502 CT, GT, WT (Z350), Trans (Forma/Empress)        \u2502
+\u2502 Efeitos Incisais    \u2502 CT, GT, BT, YT (Z350), Trans (Forma/Empress)        \u2502
 \u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524
 \u2502 Esmalte Final       \u2502 WE (Palfique LX5), MW (Estelite)                \u2502
 \u2502 (acabamento)        \u2502 Priorizar polimento superior                    \u2502
@@ -270,6 +270,25 @@ function buildContralateralSection(
   if (!contralateralTooth || !contralateralProtocol) return ''
 
   return `
+=== REGRA DE DIFERENCIAÇÃO HOMÓLOGOS ===
+- Dentes homólogos (13/23, 12/22, 11/21) com diagnósticos IDÊNTICOS:
+  → PROTOCOLO deve ser idêntico (mesmas camadas, cores, técnicas)
+  → MAS observações/notas devem ser RESUMIDAS: "Mesmo protocolo do dente [contralateral]"
+  → NÃO repita textualmente as mesmas observações em ambos
+
+=== CONSISTÊNCIA DE RESINAS NO MESMO PACIENTE ===
+⚠️ REGRA OBRIGATÓRIA: Dentes do MESMO paciente com tratamentos SEMELHANTES devem usar:
+- MESMA marca de resina (resin_brand)
+- MESMAS cores por camada (shades)
+- MESMA técnica de estratificação
+
+EXCEÇÕES permitidas APENAS quando:
+- Dente com substrato ESCURECIDO necessita de opaco extra
+- Mudança de cor SIGNIFICATIVA em um dente específico
+- Tipos de tratamento DIFERENTES (resina vs porcelana)
+
+❌ PROIBIDO: Mesmo paciente, mesmo tipo de tratamento → resinas diferentes entre dentes
+
 === PROTOCOLO DO DENTE CONTRALATERAL (OBRIGATÓRIO COPIAR!) ===
 ⚠️ O dente contralateral ${contralateralTooth} JÁ FOI PROCESSADO e recebeu este protocolo:
 
@@ -357,11 +376,19 @@ ESTRUTURA OBRIGAT\u00d3RIA - 5 CAMADAS (simplificar para 3-4 se n\u00edvel est\u
 2. CRISTAS PROXIMAIS (defini\u00e7\u00e3o anat\u00f4mica - ANTES da dentina):
    - Objetivo: Defini\u00e7\u00e3o das cristas mesial e distal
    - Resinas: Esmalte um tom mais claro que o dente
+   - Para pacientes com DENTES CLAREADOS ou que desejam cor mais clara:
+     \u2192 Op\u00e7\u00e3o padr\u00e3o: A1E (Z350)
+     \u2192 Op\u00e7\u00e3o clareada: BL-L (IPS Empress Direct) ou Bianco (Estelite)
    - Espessura: 0.2mm
    - T\u00e9cnica: Aplicar nas bordas proximais para criar profundidade
 
-3. DENTINA/CORPO (estrutura principal):
-   - Objetivo: Estrutura principal da restaura\u00e7\u00e3o
+3. DENTINA/CORPO (estrutura principal - OPCIONAL para altera\u00e7\u00f5es m\u00ednimas):
+   - Objetivo: Adicionar volume caso necess\u00e1rio e mascarar interface dente/resina
+   - Em casos de POUCA MUDAN\u00c7A (recontorno est\u00e9tico, leve aumento incisal):
+     \u2192 Esta camada \u00e9 OPCIONAL - marcar "optional": true
+     \u2192 O esmalte pode ser aplicado diretamente sobre o dente
+   - Em casos de mudan\u00e7a SIGNIFICATIVA (cavidade profunda, substrato comprometido):
+     \u2192 Esta camada \u00e9 OBRIGAT\u00d3RIA
    - Resinas: WB (Z350/Forma) ou Dentina clara (B1)
    - Espessura: 0.5-1.0mm
    - Com mascaramento integrado se substrato exigir (N\u00c3O criar camada separada de opaco)
@@ -386,7 +413,11 @@ ESTRUTURA OBRIGAT\u00d3RIA - 5 CAMADAS (simplificar para 3-4 se n\u00edvel est\u
 
 4. EFEITOS INCISAIS (OPCIONAL - flag optional: true):
    - Objetivo: Confec\u00e7\u00e3o de halo opaco incisal
-   - Resinas: Corantes (White/Blue) ou Dentina clara
+   - \u26a0\ufe0f REGRA DE CORANTES: A Z350 N\u00c3O possui corantes pr\u00f3prios!
+     Para efeitos incisais com corantes, usar:
+     - IVOCLAR IPS Empress Direct Color (White, Blue, Honey, Brown)
+     - OU dentina clara como substituto
+   - Resinas alternativas para efeitos: CT, GT, BT (Z350 transl\u00facidos)
    - Espessura: 0.1mm
    - T\u00e9cnica: Aplicar corante branco na borda incisal para criar efeito de halo opaco natural
    - INCLUIR apenas para demanda est\u00e9tica alta/muito alta
@@ -394,7 +425,8 @@ ESTRUTURA OBRIGAT\u00d3RIA - 5 CAMADAS (simplificar para 3-4 se n\u00edvel est\u
 
    \u26a0\ufe0f REGRA CR\u00cdTICA DE SHADE PARA EFEITOS:
    - O shade da camada de efeitos DEVE SER DIFERENTE do shade da camada de esmalte!
-   - Efeitos deve usar shades TRANSL\u00daCIDOS/OPALESCENTES: CT, GT, WT, Trans, Opal
+   - Efeitos deve usar shades TRANSL\u00daCIDOS/OPALESCENTES: CT, GT, BT, YT (Z350), Trans, Opal
+   - Z350 XT transl\u00facidos: CT (Clear Trans), GT (Gray Trans), BT (Blue Trans), YT (Yellow Trans). WT N\u00c3O EXISTE na Z350 \u2014 use WB (White Body) se precisar de opacidade branca
    - \u274c ERRADO: Efeitos=A1E, Esmalte=A1E (shades id\u00eanticos = sem diferencia\u00e7\u00e3o \u00f3ptica)
    - \u2705 CERTO: Efeitos=CT (transl\u00facido), Esmalte=A1E (esmalte colorido)
    - Se a linha n\u00e3o possuir shade transl\u00facido diferente do esmalte, OMITA esta camada
@@ -416,7 +448,7 @@ ESTRUTURA OBRIGAT\u00d3RIA - 5 CAMADAS (simplificar para 3-4 se n\u00edvel est\u
    - Estelite Omega/Sigma Quick (MW, WE): nanopart\u00edculas esf\u00e9ricas, excelente polimento
 
    PRIORIDADE 2 (bom polimento):
-   - Filtek Z350 XT (A1E, CT, GT, WE, WT): nanocluster, bom polimento
+   - Filtek Z350 XT (A1E, A2E, A3E, B1E, CT, GT, BT, YT): nanocluster, bom polimento
    - FORMA Ultradent (Trans, Enamel): boa capacidade
 
    PRIORIDADE 3 (polimento adequado):
@@ -440,7 +472,7 @@ TABELA DE CORES DE ESMALTE POR LINHA:
 \u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524
 \u2502 Estelite Sigma Quick\u2502 WE (White Enamel), CE (Clear Enamel)\u2502
 \u2502 Estelite Omega      \u2502 WE, JE (Jet Enamel), CT, MW         \u2502
-\u2502 Filtek Z350 XT      \u2502 CT, GT, WE, WT                      \u2502
+\u2502 Filtek Z350 XT      \u2502 CT, GT, BT, YT, A1E, A2E, A3E, B1E                      \u2502
 \u2502 Harmonize           \u2502 Incisal, TN (Trans Neutral)         \u2502
 \u2502 IPS Empress Direct  \u2502 Trans 20, Trans 30, Opal            \u2502
 \u2502 Vittra APS          \u2502 Trans, INC                          \u2502
@@ -465,7 +497,8 @@ LINHAS COM CORES BL DISPON\u00cdVEIS:
 - Palfique LX5: BL1, BL2, BL3
 - Forma (Ultradent): BL
 - Filtek Z350 XT: WB, WE (aproxima\u00e7\u00e3o)
-- Estelite Bianco: espec\u00edfica para clareados
+- Estelite Bianco/MW: espec\u00edfica para clareados
+- IPS Empress Direct: BL-L (esmalte transl\u00facido para clareados)
 
 LINHAS SEM CORES BL:
 - Estelite Sigma Quick (usar B1/A1 como aproxima\u00e7\u00e3o)
@@ -513,6 +546,10 @@ REGRAS ADICIONAIS:
 - \u274c ERRADO: Step diz "Aplicar shade WT" mas tabela de camadas mostra "A1E" (shade WT não existe na linha)
 - \u2705 CERTO: Step diz "Aplicar shade A1E" consistente com a tabela de camadas
 - Os steps, a tabela de camadas e os shades DEVEM ser 100% sincronizados
+- WORKFLOW OBRIGATÓRIO para gerar checklist:
+  1. PRIMEIRO: Definir todas as camadas com seus shades
+  2. SEGUNDO: Gerar checklist usando APENAS os shades das camadas definidas
+  3. TERCEIRO: VERIFICAR que cada shade mencionado no checklist existe na tabela de camadas
 
 \u26a0\ufe0f REGRA CRÍTICA - PADRONIZAÇÃO DE NOME DE MARCA:
 - Use SEMPRE o nome do fabricante EXATAMENTE como aparece no catálogo de resinas fornecido acima
@@ -691,6 +728,11 @@ Responda em formato JSON:
     "confidence": "alta/m\u00e9dia/baixa"
   }
 }
+
+PRIMEIRA RECOMENDA\u00c7\u00c3O DO CHECKLIST (quando aplic\u00e1vel):
+Se o paciente deseja cor mais clara (BL1, BL2, Hollywood) E o tratamento \u00e9 resina:
+- Adicionar como PRIMEIRO item do checklist:
+  "Considerar tratamento clareador previamente \u00e0s resinas para otimizar resultado est\u00e9tico e sele\u00e7\u00e3o de cor"
 
 Responda APENAS com o JSON, sem texto adicional.`
   },

@@ -71,7 +71,7 @@ const WHITENING_INSTRUCTIONS: Record<string, { instruction: string; intensity: s
     intensity: "NOTICEABLE"
   },
   hollywood: {
-    instruction: "Make ALL visible teeth EXTREMELY WHITE (BL3/0M1). Pure bright white like porcelain veneers. The teeth should appear DRAMATICALLY lighter - almost glowing white. This is the MAXIMUM possible whitening.",
+    instruction: "Make ALL visible teeth EXTREMELY WHITE (BL1). Pure bright white like porcelain veneers. The teeth should appear DRAMATICALLY lighter - almost glowing white. This is the MAXIMUM possible whitening.",
     intensity: "MAXIMUM"
   }
 };
@@ -319,22 +319,19 @@ async function generateSimulation(
            lower.includes('close-up extremo');
   });
 
-  // Filter out structural changes that would alter tooth dimensions
-  const structuralKeywords = [
-    'alargar', 'widen', 'larger', 'maior', 'aumentar largura',
-    'aumentar volume', 'add volume', 'volume', 'bulk',
-    'expandir', 'expand', 'extend', 'estender',
+  // Allow shape changes from DSD analysis (conoid laterals, visagism corrections)
+  // Only filter out truly destructive structural changes
+  const destructiveKeywords = [
     'reconstruir', 'reconstruct', 'rebuild',
-    'mudar formato', 'change shape', 'reshape'
   ];
 
   const filteredSuggestions = analysis.suggestions?.filter(s => {
     const change = s.proposed_change.toLowerCase();
     const issue = s.current_issue.toLowerCase();
-    const isStructural = structuralKeywords.some(kw =>
+    const isDestructive = destructiveKeywords.some(kw =>
       change.includes(kw) || issue.includes(kw)
     );
-    return !isStructural;
+    return !isDestructive;
   }) || [];
 
   const allowedChangesFromAnalysis = filteredSuggestions.length > 0

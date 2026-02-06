@@ -139,16 +139,23 @@ function buildBaseCorrections(): string {
 3. Fechar pequenos espaços adicionando material MÍNIMO nos pontos de contato - NÃO alargando dentes
 4. PRESERVAR mamelons se visíveis (projeções naturais da borda incisal)
 5. MANTER micro-textura natural do esmalte - NÃO deixar dentes "lisos demais"
-6. PRESERVAR translucidez incisal natural - NÃO tornar dentes opacos uniformemente`
+6. PRESERVAR translucidez incisal natural - NÃO tornar dentes opacos uniformemente
+7. Corrigir formato de incisivos laterais conoides (12/22) - aumentar largura e comprimento para proporção adequada
+8. Aplicar contorno recomendado pelo visagismo quando o formato atual for inadequado
+
+SHAPE CORRECTIONS (quando análise sugere):
+- Modificar contornos dos dentes para harmonizar com recommended_tooth_shape
+- Para laterais conoides: adicionar volume para proporção adequada (lateral = ~62% da largura do central)
+- Para dentes com formato inadequado ao visagismo: ajustar contornos suavemente`
 }
 
 const PROPORTION_RULES = `PROPORTION RULES:
 - Keep original tooth width proportions exactly
 - NEVER make teeth appear thinner or narrower than original
-- NEVER make teeth appear WIDER or LARGER than original
-- DO NOT change the overall tooth silhouette or outline
-- Only add material to fill defects - do NOT reshape tooth contours
-- Maintain the natural width-to-height ratio of each tooth`
+- NEVER make teeth appear WIDER or LARGER than original UNLESS the DSD analysis explicitly recommends contour improvement (e.g., conoid laterals, visagism shape change)
+- Only add material to fill defects - do NOT reshape tooth contours unless clinically indicated by analysis
+- Maintain the natural width-to-height ratio of each tooth
+- EXCEPTION: When allowedChangesFromAnalysis includes shape corrections, apply those contour changes`
 
 // --- Variant builders ---
 

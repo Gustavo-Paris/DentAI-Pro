@@ -24,7 +24,7 @@ const WHITENING_KEYWORDS = [
 function detectWhiteningLevel(text: string): 'natural' | 'white' | 'hollywood' | null {
   const lower = text.toLowerCase();
   // Hollywood level
-  if (lower.includes('hollywood') || lower.includes('intenso') || lower.includes('bl3')) return 'hollywood';
+  if (lower.includes('hollywood') || lower.includes('intenso') || lower.includes('bl1')) return 'hollywood';
   // White level
   if (lower.includes('notável') || lower.includes('bl1') || lower.includes('bl2') || lower === 'white') return 'white';
   // Natural level

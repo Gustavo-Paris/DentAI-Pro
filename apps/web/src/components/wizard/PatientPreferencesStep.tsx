@@ -41,7 +41,7 @@ const WHITENING_OPTIONS: {
     value: 'hollywood',
     label: 'Hollywood',
     description: 'Clareamento intenso, sorriso de celebridade',
-    shade: 'BL3',
+    shade: 'BL1',
     icon: Star,
   },
 ];
