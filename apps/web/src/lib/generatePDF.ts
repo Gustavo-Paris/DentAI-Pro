@@ -2,6 +2,7 @@ import jsPDF from 'jspdf';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { PDFData } from '@/types/protocol';
+import { getConfidenceConfig } from '@/lib/confidence-config';
 
 export type { PDFData };
 
@@ -665,17 +666,11 @@ export async function generateProtocolPDF(data: PDFData): Promise<void> {
   if (data.confidence) {
     checkPageBreak(15);
     
-    const confidenceConfig: Record<string, { color: [number, number, number]; bgColor: [number, number, number]; label: string }> = {
-      'alta': { color: [22, 163, 74], bgColor: [220, 252, 231], label: 'ALTA' },
-      'media': { color: [202, 138, 4], bgColor: [254, 249, 195], label: 'MEDIA' },
-      'baixa': { color: [220, 38, 38], bgColor: [254, 226, 226], label: 'BAIXA' },
-    };
+    const conf = getConfidenceConfig(data.confidence);
     
-    const conf = confidenceConfig[data.confidence.toLowerCase().replace('é', 'e')] || confidenceConfig['media'];
-    
-    pdf.setFillColor(...conf.bgColor);
+    pdf.setFillColor(...conf.pdfBgColor);
     pdf.roundedRect(margin, y, 60, 10, 2, 2, 'F');
-    addText(`Confianca: ${conf.label}`, margin + 5, y + 6, { fontSize: 9, fontStyle: 'bold', color: conf.color });
+    addText(`Confianca: ${conf.pdfLabel}`, margin + 5, y + 6, { fontSize: 9, fontStyle: 'bold', color: conf.pdfColor });
     
     y += 18;
   }

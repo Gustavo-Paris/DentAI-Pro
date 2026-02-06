@@ -131,6 +131,11 @@ export function ProportionsCard({ analysis }: ProportionsCardProps) {
             <Progress value={analysis.symmetry_score} className="h-2" />
           </div>
         </div>
+        {(analysis.golden_ratio_compliance < 60 || analysis.symmetry_score < 60) && (
+          <p className="text-xs text-muted-foreground">
+            Valores pré-tratamento. O planejamento proposto visa melhorar proporção e simetria.
+          </p>
+        )}
 
         {/* Proportion items */}
         <div className="space-y-2 pt-2 border-t border-border">

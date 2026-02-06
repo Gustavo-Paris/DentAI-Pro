@@ -300,7 +300,13 @@ export function DetailPage<TData = unknown>(props: DetailPageProps<TData>) {
   const renderContent = (data: TData): React.ReactNode => {
     // Custom children render
     if (children) {
-      return children(data);
+      return (
+        <>
+          {slots?.beforeContent}
+          {children(data)}
+          {slots?.afterContent}
+        </>
+      );
     }
 
     // Tabs layout
@@ -357,7 +363,9 @@ export function DetailPage<TData = unknown>(props: DetailPageProps<TData>) {
                   {section.description && (
                     <p className="text-sm text-muted-foreground mb-4">{section.description}</p>
                   )}
-                  {section.children}
+                  {typeof section.content === 'function'
+                    ? section.content(data)
+                    : section.content ?? section.children}
                 </section>
               );
             })}
