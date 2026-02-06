@@ -140,22 +140,17 @@ serve(async (req) => {
 
     const userId = claimsData.claims.sub as string;
 
-    // Check rate limit (AI_HEAVY: 10/min, 50/hour, 200/day)
+    // Check rate limit + credits in parallel (no data dependency between them)
     const supabaseService = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "");
-    const rateLimitResult = await checkRateLimit(
-      supabaseService,
-      userId,
-      "analyze-dental-photo",
-      RATE_LIMITS.AI_HEAVY
-    );
+    const [rateLimitResult, creditResult] = await Promise.all([
+      checkRateLimit(supabaseService, userId, "analyze-dental-photo", RATE_LIMITS.AI_HEAVY),
+      checkAndUseCredits(supabaseService, userId, "case_analysis"),
+    ]);
 
     if (!rateLimitResult.allowed) {
       logger.warn(`Rate limit exceeded for user ${userId} on analyze-dental-photo`);
       return createRateLimitResponse(rateLimitResult, corsHeaders);
     }
-
-    // Check and consume credits (1 credit for case_analysis)
-    const creditResult = await checkAndUseCredits(supabaseService, userId, "case_analysis");
     if (!creditResult.allowed) {
       logger.warn(`Insufficient credits for user ${userId} on case_analysis`);
       return createInsufficientCreditsResponse(creditResult, corsHeaders);

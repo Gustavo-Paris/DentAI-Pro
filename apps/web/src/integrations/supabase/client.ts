@@ -10,5 +10,12 @@ export const supabase = createClient<Database>(env.VITE_SUPABASE_URL, env.VITE_S
     storage: localStorage,
     persistSession: true,
     autoRefreshToken: true,
-  }
+  },
+  global: {
+    fetch: (url, options) => {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 55_000);
+      return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timeout));
+    },
+  },
 });

@@ -530,12 +530,24 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
       const photoPath = await uploadImageToStorage(imageBase64);
       if (photoPath) setUploadedPhotoPath(photoPath);
 
-      const { data, error } = await invokeFunction<{ analysis: PhotoAnalysisResult }>(
-        'analyze-dental-photo',
-        { body: { imageBase64, imageType: 'intraoral' } },
+      const { data } = await withRetry(
+        async () => {
+          const result = await invokeFunction<{ analysis: PhotoAnalysisResult }>(
+            'analyze-dental-photo',
+            { body: { imageBase64, imageType: 'intraoral' } },
+          );
+          if (result.error) throw result.error;
+          return result;
+        },
+        {
+          maxRetries: 2,
+          baseDelay: 3000,
+          onRetry: (attempt) => {
+            logger.warn(`Analysis retry attempt ${attempt}`);
+            toast.info('Reconectando ao servidor...', { duration: 3000 });
+          },
+        },
       );
-
-      if (error) throw error;
 
       if (data?.analysis) {
         const analysis = data.analysis as PhotoAnalysisResult;
@@ -621,12 +633,24 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
 
     setIsReanalyzing(true);
     try {
-      const { data, error } = await invokeFunction<{ analysis: PhotoAnalysisResult }>(
-        'analyze-dental-photo',
-        { body: { imageBase64, imageType: 'intraoral' } },
+      const { data } = await withRetry(
+        async () => {
+          const result = await invokeFunction<{ analysis: PhotoAnalysisResult }>(
+            'analyze-dental-photo',
+            { body: { imageBase64, imageType: 'intraoral' } },
+          );
+          if (result.error) throw result.error;
+          return result;
+        },
+        {
+          maxRetries: 2,
+          baseDelay: 3000,
+          onRetry: (attempt) => {
+            logger.warn(`Reanalysis retry attempt ${attempt}`);
+            toast.info('Reconectando ao servidor...', { duration: 3000 });
+          },
+        },
       );
-
-      if (error) throw error;
 
       if (data?.analysis) {
         const analysis = data.analysis as PhotoAnalysisResult;
