@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
-import { evaluations, profiles } from '@/data';
+import { evaluations, patients, profiles } from '@/data';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useWizardDraft, WizardDraft } from '@/hooks/useWizardDraft';
 import { format, startOfWeek, endOfWeek, subDays } from 'date-fns';
@@ -14,6 +14,7 @@ import { ptBR } from 'date-fns/locale';
 export interface ClinicalInsights {
   treatmentDistribution: Array<{ label: string; value: number; color: string }>;
   topResin: string | null;
+  topResins: Array<{ name: string; count: number }>;
   inventoryRate: number;
   totalEvaluated: number;
 }
@@ -35,6 +36,8 @@ export interface DashboardSession {
 }
 
 export interface DashboardMetrics {
+  totalCases: number;
+  totalPatients: number;
   pendingSessions: number;
   weeklySessions: number;
   completionRate: number;
@@ -171,14 +174,12 @@ function computeInsights(
     const name = row.resins?.name;
     if (name) resinCounts.set(name, (resinCounts.get(name) || 0) + 1);
   }
-  let topResin: string | null = null;
-  let maxResinCount = 0;
-  for (const [name, count] of resinCounts) {
-    if (count > maxResinCount) {
-      topResin = name;
-      maxResinCount = count;
-    }
-  }
+  const topResins = Array.from(resinCounts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([name, count]) => ({ name, count }));
+
+  const topResin = topResins.length > 0 ? topResins[0].name : null;
 
   // 3. Inventory rate
   const inventoryRate = rows.length > 0 ? Math.round((inventoryCount / rows.length) * 100) : 0;
@@ -213,6 +214,7 @@ function computeInsights(
     clinicalInsights: {
       treatmentDistribution,
       topResin,
+      topResins,
       inventoryRate,
       totalEvaluated: rows.length,
     },
@@ -228,6 +230,7 @@ const dashboardQueryKeys = {
   all: ['dashboard'] as const,
   profile: () => [...dashboardQueryKeys.all, 'profile'] as const,
   metrics: () => [...dashboardQueryKeys.all, 'metrics'] as const,
+  counts: () => [...dashboardQueryKeys.all, 'counts'] as const,
   insights: () => [...dashboardQueryKeys.all, 'insights'] as const,
 };
 
@@ -299,6 +302,20 @@ export function useDashboard(): DashboardState {
     enabled: !!user,
     staleTime: 30 * 1000,
   });
+  const { data: countsData } = useQuery({
+    queryKey: dashboardQueryKeys.counts(),
+    queryFn: async () => {
+      if (!user) throw new Error('User not authenticated');
+      const [totalCases, totalPatients] = await Promise.all([
+        evaluations.countByUserId(user.id),
+        patients.countByUserId(user.id),
+      ]);
+      return { totalCases, totalPatients };
+    },
+    enabled: !!user,
+    staleTime: 60 * 1000,
+  });
+
   const { data: insightsData, isLoading: loadingInsights } = useQuery({
     queryKey: dashboardQueryKeys.insights(),
     queryFn: async () => {
@@ -346,11 +363,15 @@ export function useDashboard(): DashboardState {
   const firstName = extractFirstName(profile?.full_name);
   const greeting = getTimeGreeting();
 
-  const metrics: DashboardMetrics = dashboardData?.metrics ?? {
-    pendingSessions: 0,
-    weeklySessions: 0,
-    completionRate: 0,
-    pendingTeeth: 0,
+  const metrics: DashboardMetrics = {
+    totalCases: countsData?.totalCases ?? 0,
+    totalPatients: countsData?.totalPatients ?? 0,
+    ...(dashboardData?.metrics ?? {
+      pendingSessions: 0,
+      weeklySessions: 0,
+      completionRate: 0,
+      pendingTeeth: 0,
+    }),
   };
   const sessions: DashboardSession[] = dashboardData?.sessions ?? [];
 
