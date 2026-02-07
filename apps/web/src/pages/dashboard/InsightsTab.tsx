@@ -11,7 +11,7 @@ import {
 import type { ChartConfig } from '@/components/ui/chart';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
-  PieChart, Pie, Cell, Legend,
+  PieChart, Pie, Cell,
   BarChart, Bar,
 } from 'recharts';
 import { useScrollReveal } from '@/hooks/useScrollReveal';

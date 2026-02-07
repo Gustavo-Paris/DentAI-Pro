@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -22,7 +22,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { AlertTriangle, Check, Info, Sparkles, CircleDot, RefreshCw, Loader2, Plus, Wrench, Wand2, Crown, CalendarIcon, Zap, Package, User } from 'lucide-react';
+import { AlertTriangle, Check, Info, Sparkles, CircleDot, RefreshCw, Loader2, Plus, Wrench, Wand2, Crown, CalendarIcon, Zap, Package, User, Mic, MicOff, ShieldCheck, ShieldAlert, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { PatientAutocomplete } from '@/components/PatientAutocomplete';
@@ -30,6 +30,8 @@ import { calculateAge } from '@/lib/dateUtils';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { calculateComplexity } from '@/lib/complexity-score';
+import { useSpeechToText } from '@/hooks/useSpeechToText';
 
 // Expanded treatment types
 export type TreatmentType = 'resina' | 'porcelana' | 'coroa' | 'implante' | 'endodontia' | 'encaminhamento' | 'gengivoplastia';
@@ -216,6 +218,18 @@ export function ReviewAnalysisStep({
   const [internalDobError, setInternalDobError] = useState(false);
   const [dobInputText, setDobInputText] = useState('');
   const [dobCalendarOpen, setDobCalendarOpen] = useState(false);
+  const speech = useSpeechToText('pt-BR');
+
+  // Append transcript to clinical notes when user stops recording
+  const prevListeningRef = useRef(false);
+  useEffect(() => {
+    if (prevListeningRef.current && !speech.isListening && speech.transcript) {
+      const existing = formData.clinicalNotes;
+      const separator = existing ? '\n' : '';
+      onFormChange({ clinicalNotes: existing + separator + speech.transcript });
+    }
+    prevListeningRef.current = speech.isListening;
+  }, [speech.isListening, speech.transcript, formData.clinicalNotes, onFormChange]);
 
   // Use external dobError if provided, otherwise use internal state
   const dobError = externalDobError ?? internalDobError;
@@ -271,6 +285,9 @@ export function ReviewAnalysisStep({
     setManualTooth('');
     setShowManualAdd(false);
   };
+
+  // Complexity score
+  const complexity = calculateComplexity(detectedTeeth.filter(t => selectedTeeth.includes(t.tooth)));
 
   // Build summary data
   const treatmentBreakdown = (() => {
@@ -1002,13 +1019,44 @@ export function ReviewAnalysisStep({
             <span className="text-sm font-medium">Notas Clínicas</span>
           </AccordionTrigger>
           <AccordionContent className="px-4 pb-4">
-            <div className="pt-2">
-              <Textarea
-                placeholder="Adicione observações clínicas, histórico relevante, ou detalhes específicos do caso..."
-                value={formData.clinicalNotes}
-                onChange={(e) => onFormChange({ clinicalNotes: e.target.value })}
-                rows={4}
-              />
+            <div className="pt-2 space-y-2">
+              <div className="relative">
+                <Textarea
+                  placeholder="Adicione observações clínicas, histórico relevante, ou detalhes específicos do caso..."
+                  value={formData.clinicalNotes}
+                  onChange={(e) => onFormChange({ clinicalNotes: e.target.value })}
+                  rows={4}
+                />
+                {speech.isSupported && (
+                  <Button
+                    type="button"
+                    variant={speech.isListening ? 'destructive' : 'ghost'}
+                    size="icon"
+                    className={cn(
+                      'absolute bottom-2 right-2 h-8 w-8',
+                      speech.isListening && 'animate-pulse',
+                    )}
+                    onClick={speech.toggle}
+                  >
+                    {speech.isListening ? (
+                      <MicOff className="w-4 h-4" />
+                    ) : (
+                      <Mic className="w-4 h-4" />
+                    )}
+                  </Button>
+                )}
+              </div>
+              {speech.isListening && (
+                <div className="flex items-center gap-2 text-xs text-destructive">
+                  <span className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
+                  Ouvindo...
+                  {speech.transcript && (
+                    <span className="text-muted-foreground truncate">
+                      {speech.transcript}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           </AccordionContent>
         </AccordionItem>
@@ -1048,6 +1096,25 @@ export function ReviewAnalysisStep({
                 {patientBirthDate ? `${calculateAge(patientBirthDate)} anos` : '—'}
               </p>
             </div>
+            {detectedTeeth.length > 0 && (
+              <div>
+                <p className="text-muted-foreground text-xs">Complexidade</p>
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    'mt-0.5 gap-1',
+                    complexity.level === 'simples' && 'border-green-500 text-green-700 dark:text-green-400',
+                    complexity.level === 'moderado' && 'border-amber-500 text-amber-700 dark:text-amber-400',
+                    complexity.level === 'complexo' && 'border-red-500 text-red-700 dark:text-red-400',
+                  )}
+                >
+                  {complexity.level === 'simples' && <ShieldCheck className="w-3 h-3" />}
+                  {complexity.level === 'moderado' && <Shield className="w-3 h-3" />}
+                  {complexity.level === 'complexo' && <ShieldAlert className="w-3 h-3" />}
+                  {complexity.level === 'simples' ? 'Simples' : complexity.level === 'moderado' ? 'Moderado' : 'Complexo'}
+                </Badge>
+              </div>
+            )}
           </div>
         </div>
       )}

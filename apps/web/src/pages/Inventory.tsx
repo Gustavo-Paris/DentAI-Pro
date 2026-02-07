@@ -110,27 +110,28 @@ export default function Inventory() {
         }}
         sort={{
           options: [
-            { value: 'brand-asc', label: 'Marca (A-Z)' },
-            { value: 'shade-asc', label: 'Cor (A-Z)' },
-            { value: 'type-asc', label: 'Tipo' },
+            {
+              value: 'brand-asc',
+              label: 'Marca (A-Z)',
+              compare: (a: FlatInventoryItem, b: FlatInventoryItem) =>
+                a.brand.localeCompare(b.brand) ||
+                a.product_line.localeCompare(b.product_line) ||
+                a.shade.localeCompare(b.shade),
+            },
+            {
+              value: 'shade-asc',
+              label: 'Cor (A-Z)',
+              compare: (a: FlatInventoryItem, b: FlatInventoryItem) =>
+                a.shade.localeCompare(b.shade),
+            },
+            {
+              value: 'type-asc',
+              label: 'Tipo',
+              compare: (a: FlatInventoryItem, b: FlatInventoryItem) =>
+                a.type.localeCompare(b.type) || a.shade.localeCompare(b.shade),
+            },
           ],
           default: 'brand-asc',
-          compareFn: (key: string) => (a: FlatInventoryItem, b: FlatInventoryItem) => {
-            switch (key) {
-              case 'brand-asc':
-                return (
-                  a.brand.localeCompare(b.brand) ||
-                  a.product_line.localeCompare(b.product_line) ||
-                  a.shade.localeCompare(b.shade)
-                );
-              case 'shade-asc':
-                return a.shade.localeCompare(b.shade);
-              case 'type-asc':
-                return a.type.localeCompare(b.type) || a.shade.localeCompare(b.shade);
-              default:
-                return 0;
-            }
-          },
         }}
         pagination={false}
         headerActions={[

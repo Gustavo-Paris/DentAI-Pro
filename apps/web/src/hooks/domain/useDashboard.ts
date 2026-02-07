@@ -192,7 +192,6 @@ function computeInsights(
   for (let i = weeksBack - 1; i >= 0; i--) {
     const weekStart = startOfWeek(subDays(now, i * 7), { weekStartsOn: 1 });
     const key = weekStart.toISOString();
-    const label = format(weekStart, 'd MMM', { locale: ptBR });
     weekMap.set(key, 0);
     weekLabels.push(key);
   }
@@ -267,7 +266,7 @@ export function useDashboard(): DashboardState {
         evaluations.getRecent({ userId: user.id, limit: 50 }),
       ]);
 
-      const dashboardMetrics: DashboardMetrics = {
+      const dashboardMetrics: Omit<DashboardMetrics, 'totalCases' | 'totalPatients'> = {
         pendingSessions: metrics.pendingSessionCount,
         weeklySessions: metrics.weeklySessionCount,
         completionRate: metrics.completionRate,

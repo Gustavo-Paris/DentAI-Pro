@@ -103,7 +103,7 @@ function SessionCard({
 // =============================================================================
 
 export default function Evaluations() {
-  const { sessions, total, isLoading, isError, newSessionId, newTeethCount } =
+  const { sessions, isLoading, isError, newSessionId, newTeethCount } =
     useEvaluationSessions();
 
   // Clear navigation state after viewing

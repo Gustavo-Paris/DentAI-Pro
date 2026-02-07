@@ -82,13 +82,13 @@ describe('Credits banner pluralization', () => {
   });
 
   it('uses plural for 0 credits', () => {
-    const creditsRemaining = 0;
+    const creditsRemaining: number = 0;
     const text = `${creditsRemaining} crédito${creditsRemaining !== 1 ? 's' : ''} restante${creditsRemaining !== 1 ? 's' : ''}`;
     expect(text).toBe('0 créditos restantes');
   });
 
   it('uses plural for multiple credits', () => {
-    const creditsRemaining = 5;
+    const creditsRemaining: number = 5;
     const text = `${creditsRemaining} crédito${creditsRemaining !== 1 ? 's' : ''} restante${creditsRemaining !== 1 ? 's' : ''}`;
     expect(text).toBe('5 créditos restantes');
   });

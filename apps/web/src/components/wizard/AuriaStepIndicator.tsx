@@ -10,30 +10,39 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const STEP_ICONS = [Camera, Heart, Brain, Smile, ClipboardCheck, FileText];
-const STEP_LABELS = ['Foto', 'Preferências', 'Análise', 'DSD', 'Revisão', 'Resultado'];
+import type { LucideIcon } from 'lucide-react';
+
+const DEFAULT_ICONS: LucideIcon[] = [Camera, Heart, Brain, Smile, ClipboardCheck, FileText];
+const DEFAULT_LABELS = ['Foto', 'Preferências', 'Análise', 'DSD', 'Revisão', 'Resultado'];
 
 interface AuriaStepIndicatorProps {
   currentStep: number; // 0-indexed
   totalSteps: number;
   onStepClick?: (index: number) => void;
+  stepLabels?: string[];
+  stepIcons?: LucideIcon[];
 }
 
 export function AuriaStepIndicator({
   currentStep,
   totalSteps,
   onStepClick,
+  stepLabels,
+  stepIcons,
 }: AuriaStepIndicatorProps) {
+  const icons = stepIcons || DEFAULT_ICONS;
+  const labels = stepLabels || DEFAULT_LABELS;
+
   const steps = useMemo(
     () =>
       Array.from({ length: totalSteps }, (_, i) => ({
-        icon: STEP_ICONS[i] || FileText,
-        label: STEP_LABELS[i] || `Step ${i + 1}`,
+        icon: icons[i] || FileText,
+        label: labels[i] || `Step ${i + 1}`,
         isCompleted: i < currentStep,
         isActive: i === currentStep,
         isFuture: i > currentStep,
       })),
-    [currentStep, totalSteps],
+    [currentStep, totalSteps, icons, labels],
   );
 
   return (

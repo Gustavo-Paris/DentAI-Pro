@@ -75,8 +75,8 @@ describe('SharedEvaluation statistics', () => {
   });
 
   it('pluralizes completion count correctly', () => {
-    const count1 = 1;
-    const count2 = 2;
+    const count1: number = 1;
+    const count2: number = 2;
     expect(`concluído${count1 !== 1 ? 's' : ''}`).toBe('concluído');
     expect(`concluído${count2 !== 1 ? 's' : ''}`).toBe('concluídos');
   });

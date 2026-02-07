@@ -39,8 +39,8 @@ export interface ProfileActions {
   handleSave: () => Promise<void>;
   handleAvatarUpload: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
   handleLogoUpload: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
-  fileInputRef: React.RefObject<HTMLInputElement | null>;
-  logoInputRef: React.RefObject<HTMLInputElement | null>;
+  fileInputRef: React.RefObject<HTMLInputElement>;
+  logoInputRef: React.RefObject<HTMLInputElement>;
 }
 
 // ---------------------------------------------------------------------------

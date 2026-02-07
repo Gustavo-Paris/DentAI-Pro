@@ -155,7 +155,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
 
   const { invokeFunction } = useAuthenticatedFetch();
   const { user } = useAuth();
-  const { canUseCredits, refreshSubscription, creditsRemaining, getCreditCost } = useSubscription();
+  const { canUseCredits, refreshSubscription, getCreditCost } = useSubscription();
 
   const lastCompositeSourcePathRef = useRef<string | null>(null);
   

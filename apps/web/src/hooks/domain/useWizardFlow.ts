@@ -14,7 +14,6 @@ import type {
   DetectedTooth,
   TreatmentType,
 } from '@/components/wizard/ReviewAnalysisStep';
-import { TREATMENT_LABELS } from '@/components/wizard/ReviewAnalysisStep';
 import type { DSDResult } from '@/components/wizard/DSDStep';
 import type { PatientPreferences } from '@/components/wizard/PatientPreferencesStep';
 import { toast } from 'sonner';
@@ -107,6 +106,9 @@ export interface WizardFlowState {
   creditsRemaining: number;
   creditsTotal: number;
 
+  // Quick Case
+  isQuickCase: boolean;
+
   // Navigation
   canGoBack: boolean;
 }
@@ -122,6 +124,7 @@ export interface WizardFlowActions {
   // Navigation
   goToStep: (targetStep: number) => void;
   goToPreferences: () => void;
+  goToQuickCase: () => void;
   handlePreferencesContinue: () => void;
   handleBack: () => void;
   handleRetryAnalysis: () => void;
@@ -139,7 +142,7 @@ export interface WizardFlowActions {
   handleToothTreatmentChange: (tooth: string, treatment: TreatmentType) => void;
   handleRestoreAiSuggestion: (tooth: string) => void;
   handleReanalyze: () => void;
-  handlePatientSelect: (name: string, patientId: string | null, birthDate: string | null) => void;
+  handlePatientSelect: (name: string, patientId?: string, birthDate?: string | null) => void;
   handlePatientBirthDateChange: (date: string | null) => void;
   setDobValidationError: (v: boolean) => void;
 
@@ -438,6 +441,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     whiteningLevel: 'natural',
   });
   const [dobValidationError, setDobValidationError] = useState(false);
+  const [isQuickCase, setIsQuickCase] = useState(false);
   const [showRestoreModal, setShowRestoreModal] = useState(false);
   const [pendingDraft, setPendingDraft] = useState<WizardDraft | null>(null);
   const [originalToothTreatments, setOriginalToothTreatments] = useState<
@@ -451,6 +455,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
 
   const hasCheckedDraftRef = useRef(false);
   const hasShownCreditWarningRef = useRef(false);
+  const isQuickCaseRef = useRef(false);
 
   // -------------------------------------------------------------------------
   // Derived
@@ -627,7 +632,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
         const cost = getCreditCost('case_analysis');
         toast.success('Análise concluída', { description: `${cost} crédito utilizado.` });
         refreshSubscription();
-        setStep(4);
+        setStep(isQuickCaseRef.current ? 5 : 4);
       } else {
         throw new Error('Análise não retornou dados');
       }
@@ -1139,17 +1144,26 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
   const goToStep = useCallback((targetStep: number) => {
     // Only allow jumping to completed steps (past steps < current)
     if (targetStep >= step || targetStep < 1 || step === 6) return;
-    // Step 3 is auto-processing — redirect to step 2
+    // Step 3 is auto-processing — redirect to step 2 (or step 1 for quick case)
     if (targetStep === 3) {
-      setStep(2);
+      setStep(isQuickCase ? 1 : 2);
       return;
     }
+    // Quick case: skip steps 2 (preferences) and 4 (DSD)
+    if (isQuickCase && (targetStep === 2 || targetStep === 4)) return;
     setStep(targetStep);
-  }, [step]);
+  }, [step, isQuickCase]);
 
   const goToPreferences = useCallback(() => {
     setStep(2);
   }, []);
+
+  const goToQuickCase = useCallback(() => {
+    setIsQuickCase(true);
+    isQuickCaseRef.current = true;
+    setPatientPreferences({ whiteningLevel: 'natural' });
+    analyzePhoto();
+  }, [analyzePhoto]);
 
   const handlePreferencesContinue = useCallback(() => {
     analyzePhoto();
@@ -1161,15 +1175,25 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     } else if (step === 2) {
       setStep(1);
     } else if (step === 3) {
-      setStep(2);
+      if (isQuickCase) {
+        setStep(1);
+        setIsQuickCase(false);
+        isQuickCaseRef.current = false;
+      } else {
+        setStep(2);
+      }
       setAnalysisError(null);
       setIsAnalyzing(false);
     } else if (step === 4) {
       setStep(2);
     } else if (step === 5) {
-      setStep(4);
+      if (isQuickCase) {
+        setStep(3);
+      } else {
+        setStep(4);
+      }
     }
-  }, [step, navigate]);
+  }, [step, navigate, isQuickCase]);
 
   const handleRetryAnalysis = useCallback(() => {
     setAnalysisError(null);
@@ -1187,9 +1211,15 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     analysisAbortedRef.current = true;
     setIsAnalyzing(false);
     setAnalysisError(null);
-    setStep(2);
+    if (isQuickCase) {
+      setStep(1);
+      setIsQuickCase(false);
+      isQuickCaseRef.current = false;
+    } else {
+      setStep(2);
+    }
     toast.info('Análise cancelada.');
-  }, []);
+  }, [isQuickCase]);
 
   // -------------------------------------------------------------------------
   // DSD Actions
@@ -1307,7 +1337,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
   );
 
   const handlePatientSelect = useCallback(
-    (_name: string, patientId: string | null, birthDate: string | null) => {
+    (_name: string, patientId?: string, birthDate?: string | null) => {
       setSelectedPatientId(patientId || null);
       setPatientBirthDate(birthDate || null);
       setOriginalPatientBirthDate(birthDate || null);
@@ -1531,6 +1561,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     lastSavedAt,
     creditsRemaining,
     creditsTotal,
+    isQuickCase,
     canGoBack,
 
     // Actions
@@ -1539,6 +1570,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     setPatientPreferences,
     goToStep,
     goToPreferences,
+    goToQuickCase,
     handlePreferencesContinue,
     handleBack,
     handleRetryAnalysis,
