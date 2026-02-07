@@ -32,7 +32,7 @@ import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
 // Expanded treatment types
-export type TreatmentType = 'resina' | 'porcelana' | 'coroa' | 'implante' | 'endodontia' | 'encaminhamento';
+export type TreatmentType = 'resina' | 'porcelana' | 'coroa' | 'implante' | 'endodontia' | 'encaminhamento' | 'gengivoplastia';
 
 // Multi-tooth detection structure
 export interface DetectedTooth {
@@ -76,6 +76,7 @@ export const TREATMENT_LABELS: Record<TreatmentType, string> = {
   implante: 'Implante',
   endodontia: 'Tratamento de Canal',
   encaminhamento: 'Encaminhamento',
+  gengivoplastia: 'Gengivoplastia Estética',
 };
 
 export const TREATMENT_DESCRIPTIONS: Record<TreatmentType, string> = {
@@ -85,6 +86,7 @@ export const TREATMENT_DESCRIPTIONS: Record<TreatmentType, string> = {
   implante: 'Checklist de avaliação para implante',
   endodontia: 'Tratamento endodôntico necessário',
   encaminhamento: 'Encaminhamento para especialista',
+  gengivoplastia: 'Protocolo de gengivoplastia estética',
 };
 
 // Treatment border colors
@@ -95,6 +97,7 @@ const TREATMENT_BORDER_COLORS: Record<TreatmentType, string> = {
   implante: 'border-l-emerald-500',
   endodontia: 'border-l-red-500',
   encaminhamento: 'border-l-purple-500',
+  gengivoplastia: 'border-l-pink-500',
 };
 
 export interface ReviewFormData {
@@ -272,7 +275,7 @@ export function ReviewAnalysisStep({
   // Build summary data
   const treatmentBreakdown = (() => {
     const counts: Record<TreatmentType, number> = {
-      resina: 0, porcelana: 0, coroa: 0, implante: 0, endodontia: 0, encaminhamento: 0,
+      resina: 0, porcelana: 0, coroa: 0, implante: 0, endodontia: 0, encaminhamento: 0, gengivoplastia: 0,
     };
     for (const tooth of selectedTeeth) {
       const treatment = toothTreatments[tooth] || detectedTeeth.find(t => t.tooth === tooth)?.treatment_indication || 'resina';
@@ -335,6 +338,7 @@ export function ReviewAnalysisStep({
                   <SelectItem value="implante">Implante</SelectItem>
                   <SelectItem value="endodontia">Tratamento de Canal</SelectItem>
                   <SelectItem value="encaminhamento">Encaminhamento</SelectItem>
+                  <SelectItem value="gengivoplastia">Gengivoplastia Estética</SelectItem>
                 </SelectContent>
               </Select>
               {onRestoreAiSuggestion && originalToothTreatments[tooth.tooth] &&
@@ -446,6 +450,45 @@ export function ReviewAnalysisStep({
               {whiteningLevel === 'hollywood' ? 'Hollywood (BL1)' :
                whiteningLevel === 'white' ? 'Branco (BL2/BL3)' : 'Natural (A1/A2)'}
             </Badge>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Gengivoplasty Banner — auto-added from DSD */}
+      {selectedTeeth.includes('GENGIVO') && (
+        <Card className="border-pink-500/50 bg-pink-50 dark:bg-pink-950/20">
+          <CardContent className="py-4">
+            <div className="flex items-start gap-3">
+              <Sparkles className="w-5 h-5 text-pink-600 dark:text-pink-400 mt-0.5" />
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <h4 className="font-medium text-pink-800 dark:text-pink-200">
+                    Gengivoplastia Estética
+                  </h4>
+                  <Badge variant="secondary" className="text-[10px] bg-pink-100 dark:bg-pink-900/50 text-pink-700 dark:text-pink-300">
+                    Recomendado pelo DSD
+                  </Badge>
+                </div>
+                <p className="text-sm text-pink-700 dark:text-pink-300">
+                  A análise DSD identificou necessidade de harmonização gengival. Um protocolo dedicado de gengivoplastia será gerado.
+                </p>
+                {dsdSuggestions && dsdSuggestions.filter(s => {
+                  const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
+                  return text.includes('gengiv') || text.includes('zênite') || text.includes('zenite');
+                }).length > 0 && (
+                  <ul className="mt-2 space-y-1">
+                    {dsdSuggestions.filter(s => {
+                      const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
+                      return text.includes('gengiv') || text.includes('zênite') || text.includes('zenite');
+                    }).map((s, i) => (
+                      <li key={i} className="text-xs text-pink-600 dark:text-pink-400">
+                        Dente {s.tooth}: {s.proposed_change}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}

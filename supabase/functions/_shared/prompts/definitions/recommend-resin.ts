@@ -52,6 +52,13 @@ export interface Params {
   // Contralateral protocol (if already processed)
   contralateralProtocol?: unknown
   contralateralTooth?: string | null
+
+  // DSD context for this specific tooth
+  dsdContext?: {
+    currentIssue: string
+    proposedChange: string
+    observations: string[]
+  }
 }
 
 // ---------- helpers ----------
@@ -263,6 +270,27 @@ Quando aplicar clareamento, use cores mais claras em TODAS as camadas:
 `
 }
 
+function buildDSDContextSection(dsdContext?: { currentIssue: string; proposedChange: string; observations: string[] }): string {
+  if (!dsdContext) return ''
+
+  const observationsList = dsdContext.observations?.length
+    ? dsdContext.observations.map(o => `- ${o}`).join('\n')
+    : ''
+
+  return `
+=== CONTEXTO DO PLANEJAMENTO DIGITAL (DSD) ===
+A análise DSD identificou para este dente:
+- Situação atual: ${dsdContext.currentIssue}
+- Mudança proposta: ${dsdContext.proposedChange}
+${observationsList ? `\nObservações estéticas gerais:\n${observationsList}` : ''}
+
+⚠️ O protocolo de estratificação DEVE considerar estes achados do DSD.
+- Se o DSD propõe aumento incisal, o protocolo deve incluir camada de aumento incisal adequada
+- Se o DSD propõe correção de proporção, ajustar espessuras das camadas
+- Se há observações sobre simetria, garantir consistência com dentes contralaterais
+`
+}
+
 function buildContralateralSection(
   contralateralTooth: string | null | undefined,
   contralateralProtocol: unknown
@@ -330,6 +358,7 @@ export const recommendResin: PromptDefinition<Params> = {
     const advancedStratification = buildAdvancedStratificationSection(p.aestheticLevel)
     const bruxismSection = buildBruxismSection(p.bruxism)
     const aestheticGoalsSection = buildAestheticGoalsSection(p.aestheticGoals)
+    const dsdContextSection = buildDSDContextSection(p.dsdContext)
     const contralateralSection = buildContralateralSection(p.contralateralTooth, p.contralateralProtocol)
 
     return `Voc\u00ea \u00e9 um especialista em materiais dent\u00e1rios e t\u00e9cnicas restauradoras. Analise o caso cl\u00ednico abaixo e forne\u00e7a uma recomenda\u00e7\u00e3o COMPLETA com protocolo de estratifica\u00e7\u00e3o.
@@ -354,6 +383,7 @@ CASO CL\u00cdNICO:
 - Or\u00e7amento: ${p.budget} \u26a0\ufe0f RESPEITAR ESTA FAIXA!
 ${p.clinicalNotes ? `- Observa\u00e7\u00f5es cl\u00ednicas: ${p.clinicalNotes}` : ''}
 ${aestheticGoalsSection}
+${dsdContextSection}
 
 ${resinsByPriceSection}
 ${inventorySection}

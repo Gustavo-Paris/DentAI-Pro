@@ -21,6 +21,10 @@ export interface Params {
   restorationTeeth?: string
   /** Allowed changes from filtered analysis suggestions */
   allowedChangesFromAnalysis?: string
+  /** Layer type for multi-layer simulation (overrides caseType routing when set) */
+  layerType?: 'restorations-only' | 'whitening-restorations' | 'complete-treatment'
+  /** Gengivoplasty suggestions text, injected for complete-treatment layer */
+  gingivoSuggestions?: string
 }
 
 // --- Shared prompt blocks ---
@@ -274,6 +278,80 @@ ${qualityRequirements}
 Output: Same photo with ONLY teeth corrected.`
 }
 
+// --- Layer-specific builders ---
+
+function buildRestorationsOnlyPrompt(params: Params): string {
+  const absolutePreservation = buildAbsolutePreservation()
+  const baseCorrections = buildBaseCorrections()
+  const textureInstruction = buildTextureInstruction()
+  const qualityRequirements = buildQualityRequirements(params)
+  const allowedChangesFromAnalysis = params.allowedChangesFromAnalysis || ''
+
+  return `DENTAL PHOTO EDIT - RESTORATIONS ONLY (NO WHITENING)
+
+${absolutePreservation}
+
+TASK: Apply ONLY structural corrections to the teeth. Keep the NATURAL tooth color — NO whitening.
+
+⚠️ CRITICAL RULE: This layer shows ONLY restorative corrections. You must:
+- Fix chips, cracks, defects, and marginal staining on restorations
+- Correct tooth shapes and contours as indicated by analysis
+- Close gaps and harmonize proportions where indicated
+- Replace old/stained restorations with material matching the CURRENT natural tooth color
+- Apply all structural improvements from the analysis
+
+⚠️ You must NOT:
+- Whiten or brighten the teeth — keep the ORIGINAL natural color
+- Make teeth lighter than they currently are
+- The tooth color in the output must be IDENTICAL to the input color
+
+DENTAL CORRECTIONS:
+${baseCorrections}
+${textureInstruction}
+${allowedChangesFromAnalysis}
+
+${PROPORTION_RULES}
+
+${qualityRequirements}
+
+Output: Same photo with teeth structurally corrected but at their ORIGINAL natural color.`
+}
+
+function buildWithGengivoplastyPrompt(params: Params): string {
+  const absolutePreservation = buildAbsolutePreservation()
+  const whiteningPrioritySection = buildWhiteningPrioritySection(params)
+  const baseCorrections = buildBaseCorrections()
+  const textureInstruction = buildTextureInstruction()
+  const qualityRequirements = buildQualityRequirements(params)
+  const allowedChangesFromAnalysis = params.allowedChangesFromAnalysis || ''
+
+  return `DENTAL PHOTO EDIT - COMPLETE TREATMENT WITH GENGIVOPLASTY
+
+${absolutePreservation}
+
+TASK: Edit teeth AND gingival contour. This is the COMPLETE treatment simulation including gengivoplasty.
+
+⚠️ EXCEPTION TO GINGIVA PRESERVATION: In this layer, you ARE ALLOWED to modify the gingival contour.
+The gum line should be recontoured to show the effect of gengivoplasty:
+- Expose more clinical crown by moving the gingival margin apically (towards the root)
+- Create symmetrical gingival zeniths between contralateral teeth
+- Harmonize the gum line curvature across the smile
+- The recontoured gums must still look NATURAL (pink, healthy tissue appearance)
+
+${params.gingivoSuggestions ? `GENGIVOPLASTY SPECIFICATIONS:\n${params.gingivoSuggestions}\n` : ''}
+
+${whiteningPrioritySection}DENTAL CORRECTIONS:
+${baseCorrections}
+${textureInstruction}
+${allowedChangesFromAnalysis}
+
+${PROPORTION_RULES}
+
+${qualityRequirements}
+
+Output: Same photo with teeth corrected AND gingival recontouring applied.`
+}
+
 // --- Prompt definition ---
 
 export const dsdSimulation: PromptDefinition<Params> = {
@@ -286,6 +364,19 @@ export const dsdSimulation: PromptDefinition<Params> = {
   mode: 'image-edit',
 
   system: (params: Params): string => {
+    // Layer-specific routing takes precedence when set
+    if (params.layerType) {
+      switch (params.layerType) {
+        case 'restorations-only':
+          return buildRestorationsOnlyPrompt(params)
+        case 'complete-treatment':
+          return buildWithGengivoplastyPrompt(params)
+        case 'whitening-restorations':
+          // Falls through to standard caseType routing below
+          break
+      }
+    }
+
     switch (params.caseType) {
       case 'reconstruction':
         return buildReconstructionPrompt(params)

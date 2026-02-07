@@ -260,6 +260,9 @@ serve(async (req) => {
 
     // Build prompt using prompt management module
     const promptDef = getPrompt('recommend-resin');
+    // Read optional DSD context from request body
+    const dsdContext = (rawData as Record<string, unknown>).dsdContext as RecommendResinParams['dsdContext'] | undefined;
+
     const promptParams: RecommendResinParams = {
       patientAge: data.patientAge,
       tooth: data.tooth,
@@ -284,6 +287,7 @@ serve(async (req) => {
       inventoryResins,
       contralateralProtocol,
       contralateralTooth,
+      dsdContext,
     };
 
     const prompt = promptDef.user(promptParams);

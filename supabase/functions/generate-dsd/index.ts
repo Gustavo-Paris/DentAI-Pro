@@ -94,9 +94,11 @@ interface RequestData {
   toothShape?: 'natural' | 'quadrado' | 'triangular' | 'oval' | 'retangular';
   additionalPhotos?: AdditionalPhotos;
   patientPreferences?: PatientPreferences;
-  analysisOnly?: boolean; // NEW: Return only analysis, skip simulation
+  analysisOnly?: boolean; // Return only analysis, skip simulation
   clinicalObservations?: string[]; // Observations from analyze-dental-photo to prevent contradictions
   clinicalTeethFindings?: ClinicalToothFinding[]; // Per-tooth findings to prevent false restoration claims
+  layerType?: 'restorations-only' | 'whitening-restorations' | 'complete-treatment'; // Multi-layer simulation
+  skipCreditCheck?: boolean; // Skip credit deduction for layer generation (already charged for initial call)
 }
 
 // Validate request
@@ -163,6 +165,12 @@ function validateRequest(data: unknown): { success: boolean; error?: string; dat
       )
     : undefined;
 
+  // Validate layerType if provided
+  const validLayerTypes = ['restorations-only', 'whitening-restorations', 'complete-treatment'];
+  const layerType = validLayerTypes.includes(req.layerType as string)
+    ? req.layerType as RequestData['layerType']
+    : undefined;
+
   return {
     success: true,
     data: {
@@ -173,9 +181,11 @@ function validateRequest(data: unknown): { success: boolean; error?: string; dat
       toothShape: toothShape as RequestData['toothShape'],
       additionalPhotos,
       patientPreferences,
-      analysisOnly: req.analysisOnly === true, // NEW
+      analysisOnly: req.analysisOnly === true,
       clinicalObservations,
       clinicalTeethFindings,
+      layerType,
+      skipCreditCheck: req.skipCreditCheck === true,
     },
   };
 }
@@ -244,7 +254,8 @@ async function generateSimulation(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabase: any,
   toothShape: string = 'natural',
-  patientPreferences?: PatientPreferences
+  patientPreferences?: PatientPreferences,
+  layerType?: 'restorations-only' | 'whitening-restorations' | 'complete-treatment',
 ): Promise<string | null> {
   const SIMULATION_TIMEOUT = 55_000; // 55s max
   
@@ -381,6 +392,20 @@ async function generateSimulation(
     }).join(', ');
   }
 
+  // Build gengivoplasty suggestions for complete-treatment layer
+  let gingivoSuggestions: string | undefined;
+  if (layerType === 'complete-treatment') {
+    const gingivoItems = analysis.suggestions?.filter(s => {
+      const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
+      return text.includes('gengiv') || text.includes('zênite') || text.includes('zenite') || text.includes('gengivoplastia');
+    }) || [];
+    if (gingivoItems.length > 0) {
+      gingivoSuggestions = gingivoItems.map(s =>
+        `- Dente ${s.tooth}: ${s.proposed_change}`
+      ).join('\n');
+    }
+  }
+
   // Build prompt via prompt management module
   const dsdSimulationPrompt = getPrompt('dsd-simulation');
   const simulationPrompt = dsdSimulationPrompt.system({
@@ -394,6 +419,8 @@ async function generateSimulation(
     specificInstructions,
     restorationTeeth,
     allowedChangesFromAnalysis,
+    layerType,
+    gingivoSuggestions,
   } as DsdSimulationParams);
   
   logger.log("DSD Simulation Request:", {
@@ -810,14 +837,17 @@ serve(async (req: Request) => {
       toothShape,
       additionalPhotos,
       patientPreferences,
-      analysisOnly, // NEW
+      analysisOnly,
       clinicalObservations,
       clinicalTeethFindings,
+      layerType,
+      skipCreditCheck,
     } = validation.data;
 
-    // Check and consume credits only for the initial DSD call (not regeneration)
+    // Check and consume credits only for the initial DSD call (not regeneration or layer generation)
     // regenerateSimulationOnly = phase 2 of same DSD, already charged
-    if (!regenerateSimulationOnly) {
+    // skipCreditCheck = layer generation calls (already charged for initial call)
+    if (!regenerateSimulationOnly && !skipCreditCheck) {
       const creditResult = await checkAndUseCredits(supabase, user.id, "dsd_simulation");
       if (!creditResult.allowed) {
         logger.warn(`Insufficient credits for user ${user.id} on dsd_simulation`);
@@ -945,7 +975,7 @@ serve(async (req: Request) => {
     // Generate simulation image
     let simulationUrl: string | null = null;
     try {
-      simulationUrl = await generateSimulation(imageBase64, analysis, user.id, supabase, toothShape || 'natural', patientPreferences);
+      simulationUrl = await generateSimulation(imageBase64, analysis, user.id, supabase, toothShape || 'natural', patientPreferences, layerType);
     } catch (simError) {
       logger.error("Simulation error:", simError);
       // Continue without simulation - analysis is still valid
@@ -955,27 +985,54 @@ serve(async (req: Request) => {
     if (evaluationId) {
       const { data: evalData, error: evalError } = await supabase
         .from("evaluations")
-        .select("user_id")
+        .select("user_id, dsd_simulation_layers")
         .eq("id", evaluationId)
         .single();
 
       if (!evalError && evalData && evalData.user_id === user.id) {
+        const updateData: Record<string, unknown> = {
+          dsd_analysis: analysis,
+          dsd_simulation_url: simulationUrl,
+        };
+
+        // When layerType is present, update the layers array
+        if (layerType && simulationUrl) {
+          const existingLayers = (evalData.dsd_simulation_layers as Array<Record<string, unknown>>) || [];
+          const newLayer = {
+            type: layerType,
+            label: layerType === 'restorations-only' ? 'Apenas Restaurações'
+              : layerType === 'complete-treatment' ? 'Tratamento Completo'
+              : 'Restaurações + Clareamento',
+            simulation_url: simulationUrl,
+            whitening_level: patientPreferences?.whiteningLevel || 'natural',
+            includes_gengivoplasty: layerType === 'complete-treatment',
+          };
+          // Replace existing layer of same type or append
+          const idx = existingLayers.findIndex((l) => l.type === layerType);
+          if (idx >= 0) {
+            existingLayers[idx] = newLayer;
+          } else {
+            existingLayers.push(newLayer);
+          }
+          updateData.dsd_simulation_layers = existingLayers;
+        }
+
         await supabase
           .from("evaluations")
-          .update({
-            dsd_analysis: analysis,
-            dsd_simulation_url: simulationUrl,
-          })
+          .update(updateData)
           .eq("id", evaluationId);
       }
     }
 
     // Return result with note if applicable
-    const result: DSDResult = {
+    const result: DSDResult & { layer_type?: string } = {
       analysis,
       simulation_url: simulationUrl,
       simulation_note: simulationNote,
     };
+    if (layerType) {
+      result.layer_type = layerType;
+    }
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
