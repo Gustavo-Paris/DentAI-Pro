@@ -35,6 +35,12 @@ interface CementationProtocol {
   confidence: "alta" | "média" | "baixa";
 }
 
+interface DSDContext {
+  currentIssue: string;
+  proposedChange: string;
+  observations: string[];
+}
+
 interface RequestData {
   evaluationId: string;
   teeth: string[];
@@ -43,6 +49,7 @@ interface RequestData {
   substrate: string;
   substrateCondition?: string;
   aestheticGoals?: string;
+  dsdContext?: DSDContext;
 }
 
 // Validate request
@@ -79,6 +86,7 @@ function validateRequest(data: unknown): { success: boolean; error?: string; dat
       substrate: req.substrate as string,
       substrateCondition: req.substrateCondition as string | undefined,
       aestheticGoals: req.aestheticGoals as string | undefined,
+      dsdContext: req.dsdContext as DSDContext | undefined,
     },
   };
 }
@@ -138,7 +146,7 @@ serve(async (req: Request) => {
       return createErrorResponse(validation.error || ERROR_MESSAGES.INVALID_REQUEST, 400, corsHeaders);
     }
 
-    const { evaluationId, teeth, shade, ceramicType, substrate, substrateCondition, aestheticGoals } = validation.data;
+    const { evaluationId, teeth, shade, ceramicType, substrate, substrateCondition, aestheticGoals, dsdContext } = validation.data;
 
     // Verify evaluation ownership
     const { data: evalData, error: evalError } = await supabase
@@ -153,8 +161,8 @@ serve(async (req: Request) => {
 
     // AI prompt for cementation protocol (from prompt registry)
     const prompt = getPrompt('recommend-cementation');
-    const systemPrompt = prompt.system({ teeth, shade, ceramicType: ceramicType!, substrate, substrateCondition, aestheticGoals });
-    const userPrompt = prompt.user({ teeth, shade, ceramicType: ceramicType!, substrate, substrateCondition, aestheticGoals });
+    const systemPrompt = prompt.system({ teeth, shade, ceramicType: ceramicType!, substrate, substrateCondition, aestheticGoals, dsdContext });
+    const userPrompt = prompt.user({ teeth, shade, ceramicType: ceramicType!, substrate, substrateCondition, aestheticGoals, dsdContext });
 
     // Tool definition for structured output
     const tools = [

@@ -7,12 +7,17 @@ import { ChevronDown, ChevronUp, Smile, Sparkles, Eye } from 'lucide-react';
 import { ComparisonSlider } from './ComparisonSlider';
 import { ProportionsCard } from './ProportionsCard';
 import type { DSDAnalysis } from '@/components/wizard/DSDStep';
+import type { SimulationLayer } from '@/types/dsd';
 
 interface CollapsibleDSDProps {
   analysis: DSDAnalysis;
   beforeImage: string | null;
   afterImage: string | null;
   defaultOpen?: boolean;
+  /** Multi-layer simulation data */
+  layers?: SimulationLayer[] | null;
+  /** Signed URLs keyed by layer type */
+  layerUrls?: Record<string, string>;
 }
 
 export function CollapsibleDSD({
@@ -20,13 +25,24 @@ export function CollapsibleDSD({
   beforeImage,
   afterImage,
   defaultOpen = false,
+  layers,
+  layerUrls = {},
 }: CollapsibleDSDProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+  const [activeLayerIndex, setActiveLayerIndex] = useState(0);
 
   // Quick summary metrics for collapsed state
   const symmetryScore = analysis.symmetry_score;
   const goldenRatio = analysis.golden_ratio_compliance;
   const suggestionsCount = analysis.suggestions?.length || 0;
+
+  const hasLayers = layers && layers.length > 0;
+  const activeLayer = hasLayers ? layers[activeLayerIndex] : null;
+  const activeAfterImage = activeLayer
+    ? layerUrls[activeLayer.type] || afterImage
+    : afterImage;
+
+  const hasAnySimulation = !!(afterImage || (hasLayers && Object.keys(layerUrls).length > 0));
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -47,6 +63,11 @@ export function CollapsibleDSD({
                         {suggestionsCount} sugestões
                       </Badge>
                     )}
+                    {hasLayers && layers.length > 1 && (
+                      <Badge variant="outline" className="text-xs">
+                        {layers.length} camadas
+                      </Badge>
+                    )}
                   </h3>
                   <div className="flex items-center gap-3 mt-1">
                     {symmetryScore !== undefined && (
@@ -64,9 +85,9 @@ export function CollapsibleDSD({
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-2">
-                {!isOpen && beforeImage && afterImage && (
+                {!isOpen && beforeImage && hasAnySimulation && (
                   <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
                     <Eye className="w-3 h-3 mr-1" />
                     Ver simulação
@@ -85,14 +106,39 @@ export function CollapsibleDSD({
 
       {/* Expanded Content */}
       <CollapsibleContent className="mt-4 space-y-4">
+        {/* Layer tabs — show when multiple layers exist */}
+        {hasLayers && layers.length > 1 && (
+          <div className="flex flex-wrap gap-2">
+            {layers.map((layer, idx) => (
+              <button
+                key={layer.type}
+                onClick={() => setActiveLayerIndex(idx)}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${
+                  activeLayerIndex === idx
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-secondary/50 text-muted-foreground border-border hover:border-primary/50'
+                }`}
+              >
+                {layer.label}
+                {layer.includes_gengivoplasty && (
+                  <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4">
+                    Gengiva
+                  </Badge>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Comparison Slider */}
-        {beforeImage && afterImage && (
+        {beforeImage && activeAfterImage && (
           <ComparisonSlider
             beforeImage={beforeImage}
-            afterImage={afterImage}
+            afterImage={activeAfterImage}
+            afterLabel={activeLayer?.label || 'Simulação DSD'}
           />
         )}
-        
+
         {/* Proportions */}
         <ProportionsCard analysis={analysis} />
       </CollapsibleContent>

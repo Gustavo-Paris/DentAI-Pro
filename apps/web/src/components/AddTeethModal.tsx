@@ -23,7 +23,7 @@ import {
 import { Loader2, Plus, Wrench, Wand2 } from 'lucide-react';
 import { logger } from '@/lib/logger';
 
-export type TreatmentType = 'resina' | 'porcelana' | 'coroa' | 'implante' | 'endodontia' | 'encaminhamento';
+export type TreatmentType = 'resina' | 'porcelana' | 'coroa' | 'implante' | 'endodontia' | 'encaminhamento' | 'gengivoplastia';
 
 // Interface for pending teeth from database - allows Json type for tooth_bounds
 export interface PendingTooth {
@@ -72,6 +72,7 @@ const TREATMENT_LABELS: Record<TreatmentType, string> = {
   implante: 'Implante',
   endodontia: 'Tratamento de Canal',
   encaminhamento: 'Encaminhamento',
+  gengivoplastia: 'Gengivoplastia Estética',
 };
 
 

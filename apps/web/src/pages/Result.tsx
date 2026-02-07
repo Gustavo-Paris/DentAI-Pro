@@ -186,6 +186,8 @@ export default function Result() {
                   beforeImage={r.photoUrls.frontal}
                   afterImage={r.dsdSimulationUrl}
                   defaultOpen={false}
+                  layers={r.dsdSimulationLayers}
+                  layerUrls={r.dsdLayerUrls}
                 />
               </section>
             )}

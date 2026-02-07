@@ -7,14 +7,17 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Smile, Loader2, RefreshCw, ChevronRight, Lightbulb, AlertCircle, Zap, ArrowRight, Check } from 'lucide-react';
+import { Smile, Loader2, RefreshCw, ChevronRight, Lightbulb, AlertCircle, Zap, ArrowRight, Check, Eye, EyeOff, Palette } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSubscription } from '@/hooks/useSubscription';
 import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
+import { AnnotationOverlay } from '@/components/dsd/AnnotationOverlay';
 import { ProportionsCard } from '@/components/dsd/ProportionsCard';
 import { LoadingOverlay } from '@/components/LoadingOverlay';
 import { logger } from '@/lib/logger';
 import { withRetry } from '@/lib/retry';
+import type { SimulationLayer, SimulationLayerType } from '@/types/dsd';
+import { LAYER_LABELS } from '@/types/dsd';
 
 // Tooth shape is now fixed as 'natural' - removed manual selection per market research
 const TOOTH_SHAPE = 'natural' as const;
@@ -56,6 +59,8 @@ export interface DSDResult {
   analysis: DSDAnalysis;
   simulation_url: string | null;
   simulation_note?: string;
+  /** Multi-layer simulations (restorations-only, whitening-restorations, complete-treatment) */
+  layers?: SimulationLayer[];
 }
 
 interface AdditionalPhotos {
@@ -104,6 +109,8 @@ interface DSDStepProps {
   clinicalTeethFindings?: ClinicalToothFinding[];
   /** Called whenever the DSD result changes (analysis complete, simulation ready, etc.) so the parent can persist it in drafts */
   onResultChange?: (result: DSDResult | null) => void;
+  /** Called when user changes whitening level in E4 comparison */
+  onPreferencesChange?: (prefs: PatientPreferences) => void;
 }
 
 const analysisSteps = [
@@ -113,7 +120,7 @@ const analysisSteps = [
   { label: 'Avaliando simetria...', duration: 2000 },
 ];
 
-export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, patientPreferences, detectedTeeth, initialResult, clinicalObservations, clinicalTeethFindings, onResultChange }: DSDStepProps) {
+export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, patientPreferences, detectedTeeth, initialResult, clinicalObservations, clinicalTeethFindings, onResultChange, onPreferencesChange }: DSDStepProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   // Initialize with draft result if available
@@ -123,10 +130,29 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
   const [isRegeneratingSimulation, setIsRegeneratingSimulation] = useState(false);
   const [isCompositing, setIsCompositing] = useState(false);
   
-  // NEW: Background simulation states
+  // Background simulation states
   const [isSimulationGenerating, setIsSimulationGenerating] = useState(false);
   const [simulationError, setSimulationError] = useState(false);
-  
+
+  // Multi-layer simulation states
+  const [layers, setLayers] = useState<SimulationLayer[]>([]);
+  const [layerUrls, setLayerUrls] = useState<Record<string, string>>({});
+  const [activeLayerIndex, setActiveLayerIndex] = useState(0);
+  const [layersGenerating, setLayersGenerating] = useState(false);
+  const [layerGenerationProgress, setLayerGenerationProgress] = useState(0);
+  const [failedLayers, setFailedLayers] = useState<SimulationLayerType[]>([]);
+  const [retryingLayer, setRetryingLayer] = useState<SimulationLayerType | null>(null);
+
+  // E4: Whitening comparison
+  const [whiteningComparison, setWhiteningComparison] = useState<Record<string, string>>({});
+  const [isComparingWhitening, setIsComparingWhitening] = useState(false);
+  const [showWhiteningComparison, setShowWhiteningComparison] = useState(false);
+
+  // E5: Annotations
+  const [showAnnotations, setShowAnnotations] = useState(false);
+  const annotationContainerRef = useRef<HTMLDivElement>(null);
+  const [annotationDimensions, setAnnotationDimensions] = useState({ width: 0, height: 0 });
+
   const { invokeFunction } = useAuthenticatedFetch();
   const { user } = useAuth();
   const { canUseCredits, refreshSubscription, creditsRemaining, getCreditCost } = useSubscription();
@@ -275,6 +301,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
   };
 
   // Deterministic post-processing: copy original pixels everywhere except teeth bounds
+  // Skip when multi-layer generation is active (compositing is handled inside generateAllLayers)
   useEffect(() => {
     const run = async () => {
       if (!user) return;
@@ -282,6 +309,9 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
       if (!simulationImageUrl) return;
       if (!result?.simulation_url) return;
       if (!toothBounds.length) return;
+
+      // Skip compositing when layers are in use (handled by generateAllLayers)
+      if (layers.length > 0 || layersGenerating) return;
 
       // Avoid infinite loops: if it's already a composited file, do nothing
       if (result.simulation_url.includes('dsd_composited_')) return;
@@ -321,64 +351,339 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
     };
 
     run();
-  }, [user, imageBase64, simulationImageUrl, result?.simulation_url, toothBounds]);
+  }, [user, imageBase64, simulationImageUrl, result?.simulation_url, toothBounds, layers.length, layersGenerating]);
 
-  // NEW: Background simulation generation
-  const generateSimulationBackground = useCallback(async (analysisData?: DSDAnalysis) => {
-    const analysis = analysisData || result?.analysis;
-    if (!imageBase64 || !analysis) return;
+  // Determine which layers to generate based on analysis
+  const determineLayersNeeded = useCallback((analysis: DSDAnalysis): SimulationLayerType[] => {
+    const needed: SimulationLayerType[] = ['restorations-only', 'whitening-restorations'];
 
-    setIsSimulationGenerating(true);
-    setSimulationError(false);
+    // Layer 3: complete-treatment with gengivoplasty
+    // Only if smile_line is 'alta' AND suggestions include gengivoplasty
+    const hasGingivoSuggestion = analysis.suggestions?.some(s => {
+      const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
+      return text.includes('gengivoplastia') || text.includes('gengival') || text.includes('zênite');
+    });
+
+    if (analysis.smile_line === 'alta' && hasGingivoSuggestion) {
+      needed.push('complete-treatment');
+    }
+
+    return needed;
+  }, []);
+
+  // Generate a single layer
+  const generateSingleLayer = useCallback(async (
+    analysis: DSDAnalysis,
+    layerType: SimulationLayerType,
+  ): Promise<SimulationLayer | null> => {
+    if (!imageBase64) return null;
 
     try {
-      const { data, fnError } = await withRetry(
+      const { data } = await withRetry(
         async () => {
-          const resp = await invokeFunction<DSDResult>('generate-dsd', {
+          const resp = await invokeFunction<DSDResult & { layer_type?: string }>('generate-dsd', {
             body: {
               imageBase64,
               toothShape: TOOTH_SHAPE,
               regenerateSimulationOnly: true,
               existingAnalysis: analysis,
-              patientPreferences, // Pass preferences for consistent background generation
+              patientPreferences,
+              layerType,
+              skipCreditCheck: true,
             },
           });
           if (resp.error || !resp.data?.simulation_url) {
             throw resp.error || new Error('Simulation returned no URL');
           }
-          return { data: resp.data, fnError: resp.error };
+          return resp;
         },
         {
           maxRetries: 2,
           baseDelay: 3000,
           onRetry: (attempt, err) => {
-            logger.warn(`DSD simulation retry ${attempt}:`, err);
+            logger.warn(`Layer ${layerType} retry ${attempt}:`, err);
           },
         },
       );
 
-      // Update result with new simulation URL
-      setResult((prev) => prev ? {
-        ...prev,
-        simulation_url: data!.simulation_url
-      } : prev);
+      if (!data?.simulation_url) return null;
 
-      // Load signed URL
-      const { data: signedData } = await supabase.storage
-        .from('dsd-simulations')
-        .createSignedUrl(data!.simulation_url, 3600);
+      return {
+        type: layerType,
+        label: LAYER_LABELS[layerType],
+        simulation_url: data.simulation_url,
+        whitening_level: patientPreferences?.whiteningLevel || 'natural',
+        includes_gengivoplasty: layerType === 'complete-treatment',
+      };
+    } catch (err) {
+      logger.error(`Layer ${layerType} generation error:`, err);
+      return null;
+    }
+  }, [imageBase64, invokeFunction, patientPreferences]);
 
-      if (signedData?.signedUrl) {
-        setSimulationImageUrl(signedData.signedUrl);
-        toast.success('Simulação visual pronta!');
+  // Composite a single layer: upload composited version and return signed URL
+  const compositeAndResolveLayer = useCallback(async (
+    layer: SimulationLayer,
+  ): Promise<{ layer: SimulationLayer; url: string | null }> => {
+    if (!layer.simulation_url) return { layer, url: null };
+
+    const { data: signedData } = await supabase.storage
+      .from('dsd-simulations')
+      .createSignedUrl(layer.simulation_url, 3600);
+
+    if (signedData?.signedUrl && toothBounds.length > 0 && !layer.simulation_url.includes('dsd_composited_') && user) {
+      try {
+        const compositeBlob = await createCompositeTeethOnly({
+          beforeDataUrl: imageBase64!,
+          afterUrl: signedData.signedUrl,
+          bounds: toothBounds,
+        });
+
+        const compositePath = `${user.id}/dsd_composited_${layer.type}_${Date.now()}.jpg`;
+        const { error: uploadError } = await supabase.storage
+          .from('dsd-simulations')
+          .upload(compositePath, compositeBlob, {
+            upsert: true,
+            contentType: 'image/jpeg',
+          });
+
+        if (!uploadError) {
+          const { data: compSignedData } = await supabase.storage
+            .from('dsd-simulations')
+            .createSignedUrl(compositePath, 3600);
+          return {
+            layer: { ...layer, simulation_url: compositePath },
+            url: compSignedData?.signedUrl || null,
+          };
+        }
+      } catch {
+        // Fall through to use original URL
+      }
+    }
+
+    return { layer, url: signedData?.signedUrl || null };
+  }, [imageBase64, toothBounds, user, createCompositeTeethOnly]);
+
+  // Generate all layers in parallel
+  const generateAllLayers = useCallback(async (analysisData?: DSDAnalysis, initialSimulationUrl?: string | null) => {
+    const analysis = analysisData || result?.analysis;
+    if (!imageBase64 || !analysis) return;
+
+    const layerTypes = determineLayersNeeded(analysis);
+    setLayersGenerating(true);
+    setIsSimulationGenerating(true);
+    setSimulationError(false);
+    setFailedLayers([]);
+    setLayerGenerationProgress(0);
+
+    try {
+      // Generate layers in parallel, but reuse initial simulation for whitening-restorations
+      const results = await Promise.allSettled(
+        layerTypes.map(async (layerType) => {
+          // Reuse the initial simulation URL for whitening-restorations (same prompt)
+          if (layerType === 'whitening-restorations' && initialSimulationUrl) {
+            setLayerGenerationProgress(prev => prev + 1);
+            return {
+              type: layerType,
+              label: LAYER_LABELS[layerType],
+              simulation_url: initialSimulationUrl,
+              whitening_level: patientPreferences?.whiteningLevel || 'natural',
+              includes_gengivoplasty: false,
+            } as SimulationLayer;
+          }
+          const layer = await generateSingleLayer(analysis, layerType);
+          setLayerGenerationProgress(prev => prev + 1);
+          return layer;
+        })
+      );
+
+      const successfulLayers: SimulationLayer[] = [];
+      const failed: SimulationLayerType[] = [];
+
+      results.forEach((r, i) => {
+        if (r.status === 'fulfilled' && r.value !== null) {
+          successfulLayers.push(r.value);
+        } else {
+          failed.push(layerTypes[i]);
+        }
+      });
+
+      setFailedLayers(failed);
+
+      if (successfulLayers.length === 0) {
+        setSimulationError(true);
+        return;
+      }
+
+      // Apply teeth-only compositing to each layer
+      const compositedLayers: SimulationLayer[] = [];
+      const resolvedUrls: Record<string, string> = {};
+
+      for (const layer of successfulLayers) {
+        const { layer: processed, url } = await compositeAndResolveLayer(layer);
+        compositedLayers.push(processed);
+        if (url) resolvedUrls[processed.type] = url;
+      }
+
+      setLayers(compositedLayers);
+      setLayerUrls(resolvedUrls);
+
+      // Set the main simulation URL to the whitening-restorations layer (or first available)
+      const mainLayer = compositedLayers.find(l => l.type === 'whitening-restorations') || compositedLayers[0];
+      if (mainLayer?.simulation_url) {
+        setResult(prev => prev ? {
+          ...prev,
+          simulation_url: mainLayer.simulation_url,
+          layers: compositedLayers,
+        } : prev);
+
+        const mainUrl = resolvedUrls[mainLayer.type] || null;
+        if (mainUrl) {
+          setSimulationImageUrl(mainUrl);
+        } else {
+          const { data: mainSignedData } = await supabase.storage
+            .from('dsd-simulations')
+            .createSignedUrl(mainLayer.simulation_url, 3600);
+          if (mainSignedData?.signedUrl) {
+            setSimulationImageUrl(mainSignedData.signedUrl);
+          }
+        }
+      }
+
+      const totalExpected = layerTypes.length;
+      if (failed.length > 0) {
+        toast.success(`${compositedLayers.length} de ${totalExpected} camadas prontas`, {
+          description: `${failed.length} camada(s) falharam — tente novamente`,
+        });
+      } else {
+        toast.success(`${compositedLayers.length} camadas de simulação prontas!`);
       }
     } catch (err) {
-      logger.error('Background simulation error:', err);
+      logger.error('Generate all layers error:', err);
       setSimulationError(true);
     } finally {
+      setLayersGenerating(false);
       setIsSimulationGenerating(false);
     }
-  }, [imageBase64, result?.analysis, invokeFunction, patientPreferences]);
+  }, [imageBase64, result?.analysis, determineLayersNeeded, generateSingleLayer, compositeAndResolveLayer, patientPreferences]);
+
+  // Retry a single failed layer
+  const retryFailedLayer = useCallback(async (layerType: SimulationLayerType) => {
+    const analysis = result?.analysis;
+    if (!imageBase64 || !analysis) return;
+
+    setRetryingLayer(layerType);
+    try {
+      const layer = await generateSingleLayer(analysis, layerType);
+      if (!layer) {
+        toast.error(`Falha ao gerar camada: ${LAYER_LABELS[layerType]}`);
+        return;
+      }
+
+      const { layer: processed, url } = await compositeAndResolveLayer(layer);
+
+      setLayers(prev => [...prev, processed]);
+      if (url) {
+        setLayerUrls(prev => ({ ...prev, [processed.type]: url }));
+      }
+      setFailedLayers(prev => prev.filter(t => t !== layerType));
+      setResult(prev => prev ? {
+        ...prev,
+        layers: [...(prev.layers || []), processed],
+      } : prev);
+      toast.success(`Camada "${LAYER_LABELS[layerType]}" pronta!`);
+    } catch (err) {
+      logger.error(`Retry layer ${layerType} error:`, err);
+      toast.error(`Falha ao gerar camada: ${LAYER_LABELS[layerType]}`);
+    } finally {
+      setRetryingLayer(null);
+    }
+  }, [imageBase64, result?.analysis, generateSingleLayer, compositeAndResolveLayer]);
+
+  // E4: Generate whitening comparison (3 levels)
+  const generateWhiteningComparison = useCallback(async () => {
+    const analysis = result?.analysis;
+    if (!imageBase64 || !analysis) return;
+
+    setIsComparingWhitening(true);
+    setShowWhiteningComparison(true);
+
+    const allLevels: Array<'natural' | 'white' | 'hollywood'> = ['natural', 'white', 'hollywood'];
+    const currentLevel = patientPreferences?.whiteningLevel || 'natural';
+
+    // Only generate the 2 missing levels
+    const missingLevels = allLevels.filter(l => l !== currentLevel);
+
+    try {
+      const results = await Promise.allSettled(
+        missingLevels.map(async (level) => {
+          const { data } = await withRetry(
+            async () => {
+              const resp = await invokeFunction<DSDResult>('generate-dsd', {
+                body: {
+                  imageBase64,
+                  toothShape: TOOTH_SHAPE,
+                  regenerateSimulationOnly: true,
+                  existingAnalysis: analysis,
+                  patientPreferences: { whiteningLevel: level },
+                  skipCreditCheck: true,
+                },
+              });
+              if (resp.error || !resp.data?.simulation_url) {
+                throw resp.error || new Error('No URL');
+              }
+              return resp;
+            },
+            { maxRetries: 1, baseDelay: 3000 },
+          );
+
+          if (data?.simulation_url) {
+            const { data: signedData } = await supabase.storage
+              .from('dsd-simulations')
+              .createSignedUrl(data.simulation_url, 3600);
+            return { level, url: signedData?.signedUrl || null };
+          }
+          return { level, url: null };
+        })
+      );
+
+      const urls: Record<string, string> = {};
+      // Add current level from existing layer
+      const currentLayerUrl = layerUrls['whitening-restorations'] || simulationImageUrl;
+      if (currentLayerUrl) {
+        urls[currentLevel] = currentLayerUrl;
+      }
+
+      for (const r of results) {
+        if (r.status === 'fulfilled' && r.value.url) {
+          urls[r.value.level] = r.value.url;
+        }
+      }
+
+      setWhiteningComparison(urls);
+      toast.success('Comparação de clareamento pronta!');
+    } catch (err) {
+      logger.error('Whitening comparison error:', err);
+      toast.error('Erro ao gerar comparação de clareamento');
+    } finally {
+      setIsComparingWhitening(false);
+    }
+  }, [imageBase64, result?.analysis, invokeFunction, patientPreferences, layerUrls, simulationImageUrl]);
+
+  // Measure annotation container
+  useEffect(() => {
+    if (!annotationContainerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setAnnotationDimensions({
+          width: entry.contentRect.width,
+          height: entry.contentRect.height,
+        });
+      }
+    });
+    observer.observe(annotationContainerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   const analyzeDSD = useCallback(async (retryCount = 0) => {
     const MAX_RETRIES = 2;
@@ -465,9 +770,10 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
         });
         refreshSubscription(); // Update credit count after consumption
         
-        // PHASE 2: Generate simulation in background
+        // PHASE 2: Generate all simulation layers in background
         // Note: We pass analysis directly since state update is async
-        generateSimulationBackground(data.analysis);
+        // Pass initial simulation_url so whitening-restorations layer can reuse it
+        generateAllLayers(data.analysis, data.simulation_url);
       } else {
         throw new Error('Dados de análise não retornados');
       }
@@ -513,7 +819,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
         setIsAnalyzing(false);
       }
     }
-  }, [imageBase64, canUseCredits, invokeFunction, refreshSubscription, getCreditCost, generateSimulationBackground, additionalPhotos, patientPreferences, clinicalObservations, clinicalTeethFindings]);
+  }, [imageBase64, canUseCredits, invokeFunction, refreshSubscription, getCreditCost, generateAllLayers, additionalPhotos, patientPreferences, clinicalObservations, clinicalTeethFindings]);
 
   // Auto-start analysis when component mounts with image - use ref to prevent loops
   useEffect(() => {
@@ -529,6 +835,14 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
     setSimulationImageUrl(null);
     setSimulationError(false);
     setIsSimulationGenerating(false);
+    setLayers([]);
+    setLayerUrls({});
+    setActiveLayerIndex(0);
+    setLayersGenerating(false);
+    setFailedLayers([]);
+    setRetryingLayer(null);
+    setShowWhiteningComparison(false);
+    setWhiteningComparison({});
     lastCompositeSourcePathRef.current = null;
     analysisStartedRef.current = false; // Allow retry
     analyzeDSD();
@@ -539,38 +853,16 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
 
     setIsRegeneratingSimulation(true);
     setSimulationError(false);
+    setFailedLayers([]);
+    lastCompositeSourcePathRef.current = null;
 
     try {
-      lastCompositeSourcePathRef.current = null;
-      const { data, error: fnError } = await invokeFunction<DSDResult>('generate-dsd', {
-        body: {
-          imageBase64,
-          regenerateSimulationOnly: true,
-          existingAnalysis: result.analysis,
-          toothShape: TOOTH_SHAPE,
-          patientPreferences, // Pass preferences for consistent regeneration
-        },
-      });
-
-      if (fnError) throw fnError;
-
-      if (data?.simulation_url) {
-        // Update result with new simulation URL
-        setResult((prev) => prev ? { ...prev, simulation_url: data.simulation_url } : prev);
-        
-        // Load signed URL
-        const { data: signedData } = await supabase.storage
-          .from('dsd-simulations')
-          .createSignedUrl(data.simulation_url, 3600);
-        
-        if (signedData?.signedUrl) {
-          setSimulationImageUrl(signedData.signedUrl);
-        }
-        
-        toast.success('Nova simulação gerada!');
-      } else {
-        throw new Error('Simulação não gerada');
-      }
+      // Regenerate all layers (no initial URL — force fresh generation)
+      setLayers([]);
+      setLayerUrls({});
+      setActiveLayerIndex(0);
+      await generateAllLayers(result.analysis, null);
+      toast.success('Novas simulações geradas!');
     } catch (error: unknown) {
       logger.error('Regenerate simulation error:', error);
       toast.error('Erro ao regenerar simulação. Tente novamente.');
@@ -781,7 +1073,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
           </Alert>
         )}
 
-        {/* NEW: Background simulation generating card */}
+        {/* Background simulation generating card */}
         {isSimulationGenerating && !simulationImageUrl && (
           <Card className="border-primary/30 bg-primary/5">
             <CardContent className="py-6">
@@ -790,9 +1082,11 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
                   <Loader2 className="w-6 h-6 text-primary animate-spin" />
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-medium">Gerando simulação visual...</h4>
+                  <h4 className="font-medium">Gerando camadas de simulação...</h4>
                   <p className="text-sm text-muted-foreground">
-                    Você pode continuar revisando a análise enquanto processamos
+                    {layerGenerationProgress > 0
+                      ? `${layerGenerationProgress} de ${determineLayersNeeded(analysis).length} camadas processadas`
+                      : 'Você pode continuar revisando a análise enquanto processamos'}
                   </p>
                 </div>
               </div>
@@ -800,7 +1094,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
           </Card>
         )}
 
-        {/* NEW: Background simulation error card */}
+        {/* Background simulation error card */}
         {simulationError && !simulationImageUrl && !isSimulationGenerating && (
           <Card className="border-amber-400 bg-amber-50/50 dark:bg-amber-950/20">
             <CardContent className="py-4">
@@ -814,7 +1108,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => generateSimulationBackground()}
+                  onClick={() => generateAllLayers()}
                 >
                   <RefreshCw className="w-3 h-3 mr-1" />
                   Tentar novamente
@@ -824,40 +1118,206 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
           </Card>
         )}
 
-        {/* Comparison Slider - when simulation is ready */}
-        {imageBase64 && simulationImageUrl && (
+        {/* Comparison Slider with Layer Tabs — when simulation is ready */}
+        {imageBase64 && (simulationImageUrl || layers.length > 0) && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="font-medium text-sm text-muted-foreground">Comparação Antes/Depois</h3>
+              <div className="flex items-center gap-2">
+                {/* Annotation toggle (E5) */}
+                {toothBounds.length > 0 && analysis.suggestions?.length > 0 && (
+                  <Button
+                    variant={showAnnotations ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setShowAnnotations(prev => !prev)}
+                    className="text-xs"
+                  >
+                    {showAnnotations ? <EyeOff className="w-3 h-3 mr-1" /> : <Eye className="w-3 h-3 mr-1" />}
+                    Marcações
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRegenerateSimulation}
+                  disabled={isRegeneratingSimulation || isCompositing || layersGenerating}
+                >
+                  {isRegeneratingSimulation || isCompositing || layersGenerating ? (
+                    <>
+                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                      {isCompositing ? 'Ajustando...' : 'Gerando...'}
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="w-3 h-3 mr-1" />
+                      Nova Simulação
+                      <span className="text-xs opacity-60 ml-0.5">(grátis)</span>
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            {/* Layer tabs */}
+            {(layers.length > 0 || failedLayers.length > 0) && (
+              <div className="flex flex-wrap gap-2">
+                {layers.map((layer, idx) => (
+                  <button
+                    key={layer.type}
+                    onClick={() => {
+                      setActiveLayerIndex(idx);
+                      const url = layerUrls[layer.type];
+                      if (url) setSimulationImageUrl(url);
+                    }}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${
+                      activeLayerIndex === idx
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-secondary/50 text-muted-foreground border-border hover:border-primary/50'
+                    }`}
+                  >
+                    {layer.label}
+                    {layer.includes_gengivoplasty && (
+                      <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4">
+                        Gengiva
+                      </Badge>
+                    )}
+                  </button>
+                ))}
+                {failedLayers.map((layerType) => (
+                  <button
+                    key={layerType}
+                    onClick={() => retryFailedLayer(layerType)}
+                    disabled={retryingLayer === layerType}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/20 disabled:opacity-50"
+                  >
+                    {retryingLayer === layerType ? (
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <RefreshCw className="w-3 h-3" />
+                    )}
+                    {LAYER_LABELS[layerType]}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div ref={annotationContainerRef} className="relative">
+              <ComparisonSlider
+                beforeImage={imageBase64}
+                afterImage={simulationImageUrl || ''}
+                afterLabel={layers.length > 0 ? layers[activeLayerIndex]?.label || 'Simulação DSD' : 'Simulação DSD'}
+                annotationOverlay={showAnnotations ? (
+                  <AnnotationOverlay
+                    suggestions={analysis.suggestions || []}
+                    toothBounds={toothBounds}
+                    visible={showAnnotations}
+                    containerWidth={annotationDimensions.width}
+                    containerHeight={annotationDimensions.height}
+                  />
+                ) : undefined}
+              />
+            </div>
+
+            {/* E4: Whitening comparison button */}
+            {!showWhiteningComparison && (
               <Button
                 variant="outline"
                 size="sm"
-                onClick={handleRegenerateSimulation}
-                disabled={isRegeneratingSimulation || isCompositing}
+                onClick={generateWhiteningComparison}
+                disabled={isComparingWhitening}
+                className="w-full"
               >
-                {isRegeneratingSimulation || isCompositing ? (
+                {isComparingWhitening ? (
                   <>
                     <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                    {isCompositing ? 'Ajustando...' : 'Gerando...'}
+                    Gerando comparação...
                   </>
                 ) : (
                   <>
-                    <RefreshCw className="w-3 h-3 mr-1" />
-                    Nova Simulação
-                    <span className="text-xs opacity-60 ml-0.5">(grátis)</span>
+                    <Palette className="w-3 h-3 mr-1" />
+                    Comparar Níveis de Clareamento
+                    <span className="text-xs opacity-60 ml-1">(grátis)</span>
                   </>
                 )}
               </Button>
-            </div>
-            <ComparisonSlider
-              beforeImage={imageBase64}
-              afterImage={simulationImageUrl}
-            />
+            )}
+
+            {/* E4: Whitening comparison grid */}
+            {showWhiteningComparison && Object.keys(whiteningComparison).length > 0 && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-medium">Comparação de Clareamento</h4>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowWhiteningComparison(false)}
+                    className="text-xs"
+                  >
+                    Fechar
+                  </Button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {(['natural', 'white', 'hollywood'] as const).map(level => {
+                    const url = whiteningComparison[level];
+                    if (!url) return (
+                      <div key={level} className="aspect-[4/3] rounded-lg bg-secondary/50 flex items-center justify-center">
+                        <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                      </div>
+                    );
+                    const labels: Record<string, string> = {
+                      natural: 'Natural (A1/A2)',
+                      white: 'Branco (BL2/BL3)',
+                      hollywood: 'Hollywood (BL1)',
+                    };
+                    const isActive = patientPreferences?.whiteningLevel === level;
+                    return (
+                      <div
+                        key={level}
+                        className={`rounded-lg overflow-hidden border-2 cursor-pointer transition-colors ${isActive ? 'border-primary' : 'border-transparent hover:border-primary/40'}`}
+                        onClick={() => {
+                          if (isActive) return;
+                          // Update preferences (persists via draft auto-save)
+                          onPreferencesChange?.({ whiteningLevel: level });
+                          // Swap the whitening-restorations layer URL instantly
+                          setLayerUrls(prev => ({ ...prev, 'whitening-restorations': url }));
+                          setLayers(prev => prev.map(l =>
+                            l.type === 'whitening-restorations'
+                              ? { ...l, whitening_level: level, simulation_url: url }
+                              : l
+                          ));
+                          // Update the main simulation view if whitening-restorations is active
+                          const whiteningIdx = layers.findIndex(l => l.type === 'whitening-restorations');
+                          if (whiteningIdx >= 0 && activeLayerIndex === whiteningIdx) {
+                            setSimulationImageUrl(url);
+                          }
+                          toast.success(`Nível de clareamento atualizado para ${labels[level]}`);
+                        }}
+                      >
+                        <ComparisonSlider
+                          beforeImage={imageBase64}
+                          afterImage={url}
+                          afterLabel={labels[level]}
+                        />
+                        {isActive ? (
+                          <div className="text-center py-1 bg-primary/10">
+                            <span className="text-xs font-medium text-primary">Selecionado</span>
+                          </div>
+                        ) : (
+                          <div className="text-center py-1 bg-secondary/30">
+                            <span className="text-xs font-medium text-muted-foreground">Clique para selecionar</span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
-        {/* If no simulation and not generating, show button to generate */}
-        {imageBase64 && !simulationImageUrl && !isSimulationGenerating && !simulationError && (
+        {/* If no simulation and not generating, show info */}
+        {imageBase64 && !simulationImageUrl && !isSimulationGenerating && !simulationError && layers.length === 0 && (
           <div className="space-y-3">
             <Alert>
               <AlertCircle className="w-4 h-4" />

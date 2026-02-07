@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/data';
 import { evaluations, profiles } from '@/data';
 import type { Resin, StratificationProtocol, ProtocolLayer, CementationProtocol } from '@/types/protocol';
+import type { SimulationLayer } from '@/types/dsd';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { SIGNED_URL_EXPIRY_SECONDS } from '@/lib/constants';
@@ -54,6 +55,7 @@ export interface Evaluation {
   checklist_progress: number[] | null;
   dsd_analysis: import('@/components/wizard/DSDStep').DSDAnalysis | null;
   dsd_simulation_url: string | null;
+  dsd_simulation_layers: SimulationLayer[] | null;
   treatment_type: 'resina' | 'porcelana' | 'coroa' | 'implante' | 'endodontia' | 'encaminhamento' | null;
   cementation_protocol: CementationProtocol | null;
   ai_treatment_indication: string | null;
@@ -264,6 +266,29 @@ export function useResult() {
     staleTime: (SIGNED_URL_EXPIRY_SECONDS - 60) * 1000,
   });
 
+  // Load signed URLs for all simulation layers
+  const { data: dsdLayerUrls = {} } = useQuery({
+    queryKey: ['result-dsd-layers', id],
+    queryFn: async () => {
+      if (!evaluation?.dsd_simulation_layers?.length) return {};
+      const urls: Record<string, string> = {};
+      await Promise.all(
+        evaluation.dsd_simulation_layers.map(async (layer) => {
+          if (!layer.simulation_url) return;
+          const { data } = await supabase.storage
+            .from('dsd-simulations')
+            .createSignedUrl(layer.simulation_url, SIGNED_URL_EXPIRY_SECONDS);
+          if (data?.signedUrl) {
+            urls[layer.type] = data.signedUrl;
+          }
+        })
+      );
+      return urls;
+    },
+    enabled: !!evaluation?.dsd_simulation_layers?.length,
+    staleTime: (SIGNED_URL_EXPIRY_SECONDS - 60) * 1000,
+  });
+
   // ---- Checklist mutation ----
   const checklistMutation = useMutation({
     mutationFn: async (indices: number[]) => {
@@ -456,6 +481,8 @@ export function useResult() {
     dentistProfile: dentistProfile ?? null,
     photoUrls,
     dsdSimulationUrl,
+    dsdLayerUrls,
+    dsdSimulationLayers: evaluation?.dsd_simulation_layers || null,
 
     // Treatment computed
     treatmentType,

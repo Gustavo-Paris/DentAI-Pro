@@ -112,6 +112,7 @@ export default function NewCase() {
                     treatment_indication: t.treatment_indication,
                   }))}
                   onResultChange={wizard.handleDSDResultChange}
+                  onPreferencesChange={wizard.setPatientPreferences}
                 />
               </div>
             ),

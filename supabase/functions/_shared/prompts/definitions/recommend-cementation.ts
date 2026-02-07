@@ -7,6 +7,11 @@ export interface Params {
   substrate: string
   substrateCondition?: string
   aestheticGoals?: string
+  dsdContext?: {
+    currentIssue: string
+    proposedChange: string
+    observations: string[]
+  }
 }
 
 export const recommendCementation: PromptDefinition<Params> = {
@@ -85,7 +90,7 @@ IMPORTANTE:
 - Priorize técnicas atualizadas e baseadas em evidências
 - O resultado deve parecer NATURAL, integrado aos dentes adjacentes`,
 
-  user: ({ teeth, shade, ceramicType, substrate, substrateCondition, aestheticGoals }: Params) =>
+  user: ({ teeth, shade, ceramicType, substrate, substrateCondition, aestheticGoals, dsdContext }: Params) =>
     `Gere um protocolo de cimentação de facetas de porcelana para o seguinte caso:
 
 DADOS DO CASO:
@@ -95,6 +100,7 @@ DADOS DO CASO:
 - Substrato: ${substrate}
 ${substrateCondition ? `- Condição do substrato: ${substrateCondition}` : ""}
 ${aestheticGoals ? `\n⚠️ PREFERÊNCIA ESTÉTICA DO PACIENTE:\n${aestheticGoals}\n\nATENÇÃO: A cor da faceta e do cimento devem refletir esta preferência. Se o paciente deseja clareamento (BL1/BL2/BL3), a cor ALVO deve ser ajustada para shades BL, independente da cor VITA detectada no substrato.` : ""}
+${dsdContext ? `\n=== CONTEXTO DO PLANEJAMENTO DIGITAL (DSD) ===\nA análise DSD identificou para este dente:\n- Situação atual: ${dsdContext.currentIssue}\n- Mudança proposta: ${dsdContext.proposedChange}${dsdContext.observations?.length ? `\n\nObservações estéticas gerais:\n${dsdContext.observations.map(o => `- ${o}`).join('\n')}` : ''}\n\n⚠️ O protocolo de cimentação DEVE considerar estes achados do DSD.` : ""}
 
 REGRA OBRIGATÓRIA: Se múltiplos dentes estão listados, use o MESMO protocolo de cimentação para todos. Dentes contralaterais (ex: 11 e 21) DEVEM ter cimento idêntico (mesma cor, mesmo tipo).
 

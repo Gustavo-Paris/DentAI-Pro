@@ -7,6 +7,8 @@ interface ComparisonSliderProps {
   afterImage: string;
   beforeLabel?: string;
   afterLabel?: string;
+  /** Optional annotation overlay rendered on top of the "before" image */
+  annotationOverlay?: React.ReactNode;
 }
 
 const MIN_ZOOM = 1;
@@ -18,6 +20,7 @@ export function ComparisonSlider({
   afterImage,
   beforeLabel = 'Antes',
   afterLabel = 'Simulação DSD',
+  annotationOverlay,
 }: ComparisonSliderProps) {
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
@@ -222,6 +225,12 @@ export function ComparisonSlider({
             style={{ transform: imageTransform, transformOrigin: 'center center' }}
             draggable={false}
           />
+          {/* Annotation overlay on the "before" side */}
+          {annotationOverlay && sliderPosition > 5 && (
+            <div className="absolute inset-0" style={{ transform: imageTransform, transformOrigin: 'center center' }}>
+              {annotationOverlay}
+            </div>
+          )}
         </div>
 
         {/* Slider line and handle */}

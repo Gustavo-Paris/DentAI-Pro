@@ -334,6 +334,36 @@ function getGenericProtocol(
         recommendations,
       };
     })(),
+    gengivoplastia: {
+      summary: `Gengivoplastia estética indicada pelo DSD para harmonização do sorriso.`,
+      checklist: [
+        'Avaliação periodontal completa (sondagem, radiografias)',
+        'Planejamento cirúrgico baseado na análise DSD',
+        'Anestesia local infiltrativa',
+        'Marcação dos zênites gengivais com sonda milimetrada',
+        'Incisão com bisturi lâmina 15C seguindo o planejamento',
+        'Remoção de tecido gengival excedente',
+        'Osteotomia/osteoplastia se necessário (aumento de coroa clínica)',
+        'Sutura (se necessário) com fio 5-0 ou 6-0',
+        'Aplicação de cimento cirúrgico',
+        'Prescrição: analgésico + anti-inflamatório + bochecho clorexidina 0,12%',
+        'Remoção de sutura em 7-10 dias',
+        'Aguardar cicatrização completa (3-6 semanas) antes de restaurações definitivas',
+        'Reavaliação e moldagem para restaurações após cicatrização',
+      ],
+      alerts: [
+        'Contraindicar em pacientes com periodontite ativa não tratada',
+        'Avaliar biotipo gengival (fino vs espesso) para escolha de técnica',
+        'Verificar distância biológica antes de planejar ressecção',
+        'Considerar gengivoplastia bilateral para simetria',
+      ],
+      recommendations: [
+        'Manter higiene oral rigorosa durante cicatrização',
+        'Evitar alimentos duros e picantes por 7 dias',
+        'Não escovar a região operada por 48h',
+        'Retornar imediatamente se houver sangramento excessivo',
+      ],
+    },
   };
 
   const protocol = protocols[treatmentType] || protocols.encaminhamento;
@@ -774,6 +804,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
         const normalizedTreatment = ({
           porcelain: 'porcelana', resin: 'resina', crown: 'coroa',
           implant: 'implante', endodontics: 'endodontia', referral: 'encaminhamento',
+          gingivoplasty: 'gengivoplastia',
         } as Record<string, TreatmentType>)[treatmentType] || treatmentType;
 
         let evaluationId: string | null = null;
@@ -809,6 +840,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
               toothData?.indication_reason || analysisResult?.indication_reason || null,
             dsd_analysis: dsdResult?.analysis || null,
             dsd_simulation_url: dsdResult?.simulation_url || null,
+            dsd_simulation_layers: dsdResult?.layers || null,
             tooth_bounds: toothData?.tooth_bounds || null,
             patient_aesthetic_goals:
               patientPreferences.whiteningLevel === 'hollywood'
@@ -836,6 +868,10 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
             async () => {
               switch (normalizedTreatment) {
                 case 'porcelana': {
+                  // Build DSD context for this tooth if available
+                  const cementDsdSuggestion = dsdResult?.analysis?.suggestions?.find(
+                    s => s.tooth === tooth,
+                  );
                   const { error: cementError } = await supabase.functions.invoke(
                     'recommend-cementation',
                     {
@@ -855,6 +891,13 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
                               : patientPreferences.whiteningLevel === 'natural'
                                 ? 'Paciente prefere aparência NATURAL (A1/A2).'
                                 : undefined,
+                        dsdContext: cementDsdSuggestion
+                          ? {
+                              currentIssue: cementDsdSuggestion.current_issue,
+                              proposedChange: cementDsdSuggestion.proposed_change,
+                              observations: dsdResult?.analysis?.observations || [],
+                            }
+                          : undefined,
                       },
                     },
                   );
@@ -862,6 +905,10 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
                   break;
                 }
                 case 'resina': {
+                  // Build DSD context for this tooth if available
+                  const resinDsdSuggestion = dsdResult?.analysis?.suggestions?.find(
+                    s => s.tooth === tooth,
+                  );
                   const { error: aiError } = await supabase.functions.invoke('recommend-resin', {
                     body: {
                       evaluationId: evaluation.id,
@@ -886,6 +933,13 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
                             : patientPreferences.whiteningLevel === 'natural'
                               ? 'Paciente prefere aparência NATURAL (A1/A2). Manter tons naturais.'
                               : undefined,
+                      dsdContext: resinDsdSuggestion
+                        ? {
+                            currentIssue: resinDsdSuggestion.current_issue,
+                            proposedChange: resinDsdSuggestion.proposed_change,
+                            observations: dsdResult?.analysis?.observations || [],
+                          }
+                        : undefined,
                     },
                   });
                   if (aiError) throw aiError;
@@ -894,8 +948,19 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
                 case 'implante':
                 case 'coroa':
                 case 'endodontia':
-                case 'encaminhamento': {
-                  const genericProtocol = getGenericProtocol(treatmentType, tooth, toothData);
+                case 'encaminhamento':
+                case 'gengivoplastia': {
+                  const genericProtocol = getGenericProtocol(normalizedTreatment, tooth, toothData);
+                  // Enrich gengivoplasty summary with DSD details if available
+                  if (normalizedTreatment === 'gengivoplastia' && dsdResult?.analysis?.suggestions) {
+                    const gingivoSuggestions = dsdResult.analysis.suggestions.filter(s => {
+                      const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
+                      return text.includes('gengiv') || text.includes('zênite') || text.includes('zenite');
+                    });
+                    if (gingivoSuggestions.length > 0) {
+                      genericProtocol.summary += ` Dentes envolvidos: ${gingivoSuggestions.map(s => s.tooth).join(', ')}. Observações DSD: ${gingivoSuggestions.map(s => s.proposed_change).join('; ')}.`;
+                    }
+                  }
                   await supabase
                     .from('evaluations')
                     .update({
@@ -1148,6 +1213,20 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
           }
           return updated;
         });
+      }
+
+      // Auto-add gengivoplasty case if DSD layers include complete-treatment with gengivoplasty
+      const hasGengivoplasty = result?.layers?.some(l => l.includes_gengivoplasty);
+      if (hasGengivoplasty) {
+        // Add a virtual "GENGIVO" tooth entry for gengivoplasty
+        setSelectedTeeth((prev) =>
+          prev.includes('GENGIVO') ? prev : [...prev, 'GENGIVO'],
+        );
+        setToothTreatments((prev) => ({
+          ...prev,
+          GENGIVO: 'gengivoplastia' as TreatmentType,
+        }));
+        toast.info('Gengivoplastia adicionada automaticamente pelo DSD');
       }
 
       setStep(5);
