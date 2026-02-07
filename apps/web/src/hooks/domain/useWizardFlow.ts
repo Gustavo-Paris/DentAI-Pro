@@ -59,6 +59,7 @@ export interface SubmissionStep {
 export interface WizardFlowState {
   // Current step (1-6)
   step: number;
+  stepDirection: 'forward' | 'backward';
 
   // Photo step
   imageBase64: string | null;
@@ -119,11 +120,13 @@ export interface WizardFlowActions {
   setPatientPreferences: (prefs: PatientPreferences) => void;
 
   // Navigation
+  goToStep: (targetStep: number) => void;
   goToPreferences: () => void;
   handlePreferencesContinue: () => void;
   handleBack: () => void;
   handleRetryAnalysis: () => void;
   handleSkipToReview: () => void;
+  cancelAnalysis: () => void;
 
   // DSD
   handleDSDComplete: (result: DSDResult | null) => void;
@@ -408,6 +411,9 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
   // -------------------------------------------------------------------------
 
   const [step, setStep] = useState(1);
+  const [stepDirection, setStepDirection] = useState<'forward' | 'backward'>('forward');
+  const prevStepRef = useRef(1);
+  const analysisAbortedRef = useRef(false);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<PhotoAnalysisResult | null>(null);
   const [formData, setFormData] = useState<ReviewFormData>(INITIAL_FORM_DATA);
@@ -555,6 +561,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     setStep(3);
     setIsAnalyzing(true);
     setAnalysisError(null);
+    analysisAbortedRef.current = false;
 
     try {
       const photoPath = await uploadImageToStorage(imageBase64);
@@ -578,6 +585,12 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
           },
         },
       );
+
+      // If user cancelled while request was in-flight, discard result
+      if (analysisAbortedRef.current) {
+        analysisAbortedRef.current = false;
+        return;
+      }
 
       if (data?.analysis) {
         const analysis = data.analysis as PhotoAnalysisResult;
@@ -1111,9 +1124,28 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     navigate,
   ]);
 
+  // Track step direction for animations
+  useEffect(() => {
+    if (step !== prevStepRef.current) {
+      setStepDirection(step > prevStepRef.current ? 'forward' : 'backward');
+      prevStepRef.current = step;
+    }
+  }, [step]);
+
   // -------------------------------------------------------------------------
   // Navigation Actions
   // -------------------------------------------------------------------------
+
+  const goToStep = useCallback((targetStep: number) => {
+    // Only allow jumping to completed steps (past steps < current)
+    if (targetStep >= step || targetStep < 1 || step === 6) return;
+    // Step 3 is auto-processing — redirect to step 2
+    if (targetStep === 3) {
+      setStep(2);
+      return;
+    }
+    setStep(targetStep);
+  }, [step]);
 
   const goToPreferences = useCallback(() => {
     setStep(2);
@@ -1149,6 +1181,14 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     setIsAnalyzing(false);
     setStep(5);
     toast.info('Prosseguindo com entrada manual.');
+  }, []);
+
+  const cancelAnalysis = useCallback(() => {
+    analysisAbortedRef.current = true;
+    setIsAnalyzing(false);
+    setAnalysisError(null);
+    setStep(2);
+    toast.info('Análise cancelada.');
   }, []);
 
   // -------------------------------------------------------------------------
@@ -1462,6 +1502,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
   return {
     // State
     step,
+    stepDirection,
     imageBase64,
     additionalPhotos,
     patientPreferences,
@@ -1496,11 +1537,13 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     setImageBase64,
     setAdditionalPhotos,
     setPatientPreferences,
+    goToStep,
     goToPreferences,
     handlePreferencesContinue,
     handleBack,
     handleRetryAnalysis,
     handleSkipToReview,
+    cancelAnalysis,
     handleDSDComplete,
     handleDSDSkip,
     handleDSDResultChange,
