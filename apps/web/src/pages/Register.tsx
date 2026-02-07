@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/contexts/AuthContext';
@@ -26,7 +26,6 @@ export default function Register() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const { signUp, signInWithGoogle } = useAuth();
-  const navigate = useNavigate();
 
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),

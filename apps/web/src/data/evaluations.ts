@@ -128,7 +128,7 @@ export async function getDashboardMetrics({ userId }: DashboardMetricsParams) {
   // Group by session to compute session-level stats
   const sessionMap = new Map<string, { total: number; completed: number }>();
   for (const row of allEvalsResult.data || []) {
-    const sid = row.session_id || row.status; // fallback for legacy rows without session_id
+    const sid = row.session_id || row.status || 'unknown'; // fallback for legacy rows
     if (!sessionMap.has(sid)) sessionMap.set(sid, { total: 0, completed: 0 });
     const entry = sessionMap.get(sid)!;
     entry.total++;

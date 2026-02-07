@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Camera, Upload, X, Image as ImageIcon, Loader2, User, Smile, Sparkles, Lightbulb } from 'lucide-react';
+import { Camera, Upload, X, Loader2, User, Smile, Sparkles, Lightbulb, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { compressImage } from '@/lib/imageUtils';
 // heic-to is dynamically imported to reduce initial bundle size (20MB library)
@@ -16,6 +16,7 @@ interface PhotoUploadStepProps {
   imageBase64: string | null;
   onImageChange: (base64: string | null) => void;
   onAnalyze: () => void;
+  onQuickCase?: () => void;
   isUploading: boolean;
   additionalPhotos?: AdditionalPhotos;
   onAdditionalPhotosChange?: (photos: AdditionalPhotos) => void;
@@ -64,6 +65,7 @@ export function PhotoUploadStep({
   imageBase64,
   onImageChange,
   onAnalyze,
+  onQuickCase,
   isUploading,
   additionalPhotos = { smile45: null, face: null },
   onAdditionalPhotosChange,
@@ -544,7 +546,7 @@ export function PhotoUploadStep({
 
       {/* CTA — Analisar com IA */}
       {imageBase64 && (
-        <div className="flex justify-center">
+        <div className="flex flex-col items-center gap-3">
           <Button
             size="lg"
             onClick={onAnalyze}
@@ -563,6 +565,23 @@ export function PhotoUploadStep({
               </>
             )}
           </Button>
+          {onQuickCase && (
+            <div className="flex flex-col items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onQuickCase}
+                disabled={isUploading}
+                className="text-muted-foreground hover:text-foreground btn-press"
+              >
+                <Zap className="w-3.5 h-3.5 mr-1.5" />
+                Caso Rápido (1 crédito)
+              </Button>
+              <p className="text-[10px] text-muted-foreground/70">
+                Pula preferências e simulação DSD
+              </p>
+            </div>
+          )}
         </div>
       )}
 

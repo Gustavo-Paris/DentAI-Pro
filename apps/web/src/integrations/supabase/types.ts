@@ -458,6 +458,281 @@ export type Database = {
           },
         ]
       }
+      credit_usage: {
+        Row: {
+          id: string
+          user_id: string
+          operation: string
+          credits_used: number
+          reference_id: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          operation: string
+          credits_used: number
+          reference_id?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          operation?: string
+          credits_used?: number
+          reference_id?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      shared_links: {
+        Row: {
+          id: string
+          user_id: string
+          session_id: string
+          token: string
+          expires_at: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          session_id: string
+          token?: string
+          expires_at?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          session_id?: string
+          token?: string
+          expires_at?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      payment_history: {
+        Row: {
+          id: string
+          user_id: string
+          amount: number
+          currency: string
+          status: string
+          description: string | null
+          invoice_url: string | null
+          invoice_pdf: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          amount: number
+          currency: string
+          status: string
+          description?: string | null
+          invoice_url?: string | null
+          invoice_pdf?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          amount?: number
+          currency?: string
+          status?: string
+          description?: string | null
+          invoice_url?: string | null
+          invoice_pdf?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      subscription_plans: {
+        Row: {
+          id: string
+          name: string
+          description: string
+          price_monthly: number
+          price_yearly: number | null
+          currency: string
+          cases_per_month: number
+          dsd_simulations_per_month: number
+          credits_per_month: number
+          max_users: number
+          allows_rollover: boolean
+          rollover_max: number | null
+          priority_support: boolean
+          features: string[]
+          sort_order: number
+          is_active: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          description: string
+          price_monthly: number
+          price_yearly?: number | null
+          currency?: string
+          cases_per_month?: number
+          dsd_simulations_per_month?: number
+          credits_per_month?: number
+          max_users?: number
+          allows_rollover?: boolean
+          rollover_max?: number | null
+          priority_support?: boolean
+          features?: string[]
+          sort_order?: number
+          is_active?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string
+          price_monthly?: number
+          price_yearly?: number | null
+          currency?: string
+          cases_per_month?: number
+          dsd_simulations_per_month?: number
+          credits_per_month?: number
+          max_users?: number
+          allows_rollover?: boolean
+          rollover_max?: number | null
+          priority_support?: boolean
+          features?: string[]
+          sort_order?: number
+          is_active?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
+      credit_costs: {
+        Row: {
+          id: string
+          operation: string
+          credits: number
+          description: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          operation: string
+          credits: number
+          description: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          operation?: string
+          credits?: number
+          description?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      credit_packs: {
+        Row: {
+          id: string
+          name: string
+          credits: number
+          price: number
+          is_active: boolean
+          sort_order: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          credits: number
+          price: number
+          is_active?: boolean
+          sort_order?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          credits?: number
+          price?: number
+          is_active?: boolean
+          sort_order?: number
+          created_at?: string
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          id: string
+          user_id: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          plan_id: string | null
+          status: string
+          current_period_start: string | null
+          current_period_end: string | null
+          cancel_at_period_end: boolean
+          canceled_at: string | null
+          trial_start: string | null
+          trial_end: string | null
+          cases_used_this_month: number
+          dsd_used_this_month: number
+          credits_used_this_month: number
+          credits_rollover: number
+          credits_bonus: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          plan_id?: string | null
+          status?: string
+          current_period_start?: string | null
+          current_period_end?: string | null
+          cancel_at_period_end?: boolean
+          canceled_at?: string | null
+          trial_start?: string | null
+          trial_end?: string | null
+          cases_used_this_month?: number
+          dsd_used_this_month?: number
+          credits_used_this_month?: number
+          credits_rollover?: number
+          credits_bonus?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          plan_id?: string | null
+          status?: string
+          current_period_start?: string | null
+          current_period_end?: string | null
+          cancel_at_period_end?: boolean
+          canceled_at?: string | null
+          trial_start?: string | null
+          trial_end?: string | null
+          cases_used_this_month?: number
+          dsd_used_this_month?: number
+          credits_used_this_month?: number
+          credits_rollover?: number
+          credits_bonus?: number
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

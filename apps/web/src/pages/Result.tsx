@@ -76,7 +76,6 @@ export default function Result() {
             onClick: r.handlePdfButtonClick,
             disabled: r.generatingPDF,
             variant: 'outline',
-            className: 'btn-glow-gold',
           },
           {
             label: 'Novo Caso',
@@ -124,7 +123,9 @@ export default function Result() {
           ),
         }}
       >
-        {(evaluation) => (
+        {(evaluation) => {
+          if (!evaluation) return null;
+          return (
           <>
             {/* Inventory Banner */}
             {r.treatmentType === 'resina' && !evaluation.has_inventory_at_creation && (
@@ -509,7 +510,8 @@ export default function Result() {
               </div>
             </div>
           </>
-        )}
+          );
+        }}
       </DetailPage>
       </div>
 

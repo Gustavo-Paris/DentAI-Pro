@@ -93,31 +93,38 @@ export default function Patients() {
           }}
           sort={{
             options: [
-              { value: 'recent', label: 'Mais recentes' },
-              { value: 'name-asc', label: 'Nome (A-Z)', direction: 'asc' },
-              { value: 'name-desc', label: 'Nome (Z-A)', direction: 'desc' },
-              { value: 'cases', label: 'Mais casos' },
-            ],
-            default: 'recent',
-            compareFn: (sortKey: string) => (a: PatientWithStats, b: PatientWithStats) => {
-              switch (sortKey) {
-                case 'name-asc':
-                  return a.name.localeCompare(b.name, 'pt-BR');
-                case 'name-desc':
-                  return b.name.localeCompare(a.name, 'pt-BR');
-                case 'cases':
-                  return b.caseCount - a.caseCount;
-                case 'recent':
-                default:
+              {
+                value: 'recent',
+                label: 'Mais recentes',
+                compare: (a: PatientWithStats, b: PatientWithStats) => {
                   if (!a.lastVisit && !b.lastVisit) return 0;
                   if (!a.lastVisit) return 1;
                   if (!b.lastVisit) return -1;
-                  return (
-                    new Date(b.lastVisit).getTime() -
-                    new Date(a.lastVisit).getTime()
-                  );
-              }
-            },
+                  return new Date(b.lastVisit).getTime() - new Date(a.lastVisit).getTime();
+                },
+              },
+              {
+                value: 'name-asc',
+                label: 'Nome (A-Z)',
+                direction: 'asc',
+                compare: (a: PatientWithStats, b: PatientWithStats) =>
+                  a.name.localeCompare(b.name, 'pt-BR'),
+              },
+              {
+                value: 'name-desc',
+                label: 'Nome (Z-A)',
+                direction: 'desc',
+                compare: (a: PatientWithStats, b: PatientWithStats) =>
+                  b.name.localeCompare(a.name, 'pt-BR'),
+              },
+              {
+                value: 'cases',
+                label: 'Mais casos',
+                compare: (a: PatientWithStats, b: PatientWithStats) =>
+                  b.caseCount - a.caseCount,
+              },
+            ],
+            default: 'recent',
           }}
           pagination={{ defaultPageSize: 20 }}
           createAction={{

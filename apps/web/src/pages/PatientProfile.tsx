@@ -47,7 +47,7 @@ export default function PatientProfile() {
     <>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       <DetailPage
-        title={(data) => data.name}
+        title={(data) => data?.name ?? '...'}
         description="Perfil do Paciente"
         backHref="/patients"
         breadcrumbs={[
