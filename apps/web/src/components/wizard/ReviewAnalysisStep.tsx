@@ -310,8 +310,14 @@ export function ReviewAnalysisStep({
             <span className="font-semibold text-sm">Dente {tooth.tooth}</span>
             <Badge
               variant={tooth.priority === 'alta' ? 'destructive' : tooth.priority === 'média' ? 'secondary' : 'outline'}
-              className="text-[10px]"
+              className="text-[10px] gap-1"
             >
+              <span className={cn(
+                'w-1.5 h-1.5 rounded-full',
+                tooth.priority === 'alta' && 'bg-red-400',
+                tooth.priority === 'média' && 'bg-amber-400',
+                tooth.priority === 'baixa' && 'bg-slate-400',
+              )} />
               {tooth.priority}
             </Badge>
           </div>
@@ -405,7 +411,7 @@ export function ReviewAnalysisStep({
           <CardContent className="py-3 flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-primary" />
-              <span className="text-sm">Análise por IA</span>
+              <span className="text-sm font-medium">Análise por IA</span>
             </div>
             <div className="flex items-center gap-3">
               {hasMultipleTeeth && (
@@ -413,9 +419,22 @@ export function ReviewAnalysisStep({
                   {detectedTeeth.length} dentes detectados
                 </Badge>
               )}
-              <Badge variant="secondary" className={confidenceColor}>
-                {confidence}% de confiança
-              </Badge>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Badge variant="secondary" className={cn('gap-1.5 cursor-help', confidenceColor)}>
+                      <span className={cn(
+                        'w-2 h-2 rounded-full',
+                        confidence >= 80 ? 'bg-green-500' : confidence >= 60 ? 'bg-yellow-500' : 'bg-red-500',
+                      )} />
+                      {confidence}% — {confidence >= 80 ? 'Alta confiança' : confidence >= 60 ? 'Média confiança' : 'Baixa confiança'}
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>Grau de certeza da IA na detecção. Alta (&gt;80%): achados claros. Média (60-80%): revisar com atenção. Baixa (&lt;60%): validação manual recomendada.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               {onReanalyze && (
                 <Button
                   variant="ghost"

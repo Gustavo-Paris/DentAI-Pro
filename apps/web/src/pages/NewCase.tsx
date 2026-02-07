@@ -48,7 +48,7 @@ export default function NewCase() {
             title: 'Foto',
             icon: Camera,
             children: (
-              <div key="step-foto" className="wizard-step-enter">
+              <div key="step-foto" className={`wizard-step-${wizard.stepDirection}`}>
                 <PhotoUploadStep
                   imageBase64={wizard.imageBase64}
                   onImageChange={wizard.setImageBase64}
@@ -65,7 +65,7 @@ export default function NewCase() {
             title: 'Preferências',
             icon: Heart,
             children: (
-              <div key="step-prefs" className="wizard-step-enter">
+              <div key="step-prefs" className={`wizard-step-${wizard.stepDirection}`}>
                 <PatientPreferencesStep
                   preferences={wizard.patientPreferences}
                   onPreferencesChange={wizard.setPatientPreferences}
@@ -79,7 +79,7 @@ export default function NewCase() {
             title: 'Análise',
             icon: Brain,
             children: (
-              <div key="step-analysis" className="wizard-step-enter">
+              <div key="step-analysis" className={`wizard-step-${wizard.stepDirection}`}>
                 <AnalyzingStep
                   imageBase64={wizard.imageBase64}
                   isAnalyzing={wizard.isAnalyzing}
@@ -87,6 +87,7 @@ export default function NewCase() {
                   onRetry={wizard.handleRetryAnalysis}
                   onSkipToReview={wizard.handleSkipToReview}
                   onBack={wizard.handleBack}
+                  onCancel={wizard.cancelAnalysis}
                 />
               </div>
             ),
@@ -96,7 +97,7 @@ export default function NewCase() {
             title: 'DSD',
             icon: Smile,
             children: (
-              <div key="step-dsd" className="wizard-step-enter">
+              <div key="step-dsd" className={`wizard-step-${wizard.stepDirection}`}>
                 <DSDStep
                   imageBase64={wizard.imageBase64}
                   onComplete={wizard.handleDSDComplete}
@@ -122,7 +123,7 @@ export default function NewCase() {
             title: 'Revisão',
             icon: ClipboardCheck,
             children: (
-              <div key="step-review" className="wizard-step-enter">
+              <div key="step-review" className={`wizard-step-${wizard.stepDirection}`}>
                 <ReviewAnalysisStep
                   analysisResult={wizard.analysisResult}
                   formData={wizard.formData}
@@ -155,7 +156,7 @@ export default function NewCase() {
             title: 'Resultado',
             icon: FileText,
             children: (
-              <div key="step-result" className="wizard-step-enter">
+              <div key="step-result" className={`wizard-step-${wizard.stepDirection}`}>
                 <LoadingOverlay
                   isLoading={wizard.isSubmitting}
                   message="Gerando Caso Clínico"
@@ -186,14 +187,7 @@ export default function NewCase() {
             <AuriaStepIndicator
               currentStep={wizard.step - 1}
               totalSteps={6}
-              onStepClick={(index) => {
-                // Only allow clicking completed steps
-                if (index < wizard.step - 1) {
-                  // Navigate back through proper handlers
-                  // For simplicity, we only support going back one step at a time
-                  // The WizardPage composite handles step navigation
-                }
-              }}
+              onStepClick={(index) => wizard.goToStep(index + 1)}
             />
           ),
           betweenHeaderAndContent: wizard.step >= 4 ? (

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Sparkles, Check, RefreshCw, ArrowRight, ArrowLeft, Lightbulb, AlertCircle } from 'lucide-react';
+import { Loader2, Sparkles, Check, RefreshCw, ArrowRight, ArrowLeft, Lightbulb, AlertCircle, X } from 'lucide-react';
 
 interface AnalyzingStepProps {
   imageBase64: string | null;
@@ -10,6 +10,7 @@ interface AnalyzingStepProps {
   onRetry: () => void;
   onSkipToReview: () => void;
   onBack?: () => void;
+  onCancel?: () => void;
 }
 
 const analysisSteps = [
@@ -28,6 +29,7 @@ export function AnalyzingStep({
   onRetry,
   onSkipToReview,
   onBack,
+  onCancel,
 }: AnalyzingStepProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -149,7 +151,10 @@ export function AnalyzingStep({
       {/* Gold progress bar */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium">Progresso da análise</span>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">Progresso da análise</span>
+            <span className="text-xs text-muted-foreground">~15-25s</span>
+          </div>
           <Badge variant="outline" className="text-gradient-gold font-semibold text-xs">
             {Math.round(progress)}%
           </Badge>
@@ -207,11 +212,17 @@ export function AnalyzingStep({
         })}
       </div>
 
-      <div className="flex justify-center">
+      <div className="flex flex-col items-center gap-3">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Sparkles className="w-4 h-4 text-primary" />
           <span>Powered by Gemini 3 Flash Preview</span>
         </div>
+        {onCancel && (
+          <Button variant="ghost" size="sm" onClick={onCancel} className="text-muted-foreground hover:text-foreground gap-2">
+            <X className="w-3.5 h-3.5" />
+            Cancelar
+          </Button>
+        )}
       </div>
     </div>
   );
