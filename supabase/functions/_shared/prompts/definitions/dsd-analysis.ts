@@ -171,6 +171,9 @@ Quando indicada, GERE UMA SUGESTÃO ESTRUTURADA (não apenas observação textua
 2. Assimetria de zenith gengival > 1mm entre dentes homólogos
 3. Proporção largura/altura dos incisivos centrais > 85% (coroas clínicas curtas)
 4. Margens gengivais irregulares que comprometem o tratamento restaurador planejado
+5. Exposição gengival excessiva mesmo com smile_line "média" — se a gengiva é CLARAMENTE visível e assimétrica
+
+⚠️ REGRA IMPORTANTE: Se detectar assimetria gengival >1mm, zênites desalinhados, ou exposição gengival excessiva, DEVE incluir sugestão de gengivoplastia no array suggestions, INDEPENDENTEMENTE da classificação de smile_line. A gengivoplastia não depende exclusivamente de smile_line "alta".
 
 ✅ FORMATO DA SUGESTÃO DE GENGIVOPLASTIA:
 Quando indicada, adicione ao array suggestions:

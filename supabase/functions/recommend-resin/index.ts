@@ -158,6 +158,11 @@ serve(async (req) => {
 
     const data: EvaluationData = validation.data;
 
+    // Backward compat: map old budget values to new ones
+    if (data.budget === 'econômico' || data.budget === 'moderado') {
+      data.budget = 'padrão';
+    }
+
     // Verify user owns this evaluation
     if (data.userId !== userId) {
       return createErrorResponse(ERROR_MESSAGES.ACCESS_DENIED, 403, corsHeaders);
@@ -212,10 +217,8 @@ serve(async (req) => {
     ) => {
       const groups = groupResinsByPrice(resinList);
       switch (budget) {
-        case "econômico":
-          return [...groups.economico, ...groups.intermediario];
-        case "moderado":
-          return [...groups.intermediario, ...groups.medioAlto];
+        case "padrão":
+          return [...groups.economico, ...groups.intermediario, ...groups.medioAlto];
         case "premium":
           return resinList; // All resins available for premium budget
         default:
@@ -559,6 +562,29 @@ serve(async (req) => {
           });
         });
         recommendation.protocol.alerts = [...existingAlerts, ...newAlerts];
+      }
+    }
+
+    // Post-AI inventory validation: ensure recommended resin is from inventory
+    if (hasInventory && recommendation.recommended_resin_name) {
+      const recNameLower = recommendation.recommended_resin_name.toLowerCase();
+      const isInInventory = inventoryResins.some(
+        (r) => r.name.toLowerCase() === recNameLower
+      );
+      if (!isInInventory) {
+        logger.warn(`AI ignored inventory! Recommended "${recommendation.recommended_resin_name}" is NOT in user inventory. Attempting fallback...`);
+        // Find best inventory match based on budget
+        const fallback = budgetAppropriateInventory[0] || inventoryResins[0];
+        if (fallback) {
+          recommendation.ideal_resin_name = recommendation.recommended_resin_name;
+          recommendation.ideal_reason = `Resina ideal tecnicamente, mas não está no seu inventário. Usando ${fallback.name} do inventário como alternativa.`;
+          recommendation.recommended_resin_name = fallback.name;
+          recommendation.is_from_inventory = true;
+          logger.log(`Inventory fallback: "${fallback.name}" (${fallback.manufacturer})`);
+        }
+      } else {
+        // Ensure is_from_inventory is correctly set
+        recommendation.is_from_inventory = true;
       }
     }
 

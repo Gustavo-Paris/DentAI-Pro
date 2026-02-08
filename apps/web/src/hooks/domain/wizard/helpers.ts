@@ -14,10 +14,14 @@ export function isAnterior(tooth: string): boolean {
 export function inferCavityClass(
   toothData: DetectedTooth | undefined,
   fallback: string,
+  treatmentType?: string,
 ): string {
   if (toothData?.cavity_class) return toothData.cavity_class;
 
   const reason = (toothData?.indication_reason || '').toLowerCase();
+  if (reason.includes('lente') || reason.includes('contato')) {
+    return 'Lente de Contato';
+  }
   if (reason.includes('reanatomização') || reason.includes('microdontia') || reason.includes('volume') || reason.includes('conoide')) {
     return 'Recontorno Estético';
   }
@@ -32,6 +36,11 @@ export function inferCavityClass(
   }
   if (reason.includes('desgaste') || reason.includes('incisal') || reason.includes('recontorno')) {
     return 'Recontorno Estético';
+  }
+
+  // When treatment is porcelana and fallback would be a Black's class, use Faceta Direta
+  if (treatmentType === 'porcelana' && /^Classe\s/i.test(fallback)) {
+    return 'Faceta Direta';
   }
 
   return fallback;

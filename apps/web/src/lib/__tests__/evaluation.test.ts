@@ -13,7 +13,7 @@ describe('reviewFormSchema', () => {
     substrate: 'Esmalte',
     bruxism: false,
     aestheticLevel: 'alto' as const,
-    budget: 'moderado' as const,
+    budget: 'padrão' as const,
     longevityExpectation: 'médio' as const,
     treatmentType: 'resina' as const,
   };
@@ -179,7 +179,7 @@ describe('reviewFormSchema', () => {
   });
 
   describe('budget validation', () => {
-    it.each(['econômico', 'moderado', 'premium'] as const)(
+    it.each(['padrão', 'premium'] as const)(
       'should accept budget %s',
       (budget) => {
         const result = reviewFormSchema.safeParse({

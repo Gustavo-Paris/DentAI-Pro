@@ -42,7 +42,10 @@ import {
   Plus,
   Share2,
   Loader2 as ShareLoader,
+  Eye,
+  X,
 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 
 import { DetailPage } from '@pageshell/composites';
 import { useEvaluationDetail } from '@/hooks/domain/useEvaluationDetail';
@@ -50,6 +53,7 @@ import { Progress } from '@/components/ui/progress';
 import type { EvaluationItem } from '@/hooks/domain/useEvaluationDetail';
 import { AddTeethModal } from '@/components/AddTeethModal';
 import { ClinicalPhotoThumbnail } from '@/components/OptimizedImage';
+import { DSDPreviewModal } from '@/components/DSDPreviewModal';
 import { getTreatmentConfig } from '@/lib/treatment-config';
 
 // =============================================================================
@@ -104,6 +108,10 @@ export default function EvaluationDetails() {
     current: number;
     total: number;
   }>({ open: false, evaluationId: '', current: 0, total: 0 });
+  const [showDSD, setShowDSD] = useState(false);
+
+  const firstEval = detail.evaluations[0];
+  const hasDSD = !!(firstEval?.dsd_simulation_url || firstEval?.dsd_simulation_layers?.length);
 
   const handleCompleteClick = (id: string) => {
     const result = detail.handleMarkAsCompleted(id);
@@ -157,13 +165,26 @@ export default function EvaluationDetails() {
               <div className="bg-gradient-to-br from-primary/5 to-transparent">
                 <CardContent className="p-4 sm:p-6">
                   <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
-                    {detail.evaluations[0]?.photo_frontal ? (
-                      <ClinicalPhotoThumbnail
-                        path={detail.evaluations[0].photo_frontal}
-                        alt="Foto clínica"
-                        size="grid"
-                        className="w-full md:w-32 lg:w-48 h-32 sm:h-48 flex-shrink-0"
-                      />
+                    {firstEval?.photo_frontal ? (
+                      <div
+                        className={`relative w-full md:w-32 lg:w-48 h-32 sm:h-48 flex-shrink-0 group ${hasDSD ? 'cursor-pointer' : ''}`}
+                        onClick={hasDSD ? () => setShowDSD(true) : undefined}
+                      >
+                        <ClinicalPhotoThumbnail
+                          path={firstEval.photo_frontal}
+                          alt="Foto clínica"
+                          size="grid"
+                          className="w-full h-full"
+                        />
+                        {hasDSD && (
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors rounded-lg flex items-center justify-center">
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 bg-background/90 px-2 py-1 rounded-full text-xs font-medium">
+                              <Eye className="w-3.5 h-3.5 text-primary" />
+                              Ver DSD
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     ) : (
                       <div className="w-full md:w-32 lg:w-48 h-32 sm:h-48 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
                         <ImageIcon className="w-8 sm:w-12 h-8 sm:h-12 text-muted-foreground" />
@@ -211,6 +232,28 @@ export default function EvaluationDetails() {
       >
         {() => (
           <>
+            {/* Floating selection bar */}
+            {detail.selectedIds.size > 0 && (
+              <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-background border shadow-lg rounded-full px-4 py-2 flex items-center gap-3 animate-in slide-in-from-bottom-4">
+                <span className="text-sm font-medium">{detail.selectedIds.size} selecionado(s)</span>
+                <Button
+                  size="sm"
+                  onClick={() => detail.handleBulkComplete(Array.from(detail.selectedIds))}
+                >
+                  <CheckCircle className="w-4 h-4 mr-1" />
+                  Finalizar
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="w-7 h-7"
+                  onClick={detail.clearSelection}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
+
             {/* Cases Table - Desktop */}
             <Card className="hidden sm:block shadow-sm rounded-xl">
               <CardHeader>
@@ -220,6 +263,12 @@ export default function EvaluationDetails() {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-secondary/50">
+                      <TableHead className="w-10">
+                        <Checkbox
+                          checked={detail.selectedIds.size === detail.evaluations.length && detail.evaluations.length > 0}
+                          onCheckedChange={() => detail.toggleSelectAll()}
+                        />
+                      </TableHead>
                       <TableHead>Dente</TableHead>
                       <TableHead>Tratamento</TableHead>
                       <TableHead>Status</TableHead>
@@ -233,6 +282,12 @@ export default function EvaluationDetails() {
                         className="hover:bg-secondary/30 transition-colors cursor-pointer"
                         onClick={() => navigate(`/result/${evaluation.id}`)}
                       >
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          <Checkbox
+                            checked={detail.selectedIds.has(evaluation.id)}
+                            onCheckedChange={() => detail.toggleSelection(evaluation.id)}
+                          />
+                        </TableCell>
                         <TableCell className="font-medium">{evaluation.tooth}</TableCell>
                         <TableCell>{getTreatmentBadge(evaluation)}</TableCell>
                         <TableCell>
@@ -291,6 +346,12 @@ export default function EvaluationDetails() {
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <Checkbox
+                          checked={detail.selectedIds.has(evaluation.id)}
+                          onCheckedChange={() => detail.toggleSelection(evaluation.id)}
+                        />
+                      </div>
                       {getTreatmentBadge(evaluation)}
                       <p className="font-semibold">Dente {evaluation.tooth}</p>
                     </div>
@@ -343,6 +404,17 @@ export default function EvaluationDetails() {
           sessionId={detail.sessionId}
           patientData={detail.patientDataForModal}
           onSuccess={detail.handleAddTeethSuccess}
+        />
+      )}
+
+      {/* DSD Preview Modal */}
+      {hasDSD && (
+        <DSDPreviewModal
+          open={showDSD}
+          onOpenChange={setShowDSD}
+          photoPath={firstEval?.photo_frontal ?? null}
+          simulationPath={firstEval?.dsd_simulation_url ?? null}
+          layers={firstEval?.dsd_simulation_layers}
         />
       )}
 

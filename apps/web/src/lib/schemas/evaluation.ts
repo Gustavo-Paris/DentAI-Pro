@@ -20,7 +20,7 @@ export const reviewFormSchema = z.object({
       // Restaurador tradicional
       'Classe I', 'Classe II', 'Classe III', 'Classe IV', 'Classe V', 'Classe VI',
       // Procedimentos estéticos
-      'Faceta Direta', 'Recontorno Estético', 'Fechamento de Diastema', 'Reparo de Restauração'
+      'Faceta Direta', 'Recontorno Estético', 'Fechamento de Diastema', 'Reparo de Restauração', 'Lente de Contato'
     ].includes(val), 'Tipo de procedimento inválido'),
   restorationSize: z.enum(['Pequena', 'Média', 'Grande', 'Extensa']),
   vitaShade: z.string().min(1, 'Cor é obrigatória'),
@@ -30,7 +30,7 @@ export const reviewFormSchema = z.object({
   depth: z.enum(['Rasa', 'Média', 'Profunda']).optional(),
   bruxism: z.boolean().default(false),
   aestheticLevel: z.enum(['básico', 'alto', 'muito alto']),
-  budget: z.enum(['econômico', 'moderado', 'premium']),
+  budget: z.enum(['padrão', 'premium']),
   longevityExpectation: z.enum(['curto', 'médio', 'longo']),
   clinicalNotes: z.string()
     .max(500, 'Notas muito longas')

@@ -78,7 +78,8 @@ export async function listBySession(sessionId: string, userId: string) {
       cavity_class, restoration_size, status, photo_frontal,
       checklist_progress, stratification_protocol, treatment_type,
       ai_treatment_indication, cementation_protocol, generic_protocol,
-      tooth_color, bruxism, aesthetic_level, budget, longevity_expectation,
+      tooth_color, bruxism, aesthetic_level, budget, longevity_expectation, patient_aesthetic_goals,
+      dsd_analysis, dsd_simulation_url, dsd_simulation_layers,
       resins!recommended_resin_id (name, manufacturer)
     `)
     .eq('session_id', sessionId)
