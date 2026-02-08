@@ -886,7 +886,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
           if (!existingNumbers.has(toothId)) {
             const toothNum = parseInt(toothId);
             const isUpper = toothNum >= 10 && toothNum <= 28;
-            const isAnteriorTooth = ANTERIOR_TEETH.includes(toothId);
+            const isAnteriorTooth = isAnterior(toothId);
 
             dsdAdditions.push({
               tooth: toothId,
