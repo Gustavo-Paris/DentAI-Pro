@@ -57,7 +57,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <a
             href="#main-content"
             className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground focus:shadow-lg"
@@ -74,23 +74,23 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
-            <Route path="/shared/:token" element={<Suspense fallback={<PageLoader />}><SharedEvaluation /></Suspense>} />
-            
+            <Route path="/shared/:token" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><SharedEvaluation /></Suspense></ErrorBoundary>} />
+
             {/* Redirect legacy /cases route */}
             <Route path="/cases" element={<Navigate to="/evaluations" replace />} />
 
             {/* Protected routes WITH persistent nav layout */}
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-              <Route path="/dashboard" element={<Suspense fallback={<PageLoader />}><Dashboard /></Suspense>} />
-              <Route path="/evaluations" element={<Suspense fallback={<PageLoader />}><Evaluations /></Suspense>} />
-              <Route path="/evaluation/:evaluationId" element={<Suspense fallback={<PageLoader />}><EvaluationDetails /></Suspense>} />
-              <Route path="/result/:id" element={<Suspense fallback={<PageLoader />}><Result /></Suspense>} />
-              <Route path="/inventory" element={<Suspense fallback={<PageLoader />}><Inventory /></Suspense>} />
-              <Route path="/patients" element={<Suspense fallback={<PageLoader />}><Patients /></Suspense>} />
-              <Route path="/patient/:patientId" element={<Suspense fallback={<PageLoader />}><PatientProfile /></Suspense>} />
-              <Route path="/profile" element={<Suspense fallback={<PageLoader />}><Profile /></Suspense>} />
-              <Route path="/pricing" element={<Suspense fallback={<PageLoader />}><Pricing /></Suspense>} />
-              <Route path="/new-case" element={<Suspense fallback={<PageLoader />}><NewCase /></Suspense>} />
+              <Route path="/dashboard" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><Dashboard /></Suspense></ErrorBoundary>} />
+              <Route path="/evaluations" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><Evaluations /></Suspense></ErrorBoundary>} />
+              <Route path="/evaluation/:evaluationId" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><EvaluationDetails /></Suspense></ErrorBoundary>} />
+              <Route path="/result/:id" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><Result /></Suspense></ErrorBoundary>} />
+              <Route path="/inventory" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><Inventory /></Suspense></ErrorBoundary>} />
+              <Route path="/patients" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><Patients /></Suspense></ErrorBoundary>} />
+              <Route path="/patient/:patientId" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><PatientProfile /></Suspense></ErrorBoundary>} />
+              <Route path="/profile" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><Profile /></Suspense></ErrorBoundary>} />
+              <Route path="/pricing" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><Pricing /></Suspense></ErrorBoundary>} />
+              <Route path="/new-case" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><NewCase /></Suspense></ErrorBoundary>} />
             </Route>
 
             <Route path="*" element={<NotFound />} />

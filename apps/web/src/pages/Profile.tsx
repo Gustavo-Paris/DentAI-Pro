@@ -55,6 +55,7 @@ export default function Profile() {
                           onClick={() => p.fileInputRef.current?.click()}
                           disabled={p.isUploading}
                           className="absolute bottom-0 right-0 p-1.5 rounded-full bg-primary text-primary-foreground shadow-md hover:bg-primary/90 transition-colors"
+                          aria-label="Mudar foto de perfil"
                         >
                           <Camera className="w-3 h-3" />
                         </button>
@@ -89,6 +90,7 @@ export default function Profile() {
                           onClick={() => p.logoInputRef.current?.click()}
                           disabled={p.isUploadingLogo}
                           className="absolute bottom-0 right-0 p-1.5 rounded-full bg-primary text-primary-foreground shadow-md hover:bg-primary/90 transition-colors"
+                          aria-label="Alterar logo do consultório"
                         >
                           <ImageIcon className="w-3 h-3" />
                         </button>

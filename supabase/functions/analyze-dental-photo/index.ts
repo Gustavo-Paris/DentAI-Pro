@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
-import { getCorsHeaders, handleCorsPreFlight, ERROR_MESSAGES, createErrorResponse } from "../_shared/cors.ts";
+import { getCorsHeaders, handleCorsPreFlight, ERROR_MESSAGES, createErrorResponse, generateRequestId } from "../_shared/cors.ts";
 import { logger } from "../_shared/logger.ts";
 import { callGeminiVisionWithTools, GeminiError, type OpenAITool } from "../_shared/gemini.ts";
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
@@ -111,10 +111,13 @@ function validateImageRequest(data: unknown): { success: boolean; error?: string
 
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
+  const reqId = generateRequestId();
 
   // Handle CORS preflight
   const preflightResponse = handleCorsPreFlight(req);
   if (preflightResponse) return preflightResponse;
+
+  logger.log(`[${reqId}] analyze-dental-photo: start`);
 
   // Track credit state for refund on error (must be outside try for catch access)
   let creditsConsumed = false;
@@ -533,12 +536,12 @@ serve(async (req) => {
       }
     );
   } catch (error: unknown) {
-    logger.error("Error analyzing photo:", error);
+    logger.error(`[${reqId}] Error analyzing photo:`, error);
     // Refund credits on unexpected errors — user paid but got nothing
     if (creditsConsumed && supabaseForRefund && userIdForRefund) {
       await refundCredits(supabaseForRefund, userIdForRefund, "case_analysis");
-      logger.log(`Refunded analysis credits for user ${userIdForRefund} due to error`);
+      logger.log(`[${reqId}] Refunded analysis credits for user ${userIdForRefund} due to error`);
     }
-    return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
+    return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders, undefined, reqId);
   }
 });
