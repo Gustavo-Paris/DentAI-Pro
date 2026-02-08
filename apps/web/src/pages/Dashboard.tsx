@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { DashboardPage } from '@pageshell/composites/dashboard';
 import type { ModuleConfig, DashboardTab } from '@pageshell/composites/dashboard';
 import { useDashboard } from '@/hooks/domain/useDashboard';
@@ -14,6 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Sparkles, Users, Package, Sun, Moon, Sunset,
   LayoutDashboard, BarChart3,
@@ -21,11 +23,21 @@ import {
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-import { StatsGrid } from './dashboard/StatsGrid';
+const StatsGrid = lazy(() => import('./dashboard/StatsGrid').then(m => ({ default: m.StatsGrid })));
 import { PrincipalTab } from './dashboard/PrincipalTab';
-import { InsightsTab } from './dashboard/InsightsTab';
+const InsightsTab = lazy(() => import('./dashboard/InsightsTab').then(m => ({ default: m.InsightsTab })));
 import { CreditsBanner } from './dashboard/CreditsBanner';
 import { OnboardingCards } from './dashboard/OnboardingCards';
+
+function StatsGridFallback() {
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <Skeleton key={i} className="h-[88px] rounded-xl" />
+      ))}
+    </div>
+  );
+}
 
 // =============================================================================
 // Module Config
@@ -86,11 +98,13 @@ export default function Dashboard() {
           label: 'Insights',
           icon: BarChart3,
           content: (
-            <InsightsTab
-              clinicalInsights={dashboard.clinicalInsights}
-              weeklyTrends={dashboard.weeklyTrends}
-              loading={dashboard.loading}
-            />
+            <Suspense fallback={<StatsGridFallback />}>
+              <InsightsTab
+                clinicalInsights={dashboard.clinicalInsights}
+                weeklyTrends={dashboard.weeklyTrends}
+                loading={dashboard.loading}
+              />
+            </Suspense>
           ),
         },
       ]
@@ -132,24 +146,28 @@ export default function Dashboard() {
                   />
                 )}
                 {isTabbed && (
-                  <StatsGrid
-                    metrics={dashboard.metrics}
-                    loading={dashboard.loading}
-                    weekRange={dashboard.weekRange}
-                    weeklyTrends={dashboard.weeklyTrends}
-                  />
-                )}
-              </>
-            ),
-            ...(!isTabbed
-              ? {
-                  stats: (
+                  <Suspense fallback={<StatsGridFallback />}>
                     <StatsGrid
                       metrics={dashboard.metrics}
                       loading={dashboard.loading}
                       weekRange={dashboard.weekRange}
                       weeklyTrends={dashboard.weeklyTrends}
                     />
+                  </Suspense>
+                )}
+              </>
+            ),
+            ...(!isTabbed
+              ? {
+                  stats: (
+                    <Suspense fallback={<StatsGridFallback />}>
+                      <StatsGrid
+                        metrics={dashboard.metrics}
+                        loading={dashboard.loading}
+                        weekRange={dashboard.weekRange}
+                        weeklyTrends={dashboard.weeklyTrends}
+                      />
+                    </Suspense>
                   ),
                   afterStats: <OnboardingCards />,
                 }

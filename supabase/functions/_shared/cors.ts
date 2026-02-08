@@ -4,6 +4,8 @@
 const PRODUCTION_ORIGINS = [
   "https://dentai.pro",
   "https://www.dentai.pro",
+  "https://auria-ai.vercel.app",
+  "https://dentai-pro.vercel.app",
 ];
 
 // Check environment - only allow localhost origins in development
@@ -27,9 +29,6 @@ export function getCorsHeaders(req: Request): Record<string, string> {
     (PRODUCTION_ORIGINS.includes(origin) ||
       // Production subdomains
       origin.endsWith(".dentai.pro") ||
-      origin === "https://dentai.pro" ||
-      // Vercel preview deploys
-      origin.endsWith(".vercel.app") ||
       // Localhost in development (any port)
       (isDevelopment && isLocalhostOrigin(origin)));
 

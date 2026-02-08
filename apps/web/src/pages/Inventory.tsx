@@ -88,9 +88,8 @@ export default function Inventory() {
           fields: ['shade', 'brand', 'product_line'],
           placeholder: 'Buscar cor, marca ou linha...',
         }}
-        cardFilters={{
+        filters={{
           brand: {
-            type: 'select',
             label: 'Marca',
             options: [
               { value: 'all', label: 'Todas as marcas' },
@@ -99,7 +98,6 @@ export default function Inventory() {
             default: 'all',
           },
           type: {
-            type: 'select',
             label: 'Tipo',
             options: [
               { value: 'all', label: 'Todos os tipos' },

@@ -163,9 +163,8 @@ export default function Evaluations() {
             fields: ['patient_name'],
             placeholder: 'Buscar por paciente...',
           }}
-          cardFilters={{
+          filters={{
             status: {
-              type: 'select',
               label: 'Status',
               options: [
                 { value: 'all', label: 'Todas' },

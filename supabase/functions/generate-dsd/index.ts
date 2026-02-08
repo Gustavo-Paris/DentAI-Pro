@@ -872,6 +872,22 @@ serve(async (req: Request) => {
       logger.log(`DSD analysis with patient preferences: goals=${!!patientPreferences.aestheticGoals}, changes=${patientPreferences.desiredChanges?.length || 0}`);
     }
 
+    // Validate ownership early if evaluationId is provided
+    if (evaluationId) {
+      const { data: ownerCheck, error: ownerError } = await supabase
+        .from("evaluations")
+        .select("user_id")
+        .eq("id", evaluationId)
+        .single();
+
+      if (ownerError || !ownerCheck) {
+        return createErrorResponse("Avaliação não encontrada", 404, corsHeaders);
+      }
+      if (ownerCheck.user_id !== user.id) {
+        return createErrorResponse(ERROR_MESSAGES.ACCESS_DENIED, 403, corsHeaders);
+      }
+    }
+
     let analysis: DSDAnalysis;
 
     // If regenerating simulation only, use existing analysis
@@ -994,15 +1010,15 @@ serve(async (req: Request) => {
       // Continue without simulation - analysis is still valid
     }
 
-    // Update evaluation if provided
+    // Update evaluation if provided (ownership already verified above)
     if (evaluationId) {
       const { data: evalData, error: evalError } = await supabase
         .from("evaluations")
-        .select("user_id, dsd_simulation_layers")
+        .select("dsd_simulation_layers")
         .eq("id", evaluationId)
         .single();
 
-      if (!evalError && evalData && evalData.user_id === user.id) {
+      if (!evalError && evalData) {
         const updateData: Record<string, unknown> = {
           dsd_analysis: analysis,
           dsd_simulation_url: simulationUrl,
