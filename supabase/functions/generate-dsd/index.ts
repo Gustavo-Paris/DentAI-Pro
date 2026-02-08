@@ -99,7 +99,6 @@ interface RequestData {
   clinicalObservations?: string[]; // Observations from analyze-dental-photo to prevent contradictions
   clinicalTeethFindings?: ClinicalToothFinding[]; // Per-tooth findings to prevent false restoration claims
   layerType?: 'restorations-only' | 'whitening-restorations' | 'complete-treatment'; // Multi-layer simulation
-  skipCreditCheck?: boolean; // Skip credit deduction for layer generation (already charged for initial call)
 }
 
 // Validate request
@@ -186,7 +185,6 @@ function validateRequest(data: unknown): { success: boolean; error?: string; dat
       clinicalObservations,
       clinicalTeethFindings,
       layerType,
-      skipCreditCheck: req.skipCreditCheck === true,
     },
   };
 }
@@ -861,13 +859,34 @@ serve(async (req: Request) => {
       clinicalObservations,
       clinicalTeethFindings,
       layerType,
-      skipCreditCheck,
     } = validation.data;
 
-    // Check and consume credits only for the initial DSD call (not regeneration or layer generation)
-    // regenerateSimulationOnly = phase 2 of same DSD, already charged
-    // skipCreditCheck = layer generation calls (already charged for initial call)
-    if (!regenerateSimulationOnly && !skipCreditCheck) {
+    // Validate ownership and check existing DSD state BEFORE credit check
+    // This allows server-side verification that initial call was already charged
+    let evaluationHasDsdAnalysis = false;
+    if (evaluationId) {
+      const { data: ownerCheck, error: ownerError } = await supabase
+        .from("evaluations")
+        .select("user_id, dsd_analysis")
+        .eq("id", evaluationId)
+        .single();
+
+      if (ownerError || !ownerCheck) {
+        return createErrorResponse("Avaliação não encontrada", 404, corsHeaders);
+      }
+      if (ownerCheck.user_id !== user.id) {
+        return createErrorResponse(ERROR_MESSAGES.ACCESS_DENIED, 403, corsHeaders);
+      }
+      evaluationHasDsdAnalysis = ownerCheck.dsd_analysis != null;
+    }
+
+    // Check and consume credits only for the initial DSD call.
+    // Skip credit check ONLY when ALL of these are true (server-validated):
+    //   1. regenerateSimulationOnly = reusing existing analysis (not a fresh call)
+    //   2. evaluationId was provided (we can verify server-side state)
+    //   3. The evaluation already has dsd_analysis stored (proves initial call was charged)
+    const isFollowUpCall = regenerateSimulationOnly && evaluationId && evaluationHasDsdAnalysis;
+    if (!isFollowUpCall) {
       const creditResult = await checkAndUseCredits(supabase, user.id, "dsd_simulation");
       if (!creditResult.allowed) {
         logger.warn(`Insufficient credits for user ${user.id} on dsd_simulation`);
@@ -882,22 +901,6 @@ serve(async (req: Request) => {
     }
     if (patientPreferences) {
       logger.log(`DSD analysis with patient preferences: goals=${!!patientPreferences.aestheticGoals}, changes=${patientPreferences.desiredChanges?.length || 0}`);
-    }
-
-    // Validate ownership early if evaluationId is provided
-    if (evaluationId) {
-      const { data: ownerCheck, error: ownerError } = await supabase
-        .from("evaluations")
-        .select("user_id")
-        .eq("id", evaluationId)
-        .single();
-
-      if (ownerError || !ownerCheck) {
-        return createErrorResponse("Avaliação não encontrada", 404, corsHeaders);
-      }
-      if (ownerCheck.user_id !== user.id) {
-        return createErrorResponse(ERROR_MESSAGES.ACCESS_DENIED, 403, corsHeaders);
-      }
     }
 
     let analysis: DSDAnalysis;

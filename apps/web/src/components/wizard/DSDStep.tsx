@@ -230,7 +230,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
               existingAnalysis: analysis,
               patientPreferences,
               layerType,
-              skipCreditCheck: true,
+
             },
           });
           if (resp.error || !resp.data?.simulation_url) {
@@ -467,7 +467,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
                   regenerateSimulationOnly: true,
                   existingAnalysis: analysis,
                   patientPreferences: { whiteningLevel: level },
-                  skipCreditCheck: true,
+    
                 },
               });
               if (resp.error || !resp.data?.simulation_url) {
