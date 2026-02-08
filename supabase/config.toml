@@ -42,5 +42,8 @@ verify_jwt = false
 [functions.sync-subscription]
 verify_jwt = false
 
+[functions.sync-credit-purchase]
+verify_jwt = false
+
 [functions.health-check]
 verify_jwt = false
