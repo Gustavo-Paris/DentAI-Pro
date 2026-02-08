@@ -228,6 +228,7 @@ Domain and technical terms used across DentAI Pro — clinical (DSD, VITA, strat
 | [[plans/2026-02-05-dental-qa-specialist-design]] | Dental QA validation system | Completed |
 | [[plans/2026-02-05-dental-ai-clinical-guardrails]] | Clinical AI guardrails and safety | Completed |
 | [[plans/2026-02-08-comprehensive-audit-design]] | Full-system audit (4 agents + E2E) | Published |
+| [[plans/2026-02-08-codebase-health-report]] | Codebase health: TODOs, test coverage, dependencies | Published |
 
 ---
 
