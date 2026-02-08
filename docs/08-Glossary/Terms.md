@@ -1,8 +1,8 @@
 ---
 title: Glossary of Terms
 created: 2026-02-05
-updated: 2026-02-05
-author: Team DentAI
+updated: 2026-02-08
+author: Team AURIA
 status: published
 tags:
   - type/glossary
@@ -14,7 +14,7 @@ related:
 
 # Glossary of Terms
 
-> Domain and technical terms used throughout DentAI Pro.
+> Domain and technical terms used throughout AURIA (formerly DentAI Pro).
 
 ---
 
@@ -38,7 +38,15 @@ The process of bonding indirect dental restorations (crowns, veneers, inlays) us
 
 ### Intraoral
 
-Referring to the inside of the mouth. Intraoral photos are the primary input for DentAI Pro's AI analysis pipeline.
+Referring to the inside of the mouth. Intraoral photos are the primary input for AURIA's AI analysis pipeline.
+
+### Quick Case
+
+A simplified 1-credit analysis mode that skips the full DSD and detailed protocol steps. Provides fast AI assessment for straightforward cases. Contrasts with the full 3-credit "Analisar com IA" flow.
+
+### Complexity Score
+
+An automated case difficulty rating calculated from the AI analysis output. Considers number of teeth involved, treatment types required, and clinical conditions. Used to help dentists triage and prioritize cases.
 
 ---
 
@@ -62,7 +70,23 @@ A high-level page pattern component from the [[#PageShell|PageShell]] design sys
 
 ### Barrel Package
 
-A package that re-exports all symbols from multiple sub-packages through a single entry point. In DentAI Pro, `@repo/page-shell` is the barrel that re-exports all `@pageshell/*` packages. Located at `packages/page-shell/`.
+A package that re-exports all symbols from multiple sub-packages through a single entry point. In AURIA, `@repo/page-shell` is the barrel that re-exports all `@pageshell/*` packages. Located at `packages/page-shell/`.
+
+### WizardPage
+
+A PageShell [[#Composite|Composite]] for multi-step flows. Used by the AURIA case analysis wizard (photo upload → patient preferences → AI analysis → DSD → review → protocol). The wizard implementation (`useWizardFlow.ts`) is the largest hook in the codebase at ~1,626 lines.
+
+### SettingsPage
+
+A PageShell [[#Composite|Composite]] for settings and configuration screens. Provides standard layout for grouped settings with sections, toggles, and form controls.
+
+### Credit System
+
+The usage-based billing mechanism in AURIA. Users have monthly credit allowances based on subscription tier (e.g., Elite = 200 credits/month). Quick Case costs 1 credit, full AI analysis costs 3 credits. Credits are deducted via `use_credits()` in `supabase/functions/_shared/credits.ts`.
+
+### Prompt Management Module
+
+Centralized module at `supabase/functions/_shared/prompts/` that manages all AI prompt templates used by Edge Functions. Contains 5 prompts across 7 subdirectories. Follows the adapter pattern with a `MetricsPort` interface. See [[06-ADRs/ADR-003-centralized-prompt-management|ADR-003]].
 
 ---
 
@@ -70,7 +94,7 @@ A package that re-exports all symbols from multiple sub-packages through a singl
 
 ### Edge Function
 
-A serverless function running on Supabase's Deno runtime, deployed at the network edge for low latency. DentAI Pro uses Edge Functions for AI processing (Gemini API calls) and Stripe billing. Located at `supabase/functions/`.
+A serverless function running on Supabase's Deno runtime, deployed at the network edge for low latency. AURIA has 8 Edge Functions: 4 AI functions (analyze-dental-photo, generate-dsd, recommend-resin, recommend-cementation) and 4 billing functions (stripe-webhook, create-checkout-session, create-portal-session, sync-subscription). Located at `supabase/functions/`.
 
 ### MetricsPort
 
@@ -86,7 +110,9 @@ The layered component design system used by DentAI Pro, organized in 11 packages
 
 - [[06-ADRs/ADR-Index]] — Architecture Decision Records
 - [[docs/00-Index/Home]] — Documentation Hub
+- [[02-Architecture/Overview]] — Architecture Overview
+- [[02-Architecture/Tech-Stack]] — Technology Stack & Dependencies
 - [[plans/2026-02-04-frontend-architecture-design]] — Frontend Architecture Design
 
 ---
-*Updated: 2026-02-05*
+*Updated: 2026-02-08*

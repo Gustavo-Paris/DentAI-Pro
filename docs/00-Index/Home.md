@@ -1,29 +1,35 @@
 ---
-title: DentAI Pro - Documentation Hub
+title: AURIA - Documentation Hub
 created: 2026-02-04
-updated: 2026-02-04
-author: Team DentAI
+updated: 2026-02-08
+author: Team AURIA
 status: published
 tags:
   - type/index
   - status/published
 ---
 
-# DentAI Pro Documentation
+# AURIA Documentation
 
 Sistema de apoio à decisão clínica odontológica com Inteligência Artificial.
+
+> [!info] Codebase Snapshot (2026-02-08)
+> **222,904 linhas** em **2,103 arquivos** | TypeScript + TSX = 85% do codebase
+> Monorepo Turborepo + pnpm com 11 pacotes PageShell + 8 Edge Functions
 
 ## Quick Start
 
 1. [[README|Instalar o projeto]]
 2. [[apps/web/README|Configurar o app web]]
-3. [[plans/2026-02-04-frontend-architecture-design|Entender a arquitetura]]
+3. [[02-Architecture/Overview|Entender a arquitetura]]
+4. [[plans/2026-02-08-comprehensive-audit-design|Ver auditoria completa]]
 
 ## Sections
 
 | Section | Description |
 |---------|-------------|
 | [[#Architecture]] | System design, layers, data flow |
+| [[#Codebase Statistics]] | Lines of code, file counts by language |
 | [[#Apps]] | Application documentation |
 | [[#Packages]] | PageShell design system & shared packages |
 | [[#Edge Functions]] | Supabase Edge Functions (AI, Billing) |
@@ -31,6 +37,7 @@ Sistema de apoio à decisão clínica odontológica com Inteligência Artificial
 | [[#Glossary]] | Domain & technical term definitions |
 | [[#Architecture Plans]] | Design documents & implementation plans |
 | [[#Operations]] | Build, deploy, CI/CD |
+| [[#Audit & Health]] | Comprehensive audit results |
 
 ---
 
@@ -57,22 +64,40 @@ Sistema de apoio à decisão clínica odontológica com Inteligência Artificial
 └─────────────────┘  └──────────────────┘
 ```
 
-**3-Layer Frontend Pattern:**
+**3-Layer Frontend Pattern** ([[06-ADRs/ADR-001-3-layer-frontend-architecture|ADR-001]]):
 
-| Layer | Responsibility | Location |
-|-------|---------------|----------|
-| **Data Client** | Typed Supabase wrappers, no business logic | `apps/web/src/data/` |
-| **Domain Hooks** | React Query + business rules | `apps/web/src/hooks/` |
-| **Page Adapters** | Map domain data → PageShell composites | `apps/web/src/pages/` |
+| Layer | Responsibility | Location | Files |
+|-------|---------------|----------|-------|
+| **Data Client** | Typed Supabase wrappers, no business logic | `apps/web/src/data/` | 10 modules |
+| **Domain Hooks** | React Query + business rules | `apps/web/src/hooks/domain/` | 10 hooks |
+| **Page Adapters** | Map domain data → PageShell composites | `apps/web/src/pages/` | 16 pages |
 
 > [!info] Architecture Details
-> See [[plans/2026-02-04-frontend-architecture-design|Frontend Architecture Design]] for the full specification.
+> See [[02-Architecture/Overview|Architecture Overview]] and [[plans/2026-02-04-frontend-architecture-design|Frontend Architecture Design]] for the full specification.
+
+---
+
+## Codebase Statistics
+
+| Language | Files | Lines | % |
+|----------|------:|------:|--:|
+| TypeScript (`.ts`) | 1,223 | 103,591 | 46% |
+| TSX (`.tsx`) | 537 | 86,302 | 39% |
+| CSS | 21 | 10,834 | 5% |
+| Markdown | 71 | 8,996 | 4% |
+| SQL | 14 | 2,005 | 1% |
+| JSON | 221 | 2,033 | 1% |
+| Outros | 16 | 9,143 | 4% |
+| **Total** | **2,103** | **222,904** | **100%** |
+
+> [!tip] Detalhamento Completo
+> Ver [[02-Architecture/Tech-Stack|Tech Stack]] para dependências detalhadas.
 
 ---
 
 ## Apps
 
-### @dentai/web
+### @auria/web
 
 Main clinical decision support application.
 
@@ -88,8 +113,12 @@ Main clinical decision support application.
 - **Resin Recommendation** — Personalized stratification protocol with compatible resins
 - **Cementation Recommendation** — Ideal cements and techniques per case
 - **Digital Smile Design (DSD)** — Treatment simulations with dental proportion analysis
+- **Quick Case** — Simplified 1-credit analysis for fast assessments
+- **Complexity Score** — Automated case difficulty rating
 - **Patient Management** — Full CRUD with evaluation tracking
-- **Billing** — Stripe subscription integration
+- **Billing** — Stripe subscription integration (Elite R$249/mês)
+
+**Frontend Stats:** ~104 component files, 16 route pages, 10 domain hooks, 10 data clients
 
 ---
 
@@ -131,6 +160,7 @@ L4  Composites   — full page patterns (ListPage, FormPage, DetailPage...)
 | `DetailPage` | Detail/view with sections and tabs |
 | `DashboardPage` | Stats & widgets |
 | `WizardPage` | Multi-step flows |
+| `SettingsPage` | Settings and configuration pages |
 
 > [!tip] Usage Guide
 > See [[packages/pageshell-composites/README|Composites README]] for full API and examples.
@@ -159,10 +189,10 @@ Supabase Edge Functions (Deno runtime) handling AI processing and billing.
 | `create-portal-session` | Stripe Customer Portal session |
 | `sync-subscription` | Subscription state synchronization |
 
-**Shared utilities:** `supabase/functions/_shared/` (CORS, auth helpers, prompt templates)
+**Shared utilities:** `supabase/functions/_shared/` — CORS, auth, rate limiting, metrics, prompt templates (7 subdirectories)
 
 > [!info] Prompt Management
-> See [[plans/2026-02-04-prompt-management-design|Prompt Management Design]] for the planned centralization of AI prompt templates.
+> Centralized prompt management module with 5 AI prompts across 4 Edge Functions. See [[06-ADRs/ADR-003-centralized-prompt-management|ADR-003]] and [[plans/2026-02-04-prompt-management-design|Prompt Management Design]].
 
 ---
 
@@ -191,9 +221,13 @@ Domain and technical terms used across DentAI Pro — clinical (DSD, VITA, strat
 
 | Document | Description | Status |
 |----------|-------------|--------|
-| [[plans/2026-02-04-frontend-architecture-design]] | 3-layer frontend architecture (Data Client → Domain Hooks → Page Adapters) | In Progress |
-| [[plans/2026-02-04-prompt-management-design]] | Centralized prompt management module for Edge Functions | Planned |
-| [[plans/2026-02-04-prompt-management-plan]] | Implementation tasks for prompt management (8 steps) | Planned |
+| [[plans/2026-02-04-frontend-architecture-design]] | 3-layer frontend architecture (Data Client → Domain Hooks → Page Adapters) | Implemented |
+| [[plans/2026-02-04-prompt-management-design]] | Centralized prompt management module for Edge Functions | Implemented |
+| [[plans/2026-02-04-prompt-management-plan]] | Implementation tasks for prompt management (8 steps) | Implemented |
+| [[plans/2026-02-04-qa-specialist-fixes-design]] | Dental QA specialist corrections | Completed |
+| [[plans/2026-02-05-dental-qa-specialist-design]] | Dental QA validation system | Completed |
+| [[plans/2026-02-05-dental-ai-clinical-guardrails]] | Clinical AI guardrails and safety | Completed |
+| [[plans/2026-02-08-comprehensive-audit-design]] | Full-system audit (4 agents + E2E) | Published |
 
 ---
 
@@ -212,8 +246,12 @@ Domain and technical terms used across DentAI Pro — clinical (DSD, VITA, strat
 | **AI** | Google Gemini APIs |
 | **Billing** | Stripe |
 | **Monorepo** | Turborepo 2.5 + pnpm 9.15 |
-| **Testing** | Vitest 3.2 |
+| **Error Tracking** | Sentry |
+| **Testing** | Vitest 3.2 + Testing Library |
 | **Deploy** | Vercel (frontend) + Supabase (backend) |
+
+> [!tip] Full Dependency Catalog
+> See [[02-Architecture/Tech-Stack|Tech Stack]] for the complete dependency list across all workspaces.
 
 ### Commands
 
@@ -236,6 +274,26 @@ Domain and technical terms used across DentAI Pro — clinical (DSD, VITA, strat
 
 - GitHub Actions: `.github/workflows/test.yml` (runs on push/PR)
 - Vercel: automatic preview deploys on PRs
+
+---
+
+## Audit & Health
+
+> [!warning] Auditoria Completa (2026-02-08)
+> Auditoria com 4 agentes de análise + teste funcional E2E via browser.
+
+| Area | Grade | Key Finding |
+|------|-------|-------------|
+| Arquitetura Frontend | A- | 95% compliance com padrão 3-camadas |
+| Qualidade de Código | B+ | Debt em componentes grandes (useWizardFlow 1626 LOC) |
+| Backend/Edge Functions | B | Race condition no credit system |
+| Seguranca | C+ | PHI exposto em shared links, JWT verify off |
+| UX/Fluxo Funcional | A- | DSD edge function retorna 500 |
+| i18n | D | Zero infraestrutura, ~1000 strings hardcoded |
+| Acessibilidade | C+ | Parcial — falta focus indicators, aria-labels |
+
+> [!info] Detalhes
+> [[plans/2026-02-08-comprehensive-audit-design|Relatório completo da auditoria]] com 30 itens no roadmap prioritizado.
 
 ---
 
@@ -282,4 +340,4 @@ VITE_SUPABASE_ANON_KEY=your-anon-key
 
 ---
 
-*Updated: 2026-02-04*
+*Updated: 2026-02-08*

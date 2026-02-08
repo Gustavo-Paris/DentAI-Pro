@@ -1,8 +1,8 @@
 ---
 title: ADR Index
 created: 2026-02-05
-updated: 2026-02-05
-author: Team DentAI
+updated: 2026-02-08
+author: Team AURIA
 status: published
 tags:
   - type/index
@@ -14,7 +14,7 @@ related:
 
 # ADR Index
 
-> Architecture Decision Records for DentAI Pro.
+> Architecture Decision Records for AURIA (formerly DentAI Pro).
 
 ## Active ADRs
 
@@ -47,8 +47,9 @@ related:
 ## Related
 
 - [[docs/00-Index/Home]] — Documentation Hub
+- [[02-Architecture/Overview]] — Architecture Overview
 - [[AGENTS.md#Governance]] — Traceability rules
 - [[Templates/ADR Template]] — Blank ADR template
 
 ---
-*Updated: 2026-02-05*
+*Updated: 2026-02-08*
