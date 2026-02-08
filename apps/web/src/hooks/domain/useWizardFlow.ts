@@ -162,6 +162,38 @@ function isAnterior(tooth: string): boolean {
   return ANTERIOR_TEETH.includes(tooth);
 }
 
+/**
+ * Infer the aesthetic cavity class when cavity_class is null.
+ * Microdontia, diastema closure, and other aesthetic procedures don't have
+ * a traditional Black's classification — but the recommend-resin edge function
+ * requires a valid cavityClass string. This maps indication_reason → aesthetic class.
+ */
+function inferCavityClass(
+  toothData: DetectedTooth | undefined,
+  fallback: string,
+): string {
+  if (toothData?.cavity_class) return toothData.cavity_class;
+
+  const reason = (toothData?.indication_reason || '').toLowerCase();
+  if (reason.includes('reanatomização') || reason.includes('microdontia') || reason.includes('volume') || reason.includes('conoide')) {
+    return 'Recontorno Estético';
+  }
+  if (reason.includes('diastema') || reason.includes('espaçamento')) {
+    return 'Fechamento de Diastema';
+  }
+  if (reason.includes('faceta')) {
+    return 'Faceta Direta';
+  }
+  if (reason.includes('reparo') || reason.includes('substituição')) {
+    return 'Reparo de Restauração';
+  }
+  if (reason.includes('desgaste') || reason.includes('incisal') || reason.includes('recontorno')) {
+    return 'Recontorno Estético';
+  }
+
+  return fallback;
+}
+
 function getFullRegion(tooth: string): string {
   const toothNum = parseInt(tooth);
   const isUpper = toothNum >= 10 && toothNum <= 28;
@@ -837,7 +869,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
             patient_age: parseInt(formData.patientAge),
             tooth,
             region: getFullRegion(tooth),
-            cavity_class: toothData?.cavity_class || formData.cavityClass,
+            cavity_class: inferCavityClass(toothData, formData.cavityClass),
             restoration_size: toothData?.restoration_size || formData.restorationSize,
             substrate: toothData?.substrate || formData.substrate,
             tooth_color: formData.vitaShade,
@@ -934,7 +966,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
                       patientAge: formData.patientAge,
                       tooth,
                       region: getFullRegion(tooth),
-                      cavityClass: toothData?.cavity_class || formData.cavityClass,
+                      cavityClass: inferCavityClass(toothData, formData.cavityClass),
                       restorationSize: toothData?.restoration_size || formData.restorationSize,
                       substrate: toothData?.substrate || formData.substrate,
                       bruxism: formData.bruxism,

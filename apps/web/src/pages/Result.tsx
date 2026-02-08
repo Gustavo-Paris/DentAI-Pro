@@ -12,7 +12,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Download, Plus, CheckCircle, Image, Package, Sparkles, Layers, Loader2, Crown, Stethoscope, ArrowUpRight, CircleX, Heart, Palette, AlertTriangle } from 'lucide-react';
+import { Download, Plus, CheckCircle, Package, Sparkles, Layers, Loader2, Crown, Stethoscope, ArrowUpRight, CircleX, Heart, Palette, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -176,6 +176,7 @@ export default function Result() {
                 stratificationNeeded={evaluation.stratification_needed}
                 indicationReason={evaluation.ai_treatment_indication || r.genericProtocol?.ai_reason}
                 whiteningGoal={evaluation.patient_aesthetic_goals}
+                secondaryPhotos={{ angle45: r.photoUrls.angle45, face: r.photoUrls.face }}
               />
             </section>
 
@@ -227,55 +228,6 @@ export default function Result() {
             {evaluation.bruxism && (
               <section className="mb-8">
                 <BruxismAlert show={true} treatmentType={r.treatmentType} />
-              </section>
-            )}
-
-            {/* Clinical Photos */}
-            {r.hasPhotos && (
-              <section className="mb-8">
-                <h3 className="font-semibold font-display mb-3 flex items-center gap-2">
-                  <Image className="w-4 h-4" />
-                  Fotos Clínicas
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {r.photoUrls.frontal && (
-                    <div className="relative">
-                      <div className={`absolute -inset-1 rounded-xl ${r.currentTreatmentStyle.glowClass} opacity-60`} />
-                      <div className={`relative aspect-square rounded-lg overflow-hidden bg-secondary ring-4 ${r.currentTreatmentStyle.ringClass} ring-offset-4 ring-offset-background shadow-xl`}>
-                        <img src={r.photoUrls.frontal} alt="Foto Clínica" className="w-full h-full object-cover" />
-                        {evaluation.tooth_bounds && (
-                          <div
-                            className="absolute rounded-full pointer-events-none"
-                            style={{
-                              left: `${evaluation.tooth_bounds.x - evaluation.tooth_bounds.width / 2}%`,
-                              top: `${evaluation.tooth_bounds.y - evaluation.tooth_bounds.height / 2}%`,
-                              width: `${evaluation.tooth_bounds.width}%`,
-                              height: `${evaluation.tooth_bounds.height}%`,
-                              backgroundColor: r.currentTreatmentStyle.overlayColor,
-                              mixBlendMode: 'multiply',
-                              boxShadow: `0 0 20px 8px ${r.currentTreatmentStyle.overlayColor}`,
-                            }}
-                          />
-                        )}
-                        <div className="absolute bottom-2 left-2">
-                          <div className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold shadow-lg ${r.currentTreatmentStyle.solidBgClass} text-white`}>
-                            <span>Dente {evaluation.tooth}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  {r.photoUrls.angle45 && (
-                    <div className="aspect-square rounded-lg overflow-hidden bg-secondary">
-                      <img src={r.photoUrls.angle45} alt="Sorriso 45°" className="w-full h-full object-cover" />
-                    </div>
-                  )}
-                  {r.photoUrls.face && (
-                    <div className="aspect-square rounded-lg overflow-hidden bg-secondary">
-                      <img src={r.photoUrls.face} alt="Rosto" className="w-full h-full object-cover" />
-                    </div>
-                  )}
-                </div>
               </section>
             )}
 
