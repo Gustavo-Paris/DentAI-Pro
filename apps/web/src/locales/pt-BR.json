@@ -1,0 +1,74 @@
+{
+  "common": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "back": "Voltar",
+    "next": "Próximo",
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "retry": "Tentar novamente",
+    "close": "Fechar",
+    "search": "Buscar",
+    "noResults": "Nenhum resultado encontrado",
+    "credits": "créditos"
+  },
+  "auth": {
+    "login": "Entrar",
+    "logout": "Sair",
+    "email": "Email",
+    "password": "Senha",
+    "forgotPassword": "Esqueceu a senha?",
+    "signUp": "Criar conta"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "evaluations": "Avaliações",
+    "inventory": "Inventário",
+    "profile": "Perfil",
+    "settings": "Configurações",
+    "newCase": "Novo Caso"
+  },
+  "dashboard": {
+    "totalCases": "Total de Casos",
+    "patients": "Pacientes",
+    "thisWeek": "Esta Semana",
+    "insights": "Insights",
+    "recentCases": "Casos Recentes"
+  },
+  "wizard": {
+    "step": "Etapa {{current}} de {{total}}",
+    "photo": "Foto",
+    "preferences": "Preferências",
+    "analysis": "Análise",
+    "dsd": "DSD",
+    "review": "Revisão",
+    "result": "Resultado"
+  },
+  "dsd": {
+    "title": "Planejamento Digital do Sorriso",
+    "analyzing": "Analisando...",
+    "confidence": "Confiança",
+    "proportions": "Proporções",
+    "suggestions": "Sugestões de Tratamento",
+    "observations": "Observações Gerais",
+    "comparison": "Comparação Antes/Depois",
+    "regenerate": "Nova Simulação",
+    "continueToReview": "Continuar para Revisão",
+    "retryAnalysis": "Refazer Análise",
+    "skipDSD": "Pular DSD"
+  },
+  "evaluation": {
+    "tooth": "Dente",
+    "region": "Região",
+    "cavityClass": "Classe",
+    "substrate": "Substrato",
+    "protocol": "Protocolo",
+    "checklist": "Checklist",
+    "alerts": "Alertas",
+    "warnings": "Pontos de Atenção"
+  }
+}

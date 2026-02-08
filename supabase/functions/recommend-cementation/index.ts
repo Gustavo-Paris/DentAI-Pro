@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsPreFlight, createErrorResponse, ERROR_MESSAGES, generateRequestId } from "../_shared/cors.ts";
+import { sanitizeForPrompt } from "../_shared/validation.ts";
 import { logger } from "../_shared/logger.ts";
 import { callGeminiWithTools, GeminiError, type OpenAIMessage, type OpenAITool } from "../_shared/gemini.ts";
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
@@ -148,7 +149,8 @@ serve(async (req: Request) => {
       return createErrorResponse(validation.error || ERROR_MESSAGES.INVALID_REQUEST, 400, corsHeaders);
     }
 
-    const { evaluationId, teeth, shade, ceramicType, substrate, substrateCondition, aestheticGoals, dsdContext } = validation.data;
+    const { evaluationId, teeth, shade, ceramicType, substrate, substrateCondition, aestheticGoals: rawGoals, dsdContext } = validation.data;
+    const aestheticGoals = rawGoals ? sanitizeForPrompt(rawGoals) : rawGoals;
 
     // Verify evaluation ownership
     const { data: evalData, error: evalError } = await supabase

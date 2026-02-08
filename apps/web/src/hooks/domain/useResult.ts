@@ -53,7 +53,7 @@ export interface Evaluation {
   ideal_resin: Resin | null;
   has_inventory_at_creation: boolean;
   checklist_progress: number[] | null;
-  dsd_analysis: import('@/components/wizard/DSDStep').DSDAnalysis | null;
+  dsd_analysis: import('@/types/dsd').DSDAnalysis | null;
   dsd_simulation_url: string | null;
   dsd_simulation_layers: SimulationLayer[] | null;
   treatment_type: 'resina' | 'porcelana' | 'coroa' | 'implante' | 'endodontia' | 'encaminhamento' | null;

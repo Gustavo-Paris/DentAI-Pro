@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState, useEffect } from 'react';
 import { PhotoAnalysisResult, ReviewFormData, TreatmentType } from '@/components/wizard/ReviewAnalysisStep';
-import { DSDResult } from '@/components/wizard/DSDStep';
+import type { DSDResult } from '@/types/dsd';
 import { PatientPreferences } from '@/components/wizard/PatientPreferencesStep';
 import { logger } from '@/lib/logger';
 import { drafts } from '@/data';

@@ -5,7 +5,7 @@ import type {
   ReviewFormData,
   TreatmentType,
 } from '@/components/wizard/ReviewAnalysisStep';
-import type { DSDResult } from '@/components/wizard/DSDStep';
+import type { DSDResult } from '@/types/dsd';
 import type { PatientPreferences } from '@/components/wizard/PatientPreferencesStep';
 
 export interface SubmissionStep {

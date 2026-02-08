@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsPreFlight, ERROR_MESSAGES, createErrorResponse, generateRequestId } from "../_shared/cors.ts";
-import { validateEvaluationData, type EvaluationData } from "../_shared/validation.ts";
+import { validateEvaluationData, sanitizeFieldsForPrompt, type EvaluationData } from "../_shared/validation.ts";
 import { logger } from "../_shared/logger.ts";
 import { callGemini, GeminiError, type OpenAIMessage } from "../_shared/gemini.ts";
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
@@ -266,24 +266,27 @@ serve(async (req) => {
     // Read optional DSD context from request body
     const dsdContext = (rawData as Record<string, unknown>).dsdContext as RecommendResinParams['dsdContext'] | undefined;
 
+    // Sanitise free-text user input before prompt interpolation
+    const safeData = sanitizeFieldsForPrompt(data, ['clinicalNotes', 'aestheticGoals']);
+
     const promptParams: RecommendResinParams = {
-      patientAge: data.patientAge,
-      tooth: data.tooth,
-      region: data.region,
-      cavityClass: data.cavityClass,
-      restorationSize: data.restorationSize,
-      depth: data.depth,
-      substrate: data.substrate,
-      substrateCondition: data.substrateCondition,
-      enamelCondition: data.enamelCondition,
-      aestheticLevel: data.aestheticLevel,
-      toothColor: data.toothColor,
-      stratificationNeeded: data.stratificationNeeded,
-      bruxism: data.bruxism,
-      longevityExpectation: data.longevityExpectation,
-      budget: data.budget,
-      clinicalNotes: data.clinicalNotes,
-      aestheticGoals: data.aestheticGoals,
+      patientAge: safeData.patientAge,
+      tooth: safeData.tooth,
+      region: safeData.region,
+      cavityClass: safeData.cavityClass,
+      restorationSize: safeData.restorationSize,
+      depth: safeData.depth,
+      substrate: safeData.substrate,
+      substrateCondition: safeData.substrateCondition,
+      enamelCondition: safeData.enamelCondition,
+      aestheticLevel: safeData.aestheticLevel,
+      toothColor: safeData.toothColor,
+      stratificationNeeded: safeData.stratificationNeeded,
+      bruxism: safeData.bruxism,
+      longevityExpectation: safeData.longevityExpectation,
+      budget: safeData.budget,
+      clinicalNotes: safeData.clinicalNotes,
+      aestheticGoals: safeData.aestheticGoals,
       allGroups,
       hasInventory,
       budgetAppropriateInventory,

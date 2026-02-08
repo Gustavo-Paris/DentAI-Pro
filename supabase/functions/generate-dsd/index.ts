@@ -10,6 +10,7 @@ import {
 } from "../_shared/gemini.ts";
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 import { checkAndUseCredits, createInsufficientCreditsResponse, refundCredits } from "../_shared/credits.ts";
+import { sanitizeForPrompt } from "../_shared/validation.ts";
 import { getPrompt } from "../_shared/prompts/registry.ts";
 import { withMetrics } from "../_shared/prompts/index.ts";
 import type { Params as DsdAnalysisParams } from "../_shared/prompts/definitions/dsd-analysis.ts";
@@ -534,7 +535,7 @@ Uma foto da face completa foi fornecida. Use-a para:
 `;
   }
 
-  // Build patient preferences context
+  // Build patient preferences context (sanitize user-provided text before prompt interpolation)
   let preferencesContext = '';
   if (patientPreferences?.aestheticGoals || patientPreferences?.desiredChanges?.length) {
     preferencesContext = `
@@ -543,11 +544,13 @@ PREFERÊNCIAS DO PACIENTE:
 O paciente expressou os seguintes desejos estéticos. PRIORIZE sugestões que atendam a estes objetivos quando clinicamente viável:
 `;
     if (patientPreferences.aestheticGoals) {
-      preferencesContext += `Objetivos descritos pelo paciente: "${patientPreferences.aestheticGoals}"
+      const safeGoals = sanitizeForPrompt(patientPreferences.aestheticGoals);
+      preferencesContext += `Objetivos descritos pelo paciente: "${safeGoals}"
 `;
     }
     if (patientPreferences.desiredChanges?.length) {
-      preferencesContext += `Mudanças desejadas: ${patientPreferences.desiredChanges.join(', ')}
+      const safeChanges = patientPreferences.desiredChanges.map(c => sanitizeForPrompt(c));
+      preferencesContext += `Mudanças desejadas: ${safeChanges.join(', ')}
 `;
     }
     preferencesContext += `
@@ -555,6 +558,7 @@ IMPORTANTE: Use as preferências do paciente para PRIORIZAR sugestões, mas NÃO
   }
 
   // Build clinical context from prior analysis to prevent contradictions
+  // (sanitize even though these come from AI output — they pass through the client)
   let clinicalContext = '';
   if (clinicalObservations?.length || clinicalTeethFindings?.length) {
     clinicalContext = `
@@ -564,18 +568,24 @@ A análise clínica inicial já foi realizada sobre esta mesma foto por outro mo
 Você DEVE manter CONSISTÊNCIA com os achados clínicos abaixo.
 `;
     if (clinicalObservations?.length) {
+      const safeObservations = clinicalObservations.map(o => sanitizeForPrompt(o));
       clinicalContext += `
 Observações clínicas prévias:
-${clinicalObservations.map(o => `- ${o}`).join('\n')}
+${safeObservations.map(o => `- ${o}`).join('\n')}
 
 REGRA: Sua classificação de arco do sorriso, corredor bucal e desgaste incisal DEVE ser
 CONSISTENTE com as observações acima. Se houver discordância, justifique nas observations.
 `;
     }
     if (clinicalTeethFindings?.length) {
+      const safeFindings = clinicalTeethFindings.map(f => ({
+        tooth: sanitizeForPrompt(f.tooth),
+        indication_reason: f.indication_reason ? sanitizeForPrompt(f.indication_reason) : undefined,
+        treatment_indication: f.treatment_indication ? sanitizeForPrompt(f.treatment_indication) : undefined,
+      }));
       clinicalContext += `
 Achados clínicos POR DENTE (diagnóstico já realizado):
-${clinicalTeethFindings.map(f => `- Dente ${f.tooth}: ${f.indication_reason || 'sem observação específica'} (indicação: ${f.treatment_indication || 'não definida'})`).join('\n')}
+${safeFindings.map(f => `- Dente ${f.tooth}: ${f.indication_reason || 'sem observação específica'} (indicação: ${f.treatment_indication || 'não definida'})`).join('\n')}
 
 ⚠️ REGRA CRÍTICA - NÃO INVENTAR RESTAURAÇÕES:
 Se a análise clínica acima identificou o problema de um dente como "diastema", "fechamento de diastema",

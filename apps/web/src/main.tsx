@@ -2,6 +2,7 @@ import { createRoot } from "react-dom/client";
 import * as Sentry from "@sentry/react";
 import App from "./App.tsx";
 import "./index.css";
+import "./lib/i18n"; // i18n initialization (must be before App)
 import { initWebVitals } from "./lib/webVitals";
 import { env } from "./lib/env";
 

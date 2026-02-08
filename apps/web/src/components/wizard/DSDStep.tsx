@@ -17,83 +17,27 @@ import { ProgressRing } from '@/components/ProgressRing';
 import { CompactStepIndicator } from '@/components/CompactStepIndicator';
 import { logger } from '@/lib/logger';
 import { withRetry } from '@/lib/retry';
-import type { SimulationLayer, SimulationLayerType } from '@/types/dsd';
+import { createCompositeTeethOnly } from '@/lib/compositeTeeth';
+import type {
+  DSDAnalysis,
+  DSDResult,
+  DSDSuggestion,
+  TreatmentIndication,
+  SimulationLayer,
+  SimulationLayerType,
+  ToothBoundsPct,
+  DetectedToothForMask,
+  ClinicalToothFinding,
+  AdditionalPhotos,
+  PatientPreferences,
+} from '@/types/dsd';
 import { LAYER_LABELS } from '@/types/dsd';
+
+// Re-export types for backward compatibility with existing importers
+export type { TreatmentIndication, DSDSuggestion, DSDAnalysis, DSDResult };
 
 // Tooth shape is now fixed as 'natural' - removed manual selection per market research
 const TOOTH_SHAPE = 'natural' as const;
-
-export type TreatmentIndication = "resina" | "porcelana" | "coroa" | "implante" | "endodontia" | "encaminhamento";
-
-export interface DSDSuggestion {
-  tooth: string;
-  current_issue: string;
-  proposed_change: string;
-  treatment_indication?: TreatmentIndication;
-}
-
-export interface DSDAnalysis {
-  facial_midline: "centrada" | "desviada_esquerda" | "desviada_direita";
-  dental_midline: "alinhada" | "desviada_esquerda" | "desviada_direita";
-  smile_line: "alta" | "média" | "baixa";
-  buccal_corridor: "adequado" | "excessivo" | "ausente";
-  occlusal_plane: "nivelado" | "inclinado_esquerda" | "inclinado_direita";
-  golden_ratio_compliance: number;
-  symmetry_score: number;
-  suggestions: DSDSuggestion[];
-  observations: string[];
-  confidence: "alta" | "média" | "baixa";
-  simulation_limitation?: string;
-  // Lip analysis
-  lip_thickness?: "fino" | "médio" | "volumoso";
-  // Overbite suspicion
-  overbite_suspicion?: "sim" | "não" | "indeterminado";
-  // Visagism fields
-  face_shape?: "oval" | "quadrado" | "triangular" | "retangular" | "redondo";
-  perceived_temperament?: "colérico" | "sanguíneo" | "melancólico" | "fleumático" | "misto";
-  smile_arc?: "consonante" | "plano" | "reverso";
-  recommended_tooth_shape?: "quadrado" | "oval" | "triangular" | "retangular" | "natural";
-  visagism_notes?: string;
-}
-
-export interface DSDResult {
-  analysis: DSDAnalysis;
-  simulation_url: string | null;
-  simulation_note?: string;
-  /** Multi-layer simulations (restorations-only, whitening-restorations, complete-treatment) */
-  layers?: SimulationLayer[];
-}
-
-interface AdditionalPhotos {
-  smile45: string | null;
-  face: string | null;
-}
-
-interface PatientPreferences {
-  whiteningLevel: 'natural' | 'white' | 'hollywood';
-}
-
-type ToothBoundsPct = {
-  /** center X in % */
-  x: number;
-  /** center Y in % */
-  y: number;
-  /** width in % */
-  width: number;
-  /** height in % */
-  height: number;
-};
-
-type DetectedToothForMask = {
-  tooth_bounds?: ToothBoundsPct;
-};
-
-/** Summary of clinical findings per tooth, passed to DSD for cross-referencing */
-interface ClinicalToothFinding {
-  tooth: string;
-  indication_reason?: string;
-  treatment_indication?: string;
-}
 
 interface DSDStepProps {
   imageBase64: string | null;
@@ -196,110 +140,6 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
       b.width > 0 && b.height > 0
     );
   }, [detectedTeeth]);
-
-  const createCompositeTeethOnly = async (params: {
-    beforeDataUrl: string;
-    afterUrl: string;
-    bounds: ToothBoundsPct[];
-  }): Promise<Blob> => {
-    const { beforeDataUrl, afterUrl, bounds } = params;
-
-    const [beforeRes, afterRes] = await Promise.all([
-      fetch(beforeDataUrl),
-      fetch(afterUrl),
-    ]);
-
-    if (!beforeRes.ok || !afterRes.ok) {
-      throw new Error('Falha ao baixar imagens para composição');
-    }
-
-    const [beforeBlob, afterBlob] = await Promise.all([
-      beforeRes.blob(),
-      afterRes.blob(),
-    ]);
-
-    const [beforeBitmap, afterBitmap] = await Promise.all([
-      createImageBitmap(beforeBlob),
-      createImageBitmap(afterBlob),
-    ]);
-
-    const w = beforeBitmap.width;
-    const h = beforeBitmap.height;
-
-    // Base canvas (original)
-    const base = document.createElement('canvas');
-    base.width = w;
-    base.height = h;
-    const baseCtx = base.getContext('2d');
-    if (!baseCtx) throw new Error('Canvas não suportado');
-    baseCtx.drawImage(beforeBitmap, 0, 0);
-
-    // Overlay canvas (AI output)
-    const overlay = document.createElement('canvas');
-    overlay.width = w;
-    overlay.height = h;
-    const overlayCtx = overlay.getContext('2d');
-    if (!overlayCtx) throw new Error('Canvas não suportado');
-    overlayCtx.drawImage(afterBitmap, 0, 0);
-
-    // Mask canvas
-    const mask = document.createElement('canvas');
-    mask.width = w;
-    mask.height = h;
-    const maskCtx = mask.getContext('2d');
-    if (!maskCtx) throw new Error('Canvas não suportado');
-
-    // Draw ellipses over teeth bounds (slightly shrunk to avoid gums/lips)
-    const scaleX = 0.9;
-    const scaleY = 0.7;
-
-    maskCtx.fillStyle = 'rgba(255,255,255,1)';
-    for (const b of bounds) {
-      const cx = (b.x / 100) * w;
-      const cy = (b.y / 100) * h;
-      const bw = (b.width / 100) * w;
-      const bh = (b.height / 100) * h;
-      const rx = (bw * scaleX) / 2;
-      const ry = (bh * scaleY) / 2;
-
-      maskCtx.beginPath();
-      maskCtx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
-      maskCtx.fill();
-    }
-
-    // Soft edges (second blurred pass)
-    maskCtx.save();
-    maskCtx.filter = 'blur(10px)';
-    maskCtx.globalAlpha = 0.55;
-    for (const b of bounds) {
-      const cx = (b.x / 100) * w;
-      const cy = (b.y / 100) * h;
-      const bw = (b.width / 100) * w;
-      const bh = (b.height / 100) * h;
-      const rx = (bw * (scaleX * 1.15)) / 2;
-      const ry = (bh * (scaleY * 1.15)) / 2;
-      maskCtx.beginPath();
-      maskCtx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
-      maskCtx.fill();
-    }
-    maskCtx.restore();
-
-    // Apply mask to overlay (keep only teeth region)
-    overlayCtx.globalCompositeOperation = 'destination-in';
-    overlayCtx.drawImage(mask, 0, 0);
-    overlayCtx.globalCompositeOperation = 'source-over';
-
-    // Merge overlay on top of base
-    baseCtx.drawImage(overlay, 0, 0);
-
-    return await new Promise<Blob>((resolve, reject) => {
-      base.toBlob(
-        (blob) => (blob ? resolve(blob) : reject(new Error('Falha ao gerar imagem final'))),
-        'image/jpeg',
-        0.92
-      );
-    });
-  };
 
   // Deterministic post-processing: copy original pixels everywhere except teeth bounds
   // Skip when multi-layer generation is active (compositing is handled inside generateAllLayers)
@@ -463,7 +303,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
     }
 
     return { layer, url: signedData?.signedUrl || null };
-  }, [imageBase64, toothBounds, user, createCompositeTeethOnly]);
+  }, [imageBase64, toothBounds, user]);
 
   // Generate all layers in parallel
   const generateAllLayers = useCallback(async (analysisData?: DSDAnalysis, initialSimulationUrl?: string | null) => {
