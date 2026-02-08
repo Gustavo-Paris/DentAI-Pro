@@ -14,7 +14,7 @@ export const INITIAL_FORM_DATA: ReviewFormData = {
   depth: 'Média',
   bruxism: false,
   aestheticLevel: 'alto',
-  budget: 'moderado',
+  budget: 'padrão',
   longevityExpectation: 'médio',
   clinicalNotes: '',
   treatmentType: 'resina',

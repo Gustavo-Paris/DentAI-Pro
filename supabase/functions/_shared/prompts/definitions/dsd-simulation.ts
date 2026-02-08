@@ -337,6 +337,8 @@ The gum line should be recontoured to show the effect of gengivoplasty:
 - Create symmetrical gingival zeniths between contralateral teeth
 - Harmonize the gum line curvature across the smile
 - The recontoured gums must still look NATURAL (pink, healthy tissue appearance)
+- The gingival alteration MUST be VISUALLY EVIDENT in the before/after comparison — do not make subtle changes that are invisible at comparison zoom level
+- Minimum 0.5mm apical movement of gingival margin for the change to be perceptible
 
 ${params.gingivoSuggestions ? `GENGIVOPLASTY SPECIFICATIONS:\n${params.gingivoSuggestions}\n` : ''}
 

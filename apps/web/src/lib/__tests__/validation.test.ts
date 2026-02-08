@@ -29,7 +29,7 @@ function validEvaluation() {
     stratificationNeeded: true,
     bruxism: false,
     longevityExpectation: 'longo',
-    budget: 'moderado',
+    budget: 'padrão',
   };
 }
 

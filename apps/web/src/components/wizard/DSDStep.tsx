@@ -199,13 +199,13 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
     const needed: SimulationLayerType[] = ['restorations-only', 'whitening-restorations'];
 
     // Layer 3: complete-treatment with gengivoplasty
-    // Only if smile_line is 'alta' AND suggestions include gengivoplasty
+    // Include when AI detected gingival treatment need, regardless of smile line
     const hasGingivoSuggestion = analysis.suggestions?.some(s => {
       const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
       return text.includes('gengivoplastia') || text.includes('gengival') || text.includes('zênite');
     });
 
-    if (analysis.smile_line === 'alta' && hasGingivoSuggestion) {
+    if (hasGingivoSuggestion) {
       needed.push('complete-treatment');
     }
 

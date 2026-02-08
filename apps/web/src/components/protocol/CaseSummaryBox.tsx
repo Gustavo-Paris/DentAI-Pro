@@ -11,10 +11,11 @@ import { getTreatmentConfig } from "@/lib/treatment-config";
 
 // Procedimentos estéticos que não usam classificação de cavidade tradicional
 const AESTHETIC_PROCEDURES = [
-  'Faceta Direta', 
-  'Recontorno Estético', 
-  'Fechamento de Diastema', 
-  'Reparo de Restauração'
+  'Faceta Direta',
+  'Recontorno Estético',
+  'Fechamento de Diastema',
+  'Reparo de Restauração',
+  'Lente de Contato',
 ];
 
 // Explicações dos níveis estéticos

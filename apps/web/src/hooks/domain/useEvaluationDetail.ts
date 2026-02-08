@@ -51,6 +51,9 @@ export interface EvaluationItem {
   budget: string;
   longevity_expectation: string;
   patient_aesthetic_goals?: string | null;
+  dsd_analysis?: Record<string, unknown> | null;
+  dsd_simulation_url?: string | null;
+  dsd_simulation_layers?: Array<{ type: string; simulation_url: string | null; includes_gengivoplasty?: boolean }> | null;
   resins?: {
     name: string;
     manufacturer: string;
@@ -87,6 +90,7 @@ export interface EvaluationDetailState {
   evaluationDateShort: string;
   completedCount: number;
   patientDataForModal: PatientDataForModal | null;
+  selectedIds: Set<string>;
 }
 
 export interface PendingChecklistResult {
@@ -98,10 +102,14 @@ export interface PendingChecklistResult {
 export interface EvaluationDetailActions {
   handleMarkAsCompleted: (id: string, force?: boolean) => PendingChecklistResult | void;
   handleMarkAllAsCompleted: () => void;
+  handleBulkComplete: (ids: string[]) => void;
   handleExportPDF: (id: string) => void;
   handleShareCase: () => void;
   setShowAddTeethModal: (show: boolean) => void;
   handleAddTeethSuccess: () => void;
+  toggleSelection: (id: string) => void;
+  toggleSelectAll: () => void;
+  clearSelection: () => void;
   getChecklist: (evaluation: EvaluationItem) => string[];
   isChecklistComplete: (evaluation: EvaluationItem) => boolean;
   getChecklistProgress: (evaluation: EvaluationItem) => ChecklistProgress;
@@ -118,6 +126,7 @@ const AESTHETIC_PROCEDURES = [
   'Recontorno Estético',
   'Fechamento de Diastema',
   'Reparo de Restauração',
+  'Lente de Contato',
 ];
 
 // ---------------------------------------------------------------------------
@@ -195,6 +204,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
   // ---- Local state ----
   const [showAddTeethModal, setShowAddTeethModal] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   // ---- Computed ----
   const patientName = evals[0]?.patient_name || 'Paciente sem nome';
@@ -216,7 +226,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
       vitaShade: first.tooth_color || 'A2',
       bruxism: first.bruxism || false,
       aestheticLevel: first.aesthetic_level || 'alto',
-      budget: first.budget || 'moderado',
+      budget: first.budget || 'padrão',
       longevityExpectation: first.longevity_expectation || 'médio',
       photoPath: first.photo_frontal,
       aestheticGoals: first.patient_aesthetic_goals ?? null,
@@ -366,6 +376,50 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
     queryClient.invalidateQueries({ queryKey: ['pendingTeeth', sessionId] });
   }, [queryClient, sessionId]);
 
+  // ---- Selection ----
+  const toggleSelection = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const toggleSelectAll = useCallback(() => {
+    setSelectedIds((prev) => {
+      if (prev.size === evals.length) return new Set();
+      return new Set(evals.map((e) => e.id));
+    });
+  }, [evals]);
+
+  const clearSelection = useCallback(() => {
+    setSelectedIds(new Set());
+  }, []);
+
+  const handleBulkComplete = useCallback((ids: string[]) => {
+    const pending = ids.filter((id) => {
+      const e = evals.find((ev) => ev.id === id);
+      return e && e.status !== 'completed';
+    });
+
+    if (pending.length === 0) {
+      toast.info('Todos os casos selecionados já estão finalizados');
+      return;
+    }
+
+    bulkCompleteMutation.mutate(pending, {
+      onSuccess: () => {
+        toast.success(`${pending.length} caso(s) marcado(s) como finalizado(s)`);
+        queryClient.invalidateQueries({ queryKey: evaluationKeys.session(sessionId) });
+        setSelectedIds(new Set());
+      },
+      onError: () => {
+        toast.error('Erro ao atualizar status');
+      },
+    });
+  }, [evals, bulkCompleteMutation, queryClient, sessionId]);
+
   return {
     // State
     sessionId,
@@ -379,14 +433,19 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
     evaluationDateShort,
     completedCount,
     patientDataForModal,
+    selectedIds,
 
     // Actions
     handleMarkAsCompleted,
     handleMarkAllAsCompleted,
+    handleBulkComplete,
     handleExportPDF,
     handleShareCase,
     setShowAddTeethModal,
     handleAddTeethSuccess,
+    toggleSelection,
+    toggleSelectAll,
+    clearSelection,
     getChecklist,
     isChecklistComplete,
     getChecklistProgress: getChecklistProgressFn,

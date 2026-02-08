@@ -83,36 +83,34 @@ function formatResinList(resinList: ResinData[]): string {
 
 function buildBudgetRulesSection(budget: string): string {
   return `
-=== REGRAS DE OR\u00c7AMENTO (OBRIGAT\u00d3RIO SEGUIR!) ===
+=== REGRAS DE ORÇAMENTO (OBRIGATÓRIO SEGUIR!) ===
 
-O or\u00e7amento selecionado pelo paciente \u00e9: "${budget}"
+O orçamento selecionado pelo paciente é: "${budget}"
 
-MAPEAMENTO DE OR\u00c7AMENTO PARA FAIXAS DE PRE\u00c7O:
-- Or\u00e7amento "econ\u00f4mico": Recomendar APENAS resinas "Econ\u00f4mico" ou "Intermedi\u00e1rio"
-- Or\u00e7amento "moderado": Recomendar resinas "Intermedi\u00e1rio" ou "M\u00e9dio-alto", EVITAR "Premium"
-- Or\u00e7amento "premium": Pode recomendar qualquer faixa, priorizando as melhores tecnicamente
+MAPEAMENTO DE ORÇAMENTO PARA FAIXAS DE PREÇO:
+- Orçamento "padrão": Recomendar resinas "Econômico", "Intermediário" ou "Médio-alto". EVITAR "Premium"
+- Orçamento "premium": Pode recomendar QUALQUER faixa, priorizando as melhores tecnicamente
 
-\u26a0\ufe0f REGRA CR\u00cdTICA: A recomenda\u00e7\u00e3o principal DEVE respeitar o or\u00e7amento do paciente!
-- Se o or\u00e7amento \u00e9 "econ\u00f4mico", N\u00c3O recomende resinas Premium como Filtek Z350 XT, Estelite Omega, Venus Diamond
-- Se o or\u00e7amento \u00e9 "moderado", N\u00c3O recomende resinas Premium como Filtek Z350 XT, Estelite Omega, Venus Diamond
-- Apenas para or\u00e7amento "premium" voc\u00ea pode recomendar resinas Premium
+⚠️ REGRA CRÍTICA: A recomendação principal DEVE respeitar o orçamento do paciente!
+- Se o orçamento é "padrão", NÃO recomende resinas Premium como Filtek Z350 XT, Estelite Omega, Venus Diamond
+- Apenas para orçamento "premium" você pode recomendar resinas Premium
 `
 }
 
 function buildResinsByPriceSection(allGroups: ResinGroups): string {
   return `
-=== RESINAS ORGANIZADAS POR FAIXA DE PRE\u00c7O ===
+=== RESINAS ORGANIZADAS POR FAIXA DE PREÇO ===
 
-**ECON\u00d4MICAS** (para or\u00e7amento econ\u00f4mico):
+**ECONÔMICAS** (para orçamento padrão):
 ${allGroups.economico.length > 0 ? formatResinList(allGroups.economico) : 'Nenhuma resina nesta faixa'}
 
-**INTERMEDI\u00c1RIAS** (para or\u00e7amento econ\u00f4mico ou moderado):
+**INTERMEDIÁRIAS** (para orçamento padrão):
 ${allGroups.intermediario.length > 0 ? formatResinList(allGroups.intermediario) : 'Nenhuma resina nesta faixa'}
 
-**M\u00c9DIO-ALTO** (para or\u00e7amento moderado ou premium):
+**MÉDIO-ALTO** (para orçamento padrão ou premium):
 ${allGroups.medioAlto.length > 0 ? formatResinList(allGroups.medioAlto) : 'Nenhuma resina nesta faixa'}
 
-**PREMIUM** (APENAS para or\u00e7amento premium):
+**PREMIUM** (APENAS para orçamento premium):
 ${allGroups.premium.length > 0 ? formatResinList(allGroups.premium) : 'Nenhuma resina nesta faixa'}
 `
 }
@@ -146,78 +144,121 @@ NOTA: O dentista ainda n\u00e3o cadastrou seu invent\u00e1rio. Recomende a melho
 function buildInventoryInstructions(hasInventory: boolean, budget: string): string {
   if (hasInventory) {
     return `
-INSTRU\u00c7\u00d5ES DE PRIORIDADE (seguir nesta ordem):
-1. PRIMEIRO: Verificar or\u00e7amento - a resina DEVE estar na faixa de pre\u00e7o adequada ao or\u00e7amento "${budget}"
-2. SEGUNDO: Dentro das resinas adequadas ao or\u00e7amento, PRIORIZAR as que est\u00e3o no invent\u00e1rio do dentista
-3. TERCEIRO: Se nenhuma do invent\u00e1rio for adequada ao or\u00e7amento, recomendar a melhor op\u00e7\u00e3o externa dentro do or\u00e7amento
-4. QUARTO: Aspectos t\u00e9cnicos (indica\u00e7\u00e3o cl\u00ednica, est\u00e9tica, resist\u00eancia) como crit\u00e9rio de desempate
+=== REGRA ABSOLUTA DE INVENTÁRIO (OBRIGATÓRIO!) ===
+
+⚠️⚠️⚠️ O dentista POSSUI inventário cadastrado. Isto significa que ele TEM essas resinas em mãos. ⚠️⚠️⚠️
+
+REGRA #1 (INVIOLÁVEL): A resina principal (recommended_resin_name) DEVE ser do inventário do dentista.
+REGRA #2: TODAS as camadas do protocolo de estratificação (layers[].resin_brand) DEVEM usar resinas do inventário.
+REGRA #3: Se a resina tecnicamente ideal NÃO está no inventário, use a mais próxima DISPONÍVEL no inventário.
+REGRA #4: Resinas externas (fora do inventário) só podem aparecer em ideal_resin_name como sugestão futura.
+
+NUNCA recomendar resinas que o dentista NÃO possui quando ele tem inventário cadastrado.
+Se o inventário é limitado, adapte o protocolo para usar o que está disponível.
+
+INSTRUÇÕES DE PRIORIDADE (seguir nesta ordem):
+1. PRIMEIRO: Verificar orçamento - a resina DEVE estar na faixa de preço adequada ao orçamento "${budget}"
+2. SEGUNDO: Dentro das resinas adequadas ao orçamento, USAR OBRIGATORIAMENTE as que estão no inventário do dentista
+3. TERCEIRO: Se nenhuma do inventário for adequada ao orçamento, recomendar a melhor opção do inventário independente da faixa (e marcar budget_compliance=false)
+4. QUARTO: Aspectos técnicos (indicação clínica, estética, resistência) como critério de desempate
 
 IMPORTANTE:
-- Se o invent\u00e1rio tem resinas adequadas ao or\u00e7amento, use-as como principal
-- A resina ideal tecnicamente pode ser mencionada como sugest\u00e3o futura se estiver fora do or\u00e7amento`
+- Se o inventário tem resinas adequadas ao orçamento, use-as como principal
+- A resina ideal tecnicamente pode ser mencionada como sugestão futura se estiver fora do inventário
+- O campo "is_from_inventory" DEVE ser true quando o dentista tem inventário`
   }
 
   return `
-INSTRU\u00c7\u00d5ES DE PRIORIDADE (seguir nesta ordem):
-1. PRIMEIRO: Verificar or\u00e7amento - a resina DEVE estar na faixa de pre\u00e7o adequada ao or\u00e7amento "${budget}"
-2. SEGUNDO: Dentro das resinas adequadas ao or\u00e7amento, escolher a melhor tecnicamente para o caso
-3. TERCEIRO: Aspectos t\u00e9cnicos (indica\u00e7\u00e3o cl\u00ednica, est\u00e9tica, resist\u00eancia) como crit\u00e9rio de sele\u00e7\u00e3o
+INSTRUÇÕES DE PRIORIDADE (seguir nesta ordem):
+1. PRIMEIRO: Verificar orçamento - a resina DEVE estar na faixa de preço adequada ao orçamento "${budget}"
+2. SEGUNDO: Dentro das resinas adequadas ao orçamento, escolher a melhor tecnicamente para o caso
+3. TERCEIRO: Aspectos técnicos (indicação clínica, estética, resistência) como critério de seleção
 
-IMPORTANTE: N\u00e3o recomende resinas Premium se o or\u00e7amento n\u00e3o for premium!`
+IMPORTANTE: Não recomende resinas Premium se o orçamento não for premium!`
 }
 
 function buildAdvancedStratificationSection(aestheticLevel: string): string {
-  if (aestheticLevel !== 'muito alto') return ''
+  if (aestheticLevel !== 'muito alto' && aestheticLevel !== 'alto') return ''
 
   return `
-=== ESTRATIFICA\u00c7\u00c3O AVAN\u00c7ADA (N\u00cdVEL EST\u00c9TICO MUITO ALTO) ===
+=== ESTRATIFICAÇÃO AVANÇADA (NÍVEL ESTÉTICO ${aestheticLevel === 'muito alto' ? 'MUITO ALTO' : 'ALTO'}) ===
 
-Para m\u00e1xima excel\u00eancia est\u00e9tica, voc\u00ea pode COMBINAR DIFERENTES MARCAS por camada:
+Para excelência estética, você pode COMBINAR DIFERENTES MARCAS por camada:
 
-TABELA DE REFER\u00caNCIA PARA COMBINA\u00c7\u00d5ES:
-\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510
-\u2502 Camada              \u2502 Resinas Recomendadas                            \u2502
-\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524
-\u2502 Aumento Incisal     \u2502 Trans-forma (Ultradent), CT (Z350), Trans20     \u2502
-\u2502 (Efeito)            \u2502 (Empress Direct)                                \u2502
-\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524
-\u2502 Cristas Proximais   \u2502 XLE (Harmonize), E BL-L (Empress), JE (Z350)    \u2502
-\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524
-\u2502 Dentina/Corpo       \u2502 D BL-L (Empress), WB (Forma), OA (Z350)         \u2502
-\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524
-\u2502 Efeitos Incisais    \u2502 CT, GT, BT, YT (Z350), Trans (Forma/Empress)        \u2502
-\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524
-\u2502 Esmalte Final       \u2502 WE (Palfique LX5), MW (Estelite)                \u2502
-\u2502 (acabamento)        \u2502 Priorizar polimento superior                    \u2502
-\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524
-\u2502 Dentes Clareados    \u2502 WE (Estelite Bianco), BL (Forma)                \u2502
-\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518
+TABELA DE RESINAS RECOMENDADAS POR CAMADA:
+┌─────────────────────┬─────────────────────────────────────────────────┐
+│ Camada              │ Resinas Recomendadas                            │
+├─────────────────────┼─────────────────────────────────────────────────┤
+│ Aumento Incisal     │ CT (Z350), TRANS (Forma), T-Neutral (Vittra)   │
+│                     │ Trans20 (Empress Direct)                        │
+├─────────────────────┼─────────────────────────────────────────────────┤
+│ Cristas Proximais   │ XLE (Harmonize), BL-L (Empress), WE (Z350)     │
+│                     │ Usar 1 tom mais claro que corpo                 │
+├─────────────────────┼─────────────────────────────────────────────────┤
+│ Dentina/Corpo       │ WB (Forma), WB/A1B/A2B (Z350), DA1/DA2 (Vittra)│
+│                     │ D BL-L (Empress)                                │
+├─────────────────────┼─────────────────────────────────────────────────┤
+│ Efeitos Incisais    │ Ver seção EFEITOS INCISAIS EXPANDIDA abaixo     │
+├─────────────────────┼─────────────────────────────────────────────────┤
+│ Esmalte Vestibular  │ WE (Palfique LX5), MW (Estelite)               │
+│ Final (acabamento)  │ A1E/A2E (Z350) — priorizar polimento superior  │
+├─────────────────────┼─────────────────────────────────────────────────┤
+│ Dentes Clareados    │ WE (Estelite Bianco), BL (Forma)               │
+└─────────────────────┴─────────────────────────────────────────────────┘
 
-=== CAMADAS DE CARACTERIZA\u00c7\u00c3O (OPCIONAL PARA M\u00c1XIMA NATURALIDADE) ===
+⚠️ REGRA: Para nível estético "alto" ou "muito alto", NÃO usar a mesma linha de produto para TODAS as camadas.
+Variar marcas conforme a tabela acima para otimizar cada camada com a resina mais indicada.
 
-Para restaura\u00e7\u00f5es que pare\u00e7am INDISTINGU\u00cdVEIS de dentes naturais:
+=== EFEITOS INCISAIS EXPANDIDA ===
 
-CARACTERIZA\u00c7\u00c3O COM TINTS/STAINS:
-\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510
-\u2502 Caracteriza\u00e7\u00e3o      \u2502 Como Aplicar                                    \u2502
-\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524
-\u2502 White spots         \u2502 Micro-pontos de tint branco no ter\u00e7o m\u00e9dio      \u2502
-\u2502 Craze lines         \u2502 Linhas finas de tint \u00e2mbar/marrom               \u2502
-\u2502 Mamelons            \u2502 Proje\u00e7\u00f5es de dentina na borda incisal           \u2502
-\u2502 Halo incisal        \u2502 Fina linha de esmalte ultra-transl\u00facido na borda\u2502
-\u2502 Foseta proximal     \u2502 Depress\u00e3o sutil nas faces proximais             \u2502
-\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518
+SUB-OPÇÕES DE EFEITOS INCISAIS (incluir como etapas dentro da camada "Efeitos Incisais"):
 
-IMPORTANTE: Caracteriza\u00e7\u00e3o excessiva = resultado artificial
-- Use com MODERA\u00c7\u00c3O - menos \u00e9 mais
-- Copie as caracter\u00edsticas dos dentes ADJACENTES do paciente
-- Evite criar "dente perfeito" ao lado de dentes naturais com caracteriza\u00e7\u00f5es
+┌─────────────────────┬──────────────────────────────────────────────────────────┐
+│ Efeito              │ Materiais e Técnica                                      │
+├─────────────────────┼──────────────────────────────────────────────────────────┤
+│ Halo Opaco          │ Opallis Flow (FGM) ou Empress Opal (Ivoclar)            │
+│ (borda incisal)     │ Fina linha de 0.1mm na borda incisal para efeito opaco  │
+├─────────────────────┼──────────────────────────────────────────────────────────┤
+│ Corante Branco      │ Kolor+ Plus White (Kerr) ou IPS Color White (Ivoclar)   │
+│                     │ Micro-pontos para white spots naturais                   │
+├─────────────────────┼──────────────────────────────────────────────────────────┤
+│ Corante Âmbar       │ Kolor+ Plus Amber (Kerr) ou IPS Color Honey (Ivoclar)   │
+│                     │ Linhas finas para craze lines e characterization         │
+├─────────────────────┼──────────────────────────────────────────────────────────┤
+│ Mamelos             │ Dentina clara (A1, B1) aplicada em projeções verticais   │
+│                     │ Na borda incisal, mimetizando dentina natural            │
+└─────────────────────┴──────────────────────────────────────────────────────────┘
 
-REGRAS DE COMBINA\u00c7\u00c3O:
-1. PRIORIZE resinas do invent\u00e1rio do usu\u00e1rio para o maior n\u00famero de camadas poss\u00edvel
-2. Sugira resinas externas APENAS para camadas cr\u00edticas onde fazem diferen\u00e7a real
-3. Na alternativa, indique op\u00e7\u00e3o mais simples usando UMA marca s\u00f3
-4. Inclua na justificativa o benef\u00edcio espec\u00edfico de cada marca escolhida
+REGRAS DE INCLUSÃO:
+- Nível "alto": Incluir pelo menos HALO OPACO como etapa opcional (optional: true)
+- Nível "muito alto": Incluir halo opaco + corantes + mamelos como etapas opcionais
+- SEMPRE marcar optional: true para efeitos — são melhorias, não obrigatórias
+
+=== CAMADAS DE CARACTERIZAÇÃO (OPCIONAL PARA MÁXIMA NATURALIDADE) ===
+
+Para restaurações que pareçam INDISTINGUÍVEIS de dentes naturais:
+
+CARACTERIZAÇÃO COM TINTS/STAINS:
+┌─────────────────────┬─────────────────────────────────────────────────┐
+│ Caracterização      │ Como Aplicar                                    │
+├─────────────────────┼─────────────────────────────────────────────────┤
+│ White spots         │ Micro-pontos de tint branco no terço médio      │
+│ Craze lines         │ Linhas finas de tint âmbar/marrom               │
+│ Mamelons            │ Projeções de dentina na borda incisal           │
+│ Halo incisal        │ Fina linha de esmalte ultra-translúcido na borda│
+│ Foseta proximal     │ Depressão sutil nas faces proximais             │
+└─────────────────────┴─────────────────────────────────────────────────┘
+
+IMPORTANTE: Caracterização excessiva = resultado artificial
+- Use com MODERAÇÃO - menos é mais
+- Copie as características dos dentes ADJACENTES do paciente
+- Evite criar "dente perfeito" ao lado de dentes naturais com caracterizações
+
+REGRAS DE COMBINAÇÃO:
+1. PRIORIZE resinas do inventário do usuário para o maior número de camadas possível
+2. Sugira resinas externas APENAS para camadas críticas onde fazem diferença real
+3. Na alternativa, indique opção mais simples usando UMA marca só
+4. Inclua na justificativa o benefício específico de cada marca escolhida
 `
 }
 
@@ -691,6 +732,52 @@ Voc\u00ea DEVE incluir a se\u00e7\u00e3o "finishing" no protocolo com passos det
 Especificar para cada passo: ferramenta, granula\u00e7\u00e3o, velocidade (alta/baixa), tempo, e dica t\u00e9cnica.
 
 ${bruxismSection}
+
+=== DICAS DE APLICAÇÃO POR MARCA (incluir no campo "technique" de cada camada) ===
+Para cada camada do protocolo, inclua na "technique" uma dica específica da marca/linha recomendada:
+
+TOKUYAMA FORMA:
+- Incrementos de até 4mm (tecnologia Giomer), fotopolimerizar 20s
+- Excelente escoamento, não gruda na espátula
+- Ideal para camada Body em incremento único
+
+TOKUYAMA PALFIQUE LX5:
+- Nano-híbrida com partículas esféricas, polimento superior
+- Incrementos de 2mm, fotopolimerizar 10s (alta reatividade)
+- Polir com discos Sof-Lex ou pontas siliconadas para brilho espelhado
+
+TOKUYAMA ESTELITE OMEGA:
+- Supra-nano esférica, mimetismo óptico excepcional
+- Incrementos de 2mm, fotopolimerizar 10s
+- Para esmalte: aplicar em camada fina (0.3-0.5mm) para efeito translúcido natural
+
+KERR HARMONIZE:
+- Tecnologia ART (Adaptive Response Technology) — adapta-se à cor do dente
+- Incrementos de 2mm, fotopolimerizar 20s
+- Excelente para cor única quando camada simples é desejada
+
+FGM VITTRA APS:
+- Tecnologia de zircônia pré-sinterizada, resistência mecânica elevada
+- Incrementos de 2mm, fotopolimerizar 20s
+- Boa opção custo-benefício para dentina/corpo
+
+3M FILTEK Z350 XT:
+- Nanoparticulada, ampla gama de opacidades
+- Incrementos de 2.5mm, fotopolimerizar 20s
+- Shades Body (B): opacidade média ideal para substituição de dentina
+- Shades Enamel (E): translucidez natural para camada final
+
+IVOCLAR IPS EMPRESS DIRECT:
+- Nano-híbrida com opalescência natural
+- Incrementos de 2mm, fotopolimerizar 20s (Bluephase)
+- Cores Bleach (BL-L): específicas para dentes clareados
+
+FGM OPALLIS / OPALLIS FLOW:
+- Flow: ideal para forramento e efeitos translúcidos
+- Incrementos de 1.5mm (flow), fotopolimerizar 20s
+- Trans/Opal: usar em camada fina para halo incisal
+
+REGRA: No campo "technique" de cada layer, ALÉM da técnica de inserção, adicionar a dica específica da marca recomendada.
 
 Responda em formato JSON:
 {

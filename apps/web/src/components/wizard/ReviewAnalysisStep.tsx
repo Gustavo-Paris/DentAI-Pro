@@ -988,9 +988,8 @@ export function ReviewAnalysisStep({
                 <Label className="text-sm">Orçamento</Label>
                 <PillToggle
                   options={[
+                    { value: 'padrão', label: 'Padrão' },
                     { value: 'premium', label: 'Premium' },
-                    { value: 'moderado', label: 'Moderado' },
-                    { value: 'econômico', label: 'Econômico' },
                   ]}
                   value={formData.budget}
                   onChange={(value) => onFormChange({ budget: value })}

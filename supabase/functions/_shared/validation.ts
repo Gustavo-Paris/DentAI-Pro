@@ -104,7 +104,7 @@ const VALID_RESTORATION_SIZES = ["Pequena", "Média", "Grande", "Extensa"];
 const VALID_SUBSTRATES = ["Esmalte", "Dentina", "Esmalte e Dentina", "Dentina profunda"];
 const VALID_AESTHETIC_LEVELS = ["baixo", "médio", "alto", "muito alto"];
 const VALID_LONGEVITY = ["curto", "médio", "longo"];
-const VALID_BUDGETS = ["econômico", "moderado", "premium"];
+const VALID_BUDGETS = ["padrão", "premium", "econômico", "moderado"];
 
 function isUUID(value: unknown): boolean {
   return typeof value === "string" && UUID_REGEX.test(value);
