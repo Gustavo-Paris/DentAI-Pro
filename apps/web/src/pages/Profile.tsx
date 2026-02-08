@@ -1,4 +1,5 @@
-import { useSearchParams, Link } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -6,12 +7,15 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Camera, Loader2, Save, Building2, ImageIcon, Sparkles, FileText, ArrowRight } from 'lucide-react';
+import { toast } from 'sonner';
 import { getInitials } from '@/lib/utils';
 import { SubscriptionStatus } from '@/components/pricing/SubscriptionStatus';
 import { CreditUsageHistory } from '@/components/pricing/CreditUsageHistory';
 import { CreditPackSection } from '@/components/pricing/CreditPackSection';
 import { useSubscription, formatPrice } from '@/hooks/useSubscription';
 import { DetailPage } from '@pageshell/composites';
+import { subscriptions } from '@/data';
+import { logger } from '@/lib/logger';
 
 import { useProfile } from '@/hooks/domain/useProfile';
 
@@ -20,8 +24,39 @@ import { useProfile } from '@/hooks/domain/useProfile';
 // =============================================================================
 
 export default function Profile() {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const p = useProfile();
+  const { refreshSubscription } = useSubscription();
+
+  // Handle redirect from Stripe after credit pack purchase
+  useEffect(() => {
+    const credits = searchParams.get('credits');
+    if (credits !== 'success') return;
+
+    navigate('/profile?tab=assinatura', { replace: true });
+
+    // Sync credits from Stripe with retry (bypasses webhook timing issues)
+    const syncWithRetry = async (attempts = 3, delay = 2000) => {
+      for (let i = 0; i < attempts; i++) {
+        try {
+          const result = await subscriptions.syncCreditPurchase();
+          if (result?.synced) {
+            toast.success(`${result.credits_added} créditos adicionados com sucesso!`);
+            refreshSubscription();
+            return;
+          }
+        } catch (e) {
+          logger.error(`Credit sync attempt ${i + 1} failed:`, e);
+        }
+        if (i < attempts - 1) await new Promise(r => setTimeout(r, delay));
+      }
+      // Final fallback: just refresh to pick up any webhook-applied credits
+      refreshSubscription();
+      toast.success('Créditos adicionados com sucesso!');
+    };
+    syncWithRetry();
+  }, [searchParams, navigate, refreshSubscription]);
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">

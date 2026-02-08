@@ -137,3 +137,12 @@ export async function purchaseCreditPack(packId: string) {
   if (error) throw error;
   return data as { url: string };
 }
+
+export async function syncCreditPurchase() {
+  const { data, error } = await supabase.functions.invoke('sync-credit-purchase', {
+    body: {},
+  });
+
+  if (error) throw error;
+  return data as { synced: boolean; credits_added: number; sessions_processed: number };
+}
