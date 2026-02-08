@@ -1,5 +1,12 @@
-// Shared CORS configuration for all edge functions
+// Shared CORS configuration and utilities for all edge functions
 // Restricts API access to known origins for defense-in-depth
+
+/** Generate a short request ID for tracing (8-char hex) */
+export function generateRequestId(): string {
+  const bytes = new Uint8Array(4);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+}
 
 const PRODUCTION_ORIGINS = [
   "https://dentai.pro",
@@ -67,10 +74,11 @@ export function createErrorResponse(
   message: string,
   status: number,
   corsHeaders: Record<string, string>,
-  code?: string
+  code?: string,
+  requestId?: string,
 ): Response {
   return new Response(
-    JSON.stringify({ error: message, ...(code && { code }) }),
+    JSON.stringify({ error: message, ...(code && { code }), ...(requestId && { requestId }) }),
     { status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
   );
 }

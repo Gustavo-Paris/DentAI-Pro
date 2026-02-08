@@ -30,6 +30,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { memo } from 'react';
 import { Plus, Search, Loader2, X, FileWarning, Check } from 'lucide-react';
 import { ListPage } from '@pageshell/composites/list';
 import { useInventoryManagement } from '@/hooks/domain/useInventoryManagement';
@@ -41,7 +42,7 @@ import { ResinTypeLegend } from '@/components/ResinTypeLegend';
 // Card component (presentation only)
 // =============================================================================
 
-function InventoryResinCard({
+const InventoryResinCard = memo(function InventoryResinCard({
   item,
   onRemove,
 }: {
@@ -57,12 +58,13 @@ function InventoryResinCard({
         onClick={() => onRemove(item.id)}
         className="absolute -top-1 -right-1 p-0.5 rounded-full bg-destructive/10 hover:bg-destructive/20 transition-colors opacity-0 group-hover:opacity-100"
         title="Remover"
+        aria-label="Remover resina"
       >
         <X className="h-3 w-3 text-destructive" />
       </button>
     </div>
   );
-}
+});
 
 // =============================================================================
 // Page Adapter — maps domain hook → ListPage composite

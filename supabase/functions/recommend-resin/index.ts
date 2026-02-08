@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
-import { getCorsHeaders, handleCorsPreFlight, ERROR_MESSAGES, createErrorResponse } from "../_shared/cors.ts";
+import { getCorsHeaders, handleCorsPreFlight, ERROR_MESSAGES, createErrorResponse, generateRequestId } from "../_shared/cors.ts";
 import { validateEvaluationData, type EvaluationData } from "../_shared/validation.ts";
 import { logger } from "../_shared/logger.ts";
 import { callGemini, GeminiError, type OpenAIMessage } from "../_shared/gemini.ts";
@@ -95,10 +95,13 @@ const getWhiteningColors = (baseColor: string): string[] => {
 
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
-  
+  const reqId = generateRequestId();
+
   // Handle CORS preflight
   const preflightResponse = handleCorsPreFlight(req);
   if (preflightResponse) return preflightResponse;
+
+  logger.log(`[${reqId}] recommend-resin: start`);
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -373,64 +376,81 @@ serve(async (req) => {
       const validatedLayers = [];
       const validationAlerts: string[] = [];
       const shadeReplacements: Record<string, string> = {}; // Track all shade corrections for checklist sync
-      
+
       // Check if patient requested whitening (BL shades)
-      // Exclude broad terms like 'clareamento' and 'branco' that trigger for Natural level
       const wantsWhitening = data.aestheticGoals?.toLowerCase().includes('hollywood') ||
                              data.aestheticGoals?.toLowerCase().includes('bl1') ||
                              data.aestheticGoals?.toLowerCase().includes('bl2') ||
                              data.aestheticGoals?.toLowerCase().includes('bl3') ||
                              data.aestheticGoals?.toLowerCase().includes('intenso') ||
                              data.aestheticGoals?.toLowerCase().includes('notável');
-      
+
       // Track if any layer uses a product line without BL shades
       let productLineWithoutBL: string | null = null;
-      
+
+      // ── Batch prefetch: single query replaces N+1 per-layer lookups ──
+      const productLines = new Set<string>();
       for (const layer of recommendation.protocol.layers) {
-        // Normalize invalid Z350 shades: WT does not exist in Z350 XT line
         if (layer.shade === 'WT' && layer.resin_brand?.includes('Z350')) {
-          logger.warn(`Shade normalization: WT → CT for ${layer.resin_brand} (WT does not exist in Z350 XT)`);
           shadeReplacements['WT'] = 'CT';
           layer.shade = 'CT';
         }
+        const brandMatch = layer.resin_brand?.match(/^(.+?)\s*-\s*(.+)$/);
+        const pl = brandMatch ? brandMatch[2].trim() : layer.resin_brand;
+        if (pl) productLines.add(pl);
+      }
 
-        // Extract product line from resin_brand (format: "Fabricante - Linha")
+      // Single DB call: fetch all catalog rows for every product line mentioned
+      const catalogRows: Array<{ shade: string; type: string; product_line: string }> = [];
+      if (productLines.size > 0) {
+        // ilike OR chain: product_line ilike %line1% OR ilike %line2% ...
+        const orFilter = Array.from(productLines)
+          .map((pl) => `product_line.ilike.%${pl}%`)
+          .join(",");
+        const { data: rows } = await supabase
+          .from("resin_catalog")
+          .select("shade, type, product_line")
+          .or(orFilter);
+        if (rows) catalogRows.push(...rows);
+      }
+
+      // Build in-memory indexes for O(1) lookups
+      // Index: (product_line_keyword, shade) → catalog row
+      function matchesLine(catalogLine: string, keyword: string): boolean {
+        return catalogLine.toLowerCase().includes(keyword.toLowerCase());
+      }
+      function getRowsForLine(keyword: string) {
+        return catalogRows.filter((r) => matchesLine(r.product_line, keyword));
+      }
+
+      for (const layer of recommendation.protocol.layers) {
         const brandMatch = layer.resin_brand?.match(/^(.+?)\s*-\s*(.+)$/);
         const productLine = brandMatch ? brandMatch[2].trim() : layer.resin_brand;
         const layerType = layer.name?.toLowerCase() || '';
-        
+
         if (productLine && layer.shade) {
-          // Check if shade exists in the product line
-          const { data: catalogMatch } = await supabase
-            .from('resin_catalog')
-            .select('shade, type, product_line')
-            .ilike('product_line', `%${productLine}%`)
-            .eq('shade', layer.shade)
-            .limit(1);
-          
+          const lineRows = getRowsForLine(productLine);
+
+          // Check if shade exists in the product line (was: per-layer DB query)
+          const catalogMatch = lineRows.find((r) => r.shade === layer.shade);
+
           // For enamel layer, ensure we use specific enamel shades when available
           const isEnamelLayer = layerType.includes('esmalte') || layerType.includes('enamel');
-          
+
           if (isEnamelLayer) {
-            // Check if the product line has specific enamel shades
-            const { data: enamelShades } = await supabase
-              .from('resin_catalog')
-              .select('shade, type')
-              .ilike('product_line', `%${productLine}%`)
-              .ilike('type', '%Esmalte%')
-              .limit(10);
-            
-            // If enamel shades exist but current shade is Universal, suggest enamel shade
-            if (enamelShades && enamelShades.length > 0) {
+            const enamelShades = lineRows.filter((r) =>
+              r.type?.toLowerCase().includes('esmalte')
+            );
+
+            if (enamelShades.length > 0) {
               const currentIsUniversal = !['WE', 'CE', 'JE', 'CT', 'Trans', 'IT', 'TN', 'Opal', 'INC'].some(
                 prefix => layer.shade.toUpperCase().includes(prefix)
               );
-              
+
               if (currentIsUniversal) {
-                // Find preferred enamel shade (WE > CE > others)
                 const preferredOrder = ['WE', 'CE', 'JE', 'CT', 'Trans'];
                 let bestEnamel = enamelShades[0];
-                
+
                 for (const pref of preferredOrder) {
                   const found = enamelShades.find(e => e.shade.toUpperCase().includes(pref));
                   if (found) {
@@ -438,7 +458,7 @@ serve(async (req) => {
                     break;
                   }
                 }
-                
+
                 const originalShade = layer.shade;
                 layer.shade = bestEnamel.shade;
                 shadeReplacements[originalShade] = bestEnamel.shade;
@@ -449,50 +469,34 @@ serve(async (req) => {
               }
             }
           }
-          
-          // Check if patient wants BL but product line doesn't have it
+
+          // Check if patient wants BL but product line doesn't have it (in-memory check)
           if (wantsWhitening && !productLineWithoutBL) {
-            const { data: blShades } = await supabase
-              .from('resin_catalog')
-              .select('shade')
-              .ilike('product_line', `%${productLine}%`)
-              .or('shade.ilike.%BL%,shade.ilike.%Bianco%')
-              .limit(1);
-            
-            if (!blShades || blShades.length === 0) {
+            const hasBL = lineRows.some(
+              (r) => /bl|bianco/i.test(r.shade)
+            );
+            if (!hasBL) {
               productLineWithoutBL = productLine;
             }
           }
-          
-          if (!catalogMatch || catalogMatch.length === 0) {
-            // Shade doesn't exist - find appropriate alternative
-            let typeFilter = '';
-            
-            // Determine appropriate type based on layer name
-            if (layerType.includes('opaco') || layerType.includes('mascaramento')) {
-              typeFilter = 'Opaco';
-            } else if (layerType.includes('dentina') || layerType.includes('body')) {
-              typeFilter = 'Universal'; // Universal/Body shades for dentin
-            } else if (isEnamelLayer) {
-              typeFilter = 'Esmalte';
-            }
-            
-            // Find alternative shades in the same product line
-            let alternativeQuery = supabase
-              .from('resin_catalog')
-              .select('shade, type, product_line')
-              .ilike('product_line', `%${productLine}%`);
-            
-            if (typeFilter) {
-              alternativeQuery = alternativeQuery.ilike('type', `%${typeFilter}%`);
-            }
-            
-            const { data: alternatives } = await alternativeQuery.limit(5);
-            
-            if (alternatives && alternatives.length > 0) {
-              const originalShade = layer.shade;
 
-              // Try to find the closest shade based on the original
+          if (!catalogMatch) {
+            // Shade doesn't exist - find appropriate alternative from cached rows
+            let typeFilter = '';
+            if (layerType.includes('opaco') || layerType.includes('mascaramento')) {
+              typeFilter = 'opaco';
+            } else if (layerType.includes('dentina') || layerType.includes('body')) {
+              typeFilter = 'universal';
+            } else if (isEnamelLayer) {
+              typeFilter = 'esmalte';
+            }
+
+            const alternatives = typeFilter
+              ? lineRows.filter((r) => r.type?.toLowerCase().includes(typeFilter)).slice(0, 5)
+              : lineRows.slice(0, 5);
+
+            if (alternatives.length > 0) {
+              const originalShade = layer.shade;
               const baseShade = originalShade.replace(/^O/, '').replace(/[DE]$/, '');
               const closestAlt = alternatives.find(a => a.shade.includes(baseShade)) || alternatives[0];
 
@@ -503,12 +507,11 @@ serve(async (req) => {
               );
               logger.warn(`Shade validation: ${originalShade} → ${closestAlt.shade} for ${productLine}`);
             } else {
-              // No alternatives found in this product line - log warning
               logger.warn(`No valid shades found for ${productLine}, keeping original: ${layer.shade}`);
             }
           }
         }
-        
+
         validatedLayers.push(layer);
       }
       
@@ -636,7 +639,7 @@ serve(async (req) => {
       }
     );
   } catch (error: unknown) {
-    console.error("Error:", error);
-    return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
+    logger.error(`[${reqId}] recommend-resin error:`, error);
+    return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders, undefined, reqId);
   }
 });

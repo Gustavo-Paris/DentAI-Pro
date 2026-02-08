@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, memo } from 'react';
 import { Link } from 'react-router-dom';
 import { ListPage } from '@pageshell/composites/list';
 import { useEvaluationSessions } from '@/hooks/domain/useEvaluationSessions';
@@ -13,7 +13,7 @@ import { ptBR } from 'date-fns/locale';
 // Card component (presentation only)
 // =============================================================================
 
-function SessionCard({
+const SessionCard = memo(function SessionCard({
   session,
   isNew,
   index,
@@ -96,7 +96,7 @@ function SessionCard({
       </Card>
     </Link>
   );
-}
+});
 
 // =============================================================================
 // Page Adapter

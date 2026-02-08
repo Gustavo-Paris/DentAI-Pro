@@ -1,0 +1,113 @@
+import type { AdditionalPhotos } from '@/hooks/useWizardDraft';
+import type { WizardDraft } from '@/hooks/useWizardDraft';
+import type {
+  PhotoAnalysisResult,
+  ReviewFormData,
+  TreatmentType,
+} from '@/components/wizard/ReviewAnalysisStep';
+import type { DSDResult } from '@/components/wizard/DSDStep';
+import type { PatientPreferences } from '@/components/wizard/PatientPreferencesStep';
+
+export interface SubmissionStep {
+  label: string;
+  completed: boolean;
+}
+
+export interface WizardFlowState {
+  // Current step (1-6)
+  step: number;
+  stepDirection: 'forward' | 'backward';
+
+  // Photo step
+  imageBase64: string | null;
+  additionalPhotos: AdditionalPhotos;
+
+  // Preferences step
+  patientPreferences: PatientPreferences;
+
+  // Analysis step
+  isAnalyzing: boolean;
+  analysisError: string | null;
+  analysisResult: PhotoAnalysisResult | null;
+
+  // DSD step
+  dsdResult: DSDResult | null;
+
+  // Review step
+  formData: ReviewFormData;
+  selectedTeeth: string[];
+  toothTreatments: Record<string, TreatmentType>;
+  originalToothTreatments: Record<string, TreatmentType>;
+  selectedPatientId: string | null;
+  patientBirthDate: string | null;
+  originalPatientBirthDate: string | null;
+  dobValidationError: boolean;
+  isReanalyzing: boolean;
+  hasInventory: boolean;
+
+  // Submission
+  isSubmitting: boolean;
+  submissionComplete: boolean;
+  submissionStep: number;
+  submissionSteps: SubmissionStep[];
+
+  // Upload
+  uploadedPhotoPath: string | null;
+
+  // Draft
+  showRestoreModal: boolean;
+  pendingDraft: WizardDraft | null;
+  isSaving: boolean;
+  lastSavedAt: string | null;
+
+  // Credits
+  creditsRemaining: number;
+  creditsTotal: number;
+
+  // Quick Case
+  isQuickCase: boolean;
+
+  // Navigation
+  canGoBack: boolean;
+}
+
+export interface WizardFlowActions {
+  // Photo
+  setImageBase64: (base64: string | null) => void;
+  setAdditionalPhotos: (photos: AdditionalPhotos) => void;
+
+  // Preferences
+  setPatientPreferences: (prefs: PatientPreferences) => void;
+
+  // Navigation
+  goToStep: (targetStep: number) => void;
+  goToPreferences: () => void;
+  goToQuickCase: () => void;
+  handlePreferencesContinue: () => void;
+  handleBack: () => void;
+  handleRetryAnalysis: () => void;
+  handleSkipToReview: () => void;
+  cancelAnalysis: () => void;
+
+  // DSD
+  handleDSDComplete: (result: DSDResult | null) => void;
+  handleDSDSkip: () => void;
+  handleDSDResultChange: (result: DSDResult | null) => void;
+
+  // Review
+  updateFormData: (updates: Partial<ReviewFormData>) => void;
+  setSelectedTeeth: (teeth: string[]) => void;
+  handleToothTreatmentChange: (tooth: string, treatment: TreatmentType) => void;
+  handleRestoreAiSuggestion: (tooth: string) => void;
+  handleReanalyze: () => void;
+  handlePatientSelect: (name: string, patientId?: string, birthDate?: string | null) => void;
+  handlePatientBirthDateChange: (date: string | null) => void;
+  setDobValidationError: (v: boolean) => void;
+
+  // Submission
+  handleSubmit: () => Promise<void>;
+
+  // Draft
+  handleRestoreDraft: () => Promise<void>;
+  handleDiscardDraft: () => void;
+}

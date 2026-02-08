@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
-import { getCorsHeaders, handleCorsPreFlight, createErrorResponse, ERROR_MESSAGES } from "../_shared/cors.ts";
+import { getCorsHeaders, handleCorsPreFlight, createErrorResponse, ERROR_MESSAGES, generateRequestId } from "../_shared/cors.ts";
 import { logger } from "../_shared/logger.ts";
 import {
   callGeminiVisionWithTools,
@@ -780,6 +780,8 @@ serve(async (req: Request) => {
   if (corsResponse) return corsResponse;
 
   const corsHeaders = getCorsHeaders(req);
+  const reqId = generateRequestId();
+  logger.log(`[${reqId}] generate-dsd: start`);
 
   // Track credit state for refund on error (must be outside try for catch access)
   let creditsConsumed = false;
@@ -1067,12 +1069,12 @@ serve(async (req: Request) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    logger.error("DSD generation error:", error);
+    logger.error(`[${reqId}] DSD generation error:`, error);
     // Refund credits on unexpected errors — user paid but got nothing
     if (creditsConsumed && supabaseForRefund && userIdForRefund) {
       await refundCredits(supabaseForRefund, userIdForRefund, "dsd_simulation");
-      logger.log(`Refunded DSD credits for user ${userIdForRefund} due to error`);
+      logger.log(`[${reqId}] Refunded DSD credits for user ${userIdForRefund} due to error`);
     }
-    return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
+    return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders, undefined, reqId);
   }
 });

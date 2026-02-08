@@ -158,6 +158,11 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Keyboard-only focus indicators (not triggered by mouse) */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring rounded-sm;
+  }
 }
 
 @layer utilities {
