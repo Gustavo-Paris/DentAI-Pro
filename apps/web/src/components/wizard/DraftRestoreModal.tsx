@@ -39,17 +39,19 @@ export function DraftRestoreModal({
             <RotateCcw className="w-5 h-5 text-primary" />
             Continuar avaliação anterior?
           </AlertDialogTitle>
-          <AlertDialogDescription className="space-y-3">
-            <p>
-              Você tem uma avaliação não finalizada salva automaticamente.
-            </p>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
-              <Clock className="w-4 h-4" />
-              <span>Último salvamento: {timeAgo}</span>
+          <AlertDialogDescription asChild>
+            <div className="text-sm text-muted-foreground space-y-3">
+              <p>
+                Você tem uma avaliação não finalizada salva automaticamente.
+              </p>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
+                <Clock className="w-4 h-4" />
+                <span>Último salvamento: {timeAgo}</span>
+              </div>
+              <p>
+                Deseja continuar de onde parou ou começar uma nova avaliação?
+              </p>
             </div>
-            <p>
-              Deseja continuar de onde parou ou começar uma nova avaliação?
-            </p>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="flex-col sm:flex-row gap-2">

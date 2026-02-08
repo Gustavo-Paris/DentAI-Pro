@@ -4,7 +4,7 @@ import { getCorsHeaders, handleCorsPreFlight, ERROR_MESSAGES, createErrorRespons
 import { logger } from "../_shared/logger.ts";
 import { callGeminiVisionWithTools, GeminiError, type OpenAITool } from "../_shared/gemini.ts";
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
-import { checkAndUseCredits, createInsufficientCreditsResponse } from "../_shared/credits.ts";
+import { checkAndUseCredits, createInsufficientCreditsResponse, refundCredits } from "../_shared/credits.ts";
 import { getPrompt } from "../_shared/prompts/registry.ts";
 import { withMetrics } from "../_shared/prompts/index.ts";
 import type { PromptDefinition } from "../_shared/prompts/types.ts";
@@ -111,10 +111,15 @@ function validateImageRequest(data: unknown): { success: boolean; error?: string
 
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
-  
+
   // Handle CORS preflight
   const preflightResponse = handleCorsPreFlight(req);
   if (preflightResponse) return preflightResponse;
+
+  // Track credit state for refund on error (must be outside try for catch access)
+  let creditsConsumed = false;
+  let supabaseForRefund: ReturnType<typeof createClient> | null = null;
+  let userIdForRefund: string | null = null;
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -140,21 +145,24 @@ serve(async (req) => {
 
     const userId = claimsData.claims.sub as string;
 
-    // Check rate limit + credits in parallel (no data dependency between them)
+    // Check rate limit FIRST (before consuming credits)
     const supabaseService = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "");
-    const [rateLimitResult, creditResult] = await Promise.all([
-      checkRateLimit(supabaseService, userId, "analyze-dental-photo", RATE_LIMITS.AI_HEAVY),
-      checkAndUseCredits(supabaseService, userId, "case_analysis"),
-    ]);
+    supabaseForRefund = supabaseService;
+    userIdForRefund = userId;
 
+    const rateLimitResult = await checkRateLimit(supabaseService, userId, "analyze-dental-photo", RATE_LIMITS.AI_HEAVY);
     if (!rateLimitResult.allowed) {
       logger.warn(`Rate limit exceeded for user ${userId} on analyze-dental-photo`);
       return createRateLimitResponse(rateLimitResult, corsHeaders);
     }
+
+    // Then consume credits (atomic with row locking)
+    const creditResult = await checkAndUseCredits(supabaseService, userId, "case_analysis");
     if (!creditResult.allowed) {
       logger.warn(`Insufficient credits for user ${userId} on case_analysis`);
       return createInsufficientCreditsResponse(creditResult, corsHeaders);
     }
+    creditsConsumed = true;
 
     // Parse and validate request
     let rawData: unknown;
@@ -402,11 +410,19 @@ serve(async (req) => {
     } catch (error) {
       if (error instanceof GeminiError) {
         if (error.statusCode === 429) {
+          if (creditsConsumed && supabaseForRefund && userIdForRefund) {
+            await refundCredits(supabaseForRefund, userIdForRefund, "case_analysis");
+          }
           return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
         }
         logger.error("Gemini API error:", error.message);
       } else {
         logger.error("AI error:", error);
+      }
+      // Refund credits on AI errors
+      if (creditsConsumed && supabaseForRefund && userIdForRefund) {
+        await refundCredits(supabaseForRefund, userIdForRefund, "case_analysis");
+        logger.log(`Refunded analysis credits for user ${userIdForRefund} due to AI error`);
       }
       return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     }
@@ -518,6 +534,11 @@ serve(async (req) => {
     );
   } catch (error: unknown) {
     logger.error("Error analyzing photo:", error);
+    // Refund credits on unexpected errors — user paid but got nothing
+    if (creditsConsumed && supabaseForRefund && userIdForRefund) {
+      await refundCredits(supabaseForRefund, userIdForRefund, "case_analysis");
+      logger.log(`Refunded analysis credits for user ${userIdForRefund} due to error`);
+    }
     return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
   }
 });

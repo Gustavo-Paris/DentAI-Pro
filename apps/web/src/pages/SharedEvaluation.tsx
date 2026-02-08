@@ -35,7 +35,6 @@ interface SharedEval {
   cavity_class: string;
   status: string | null;
   ai_treatment_indication: string | null;
-  patient_name: string | null;
   created_at: string;
 }
 
@@ -44,7 +43,6 @@ export default function SharedEvaluation() {
   const [loading, setLoading] = useState(true);
   const [expired, setExpired] = useState(false);
   const [evaluations, setEvaluations] = useState<SharedEval[]>([]);
-  const [patientName, setPatientName] = useState('');
 
   useEffect(() => {
     const fetchSharedData = async () => {
@@ -70,10 +68,10 @@ export default function SharedEvaluation() {
         return;
       }
 
-      // Fetch evaluation data (read-only, public fields only)
+      // Fetch evaluation data (read-only, public fields only — NO patient PII per LGPD)
       const { data: evals, error: evalError } = await supabase
         .from('evaluations')
-        .select('tooth, treatment_type, cavity_class, status, ai_treatment_indication, patient_name, created_at')
+        .select('tooth, treatment_type, cavity_class, status, ai_treatment_indication, created_at')
         .eq('session_id', link.session_id)
         .order('tooth', { ascending: true });
 
@@ -84,7 +82,6 @@ export default function SharedEvaluation() {
       }
 
       setEvaluations(evals);
-      setPatientName(evals[0].patient_name || 'Paciente');
       setLoading(false);
     };
 
@@ -140,7 +137,7 @@ export default function SharedEvaluation() {
       <main className="container mx-auto px-4 py-8 max-w-2xl">
         <Card className="mb-6 shadow-sm rounded-xl">
           <CardHeader>
-            <CardTitle className="text-xl font-display">{patientName}</CardTitle>
+            <CardTitle className="text-xl font-display">Avaliação Odontológica</CardTitle>
             <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
                 <Calendar className="w-4 h-4" />

@@ -9,7 +9,7 @@ import {
   type OpenAITool
 } from "../_shared/gemini.ts";
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
-import { checkAndUseCredits, createInsufficientCreditsResponse } from "../_shared/credits.ts";
+import { checkAndUseCredits, createInsufficientCreditsResponse, refundCredits } from "../_shared/credits.ts";
 import { getPrompt } from "../_shared/prompts/registry.ts";
 import { withMetrics } from "../_shared/prompts/index.ts";
 import type { Params as DsdAnalysisParams } from "../_shared/prompts/definitions/dsd-analysis.ts";
@@ -781,6 +781,11 @@ serve(async (req: Request) => {
 
   const corsHeaders = getCorsHeaders(req);
 
+  // Track credit state for refund on error (must be outside try for catch access)
+  let creditsConsumed = false;
+  let supabaseForRefund: ReturnType<typeof createClient> | null = null;
+  let userIdForRefund: string | null = null;
+
   try {
     // Get environment variables
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
@@ -807,6 +812,9 @@ serve(async (req: Request) => {
     if (authError || !user) {
       return createErrorResponse(ERROR_MESSAGES.INVALID_TOKEN, 401, corsHeaders);
     }
+
+    supabaseForRefund = supabase;
+    userIdForRefund = user.id;
 
     // Check rate limit (AI_HEAVY: 10/min, 50/hour, 200/day)
     const rateLimitResult = await checkRateLimit(
@@ -853,6 +861,7 @@ serve(async (req: Request) => {
         logger.warn(`Insufficient credits for user ${user.id} on dsd_simulation`);
         return createInsufficientCreditsResponse(creditResult, corsHeaders);
       }
+      creditsConsumed = true;
     }
 
     // Log if additional photos or preferences were provided
@@ -871,9 +880,13 @@ serve(async (req: Request) => {
     } else {
       // Run full analysis - pass additional photos, preferences, clinical observations, and per-tooth findings
       const analysisResult = await analyzeProportions(imageBase64, corsHeaders, additionalPhotos, patientPreferences, clinicalObservations, clinicalTeethFindings);
-      
-      // Check if it's an error response
+
+      // Check if it's an error response — refund credits if analysis failed
       if (analysisResult instanceof Response) {
+        if (creditsConsumed) {
+          await refundCredits(supabase, user.id, "dsd_simulation");
+          logger.log(`Refunded DSD credits for user ${user.id} due to analysis failure`);
+        }
         return analysisResult;
       }
       
@@ -1039,6 +1052,11 @@ serve(async (req: Request) => {
     });
   } catch (error) {
     logger.error("DSD generation error:", error);
+    // Refund credits on unexpected errors — user paid but got nothing
+    if (creditsConsumed && supabaseForRefund && userIdForRefund) {
+      await refundCredits(supabaseForRefund, userIdForRefund, "dsd_simulation");
+      logger.log(`Refunded DSD credits for user ${userIdForRefund} due to error`);
+    }
     return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
   }
 });

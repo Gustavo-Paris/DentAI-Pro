@@ -12,31 +12,30 @@ export interface CreditCheckResult {
 }
 
 /**
- * Check if user has enough credits for an operation and consume them.
+ * Atomically check and consume credits for an operation.
+ * Uses use_credits() which does SELECT FOR UPDATE to prevent race conditions.
  * Returns { allowed: true } if credits were consumed successfully.
- * For free users without subscription, falls back to count-based limits.
  */
 export async function checkAndUseCredits(
   supabase: SupabaseClient,
   userId: string,
   operation: string,
 ): Promise<CreditCheckResult> {
-  // Try to use the database function (handles everything server-side)
-  const { data: canUse, error: checkError } = await supabase
-    .rpc("can_use_credits", {
+  // Single atomic call: check + consume with row locking
+  const { data: consumed, error: useError } = await supabase
+    .rpc("use_credits", {
       p_user_id: userId,
       p_operation: operation,
     });
 
-  if (checkError) {
-    logger.error(`Error checking credits for ${userId}: ${checkError.message}`);
-    // On error, allow the request (fail open) but log it
-    // This prevents credit system bugs from blocking all users
-    return { allowed: true, creditsAvailable: -1, creditsCost: 0, isFreeUser: false };
+  if (useError) {
+    logger.error(`Error consuming credits for ${userId}: ${useError.message}`);
+    // Fail-closed: deny the request on error to prevent free usage abuse
+    return { allowed: false, creditsAvailable: 0, creditsCost: 0, isFreeUser: false };
   }
 
-  if (!canUse) {
-    // Get credit info for the error response
+  if (!consumed) {
+    // Not enough credits — get info for the error response
     const creditInfo = await getCreditInfo(supabase, userId, operation);
     return {
       allowed: false,
@@ -44,19 +43,6 @@ export async function checkAndUseCredits(
       creditsCost: creditInfo.cost,
       isFreeUser: creditInfo.isFreeUser,
     };
-  }
-
-  // Consume the credits
-  const { data: consumed, error: useError } = await supabase
-    .rpc("use_credits", {
-      p_user_id: userId,
-      p_operation: operation,
-    });
-
-  if (useError || !consumed) {
-    logger.error(`Error consuming credits for ${userId}: ${useError?.message || "use_credits returned false"}`);
-    // Credits were available but consumption failed
-    return { allowed: false, creditsAvailable: 0, creditsCost: 0, isFreeUser: false };
   }
 
   // Get remaining for logging
@@ -69,6 +55,33 @@ export async function checkAndUseCredits(
     creditsCost: creditInfo.cost,
     isFreeUser: creditInfo.isFreeUser,
   };
+}
+
+/**
+ * Refund credits for a failed operation.
+ * Call this when an AI edge function fails after credits were consumed.
+ */
+export async function refundCredits(
+  supabase: SupabaseClient,
+  userId: string,
+  operation: string,
+): Promise<boolean> {
+  const { data: refunded, error: refundError } = await supabase
+    .rpc("refund_credits", {
+      p_user_id: userId,
+      p_operation: operation,
+    });
+
+  if (refundError) {
+    logger.error(`Error refunding credits for ${userId}: ${refundError.message}`);
+    return false;
+  }
+
+  if (refunded) {
+    logger.log(`Credits refunded: user=${userId}, op=${operation}`);
+  }
+
+  return !!refunded;
 }
 
 /**
