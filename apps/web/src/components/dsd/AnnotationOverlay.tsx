@@ -1,11 +1,4 @@
-import type { DSDSuggestion } from '@/components/wizard/DSDStep';
-
-type ToothBoundsPct = {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-};
+import type { DSDSuggestion, ToothBoundsPct } from '@/types/dsd';
 
 interface AnnotationOverlayProps {
   suggestions: DSDSuggestion[];

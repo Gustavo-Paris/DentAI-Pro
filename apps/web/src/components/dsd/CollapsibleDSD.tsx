@@ -6,8 +6,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { ChevronDown, ChevronUp, Smile, Sparkles, Eye } from 'lucide-react';
 import { ComparisonSlider } from './ComparisonSlider';
 import { ProportionsCard } from './ProportionsCard';
-import type { DSDAnalysis } from '@/components/wizard/DSDStep';
-import type { SimulationLayer } from '@/types/dsd';
+import type { DSDAnalysis, SimulationLayer } from '@/types/dsd';
 
 interface CollapsibleDSDProps {
   analysis: DSDAnalysis;

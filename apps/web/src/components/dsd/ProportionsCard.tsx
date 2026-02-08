@@ -3,19 +3,7 @@ import { Check, X, AlertCircle, Minus, ChevronDown, ChevronUp } from 'lucide-rea
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-
-interface DSDAnalysis {
-  facial_midline: "centrada" | "desviada_esquerda" | "desviada_direita";
-  dental_midline: "alinhada" | "desviada_esquerda" | "desviada_direita";
-  smile_line: "alta" | "média" | "baixa";
-  buccal_corridor: "adequado" | "excessivo" | "ausente";
-  occlusal_plane: "nivelado" | "inclinado_esquerda" | "inclinado_direita";
-  golden_ratio_compliance: number;
-  symmetry_score: number;
-  lip_thickness?: "fino" | "médio" | "volumoso";
-  overbite_suspicion?: "sim" | "não" | "indeterminado";
-  observations?: string[];
-}
+import type { DSDAnalysis } from '@/types/dsd';
 
 interface ProportionsCardProps {
   analysis: DSDAnalysis;
