@@ -175,6 +175,7 @@ export default function NewCase() {
             isLoading={wizard.isSubmitting}
             message="Gerando Caso Clínico"
             steps={wizard.submissionSteps}
+            progress={wizard.submissionSteps.filter(s => s.completed).length / Math.max(wizard.submissionSteps.length, 1) * 100}
           />
           {wizard.submissionComplete ? (
             <div className="flex flex-col items-center justify-center py-16 sm:py-24 space-y-4">

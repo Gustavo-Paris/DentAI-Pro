@@ -33,7 +33,6 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
-  Eye,
   FileDown,
   CheckCircle,
   MoreHorizontal,
@@ -229,13 +228,17 @@ export default function EvaluationDetails() {
                   </TableHeader>
                   <TableBody>
                     {detail.evaluations.map((evaluation) => (
-                      <TableRow key={evaluation.id} className="hover:bg-secondary/30 transition-colors">
+                      <TableRow
+                        key={evaluation.id}
+                        className="hover:bg-secondary/30 transition-colors cursor-pointer"
+                        onClick={() => navigate(`/result/${evaluation.id}`)}
+                      >
                         <TableCell className="font-medium">{evaluation.tooth}</TableCell>
                         <TableCell>{getTreatmentBadge(evaluation)}</TableCell>
                         <TableCell>
                           {getStatusBadge(evaluation, detail.getChecklistProgress)}
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="icon" aria-label="Mais opções">
@@ -243,10 +246,6 @@ export default function EvaluationDetails() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => navigate(`/result/${evaluation.id}`)}>
-                                <Eye className="w-4 h-4 mr-2" />
-                                Ver caso
-                              </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => detail.handleExportPDF(evaluation.id)}>
                                 <FileDown className="w-4 h-4 mr-2" />
                                 Exportar PDF
@@ -285,7 +284,11 @@ export default function EvaluationDetails() {
                 const treatmentConfig = getTreatmentConfig(evaluation.treatment_type);
                 const borderColor = treatmentConfig.variant === 'default' ? 'border-l-primary' : 'border-l-amber-500';
                 return (
-                <Card key={evaluation.id} className={`p-4 shadow-sm rounded-xl border-l-[3px] ${borderColor}`}>
+                <Card
+                  key={evaluation.id}
+                  className={`p-4 shadow-sm rounded-xl border-l-[3px] ${borderColor} cursor-pointer hover:shadow-md transition-shadow`}
+                  onClick={() => navigate(`/result/${evaluation.id}`)}
+                >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
                       {getTreatmentBadge(evaluation)}
@@ -301,16 +304,7 @@ export default function EvaluationDetails() {
                     </div>
                   )}
 
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => navigate(`/result/${evaluation.id}`)}
-                    >
-                      <Eye className="w-4 h-4 mr-1" />
-                      Ver
-                    </Button>
+                  <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="outline" size="sm" aria-label="Mais opções">

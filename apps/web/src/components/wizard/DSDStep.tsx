@@ -7,13 +7,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Smile, Loader2, RefreshCw, ChevronRight, Lightbulb, AlertCircle, Zap, ArrowRight, Check, Eye, EyeOff, Palette } from 'lucide-react';
+import { Smile, Loader2, RefreshCw, ChevronRight, Lightbulb, AlertCircle, Zap, ArrowRight, Eye, EyeOff, Palette } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSubscription } from '@/hooks/useSubscription';
 import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
 import { AnnotationOverlay } from '@/components/dsd/AnnotationOverlay';
 import { ProportionsCard } from '@/components/dsd/ProportionsCard';
-import { LoadingOverlay } from '@/components/LoadingOverlay';
+import { ProgressRing } from '@/components/ProgressRing';
+import { CompactStepIndicator } from '@/components/CompactStepIndicator';
 import { logger } from '@/lib/logger';
 import { withRetry } from '@/lib/retry';
 import type { SimulationLayer, SimulationLayerType } from '@/types/dsd';
@@ -875,61 +876,54 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
     onComplete(result);
   };
 
-  // Build loading steps for LoadingOverlay
-  const loadingSteps = useMemo(() => {
-    return analysisSteps.map((step, index) => ({
-      label: step.label,
+  // Loading state — inline card with ring + compact steps
+  if (isAnalyzing) {
+    const compactSteps = analysisSteps.map((step, index) => ({
+      label: step.label.replace('...', ''),
       completed: index < currentStep,
     }));
-  }, [currentStep]);
+    const activeIndex = currentStep;
+    const currentLabel = currentStep < analysisSteps.length
+      ? analysisSteps[currentStep].label
+      : 'Finalizando...';
+    const dsdProgress = Math.min((currentStep / analysisSteps.length) * 100, 95);
 
-  // Loading state — inline card with timeline
-  if (isAnalyzing) {
     return (
-      <>
-        <LoadingOverlay
-          isLoading={true}
-          message="Analisando proporções do sorriso"
-          steps={loadingSteps}
-        />
-        <div className="space-y-6">
-          <div className="text-center">
-            <h2 className="text-xl font-semibold font-display mb-2 text-gradient-gold">Planejamento Digital do Sorriso</h2>
-            <p className="text-muted-foreground">Analisando proporções e simetria facial</p>
-          </div>
-
-          {/* Inline photo + gold border loading card */}
-          {imageBase64 && (
-            <Card className="card-elevated border-primary/30 overflow-hidden">
-              <CardContent className="p-0">
-                <div className="relative scan-line-animation">
-                  <img src={imageBase64} alt="Foto sendo analisada" className="w-full max-h-[300px] object-contain" />
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Timeline checklist */}
-          <div className="timeline-line pl-2 space-y-3">
-            {analysisSteps.map((step, index) => {
-              const isCompleted = index < currentStep;
-              const isActive = index === currentStep;
-              return (
-                <div key={index} className={`flex items-center gap-3 transition-opacity ${isActive || isCompleted ? 'opacity-100' : 'opacity-30'}`}>
-                  <div className={`relative z-10 w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
-                    isCompleted ? 'bg-primary text-primary-foreground' : isActive ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'
-                  }`}>
-                    {isCompleted ? <Check className="w-3.5 h-3.5 animate-scale-in" /> : isActive ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <span className="text-[10px]">{index + 1}</span>}
-                  </div>
-                  <span className={`text-sm ${isCompleted || isActive ? 'text-foreground' : 'text-muted-foreground'}`}>{step.label}</span>
-                </div>
-              );
-            })}
-          </div>
-
-          <p className="text-xs text-muted-foreground text-center">~15-25 segundos</p>
+      <div className="space-y-6">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold font-display mb-2 text-gradient-gold">Planejamento Digital do Sorriso</h2>
+          <p className="text-muted-foreground">{currentLabel}</p>
         </div>
-      </>
+
+        {/* Inline photo with scan-line */}
+        {imageBase64 && (
+          <Card className="card-elevated border-primary/30 overflow-hidden">
+            <CardContent className="p-0">
+              <div className="relative scan-line-animation">
+                <img src={imageBase64} alt="Foto sendo analisada" className="w-full max-h-[300px] object-contain" />
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Progress ring + current step label */}
+        <div className="flex items-center justify-center gap-4">
+          <ProgressRing progress={dsdProgress} size={80} />
+          <div>
+            <p className="text-sm font-medium">{currentLabel}</p>
+            <p className="text-xs text-muted-foreground">~15-25 segundos</p>
+          </div>
+        </div>
+
+        {/* Horizontal compact steps */}
+        <div className="flex justify-center">
+          <CompactStepIndicator
+            steps={compactSteps}
+            currentIndex={activeIndex}
+            variant="horizontal"
+          />
+        </div>
+      </div>
     );
   }
 

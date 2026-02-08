@@ -40,6 +40,8 @@ interface CaseSummaryBoxProps {
   indicationReason?: string | null;
   /** Patient whitening preference text — when present, used as target color for non-resin treatments */
   whiteningGoal?: string | null;
+  /** Optional secondary photos (45° / face) shown as thumbnails */
+  secondaryPhotos?: { angle45?: string | null; face?: string | null };
 }
 
 // Map whitening preference text to target shade
@@ -77,6 +79,7 @@ function CaseSummaryBox({
   stratificationNeeded,
   indicationReason,
   whiteningGoal,
+  secondaryPhotos,
 }: CaseSummaryBoxProps) {
   const config = getTreatmentConfig(treatmentType);
   const showCavityInfo = config.showCavityInfo;
@@ -189,6 +192,17 @@ function CaseSummaryBox({
             </Badge>
           )}
         </div>
+
+        {/* Secondary photo thumbnails */}
+        {secondaryPhotos && (secondaryPhotos.angle45 || secondaryPhotos.face) && (
+          <div className="flex gap-2 mt-3 pt-3 border-t border-border">
+            {[secondaryPhotos.angle45, secondaryPhotos.face].filter(Boolean).map((url, i) => (
+              <div key={i} className="w-12 h-12 rounded-lg overflow-hidden bg-secondary shrink-0">
+                <img src={url!} alt="" className="w-full h-full object-cover" />
+              </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Loader2, Sparkles, Check, RefreshCw, ArrowRight, ArrowLeft, Lightbulb, AlertCircle, X } from 'lucide-react';
+import { Sparkles, RefreshCw, ArrowRight, ArrowLeft, Lightbulb, AlertCircle, X } from 'lucide-react';
+import { ProgressRing } from '@/components/ProgressRing';
+import { CompactStepIndicator } from '@/components/CompactStepIndicator';
 
 interface AnalyzingStepProps {
   imageBase64: string | null;
@@ -125,14 +126,22 @@ export function AnalyzingStep({
     );
   }
 
-  // Loading state with scan-line + timeline
+  // Build step data for CompactStepIndicator
+  const compactSteps = analysisSteps.map((step, index) => ({
+    label: step.label.replace('...', ''),
+    completed: currentStep > index + 1,
+  }));
+  const activeIndex = Math.max(0, currentStep - 1);
+  const currentLabel = currentStep > 0 && currentStep <= analysisSteps.length
+    ? analysisSteps[currentStep - 1].label
+    : 'Detectando estruturas dentárias...';
+
+  // Loading state with scan-line + ring
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-semibold font-display mb-2">Analisando Foto</h2>
-        <p className="text-muted-foreground">
-          A IA está detectando os parâmetros clínicos automaticamente
-        </p>
+        <h2 className="text-2xl font-semibold font-display mb-2 text-gradient-gold">Analisando Foto</h2>
+        <p className="text-muted-foreground">{currentLabel}</p>
       </div>
 
       {/* Photo with scan-line animation */}
@@ -148,68 +157,22 @@ export function AnalyzingStep({
         )}
       </div>
 
-      {/* Gold progress bar */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">Progresso da análise</span>
-            <span className="text-xs text-muted-foreground">~15-25s</span>
-          </div>
-          <Badge variant="outline" className="text-gradient-gold font-semibold text-xs">
-            {Math.round(progress)}%
-          </Badge>
-        </div>
-        <div className="progress-gold h-2 rounded-full">
-          <div
-            className="h-full rounded-full"
-            style={{ width: `${progress}%` }}
-          />
+      {/* Progress ring + current step label */}
+      <div className="flex items-center justify-center gap-4">
+        <ProgressRing progress={progress} size={80} />
+        <div>
+          <p className="text-sm font-medium">{currentLabel}</p>
+          <p className="text-xs text-muted-foreground">~8-15 segundos</p>
         </div>
       </div>
 
-      {/* Timeline progress steps */}
-      <div className="timeline-line pl-2 space-y-4">
-        {analysisSteps.map((step, index) => {
-          const isCompleted = currentStep > index + 1;
-          const isActive = currentStep === index + 1;
-          const isPending = currentStep < index + 1;
-
-          return (
-            <div
-              key={step.id}
-              className={`flex items-center gap-4 relative transition-all duration-300 ${
-                isPending ? 'opacity-30' : 'opacity-100'
-              }`}
-              style={{
-                animationDelay: `${index * 100}ms`,
-              }}
-            >
-              {/* Timeline node */}
-              <div className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 ${
-                isCompleted
-                  ? 'bg-primary text-primary-foreground shadow-sm'
-                  : isActive
-                    ? 'bg-primary/20 text-primary ring-2 ring-primary/30'
-                    : 'bg-muted text-muted-foreground'
-              }`}>
-                {isCompleted ? (
-                  <Check className="w-4 h-4 animate-scale-in" />
-                ) : isActive ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <span className="text-xs">{step.id}</span>
-                )}
-              </div>
-
-              {/* Label */}
-              <span className={`text-sm transition-colors ${
-                isCompleted || isActive ? 'text-foreground' : 'text-muted-foreground'
-              }`}>
-                {step.label}
-              </span>
-            </div>
-          );
-        })}
+      {/* Horizontal compact steps */}
+      <div className="flex justify-center">
+        <CompactStepIndicator
+          steps={compactSteps}
+          currentIndex={activeIndex}
+          variant="horizontal"
+        />
       </div>
 
       <div className="flex flex-col items-center gap-3">
