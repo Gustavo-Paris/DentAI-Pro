@@ -252,8 +252,8 @@ serve(async (req) => {
                     },
                     cavity_class: {
                       type: "string",
-                      enum: ["Classe I", "Classe II", "Classe III", "Classe IV", "Classe V", "Classe VI"],
-                      description: "Classificação de Black da cavidade",
+                      enum: ["Classe I", "Classe II", "Classe III", "Classe IV", "Classe V", "Classe VI", "Fechamento de Diastema", "Recontorno Estético", "Faceta Direta", "Lente de Contato"],
+                      description: "Classificação de Black da cavidade (Classes I-VI) OU procedimento estético sem cavidade cariosa (Fechamento de Diastema, Recontorno Estético, Faceta Direta, Lente de Contato). Use null para tratamentos protéticos (coroa, implante, endodontia).",
                       nullable: true
                     },
                     restoration_size: {

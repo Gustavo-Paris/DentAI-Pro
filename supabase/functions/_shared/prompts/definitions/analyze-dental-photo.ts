@@ -187,34 +187,45 @@ Para indicações protéticas sem lesão cariosa ativa, cavity_class DEVE ser nu
 
 cavity_class deve ser preenchido APENAS quando existe uma lesão cariosa ativa ou restauração direta a ser realizada/substituída com formato de cavidade classificável.
 
-⚠️ REGRA CRÍTICA — MICRODONTIA E REANATOMIZAÇÃO:
-- Dentes com microdontia (especialmente incisivos laterais 12/22) que necessitam de AUMENTO DE VOLUME (reanatomização) NÃO possuem cavidade cariosa classificável.
-- A classificação de Black (Classes I-VI) aplica-se a CAVIDADES — não a aumento de volume em dentes íntegros ou com proporção reduzida.
-- Para microdontia verdadeira ou dentes conoides com indicação de reanatomização:
-  → cavity_class: null (não há cavidade)
-  → treatment_indication: "resina"
-  → indication_reason: "Reanatomização por proporção inadequada — dente com volume reduzido necessitando aumento de largura e/ou comprimento"
-  → restoration_size: "Extensa" (pois envolve reconstrução de volume)
-- Para restauração PRÉVIA insatisfatória em lateral com proporção reduzida:
-  → cavity_class: null (substituição estética, não cavidade cariosa)
-  → treatment_indication: "resina"
-  → indication_reason: "Substituição de restauração insatisfatória com reanatomização — [descrever problema específico]"
-- ❌ ERRADO: Dente 12 conoide → Classe I Extensa (Classe I = cavidade oclusal, não existe em anterior para volume)
-- ❌ ERRADO: Dente 12 reanatomização → Classe IV (Classe IV = fratura de ângulo, não aumento de volume)
-- ✅ CERTO: Dente 12 conoide → cavity_class: null, resina, "Reanatomização por microdontia"
+⚠️⚠️⚠️ REGRA MAIS IMPORTANTE — ÁRVORE DE DECISÃO PARA cavity_class ⚠️⚠️⚠️
 
-⚠️ REGRA CRÍTICA — DIASTEMA E REANATOMIZAÇÃO vs CLASSE III:
-- Classe III de Black = CAVIDADE CARIOSA na face proximal de dente anterior
-- Fechamento de diastema SEM cavidade cariosa NÃO É Classe III — é procedimento estético
-- Reanatomização para aumentar largura de dente (microdontia) NÃO É Classe III
-- Se não há lesão cariosa proximal nem restauração proximal a substituir:
-  → cavity_class: "Fechamento de Diastema" (se objetivo principal é fechar espaço entre dentes)
-  → cavity_class: "Recontorno Estético" (se objetivo é aumentar volume/forma do dente)
-  → NÃO usar Classe III — reservar Classe III para cavidades cariosas proximais reais
-- ❌ ERRADO: Dente 12 com diastema mesial sem cárie → Classe III Média
-- ❌ ERRADO: Dente 12 reanatomização por microdontia → Classe III
-- ✅ CERTO: Dente 12 com diastema → cavity_class: "Fechamento de Diastema", resina
-- ✅ CERTO: Dente 12 reanatomização → cavity_class: "Recontorno Estético", resina
+ANTES de classificar cavity_class, siga esta árvore de decisão OBRIGATÓRIA:
+
+PERGUNTA 1: Existe CAVIDADE CARIOSA REAL (lesão escura, destruição de tecido) visível neste dente?
+  → SIM: Use classificação de Black (Classe I-VI) conforme localização da cavidade
+  → NÃO: Vá para PERGUNTA 2
+
+PERGUNTA 2: Existe RESTAURAÇÃO PROXIMAL PRÉVIA a ser substituída (interface visível, manchamento marginal)?
+  → SIM: Use Classe III (substituição de restauração proximal existente) ou a classe correspondente
+  → NÃO: Vá para PERGUNTA 3
+
+PERGUNTA 3: O dente tem DIASTEMA (espaço entre dentes adjacentes) que precisa ser fechado?
+  → SIM: cavity_class = "Fechamento de Diastema" (NUNCA Classe III — não há cavidade)
+  → NÃO: Vá para PERGUNTA 4
+
+PERGUNTA 4: O dente tem MICRODONTIA, formato conoide, ou proporção inadequada que precisa de aumento de volume?
+  → SIM: cavity_class = "Recontorno Estético" (NUNCA Classe I, III ou IV — não há cavidade)
+  → NÃO: Vá para PERGUNTA 5
+
+PERGUNTA 5: O dente precisa de faceta por questão estética (cor, forma, alinhamento)?
+  → SIM: cavity_class = "Faceta Direta" ou "Lente de Contato"
+  → NÃO: cavity_class = null
+
+⚠️ REGRA ABSOLUTA: Classe III de Black = CAVIDADE CARIOSA na face proximal de dente anterior.
+- Diastema SEM cavidade cariosa → "Fechamento de Diastema" (NUNCA Classe III)
+- Microdontia/conoide → "Recontorno Estético" (NUNCA Classe III)
+- Reanatomização para aumentar volume → "Recontorno Estético" (NUNCA Classe III)
+- Restauração proximal COM interface visível e manchamento → Classe III (é substituição de restauração)
+- Espaço entre dentes sem lesão cariosa → "Fechamento de Diastema" (NUNCA Classe III)
+
+EXEMPLOS CONCRETOS:
+- ❌ ERRADO: Dente 12 com diastema mesial, sem cárie, sem restauração prévia → Classe III
+- ❌ ERRADO: Dente 12 conoide precisando de volume → Classe III Extensa
+- ❌ ERRADO: Dente 22 com microdontia e diastemas → Classe III
+- ✅ CERTO: Dente 12 com diastema → cavity_class: "Fechamento de Diastema"
+- ✅ CERTO: Dente 12 conoide → cavity_class: "Recontorno Estético"
+- ✅ CERTO: Dente 11 com restauração proximal manchada → cavity_class: "Classe III" (restauração existente a substituir)
+- ✅ CERTO: Dente 22 com microdontia + diastemas → cavity_class: "Recontorno Estético"
 
 ⚠️ REGRA CRÍTICA — DESGASTE INCISAL vs CLASSE IV:
 - Classe IV de Black = FRATURA ou CÁRIE que envolve o ângulo incisal COM destruição da face proximal
@@ -373,7 +384,7 @@ Incisivos laterais com proporção reduzida são MUITO MAIS FREQUENTEMENTE resta
 5. O dente apresenta diferença de cor/textura entre regiões (indica restauração existente)
 
 ✅ Nesses casos, indique:
-- cavity_class: Classe apropriada APENAS se existe cavidade cariosa real. Se é substituição estética sem cavidade → cavity_class: null (veja regra de reanatomização acima)
+- cavity_class: Classe de Black APENAS se existe cavidade cariosa real ou restauração a substituir. Se é procedimento estético → cavity_class: "Recontorno Estético" ou "Fechamento de Diastema" (veja árvore de decisão acima)
 - notes: "Fratura presente - não confundir com anomalia dental"
 - notes: "Restauração antiga visível - tamanho real pode ser maior"
 - treatment_indication: "resina" (reparo/reconstrução)
@@ -435,6 +446,12 @@ INSTRUÇÕES OBRIGATÓRIAS - ANÁLISE COMPLETA DO SORRISO:
 7. Ordene por prioridade: alta (patologias urgentes) → média (restaurações) → baixa (estética)
 
 ⚠️ NÃO inclua dentes que não estejam claramente visíveis na foto. Se a foto mostra predominantemente a arcada superior, NÃO sugira tratamento para dentes inferiores (31-48).
+
+⚠️ LEMBRETE FINAL SOBRE cavity_class — RELEIA ANTES DE RESPONDER:
+- Diastema sem cárie → "Fechamento de Diastema" (NUNCA "Classe III")
+- Microdontia/conoide → "Recontorno Estético" (NUNCA "Classe III")
+- Classe III = SOMENTE para cavidade cariosa proximal REAL ou restauração proximal existente com manchamento/infiltração
+- Se o dente precisa de AUMENTO DE VOLUME e não tem cavidade cariosa → NÃO é classificação de Black
 
 Use a função analyze_dental_photo para retornar a análise estruturada completa.`,
 }
