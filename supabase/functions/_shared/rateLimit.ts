@@ -93,8 +93,8 @@ export async function checkRateLimit(
 
     if (fetchError) {
       console.error("Rate limit fetch error:", fetchError);
-      // On error, allow the request but log it
-      return createAllowedResult(config, minuteReset, hourReset, dayReset);
+      // Fail closed: deny on DB error to prevent bypass
+      return createDeniedResult(minuteReset, hourReset, dayReset);
     }
 
     let minuteCount = 0;
@@ -186,29 +186,25 @@ export async function checkRateLimit(
     };
   } catch (error) {
     console.error("Rate limit error:", error);
-    // On unexpected error, allow the request
-    return createAllowedResult(config, minuteReset, hourReset, dayReset);
+    // Fail closed: deny on unexpected error to prevent bypass
+    return createDeniedResult(minuteReset, hourReset, dayReset);
   }
 }
 
-function createAllowedResult(
-  config: RateLimitConfig,
+function createDeniedResult(
   minuteReset: Date,
   hourReset: Date,
   dayReset: Date
 ): RateLimitResult {
   return {
-    allowed: true,
-    remaining: {
-      minute: config.perMinute - 1,
-      hour: config.perHour - 1,
-      day: config.perDay - 1,
-    },
+    allowed: false,
+    remaining: { minute: 0, hour: 0, day: 0 },
     resetAt: {
       minute: minuteReset,
       hour: hourReset,
       day: dayReset,
     },
+    retryAfter: 30,
   };
 }
 
