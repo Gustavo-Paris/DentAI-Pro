@@ -10,8 +10,9 @@ export async function createCompositeTeethOnly(params: {
   beforeDataUrl: string;
   afterUrl: string;
   bounds: ToothBoundsPct[];
+  includeGingiva?: boolean;
 }): Promise<Blob> {
-  const { beforeDataUrl, afterUrl, bounds } = params;
+  const { beforeDataUrl, afterUrl, bounds, includeGingiva } = params;
 
   const [beforeRes, afterRes] = await Promise.all([
     fetch(beforeDataUrl),
@@ -58,16 +59,20 @@ export async function createCompositeTeethOnly(params: {
   const maskCtx = mask.getContext('2d');
   if (!maskCtx) throw new Error('Canvas não suportado');
 
-  // Draw ellipses over teeth bounds (slightly shrunk to avoid gums/lips)
+  // Draw ellipses over teeth bounds
+  // When includeGingiva is true (complete-treatment layer), expand mask upward
+  // to include the gingival region so gengivoplasty changes are preserved.
   const scaleX = 0.9;
-  const scaleY = 0.7;
+  const scaleY = includeGingiva ? 1.15 : 0.7;
+  // Shift ellipses upward to cover gengiva above tooth crown
+  const yOffsetRatio = includeGingiva ? -0.15 : 0;
 
   maskCtx.fillStyle = 'rgba(255,255,255,1)';
   for (const b of bounds) {
     const cx = (b.x / 100) * w;
-    const cy = (b.y / 100) * h;
-    const bw = (b.width / 100) * w;
     const bh = (b.height / 100) * h;
+    const cy = (b.y / 100) * h + bh * yOffsetRatio;
+    const bw = (b.width / 100) * w;
     const rx = (bw * scaleX) / 2;
     const ry = (bh * scaleY) / 2;
 
@@ -78,13 +83,13 @@ export async function createCompositeTeethOnly(params: {
 
   // Soft edges (second blurred pass)
   maskCtx.save();
-  maskCtx.filter = 'blur(10px)';
+  maskCtx.filter = includeGingiva ? 'blur(14px)' : 'blur(10px)';
   maskCtx.globalAlpha = 0.55;
   for (const b of bounds) {
     const cx = (b.x / 100) * w;
-    const cy = (b.y / 100) * h;
-    const bw = (b.width / 100) * w;
     const bh = (b.height / 100) * h;
+    const cy = (b.y / 100) * h + bh * yOffsetRatio;
+    const bw = (b.width / 100) * w;
     const rx = (bw * (scaleX * 1.15)) / 2;
     const ry = (bh * (scaleY * 1.15)) / 2;
     maskCtx.beginPath();

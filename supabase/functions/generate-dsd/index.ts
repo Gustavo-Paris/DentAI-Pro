@@ -952,11 +952,10 @@ serve(async (req: Request) => {
       }
     }
 
-    // Safety net #2: Strip gengivoplastia suggestions if smile line is not "alta"
-    // Gengivoplastia only makes sense when gingiva is clearly visible (high smile line).
-    // For "média" smile line, the AI prompt already instructs conservatism —
-    // the post-processing only kicks in as a hard filter for non-alta lines.
-    if (analysis.smile_line !== 'alta') {
+    // Safety net #2: Strip gengivoplastia suggestions only for low smile line.
+    // Both "alta" and "média" have sufficient gingival visibility for gengivoplasty.
+    // The AI prompt already instructs conservatism for "média" cases.
+    if (analysis.smile_line === 'baixa') {
       const before = analysis.suggestions.length;
       analysis.suggestions = analysis.suggestions.filter(s => {
         // Only filter suggestions that are specifically about gengivoplastia treatment
