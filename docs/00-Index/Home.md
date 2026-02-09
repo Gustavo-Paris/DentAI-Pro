@@ -1,7 +1,7 @@
 ---
 title: AURIA - Documentation Hub
 created: 2026-02-04
-updated: 2026-02-08
+updated: 2026-02-09
 author: Team AURIA
 status: published
 tags:
@@ -33,10 +33,14 @@ Sistema de apoio à decisão clínica odontológica com Inteligência Artificial
 | [[#Apps]] | Application documentation |
 | [[#Packages]] | PageShell design system & shared packages |
 | [[#Edge Functions]] | Supabase Edge Functions (AI, Billing) |
+| [[03-API/Edge-Functions\|API Reference]] | Full request/response docs for all 8 edge functions |
 | [[#Architecture Decision Records (ADRs)]] | Formal architecture decisions |
 | [[#Glossary]] | Domain & technical term definitions |
 | [[#Architecture Plans]] | Design documents & implementation plans |
+| [[04-Development/Setup-Guide\|Developer Setup]] | Environment setup, scripts, conventions |
 | [[#Operations]] | Build, deploy, CI/CD |
+| [[05-Operations/Runbooks/Deploy-Edge-Functions\|Deploy Runbook]] | Edge function deployment procedures |
+| [[05-Operations/Runbooks/Supabase-Auth\|Auth Runbook]] | JWT/ES256 auth troubleshooting |
 | [[#Audit & Health]] | Comprehensive audit results |
 
 ---
