@@ -59,6 +59,7 @@ export interface Evaluation {
   treatment_type: 'resina' | 'porcelana' | 'coroa' | 'implante' | 'endodontia' | 'encaminhamento' | null;
   cementation_protocol: CementationProtocol | null;
   ai_treatment_indication: string | null;
+  ai_indication_reason: string | null;
   generic_protocol: {
     treatment_type: string;
     tooth: string;
@@ -349,7 +350,7 @@ export function useResult() {
   // ---- Computed values ----
   const treatmentType = evaluation?.treatment_type || 'resina';
   const isPorcelain = treatmentType === 'porcelana';
-  const isSpecialTreatment = ['implante', 'coroa', 'endodontia', 'encaminhamento'].includes(treatmentType);
+  const isSpecialTreatment = ['implante', 'coroa', 'endodontia', 'encaminhamento', 'gengivoplastia', 'recobrimento_radicular'].includes(treatmentType);
   const cementationProtocol = evaluation?.cementation_protocol as CementationProtocol | null;
   const genericProtocol = evaluation?.generic_protocol ?? null;
   const protocol = evaluation?.stratification_protocol ?? null;

@@ -30,3 +30,8 @@ export const treatmentConfig: Record<TreatmentType, TreatmentTypeConfig> = {
 export function getTreatmentConfig(type: string | null | undefined): TreatmentTypeConfig {
   return treatmentConfig[(type || 'resina') as TreatmentType] || treatmentConfig.resina;
 }
+
+export function formatToothLabel(tooth: string): string {
+  if (tooth === 'GENGIVO') return 'Gengiva';
+  return `Dente ${tooth}`;
+}

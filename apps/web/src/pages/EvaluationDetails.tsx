@@ -54,7 +54,7 @@ import type { EvaluationItem } from '@/hooks/domain/useEvaluationDetail';
 import { AddTeethModal } from '@/components/AddTeethModal';
 import { ClinicalPhotoThumbnail } from '@/components/OptimizedImage';
 import { DSDPreviewModal } from '@/components/DSDPreviewModal';
-import { getTreatmentConfig } from '@/lib/treatment-config';
+import { getTreatmentConfig, formatToothLabel } from '@/lib/treatment-config';
 
 // =============================================================================
 // Presentation helpers
@@ -207,7 +207,7 @@ export default function EvaluationDetails() {
                       <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
                         {detail.evaluations.map((e) => (
                           <Badge key={e.id} variant="outline" className="text-xs">
-                            Dente {e.tooth}
+                            {formatToothLabel(e.tooth)}
                           </Badge>
                         ))}
                       </div>
@@ -288,7 +288,7 @@ export default function EvaluationDetails() {
                             onCheckedChange={() => detail.toggleSelection(evaluation.id)}
                           />
                         </TableCell>
-                        <TableCell className="font-medium">{evaluation.tooth}</TableCell>
+                        <TableCell className="font-medium">{evaluation.tooth === 'GENGIVO' ? 'Gengiva' : evaluation.tooth}</TableCell>
                         <TableCell>{getTreatmentBadge(evaluation)}</TableCell>
                         <TableCell>
                           {getStatusBadge(evaluation, detail.getChecklistProgress)}
@@ -353,7 +353,7 @@ export default function EvaluationDetails() {
                         />
                       </div>
                       {getTreatmentBadge(evaluation)}
-                      <p className="font-semibold">Dente {evaluation.tooth}</p>
+                      <p className="font-semibold">{formatToothLabel(evaluation.tooth)}</p>
                     </div>
                     {getStatusBadge(evaluation, detail.getChecklistProgress)}
                   </div>
