@@ -474,6 +474,9 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
 
         let evaluationId: string | null = null;
 
+        // Gengivoplasty is a tissue procedure, not per-tooth — use sensible defaults
+        const isGengivoplasty = tooth === 'GENGIVO' || normalizedTreatment === 'gengivoplastia';
+
         try {
           // Insert evaluation (DB is fast, no retry needed)
           const insertData = {
@@ -482,27 +485,27 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
             patient_id: patientId || null,
             patient_name: formData.patientName || null,
             patient_age: parseInt(formData.patientAge),
-            tooth,
-            region: getFullRegion(tooth),
-            cavity_class: inferCavityClass(toothData, formData.cavityClass, normalizedTreatment),
-            restoration_size: toothData?.restoration_size || formData.restorationSize,
-            substrate: toothData?.substrate || formData.substrate,
-            tooth_color: formData.vitaShade,
-            depth: toothData?.depth || formData.depth,
-            substrate_condition: toothData?.substrate_condition || formData.substrateCondition,
-            enamel_condition: toothData?.enamel_condition || formData.enamelCondition,
+            tooth: isGengivoplasty ? 'GENGIVO' : tooth,
+            region: isGengivoplasty ? 'anterior-superior' : getFullRegion(tooth),
+            cavity_class: isGengivoplasty ? 'N/A' : inferCavityClass(toothData, formData.cavityClass, normalizedTreatment),
+            restoration_size: isGengivoplasty ? 'N/A' : (toothData?.restoration_size || formData.restorationSize),
+            substrate: isGengivoplasty ? 'N/A' : (toothData?.substrate || formData.substrate),
+            tooth_color: formData.vitaShade || 'A2',
+            depth: isGengivoplasty ? null : (toothData?.depth || formData.depth),
+            substrate_condition: isGengivoplasty ? null : (toothData?.substrate_condition || formData.substrateCondition),
+            enamel_condition: isGengivoplasty ? null : (toothData?.enamel_condition || formData.enamelCondition),
             bruxism: formData.bruxism,
-            aesthetic_level: formData.aestheticLevel,
-            budget: formData.budget,
-            longevity_expectation: formData.longevityExpectation,
+            aesthetic_level: formData.aestheticLevel || 'alto',
+            budget: formData.budget || 'moderado',
+            longevity_expectation: formData.longevityExpectation || 'longo-prazo',
             photo_frontal: uploadedPhotoPath,
             status: 'analyzing',
             treatment_type: normalizedTreatment,
             desired_tooth_shape: 'natural',
             ai_treatment_indication:
-              toothData?.treatment_indication || analysisResult?.treatment_indication || null,
+              isGengivoplasty ? 'gengivoplastia' : (toothData?.treatment_indication || analysisResult?.treatment_indication || null),
             ai_indication_reason:
-              toothData?.indication_reason || analysisResult?.indication_reason || null,
+              isGengivoplasty ? 'Harmonização gengival identificada pela análise DSD' : (toothData?.indication_reason || analysisResult?.indication_reason || null),
             dsd_analysis: dsdResult?.analysis || null,
             dsd_simulation_url: dsdResult?.simulation_url || null,
             dsd_simulation_layers: dsdResult?.layers || null,
