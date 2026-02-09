@@ -12,7 +12,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Download, Plus, CheckCircle, Package, Sparkles, Layers, Loader2, Crown, Stethoscope, ArrowUpRight, CircleX, Heart, Palette, AlertTriangle } from 'lucide-react';
+import { Download, Plus, CheckCircle, Package, Sparkles, Layers, Loader2, Crown, Stethoscope, ArrowUpRight, CircleX, Heart, Palette, AlertTriangle, Smile, HeartPulse } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -35,6 +35,7 @@ import { DetailPage } from '@pageshell/composites';
 
 import { useResult } from '@/hooks/domain/useResult';
 import { BRAND_NAME } from '@/lib/branding';
+import { formatToothLabel } from '@/lib/treatment-config';
 
 // =============================================================================
 // Page Adapter
@@ -65,7 +66,7 @@ export default function Result() {
         breadcrumbs={[
           { label: 'Dashboard', href: '/dashboard' },
           { label: 'Avaliação', href: evaluation ? `/evaluation/${evaluation.session_id}` : undefined },
-          { label: evaluation ? `Dente ${evaluation.tooth}` : '...' },
+          { label: evaluation ? formatToothLabel(evaluation.tooth) : '...' },
         ]}
         backHref={evaluation ? `/evaluation/${evaluation.session_id}` : '/dashboard'}
         query={{ data: evaluation, isLoading: r.isLoading }}
@@ -105,13 +106,13 @@ export default function Result() {
                     <div className="flex-1">
                       <h2 className="text-xl sm:text-2xl font-semibold font-display">{r.currentTreatmentStyle.label}</h2>
                       <p className="text-sm text-muted-foreground">
-                        Dente {evaluation.tooth} • {evaluation.region.replace('-', ' ')}
+                        {formatToothLabel(evaluation.tooth)} • {evaluation.region.replace('-', ' ')}
                       </p>
                       <p className="text-xs text-muted-foreground mt-0.5 print:hidden">
                         {format(new Date(evaluation.created_at), "d 'de' MMMM 'de' yyyy, HH:mm", { locale: ptBR })}
                       </p>
                     </div>
-                    {r.treatmentType !== 'encaminhamento' && (
+                    {['resina', 'porcelana', 'coroa'].includes(r.treatmentType) && (
                       <Badge variant={r.currentTreatmentStyle.badgeVariant}>
                         {r.treatmentType === 'resina' ? 'Direta' : 'Indireta'}
                       </Badge>
@@ -174,7 +175,7 @@ export default function Result() {
                 aestheticLevel={evaluation.aesthetic_level}
                 bruxism={evaluation.bruxism}
                 stratificationNeeded={evaluation.stratification_needed}
-                indicationReason={evaluation.ai_treatment_indication || r.genericProtocol?.ai_reason}
+                indicationReason={evaluation.ai_indication_reason || r.genericProtocol?.ai_reason}
                 whiteningGoal={evaluation.patient_aesthetic_goals}
                 secondaryPhotos={{ angle45: r.photoUrls.angle45, face: r.photoUrls.face }}
               />
@@ -347,10 +348,14 @@ export default function Result() {
                           {r.treatmentType === 'implante' && <CircleX className="w-4 h-4" />}
                           {r.treatmentType === 'endodontia' && <Stethoscope className="w-4 h-4" />}
                           {r.treatmentType === 'encaminhamento' && <ArrowUpRight className="w-4 h-4" />}
+                          {r.treatmentType === 'gengivoplastia' && <Smile className="w-4 h-4" />}
+                          {r.treatmentType === 'recobrimento_radicular' && <HeartPulse className="w-4 h-4" />}
                           {r.treatmentType === 'coroa' && 'Planejamento Protético'}
                           {r.treatmentType === 'implante' && 'Planejamento Cirúrgico'}
                           {r.treatmentType === 'endodontia' && 'Protocolo Endodôntico'}
                           {r.treatmentType === 'encaminhamento' && 'Orientações de Encaminhamento'}
+                          {r.treatmentType === 'gengivoplastia' && 'Protocolo de Gengivoplastia'}
+                          {r.treatmentType === 'recobrimento_radicular' && 'Protocolo de Recobrimento Radicular'}
                         </CardTitle>
                       </CardHeader>
                       <CardContent>

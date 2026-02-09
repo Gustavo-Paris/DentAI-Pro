@@ -9,6 +9,9 @@ import {
 import { User, MapPin, Layers, Palette, Info } from "lucide-react";
 import { getTreatmentConfig } from "@/lib/treatment-config";
 
+// Procedimentos gengivais/teciduais que não exibem cor
+const TISSUE_PROCEDURES = ['gengivoplastia', 'recobrimento_radicular'];
+
 // Procedimentos estéticos que não usam classificação de cavidade tradicional
 const AESTHETIC_PROCEDURES = [
   'Faceta Direta',
@@ -83,6 +86,7 @@ function CaseSummaryBox({
 }: CaseSummaryBoxProps) {
   const config = getTreatmentConfig(treatmentType);
   const showCavityInfo = config.showCavityInfo;
+  const isTissueProcedure = TISSUE_PROCEDURES.includes(treatmentType);
   const TreatmentIcon = config.icon;
   
   return (
@@ -94,7 +98,7 @@ function CaseSummaryBox({
         </CardTitle>
       </CardHeader>
       <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
-        <div className={`grid grid-cols-2 ${showCavityInfo ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-3 sm:gap-4`}>
+        <div className={`grid grid-cols-2 ${showCavityInfo ? 'md:grid-cols-4' : isTissueProcedure ? 'md:grid-cols-2' : 'md:grid-cols-3'} gap-3 sm:gap-4`}>
           <div className="space-y-0.5 sm:space-y-1">
             <div className="flex items-center gap-1 sm:gap-1.5 text-muted-foreground text-xs">
               <User className="w-3 h-3" />
@@ -108,7 +112,7 @@ function CaseSummaryBox({
               <MapPin className="w-3 h-3" />
               Dente
             </div>
-            <p className="font-medium text-sm sm:text-base">{tooth}</p>
+            <p className="font-medium text-sm sm:text-base">{tooth === 'GENGIVO' ? 'Gengiva' : tooth}</p>
             <p className="text-xs text-muted-foreground">{region}</p>
           </div>
           
@@ -140,6 +144,7 @@ function CaseSummaryBox({
             </div>
           )}
           
+          {!isTissueProcedure && (
           <div className="space-y-0.5 sm:space-y-1">
             {(() => {
               const { shade, isTarget, alreadyInRange } = !showCavityInfo
@@ -162,6 +167,7 @@ function CaseSummaryBox({
               );
             })()}
           </div>
+          )}
         </div>
         
         {/* Tags */}
