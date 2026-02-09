@@ -34,7 +34,7 @@ import { calculateComplexity } from '@/lib/complexity-score';
 import { useSpeechToText } from '@/hooks/useSpeechToText';
 
 // Expanded treatment types
-export type TreatmentType = 'resina' | 'porcelana' | 'coroa' | 'implante' | 'endodontia' | 'encaminhamento' | 'gengivoplastia';
+export type TreatmentType = 'resina' | 'porcelana' | 'coroa' | 'implante' | 'endodontia' | 'encaminhamento' | 'gengivoplastia' | 'recobrimento_radicular';
 
 // Multi-tooth detection structure
 export interface DetectedTooth {
@@ -79,6 +79,7 @@ export const TREATMENT_LABELS: Record<TreatmentType, string> = {
   endodontia: 'Tratamento de Canal',
   encaminhamento: 'Encaminhamento',
   gengivoplastia: 'Gengivoplastia Estética',
+  recobrimento_radicular: 'Recobrimento Radicular',
 };
 
 export const TREATMENT_DESCRIPTIONS: Record<TreatmentType, string> = {
@@ -89,6 +90,7 @@ export const TREATMENT_DESCRIPTIONS: Record<TreatmentType, string> = {
   endodontia: 'Tratamento endodôntico necessário',
   encaminhamento: 'Encaminhamento para especialista',
   gengivoplastia: 'Protocolo de gengivoplastia estética',
+  recobrimento_radicular: 'Protocolo de recobrimento radicular',
 };
 
 // Treatment border colors
@@ -100,6 +102,7 @@ const TREATMENT_BORDER_COLORS: Record<TreatmentType, string> = {
   endodontia: 'border-l-red-500',
   encaminhamento: 'border-l-purple-500',
   gengivoplastia: 'border-l-pink-500',
+  recobrimento_radicular: 'border-l-teal-500',
 };
 
 export interface ReviewFormData {
@@ -296,7 +299,7 @@ export function ReviewAnalysisStep({
   // Build summary data (only real teeth)
   const treatmentBreakdown = (() => {
     const counts: Record<TreatmentType, number> = {
-      resina: 0, porcelana: 0, coroa: 0, implante: 0, endodontia: 0, encaminhamento: 0, gengivoplastia: 0,
+      resina: 0, porcelana: 0, coroa: 0, implante: 0, endodontia: 0, encaminhamento: 0, gengivoplastia: 0, recobrimento_radicular: 0,
     };
     for (const tooth of realSelectedTeeth) {
       const treatment = toothTreatments[tooth] || detectedTeeth.find(t => t.tooth === tooth)?.treatment_indication || 'resina';
@@ -367,6 +370,7 @@ export function ReviewAnalysisStep({
                   <SelectItem value="endodontia">Tratamento de Canal</SelectItem>
                   <SelectItem value="encaminhamento">Encaminhamento</SelectItem>
                   <SelectItem value="gengivoplastia">Gengivoplastia Estética</SelectItem>
+                  <SelectItem value="recobrimento_radicular">Recobrimento Radicular</SelectItem>
                 </SelectContent>
               </Select>
               {onRestoreAiSuggestion && originalToothTreatments[tooth.tooth] &&
@@ -488,8 +492,7 @@ export function ReviewAnalysisStep({
             <Sparkles className="w-5 h-5 text-primary" />
             <span className="text-sm text-muted-foreground">Nível de clareamento:</span>
             <Badge variant="secondary" className="font-medium">
-              {whiteningLevel === 'hollywood' ? 'Hollywood (BL1)' :
-               whiteningLevel === 'white' ? 'Branco (BL2/BL3)' : 'Natural (A1/A2)'}
+              {whiteningLevel === 'hollywood' ? 'Branco Hollywood (BL1/BL2/BL3)' : 'Branco Natural (A1/A2/B1)'}
             </Badge>
           </CardContent>
         </Card>
@@ -1001,18 +1004,7 @@ export function ReviewAnalysisStep({
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label className="text-sm">Expectativa de longevidade</Label>
-                <PillToggle
-                  options={[
-                    { value: 'longo', label: 'Longo' },
-                    { value: 'médio', label: 'Médio' },
-                    { value: 'curto', label: 'Curto' },
-                  ]}
-                  value={formData.longevityExpectation}
-                  onChange={(value) => onFormChange({ longevityExpectation: value })}
-                />
-              </div>
+              {/* Longevidade removida — Issue #11 QA V9 */}
             </div>
           </AccordionContent>
         </AccordionItem>

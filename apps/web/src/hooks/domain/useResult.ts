@@ -9,7 +9,7 @@ import type { SimulationLayer } from '@/types/dsd';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { SIGNED_URL_EXPIRY_SECONDS } from '@/lib/constants';
-import { Layers, Crown, Stethoscope, ArrowUpRight, CircleX } from 'lucide-react';
+import { Layers, Crown, Stethoscope, ArrowUpRight, CircleX, Smile, HeartPulse } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -176,6 +176,30 @@ const treatmentStyles: Record<string, TreatmentStyle> = {
     solidBgClass: 'bg-gray-600',
     glowClass: 'bg-gray-400',
     overlayColor: 'rgba(107, 114, 128, 0.45)',
+  },
+  gengivoplastia: {
+    label: 'Gengivoplastia Estética',
+    icon: Smile,
+    bgClass: 'bg-emerald-50 dark:bg-emerald-950/20',
+    borderClass: 'border-emerald-200 dark:border-emerald-800',
+    iconClass: 'text-emerald-600 dark:text-emerald-400',
+    badgeVariant: 'secondary',
+    ringClass: 'ring-emerald-500',
+    solidBgClass: 'bg-emerald-600',
+    glowClass: 'bg-emerald-400',
+    overlayColor: 'rgba(16, 185, 129, 0.45)',
+  },
+  recobrimento_radicular: {
+    label: 'Recobrimento Radicular',
+    icon: HeartPulse,
+    bgClass: 'bg-teal-50 dark:bg-teal-950/20',
+    borderClass: 'border-teal-200 dark:border-teal-800',
+    iconClass: 'text-teal-600 dark:text-teal-400',
+    badgeVariant: 'secondary',
+    ringClass: 'ring-teal-500',
+    solidBgClass: 'bg-teal-600',
+    glowClass: 'bg-teal-400',
+    overlayColor: 'rgba(20, 184, 166, 0.45)',
   },
 };
 

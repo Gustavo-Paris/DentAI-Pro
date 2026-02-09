@@ -203,6 +203,19 @@ cavity_class deve ser preenchido APENAS quando existe uma lesão cariosa ativa o
 - ❌ ERRADO: Dente 12 reanatomização → Classe IV (Classe IV = fratura de ângulo, não aumento de volume)
 - ✅ CERTO: Dente 12 conoide → cavity_class: null, resina, "Reanatomização por microdontia"
 
+⚠️ REGRA CRÍTICA — DIASTEMA E REANATOMIZAÇÃO vs CLASSE III:
+- Classe III de Black = CAVIDADE CARIOSA na face proximal de dente anterior
+- Fechamento de diastema SEM cavidade cariosa NÃO É Classe III — é procedimento estético
+- Reanatomização para aumentar largura de dente (microdontia) NÃO É Classe III
+- Se não há lesão cariosa proximal nem restauração proximal a substituir:
+  → cavity_class: "Fechamento de Diastema" (se objetivo principal é fechar espaço entre dentes)
+  → cavity_class: "Recontorno Estético" (se objetivo é aumentar volume/forma do dente)
+  → NÃO usar Classe III — reservar Classe III para cavidades cariosas proximais reais
+- ❌ ERRADO: Dente 12 com diastema mesial sem cárie → Classe III Média
+- ❌ ERRADO: Dente 12 reanatomização por microdontia → Classe III
+- ✅ CERTO: Dente 12 com diastema → cavity_class: "Fechamento de Diastema", resina
+- ✅ CERTO: Dente 12 reanatomização → cavity_class: "Recontorno Estético", resina
+
 ⚠️ REGRA CRÍTICA — DESGASTE INCISAL vs CLASSE IV:
 - Classe IV de Black = FRATURA ou CÁRIE que envolve o ângulo incisal COM destruição da face proximal
 - Desgaste incisal (erosão, atrição, abrasão) no bordo incisal SEM envolvimento proximal = NÃO É Classe IV
@@ -286,14 +299,28 @@ OBSERVE atentamente por sinais de restaurações prévias:
    - Diferença de textura (mais opaco, mais liso)
    - Manchamento localizado ou escurecimento marginal
 
-2. **Como Registrar**
+2. **DETECÇÃO DE FACETAS EM RESINA EXISTENTES** (IMPORTANTE)
+   Facetas em resina são restaurações que cobrem TODA a face vestibular do dente. Sinais específicos:
+   - Face vestibular INTEIRA com cor/textura UNIFORME diferente dos dentes adjacentes → provável faceta existente
+   - Interface CERVICAL visível (linha de transição na margem gengival)
+   - Reflexo de luz DIFERENTE do esmalte natural (mais uniforme, sem periquimácies)
+   - Ausência de caracterizações naturais (sem translucidez incisal, sem variação de saturação cervical-incisal)
+   - Superfície mais LISA ou mais OPACA que os dentes vizinhos em toda a extensão vestibular
+
+   ⚠️ Se a face vestibular INTEIRA de um dente tem aparência diferente dos adjacentes (cor, textura, reflexo de luz uniformes) → classificar como "Faceta em resina existente"
+   - enamel_condition: "Restauração prévia (faceta em resina)"
+   - notes: "Faceta em resina existente cobrindo face vestibular — avaliar necessidade de substituição"
+
+   ⚠️ NÃO confundir faceta existente com dente natural mais claro — exija INTERFACE visível ou DIFERENÇA DE TEXTURA inequívoca
+
+3. **Como Registrar**
    Se detectar restauração existente:
    - enamel_condition: "Restauração prévia" (adicione esta opção se necessário)
    - notes: "Restauração em resina existente - avaliar necessidade de substituição"
    - treatment_indication: "resina" (para reparo/substituição)
    - indication_reason: "Restauração antiga com [descrever problema: manchamento/infiltração/fratura marginal]"
 
-3. **Implicações Clínicas**
+4. **Implicações Clínicas**
    - Restaurações antigas podem mascarar o tamanho real do dente
    - Não confundir dente restaurado com "micro-dente"
    - Considerar remoção da resina antiga no planejamento
@@ -313,6 +340,9 @@ OBSERVE atentamente por sinais de restaurações prévias:
    - Mudança ABRUPTA de textura superficial em área DELIMITADA
    - Falha marginal visível (gap, degrau, descoloração NA MARGEM)
    - Diferença de translucidez em área LOCALIZADA (não o dente inteiro)
+   - Para FACETAS: face vestibular inteira com reflexo de luz uniforme + interface cervical visível
+
+   ⚠️ Só marque restauração com PROVA VISUAL INEQUÍVOCA de interface ou diferença de textura
 
 3. **Regra de Conservadorismo**
    - Na dúvida entre "dente íntegro com variação de cor" e "restauração antiga", SEMPRE optar pela classificação mais conservadora (dente íntegro)

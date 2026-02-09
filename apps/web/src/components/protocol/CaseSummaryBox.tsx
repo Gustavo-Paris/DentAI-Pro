@@ -45,26 +45,25 @@ interface CaseSummaryBoxProps {
   secondaryPhotos?: { angle45?: string | null; face?: string | null };
 }
 
-// Map whitening preference text to target shade
-function getTargetShade(whiteningGoal: string | null | undefined, originalColor: string): { shade: string; isTarget: boolean } {
-  if (!whiteningGoal) return { shade: originalColor, isTarget: false };
+// Map whitening preference text to target shade (2 levels: natural / hollywood)
+function getTargetShade(whiteningGoal: string | null | undefined, originalColor: string): { shade: string; isTarget: boolean; alreadyInRange: boolean } {
+  if (!whiteningGoal) return { shade: originalColor, isTarget: false, alreadyInRange: false };
   const lower = whiteningGoal.toLowerCase();
-  if (lower.includes('hollywood') || lower.includes('intenso')) {
-    return { shade: 'BL1', isTarget: true };
+  const upper = originalColor.toUpperCase().trim();
+  if (lower.includes('hollywood') || lower.includes('intenso') || lower.includes('bl1') || lower.includes('bl2') || lower.includes('bl3')) {
+    const alreadyInRange = ['BL1', 'BL2', 'BL3'].some(s => upper === s);
+    return { shade: 'BL1/BL2/BL3', isTarget: true, alreadyInRange };
   }
-  if (lower.includes('notável') || lower.includes('branco') || lower.includes('bl2') || lower.includes('bl3')) {
-    return { shade: 'BL2/BL3', isTarget: true };
+  if (lower.includes('natural') || lower.includes('a1') || lower.includes('a2') || lower.includes('b1') || lower.includes('sutil') || lower.includes('discreto')) {
+    const alreadyInRange = ['A1', 'A2', 'B1'].some(s => upper === s);
+    return { shade: 'A1/A2/B1', isTarget: true, alreadyInRange };
   }
-  if (lower.includes('bl1')) {
-    return { shade: 'BL1', isTarget: true };
+  // Legacy fallback for old 3-level 'white'/'notável' values
+  if (lower.includes('notável') || lower.includes('branco') || lower.includes('white')) {
+    const alreadyInRange = ['BL1', 'BL2', 'BL3'].some(s => upper === s);
+    return { shade: 'BL1/BL2/BL3', isTarget: true, alreadyInRange };
   }
-  if (lower.includes('bl4') || lower.includes('moderado')) {
-    return { shade: 'BL3/BL4', isTarget: true };
-  }
-  if (lower.includes('natural') || lower.includes('a1') || lower.includes('a2') || lower.includes('sutil')) {
-    return { shade: 'A1/A2', isTarget: true };
-  }
-  return { shade: originalColor, isTarget: false };
+  return { shade: originalColor, isTarget: false, alreadyInRange: false };
 }
 
 function CaseSummaryBox({
@@ -143,9 +142,9 @@ function CaseSummaryBox({
           
           <div className="space-y-0.5 sm:space-y-1">
             {(() => {
-              const { shade, isTarget } = !showCavityInfo
+              const { shade, isTarget, alreadyInRange } = !showCavityInfo
                 ? getTargetShade(whiteningGoal, toothColor)
-                : { shade: toothColor, isTarget: false };
+                : { shade: toothColor, isTarget: false, alreadyInRange: false };
               return (
                 <>
                   <div className="flex items-center gap-1 sm:gap-1.5 text-muted-foreground text-xs">
@@ -153,7 +152,10 @@ function CaseSummaryBox({
                     Cor {showCavityInfo ? 'VITA' : 'Alvo'}
                   </div>
                   <p className="font-mono font-medium text-sm sm:text-base">{shade}</p>
-                  {isTarget && (
+                  {isTarget && alreadyInRange && (
+                    <p className="text-xs text-green-600">Cor atual já na faixa desejada</p>
+                  )}
+                  {isTarget && !alreadyInRange && (
                     <p className="text-xs text-muted-foreground">Original: {toothColor}</p>
                   )}
                 </>

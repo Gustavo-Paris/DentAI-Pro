@@ -442,7 +442,7 @@ ESTRUTURA OBRIGAT\u00d3RIA - 5 CAMADAS (simplificar para 3-4 se n\u00edvel est\u
    - Objetivo: Constru\u00e7\u00e3o da borda incisal
    - Resinas: Esmalte transl\u00facido \u2014 CT (Z350), Trans (FORMA), Trans20 (Empress)
    - Espessura: 0.2-0.3mm
-   - T\u00e9cnica: Aplicar na regi\u00e3o da quebra incisal, criando base para os mamelons
+   - T\u00e9cnica: Aplicar incremento \u00fanico na borda do dente para aumentar ou alinhar a incisal, criando base para os mamelons. N\u00c3O fracionar em m\u00faltiplos incrementos \u2014 camada fina e \u00fanica
 
 2. CRISTAS PROXIMAIS (defini\u00e7\u00e3o anat\u00f4mica - ANTES da dentina):
    - Objetivo: Defini\u00e7\u00e3o das cristas mesial e distal
@@ -490,7 +490,7 @@ ESTRUTURA OBRIGAT\u00d3RIA - 5 CAMADAS (simplificar para 3-4 se n\u00edvel est\u
      - OU dentina clara como substituto
    - Resinas alternativas para efeitos: CT, GT, BT (Z350 transl\u00facidos)
    - Espessura: 0.1mm
-   - T\u00e9cnica: Aplicar corante branco na borda incisal para criar efeito de halo opaco natural
+   - T\u00e9cnica: Aplicar corante com pincel fino na borda incisal para criar efeito de halo opaco natural. N\u00c3O usar incrementos convencionais \u2014 efeitos incisais s\u00e3o aplicados com pincel ou instrumento de ponta fina
    - INCLUIR apenas para demanda est\u00e9tica alta/muito alta
    - Shade DEVE ser diferente do shade da camada de esmalte
 
@@ -763,7 +763,7 @@ FGM VITTRA APS:
 
 3M FILTEK Z350 XT:
 - Nanoparticulada, ampla gama de opacidades
-- Incrementos de 2.5mm, fotopolimerizar 20s
+- Incrementos de até 2mm, fotopolimerizar 20s
 - Shades Body (B): opacidade média ideal para substituição de dentina
 - Shades Enamel (E): translucidez natural para camada final
 
@@ -778,6 +778,7 @@ FGM OPALLIS / OPALLIS FLOW:
 - Trans/Opal: usar em camada fina para halo incisal
 
 REGRA: No campo "technique" de cada layer, ALÉM da técnica de inserção, adicionar a dica específica da marca recomendada.
+⚠️ EXCEÇÃO OBRIGATÓRIA: Para a camada de EFEITOS INCISAIS, NÃO incluir dica genérica de incrementos da marca (ex: "Incrementos de até 2mm, fotopolimerizar 20s"). Efeitos incisais usam técnica de pincel/corante, não incrementos convencionais. Incluir APENAS a dica de técnica específica da camada de efeitos.
 
 Responda em formato JSON:
 {

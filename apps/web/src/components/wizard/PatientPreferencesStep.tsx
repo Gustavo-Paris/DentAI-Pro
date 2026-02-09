@@ -27,27 +27,18 @@ const WHITENING_OPTIONS: {
 }[] = [
   {
     value: 'natural',
-    label: 'Natural',
-    description: 'Clareamento sutil, aparência discreta',
-    shade: 'A1 / A2',
+    label: 'Branco Natural',
+    description: 'Tom claro e discreto, aparência natural e harmoniosa',
+    shade: 'A1 / A2 / B1',
     icon: Sun,
     swatchGradient: 'bg-gradient-to-r from-amber-200 to-amber-100',
     swatchGradientSelected: 'bg-gradient-to-r from-amber-300 to-amber-200',
   },
   {
-    value: 'white',
-    label: 'Branco',
-    description: 'Clareamento notável, resultado evidente',
-    shade: 'BL2 / BL3',
-    icon: Zap,
-    swatchGradient: 'bg-gradient-to-r from-gray-200 to-white',
-    swatchGradientSelected: 'bg-gradient-to-r from-gray-300 to-gray-100',
-  },
-  {
     value: 'hollywood',
-    label: 'Hollywood',
+    label: 'Branco Hollywood',
     description: 'Clareamento intenso, sorriso de celebridade',
-    shade: 'BL1',
+    shade: 'BL1 / BL2 / BL3',
     icon: Star,
     swatchGradient: 'bg-gradient-to-r from-white to-blue-50',
     swatchGradientSelected: 'bg-gradient-to-r from-white via-blue-50 to-blue-100',
@@ -82,7 +73,7 @@ export function PatientPreferencesStep({
 
         <CardContent className="space-y-6">
           {/* Whitening Level Cards with Color Swatches */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {WHITENING_OPTIONS.map((option) => {
               const Icon = option.icon;
               const isSelected = preferences.whiteningLevel === option.value;

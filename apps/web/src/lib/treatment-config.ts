@@ -1,12 +1,12 @@
 import type { ComponentType } from 'react';
-import { Layers, Crown, Stethoscope, ArrowUpRight, CircleX, Smile } from 'lucide-react';
+import { Layers, Crown, Stethoscope, ArrowUpRight, CircleX, Smile, HeartPulse } from 'lucide-react';
 
 // =============================================================================
 // Unified treatment type configuration
 // Merges fields from EvaluationDetails, CaseSummaryBox, and Result
 // =============================================================================
 
-export type TreatmentType = 'resina' | 'porcelana' | 'coroa' | 'implante' | 'endodontia' | 'encaminhamento' | 'gengivoplastia';
+export type TreatmentType = 'resina' | 'porcelana' | 'coroa' | 'implante' | 'endodontia' | 'encaminhamento' | 'gengivoplastia' | 'recobrimento_radicular';
 
 export interface TreatmentTypeConfig {
   label: string;
@@ -24,6 +24,7 @@ export const treatmentConfig: Record<TreatmentType, TreatmentTypeConfig> = {
   endodontia: { label: 'Endodontia', shortLabel: 'Endo', icon: Stethoscope, variant: 'outline', showCavityInfo: false },
   encaminhamento: { label: 'Encaminhamento', shortLabel: 'Encaminhar', icon: ArrowUpRight, variant: 'outline', showCavityInfo: false },
   gengivoplastia: { label: 'Gengivoplastia Estética', shortLabel: 'Gengivo', icon: Smile, variant: 'secondary', showCavityInfo: false },
+  recobrimento_radicular: { label: 'Recobrimento Radicular', shortLabel: 'Recobr.', icon: HeartPulse, variant: 'secondary', showCavityInfo: false },
 };
 
 export function getTreatmentConfig(type: string | null | undefined): TreatmentTypeConfig {
