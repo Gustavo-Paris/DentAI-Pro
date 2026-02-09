@@ -98,6 +98,28 @@ jobs:
       - name: Build
         run: pnpm turbo run build
 
+      - name: Check bundle size
+        run: |
+          DIST_DIR="apps/web/dist"
+          if [ -d "$DIST_DIR/assets" ]; then
+            TOTAL_JS=$(find "$DIST_DIR/assets" -name '*.js' -exec wc -c {} + | tail -1 | awk '{print $1}')
+            TOTAL_CSS=$(find "$DIST_DIR/assets" -name '*.css' -exec wc -c {} + | tail -1 | awk '{print $1}')
+            JS_KB=$((TOTAL_JS / 1024))
+            CSS_KB=$((TOTAL_CSS / 1024))
+            echo "## Bundle Size Report" >> $GITHUB_STEP_SUMMARY
+            echo "| Asset | Size |" >> $GITHUB_STEP_SUMMARY
+            echo "|-------|------|" >> $GITHUB_STEP_SUMMARY
+            echo "| JS (total) | ${JS_KB} KB |" >> $GITHUB_STEP_SUMMARY
+            echo "| CSS (total) | ${CSS_KB} KB |" >> $GITHUB_STEP_SUMMARY
+            echo ""
+            echo "JS: ${JS_KB} KB, CSS: ${CSS_KB} KB"
+            # Fail if JS bundle exceeds 2MB (2048 KB)
+            if [ "$JS_KB" -gt 2048 ]; then
+              echo "::error::JS bundle size (${JS_KB} KB) exceeds 2MB limit"
+              exit 1
+            fi
+          fi
+
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
