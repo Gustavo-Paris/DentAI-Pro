@@ -45,7 +45,7 @@ supabase/.temp/
 # QA screenshots & test artifacts
 *.png
 *.jpeg
-test-photo.*
+test-photo*
 wizard-audit/
 
 # Playwright MCP
