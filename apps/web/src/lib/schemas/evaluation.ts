@@ -31,7 +31,7 @@ export const reviewFormSchema = z.object({
   bruxism: z.boolean().default(false),
   aestheticLevel: z.enum(['básico', 'alto', 'muito alto']),
   budget: z.enum(['padrão', 'premium']),
-  longevityExpectation: z.enum(['curto', 'médio', 'longo']),
+  longevityExpectation: z.enum(['curto', 'médio', 'longo']).default('médio'),
   clinicalNotes: z.string()
     .max(500, 'Notas muito longas')
     .optional()
@@ -43,6 +43,8 @@ export const reviewFormSchema = z.object({
     'implante',
     'endodontia',
     'encaminhamento',
+    'gengivoplastia',
+    'recobrimento_radicular',
   ]).default('resina'),
 });
 

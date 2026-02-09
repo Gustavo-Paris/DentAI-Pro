@@ -161,25 +161,55 @@ contradiz diagnósticos anteriores.
    - Proporção coroa clínica (altura visível dos dentes)
    → Avalie INDEPENDENTEMENTE da saúde
 
-=== GENGIVOPLASTIA COMO SUGESTÃO ESTRUTURADA (OBRIGATÓRIO) ===
+=== GENGIVOPLASTIA vs RECOBRIMENTO RADICULAR (OBRIGATÓRIO DIFERENCIAR) ===
 
 A gengiva pode estar SAUDÁVEL mas ainda ter indicação de gengivoplastia ESTÉTICA.
+São dois procedimentos OPOSTOS — diferenciar corretamente é CRÍTICO:
+
+**GENGIVOPLASTIA** (treatment_indication: "gengivoplastia"):
+- Objetivo: AUMENTAR a coroa clínica removendo excesso de gengiva
+- Indicação: Coroa clínica CURTA, excesso gengival, sorriso gengival
+- Resultado: Dente fica MAIOR (mais coroa visível)
+
+**RECOBRIMENTO RADICULAR** (treatment_indication: "recobrimento_radicular"):
+- Objetivo: COBRIR raiz exposta com enxerto gengival
+- Indicação: Recessão gengival visível, raiz exposta, sensibilidade cervical
+- Resultado: Dente fica com MENOS raiz exposta (gengiva cobre mais)
+- Sinais visuais: margem gengival retraída, superfície radicular amarelada/exposta, dente parece "comprido demais"
+
+⚠️ REGRA DE DIFERENCIAÇÃO:
+- Se a coroa clínica precisa ficar MAIOR (remoção de gengiva) → "gengivoplastia"
+- Se a coroa clínica precisa ficar MENOR (cobertura de raiz exposta) → "recobrimento_radicular"
+- NUNCA confunda os dois — são procedimentos opostos!
+
 Quando indicada, GERE UMA SUGESTÃO ESTRUTURADA (não apenas observação textual).
 
-✅ CRITÉRIOS DE INDICAÇÃO - Gerar sugestão estruturada se QUALQUER um presente:
+✅ CRITÉRIOS DE INDICAÇÃO PARA GENGIVOPLASTIA:
 1. Sorriso gengival > 3mm de exposição gengival
 2. Assimetria de zenith gengival > 1mm entre dentes homólogos
 3. Proporção largura/altura dos incisivos centrais > 85% (coroas clínicas curtas)
 4. Margens gengivais irregulares que comprometem o tratamento restaurador planejado
 5. Exposição gengival excessiva mesmo com smile_line "média" — se a gengiva é CLARAMENTE visível e assimétrica
 
-⚠️ REGRA IMPORTANTE: Se detectar assimetria gengival >1mm, zênites desalinhados, ou exposição gengival excessiva, DEVE incluir sugestão de gengivoplastia no array suggestions, INDEPENDENTEMENTE da classificação de smile_line. A gengivoplastia não depende exclusivamente de smile_line "alta".
+✅ CRITÉRIOS DE INDICAÇÃO PARA RECOBRIMENTO RADICULAR:
+1. Recessão gengival visível (margem gengival mais apical que o normal)
+2. Raiz exposta — superfície radicular amarelada/escurecida visível
+3. Dente aparenta ser "comprido demais" comparado ao contralateral
+4. Sensibilidade cervical relatada (se contexto clínico disponível)
 
-✅ FORMATO DA SUGESTÃO DE GENGIVOPLASTIA:
+⚠️ REGRA IMPORTANTE: Se detectar assimetria gengival >1mm, zênites desalinhados, ou exposição gengival excessiva, DEVE incluir sugestão no array suggestions, INDEPENDENTEMENTE da classificação de smile_line.
+
+⚠️ REGRA DE CORREÇÃO COMPLETA DO ARCO (OBRIGATÓRIO):
+- Ao detectar assimetria gengival em QUALQUER dente, avaliar e sugerir correção para TODOS os dentes do arco estético (13-23)
+- Não deixar zênites assimétricos na simulação — harmonizar contralaterais
+- Se o dente 12 precisa de correção gengival, avaliar TAMBÉM 22, 11, 21, 13 e 23
+- Gerar sugestões INDIVIDUAIS para CADA dente que precisa de ajuste gengival
+
+✅ FORMATO DA SUGESTÃO:
 Quando indicada, adicione ao array suggestions:
 {
   "tooth_number": "13 ao 23" (ou listar todos os dentes envolvidos),
-  "treatment_indication": "gengivoplastia",
+  "treatment_indication": "gengivoplastia" ou "recobrimento_radicular",
   "procedure_type": "complementar",
   "description": "[justificativa clínica específica baseada nos critérios acima]",
   "priority": "alta",
@@ -198,6 +228,14 @@ Na sugestão de gengivoplastia, incluir em proposed_change:
 2. Avaliação periodontal (sondagem, distâncias biológicas)
 3. Procedimento respeitando distâncias biológicas
 4. Aguardar 60-90 dias de maturação tecidual antes do tratamento restaurador"
+
+✅ PROTOCOLO DE RECOBRIMENTO RADICULAR (incluir quando indicado):
+Na sugestão de recobrimento, incluir em proposed_change:
+"Recobrimento radicular para [justificativa]. Planejamento inclui:
+1. Avaliação periodontal detalhada (classificação de Miller/Cairo)
+2. Técnica de enxerto de tecido conjuntivo subepitelial ou técnica de túnel
+3. Aguardar 90-120 dias de cicatrização antes do tratamento restaurador
+4. Acompanhamento da maturação do enxerto"
 
 ❌ NÃO gerar sugestão de gengivoplastia se:
 - Linha do sorriso "média" ou "baixa" E
@@ -243,6 +281,15 @@ Quando identificar necessidade de tratamento em incisivos (11, 12, 21, 22), AVAL
 
 REGRA: Se ≥4 dentes anteriores precisam de intervenção, SEMPRE avalie os 6-8 dentes visíveis no arco.
 Inclua caninos/pré-molares com prioridade "baixa" se a melhoria for apenas para harmonização estética.
+
+=== RECONTORNO INCISAL PARA DESNÍVEL ENTRE HOMÓLOGOS (OBRIGATÓRIO) ===
+
+⚠️ REGRA: Quando detectar desnível incisal entre dentes simétricos (11/21, 12/22, 13/23):
+- Sugerir "Recontorno Incisal em Resina Composta" como opção de tratamento
+- Se desnível > 0.5mm entre homólogos → indicação OBRIGATÓRIA
+- treatment_indication: "resina"
+- proposed_change: "Recontorno incisal para harmonizar altura com dente contralateral [número]"
+- Medir visualmente a diferença de comprimento entre homólogos antes de decidir
 
 === COMPLETUDE DE SUGESTÕES INCISAIS (OBRIGATÓRIO) ===
 

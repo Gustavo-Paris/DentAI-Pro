@@ -22,9 +22,11 @@ export interface Params {
   /** Allowed changes from filtered analysis suggestions */
   allowedChangesFromAnalysis?: string
   /** Layer type for multi-layer simulation (overrides caseType routing when set) */
-  layerType?: 'restorations-only' | 'whitening-restorations' | 'complete-treatment'
+  layerType?: 'restorations-only' | 'whitening-restorations' | 'complete-treatment' | 'root-coverage'
   /** Gengivoplasty suggestions text, injected for complete-treatment layer */
   gingivoSuggestions?: string
+  /** Root coverage suggestions text, injected for root-coverage layer */
+  rootCoverageSuggestions?: string
 }
 
 // --- Shared prompt blocks ---
@@ -354,6 +356,43 @@ ${qualityRequirements}
 Output: Same photo with teeth corrected AND gingival recontouring applied.`
 }
 
+function buildRootCoveragePrompt(params: Params): string {
+  const absolutePreservation = buildAbsolutePreservation()
+  const whiteningPrioritySection = buildWhiteningPrioritySection(params)
+  const baseCorrections = buildBaseCorrections()
+  const textureInstruction = buildTextureInstruction()
+  const qualityRequirements = buildQualityRequirements(params)
+  const allowedChangesFromAnalysis = params.allowedChangesFromAnalysis || ''
+
+  return `DENTAL PHOTO EDIT - COMPLETE TREATMENT WITH ROOT COVERAGE
+
+${absolutePreservation}
+
+TASK: Edit teeth AND gingival contour. This is the COMPLETE treatment simulation including root coverage (recobrimento radicular).
+
+⚠️ EXCEPTION TO GINGIVA PRESERVATION: In this layer, you ARE ALLOWED to modify the gingival contour.
+The gum line should be recontoured to show the effect of root coverage:
+- Cover exposed root surfaces by moving the gingival margin coronally (towards the crown)
+- Create symmetrical gingival margins between contralateral teeth
+- The covered areas must show healthy pink gingival tissue covering previously exposed root
+- The recontoured gums must look NATURAL (pink, healthy tissue appearance)
+- The gingival alteration MUST be VISUALLY EVIDENT in the before/after comparison
+- Root surfaces that were exposed/yellowish should now be covered by healthy gum tissue
+
+${params.rootCoverageSuggestions ? `ROOT COVERAGE SPECIFICATIONS:\n${params.rootCoverageSuggestions}\n` : ''}
+
+${whiteningPrioritySection}DENTAL CORRECTIONS:
+${baseCorrections}
+${textureInstruction}
+${allowedChangesFromAnalysis}
+
+${PROPORTION_RULES}
+
+${qualityRequirements}
+
+Output: Same photo with teeth corrected AND gingival root coverage applied.`
+}
+
 // --- Prompt definition ---
 
 export const dsdSimulation: PromptDefinition<Params> = {
@@ -373,6 +412,8 @@ export const dsdSimulation: PromptDefinition<Params> = {
           return buildRestorationsOnlyPrompt(params)
         case 'complete-treatment':
           return buildWithGengivoplastyPrompt(params)
+        case 'root-coverage':
+          return buildRootCoveragePrompt(params)
         case 'whitening-restorations':
           // Falls through to standard caseType routing below
           break
