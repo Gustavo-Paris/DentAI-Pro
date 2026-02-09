@@ -160,7 +160,7 @@ serve(async (req) => {
     }
 
     // Then consume credits (atomic with row locking)
-    const creditResult = await checkAndUseCredits(supabaseService, userId, "case_analysis");
+    const creditResult = await checkAndUseCredits(supabaseService, userId, "case_analysis", reqId);
     if (!creditResult.allowed) {
       logger.warn(`Insufficient credits for user ${userId} on case_analysis`);
       return createInsufficientCreditsResponse(creditResult, corsHeaders);
@@ -414,7 +414,7 @@ serve(async (req) => {
       if (error instanceof GeminiError) {
         if (error.statusCode === 429) {
           if (creditsConsumed && supabaseForRefund && userIdForRefund) {
-            await refundCredits(supabaseForRefund, userIdForRefund, "case_analysis");
+            await refundCredits(supabaseForRefund, userIdForRefund, "case_analysis", reqId);
           }
           return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
         }
@@ -424,7 +424,7 @@ serve(async (req) => {
       }
       // Refund credits on AI errors
       if (creditsConsumed && supabaseForRefund && userIdForRefund) {
-        await refundCredits(supabaseForRefund, userIdForRefund, "case_analysis");
+        await refundCredits(supabaseForRefund, userIdForRefund, "case_analysis", reqId);
         logger.log(`Refunded analysis credits for user ${userIdForRefund} due to AI error`);
       }
       return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
@@ -539,7 +539,7 @@ serve(async (req) => {
     logger.error(`[${reqId}] Error analyzing photo:`, error);
     // Refund credits on unexpected errors — user paid but got nothing
     if (creditsConsumed && supabaseForRefund && userIdForRefund) {
-      await refundCredits(supabaseForRefund, userIdForRefund, "case_analysis");
+      await refundCredits(supabaseForRefund, userIdForRefund, "case_analysis", reqId);
       logger.log(`[${reqId}] Refunded analysis credits for user ${userIdForRefund} due to error`);
     }
     return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders, undefined, reqId);

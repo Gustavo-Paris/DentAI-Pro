@@ -887,7 +887,7 @@ serve(async (req: Request) => {
     //   3. The evaluation already has dsd_analysis stored (proves initial call was charged)
     const isFollowUpCall = regenerateSimulationOnly && evaluationId && evaluationHasDsdAnalysis;
     if (!isFollowUpCall) {
-      const creditResult = await checkAndUseCredits(supabase, user.id, "dsd_simulation");
+      const creditResult = await checkAndUseCredits(supabase, user.id, "dsd_simulation", reqId);
       if (!creditResult.allowed) {
         logger.warn(`Insufficient credits for user ${user.id} on dsd_simulation`);
         return createInsufficientCreditsResponse(creditResult, corsHeaders);
@@ -915,7 +915,7 @@ serve(async (req: Request) => {
       // Check if it's an error response — refund credits if analysis failed
       if (analysisResult instanceof Response) {
         if (creditsConsumed) {
-          await refundCredits(supabase, user.id, "dsd_simulation");
+          await refundCredits(supabase, user.id, "dsd_simulation", reqId);
           logger.log(`Refunded DSD credits for user ${user.id} due to analysis failure`);
         }
         return analysisResult;
@@ -1084,7 +1084,7 @@ serve(async (req: Request) => {
     logger.error(`[${reqId}] DSD generation error:`, error);
     // Refund credits on unexpected errors — user paid but got nothing
     if (creditsConsumed && supabaseForRefund && userIdForRefund) {
-      await refundCredits(supabaseForRefund, userIdForRefund, "dsd_simulation");
+      await refundCredits(supabaseForRefund, userIdForRefund, "dsd_simulation", reqId);
       logger.log(`[${reqId}] Refunded DSD credits for user ${userIdForRefund} due to error`);
     }
     return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders, undefined, reqId);

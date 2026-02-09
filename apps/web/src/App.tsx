@@ -38,7 +38,14 @@ const PatientProfile = lazy(() => import("@/pages/PatientProfile"));
 const Profile = lazy(() => import("@/pages/Profile"));
 const Pricing = lazy(() => import("@/pages/Pricing"));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 // Loading fallback for lazy-loaded pages
 const PageLoader = () => (

@@ -34,7 +34,7 @@ serve(async (req: Request) => {
   // Fail-fast: reject all webhooks if secret is not configured
   if (!WEBHOOK_SECRET) {
     logger.error("STRIPE_WEBHOOK_SECRET is not configured — rejecting all webhooks");
-    return new Response("Webhook secret not configured", { status: 500 });
+    return new Response("Webhook secret not configured", { status: 503 });
   }
 
   try {

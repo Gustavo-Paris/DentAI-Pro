@@ -15,12 +15,39 @@ export interface CreditCheckResult {
  * Atomically check and consume credits for an operation.
  * Uses use_credits() which does SELECT FOR UPDATE to prevent race conditions.
  * Returns { allowed: true } if credits were consumed successfully.
+ *
+ * @param operationId - Optional unique ID for this operation. Used to prevent
+ * double-charge on retry and to enable idempotent refunds. Pass a session/request
+ * ID so the same operation isn't charged twice.
  */
 export async function checkAndUseCredits(
   supabase: SupabaseClient,
   userId: string,
   operation: string,
+  operationId?: string,
 ): Promise<CreditCheckResult> {
+  // If operationId provided, check if already consumed (idempotent)
+  if (operationId) {
+    const { data: existing } = await supabase
+      .from("credit_transactions")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("operation_id", operationId)
+      .eq("type", "consume")
+      .maybeSingle();
+
+    if (existing) {
+      logger.log(`Credits already consumed for operation ${operationId}, skipping`);
+      const creditInfo = await getCreditInfo(supabase, userId, operation);
+      return {
+        allowed: true,
+        creditsAvailable: creditInfo.available,
+        creditsCost: creditInfo.cost,
+        isFreeUser: creditInfo.isFreeUser,
+      };
+    }
+  }
+
   // Single atomic call: check + consume with row locking
   const { data: consumed, error: useError } = await supabase
     .rpc("use_credits", {
@@ -45,9 +72,21 @@ export async function checkAndUseCredits(
     };
   }
 
+  // Record the transaction with operationId for idempotency tracking
+  if (operationId) {
+    await supabase.from("credit_transactions").insert({
+      user_id: userId,
+      operation_id: operationId,
+      operation,
+      type: "consume",
+    }).then(({ error }) => {
+      if (error) logger.warn(`Failed to record credit transaction: ${error.message}`);
+    });
+  }
+
   // Get remaining for logging
   const creditInfo = await getCreditInfo(supabase, userId, operation);
-  logger.log(`Credits consumed: user=${userId}, op=${operation}, remaining=${creditInfo.available}`);
+  logger.log(`Credits consumed: user=${userId}, op=${operation}, opId=${operationId || 'none'}, remaining=${creditInfo.available}`);
 
   return {
     allowed: true,
@@ -60,12 +99,32 @@ export async function checkAndUseCredits(
 /**
  * Refund credits for a failed operation.
  * Call this when an AI edge function fails after credits were consumed.
+ *
+ * @param operationId - Optional unique ID to prevent double-refund. If provided,
+ * checks that this operation hasn't already been refunded before issuing refund.
  */
 export async function refundCredits(
   supabase: SupabaseClient,
   userId: string,
   operation: string,
+  operationId?: string,
 ): Promise<boolean> {
+  // If operationId provided, check if already refunded (idempotent)
+  if (operationId) {
+    const { data: existing } = await supabase
+      .from("credit_transactions")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("operation_id", operationId)
+      .eq("type", "refund")
+      .maybeSingle();
+
+    if (existing) {
+      logger.log(`Credits already refunded for operation ${operationId}, skipping`);
+      return true;
+    }
+  }
+
   const { data: refunded, error: refundError } = await supabase
     .rpc("refund_credits", {
       p_user_id: userId,
@@ -78,7 +137,18 @@ export async function refundCredits(
   }
 
   if (refunded) {
-    logger.log(`Credits refunded: user=${userId}, op=${operation}`);
+    // Record the refund transaction
+    if (operationId) {
+      await supabase.from("credit_transactions").insert({
+        user_id: userId,
+        operation_id: operationId,
+        operation,
+        type: "refund",
+      }).then(({ error }) => {
+        if (error) logger.warn(`Failed to record refund transaction: ${error.message}`);
+      });
+    }
+    logger.log(`Credits refunded: user=${userId}, op=${operation}, opId=${operationId || 'none'}`);
   }
 
   return !!refunded;
