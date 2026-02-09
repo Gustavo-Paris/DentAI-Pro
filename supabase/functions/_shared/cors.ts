@@ -34,8 +34,6 @@ export function getCorsHeaders(req: Request): Record<string, string> {
   const isAllowed =
     !!origin &&
     (PRODUCTION_ORIGINS.includes(origin) ||
-      // Production subdomains
-      origin.endsWith(".dentai.pro") ||
       // Localhost in development (any port)
       (isDevelopment && isLocalhostOrigin(origin)));
 
