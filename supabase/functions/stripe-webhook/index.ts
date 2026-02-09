@@ -31,6 +31,12 @@ serve(async (req: Request) => {
     return new Response("Method not allowed", { status: 405 });
   }
 
+  // Fail-fast: reject all webhooks if secret is not configured
+  if (!WEBHOOK_SECRET) {
+    logger.error("STRIPE_WEBHOOK_SECRET is not configured — rejecting all webhooks");
+    return new Response("Webhook secret not configured", { status: 500 });
+  }
+
   try {
     // Get the signature from headers
     const signature = req.headers.get("stripe-signature");
