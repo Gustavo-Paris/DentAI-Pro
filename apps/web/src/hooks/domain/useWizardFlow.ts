@@ -882,6 +882,10 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
 
         const dsdAdditions: DetectedTooth[] = [];
         for (const s of result.analysis.suggestions) {
+          // Skip gengivoplasty suggestions — these are handled as a separate case, not per-tooth
+          const proposedLower = s.proposed_change.toLowerCase();
+          if (proposedLower.includes('gengivoplastia') || proposedLower.includes('gengival')) continue;
+
           const toothId = String(s.tooth);
           if (!existingNumbers.has(toothId)) {
             const toothNum = parseInt(toothId);
@@ -922,6 +926,10 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
         setToothTreatments((prev) => {
           const updated = { ...prev };
           for (const s of result.analysis.suggestions) {
+            // Skip gengivoplasty — don't override per-tooth treatments
+            const proposedLower = s.proposed_change.toLowerCase();
+            if (proposedLower.includes('gengivoplastia') || proposedLower.includes('gengival')) continue;
+
             if (s.treatment_indication && s.treatment_indication !== 'resina') {
               if (!prev[s.tooth] || prev[s.tooth] === 'resina') {
                 updated[s.tooth] = s.treatment_indication as TreatmentType;

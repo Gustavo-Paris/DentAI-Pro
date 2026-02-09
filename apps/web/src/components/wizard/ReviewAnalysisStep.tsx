@@ -289,15 +289,20 @@ export function ReviewAnalysisStep({
   // Complexity score
   const complexity = calculateComplexity(detectedTeeth.filter(t => selectedTeeth.includes(t.tooth)));
 
-  // Build summary data
+  // Real teeth count (exclude virtual "GENGIVO" entry)
+  const realSelectedTeeth = selectedTeeth.filter(t => t !== 'GENGIVO');
+  const hasGengivoplasty = selectedTeeth.includes('GENGIVO');
+
+  // Build summary data (only real teeth)
   const treatmentBreakdown = (() => {
     const counts: Record<TreatmentType, number> = {
       resina: 0, porcelana: 0, coroa: 0, implante: 0, endodontia: 0, encaminhamento: 0, gengivoplastia: 0,
     };
-    for (const tooth of selectedTeeth) {
+    for (const tooth of realSelectedTeeth) {
       const treatment = toothTreatments[tooth] || detectedTeeth.find(t => t.tooth === tooth)?.treatment_indication || 'resina';
       counts[treatment]++;
     }
+    if (hasGengivoplasty) counts.gengivoplastia = 1;
     return Object.entries(counts).filter(([, count]) => count > 0) as [TreatmentType, number][];
   })();
 
@@ -600,7 +605,7 @@ export function ReviewAnalysisStep({
               <CircleDot className="w-4 h-4 text-primary" />
               Selecione os Dentes para o Protocolo
               <Badge variant="secondary" className="ml-2">
-                {selectedTeeth.length > 0 ? `${selectedTeeth.length} selecionado(s)` : detectedTeeth.length}
+                {realSelectedTeeth.length > 0 ? `${realSelectedTeeth.length} selecionado(s)` : detectedTeeth.length}
               </Badge>
             </CardTitle>
           </CardHeader>
@@ -666,7 +671,7 @@ export function ReviewAnalysisStep({
             {/* Manually added teeth */}
             {(() => {
               const detectedToothNumbers = detectedTeeth.map(t => t.tooth);
-              const manualTeeth = selectedTeeth.filter(t => !detectedToothNumbers.includes(t));
+              const manualTeeth = selectedTeeth.filter(t => !detectedToothNumbers.includes(t) && t !== 'GENGIVO');
               if (manualTeeth.length === 0) return null;
               return (
                 <div className="mt-4">
@@ -754,7 +759,7 @@ export function ReviewAnalysisStep({
 
             {selectedTeeth.length > 0 && (
               <p className="text-sm text-primary mt-4 text-center font-medium">
-                {selectedTeeth.length} dente(s) selecionado(s) para gerar protocolo
+                {realSelectedTeeth.length} dente(s) selecionado(s) para gerar protocolo{hasGengivoplasty ? ' + gengivoplastia' : ''}
               </p>
             )}
           </CardContent>
@@ -1071,7 +1076,7 @@ export function ReviewAnalysisStep({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
             <div>
               <p className="text-muted-foreground text-xs">Dentes</p>
-              <p className="font-semibold text-gradient-gold">{selectedTeeth.length}</p>
+              <p className="font-semibold text-gradient-gold">{realSelectedTeeth.length}{hasGengivoplasty ? ' + gengivo' : ''}</p>
             </div>
             <div>
               <p className="text-muted-foreground text-xs">Tipos</p>

@@ -278,6 +278,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
           beforeDataUrl: imageBase64!,
           afterUrl: signedData.signedUrl,
           bounds: toothBounds,
+          includeGingiva: layer.includes_gengivoplasty,
         });
 
         const compositePath = `${user.id}/dsd_composited_${layer.type}_${Date.now()}.jpg`;
@@ -369,8 +370,8 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
       setLayers(compositedLayers);
       setLayerUrls(resolvedUrls);
 
-      // Set the main simulation URL to the whitening-restorations layer (or first available)
-      const mainLayer = compositedLayers.find(l => l.type === 'whitening-restorations') || compositedLayers[0];
+      // Set the main simulation URL to the first layer (matches activeLayerIndex=0)
+      const mainLayer = compositedLayers[0];
       if (mainLayer?.simulation_url) {
         setResult(prev => prev ? {
           ...prev,
@@ -1119,10 +1120,11 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
                               ? { ...l, whitening_level: level, simulation_url: url }
                               : l
                           ));
-                          // Update the main simulation view if whitening-restorations is active
+                          // Always update main view and switch to whitening-restorations tab
+                          setSimulationImageUrl(url);
                           const whiteningIdx = layers.findIndex(l => l.type === 'whitening-restorations');
-                          if (whiteningIdx >= 0 && activeLayerIndex === whiteningIdx) {
-                            setSimulationImageUrl(url);
+                          if (whiteningIdx >= 0) {
+                            setActiveLayerIndex(whiteningIdx);
                           }
                           toast.success(`Nível de clareamento atualizado para ${labels[level]}`);
                         }}
