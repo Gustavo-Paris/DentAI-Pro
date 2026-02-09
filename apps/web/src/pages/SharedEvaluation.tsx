@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { getSharedEvaluation, type SharedEvaluationRow } from '@/data/evaluations';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -29,60 +29,28 @@ const treatmentLabels: Record<string, { label: string; icon: typeof Layers }> = 
   encaminhamento: { label: 'Encaminhamento', icon: ArrowUpRight },
 };
 
-interface SharedEval {
-  tooth: string;
-  treatment_type: string | null;
-  cavity_class: string;
-  status: string | null;
-  ai_treatment_indication: string | null;
-  created_at: string;
-}
-
 export default function SharedEvaluation() {
   const { token } = useParams<{ token: string }>();
   const [loading, setLoading] = useState(true);
   const [expired, setExpired] = useState(false);
-  const [evaluations, setEvaluations] = useState<SharedEval[]>([]);
+  const [evaluations, setEvaluations] = useState<SharedEvaluationRow[]>([]);
 
   useEffect(() => {
     const fetchSharedData = async () => {
       if (!token) return;
 
-      // Look up the shared link
-      const { data: link, error: linkError } = await supabase
-        .from('shared_links')
-        .select('session_id, expires_at')
-        .eq('token', token)
-        .maybeSingle();
-
-      if (linkError || !link) {
+      try {
+        const rows = await getSharedEvaluation(token);
+        if (rows.length === 0) {
+          setExpired(true);
+        } else {
+          setEvaluations(rows);
+        }
+      } catch {
         setExpired(true);
+      } finally {
         setLoading(false);
-        return;
       }
-
-      // Check expiry
-      if (new Date(link.expires_at) < new Date()) {
-        setExpired(true);
-        setLoading(false);
-        return;
-      }
-
-      // Fetch evaluation data (read-only, public fields only — NO patient PII per LGPD)
-      const { data: evals, error: evalError } = await supabase
-        .from('evaluations')
-        .select('tooth, treatment_type, cavity_class, status, ai_treatment_indication, created_at')
-        .eq('session_id', link.session_id)
-        .order('tooth', { ascending: true });
-
-      if (evalError || !evals || evals.length === 0) {
-        setExpired(true);
-        setLoading(false);
-        return;
-      }
-
-      setEvaluations(evals);
-      setLoading(false);
     };
 
     fetchSharedData();
@@ -198,6 +166,12 @@ export default function SharedEvaluation() {
         </div>
 
         <p className="text-center text-xs text-muted-foreground mt-8">
+          {evaluations[0]?.clinic_name && (
+            <>
+              {evaluations[0].clinic_name}
+              {' '}&middot;{' '}
+            </>
+          )}
           Gerado por {BRAND_NAME} &middot; Ferramenta de apoio à decisão clínica
         </p>
       </main>

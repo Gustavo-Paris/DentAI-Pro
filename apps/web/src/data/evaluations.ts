@@ -242,6 +242,22 @@ export async function listPendingTeeth(sessionId: string, userId: string) {
 // Shared links
 // ---------------------------------------------------------------------------
 
+export interface SharedEvaluationRow {
+  tooth: string;
+  treatment_type: string | null;
+  cavity_class: string;
+  status: string | null;
+  ai_treatment_indication: string | null;
+  created_at: string;
+  clinic_name: string | null;
+}
+
+export async function getSharedEvaluation(token: string): Promise<SharedEvaluationRow[]> {
+  const { data, error } = await supabase.rpc('get_shared_evaluation', { p_token: token });
+  if (error) throw error;
+  return (data as SharedEvaluationRow[]) || [];
+}
+
 export async function getOrCreateShareLink(sessionId: string, userId: string) {
   // Check if there's already a valid link
   const { data: existing } = await supabase
