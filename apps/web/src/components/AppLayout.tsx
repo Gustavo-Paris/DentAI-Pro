@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { BRAND_NAME } from '@/lib/branding';
 import { CreditBadge } from '@/components/CreditBadge';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { HelpButton } from '@/components/HelpButton';
 import {
   LayoutDashboard,
   FileText,
@@ -123,6 +124,9 @@ export default function AppLayout() {
       <main className="lg:pl-56 pb-20 lg:pb-0">
         <Outlet />
       </main>
+
+      {/* Floating help button */}
+      <HelpButton />
 
       {/* Mobile bottom nav */}
       <nav className="lg:hidden fixed bottom-0 inset-x-0 z-30 border-t border-border bg-card/95 backdrop-blur-sm safe-area-bottom">

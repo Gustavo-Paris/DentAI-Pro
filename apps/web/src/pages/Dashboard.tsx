@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { DashboardPage } from '@pageshell/composites/dashboard';
 import type { ModuleConfig, DashboardTab } from '@pageshell/composites/dashboard';
 import { useDashboard } from '@/hooks/domain/useDashboard';
@@ -27,7 +28,8 @@ const StatsGrid = lazy(() => import('./dashboard/StatsGrid').then(m => ({ defaul
 import { PrincipalTab } from './dashboard/PrincipalTab';
 const InsightsTab = lazy(() => import('./dashboard/InsightsTab').then(m => ({ default: m.InsightsTab })));
 import { CreditsBanner } from './dashboard/CreditsBanner';
-import { OnboardingCards } from './dashboard/OnboardingCards';
+import { OnboardingProgress } from '@/components/onboarding/OnboardingProgress';
+import { WelcomeModal } from '@/components/onboarding/WelcomeModal';
 
 function StatsGridFallback() {
   return (
@@ -74,6 +76,7 @@ const modules: ModuleConfig[] = [
 
 export default function Dashboard() {
   const dashboard = useDashboard();
+  const navigate = useNavigate();
   const isTabbed = !dashboard.isNewUser;
 
   const tabsConfig: DashboardTab[] | undefined = isTabbed
@@ -169,7 +172,7 @@ export default function Dashboard() {
                       />
                     </Suspense>
                   ),
-                  afterStats: <OnboardingCards />,
+                  afterStats: <OnboardingProgress />,
                 }
               : {}),
           }}
@@ -194,6 +197,13 @@ export default function Dashboard() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        <WelcomeModal
+          open={dashboard.showWelcome}
+          onClose={dashboard.dismissWelcome}
+          onTrySample={() => navigate('/new-case?sample=true')}
+          onCreateCase={() => navigate('/new-case')}
+        />
       </div>
     </TooltipProvider>
   );

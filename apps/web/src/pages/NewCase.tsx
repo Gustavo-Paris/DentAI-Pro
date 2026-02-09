@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -14,6 +15,7 @@ import {
   Save,
   Heart,
   Sparkles,
+  Eye,
 } from 'lucide-react';
 
 import { WizardPage } from '@pageshell/composites';
@@ -41,6 +43,7 @@ const QUICK_ICONS = [Camera, Brain, ClipboardCheck, FileText];
 
 export default function NewCase() {
   const wizard = useWizardFlow();
+  const navigate = useNavigate();
 
   // Compute display step index (0-indexed) from internal step (1-indexed)
   const displayStep = wizard.isQuickCase
@@ -234,23 +237,31 @@ export default function NewCase() {
               stepIcons={wizard.isQuickCase ? QUICK_ICONS : undefined}
             />
           ),
-          betweenHeaderAndContent: wizard.step >= 4 ? (
-            <div className="flex justify-end mb-2">
-              <Badge variant="outline" className="text-xs gap-1.5">
-                {wizard.isSaving ? (
-                  <>
-                    <Save className="w-3 h-3 animate-pulse" />
-                    <span className="hidden sm:inline">Salvando...</span>
-                  </>
-                ) : wizard.lastSavedAt ? (
-                  <>
-                    <Check className="w-3 h-3 text-primary" />
-                    <span className="hidden sm:inline">Salvo</span>
-                  </>
-                ) : null}
-              </Badge>
+          betweenHeaderAndContent: (
+            <div className="flex items-center justify-between mb-2">
+              {wizard.isSampleCase ? (
+                <Badge variant="secondary" className="text-xs gap-1.5 bg-primary/10 text-primary border-primary/20">
+                  <Eye className="w-3 h-3" />
+                  Caso Exemplo
+                </Badge>
+              ) : <span />}
+              {wizard.step >= 4 && !wizard.isSampleCase ? (
+                <Badge variant="outline" className="text-xs gap-1.5">
+                  {wizard.isSaving ? (
+                    <>
+                      <Save className="w-3 h-3 animate-pulse" />
+                      <span className="hidden sm:inline">Salvando...</span>
+                    </>
+                  ) : wizard.lastSavedAt ? (
+                    <>
+                      <Check className="w-3 h-3 text-primary" />
+                      <span className="hidden sm:inline">Salvo</span>
+                    </>
+                  ) : null}
+                </Badge>
+              ) : <span />}
             </div>
-          ) : null,
+          ),
           navigation: wizard.canGoBack ? (
             <div className="wizard-nav-sticky">
               <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 pt-4 pb-2 sm:mt-8 sm:pt-0 sm:pb-0">
@@ -260,24 +271,35 @@ export default function NewCase() {
                 </Button>
 
                 {wizard.step === 5 && (
-                  <Button
-                    onClick={wizard.handleSubmit}
-                    disabled={wizard.isSubmitting}
-                    className="w-full sm:w-auto btn-glow-gold btn-press font-semibold"
-                  >
-                    {wizard.isSubmitting ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Processando...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="w-4 h-4 mr-2" />
-                        Gerar Caso
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </>
-                    )}
-                  </Button>
+                  wizard.isSampleCase ? (
+                    <Button
+                      onClick={() => navigate('/new-case')}
+                      className="w-full sm:w-auto btn-glow-gold btn-press font-semibold"
+                    >
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Criar Meu Proprio Caso
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={wizard.handleSubmit}
+                      disabled={wizard.isSubmitting}
+                      className="w-full sm:w-auto btn-glow-gold btn-press font-semibold"
+                    >
+                      {wizard.isSubmitting ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Processando...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4 mr-2" />
+                          Gerar Caso
+                          <ArrowRight className="w-4 h-4 ml-2" />
+                        </>
+                      )}
+                    </Button>
+                  )
                 )}
               </div>
             </div>

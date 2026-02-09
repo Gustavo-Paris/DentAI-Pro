@@ -12,6 +12,8 @@ import {
 import { Sparkles, Camera, Smile, Layers, FileText, Star, Check, Zap, Users, RefreshCw } from 'lucide-react';
 import { BRAND_NAME } from '@/lib/branding';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { HeroMockup } from '@/components/landing/HeroMockup';
+import { FeaturePreview } from '@/components/landing/FeaturePreview';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { SubscriptionPlan } from '@/hooks/useSubscription';
@@ -52,27 +54,38 @@ export default function Landing() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_50%_at_20%_80%,hsl(235_56%_58%/0.03),transparent)] dark:bg-[radial-gradient(ellipse_50%_50%_at_20%_80%,hsl(235_60%_68%/0.03),transparent)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_1px_at_20px_20px,hsl(235_56%_58%/0.05)_1px,transparent_0)] dark:bg-[radial-gradient(circle_1px_at_20px_20px,hsl(235_60%_68%/0.03)_1px,transparent_0)] bg-[length:40px_40px]" />
 
-        <div className="container mx-auto px-4 sm:px-6 text-center max-w-3xl relative">
-          <Badge
-            variant="secondary"
-            className="mb-6 animate-[fade-in-up_0.6s_ease-out_0.2s_both]"
-            style={{ animation: 'badge-pulse-ring 3s ease-in-out infinite, fade-in-up 0.6s ease-out 0.2s both' }}
-          >
-            <Sparkles className="w-3 h-3 mr-1" />
-            Inteligência Clínica Estética
-          </Badge>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-tight mb-4 sm:mb-6 font-display animate-[fade-in-up_0.6s_ease-out_0.4s_both]">
-            O padrão <span className="text-gradient-gold">ouro</span> da odontologia estética
-          </h1>
-          <p className="text-base sm:text-lg text-muted-foreground mb-8 sm:mb-10 max-w-xl mx-auto animate-[fade-in-up_0.6s_ease-out_0.6s_both]">
-            IA que analisa, planeja e gera protocolos personalizados com precisão.
-          </p>
-          <div className="animate-[fade-in-up_0.6s_ease-out_0.8s_both]">
-            <Link to="/register">
-              <Button size="lg" className="px-6 sm:px-8 h-12 text-base btn-glow-gold">
-                Começar Avaliação Gratuita
-              </Button>
-            </Link>
+        <div className="container mx-auto px-4 sm:px-6 relative">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center max-w-6xl mx-auto">
+            {/* Left column — text */}
+            <div className="text-center lg:text-left">
+              <Badge
+                variant="secondary"
+                className="mb-6 animate-[fade-in-up_0.6s_ease-out_0.2s_both]"
+                style={{ animation: 'badge-pulse-ring 3s ease-in-out infinite, fade-in-up 0.6s ease-out 0.2s both' }}
+              >
+                <Sparkles className="w-3 h-3 mr-1" />
+                Inteligencia Clinica Estetica
+              </Badge>
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-tight mb-4 sm:mb-6 font-display animate-[fade-in-up_0.6s_ease-out_0.4s_both]">
+                O padrao <span className="text-gradient-gold">ouro</span> da odontologia estetica
+              </h1>
+              <p className="text-base sm:text-lg text-muted-foreground mb-8 sm:mb-10 max-w-xl mx-auto lg:mx-0 animate-[fade-in-up_0.6s_ease-out_0.6s_both]">
+                IA que analisa, planeja e gera protocolos personalizados com precisao.
+              </p>
+              <div className="animate-[fade-in-up_0.6s_ease-out_0.8s_both] flex flex-col items-center lg:items-start gap-2">
+                <Link to="/register">
+                  <Button size="lg" className="px-6 sm:px-8 h-12 text-base btn-glow-gold">
+                    Testar Gratis em 2 Minutos
+                  </Button>
+                </Link>
+                <p className="text-xs text-muted-foreground">Sem cartao de credito. 3 creditos gratis.</p>
+              </div>
+            </div>
+
+            {/* Right column — device mockup */}
+            <div className="hidden lg:block">
+              <HeroMockup />
+            </div>
           </div>
         </div>
       </section>
@@ -82,10 +95,10 @@ export default function Landing() {
         <div className="container mx-auto px-4 sm:px-6">
           <div ref={statsRef} className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
             {[
-              { value: 'IA', label: 'Análise automática' },
-              { value: '250+', label: 'Cores de resinas' },
-              { value: '15+', label: 'Marcas disponíveis' },
+              { value: '<2min', label: 'Para primeiro resultado' },
               { value: '6', label: 'Tipos de tratamento' },
+              { value: '15+', label: 'Marcas de resinas' },
+              { value: '250+', label: 'Cores VITA disponíveis' },
             ].map((stat, i) => (
               <div
                 key={i}
@@ -106,37 +119,42 @@ export default function Landing() {
             Tudo que você precisa em um só lugar
           </h2>
           <div ref={featuresRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            {[
+            {([
               {
                 icon: Camera,
-                title: 'Análise Visual com IA',
+                title: 'Analise Visual com IA',
                 description: 'Tire uma foto e a IA identifica dentes, classifica cavidades e detecta cor VITA.',
+                preview: 'analysis' as const,
               },
               {
                 icon: Smile,
-                title: 'Simulação de Sorriso',
-                description: 'Visualize o resultado antes de iniciar com simulação DSD e níveis de clareamento.',
+                title: 'Simulacao de Sorriso',
+                description: 'Visualize o resultado antes de iniciar com simulacao DSD e niveis de clareamento.',
+                preview: 'dsd' as const,
               },
               {
                 icon: Layers,
-                title: 'Protocolo de Estratificação',
-                description: 'Receba camada por camada qual resina usar do seu inventário pessoal.',
+                title: 'Protocolo de Estratificacao',
+                description: 'Receba camada por camada qual resina usar do seu inventario pessoal.',
+                preview: 'protocol' as const,
               },
               {
                 icon: FileText,
-                title: 'Relatório Profissional',
-                description: 'Exporte PDF personalizado com logo do consultório e protocolo completo.',
+                title: 'Relatorio Profissional',
+                description: 'Exporte PDF personalizado com logo do consultorio e protocolo completo.',
+                preview: 'pdf' as const,
               },
-            ].map((feature, index) => (
+            ]).map((feature, index) => (
               <div
                 key={index}
-                className={`scroll-reveal scroll-reveal-delay-${index + 1} text-center border border-border rounded-xl p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md group`}
+                className={`scroll-reveal scroll-reveal-delay-${index + 1} text-left border border-border rounded-xl p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md group`}
               >
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center mx-auto mb-4 transition-transform duration-300 group-hover:scale-110">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110">
                   <feature.icon className="w-6 h-6 sm:w-7 sm:h-7 text-primary" />
                 </div>
                 <h3 className="font-medium text-sm sm:text-base mb-1 sm:mb-2">{feature.title}</h3>
                 <p className="text-xs sm:text-sm text-muted-foreground">{feature.description}</p>
+                <FeaturePreview type={feature.preview} />
               </div>
             ))}
           </div>
@@ -152,48 +170,70 @@ export default function Landing() {
           <div ref={testimonialsRef} className="grid md:grid-cols-2 gap-6">
             {[
               {
-                quote: "Economizo horas de pesquisa em cada caso. A IA realmente entende as nuances do planejamento clínico e me dá confiança nas minhas escolhas.",
-                author: "Dr. Carlos Mendonça",
-                role: "Dentista Estético • São Paulo, SP",
-                rating: 5
+                quote: "Economizo horas de pesquisa em cada caso. A IA realmente entende as nuances do planejamento clinico e me da confianca nas minhas escolhas.",
+                author: "Dr. Carlos Mendonca",
+                role: "Dentista Estetico",
+                clinic: "Clinica Sorriso Perfeito",
+                rating: 5,
+                gradient: 'from-primary/20 to-primary/5',
+                highlight: 'Economizo 3h/semana',
               },
               {
-                quote: "O protocolo de estratificação é excelente, mas o que mais me impressionou foi a simulação DSD. Meus pacientes adoram visualizar o resultado.",
+                quote: "O protocolo de estratificacao e excelente, mas o que mais me impressionou foi a simulacao DSD. Meus pacientes adoram visualizar o resultado.",
                 author: "Dra. Ana Paula Ribeiro",
-                role: "Clínica Geral • Rio de Janeiro, RJ",
-                rating: 5
+                role: "Clinica Geral",
+                clinic: "Odonto Excellence",
+                rating: 5,
+                gradient: 'from-violet-500/20 to-violet-500/5',
+                highlight: null,
               },
               {
-                quote: "Ferramenta essencial para quem trabalha com estética dental. A análise de cor e a indicação automática de tratamento economizam muito tempo.",
+                quote: "Ferramenta essencial para quem trabalha com estetica dental. A analise de cor e a indicacao automatica de tratamento economizam muito tempo.",
                 author: "Dr. Fernando Costa",
-                role: "Especialista em Dentística • Belo Horizonte, MG",
-                rating: 5
+                role: "Especialista em Dentistica",
+                clinic: "Instituto Costa Dental",
+                rating: 4,
+                gradient: 'from-emerald-500/20 to-emerald-500/5',
+                highlight: null,
               },
               {
-                quote: "Uso diariamente no meu consultório. A integração com meu inventário pessoal e a gestão de pacientes tornaram meu fluxo de trabalho muito mais eficiente.",
+                quote: "Uso diariamente no meu consultorio. A integracao com meu inventario pessoal e a gestao de pacientes tornaram meu fluxo de trabalho muito mais eficiente.",
                 author: "Dra. Juliana Santos",
-                role: "Cirurgiã-Dentista • Curitiba, PR",
-                rating: 5
+                role: "Cirurgia-Dentista",
+                clinic: "Juliana Santos Odontologia",
+                rating: 5,
+                gradient: 'from-amber-500/20 to-amber-500/5',
+                highlight: null,
               }
             ].map((testimonial, i) => (
               <div
                 key={i}
                 className={`scroll-reveal scroll-reveal-delay-${i + 1} relative bg-background rounded-xl p-6 border-l-4 border-l-primary/40`}
               >
-                <span className="absolute top-2 right-4 text-7xl leading-none font-serif text-primary/[0.05] select-none">"</span>
+                <span className="absolute top-2 right-4 text-7xl leading-none font-serif text-primary/[0.05] select-none">&ldquo;</span>
+                {testimonial.highlight && (
+                  <Badge variant="secondary" className="mb-3 text-xs">
+                    <Zap className="w-3 h-3 mr-1" />
+                    {testimonial.highlight}
+                  </Badge>
+                )}
                 <div className="flex gap-1 mb-3">
-                  {Array.from({ length: testimonial.rating }).map((_, j) => (
-                    <Star key={j} className="w-4 h-4 fill-primary text-primary" />
+                  {Array.from({ length: 5 }).map((_, j) => (
+                    <Star
+                      key={j}
+                      className={`w-4 h-4 ${j < testimonial.rating ? 'fill-primary text-primary' : 'text-muted-foreground/30'}`}
+                    />
                   ))}
                 </div>
-                <p className="text-muted-foreground mb-4 text-sm sm:text-base">"{testimonial.quote}"</p>
+                <p className="text-muted-foreground mb-4 text-sm sm:text-base">&ldquo;{testimonial.quote}&rdquo;</p>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm shrink-0">
+                  <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${testimonial.gradient} flex items-center justify-center text-primary font-semibold text-sm shrink-0`}>
                     {getInitials(testimonial.author)}
                   </div>
                   <div>
                     <p className="font-medium text-sm">{testimonial.author}</p>
                     <p className="text-xs text-muted-foreground">{testimonial.role}</p>
+                    <p className="text-xs text-muted-foreground/70">{testimonial.clinic}</p>
                   </div>
                 </div>
               </div>
@@ -307,15 +347,21 @@ export default function Landing() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_120%,hsl(235_56%_58%/0.08),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_120%,hsl(235_60%_68%/0.10),transparent)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_20%_40%,hsl(235_56%_58%/0.05),transparent)] dark:bg-[radial-gradient(ellipse_60%_40%_at_20%_40%,hsl(235_60%_68%/0.05),transparent)]" />
 
-        <div ref={ctaRef} className="scroll-reveal container mx-auto px-4 sm:px-6 text-center relative">
+        <div ref={ctaRef} className="scroll-reveal container mx-auto px-4 sm:px-6 text-center relative max-w-2xl">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold mb-3 sm:mb-4 font-display">
-            Pronto para começar?
+            Veja a IA em acao com seu proprio caso
           </h2>
           <p className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-8 max-w-lg mx-auto">
-            Crie sua conta e faça sua primeira avaliação em minutos.
+            Crie sua conta, tire uma foto e receba um protocolo completo em menos de 2 minutos.
           </p>
+          <ul className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 mb-8 text-sm text-muted-foreground">
+            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" />Analise visual com IA</li>
+            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" />Protocolo personalizado</li>
+            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" />Resultado em minutos</li>
+          </ul>
           <Link to="/register">
             <Button size="lg" className="px-6 sm:px-8 h-12 text-base btn-glow-gold">
+              <Sparkles className="w-4 h-4 mr-2" />
               Criar Conta Gratuita
             </Button>
           </Link>
