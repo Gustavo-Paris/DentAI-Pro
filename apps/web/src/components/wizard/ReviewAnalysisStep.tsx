@@ -810,7 +810,7 @@ export function ReviewAnalysisStep({
             {/* Birth date + calculated age */}
             <div className="space-y-2">
               <Label>
-                Data de Nascimento <span className="text-destructive">*</span>
+                Data de nascimento (opcional)
               </Label>
               <div className="flex gap-2 items-center">
                 <div className="relative flex-1">
@@ -909,14 +909,13 @@ export function ReviewAnalysisStep({
                 )}
               </div>
 
-              {dobError && (
-                <p className="text-xs text-destructive flex items-center gap-1">
-                  <AlertTriangle className="w-3 h-3" />
-                  Informe a data de nascimento para gerar o caso
+              {!patientBirthDate && !dobError && (
+                <p className="text-xs text-muted-foreground">
+                  Recomendado para protocolos mais precisos
                 </p>
               )}
 
-              {selectedPatientId && !patientBirthDate && !dobError && (
+              {selectedPatientId && !patientBirthDate && (
                 <p className="text-xs text-muted-foreground">
                   Adicione para preencher automaticamente nas próximas vezes
                 </p>

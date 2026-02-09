@@ -60,6 +60,16 @@ export async function getCatalog() {
   return (data as CatalogResin[]) || [];
 }
 
+export async function countByUserId(userId: string) {
+  const { count, error } = await supabase
+    .from('user_inventory')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId);
+
+  if (error) throw error;
+  return count || 0;
+}
+
 // ---------------------------------------------------------------------------
 // Mutations
 // ---------------------------------------------------------------------------

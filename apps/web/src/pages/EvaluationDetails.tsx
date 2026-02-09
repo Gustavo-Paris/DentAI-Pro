@@ -44,6 +44,7 @@ import {
   Loader2 as ShareLoader,
   Eye,
   X,
+  Sparkles,
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -136,6 +137,12 @@ export default function EvaluationDetails() {
         ]}
         query={{ data: detail.evaluations, isLoading: detail.isLoading }}
         headerActions={[
+          {
+            label: 'Nova Avaliação',
+            icon: Sparkles,
+            onClick: () => navigate('/new-case'),
+            variant: 'default',
+          },
           {
             label: 'Compartilhar',
             icon: detail.isSharing ? ShareLoader : Share2,

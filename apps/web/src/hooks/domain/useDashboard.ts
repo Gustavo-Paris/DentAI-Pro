@@ -78,6 +78,10 @@ export interface DashboardState {
   clinicalInsights: ClinicalInsights | null;
   weeklyTrends: WeeklyTrendPoint[];
 
+  // Welcome modal
+  showWelcome: boolean;
+  dismissWelcome: () => void;
+
   // Subscription tier
   creditsPerMonth: number;
   isActive: boolean;
@@ -341,6 +345,9 @@ export function useDashboard(): DashboardState {
   const [creditsBannerDismissed, setCreditsBannerDismissed] = useState(
     () => sessionStorage.getItem('credits-banner-dismissed') === 'true',
   );
+  const [welcomeDismissed, setWelcomeDismissed] = useState(
+    () => localStorage.getItem('auria-welcome-dismissed') === 'true',
+  );
 
   // --- Load draft on mount ---
   useEffect(() => {
@@ -386,6 +393,8 @@ export function useDashboard(): DashboardState {
 
   const isNewUser = !loading && sessions.length === 0 && metrics.pendingSessions === 0;
 
+  const showWelcome = isNewUser && !welcomeDismissed;
+
   const showCreditsBanner =
     !creditsBannerDismissed &&
     !loadingCredits &&
@@ -394,6 +403,11 @@ export function useDashboard(): DashboardState {
     creditsRemaining <= 5;
 
   // --- Actions ---
+  const dismissWelcome = useCallback(() => {
+    setWelcomeDismissed(true);
+    localStorage.setItem('auria-welcome-dismissed', 'true');
+  }, []);
+
   const dismissCreditsBanner = useCallback(() => {
     setCreditsBannerDismissed(true);
     sessionStorage.setItem('credits-banner-dismissed', 'true');
@@ -423,6 +437,8 @@ export function useDashboard(): DashboardState {
     loading,
     loadingCredits,
     isNewUser,
+    showWelcome,
+    dismissWelcome,
     showCreditsBanner,
     creditsRemaining,
     dismissCreditsBanner,

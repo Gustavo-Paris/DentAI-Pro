@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthenticatedFetch } from '@/hooks/useAuthenticatedFetch';
@@ -22,6 +22,7 @@ import { withRetry } from '@/lib/retry';
 
 import { INITIAL_FORM_DATA } from './wizard/constants';
 import { isAnterior, inferCavityClass, getFullRegion, getGenericProtocol } from './wizard/helpers';
+import { SAMPLE_CASE } from '@/data/sample-case';
 
 // Types re-exported from wizard/types.ts
 export type { SubmissionStep, WizardFlowState, WizardFlowActions } from './wizard/types';
@@ -36,6 +37,7 @@ import type { WizardFlowState, WizardFlowActions } from './wizard/types';
 export function useWizardFlow(): WizardFlowState & WizardFlowActions {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { invokeFunction } = useAuthenticatedFetch();
   const {
     canUseCredits,
@@ -89,6 +91,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
   });
   const [dobValidationError, setDobValidationError] = useState(false);
   const [isQuickCase, setIsQuickCase] = useState(false);
+  const [isSampleCase, setIsSampleCase] = useState(false);
   const [showRestoreModal, setShowRestoreModal] = useState(false);
   const [pendingDraft, setPendingDraft] = useState<WizardDraft | null>(null);
   const [originalToothTreatments, setOriginalToothTreatments] = useState<
@@ -101,6 +104,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
   // -------------------------------------------------------------------------
 
   const hasCheckedDraftRef = useRef(false);
+  const hasCheckedSampleRef = useRef(false);
   const hasShownCreditWarningRef = useRef(false);
   const isQuickCaseRef = useRef(false);
 
@@ -183,9 +187,11 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
 
   const validateForm = useCallback((): boolean => {
     if (!formData.patientAge || !patientBirthDate) {
-      setDobValidationError(true);
-      toast.error('Informe a data de nascimento do paciente');
-      return false;
+      // DOB is optional — show soft warning and default age to 30
+      toast.warning('Data de nascimento não informada. Usando idade padrão de 30 anos.', {
+        duration: 4000,
+      });
+      setFormData((prev) => ({ ...prev, patientAge: prev.patientAge || '30' }));
     }
     const teethToProcess = selectedTeeth.length > 0 ? selectedTeeth : [formData.tooth];
     if (teethToProcess.length === 0 || !teethToProcess[0]) {
@@ -1099,7 +1105,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
 
     const checkDraft = async () => {
       const draft = await loadDraft();
-      if (draft && draft.step >= 2) {
+      if (draft && draft.step >= 1) {
         setPendingDraft(draft);
         setShowRestoreModal(true);
       }
@@ -1107,9 +1113,24 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     checkDraft();
   }, [loadDraft]);
 
-  // Auto-save when state changes (after analysis)
+  // Sample case: pre-fill state and jump to review step
   useEffect(() => {
-    if (step >= 4 && user) {
+    if (hasCheckedSampleRef.current) return;
+    hasCheckedSampleRef.current = true;
+
+    if (searchParams.get('sample') === 'true') {
+      setIsSampleCase(true);
+      setAnalysisResult(SAMPLE_CASE.analysisResult);
+      setFormData(SAMPLE_CASE.formData);
+      setSelectedTeeth([...SAMPLE_CASE.selectedTeeth]);
+      setToothTreatments({ ...SAMPLE_CASE.toothTreatments });
+      setStep(5);
+    }
+  }, [searchParams]);
+
+  // Auto-save when state changes (from step 1 with image)
+  useEffect(() => {
+    if (step >= 1 && imageBase64 !== null && user) {
       saveDraft({
         step,
         formData,
@@ -1124,6 +1145,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     }
   }, [
     step,
+    imageBase64,
     formData,
     selectedTeeth,
     toothTreatments,
@@ -1220,6 +1242,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     creditsRemaining,
     creditsTotal,
     isQuickCase,
+    isSampleCase,
     canGoBack,
 
     // Actions

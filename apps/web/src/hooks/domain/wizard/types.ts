@@ -67,6 +67,9 @@ export interface WizardFlowState {
   // Quick Case
   isQuickCase: boolean;
 
+  // Sample Case
+  isSampleCase: boolean;
+
   // Navigation
   canGoBack: boolean;
 }
