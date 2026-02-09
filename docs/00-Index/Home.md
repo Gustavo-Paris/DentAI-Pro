@@ -39,7 +39,9 @@ Sistema de apoio à decisão clínica odontológica com Inteligência Artificial
 | [[#Architecture Plans]] | Design documents & implementation plans |
 | [[04-Development/Setup-Guide\|Developer Setup]] | Environment setup, scripts, conventions |
 | [[04-Development/Testing-Guide\|Testing Guide]] | Vitest conventions, patterns, utilities |
+| [[04-Development/Git-Workflow\|Git Workflow]] | Commits, branches, CI/CD, PR process |
 | [[02-Architecture/Database-Schema\|Database Schema]] | Tables, RPCs, RLS policies, credit system |
+| [[01-Getting-Started/Troubleshooting\|Troubleshooting]] | Known issues, gotchas, solutions |
 | [[#Operations]] | Build, deploy, CI/CD |
 | [[05-Operations/Runbooks/Deploy-Edge-Functions\|Deploy Runbook]] | Edge function deployment procedures |
 | [[05-Operations/Runbooks/Supabase-Auth\|Auth Runbook]] | JWT/ES256 auth troubleshooting |
