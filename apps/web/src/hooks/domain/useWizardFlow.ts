@@ -551,7 +551,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
             substrate_condition: isGengivoplasty ? null : (toothData?.substrate_condition || formData.substrateCondition),
             enamel_condition: isGengivoplasty ? null : (toothData?.enamel_condition || formData.enamelCondition),
             bruxism: formData.bruxism,
-            aesthetic_level: formData.aestheticLevel || 'alto',
+            aesthetic_level: formData.aestheticLevel || 'estético',
             budget: formData.budget || 'moderado',
             longevity_expectation: formData.longevityExpectation || 'longo-prazo',
             photo_frontal: uploadedPhotoPath,

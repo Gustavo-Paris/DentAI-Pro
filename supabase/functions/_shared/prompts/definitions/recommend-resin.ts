@@ -178,10 +178,10 @@ IMPORTANTE: Não recomende resinas Premium se o orçamento não for premium!`
 }
 
 function buildAdvancedStratificationSection(aestheticLevel: string): string {
-  if (aestheticLevel !== 'muito alto' && aestheticLevel !== 'alto') return ''
+  if (!['estético', 'alto', 'muito alto'].includes(aestheticLevel)) return ''
 
   return `
-=== ESTRATIFICAÇÃO AVANÇADA (NÍVEL ESTÉTICO ${aestheticLevel === 'muito alto' ? 'MUITO ALTO' : 'ALTO'}) ===
+=== ESTRATIFICAÇÃO AVANÇADA (NÍVEL ESTÉTICO ${aestheticLevel.toUpperCase()}) ===
 
 Para excelência estética, você pode COMBINAR DIFERENTES MARCAS por camada:
 
@@ -206,8 +206,16 @@ TABELA DE RESINAS RECOMENDADAS POR CAMADA:
 │ Dentes Clareados    │ WE (Estelite Bianco), BL (Forma)               │
 └─────────────────────┴─────────────────────────────────────────────────┘
 
-⚠️ REGRA: Para nível estético "alto" ou "muito alto", NÃO usar a mesma linha de produto para TODAS as camadas.
-Variar marcas conforme a tabela acima para otimizar cada camada com a resina mais indicada.
+⚠️ REGRA CRÍTICA — DIVERSIDADE DE MARCAS (OBRIGATÓRIO):
+- É PROIBIDO usar a mesma linha de produto (ex: "3M ESPE - Filtek Z350 XT") para TODAS as 5 camadas
+- CADA camada deve usar a resina MAIS INDICADA para sua função específica:
+  • Aumento Incisal: Trans (FORMA) ou Trans20 (IPS Empress Direct) — translucidez superior
+  • Cristas Proximais: XLE (Harmonize) ou BL-L (Empress Direct) — adaptação cromática
+  • Dentina/Corpo: WB (FORMA) ou Vittra APS — opacidade e volume
+  • Efeitos Incisais: Corantes IVOCLAR (IPS Color) — Z350 NÃO possui corantes próprios!
+  • Esmalte Vestibular Final: Palfique LX5 (WE) ou Estelite Omega (MW) — polimento superior
+- A Z350 pode ser usada em 1-2 camadas, mas NÃO em todas
+- EXCEÇÃO: Se o inventário do dentista só possui Z350, então usar Z350 para todas é aceitável — mas marcar nas observações
 
 === EFEITOS INCISAIS EXPANDIDA ===
 
@@ -436,22 +444,22 @@ ${advancedStratification}
 === PROTOCOLO DE ESTRATIFICA\u00c7\u00c3O - CAMADAS (ATUALIZADO V2) ===
 \u26a0\ufe0f CR\u00cdTICO: A cor escolhida DEVE corresponder ao tipo da camada E existir na linha de produto!
 
-ESTRUTURA OBRIGAT\u00d3RIA - 5 CAMADAS (simplificar para 3-4 se n\u00edvel est\u00e9tico baixo/m\u00e9dio):
+ESTRUTURA OBRIGAT\u00d3RIA - 5 CAMADAS (simplificar para 2-3 se n\u00edvel est\u00e9tico funcional):
 
-1. AUMENTO INCISAL (primeira etapa):
-   - Objetivo: Constru\u00e7\u00e3o da borda incisal
-   - Resinas: Esmalte transl\u00facido \u2014 CT (Z350), Trans (FORMA), Trans20 (Empress)
+1. AUMENTO INCISAL (primeira etapa, SE NECESSÁRIO):
+   - Objetivo: Construção da borda incisal, SE NECESSÁRIO
+   - Resinas: Esmalte translúcido — Trans (FORMA), CT (Z350), Trans20 (IPS Empress Direct)
    - Espessura: 0.2-0.3mm
-   - T\u00e9cnica: Aplicar incremento \u00fanico na borda do dente para aumentar ou alinhar a incisal, criando base para os mamelons. N\u00c3O fracionar em m\u00faltiplos incrementos \u2014 camada fina e \u00fanica
+   - Técnica: Incrementos de até 2mm, fotopolimerizar 20s. Aplicar incremento único na borda do dente para aumentar ou alinhar a incisal, criando base para os mamelons. NÃO fracionar em múltiplos incrementos — camada fina e única
 
-2. CRISTAS PROXIMAIS (defini\u00e7\u00e3o anat\u00f4mica - ANTES da dentina):
-   - Objetivo: Defini\u00e7\u00e3o das cristas mesial e distal
-   - Resinas: Esmalte um tom mais claro que o dente
+2. CRISTAS PROXIMAIS (definição anatômica - ANTES da dentina):
+   - Objetivo: Definição das cristas mesial e distal
+   - Resinas: XLE (Harmonize), BL-L (Empress Direct), WE (Z350) — esmalte um tom mais claro que o dente
    - Para pacientes com DENTES CLAREADOS ou que desejam cor mais clara:
-     \u2192 Op\u00e7\u00e3o padr\u00e3o: A1E (Z350)
-     \u2192 Op\u00e7\u00e3o clareada: BL-L (IPS Empress Direct) ou Bianco (Estelite)
+     → Opção padrão: XLE (Harmonize)
+     → Opção clareada: BL-L (IPS Empress Direct) ou Bianco (Estelite)
    - Espessura: 0.2mm
-   - T\u00e9cnica: Aplicar nas bordas proximais para criar profundidade
+   - Técnica: Aplicar nas bordas proximais para criar profundidade. O incremento pode ser tracionado com tira de poliéster para melhor adaptação da resina nas bordas proximais e resultado mais uniforme
 
 3. DENTINA/CORPO (estrutura principal - OPCIONAL para altera\u00e7\u00f5es m\u00ednimas):
    - Objetivo: Adicionar volume caso necess\u00e1rio e mascarar interface dente/resina
@@ -460,9 +468,10 @@ ESTRUTURA OBRIGAT\u00d3RIA - 5 CAMADAS (simplificar para 3-4 se n\u00edvel est\u
      \u2192 O esmalte pode ser aplicado diretamente sobre o dente
    - Em casos de mudan\u00e7a SIGNIFICATIVA (cavidade profunda, substrato comprometido):
      \u2192 Esta camada \u00e9 OBRIGAT\u00d3RIA
-   - Resinas: WB (Z350/Forma) ou Dentina clara (B1)
+   - Resinas: WB (FORMA), DA1/DA2 (Vittra APS), WB (Z350) ou Dentina clara (B1)
    - Espessura: 0.5-1.0mm
-   - Com mascaramento integrado se substrato exigir (N\u00c3O criar camada separada de opaco)
+   - Técnica: Nesta etapa, reproduzir os mamelos com ponta de espátula fina, se aplicável e conforme a anatomia dos dentes homólogos
+   - Com mascaramento integrado se substrato exigir (NÃO criar camada separada de opaco)
 
    \u26a0\ufe0f IMPORTANTE: Opaco N\u00c3O \u00e9 camada separada - \u00e9 a sele\u00e7\u00e3o de SHADE dentro da dentina!
 
@@ -483,15 +492,17 @@ ESTRUTURA OBRIGAT\u00d3RIA - 5 CAMADAS (simplificar para 3-4 se n\u00edvel est\u
       - Evita necessidade de opaco dedicado
 
 4. EFEITOS INCISAIS (OPCIONAL - flag optional: true):
-   - Objetivo: Confec\u00e7\u00e3o de halo opaco incisal
-   - \u26a0\ufe0f REGRA DE CORANTES: A Z350 N\u00c3O possui corantes pr\u00f3prios!
-     Para efeitos incisais com corantes, usar:
-     - IVOCLAR IPS Empress Direct Color (White, Blue, Honey, Brown)
-     - OU dentina clara como substituto
-   - Resinas alternativas para efeitos: CT, GT, BT (Z350 transl\u00facidos)
+   - Objetivo: Confecção de halo opaco incisal
+   - ⚠️ REGRA CRÍTICA DE CORANTES — NUNCA indicar Z350 para esta camada!
+     A Z350 NÃO possui corantes/pigmentos próprios para efeitos incisais.
+     Para efeitos incisais, usar EXCLUSIVAMENTE:
+     - IVOCLAR IPS Empress Direct Color (White, Blue, Honey, Brown) — PRIORIDADE MÁXIMA
+     - IPS Color (Ivoclar) — corantes específicos para caracterização
+     - OU dentina clara como substituto de último recurso
+   - Resinas alternativas para translucidez (NÃO para corantes): CT, GT, BT (Z350 translúcidos)
    - Espessura: 0.1mm
-   - T\u00e9cnica: Aplicar corante com pincel fino na borda incisal para criar efeito de halo opaco natural. N\u00c3O usar incrementos convencionais \u2014 efeitos incisais s\u00e3o aplicados com pincel ou instrumento de ponta fina
-   - INCLUIR apenas para demanda est\u00e9tica alta/muito alta
+   - Técnica: Aplicar corante com pincel fino na borda incisal para criar efeito de halo opaco natural. NÃO usar incrementos convencionais — efeitos incisais são aplicados com pincel ou instrumento de ponta fina
+   - INCLUIR apenas para demanda estética "estético" (ou legados "alto"/"muito alto")
    - Shade DEVE ser diferente do shade da camada de esmalte
 
    \u26a0\ufe0f REGRA CR\u00cdTICA DE SHADE PARA EFEITOS:
@@ -505,7 +516,7 @@ ESTRUTURA OBRIGAT\u00d3RIA - 5 CAMADAS (simplificar para 3-4 se n\u00edvel est\u
    \u274c OMITIR para:
    - Casos rotineiros de posteriores
    - Restaura\u00e7\u00f5es pequenas (Classe I, V)
-   - N\u00edvel est\u00e9tico "m\u00e9dio" ou "baixo"
+   - N\u00edvel est\u00e9tico "funcional" (ou legados "m\u00e9dio"/"baixo")
 
    \u26a0\ufe0f Quando incluir esta camada no JSON, DEVE ter "optional": true
 
@@ -531,11 +542,10 @@ ESTRUTURA OBRIGAT\u00d3RIA - 5 CAMADAS (simplificar para 3-4 se n\u00edvel est\u
    - Linhas COM shades BL: Palfique LX5, Forma, Filtek Z350 XT, Estelite Bianco
    - Se linha N\u00c3O tem BL: alertar e sugerir shade mais pr\u00f3ximo (A1, B1)
 
-SIMPLIFICA\u00c7\u00c3O POR N\u00cdVEL EST\u00c9TICO:
-- N\u00edvel "baixo": 2 camadas (Dentina/Corpo + Esmalte Vestibular Final)
-- N\u00edvel "m\u00e9dio": 3 camadas (Aumento Incisal + Dentina/Corpo + Esmalte Vestibular Final)
-- N\u00edvel "alto": 4 camadas (Aumento Incisal + Cristas Proximais + Dentina/Corpo + Esmalte Vestibular Final)
-- N\u00edvel "muito alto": 5 camadas (todas, incluindo Efeitos Incisais com optional: true)
+SIMPLIFICAÇÃO POR NÍVEL ESTÉTICO:
+- Nível "funcional": 2-3 camadas (Dentina/Corpo + Esmalte Vestibular Final + Aumento Incisal SE NECESSÁRIO)
+- Nível "estético": 4-5 camadas (Aumento Incisal + Cristas Proximais + Dentina/Corpo + Efeitos Incisais com optional: true + Esmalte Vestibular Final)
+NOTA BACKWARD-COMPAT: Se o nível for "baixo" ou "médio", tratar como "funcional". Se for "alto" ou "muito alto", tratar como "estético".
 
 TABELA DE CORES DE ESMALTE POR LINHA:
 \u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510
@@ -579,27 +589,19 @@ INSTRU\u00c7\u00d5ES PARA PROTOCOLO DE ESTRATIFICA\u00c7\u00c3O (V2):
 
 ESTRUTURA DO PROTOCOLO - 2 a 5 CAMADAS conforme n\u00edvel est\u00e9tico (ver se\u00e7\u00e3o SIMPLIFICA\u00c7\u00c3O POR N\u00cdVEL EST\u00c9TICO acima):
 
-N\u00cdVEL BAIXO (2 camadas):
+N\u00cdVEL FUNCIONAL (2-3 camadas):
 - Camada 1: Dentina/Corpo
 - Camada 2: Esmalte Vestibular Final
+- Camada 3 (SE NECESS\u00c1RIO): Aumento Incisal \u2014 incluir apenas se o caso exigir reconstru\u00e7\u00e3o de bordo incisal
 
-N\u00cdVEL M\u00c9DIO (3 camadas):
-- Camada 1: Aumento Incisal
-- Camada 2: Dentina/Corpo
-- Camada 3: Esmalte Vestibular Final
-
-N\u00cdVEL ALTO (4 camadas):
-- Camada 1: Aumento Incisal
-- Camada 2: Cristas Proximais
-- Camada 3: Dentina/Corpo
-- Camada 4: Esmalte Vestibular Final
-
-N\u00cdVEL MUITO ALTO (5 camadas):
-- Camada 1: Aumento Incisal
+N\u00cdVEL EST\u00c9TICO (4-5 camadas):
+- Camada 1: Aumento Incisal (SE NECESS\u00c1RIO)
 - Camada 2: Cristas Proximais
 - Camada 3: Dentina/Corpo
 - Camada 4: Efeitos Incisais (optional: true)
 - Camada 5: Esmalte Vestibular Final
+
+NOTA BACKWARD-COMPAT: Se o n\u00edvel for "baixo" ou "m\u00e9dio", tratar como "funcional". Se for "alto" ou "muito alto", tratar como "est\u00e9tico".
 
 \u26a0\ufe0f CR\u00cdTICO: N\u00c3O criar camada separada chamada "Opaco" ou "Mascaramento"!
 - Integrar mascaramento na descri\u00e7\u00e3o da camada Dentina/Corpo
@@ -723,10 +725,16 @@ Voc\u00ea DEVE incluir a se\u00e7\u00e3o "finishing" no protocolo com passos det
    - Pontas diamantadas finas (FF) para ajuste de anatomia
    - Discos de granula\u00e7\u00e3o grossa para contorno inicial
 2. POLIMENTO SEQUENCIAL:
-   - Discos: Grossa \u2192 M\u00e9dia \u2192 Fina \u2192 Ultrafina (ex: Sof-Lex, OptiDisc)
+   - Discos: Grossa → Média → Fina → Ultrafina (ex: Sof-Lex, OptiDisc)
    - Pontas siliconadas/borrachas polidoras para faces livres
-   - Pasta diamantada ou \u00f3xido de alum\u00ednio para brilho
-3. BRILHO FINAL:
+   - Pasta diamantada ou óxido de alumínio para brilho
+3. PONTAS E ESPIRAIS DE BORRACHA (após os discos):
+   - Marcas sugeridas: DHPro, American Burrs
+   - Protocolo: 40-60 segundos cada ponta
+   - Velocidade controlada (baixa rotação)
+   - SEM aquecer a superfície da resina — usar movimentos intermitentes
+   - Ordem: Ponta grossa → Ponta média → Ponta fina → Espiral de polimento
+4. BRILHO FINAL:
    - Escova de feltro + pasta de polimento de alta performance
 
 Especificar para cada passo: ferramenta, granula\u00e7\u00e3o, velocidade (alta/baixa), tempo, e dica t\u00e9cnica.
@@ -819,13 +827,17 @@ Responda em formato JSON:
         {"order": 1, "tool": "Ponta diamantada FF 2200FF", "grit": "Fina", "speed": "Alta rota\u00e7\u00e3o com spray", "time": "20-30s", "tip": "Remover excessos cervicais e vestibulares"}
       ],
       "polishing": [
-        {"order": 1, "tool": "Disco Sof-Lex Vermelho Escuro", "grit": "Grossa", "speed": "Baixa rota\u00e7\u00e3o", "time": "30s", "tip": "Sentido cervical-incisal"},
-        {"order": 2, "tool": "Disco Sof-Lex Vermelho Claro", "grit": "M\u00e9dia", "speed": "Baixa rota\u00e7\u00e3o", "time": "30s", "tip": "Manter disco \u00famido"},
-        {"order": 3, "tool": "Disco Sof-Lex Laranja", "grit": "Fina", "speed": "Baixa rota\u00e7\u00e3o", "time": "30s", "tip": "Evitar press\u00e3o excessiva"},
-        {"order": 4, "tool": "Disco Sof-Lex Amarelo", "grit": "Ultrafina", "speed": "Baixa rota\u00e7\u00e3o", "time": "30s", "tip": "Polimento final"}
+        {"order": 1, "tool": "Disco Sof-Lex Vermelho Escuro", "grit": "Grossa", "speed": "Baixa rotação", "time": "30s", "tip": "Sentido cervical-incisal"},
+        {"order": 2, "tool": "Disco Sof-Lex Vermelho Claro", "grit": "Média", "speed": "Baixa rotação", "time": "30s", "tip": "Manter disco úmido"},
+        {"order": 3, "tool": "Disco Sof-Lex Laranja", "grit": "Fina", "speed": "Baixa rotação", "time": "30s", "tip": "Evitar pressão excessiva"},
+        {"order": 4, "tool": "Disco Sof-Lex Amarelo", "grit": "Ultrafina", "speed": "Baixa rotação", "time": "30s", "tip": "Polimento final"},
+        {"order": 5, "tool": "Ponta de borracha grossa (DHPro/American Burrs)", "speed": "Baixa rotação", "time": "40-60s", "tip": "Movimentos intermitentes, SEM aquecer a resina"},
+        {"order": 6, "tool": "Ponta de borracha média", "speed": "Baixa rotação", "time": "40-60s", "tip": "Manter superfície úmida"},
+        {"order": 7, "tool": "Ponta de borracha fina", "speed": "Baixa rotação", "time": "40-60s", "tip": "Polimento intermediário"},
+        {"order": 8, "tool": "Espiral de polimento", "speed": "Baixa rotação", "time": "40-60s", "tip": "Brilho pré-final"}
       ],
-      "final_glaze": "Pasta Diamond Excel com feltro em baixa rota\u00e7\u00e3o por 40s",
-      "maintenance_advice": "Polimento de retoque a cada 6 meses para manter brilho"
+      "final_glaze": "Pasta Diamond Excel com feltro em baixa rotação por 40s",
+      "maintenance_advice": "Protocolo de cuidados pós-resina: manutenção profissional a cada 6 meses (profilaxia + polimento de retoque), evitar pastas dentais abrasivas (preferir pastas de baixa abrasividade RDA <70), cuidado ao morder alimentos duros (maçã, cenoura crua, gelo — de preferência cortar em pedaços menores), evitar morder objetos (canetas, unhas). Consultar o dentista em caso de sensibilidade ou alteração de cor."
     },
     "checklist": [
       "Passo 1: Profilaxia com pasta sem fl\u00faor",
@@ -846,6 +858,14 @@ Responda em formato JSON:
     "confidence": "alta/m\u00e9dia/baixa"
   }
 }
+
+=== PROTOCOLO DE CUIDADOS PÓS-RESINA (OBRIGATÓRIO) ===
+O campo "maintenance_advice" DEVE incluir TODOS os itens abaixo:
+1. Manutenção profissional a cada 6 meses (profilaxia + polimento de retoque)
+2. Evitar pastas abrasivas (preferir RDA < 70)
+3. Cuidado com alimentos duros (preferência por cortar ao invés de morder)
+4. Evitar hábitos parafuncionais (roer unhas, morder canetas)
+5. Retorno em caso de sensibilidade ou alteração de cor
 
 ALERTA DE GUIA DE SILICONE (quando aplic\u00e1vel):
 Se o tratamento \u00e9 reanatomiza\u00e7\u00e3o em dente ANTERIOR (11-13, 21-23) com aumento de volume significativo:

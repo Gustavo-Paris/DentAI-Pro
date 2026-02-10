@@ -199,6 +199,16 @@ Quando indicada, GERE UMA SUGESTÃO ESTRUTURADA (não apenas observação textua
 
 ⚠️ REGRA IMPORTANTE: Se detectar assimetria gengival >1mm, zênites desalinhados, ou exposição gengival excessiva, DEVE incluir sugestão no array suggestions, INDEPENDENTEMENTE da classificação de smile_line.
 
+⚠️ REGRA PARA INCISIVOS LATERAIS (12, 22) — GENGIVOPLASTIA:
+- Incisivos laterais são NATURALMENTE mais curtos que os centrais (11, 21) — a diferença de 1-2mm é NORMAL e DESEJÁVEL para proporção dental adequada
+- NÃO indicar gengivoplastia nos laterais APENAS para igualar a altura dos centrais
+- Gengivoplastia nos laterais SOMENTE se:
+  • Assimetria entre 12 e 22 (laterais entre si) > 1mm
+  • Proporção largura/altura do lateral > 90% (muito quadrado/curto)
+  • Excesso gengival evidente com sorriso gengival > 3mm que afeta OS LATERAIS especificamente
+- A proporção ideal é: Central > Lateral > Canino (progressão natural de comprimento)
+- Preservar a diferença natural de altura entre central e lateral MELHORA a estética do sorriso
+
 ⚠️ REGRA DE CORREÇÃO COMPLETA DO ARCO (OBRIGATÓRIO):
 - Ao detectar assimetria gengival em QUALQUER dente, avaliar e sugerir correção para TODOS os dentes do arco estético (13-23)
 - Não deixar zênites assimétricos na simulação — harmonizar contralaterais
@@ -307,6 +317,17 @@ Inclua caninos/pré-molares com prioridade "baixa" se a melhoria for apenas para
 3. PROIBIDO: Listar apenas dente 11 quando 11, 21, 12 e 22 todos precisam do mesmo tratamento
    - Se o problema é bilateral (ex: desgaste incisal generalizado), AMBOS os lados devem ser listados
    - Cada dente recebe sua própria sugestão separada
+
+=== SUGESTÃO DE ENCERAMENTO LABORATORIAL (OBRIGATÓRIO quando aplicável) ===
+Em caso de GRANDES mudanças no DSD e/ou fechamento de diastemas GRANDES (>2mm):
+- Sugerir ao dentista moldagem prévia e envio de fotos ao laboratório
+- Objetivo: enceramento diagnóstico e confecção de guias de silicone
+- Incluir nos "alerts" da análise DSD:
+  "Caso com mudanças significativas — recomenda-se moldagem prévia, envio ao laboratório para enceramento e confecção de guias de silicone para otimizar o atendimento"
+- Critérios de ativação:
+  • 4+ dentes com mudanças propostas
+  • OU fechamento de diastema >2mm
+  • OU mudança significativa de proporção/comprimento (>1.5mm de aumento)
 
 === AVALIAÇÃO DE VIABILIDADE DO DSD ===
 Antes de sugerir tratamentos, avalie se o caso É ADEQUADO para simulação visual:
