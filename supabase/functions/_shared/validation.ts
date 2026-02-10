@@ -98,7 +98,7 @@ const VALID_CAVITY_CLASSES = [
   // Restaurador tradicional
   "Classe I", "Classe II", "Classe III", "Classe IV", "Classe V", "Classe VI",
   // Procedimentos estéticos
-  "Faceta Direta", "Recontorno Estético", "Fechamento de Diastema", "Reparo de Restauração"
+  "Faceta Direta", "Recontorno Estético", "Fechamento de Diastema", "Reparo de Restauração", "Lente de Contato"
 ];
 const VALID_RESTORATION_SIZES = ["Pequena", "Média", "Grande", "Extensa"];
 const VALID_SUBSTRATES = ["Esmalte", "Dentina", "Esmalte e Dentina", "Dentina profunda"];
