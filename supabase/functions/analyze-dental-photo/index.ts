@@ -126,7 +126,6 @@ serve(async (req) => {
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 
     // Validate authentication
     const authHeader = req.headers.get("Authorization");
@@ -134,23 +133,19 @@ serve(async (req) => {
       return createErrorResponse(ERROR_MESSAGES.UNAUTHORIZED, 401, corsHeaders);
     }
 
-    // Verify JWT claims
-    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
+    // Create service role client for all operations
+    const supabaseService = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "");
+    supabaseForRefund = supabaseService;
 
+    // Verify user via getUser()
     const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
-    
-    if (claimsError || !claimsData?.claims) {
+    const { data: { user }, error: authError } = await supabaseService.auth.getUser(token);
+
+    if (authError || !user) {
       return createErrorResponse(ERROR_MESSAGES.INVALID_TOKEN, 401, corsHeaders);
     }
 
-    const userId = claimsData.claims.sub as string;
-
-    // Check rate limit FIRST (before consuming credits)
-    const supabaseService = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "");
-    supabaseForRefund = supabaseService;
+    const userId = user.id;
     userIdForRefund = userId;
 
     const rateLimitResult = await checkRateLimit(supabaseService, userId, "analyze-dental-photo", RATE_LIMITS.AI_HEAVY);
@@ -431,6 +426,11 @@ serve(async (req) => {
     }
 
     if (!analysisResult) {
+      // Refund credits — AI returned unusable result but user already paid
+      if (creditsConsumed && supabaseForRefund && userIdForRefund) {
+        await refundCredits(supabaseForRefund, userIdForRefund, "case_analysis", reqId);
+        logger.log(`[${reqId}] Refunded analysis credits for user ${userIdForRefund} — AI returned no usable result`);
+      }
       return createErrorResponse(ERROR_MESSAGES.ANALYSIS_FAILED, 500, corsHeaders);
     }
 

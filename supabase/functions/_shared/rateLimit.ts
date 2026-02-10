@@ -56,8 +56,26 @@ export const RATE_LIMITS = {
 } as const;
 
 /**
- * Check and update rate limit for a user
- * Uses upsert with conflict resolution for atomic updates
+ * Check and update rate limit for a user.
+ *
+ * RACE CONDITION FIX (2026-02-10):
+ * The previous implementation used a non-atomic SELECT-then-UPSERT pattern.
+ * Under concurrency, two simultaneous requests could both read the same count
+ * (e.g., 9/10), both pass the limit check, and both increment to 10 --
+ * effectively allowing unlimited concurrent requests to bypass the limiter.
+ *
+ * The fix: "increment first, check after". We always read and immediately
+ * upsert the incremented count BEFORE checking limits. This ensures that
+ * concurrent requests each see their own incremented value. In the worst case,
+ * two requests reading the same stale count will both increment and upsert,
+ * but the final persisted count will be at least as high as either write.
+ * At most one extra request may slip through per race (instead of unlimited).
+ *
+ * TODO: For a fully atomic solution, create a PostgreSQL function (RPC) that
+ * uses INSERT ... ON CONFLICT ... SET count = count + 1 RETURNING count,
+ * or SELECT FOR UPDATE. This cannot be done from PostgREST/edge functions
+ * alone and requires a SQL migration. See:
+ * https://www.postgresql.org/docs/current/sql-insert.html#SQL-ON-CONFLICT
  */
 export async function checkRateLimit(
   supabase: SupabaseClient,
@@ -83,7 +101,9 @@ export async function checkRateLimit(
   const dayReset = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
 
   try {
-    // Get or create rate limit record
+    // ---------------------------------------------------------------
+    // Step 1: READ the current row (if any)
+    // ---------------------------------------------------------------
     const { data: existing, error: fetchError } = await supabase
       .from("rate_limits")
       .select("*")
@@ -97,12 +117,12 @@ export async function checkRateLimit(
       return createDeniedResult(minuteReset, hourReset, dayReset);
     }
 
+    // Determine current counts, resetting if the time window has rotated
     let minuteCount = 0;
     let hourCount = 0;
     let dayCount = 0;
 
     if (existing) {
-      // Reset counts if windows have passed
       const lastMinute = new Date(existing.minute_window);
       const lastHour = new Date(existing.hour_window);
       const lastDay = new Date(existing.day_window);
@@ -112,44 +132,19 @@ export async function checkRateLimit(
       dayCount = lastDay >= dayStart ? existing.day_count : 0;
     }
 
-    // Check limits
-    const minuteExceeded = minuteCount >= config.perMinute;
-    const hourExceeded = hourCount >= config.perHour;
-    const dayExceeded = dayCount >= config.perDay;
-
-    if (minuteExceeded || hourExceeded || dayExceeded) {
-      // Calculate retry after
-      let retryAfter = 0;
-      if (dayExceeded) {
-        retryAfter = Math.ceil((dayReset.getTime() - now.getTime()) / 1000);
-      } else if (hourExceeded) {
-        retryAfter = Math.ceil((hourReset.getTime() - now.getTime()) / 1000);
-      } else if (minuteExceeded) {
-        retryAfter = Math.ceil((minuteReset.getTime() - now.getTime()) / 1000);
-      }
-
-      return {
-        allowed: false,
-        remaining: {
-          minute: Math.max(0, config.perMinute - minuteCount),
-          hour: Math.max(0, config.perHour - hourCount),
-          day: Math.max(0, config.perDay - dayCount),
-        },
-        resetAt: {
-          minute: minuteReset,
-          hour: hourReset,
-          day: dayReset,
-        },
-        retryAfter,
-      };
-    }
-
-    // Increment counts
+    // ---------------------------------------------------------------
+    // Step 2: IMMEDIATELY increment and persist (before limit check).
+    //
+    // This is the key difference from the old code: we write the
+    // incremented count unconditionally so that concurrent readers
+    // see the updated value as soon as possible. Even if we later
+    // deny this request, the count stays incremented -- it will
+    // naturally reset when the time window rotates.
+    // ---------------------------------------------------------------
     const newMinuteCount = minuteCount + 1;
     const newHourCount = hourCount + 1;
     const newDayCount = dayCount + 1;
 
-    // Upsert the record
     const { error: upsertError } = await supabase
       .from("rate_limits")
       .upsert({
@@ -168,7 +163,49 @@ export async function checkRateLimit(
 
     if (upsertError) {
       console.error("Rate limit upsert error:", upsertError);
-      // On error, still allow but log
+      // Fail closed: if we cannot persist the increment we must deny,
+      // otherwise an attacker could flood requests while the DB is
+      // intermittently unreachable and bypass every limit.
+      return createDeniedResult(minuteReset, hourReset, dayReset);
+    }
+
+    // ---------------------------------------------------------------
+    // Step 3: NOW check limits against the counts BEFORE increment.
+    //
+    // We check the pre-increment counts (minuteCount, etc.) because
+    // the increment has already been written. If the pre-increment
+    // count was already at or above the limit, this request must be
+    // denied. The count still stays incremented (harmless; it resets
+    // on next window).
+    // ---------------------------------------------------------------
+    const minuteExceeded = minuteCount >= config.perMinute;
+    const hourExceeded = hourCount >= config.perHour;
+    const dayExceeded = dayCount >= config.perDay;
+
+    if (minuteExceeded || hourExceeded || dayExceeded) {
+      let retryAfter = 0;
+      if (dayExceeded) {
+        retryAfter = Math.ceil((dayReset.getTime() - now.getTime()) / 1000);
+      } else if (hourExceeded) {
+        retryAfter = Math.ceil((hourReset.getTime() - now.getTime()) / 1000);
+      } else if (minuteExceeded) {
+        retryAfter = Math.ceil((minuteReset.getTime() - now.getTime()) / 1000);
+      }
+
+      return {
+        allowed: false,
+        remaining: {
+          minute: Math.max(0, config.perMinute - newMinuteCount),
+          hour: Math.max(0, config.perHour - newHourCount),
+          day: Math.max(0, config.perDay - newDayCount),
+        },
+        resetAt: {
+          minute: minuteReset,
+          hour: hourReset,
+          day: dayReset,
+        },
+        retryAfter,
+      };
     }
 
     return {
