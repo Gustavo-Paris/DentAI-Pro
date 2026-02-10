@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getSharedEvaluation, type SharedEvaluationRow } from '@/data/evaluations';
+import { getSharedEvaluation, getSharedDSD, type SharedEvaluationRow, type SharedDSDData } from '@/data/evaluations';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { BRAND_NAME } from '@/lib/branding';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { supabase } from '@/data/client';
+import { SIGNED_URL_EXPIRY_SECONDS } from '@/lib/constants';
+import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
+import { ProportionsCard } from '@/components/dsd/ProportionsCard';
+import type { DSDAnalysis, SimulationLayer } from '@/types/dsd';
+import { LAYER_LABELS } from '@/types/dsd';
 import {
   CheckCircle,
   Calendar,
@@ -34,17 +40,26 @@ export default function SharedEvaluation() {
   const [loading, setLoading] = useState(true);
   const [expired, setExpired] = useState(false);
   const [evaluations, setEvaluations] = useState<SharedEvaluationRow[]>([]);
+  const [dsdData, setDsdData] = useState<SharedDSDData | null>(null);
+  const [beforeImageUrl, setBeforeImageUrl] = useState<string | null>(null);
+  const [simulationUrl, setSimulationUrl] = useState<string | null>(null);
+  const [layerUrls, setLayerUrls] = useState<Record<string, string>>({});
+  const [activeLayerIndex, setActiveLayerIndex] = useState(0);
 
   useEffect(() => {
     const fetchSharedData = async () => {
       if (!token) return;
 
       try {
-        const rows = await getSharedEvaluation(token);
+        const [rows, dsd] = await Promise.all([
+          getSharedEvaluation(token),
+          getSharedDSD(token),
+        ]);
         if (rows.length === 0) {
           setExpired(true);
         } else {
           setEvaluations(rows);
+          if (dsd) setDsdData(dsd);
         }
       } catch {
         setExpired(true);
@@ -55,6 +70,42 @@ export default function SharedEvaluation() {
 
     fetchSharedData();
   }, [token]);
+
+  // Resolve signed URLs for DSD images
+  useEffect(() => {
+    if (!dsdData) return;
+    const resolve = async () => {
+      // Before image (clinical photo)
+      if (dsdData.photo_frontal) {
+        const { data } = await supabase.storage
+          .from('clinical-photos')
+          .createSignedUrl(dsdData.photo_frontal, SIGNED_URL_EXPIRY_SECONDS);
+        if (data?.signedUrl) setBeforeImageUrl(data.signedUrl);
+      }
+      // Main simulation URL
+      if (dsdData.dsd_simulation_url) {
+        const { data } = await supabase.storage
+          .from('dsd-simulations')
+          .createSignedUrl(dsdData.dsd_simulation_url, SIGNED_URL_EXPIRY_SECONDS);
+        if (data?.signedUrl) setSimulationUrl(data.signedUrl);
+      }
+      // Layer URLs
+      if (dsdData.dsd_simulation_layers?.length) {
+        const urls: Record<string, string> = {};
+        await Promise.all(
+          dsdData.dsd_simulation_layers.map(async (layer) => {
+            if (!layer.simulation_url) return;
+            const { data } = await supabase.storage
+              .from('dsd-simulations')
+              .createSignedUrl(layer.simulation_url, SIGNED_URL_EXPIRY_SECONDS);
+            if (data?.signedUrl) urls[layer.type] = data.signedUrl;
+          })
+        );
+        setLayerUrls(urls);
+      }
+    };
+    resolve();
+  }, [dsdData]);
 
   if (loading) {
     return (
@@ -120,6 +171,50 @@ export default function SharedEvaluation() {
             </div>
           </CardHeader>
         </Card>
+
+        {/* DSD Simulation Section */}
+        {dsdData?.dsd_analysis && beforeImageUrl && simulationUrl && (() => {
+          const analysis = dsdData.dsd_analysis as unknown as DSDAnalysis;
+          const layers = (dsdData.dsd_simulation_layers || []) as unknown as SimulationLayer[];
+          const activeLayer = layers[activeLayerIndex];
+          const activeAfterImage = activeLayer?.type && layerUrls[activeLayer.type]
+            ? layerUrls[activeLayer.type]
+            : simulationUrl;
+
+          return (
+            <Card className="mb-6 shadow-sm rounded-xl overflow-hidden">
+              <CardHeader>
+                <CardTitle className="text-lg font-display">Simulação DSD</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {layers.length > 1 && (
+                  <div className="flex flex-wrap gap-2">
+                    {layers.map((layer, idx) => (
+                      <Button
+                        key={layer.type}
+                        variant={idx === activeLayerIndex ? 'default' : 'outline'}
+                        size="sm"
+                        className="text-xs"
+                        onClick={() => setActiveLayerIndex(idx)}
+                      >
+                        {LAYER_LABELS[layer.type as keyof typeof LAYER_LABELS] || layer.label}
+                        {layer.includes_gengivoplasty && (
+                          <Badge variant="secondary" className="ml-1 text-[10px] px-1">Gengivo</Badge>
+                        )}
+                      </Button>
+                    ))}
+                  </div>
+                )}
+                <ComparisonSlider
+                  beforeImage={beforeImageUrl}
+                  afterImage={activeAfterImage}
+                  afterLabel={activeLayer?.label || 'Simulação DSD'}
+                />
+                <ProportionsCard analysis={analysis} />
+              </CardContent>
+            </Card>
+          );
+        })()}
 
         <div className="space-y-3">
           {evaluations.map((evaluation, index) => {

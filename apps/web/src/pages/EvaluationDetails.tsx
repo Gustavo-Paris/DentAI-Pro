@@ -97,6 +97,30 @@ function getStatusBadge(evaluation: EvaluationItem, getChecklistProgress: (e: Ev
 }
 
 // =============================================================================
+// Grouping helper — groups evaluations by treatment type
+// =============================================================================
+
+interface EvalGroup {
+  treatmentType: string;
+  label: string;
+  evaluations: EvaluationItem[];
+}
+
+function groupByTreatment(evaluations: EvaluationItem[]): EvalGroup[] {
+  const map = new Map<string, EvaluationItem[]>();
+  for (const ev of evaluations) {
+    const key = ev.treatment_type || 'outros';
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(ev);
+  }
+  return Array.from(map.entries()).map(([treatmentType, items]) => ({
+    treatmentType,
+    label: getTreatmentConfig(treatmentType).shortLabel,
+    evaluations: items,
+  }));
+}
+
+// =============================================================================
 // Page Adapter
 // =============================================================================
 
@@ -264,7 +288,7 @@ export default function EvaluationDetails() {
             {/* Cases Table - Desktop */}
             <Card className="hidden sm:block shadow-sm rounded-xl">
               <CardHeader>
-                <CardTitle className="text-lg font-display">Casos Gerados</CardTitle>
+                <CardTitle className="text-lg font-display">Tratamentos Gerados</CardTitle>
               </CardHeader>
               <CardContent className="p-0">
                 <Table>
@@ -283,27 +307,161 @@ export default function EvaluationDetails() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {detail.evaluations.map((evaluation) => (
-                      <TableRow
+                    {groupByTreatment(detail.evaluations).map((group) => {
+                      const showGroupHeader = group.evaluations.length > 1;
+                      const groupTeeth = group.evaluations.map(e => e.tooth === 'GENGIVO' ? 'Gengiva' : e.tooth).join(', ');
+                      const groupIds = group.evaluations.map(e => e.id);
+                      const allSelected = groupIds.every(id => detail.selectedIds.has(id));
+                      return [
+                        showGroupHeader && (
+                          <TableRow key={`group-${group.treatmentType}`} className="bg-muted/40 border-t">
+                            <TableCell onClick={(e) => e.stopPropagation()}>
+                              <Checkbox
+                                checked={allSelected}
+                                onCheckedChange={() => {
+                                  for (const id of groupIds) {
+                                    if (allSelected || !detail.selectedIds.has(id)) {
+                                      detail.toggleSelection(id);
+                                    }
+                                  }
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell colSpan={3} className="py-2">
+                              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                                {group.label} — {group.evaluations.length} dentes: {groupTeeth}
+                              </span>
+                              <span className="text-xs text-muted-foreground ml-2">(mesmo protocolo)</span>
+                            </TableCell>
+                            <TableCell className="text-right py-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-xs h-7"
+                                onClick={() => navigate(`/result/${group.evaluations[0].id}`)}
+                              >
+                                <Eye className="w-3 h-3 mr-1" />
+                                Ver Protocolo
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ),
+                        ...group.evaluations.map((evaluation) => (
+                          <TableRow
+                            key={evaluation.id}
+                            className="hover:bg-secondary/30 transition-colors cursor-pointer"
+                            onClick={() => navigate(`/result/${evaluation.id}`)}
+                          >
+                            <TableCell onClick={(e) => e.stopPropagation()}>
+                              <Checkbox
+                                checked={detail.selectedIds.has(evaluation.id)}
+                                onCheckedChange={() => detail.toggleSelection(evaluation.id)}
+                              />
+                            </TableCell>
+                            <TableCell className="font-medium">{evaluation.tooth === 'GENGIVO' ? 'Gengiva' : evaluation.tooth}</TableCell>
+                            <TableCell>{getTreatmentBadge(evaluation)}</TableCell>
+                            <TableCell>
+                              {getStatusBadge(evaluation, detail.getChecklistProgress)}
+                            </TableCell>
+                            <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon" aria-label="Mais opções">
+                                    <MoreHorizontal className="w-4 h-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => detail.handleExportPDF(evaluation.id)}>
+                                    <FileDown className="w-4 h-4 mr-2" />
+                                    Exportar PDF
+                                  </DropdownMenuItem>
+                                  {evaluation.status !== 'completed' && (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <DropdownMenuItem
+                                          onClick={() => handleCompleteClick(evaluation.id)}
+                                        >
+                                          <CheckCircle className="w-4 h-4 mr-2" />
+                                          Marcar como finalizado
+                                        </DropdownMenuItem>
+                                      </TooltipTrigger>
+                                      {!detail.isChecklistComplete(evaluation) && (
+                                        <TooltipContent>
+                                          {detail.getChecklistProgress(evaluation).current} de {detail.getChecklistProgress(evaluation).total} itens completos no checklist
+                                        </TooltipContent>
+                                      )}
+                                    </Tooltip>
+                                  )}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                          </TableRow>
+                        )),
+                      ];
+                    })}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+
+            {/* Cases Cards - Mobile */}
+            <div className="sm:hidden space-y-3">
+              <h3 className="font-semibold font-display text-lg">Tratamentos Gerados</h3>
+              {groupByTreatment(detail.evaluations).map((group) => {
+                const showGroupHeader = group.evaluations.length > 1;
+                const groupTeeth = group.evaluations.map(e => e.tooth === 'GENGIVO' ? 'Gengiva' : e.tooth).join(', ');
+                return (
+                  <div key={`mgroup-${group.treatmentType}`}>
+                    {showGroupHeader && (
+                      <div className="flex items-center justify-between px-2 py-2 mb-1 bg-muted/40 rounded-lg">
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                          {group.label} — {group.evaluations.length} dentes: {groupTeeth}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs h-7"
+                          onClick={() => navigate(`/result/${group.evaluations[0].id}`)}
+                        >
+                          <Eye className="w-3 h-3 mr-1" />
+                          Ver Protocolo
+                        </Button>
+                      </div>
+                    )}
+                    {group.evaluations.map((evaluation) => {
+                      const treatmentConfig = getTreatmentConfig(evaluation.treatment_type);
+                      const borderColor = treatmentConfig.variant === 'default' ? 'border-l-primary' : 'border-l-amber-500';
+                      return (
+                      <Card
                         key={evaluation.id}
-                        className="hover:bg-secondary/30 transition-colors cursor-pointer"
+                        className={`p-4 shadow-sm rounded-xl border-l-[3px] ${borderColor} cursor-pointer hover:shadow-md transition-shadow mb-2`}
                         onClick={() => navigate(`/result/${evaluation.id}`)}
                       >
-                        <TableCell onClick={(e) => e.stopPropagation()}>
-                          <Checkbox
-                            checked={detail.selectedIds.has(evaluation.id)}
-                            onCheckedChange={() => detail.toggleSelection(evaluation.id)}
-                          />
-                        </TableCell>
-                        <TableCell className="font-medium">{evaluation.tooth === 'GENGIVO' ? 'Gengiva' : evaluation.tooth}</TableCell>
-                        <TableCell>{getTreatmentBadge(evaluation)}</TableCell>
-                        <TableCell>
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <div onClick={(e) => e.stopPropagation()}>
+                              <Checkbox
+                                checked={detail.selectedIds.has(evaluation.id)}
+                                onCheckedChange={() => detail.toggleSelection(evaluation.id)}
+                              />
+                            </div>
+                            {getTreatmentBadge(evaluation)}
+                            <p className="font-semibold">{formatToothLabel(evaluation.tooth)}</p>
+                          </div>
                           {getStatusBadge(evaluation, detail.getChecklistProgress)}
-                        </TableCell>
-                        <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                        </div>
+
+                        {evaluation.treatment_type === 'resina' && evaluation.resins && (
+                          <div className="mb-3 p-2 bg-muted/50 rounded">
+                            <p className="text-sm font-medium">{evaluation.resins.name}</p>
+                            <p className="text-xs text-muted-foreground">{evaluation.resins.manufacturer}</p>
+                          </div>
+                        )}
+
+                        <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" aria-label="Mais opções">
+                              <Button variant="outline" size="sm" aria-label="Mais opções">
                                 <MoreHorizontal className="w-4 h-4" />
                               </Button>
                             </DropdownMenuTrigger>
@@ -313,87 +471,18 @@ export default function EvaluationDetails() {
                                 Exportar PDF
                               </DropdownMenuItem>
                               {evaluation.status !== 'completed' && (
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <DropdownMenuItem
-                                      onClick={() => handleCompleteClick(evaluation.id)}
-                                    >
-                                      <CheckCircle className="w-4 h-4 mr-2" />
-                                      Marcar como finalizado
-                                    </DropdownMenuItem>
-                                  </TooltipTrigger>
-                                  {!detail.isChecklistComplete(evaluation) && (
-                                    <TooltipContent>
-                                      {detail.getChecklistProgress(evaluation).current} de {detail.getChecklistProgress(evaluation).total} itens completos no checklist
-                                    </TooltipContent>
-                                  )}
-                                </Tooltip>
+                                <DropdownMenuItem onClick={() => handleCompleteClick(evaluation.id)}>
+                                  <CheckCircle className="w-4 h-4 mr-2" />
+                                  Marcar como finalizado
+                                </DropdownMenuItem>
                               )}
                             </DropdownMenuContent>
                           </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-
-            {/* Cases Cards - Mobile */}
-            <div className="sm:hidden space-y-3">
-              <h3 className="font-semibold font-display text-lg">Casos Gerados</h3>
-              {detail.evaluations.map((evaluation) => {
-                const treatmentConfig = getTreatmentConfig(evaluation.treatment_type);
-                const borderColor = treatmentConfig.variant === 'default' ? 'border-l-primary' : 'border-l-amber-500';
-                return (
-                <Card
-                  key={evaluation.id}
-                  className={`p-4 shadow-sm rounded-xl border-l-[3px] ${borderColor} cursor-pointer hover:shadow-md transition-shadow`}
-                  onClick={() => navigate(`/result/${evaluation.id}`)}
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <div onClick={(e) => e.stopPropagation()}>
-                        <Checkbox
-                          checked={detail.selectedIds.has(evaluation.id)}
-                          onCheckedChange={() => detail.toggleSelection(evaluation.id)}
-                        />
-                      </div>
-                      {getTreatmentBadge(evaluation)}
-                      <p className="font-semibold">{formatToothLabel(evaluation.tooth)}</p>
-                    </div>
-                    {getStatusBadge(evaluation, detail.getChecklistProgress)}
+                        </div>
+                      </Card>
+                      );
+                    })}
                   </div>
-
-                  {evaluation.treatment_type === 'resina' && evaluation.resins && (
-                    <div className="mb-3 p-2 bg-muted/50 rounded">
-                      <p className="text-sm font-medium">{evaluation.resins.name}</p>
-                      <p className="text-xs text-muted-foreground">{evaluation.resins.manufacturer}</p>
-                    </div>
-                  )}
-
-                  <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm" aria-label="Mais opções">
-                          <MoreHorizontal className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => detail.handleExportPDF(evaluation.id)}>
-                          <FileDown className="w-4 h-4 mr-2" />
-                          Exportar PDF
-                        </DropdownMenuItem>
-                        {evaluation.status !== 'completed' && (
-                          <DropdownMenuItem onClick={() => handleCompleteClick(evaluation.id)}>
-                            <CheckCircle className="w-4 h-4 mr-2" />
-                            Marcar como finalizado
-                          </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </Card>
                 );
               })}
             </div>
