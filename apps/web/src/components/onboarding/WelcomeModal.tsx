@@ -96,7 +96,7 @@ export function WelcomeModal({ open, onClose, onTrySample, onCreateCase }: Welco
             {slide.id === 'welcome' ? (
               <>
                 Bem-vindo ao{' '}
-                <span className="text-gradient-gold">{BRAND_NAME}</span>
+                <span className="text-primary font-semibold">{BRAND_NAME}</span>
               </>
             ) : (
               slide.title

@@ -85,7 +85,7 @@ export default function ResetPassword() {
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_80%,hsl(var(--primary)/0.10),transparent_50%)]" />
           <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]" style={{ backgroundImage: 'radial-gradient(circle, hsl(var(--foreground)) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
           <div className="relative flex flex-col justify-center px-12 xl:px-16">
-            <span className="text-2xl font-display tracking-[0.2em] text-gradient-gold mb-4">{BRAND_NAME}</span>
+            <span className="text-2xl font-display tracking-[0.2em] text-primary mb-4">{BRAND_NAME}</span>
             <h2 className="text-3xl sm:text-4xl font-semibold font-display tracking-tight text-foreground/90 mb-3">
               O padrão ouro da odontologia estética
             </h2>
@@ -98,7 +98,7 @@ export default function ResetPassword() {
         {/* Form panel */}
         <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-8">
           <div className="w-full max-w-sm text-center">
-            <Link to="/" className="text-lg sm:text-xl font-display tracking-[0.2em] text-gradient-gold">
+            <Link to="/" className="text-lg sm:text-xl font-display tracking-[0.2em] text-primary">
               {BRAND_NAME}
             </Link>
             <h1 className="text-xl sm:text-2xl font-semibold font-display mt-6 sm:mt-8 mb-2">
@@ -124,7 +124,7 @@ export default function ResetPassword() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_80%,hsl(var(--primary)/0.10),transparent_50%)]" />
         <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]" style={{ backgroundImage: 'radial-gradient(circle, hsl(var(--foreground)) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
         <div className="relative flex flex-col justify-center px-12 xl:px-16">
-          <span className="text-2xl font-display tracking-[0.2em] text-gradient-gold mb-4">{BRAND_NAME}</span>
+          <span className="text-2xl font-display tracking-[0.2em] text-primary mb-4">{BRAND_NAME}</span>
           <h2 className="text-3xl sm:text-4xl font-semibold font-display tracking-tight text-foreground/90 mb-3">
             O padrão ouro da odontologia estética
           </h2>
@@ -138,7 +138,7 @@ export default function ResetPassword() {
       <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-8">
         <div className="w-full max-w-sm">
           <div className="text-center mb-6 sm:mb-8">
-            <Link to="/" className="text-lg sm:text-xl font-display tracking-[0.2em] text-gradient-gold animate-[fade-in-up_0.6s_ease-out_0.2s_both]">
+            <Link to="/" className="text-lg sm:text-xl font-display tracking-[0.2em] text-primary animate-[fade-in-up_0.6s_ease-out_0.2s_both]">
               {BRAND_NAME}
             </Link>
             <h1 className="text-xl sm:text-2xl font-semibold font-display mt-6 sm:mt-8 mb-2 animate-[fade-in-up_0.6s_ease-out_0.3s_both]">

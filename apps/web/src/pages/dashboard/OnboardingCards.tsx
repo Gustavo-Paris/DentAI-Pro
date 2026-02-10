@@ -53,7 +53,7 @@ export function OnboardingCards() {
                     <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${step.iconBg} transition-transform duration-200 group-hover:scale-110`}>
                       <Icon className="w-4.5 h-4.5" />
                     </div>
-                    <span className="text-[10px] font-bold text-gradient-gold uppercase tracking-widest">
+                    <span className="text-[10px] font-bold text-primary uppercase tracking-widest">
                       Passo {step.step}
                     </span>
                   </div>

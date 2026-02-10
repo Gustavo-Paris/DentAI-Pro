@@ -732,7 +732,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
     return (
       <div className="space-y-6">
         <div className="text-center">
-          <h2 className="text-xl font-semibold font-display mb-2 text-gradient-gold">Planejamento Digital do Sorriso</h2>
+          <h2 className="text-xl font-semibold font-display mb-2 text-primary">Planejamento Digital do Sorriso</h2>
           <p className="text-muted-foreground">{currentLabel}</p>
         </div>
 
@@ -846,7 +846,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
             <Smile className="w-8 h-8 text-primary" />
           </div>
-          <h2 className="text-xl font-semibold font-display mb-2 text-gradient-gold">Planejamento Digital do Sorriso</h2>
+          <h2 className="text-xl font-semibold font-display mb-2 text-primary">Planejamento Digital do Sorriso</h2>
           <div className="flex items-center justify-center gap-2">
             <Badge
               variant={analysis.confidence === 'alta' ? 'default' : analysis.confidence === 'média' ? 'secondary' : 'outline'}
@@ -1297,7 +1297,7 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
         <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
           <Smile className="w-8 h-8 text-primary" />
         </div>
-        <h2 className="text-xl font-semibold font-display mb-2 text-gradient-gold">Simulação de Sorriso (DSD)</h2>
+        <h2 className="text-xl font-semibold font-display mb-2 text-primary">Simulação de Sorriso (DSD)</h2>
         <p className="text-muted-foreground max-w-md mx-auto">
           O Digital Smile Design analisa as proporções faciais e dentárias do paciente, gerando uma simulação visual do resultado final antes de iniciar o tratamento.
         </p>

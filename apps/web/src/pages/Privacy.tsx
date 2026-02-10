@@ -8,7 +8,7 @@ export default function Privacy() {
     <div className="min-h-screen bg-background">
       <header className="border-b border-border">
         <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
-          <Link to="/" className="text-lg sm:text-xl font-semibold tracking-[0.2em] font-display text-gradient-gold">
+          <Link to="/" className="text-lg sm:text-xl font-semibold tracking-[0.2em] font-display text-primary">
             {BRAND_NAME}
           </Link>
           <Link to="/">

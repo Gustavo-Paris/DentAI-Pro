@@ -29,7 +29,7 @@ export function ProcessingOverlay({
         <CardContent className="p-6 flex flex-col items-center text-center">
           <ProgressRing progress={progress} size={128} />
 
-          <p className="mt-4 font-semibold text-gradient-gold">{message}</p>
+          <p className="mt-4 font-semibold text-primary">{message}</p>
 
           {steps && steps.length > 0 && (
             <div className="mt-4 w-full text-left">
