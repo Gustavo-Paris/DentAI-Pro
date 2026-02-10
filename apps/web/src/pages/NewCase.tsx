@@ -26,6 +26,7 @@ import { AnalyzingStep } from '@/components/wizard/AnalyzingStep';
 import { DSDStep } from '@/components/wizard/DSDStep';
 import { ReviewAnalysisStep } from '@/components/wizard/ReviewAnalysisStep';
 import { DraftRestoreModal } from '@/components/wizard/DraftRestoreModal';
+import { CreditConfirmDialog } from '@/components/CreditConfirmDialog';
 import { LoadingOverlay } from '@/components/LoadingOverlay';
 import { AuriaStepIndicator } from '@/components/wizard/AuriaStepIndicator';
 
@@ -314,6 +315,12 @@ export default function NewCase() {
         lastSavedAt={wizard.pendingDraft?.lastSavedAt || null}
         onRestore={wizard.handleRestoreDraft}
         onDiscard={wizard.handleDiscardDraft}
+      />
+
+      {/* Credit Confirmation Dialog */}
+      <CreditConfirmDialog
+        data={wizard.creditConfirmData}
+        onConfirm={wizard.handleCreditConfirm}
       />
     </div>
   );
