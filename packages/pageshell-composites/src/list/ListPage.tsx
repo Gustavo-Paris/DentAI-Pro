@@ -1028,6 +1028,8 @@ export function ListPage<
               pagination={pagination}
               total={total}
               listLogic={listLogic}
+              paginationLabels={resolvedLabels.pagination}
+              navigationLabels={resolvedLabels.navigation}
             />
           )}
         </div>

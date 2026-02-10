@@ -19,6 +19,7 @@ import {
 } from '@pageshell/primitives';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { ListPageProps } from '../types';
+import type { PaginationLabels, NavigationLabels } from '../../shared/types';
 
 // =============================================================================
 // Types
@@ -31,6 +32,10 @@ export interface ListPagePaginationProps {
   total: number;
   /** List logic instance from useListLogic hook */
   listLogic: ReturnType<typeof useListLogic>;
+  /** Pagination labels */
+  paginationLabels?: PaginationLabels;
+  /** Navigation labels */
+  navigationLabels?: NavigationLabels;
 }
 
 // =============================================================================
@@ -41,12 +46,25 @@ export function ListPagePagination({
   pagination,
   total,
   listLogic,
+  paginationLabels,
+  navigationLabels,
 }: ListPagePaginationProps) {
   const totalPages = Math.ceil(total / listLogic.pageSize);
   const currentPage = listLogic.page;
   const paginationConfig = typeof pagination === 'object' ? pagination : {};
   const showSizeChanger = paginationConfig.showSizeChanger ?? false;
   const pageSizes = paginationConfig.pageSizes ?? [10, 20, 50, 100];
+
+  const labels = {
+    showing: paginationLabels?.showing ?? 'Mostrando',
+    to: paginationLabels?.to ?? 'a',
+    of: paginationLabels?.of ?? 'de',
+    items: paginationLabels?.items ?? 'itens',
+  };
+  const navLabels = {
+    previousPage: navigationLabels?.previousPage ?? 'Página anterior',
+    nextPage: navigationLabels?.nextPage ?? 'Próxima página',
+  };
 
   // Generate page numbers to show (unconditionally called per React rules)
   const pageNumbers = React.useMemo((): (number | 'ellipsis')[] => {
@@ -100,19 +118,19 @@ export function ListPagePagination({
     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-border">
       <div className="flex items-center gap-4">
         <p className="text-sm text-muted-foreground">
-          Showing{' '}
+          {labels.showing}{' '}
           <span className="font-medium">
             {Math.min((currentPage - 1) * listLogic.pageSize + 1, total)}
           </span>{' '}
-          to{' '}
+          {labels.to}{' '}
           <span className="font-medium">
             {Math.min(currentPage * listLogic.pageSize, total)}
           </span>{' '}
-          of <span className="font-medium">{total}</span> items
+          {labels.of} <span className="font-medium">{total}</span> {labels.items}
         </p>
         {showSizeChanger && (
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Show</span>
+            <span className="text-sm text-muted-foreground">Exibir</span>
             <Select
               value={String(listLogic.pageSize)}
               onValueChange={handlePageSizeChange}
@@ -135,7 +153,7 @@ export function ListPagePagination({
         <button
           onClick={handlePreviousPage}
           disabled={currentPage <= 1}
-          aria-label="Previous page"
+          aria-label={navLabels.previousPage}
           className="min-h-[44px] min-w-[44px] p-2.5 rounded-lg border border-border hover:bg-muted transition-colors touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <ChevronLeft className="h-5 w-5 text-muted-foreground" />
@@ -164,7 +182,7 @@ export function ListPagePagination({
         <button
           onClick={handleNextPage}
           disabled={currentPage >= totalPages}
-          aria-label="Next page"
+          aria-label={navLabels.nextPage}
           className="min-h-[44px] min-w-[44px] p-2.5 rounded-lg border border-border hover:bg-muted transition-colors touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <ChevronRight className="h-5 w-5 text-muted-foreground" />
