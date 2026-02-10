@@ -98,6 +98,12 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     Record<string, TreatmentType>
   >({});
   const [currentToothIndex, setCurrentToothIndex] = useState(-1);
+  const [creditConfirmData, setCreditConfirmData] = useState<{
+    operation: string;
+    operationLabel: string;
+    cost: number;
+    remaining: number;
+  } | null>(null);
 
   // -------------------------------------------------------------------------
   // Refs
@@ -107,6 +113,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
   const hasCheckedSampleRef = useRef(false);
   const hasShownCreditWarningRef = useRef(false);
   const isQuickCaseRef = useRef(false);
+  const creditConfirmResolveRef = useRef<((confirmed: boolean) => void) | null>(null);
 
   // -------------------------------------------------------------------------
   // Derived
@@ -203,6 +210,27 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
   }, [formData.patientAge, formData.tooth, patientBirthDate, selectedTeeth]);
 
   // -------------------------------------------------------------------------
+  // Credit confirmation
+  // -------------------------------------------------------------------------
+
+  const confirmCreditUse = useCallback(
+    (operation: string, operationLabel: string): Promise<boolean> => {
+      const cost = getCreditCost(operation);
+      return new Promise((resolve) => {
+        creditConfirmResolveRef.current = resolve;
+        setCreditConfirmData({ operation, operationLabel, cost, remaining: creditsRemaining });
+      });
+    },
+    [getCreditCost, creditsRemaining],
+  );
+
+  const handleCreditConfirm = useCallback((confirmed: boolean) => {
+    creditConfirmResolveRef.current?.(confirmed);
+    creditConfirmResolveRef.current = null;
+    setCreditConfirmData(null);
+  }, []);
+
+  // -------------------------------------------------------------------------
   // Core Actions
   // -------------------------------------------------------------------------
 
@@ -215,6 +243,9 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
       });
       return;
     }
+
+    const confirmed = await confirmCreditUse('case_analysis', 'Análise com IA');
+    if (!confirmed) return;
 
     setStep(3);
     setIsAnalyzing(true);
@@ -290,13 +321,18 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
         throw new Error('Análise não retornou dados');
       }
     } catch (error: unknown) {
-      const err = error as { message?: string; code?: string };
+      const err = error as { message?: string; code?: string; name?: string };
       logger.error('Analysis error:', error);
 
-      let errorMessage =
-        'Não foi possível analisar a foto. Verifique se a imagem está nítida e tente novamente.';
+      let errorMessage: string;
+      const isNetwork =
+        err.name === 'AbortError' ||
+        err.message?.includes('Failed to fetch') ||
+        err.message?.includes('network') ||
+        err.message?.includes('timeout');
+
       if (err.message?.includes('429') || err.code === 'RATE_LIMITED') {
-        errorMessage = 'Limite de requisições excedido. Aguarde alguns minutos e tente novamente.';
+        errorMessage = 'Limite de requisições excedido. Aguarde 1-2 minutos antes de tentar novamente.';
       } else if (
         err.message?.includes('402') ||
         err.code === 'INSUFFICIENT_CREDITS' ||
@@ -306,7 +342,16 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
         refreshSubscription();
       } else if (err.message?.includes('não retornou dados')) {
         errorMessage =
-          'A IA não conseguiu identificar estruturas dentárias na foto. Tente uma foto com melhor iluminação.';
+          'A IA não conseguiu identificar estruturas dentárias. Dicas: use boa iluminação, foque na região intraoral e evite reflexos no espelho.';
+      } else if (isNetwork) {
+        errorMessage =
+          'Erro de conexão com o servidor. Verifique sua internet e tente novamente.';
+      } else if (err.message?.includes('500') || err.message?.includes('edge function')) {
+        errorMessage =
+          'Erro temporário no servidor. Seu crédito não foi consumido — tente novamente em instantes.';
+      } else {
+        errorMessage =
+          'Não foi possível analisar a foto. Verifique se a imagem está nítida e tente novamente.';
       }
 
       setAnalysisError(errorMessage);
@@ -315,6 +360,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
   }, [
     imageBase64,
     canUseCredits,
+    confirmCreditUse,
     navigate,
     uploadImageToStorage,
     invokeFunction,
@@ -1244,6 +1290,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     isQuickCase,
     isSampleCase,
     canGoBack,
+    creditConfirmData,
 
     // Actions
     setImageBase64,
@@ -1269,6 +1316,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     handlePatientBirthDateChange,
     setDobValidationError,
     handleSubmit,
+    handleCreditConfirm,
     handleRestoreDraft,
     handleDiscardDraft,
   };

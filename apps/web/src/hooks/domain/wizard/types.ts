@@ -13,10 +13,20 @@ export interface SubmissionStep {
   completed: boolean;
 }
 
+export interface CreditConfirmData {
+  operation: string;
+  operationLabel: string;
+  cost: number;
+  remaining: number;
+}
+
 export interface WizardFlowState {
   // Current step (1-6)
   step: number;
   stepDirection: 'forward' | 'backward';
+
+  // Credit confirmation
+  creditConfirmData: CreditConfirmData | null;
 
   // Photo step
   imageBase64: string | null;
@@ -109,6 +119,9 @@ export interface WizardFlowActions {
 
   // Submission
   handleSubmit: () => Promise<void>;
+
+  // Credit confirmation
+  handleCreditConfirm: (confirmed: boolean) => void;
 
   // Draft
   handleRestoreDraft: () => Promise<void>;
