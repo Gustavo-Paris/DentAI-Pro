@@ -113,6 +113,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
   const hasCheckedSampleRef = useRef(false);
   const hasShownCreditWarningRef = useRef(false);
   const isQuickCaseRef = useRef(false);
+  const fullFlowCreditsConfirmedRef = useRef(false);
   const creditConfirmResolveRef = useRef<((confirmed: boolean) => void) | null>(null);
 
   // -------------------------------------------------------------------------
@@ -214,8 +215,8 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
   // -------------------------------------------------------------------------
 
   const confirmCreditUse = useCallback(
-    (operation: string, operationLabel: string): Promise<boolean> => {
-      const cost = getCreditCost(operation);
+    (operation: string, operationLabel: string, costOverride?: number): Promise<boolean> => {
+      const cost = costOverride ?? getCreditCost(operation);
       return new Promise((resolve) => {
         creditConfirmResolveRef.current = resolve;
         setCreditConfirmData({ operation, operationLabel, cost, remaining: creditsRemaining });
@@ -237,15 +238,18 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
   const analyzePhoto = useCallback(async () => {
     if (!imageBase64) return;
 
-    if (!canUseCredits('case_analysis')) {
-      toast.error('Créditos insuficientes. Faça upgrade do seu plano para continuar.', {
-        action: { label: 'Ver Planos', onClick: () => navigate('/pricing') },
-      });
-      return;
-    }
+    // Full flow credits were already confirmed upfront in goToPreferences
+    if (!fullFlowCreditsConfirmedRef.current) {
+      if (!canUseCredits('case_analysis')) {
+        toast.error('Créditos insuficientes. Faça upgrade do seu plano para continuar.', {
+          action: { label: 'Ver Planos', onClick: () => navigate('/pricing') },
+        });
+        return;
+      }
 
-    const confirmed = await confirmCreditUse('case_analysis', 'Análise com IA');
-    if (!confirmed) return;
+      const confirmed = await confirmCreditUse('case_analysis', 'Análise com IA');
+      if (!confirmed) return;
+    }
 
     setStep(3);
     setIsAnalyzing(true);
@@ -856,11 +860,25 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     setStep(targetStep);
   }, [step, isQuickCase]);
 
-  const goToPreferences = useCallback(() => {
+  const goToPreferences = useCallback(async () => {
     setIsQuickCase(false);
     isQuickCaseRef.current = false;
+
+    const fullCost = getCreditCost('case_analysis') + getCreditCost('dsd_simulation');
+
+    if (creditsRemaining < fullCost) {
+      toast.error('Créditos insuficientes para análise completa. Faça upgrade do seu plano.', {
+        action: { label: 'Ver Planos', onClick: () => navigate('/pricing') },
+      });
+      return;
+    }
+
+    const confirmed = await confirmCreditUse('full_analysis', 'Análise Completa com IA', fullCost);
+    if (!confirmed) return;
+
+    fullFlowCreditsConfirmedRef.current = true;
     setStep(2);
-  }, []);
+  }, [getCreditCost, creditsRemaining, navigate, confirmCreditUse]);
 
   const goToQuickCase = useCallback(() => {
     setIsQuickCase(true);
@@ -877,6 +895,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     if (step === 1) {
       navigate('/dashboard');
     } else if (step === 2) {
+      fullFlowCreditsConfirmedRef.current = false;
       setStep(1);
     } else if (step === 3) {
       if (isQuickCase) {
