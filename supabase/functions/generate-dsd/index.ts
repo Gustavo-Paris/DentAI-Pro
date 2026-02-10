@@ -30,7 +30,7 @@ interface DSDAnalysis {
     tooth: string;
     current_issue: string;
     proposed_change: string;
-    treatment_indication?: "resina" | "porcelana" | "coroa" | "implante" | "endodontia" | "encaminhamento";
+    treatment_indication?: "resina" | "porcelana" | "coroa" | "implante" | "endodontia" | "encaminhamento" | "gengivoplastia" | "recobrimento_radicular";
   }[];
   observations: string[];
   confidence: "alta" | "média" | "baixa";
@@ -649,8 +649,8 @@ Se o problema clínico é microdontia/conoide → sua sugestão deve ser "Aument
                   proposed_change: { type: "string", description: "Mudança proposta para melhorar" },
                   treatment_indication: {
                     type: "string",
-                    enum: ["resina", "porcelana", "coroa", "implante", "endodontia", "encaminhamento"],
-                    description: "Tipo de tratamento indicado: resina (restauração direta, fechamento de diastema pequeno), porcelana (faceta/laminado para múltiplos dentes ou casos estéticos), coroa (destruição extensa), implante (dente ausente/extração), endodontia (canal), encaminhamento (especialista)",
+                    enum: ["resina", "porcelana", "coroa", "implante", "endodontia", "encaminhamento", "gengivoplastia", "recobrimento_radicular"],
+                    description: "Tipo de tratamento indicado: resina (restauração direta, acréscimo incisal, fechamento de diastema), porcelana (faceta/laminado para múltiplos dentes), coroa (destruição extensa), implante (dente ausente), endodontia (canal), encaminhamento (ortodontia/especialista), gengivoplastia (remoção de excesso gengival), recobrimento_radicular (cobertura de raiz exposta)",
                   },
                 },
                 required: ["tooth", "current_issue", "proposed_change", "treatment_indication"],
@@ -989,6 +989,39 @@ serve(async (req: Request) => {
           analysis.observations = analysis.observations || [];
           analysis.observations.push('ATENÇÃO: Suspeita de sobremordida profunda — gengivoplastia contraindicada até avaliação ortodôntica.');
         }
+      }
+    }
+
+    // Safety net #4: Validate treatment suggestion consistency (inverted logic detection)
+    // If a suggestion proposes "aumento incisal" (making tooth bigger) but treatment is gengivoplastia → fix it
+    for (const suggestion of analysis.suggestions) {
+      const proposed = suggestion.proposed_change.toLowerCase();
+      const issue = suggestion.current_issue.toLowerCase();
+      const treatment = (suggestion.treatment_indication || '').toLowerCase();
+
+      // Case 1: Proposed change is about increasing incisal edge (tooth gets bigger)
+      // but treatment says gengivoplastia → should be resina
+      const proposesIncisalIncrease = proposed.includes('aument') && (proposed.includes('incisal') || proposed.includes('bordo'));
+      if (proposesIncisalIncrease && treatment === 'gengivoplastia') {
+        logger.log(`Post-processing: fixing inverted logic for tooth ${suggestion.tooth} — incisal increase should be resina, not gengivoplastia`);
+        (suggestion as { treatment_indication: string }).treatment_indication = 'resina';
+      }
+
+      // Case 2: Issue mentions desgaste/recontorno (tooth gets smaller) but treatment is resina acréscimo
+      const proposesIncisalDecrease = proposed.includes('recontorno') || proposed.includes('desgast') || proposed.includes('diminu');
+      const issueIsDecrease = issue.includes('desgast') || issue.includes('recontorno') || issue.includes('diminui');
+      if ((proposesIncisalDecrease || issueIsDecrease) && proposed.includes('acréscimo')) {
+        logger.log(`Post-processing: fixing contradictory suggestion for tooth ${suggestion.tooth} — recontorno/desgaste proposed but acréscimo mentioned`);
+        // Keep as resina but the proposed_change already describes the correct action
+      }
+
+      // Case 3: Normalize gengivoplastia/recobrimento_radicular treatment_indication
+      // (in case AI used "encaminhamento" for gengivoplastia)
+      if (treatment === 'encaminhamento' && (proposed.includes('gengivoplastia') || issue.includes('gengivoplastia'))) {
+        (suggestion as { treatment_indication: string }).treatment_indication = 'gengivoplastia';
+      }
+      if (treatment === 'encaminhamento' && (proposed.includes('recobrimento') || issue.includes('recobrimento radicular'))) {
+        (suggestion as { treatment_indication: string }).treatment_indication = 'recobrimento_radicular';
       }
     }
 

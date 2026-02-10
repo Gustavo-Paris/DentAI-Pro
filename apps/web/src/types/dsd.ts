@@ -11,7 +11,7 @@
 // Treatment & Analysis Types
 // ---------------------------------------------------------------------------
 
-export type TreatmentIndication = "resina" | "porcelana" | "coroa" | "implante" | "endodontia" | "encaminhamento";
+export type TreatmentIndication = "resina" | "porcelana" | "coroa" | "implante" | "endodontia" | "encaminhamento" | "gengivoplastia" | "recobrimento_radicular";
 
 export interface DSDSuggestion {
   tooth: string;

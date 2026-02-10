@@ -98,6 +98,9 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     Record<string, TreatmentType>
   >({});
   const [currentToothIndex, setCurrentToothIndex] = useState(-1);
+
+  // Track if user manually overrode vitaShade — prevent AI from resetting it
+  const vitaShadeManuallySetRef = useRef(false);
   const [creditConfirmData, setCreditConfirmData] = useState<{
     operation: string;
     operationLabel: string;
@@ -306,13 +309,14 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
                 : prev.toothRegion),
             cavityClass: primaryToothData.cavity_class || prev.cavityClass,
             restorationSize: primaryToothData.restoration_size || prev.restorationSize,
-            vitaShade: analysis.vita_shade || prev.vitaShade,
+            // Only update vitaShade from AI if user hasn't manually overridden it
+            vitaShade: vitaShadeManuallySetRef.current ? prev.vitaShade : (analysis.vita_shade || prev.vitaShade),
             substrate: primaryToothData.substrate || prev.substrate,
             substrateCondition: primaryToothData.substrate_condition || prev.substrateCondition,
             enamelCondition: primaryToothData.enamel_condition || prev.enamelCondition,
             depth: primaryToothData.depth || prev.depth,
           }));
-        } else if (analysis.vita_shade) {
+        } else if (analysis.vita_shade && !vitaShadeManuallySetRef.current) {
           setFormData((prev) => ({ ...prev, vitaShade: analysis.vita_shade || prev.vitaShade }));
         }
 
@@ -424,7 +428,8 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
                 : prev.toothRegion),
             cavityClass: primaryToothData.cavity_class || prev.cavityClass,
             restorationSize: primaryToothData.restoration_size || prev.restorationSize,
-            vitaShade: analysis.vita_shade || prev.vitaShade,
+            // Only update vitaShade from AI if user hasn't manually overridden it
+            vitaShade: vitaShadeManuallySetRef.current ? prev.vitaShade : (analysis.vita_shade || prev.vitaShade),
             substrate: primaryToothData.substrate || prev.substrate,
             substrateCondition: primaryToothData.substrate_condition || prev.substrateCondition,
             enamelCondition: primaryToothData.enamel_condition || prev.enamelCondition,
@@ -1017,7 +1022,9 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
       }
 
       // Auto-add gengivoplasty case if DSD layers include complete-treatment with gengivoplasty
-      const hasGengivoplasty = result?.layers?.some(l => l.includes_gengivoplasty);
+      // OR if any suggestion has treatment_indication: "gengivoplastia"
+      const hasGengivoplasty = result?.layers?.some(l => l.includes_gengivoplasty) ||
+        result?.analysis?.suggestions?.some(s => s.treatment_indication === 'gengivoplastia');
       if (hasGengivoplasty) {
         // Add a virtual "GENGIVO" tooth entry for gengivoplasty
         setSelectedTeeth((prev) =>
@@ -1050,6 +1057,10 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
   // -------------------------------------------------------------------------
 
   const updateFormData = useCallback((updates: Partial<ReviewFormData>) => {
+    // Track manual vitaShade override so AI doesn't reset it
+    if ('vitaShade' in updates && updates.vitaShade) {
+      vitaShadeManuallySetRef.current = true;
+    }
     setFormData((prev) => ({ ...prev, ...updates }));
   }, []);
 

@@ -201,6 +201,9 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
     // Layer 3: complete-treatment with gengivoplasty
     // Include when AI detected gingival treatment need, regardless of smile line
     const hasGingivoSuggestion = analysis.suggestions?.some(s => {
+      // Check structured treatment_indication first (more reliable)
+      if (s.treatment_indication === 'gengivoplastia') return true;
+      // Fallback to text matching
       const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
       return text.includes('gengivoplastia') || text.includes('gengival') || text.includes('zênite');
     });
