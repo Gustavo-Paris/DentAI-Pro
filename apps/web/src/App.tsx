@@ -10,6 +10,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import CookieConsent from "@/components/CookieConsent";
+import { KeyboardShortcuts } from "@/components/KeyboardShortcuts";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { Skeleton } from "@/components/ui/skeleton";
 import AppLayout from "@/components/AppLayout";
@@ -109,6 +110,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
           <GlobalSearch />
+          <KeyboardShortcuts />
           <CookieConsent />
           </AuthProvider>
         </BrowserRouter>
