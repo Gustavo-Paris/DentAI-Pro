@@ -857,6 +857,8 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
   }, [step, isQuickCase]);
 
   const goToPreferences = useCallback(() => {
+    setIsQuickCase(false);
+    isQuickCaseRef.current = false;
     setStep(2);
   }, []);
 
