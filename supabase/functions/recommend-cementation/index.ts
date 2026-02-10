@@ -7,6 +7,7 @@ import { callGeminiWithTools, GeminiError, type OpenAIMessage, type OpenAITool }
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 import { getPrompt, withMetrics } from "../_shared/prompts/index.ts";
 import { createSupabaseMetrics, PROMPT_VERSION } from "../_shared/metrics-adapter.ts";
+import { parseAIResponse, CementationProtocolSchema } from "../_shared/aiSchemas.ts";
 
 // Cementation protocol interfaces
 interface CementationStep {
@@ -327,7 +328,7 @@ serve(async (req: Request) => {
         return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
       }
 
-      protocol = geminiResult.functionCall.args as unknown as CementationProtocol;
+      protocol = parseAIResponse(CementationProtocolSchema, geminiResult.functionCall.args, 'recommend-cementation') as CementationProtocol;
     } catch (error) {
       if (error instanceof GeminiError) {
         if (error.statusCode === 429) {

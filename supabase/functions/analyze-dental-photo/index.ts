@@ -10,6 +10,7 @@ import { withMetrics } from "../_shared/prompts/index.ts";
 import type { PromptDefinition } from "../_shared/prompts/types.ts";
 import type { Params as AnalyzePhotoParams } from "../_shared/prompts/definitions/analyze-dental-photo.ts";
 import { createSupabaseMetrics, PROMPT_VERSION } from "../_shared/metrics-adapter.ts";
+import { parseAIResponse, PhotoAnalysisResultSchema } from "../_shared/aiSchemas.ts";
 
 interface AnalyzePhotoRequest {
   imageBase64: string;
@@ -391,7 +392,7 @@ serve(async (req) => {
 
       if (result.functionCall) {
         logger.log("Successfully got analysis from Gemini");
-        analysisResult = result.functionCall.args as unknown as PhotoAnalysisResult;
+        analysisResult = parseAIResponse(PhotoAnalysisResultSchema, result.functionCall.args, 'analyze-dental-photo') as PhotoAnalysisResult;
       } else if (result.text) {
         // Fallback: try to extract JSON from text response
         logger.log("No function call, checking text for JSON...");
@@ -399,9 +400,10 @@ serve(async (req) => {
         if (jsonMatch) {
           try {
             const jsonStr = jsonMatch[1] || jsonMatch[0];
-            analysisResult = JSON.parse(jsonStr);
-          } catch {
-            logger.error("Failed to parse JSON from text response");
+            const parsed = JSON.parse(jsonStr);
+            analysisResult = parseAIResponse(PhotoAnalysisResultSchema, parsed, 'analyze-dental-photo') as PhotoAnalysisResult;
+          } catch (parseErr) {
+            logger.error("Failed to parse/validate JSON from text response:", parseErr);
           }
         }
       }

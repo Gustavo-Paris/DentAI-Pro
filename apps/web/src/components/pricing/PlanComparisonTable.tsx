@@ -34,7 +34,7 @@ const features: FeatureRow[] = [
 function CellValue({ value }: { value: string | boolean | number }) {
   if (typeof value === 'boolean') {
     return value ? (
-      <Check className="h-4 w-4 text-green-500 mx-auto" />
+      <Check className="h-4 w-4 text-success mx-auto" />
     ) : (
       <Minus className="h-4 w-4 text-muted-foreground/40 mx-auto" />
     );

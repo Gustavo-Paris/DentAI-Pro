@@ -6,6 +6,7 @@ import { PlanComparisonTable } from '@/components/pricing/PlanComparisonTable';
 import { useSubscription } from '@/hooks/useSubscription';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
+import { DetailPage } from '@pageshell/composites';
 import {
   Dialog,
   DialogContent,
@@ -15,6 +16,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+
+// =============================================================================
+// Page Adapter
+// =============================================================================
 
 export default function Pricing() {
   const navigate = useNavigate();
@@ -52,15 +57,25 @@ export default function Pricing() {
   }, [searchParams, navigate, refreshSubscription]);
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-12">
-      <PricingSection />
-      <PlanComparisonTable />
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <DetailPage
+        title="Planos e Preços"
+        query={{ data: true, isLoading: false }}
+        containerVariant="shell"
+      >
+        {() => (
+          <div className="space-y-12">
+            <PricingSection />
+            <PlanComparisonTable />
+          </div>
+        )}
+      </DetailPage>
 
       <Dialog open={showSuccess} onOpenChange={setShowSuccess}>
         <DialogContent className="sm:max-w-md text-center">
           <DialogHeader className="items-center">
-            <div className="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-950/40">
-              <CheckCircle2 className="h-10 w-10 text-green-600 dark:text-green-400" />
+            <div className="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-success/10 dark:bg-success/20">
+              <CheckCircle2 className="h-10 w-10 text-success" />
             </div>
             <DialogTitle className="text-xl font-display">Assinatura ativada!</DialogTitle>
             <DialogDescription>

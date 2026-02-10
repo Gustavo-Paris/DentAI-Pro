@@ -129,7 +129,7 @@ export function SubscriptionStatus() {
           )}
 
           {subscription?.cancel_at_period_end && (
-            <div className="flex items-center gap-2 p-3 bg-yellow-50 dark:bg-yellow-950/30 text-yellow-600 dark:text-yellow-400 rounded-lg text-sm">
+            <div className="flex items-center gap-2 p-3 bg-warning/10 dark:bg-warning/10 text-warning rounded-lg text-sm">
               <AlertTriangle className="h-4 w-4 shrink-0" />
               <span>
                 Sua assinatura será cancelada em{' '}
@@ -157,14 +157,14 @@ export function SubscriptionStatus() {
             <div className="flex justify-between text-sm">
               <span>Uso mensal</span>
               <span className={cn(
-                creditsRemaining <= 5 && creditsTotal > 0 && 'text-orange-500 dark:text-orange-400 font-medium'
+                creditsRemaining <= 5 && creditsTotal > 0 && 'text-warning font-medium'
               )}>
                 {creditsUsed} / {creditsTotal} créditos
               </span>
             </div>
             <Progress
               value={creditsPercentUsed}
-              className={cn(creditsPercentUsed > 80 && '[&>div]:bg-orange-500 dark:[&>div]:bg-orange-400')}
+              className={cn(creditsPercentUsed > 80 && '[&>div]:bg-warning')}
             />
           </div>
 
@@ -180,7 +180,7 @@ export function SubscriptionStatus() {
                   <RefreshCw className="h-3 w-3" />
                   <span>Rollover</span>
                 </div>
-                <div className="font-semibold text-green-600 dark:text-green-400">+{creditsRollover}</div>
+                <div className="font-semibold text-success">+{creditsRollover}</div>
               </div>
             )}
           </div>
@@ -199,7 +199,7 @@ export function SubscriptionStatus() {
 
           {/* Low Credits Warning */}
           {creditsRemaining <= 5 && creditsTotal > 0 && (
-            <p className="text-xs text-orange-500 dark:text-orange-400">
+            <p className="text-xs text-warning">
               Você está chegando ao limite de créditos. Considere fazer upgrade.
             </p>
           )}

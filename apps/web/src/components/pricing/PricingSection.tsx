@@ -53,7 +53,7 @@ export function PricingSection() {
           Anual
         </Label>
         {billingPeriod === 'yearly' && (
-          <Badge variant="secondary" className="text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/30">
+          <Badge variant="secondary" className="text-success bg-success/10">
             -16%
           </Badge>
         )}

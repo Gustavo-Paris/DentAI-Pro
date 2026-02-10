@@ -334,7 +334,7 @@ export default function Inventory() {
               {inv.csvPreview.matched.length > 0 && (
                 <div>
                   <p className="text-sm font-medium flex items-center gap-2 mb-2">
-                    <Check className="w-4 h-4 text-green-500" />
+                    <Check className="w-4 h-4 text-success" />
                     {inv.csvPreview.matched.length} resina(s) encontrada(s)
                   </p>
                   <div className="max-h-40 overflow-y-auto space-y-1 border rounded-lg p-2">
@@ -348,11 +348,11 @@ export default function Inventory() {
               )}
               {inv.csvPreview.unmatched.length > 0 && (
                 <div>
-                  <p className="text-sm font-medium flex items-center gap-2 mb-2 text-amber-600 dark:text-amber-400">
+                  <p className="text-sm font-medium flex items-center gap-2 mb-2 text-warning">
                     <FileWarning className="w-4 h-4" />
                     {inv.csvPreview.unmatched.length} não encontrada(s) no catálogo
                   </p>
-                  <div className="max-h-24 overflow-y-auto space-y-1 border rounded-lg p-2 border-amber-200 dark:border-amber-800">
+                  <div className="max-h-24 overflow-y-auto space-y-1 border rounded-lg p-2 border-warning/30">
                     {inv.csvPreview.unmatched.map((line, i) => (
                       <p key={i} className="text-xs text-muted-foreground">
                         {line}
