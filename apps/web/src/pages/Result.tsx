@@ -64,7 +64,7 @@ export default function Result() {
       <DetailPage
         title={r.currentTreatmentStyle.label}
         breadcrumbs={[
-          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'Início', href: '/dashboard' },
           { label: 'Avaliação', href: evaluation ? `/evaluation/${evaluation.session_id}` : undefined },
           { label: evaluation ? formatToothLabel(evaluation.tooth) : '...' },
         ]}
@@ -456,24 +456,6 @@ export default function Result() {
                 </div>
               </section>
             )}
-
-            {/* New Case CTA */}
-            <Card className="mt-8 border-primary/20 bg-gradient-to-r from-primary/5 to-transparent print:hidden">
-              <CardContent className="py-5">
-                <div className="flex flex-col sm:flex-row items-center gap-4">
-                  <div className="flex-1 text-center sm:text-left">
-                    <h4 className="font-medium mb-1">Pronto para o próximo caso?</h4>
-                    <p className="text-sm text-muted-foreground">Inicie uma nova avaliação com IA em segundos.</p>
-                  </div>
-                  <Link to="/new-case">
-                    <Button className="btn-glow-gold btn-press">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Novo Caso
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
 
             {/* Disclaimer */}
             <div className="mt-8 p-4 rounded-xl shadow-sm border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30">

@@ -14,6 +14,7 @@ import {
   PieChart, Pie, Cell,
   BarChart, Bar,
 } from 'recharts';
+import { BarChart3 } from 'lucide-react';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 
 // ---------------------------------------------------------------------------
@@ -230,6 +231,18 @@ export function InsightsTab({
   weeklyTrends: WeeklyTrendPoint[];
   loading: boolean;
 }) {
+  if (!loading && !clinicalInsights && weeklyTrends.length === 0) {
+    return (
+      <Card className="p-8 sm:p-10 text-center">
+        <BarChart3 className="w-10 h-10 mx-auto text-muted-foreground/40 mb-3" />
+        <p className="font-medium font-display text-sm mb-1">Sem dados suficientes</p>
+        <p className="text-xs text-muted-foreground">
+          Os insights aparecerão aqui após suas primeiras avaliações.
+        </p>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <WeeklyTrendsChart data={weeklyTrends} loading={loading} />

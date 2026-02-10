@@ -64,21 +64,21 @@ export default function Landing() {
                 style={{ animation: 'badge-pulse-ring 3s ease-in-out infinite, fade-in-up 0.6s ease-out 0.2s both' }}
               >
                 <Sparkles className="w-3 h-3 mr-1" />
-                Inteligencia Clinica Estetica
+                Inteligência Clínica Estética
               </Badge>
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-tight mb-4 sm:mb-6 font-display animate-[fade-in-up_0.6s_ease-out_0.4s_both]">
-                O padrao <span className="text-gradient-gold">ouro</span> da odontologia estetica
+                O padrão <span className="text-gradient-gold">ouro</span> da odontologia estética
               </h1>
               <p className="text-base sm:text-lg text-muted-foreground mb-8 sm:mb-10 max-w-xl mx-auto lg:mx-0 animate-[fade-in-up_0.6s_ease-out_0.6s_both]">
-                IA que analisa, planeja e gera protocolos personalizados com precisao.
+                IA que analisa, planeja e gera protocolos personalizados com precisão.
               </p>
               <div className="animate-[fade-in-up_0.6s_ease-out_0.8s_both] flex flex-col items-center lg:items-start gap-2">
                 <Link to="/register">
                   <Button size="lg" className="px-6 sm:px-8 h-12 text-base btn-glow-gold">
-                    Testar Gratis em 2 Minutos
+                    Testar Grátis em 2 Minutos
                   </Button>
                 </Link>
-                <p className="text-xs text-muted-foreground">Sem cartao de credito. 3 creditos gratis.</p>
+                <p className="text-xs text-muted-foreground">Sem cartão de crédito. 3 créditos grátis.</p>
               </div>
             </div>
 
@@ -122,26 +122,26 @@ export default function Landing() {
             {([
               {
                 icon: Camera,
-                title: 'Analise Visual com IA',
+                title: 'Análise Visual com IA',
                 description: 'Tire uma foto e a IA identifica dentes, classifica cavidades e detecta cor VITA.',
                 preview: 'analysis' as const,
               },
               {
                 icon: Smile,
-                title: 'Simulacao de Sorriso',
-                description: 'Visualize o resultado antes de iniciar com simulacao DSD e niveis de clareamento.',
+                title: 'Simulação de Sorriso',
+                description: 'Visualize o resultado antes de iniciar com simulação DSD e níveis de clareamento.',
                 preview: 'dsd' as const,
               },
               {
                 icon: Layers,
-                title: 'Protocolo de Estratificacao',
-                description: 'Receba camada por camada qual resina usar do seu inventario pessoal.',
+                title: 'Protocolo de Estratificação',
+                description: 'Receba camada por camada qual resina usar do seu inventário pessoal.',
                 preview: 'protocol' as const,
               },
               {
                 icon: FileText,
-                title: 'Relatorio Profissional',
-                description: 'Exporte PDF personalizado com logo do consultorio e protocolo completo.',
+                title: 'Relatório Profissional',
+                description: 'Exporte PDF personalizado com logo do consultório e protocolo completo.',
                 preview: 'pdf' as const,
               },
             ]).map((feature, index) => (
@@ -170,36 +170,36 @@ export default function Landing() {
           <div ref={testimonialsRef} className="grid md:grid-cols-2 gap-6">
             {[
               {
-                quote: "Economizo horas de pesquisa em cada caso. A IA realmente entende as nuances do planejamento clinico e me da confianca nas minhas escolhas.",
-                author: "Dr. Carlos Mendonca",
-                role: "Dentista Estetico",
-                clinic: "Clinica Sorriso Perfeito",
+                quote: "Economizo horas de pesquisa em cada caso. A IA realmente entende as nuances do planejamento clínico e me dá confiança nas minhas escolhas.",
+                author: "Dr. Carlos Mendonça",
+                role: "Dentista Estético",
+                clinic: "Clínica Sorriso Perfeito",
                 rating: 5,
                 gradient: 'from-primary/20 to-primary/5',
                 highlight: 'Economizo 3h/semana',
               },
               {
-                quote: "O protocolo de estratificacao e excelente, mas o que mais me impressionou foi a simulacao DSD. Meus pacientes adoram visualizar o resultado.",
+                quote: "O protocolo de estratificação é excelente, mas o que mais me impressionou foi a simulação DSD. Meus pacientes adoram visualizar o resultado.",
                 author: "Dra. Ana Paula Ribeiro",
-                role: "Clinica Geral",
+                role: "Clínica Geral",
                 clinic: "Odonto Excellence",
                 rating: 5,
                 gradient: 'from-violet-500/20 to-violet-500/5',
                 highlight: null,
               },
               {
-                quote: "Ferramenta essencial para quem trabalha com estetica dental. A analise de cor e a indicacao automatica de tratamento economizam muito tempo.",
+                quote: "Ferramenta essencial para quem trabalha com estética dental. A análise de cor e a indicação automática de tratamento economizam muito tempo.",
                 author: "Dr. Fernando Costa",
-                role: "Especialista em Dentistica",
+                role: "Especialista em Dentística",
                 clinic: "Instituto Costa Dental",
                 rating: 4,
                 gradient: 'from-emerald-500/20 to-emerald-500/5',
                 highlight: null,
               },
               {
-                quote: "Uso diariamente no meu consultorio. A integracao com meu inventario pessoal e a gestao de pacientes tornaram meu fluxo de trabalho muito mais eficiente.",
+                quote: "Uso diariamente no meu consultório. A integração com meu inventário pessoal e a gestão de pacientes tornaram meu fluxo de trabalho muito mais eficiente.",
                 author: "Dra. Juliana Santos",
-                role: "Cirurgia-Dentista",
+                role: "Cirurgiã-Dentista",
                 clinic: "Juliana Santos Odontologia",
                 rating: 5,
                 gradient: 'from-amber-500/20 to-amber-500/5',
@@ -349,13 +349,13 @@ export default function Landing() {
 
         <div ref={ctaRef} className="scroll-reveal container mx-auto px-4 sm:px-6 text-center relative max-w-2xl">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold mb-3 sm:mb-4 font-display">
-            Veja a IA em acao com seu proprio caso
+            Veja a IA em ação com seu próprio caso
           </h2>
           <p className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-8 max-w-lg mx-auto">
             Crie sua conta, tire uma foto e receba um protocolo completo em menos de 2 minutos.
           </p>
           <ul className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 mb-8 text-sm text-muted-foreground">
-            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" />Analise visual com IA</li>
+            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" />Análise visual com IA</li>
             <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" />Protocolo personalizado</li>
             <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" />Resultado em minutos</li>
           </ul>

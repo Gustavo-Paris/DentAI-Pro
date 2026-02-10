@@ -186,29 +186,29 @@ export interface ListPageLabels {
 // =============================================================================
 
 /**
- * Default English labels for ListPage
+ * Default labels for ListPage (PT-BR)
  */
 export const DEFAULT_LIST_PAGE_LABELS: Required<ListPageLabels> = {
   search: {
-    placeholder: 'Search...',
+    placeholder: 'Buscar...',
   },
   pagination: {
-    showing: 'Showing',
-    to: 'to',
-    of: 'of',
-    items: 'items',
+    showing: 'Mostrando',
+    to: 'a',
+    of: 'de',
+    items: 'itens',
   },
   selection: {
-    itemSelected: 'item selected',
-    itemsSelected: 'items selected',
+    itemSelected: 'item selecionado',
+    itemsSelected: 'itens selecionados',
   },
   navigation: {
-    previousPage: 'Previous page',
-    nextPage: 'Next page',
+    previousPage: 'Página anterior',
+    nextPage: 'Próxima página',
   },
   emptyState: {
-    title: 'No items found',
-    description: 'Get started by creating a new item.',
+    title: 'Nenhum item encontrado',
+    description: 'Comece criando um novo item.',
   },
 };
 
@@ -256,17 +256,17 @@ export interface FormLabels {
 }
 
 /**
- * Default form labels (English)
+ * Default form labels (PT-BR)
  */
 export const DEFAULT_FORM_LABELS: Required<FormLabels> = {
-  submit: 'Save',
-  cancel: 'Cancel',
-  back: 'Back',
-  errorTitle: 'Error',
-  saving: 'Saving...',
-  saved: 'Saved',
-  saveFailed: 'Save failed',
-  unsavedChanges: 'Unsaved changes',
+  submit: 'Salvar',
+  cancel: 'Cancelar',
+  back: 'Voltar',
+  errorTitle: 'Erro',
+  saving: 'Salvando...',
+  saved: 'Salvo',
+  saveFailed: 'Erro ao salvar',
+  unsavedChanges: 'Alterações não salvas',
 };
 
 /**
@@ -294,8 +294,8 @@ export interface DetailPageLabels {
  * Default detail page labels (English)
  */
 export const DEFAULT_DETAIL_PAGE_LABELS: Required<DetailPageLabels> = {
-  back: 'Back',
-  errorLoadingData: 'Error loading data',
+  back: 'Voltar',
+  errorLoadingData: 'Erro ao carregar dados',
   breadcrumb: 'Breadcrumb',
 };
 

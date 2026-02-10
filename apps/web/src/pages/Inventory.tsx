@@ -144,7 +144,7 @@ export default function Inventory() {
           label: 'Adicionar Resinas',
           onClick: inv.openDialog,
         }}
-        beforeTableSlot={<ResinTypeLegend />}
+        slots={{ beforeTableSlot: <ResinTypeLegend /> }}
         emptyState={{
           title: 'Inventário vazio',
           description: 'Adicione suas primeiras resinas ao inventário',
