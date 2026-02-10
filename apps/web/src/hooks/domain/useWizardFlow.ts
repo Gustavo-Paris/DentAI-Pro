@@ -642,7 +642,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
                     body: {
                       evaluationId: evaluation.id,
                       userId: user.id,
-                      patientAge: formData.patientAge,
+                      patientAge: formData.patientAge || '30',
                       tooth,
                       region: getFullRegion(tooth),
                       cavityClass: inferCavityClass(toothData, formData.cavityClass, normalizedTreatment),
