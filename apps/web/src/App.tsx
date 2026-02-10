@@ -50,9 +50,13 @@ const queryClient = new QueryClient({
 // Loading fallback for lazy-loaded pages
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
-    <div className="w-full max-w-4xl mx-4 space-y-4">
-      <Skeleton className="h-16 w-full" />
-      <Skeleton className="h-[400px] w-full" />
+    <div className="flex flex-col items-center gap-4">
+      <span className="text-xl font-semibold tracking-[0.2em] font-display text-gradient-gold animate-pulse">
+        AURIA
+      </span>
+      <div className="w-48">
+        <Skeleton className="h-1 w-full rounded-full" />
+      </div>
     </div>
   </div>
 );

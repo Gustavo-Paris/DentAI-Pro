@@ -151,7 +151,7 @@ export function PatientPreferencesStep({
               <Zap className="w-4 h-4 text-primary shrink-0" />
               <span>
                 As próximas etapas consumirão{' '}
-                <strong className="text-gradient-gold font-bold">{totalCost} créditos</strong>{' '}
+                <strong className="text-primary font-bold">{totalCost} créditos</strong>{' '}
                 (análise + DSD)
               </span>
             </div>

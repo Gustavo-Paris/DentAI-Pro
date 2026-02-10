@@ -47,6 +47,10 @@ export default {
   				DEFAULT: 'hsl(var(--card))',
   				foreground: 'hsl(var(--card-foreground))'
   			},
+  			success: {
+  				DEFAULT: 'hsl(var(--success))',
+  				foreground: 'hsl(var(--success-foreground))'
+  			},
   			sidebar: {
   				DEFAULT: 'hsl(var(--sidebar-background))',
   				foreground: 'hsl(var(--sidebar-foreground))',
@@ -111,7 +115,7 @@ export default {
   				'sans-serif'
   			],
   			display: [
-  				'Outfit',
+  				'Plus Jakarta Sans',
   				'DM Sans',
   				'ui-sans-serif',
   				'system-ui',

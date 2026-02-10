@@ -122,7 +122,9 @@ export default function AppLayout() {
 
       {/* Main content */}
       <main className="lg:pl-56 pb-20 lg:pb-0">
-        <Outlet />
+        <div key={location.pathname} className="route-enter">
+          <Outlet />
+        </div>
       </main>
 
       {/* Floating help button */}

@@ -1067,7 +1067,7 @@ export function ReviewAnalysisStep({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
             <div>
               <p className="text-muted-foreground text-xs">Dentes</p>
-              <p className="font-semibold text-gradient-gold">{realSelectedTeeth.length}{hasGengivoplasty ? ' + gengivo' : ''}</p>
+              <p className="font-semibold text-primary">{realSelectedTeeth.length}{hasGengivoplasty ? ' + gengivo' : ''}</p>
             </div>
             <div>
               <p className="text-muted-foreground text-xs">Tipos</p>

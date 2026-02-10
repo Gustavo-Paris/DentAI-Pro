@@ -166,7 +166,7 @@ function RecentSessions({
               <FileText className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
             </div>
             <div>
-              <p className="font-medium font-display text-sm mb-1 text-gradient-gold">Nenhuma avaliação ainda</p>
+              <p className="font-medium font-display text-sm mb-1 text-primary">Nenhuma avaliação ainda</p>
               <p className="text-xs text-muted-foreground mb-4">Comece criando sua primeira avaliação com IA</p>
             </div>
             <Link to="/new-case">

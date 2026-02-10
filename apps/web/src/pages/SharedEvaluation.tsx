@@ -94,7 +94,7 @@ export default function SharedEvaluation() {
     <div className="min-h-screen bg-background">
       <header className="border-b border-border">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <span className="text-lg font-semibold tracking-[0.2em] font-display text-gradient-gold">{BRAND_NAME}</span>
+          <span className="text-lg font-semibold tracking-[0.2em] font-display text-primary">{BRAND_NAME}</span>
           <Badge variant="outline" className="gap-1 text-xs">
             <Clock className="w-3 h-3" />
             Visualização compartilhada
