@@ -118,9 +118,9 @@ const statConfigs: StatConfig[] = [
   {
     key: 'totalCases',
     label: 'Total de Casos',
-    unit: 'casos gerados',
+    unit: 'tratamentos gerados',
     icon: FileText,
-    tooltip: 'Total de casos gerados por avaliações',
+    tooltip: 'Total de tratamentos gerados por avaliações',
     accentColor: 'from-primary to-primary/70',
     darkAccentColor: 'dark:from-primary dark:to-primary/60',
     getValueColor: () => 'text-foreground',

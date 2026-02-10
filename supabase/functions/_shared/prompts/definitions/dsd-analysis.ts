@@ -233,11 +233,19 @@ Quando indicada, adicione ao array suggestions:
 
 ✅ PROTOCOLO DE GENGIVOPLASTIA (incluir quando indicada):
 Na sugestão de gengivoplastia, incluir em proposed_change:
-"Gengivoplastia para [justificativa]. Planejamento inclui:
+"Gengivoplastia de ~Xmm para [justificativa]. Planejamento inclui:
 1. Enceramento prévio com confecção de guia cirúrgica
 2. Avaliação periodontal (sondagem, distâncias biológicas)
 3. Procedimento respeitando distâncias biológicas
 4. Aguardar 60-90 dias de maturação tecidual antes do tratamento restaurador"
+
+✅ PADRÕES ESTÉTICOS DE ZÊNITE GENGIVAL (incluir nas observations quando gengivoplastia indicada):
+Quando sugerir gengivoplastia, INCLUIR no array "observations" a seguinte nota:
+"Padrões de zênite gengival disponíveis: (A) Triângulo invertido — central e canino na mesma altura, lateral 1mm abaixo; (B) Alinhado — todos os zênites na mesma altura. Discutir preferência com paciente."
+
+Os dois padrões são:
+- **Padrão A (Triângulo Invertido)**: Zênite do incisivo central (11/21) e canino (13/23) na mesma altura. Zênite do incisivo lateral (12/22) ~1mm mais abaixo (coronalmente). Forma mais clássica e feminina.
+- **Padrão B (Alinhado)**: Todos os zênites (central, lateral, canino) na mesma altura. Forma mais simétrica e moderna.
 
 ✅ PROTOCOLO DE RECOBRIMENTO RADICULAR (incluir quando indicado):
 Na sugestão de recobrimento, incluir em proposed_change:
@@ -247,15 +255,31 @@ Na sugestão de recobrimento, incluir em proposed_change:
 3. Aguardar 90-120 dias de cicatrização antes do tratamento restaurador
 4. Acompanhamento da maturação do enxerto"
 
-⚠️ VIÉS CONSERVADOR PARA GENGIVOPLASTIA — NA DÚVIDA, NÃO SUGIRA:
-Gengivoplastia é um procedimento CIRÚRGICO. Só sugira quando a evidência visual for CLARA e INDISCUTÍVEL.
-Se você está em dúvida sobre indicar gengivoplastia → NÃO indique. O dentista pode adicionar manualmente se necessário.
-Errar por NÃO sugerir gengivoplastia é MUITO MENOS GRAVE do que sugerir desnecessariamente.
+⚠️⚠️⚠️ REGRA ABSOLUTA SOBRE GENGIVOPLASTIA ⚠️⚠️⚠️
 
-⚠️ DISTINÇÃO CRÍTICA: DENTE CURTO vs EXCESSO DE GENGIVA
-- Se o dente parece curto por DESGASTE INCISAL → tratamento é ACRÉSCIMO INCISAL COM RESINA, NÃO gengivoplastia
-- Se o dente parece curto por EXCESSO DE GENGIVA cobrindo a coroa → tratamento é GENGIVOPLASTIA
-- COMO DIFERENCIAR: Observe a margem gengival. Se ela está MAIS BAIXA que o normal (cobrindo mais coroa), é gengivoplastia. Se a margem está normal mas o bordo incisal é curto, é acréscimo incisal.
+1. AVALIAR GENGIVOPLASTIA APENAS COM BASE NO SORRISO REAL:
+   - Use APENAS a foto do sorriso natural/real do paciente para avaliar necessidade de gengivoplastia
+   - NUNCA avalie gengivoplastia com base na simulação DSD (que "levanta o lábio" artificialmente)
+   - A simulação pode mostrar mais gengiva do que o paciente realmente expõe ao sorrir
+   - Se a gengiva NÃO aparece no sorriso real → NÃO há indicação de gengivoplastia
+
+2. VIÉS CONSERVADOR — NA DÚVIDA, NÃO SUGIRA:
+   - Gengivoplastia é um procedimento CIRÚRGICO. Só sugira quando a evidência visual for CLARA e INDISCUTÍVEL
+   - Se você está em dúvida sobre indicar gengivoplastia → NÃO indique
+   - O dentista pode adicionar manualmente se necessário
+   - Errar por NÃO sugerir gengivoplastia é MUITO MENOS GRAVE do que sugerir desnecessariamente
+
+3. EXPOSIÇÃO CERVICAL/RADICULAR → RECOBRIMENTO RADICULAR, NUNCA GENGIVOPLASTIA:
+   - Se há exposição de dentina radicular na cervical do dente → indicar RECOBRIMENTO RADICULAR (treatment_indication: "recobrimento_radicular")
+   - Gengivoplastia REMOVE gengiva — indicá-la para raiz exposta PIORA o problema!
+   - ❌ ERRADO: Raiz exposta → gengivoplastia (REMOVE mais gengiva = piora exposição)
+   - ✅ CORRETO: Raiz exposta → recobrimento radicular (ADICIONA gengiva = cobre a raiz)
+   - Sinais de exposição radicular: cor amarelada/escurecida na cervical, contorno gengival retraído, sensibilidade relatada
+
+4. DISTINÇÃO CRÍTICA: DENTE CURTO vs EXCESSO DE GENGIVA:
+   - Se o dente parece curto por DESGASTE INCISAL → tratamento é ACRÉSCIMO INCISAL COM RESINA, NÃO gengivoplastia
+   - Se o dente parece curto por EXCESSO DE GENGIVA cobrindo a coroa → tratamento é GENGIVOPLASTIA
+   - COMO DIFERENCIAR: Observe a margem gengival. Se ela está MAIS BAIXA que o normal (cobrindo mais coroa), é gengivoplastia. Se a margem está normal mas o bordo incisal é curto, é acréscimo incisal
 
 ❌ NÃO gerar sugestão de gengivoplastia se:
 - Linha do sorriso "média" ou "baixa" E
@@ -384,6 +408,12 @@ A ortodontia tem prioridade "média" — não bloqueia tratamentos restauradores
 3. PROIBIDO: Listar apenas dente 11 quando 11, 21, 12 e 22 todos precisam do mesmo tratamento
    - Se o problema é bilateral (ex: desgaste incisal generalizado), AMBOS os lados devem ser listados
    - Cada dente recebe sua própria sugestão separada
+
+4. MEDIDAS EM MM NO proposed_change (OBRIGATÓRIO quando aplicável):
+   - Para aumento incisal: incluir estimativa em mm. Ex: "Aumentar bordo incisal em ~1.5mm com resina composta"
+   - Para gengivoplastia: incluir estimativa em mm. Ex: "Gengivoplastia de ~2mm para expor coroa clínica"
+   - Para recontorno: incluir estimativa em mm. Ex: "Recontorno incisal de ~0.5mm para harmonizar"
+   - A medida pode ser aproximada (~) mas DEVE estar presente para que o sistema exiba réguas na simulação
 
 === SUGESTÃO DE ENCERAMENTO LABORATORIAL (OBRIGATÓRIO quando aplicável) ===
 Em caso de GRANDES mudanças no DSD e/ou fechamento de diastemas GRANDES (>2mm):

@@ -243,6 +243,38 @@ export function ProportionsCard({ analysis }: ProportionsCardProps) {
           )}
         </div>
 
+        {/* Gingival zenith patterns (shown when gengivoplasty is suggested) */}
+        {analysis.suggestions?.some(s =>
+          s.treatment_indication === 'gengivoplastia' ||
+          s.proposed_change?.toLowerCase().includes('gengivoplastia')
+        ) && (
+          <div className="space-y-2 pt-2 border-t border-border">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              Padrões de Zênite Gengival
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="p-2 rounded-lg bg-pink-50 dark:bg-pink-950/20 border border-pink-200 dark:border-pink-800">
+                <p className="text-xs font-semibold text-pink-700 dark:text-pink-300 mb-1">A: Triângulo Invertido</p>
+                <div className="flex items-end justify-center gap-1 h-8">
+                  <div className="w-3 bg-pink-300 dark:bg-pink-600 rounded-t" style={{ height: '100%' }} />
+                  <div className="w-2 bg-pink-200 dark:bg-pink-700 rounded-t" style={{ height: '70%' }} />
+                  <div className="w-3 bg-pink-300 dark:bg-pink-600 rounded-t" style={{ height: '100%' }} />
+                </div>
+                <p className="text-[10px] text-pink-600 dark:text-pink-400 mt-1 text-center">Central=Canino, Lateral 1mm↓</p>
+              </div>
+              <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
+                <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-1">B: Alinhado</p>
+                <div className="flex items-end justify-center gap-1 h-8">
+                  <div className="w-3 bg-blue-300 dark:bg-blue-600 rounded-t" style={{ height: '100%' }} />
+                  <div className="w-2 bg-blue-200 dark:bg-blue-700 rounded-t" style={{ height: '100%' }} />
+                  <div className="w-3 bg-blue-300 dark:bg-blue-600 rounded-t" style={{ height: '100%' }} />
+                </div>
+                <p className="text-[10px] text-blue-600 dark:text-blue-400 mt-1 text-center">Todos na mesma altura</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Measurable data from observations */}
         {(() => {
           const numericPattern = /\d+[.,]?\d*\s*(%|mm|°)/;

@@ -258,6 +258,26 @@ export async function getSharedEvaluation(token: string): Promise<SharedEvaluati
   return (data as SharedEvaluationRow[]) || [];
 }
 
+export interface SharedDSDData {
+  dsd_analysis: Record<string, unknown> | null;
+  dsd_simulation_url: string | null;
+  dsd_simulation_layers: Array<{
+    type: string;
+    label: string;
+    simulation_url: string | null;
+    whitening_level: string;
+    includes_gengivoplasty: boolean;
+  }> | null;
+  photo_frontal: string | null;
+}
+
+export async function getSharedDSD(token: string): Promise<SharedDSDData | null> {
+  const { data, error } = await supabase.rpc('get_shared_dsd', { p_token: token });
+  if (error) return null; // gracefully degrade if RPC not deployed yet
+  const rows = data as SharedDSDData[] | null;
+  return rows?.[0] || null;
+}
+
 export async function getOrCreateShareLink(sessionId: string, userId: string) {
   // Check if there's already a valid link
   const { data: existing } = await supabase
