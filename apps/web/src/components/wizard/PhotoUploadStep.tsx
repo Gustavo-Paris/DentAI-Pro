@@ -544,49 +544,49 @@ export function PhotoUploadStep({
         </div>
       )}
 
-      {/* CTA — Quick Case (primary) + Full Flow (secondary) */}
+      {/* CTA — Full Flow (primary) + Quick Case (secondary) */}
       {imageBase64 && (
         <div className="flex flex-col items-center gap-4">
+          <div className="flex flex-col items-center gap-1">
+            <Button
+              size="lg"
+              onClick={onAnalyze}
+              disabled={isUploading}
+              className="btn-glow-gold btn-press font-semibold text-base min-w-[260px]"
+            >
+              {isUploading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Enviando...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Análise Completa com IA
+                </>
+              )}
+            </Button>
+            <p className="text-[10px] text-muted-foreground/70">
+              3 créditos — inclui preferências e simulação DSD
+            </p>
+          </div>
           {onQuickCase && (
             <div className="flex flex-col items-center gap-1">
               <Button
-                size="lg"
+                variant="outline"
+                size="default"
                 onClick={onQuickCase}
                 disabled={isUploading}
-                className="btn-glow-gold btn-press font-semibold text-base min-w-[260px]"
+                className="btn-press min-w-[220px]"
               >
-                {isUploading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Enviando...
-                  </>
-                ) : (
-                  <>
-                    <Zap className="w-4 h-4 mr-2" />
-                    Análise Rápida com IA
-                  </>
-                )}
+                <Zap className="w-4 h-4 mr-2" />
+                Análise Rápida
               </Button>
               <p className="text-[10px] text-muted-foreground/70">
                 1 crédito — resultado em segundos
               </p>
             </div>
           )}
-          <div className="flex flex-col items-center gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onAnalyze}
-              disabled={isUploading}
-              className="btn-press"
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              Análise Completa (3 créditos)
-            </Button>
-            <p className="text-[10px] text-muted-foreground/70">
-              Inclui preferências e simulação DSD
-            </p>
-          </div>
         </div>
       )}
 
