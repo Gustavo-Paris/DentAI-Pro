@@ -5,8 +5,11 @@ interface WarningsSectionProps {
   warnings: string[];
 }
 
+const PLACEHOLDER_PATTERNS = [/^NÃO fazer [A-Z]$/i, /^não fazer [a-z]$/i, /^placeholder/i];
+
 function WarningsSection({ warnings }: WarningsSectionProps) {
-  if (!warnings || warnings.length === 0) return null;
+  const filtered = warnings?.filter(w => !PLACEHOLDER_PATTERNS.some(p => p.test(w.trim())));
+  if (!filtered || filtered.length === 0) return null;
 
   return (
     <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-4">
@@ -15,7 +18,7 @@ function WarningsSection({ warnings }: WarningsSectionProps) {
         <h4 className="font-medium text-destructive">O que NÃO fazer</h4>
       </div>
       <ul className="space-y-2">
-        {warnings.map((warning, index) => (
+        {filtered.map((warning, index) => (
           <li key={index} className="flex items-start gap-2 text-sm">
             <XCircle className="w-4 h-4 text-destructive mt-0.5 shrink-0" />
             <span className="text-destructive/90">{warning}</span>

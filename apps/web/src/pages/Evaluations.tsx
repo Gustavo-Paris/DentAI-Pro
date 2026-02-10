@@ -73,12 +73,17 @@ const SessionCard = memo(function SessionCard({
                 <CheckCircle className="w-3 h-3" aria-hidden="true" />
                 <span className="hidden sm:inline">Finalizado</span>
               </span>
-            ) : (
+            ) : session.completedCount > 0 ? (
               <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
-                <span className="hidden sm:inline">Em progresso</span>
+                <span className="hidden sm:inline">Em andamento</span>
                 <span className="text-muted-foreground">
                   ({session.completedCount}/{session.evaluationCount})
                 </span>
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                <CheckCircle className="w-3 h-3" aria-hidden="true" />
+                <span className="hidden sm:inline">Resultados prontos</span>
               </span>
             )}
             <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-muted-foreground">

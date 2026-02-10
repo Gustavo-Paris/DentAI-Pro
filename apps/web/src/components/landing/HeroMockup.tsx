@@ -17,7 +17,7 @@ export function HeroMockup() {
           {/* App header */}
           <div className="px-4 py-3 border-b border-border/50">
             <div className="text-xs font-semibold tracking-[0.15em] text-primary">AURIA</div>
-            <div className="text-[10px] text-muted-foreground mt-0.5">Resultado da Analise</div>
+            <div className="text-[10px] text-muted-foreground mt-0.5">Resultado da Análise</div>
           </div>
 
           {/* Content area */}
@@ -73,7 +73,7 @@ export function HeroMockup() {
 
             {/* Confidence badge */}
             <div className="flex items-center justify-between bg-secondary/60 rounded-lg px-3 py-2">
-              <span className="text-[10px] text-muted-foreground">Confianca da IA</span>
+              <span className="text-[10px] text-muted-foreground">Confiança da IA</span>
               <div className="flex items-center gap-1">
                 <div className="w-2 h-2 rounded-full bg-emerald-500" />
                 <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">Alta</span>

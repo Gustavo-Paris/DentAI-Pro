@@ -132,7 +132,7 @@ export default function EvaluationDetails() {
       <DetailPage
         title={detail.patientName}
         breadcrumbs={[
-          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'Avaliações', href: '/evaluations' },
           { label: detail.patientName },
         ]}
         query={{ data: detail.evaluations, isLoading: detail.isLoading }}

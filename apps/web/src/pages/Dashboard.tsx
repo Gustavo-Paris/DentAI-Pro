@@ -49,7 +49,7 @@ const modules: ModuleConfig[] = [
   {
     id: 'new-case',
     title: 'Nova Avaliação',
-    description: 'Análise com IA · 3 créditos',
+    description: 'A partir de 1 crédito',
     icon: Sparkles,
     href: '/new-case',
     variant: 'primary',

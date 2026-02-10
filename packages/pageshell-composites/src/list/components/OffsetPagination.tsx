@@ -37,14 +37,14 @@ export function OffsetPagination({
 
   // Use defaults if labels not provided
   const labels = {
-    showing: paginationLabels?.showing ?? 'Showing',
-    to: paginationLabels?.to ?? 'to',
-    of: paginationLabels?.of ?? 'of',
-    items: paginationLabels?.items ?? 'items',
+    showing: paginationLabels?.showing ?? 'Mostrando',
+    to: paginationLabels?.to ?? 'a',
+    of: paginationLabels?.of ?? 'de',
+    items: paginationLabels?.items ?? 'itens',
   };
   const navLabels = {
-    previousPage: navigationLabels?.previousPage ?? 'Previous page',
-    nextPage: navigationLabels?.nextPage ?? 'Next page',
+    previousPage: navigationLabels?.previousPage ?? 'Página anterior',
+    nextPage: navigationLabels?.nextPage ?? 'Próxima página',
   };
   const totalPages = Math.ceil(total / pageSize);
 
