@@ -623,17 +623,16 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
       clearInterval(stepInterval);
       logger.error('DSD error:', error);
       
-      const err = error as { name?: string; message?: string; code?: string };
-      
+      const err = error as { name?: string; message?: string; code?: string; status?: number };
+
       // Check if it's a connection/timeout error that can be retried
-      const isConnectionError = 
+      const isConnectionError =
         err.name === 'AbortError' ||
         err.message?.includes('Failed to fetch') ||
         err.message?.includes('fetch') ||
         err.message?.includes('timeout') ||
-        err.message?.includes('network') ||
-        err.message?.includes('500');
-      
+        err.message?.includes('network');
+
       if (isConnectionError && retryCount < MAX_RETRIES) {
         logger.debug(`DSD retry ${retryCount + 1}/${MAX_RETRIES}...`);
         didRetry = true;
@@ -641,17 +640,19 @@ export function DSDStep({ imageBase64, onComplete, onSkip, additionalPhotos, pat
         await new Promise(r => setTimeout(r, 2000)); // Wait 2s before retry
         return analyzeDSD(retryCount + 1);
       }
-      
+
       hasError = true;
-      if (err.message?.includes('429') || err.code === 'RATE_LIMITED') {
+      if (err.status === 429 || err.message?.includes('429') || err.code === 'RATE_LIMITED') {
         setError('Limite de requisições excedido. Aguarde alguns minutos.');
-      } else if (err.message?.includes('402') || err.code === 'INSUFFICIENT_CREDITS' || err.code === 'PAYMENT_REQUIRED') {
+      } else if (err.status === 402 || err.message?.includes('402') || err.code === 'INSUFFICIENT_CREDITS' || err.code === 'PAYMENT_REQUIRED') {
         setError('Créditos insuficientes para simulação DSD. Faça upgrade do seu plano.');
         refreshSubscription();
       } else if (isConnectionError) {
         setError('Erro de conexão. Verifique sua internet e tente novamente.');
       } else {
-        setError('Não foi possível gerar a análise DSD. Você pode pular esta etapa.');
+        // Show actual server error when available, otherwise generic message
+        const serverMsg = err.message && !err.message.includes('non-2xx') ? err.message : null;
+        setError(serverMsg || 'Não foi possível gerar a análise DSD. Você pode pular esta etapa.');
       }
       setIsAnalyzing(false);
     } finally {

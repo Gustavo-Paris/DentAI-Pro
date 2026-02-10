@@ -774,11 +774,15 @@ Se o problema clínico é microdontia/conoide → sua sugestão deve ser "Aument
       if (error.statusCode === 429) {
         return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
       }
-      logger.error("Gemini analysis error:", error.message);
+      logger.error("Gemini analysis error:", error.message, "status:", error.statusCode);
+      // Include Gemini error details in response for debugging
+      const detail = `${ERROR_MESSAGES.AI_ERROR} (${error.statusCode}: ${error.message})`;
+      return createErrorResponse(detail, 500, corsHeaders);
     } else {
-      logger.error("AI analysis error:", error);
+      const msg = error instanceof Error ? error.message : String(error);
+      logger.error("AI analysis error:", msg);
+      return createErrorResponse(`${ERROR_MESSAGES.AI_ERROR} (${msg})`, 500, corsHeaders);
     }
-    return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
   }
 }
 
@@ -1081,12 +1085,13 @@ serve(async (req: Request) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    logger.error(`[${reqId}] DSD generation error:`, error);
+    const msg = error instanceof Error ? error.message : String(error);
+    logger.error(`[${reqId}] DSD generation error:`, msg);
     // Refund credits on unexpected errors — user paid but got nothing
     if (creditsConsumed && supabaseForRefund && userIdForRefund) {
       await refundCredits(supabaseForRefund, userIdForRefund, "dsd_simulation", reqId);
       logger.log(`[${reqId}] Refunded DSD credits for user ${userIdForRefund} due to error`);
     }
-    return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders, undefined, reqId);
+    return createErrorResponse(`${ERROR_MESSAGES.PROCESSING_ERROR} (${msg})`, 500, corsHeaders, undefined, reqId);
   }
 });

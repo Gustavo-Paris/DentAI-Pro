@@ -62,11 +62,48 @@ export function useAuthenticatedFetch() {
       trackTiming(`edge-fn-${functionName}`, duration);
 
       if (error) {
-        // Check if it's a 401 and try to refresh + retry once
+        // Extract the actual error body from the Response context
+        // FunctionsHttpError stores the Response object in error.context
+        const context = (error as { context?: Response }).context;
+        if (context && typeof context.json === 'function') {
+          try {
+            const body = await context.json();
+            const serverMessage = body?.error || body?.message;
+            if (serverMessage) {
+              // Enrich error with server message and status info
+              const status = context.status || 0;
+              const enriched = new Error(serverMessage);
+              (enriched as { code?: string }).code = body?.code;
+              (enriched as { status?: number }).status = status;
+              logger.error(`Edge function ${functionName} error (${status}):`, serverMessage);
+
+              // Check if it's a 401 and try to refresh + retry once
+              if (status === 401) {
+                logger.debug('Got 401, attempting token refresh and retry...');
+                const { error: refreshError } = await supabase.auth.refreshSession();
+                if (refreshError) {
+                  logger.error('Token refresh after 401 failed:', refreshError);
+                  return { data: null, error: enriched };
+                }
+                const retryResult = await supabase.functions.invoke<T>(functionName, {
+                  body: options?.body,
+                  headers: options?.headers,
+                });
+                return { data: retryResult.data, error: retryResult.error };
+              }
+
+              return { data: null, error: enriched };
+            }
+          } catch {
+            // Response body already consumed or not JSON — fall through
+          }
+        }
+
+        // Fallback: check error message for 401
         const errorMessage = error.message || '';
         if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
           logger.debug('Got 401, attempting token refresh and retry...');
-          
+
           const { error: refreshError } = await supabase.auth.refreshSession();
           if (refreshError) {
             logger.error('Token refresh after 401 failed:', refreshError);
