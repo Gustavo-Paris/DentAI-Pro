@@ -105,7 +105,6 @@ serve(async (req) => {
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
     // Validate authentication
@@ -114,22 +113,18 @@ serve(async (req) => {
       return createErrorResponse(ERROR_MESSAGES.UNAUTHORIZED, 401, corsHeaders);
     }
 
-    // Create client with user's auth token to verify claims
-    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
+    // Create service role client for all operations
+    const supabaseService = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Verify user via getUser()
     const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
-    
-    if (claimsError || !claimsData?.claims) {
+    const { data: { user }, error: authError } = await supabaseService.auth.getUser(token);
+
+    if (authError || !user) {
       return createErrorResponse(ERROR_MESSAGES.INVALID_TOKEN, 401, corsHeaders);
     }
 
-    const userId = claimsData.claims.sub as string;
-
-    // Check rate limit (AI_LIGHT: 20/min, 100/hour, 500/day)
-    const supabaseService = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "");
+    const userId = user.id;
     const rateLimitResult = await checkRateLimit(
       supabaseService,
       userId,
