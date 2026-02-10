@@ -558,7 +558,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
             bruxism: formData.bruxism,
             aesthetic_level: formData.aestheticLevel || 'estético',
             budget: formData.budget || 'moderado',
-            longevity_expectation: formData.longevityExpectation || 'longo-prazo',
+            longevity_expectation: formData.longevityExpectation || 'longo',
             photo_frontal: uploadedPhotoPath,
             status: 'analyzing',
             treatment_type: normalizedTreatment,

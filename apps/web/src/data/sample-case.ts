@@ -58,7 +58,7 @@ export const SAMPLE_FORM_DATA: ReviewFormData = {
   bruxism: false,
   aestheticLevel: 'estético',
   budget: 'padrão',
-  longevityExpectation: 'longo-prazo',
+  longevityExpectation: 'longo',
   clinicalNotes: '',
   treatmentType: 'resina',
 };
