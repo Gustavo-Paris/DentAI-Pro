@@ -23,9 +23,12 @@ const AESTHETIC_PROCEDURES = [
 
 // Explicações dos níveis estéticos
 const aestheticExplanations: Record<string, string> = {
+  'funcional': 'Restauração funcional com boa estética — 2-3 camadas',
+  'estético': 'Mimetismo natural, estratificação completa — 4-5 camadas com efeitos opcionais',
+  // Backward compat for old values
   'básico': 'Restauração funcional, estética secundária',
   'alto': 'Mimetismo natural exigido, paciente atento aos detalhes',
-  'muito alto': 'DSD ativo, harmonização completa, estética de excelência'
+  'muito alto': 'DSD ativo, harmonização completa, estética de excelência',
 };
 
 interface CaseSummaryBoxProps {

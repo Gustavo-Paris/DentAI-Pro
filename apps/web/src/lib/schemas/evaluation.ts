@@ -29,7 +29,7 @@ export const reviewFormSchema = z.object({
   enamelCondition: z.string().optional(),
   depth: z.enum(['Rasa', 'Média', 'Profunda']).optional(),
   bruxism: z.boolean().default(false),
-  aestheticLevel: z.enum(['básico', 'alto', 'muito alto']),
+  aestheticLevel: z.enum(['funcional', 'estético']),
   budget: z.enum(['padrão', 'premium']),
   longevityExpectation: z.enum(['curto', 'médio', 'longo']).default('médio'),
   clinicalNotes: z.string()

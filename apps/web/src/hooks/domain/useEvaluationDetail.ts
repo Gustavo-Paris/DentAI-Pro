@@ -225,7 +225,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
       id: first.patient_id,
       vitaShade: first.tooth_color || 'A2',
       bruxism: first.bruxism || false,
-      aestheticLevel: first.aesthetic_level || 'alto',
+      aestheticLevel: first.aesthetic_level || 'estético',
       budget: first.budget || 'padrão',
       longevityExpectation: first.longevity_expectation || 'médio',
       photoPath: first.photo_frontal,

@@ -980,14 +980,12 @@ export function ReviewAnalysisStep({
                 <Label className="text-sm">Nível de exigência estética</Label>
                 <PillToggle
                   options={[
-                    { value: 'muito alto', label: 'Muito Alto' },
-                    { value: 'alto', label: 'Alto' },
-                    { value: 'médio', label: 'Médio' },
-                    { value: 'baixo', label: 'Baixo' },
+                    { value: 'funcional', label: 'Funcional' },
+                    { value: 'estético', label: 'Estético' },
                   ]}
                   value={formData.aestheticLevel}
                   onChange={(value) => onFormChange({ aestheticLevel: value })}
-                  columns={4}
+                  columns={2}
                 />
               </div>
 

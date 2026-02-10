@@ -24,7 +24,7 @@ function validEvaluation() {
     cavityClass: 'Classe IV',
     restorationSize: 'Média',
     substrate: 'Esmalte',
-    aestheticLevel: 'alto',
+    aestheticLevel: 'estético',
     toothColor: 'A2',
     stratificationNeeded: true,
     bruxism: false,
@@ -44,7 +44,7 @@ function validCase() {
     restorationSize: 'Pequena',
     substrate: 'Esmalte',
     hasBruxism: false,
-    aestheticLevel: 'alto',
+    aestheticLevel: 'estético',
     toothShade: 'A1',
     needsStratification: false,
   };

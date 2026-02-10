@@ -13,7 +13,7 @@ export const INITIAL_FORM_DATA: ReviewFormData = {
   enamelCondition: 'Íntegro',
   depth: 'Média',
   bruxism: false,
-  aestheticLevel: 'alto',
+  aestheticLevel: 'estético',
   budget: 'padrão',
   longevityExpectation: 'médio',
   clinicalNotes: '',

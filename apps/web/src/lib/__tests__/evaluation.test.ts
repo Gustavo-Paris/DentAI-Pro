@@ -12,7 +12,7 @@ describe('reviewFormSchema', () => {
     vitaShade: 'A2',
     substrate: 'Esmalte',
     bruxism: false,
-    aestheticLevel: 'alto' as const,
+    aestheticLevel: 'estético' as const,
     budget: 'padrão' as const,
     longevityExpectation: 'médio' as const,
     treatmentType: 'resina' as const,
@@ -166,7 +166,7 @@ describe('reviewFormSchema', () => {
   });
 
   describe('aestheticLevel validation', () => {
-    it.each(['básico', 'alto', 'muito alto'] as const)(
+    it.each(['funcional', 'estético'] as const)(
       'should accept %s',
       (level) => {
         const result = reviewFormSchema.safeParse({
@@ -176,6 +176,14 @@ describe('reviewFormSchema', () => {
         expect(result.success).toBe(true);
       }
     );
+
+    it('should reject old aesthetic level values', () => {
+      const result = reviewFormSchema.safeParse({
+        ...validData,
+        aestheticLevel: 'alto',
+      });
+      expect(result.success).toBe(false);
+    });
   });
 
   describe('budget validation', () => {
