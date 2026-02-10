@@ -536,7 +536,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
             session_id: sessionId,
             patient_id: patientId || null,
             patient_name: formData.patientName || null,
-            patient_age: parseInt(formData.patientAge),
+            patient_age: parseInt(formData.patientAge) || 30,
             tooth: isGengivoplasty ? 'GENGIVO' : tooth,
             region: isGengivoplasty ? 'anterior-superior' : getFullRegion(tooth),
             cavity_class: isGengivoplasty ? 'N/A' : inferCavityClass(toothData, formData.cavityClass, normalizedTreatment),
