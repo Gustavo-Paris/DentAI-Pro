@@ -16,6 +16,7 @@ import { withMetrics } from "../_shared/prompts/index.ts";
 import type { Params as DsdAnalysisParams } from "../_shared/prompts/definitions/dsd-analysis.ts";
 import type { Params as DsdSimulationParams } from "../_shared/prompts/definitions/dsd-simulation.ts";
 import { createSupabaseMetrics, PROMPT_VERSION } from "../_shared/metrics-adapter.ts";
+import { parseAIResponse, DSDAnalysisSchema } from "../_shared/aiSchemas.ts";
 
 // DSD Analysis interface
 interface DSDAnalysis {
@@ -764,7 +765,7 @@ Se o problema clínico é microdontia/conoide → sua sugestão deve ser "Aument
     });
 
     if (result.functionCall) {
-      return result.functionCall.args as unknown as DSDAnalysis;
+      return parseAIResponse(DSDAnalysisSchema, result.functionCall.args, 'generate-dsd') as DSDAnalysis;
     }
 
     logger.error("No function call in Gemini response");

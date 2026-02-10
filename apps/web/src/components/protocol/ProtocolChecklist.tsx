@@ -40,7 +40,7 @@ export default function ProtocolChecklist({
           <div
             className={cn(
               "h-full transition-all duration-300",
-              allComplete ? "bg-green-500" : "bg-primary"
+              allComplete ? "bg-success" : "bg-primary"
             )}
             style={{ width: `${progress}%` }}
           />
@@ -49,7 +49,7 @@ export default function ProtocolChecklist({
           {checkedSet.size}/{items.length}
         </span>
         {allComplete && (
-          <CheckCircle2 className="w-5 h-5 text-green-500" />
+          <CheckCircle2 className="w-5 h-5 text-success" />
         )}
       </div>
 
@@ -63,7 +63,7 @@ export default function ProtocolChecklist({
               className={cn(
                 "flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-colors",
                 isChecked
-                  ? "bg-green-500/10 border border-green-500/20"
+                  ? "bg-success/10 border border-success/20"
                   : "bg-muted/30 hover:bg-muted/50 border border-transparent"
               )}
             >

@@ -246,7 +246,7 @@ export function CementationProtocolCard({
 
       {/* Alerts */}
       {protocol.alerts && protocol.alerts.length > 0 && (
-        <Card className="border-destructive/50 bg-red-50 dark:bg-red-950/20">
+        <Card className="border-destructive/50 bg-destructive/10 dark:bg-destructive/10">
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2 text-destructive">
               <AlertTriangle className="w-4 h-4" />
@@ -268,9 +268,9 @@ export function CementationProtocolCard({
 
       {/* Warnings */}
       {protocol.warnings && protocol.warnings.length > 0 && (
-        <Card className="border-amber-400/50 bg-amber-50 dark:bg-amber-950/20">
+        <Card className="border-warning/50 bg-warning/10 dark:bg-warning/10">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2 text-amber-600 dark:text-amber-400">
+            <CardTitle className="text-base flex items-center gap-2 text-warning">
               <AlertTriangle className="w-4 h-4" />
               Pontos de Atenção
             </CardTitle>
@@ -278,7 +278,7 @@ export function CementationProtocolCard({
           <CardContent>
             <ul className="space-y-2">
               {protocol.warnings.map((warning, index) => (
-                <li key={index} className="flex items-start gap-2 text-sm text-amber-600 dark:text-amber-400">
+                <li key={index} className="flex items-start gap-2 text-sm text-warning">
                   <span className="mt-0.5">⚠️</span>
                   {warning}
                 </li>

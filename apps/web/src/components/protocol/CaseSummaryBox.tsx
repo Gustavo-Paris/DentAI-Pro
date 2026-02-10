@@ -161,7 +161,7 @@ function CaseSummaryBox({
                   </div>
                   <p className="font-mono font-medium text-sm sm:text-base">{shade}</p>
                   {isTarget && alreadyInRange && (
-                    <p className="text-xs text-green-600">Cor atual já na faixa desejada</p>
+                    <p className="text-xs text-success">Cor atual já na faixa desejada</p>
                   )}
                   {isTarget && !alreadyInRange && (
                     <p className="text-xs text-muted-foreground">Original: {toothColor}</p>

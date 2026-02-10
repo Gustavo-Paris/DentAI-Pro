@@ -25,21 +25,21 @@ export function CreditBadge({ variant = 'compact', className, showTooltip = true
   const isCritical = creditsRemaining <= 2;
 
   const colorClass = isCritical
-    ? 'text-red-600 dark:text-red-400'
+    ? 'text-destructive'
     : isLow
-      ? 'text-amber-600 dark:text-amber-400'
+      ? 'text-warning'
       : 'text-muted-foreground';
 
   const bgClass = isCritical
-    ? 'bg-red-50 border-red-200 dark:bg-red-950/30 dark:border-red-800'
+    ? 'bg-destructive/10 border-destructive/20 dark:bg-destructive/10 dark:border-destructive/30'
     : isLow
-      ? 'bg-amber-50 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800'
+      ? 'bg-warning/10 border-warning/20 dark:bg-warning/10 dark:border-warning/30'
       : 'bg-secondary/50 border-border';
 
   const barColor = isCritical
-    ? 'bg-red-500'
+    ? 'bg-destructive'
     : isLow
-      ? 'bg-amber-500'
+      ? 'bg-warning'
       : 'bg-primary';
 
   if (variant === 'compact') {

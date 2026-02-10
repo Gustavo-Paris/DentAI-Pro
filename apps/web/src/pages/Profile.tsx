@@ -257,9 +257,9 @@ function PaymentHistorySection({
   };
 
   const statusColor: Record<string, string> = {
-    succeeded: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-    failed: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-    pending: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    succeeded: 'bg-success/10 text-success dark:bg-success/20 dark:text-success',
+    failed: 'bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive',
+    pending: 'bg-warning/10 text-warning dark:bg-warning/20 dark:text-warning',
     refunded: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
   };
 

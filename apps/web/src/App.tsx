@@ -10,6 +10,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import CookieConsent from "@/components/CookieConsent";
+import PostHogProvider from "@/components/PostHogProvider";
 import { KeyboardShortcuts } from "@/components/KeyboardShortcuts";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -79,6 +80,7 @@ const App = () => (
             Pular para conteúdo
           </a>
           <AuthProvider>
+          <PostHogProvider>
           <Routes>
             {/* Public routes - eagerly loaded */}
             <Route path="/" element={<Landing />} />
@@ -112,6 +114,7 @@ const App = () => (
           <GlobalSearch />
           <KeyboardShortcuts />
           <CookieConsent />
+          </PostHogProvider>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>

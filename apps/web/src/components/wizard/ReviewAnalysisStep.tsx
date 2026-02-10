@@ -248,7 +248,7 @@ export function ReviewAnalysisStep({
   };
 
   const confidence = analysisResult?.confidence ?? 0;
-  const confidenceColor = confidence >= 80 ? 'text-green-600 dark:text-green-400' : confidence >= 60 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400';
+  const confidenceColor = confidence >= 80 ? 'text-success' : confidence >= 60 ? 'text-warning' : 'text-destructive';
   const detectedTeeth = analysisResult?.detected_teeth || [];
   const hasMultipleTeeth = detectedTeeth.length > 1;
 
@@ -339,8 +339,8 @@ export function ReviewAnalysisStep({
             >
               <span className={cn(
                 'w-1.5 h-1.5 rounded-full',
-                tooth.priority === 'alta' && 'bg-red-400',
-                tooth.priority === 'média' && 'bg-amber-400',
+                tooth.priority === 'alta' && 'bg-destructive',
+                tooth.priority === 'média' && 'bg-warning',
                 tooth.priority === 'baixa' && 'bg-slate-400',
               )} />
               {tooth.priority}
@@ -433,7 +433,7 @@ export function ReviewAnalysisStep({
 
       {/* 1. AI Confidence Banner */}
       {analysisResult && (
-        <Card className={`card-elevated border-l-4 ${confidence >= 80 ? 'border-l-green-500' : confidence >= 60 ? 'border-l-yellow-500' : 'border-l-red-500'}`}>
+        <Card className={`card-elevated border-l-4 ${confidence >= 80 ? 'border-l-success' : confidence >= 60 ? 'border-l-warning' : 'border-l-destructive'}`}>
           <CardContent className="py-3 flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-primary" />
@@ -451,7 +451,7 @@ export function ReviewAnalysisStep({
                     <Badge variant="secondary" className={cn('gap-1.5 cursor-help', confidenceColor)}>
                       <span className={cn(
                         'w-2 h-2 rounded-full',
-                        confidence >= 80 ? 'bg-green-500' : confidence >= 60 ? 'bg-yellow-500' : 'bg-red-500',
+                        confidence >= 80 ? 'bg-success' : confidence >= 60 ? 'bg-warning' : 'bg-destructive',
                       )} />
                       {confidence}% — {confidence >= 80 ? 'Alta confiança' : confidence >= 60 ? 'Média confiança' : 'Baixa confiança'}
                     </Badge>
@@ -582,15 +582,15 @@ export function ReviewAnalysisStep({
           w.replace(/Detectados?\s+\d+\s+dentes?/i, `Detectados ${actualCount} dentes`)
         );
         return (
-          <Card className="border-yellow-500/50 bg-yellow-50 dark:bg-yellow-950/20">
+          <Card className="border-warning/50 bg-warning/10 dark:bg-warning/10">
             <CardContent className="py-4">
               <div className="flex items-start gap-3">
-                <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5" />
+                <AlertTriangle className="w-5 h-5 text-warning mt-0.5" />
                 <div>
-                  <h4 className="font-medium text-yellow-800 dark:text-yellow-200">Pontos de atenção</h4>
+                  <h4 className="font-medium text-warning-foreground dark:text-warning">Pontos de atenção</h4>
                   <ul className="mt-2 space-y-1">
                     {correctedWarnings.map((warning, i) => (
-                      <li key={i} className="text-sm text-yellow-700 dark:text-yellow-300">• {warning}</li>
+                      <li key={i} className="text-sm text-warning">• {warning}</li>
                     ))}
                   </ul>
                 </div>
@@ -1096,9 +1096,9 @@ export function ReviewAnalysisStep({
                   variant="outline"
                   className={cn(
                     'mt-0.5 gap-1',
-                    complexity.level === 'simples' && 'border-green-500 text-green-700 dark:text-green-400',
-                    complexity.level === 'moderado' && 'border-amber-500 text-amber-700 dark:text-amber-400',
-                    complexity.level === 'complexo' && 'border-red-500 text-red-700 dark:text-red-400',
+                    complexity.level === 'simples' && 'border-success text-success',
+                    complexity.level === 'moderado' && 'border-warning text-warning',
+                    complexity.level === 'complexo' && 'border-destructive text-destructive',
                   )}
                 >
                   {complexity.level === 'simples' && <ShieldCheck className="w-3 h-3" />}
