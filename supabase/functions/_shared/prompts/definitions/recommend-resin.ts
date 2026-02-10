@@ -189,7 +189,7 @@ TABELA DE RESINAS RECOMENDADAS POR CAMADA:
 ┌─────────────────────┬─────────────────────────────────────────────────┐
 │ Camada              │ Resinas Recomendadas                            │
 ├─────────────────────┼─────────────────────────────────────────────────┤
-│ Aumento Incisal     │ CT (Z350), TRANS (Forma), T-Neutral (Vittra)   │
+│ Aumento Incisal     │ CT (Z350), Trans (Forma), Trans (Vittra APS)   │
 │                     │ Trans20 (Empress Direct)                        │
 ├─────────────────────┼─────────────────────────────────────────────────┤
 │ Cristas Proximais   │ XLE (Harmonize), BL-L (Empress), WE (Z350)     │
@@ -439,9 +439,24 @@ ${inventorySection}
 ${inventoryInstructions}
 ${contralateralSection}
 
+=== PROTOCOLO ESPECIAL: RECONTORNO INCISAL (DESGASTE) ===
+⚠️ Quando a classe da cavidade for "Recontorno Estético" E o DSD/indicação mencionar DIMINUIR o bordo incisal (desgaste, recontorno para diminuir), gere um PROTOCOLO DE RECONTORNO ao invés de estratificação:
+
+Se o caso for de DESGASTE/DIMINUIÇÃO do bordo incisal:
+- NÃO gere camadas de estratificação
+- Gere um protocolo com os seguintes passos no array "layers":
+  1. order: 1, name: "Planejamento e Marcação", resin_brand: "N/A", shade: "N/A", thickness: "N/A", purpose: "Marcar com caneta para resina a área a ser desgastada. Verificar guia incisal e função oclusal", technique: "Usar caneta marcadora específica para resina. Conferir com papel carbono articular"
+  2. order: 2, name: "Desgaste Inicial", resin_brand: "N/A", shade: "N/A", thickness: "0.5-1.0mm", purpose: "Remover volume marcado com cuidado até atingir comprimento planejado", technique: "Ponta diamantada 2135 em alta rotação com spray. Movimentos suaves vestíbulo-palatino"
+  3. order: 3, name: "Refinamento", resin_brand: "N/A", shade: "N/A", thickness: "0.1-0.2mm", purpose: "Suavizar ângulos e definir forma final do bordo incisal", technique: "Ponta diamantada FF (3118FF ou 2135FF). Alta rotação com spray, movimentos leves"
+  4. order: 4, name: "Acabamento", resin_brand: "N/A", shade: "N/A", thickness: "N/A", purpose: "Alisar superfície e remover riscos do desgaste", technique: "Discos Sof-Lex sequência completa: Preto → Azul escuro → Azul médio → Azul claro. Movimentos unidirecionais"
+  5. order: 5, name: "Polimento Final", resin_brand: "N/A", shade: "N/A", thickness: "N/A", purpose: "Devolver brilho ao esmalte desgastado", technique: "Pasta diamantada (Diamond Excel) + disco de feltro em baixa rotação por 40-60s"
+- Inclua "finishing" normalmente com passos equivalentes
+- Inclua "checklist" com: verificar guia incisal, verificar função oclusal, checar simetria com contralateral, aplicar flúor após desgaste
+- Se o caso NÃO mencionar diminuir/desgastar (é um acréscimo incisal), use o protocolo normal de estratificação abaixo.
+
 ${advancedStratification}
 
-=== PROTOCOLO DE ESTRATIFICA\u00c7\u00c3O - CAMADAS (ATUALIZADO V2) ===
+=== PROTOCOLO DE ESTRATIFICAÇÃO - CAMADAS (ATUALIZADO V2) ===
 \u26a0\ufe0f CR\u00cdTICO: A cor escolhida DEVE corresponder ao tipo da camada E existir na linha de produto!
 
 ESTRUTURA OBRIGAT\u00d3RIA - 5 CAMADAS (simplificar para 2-3 se n\u00edvel est\u00e9tico funcional):
@@ -719,25 +734,47 @@ No checklist, especifique o tipo de sistema adesivo recomendado, n\u00e3o apenas
 
 REGRA CR\u00cdTICA: O checklist N\u00c3O DEVE conter as palavras "bisel" ou "biselamento".
 
-=== ACABAMENTO E POLIMENTO (OBRIGAT\u00d3RIO) ===
-Voc\u00ea DEVE incluir a se\u00e7\u00e3o "finishing" no protocolo com passos detalhados de:
-1. CONTORNO ANAT\u00d4MICO:
-   - Pontas diamantadas finas (FF) para ajuste de anatomia
-   - Discos de granula\u00e7\u00e3o grossa para contorno inicial
-2. POLIMENTO SEQUENCIAL:
-   - Discos: Grossa → Média → Fina → Ultrafina (ex: Sof-Lex, OptiDisc)
-   - Pontas siliconadas/borrachas polidoras para faces livres
-   - Pasta diamantada ou óxido de alumínio para brilho
-3. PONTAS E ESPIRAIS DE BORRACHA (após os discos):
+=== ACABAMENTO E POLIMENTO (OBRIGATÓRIO — NUNCA OMITIR) ===
+
+⚠️ A seção "finishing" é OBRIGATÓRIA em TODOS os protocolos de resina. NUNCA omita esta seção.
+Se omitir, o protocolo será considerado INCOMPLETO e o dentista não terá orientação de acabamento.
+
+Você DEVE incluir a seção "finishing" no protocolo com passos detalhados de:
+
+1. REMOÇÃO DE EXCESSOS:
+   - Lâmina de bisturi nº 12: remover excessos grosseiros nas margens
+   - Sonda exploradora para verificar adaptação marginal
+
+2. CONTORNO ANATÔMICO:
+   - Pontas diamantadas finas (FF): 3118FF, 2135FF para ajuste de anatomia
+   - Movimentos leves, sem pressão excessiva
+
+3. ACABAMENTO COM DISCOS:
+   - Discos Sof-Lex (sequência completa): Preto → Azul escuro → Azul médio → Azul claro
+   - Movimentos unidirecionais, sentido cervical-incisal
+   - Manter disco ÚMIDO para evitar aquecimento
+
+4. POLIMENTO INTERPROXIMAL:
+   - Tiras de lixa interproximal: movimentos de vai-e-vem suaves
+   - Verificar ponto de contato adequado
+
+5. PONTAS E ESPIRAIS DE BORRACHA (após os discos):
    - Marcas sugeridas: DHPro, American Burrs
    - Protocolo: 40-60 segundos cada ponta
    - Velocidade controlada (baixa rotação)
    - SEM aquecer a superfície da resina — usar movimentos intermitentes
    - Ordem: Ponta grossa → Ponta média → Ponta fina → Espiral de polimento
-4. BRILHO FINAL:
-   - Escova de feltro + pasta de polimento de alta performance
 
-Especificar para cada passo: ferramenta, granula\u00e7\u00e3o, velocidade (alta/baixa), tempo, e dica t\u00e9cnica.
+6. BRILHO FINAL:
+   - Pasta diamantada (Diamond Excel ou equivalente) + disco de feltro
+   - Baixa rotação, movimentos circulares, 40-60 segundos
+
+7. TEXTURIZAÇÃO (OPCIONAL — incluir se o dente for anterior e o caso exigir naturalidade):
+   - Ponta diamantada fina: criar periquimáceas (linhas horizontais sutis)
+   - Apenas na face vestibular, terço médio e incisal
+   - Objetivo: reproduzir textura natural do esmalte
+
+Especificar para cada passo: ferramenta, granulação, velocidade (alta/baixa), tempo, e dica técnica.
 
 ${bruxismSection}
 
@@ -827,10 +864,10 @@ Responda em formato JSON:
         {"order": 1, "tool": "Ponta diamantada FF 2200FF", "grit": "Fina", "speed": "Alta rota\u00e7\u00e3o com spray", "time": "20-30s", "tip": "Remover excessos cervicais e vestibulares"}
       ],
       "polishing": [
-        {"order": 1, "tool": "Disco Sof-Lex Vermelho Escuro", "grit": "Grossa", "speed": "Baixa rotação", "time": "30s", "tip": "Sentido cervical-incisal"},
-        {"order": 2, "tool": "Disco Sof-Lex Vermelho Claro", "grit": "Média", "speed": "Baixa rotação", "time": "30s", "tip": "Manter disco úmido"},
-        {"order": 3, "tool": "Disco Sof-Lex Laranja", "grit": "Fina", "speed": "Baixa rotação", "time": "30s", "tip": "Evitar pressão excessiva"},
-        {"order": 4, "tool": "Disco Sof-Lex Amarelo", "grit": "Ultrafina", "speed": "Baixa rotação", "time": "30s", "tip": "Polimento final"},
+        {"order": 1, "tool": "Disco Sof-Lex Pop-On Preto", "grit": "Grossa", "speed": "Baixa rotação", "time": "30s", "tip": "Sentido cervical-incisal"},
+        {"order": 2, "tool": "Disco Sof-Lex Pop-On Azul Escuro", "grit": "Média", "speed": "Baixa rotação", "time": "30s", "tip": "Manter disco úmido"},
+        {"order": 3, "tool": "Disco Sof-Lex Pop-On Azul Médio", "grit": "Fina", "speed": "Baixa rotação", "time": "30s", "tip": "Evitar pressão excessiva"},
+        {"order": 4, "tool": "Disco Sof-Lex Pop-On Azul Claro", "grit": "Ultrafina", "speed": "Baixa rotação", "time": "30s", "tip": "Polimento final"},
         {"order": 5, "tool": "Ponta de borracha grossa (DHPro/American Burrs)", "speed": "Baixa rotação", "time": "40-60s", "tip": "Movimentos intermitentes, SEM aquecer a resina"},
         {"order": 6, "tool": "Ponta de borracha média", "speed": "Baixa rotação", "time": "40-60s", "tip": "Manter superfície úmida"},
         {"order": 7, "tool": "Ponta de borracha fina", "speed": "Baixa rotação", "time": "40-60s", "tip": "Polimento intermediário"},

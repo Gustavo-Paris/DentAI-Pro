@@ -485,6 +485,34 @@ serve(async (req) => {
       detectedTeeth.splice(0, detectedTeeth.length, ...upperTeeth);
     }
 
+    // Post-processing: Remove Black classification for non-applicable treatments
+    // Aesthetic procedures (facetas, lentes, recontornos, acréscimos) should NOT have Classe I-VI
+    const blackClassPattern = /^Classe\s+(I{1,3}V?|IV|V|VI)$/i;
+    const aestheticTreatments = ['porcelana', 'encaminhamento'];
+    for (const tooth of detectedTeeth) {
+      if (!tooth.cavity_class || !blackClassPattern.test(tooth.cavity_class)) continue;
+      const reason = (tooth.indication_reason || '').toLowerCase();
+      const treatment = (tooth.treatment_indication || '').toLowerCase();
+      const isAestheticCase =
+        aestheticTreatments.includes(treatment) ||
+        reason.includes('faceta') ||
+        reason.includes('lente') ||
+        reason.includes('laminado') ||
+        reason.includes('recontorno') ||
+        reason.includes('acréscimo') ||
+        reason.includes('acrescimo') ||
+        reason.includes('diastema') ||
+        reason.includes('microdontia') ||
+        reason.includes('conoide') ||
+        reason.includes('harmoniz') ||
+        reason.includes('volume') ||
+        reason.includes('reanatomiz');
+      if (isAestheticCase) {
+        logger.log(`Post-processing: removing Black classification '${tooth.cavity_class}' for aesthetic tooth ${tooth.tooth} (reason: ${reason.substring(0, 50)})`);
+        tooth.cavity_class = null;
+      }
+    }
+
     // Sort by priority: alta > média > baixa
     const priorityOrder = { alta: 0, média: 1, baixa: 2 };
     detectedTeeth.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);

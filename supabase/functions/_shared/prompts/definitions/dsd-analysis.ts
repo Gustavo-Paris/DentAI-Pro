@@ -247,6 +247,16 @@ Na sugestão de recobrimento, incluir em proposed_change:
 3. Aguardar 90-120 dias de cicatrização antes do tratamento restaurador
 4. Acompanhamento da maturação do enxerto"
 
+⚠️ VIÉS CONSERVADOR PARA GENGIVOPLASTIA — NA DÚVIDA, NÃO SUGIRA:
+Gengivoplastia é um procedimento CIRÚRGICO. Só sugira quando a evidência visual for CLARA e INDISCUTÍVEL.
+Se você está em dúvida sobre indicar gengivoplastia → NÃO indique. O dentista pode adicionar manualmente se necessário.
+Errar por NÃO sugerir gengivoplastia é MUITO MENOS GRAVE do que sugerir desnecessariamente.
+
+⚠️ DISTINÇÃO CRÍTICA: DENTE CURTO vs EXCESSO DE GENGIVA
+- Se o dente parece curto por DESGASTE INCISAL → tratamento é ACRÉSCIMO INCISAL COM RESINA, NÃO gengivoplastia
+- Se o dente parece curto por EXCESSO DE GENGIVA cobrindo a coroa → tratamento é GENGIVOPLASTIA
+- COMO DIFERENCIAR: Observe a margem gengival. Se ela está MAIS BAIXA que o normal (cobrindo mais coroa), é gengivoplastia. Se a margem está normal mas o bordo incisal é curto, é acréscimo incisal.
+
 ❌ NÃO gerar sugestão de gengivoplastia se:
 - Linha do sorriso "média" ou "baixa" E
 - Zênites simétricos E
@@ -291,6 +301,63 @@ Quando identificar necessidade de tratamento em incisivos (11, 12, 21, 22), AVAL
 
 REGRA: Se ≥4 dentes anteriores precisam de intervenção, SEMPRE avalie os 6-8 dentes visíveis no arco.
 Inclua caninos/pré-molares com prioridade "baixa" se a melhoria for apenas para harmonização estética.
+
+=== MATRIZ DE DECISÃO: ALTERAÇÃO DSD → TRATAMENTO CORRETO (OBRIGATÓRIO) ===
+
+⚠️⚠️⚠️ REGRA ABSOLUTAMENTE CRÍTICA — LEIA COM ATENÇÃO ⚠️⚠️⚠️
+
+Quando o DSD propõe uma alteração visual, o tratamento sugerido DEVE corresponder à alteração proposta.
+Use esta matriz para VALIDAR cada sugestão ANTES de finalizar:
+
+| O que o DSD propõe?                          | Tratamento CORRETO               | NUNCA sugerir           |
+|----------------------------------------------|----------------------------------|-------------------------|
+| AUMENTAR bordo incisal (dente fica MAIOR)    | Acréscimo incisal com resina     | ❌ Gengivoplastia       |
+| DIMINUIR bordo incisal (dente fica MENOR)    | Recontorno/Desgaste incisal      | ❌ Acréscimo incisal    |
+| DIMINUIR gengiva (mais dente exposto)        | Gengivoplastia                   | ❌ Recobrimento radicular|
+| AUMENTAR gengiva (menos dente exposto)       | Recobrimento radicular           | ❌ Gengivoplastia       |
+| ALARGAR arco dental / preencher corredor     | Expansão ortodôntica + facetas   | —                       |
+| ALINHAR dentes desalinhados                  | Ortodontia (encaminhamento)      | —                       |
+
+EXEMPLOS DE ERROS FATAIS (NUNCA COMETER):
+❌ ERRADO: DSD simulou AUMENTO do dente (ficou mais longo) → sugerir gengivoplastia
+   Gengivoplastia REMOVE gengiva para EXPOR mais dente — se o DSD já AUMENTOU o dente, não precisa expor mais.
+   ✅ CORRETO: Sugerir acréscimo incisal com resina composta (treatment_indication: "resina")
+
+❌ ERRADO: DSD simulou DIMINUIÇÃO do bordo incisal → sugerir acréscimo com resina
+   Se o dente precisa ficar MENOR, o tratamento é DESGASTE/RECONTORNO, não acréscimo.
+   ✅ CORRETO: Sugerir recontorno incisal (desgaste seletivo)
+
+❌ ERRADO: Gengivoplastia quando o problema é apenas comprimento incisal insuficiente
+   Se o dente está CURTO porque falta bordo incisal (desgaste), a solução é ADICIONAR resina no bordo.
+   Gengivoplastia só é indicada quando há EXCESSO DE GENGIVA cobrindo a coroa.
+   ✅ CORRETO: Avaliar se o problema é gengival (excesso de tecido) ou dental (falta de estrutura incisal)
+
+⚠️ VALIDAÇÃO FINAL: Para CADA sugestão, pergunte-se:
+"O tratamento que estou sugerindo PRODUZ o mesmo efeito visual que o DSD simulou?"
+Se NÃO → a sugestão está INVERTIDA. Corrija antes de finalizar.
+
+=== SUGESTÕES DE ORTODONTIA (OBRIGATÓRIO QUANDO APLICÁVEL) ===
+
+Além do corredor bucal excessivo, AVALIE e sugira ortodontia nos seguintes cenários:
+
+1. **Corredor bucal excessivo** → Sugerir: "Expansão maxilar com aparelho ortodôntico (expansor)"
+   - treatment_indication: "encaminhamento"
+   - Adicionar observação: "Corredor bucal excessivo indica possível atresia maxilar. Avaliação ortodôntica para expansão do arco recomendada."
+
+2. **Dentes desalinhados/apinhados** → Sugerir: "Alinhamento ortodôntico"
+   - treatment_indication: "encaminhamento"
+   - Quando inclinação ou rotação evidente comprometem estética ou função
+
+3. **Sobremordida profunda** (overbite_suspicion = "sim") → Sugerir: "Correção ortodôntica da sobremordida"
+   - treatment_indication: "encaminhamento"
+   - Adicionar observação: "Sobremordida profunda pode comprometer longevidade de restaurações anteriores. Avaliação ortodôntica recomendada."
+
+4. **Desvio de linha média dental > 2mm** → Sugerir: "Correção ortodôntica do desvio de linha média"
+   - treatment_indication: "encaminhamento"
+   - Linha média dental desviada >2mm não pode ser corrigida apenas com restaurações
+
+⚠️ Sugestões ortodônticas COEXISTEM com sugestões restauradoras (são complementares, não excludentes).
+A ortodontia tem prioridade "média" — não bloqueia tratamentos restauradores de urgência.
 
 === RECONTORNO INCISAL PARA DESNÍVEL ENTRE HOMÓLOGOS (OBRIGATÓRIO) ===
 
