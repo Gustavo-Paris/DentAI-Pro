@@ -5,6 +5,7 @@ import { sanitizeForPrompt } from "../_shared/validation.ts";
 import { logger } from "../_shared/logger.ts";
 import { callGeminiWithTools, GeminiError, type OpenAIMessage, type OpenAITool } from "../_shared/gemini.ts";
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
+import { checkAndUseCredits, createInsufficientCreditsResponse, refundCredits } from "../_shared/credits.ts";
 import { getPrompt, withMetrics } from "../_shared/prompts/index.ts";
 import { createSupabaseMetrics, PROMPT_VERSION } from "../_shared/metrics-adapter.ts";
 import { parseAIResponse, CementationProtocolSchema } from "../_shared/aiSchemas.ts";
@@ -102,6 +103,11 @@ serve(async (req: Request) => {
   const reqId = generateRequestId();
   logger.log(`[${reqId}] recommend-cementation: start`);
 
+  // Track credit state for refund on error (must be outside try for catch access)
+  let creditsConsumed = false;
+  let supabaseForRefund: ReturnType<typeof createClient> | null = null;
+  let userIdForRefund: string | null = null;
+
   try {
     // Get environment variables
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
@@ -120,6 +126,7 @@ serve(async (req: Request) => {
 
     // Create Supabase client
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    supabaseForRefund = supabase;
 
     // Validate user token
     const token = authHeader.replace("Bearer ", "");
@@ -128,6 +135,8 @@ serve(async (req: Request) => {
     if (authError || !user) {
       return createErrorResponse(ERROR_MESSAGES.INVALID_TOKEN, 401, corsHeaders);
     }
+
+    userIdForRefund = user.id;
 
     // Check rate limit (AI_LIGHT: 20/min, 100/hour, 500/day)
     const rateLimitResult = await checkRateLimit(
@@ -141,6 +150,14 @@ serve(async (req: Request) => {
       logger.warn(`Rate limit exceeded for user ${user.id} on recommend-cementation`);
       return createRateLimitResponse(rateLimitResult, corsHeaders);
     }
+
+    // Check and consume credits
+    const creditResult = await checkAndUseCredits(supabase, user.id, "cementation_recommendation", reqId);
+    if (!creditResult.allowed) {
+      logger.warn(`Insufficient credits for user ${user.id} on cementation_recommendation`);
+      return createInsufficientCreditsResponse(creditResult, corsHeaders);
+    }
+    creditsConsumed = true;
 
     // Parse and validate request body
     const body = await req.json();
@@ -325,6 +342,10 @@ serve(async (req: Request) => {
 
       if (!geminiResult.functionCall) {
         logger.error("No function call in Gemini response");
+        if (creditsConsumed && supabaseForRefund && userIdForRefund) {
+          await refundCredits(supabaseForRefund, userIdForRefund, "cementation_recommendation", reqId);
+          logger.log(`[${reqId}] Refunded cementation_recommendation credits for user ${userIdForRefund} — no function call in AI response`);
+        }
         return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
       }
 
@@ -332,11 +353,19 @@ serve(async (req: Request) => {
     } catch (error) {
       if (error instanceof GeminiError) {
         if (error.statusCode === 429) {
+          if (creditsConsumed && supabaseForRefund && userIdForRefund) {
+            await refundCredits(supabaseForRefund, userIdForRefund, "cementation_recommendation", reqId);
+          }
           return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
         }
         logger.error("Gemini API error:", error.message);
       } else {
         logger.error("AI error:", error);
+      }
+      // Refund credits on AI errors
+      if (creditsConsumed && supabaseForRefund && userIdForRefund) {
+        await refundCredits(supabaseForRefund, userIdForRefund, "cementation_recommendation", reqId);
+        logger.log(`Refunded cementation_recommendation credits for user ${userIdForRefund} due to AI error`);
       }
       return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     }
@@ -365,6 +394,11 @@ serve(async (req: Request) => {
     );
   } catch (error) {
     logger.error(`[${reqId}] recommend-cementation error:`, error);
+    // Refund credits on unexpected errors
+    if (creditsConsumed && supabaseForRefund && userIdForRefund) {
+      await refundCredits(supabaseForRefund, userIdForRefund, "cementation_recommendation", reqId);
+      logger.log(`[${reqId}] Refunded cementation_recommendation credits for user ${userIdForRefund} due to error`);
+    }
     return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders, undefined, reqId);
   }
 });

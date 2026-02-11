@@ -1,4 +1,5 @@
 import { supabase } from './client';
+import { withQuery, withMutation } from './utils';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -37,25 +38,24 @@ export async function list({ userId, page = 0, pageSize = 20 }: PatientsListPara
 }
 
 export async function getById(patientId: string, userId: string) {
-  const { data, error } = await supabase
-    .from('patients')
-    .select('*')
-    .eq('id', patientId)
-    .eq('user_id', userId)
-    .maybeSingle();
-
-  if (error) throw error;
-  return data as PatientRow | null;
+  return withQuery(() =>
+    supabase
+      .from('patients')
+      .select('*')
+      .eq('id', patientId)
+      .eq('user_id', userId)
+      .maybeSingle(),
+  ) as Promise<PatientRow | null>;
 }
 
 export async function getEvaluationStats(userId: string, patientIds: string[]) {
-  const { data, error } = await supabase
-    .from('evaluations')
-    .select('patient_id, session_id, status, created_at')
-    .eq('user_id', userId)
-    .in('patient_id', patientIds);
-
-  if (error) throw error;
+  const data = await withQuery(() =>
+    supabase
+      .from('evaluations')
+      .select('patient_id, session_id, status, created_at')
+      .eq('user_id', userId)
+      .in('patient_id', patientIds),
+  );
   return data || [];
 }
 
@@ -78,22 +78,22 @@ export async function listSessions(
 }
 
 export async function update(id: string, updates: Partial<PatientRow>) {
-  const { error } = await supabase
-    .from('patients')
-    .update(updates)
-    .eq('id', id);
-
-  if (error) throw error;
+  await withMutation(() =>
+    supabase
+      .from('patients')
+      .update(updates)
+      .eq('id', id),
+  );
 }
 
 export async function listAll(userId: string) {
-  const { data, error } = await supabase
-    .from('patients')
-    .select('id, name')
-    .eq('user_id', userId)
-    .order('name');
-
-  if (error) throw error;
+  const data = await withQuery(() =>
+    supabase
+      .from('patients')
+      .select('id, name')
+      .eq('user_id', userId)
+      .order('name'),
+  );
   return data || [];
 }
 

@@ -1,4 +1,5 @@
 import { supabase } from './client';
+import { withQuery, withMutation } from './utils';
 
 export interface Profile {
   full_name: string | null;
@@ -13,34 +14,32 @@ export interface ProfileFull extends Profile {
 }
 
 export async function getByUserId(userId: string) {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('full_name, avatar_url')
-    .eq('user_id', userId)
-    .maybeSingle();
-
-  if (error) throw error;
-  return data as Profile | null;
+  return withQuery(() =>
+    supabase
+      .from('profiles')
+      .select('full_name, avatar_url')
+      .eq('user_id', userId)
+      .maybeSingle(),
+  ) as Promise<Profile | null>;
 }
 
 export async function getFullByUserId(userId: string) {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('full_name, cro, clinic_name, phone, avatar_url, clinic_logo_url')
-    .eq('user_id', userId)
-    .single();
-
-  if (error) throw error;
-  return data as ProfileFull;
+  return withQuery(() =>
+    supabase
+      .from('profiles')
+      .select('full_name, cro, clinic_name, phone, avatar_url, clinic_logo_url')
+      .eq('user_id', userId)
+      .single(),
+  ) as Promise<ProfileFull>;
 }
 
 export async function updateProfile(userId: string, updates: Partial<ProfileFull>) {
-  const { error } = await supabase
-    .from('profiles')
-    .update(updates)
-    .eq('user_id', userId);
-
-  if (error) throw error;
+  await withMutation(() =>
+    supabase
+      .from('profiles')
+      .update(updates)
+      .eq('user_id', userId),
+  );
 }
 
 export function getAvatarPublicUrl(avatarPath: string): string {

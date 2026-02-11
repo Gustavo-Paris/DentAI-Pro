@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -27,6 +28,7 @@ export default function PhotoUploader({
   userId,
   evaluationId,
 }: PhotoUploaderProps) {
+  const { t } = useTranslation();
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -37,13 +39,13 @@ export default function PhotoUploader({
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      toast.error('Apenas imagens são permitidas');
+      toast.error(t('components.photoUploader.onlyImages'));
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('Imagem deve ter no máximo 5MB');
+      toast.error(t('components.photoUploader.maxSize'));
       return;
     }
 
@@ -79,10 +81,10 @@ export default function PhotoUploader({
         .getPublicUrl(fileName);
 
       onChange(fileName);
-      toast.success('Foto carregada com sucesso');
+      toast.success(t('components.photoUploader.uploadSuccess'));
     } catch (error) {
       logger.error('Upload error:', error);
-      toast.error('Erro ao carregar foto');
+      toast.error(t('components.photoUploader.uploadError'));
       setPreview(null);
     } finally {
       setUploading(false);
@@ -136,7 +138,7 @@ export default function PhotoUploader({
                 <button
                   onClick={handleRemove}
                   className="absolute -top-2 -right-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center hover:bg-destructive/90"
-                  aria-label="Remover foto"
+                  aria-label={t('components.photoUploader.removePhoto')}
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -146,7 +148,7 @@ export default function PhotoUploader({
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
                 className="w-full h-full bg-secondary rounded-lg flex items-center justify-center hover:bg-secondary/80 transition-colors"
-                aria-label={uploading ? 'Carregando foto...' : `Adicionar foto: ${label}`}
+                aria-label={uploading ? t('components.photoUploader.uploading') : t('components.photoUploader.addPhoto', { label })}
               >
                 {uploading ? (
                   <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
@@ -170,7 +172,7 @@ export default function PhotoUploader({
                 onClick={() => fileInputRef.current?.click()}
               >
                 <Upload className="w-3 h-3 mr-1" />
-                Carregar foto
+                {t('components.photoUploader.uploadButton')}
               </Button>
             )}
           </div>

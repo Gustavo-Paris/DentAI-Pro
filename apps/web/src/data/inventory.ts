@@ -1,4 +1,5 @@
 import { supabase } from './client';
+import { withQuery, withMutation } from './utils';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -48,15 +49,15 @@ export async function list({ userId, page = 0, pageSize = 30 }: InventoryListPar
 }
 
 export async function getCatalog() {
-  const { data, error } = await supabase
-    .from('resin_catalog')
-    .select('*')
-    .order('brand', { ascending: true })
-    .order('product_line', { ascending: true })
-    .order('type', { ascending: true })
-    .order('shade', { ascending: true });
-
-  if (error) throw error;
+  const data = await withQuery(() =>
+    supabase
+      .from('resin_catalog')
+      .select('*')
+      .order('brand', { ascending: true })
+      .order('product_line', { ascending: true })
+      .order('type', { ascending: true })
+      .order('shade', { ascending: true }),
+  );
   return (data as CatalogResin[]) || [];
 }
 
@@ -80,15 +81,16 @@ export async function addItems(userId: string, resinIds: string[]) {
     resin_id: resinId,
   }));
 
-  const { error } = await supabase.from('user_inventory').insert(inserts);
-  if (error) throw error;
+  await withMutation(() =>
+    supabase.from('user_inventory').insert(inserts),
+  );
 }
 
 export async function removeItem(inventoryItemId: string) {
-  const { error } = await supabase
-    .from('user_inventory')
-    .delete()
-    .eq('id', inventoryItemId);
-
-  if (error) throw error;
+  await withMutation(() =>
+    supabase
+      .from('user_inventory')
+      .delete()
+      .eq('id', inventoryItemId),
+  );
 }

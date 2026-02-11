@@ -1,10 +1,21 @@
 import { supabase } from './client';
+import { withQuery, withMutation } from './utils';
 
 // ---------------------------------------------------------------------------
 // Storage
 // ---------------------------------------------------------------------------
 
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic'];
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
 export async function uploadPhoto(userId: string, blob: Blob): Promise<string> {
+  if (!ALLOWED_IMAGE_TYPES.includes(blob.type)) {
+    throw new Error('Tipo de arquivo inválido. Apenas imagens são permitidas.');
+  }
+  if (blob.size > MAX_FILE_SIZE) {
+    throw new Error('Arquivo muito grande. Máximo: 10MB.');
+  }
+
   const fileName = `${userId}/intraoral_${Date.now()}.jpg`;
   const { error } = await supabase.storage
     .from('clinical-photos')
@@ -66,13 +77,13 @@ export async function updatePatientBirthDate(
 // ---------------------------------------------------------------------------
 
 export async function createEvaluation(data: Record<string, unknown>) {
-  const { data: evaluation, error } = await supabase
-    .from('evaluations')
-    .insert(data as never)
-    .select()
-    .single();
-  if (error) throw error;
-  return evaluation;
+  return withQuery(() =>
+    supabase
+      .from('evaluations')
+      .insert(data as never)
+      .select()
+      .single(),
+  );
 }
 
 export async function updateEvaluationProtocol(
@@ -111,17 +122,19 @@ export async function updateEvaluationStatus(
 // ---------------------------------------------------------------------------
 
 export async function invokeRecommendCementation(body: Record<string, unknown>) {
-  const { error } = await supabase.functions.invoke('recommend-cementation', {
-    body,
-  });
-  if (error) throw error;
+  await withMutation(() =>
+    supabase.functions.invoke('recommend-cementation', {
+      body,
+    }),
+  );
 }
 
 export async function invokeRecommendResin(body: Record<string, unknown>) {
-  const { error } = await supabase.functions.invoke('recommend-resin', {
-    body,
-  });
-  if (error) throw error;
+  await withMutation(() =>
+    supabase.functions.invoke('recommend-resin', {
+      body,
+    }),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -131,8 +144,9 @@ export async function invokeRecommendResin(body: Record<string, unknown>) {
 export async function savePendingTeeth(
   rows: Array<Record<string, unknown>>,
 ) {
-  const { error } = await supabase
-    .from('session_detected_teeth')
-    .insert(rows);
-  if (error) throw error;
+  await withMutation(() =>
+    supabase
+      .from('session_detected_teeth')
+      .insert(rows),
+  );
 }

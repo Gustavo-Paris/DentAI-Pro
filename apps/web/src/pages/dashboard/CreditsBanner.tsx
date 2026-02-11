@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, ArrowRight, X } from 'lucide-react';
 
@@ -9,6 +10,8 @@ export function CreditsBanner({
   creditsRemaining: number;
   onDismiss: () => void;
 }) {
+  const { t } = useTranslation();
+
   return (
     <div className="relative overflow-hidden rounded-xl border border-primary/20 dark:border-primary/15 shadow-sm">
       <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/3 to-primary/5 dark:from-primary/8 dark:via-primary/4 dark:to-primary/8" />
@@ -20,22 +23,22 @@ export function CreditsBanner({
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-foreground">
-            {creditsRemaining} crédito{creditsRemaining !== 1 ? 's' : ''} restante{creditsRemaining !== 1 ? 's' : ''}
+            {t('dashboard.credits.remaining', { count: creditsRemaining })}
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Faça upgrade para continuar sem interrupção
+            {t('dashboard.credits.upgradeHint')}
           </p>
         </div>
         <Link to="/pricing">
           <Button size="sm" className="btn-glow-gold shrink-0">
-            Ver planos
+            {t('common.viewPlans')}
             <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
           </Button>
         </Link>
         <button
           onClick={onDismiss}
           className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors shrink-0"
-          aria-label="Fechar aviso"
+          aria-label={t('dashboard.credits.dismissLabel')}
         >
           <X className="w-4 h-4" />
         </button>

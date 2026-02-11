@@ -110,7 +110,7 @@ describe('uploadPhoto', () => {
     const uploadError = new Error('Upload failed');
     mockUpload.mockResolvedValue({ error: uploadError });
 
-    const blob = new Blob(['data']);
+    const blob = new Blob(['data'], { type: 'image/jpeg' });
     await expect(uploadPhoto('user-1', blob)).rejects.toThrow('Upload failed');
   });
 });

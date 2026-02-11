@@ -1,7 +1,7 @@
 ---
 title: Agentes do Projeto - DentAI Pro
 created: 2026-02-04
-updated: 2026-02-04
+updated: 2026-02-11
 author: Team DentAI
 status: published
 tags:
@@ -119,6 +119,11 @@ REQ-042 ←→ ADR-007 ←→ PR #123 ←→ TEST-101
 | [[06-ADRs/ADR-001-3-layer-frontend-architecture\|ADR-001]] | 3-Layer Frontend Architecture |
 | [[06-ADRs/ADR-002-pageshell-design-system-adoption\|ADR-002]] | PageShell Design System Adoption |
 | [[06-ADRs/ADR-003-centralized-prompt-management\|ADR-003]] | Centralized Prompt Management |
+| [[06-ADRs/ADR-004-credit-model-and-monetization\|ADR-004]] | Credit Model & Monetization |
+| [[06-ADRs/ADR-005-authentication-and-authorization\|ADR-005]] | Authentication & Authorization |
+| [[06-ADRs/ADR-006-ai-integration-strategy\|ADR-006]] | AI Integration Strategy |
+| [[06-ADRs/ADR-007-clinical-photo-storage\|ADR-007]] | Clinical Photo Storage |
+| [[06-ADRs/ADR-008-wizard-architecture-post-refactor\|ADR-008]] | Wizard Architecture (Post-Refactor) |
 
 → [[06-ADRs/ADR-Index]] — Índice completo + template
 
@@ -134,4 +139,4 @@ Filhos podem sobrescrever com `@override: razão`.
 - [[README]] — Setup e overview técnico
 
 ---
-*Atualizado: 2026-02-04*
+*Atualizado: 2026-02-11*

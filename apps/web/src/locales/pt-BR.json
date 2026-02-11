@@ -121,7 +121,87 @@
     "availableResins": "Resinas disponíveis",
     "principal": "Principal",
     "discardDraftTitle": "Descartar rascunho?",
-    "discardDraftDescription": "O rascunho será apagado permanentemente. Esta ação não pode ser desfeita."
+    "discardDraftDescription": "O rascunho será apagado permanentemente. Esta ação não pode ser desfeita.",
+    "onboarding": {
+      "firstSteps": "Primeiros passos",
+      "step": "Passo {{step}}",
+      "step1Title": "Cadastre seu inventário",
+      "step1Desc": "Adicione suas resinas para recomendações personalizadas",
+      "step2Title": "Crie sua primeira avaliação",
+      "step2Desc": "Tire uma foto e receba análise com IA",
+      "step3Title": "Cadastre pacientes",
+      "step3Desc": "Organize seus pacientes e históricos"
+    },
+    "stats": {
+      "totalCases": "Total de Casos",
+      "totalCasesUnit": "tratamentos gerados",
+      "totalCasesTooltip": "Total de tratamentos gerados por avaliações",
+      "patients": "Pacientes",
+      "patientsUnit": "cadastrados",
+      "patientsTooltip": "Total de pacientes cadastrados",
+      "thisWeek": "Esta Semana",
+      "thisWeekUnit": "novas avaliações",
+      "thisWeekTooltip": "Avaliações criadas esta semana",
+      "completion": "Conclusão",
+      "completionUnit": "das avaliações concluídas",
+      "completionTooltip": "Avaliações com todos os casos concluídos",
+      "open": "Em Aberto",
+      "openUnit": "avaliações pendentes",
+      "openTooltip": "Avaliações com casos ainda não concluídos",
+      "pendingCases": "Casos Pendentes",
+      "pendingCasesUnit": "casos em aberto",
+      "pendingCasesTooltip": "Total de casos aguardando conclusão"
+    },
+    "session": {
+      "yearsOld": "{{age}} anos"
+    },
+    "draft": {
+      "badge": "Rascunho",
+      "teethSelected_one": "{{count}} dente selecionado",
+      "teethSelected_other": "{{count}} dentes selecionados",
+      "savedAgo": "Salvo {{time}}",
+      "discardLabel": "Descartar rascunho",
+      "continueLabel": "Continuar avaliação",
+      "continue": "Continuar"
+    },
+    "pending": {
+      "title": "Ações Pendentes",
+      "openEvaluations_one": "{{count}} avaliação em aberto",
+      "openEvaluations_other": "{{count}} avaliações em aberto",
+      "tapToComplete": "Toque para ver e concluir"
+    },
+    "recent": {
+      "title": "Avaliações recentes",
+      "viewAll": "Ver todas",
+      "viewAllLabel": "Ver todas as avaliações",
+      "all": "Todas",
+      "emptyTitle": "Nenhuma avaliação ainda",
+      "emptyDescription": "Comece criando sua primeira avaliação com IA",
+      "createFirst": "Criar avaliação",
+      "createFirstLabel": "Criar primeira avaliação"
+    },
+    "credits": {
+      "remaining_one": "{{count}} crédito restante",
+      "remaining_other": "{{count}} créditos restantes",
+      "upgradeHint": "Faça upgrade para continuar sem interrupção",
+      "dismissLabel": "Fechar aviso"
+    },
+    "insights": {
+      "evaluationsLabel": "Avaliações",
+      "weeklyTrend": "Tendência semanal",
+      "evaluationsInPeriod": "{{count}} avaliações no período",
+      "treatmentDistribution": "Distribuição de Tratamentos",
+      "total": "total",
+      "topResins": "Resinas mais usadas",
+      "usesLabel": "Usos",
+      "clinicalSummary": "Resumo clínico",
+      "topResin": "Resina mais usada",
+      "inventoryUsage": "Uso do inventário",
+      "totalCases": "Total de casos",
+      "weeklyAverage": "Média por semana",
+      "noData": "Sem dados suficientes",
+      "noDataDescription": "Os insights aparecerão aqui após suas primeiras avaliações."
+    }
   },
   "wizard": {
     "step": "Etapa {{current}} de {{total}}",
@@ -1071,6 +1151,16 @@
         "aiConfidence": "Confiança da IA",
         "high": "Alta"
       }
+    },
+    "photoUploader": {
+      "onlyImages": "Apenas imagens são permitidas",
+      "maxSize": "Imagem deve ter no máximo 5MB",
+      "uploadSuccess": "Foto carregada com sucesso",
+      "uploadError": "Erro ao carregar foto",
+      "removePhoto": "Remover foto",
+      "uploading": "Carregando foto...",
+      "addPhoto": "Adicionar foto: {{label}}",
+      "uploadButton": "Carregar foto"
     }
   }
 }

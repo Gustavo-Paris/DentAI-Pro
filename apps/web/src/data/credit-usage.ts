@@ -1,4 +1,5 @@
 import { supabase } from './client';
+import { withQuery } from './utils';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -66,13 +67,13 @@ export async function getMonthlyStats(userId: string): Promise<MonthlyStats[]> {
   const now = new Date();
   const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
-  const { data, error } = await supabase
-    .from('credit_usage')
-    .select('operation, credits_used')
-    .eq('user_id', userId)
-    .gte('created_at', firstOfMonth);
-
-  if (error) throw error;
+  const data = await withQuery(() =>
+    supabase
+      .from('credit_usage')
+      .select('operation, credits_used')
+      .eq('user_id', userId)
+      .gte('created_at', firstOfMonth),
+  );
 
   // Aggregate client-side (Supabase JS doesn't support GROUP BY natively)
   const statsMap = new Map<string, { total_credits: number; count: number }>();

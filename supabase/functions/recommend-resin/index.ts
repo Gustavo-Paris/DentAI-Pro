@@ -5,6 +5,7 @@ import { validateEvaluationData, sanitizeFieldsForPrompt, type EvaluationData } 
 import { logger } from "../_shared/logger.ts";
 import { callGemini, GeminiError, type OpenAIMessage } from "../_shared/gemini.ts";
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
+import { checkAndUseCredits, createInsufficientCreditsResponse, refundCredits } from "../_shared/credits.ts";
 import { getPrompt } from "../_shared/prompts/registry.ts";
 import { withMetrics } from "../_shared/prompts/index.ts";
 import type { Params as RecommendResinParams } from "../_shared/prompts/definitions/recommend-resin.ts";
@@ -103,6 +104,11 @@ serve(async (req) => {
 
   logger.log(`[${reqId}] recommend-resin: start`);
 
+  // Track credit state for refund on error (must be outside try for catch access)
+  let creditsConsumed = false;
+  let supabaseForRefund: ReturnType<typeof createClient> | null = null;
+  let userIdForRefund: string | null = null;
+
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -115,6 +121,7 @@ serve(async (req) => {
 
     // Create service role client for all operations
     const supabaseService = createClient(supabaseUrl, supabaseServiceKey);
+    supabaseForRefund = supabaseService;
 
     // Verify user via getUser()
     const token = authHeader.replace("Bearer ", "");
@@ -125,6 +132,8 @@ serve(async (req) => {
     }
 
     const userId = user.id;
+    userIdForRefund = userId;
+
     const rateLimitResult = await checkRateLimit(
       supabaseService,
       userId,
@@ -136,6 +145,14 @@ serve(async (req) => {
       logger.warn(`Rate limit exceeded for user ${userId} on recommend-resin`);
       return createRateLimitResponse(rateLimitResult, corsHeaders);
     }
+
+    // Check and consume credits
+    const creditResult = await checkAndUseCredits(supabaseService, userId, "resin_recommendation", reqId);
+    if (!creditResult.allowed) {
+      logger.warn(`Insufficient credits for user ${userId} on resin_recommendation`);
+      return createInsufficientCreditsResponse(creditResult, corsHeaders);
+    }
+    creditsConsumed = true;
 
     // Parse and validate input
     let rawData: unknown;
@@ -327,6 +344,10 @@ serve(async (req) => {
 
       if (!geminiResult.text) {
         logger.error("Empty response from Gemini");
+        if (creditsConsumed && supabaseForRefund && userIdForRefund) {
+          await refundCredits(supabaseForRefund, userIdForRefund, "resin_recommendation", reqId);
+          logger.log(`[${reqId}] Refunded resin_recommendation credits for user ${userIdForRefund} — empty AI response`);
+        }
         return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
       }
 
@@ -334,11 +355,19 @@ serve(async (req) => {
     } catch (error) {
       if (error instanceof GeminiError) {
         if (error.statusCode === 429) {
+          if (creditsConsumed && supabaseForRefund && userIdForRefund) {
+            await refundCredits(supabaseForRefund, userIdForRefund, "resin_recommendation", reqId);
+          }
           return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
         }
         logger.error("Gemini API error:", error.message);
       } else {
         logger.error("AI error:", error);
+      }
+      // Refund credits on AI errors
+      if (creditsConsumed && supabaseForRefund && userIdForRefund) {
+        await refundCredits(supabaseForRefund, userIdForRefund, "resin_recommendation", reqId);
+        logger.log(`Refunded resin_recommendation credits for user ${userIdForRefund} due to AI error`);
       }
       return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     }
@@ -363,12 +392,20 @@ serve(async (req) => {
       }
     } catch (parseError) {
       logger.error("Failed to parse AI response. Raw content:", content.substring(0, 500));
+      if (creditsConsumed && supabaseForRefund && userIdForRefund) {
+        await refundCredits(supabaseForRefund, userIdForRefund, "resin_recommendation", reqId);
+        logger.log(`[${reqId}] Refunded resin_recommendation credits for user ${userIdForRefund} — AI returned unparseable response`);
+      }
       return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     }
 
     // Validate that protocol is not empty
     if (recommendation.protocol?.layers?.length === 0 || !recommendation.protocol?.checklist?.length) {
       logger.error("AI returned empty protocol, protocol:", JSON.stringify(recommendation.protocol));
+      if (creditsConsumed && supabaseForRefund && userIdForRefund) {
+        await refundCredits(supabaseForRefund, userIdForRefund, "resin_recommendation", reqId);
+        logger.log(`[${reqId}] Refunded resin_recommendation credits for user ${userIdForRefund} — empty protocol`);
+      }
       return createErrorResponse("Protocolo vazio — tente novamente", 500, corsHeaders);
     }
 
@@ -664,6 +701,11 @@ serve(async (req) => {
     );
   } catch (error: unknown) {
     logger.error(`[${reqId}] recommend-resin error:`, error);
+    // Refund credits on unexpected errors
+    if (creditsConsumed && supabaseForRefund && userIdForRefund) {
+      await refundCredits(supabaseForRefund, userIdForRefund, "resin_recommendation", reqId);
+      logger.log(`[${reqId}] Refunded resin_recommendation credits for user ${userIdForRefund} due to error`);
+    }
     return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders, undefined, reqId);
   }
 });

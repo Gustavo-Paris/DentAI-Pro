@@ -1,4 +1,5 @@
 import { supabase } from './client';
+import { withQuery } from './utils';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -63,37 +64,36 @@ export interface CreditPack {
 // ---------------------------------------------------------------------------
 
 export async function getPlans() {
-  const { data, error } = await supabase
-    .from('subscription_plans')
-    .select('*')
-    .eq('is_active', true)
-    .order('sort_order');
-
-  if (error) throw error;
+  const data = await withQuery(() =>
+    supabase
+      .from('subscription_plans')
+      .select('*')
+      .eq('is_active', true)
+      .order('sort_order'),
+  );
   return (data as SubscriptionPlan[]) || [];
 }
 
 export async function getCreditCosts() {
-  const { data, error } = await supabase
-    .from('credit_costs')
-    .select('*');
-
-  if (error) throw error;
+  const data = await withQuery(() =>
+    supabase
+      .from('credit_costs')
+      .select('*'),
+  );
   return (data as CreditCost[]) || [];
 }
 
 export async function getByUserId(userId: string) {
-  const { data, error } = await supabase
-    .from('subscriptions')
-    .select(`
-      *,
-      plan:subscription_plans(*)
-    `)
-    .eq('user_id', userId)
-    .maybeSingle();
-
-  if (error) throw error;
-  return data as Subscription | null;
+  return withQuery(() =>
+    supabase
+      .from('subscriptions')
+      .select(`
+        *,
+        plan:subscription_plans(*)
+      `)
+      .eq('user_id', userId)
+      .maybeSingle(),
+  ) as Promise<Subscription | null>;
 }
 
 // ---------------------------------------------------------------------------
@@ -101,48 +101,48 @@ export async function getByUserId(userId: string) {
 // ---------------------------------------------------------------------------
 
 export async function createCheckoutSession(priceId: string) {
-  const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-    body: { priceId },
-  });
-
-  if (error) throw error;
+  const data = await withQuery(() =>
+    supabase.functions.invoke('create-checkout-session', {
+      body: { priceId },
+    }),
+  );
   return data as { sessionId?: string; url?: string; updated?: boolean };
 }
 
 export async function createPortalSession() {
-  const { data, error } = await supabase.functions.invoke('create-portal-session', {
-    body: {},
-  });
-
-  if (error) throw error;
+  const data = await withQuery(() =>
+    supabase.functions.invoke('create-portal-session', {
+      body: {},
+    }),
+  );
   return data as { url: string };
 }
 
 export async function getCreditPacks() {
-  const { data, error } = await supabase
-    .from('credit_packs')
-    .select('*')
-    .eq('is_active', true)
-    .order('sort_order');
-
-  if (error) throw error;
+  const data = await withQuery(() =>
+    supabase
+      .from('credit_packs')
+      .select('*')
+      .eq('is_active', true)
+      .order('sort_order'),
+  );
   return (data as CreditPack[]) || [];
 }
 
 export async function purchaseCreditPack(packId: string, paymentMethod?: 'card' | 'pix') {
-  const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-    body: { packId, ...(paymentMethod ? { payment_method: paymentMethod } : {}) },
-  });
-
-  if (error) throw error;
+  const data = await withQuery(() =>
+    supabase.functions.invoke('create-checkout-session', {
+      body: { packId, ...(paymentMethod ? { payment_method: paymentMethod } : {}) },
+    }),
+  );
   return data as { url: string };
 }
 
 export async function syncCreditPurchase() {
-  const { data, error } = await supabase.functions.invoke('sync-credit-purchase', {
-    body: {},
-  });
-
-  if (error) throw error;
+  const data = await withQuery(() =>
+    supabase.functions.invoke('sync-credit-purchase', {
+      body: {},
+    }),
+  );
   return data as { synced: boolean; credits_added: number; sessions_processed: number };
 }

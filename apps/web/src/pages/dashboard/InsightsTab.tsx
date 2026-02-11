@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { ClinicalInsights, WeeklyTrendPoint } from '@/hooks/domain/useDashboard';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -22,9 +23,10 @@ import { useScrollReveal } from '@/hooks/useScrollReveal';
 // ---------------------------------------------------------------------------
 
 function WeeklyTrendsChart({ data, loading }: { data: WeeklyTrendPoint[]; loading: boolean }) {
+  const { t } = useTranslation();
   const containerRef = useScrollReveal();
   const chartConfig: ChartConfig = {
-    value: { label: 'Avaliações', color: 'hsl(var(--primary))' },
+    value: { label: t('dashboard.insights.evaluationsLabel'), color: 'hsl(var(--primary))' },
   };
 
   const totalPeriod = data.reduce((sum, d) => sum + d.value, 0);
@@ -35,10 +37,10 @@ function WeeklyTrendsChart({ data, loading }: { data: WeeklyTrendPoint[]; loadin
     <div ref={containerRef} className="scroll-reveal">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-semibold font-display uppercase tracking-wider text-muted-foreground">
-          Tendência semanal
+          {t('dashboard.insights.weeklyTrend')}
         </h2>
         <Badge variant="secondary" className="text-xs">
-          {totalPeriod} avaliações no período
+          {t('dashboard.insights.evaluationsInPeriod', { count: totalPeriod })}
         </Badge>
       </div>
       <Card className="p-4 shadow-sm rounded-xl">
@@ -73,6 +75,7 @@ function WeeklyTrendsChart({ data, loading }: { data: WeeklyTrendPoint[]; loadin
 // ---------------------------------------------------------------------------
 
 function TreatmentDonut({ items }: { items: Array<{ label: string; value: number; color: string }> }) {
+  const { t } = useTranslation();
   const containerRef = useScrollReveal();
   const total = items.reduce((sum, item) => sum + item.value, 0);
 
@@ -82,7 +85,7 @@ function TreatmentDonut({ items }: { items: Array<{ label: string; value: number
     <div ref={containerRef} className="scroll-reveal">
       <Card className="p-4 shadow-sm rounded-xl">
         <h3 className="text-sm font-semibold font-display text-muted-foreground mb-3">
-          Distribuição de Tratamentos
+          {t('dashboard.insights.treatmentDistribution')}
         </h3>
         <div className="flex flex-col items-center">
           <div className="relative w-[180px] h-[180px]">
@@ -106,7 +109,7 @@ function TreatmentDonut({ items }: { items: Array<{ label: string; value: number
             {/* Center text */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
               <span className="text-2xl font-semibold tabular-nums">{total}</span>
-              <span className="text-[10px] text-muted-foreground">total</span>
+              <span className="text-[10px] text-muted-foreground">{t('dashboard.insights.total')}</span>
             </div>
           </div>
           {/* Legend */}
@@ -130,19 +133,20 @@ function TreatmentDonut({ items }: { items: Array<{ label: string; value: number
 // ---------------------------------------------------------------------------
 
 function TopResinsChart({ resins }: { resins: Array<{ name: string; count: number }> }) {
+  const { t } = useTranslation();
   const containerRef = useScrollReveal();
 
   if (resins.length === 0) return null;
 
   const chartConfig: ChartConfig = {
-    count: { label: 'Usos', color: 'hsl(var(--chart-1))' },
+    count: { label: t('dashboard.insights.usesLabel'), color: 'hsl(var(--chart-1))' },
   };
 
   return (
     <div ref={containerRef} className="scroll-reveal">
       <Card className="p-4 shadow-sm rounded-xl">
         <h3 className="text-sm font-semibold font-display text-muted-foreground mb-3">
-          Resinas mais usadas
+          {t('dashboard.insights.topResins')}
         </h3>
         <ChartContainer config={chartConfig} className="aspect-auto h-[180px] w-full">
           <BarChart layout="vertical" data={resins} margin={{ left: 0, right: 16 }}>
@@ -180,6 +184,7 @@ function ClinicalStatsCard({
   insights: ClinicalInsights;
   weeklyTrends: WeeklyTrendPoint[];
 }) {
+  const { t } = useTranslation();
   const containerRef = useScrollReveal();
   const totalWeeklyEvals = weeklyTrends.reduce((sum, w) => sum + w.value, 0);
   const avgPerWeek = weeklyTrends.length > 0 ? (totalWeeklyEvals / weeklyTrends.length).toFixed(1) : '0';
@@ -187,17 +192,17 @@ function ClinicalStatsCard({
   return (
     <div ref={containerRef} className="scroll-reveal">
       <Card className="p-4 space-y-3 shadow-sm rounded-xl">
-        <h3 className="text-sm font-semibold font-display text-muted-foreground">Resumo clínico</h3>
+        <h3 className="text-sm font-semibold font-display text-muted-foreground">{t('dashboard.insights.clinicalSummary')}</h3>
 
         {insights.topResin && (
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">Resina mais usada</span>
+            <span className="text-xs text-muted-foreground">{t('dashboard.insights.topResin')}</span>
             <Badge variant="secondary" className="text-xs">{insights.topResin}</Badge>
           </div>
         )}
 
         <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">Uso do inventário</span>
+          <span className="text-xs text-muted-foreground">{t('dashboard.insights.inventoryUsage')}</span>
           <div className="flex items-center gap-2">
             <Progress value={insights.inventoryRate} className="w-20 h-2" />
             <span className="text-xs font-medium tabular-nums">{insights.inventoryRate}%</span>
@@ -205,12 +210,12 @@ function ClinicalStatsCard({
         </div>
 
         <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">Total de casos</span>
+          <span className="text-xs text-muted-foreground">{t('dashboard.insights.totalCases')}</span>
           <span className="text-xs font-medium tabular-nums">{insights.totalEvaluated}</span>
         </div>
 
         <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">Média por semana</span>
+          <span className="text-xs text-muted-foreground">{t('dashboard.insights.weeklyAverage')}</span>
           <span className="text-xs font-medium tabular-nums">{avgPerWeek}</span>
         </div>
       </Card>
@@ -231,13 +236,15 @@ export function InsightsTab({
   weeklyTrends: WeeklyTrendPoint[];
   loading: boolean;
 }) {
+  const { t } = useTranslation();
+
   if (!loading && !clinicalInsights && weeklyTrends.length === 0) {
     return (
       <Card className="p-8 sm:p-10 text-center">
         <BarChart3 className="w-10 h-10 mx-auto text-muted-foreground/40 mb-3" />
-        <p className="font-medium font-display text-sm mb-1">Sem dados suficientes</p>
+        <p className="font-medium font-display text-sm mb-1">{t('dashboard.insights.noData')}</p>
         <p className="text-xs text-muted-foreground">
-          Os insights aparecerão aqui após suas primeiras avaliações.
+          {t('dashboard.insights.noDataDescription')}
         </p>
       </Card>
     );
