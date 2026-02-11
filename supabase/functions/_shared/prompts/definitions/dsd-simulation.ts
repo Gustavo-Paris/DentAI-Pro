@@ -92,10 +92,14 @@ Dimensões de saída DEVEM ser iguais às dimensões de entrada.
 - NÃO deve parecer que os dentes foram "copiados" de outra pessoa
 
 REFERÊNCIA ANATÔMICA FIXA:
-O lábio superior define a LINHA DO SORRISO. Sua posição é a referência
-para diagnóstico de sorriso gengival. Alterar o lábio = destruir o diagnóstico.
-O contorno, posição, e formato do lábio são IMUTÁVEIS em TODAS as camadas.
-⚠️ LÁBIOS SÃO A REFERÊNCIA DIAGNÓSTICA — MOVER LÁBIOS = DESTRUIR O CASO`
+Os lábios (superior E inferior) definem a MOLDURA DO SORRISO.
+- O lábio superior define a LINHA DO SORRISO — referência para diagnóstico de sorriso gengival
+- O lábio inferior define a CURVA DO SORRISO — referência para arco do sorriso
+- A ABERTURA LABIAL (distância entre lábios) define a EXPOSIÇÃO DENTAL
+Alterar QUALQUER lábio = destruir o diagnóstico e a comparação antes/depois.
+O contorno, posição, formato e abertura dos lábios são IMUTÁVEIS em TODAS as camadas.
+⚠️ LÁBIOS SÃO A REFERÊNCIA DIAGNÓSTICA — MOVER LÁBIOS = DESTRUIR O CASO
+⚠️ ERRO FREQUENTE DO MODELO: Levantar o lábio superior e abaixar o inferior para "mostrar mais resultado" — PROIBIDO`
 }
 
 function buildWhiteningPrioritySection(params: Params): string {
@@ -340,13 +344,19 @@ ${absolutePreservation}
 TASK: Edit teeth AND gingival contour. This is the COMPLETE treatment simulation including gengivoplasty.
 
 ⚠️⚠️⚠️ REGRA #0 — MAIS IMPORTANTE QUE TUDO ⚠️⚠️⚠️
-A LINHA DO SORRISO (posição do lábio superior) é SAGRADA e INTOCÁVEL.
-O nível gengival do sorriso NÃO pode ser alterado — a gengivoplastia
-altera apenas a margem gengival ENTRE os dentes, nunca a relação
-lábio-gengiva visível no sorriso.
+AMBOS OS LÁBIOS (superior E inferior) são SAGRADOS e INTOCÁVEIS.
+A gengivoplastia altera apenas a margem gengival ENTRE os dentes,
+NUNCA a posição, formato, abertura ou contorno dos lábios.
 
-VALIDAÇÃO: Compare a posição do lábio superior pixel a pixel.
-Se o lábio mudou de posição → REJEITAR e refazer.
+O enquadramento da foto (crop, zoom, ângulo) DEVE ser IDÊNTICO.
+Os lábios são a referência anatômica fixa para o antes/depois.
+Se os lábios mudarem, a comparação clínica é DESTRUÍDA.
+
+VALIDAÇÃO:
+- Lábio superior: mesma posição, formato e contorno pixel a pixel
+- Lábio inferior: mesma posição, formato e contorno pixel a pixel
+- Abertura labial: IDÊNTICA à foto original
+- Se qualquer lábio mudou de posição → REJEITAR e refazer
 
 ⚠️ EXCEPTION TO GINGIVA PRESERVATION: In this layer, you ARE ALLOWED to modify the gingival contour.
 The gum line should be recontoured to show the effect of gengivoplasty:
@@ -359,13 +369,17 @@ The gum line should be recontoured to show the effect of gengivoplasty:
 
 ⚠️ REGRA ABSOLUTA SOBRE LÁBIOS (MESMO COM GENGIVOPLASTIA):
 A gengivoplastia altera APENAS a MARGEM GENGIVAL (interface gengiva-dente).
-- O LÁBIO SUPERIOR é a REFERÊNCIA FIXA para classificação de sorriso gengival
-- Mover o lábio INVALIDA toda a análise clínica
+- AMBOS os lábios (superior E inferior) são REFERÊNCIAS FIXAS
+- Mover QUALQUER lábio INVALIDA toda a análise clínica
 - DEFINIÇÃO: Margem gengival = tecido rosa entre dente e lábio
-- DEFINIÇÃO: Lábio = tecido vermelho/rosa com vermilion border acima da gengiva
+- DEFINIÇÃO: Lábio = tecido vermelho/rosa com vermilion border
+- O LÁBIO SUPERIOR permanece EXATAMENTE na mesma posição e formato
+- O LÁBIO INFERIOR permanece EXATAMENTE na mesma posição e formato
+- A ABERTURA LABIAL (distância entre lábios) é FIXA — não pode aumentar nem diminuir
 - Ao mover a margem gengival apicalmente, o ESPAÇO entre lábio e dente AUMENTA
-  (mostrando mais coroa clínica) — mas o LÁBIO PERMANECE EXATAMENTE ONDE ESTÁ
-- Se não for possível simular gengivoplastia sem mover o lábio: NÃO FAÇA
+  (mostrando mais coroa clínica) — mas os LÁBIOS PERMANECEM EXATAMENTE ONDE ESTÃO
+- Se não for possível simular gengivoplastia sem mover os lábios: NÃO FAÇA
+- ⚠️ ERRO COMUM: Levantar o lábio superior e/ou abaixar o inferior para "mostrar mais dente" — ISSO É PROIBIDO
 
 ${params.gingivoSuggestions ? `GENGIVOPLASTY SPECIFICATIONS:\n${params.gingivoSuggestions}\n` : ''}
 
@@ -406,13 +420,17 @@ The gum line should be recontoured to show the effect of root coverage:
 
 ⚠️ REGRA ABSOLUTA SOBRE LÁBIOS (MESMO COM RECOBRIMENTO RADICULAR):
 O recobrimento radicular altera APENAS a MARGEM GENGIVAL (interface gengiva-dente).
-- O LÁBIO SUPERIOR é a REFERÊNCIA FIXA para classificação de sorriso gengival
-- Mover o lábio INVALIDA toda a análise clínica
+- AMBOS os lábios (superior E inferior) são REFERÊNCIAS FIXAS
+- Mover QUALQUER lábio INVALIDA toda a análise clínica
 - DEFINIÇÃO: Margem gengival = tecido rosa entre dente e lábio
-- DEFINIÇÃO: Lábio = tecido vermelho/rosa com vermilion border acima da gengiva
+- DEFINIÇÃO: Lábio = tecido vermelho/rosa com vermilion border
+- O LÁBIO SUPERIOR permanece EXATAMENTE na mesma posição e formato
+- O LÁBIO INFERIOR permanece EXATAMENTE na mesma posição e formato
+- A ABERTURA LABIAL (distância entre lábios) é FIXA — não pode aumentar nem diminuir
 - Ao mover a margem gengival coronalmente, o ESPAÇO entre lábio e dente DIMINUI
-  (mostrando menos raiz exposta) — mas o LÁBIO PERMANECE EXATAMENTE ONDE ESTÁ
-- Se não for possível simular recobrimento radicular sem mover o lábio: NÃO FAÇA
+  (mostrando menos raiz exposta) — mas os LÁBIOS PERMANECEM EXATAMENTE ONDE ESTÃO
+- Se não for possível simular recobrimento radicular sem mover os lábios: NÃO FAÇA
+- ⚠️ ERRO COMUM: Levantar o lábio superior e/ou abaixar o inferior para "mostrar mais dente" — ISSO É PROIBIDO
 
 ${params.rootCoverageSuggestions ? `ROOT COVERAGE SPECIFICATIONS:\n${params.rootCoverageSuggestions}\n` : ''}
 

@@ -474,66 +474,111 @@ async function generateSimulation(
   );
   const dsdSimulationPromptDef = getPrompt('dsd-simulation');
 
-  try {
-    logger.log("Calling Gemini Image Edit for simulation...");
+  // Lip validation helper: checks if EITHER lip moved between original and simulation
+  const isGingivalLayer = layerType === 'complete-treatment' || layerType === 'root-coverage';
+  const MAX_LIP_RETRIES = isGingivalLayer ? 2 : 0; // Only retry for gingival layers
 
-    const result = await withMetrics<{ imageUrl: string | null; text: string | null }>(metrics, dsdSimulationPromptDef.id, PROMPT_VERSION, dsdSimulationPromptDef.model)(async () => {
-      const response = await callGeminiImageEdit(
-        simulationPrompt,
+  async function validateLips(simImageUrl: string): Promise<boolean> {
+    try {
+      const simBase64 = simImageUrl.replace(/^data:image\/\w+;base64,/, "");
+      const simMimeMatch = simImageUrl.match(/^data:([^;]+);base64,/);
+      const simMimeType = simMimeMatch ? simMimeMatch[1] : 'image/png';
+
+      const lipCheck = await callGeminiVision(
+        "gemini-2.0-flash",
+        `Imagem 1 é a ORIGINAL. Imagem 2 é a SIMULAÇÃO odontológica.
+Compare AMBOS os lábios entre as duas imagens:
+1. O LÁBIO SUPERIOR mudou de posição, formato ou contorno?
+2. O LÁBIO INFERIOR mudou de posição, formato ou contorno?
+3. A ABERTURA LABIAL (distância entre lábios) mudou?
+
+Se QUALQUER um dos itens acima mudou, responda 'SIM'.
+Se ambos os lábios estão na MESMA posição exata, responda 'NÃO'.
+Responda APENAS 'SIM' ou 'NÃO'.`,
         inputBase64Data,
         inputMimeType,
         {
-          temperature: dsdSimulationPromptDef.temperature,
-          timeoutMs: SIMULATION_TIMEOUT,
-          seed: imageSeed,
+          temperature: 0.0,
+          maxTokens: 10,
+          additionalImages: [{ data: simBase64, mimeType: simMimeType }],
         }
       );
-      return {
-        result: response,
-        tokensIn: 0,
-        tokensOut: 0,
-      };
-    });
 
-    if (!result.imageUrl) {
-      logger.warn("No image in Gemini response, text was:", result.text);
-      throw new Error(`Gemini returned no image. Text: ${(result.text || 'none').substring(0, 200)}`);
+      const lipAnswer = (lipCheck.text || '').trim().toUpperCase();
+      const lipsMoved = lipAnswer.includes('SIM');
+      logger.log(`Lip validation for ${layerType || 'standard'} layer: ${lipsMoved ? 'FAILED (lips moved)' : 'PASSED'}`);
+      return !lipsMoved; // true = valid (lips didn't move)
+    } catch (lipErr) {
+      // If validation itself fails, accept the image (don't block on validation errors)
+      logger.warn("Lip validation check failed (non-blocking):", lipErr);
+      return true;
     }
+  }
 
-    // Post-generation lip validation for gingival layers
-    if (layerType === 'complete-treatment' || layerType === 'root-coverage') {
-      try {
-        const simBase64 = result.imageUrl.replace(/^data:image\/\w+;base64,/, "");
-        const simMimeMatch = result.imageUrl.match(/^data:([^;]+);base64,/);
-        const simMimeType = simMimeMatch ? simMimeMatch[1] : 'image/png';
+  try {
+    logger.log("Calling Gemini Image Edit for simulation...");
 
-        const lipCheck = await callGeminiVision(
-          "gemini-2.0-flash",
-          "Imagem 1 é a ORIGINAL. Imagem 2 é a SIMULAÇÃO. Compare o lábio superior entre as duas imagens. O lábio superior mudou de posição, formato ou contorno? Responda APENAS 'SIM' ou 'NÃO'.",
+    let finalResult: { imageUrl: string | null; text: string | null } | null = null;
+
+    for (let attempt = 0; attempt <= MAX_LIP_RETRIES; attempt++) {
+      const result = await withMetrics<{ imageUrl: string | null; text: string | null }>(metrics, dsdSimulationPromptDef.id, PROMPT_VERSION, dsdSimulationPromptDef.model)(async () => {
+        const response = await callGeminiImageEdit(
+          simulationPrompt,
           inputBase64Data,
           inputMimeType,
           {
-            temperature: 0.0,
-            maxTokens: 10,
-            additionalImages: [{ data: simBase64, mimeType: simMimeType }],
+            temperature: dsdSimulationPromptDef.temperature + (attempt * 0.05), // Slight variation on retry
+            timeoutMs: SIMULATION_TIMEOUT,
+            seed: attempt === 0 ? imageSeed : imageSeed + attempt, // Different seed on retry
           }
         );
+        return {
+          result: response,
+          tokensIn: 0,
+          tokensOut: 0,
+        };
+      });
 
-        const lipAnswer = (lipCheck.text || '').trim().toUpperCase();
-        if (lipAnswer.includes('SIM')) {
-          // Non-blocking: gingival layers naturally alter the gum/lip area
-          logger.warn(`Lip validation: lip change detected for ${layerType} layer — continuing anyway (gingival layers expected to modify gum area)`);
-        } else {
-          logger.log(`Lip validation passed for ${layerType} layer`);
+      if (!result.imageUrl) {
+        logger.warn(`Attempt ${attempt + 1}: No image in Gemini response, text was:`, result.text);
+        if (attempt === MAX_LIP_RETRIES) {
+          throw new Error(`Gemini returned no image after ${attempt + 1} attempts. Text: ${(result.text || 'none').substring(0, 200)}`);
         }
-      } catch (lipErr) {
-        // Don't block simulation on validation failure — log and continue
-        logger.warn("Lip validation check failed (non-blocking):", lipErr);
+        continue;
       }
+
+      // For gingival layers, validate lips before accepting
+      if (isGingivalLayer) {
+        if (attempt < MAX_LIP_RETRIES) {
+          const lipsValid = await validateLips(result.imageUrl);
+          if (!lipsValid) {
+            logger.warn(`Attempt ${attempt + 1}/${MAX_LIP_RETRIES + 1}: Lip movement detected, retrying with different seed...`);
+            // Keep as fallback in case all retries fail
+            finalResult = result;
+            continue;
+          }
+        } else {
+          // Last attempt — run validation but accept regardless
+          const lipsValid = await validateLips(result.imageUrl);
+          if (!lipsValid) {
+            logger.warn(`Final attempt ${attempt + 1}: Lip movement still detected — accepting anyway (best effort)`);
+          }
+        }
+      }
+
+      finalResult = result;
+      if (attempt > 0) {
+        logger.log(`Simulation accepted on attempt ${attempt + 1}`);
+      }
+      break;
+    }
+
+    if (!finalResult?.imageUrl) {
+      throw new Error("Gemini returned no valid image after all attempts");
     }
 
     // Upload generated image
-    const base64Data = result.imageUrl.replace(/^data:image\/\w+;base64,/, "");
+    const base64Data = finalResult.imageUrl.replace(/^data:image\/\w+;base64,/, "");
     const binaryData = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
 
     const fileName = `${userId}/dsd_${Date.now()}.png`;
