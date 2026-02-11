@@ -542,6 +542,7 @@
         "remove45": "Remover foto 45°",
         "faceAlt": "Face completa",
         "faceLabel": "Face Completa",
+        "removeFace": "Remover foto do rosto",
         "optional": "Opcional",
         "photo45Added": "Foto 45° adicionada",
         "faceAdded": "Foto de face adicionada",
@@ -655,6 +656,8 @@
         "clinicalNotes": "Notas Clínicas",
         "clinicalNotesPlaceholder": "Adicione observações clínicas, histórico relevante, ou detalhes específicos do caso...",
         "listening": "Ouvindo...",
+        "stopRecording": "Parar gravação de voz",
+        "startRecording": "Iniciar gravação de voz",
         "caseSummary": "Resumo do Caso",
         "teethLabel": "Dentes",
         "typesLabel": "Tipos",
@@ -963,7 +966,9 @@
       "profile": "Perfil",
       "signOut": "Sair da conta",
       "endSession": "Encerrar sessão",
-      "searchLabel": "Buscar (⌘K)"
+      "searchLabel": "Buscar (⌘K)",
+      "skipToContent": "Pular para o conteúdo principal",
+      "mainNavigation": "Navegação principal"
     },
     "globalSearch": {
       "placeholder": "Buscar paciente, dente ou data...",

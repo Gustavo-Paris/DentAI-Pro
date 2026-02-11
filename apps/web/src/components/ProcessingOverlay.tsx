@@ -28,7 +28,7 @@ export function ProcessingOverlay({
     : -1;
 
   return (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 grain-overlay">
+    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 grain-overlay" role="status" aria-live="polite">
       <Card className="w-full max-w-md rounded-2xl card-elevated animate-[scale-in_0.3s_ease-out]">
         <CardContent className="p-6 flex flex-col items-center text-center">
           <ProgressRing progress={progress} size={128} />

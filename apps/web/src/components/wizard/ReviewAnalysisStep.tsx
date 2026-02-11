@@ -170,16 +170,18 @@ function PillToggle({
   columns?: number;
 }) {
   return (
-    <div className={cn('grid gap-2', columns === 4 ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-3')}>
+    <div className={cn('grid gap-2', columns === 4 ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-3')} role="radiogroup">
       {options.map((opt) => {
         const isSelected = value === opt.value;
         return (
           <button
             key={opt.value}
             type="button"
+            role="radio"
+            aria-checked={isSelected}
             onClick={() => onChange(opt.value)}
             className={cn(
-              'px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 btn-press border',
+              'px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 btn-press border focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
               isSelected
                 ? 'bg-primary text-primary-foreground border-primary shadow-sm'
                 : 'bg-card border-border hover:border-primary/50 text-foreground',
@@ -384,6 +386,7 @@ export function ReviewAnalysisStep({
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 shrink-0"
+                        aria-label={t('components.wizard.review.restoreAI', { treatment: t(TREATMENT_LABEL_KEYS[originalToothTreatments[tooth.tooth]]) })}
                         onClick={(e) => {
                           e.stopPropagation();
                           onRestoreAiSuggestion(tooth.tooth);
@@ -470,6 +473,7 @@ export function ReviewAnalysisStep({
                   onClick={onReanalyze}
                   disabled={isReanalyzing}
                   className="h-7 px-2 btn-press"
+                  aria-label={t('components.wizard.review.reanalyze')}
                 >
                   {isReanalyzing ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -1032,6 +1036,7 @@ export function ReviewAnalysisStep({
                       speech.isListening && 'animate-pulse',
                     )}
                     onClick={speech.toggle}
+                    aria-label={speech.isListening ? t('components.wizard.review.stopRecording') : t('components.wizard.review.startRecording')}
                   >
                     {speech.isListening ? (
                       <MicOff className="w-4 h-4" />
@@ -1042,7 +1047,7 @@ export function ReviewAnalysisStep({
                 )}
               </div>
               {speech.isListening && (
-                <div className="flex items-center gap-2 text-xs text-destructive">
+                <div className="flex items-center gap-2 text-xs text-destructive" role="status" aria-live="polite">
                   <span className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
                   {t('components.wizard.review.listening')}
                   {speech.transcript && (

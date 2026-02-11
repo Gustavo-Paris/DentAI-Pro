@@ -54,8 +54,9 @@ export function CreditBadge({ variant = 'compact', className, showTooltip = true
           colorClass,
           className
         )}
+        aria-label={t('components.creditBadge.remaining', { remaining: creditsRemaining, total: creditsTotal })}
       >
-        <Zap className="w-3 h-3" />
+        <Zap className="w-3 h-3" aria-hidden="true" />
         <span>{creditsRemaining} cr</span>
       </Link>
     );

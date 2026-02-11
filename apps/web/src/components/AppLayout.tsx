@@ -46,6 +46,14 @@ export default function AppLayout() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Skip to content link */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:outline-none"
+      >
+        {t('components.layout.skipToContent')}
+      </a>
+
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex fixed inset-y-0 left-0 z-30 w-56 flex-col border-r border-border bg-sidebar">
         {/* Logo — premium breathing room */}
@@ -53,24 +61,31 @@ export default function AppLayout() {
           <span className="text-lg font-semibold tracking-[0.2em] font-display text-gradient-gold">{BRAND_NAME}</span>
         </div>
 
-        <nav className="flex-1 py-4 px-2.5 space-y-0.5">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                cn(
-                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
-                  isActive
-                    ? 'bg-primary/10 text-primary shadow-2xs'
-                    : 'text-muted-foreground hover:bg-accent hover:text-foreground'
-                )
-              }
-            >
-              <item.icon className="w-[18px] h-[18px]" />
-              {t(`components.layout.${item.labelKey}`)}
-            </NavLink>
-          ))}
+        <nav className="flex-1 py-4 px-2.5 space-y-0.5" aria-label={t('components.layout.mainNavigation')}>
+          {navItems.map((item) => {
+            const isItemActive =
+              item.to === '/dashboard'
+                ? location.pathname === '/dashboard'
+                : location.pathname.startsWith(item.to);
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                aria-current={isItemActive ? 'page' : undefined}
+                className={({ isActive }) =>
+                  cn(
+                    'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
+                    isActive
+                      ? 'bg-primary/10 text-primary shadow-2xs'
+                      : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                  )
+                }
+              >
+                <item.icon className="w-[18px] h-[18px]" />
+                {t(`components.layout.${item.labelKey}`)}
+              </NavLink>
+            );
+          })}
         </nav>
 
         <div className="border-t border-border p-3 space-y-3">
@@ -123,7 +138,7 @@ export default function AppLayout() {
       </header>
 
       {/* Main content */}
-      <main className="lg:pl-56 pb-20 lg:pb-0">
+      <main id="main-content" className="lg:pl-56 pb-20 lg:pb-0">
         <div key={location.pathname} className="route-enter">
           <Outlet />
         </div>
@@ -133,7 +148,7 @@ export default function AppLayout() {
       <HelpButton />
 
       {/* Mobile bottom nav */}
-      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-30 border-t border-border bg-card/95 backdrop-blur-sm safe-area-bottom">
+      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-30 border-t border-border bg-card/95 backdrop-blur-sm safe-area-bottom" aria-label={t('components.layout.mainNavigation')}>
         <div className="flex items-center justify-around h-[68px]">
           {navItems.map((item) => {
             const isActive =
@@ -144,6 +159,7 @@ export default function AppLayout() {
               <NavLink
                 key={item.to}
                 to={item.to}
+                aria-current={isActive ? 'page' : undefined}
                 className={cn(
                   'relative flex flex-col items-center justify-center gap-0.5 min-w-[56px] h-12 px-3 rounded-xl transition-all duration-200 active:scale-[0.92]',
                   isActive ? 'bg-primary/12' : 'hover:bg-accent/50'

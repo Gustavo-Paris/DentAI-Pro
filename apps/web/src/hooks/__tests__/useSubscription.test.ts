@@ -103,4 +103,105 @@ describe('credit calculation logic', () => {
   it('should allow operation when credits exactly match', () => {
     expect(canUseCredits(2, 2)).toBe(true);
   });
+
+  it('should deny operation when zero credits remain', () => {
+    expect(canUseCredits(0, 1)).toBe(false);
+  });
+});
+
+describe('credit calculation with bonus', () => {
+  // Replicate the hook's full credit computation including bonus
+  function computeCreditsWithBonus(params: {
+    creditsPerMonth: number;
+    creditsUsed: number;
+    creditsRollover: number;
+    creditsBonus: number;
+  }) {
+    const { creditsPerMonth, creditsUsed, creditsRollover, creditsBonus } = params;
+    const creditsTotal = creditsPerMonth + creditsRollover + creditsBonus;
+    const creditsRemaining = Math.max(0, creditsTotal - creditsUsed);
+    const creditsPercentUsed = creditsTotal > 0 ? (creditsUsed / creditsTotal) * 100 : 0;
+    return { creditsTotal, creditsRemaining, creditsPercentUsed };
+  }
+
+  it('should include bonus in total credits', () => {
+    const result = computeCreditsWithBonus({
+      creditsPerMonth: 10,
+      creditsUsed: 5,
+      creditsRollover: 3,
+      creditsBonus: 7,
+    });
+    expect(result.creditsTotal).toBe(20); // 10 + 3 + 7
+    expect(result.creditsRemaining).toBe(15); // 20 - 5
+  });
+
+  it('should compute percentage correctly with bonus', () => {
+    const result = computeCreditsWithBonus({
+      creditsPerMonth: 10,
+      creditsUsed: 10,
+      creditsRollover: 0,
+      creditsBonus: 10,
+    });
+    expect(result.creditsTotal).toBe(20);
+    expect(result.creditsPercentUsed).toBe(50); // 10/20 * 100
+    expect(result.creditsRemaining).toBe(10);
+  });
+});
+
+describe('estimatedDaysRemaining calculation', () => {
+  function computeEstimatedDays(
+    creditUsageHistory: { created_at: string; credits_used: number }[],
+    creditsRemaining: number,
+  ): number | null {
+    if (creditUsageHistory.length === 0 || creditsRemaining <= 0) return null;
+
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const recentEntries = creditUsageHistory.filter(
+      (entry) => new Date(entry.created_at) >= thirtyDaysAgo,
+    );
+
+    if (recentEntries.length === 0) return null;
+
+    const totalUsed = recentEntries.reduce((sum, entry) => sum + entry.credits_used, 0);
+    const avgPerDay = totalUsed / 30;
+
+    if (avgPerDay <= 0) return null;
+    return Math.floor(creditsRemaining / avgPerDay);
+  }
+
+  it('should return null for empty usage history', () => {
+    expect(computeEstimatedDays([], 10)).toBeNull();
+  });
+
+  it('should return null when no credits remaining', () => {
+    const history = [{ created_at: new Date().toISOString(), credits_used: 5 }];
+    expect(computeEstimatedDays(history, 0)).toBeNull();
+  });
+
+  it('should return null when no recent entries in last 30 days', () => {
+    const oldDate = new Date();
+    oldDate.setDate(oldDate.getDate() - 60);
+    const history = [{ created_at: oldDate.toISOString(), credits_used: 5 }];
+    expect(computeEstimatedDays(history, 10)).toBeNull();
+  });
+
+  it('should estimate days based on average daily usage', () => {
+    const now = new Date();
+    const history = [
+      { created_at: now.toISOString(), credits_used: 30 }, // 30 credits over 30 days = 1/day
+    ];
+    const result = computeEstimatedDays(history, 15);
+    expect(result).toBe(15); // 15 remaining / 1 per day
+  });
+
+  it('should handle high usage rate', () => {
+    const now = new Date();
+    const history = [
+      { created_at: now.toISOString(), credits_used: 60 }, // 60 credits over 30 days = 2/day
+    ];
+    const result = computeEstimatedDays(history, 10);
+    expect(result).toBe(5); // 10 remaining / 2 per day
+  });
 });

@@ -97,9 +97,9 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background flex" role="main">
       {/* Brand panel — desktop only */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden grain-overlay bg-background">
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden grain-overlay bg-background" aria-hidden="true">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_hsl(235_56%_58%/0.08),_transparent_60%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_hsl(235_60%_68%/0.05),_transparent_50%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_hsl(235_56%_58%/0.03),_transparent_40%)]" />
@@ -158,6 +158,8 @@ export default function Register() {
                       <FormControl>
                         <Input
                           placeholder="Dr. João Silva"
+                          autoComplete="name"
+                          aria-required="true"
                           {...field}
                         />
                       </FormControl>
@@ -193,6 +195,8 @@ export default function Register() {
                         <Input
                           type="email"
                           placeholder="seu@email.com"
+                          autoComplete="email"
+                          aria-required="true"
                           {...field}
                         />
                       </FormControl>
@@ -211,6 +215,8 @@ export default function Register() {
                         <Input
                           type="password"
                           placeholder="••••••••••••"
+                          autoComplete="new-password"
+                          aria-required="true"
                           {...field}
                         />
                       </FormControl>
@@ -230,6 +236,8 @@ export default function Register() {
                         <Input
                           type="password"
                           placeholder="••••••••••••"
+                          autoComplete="new-password"
+                          aria-required="true"
                           {...field}
                         />
                       </FormControl>

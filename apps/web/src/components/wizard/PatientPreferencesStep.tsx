@@ -75,7 +75,7 @@ export function PatientPreferencesStep({
 
         <CardContent className="space-y-6">
           {/* Whitening Level Cards with Color Swatches */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" role="radiogroup" aria-label={t('components.wizard.preferences.title')}>
             {WHITENING_OPTIONS.map((option) => {
               const Icon = option.icon;
               const isSelected = preferences.whiteningLevel === option.value;
@@ -84,6 +84,9 @@ export function PatientPreferencesStep({
                 <button
                   key={option.value}
                   type="button"
+                  role="radio"
+                  aria-checked={isSelected}
+                  aria-label={t(option.labelKey)}
                   onClick={() => handleSelect(option.value)}
                   className={cn(
                     'relative flex flex-col items-center rounded-xl border-2 transition-all duration-200 overflow-hidden btn-press',
