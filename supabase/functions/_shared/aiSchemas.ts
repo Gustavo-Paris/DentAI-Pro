@@ -220,3 +220,67 @@ export const CementationProtocolSchema = z
   .passthrough();
 
 export type CementationProtocolParsed = z.infer<typeof CementationProtocolSchema>;
+
+// ---------------------------------------------------------------------------
+// 4. RecommendResinResponse (recommend-resin)
+// ---------------------------------------------------------------------------
+
+const ProtocolLayerSchema = z
+  .object({
+    order: z.number(),
+    name: z.string(),
+    resin_brand: z.string(),
+    shade: z.string(),
+    thickness: z.string(),
+    purpose: z.string(),
+    technique: z.string(),
+  })
+  .passthrough();
+
+const ProtocolAlternativeSchema = z
+  .object({
+    resin: z.string(),
+    shade: z.string(),
+    technique: z.string(),
+    tradeoff: z.string(),
+  })
+  .passthrough();
+
+const PolishingStepSchema = z
+  .object({
+    order: z.number(),
+    tool: z.string(),
+    grit: z.string().optional(),
+    speed: z.string(),
+    time: z.string(),
+    tip: z.string(),
+  })
+  .passthrough();
+
+const FinishingProtocolSchema = z
+  .object({
+    contouring: z.array(PolishingStepSchema).default([]),
+    polishing: z.array(PolishingStepSchema).default([]),
+    final_glaze: z.string().optional(),
+    maintenance_advice: z.string(),
+  })
+  .passthrough();
+
+export const RecommendResinResponseSchema = z
+  .object({
+    protocol: z
+      .object({
+        layers: z.array(ProtocolLayerSchema).min(1),
+        alternative: ProtocolAlternativeSchema,
+        finishing: FinishingProtocolSchema.optional(),
+        checklist: z.array(z.string()).min(1),
+        alerts: z.array(z.string()).default([]),
+        warnings: z.array(z.string()).default([]),
+        justification: z.string(),
+        confidence: z.string(),
+      })
+      .passthrough(),
+  })
+  .passthrough();
+
+export type RecommendResinResponseParsed = z.infer<typeof RecommendResinResponseSchema>;

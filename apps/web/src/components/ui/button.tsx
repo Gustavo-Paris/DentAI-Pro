@@ -20,10 +20,10 @@ const buttonVariants = cva(
         premium: "bg-gradient-to-r from-[hsl(var(--brand-accent))] to-[hsl(var(--brand-accent-light))] text-white font-semibold hover:brightness-110",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
+        default: "h-10 min-h-[44px] px-4 py-2",
+        sm: "h-9 min-h-[44px] rounded-md px-3",
         lg: "h-11 rounded-md px-8",
-        icon: "h-10 w-10",
+        icon: "h-10 w-10 min-h-[44px] min-w-[44px]",
       },
     },
     defaultVariants: {
