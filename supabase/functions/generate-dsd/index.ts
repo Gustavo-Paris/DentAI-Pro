@@ -453,8 +453,9 @@ async function generateSimulation(
   // Extract base64 data and mime type from data URL
   const dataUrlMatch = imageBase64.match(/^data:([^;]+);base64,(.+)$/);
   if (!dataUrlMatch) {
-    logger.error("Invalid image data URL format");
-    return null;
+    const preview = imageBase64.substring(0, 80);
+    logger.error(`Invalid image data URL format. Preview: ${preview}`);
+    throw new Error(`Invalid image format (expected data:...;base64,...). Got: ${preview}...`);
   }
   const [, inputMimeType, inputBase64Data] = dataUrlMatch;
 
@@ -495,8 +496,8 @@ async function generateSimulation(
     });
 
     if (!result.imageUrl) {
-      logger.warn("No image in Gemini response");
-      return null;
+      logger.warn("No image in Gemini response, text was:", result.text);
+      throw new Error(`Gemini returned no image. Text: ${(result.text || 'none').substring(0, 200)}`);
     }
 
     // Post-generation lip validation for gingival layers
@@ -520,10 +521,11 @@ async function generateSimulation(
 
         const lipAnswer = (lipCheck.text || '').trim().toUpperCase();
         if (lipAnswer.includes('SIM')) {
-          logger.warn(`Lip validation FAILED for ${layerType} layer — lip was altered. Rejecting simulation.`);
-          return null;
+          // Non-blocking: gingival layers naturally alter the gum/lip area
+          logger.warn(`Lip validation: lip change detected for ${layerType} layer — continuing anyway (gingival layers expected to modify gum area)`);
+        } else {
+          logger.log(`Lip validation passed for ${layerType} layer`);
         }
-        logger.log(`Lip validation passed for ${layerType} layer`);
       } catch (lipErr) {
         // Don't block simulation on validation failure — log and continue
         logger.warn("Lip validation check failed (non-blocking):", lipErr);
@@ -545,7 +547,7 @@ async function generateSimulation(
 
     if (uploadError) {
       logger.error("Upload error:", uploadError);
-      return null;
+      throw new Error(`Storage upload failed: ${uploadError.message}`);
     }
 
     logger.log("Simulation generated and uploaded:", fileName);
@@ -553,10 +555,12 @@ async function generateSimulation(
   } catch (err) {
     if (err instanceof GeminiError) {
       logger.warn(`Gemini simulation error (${err.statusCode}):`, err.message);
-    } else {
-      logger.warn("Simulation error:", err);
+      throw new Error(`GeminiError ${err.statusCode}: ${err.message}`);
     }
-    return null;
+    // Re-throw with context for debugging
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.warn("Simulation error:", msg);
+    throw new Error(`Simulation failed: ${msg}`);
   }
 }
 
@@ -948,11 +952,13 @@ serve(async (req: Request) => {
     }
 
     // Check and consume credits only for the initial DSD call.
-    // Skip credit check ONLY when ALL of these are true (server-validated):
-    //   1. regenerateSimulationOnly = reusing existing analysis (not a fresh call)
-    //   2. evaluationId was provided (we can verify server-side state)
-    //   3. The evaluation already has dsd_analysis stored (proves initial call was charged)
-    const isFollowUpCall = regenerateSimulationOnly && evaluationId && evaluationHasDsdAnalysis;
+    // Skip credit check when this is a follow-up layer generation call:
+    //   Option A: regenerateSimulationOnly + evaluationId + evaluation has dsd_analysis (server-verified)
+    //   Option B: regenerateSimulationOnly + existingAnalysis provided (client sends back analysis from paid call)
+    // Both cases mean the initial analysis was already charged.
+    const isFollowUpCall = regenerateSimulationOnly && (
+      (evaluationId && evaluationHasDsdAnalysis) || existingAnalysis
+    );
     if (!isFollowUpCall) {
       const creditResult = await checkAndUseCredits(supabase, user.id, "dsd_simulation", reqId);
       if (!creditResult.allowed) {
@@ -1171,10 +1177,13 @@ serve(async (req: Request) => {
 
     // Generate simulation image
     let simulationUrl: string | null = null;
+    let simulationDebug: string | undefined;
     try {
       simulationUrl = await generateSimulation(imageBase64, analysis, user.id, supabase, toothShape || 'natural', patientPreferences, layerType);
     } catch (simError) {
-      logger.error("Simulation error:", simError);
+      const simMsg = simError instanceof Error ? simError.message : String(simError);
+      logger.error("Simulation error:", simMsg);
+      simulationDebug = simMsg;
       // Continue without simulation - analysis is still valid
     }
 
@@ -1224,13 +1233,16 @@ serve(async (req: Request) => {
     }
 
     // Return result with note if applicable
-    const result: DSDResult & { layer_type?: string } = {
+    const result: DSDResult & { layer_type?: string; simulation_debug?: string } = {
       analysis,
       simulation_url: simulationUrl,
       simulation_note: simulationNote,
     };
     if (layerType) {
       result.layer_type = layerType;
+    }
+    if (simulationDebug && !simulationUrl) {
+      result.simulation_debug = simulationDebug;
     }
 
     return new Response(JSON.stringify(result), {

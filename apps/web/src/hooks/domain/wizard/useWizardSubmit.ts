@@ -243,6 +243,7 @@ export function useWizardSubmit({
                 ? 'Clareamento intenso - nível Hollywood (BL1)'
                 : 'Aparência natural e sutil (A1/A2)',
             patient_desired_changes: null,
+            stratification_needed: !isGengivoplasty,
           };
 
           const evaluation = await wizardData.createEvaluation(insertData);
