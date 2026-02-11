@@ -597,7 +597,7 @@ function PrivacySection({
 
             <div className="space-y-2">
               <Label htmlFor="delete-confirmation">
-                Digite <strong className="text-destructive">{CONFIRMATION_PHRASE}</strong> para confirmar:
+                {t('profile.deleteConfirmLabelPrefix')} <strong className="text-destructive">{CONFIRMATION_PHRASE}</strong> {t('profile.deleteConfirmLabelSuffix')}
               </Label>
               <Input
                 id="delete-confirmation"

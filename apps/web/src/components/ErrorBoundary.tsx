@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, RefreshCw, Home } from 'lucide-react';
 import { logger } from '@/lib/logger';
+import i18n from '@/lib/i18n';
 
 interface Props {
   children: ReactNode;
@@ -54,10 +55,10 @@ class ErrorBoundary extends Component<Props, State> {
                 <AlertCircle className="w-8 h-8 text-destructive" />
               </div>
               
-              <h2 className="text-xl font-semibold mb-2">Algo deu errado</h2>
-              
+              <h2 className="text-xl font-semibold mb-2">{i18n.t('components.errorBoundary.title')}</h2>
+
               <p className="text-muted-foreground mb-6">
-                Ocorreu um erro inesperado. Por favor, recarregue a página ou volte ao início.
+                {i18n.t('components.errorBoundary.description')}
               </p>
               
               {import.meta.env.DEV && this.state.error && (
@@ -71,11 +72,11 @@ class ErrorBoundary extends Component<Props, State> {
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Button onClick={this.handleReload} className="gap-2">
                   <RefreshCw className="w-4 h-4" />
-                  Recarregar Página
+                  {i18n.t('components.errorBoundary.reloadPage')}
                 </Button>
                 <Button variant="outline" onClick={this.handleGoHome} className="gap-2">
                   <Home className="w-4 h-4" />
-                  Ir para Início
+                  {i18n.t('components.errorBoundary.goToHome')}
                 </Button>
               </div>
             </CardContent>

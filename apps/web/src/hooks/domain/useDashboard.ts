@@ -6,6 +6,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { useWizardDraft, WizardDraft } from '@/hooks/useWizardDraft';
 import { WELCOME_STORAGE_KEY } from '@/lib/branding';
 import { QUERY_STALE_TIMES } from '@/lib/constants';
+import i18n from '@/lib/i18n';
 import { format, startOfWeek, endOfWeek, subDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -97,13 +98,13 @@ export interface DashboardState {
 
 function getTimeGreeting(): string {
   const hour = new Date().getHours();
-  if (hour < 12) return 'Bom dia';
-  if (hour < 18) return 'Boa tarde';
-  return 'Boa noite';
+  if (hour < 12) return i18n.t('dashboard.greetingMorning');
+  if (hour < 18) return i18n.t('dashboard.greetingAfternoon');
+  return i18n.t('dashboard.greetingEvening');
 }
 
 function extractFirstName(fullName: string | null | undefined): string {
-  if (!fullName) return 'Usuário';
+  if (!fullName) return i18n.t('dashboard.userFallback');
   const match = fullName.match(/^(Dra?\.\s*)(.+)/i);
   if (match) {
     const restFirst = match[2].split(' ')[0];
@@ -135,14 +136,16 @@ const TREATMENT_COLORS: Record<string, string> = {
   encaminhamento: '#6b7280',
 };
 
-const TREATMENT_LABELS: Record<string, string> = {
-  resina: 'Resina',
-  porcelana: 'Porcelana',
-  coroa: 'Coroa',
-  implante: 'Implante',
-  endodontia: 'Endodontia',
-  encaminhamento: 'Encaminhamento',
-};
+function getTreatmentLabels(): Record<string, string> {
+  return {
+    resina: i18n.t('dashboard.treatmentResina'),
+    porcelana: i18n.t('dashboard.treatmentPorcelana'),
+    coroa: i18n.t('dashboard.treatmentCoroa'),
+    implante: i18n.t('dashboard.treatmentImplante'),
+    endodontia: i18n.t('dashboard.treatmentEndodontia'),
+    encaminhamento: i18n.t('dashboard.treatmentEncaminhamento'),
+  };
+}
 
 interface RawInsightRow {
   id: string;
@@ -167,10 +170,11 @@ function computeInsights(
     if (row.is_from_inventory) inventoryCount++;
   }
 
+  const treatmentLabels = getTreatmentLabels();
   const treatmentDistribution = Array.from(typeCounts.entries())
     .sort((a, b) => b[1] - a[1])
     .map(([type, count]) => ({
-      label: TREATMENT_LABELS[type] || type,
+      label: treatmentLabels[type] || type,
       value: count,
       color: TREATMENT_COLORS[type] || '#6b7280',
     }));

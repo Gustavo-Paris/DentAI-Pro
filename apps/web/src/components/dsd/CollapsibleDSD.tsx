@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -27,6 +28,7 @@ export function CollapsibleDSD({
   layers,
   layerUrls = {},
 }: CollapsibleDSDProps) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const [activeLayerIndex, setActiveLayerIndex] = useState(0);
 
@@ -68,15 +70,15 @@ export function CollapsibleDSD({
                 </div>
                 <div>
                   <h3 className="font-medium flex items-center gap-2">
-                    Planejamento Digital do Sorriso (DSD)
+                    {t('components.dsd.collapsible.title')}
                     {suggestionsCount > 0 && (
                       <Badge variant="secondary" className="text-xs">
-                        {suggestionsCount} sugestões
+                        {t('components.dsd.collapsible.suggestions', { count: suggestionsCount })}
                       </Badge>
                     )}
                     {hasLayers && layers.length > 1 && (
                       <Badge variant="outline" className="text-xs">
-                        {layers.length} camadas
+                        {t('components.dsd.collapsible.layers', { count: layers.length })}
                       </Badge>
                     )}
                   </h3>
@@ -84,13 +86,13 @@ export function CollapsibleDSD({
                     {symmetryScore !== undefined && (
                       <span className="text-xs text-muted-foreground flex items-center gap-1">
                         <Sparkles className="w-3 h-3" />
-                        Simetria: {symmetryScore}%
+                        {t('components.dsd.collapsible.symmetry')}: {symmetryScore}%
                       </span>
                     )}
                     {goldenRatio !== undefined && (
                       <span className="text-xs text-muted-foreground flex items-center gap-1">
                         <Sparkles className="w-3 h-3" />
-                        Proporção áurea: {goldenRatio}%
+                        {t('components.dsd.collapsible.goldenRatio')}: {goldenRatio}%
                       </span>
                     )}
                   </div>
@@ -101,7 +103,7 @@ export function CollapsibleDSD({
                 {!isOpen && beforeImage && hasAnySimulation && (
                   <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
                     <Eye className="w-3 h-3 mr-1" />
-                    Ver simulação
+                    {t('components.dsd.collapsible.viewSimulation')}
                   </Button>
                 )}
                 {isOpen ? (
@@ -133,7 +135,7 @@ export function CollapsibleDSD({
                 {layer.label}
                 {layer.includes_gengivoplasty && (
                   <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4">
-                    Gengiva
+                    {t('components.dsd.collapsible.gingivaLabel')}
                   </Badge>
                 )}
               </button>
@@ -146,16 +148,16 @@ export function CollapsibleDSD({
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center gap-1">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-              <span className="text-xs font-medium text-muted-foreground">Áreas:</span>
+              <span className="text-xs font-medium text-muted-foreground">{t('components.dsd.collapsible.areas')}</span>
             </div>
             <Badge variant="outline" className="text-[10px] border-emerald-300 text-emerald-700 dark:border-emerald-700 dark:text-emerald-400">
-              Lábio: Preservado
+              {t('components.dsd.collapsible.lipPreserved')}
             </Badge>
             <Badge variant="outline" className="text-[10px] border-rose-300 text-rose-700 dark:border-rose-700 dark:text-rose-400">
-              Gengiva: Alterada
+              {t('components.dsd.collapsible.gingivaAltered')}
             </Badge>
             <Badge variant="outline" className="text-[10px] border-blue-300 text-blue-700 dark:border-blue-700 dark:text-blue-400">
-              Dentes: Alterados
+              {t('components.dsd.collapsible.teethAltered')}
             </Badge>
           </div>
         )}
@@ -168,7 +170,7 @@ export function CollapsibleDSD({
             afterLabel={activeLayer?.label || 'Simulação DSD'}
             changeIndicator={
               activeLayer?.includes_gengivoplasty
-                ? 'Gengiva reconturada'
+                ? t('components.dsd.collapsible.gingivaRecontoured')
                 : undefined
             }
           />
@@ -181,7 +183,7 @@ export function CollapsibleDSD({
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-medium flex items-center gap-1.5">
                   <Scissors className="w-4 h-4 text-rose-500" />
-                  Alterações Gengivais
+                  {t('components.dsd.collapsible.gingivalChanges')}
                 </h4>
                 {gingivalLayerIndex >= 0 && activeLayerIndex !== gingivalLayerIndex && (
                   <Button
@@ -190,7 +192,7 @@ export function CollapsibleDSD({
                     className="text-xs border-rose-200 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-rose-900"
                     onClick={() => setActiveLayerIndex(gingivalLayerIndex)}
                   >
-                    Ver com gengiva
+                    {t('components.dsd.collapsible.viewWithGingiva')}
                   </Button>
                 )}
               </div>
@@ -214,7 +216,7 @@ export function CollapsibleDSD({
                 </div>
               ) : (
                 <p className="text-xs text-muted-foreground">
-                  Gengivoplastia incluída no tratamento completo. Compare as camadas para visualizar a diferença.
+                  {t('components.dsd.collapsible.gingivoplastyIncluded')}
                 </p>
               )}
             </CardContent>
