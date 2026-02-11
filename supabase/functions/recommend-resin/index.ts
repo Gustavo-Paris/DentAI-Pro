@@ -10,6 +10,7 @@ import { getPrompt } from "../_shared/prompts/registry.ts";
 import { withMetrics } from "../_shared/prompts/index.ts";
 import type { Params as RecommendResinParams } from "../_shared/prompts/definitions/recommend-resin.ts";
 import { createSupabaseMetrics, PROMPT_VERSION } from "../_shared/metrics-adapter.ts";
+import { parseAIResponse, RecommendResinResponseSchema } from "../_shared/aiSchemas.ts";
 
 function getContralateral(tooth: string): string | null {
   const num = parseInt(tooth);
@@ -399,14 +400,15 @@ serve(async (req) => {
       return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     }
 
-    // Validate that protocol is not empty
-    if (recommendation.protocol?.layers?.length === 0 || !recommendation.protocol?.checklist?.length) {
-      logger.error("AI returned empty protocol, protocol:", JSON.stringify(recommendation.protocol));
+    // Validate response structure with Zod (covers empty layers/checklist via .min(1))
+    try {
+      parseAIResponse(RecommendResinResponseSchema, recommendation, 'recommend-resin');
+    } catch {
       if (creditsConsumed && supabaseForRefund && userIdForRefund) {
         await refundCredits(supabaseForRefund, userIdForRefund, "resin_recommendation", reqId);
-        logger.log(`[${reqId}] Refunded resin_recommendation credits for user ${userIdForRefund} — empty protocol`);
+        logger.log(`[${reqId}] Refunded resin_recommendation credits for user ${userIdForRefund} — Zod validation failed`);
       }
-      return createErrorResponse("Protocolo vazio — tente novamente", 500, corsHeaders);
+      return createErrorResponse("Protocolo inválido — tente novamente", 500, corsHeaders);
     }
 
     // Validate and fix protocol layers against resin_catalog
