@@ -270,17 +270,7 @@ export function useDSDStep({
             },
           });
           if (resp.error || !resp.data?.simulation_url) {
-            const debugInfo = (resp.data as Record<string, unknown>)?.simulation_debug;
-            console.error(`[DSD DEBUG] Layer ${layerType}:`, {
-              hasError: !!resp.error,
-              errorMsg: resp.error?.message,
-              hasData: !!resp.data,
-              simUrl: resp.data?.simulation_url,
-              simDebug: debugInfo,
-              fullResp: resp.data,
-            });
-            const debugSuffix = debugInfo ? ` [${debugInfo}]` : '';
-            throw resp.error || new Error(`Simulation returned no URL${debugSuffix}`);
+            throw resp.error || new Error('Simulation returned no URL');
           }
           return resp;
         },

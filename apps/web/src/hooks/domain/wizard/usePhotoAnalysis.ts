@@ -195,15 +195,8 @@ export function usePhotoAnalysis({
         throw new Error('Análise não retornou dados');
       }
     } catch (error: unknown) {
-      const err = error as { message?: string; code?: string; name?: string; debug?: string; status?: number };
+      const err = error as { message?: string; code?: string; name?: string; status?: number };
       logger.error('Analysis error:', error);
-      console.error('[ANALYSIS DEBUG]', {
-        message: err.message,
-        code: err.code,
-        name: err.name,
-        status: err.status,
-        debug: err.debug,
-      });
 
       let errorMessage: string;
       const isNetwork =
@@ -229,12 +222,6 @@ export function usePhotoAnalysis({
         errorMessage = t('toasts.analysis.serverError');
       } else {
         errorMessage = t('toasts.analysis.genericError');
-      }
-
-      // Append debug info for diagnosis (temporary)
-      const debugInfo = err.debug || err.message || err.name || '';
-      if (debugInfo) {
-        errorMessage += `\n\n[Debug: ${debugInfo}]`;
       }
 
       setAnalysisError(errorMessage);
