@@ -1,5 +1,6 @@
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useTranslation } from 'react-i18next';
 import { Clock, Trash2, RotateCcw } from 'lucide-react';
 import {
   AlertDialog,
@@ -27,6 +28,7 @@ export function DraftRestoreModal({
   onRestore,
   onDiscard,
 }: DraftRestoreModalProps) {
+  const { t } = useTranslation();
   const timeAgo = lastSavedAt
     ? formatDistanceToNow(new Date(lastSavedAt), { addSuffix: true, locale: ptBR })
     : 'recentemente';
@@ -37,19 +39,19 @@ export function DraftRestoreModal({
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
             <RotateCcw className="w-5 h-5 text-primary" />
-            Continuar avaliação anterior?
+            {t('components.wizard.draftRestore.title')}
           </AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="text-sm text-muted-foreground space-y-3">
               <p>
-                Você tem uma avaliação não finalizada salva automaticamente.
+                {t('components.wizard.draftRestore.description')}
               </p>
               <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
                 <Clock className="w-4 h-4" />
-                <span>Último salvamento: {timeAgo}</span>
+                <span>{t('components.wizard.draftRestore.lastSaved', { time: timeAgo })}</span>
               </div>
               <p>
-                Deseja continuar de onde parou ou começar uma nova avaliação?
+                {t('components.wizard.draftRestore.continueOrNew')}
               </p>
             </div>
           </AlertDialogDescription>
@@ -57,11 +59,11 @@ export function DraftRestoreModal({
         <AlertDialogFooter className="flex-col sm:flex-row gap-2">
           <AlertDialogCancel onClick={onDiscard} className="gap-2">
             <Trash2 className="w-4 h-4" />
-            Começar do zero
+            {t('components.wizard.draftRestore.startOver')}
           </AlertDialogCancel>
           <AlertDialogAction onClick={onRestore} className="gap-2">
             <RotateCcw className="w-4 h-4" />
-            Continuar
+            {t('components.wizard.draftRestore.continue')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

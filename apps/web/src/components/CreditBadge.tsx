@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -17,6 +18,7 @@ interface CreditBadgeProps {
 }
 
 export function CreditBadge({ variant = 'compact', className, showTooltip = true }: CreditBadgeProps) {
+  const { t } = useTranslation();
   const { creditsRemaining, creditsTotal, creditsPercentUsed, isLoading, getCreditCost } = useSubscription();
 
   if (isLoading) return null;
@@ -63,9 +65,9 @@ export function CreditBadge({ variant = 'compact', className, showTooltip = true
         <Tooltip>
           <TooltipTrigger asChild>{badge}</TooltipTrigger>
           <TooltipContent side="bottom" className="text-xs">
-            <p className="font-medium">{creditsRemaining} de {creditsTotal} créditos restantes</p>
+            <p className="font-medium">{t('components.creditBadge.remaining', { remaining: creditsRemaining, total: creditsTotal })}</p>
             <p className="text-muted-foreground mt-0.5">
-              Análise = {getCreditCost('case_analysis')} cr | DSD = {getCreditCost('dsd_simulation')} cr
+              {t('components.creditBadge.costInfo', { analysis: getCreditCost('case_analysis'), dsd: getCreditCost('dsd_simulation') })}
             </p>
           </TooltipContent>
         </Tooltip>
@@ -81,7 +83,7 @@ export function CreditBadge({ variant = 'compact', className, showTooltip = true
       <div className="flex items-center justify-between mb-2">
         <div className={cn('flex items-center gap-1.5 text-sm font-medium', colorClass)}>
           <Zap className="w-3.5 h-3.5" />
-          <span>Créditos</span>
+          <span>{t('components.creditBadge.creditsLabel')}</span>
         </div>
         <span className={cn('text-sm font-semibold', colorClass)}>
           {creditsRemaining}/{creditsTotal}
@@ -94,7 +96,7 @@ export function CreditBadge({ variant = 'compact', className, showTooltip = true
         />
       </div>
       <p className="text-xs text-muted-foreground mt-1.5">
-        Análise = {getCreditCost('case_analysis')} cr | DSD = {getCreditCost('dsd_simulation')} cr
+        {t('components.creditBadge.costInfo', { analysis: getCreditCost('case_analysis'), dsd: getCreditCost('dsd_simulation') })}
       </p>
     </div>
   );

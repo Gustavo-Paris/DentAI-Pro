@@ -1,5 +1,6 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import { NavLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { BRAND_NAME } from '@/lib/branding';
@@ -23,14 +24,15 @@ import {
 } from '@/components/ui/tooltip';
 
 const navItems = [
-  { to: '/dashboard', label: 'Início', icon: LayoutDashboard },
-  { to: '/evaluations', label: 'Avaliações', icon: FileText },
-  { to: '/patients', label: 'Pacientes', icon: Users },
-  { to: '/inventory', label: 'Inventário', icon: Package },
-  { to: '/profile', label: 'Perfil', icon: User },
+  { to: '/dashboard', labelKey: 'home', icon: LayoutDashboard },
+  { to: '/evaluations', labelKey: 'evaluations', icon: FileText },
+  { to: '/patients', labelKey: 'patients', icon: Users },
+  { to: '/inventory', labelKey: 'inventory', icon: Package },
+  { to: '/profile', labelKey: 'profile', icon: User },
 ] as const;
 
 export default function AppLayout() {
+  const { t } = useTranslation();
   const { signOut } = useAuth();
   const location = useLocation();
 
@@ -66,7 +68,7 @@ export default function AppLayout() {
               }
             >
               <item.icon className="w-[18px] h-[18px]" />
-              {item.label}
+              {t(`components.layout.${item.labelKey}`)}
             </NavLink>
           ))}
         </nav>
@@ -82,13 +84,13 @@ export default function AppLayout() {
                   size="icon"
                   onClick={handleSignOut}
                   className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                  aria-label="Sair da conta"
+                  aria-label={t('components.layout.signOut')}
                 >
                   <LogOut className="w-4 h-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="right">
-                <p>Encerrar sessão</p>
+                <p>{t('components.layout.endSession')}</p>
               </TooltipContent>
             </Tooltip>
           </div>
@@ -103,7 +105,7 @@ export default function AppLayout() {
             <button
               onClick={openSearch}
               className="flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all duration-200 active:scale-95"
-              aria-label="Buscar (⌘K)"
+              aria-label={t('components.layout.searchLabel')}
             >
               <Search className="w-[18px] h-[18px]" />
             </button>
@@ -112,7 +114,7 @@ export default function AppLayout() {
             <button
               onClick={handleSignOut}
               className="flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200 active:scale-95"
-              aria-label="Sair da conta"
+              aria-label={t('components.layout.signOut')}
             >
               <LogOut className="w-[18px] h-[18px]" />
             </button>
@@ -159,7 +161,7 @@ export default function AppLayout() {
                     isActive ? 'text-primary' : 'text-muted-foreground'
                   )}
                 >
-                  {item.label}
+                  {t(`components.layout.${item.labelKey}`)}
                 </span>
                 {isActive && (
                   <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-5 h-[3px] rounded-full bg-primary" />

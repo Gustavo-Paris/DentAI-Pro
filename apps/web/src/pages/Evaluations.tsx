@@ -1,5 +1,6 @@
 import { useEffect, memo } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ListPage } from '@pageshell/composites/list';
 import { useEvaluationSessions } from '@/hooks/domain/useEvaluationSessions';
 import type { EvaluationSession } from '@/hooks/domain/useEvaluationSessions';
@@ -108,6 +109,7 @@ const SessionCard = memo(function SessionCard({
 // =============================================================================
 
 export default function Evaluations() {
+  const { t } = useTranslation();
   const { sessions, isLoading, isError, newSessionId, newTeethCount } =
     useEvaluationSessions();
 
@@ -123,9 +125,9 @@ export default function Evaluations() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <Card className="p-6 text-center">
           <AlertTriangle className="w-8 h-8 text-destructive mx-auto mb-3" />
-          <p className="font-medium">Erro ao carregar avaliações</p>
+          <p className="font-medium">{t('evaluation.loadError')}</p>
           <p className="text-sm text-muted-foreground mt-1">
-            Tente recarregar a página. Se o problema persistir, entre em contato com o suporte.
+            {t('errors.tryReloadPage')}
           </p>
         </Card>
       </div>
@@ -140,18 +142,17 @@ export default function Evaluations() {
           <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" aria-hidden="true" />
           <div>
             <p className="font-medium text-sm sm:text-base">
-              Avaliação criada com {newTeethCount} caso
-              {newTeethCount > 1 ? 's' : ''}!
+              {t('evaluation.createdWithCases', { count: newTeethCount })}
             </p>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              A avaliação nova está destacada abaixo.
+              {t('evaluation.newHighlighted')}
             </p>
           </div>
         </div>
       )}
 
       <ListPage<EvaluationSession>
-          title="Avaliações"
+          title={t('evaluation.title')}
           viewMode="cards"
           items={sessions}
           isLoading={isLoading}
@@ -166,32 +167,32 @@ export default function Evaluations() {
           gridClassName="grid grid-cols-1 gap-3"
           searchConfig={{
             fields: ['patient_name'],
-            placeholder: 'Buscar por paciente...',
+            placeholder: t('evaluation.searchByPatient'),
           }}
           filters={{
             status: {
-              label: 'Status',
+              label: t('evaluation.statusFilter'),
               options: [
-                { value: 'all', label: 'Todas' },
-                { value: 'pending', label: 'Em progresso' },
-                { value: 'completed', label: 'Finalizadas' },
+                { value: 'all', label: t('evaluation.statusAll') },
+                { value: 'pending', label: t('evaluation.statusPending') },
+                { value: 'completed', label: t('evaluation.statusCompleted') },
               ],
               default: 'all',
             },
           }}
           pagination={{ defaultPageSize: 20 }}
           createAction={{
-            label: 'Nova Avaliação',
+            label: t('evaluation.newEvaluation'),
             href: '/new-case',
           }}
           emptyState={{
-            title: 'Nenhuma avaliação encontrada',
-            description: 'Você ainda não criou nenhuma avaliação.',
-            action: { label: 'Criar primeira avaliação', href: '/new-case' },
+            title: t('evaluation.emptyTitle'),
+            description: t('evaluation.emptyDescription'),
+            action: { label: t('evaluation.emptyAction'), href: '/new-case' },
           }}
           labels={{
-            search: { placeholder: 'Buscar por paciente...' },
-            pagination: { showing: 'Mostrando', of: 'de', items: 'avaliações' },
+            search: { placeholder: t('evaluation.searchByPatient') },
+            pagination: { showing: t('common.showingOf'), of: t('common.of'), items: t('evaluation.paginationItems') },
           }}
         />
     </div>

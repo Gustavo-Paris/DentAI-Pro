@@ -1,11 +1,12 @@
+import { useTranslation } from 'react-i18next';
 import { Camera, Sparkles, History, Zap } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSubscription, type CreditUsageRecord } from '@/hooks/useSubscription';
 
-const operationConfig: Record<string, { label: string; icon: typeof Camera; color: string }> = {
-  case_analysis: { label: 'Análise de Caso', icon: Camera, color: 'text-blue-500' },
-  dsd_simulation: { label: 'Simulação DSD', icon: Sparkles, color: 'text-purple-500' },
+const operationConfig: Record<string, { labelKey: string; icon: typeof Camera; color: string }> = {
+  case_analysis: { labelKey: 'components.pricing.creditUsage.caseAnalysis', icon: Camera, color: 'text-blue-500' },
+  dsd_simulation: { labelKey: 'components.pricing.creditUsage.dsdSimulation', icon: Sparkles, color: 'text-purple-500' },
 };
 
 function formatRelativeDate(dateStr: string): string {
@@ -24,6 +25,7 @@ function formatRelativeDate(dateStr: string): string {
 }
 
 export function CreditUsageHistory() {
+  const { t } = useTranslation();
   const { creditUsageHistory, isCreditUsageLoading, estimatedDaysRemaining } = useSubscription();
 
   if (isCreditUsageLoading) {
@@ -32,7 +34,7 @@ export function CreditUsageHistory() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg font-display">
             <History className="h-5 w-5" />
-            Histórico de Uso
+            {t('components.pricing.creditUsage.title')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -50,11 +52,11 @@ export function CreditUsageHistory() {
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg font-display">
             <History className="h-5 w-5" />
-            Histórico de Uso
+            {t('components.pricing.creditUsage.title')}
           </CardTitle>
           {estimatedDaysRemaining !== null && (
             <span className="text-xs text-muted-foreground">
-              ~{estimatedDaysRemaining} dias restantes
+              {t('components.pricing.creditUsage.daysRemaining', { days: estimatedDaysRemaining })}
             </span>
           )}
         </div>
@@ -63,16 +65,16 @@ export function CreditUsageHistory() {
         {creditUsageHistory.length === 0 ? (
           <div className="py-8 text-center">
             <History className="w-10 h-10 mx-auto text-muted-foreground/40 mb-3" />
-            <p className="text-sm font-medium text-muted-foreground">Nenhum uso registrado</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('components.pricing.creditUsage.noUsage')}</p>
             <p className="text-xs text-muted-foreground mt-1">
-              O histórico aparecerá aqui quando você usar seus créditos
+              {t('components.pricing.creditUsage.noUsageDesc')}
             </p>
           </div>
         ) : (
           <div className="space-y-2">
             {creditUsageHistory.map((entry: CreditUsageRecord) => {
               const config = operationConfig[entry.operation] || {
-                label: entry.operation,
+                labelKey: '',
                 icon: Zap,
                 color: 'text-muted-foreground',
               };
@@ -88,7 +90,7 @@ export function CreditUsageHistory() {
                       <Icon className="h-4 w-4" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium">{config.label}</p>
+                      <p className="text-sm font-medium">{config.labelKey ? t(config.labelKey) : entry.operation}</p>
                       <p className="text-xs text-muted-foreground">
                         {formatRelativeDate(entry.created_at)}
                       </p>

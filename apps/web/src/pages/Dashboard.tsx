@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { DashboardPage } from '@pageshell/composites/dashboard';
 import type { ModuleConfig, DashboardTab } from '@pageshell/composites/dashboard';
 import { useDashboard } from '@/hooks/domain/useDashboard';
@@ -45,45 +46,46 @@ function StatsGridFallback() {
 // Module Config
 // =============================================================================
 
-const modules: ModuleConfig[] = [
-  {
-    id: 'new-case',
-    title: 'Nova Avaliação',
-    description: 'A partir de 1 crédito',
-    icon: Sparkles,
-    href: '/new-case',
-    variant: 'primary',
-  },
-  {
-    id: 'patients',
-    title: 'Meus Pacientes',
-    description: 'Gerenciar pacientes',
-    icon: Users,
-    href: '/patients',
-  },
-  {
-    id: 'inventory',
-    title: 'Meu Inventário',
-    description: 'Resinas disponíveis',
-    icon: Package,
-    href: '/inventory',
-  },
-];
-
 // =============================================================================
 // Page Adapter — maps domain hook → DashboardPage composite
 // =============================================================================
 
 export default function Dashboard() {
+  const { t } = useTranslation();
   const dashboard = useDashboard();
   const navigate = useNavigate();
   const isTabbed = !dashboard.isNewUser;
+
+  const modules: ModuleConfig[] = [
+    {
+      id: 'new-case',
+      title: t('dashboard.newEvaluation'),
+      description: t('dashboard.newEvaluationDescription'),
+      icon: Sparkles,
+      href: '/new-case',
+      variant: 'primary',
+    },
+    {
+      id: 'patients',
+      title: t('dashboard.myPatients'),
+      description: t('dashboard.managePatients'),
+      icon: Users,
+      href: '/patients',
+    },
+    {
+      id: 'inventory',
+      title: t('dashboard.myInventory'),
+      description: t('dashboard.availableResins'),
+      icon: Package,
+      href: '/inventory',
+    },
+  ];
 
   const tabsConfig: DashboardTab[] | undefined = isTabbed
     ? [
         {
           id: 'principal',
-          label: 'Principal',
+          label: t('dashboard.principal'),
           icon: LayoutDashboard,
           content: (
             <PrincipalTab
@@ -98,7 +100,7 @@ export default function Dashboard() {
         },
         {
           id: 'insights',
-          label: 'Insights',
+          label: t('dashboard.insights'),
           icon: BarChart3,
           content: (
             <Suspense fallback={<StatsGridFallback />}>
@@ -184,15 +186,15 @@ export default function Dashboard() {
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Descartar rascunho?</AlertDialogTitle>
+              <AlertDialogTitle>{t('dashboard.discardDraftTitle')}</AlertDialogTitle>
               <AlertDialogDescription>
-                O rascunho será apagado permanentemente. Esta ação não pode ser desfeita.
+                {t('dashboard.discardDraftDescription')}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
               <AlertDialogAction onClick={dashboard.confirmDiscardDraft}>
-                Descartar
+                {t('common.discard')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

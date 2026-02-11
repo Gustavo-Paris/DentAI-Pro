@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useOnboardingProgress } from '@/hooks/domain/useOnboardingProgress';
 
 export function OnboardingProgress() {
+  const { t } = useTranslation();
   const { steps, completionPercentage, allComplete, loading } = useOnboardingProgress();
 
   if (loading || allComplete) return null;
@@ -14,10 +16,10 @@ export function OnboardingProgress() {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-          Primeiros passos
+          {t('components.onboarding.progress.firstSteps')}
         </p>
         <span className="text-xs text-muted-foreground">
-          {completedCount} de {steps.length} completos
+          {t('components.onboarding.progress.completedOf', { completed: completedCount, total: steps.length })}
         </span>
       </div>
 

@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -70,6 +71,7 @@ export function PhotoUploadStep({
   additionalPhotos = { smile45: null, face: null },
   onAdditionalPhotosChange,
 }: PhotoUploadStepProps) {
+  const { t } = useTranslation();
   const [dragActive, setDragActive] = useState(false);
   const [dragActiveSmile45, setDragActiveSmile45] = useState(false);
   const [dragActiveFace, setDragActiveFace] = useState(false);
@@ -104,12 +106,12 @@ export function PhotoUploadStep({
   const handleFile = useCallback(async (file: File) => {
     // Validação de tipo - aceitar imagens E arquivos sem tipo (HEIC no Safari)
     if (!file.type.startsWith('image/') && file.type !== '' && file.type !== 'application/octet-stream') {
-      toast.error('Apenas imagens são permitidas');
+      toast.error(t('components.wizard.photoUpload.onlyImages'));
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      toast.error('Imagem deve ter no máximo 10MB');
+      toast.error(t('components.wizard.photoUpload.maxSize'));
       return;
     }
 
@@ -122,7 +124,7 @@ export function PhotoUploadStep({
       const fileIsHeic = await checkIsHeic(file);
 
       if (fileIsHeic) {
-        toast.info('Convertendo foto do iPhone...');
+        toast.info(t('components.wizard.photoUpload.convertingIphone'));
         processedBlob = await convertHeicToJpeg(file);
       }
 
@@ -138,18 +140,18 @@ export function PhotoUploadStep({
         // Se o Safari converteu automaticamente para JPEG/PNG
         if (base64.startsWith('data:image/jpeg') || base64.startsWith('data:image/png')) {
           onImageChange(base64);
-          toast.info('Imagem carregada com conversão automática');
+          toast.info(t('components.wizard.photoUpload.autoConversion'));
           return;
         }
 
-        toast.error('Erro ao processar imagem. Tente tirar a foto novamente ou envie como JPG.');
+        toast.error(t('components.wizard.photoUpload.processError'));
       } catch {
-        toast.error('Não foi possível processar esta foto. Tente enviar como JPG ou usar a câmera diretamente.');
+        toast.error(t('components.wizard.photoUpload.processErrorFallback'));
       }
     } finally {
       setIsCompressing(false);
     }
-  }, [onImageChange]);
+  }, [onImageChange, t]);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -190,12 +192,12 @@ export function PhotoUploadStep({
   // Handle optional photo upload (45° or Face)
   const handleOptionalFile = useCallback(async (file: File, type: 'smile45' | 'face') => {
     if (!file.type.startsWith('image/') && file.type !== '' && file.type !== 'application/octet-stream') {
-      toast.error('Apenas imagens são permitidas');
+      toast.error(t('components.wizard.photoUpload.onlyImages'));
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      toast.error('Imagem deve ter no máximo 10MB');
+      toast.error(t('components.wizard.photoUpload.maxSize'));
       return;
     }
 
@@ -218,7 +220,7 @@ export function PhotoUploadStep({
         });
       }
 
-      toast.success(type === 'smile45' ? 'Foto 45° adicionada' : 'Foto de face adicionada');
+      toast.success(type === 'smile45' ? t('components.wizard.photoUpload.photo45Added') : t('components.wizard.photoUpload.faceAdded'));
     } catch {
       try {
         const base64 = await readFileAsDataURL(file);
@@ -231,14 +233,14 @@ export function PhotoUploadStep({
           }
           return;
         }
-        toast.error('Erro ao processar foto opcional');
+        toast.error(t('components.wizard.photoUpload.optionalPhotoError'));
       } catch {
-        toast.error('Erro ao processar foto');
+        toast.error(t('components.wizard.photoUpload.photoError'));
       }
     } finally {
       setProcessingOptional(null);
     }
-  }, [additionalPhotos, onAdditionalPhotosChange]);
+  }, [additionalPhotos, onAdditionalPhotosChange, t]);
 
   const handleOptionalFileChange = (type: 'smile45' | 'face') => (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -264,9 +266,9 @@ export function PhotoUploadStep({
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-semibold font-display mb-2">Foto Intraoral</h2>
+        <h2 className="text-2xl font-semibold font-display mb-2">{t('components.wizard.photoUpload.title')}</h2>
         <p className="text-muted-foreground">
-          Envie uma foto da cavidade para análise automática com IA
+          {t('components.wizard.photoUpload.subtitle')}
         </p>
       </div>
 
@@ -291,10 +293,10 @@ export function PhotoUploadStep({
                     <Loader2 className="w-10 h-10 text-primary animate-spin" />
                   </div>
                   <h3 className="text-lg font-medium mb-2">
-                    Processando imagem...
+                    {t('components.wizard.photoUpload.processing')}
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    Otimizando para análise
+                    {t('components.wizard.photoUpload.optimizing')}
                   </p>
                 </div>
               ) : (
@@ -304,10 +306,10 @@ export function PhotoUploadStep({
                   </div>
 
                   <h3 className="text-lg font-medium mb-2">
-                    Arraste uma foto aqui
+                    {t('components.wizard.photoUpload.dragHere')}
                   </h3>
                   <p className="text-sm text-muted-foreground mb-6">
-                    {showCameraButton ? 'ou escolha uma foto existente ou tire uma nova' : 'ou escolha uma foto do seu dispositivo'}
+                    {showCameraButton ? t('components.wizard.photoUpload.orChooseMobile') : t('components.wizard.photoUpload.orChooseDesktop')}
                   </p>
 
                   <div className="flex flex-col sm:flex-row gap-3">
@@ -317,7 +319,7 @@ export function PhotoUploadStep({
                       className="btn-press"
                     >
                       <Upload className="w-4 h-4 mr-2" />
-                      Escolher da Galeria
+                      {t('components.wizard.photoUpload.chooseFromGallery')}
                     </Button>
                     {showCameraButton && (
                       <Button
@@ -326,7 +328,7 @@ export function PhotoUploadStep({
                         className="btn-press"
                       >
                         <Camera className="w-4 h-4 mr-2" />
-                        Tirar Foto
+                        {t('components.wizard.photoUpload.takePhoto')}
                       </Button>
                     )}
                   </div>
@@ -351,13 +353,13 @@ export function PhotoUploadStep({
             <div className="relative">
               <img
                 src={imageBase64}
-                alt="Foto intraoral"
+                alt={t('components.wizard.photoUpload.altIntraoral')}
                 className="w-full max-h-[400px] object-contain ring-2 ring-primary/20 rounded-xl"
               />
               {/* Badge overlay */}
               <Badge className="absolute top-3 left-3 bg-background/80 backdrop-blur-sm text-foreground border border-border/50">
                 <Camera className="w-3 h-3 mr-1" />
-                Intraoral
+                {t('components.wizard.photoUpload.badgeIntraoral')}
               </Badge>
               {/* Frosted glass remove button */}
               <Button
@@ -365,7 +367,7 @@ export function PhotoUploadStep({
                 size="icon"
                 className="absolute top-3 right-3 bg-background/80 backdrop-blur-sm hover:bg-background/90 border border-border/50"
                 onClick={handleRemove}
-                aria-label="Remover foto intraoral"
+                aria-label={t('components.wizard.photoUpload.removeIntraoral')}
               >
                 <X className="w-4 h-4" />
               </Button>
@@ -413,7 +415,7 @@ export function PhotoUploadStep({
       {imageBase64 && (
         <div className="space-y-3">
           <p className="text-sm text-muted-foreground text-center">
-            Fotos adicionais — melhoram a análise de proporções
+            {t('components.wizard.photoUpload.additionalPhotos')}
           </p>
           <div className="grid grid-cols-2 gap-3">
             {/* Foto 45° */}
@@ -442,7 +444,7 @@ export function PhotoUploadStep({
                     <div className="relative">
                       <img
                         src={additionalPhotos.smile45}
-                        alt="Sorriso 45°"
+                        alt={t('components.wizard.photoUpload.smile45Alt')}
                         className="w-full h-24 object-cover rounded-lg ring-1 ring-primary/20"
                       />
                       <Button
@@ -450,12 +452,12 @@ export function PhotoUploadStep({
                         size="icon"
                         className="absolute top-1 right-1 h-6 w-6 bg-background/80 backdrop-blur-sm"
                         onClick={() => removeOptionalPhoto('smile45')}
-                        aria-label="Remover foto 45°"
+                        aria-label={t('components.wizard.photoUpload.remove45')}
                       >
                         <X className="w-3 h-3" />
                       </Button>
                       <Badge className="absolute bottom-1 left-1 bg-background/80 backdrop-blur-sm text-foreground text-[10px] border border-border/50">
-                        Sorriso 45°
+                        {t('components.wizard.photoUpload.smile45Label')}
                       </Badge>
                     </div>
                   ) : (
@@ -469,8 +471,8 @@ export function PhotoUploadStep({
                       ) : (
                         <>
                           <Smile className="w-5 h-5" />
-                          <span className="text-xs font-medium">Sorriso 45°</span>
-                          <span className="text-[10px]">Opcional</span>
+                          <span className="text-xs font-medium">{t('components.wizard.photoUpload.smile45Label')}</span>
+                          <span className="text-[10px]">{t('components.wizard.photoUpload.optional')}</span>
                         </>
                       )}
                     </button>
@@ -505,7 +507,7 @@ export function PhotoUploadStep({
                     <div className="relative">
                       <img
                         src={additionalPhotos.face}
-                        alt="Face completa"
+                        alt={t('components.wizard.photoUpload.faceAlt')}
                         className="w-full h-24 object-cover rounded-lg ring-1 ring-primary/20"
                       />
                       <Button
@@ -517,7 +519,7 @@ export function PhotoUploadStep({
                         <X className="w-3 h-3" />
                       </Button>
                       <Badge className="absolute bottom-1 left-1 bg-background/80 backdrop-blur-sm text-foreground text-[10px] border border-border/50">
-                        Face
+                        {t('components.wizard.photoUpload.faceLabel')}
                       </Badge>
                     </div>
                   ) : (
@@ -531,8 +533,8 @@ export function PhotoUploadStep({
                       ) : (
                         <>
                           <User className="w-5 h-5" />
-                          <span className="text-xs font-medium">Face Completa</span>
-                          <span className="text-[10px]">Opcional</span>
+                          <span className="text-xs font-medium">{t('components.wizard.photoUpload.faceLabel')}</span>
+                          <span className="text-[10px]">{t('components.wizard.photoUpload.optional')}</span>
                         </>
                       )}
                     </button>
@@ -557,17 +559,17 @@ export function PhotoUploadStep({
               {isUploading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Enviando...
+                  {t('components.wizard.photoUpload.sending')}
                 </>
               ) : (
                 <>
                   <Sparkles className="w-4 h-4 mr-2" />
-                  Análise Completa com IA
+                  {t('components.wizard.photoUpload.fullAnalysis')}
                 </>
               )}
             </Button>
             <p className="text-[10px] text-muted-foreground/70">
-              3 créditos — inclui preferências e simulação DSD
+              {t('components.wizard.photoUpload.fullAnalysisCost')}
             </p>
           </div>
           {onQuickCase && (
@@ -580,10 +582,10 @@ export function PhotoUploadStep({
                 className="btn-press min-w-[220px]"
               >
                 <Zap className="w-4 h-4 mr-2" />
-                Análise Rápida
+                {t('components.wizard.photoUpload.quickAnalysis')}
               </Button>
               <p className="text-[10px] text-muted-foreground/70">
-                1 crédito — resultado em segundos
+                {t('components.wizard.photoUpload.quickAnalysisCost')}
               </p>
             </div>
           )}
@@ -595,11 +597,11 @@ export function PhotoUploadStep({
         <div className="flex items-start gap-2">
           <Lightbulb className="w-3.5 h-3.5 text-primary/50 mt-0.5 shrink-0" />
           <div>
-            <p className="text-xs text-muted-foreground font-medium mb-1">Dicas para melhor análise</p>
+            <p className="text-xs text-muted-foreground font-medium mb-1">{t('components.wizard.photoUpload.tipsTitle')}</p>
             <ul className="text-xs text-muted-foreground/80 space-y-0.5">
-              <li>Foto bem iluminada e focada na cavidade</li>
-              <li>Dentes limpos e secos para melhor visualização</li>
-              <li>Escala VITA próxima ao dente, se disponível</li>
+              <li>{t('components.wizard.photoUpload.tip1')}</li>
+              <li>{t('components.wizard.photoUpload.tip2')}</li>
+              <li>{t('components.wizard.photoUpload.tip3')}</li>
             </ul>
           </div>
         </div>

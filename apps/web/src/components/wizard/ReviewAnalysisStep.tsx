@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -70,27 +71,27 @@ export interface PhotoAnalysisResult {
   indication_reason?: string;
 }
 
-// Treatment type labels and icons mapping
-export const TREATMENT_LABELS: Record<TreatmentType, string> = {
-  resina: 'Resina Composta',
-  porcelana: 'Faceta de Porcelana',
-  coroa: 'Coroa Total',
-  implante: 'Implante',
-  endodontia: 'Tratamento de Canal',
-  encaminhamento: 'Encaminhamento',
-  gengivoplastia: 'Gengivoplastia Estética',
-  recobrimento_radicular: 'Recobrimento Radicular',
+// Treatment type translation key mapping
+export const TREATMENT_LABEL_KEYS: Record<TreatmentType, string> = {
+  resina: 'components.wizard.review.treatmentResina',
+  porcelana: 'components.wizard.review.treatmentPorcelana',
+  coroa: 'components.wizard.review.treatmentCoroa',
+  implante: 'components.wizard.review.treatmentImplante',
+  endodontia: 'components.wizard.review.treatmentEndodontia',
+  encaminhamento: 'components.wizard.review.treatmentEncaminhamento',
+  gengivoplastia: 'components.wizard.review.treatmentGengivoplastia',
+  recobrimento_radicular: 'components.wizard.review.treatmentRecobrimentoRadicular',
 };
 
-export const TREATMENT_DESCRIPTIONS: Record<TreatmentType, string> = {
-  resina: 'Protocolo de estratificação',
-  porcelana: 'Protocolo de cimentação',
-  coroa: 'Protocolo de preparo e cimentação',
-  implante: 'Checklist de avaliação para implante',
-  endodontia: 'Tratamento endodôntico necessário',
-  encaminhamento: 'Encaminhamento para especialista',
-  gengivoplastia: 'Protocolo de gengivoplastia estética',
-  recobrimento_radicular: 'Protocolo de recobrimento radicular',
+export const TREATMENT_DESC_KEYS: Record<TreatmentType, string> = {
+  resina: 'components.wizard.review.descResina',
+  porcelana: 'components.wizard.review.descPorcelana',
+  coroa: 'components.wizard.review.descCoroa',
+  implante: 'components.wizard.review.descImplante',
+  endodontia: 'components.wizard.review.descEndodontia',
+  encaminhamento: 'components.wizard.review.descEncaminhamento',
+  gengivoplastia: 'components.wizard.review.descGengivoplastia',
+  recobrimento_radicular: 'components.wizard.review.descRecobrimentoRadicular',
 };
 
 // Treatment border colors
@@ -216,6 +217,7 @@ export function ReviewAnalysisStep({
   dsdObservations,
   dsdSuggestions,
 }: Omit<ReviewAnalysisStepProps, 'onToothSelect'>) {
+  const { t } = useTranslation();
   const [showManualAdd, setShowManualAdd] = useState(false);
   const [manualTooth, setManualTooth] = useState('');
   const [internalDobError, setInternalDobError] = useState(false);
@@ -332,7 +334,7 @@ export function ReviewAnalysisStep({
         />
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1">
-            <span className="font-semibold text-sm">Dente {tooth.tooth}</span>
+            <span className="font-semibold text-sm">{t('components.wizard.review.tooth', { number: tooth.tooth })}</span>
             <Badge
               variant={tooth.priority === 'alta' ? 'destructive' : tooth.priority === 'média' ? 'secondary' : 'outline'}
               className="text-[10px] gap-1"
@@ -349,7 +351,7 @@ export function ReviewAnalysisStep({
 
           {/* Treatment badge */}
           <Badge variant="outline" className="text-[10px] mb-1.5">
-            {TREATMENT_LABELS[treatment]}
+            {t(TREATMENT_LABEL_KEYS[treatment])}
           </Badge>
 
           {/* Per-tooth treatment selector */}
@@ -391,7 +393,7 @@ export function ReviewAnalysisStep({
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Restaurar sugestão da IA ({TREATMENT_LABELS[originalToothTreatments[tooth.tooth]]})</p>
+                      <p>{t('components.wizard.review.restoreAI', { treatment: t(TREATMENT_LABEL_KEYS[originalToothTreatments[tooth.tooth]]) })}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -405,7 +407,7 @@ export function ReviewAnalysisStep({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <p className="text-[10px] text-muted-foreground mt-1 italic truncate cursor-help">
-                    IA: {tooth.indication_reason}
+                    {t('components.wizard.review.aiNote', { note: tooth.indication_reason })}
                   </p>
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
@@ -422,11 +424,11 @@ export function ReviewAnalysisStep({
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-semibold font-display mb-2">Revisão da Análise</h2>
+        <h2 className="text-2xl font-semibold font-display mb-2">{t('components.wizard.review.title')}</h2>
         <p className="text-muted-foreground">
           {hasMultipleTeeth
-            ? `Detectados ${detectedTeeth.length} dentes com problema. Selecione qual tratar primeiro.`
-            : 'Confirme ou ajuste os dados detectados pela IA'
+            ? t('components.wizard.review.multiTeethSubtitle', { count: detectedTeeth.length })
+            : t('components.wizard.review.singleToothSubtitle')
           }
         </p>
       </div>
@@ -437,12 +439,12 @@ export function ReviewAnalysisStep({
           <CardContent className="py-3 flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-primary" />
-              <span className="text-sm font-medium">Análise por IA</span>
+              <span className="text-sm font-medium">{t('components.wizard.review.aiAnalysis')}</span>
             </div>
             <div className="flex items-center gap-3">
               {hasMultipleTeeth && (
                 <Badge variant="outline" className="text-xs">
-                  {detectedTeeth.length} dentes detectados
+                  {t('components.wizard.review.teethDetected', { count: detectedTeeth.length })}
                 </Badge>
               )}
               <TooltipProvider>
@@ -453,11 +455,11 @@ export function ReviewAnalysisStep({
                         'w-2 h-2 rounded-full',
                         confidence >= 80 ? 'bg-success' : confidence >= 60 ? 'bg-warning' : 'bg-destructive',
                       )} />
-                      {confidence}% — {confidence >= 80 ? 'Alta confiança' : confidence >= 60 ? 'Média confiança' : 'Baixa confiança'}
+                      {confidence}% — {confidence >= 80 ? t('components.wizard.review.highConfidence') : confidence >= 60 ? t('components.wizard.review.mediumConfidence') : t('components.wizard.review.lowConfidence')}
                     </Badge>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs">
-                    <p>Grau de certeza da IA na detecção. Alta (&gt;80%): achados claros. Média (60-80%): revisar com atenção. Baixa (&lt;60%): validação manual recomendada.</p>
+                    <p>{t('components.wizard.review.confidenceTooltip')}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -474,7 +476,7 @@ export function ReviewAnalysisStep({
                   ) : (
                     <RefreshCw className="w-4 h-4" />
                   )}
-                  <span className="ml-1 hidden sm:inline">Reanalisar</span>
+                  <span className="ml-1 hidden sm:inline">{t('components.wizard.review.reanalyze')}</span>
                   <span className="inline-flex items-center gap-0.5 text-xs opacity-60 ml-0.5">
                     <Zap className="w-2.5 h-2.5" />1
                   </span>
@@ -490,9 +492,9 @@ export function ReviewAnalysisStep({
         <Card className="card-elevated border-primary/30 bg-gradient-to-r from-primary/5 to-accent/5">
           <CardContent className="py-3 flex items-center gap-3">
             <Sparkles className="w-5 h-5 text-primary" />
-            <span className="text-sm text-muted-foreground">Nível de clareamento:</span>
+            <span className="text-sm text-muted-foreground">{t('components.wizard.review.whiteningLevel')}</span>
             <Badge variant="secondary" className="font-medium">
-              {whiteningLevel === 'hollywood' ? 'Branco Hollywood (BL1/BL2/BL3)' : 'Branco Natural (A1/A2/B1)'}
+              {whiteningLevel === 'hollywood' ? t('components.wizard.review.hollywoodWhite') : t('components.wizard.review.naturalWhite')}
             </Badge>
           </CardContent>
         </Card>
@@ -507,14 +509,14 @@ export function ReviewAnalysisStep({
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <h4 className="font-medium text-pink-800 dark:text-pink-200">
-                    Gengivoplastia Estética
+                    {t('components.wizard.review.gingivoplastyTitle')}
                   </h4>
                   <Badge variant="secondary" className="text-[10px] bg-pink-100 dark:bg-pink-900/50 text-pink-700 dark:text-pink-300">
-                    Recomendado pelo DSD
+                    {t('components.wizard.review.recommendedByDSD')}
                   </Badge>
                 </div>
                 <p className="text-sm text-pink-700 dark:text-pink-300">
-                  A análise DSD identificou necessidade de harmonização gengival. Um protocolo dedicado de gengivoplastia será gerado.
+                  {t('components.wizard.review.gingivoplastyDesc')}
                 </p>
                 {dsdSuggestions && dsdSuggestions.filter(s => {
                   const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
@@ -526,7 +528,7 @@ export function ReviewAnalysisStep({
                       return text.includes('gengiv') || text.includes('zênite') || text.includes('zenite');
                     }).map((s, i) => (
                       <li key={i} className="text-xs text-pink-600 dark:text-pink-400">
-                        Dente {s.tooth}: {s.proposed_change}
+                        {t('components.wizard.review.tooth', { number: s.tooth })}: {s.proposed_change}
                       </li>
                     ))}
                   </ul>
@@ -544,12 +546,12 @@ export function ReviewAnalysisStep({
             <div className="flex items-center gap-2">
               <Package className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               <span className="text-sm text-blue-700 dark:text-blue-300">
-                Você não tem resinas cadastradas. As recomendações são genéricas.
+                {t('components.wizard.review.noResins')}
               </span>
             </div>
             <Link to="/inventory">
               <Button variant="outline" size="sm" className="text-xs border-blue-300 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 btn-press">
-                Cadastrar resinas
+                {t('components.wizard.review.registerResins')}
               </Button>
             </Link>
           </CardContent>
@@ -564,10 +566,10 @@ export function ReviewAnalysisStep({
               <Crown className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5" />
               <div className="flex-1">
                 <h4 className="font-medium text-amber-800 dark:text-amber-200">
-                  Indicação: Facetas de Porcelana
+                  {t('components.wizard.review.porcelainTitle')}
                 </h4>
                 <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
-                  {analysisResult.indication_reason || 'Este caso pode se beneficiar de facetas cerâmicas para melhor resultado estético e durabilidade.'}
+                  {analysisResult.indication_reason || t('components.wizard.review.porcelainDefault')}
                 </p>
               </div>
             </div>
@@ -587,7 +589,7 @@ export function ReviewAnalysisStep({
               <div className="flex items-start gap-3">
                 <AlertTriangle className="w-5 h-5 text-warning mt-0.5" />
                 <div>
-                  <h4 className="font-medium text-warning-foreground dark:text-warning">Pontos de atenção</h4>
+                  <h4 className="font-medium text-warning-foreground dark:text-warning">{t('components.wizard.review.attentionPoints')}</h4>
                   <ul className="mt-2 space-y-1">
                     {correctedWarnings.map((warning, i) => (
                       <li key={i} className="text-sm text-warning">• {warning}</li>
@@ -606,36 +608,36 @@ export function ReviewAnalysisStep({
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <CircleDot className="w-4 h-4 text-primary" />
-              Selecione os Dentes para o Protocolo
+              {t('components.wizard.review.selectTeethTitle')}
               <Badge variant="secondary" className="ml-2">
-                {realSelectedTeeth.length > 0 ? `${realSelectedTeeth.length} selecionado(s)` : detectedTeeth.length}
+                {realSelectedTeeth.length > 0 ? t('components.wizard.review.selected', { count: realSelectedTeeth.length }) : detectedTeeth.length}
               </Badge>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              Marque os dentes que deseja incluir no protocolo. Cada dente gerará um caso separado.
+              {t('components.wizard.review.selectTeethDesc')}
             </p>
 
             {/* Quick selection buttons */}
             <div className="flex flex-wrap gap-2 mb-4">
               <Button variant="outline" size="sm" onClick={() => handleSelectCategory('restorative')} className="text-xs btn-press">
                 <Wrench className="w-3 h-3 mr-1" />
-                Apenas Necessários ({restorativeTeeth.length})
+                {t('components.wizard.review.onlyRequired', { count: restorativeTeeth.length })}
               </Button>
               <Button variant="outline" size="sm" onClick={() => handleSelectCategory('all')} className="text-xs btn-press">
                 <Check className="w-3 h-3 mr-1" />
-                Selecionar Todos ({detectedTeeth.length})
+                {t('components.wizard.review.selectAll', { count: detectedTeeth.length })}
               </Button>
               {aestheticTeeth.length > 0 && (
                 <Button variant="outline" size="sm" onClick={() => handleSelectCategory('aesthetic')} className="text-xs btn-press">
                   <Wand2 className="w-3 h-3 mr-1" />
-                  Apenas Estéticos ({aestheticTeeth.length})
+                  {t('components.wizard.review.onlyAesthetic', { count: aestheticTeeth.length })}
                 </Button>
               )}
               {selectedTeeth.length > 0 && (
                 <Button variant="ghost" size="sm" onClick={() => onSelectedTeethChange?.([])} className="text-xs text-muted-foreground">
-                  Limpar seleção
+                  {t('components.wizard.review.clearSelection')}
                 </Button>
               )}
             </div>
@@ -645,7 +647,7 @@ export function ReviewAnalysisStep({
               <div className="mb-6">
                 <div className="flex items-center gap-2 mb-3">
                   <Wrench className="w-4 h-4 text-destructive" />
-                  <h4 className="font-medium text-sm">Tratamentos Necessários</h4>
+                  <h4 className="font-medium text-sm">{t('components.wizard.review.requiredTreatments')}</h4>
                   <Badge variant="destructive" className="text-xs">{restorativeTeeth.length}</Badge>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -659,11 +661,11 @@ export function ReviewAnalysisStep({
               <div className="mb-4">
                 <div className="flex items-center gap-2 mb-3">
                   <Wand2 className="w-4 h-4 text-primary" />
-                  <h4 className="font-medium text-sm">Melhorias Estéticas (Opcionais)</h4>
+                  <h4 className="font-medium text-sm">{t('components.wizard.review.aestheticImprovements')}</h4>
                   <Badge variant="secondary" className="text-xs">{aestheticTeeth.length}</Badge>
                 </div>
                 <p className="text-xs text-muted-foreground mb-3">
-                  Sugestões para harmonização do sorriso detectadas pela IA
+                  {t('components.wizard.review.aestheticDesc')}
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {aestheticTeeth.map((tooth, index) => renderToothCard(tooth, index, 'aesthetic'))}
@@ -680,7 +682,7 @@ export function ReviewAnalysisStep({
                 <div className="mt-4">
                   <h4 className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2">
                     <Plus className="w-3 h-3" />
-                    Dentes adicionados manualmente
+                    {t('components.wizard.review.manuallyAdded')}
                   </h4>
                   <div className="space-y-2">
                     {manualTeeth.map((toothNum) => (
@@ -695,8 +697,8 @@ export function ReviewAnalysisStep({
                         />
                         <div className="flex-1">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="font-semibold text-sm">Dente {toothNum}</span>
-                            <Badge variant="outline" className="text-xs">manual</Badge>
+                            <span className="font-semibold text-sm">{t('components.wizard.review.tooth', { number: toothNum })}</span>
+                            <Badge variant="outline" className="text-xs">{t('components.wizard.review.manual')}</Badge>
                           </div>
                           {onToothTreatmentChange && (
                             <Select
@@ -728,31 +730,31 @@ export function ReviewAnalysisStep({
             {!showManualAdd ? (
               <Button variant="outline" size="sm" className="mt-4 w-full btn-press" onClick={() => setShowManualAdd(true)}>
                 <Plus className="w-4 h-4 mr-2" />
-                Adicionar dente manualmente
+                {t('components.wizard.review.addManually')}
               </Button>
             ) : (
               <div className="mt-4 flex gap-2">
                 <Select value={manualTooth} onValueChange={setManualTooth}>
                   <SelectTrigger className="flex-1">
-                    <SelectValue placeholder="Selecione o dente" />
+                    <SelectValue placeholder={t('components.wizard.review.selectTooth')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <div className="px-2 py-1 text-xs font-medium text-muted-foreground">Superior</div>
-                    {TEETH.upper.map((t) => (
-                      <SelectItem key={t} value={t} disabled={selectedTeeth.includes(t)}>
-                        {t} {selectedTeeth.includes(t) && '(já adicionado)'}
+                    <div className="px-2 py-1 text-xs font-medium text-muted-foreground">{t('components.wizard.review.upper')}</div>
+                    {TEETH.upper.map((toothNum) => (
+                      <SelectItem key={toothNum} value={toothNum} disabled={selectedTeeth.includes(toothNum)}>
+                        {toothNum} {selectedTeeth.includes(toothNum) && t('components.wizard.review.alreadyAdded')}
                       </SelectItem>
                     ))}
-                    <div className="px-2 py-1 text-xs font-medium text-muted-foreground">Inferior</div>
-                    {TEETH.lower.map((t) => (
-                      <SelectItem key={t} value={t} disabled={selectedTeeth.includes(t)}>
-                        {t} {selectedTeeth.includes(t) && '(já adicionado)'}
+                    <div className="px-2 py-1 text-xs font-medium text-muted-foreground">{t('components.wizard.review.lower')}</div>
+                    {TEETH.lower.map((toothNum) => (
+                      <SelectItem key={toothNum} value={toothNum} disabled={selectedTeeth.includes(toothNum)}>
+                        {toothNum} {selectedTeeth.includes(toothNum) && t('components.wizard.review.alreadyAdded')}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
                 <Button onClick={handleAddManualTooth} disabled={!manualTooth} className="btn-press">
-                  Adicionar
+                  {t('components.wizard.review.add')}
                 </Button>
                 <Button variant="ghost" onClick={() => setShowManualAdd(false)}>
                   Cancelar
@@ -762,7 +764,7 @@ export function ReviewAnalysisStep({
 
             {selectedTeeth.length > 0 && (
               <p className="text-sm text-primary mt-4 text-center font-medium">
-                {realSelectedTeeth.length} dente(s) selecionado(s) para gerar protocolo{hasGengivoplasty ? ' + gengivoplastia' : ''}
+                {t('components.wizard.review.teethSelectedCount', { count: realSelectedTeeth.length })}{hasGengivoplasty ? t('components.wizard.review.plusGingivoplasty') : ''}
               </p>
             )}
           </CardContent>
@@ -775,7 +777,7 @@ export function ReviewAnalysisStep({
           <div className="flex items-start gap-2">
             <Info className="w-4 h-4 text-primary/50 mt-0.5 shrink-0" />
             <div>
-              <p className="text-sm font-medium mb-1">Observações da IA</p>
+              <p className="text-sm font-medium mb-1">{t('components.wizard.review.aiObservations')}</p>
               <ul className="space-y-1">
                 {analysisResult.observations.map((obs, i) => (
                   <li key={i} className="text-xs text-muted-foreground">• {obs}</li>
@@ -791,7 +793,7 @@ export function ReviewAnalysisStep({
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
             <User className="w-4 h-4 text-primary" />
-            Dados do Paciente
+            {t('components.wizard.review.patientData')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -803,21 +805,21 @@ export function ReviewAnalysisStep({
                 onPatientSelect?.(name, patientId, birthDate);
               }}
               selectedPatientId={selectedPatientId}
-              placeholder="Nome do paciente"
-              label="Nome (opcional)"
+              placeholder={t('components.wizard.review.patientNamePlaceholder')}
+              label={t('components.wizard.review.patientNameLabel')}
             />
 
             {/* Birth date + calculated age */}
             <div className="space-y-2">
               <Label>
-                Data de nascimento (opcional)
+                {t('components.wizard.review.birthDateLabel')}
               </Label>
               <div className="flex gap-2 items-center">
                 <div className="relative flex-1">
                   <Input
                     type="text"
                     inputMode="numeric"
-                    placeholder="DD/MM/AAAA"
+                    placeholder={t('components.wizard.review.birthDatePlaceholder')}
                     className={cn(
                       "pr-10",
                       dobError && "border-destructive ring-1 ring-destructive"
@@ -903,7 +905,7 @@ export function ReviewAnalysisStep({
                 {patientBirthDate && (
                   <div className="flex items-center gap-1 px-3 py-2 rounded-md bg-primary/10 text-primary min-w-[80px] justify-center">
                     <span className="text-sm font-medium">
-                      {calculateAge(patientBirthDate)} anos
+                      {t('components.wizard.review.yearsOld', { age: calculateAge(patientBirthDate) })}
                     </span>
                   </div>
                 )}
@@ -911,13 +913,13 @@ export function ReviewAnalysisStep({
 
               {!patientBirthDate && !dobError && (
                 <p className="text-xs text-muted-foreground">
-                  Recomendado para protocolos mais precisos
+                  {t('components.wizard.review.recommendedForPrecision')}
                 </p>
               )}
 
               {selectedPatientId && !patientBirthDate && (
                 <p className="text-xs text-muted-foreground">
-                  Adicione para preencher automaticamente nas próximas vezes
+                  {t('components.wizard.review.addForAutoFill')}
                 </p>
               )}
             </div>
@@ -931,12 +933,12 @@ export function ReviewAnalysisStep({
         {imageBase64 && (
           <AccordionItem value="photo" className="border rounded-lg overflow-hidden">
             <AccordionTrigger className="px-4 hover:no-underline">
-              <span className="text-sm font-medium">Foto & Observações</span>
+              <span className="text-sm font-medium">{t('components.wizard.review.photoAndObs')}</span>
             </AccordionTrigger>
             <AccordionContent className="px-4 pb-4">
               <img
                 src={imageBase64}
-                alt="Foto analisada"
+                alt={t('components.wizard.review.analyzedPhoto')}
                 className="w-full rounded-lg ring-1 ring-border mb-4"
               />
 
@@ -945,13 +947,13 @@ export function ReviewAnalysisStep({
                 <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
                   <h4 className="text-sm font-medium mb-2 flex items-center gap-2 text-primary">
                     <Sparkles className="w-4 h-4" />
-                    Notas Estéticas (DSD)
+                    {t('components.wizard.review.aestheticNotesDSD')}
                   </h4>
                   {dsdSuggestions && dsdSuggestions.length > 0 && (
                     <ul className="space-y-1 mb-2">
                       {dsdSuggestions.map((s, i) => (
                         <li key={i} className="text-sm text-muted-foreground">
-                          <span className="font-medium">Dente {s.tooth}:</span> {s.proposed_change}
+                          <span className="font-medium">{t('components.wizard.review.tooth', { number: s.tooth })}:</span> {s.proposed_change}
                         </li>
                       ))}
                     </ul>
@@ -972,16 +974,16 @@ export function ReviewAnalysisStep({
         {/* 6. Estética e Orçamento — Pill Toggles */}
         <AccordionItem value="aesthetic" className="border rounded-lg overflow-hidden">
           <AccordionTrigger className="px-4 hover:no-underline">
-            <span className="text-sm font-medium">Estética e Orçamento</span>
+            <span className="text-sm font-medium">{t('components.wizard.review.aestheticAndBudget')}</span>
           </AccordionTrigger>
           <AccordionContent className="px-4 pb-4">
             <div className="space-y-5 pt-2">
               <div className="space-y-2">
-                <Label className="text-sm">Nível de exigência estética</Label>
+                <Label className="text-sm">{t('components.wizard.review.aestheticLevel')}</Label>
                 <PillToggle
                   options={[
-                    { value: 'funcional', label: 'Funcional' },
-                    { value: 'estético', label: 'Estético' },
+                    { value: 'funcional', label: t('components.wizard.review.functional') },
+                    { value: 'estético', label: t('components.wizard.review.aesthetic') },
                   ]}
                   value={formData.aestheticLevel}
                   onChange={(value) => onFormChange({ aestheticLevel: value })}
@@ -990,11 +992,11 @@ export function ReviewAnalysisStep({
               </div>
 
               <div className="space-y-2">
-                <Label className="text-sm">Orçamento</Label>
+                <Label className="text-sm">{t('components.wizard.review.budget')}</Label>
                 <PillToggle
                   options={[
-                    { value: 'padrão', label: 'Padrão' },
-                    { value: 'premium', label: 'Premium' },
+                    { value: 'padrão', label: t('components.wizard.review.standard') },
+                    { value: 'premium', label: t('components.wizard.review.premium') },
                   ]}
                   value={formData.budget}
                   onChange={(value) => onFormChange({ budget: value })}
@@ -1009,13 +1011,13 @@ export function ReviewAnalysisStep({
         {/* 7. Notas Clínicas */}
         <AccordionItem value="notes" className="border rounded-lg overflow-hidden">
           <AccordionTrigger className="px-4 hover:no-underline">
-            <span className="text-sm font-medium">Notas Clínicas</span>
+            <span className="text-sm font-medium">{t('components.wizard.review.clinicalNotes')}</span>
           </AccordionTrigger>
           <AccordionContent className="px-4 pb-4">
             <div className="pt-2 space-y-2">
               <div className="relative">
                 <Textarea
-                  placeholder="Adicione observações clínicas, histórico relevante, ou detalhes específicos do caso..."
+                  placeholder={t('components.wizard.review.clinicalNotesPlaceholder')}
                   value={formData.clinicalNotes}
                   onChange={(e) => onFormChange({ clinicalNotes: e.target.value })}
                   rows={4}
@@ -1042,7 +1044,7 @@ export function ReviewAnalysisStep({
               {speech.isListening && (
                 <div className="flex items-center gap-2 text-xs text-destructive">
                   <span className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
-                  Ouvindo...
+                  {t('components.wizard.review.listening')}
                   {speech.transcript && (
                     <span className="text-muted-foreground truncate">
                       {speech.transcript}
@@ -1060,38 +1062,38 @@ export function ReviewAnalysisStep({
         <div className="bg-gradient-to-r from-primary/5 to-accent/5 border border-primary/20 rounded-xl p-4 space-y-3">
           <h4 className="font-semibold text-sm flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-primary" />
-            Resumo do Caso
+            {t('components.wizard.review.caseSummary')}
           </h4>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
             <div>
-              <p className="text-muted-foreground text-xs">Dentes</p>
-              <p className="font-semibold text-primary">{realSelectedTeeth.length}{hasGengivoplasty ? ' + gengivo' : ''}</p>
+              <p className="text-muted-foreground text-xs">{t('components.wizard.review.teethLabel')}</p>
+              <p className="font-semibold text-primary">{realSelectedTeeth.length}{hasGengivoplasty ? t('components.wizard.review.plusGengivo') : ''}</p>
             </div>
             <div>
-              <p className="text-muted-foreground text-xs">Tipos</p>
+              <p className="text-muted-foreground text-xs">{t('components.wizard.review.typesLabel')}</p>
               <div className="flex flex-wrap gap-1 mt-0.5">
                 {treatmentBreakdown.map(([type, count]) => (
                   <Badge key={type} variant="outline" className="text-[10px] font-normal">
-                    {count} {type === 'resina' ? 'Resina' : type === 'porcelana' ? 'Faceta' : type === 'coroa' ? 'Coroa' : type}
+                    {count} {type === 'resina' ? t('components.wizard.review.typeResina') : type === 'porcelana' ? t('components.wizard.review.typeFaceta') : type === 'coroa' ? t('components.wizard.review.typeCoroa') : type}
                   </Badge>
                 ))}
               </div>
             </div>
             <div>
-              <p className="text-muted-foreground text-xs">Paciente</p>
+              <p className="text-muted-foreground text-xs">{t('components.wizard.review.patientLabel')}</p>
               <p className="font-medium text-sm truncate">
-                {formData.patientName || 'Não informado'}
+                {formData.patientName || t('components.wizard.review.notInformed')}
               </p>
             </div>
             <div>
-              <p className="text-muted-foreground text-xs">Idade</p>
+              <p className="text-muted-foreground text-xs">{t('components.wizard.review.ageLabel')}</p>
               <p className="font-medium text-sm">
-                {patientBirthDate ? `${calculateAge(patientBirthDate)} anos` : '—'}
+                {patientBirthDate ? t('components.wizard.review.yearsOld', { age: calculateAge(patientBirthDate) }) : '—'}
               </p>
             </div>
             {detectedTeeth.length > 0 && (
               <div>
-                <p className="text-muted-foreground text-xs">Complexidade</p>
+                <p className="text-muted-foreground text-xs">{t('components.wizard.review.complexityLabel')}</p>
                 <Badge
                   variant="outline"
                   className={cn(
@@ -1104,7 +1106,7 @@ export function ReviewAnalysisStep({
                   {complexity.level === 'simples' && <ShieldCheck className="w-3 h-3" />}
                   {complexity.level === 'moderado' && <Shield className="w-3 h-3" />}
                   {complexity.level === 'complexo' && <ShieldAlert className="w-3 h-3" />}
-                  {complexity.level === 'simples' ? 'Simples' : complexity.level === 'moderado' ? 'Moderado' : 'Complexo'}
+                  {complexity.level === 'simples' ? t('components.wizard.review.simple') : complexity.level === 'moderado' ? t('components.wizard.review.moderate') : t('components.wizard.review.complex')}
                 </Badge>
               </div>
             )}

@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import NotFound from '../NotFound';
+import translations from '@/locales/pt-BR.json';
 
 vi.mock('@/lib/logger', () => ({
   logger: { info: vi.fn(), error: vi.fn(), warn: vi.fn() },
@@ -11,6 +12,20 @@ vi.mock('lucide-react', () => ({
   ArrowLeft: ({ className }: { className?: string }) => (
     <span data-testid="arrow-left" className={className} />
   ),
+}));
+
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const parts = key.split('.');
+      let value: unknown = translations;
+      for (const part of parts) {
+        value = (value as Record<string, unknown>)?.[part];
+      }
+      return (value as string) ?? key;
+    },
+    i18n: { language: 'pt-BR' },
+  }),
 }));
 
 describe('NotFound', () => {

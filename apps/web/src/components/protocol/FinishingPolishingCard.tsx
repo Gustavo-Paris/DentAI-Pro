@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles } from 'lucide-react';
@@ -23,6 +24,7 @@ interface FinishingPolishingCardProps {
 }
 
 export function FinishingPolishingCard({ protocol }: FinishingPolishingCardProps) {
+  const { t } = useTranslation();
   if (!protocol) return null;
 
   const renderStep = (step: PolishingStep) => (
@@ -62,7 +64,7 @@ export function FinishingPolishingCard({ protocol }: FinishingPolishingCardProps
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-primary" />
-          Acabamento & Polimento
+          {t('components.protocol.finishingPolishing.title')}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -70,7 +72,7 @@ export function FinishingPolishingCard({ protocol }: FinishingPolishingCardProps
         {protocol.contouring && protocol.contouring.length > 0 && (
           <div>
             <h4 className="text-sm font-medium text-muted-foreground mb-2">
-              Contorno Anatômico
+              {t('components.protocol.finishingPolishing.contouring')}
             </h4>
             <div className="space-y-2">
               {protocol.contouring.map(renderStep)}
@@ -82,7 +84,7 @@ export function FinishingPolishingCard({ protocol }: FinishingPolishingCardProps
         {protocol.polishing && protocol.polishing.length > 0 && (
           <div>
             <h4 className="text-sm font-medium text-muted-foreground mb-2">
-              Polimento Sequencial
+              {t('components.protocol.finishingPolishing.sequentialPolishing')}
             </h4>
             <div className="space-y-2">
               {protocol.polishing.map(renderStep)}
@@ -94,7 +96,7 @@ export function FinishingPolishingCard({ protocol }: FinishingPolishingCardProps
         {protocol.final_glaze && (
           <div className="p-3 bg-primary/10 rounded-lg">
             <p className="text-sm">
-              <span className="font-medium">Brilho Final: </span>
+              <span className="font-medium">{t('components.protocol.finishingPolishing.finalGlaze')}</span>
               {protocol.final_glaze}
             </p>
           </div>
@@ -104,7 +106,7 @@ export function FinishingPolishingCard({ protocol }: FinishingPolishingCardProps
         {protocol.maintenance_advice && (
           <div className="pt-3 border-t border-primary/20">
             <p className="text-xs text-muted-foreground">
-              <span className="font-medium">Manutenção: </span>
+              <span className="font-medium">{t('components.protocol.finishingPolishing.maintenance')}</span>
               {protocol.maintenance_advice}
             </p>
           </div>

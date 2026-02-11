@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { CheckCircle2 } from 'lucide-react';
 import { PricingSection } from '@/components/pricing/PricingSection';
 import { PlanComparisonTable } from '@/components/pricing/PlanComparisonTable';
@@ -22,6 +23,7 @@ import { Button } from '@/components/ui/button';
 // =============================================================================
 
 export default function Pricing() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { refreshSubscription } = useSubscription();
@@ -59,7 +61,7 @@ export default function Pricing() {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       <DetailPage
-        title="Planos e Preços"
+        title={t('pricing.title')}
         query={{ data: true, isLoading: false }}
         containerVariant="shell"
       >
@@ -77,14 +79,14 @@ export default function Pricing() {
             <div className="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-success/10 dark:bg-success/20">
               <CheckCircle2 className="h-10 w-10 text-success" />
             </div>
-            <DialogTitle className="text-xl font-display">Assinatura ativada!</DialogTitle>
+            <DialogTitle className="text-xl font-display">{t('pricing.subscriptionActivated')}</DialogTitle>
             <DialogDescription>
-              Seu plano foi ativado com sucesso. Agora você tem acesso a todos os recursos inclusos.
+              {t('pricing.subscriptionActivatedDescription')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="sm:justify-center">
             <Button onClick={() => { setShowSuccess(false); navigate('/dashboard'); }}>
-              Ir para o Dashboard
+              {t('pricing.goToDashboard')}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,4 +1,7 @@
+import { useTranslation } from 'react-i18next';
+
 export function HeroMockup() {
+  const { t } = useTranslation();
   return (
     <div className="relative w-full max-w-sm mx-auto animate-[fade-in-up_0.8s_ease-out_1s_both]">
       {/* Float animation wrapper */}
@@ -17,7 +20,7 @@ export function HeroMockup() {
           {/* App header */}
           <div className="px-4 py-3 border-b border-border/50">
             <div className="text-xs font-semibold tracking-[0.15em] text-primary">AURIA</div>
-            <div className="text-[10px] text-muted-foreground mt-0.5">Resultado da Análise</div>
+            <div className="text-[10px] text-muted-foreground mt-0.5">{t('components.landing.heroMockup.analysisResult')}</div>
           </div>
 
           {/* Content area */}
@@ -44,9 +47,9 @@ export function HeroMockup() {
               <div className="flex-1 space-y-1.5">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium">Dente #21</span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">Resina</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">{t('components.landing.heroMockup.resin')}</span>
                 </div>
-                <div className="text-[10px] text-muted-foreground">Cor VITA: A2</div>
+                <div className="text-[10px] text-muted-foreground">{t('components.landing.heroMockup.vitaColor')}</div>
                 <div className="flex items-center gap-1.5">
                   <div className="flex-1 h-1.5 rounded-full bg-secondary overflow-hidden">
                     <div className="h-full w-[92%] rounded-full bg-primary" />
@@ -58,11 +61,11 @@ export function HeroMockup() {
 
             {/* Protocol layers */}
             <div className="space-y-1.5">
-              <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Protocolo</div>
+              <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">{t('components.landing.heroMockup.protocol')}</div>
               {[
-                { label: 'Esmalte', color: 'bg-sky-400/70 dark:bg-sky-400/50' },
-                { label: 'Corpo', color: 'bg-primary/60' },
-                { label: 'Dentina', color: 'bg-amber-400/70 dark:bg-amber-400/50' },
+                { label: t('components.landing.heroMockup.enamel'), color: 'bg-sky-400/70 dark:bg-sky-400/50' },
+                { label: t('components.landing.heroMockup.body'), color: 'bg-primary/60' },
+                { label: t('components.landing.heroMockup.dentin'), color: 'bg-amber-400/70 dark:bg-amber-400/50' },
               ].map((layer) => (
                 <div key={layer.label} className="flex items-center gap-2">
                   <div className={`w-full h-3 rounded ${layer.color}`} />
@@ -73,10 +76,10 @@ export function HeroMockup() {
 
             {/* Confidence badge */}
             <div className="flex items-center justify-between bg-secondary/60 rounded-lg px-3 py-2">
-              <span className="text-[10px] text-muted-foreground">Confiança da IA</span>
+              <span className="text-[10px] text-muted-foreground">{t('components.landing.heroMockup.aiConfidence')}</span>
               <div className="flex items-center gap-1">
                 <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">Alta</span>
+                <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">{t('components.landing.heroMockup.high')}</span>
               </div>
             </div>
           </div>

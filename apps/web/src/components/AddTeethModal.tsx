@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -65,14 +66,14 @@ interface AddTeethModalProps {
   onSuccess: () => void;
 }
 
-const TREATMENT_LABELS: Record<TreatmentType, string> = {
-  resina: 'Resina Composta',
-  porcelana: 'Faceta de Porcelana',
-  coroa: 'Coroa Total',
-  implante: 'Implante',
-  endodontia: 'Tratamento de Canal',
-  encaminhamento: 'Encaminhamento',
-  gengivoplastia: 'Gengivoplastia Estética',
+const TREATMENT_LABEL_KEYS: Record<TreatmentType, string> = {
+  resina: 'components.wizard.review.treatmentResina',
+  porcelana: 'components.wizard.review.treatmentPorcelana',
+  coroa: 'components.wizard.review.treatmentCoroa',
+  implante: 'components.wizard.review.treatmentImplante',
+  endodontia: 'components.wizard.review.treatmentEndodontia',
+  encaminhamento: 'components.wizard.review.treatmentEncaminhamento',
+  gengivoplastia: 'components.wizard.review.treatmentGengivoplastia',
 };
 
 
@@ -203,6 +204,7 @@ export function AddTeethModal({
   patientData,
   onSuccess,
 }: AddTeethModalProps) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [selectedTeeth, setSelectedTeeth] = useState<string[]>([]);
   const [toothTreatments, setToothTreatments] = useState<Record<string, TreatmentType>>({});
@@ -363,15 +365,15 @@ export function AddTeethModal({
 
       // Build success message
       const treatmentMessages = Object.entries(treatmentCounts)
-        .map(([type, count]) => `${count} ${TREATMENT_LABELS[type as TreatmentType] || type}`)
+        .map(([type, count]) => `${count} ${TREATMENT_LABEL_KEYS[type as TreatmentType] ? t(TREATMENT_LABEL_KEYS[type as TreatmentType]) : type}`)
         .join(', ');
       
-      toast.success(`Casos adicionados: ${treatmentMessages}`);
+      toast.success(t('components.addTeeth.casesAdded', { details: treatmentMessages }));
       onSuccess();
       onClose();
     } catch (error) {
       logger.error('Error adding teeth:', error);
-      toast.error('Erro ao adicionar casos');
+      toast.error(t('components.addTeeth.addError'));
     } finally {
       setIsSubmitting(false);
     }
@@ -386,11 +388,10 @@ export function AddTeethModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Plus className="w-5 h-5 text-primary" />
-            Adicionar Mais Dentes
+            {t('components.addTeeth.title')}
           </DialogTitle>
           <DialogDescription>
-            Dentes detectados pela IA que não foram selecionados anteriormente. 
-            Escolha quais deseja adicionar à avaliação.
+            {t('components.addTeeth.description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -403,7 +404,7 @@ export function AddTeethModal({
               onClick={handleSelectAll}
               className="text-xs"
             >
-              Selecionar todos ({pendingTeeth.length})
+              {t('components.addTeeth.selectAll', { count: pendingTeeth.length })}
             </Button>
             {selectedTeeth.length > 0 && (
               <Button
@@ -412,7 +413,7 @@ export function AddTeethModal({
                 onClick={handleClearSelection}
                 className="text-xs text-muted-foreground"
               >
-                Limpar seleção
+                {t('components.addTeeth.clearSelection')}
               </Button>
             )}
           </div>
@@ -422,7 +423,7 @@ export function AddTeethModal({
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <Wrench className="w-4 h-4 text-destructive" />
-                <h4 className="font-medium text-sm">Tratamentos Necessários</h4>
+                <h4 className="font-medium text-sm">{t('components.addTeeth.requiredTreatments')}</h4>
                 <Badge variant="destructive" className="text-xs">{restorativeTeeth.length}</Badge>
               </div>
               <div className="space-y-2">
@@ -444,8 +445,8 @@ export function AddTeethModal({
                       />
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="font-semibold">Dente {tooth.tooth}</span>
-                          <Badge 
+                          <span className="font-semibold">{t('components.addTeeth.tooth', { number: tooth.tooth })}</span>
+                          <Badge
                             className={`text-xs ${priorityStyles[tooth.priority || 'média']}`}
                           >
                             {tooth.priority || 'média'}
@@ -489,7 +490,7 @@ export function AddTeethModal({
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <Wand2 className="w-4 h-4 text-primary" />
-                <h4 className="font-medium text-sm">Melhorias Estéticas</h4>
+                <h4 className="font-medium text-sm">{t('components.addTeeth.aestheticImprovements')}</h4>
                 <Badge variant="secondary" className="text-xs">{aestheticTeeth.length}</Badge>
               </div>
               <div className="space-y-2">
@@ -511,8 +512,8 @@ export function AddTeethModal({
                       />
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="font-semibold">Dente {tooth.tooth}</span>
-                          <Badge variant="secondary" className="text-xs">estético</Badge>
+                          <span className="font-semibold">{t('components.addTeeth.tooth', { number: tooth.tooth })}</span>
+                          <Badge variant="secondary" className="text-xs">{t('components.addTeeth.aestheticLabel')}</Badge>
                         </div>
                         {tooth.indication_reason && (
                           <p className="text-xs text-muted-foreground">{tooth.indication_reason}</p>
@@ -554,12 +555,12 @@ export function AddTeethModal({
             {isSubmitting ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Gerando...
+                {t('components.addTeeth.generating')}
               </>
             ) : (
               <>
                 <Plus className="w-4 h-4 mr-2" />
-                Adicionar {selectedTeeth.length} dente(s)
+                {t('components.addTeeth.addCount', { count: selectedTeeth.length })}
               </>
             )}
           </Button>

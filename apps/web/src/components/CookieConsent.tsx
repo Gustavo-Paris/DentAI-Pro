@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import * as Sentry from '@sentry/react';
 import { Button } from '@/components/ui/button';
 
@@ -16,6 +17,7 @@ function applySentryReplayPolicy(consent: ConsentValue) {
 }
 
 export default function CookieConsent() {
+  const { t } = useTranslation();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -38,7 +40,7 @@ export default function CookieConsent() {
   return (
     <div
       role="dialog"
-      aria-label="Consentimento de cookies"
+      aria-label={t('components.cookieConsent.ariaLabel')}
       className="fixed bottom-0 inset-x-0 z-50 p-4 sm:p-6"
     >
       <div className="mx-auto max-w-3xl rounded-xl border border-border bg-card p-4 sm:p-6 shadow-lg flex flex-col sm:flex-row items-start sm:items-center gap-4">
@@ -58,10 +60,10 @@ export default function CookieConsent() {
             size="sm"
             onClick={() => handleConsent('essential')}
           >
-            Apenas essenciais
+            {t('components.cookieConsent.essentialOnly')}
           </Button>
           <Button size="sm" onClick={() => handleConsent('accepted')}>
-            Aceitar todos
+            {t('components.cookieConsent.acceptAll')}
           </Button>
         </div>
       </div>

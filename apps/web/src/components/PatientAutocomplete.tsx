@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/ui/input';
@@ -25,10 +26,11 @@ interface PatientAutocompleteProps {
 export function PatientAutocomplete({
   value,
   onChange,
-  placeholder = 'Nome do paciente',
-  label = 'Nome (opcional)',
+  placeholder,
+  label,
   selectedPatientId,
 }: PatientAutocompleteProps) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [filteredPatients, setFilteredPatients] = useState<Patient[]>([]);
@@ -144,14 +146,17 @@ export function PatientAutocomplete({
   const showDropdown = isOpen && value.trim().length > 0 && (filteredPatients.length > 0 || value.trim().length >= 2);
   const exactMatch = patients.find((p) => p.name.toLowerCase() === value.toLowerCase().trim());
 
+  const resolvedLabel = label ?? t('components.wizard.review.patientNameLabel');
+  const resolvedPlaceholder = placeholder ?? t('components.wizard.review.patientNamePlaceholder');
+
   return (
     <div className="space-y-2 relative">
-      <Label htmlFor="patientName">{label}</Label>
+      <Label htmlFor="patientName">{resolvedLabel}</Label>
       <div className="relative">
         <Input
           ref={inputRef}
           id="patientName"
-          placeholder={placeholder}
+          placeholder={resolvedPlaceholder}
           value={value}
           onChange={handleInputChange}
           onFocus={() => value.trim() && setIsOpen(true)}
@@ -193,7 +198,7 @@ export function PatientAutocomplete({
                 )}
               </div>
               <Badge variant="outline" className="text-xs shrink-0 bg-secondary text-secondary-foreground">
-                Existente
+                {t('components.patientAutocomplete.existing')}
               </Badge>
             </button>
           ))}
@@ -214,8 +219,8 @@ export function PatientAutocomplete({
                   <Plus className="w-4 h-4 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm text-foreground">Criar "{value.trim()}"</p>
-                  <p className="text-xs text-muted-foreground">Novo paciente</p>
+                  <p className="font-medium text-sm text-foreground">{t('components.patientAutocomplete.createNew', { name: value.trim() })}</p>
+                  <p className="text-xs text-muted-foreground">{t('components.patientAutocomplete.newPatient')}</p>
                 </div>
               </button>
             </>
@@ -224,7 +229,7 @@ export function PatientAutocomplete({
           {/* No results */}
           {filteredPatients.length === 0 && value.trim().length < 2 && (
             <div className="px-3 py-2 text-sm text-muted-foreground">
-              Digite pelo menos 2 caracteres...
+              {t('components.patientAutocomplete.minChars')}
             </div>
           )}
         </div>

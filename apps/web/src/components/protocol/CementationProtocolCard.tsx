@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -88,11 +89,12 @@ function StepsList({
   );
 }
 
-export function CementationProtocolCard({ 
-  protocol, 
-  checkedIndices = [], 
-  onProgressChange 
+export function CementationProtocolCard({
+  protocol,
+  checkedIndices = [],
+  onProgressChange
 }: CementationProtocolCardProps) {
+  const { t } = useTranslation();
   const handleCheck = (index: number, checked: boolean) => {
     if (!onProgressChange) return;
     if (checked) {
@@ -109,12 +111,12 @@ export function CementationProtocolCard({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Crown className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-            Protocolo de Cimentação de Facetas
+            {t('components.protocol.cementation.title')}
             <Badge 
               variant={protocol.confidence === 'alta' ? 'default' : 'secondary'}
               className={protocol.confidence === 'alta' ? 'bg-primary' : ''}
             >
-              Confiança {protocol.confidence}
+              {t('components.protocol.cementation.confidence', { level: protocol.confidence })}
             </Badge>
           </CardTitle>
         </CardHeader>
@@ -123,7 +125,7 @@ export function CementationProtocolCard({
       {/* Preparation Steps */}
       {protocol.preparation_steps && protocol.preparation_steps.length > 0 && (
         <StepsList 
-          title="1. Preparo (se necessário)" 
+          title={t('components.protocol.cementation.prepSteps')} 
           icon={Sparkles} 
           steps={protocol.preparation_steps}
           iconColor="text-blue-500" 
@@ -132,7 +134,7 @@ export function CementationProtocolCard({
 
       {/* Ceramic Treatment */}
       <StepsList 
-        title="2. Tratamento da Cerâmica" 
+        title={t('components.protocol.cementation.ceramicTreatment')} 
         icon={Crown} 
         steps={protocol.ceramic_treatment}
         iconColor="text-amber-500" 
@@ -140,7 +142,7 @@ export function CementationProtocolCard({
 
       {/* Tooth Treatment */}
       <StepsList 
-        title="3. Tratamento do Dente" 
+        title={t('components.protocol.cementation.toothTreatment')} 
         icon={Droplets} 
         steps={protocol.tooth_treatment}
         iconColor="text-cyan-500" 
@@ -151,29 +153,29 @@ export function CementationProtocolCard({
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
             <CheckCircle className="w-4 h-4 text-emerald-500" />
-            4. Cimentação
+            {t('components.protocol.cementation.cementationStep')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div>
-              <span className="text-sm text-muted-foreground">Tipo de cimento</span>
+              <span className="text-sm text-muted-foreground">{t('components.protocol.cementation.cementType')}</span>
               <p className="font-medium">{protocol.cementation.cement_type}</p>
             </div>
             <div>
-              <span className="text-sm text-muted-foreground">Marca</span>
+              <span className="text-sm text-muted-foreground">{t('components.protocol.cementation.brand')}</span>
               <p className="font-medium">{protocol.cementation.cement_brand}</p>
             </div>
             <div>
-              <span className="text-sm text-muted-foreground">Cor</span>
+              <span className="text-sm text-muted-foreground">{t('components.protocol.cementation.color')}</span>
               <p className="font-medium">{protocol.cementation.shade}</p>
             </div>
             <div>
-              <span className="text-sm text-muted-foreground">Fotopolimerização</span>
+              <span className="text-sm text-muted-foreground">{t('components.protocol.cementation.lightCuring')}</span>
               <p className="font-medium">{protocol.cementation.light_curing_time}</p>
             </div>
             <div className="col-span-2">
-              <span className="text-sm text-muted-foreground">Técnica</span>
+              <span className="text-sm text-muted-foreground">{t('components.protocol.cementation.technique')}</span>
               <p className="font-medium text-sm">{protocol.cementation.technique}</p>
             </div>
           </div>
@@ -182,7 +184,7 @@ export function CementationProtocolCard({
 
       {/* Finishing */}
       <StepsList 
-        title="5. Acabamento e Polimento" 
+        title={t('components.protocol.cementation.finishing')} 
         icon={Sparkles} 
         steps={protocol.finishing}
         iconColor="text-purple-500" 
@@ -192,7 +194,7 @@ export function CementationProtocolCard({
       {protocol.post_operative && protocol.post_operative.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Orientações Pós-operatórias</CardTitle>
+            <CardTitle className="text-base">{t('components.protocol.cementation.postOperative')}</CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2">
@@ -213,7 +215,7 @@ export function CementationProtocolCard({
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <ClipboardCheck className="w-4 h-4" />
-              Checklist do Procedimento
+              {t('components.protocol.cementation.checklist')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -250,7 +252,7 @@ export function CementationProtocolCard({
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2 text-destructive">
               <AlertTriangle className="w-4 h-4" />
-              O que NÃO fazer
+              {t('components.protocol.cementation.doNot')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -272,7 +274,7 @@ export function CementationProtocolCard({
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2 text-warning">
               <AlertTriangle className="w-4 h-4" />
-              Pontos de Atenção
+              {t('components.protocol.cementation.attentionPoints')}
             </CardTitle>
           </CardHeader>
           <CardContent>

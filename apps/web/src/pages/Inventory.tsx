@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -71,13 +72,14 @@ const InventoryResinCard = memo(function InventoryResinCard({
 // =============================================================================
 
 export default function Inventory() {
+  const { t } = useTranslation();
   const inv = useInventoryManagement();
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       <ListPage<FlatInventoryItem>
-        title="Meu Inventário"
-        description={`${inv.total} cores de resina`}
+        title={t('inventory.title')}
+        description={t('inventory.resinColors', { count: inv.total })}
         viewMode="cards"
         items={inv.flatItems}
         isLoading={inv.isLoading}
@@ -88,21 +90,21 @@ export default function Inventory() {
         gridClassName="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2"
         searchConfig={{
           fields: ['shade', 'brand', 'product_line'],
-          placeholder: 'Buscar cor, marca ou linha...',
+          placeholder: t('inventory.searchPlaceholder'),
         }}
         filters={{
           brand: {
-            label: 'Marca',
+            label: t('inventory.brandFilter'),
             options: [
-              { value: 'all', label: 'Todas as marcas' },
+              { value: 'all', label: t('inventory.allBrands') },
               ...inv.brandOptions,
             ],
             default: 'all',
           },
           type: {
-            label: 'Tipo',
+            label: t('inventory.typeFilter'),
             options: [
-              { value: 'all', label: 'Todos os tipos' },
+              { value: 'all', label: t('inventory.allTypes') },
               ...inv.typeOptions,
             ],
             default: 'all',
@@ -112,7 +114,7 @@ export default function Inventory() {
           options: [
             {
               value: 'brand-asc',
-              label: 'Marca (A-Z)',
+              label: t('inventory.sortBrandAsc'),
               compare: (a: FlatInventoryItem, b: FlatInventoryItem) =>
                 a.brand.localeCompare(b.brand) ||
                 a.product_line.localeCompare(b.product_line) ||
@@ -120,13 +122,13 @@ export default function Inventory() {
             },
             {
               value: 'shade-asc',
-              label: 'Cor (A-Z)',
+              label: t('inventory.sortShadeAsc'),
               compare: (a: FlatInventoryItem, b: FlatInventoryItem) =>
                 a.shade.localeCompare(b.shade),
             },
             {
               value: 'type-asc',
-              label: 'Tipo',
+              label: t('inventory.sortType'),
               compare: (a: FlatInventoryItem, b: FlatInventoryItem) =>
                 a.type.localeCompare(b.type) || a.shade.localeCompare(b.shade),
             },
@@ -141,17 +143,17 @@ export default function Inventory() {
           { label: 'Importar', icon: 'upload' as const, onClick: () => inv.csvInputRef.current?.click(), variant: 'outline' as const },
         ]}
         createAction={{
-          label: 'Adicionar Resinas',
+          label: t('inventory.addResins'),
           onClick: inv.openDialog,
         }}
         slots={{ beforeTableSlot: <ResinTypeLegend /> }}
         emptyState={{
-          title: 'Inventário vazio',
-          description: 'Adicione suas primeiras resinas ao inventário',
-          action: { label: 'Adicionar Resinas', onClick: inv.openDialog },
+          title: t('inventory.emptyTitle'),
+          description: t('inventory.emptyDescription'),
+          action: { label: t('inventory.addResins'), onClick: inv.openDialog },
         }}
         labels={{
-          search: { placeholder: 'Buscar cor, marca ou linha...' },
+          search: { placeholder: t('inventory.searchPlaceholder') },
         }}
       />
 
@@ -168,7 +170,7 @@ export default function Inventory() {
       <Dialog open={inv.dialogOpen} onOpenChange={(open) => (open ? inv.openDialog() : inv.closeDialog())}>
         <DialogContent className="max-w-3xl max-h-[85vh] overflow-hidden flex flex-col">
           <DialogHeader>
-            <DialogTitle>Adicionar Resinas ao Inventário</DialogTitle>
+            <DialogTitle>{t('inventory.addToInventoryTitle')}</DialogTitle>
           </DialogHeader>
 
           <ResinTypeLegend />
@@ -223,8 +225,8 @@ export default function Inventory() {
                 {inv.catalogFilters.search ||
                 inv.catalogFilters.brand !== 'all' ||
                 inv.catalogFilters.type !== 'all'
-                  ? 'Nenhuma resina encontrada'
-                  : 'Todas as resinas já estão no inventário'}
+                  ? t('inventory.noResinsFound')
+                  : t('inventory.allResinsInInventory')}
               </p>
             ) : (
               <Accordion
@@ -268,7 +270,7 @@ export default function Inventory() {
           <DialogFooter className="mt-4 pt-4 border-t border-border">
             <div className="flex items-center justify-between w-full">
               <span className="text-sm text-muted-foreground">
-                {inv.selectedResins.size} resina(s) selecionada(s)
+                {t('inventory.resinsSelected', { count: inv.selectedResins.size })}
               </span>
               <Button
                 onClick={inv.addSelectedToInventory}
@@ -279,7 +281,7 @@ export default function Inventory() {
                 ) : (
                   <Plus className="h-4 w-4 mr-2" />
                 )}
-                Adicionar ao Inventário
+                {t('inventory.addToInventory')}
               </Button>
             </div>
           </DialogFooter>
@@ -295,14 +297,13 @@ export default function Inventory() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar remoção</AlertDialogTitle>
+            <AlertDialogTitle>{t('inventory.confirmRemoveTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja remover esta resina do inventário? Esta ação não pode ser
-              desfeita.
+              {t('inventory.confirmRemoveDescription')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 if (inv.deletingItemId) {
@@ -311,7 +312,7 @@ export default function Inventory() {
                 }
               }}
             >
-              Remover
+              {t('common.remove')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -326,7 +327,7 @@ export default function Inventory() {
       >
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Importar Inventário via CSV</DialogTitle>
+            <DialogTitle>{t('inventory.importCSVTitle')}</DialogTitle>
           </DialogHeader>
 
           {inv.csvPreview && (
@@ -363,7 +364,7 @@ export default function Inventory() {
               )}
               {inv.csvPreview.matched.length === 0 && (
                 <p className="text-sm text-muted-foreground text-center py-4">
-                  Nenhuma resina do CSV foi encontrada no catálogo.
+                  {t('inventory.noCSVMatch')}
                 </p>
               )}
             </div>
@@ -371,7 +372,7 @@ export default function Inventory() {
 
           <DialogFooter>
             <Button variant="outline" onClick={inv.closeImportDialog}>
-              Cancelar
+              {t('common.cancel')}
             </Button>
             <Button
               onClick={inv.confirmImport}
@@ -382,7 +383,7 @@ export default function Inventory() {
               ) : (
                 <Plus className="h-4 w-4 mr-2" />
               )}
-              Adicionar {inv.csvPreview?.matched.length || 0} resina(s)
+              {t('inventory.addResinsCount', { count: inv.csvPreview?.matched.length || 0 })}
             </Button>
           </DialogFooter>
         </DialogContent>

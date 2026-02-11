@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +23,7 @@ import {
 } from '@/components/ui/form';
 
 export default function Register() {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
@@ -47,7 +49,7 @@ export default function Register() {
     const { error } = await signUp(data.email, data.password, data.fullName, data.cro || '');
     
     if (error) {
-      toast.error('Erro ao criar conta', {
+      toast.error(t('auth.createAccountError'), {
         description: error.message,
       });
     } else {
@@ -61,7 +63,7 @@ export default function Register() {
     setGoogleLoading(true);
     const { error } = await signInWithGoogle();
     if (error) {
-      toast.error('Erro ao continuar com Google', {
+      toast.error(t('auth.googleRegisterError'), {
         description: error.message,
       });
       setGoogleLoading(false);
@@ -79,14 +81,14 @@ export default function Register() {
             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mx-auto mb-4">
               <Mail className="w-8 h-8 text-primary" />
             </div>
-            <h1 className="text-xl sm:text-2xl font-semibold font-display mb-2">Verifique seu email</h1>
+            <h1 className="text-xl sm:text-2xl font-semibold font-display mb-2">{t('auth.verifyEmail')}</h1>
             <p className="text-sm text-muted-foreground mb-6">
-              Enviamos um link de confirmação para{' '}
+              {t('auth.verifyEmailSent')}{' '}
               <span className="font-medium text-foreground">{form.getValues('email')}</span>.
-              Clique no link para ativar sua conta.
+              {t('auth.verifyEmailClickLink')}
             </p>
             <Link to="/login">
-              <Button className="w-full btn-glow-gold">Ir para Login</Button>
+              <Button className="w-full btn-glow-gold">{t('common.goToLogin')}</Button>
             </Link>
           </div>
         </div>
@@ -104,8 +106,8 @@ export default function Register() {
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle, hsl(var(--foreground)) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
         <div className="relative flex flex-col justify-center px-12 xl:px-16">
           <span className="font-display tracking-[0.2em] text-gradient-gold text-2xl font-semibold mb-6 animate-[fade-in-up_0.6s_ease-out_0.2s_both]">{BRAND_NAME}</span>
-          <h2 className="text-3xl xl:text-4xl font-display font-semibold tracking-tight mb-3 animate-[fade-in-up_0.6s_ease-out_0.3s_both]">O padrão ouro da odontologia estética</h2>
-          <p className="text-muted-foreground text-lg animate-[fade-in-up_0.6s_ease-out_0.4s_both]">Apoio à decisão clínica com inteligência artificial</p>
+          <h2 className="text-3xl xl:text-4xl font-display font-semibold tracking-tight mb-3 animate-[fade-in-up_0.6s_ease-out_0.3s_both]">{t('landing.brandSlogan')}</h2>
+          <p className="text-muted-foreground text-lg animate-[fade-in-up_0.6s_ease-out_0.4s_both]">{t('landing.brandDescription')}</p>
         </div>
       </div>
 
@@ -116,9 +118,9 @@ export default function Register() {
             <Link to="/" className="font-display tracking-[0.2em] text-gradient-gold text-lg sm:text-xl font-semibold lg:hidden animate-[fade-in-up_0.6s_ease-out_0.2s_both]">
               {BRAND_NAME}
             </Link>
-            <h1 className="text-xl sm:text-2xl font-semibold font-display mt-6 sm:mt-8 mb-2 animate-[fade-in-up_0.6s_ease-out_0.3s_both]">Criar conta</h1>
+            <h1 className="text-xl sm:text-2xl font-semibold font-display mt-6 sm:mt-8 mb-2 animate-[fade-in-up_0.6s_ease-out_0.3s_both]">{t('auth.registerTitle')}</h1>
             <p className="text-sm text-muted-foreground animate-[fade-in-up_0.6s_ease-out_0.3s_both]">
-              Preencha os dados para começar
+              {t('auth.registerSubtitle')}
             </p>
           </div>
 
@@ -131,7 +133,7 @@ export default function Register() {
               type="button"
             >
               <GoogleIcon className="w-4 h-4 mr-2" />
-              {googleLoading ? 'Conectando...' : 'Continuar com Google'}
+              {googleLoading ? t('auth.connecting') : t('auth.continueWithGoogle')}
             </Button>
           </div>
 
@@ -140,7 +142,7 @@ export default function Register() {
               <span className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">ou</span>
+              <span className="bg-background px-2 text-muted-foreground">{t('common.or')}</span>
             </div>
           </div>
 
@@ -152,7 +154,7 @@ export default function Register() {
                   name="fullName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nome completo</FormLabel>
+                      <FormLabel>{t('auth.fullName')}</FormLabel>
                       <FormControl>
                         <Input
                           placeholder="Dr. João Silva"
@@ -169,7 +171,7 @@ export default function Register() {
                   name="cro"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>CRO (opcional)</FormLabel>
+                      <FormLabel>{t('auth.croLabel')}</FormLabel>
                       <FormControl>
                         <Input
                           placeholder="CRO-SP 12345"
@@ -186,7 +188,7 @@ export default function Register() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email profissional</FormLabel>
+                      <FormLabel>{t('auth.professionalEmail')}</FormLabel>
                       <FormControl>
                         <Input
                           type="email"
@@ -204,7 +206,7 @@ export default function Register() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Senha</FormLabel>
+                      <FormLabel>{t('auth.password')}</FormLabel>
                       <FormControl>
                         <Input
                           type="password"
@@ -223,7 +225,7 @@ export default function Register() {
                   name="confirmPassword"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Confirmar senha</FormLabel>
+                      <FormLabel>{t('auth.confirmPassword')}</FormLabel>
                       <FormControl>
                         <Input
                           type="password"
@@ -249,13 +251,13 @@ export default function Register() {
                       </FormControl>
                       <div className="space-y-1 leading-none">
                         <FormLabel className="text-sm leading-relaxed cursor-pointer font-normal">
-                          Li e aceito os{' '}
+                          {t('auth.acceptTerms')}{' '}
                           <Link to="/terms" className="underline underline-offset-4 hover:text-foreground" target="_blank">
-                            Termos de Uso
+                            {t('auth.termsOfUse')}
                           </Link>
-                          {' '}e a{' '}
+                          {' '}{t('auth.and')}{' '}
                           <Link to="/privacy" className="underline underline-offset-4 hover:text-foreground" target="_blank">
-                            Política de Privacidade
+                            {t('auth.privacyPolicy')}
                           </Link>
                         </FormLabel>
                         <FormMessage />
@@ -265,16 +267,16 @@ export default function Register() {
                 />
 
                 <Button type="submit" className="w-full btn-glow-gold" disabled={loading}>
-                  {loading ? 'Criando conta...' : 'Criar conta'}
+                  {loading ? t('auth.creatingAccount') : t('auth.signUp')}
                 </Button>
               </form>
             </Form>
           </div>
 
           <p className="text-center text-sm text-muted-foreground mt-6">
-            Já tem uma conta?{' '}
+            {t('auth.hasAccount')}{' '}
             <Link to="/login" className="text-foreground underline underline-offset-4">
-              Entrar
+              {t('auth.login')}
             </Link>
           </p>
         </div>

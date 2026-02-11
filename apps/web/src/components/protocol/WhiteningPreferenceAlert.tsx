@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Palette, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ProtocolLayer } from "@/types/protocol";
@@ -61,6 +62,7 @@ export default function WhiteningPreferenceAlert({
   aestheticGoals,
   protocolLayers = [],
 }: WhiteningPreferenceAlertProps) {
+  const { t } = useTranslation();
   // Only show if there's aesthetic goals text with whitening keywords
   if (!aestheticGoals || !hasWhiteningKeywords(aestheticGoals)) return null;
 
@@ -85,21 +87,21 @@ export default function WhiteningPreferenceAlert({
         <div className="flex-1 space-y-2">
           <div className="flex items-center gap-2">
             <h4 className="font-medium text-primary">
-              Preferência de Clareamento Aplicada
+              {t('components.protocol.whiteningAlert.title')}
             </h4>
             <Badge variant="outline" className="text-xs border-primary/30 text-primary">
               <Palette className="w-3 h-3 mr-1" />
-              Cores Ajustadas
+              {t('components.protocol.whiteningAlert.colorsAdjusted')}
             </Badge>
           </div>
           
           <p className="text-sm text-muted-foreground">
-            O paciente indicou preferência por <span className="font-medium text-primary">dentes mais brancos</span>.
+            {t('components.protocol.whiteningAlert.patientPreference')} <span className="font-medium text-primary">{t('components.protocol.whiteningAlert.whiterTeeth')}</span>.
           </p>
 
           <div className="flex items-center gap-3 mt-2">
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">Cor detectada:</span>
+              <span className="text-xs text-muted-foreground">{t('components.protocol.whiteningAlert.detectedColor')}</span>
               <Badge variant="secondary" className="font-mono">
                 {originalColor}
               </Badge>
@@ -109,7 +111,7 @@ export default function WhiteningPreferenceAlert({
               <>
                 <span className="text-muted-foreground">→</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">Protocolo usa:</span>
+                  <span className="text-xs text-muted-foreground">{t('components.protocol.whiteningAlert.protocolUses')}</span>
                   <div className="flex gap-1 flex-wrap">
                     {usedShades.map((shade) => (
                       <Badge 
@@ -127,7 +129,7 @@ export default function WhiteningPreferenceAlert({
             
             {!hasWhiteningApplied && usedShades.length === 0 && (
               <span className="text-xs text-primary">
-                Cor mais clara disponível - mantida no protocolo
+                {t('components.protocol.whiteningAlert.lighterAvailable')}
               </span>
             )}
           </div>

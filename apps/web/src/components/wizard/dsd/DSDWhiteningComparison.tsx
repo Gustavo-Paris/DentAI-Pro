@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Loader2, Palette } from 'lucide-react';
 import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
@@ -30,6 +31,7 @@ export function DSDWhiteningComparison({
   onCloseComparison,
   onSelectLevel,
 }: DSDWhiteningComparisonProps) {
+  const { t } = useTranslation();
   return (
     <>
       {/* E4: Whitening comparison button */}
@@ -44,13 +46,13 @@ export function DSDWhiteningComparison({
           {isComparingWhitening ? (
             <>
               <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-              Gerando comparação...
+              {t('components.wizard.dsd.whiteningComparison.generating')}
             </>
           ) : (
             <>
               <Palette className="w-3 h-3 mr-1" />
-              Comparar Níveis de Clareamento
-              <span className="text-xs opacity-60 ml-1">(grátis)</span>
+              {t('components.wizard.dsd.whiteningComparison.compareTitle')}
+              <span className="text-xs opacity-60 ml-1">{t('components.wizard.dsd.whiteningComparison.free')}</span>
             </>
           )}
         </Button>
@@ -60,14 +62,14 @@ export function DSDWhiteningComparison({
       {showWhiteningComparison && Object.keys(whiteningComparison).length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h4 className="text-sm font-medium">Comparação de Clareamento</h4>
+            <h4 className="text-sm font-medium">{t('components.wizard.dsd.whiteningComparison.title')}</h4>
             <Button
               variant="ghost"
               size="sm"
               onClick={onCloseComparison}
               className="text-xs"
             >
-              Fechar
+              {t('components.wizard.dsd.whiteningComparison.close')}
             </Button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -95,11 +97,11 @@ export function DSDWhiteningComparison({
                   />
                   {isActive ? (
                     <div className="text-center py-1 bg-primary/10">
-                      <span className="text-xs font-medium text-primary">Selecionado</span>
+                      <span className="text-xs font-medium text-primary">{t('components.wizard.dsd.whiteningComparison.selected')}</span>
                     </div>
                   ) : (
                     <div className="text-center py-1 bg-secondary/30">
-                      <span className="text-xs font-medium text-muted-foreground">Clique para selecionar</span>
+                      <span className="text-xs font-medium text-muted-foreground">{t('components.wizard.dsd.whiteningComparison.clickToSelect')}</span>
                     </div>
                   )}
                 </div>

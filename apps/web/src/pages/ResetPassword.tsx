@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +21,7 @@ import {
 } from '@/components/ui/form';
 
 export default function ResetPassword() {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [sessionReady, setSessionReady] = useState(false);
@@ -62,12 +64,12 @@ export default function ResetPassword() {
     const { error } = await supabase.auth.updateUser({ password: data.password });
 
     if (error) {
-      toast.error('Erro ao atualizar senha', {
+      toast.error(t('auth.updatePasswordError'), {
         description: error.message,
       });
     } else {
       setSuccess(true);
-      toast.success('Senha atualizada com sucesso!');
+      toast.success(t('auth.updatePasswordSuccess'));
       setTimeout(() => {
         navigate('/dashboard');
       }, 2000);
@@ -88,10 +90,10 @@ export default function ResetPassword() {
           <div className="relative flex flex-col justify-center px-12 xl:px-16">
             <span className="text-2xl font-display tracking-[0.2em] text-gradient-gold mb-4">{BRAND_NAME}</span>
             <h2 className="text-3xl sm:text-4xl font-semibold font-display tracking-tight text-foreground/90 mb-3">
-              O padrão ouro da odontologia estética
+              {t('landing.brandSlogan')}
             </h2>
             <p className="text-muted-foreground max-w-md">
-              Protocolos clínicos inteligentes, simulações de sorriso e gestão completa de casos.
+              {t('landing.brandDescriptionAlt')}
             </p>
           </div>
         </div>
@@ -103,13 +105,13 @@ export default function ResetPassword() {
               {BRAND_NAME}
             </Link>
             <h1 className="text-xl sm:text-2xl font-semibold font-display mt-6 sm:mt-8 mb-2">
-              Link inválido ou expirado
+              {t('auth.invalidLink')}
             </h1>
             <p className="text-sm text-muted-foreground mb-6">
-              O link de recuperação pode ter expirado. Solicite um novo link.
+              {t('auth.invalidLinkDescription')}
             </p>
             <Link to="/forgot-password">
-              <Button className="w-full btn-glow-gold">Solicitar novo link</Button>
+              <Button className="w-full btn-glow-gold">{t('auth.requestNewLink')}</Button>
             </Link>
           </div>
         </div>
@@ -128,10 +130,10 @@ export default function ResetPassword() {
         <div className="relative flex flex-col justify-center px-12 xl:px-16">
           <span className="text-2xl font-display tracking-[0.2em] text-gradient-gold mb-4">{BRAND_NAME}</span>
           <h2 className="text-3xl sm:text-4xl font-semibold font-display tracking-tight text-foreground/90 mb-3">
-            O padrão ouro da odontologia estética
+            {t('landing.brandSlogan')}
           </h2>
           <p className="text-muted-foreground max-w-md">
-            Protocolos clínicos inteligentes, simulações de sorriso e gestão completa de casos.
+            {t('landing.brandDescriptionAlt')}
           </p>
         </div>
       </div>
@@ -144,12 +146,12 @@ export default function ResetPassword() {
               {BRAND_NAME}
             </Link>
             <h1 className="text-xl sm:text-2xl font-semibold font-display mt-6 sm:mt-8 mb-2 animate-[fade-in-up_0.6s_ease-out_0.3s_both]">
-              {success ? 'Senha atualizada!' : 'Nova senha'}
+              {success ? t('auth.resetPasswordSuccess') : t('auth.resetPasswordTitle')}
             </h1>
             <p className="text-sm text-muted-foreground animate-[fade-in-up_0.6s_ease-out_0.4s_both]">
               {success
-                ? 'Você será redirecionado automaticamente'
-                : 'Digite sua nova senha'
+                ? t('auth.resetPasswordRedirect')
+                : t('auth.resetPasswordSubtitle')
               }
             </p>
           </div>
@@ -160,7 +162,7 @@ export default function ResetPassword() {
                 <CheckCircle className="w-8 h-8 text-primary" />
               </div>
               <p className="text-sm text-muted-foreground text-center">
-                Redirecionando para o dashboard...
+                {t('auth.redirectingToDashboard')}
               </p>
             </div>
           ) : (
@@ -172,7 +174,7 @@ export default function ResetPassword() {
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nova senha</FormLabel>
+                        <FormLabel>{t('auth.newPassword')}</FormLabel>
                         <FormControl>
                           <Input
                             type="password"
@@ -191,7 +193,7 @@ export default function ResetPassword() {
                     name="confirmPassword"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Confirmar nova senha</FormLabel>
+                        <FormLabel>{t('auth.confirmNewPassword')}</FormLabel>
                         <FormControl>
                           <Input
                             type="password"
@@ -205,7 +207,7 @@ export default function ResetPassword() {
                   />
 
                   <Button type="submit" className="w-full btn-glow-gold" disabled={loading}>
-                    {loading ? 'Atualizando...' : 'Atualizar senha'}
+                    {loading ? t('auth.updating') : t('auth.updatePassword')}
                   </Button>
                 </form>
               </Form>

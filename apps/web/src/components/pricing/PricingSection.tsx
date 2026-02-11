@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSubscription } from '@/hooks/useSubscription';
 import { PricingCard } from './PricingCard';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -15,6 +16,7 @@ export function PricingSection() {
     checkout,
     isCheckingOut,
   } = useSubscription();
+  const { t } = useTranslation();
 
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
 
@@ -33,16 +35,16 @@ export function PricingSection() {
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h2 className="text-3xl font-semibold font-display tracking-tight">Escolha seu plano</h2>
+        <h2 className="text-3xl font-semibold font-display tracking-tight">{t('components.pricing.section.title')}</h2>
         <p className="text-muted-foreground mt-2">
-          Comece gratuitamente e faça upgrade quando precisar
+          {t('components.pricing.section.subtitle')}
         </p>
       </div>
 
       {/* Billing Period Toggle */}
       <div className="flex items-center justify-center gap-3">
         <Label htmlFor="billing-toggle" className={billingPeriod === 'monthly' ? 'font-semibold' : 'text-muted-foreground'}>
-          Mensal
+          {t('components.pricing.section.monthly')}
         </Label>
         <Switch
           id="billing-toggle"
@@ -50,7 +52,7 @@ export function PricingSection() {
           onCheckedChange={(checked) => setBillingPeriod(checked ? 'yearly' : 'monthly')}
         />
         <Label htmlFor="billing-toggle" className={billingPeriod === 'yearly' ? 'font-semibold' : 'text-muted-foreground'}>
-          Anual
+          {t('components.pricing.section.yearly')}
         </Label>
         {billingPeriod === 'yearly' && (
           <Badge variant="secondary" className="text-success bg-success/10">
@@ -75,7 +77,7 @@ export function PricingSection() {
       </div>
 
       <p className="text-center text-sm text-muted-foreground">
-        Todos os planos incluem 7 dias de garantia. Cancele a qualquer momento.
+        {t('components.pricing.section.guarantee')}
       </p>
     </div>
   );

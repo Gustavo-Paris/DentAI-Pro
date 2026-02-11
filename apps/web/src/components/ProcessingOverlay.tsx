@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { ProgressRing } from './ProgressRing';
 import { CompactStepIndicator } from './CompactStepIndicator';
@@ -13,11 +14,14 @@ interface ProcessingOverlayProps {
 export function ProcessingOverlay({
   isLoading,
   steps,
-  message = 'Processando...',
+  message,
   progress = 0,
   estimatedTime,
 }: ProcessingOverlayProps) {
+  const { t } = useTranslation();
   if (!isLoading) return null;
+
+  const displayMessage = message || t('components.processingOverlay.defaultMessage');
 
   const currentIndex = steps
     ? steps.findIndex((s) => !s.completed)
@@ -29,7 +33,7 @@ export function ProcessingOverlay({
         <CardContent className="p-6 flex flex-col items-center text-center">
           <ProgressRing progress={progress} size={128} />
 
-          <p className="mt-4 font-semibold text-primary">{message}</p>
+          <p className="mt-4 font-semibold text-primary">{displayMessage}</p>
 
           {steps && steps.length > 0 && (
             <div className="mt-4 w-full text-left">
@@ -43,12 +47,12 @@ export function ProcessingOverlay({
 
           {estimatedTime && (
             <p className="text-xs text-muted-foreground mt-4">
-              {estimatedTime} restantes
+              {t('components.processingOverlay.remaining', { time: estimatedTime })}
             </p>
           )}
 
           <p className="text-xs text-muted-foreground mt-2 animate-pulse">
-            Não feche esta página
+            {t('components.processingOverlay.doNotClose')}
           </p>
         </CardContent>
       </Card>

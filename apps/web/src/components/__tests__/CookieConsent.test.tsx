@@ -1,11 +1,27 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import CookieConsent from '../CookieConsent';
+import translations from '@/locales/pt-BR.json';
 
 // Mock Sentry
 vi.mock('@sentry/react', () => ({
   getClient: () => ({
     getIntegrationByName: () => null,
+  }),
+}));
+
+// Mock react-i18next
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const parts = key.split('.');
+      let value: unknown = translations;
+      for (const part of parts) {
+        value = (value as Record<string, unknown>)?.[part];
+      }
+      return (value as string) ?? key;
+    },
+    i18n: { language: 'pt-BR' },
   }),
 }));
 

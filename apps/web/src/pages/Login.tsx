@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +20,7 @@ import {
 } from '@/components/ui/form';
 
 export default function Login() {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const { signIn, signInWithGoogle } = useAuth();
@@ -39,16 +41,16 @@ export default function Login() {
     
     if (error) {
       if (error.message?.toLowerCase().includes('email not confirmed')) {
-        toast.error('Verifique seu email', {
-          description: 'Enviamos um link de confirmação para seu email. Clique no link para ativar sua conta.',
+        toast.error(t('auth.verifyEmail'), {
+          description: t('auth.verifyEmailDescription'),
         });
       } else {
-        toast.error('Erro ao entrar', {
-          description: 'Email ou senha incorretos.',
+        toast.error(t('auth.loginError'), {
+          description: t('auth.loginErrorDescription'),
         });
       }
     } else {
-      toast.success('Bem-vindo de volta!');
+      toast.success(t('auth.welcomeBack'));
       navigate('/dashboard');
     }
     
@@ -59,7 +61,7 @@ export default function Login() {
     setGoogleLoading(true);
     const { error } = await signInWithGoogle();
     if (error) {
-      toast.error('Erro ao entrar com Google', {
+      toast.error(t('auth.googleLoginError'), {
         description: error.message,
       });
       setGoogleLoading(false);
@@ -76,8 +78,8 @@ export default function Login() {
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle, hsl(var(--foreground)) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
         <div className="relative flex flex-col justify-center px-12 xl:px-16">
           <span className="font-display tracking-[0.2em] text-gradient-gold text-2xl font-semibold mb-6 animate-[fade-in-up_0.6s_ease-out_0.2s_both]">{BRAND_NAME}</span>
-          <h2 className="text-3xl xl:text-4xl font-display font-semibold tracking-tight mb-3 animate-[fade-in-up_0.6s_ease-out_0.3s_both]">O padrão ouro da odontologia estética</h2>
-          <p className="text-muted-foreground text-lg animate-[fade-in-up_0.6s_ease-out_0.4s_both]">Apoio à decisão clínica com inteligência artificial</p>
+          <h2 className="text-3xl xl:text-4xl font-display font-semibold tracking-tight mb-3 animate-[fade-in-up_0.6s_ease-out_0.3s_both]">{t('landing.brandSlogan')}</h2>
+          <p className="text-muted-foreground text-lg animate-[fade-in-up_0.6s_ease-out_0.4s_both]">{t('landing.brandDescription')}</p>
         </div>
       </div>
 
@@ -88,9 +90,9 @@ export default function Login() {
             <Link to="/" className="font-display tracking-[0.2em] text-gradient-gold text-lg sm:text-xl font-semibold lg:hidden animate-[fade-in-up_0.6s_ease-out_0.2s_both]">
               {BRAND_NAME}
             </Link>
-            <h1 className="text-xl sm:text-2xl font-semibold font-display mt-6 sm:mt-8 mb-2 animate-[fade-in-up_0.6s_ease-out_0.3s_both]">Entrar</h1>
+            <h1 className="text-xl sm:text-2xl font-semibold font-display mt-6 sm:mt-8 mb-2 animate-[fade-in-up_0.6s_ease-out_0.3s_both]">{t('auth.loginTitle')}</h1>
             <p className="text-sm text-muted-foreground animate-[fade-in-up_0.6s_ease-out_0.3s_both]">
-              Acesse sua conta para continuar
+              {t('auth.loginSubtitle')}
             </p>
           </div>
 
@@ -103,7 +105,7 @@ export default function Login() {
               type="button"
             >
               <GoogleIcon className="w-4 h-4 mr-2" />
-              {googleLoading ? 'Conectando...' : 'Continuar com Google'}
+              {googleLoading ? t('auth.connecting') : t('auth.continueWithGoogle')}
             </Button>
           </div>
 
@@ -112,7 +114,7 @@ export default function Login() {
               <span className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">ou</span>
+              <span className="bg-background px-2 text-muted-foreground">{t('common.or')}</span>
             </div>
           </div>
 
@@ -124,7 +126,7 @@ export default function Login() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>{t('auth.email')}</FormLabel>
                       <FormControl>
                         <Input
                           type="email"
@@ -142,7 +144,7 @@ export default function Login() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Senha</FormLabel>
+                      <FormLabel>{t('auth.password')}</FormLabel>
                       <FormControl>
                         <Input
                           type="password"
@@ -160,21 +162,21 @@ export default function Login() {
                     to="/forgot-password"
                     className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-4"
                   >
-                    Esqueci minha senha
+                    {t('auth.forgotPasswordLink')}
                   </Link>
                 </div>
 
                 <Button type="submit" className="w-full btn-glow-gold" disabled={loading}>
-                  {loading ? 'Entrando...' : 'Entrar'}
+                  {loading ? t('auth.loggingIn') : t('auth.login')}
                 </Button>
               </form>
             </Form>
           </div>
 
           <p className="text-center text-sm text-muted-foreground mt-6">
-            Não tem uma conta?{' '}
+            {t('auth.noAccount')}{' '}
             <Link to="/register" className="text-foreground underline underline-offset-4">
-              Criar conta
+              {t('auth.signUp')}
             </Link>
           </p>
         </div>

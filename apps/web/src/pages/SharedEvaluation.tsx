@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { getSharedEvaluation, getSharedDSD, type SharedEvaluationRow, type SharedDSDData } from '@/data/evaluations';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -26,16 +27,26 @@ import {
   Clock,
 } from 'lucide-react';
 
-const treatmentLabels: Record<string, { label: string; icon: typeof Layers }> = {
-  resina: { label: 'Resina Composta', icon: Layers },
-  porcelana: { label: 'Faceta de Porcelana', icon: Crown },
-  coroa: { label: 'Coroa Total', icon: Crown },
-  implante: { label: 'Implante', icon: CircleX },
-  endodontia: { label: 'Endodontia', icon: Stethoscope },
-  encaminhamento: { label: 'Encaminhamento', icon: ArrowUpRight },
+const treatmentIcons: Record<string, typeof Layers> = {
+  resina: Layers,
+  porcelana: Crown,
+  coroa: Crown,
+  implante: CircleX,
+  endodontia: Stethoscope,
+  encaminhamento: ArrowUpRight,
+};
+
+const treatmentLabelKeys: Record<string, string> = {
+  resina: 'pages.treatmentResina',
+  porcelana: 'pages.treatmentPorcelana',
+  coroa: 'pages.treatmentCoroa',
+  implante: 'pages.treatmentImplante',
+  endodontia: 'pages.treatmentEndodontia',
+  encaminhamento: 'pages.treatmentEncaminhamento',
 };
 
 export default function SharedEvaluation() {
+  const { t } = useTranslation();
   const { token } = useParams<{ token: string }>();
   const [loading, setLoading] = useState(true);
   const [expired, setExpired] = useState(false);
@@ -124,12 +135,12 @@ export default function SharedEvaluation() {
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
         <div className="text-center">
           <AlertTriangle className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-          <h1 className="text-xl font-semibold font-display mb-2">Link expirado ou inválido</h1>
+          <h1 className="text-xl font-semibold font-display mb-2">{t('pages.sharedExpiredTitle')}</h1>
           <p className="text-sm text-muted-foreground mb-6">
-            Este link de compartilhamento não está mais disponível.
+            {t('pages.sharedExpiredDescription')}
           </p>
           <Button asChild>
-            <Link to="/">Ir para {BRAND_NAME}</Link>
+            <Link to="/">{t('pages.goTo', { name: BRAND_NAME })}</Link>
           </Button>
         </div>
       </div>
@@ -148,7 +159,7 @@ export default function SharedEvaluation() {
           <span className="text-lg font-semibold tracking-[0.2em] font-display text-primary">{BRAND_NAME}</span>
           <Badge variant="outline" className="gap-1 text-xs">
             <Clock className="w-3 h-3" />
-            Visualização compartilhada
+            {t('pages.sharedView')}
           </Badge>
         </div>
       </header>
@@ -156,17 +167,17 @@ export default function SharedEvaluation() {
       <main className="container mx-auto px-4 py-8 max-w-2xl">
         <Card className="mb-6 shadow-sm rounded-xl">
           <CardHeader>
-            <CardTitle className="text-xl font-display">Avaliação Odontológica</CardTitle>
+            <CardTitle className="text-xl font-display">{t('evaluation.dental')}</CardTitle>
             <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
                 <Calendar className="w-4 h-4" />
                 {evalDate}
               </div>
               <span>
-                {evaluations.length} dente{evaluations.length > 1 ? 's' : ''} avaliado{evaluations.length > 1 ? 's' : ''}
+                {t('pages.teethEvaluated', { count: evaluations.length })}
               </span>
               <span>
-                {completedCount}/{evaluations.length} concluído{completedCount !== 1 ? 's' : ''}
+                {completedCount}/{evaluations.length} {t('pages.completed', { count: completedCount })}
               </span>
             </div>
           </CardHeader>
@@ -184,7 +195,7 @@ export default function SharedEvaluation() {
           return (
             <Card className="mb-6 shadow-sm rounded-xl overflow-hidden">
               <CardHeader>
-                <CardTitle className="text-lg font-display">Simulação DSD</CardTitle>
+                <CardTitle className="text-lg font-display">{t('pages.dsdSimulation')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {layers.length > 1 && (
@@ -218,8 +229,11 @@ export default function SharedEvaluation() {
 
         <div className="space-y-3">
           {evaluations.map((evaluation, index) => {
-            const treatment = treatmentLabels[evaluation.treatment_type || 'resina'];
-            const TreatmentIcon = treatment?.icon || Layers;
+            const treatmentType = evaluation.treatment_type || 'resina';
+            const TreatmentIcon = treatmentIcons[treatmentType] || Layers;
+            const treatmentLabel = treatmentLabelKeys[treatmentType]
+              ? t(treatmentLabelKeys[treatmentType])
+              : t('pages.treatmentDefault');
 
             return (
               <Card key={index} className="shadow-sm rounded-xl">
@@ -233,7 +247,7 @@ export default function SharedEvaluation() {
                         <div className="flex items-center gap-2">
                           <TreatmentIcon className="w-4 h-4 text-muted-foreground" />
                           <span className="text-sm font-medium">
-                            {treatment?.label || 'Tratamento'}
+                            {treatmentLabel}
                           </span>
                         </div>
                         {evaluation.ai_treatment_indication && (
@@ -246,11 +260,11 @@ export default function SharedEvaluation() {
                     {evaluation.status === 'completed' ? (
                       <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
                         <CheckCircle className="w-3 h-3" />
-                        Concluído
+                        {t('evaluation.completed')}
                       </span>
                     ) : (
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
-                        Planejado
+                        {t('evaluation.planned')}
                       </span>
                     )}
                   </div>
@@ -267,7 +281,7 @@ export default function SharedEvaluation() {
               {' '}&middot;{' '}
             </>
           )}
-          Gerado por {BRAND_NAME} &middot; Ferramenta de apoio à decisão clínica
+          {t('pages.generatedBy')} {BRAND_NAME} &middot; {t('pages.clinicalDecisionSupport')}
         </p>
       </main>
     </div>

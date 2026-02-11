@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +10,7 @@ import { ArrowLeft, Mail } from 'lucide-react';
 import { BRAND_NAME } from '@/lib/branding';
 
 export default function ForgotPassword() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -22,13 +24,13 @@ export default function ForgotPassword() {
     });
 
     if (error) {
-      toast.error('Erro ao enviar email', {
+      toast.error(t('auth.sendError'), {
         description: error.message,
       });
     } else {
       setSent(true);
-      toast.success('Email enviado!', {
-        description: 'Verifique sua caixa de entrada.',
+      toast.success(t('auth.emailSent'), {
+        description: t('auth.emailSentDescription'),
       });
     }
 
@@ -45,8 +47,8 @@ export default function ForgotPassword() {
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle, hsl(var(--foreground)) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
         <div className="relative flex flex-col justify-center px-12 xl:px-16">
           <span className="font-display tracking-[0.2em] text-gradient-gold text-2xl font-semibold mb-6 animate-[fade-in-up_0.6s_ease-out_0.2s_both]">{BRAND_NAME}</span>
-          <h2 className="text-3xl xl:text-4xl font-display font-semibold tracking-tight mb-3 animate-[fade-in-up_0.6s_ease-out_0.3s_both]">O padrão ouro da odontologia estética</h2>
-          <p className="text-muted-foreground text-lg animate-[fade-in-up_0.6s_ease-out_0.4s_both]">Apoio à decisão clínica com inteligência artificial</p>
+          <h2 className="text-3xl xl:text-4xl font-display font-semibold tracking-tight mb-3 animate-[fade-in-up_0.6s_ease-out_0.3s_both]">{t('landing.brandSlogan')}</h2>
+          <p className="text-muted-foreground text-lg animate-[fade-in-up_0.6s_ease-out_0.4s_both]">{t('landing.brandDescription')}</p>
         </div>
       </div>
 
@@ -58,12 +60,12 @@ export default function ForgotPassword() {
               {BRAND_NAME}
             </Link>
             <h1 className="text-xl sm:text-2xl font-semibold font-display mt-6 sm:mt-8 mb-2 animate-[fade-in-up_0.6s_ease-out_0.3s_both]">
-              Recuperar senha
+              {t('auth.forgotPasswordTitle')}
             </h1>
             <p className="text-sm text-muted-foreground animate-[fade-in-up_0.6s_ease-out_0.3s_both]">
               {sent
-                ? 'Verifique seu email para redefinir sua senha'
-                : 'Digite seu email para receber o link de recuperação'
+                ? t('auth.forgotPasswordSubtitleSent')
+                : t('auth.forgotPasswordSubtitle')
               }
             </p>
           </div>
@@ -76,22 +78,22 @@ export default function ForgotPassword() {
                 </div>
               </div>
               <p className="text-center text-sm text-muted-foreground">
-                Enviamos um link de recuperação para <strong>{email}</strong>.
-                Clique no link do email para criar uma nova senha.
+                {t('auth.verifyEmailSent')} <strong>{email}</strong>.
+                {t('auth.verifyEmailClickLink')}
               </p>
               <Button
                 variant="outline"
                 className="w-full"
                 onClick={() => setSent(false)}
               >
-                Enviar novamente
+                {t('auth.sendAgain')}
               </Button>
             </div>
           ) : (
             <div className="animate-[fade-in-up_0.6s_ease-out_0.5s_both]">
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t('auth.email')}</Label>
                   <Input
                     id="email"
                     type="email"
@@ -103,7 +105,7 @@ export default function ForgotPassword() {
                 </div>
 
                 <Button type="submit" className="w-full btn-glow-gold" disabled={loading}>
-                  {loading ? 'Enviando...' : 'Enviar link de recuperação'}
+                  {loading ? t('auth.sending') : t('auth.sendRecoveryLink')}
                 </Button>
               </form>
             </div>
@@ -114,7 +116,7 @@ export default function ForgotPassword() {
             className="flex items-center justify-center gap-2 text-sm text-muted-foreground mt-6 hover:text-foreground"
           >
             <ArrowLeft className="w-4 h-4" />
-            Voltar para o login
+            {t('common.backToLogin')}
           </Link>
         </div>
       </div>

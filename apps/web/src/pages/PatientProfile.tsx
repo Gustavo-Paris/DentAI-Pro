@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,6 +36,7 @@ import { usePatientProfile } from '@/hooks/domain/usePatientProfile';
 // =============================================================================
 
 export default function PatientProfile() {
+  const { t } = useTranslation();
   const profile = usePatientProfile();
 
   if (!profile.patient && !profile.isLoading) return null;
@@ -48,16 +50,16 @@ export default function PatientProfile() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       <DetailPage
         title={(data) => data?.name ?? '...'}
-        description="Perfil do Paciente"
+        description={t('patients.profileTitle')}
         backHref="/patients"
         breadcrumbs={[
-          { label: 'Dashboard', href: '/dashboard' },
-          { label: 'Pacientes', href: '/patients' },
+          { label: t('nav.dashboard'), href: '/dashboard' },
+          { label: t('dashboard.patients'), href: '/patients' },
           { label: patient?.name || '...' },
         ]}
         query={{ data: patient, isLoading: profile.isLoading }}
         headerActions={[
-          { label: 'Editar', icon: Pencil, onClick: profile.openEditDialog, variant: 'outline' },
+          { label: t('common.edit'), icon: Pencil, onClick: profile.openEditDialog, variant: 'outline' },
         ]}
         slots={{
           beforeContent: patient && (
@@ -66,7 +68,7 @@ export default function PatientProfile() {
                 {profile.getInitials(patient.name)}
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Perfil do Paciente</p>
+                <p className="text-sm text-muted-foreground">{t('patients.profileTitle')}</p>
               </div>
             </div>
           ),
@@ -74,7 +76,7 @@ export default function PatientProfile() {
         sections={[
           {
             id: 'contact',
-            title: 'Informações de Contato',
+            title: t('patients.contactInfo'),
             content: () => (
               <Card className="p-4">
                 <div className="flex flex-wrap gap-4 text-sm">
@@ -98,9 +100,9 @@ export default function PatientProfile() {
                   )}
                   {!patient?.phone && !patient?.email && !patient?.notes && (
                     <p className="text-muted-foreground">
-                      Nenhuma informação adicional.{' '}
+                      {t('patients.noAdditionalInfo')}{' '}
                       <button className="text-primary hover:underline" onClick={profile.openEditDialog}>
-                        Adicionar dados
+                        {t('patients.addData')}
                       </button>
                     </p>
                   )}
@@ -110,14 +112,14 @@ export default function PatientProfile() {
           },
           {
             id: 'metrics',
-            title: 'Métricas',
+            title: t('patients.metrics'),
             content: () => (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
-                  { value: metrics.totalSessions, label: 'Avaliações' },
-                  { value: metrics.totalCases, label: 'Casos' },
-                  { value: metrics.completedCases, label: 'Concluídos', highlight: true },
-                  { value: metrics.firstVisitFormatted, label: '1ª Visita' },
+                  { value: metrics.totalSessions, label: t('patients.evaluationsLabel') },
+                  { value: metrics.totalCases, label: t('patients.casesLabel') },
+                  { value: metrics.completedCases, label: t('patients.completedLabel'), highlight: true },
+                  { value: metrics.firstVisitFormatted, label: t('patients.firstVisit') },
                 ].map((stat, i) => (
                   <Card
                     key={stat.label}
@@ -133,14 +135,14 @@ export default function PatientProfile() {
           },
           {
             id: 'sessions',
-            title: 'Histórico de Avaliações',
+            title: t('patients.sessionHistory'),
             content: () => (
               <div>
                 <div className="flex items-center justify-end mb-4">
                   <Link to={`/new-case?patient=${patientId}`}>
                     <Button size="sm">
                       <Plus className="w-4 h-4 mr-1" />
-                      Nova Avaliação
+                      {t('evaluation.newEvaluation')}
                     </Button>
                   </Link>
                 </div>
@@ -148,14 +150,14 @@ export default function PatientProfile() {
                 {sessionsList.length === 0 ? (
                   <Card className="p-8 text-center">
                     <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="font-semibold font-display mb-2">Nenhuma avaliação ainda</h3>
+                    <h3 className="font-semibold font-display mb-2">{t('patients.noEvaluationsYet')}</h3>
                     <p className="text-sm text-muted-foreground mb-4">
-                      Crie a primeira avaliação para este paciente
+                      {t('patients.createFirstEvaluation')}
                     </p>
                     <Link to={`/new-case?patient=${patientId}`}>
                       <Button>
                         <Plus className="w-4 h-4 mr-2" />
-                        Nova Avaliação
+                        {t('evaluation.newEvaluation')}
                       </Button>
                     </Link>
                   </Card>
@@ -240,7 +242,7 @@ export default function PatientProfile() {
                               Carregando...
                             </>
                           ) : (
-                            'Carregar mais avaliações'
+                            t('patients.loadMoreEvaluations')
                           )}
                         </Button>
                       </div>
@@ -258,56 +260,56 @@ export default function PatientProfile() {
       <Dialog open={profile.editDialogOpen} onOpenChange={profile.setEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Editar Paciente</DialogTitle>
+            <DialogTitle>{t('patients.editPatient')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 mt-4">
             <div>
-              <Label htmlFor="name">Nome</Label>
+              <Label htmlFor="name">{t('patients.name')}</Label>
               <Input
                 id="name"
                 value={editForm.name}
                 onChange={(e) => profile.updateEditField('name', e.target.value)}
-                placeholder="Nome do paciente"
+                placeholder={t('patients.namePlaceholder')}
               />
             </div>
             <div>
-              <Label htmlFor="phone">Telefone</Label>
+              <Label htmlFor="phone">{t('patients.phone')}</Label>
               <Input
                 id="phone"
                 value={editForm.phone}
                 onChange={(e) => profile.updateEditField('phone', e.target.value)}
-                placeholder="(00) 00000-0000"
+                placeholder={t('patients.phonePlaceholder')}
               />
             </div>
             <div>
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('auth.email')}</Label>
               <Input
                 id="email"
                 type="email"
                 value={editForm.email}
                 onChange={(e) => profile.updateEditField('email', e.target.value)}
-                placeholder="email@exemplo.com"
+                placeholder={t('patients.emailPlaceholder')}
               />
             </div>
             <div>
-              <Label htmlFor="notes">Notas clínicas</Label>
+              <Label htmlFor="notes">{t('patients.clinicalNotes')}</Label>
               <Textarea
                 id="notes"
                 value={editForm.notes}
                 onChange={(e) => profile.updateEditField('notes', e.target.value)}
-                placeholder="Alergias, preferências, observações..."
+                placeholder={t('patients.clinicalNotesPlaceholder')}
                 rows={4}
               />
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={profile.closeEditDialog}>
-                Cancelar
+                {t('common.cancel')}
               </Button>
               <Button
                 onClick={profile.handleSave}
                 disabled={profile.isSaving || !editForm.name.trim()}
               >
-                {profile.isSaving ? 'Salvando...' : 'Salvar'}
+                {profile.isSaving ? t('common.saving') : t('common.save')}
               </Button>
             </div>
           </div>

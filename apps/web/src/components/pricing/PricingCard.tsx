@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Check, Loader2, Zap, Users, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,6 +27,7 @@ export function PricingCard({
   currentPlanSortOrder,
   billingPeriod = 'monthly',
 }: PricingCardProps) {
+  const { t } = useTranslation();
   const isFree = plan.price_monthly === 0;
   const features = Array.isArray(plan.features) ? plan.features : JSON.parse(plan.features as unknown as string);
   const isDowngrade = currentPlanSortOrder !== undefined && plan.sort_order < currentPlanSortOrder;
@@ -43,13 +45,13 @@ export function PricingCard({
     >
       {isPopular && (
         <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary">
-          Mais Popular
+          {t('components.pricing.card.mostPopular')}
         </Badge>
       )}
 
       {isCurrentPlan && (
         <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-success">
-          Plano Atual
+          {t('components.pricing.card.currentPlan')}
         </Badge>
       )}
 
@@ -63,18 +65,18 @@ export function PricingCard({
         <div className="text-center mb-4">
           <div className="flex items-baseline justify-center gap-1">
             <span className="text-4xl font-semibold">
-              {isFree ? 'Grátis' : formatPrice(isYearly ? Math.round(displayPrice / 12) : displayPrice)}
+              {isFree ? t('components.pricing.card.free') : formatPrice(isYearly ? Math.round(displayPrice / 12) : displayPrice)}
             </span>
-            {!isFree && <span className="text-muted-foreground">/mês</span>}
+            {!isFree && <span className="text-muted-foreground">{t('components.pricing.card.perMonth')}</span>}
           </div>
           {!isFree && isYearly && (
             <p className="text-sm text-muted-foreground mt-1">
-              Cobrado {formatPrice(displayPrice)}/ano
+              {t('components.pricing.card.billedYearly', { price: formatPrice(displayPrice) })}
             </p>
           )}
           {!isFree && !isYearly && plan.price_yearly && (
             <p className="text-sm text-muted-foreground mt-1">
-              ou {formatPrice(plan.price_yearly)}/ano (economia de 16%)
+              {t('components.pricing.card.orYearly', { price: formatPrice(plan.price_yearly) })}
             </p>
           )}
         </div>
@@ -83,10 +85,10 @@ export function PricingCard({
         <div className="bg-primary/10 rounded-lg p-3 mb-4 text-center">
           <div className="flex items-center justify-center gap-2 text-primary font-semibold">
             <Zap className="h-4 w-4" />
-            <span>{plan.credits_per_month} créditos/mês</span>
+            <span>{t('components.pricing.card.creditsPerMonth', { count: plan.credits_per_month })}</span>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            1 crédito = 1 análise | 2 créditos = 1 simulação DSD
+            {t('components.pricing.card.creditExplainer')}
           </p>
         </div>
 
@@ -95,13 +97,13 @@ export function PricingCard({
           {plan.max_users > 1 && (
             <div className="flex items-center gap-1 text-muted-foreground">
               <Users className="h-4 w-4" />
-              <span>{plan.max_users} usuários</span>
+              <span>{t('components.pricing.card.users', { count: plan.max_users })}</span>
             </div>
           )}
           {plan.allows_rollover && (
             <div className="flex items-center gap-1 text-muted-foreground">
               <RefreshCw className="h-4 w-4" />
-              <span>Rollover</span>
+              <span>{t('components.pricing.card.rollover')}</span>
             </div>
           )}
         </div>
@@ -127,18 +129,18 @@ export function PricingCard({
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Processando...
+              {t('components.pricing.card.processing')}
             </>
           ) : isCurrentPlan ? (
-            'Plano Atual'
+            t('components.pricing.card.currentPlanBtn')
           ) : isFree ? (
-            'Plano Gratuito'
+            t('components.pricing.card.freePlanBtn')
           ) : isDowngrade ? (
-            'Alterar Plano'
+            t('components.pricing.card.changePlan')
           ) : isUpgrade ? (
-            'Fazer Upgrade'
+            t('components.pricing.card.upgrade')
           ) : (
-            'Assinar Agora'
+            t('components.pricing.card.subscribe')
           )}
         </Button>
       </CardFooter>

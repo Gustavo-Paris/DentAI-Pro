@@ -1,4 +1,5 @@
 import { RefObject } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, RefreshCw, Eye, EyeOff } from 'lucide-react';
@@ -54,10 +55,11 @@ export function DSDSimulationViewer({
   onRegenerateSimulation,
   onToggleAnnotations,
 }: DSDSimulationViewerProps) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="font-medium text-sm text-muted-foreground">Comparação Antes/Depois</h3>
+        <h3 className="font-medium text-sm text-muted-foreground">{t('components.wizard.dsd.simulationViewer.beforeAfter')}</h3>
         <div className="flex items-center gap-2">
           {/* Annotation toggle (E5) */}
           {toothBounds.length > 0 && suggestions?.length > 0 && (
@@ -68,7 +70,7 @@ export function DSDSimulationViewer({
               className="text-xs"
             >
               {showAnnotations ? <EyeOff className="w-3 h-3 mr-1" /> : <Eye className="w-3 h-3 mr-1" />}
-              Marcações
+              {t('components.wizard.dsd.simulationViewer.annotations')}
             </Button>
           )}
           <Button
@@ -80,13 +82,13 @@ export function DSDSimulationViewer({
             {isRegeneratingSimulation || isCompositing || layersGenerating ? (
               <>
                 <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                {isCompositing ? 'Ajustando...' : 'Gerando...'}
+                {isCompositing ? t('components.wizard.dsd.simulationViewer.adjusting') : t('components.wizard.dsd.simulationViewer.generating')}
               </>
             ) : (
               <>
                 <RefreshCw className="w-3 h-3 mr-1" />
-                Nova Simulação
-                <span className="text-xs opacity-60 ml-0.5">(grátis)</span>
+                {t('components.wizard.dsd.simulationViewer.newSimulation')}
+                <span className="text-xs opacity-60 ml-0.5">{t('components.wizard.dsd.simulationViewer.free')}</span>
               </>
             )}
           </Button>
@@ -109,7 +111,7 @@ export function DSDSimulationViewer({
               {layer.label}
               {layer.includes_gengivoplasty && (
                 <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4">
-                  Gengiva
+                  {t('components.wizard.dsd.simulationViewer.gingiva')}
                 </Badge>
               )}
             </button>
@@ -136,7 +138,7 @@ export function DSDSimulationViewer({
         <ComparisonSlider
           beforeImage={imageBase64}
           afterImage={simulationImageUrl || ''}
-          afterLabel={layers.length > 0 ? layers[activeLayerIndex]?.label || 'Simulação DSD' : 'Simulação DSD'}
+          afterLabel={layers.length > 0 ? layers[activeLayerIndex]?.label || t('components.wizard.dsd.simulationViewer.defaultLabel') : t('components.wizard.dsd.simulationViewer.defaultLabel')}
           annotationOverlay={showAnnotations ? (
             <AnnotationOverlay
               suggestions={suggestions || []}
