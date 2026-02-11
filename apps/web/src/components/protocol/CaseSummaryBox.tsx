@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -87,6 +88,7 @@ function CaseSummaryBox({
   whiteningGoal,
   secondaryPhotos,
 }: CaseSummaryBoxProps) {
+  const { t } = useTranslation();
   const config = getTreatmentConfig(treatmentType);
   const showCavityInfo = config.showCavityInfo;
   const isTissueProcedure = TISSUE_PROCEDURES.includes(treatmentType);
@@ -97,7 +99,7 @@ function CaseSummaryBox({
       <CardHeader className="pb-2 sm:pb-3">
         <CardTitle className="text-sm sm:text-base flex items-center gap-2">
           <User className="w-4 h-4" />
-          Resumo do Caso
+          {t('components.protocol.caseSummary.title')}
         </CardTitle>
       </CardHeader>
       <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
@@ -105,17 +107,17 @@ function CaseSummaryBox({
           <div className="space-y-0.5 sm:space-y-1">
             <div className="flex items-center gap-1 sm:gap-1.5 text-muted-foreground text-xs">
               <User className="w-3 h-3" />
-              Paciente
+              {t('components.protocol.caseSummary.patient')}
             </div>
-            <p className="font-medium text-sm sm:text-base">{patientAge} anos</p>
+            <p className="font-medium text-sm sm:text-base">{t('components.protocol.caseSummary.yearsOld', { age: patientAge })}</p>
           </div>
           
           <div className="space-y-0.5 sm:space-y-1">
             <div className="flex items-center gap-1 sm:gap-1.5 text-muted-foreground text-xs">
               <MapPin className="w-3 h-3" />
-              Dente
+              {t('components.protocol.caseSummary.tooth')}
             </div>
-            <p className="font-medium text-sm sm:text-base">{tooth === 'GENGIVO' ? 'Gengiva' : tooth}</p>
+            <p className="font-medium text-sm sm:text-base">{tooth === 'GENGIVO' ? t('components.protocol.caseSummary.gingiva') : tooth}</p>
             <p className="text-xs text-muted-foreground">{region}</p>
           </div>
           
@@ -124,7 +126,7 @@ function CaseSummaryBox({
             <div className="space-y-0.5 sm:space-y-1">
               <div className="flex items-center gap-1 sm:gap-1.5 text-muted-foreground text-xs">
                 <Layers className="w-3 h-3" />
-                {AESTHETIC_PROCEDURES.includes(cavityClass) ? 'Procedimento' : 'Classificação (Black)'}
+                {AESTHETIC_PROCEDURES.includes(cavityClass) ? t('components.protocol.caseSummary.procedure') : t('components.protocol.caseSummary.classification')}
               </div>
               <p className="font-medium text-sm sm:text-base">{cavityClass}</p>
               {!AESTHETIC_PROCEDURES.includes(cavityClass) && (
@@ -138,7 +140,7 @@ function CaseSummaryBox({
             <div className="space-y-0.5 sm:space-y-1">
               <div className="flex items-center gap-1 sm:gap-1.5 text-muted-foreground text-xs">
                 <TreatmentIcon className="w-3 h-3" />
-                Tratamento
+                {t('components.protocol.caseSummary.treatment')}
               </div>
               <p className="font-medium text-sm sm:text-base">{config.label}</p>
               {indicationReason && (
@@ -157,14 +159,14 @@ function CaseSummaryBox({
                 <>
                   <div className="flex items-center gap-1 sm:gap-1.5 text-muted-foreground text-xs">
                     <Palette className="w-3 h-3" />
-                    Cor {showCavityInfo ? 'VITA' : 'Alvo'}
+                    {showCavityInfo ? t('components.protocol.caseSummary.vitaColor') : t('components.protocol.caseSummary.targetColor')}
                   </div>
                   <p className="font-mono font-medium text-sm sm:text-base">{shade}</p>
                   {isTarget && alreadyInRange && (
-                    <p className="text-xs text-success">Cor atual já na faixa desejada</p>
+                    <p className="text-xs text-success">{t('components.protocol.caseSummary.colorInRange')}</p>
                   )}
                   {isTarget && !alreadyInRange && (
-                    <p className="text-xs text-muted-foreground">Original: {toothColor}</p>
+                    <p className="text-xs text-muted-foreground">{t('components.protocol.caseSummary.originalColor', { color: toothColor })}</p>
                   )}
                 </>
               );
@@ -179,7 +181,7 @@ function CaseSummaryBox({
             <TooltipTrigger asChild>
               <Badge variant="outline" className="capitalize text-xs cursor-help gap-1">
                 <Info className="w-3 h-3" />
-                Estética: {aestheticLevel}
+                {t('components.protocol.caseSummary.aestheticLabel', { level: aestheticLevel })}
               </Badge>
             </TooltipTrigger>
             <TooltipContent side="top">
@@ -190,12 +192,12 @@ function CaseSummaryBox({
           </Tooltip>
           {bruxism && (
             <Badge variant="destructive" className="text-xs">
-              Bruxismo
+              {t('components.protocol.caseSummary.bruxism')}
             </Badge>
           )}
           {stratificationNeeded && showCavityInfo && (
             <Badge variant="secondary" className="text-xs">
-              Estratificação
+              {t('components.protocol.caseSummary.stratification')}
             </Badge>
           )}
           {!showCavityInfo && (

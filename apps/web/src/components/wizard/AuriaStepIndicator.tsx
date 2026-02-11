@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Camera,
   Heart,
@@ -30,6 +31,7 @@ export function AuriaStepIndicator({
   stepLabels,
   stepIcons,
 }: AuriaStepIndicatorProps) {
+  const { t } = useTranslation();
   const icons = stepIcons || DEFAULT_ICONS;
   const labels = stepLabels || DEFAULT_LABELS;
 
@@ -84,11 +86,11 @@ export function AuriaStepIndicator({
                   )}
                   <span className="sr-only">
                     {step.isCompleted
-                      ? 'Completed: '
+                      ? t('components.wizard.stepIndicator.completed')
                       : step.isActive
-                        ? 'Current: '
-                        : 'Upcoming: '}
-                    Step {index + 1}, {step.label}
+                        ? t('components.wizard.stepIndicator.current')
+                        : t('components.wizard.stepIndicator.upcoming')}
+                    {t('components.wizard.stepIndicator.stepLabel', { index: index + 1, label: step.label })}
                   </span>
                 </span>
                 <span
@@ -137,7 +139,7 @@ export function AuriaStepIndicator({
               {steps[currentStep]?.label}
             </p>
             <p className="text-xs text-muted-foreground">
-              Etapa {currentStep + 1} de {totalSteps}
+              {t('components.wizard.stepIndicator.stepOf', { current: currentStep + 1, total: totalSteps })}
             </p>
           </div>
         </div>
@@ -156,7 +158,7 @@ export function AuriaStepIndicator({
                 step.isCompleted && 'w-2 h-2 bg-primary/60',
                 step.isFuture && 'w-2 h-2 bg-muted-foreground/30',
               )}
-              aria-label={`Go to step ${index + 1}: ${step.label}`}
+              aria-label={t('components.wizard.stepIndicator.goToStep', { index: index + 1, label: step.label })}
             />
           ))}
         </div>

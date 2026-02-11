@@ -33,6 +33,7 @@ import { CollapsibleDSD } from '@/components/dsd/CollapsibleDSD';
 import { LoadingOverlay } from '@/components/LoadingOverlay';
 import { DetailPage } from '@pageshell/composites';
 
+import { useTranslation } from 'react-i18next';
 import { useResult } from '@/hooks/domain/useResult';
 import { BRAND_NAME } from '@/lib/branding';
 import { formatToothLabel } from '@/lib/treatment-config';
@@ -42,13 +43,14 @@ import { formatToothLabel } from '@/lib/treatment-config';
 // =============================================================================
 
 export default function Result() {
+  const { t } = useTranslation();
   const r = useResult();
 
 
   if (!r.evaluation && !r.isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Avaliação não encontrada</p>
+        <p className="text-muted-foreground">{t('result.notFound')}</p>
       </div>
     );
   }
@@ -58,28 +60,28 @@ export default function Result() {
 
   return (
     <>
-      <LoadingOverlay isLoading={r.generatingPDF} message="Gerando PDF..." />
+      <LoadingOverlay isLoading={r.generatingPDF} message={t('result.generatingPDF')} />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       <DetailPage
         title={r.currentTreatmentStyle.label}
         breadcrumbs={[
-          { label: 'Início', href: '/dashboard' },
-          { label: 'Avaliação', href: evaluation ? `/evaluation/${evaluation.session_id}` : undefined },
+          { label: t('result.home'), href: '/dashboard' },
+          { label: t('result.evaluation'), href: evaluation ? `/evaluation/${evaluation.session_id}` : undefined },
           { label: evaluation ? formatToothLabel(evaluation.tooth) : '...' },
         ]}
         backHref={evaluation ? `/evaluation/${evaluation.session_id}` : '/dashboard'}
         query={{ data: evaluation, isLoading: r.isLoading }}
         footerActions={[
           {
-            label: 'Baixar PDF',
+            label: t('result.downloadPDF'),
             icon: r.generatingPDF ? Loader2 : Download,
             onClick: r.handlePdfButtonClick,
             disabled: r.generatingPDF,
             variant: 'outline',
           },
           {
-            label: 'Novo Caso',
+            label: t('result.newCase'),
             icon: Plus,
             onClick: () => { window.location.href = '/new-case'; },
             variant: 'default',
@@ -92,7 +94,7 @@ export default function Result() {
               <div className="hidden print:block mb-8">
                 <h1 className="text-2xl font-semibold">{BRAND_NAME}</h1>
                 <p className="text-sm text-muted-foreground">
-                  Relatório de Recomendação • {format(new Date(evaluation.created_at), "d 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                  {t('result.reportTitle')} • {format(new Date(evaluation.created_at), "d 'de' MMMM 'de' yyyy", { locale: ptBR })}
                 </p>
               </div>
 
@@ -114,7 +116,7 @@ export default function Result() {
                     </div>
                     {['resina', 'porcelana', 'coroa'].includes(r.treatmentType) && (
                       <Badge variant={r.currentTreatmentStyle.badgeVariant}>
-                        {r.treatmentType === 'resina' ? 'Direta' : 'Indireta'}
+                        {r.treatmentType === 'resina' ? t('result.direct') : t('result.indirect')}
                       </Badge>
                     )}
                   </div>
@@ -135,13 +137,13 @@ export default function Result() {
                   <div className="flex items-center gap-3">
                     <Package className="w-5 h-5 text-primary" />
                     <div className="flex-1">
-                      <p className="text-sm font-medium">Personalize suas recomendações</p>
+                      <p className="text-sm font-medium">{t('result.customizeRecommendations')}</p>
                       <p className="text-xs text-muted-foreground">
-                        Cadastre as resinas do seu consultório para receber sugestões baseadas no seu estoque.
+                        {t('result.customizeRecommendationsDesc')}
                       </p>
                     </div>
                     <Link to="/inventory">
-                      <Button size="sm" variant="outline">Ir para Inventário</Button>
+                      <Button size="sm" variant="outline">{t('inventory.goToInventory')}</Button>
                     </Link>
                   </div>
                 </CardContent>
@@ -152,7 +154,7 @@ export default function Result() {
             {r.isSpecialTreatment && r.genericProtocol?.recommendations && (
               <Card className="mb-6 border-muted">
                 <CardContent className="py-4">
-                  <p className="text-sm font-medium mb-2">Recomendações ao paciente:</p>
+                  <p className="text-sm font-medium mb-2">{t('result.patientRecommendations')}</p>
                   <ul className="text-xs text-muted-foreground space-y-1">
                     {r.genericProtocol.recommendations.map((rec, i) => (
                       <li key={i}>• {rec}</li>
@@ -202,7 +204,7 @@ export default function Result() {
                   <CardHeader className="pb-3">
                     <CardTitle className="text-base flex items-center gap-2">
                       <Heart className="w-4 h-4 text-primary" />
-                      Preferências do Paciente
+                      {t('result.patientPreferences')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -250,7 +252,7 @@ export default function Result() {
                         {evaluation.is_from_inventory && (
                           <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 animate-[badge-pulse-ring_3s_ease-in-out_infinite]">
                             <Package className="w-3 h-3 mr-1" />
-                            No seu estoque
+                            {t('result.inYourStock')}
                           </Badge>
                         )}
                       </div>
@@ -259,25 +261,25 @@ export default function Result() {
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                       <div className="bg-secondary/30 rounded-lg p-3">
-                        <span className="text-muted-foreground">Opacidade</span>
+                        <span className="text-muted-foreground">{t('result.opacity')}</span>
                         <p className="font-medium">{r.resin.opacity}</p>
                       </div>
                       <div className="bg-secondary/30 rounded-lg p-3">
-                        <span className="text-muted-foreground">Resistência</span>
+                        <span className="text-muted-foreground">{t('result.resistance')}</span>
                         <p className="font-medium">{r.resin.resistance}</p>
                       </div>
                       <div className="bg-secondary/30 rounded-lg p-3">
-                        <span className="text-muted-foreground">Polimento</span>
+                        <span className="text-muted-foreground">{t('result.polishing')}</span>
                         <p className="font-medium">{r.resin.polishing}</p>
                       </div>
                       <div className="bg-secondary/30 rounded-lg p-3">
-                        <span className="text-muted-foreground">Estética</span>
+                        <span className="text-muted-foreground">{t('result.aesthetics')}</span>
                         <p className="font-medium">{r.resin.aesthetics}</p>
                       </div>
                     </div>
                     {evaluation.recommendation_text && (
                       <div className="pt-4 border-t border-border">
-                        <h4 className="font-medium mb-2">Justificativa</h4>
+                        <h4 className="font-medium mb-2">{t('result.justification')}</h4>
                         <p className="text-sm text-muted-foreground leading-relaxed">
                           {evaluation.recommendation_text}
                         </p>
@@ -308,7 +310,7 @@ export default function Result() {
                   <section className="mb-8">
                     <h3 className="font-semibold font-display mb-3 flex items-center gap-2">
                       <Layers className="w-4 h-4" />
-                      Protocolo de Estratificação
+                      {t('result.stratificationProtocol')}
                     </h3>
                     <ProtocolTable layers={r.layers} />
                     {r.layers.length > 0 && (
@@ -316,7 +318,7 @@ export default function Result() {
                         <CardHeader className="py-3">
                           <CardTitle className="text-sm flex items-center gap-2">
                             <Palette className="w-4 h-4" />
-                            Resinas Utilizadas
+                            {t('result.resinsUsed')}
                           </CardTitle>
                         </CardHeader>
                         <CardContent className="py-2">
@@ -350,12 +352,12 @@ export default function Result() {
                           {r.treatmentType === 'encaminhamento' && <ArrowUpRight className="w-4 h-4" />}
                           {r.treatmentType === 'gengivoplastia' && <Smile className="w-4 h-4" />}
                           {r.treatmentType === 'recobrimento_radicular' && <HeartPulse className="w-4 h-4" />}
-                          {r.treatmentType === 'coroa' && 'Planejamento Protético'}
-                          {r.treatmentType === 'implante' && 'Planejamento Cirúrgico'}
-                          {r.treatmentType === 'endodontia' && 'Protocolo Endodôntico'}
-                          {r.treatmentType === 'encaminhamento' && 'Orientações de Encaminhamento'}
-                          {r.treatmentType === 'gengivoplastia' && 'Protocolo de Gengivoplastia'}
-                          {r.treatmentType === 'recobrimento_radicular' && 'Protocolo de Recobrimento Radicular'}
+                          {r.treatmentType === 'coroa' && t('result.crownPlanning')}
+                          {r.treatmentType === 'implante' && t('result.implantPlanning')}
+                          {r.treatmentType === 'endodontia' && t('result.endodonticProtocol')}
+                          {r.treatmentType === 'encaminhamento' && t('result.referralGuidelines')}
+                          {r.treatmentType === 'gengivoplastia' && t('result.gingivoplastyProtocol')}
+                          {r.treatmentType === 'recobrimento_radicular' && t('result.rootCoverageProtocol')}
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
@@ -385,7 +387,7 @@ export default function Result() {
               <section className="mb-8 print:hidden">
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-base">Passo a Passo</CardTitle>
+                    <CardTitle className="text-base">{t('result.stepByStep')}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <ProtocolChecklist
@@ -420,7 +422,7 @@ export default function Result() {
                   <CardHeader className="pb-3">
                     <CardTitle className="text-base flex items-center gap-2 text-muted-foreground">
                       <Sparkles className="w-4 h-4" />
-                      Opção Ideal (fora do estoque)
+                      {t('result.idealOption')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
@@ -432,7 +434,7 @@ export default function Result() {
                       <p className="text-sm text-muted-foreground">{evaluation.ideal_reason}</p>
                     )}
                     <p className="text-xs text-muted-foreground/70">
-                      Considere adquirir para casos futuros similares
+                      {t('result.considerAcquiring')}
                     </p>
                   </CardContent>
                 </Card>
@@ -442,7 +444,7 @@ export default function Result() {
             {/* Alternatives */}
             {r.alternatives && r.alternatives.length > 0 && (
               <section className="mb-8">
-                <h3 className="font-semibold font-display mb-3">Outras Alternativas</h3>
+                <h3 className="font-semibold font-display mb-3">{t('result.otherAlternatives')}</h3>
                 <div className="space-y-3">
                   {r.alternatives.map((alt, index) => (
                     <Card key={index} className="p-4">
@@ -462,7 +464,7 @@ export default function Result() {
               <div className="flex items-start gap-3">
                 <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                 <p className="text-xs text-amber-800 dark:text-amber-200">
-                  Este planejamento foi gerado por Inteligência Artificial e serve como ferramenta de apoio à decisão clínica. Não substitui uma avaliação clínica criteriosa realizada por Cirurgião-Dentista.
+                  {t('result.disclaimer')}
                 </p>
               </div>
             </div>
@@ -476,16 +478,15 @@ export default function Result() {
       <AlertDialog open={r.showPdfConfirmDialog} onOpenChange={r.setShowPdfConfirmDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Checklist incompleto</AlertDialogTitle>
+            <AlertDialogTitle>{t('evaluation.incompleteChecklistTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              O checklist do protocolo ainda não está 100% concluído.
-              Deseja gerar o PDF mesmo assim?
+              {t('result.pdfChecklistIncomplete')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={r.handleExportPDF}>
-              Gerar PDF
+              {t('result.generatePDF')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

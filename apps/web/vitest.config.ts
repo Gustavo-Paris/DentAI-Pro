@@ -11,14 +11,25 @@ export default defineConfig({
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
     coverage: {
       provider: "v8",
-      reporter: ["text", "lcov", "json-summary"],
+      reporter: ["text", "text-summary", "json-summary", "html", "lcov"],
+      reportsDirectory: "./coverage",
       include: ["src/**/*.{ts,tsx}"],
       exclude: [
-        "src/test/**",
         "src/**/*.test.{ts,tsx}",
+        "src/**/*.spec.{ts,tsx}",
+        "src/test/**",
         "src/components/ui/**",
         "src/integrations/supabase/types.ts",
+        "src/**/*.d.ts",
+        "src/main.tsx",
+        "src/vite-env.d.ts",
       ],
+      thresholds: {
+        statements: 5,
+        branches: 20,
+        functions: 20,
+        lines: 5,
+      },
     },
   },
   resolve: {

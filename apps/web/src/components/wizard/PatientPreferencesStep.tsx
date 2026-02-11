@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Sparkles, ArrowRight, Sun, Zap, Star, Check, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 import { useSubscription } from '@/hooks/useSubscription';
 
 export type WhiteningLevel = 'natural' | 'white' | 'hollywood';
@@ -18,8 +19,8 @@ interface PatientPreferencesStepProps {
 
 const WHITENING_OPTIONS: {
   value: WhiteningLevel;
-  label: string;
-  description: string;
+  labelKey: string;
+  descKey: string;
   shade: string;
   icon: typeof Sun;
   swatchGradient: string;
@@ -27,8 +28,8 @@ const WHITENING_OPTIONS: {
 }[] = [
   {
     value: 'natural',
-    label: 'Branco Natural',
-    description: 'Tom claro e discreto, aparência natural e harmoniosa',
+    labelKey: 'components.wizard.preferences.naturalLabel',
+    descKey: 'components.wizard.preferences.naturalDesc',
     shade: 'A1 / A2 / B1',
     icon: Sun,
     swatchGradient: 'bg-gradient-to-r from-amber-200 to-amber-100',
@@ -36,8 +37,8 @@ const WHITENING_OPTIONS: {
   },
   {
     value: 'hollywood',
-    label: 'Branco Hollywood',
-    description: 'Clareamento intenso, sorriso de celebridade',
+    labelKey: 'components.wizard.preferences.hollywoodLabel',
+    descKey: 'components.wizard.preferences.hollywoodDesc',
     shade: 'BL1 / BL2 / BL3',
     icon: Star,
     swatchGradient: 'bg-gradient-to-r from-white to-blue-50',
@@ -50,6 +51,7 @@ export function PatientPreferencesStep({
   onPreferencesChange,
   onContinue,
 }: PatientPreferencesStepProps) {
+  const { t } = useTranslation();
   const { creditsRemaining, getCreditCost } = useSubscription();
   const totalCost = getCreditCost('case_analysis') + getCreditCost('dsd_simulation');
   const hasEnoughCredits = creditsRemaining >= totalCost;
@@ -65,9 +67,9 @@ export function PatientPreferencesStep({
           <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
             <Sparkles className="w-6 h-6 text-primary" />
           </div>
-          <CardTitle className="text-xl">Nível de Clareamento</CardTitle>
+          <CardTitle className="text-xl">{t('components.wizard.preferences.title')}</CardTitle>
           <CardDescription className="text-base">
-            Escolha o tom desejado para a simulação do sorriso
+            {t('components.wizard.preferences.subtitle')}
           </CardDescription>
         </CardHeader>
 
@@ -122,7 +124,7 @@ export function PatientPreferencesStep({
                       'font-semibold text-base mb-1',
                       isSelected ? 'text-primary' : 'text-foreground'
                     )}>
-                      {option.label}
+                      {t(option.labelKey)}
                     </h3>
 
                     {/* Shade badge */}
@@ -137,7 +139,7 @@ export function PatientPreferencesStep({
 
                     {/* Description */}
                     <p className="text-xs text-muted-foreground text-center">
-                      {option.description}
+                      {t(option.descKey)}
                     </p>
                   </div>
                 </button>
@@ -150,15 +152,15 @@ export function PatientPreferencesStep({
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Zap className="w-4 h-4 text-primary shrink-0" />
               <span>
-                As próximas etapas consumirão{' '}
-                <strong className="text-primary font-bold">{totalCost} créditos</strong>{' '}
-                (análise + DSD)
+                {t('components.wizard.preferences.creditCostText')}{' '}
+                <strong className="text-primary font-bold">{totalCost} {t('common.credits')}</strong>{' '}
+                {t('components.wizard.preferences.creditCostSuffix')}
               </span>
             </div>
             {!hasEnoughCredits && (
               <div className="flex items-center gap-2 mt-2 text-sm text-amber-600 dark:text-amber-400">
                 <AlertTriangle className="w-4 h-4 shrink-0" />
-                <span>Você tem apenas {creditsRemaining} crédito{creditsRemaining !== 1 ? 's' : ''}. Créditos insuficientes para o fluxo completo.</span>
+                <span>{t('components.wizard.preferences.insufficientCredits', { count: creditsRemaining, plural: creditsRemaining !== 1 ? 's' : '' })}</span>
               </div>
             )}
           </div>
@@ -171,7 +173,7 @@ export function PatientPreferencesStep({
               className="w-auto min-w-[280px] gap-2 btn-glow-gold btn-press font-semibold group"
               size="lg"
             >
-              Continuar com simulação
+              {t('components.wizard.preferences.continueSimulation')}
               <span className="inline-flex items-center gap-0.5 text-xs opacity-80 ml-1">
                 <Zap className="w-3 h-3" />{totalCost}
               </span>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -125,6 +126,7 @@ function groupByTreatment(evaluations: EvaluationItem[]): EvalGroup[] {
 // =============================================================================
 
 export default function EvaluationDetails() {
+  const { t } = useTranslation();
   const detail = useEvaluationDetail();
   const navigate = useNavigate();
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -156,19 +158,19 @@ export default function EvaluationDetails() {
       <DetailPage
         title={detail.patientName}
         breadcrumbs={[
-          { label: 'Avaliações', href: '/evaluations' },
+          { label: t('evaluation.title'), href: '/evaluations' },
           { label: detail.patientName },
         ]}
         query={{ data: detail.evaluations, isLoading: detail.isLoading }}
         headerActions={[
           {
-            label: 'Nova Avaliação',
+            label: t('evaluation.newEvaluation'),
             icon: Sparkles,
             onClick: () => navigate('/new-case'),
             variant: 'default',
           },
           {
-            label: 'Compartilhar',
+            label: t('evaluation.share'),
             icon: detail.isSharing ? ShareLoader : Share2,
             onClick: detail.handleShareCase,
             disabled: detail.isSharing,
@@ -176,14 +178,14 @@ export default function EvaluationDetails() {
           },
           ...(detail.pendingTeeth.length > 0
             ? [{
-                label: `Adicionar mais dentes (${detail.pendingTeeth.length})`,
+                label: t('evaluation.addMoreTeeth', { count: detail.pendingTeeth.length }),
                 icon: Plus,
                 onClick: () => detail.setShowAddTeethModal(true),
                 variant: 'outline' as const,
               }]
             : []),
           {
-            label: 'Marcar todos como concluídos',
+            label: t('evaluation.markAllCompleted'),
             icon: CheckCircle,
             onClick: detail.handleMarkAllAsCompleted,
             disabled: detail.completedCount === detail.evaluations.length,
@@ -231,7 +233,7 @@ export default function EvaluationDetails() {
                         </div>
                         <div className="flex items-center gap-1">
                           <User className="w-3 h-3 sm:w-4 sm:h-4" />
-                          {detail.evaluations.length} dente(s)
+                          {detail.evaluations.length} {t('evaluation.teeth')}
                         </div>
                       </div>
 
@@ -244,7 +246,7 @@ export default function EvaluationDetails() {
                       </div>
 
                       <div className="flex items-center gap-3 text-sm">
-                        <span className="text-muted-foreground">Progresso:</span>
+                        <span className="text-muted-foreground">{t('evaluation.progress')}</span>
                         <Progress
                           value={detail.evaluations.length > 0 ? (detail.completedCount / detail.evaluations.length) * 100 : 0}
                           className="h-2 flex-1 max-w-[200px]"
@@ -266,13 +268,13 @@ export default function EvaluationDetails() {
             {/* Floating selection bar */}
             {detail.selectedIds.size > 0 && (
               <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-background border shadow-lg rounded-full px-4 py-2 flex items-center gap-3 animate-in slide-in-from-bottom-4">
-                <span className="text-sm font-medium">{detail.selectedIds.size} selecionado(s)</span>
+                <span className="text-sm font-medium">{t('common.selected', { count: detail.selectedIds.size })}</span>
                 <Button
                   size="sm"
                   onClick={() => detail.handleBulkComplete(Array.from(detail.selectedIds))}
                 >
                   <CheckCircle className="w-4 h-4 mr-1" />
-                  Finalizar
+                  {t('common.finish')}
                 </Button>
                 <Button
                   variant="ghost"
@@ -288,7 +290,7 @@ export default function EvaluationDetails() {
             {/* Cases Table - Desktop */}
             <Card className="hidden sm:block shadow-sm rounded-xl">
               <CardHeader>
-                <CardTitle className="text-lg font-display">Tratamentos Gerados</CardTitle>
+                <CardTitle className="text-lg font-display">{t('evaluation.generatedTreatments')}</CardTitle>
               </CardHeader>
               <CardContent className="p-0">
                 <Table>
@@ -300,10 +302,10 @@ export default function EvaluationDetails() {
                           onCheckedChange={() => detail.toggleSelectAll()}
                         />
                       </TableHead>
-                      <TableHead>Dente</TableHead>
-                      <TableHead>Tratamento</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Ações</TableHead>
+                      <TableHead>{t('evaluation.tooth')}</TableHead>
+                      <TableHead>{t('evaluation.treatment')}</TableHead>
+                      <TableHead>{t('evaluation.status')}</TableHead>
+                      <TableHead className="text-right">{t('evaluation.actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -331,7 +333,7 @@ export default function EvaluationDetails() {
                               <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                                 {group.label} — {group.evaluations.length} dentes: {groupTeeth}
                               </span>
-                              <span className="text-xs text-muted-foreground ml-2">(mesmo protocolo)</span>
+                              <span className="text-xs text-muted-foreground ml-2">({t('evaluation.sameProtocol')})</span>
                             </TableCell>
                             <TableCell className="text-right py-2">
                               <Button
@@ -341,7 +343,7 @@ export default function EvaluationDetails() {
                                 onClick={() => navigate(`/result/${group.evaluations[0].id}`)}
                               >
                                 <Eye className="w-3 h-3 mr-1" />
-                                Ver Protocolo
+                                {t('evaluation.viewProtocol')}
                               </Button>
                             </TableCell>
                           </TableRow>
@@ -373,7 +375,7 @@ export default function EvaluationDetails() {
                                 <DropdownMenuContent align="end">
                                   <DropdownMenuItem onClick={() => detail.handleExportPDF(evaluation.id)}>
                                     <FileDown className="w-4 h-4 mr-2" />
-                                    Exportar PDF
+                                    {t('common.exportPDF')}
                                   </DropdownMenuItem>
                                   {evaluation.status !== 'completed' && (
                                     <Tooltip>
@@ -382,7 +384,7 @@ export default function EvaluationDetails() {
                                           onClick={() => handleCompleteClick(evaluation.id)}
                                         >
                                           <CheckCircle className="w-4 h-4 mr-2" />
-                                          Marcar como finalizado
+                                          {t('common.markAsCompleted')}
                                         </DropdownMenuItem>
                                       </TooltipTrigger>
                                       {!detail.isChecklistComplete(evaluation) && (
@@ -406,7 +408,7 @@ export default function EvaluationDetails() {
 
             {/* Cases Cards - Mobile */}
             <div className="sm:hidden space-y-3">
-              <h3 className="font-semibold font-display text-lg">Tratamentos Gerados</h3>
+              <h3 className="font-semibold font-display text-lg">{t('evaluation.generatedTreatments')}</h3>
               {groupByTreatment(detail.evaluations).map((group) => {
                 const showGroupHeader = group.evaluations.length > 1;
                 const groupTeeth = group.evaluations.map(e => e.tooth === 'GENGIVO' ? 'Gengiva' : e.tooth).join(', ');
@@ -523,16 +525,15 @@ export default function EvaluationDetails() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Checklist incompleto</AlertDialogTitle>
+            <AlertDialogTitle>{t('evaluation.incompleteChecklistTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Existem {confirmDialog.current} de {confirmDialog.total} itens completos no checklist.
-              Deseja finalizar mesmo assim?
+              {t('evaluation.incompleteChecklistDescription', { current: confirmDialog.current, total: confirmDialog.total })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmComplete}>
-              Finalizar mesmo assim
+              {t('evaluation.finishAnyway')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

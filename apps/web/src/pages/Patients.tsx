@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ListPage } from '@pageshell/composites/list';
 import { usePatientList } from '@/hooks/domain/usePatientList';
 import type { PatientWithStats } from '@/hooks/domain/usePatientList';
@@ -60,6 +61,7 @@ function PatientCard({ patient, index }: { patient: PatientWithStats; index: num
 // =============================================================================
 
 export default function Patients() {
+  const { t } = useTranslation();
   const { patients, total, isLoading, isError } = usePatientList();
 
   if (isError) {
@@ -67,9 +69,9 @@ export default function Patients() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <Card className="p-6 text-center">
           <AlertTriangle className="w-8 h-8 text-destructive mx-auto mb-3" />
-          <p className="font-medium">Erro ao carregar pacientes</p>
+          <p className="font-medium">{t('patients.loadError')}</p>
           <p className="text-sm text-muted-foreground mt-1">
-            Tente recarregar a página. Se o problema persistir, entre em contato com o suporte.
+            {t('errors.tryReloadPage')}
           </p>
         </Card>
       </div>
@@ -79,8 +81,8 @@ export default function Patients() {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       <ListPage<PatientWithStats>
-          title="Meus Pacientes"
-          description={`${total} pacientes`}
+          title={t('patients.title')}
+          description={t('patients.count', { count: total })}
           viewMode="cards"
           items={patients}
           isLoading={isLoading}
@@ -89,13 +91,13 @@ export default function Patients() {
           gridClassName="grid grid-cols-1 gap-3"
           searchConfig={{
             fields: ['name', 'phone', 'email'],
-            placeholder: 'Buscar por nome, telefone ou email...',
+            placeholder: t('patients.searchPlaceholder'),
           }}
           sort={{
             options: [
               {
                 value: 'recent',
-                label: 'Mais recentes',
+                label: t('patients.sortRecent'),
                 compare: (a: PatientWithStats, b: PatientWithStats) => {
                   if (!a.lastVisit && !b.lastVisit) return 0;
                   if (!a.lastVisit) return 1;
@@ -105,21 +107,21 @@ export default function Patients() {
               },
               {
                 value: 'name-asc',
-                label: 'Nome (A-Z)',
+                label: t('patients.sortNameAsc'),
                 direction: 'asc',
                 compare: (a: PatientWithStats, b: PatientWithStats) =>
                   a.name.localeCompare(b.name, 'pt-BR'),
               },
               {
                 value: 'name-desc',
-                label: 'Nome (Z-A)',
+                label: t('patients.sortNameDesc'),
                 direction: 'desc',
                 compare: (a: PatientWithStats, b: PatientWithStats) =>
                   b.name.localeCompare(a.name, 'pt-BR'),
               },
               {
                 value: 'cases',
-                label: 'Mais casos',
+                label: t('patients.sortCases'),
                 compare: (a: PatientWithStats, b: PatientWithStats) =>
                   b.caseCount - a.caseCount,
               },
@@ -128,18 +130,17 @@ export default function Patients() {
           }}
           pagination={{ defaultPageSize: 20 }}
           createAction={{
-            label: 'Nova Avaliação',
+            label: t('evaluation.newEvaluation'),
             href: '/new-case',
           }}
           emptyState={{
-            title: 'Nenhum paciente cadastrado',
-            description:
-              'Crie uma avaliação para adicionar seu primeiro paciente',
-            action: { label: 'Nova Avaliação', href: '/new-case' },
+            title: t('patients.emptyTitle'),
+            description: t('patients.emptyDescription'),
+            action: { label: t('evaluation.newEvaluation'), href: '/new-case' },
           }}
           labels={{
-            search: { placeholder: 'Buscar por nome, telefone ou email...' },
-            pagination: { showing: 'Mostrando', of: 'de', items: 'pacientes' },
+            search: { placeholder: t('patients.searchPlaceholder') },
+            pagination: { showing: t('common.showingOf'), of: t('common.of'), items: t('patients.paginationItems') },
           }}
         />
     </div>

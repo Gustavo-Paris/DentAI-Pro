@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,6 +23,7 @@ import { getInitials } from '@/lib/utils';
 import { useScrollReveal, useScrollRevealChildren } from '@/hooks/useScrollReveal';
 
 export default function Landing() {
+  const { t } = useTranslation();
   const statsRef = useScrollRevealChildren<HTMLDivElement>();
   const featuresRef = useScrollRevealChildren<HTMLDivElement>();
   const testimonialsRef = useScrollRevealChildren<HTMLDivElement>();
@@ -37,10 +39,10 @@ export default function Landing() {
           <div className="flex items-center gap-2 sm:gap-4">
             <ThemeToggle />
             <Link to="/login">
-              <Button variant="ghost" size="sm">Entrar</Button>
+              <Button variant="ghost" size="sm">{t('landing.login')}</Button>
             </Link>
             <Link to="/register">
-              <Button size="sm">Começar</Button>
+              <Button size="sm">{t('landing.start')}</Button>
             </Link>
           </div>
         </div>
@@ -64,21 +66,21 @@ export default function Landing() {
                 style={{ animation: 'badge-pulse-ring 3s ease-in-out infinite, fade-in-up 0.6s ease-out 0.2s both' }}
               >
                 <Sparkles className="w-3 h-3 mr-1" />
-                Inteligência Clínica Estética
+                {t('landing.heroTagline')}
               </Badge>
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-tight mb-4 sm:mb-6 font-display animate-[fade-in-up_0.6s_ease-out_0.4s_both]">
                 O padrão <span className="text-gradient-gold">ouro</span> da odontologia estética
               </h1>
               <p className="text-base sm:text-lg text-muted-foreground mb-8 sm:mb-10 max-w-xl mx-auto lg:mx-0 animate-[fade-in-up_0.6s_ease-out_0.6s_both]">
-                IA que analisa, planeja e gera protocolos personalizados com precisão.
+                {t('landing.heroSubtitle')}
               </p>
               <div className="animate-[fade-in-up_0.6s_ease-out_0.8s_both] flex flex-col items-center lg:items-start gap-2">
                 <Link to="/register">
                   <Button size="lg" className="px-6 sm:px-8 h-12 text-base btn-glow-gold">
-                    Testar Grátis em 2 Minutos
+                    {t('landing.heroCTA')}
                   </Button>
                 </Link>
-                <p className="text-xs text-muted-foreground">Sem cartão de crédito. 3 créditos grátis.</p>
+                <p className="text-xs text-muted-foreground">{t('landing.heroNoCreditCard')}</p>
               </div>
             </div>
 
@@ -95,10 +97,10 @@ export default function Landing() {
         <div className="container mx-auto px-4 sm:px-6">
           <div ref={statsRef} className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
             {[
-              { value: '<2min', label: 'Para primeiro resultado' },
-              { value: '6', label: 'Tipos de tratamento' },
-              { value: '15+', label: 'Marcas de resinas' },
-              { value: '250+', label: 'Cores VITA disponíveis' },
+              { value: '<2min', label: t('landing.statsFirstResult') },
+              { value: '6', label: t('landing.statsTreatmentTypes') },
+              { value: '15+', label: t('landing.statsResinBrands') },
+              { value: '250+', label: t('landing.statsVitaColors') },
             ].map((stat, i) => (
               <div
                 key={i}
@@ -116,32 +118,32 @@ export default function Landing() {
       <section className="py-16 sm:py-24 bg-background">
         <div className="container mx-auto px-4 sm:px-6">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-center mb-10 sm:mb-16 font-display">
-            Tudo que você precisa em um só lugar
+            {t('landing.featuresTitle')}
           </h2>
           <div ref={featuresRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {([
               {
                 icon: Camera,
-                title: 'Análise Visual com IA',
-                description: 'Tire uma foto e a IA identifica dentes, classifica cavidades e detecta cor VITA.',
+                title: t('landing.featureAnalysis'),
+                description: t('landing.featureAnalysisDesc'),
                 preview: 'analysis' as const,
               },
               {
                 icon: Smile,
-                title: 'Simulação de Sorriso',
-                description: 'Visualize o resultado antes de iniciar com simulação DSD e níveis de clareamento.',
+                title: t('landing.featureDSD'),
+                description: t('landing.featureDSDDesc'),
                 preview: 'dsd' as const,
               },
               {
                 icon: Layers,
-                title: 'Protocolo de Estratificação',
-                description: 'Receba camada por camada qual resina usar do seu inventário pessoal.',
+                title: t('landing.featureProtocol'),
+                description: t('landing.featureProtocolDesc'),
                 preview: 'protocol' as const,
               },
               {
                 icon: FileText,
-                title: 'Relatório Profissional',
-                description: 'Exporte PDF personalizado com logo do consultório e protocolo completo.',
+                title: t('landing.featureReport'),
+                description: t('landing.featureReportDesc'),
                 preview: 'pdf' as const,
               },
             ]).map((feature, index) => (
@@ -165,42 +167,42 @@ export default function Landing() {
       <section className="py-16 sm:py-24 bg-secondary/20">
         <div className="container mx-auto px-4 sm:px-6 max-w-4xl">
           <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-10 sm:mb-16 font-display">
-            O que dizem os dentistas
+            {t('landing.testimonialsTitle')}
           </h2>
           <div ref={testimonialsRef} className="grid md:grid-cols-2 gap-6">
             {[
               {
-                quote: "Economizo horas de pesquisa em cada caso. A IA realmente entende as nuances do planejamento clínico e me dá confiança nas minhas escolhas.",
-                author: "Dr. Carlos Mendonça",
-                role: "Dentista Estético",
-                clinic: "Clínica Sorriso Perfeito",
+                quote: t('landing.testimonial1Quote'),
+                author: t('landing.testimonial1Author'),
+                role: t('landing.testimonial1Role'),
+                clinic: t('landing.testimonial1Clinic'),
                 rating: 5,
                 gradient: 'from-primary/20 to-primary/5',
-                highlight: 'Economizo 3h/semana',
+                highlight: t('landing.testimonial1Highlight'),
               },
               {
-                quote: "O protocolo de estratificação é excelente, mas o que mais me impressionou foi a simulação DSD. Meus pacientes adoram visualizar o resultado.",
-                author: "Dra. Ana Paula Ribeiro",
-                role: "Clínica Geral",
-                clinic: "Odonto Excellence",
+                quote: t('landing.testimonial2Quote'),
+                author: t('landing.testimonial2Author'),
+                role: t('landing.testimonial2Role'),
+                clinic: t('landing.testimonial2Clinic'),
                 rating: 5,
                 gradient: 'from-violet-500/20 to-violet-500/5',
                 highlight: null,
               },
               {
-                quote: "Ferramenta essencial para quem trabalha com estética dental. A análise de cor e a indicação automática de tratamento economizam muito tempo.",
-                author: "Dr. Fernando Costa",
-                role: "Especialista em Dentística",
-                clinic: "Instituto Costa Dental",
+                quote: t('landing.testimonial3Quote'),
+                author: t('landing.testimonial3Author'),
+                role: t('landing.testimonial3Role'),
+                clinic: t('landing.testimonial3Clinic'),
                 rating: 4,
                 gradient: 'from-emerald-500/20 to-emerald-500/5',
                 highlight: null,
               },
               {
-                quote: "Uso diariamente no meu consultório. A integração com meu inventário pessoal e a gestão de pacientes tornaram meu fluxo de trabalho muito mais eficiente.",
-                author: "Dra. Juliana Santos",
-                role: "Cirurgiã-Dentista",
-                clinic: "Juliana Santos Odontologia",
+                quote: t('landing.testimonial4Quote'),
+                author: t('landing.testimonial4Author'),
+                role: t('landing.testimonial4Role'),
+                clinic: t('landing.testimonial4Clinic'),
                 rating: 5,
                 gradient: 'from-amber-500/20 to-amber-500/5',
                 highlight: null,
@@ -246,29 +248,29 @@ export default function Landing() {
       <section className="py-16 sm:py-24 bg-background">
         <div className="container mx-auto px-4 sm:px-6 max-w-3xl">
           <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-10 sm:mb-16 font-display">
-            Como funciona
+            {t('landing.howItWorksTitle')}
           </h2>
           <div ref={howItWorksRef} className="space-y-8 sm:space-y-12 timeline-line">
             {[
               {
                 step: '01',
-                title: 'Tire a foto intraoral',
-                description: 'Faça upload da foto clínica e fotos adicionais (sorriso, face) para análise completa.',
+                title: t('landing.step1Title'),
+                description: t('landing.step1Desc'),
               },
               {
                 step: '02',
-                title: 'IA analisa o caso completo',
-                description: 'Detecta múltiplos dentes, classifica tratamentos (resina, porcelana, coroa...) e identifica cor VITA.',
+                title: t('landing.step2Title'),
+                description: t('landing.step2Desc'),
               },
               {
                 step: '03',
-                title: 'Visualize o resultado',
-                description: 'Simulação de clareamento (Natural, White, Hollywood) e análise de proporções ideais do sorriso.',
+                title: t('landing.step3Title'),
+                description: t('landing.step3Desc'),
               },
               {
                 step: '04',
-                title: 'Receba o protocolo',
-                description: 'Protocolo de estratificação ou cimentação personalizado com suas resinas disponíveis.',
+                title: t('landing.step4Title'),
+                description: t('landing.step4Desc'),
               },
             ].map((item, index) => (
               <div key={index} className={`scroll-reveal scroll-reveal-delay-${index + 1} flex items-start gap-4 pl-12 sm:pl-16 relative`}>
@@ -289,49 +291,49 @@ export default function Landing() {
       <section className="py-16 sm:py-24 bg-secondary/20">
         <div className="container mx-auto px-4 sm:px-6 max-w-2xl">
           <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-8 sm:mb-12 font-display">
-            Perguntas frequentes
+            {t('landing.faqTitle')}
           </h2>
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="item-1">
-              <AccordionTrigger>Como a IA faz a recomendação?</AccordionTrigger>
+              <AccordionTrigger>{t('landing.faq1Q')}</AccordionTrigger>
               <AccordionContent>
-                Nossa IA analisa a foto clínica detectando múltiplos dentes, classificando o tipo de tratamento indicado (resina, porcelana, coroa, implante, etc.), identificando a cor VITA e gerando um protocolo personalizado baseado no seu inventário de resinas.
+                {t('landing.faq1A')}
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-2">
-              <AccordionTrigger>O que é a simulação DSD?</AccordionTrigger>
+              <AccordionTrigger>{t('landing.faq2Q')}</AccordionTrigger>
               <AccordionContent>
-                O Digital Smile Design (DSD) analisa proporções faciais e dentais, permitindo simular diferentes níveis de clareamento (Natural, White, Hollywood) para que você e seu paciente visualizem o resultado antes de iniciar o tratamento.
+                {t('landing.faq2A')}
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-3">
-              <AccordionTrigger>Quais tipos de tratamento são suportados?</AccordionTrigger>
+              <AccordionTrigger>{t('landing.faq3Q')}</AccordionTrigger>
               <AccordionContent>
-                A plataforma suporta 6 tipos de tratamento: Resina Composta (com protocolo de estratificação), Faceta de Porcelana (com protocolo de cimentação), Coroa, Implante, Endodontia e Encaminhamento para especialistas.
+                {t('landing.faq3A')}
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-4">
-              <AccordionTrigger>Como funciona a gestão de pacientes?</AccordionTrigger>
+              <AccordionTrigger>{t('landing.faq4Q')}</AccordionTrigger>
               <AccordionContent>
-                Você pode cadastrar pacientes com informações de contato e notas clínicas. Cada paciente tem um histórico de avaliações e casos, com acompanhamento de progresso através de checklists interativos.
+                {t('landing.faq4A')}
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-5">
-              <AccordionTrigger>Posso exportar as recomendações?</AccordionTrigger>
+              <AccordionTrigger>{t('landing.faq5Q')}</AccordionTrigger>
               <AccordionContent>
-                Sim, todas as avaliações podem ser exportadas em PDF profissional com os dados do caso, fotos clínicas, análise DSD, protocolo completo e logo do seu consultório.
+                {t('landing.faq5A')}
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-6">
-              <AccordionTrigger>Quanto custa?</AccordionTrigger>
+              <AccordionTrigger>{t('landing.faq6Q')}</AccordionTrigger>
               <AccordionContent>
-                O {BRAND_NAME} oferece um plano gratuito com créditos limitados para você experimentar. Para uso contínuo, temos planos pagos com mais créditos para análises e simulações DSD. Veja os preços abaixo.
+                {t('landing.faq6A', { brandName: BRAND_NAME })}
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-7">
-              <AccordionTrigger>A ferramenta substitui meu julgamento clínico?</AccordionTrigger>
+              <AccordionTrigger>{t('landing.faq7Q')}</AccordionTrigger>
               <AccordionContent>
-                Não. O {BRAND_NAME} é uma ferramenta de apoio à decisão clínica. As recomendações são sugestões baseadas em evidências e devem ser validadas pelo profissional de acordo com cada caso específico.
+                {t('landing.faq7A', { brandName: BRAND_NAME })}
               </AccordionContent>
             </AccordionItem>
           </Accordion>
@@ -349,20 +351,20 @@ export default function Landing() {
 
         <div ref={ctaRef} className="scroll-reveal container mx-auto px-4 sm:px-6 text-center relative max-w-2xl">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold mb-3 sm:mb-4 font-display">
-            Veja a IA em ação com seu próprio caso
+            {t('landing.ctaTitle')}
           </h2>
           <p className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-8 max-w-lg mx-auto">
-            Crie sua conta, tire uma foto e receba um protocolo completo em menos de 2 minutos.
+            {t('landing.ctaSubtitle')}
           </p>
           <ul className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 mb-8 text-sm text-muted-foreground">
-            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" />Análise visual com IA</li>
-            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" />Protocolo personalizado</li>
-            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" />Resultado em minutos</li>
+            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" />{t('landing.ctaFeature1')}</li>
+            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" />{t('landing.ctaFeature2')}</li>
+            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" />{t('landing.ctaFeature3')}</li>
           </ul>
           <Link to="/register">
             <Button size="lg" className="px-6 sm:px-8 h-12 text-base btn-glow-gold">
               <Sparkles className="w-4 h-4 mr-2" />
-              Criar Conta Gratuita
+              {t('landing.ctaCTA')}
             </Button>
           </Link>
         </div>
@@ -374,15 +376,15 @@ export default function Landing() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-center sm:text-left">
               <span className="text-xs sm:text-sm text-muted-foreground">
-                © {new Date().getFullYear()} {BRAND_NAME}. Ferramenta de apoio à decisão clínica.
+                © {new Date().getFullYear()} {BRAND_NAME}. {t('landing.footer')}
               </span>
             </div>
             <div className="flex items-center gap-4 text-xs sm:text-sm text-muted-foreground">
               <Link to="/terms" className="hover:text-foreground hover:underline underline-offset-4">
-                Termos de Uso
+                {t('landing.termsOfUse')}
               </Link>
               <Link to="/privacy" className="hover:text-foreground hover:underline underline-offset-4">
-                Privacidade
+                {t('landing.privacy')}
               </Link>
             </div>
           </div>
@@ -393,6 +395,7 @@ export default function Landing() {
 }
 
 function LandingPricing() {
+  const { t } = useTranslation();
   const { data: plans, isLoading } = useQuery({
     queryKey: ['subscription-plans'],
     queryFn: async (): Promise<SubscriptionPlan[]> => {
@@ -412,10 +415,10 @@ function LandingPricing() {
       <div className="container mx-auto px-4 sm:px-6">
         <div className="text-center mb-8 sm:mb-12">
           <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold font-display">
-            Planos e preços
+            {t('pricing.plansAndPricing')}
           </h2>
           <p className="text-sm sm:text-base text-muted-foreground mt-2">
-            Comece gratuitamente e faça upgrade quando precisar
+            {t('pricing.startFreeUpgrade')}
           </p>
         </div>
 
@@ -441,7 +444,7 @@ function LandingPricing() {
                 >
                   {isPopular && (
                     <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary">
-                      Mais Popular
+                      {t('pricing.mostPopular')}
                     </Badge>
                   )}
 
@@ -454,19 +457,19 @@ function LandingPricing() {
                     <div className="text-center mb-4">
                       <div className="flex items-baseline justify-center gap-1">
                         <span className="text-4xl font-bold">
-                          {isFree ? 'Grátis' : formatPrice(plan.price_monthly)}
+                          {isFree ? t('pricing.free') : formatPrice(plan.price_monthly)}
                         </span>
-                        {!isFree && <span className="text-muted-foreground">/mês</span>}
+                        {!isFree && <span className="text-muted-foreground">{t('pricing.perMonth')}</span>}
                       </div>
                     </div>
 
                     <div className="bg-primary/10 rounded-lg p-3 mb-4 text-center">
                       <div className="flex items-center justify-center gap-2 text-primary font-semibold">
                         <Zap className="h-4 w-4" />
-                        <span>{plan.credits_per_month} créditos/mês</span>
+                        <span>{t('pricing.creditsPerMonth', { count: plan.credits_per_month })}</span>
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        1 crédito = 1 análise | 2 créditos = 1 simulação DSD
+                        {t('pricing.creditExplanation')}
                       </p>
                     </div>
 
@@ -474,13 +477,13 @@ function LandingPricing() {
                       {plan.max_users > 1 && (
                         <div className="flex items-center gap-1 text-muted-foreground">
                           <Users className="h-4 w-4" />
-                          <span>{plan.max_users} usuários</span>
+                          <span>{t('pricing.users', { count: plan.max_users })}</span>
                         </div>
                       )}
                       {plan.allows_rollover && (
                         <div className="flex items-center gap-1 text-muted-foreground">
                           <RefreshCw className="h-4 w-4" />
-                          <span>Rollover</span>
+                          <span>{t('pricing.rollover')}</span>
                         </div>
                       )}
                     </div>
@@ -502,7 +505,7 @@ function LandingPricing() {
                       asChild
                     >
                       <Link to="/register">
-                        {isFree ? 'Começar Grátis' : 'Começar'}
+                        {isFree ? t('pricing.startFree') : t('pricing.start')}
                       </Link>
                     </Button>
                   </CardFooter>
@@ -513,7 +516,7 @@ function LandingPricing() {
         ) : null}
 
         <p className="text-center text-sm text-muted-foreground mt-8">
-          Todos os planos incluem 7 dias de garantia. Cancele a qualquer momento.
+          {t('pricing.guarantee')}
         </p>
       </div>
     </section>

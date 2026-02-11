@@ -44,3 +44,9 @@ verify_jwt = false
 
 [functions.health-check]
 verify_jwt = false
+
+[functions.data-export]
+verify_jwt = false
+
+[functions.delete-account]
+verify_jwt = false

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Loader2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,15 +11,16 @@ export function CreditPackSection() {
     isPurchasingPack,
     isActive,
   } = useSubscription();
+  const { t } = useTranslation();
 
   if (!isActive || creditPacks.length === 0) return null;
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg font-display">Comprar Créditos Extras</CardTitle>
+        <CardTitle className="text-lg font-display">{t('components.pricing.creditPack.title')}</CardTitle>
         <CardDescription>
-          Precisa de mais créditos? Compre pacotes avulsos sem alterar seu plano.
+          {t('components.pricing.creditPack.subtitle')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -29,7 +31,7 @@ export function CreditPackSection() {
               className="flex flex-col items-center gap-2 rounded-xl border border-border p-4 text-center"
             >
               <span className="text-2xl font-bold font-display">{pack.credits}</span>
-              <span className="text-sm text-muted-foreground">créditos</span>
+              <span className="text-sm text-muted-foreground">{t('components.pricing.creditPack.credits')}</span>
               <span className="text-lg font-semibold">{formatPrice(pack.price)}</span>
               <Button
                 size="sm"
@@ -43,7 +45,7 @@ export function CreditPackSection() {
                 ) : (
                   <>
                     <Plus className="w-4 h-4 mr-1" />
-                    Comprar
+                    {t('components.pricing.creditPack.buy')}
                   </>
                 )}
               </Button>

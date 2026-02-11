@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Table,
   TableBody,
@@ -47,6 +48,7 @@ const getLayerStyles = (layerName: string): string => {
 };
 
 function ProtocolTable({ layers }: ProtocolTableProps) {
+  const { t } = useTranslation();
   if (!layers || layers.length === 0) return null;
 
   return (
@@ -56,10 +58,10 @@ function ProtocolTable({ layers }: ProtocolTableProps) {
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50">
-              <TableHead className="w-[140px]">Camada</TableHead>
-              <TableHead>Resina</TableHead>
-              <TableHead className="w-[80px]">Cor</TableHead>
-              <TableHead className="w-[100px]">Espessura</TableHead>
+              <TableHead className="w-[140px]">{t('components.protocol.table.layer')}</TableHead>
+              <TableHead>{t('components.protocol.table.resin')}</TableHead>
+              <TableHead className="w-[80px]">{t('components.protocol.table.color')}</TableHead>
+              <TableHead className="w-[100px]">{t('components.protocol.table.thickness')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -68,7 +70,7 @@ function ProtocolTable({ layers }: ProtocolTableProps) {
                 <TableCell className="font-medium">
                   {layer.order}. {layer.name}
                   {layer.optional && (
-                    <span className="ml-1.5 text-xs font-normal text-muted-foreground">(opcional)</span>
+                    <span className="ml-1.5 text-xs font-normal text-muted-foreground">{t('components.protocol.table.optional')}</span>
                   )}
                 </TableCell>
                 <TableCell>{layer.resin_brand}</TableCell>
@@ -85,7 +87,7 @@ function ProtocolTable({ layers }: ProtocolTableProps) {
                       </span>
                     </TooltipTrigger>
                     <TooltipContent side="top">
-                      <p className="text-xs">Ajustar conforme profundidade e mascaramento necessário</p>
+                      <p className="text-xs">{t('components.protocol.table.thicknessTooltip')}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TableCell>
@@ -100,11 +102,11 @@ function ProtocolTable({ layers }: ProtocolTableProps) {
             <div key={`detail-${layer.order}`} className="px-4 py-3 bg-muted/30">
               <div className="flex items-start gap-4 text-sm">
                 <div className="flex-1">
-                  <span className="text-muted-foreground">Objetivo: </span>
+                  <span className="text-muted-foreground">{t('components.protocol.table.purpose')}</span>
                   <span>{layer.purpose}</span>
                 </div>
                 <div className="flex-1">
-                  <span className="text-muted-foreground">Técnica: </span>
+                  <span className="text-muted-foreground">{t('components.protocol.table.technique')}</span>
                   <span>{layer.technique}</span>
                 </div>
               </div>
@@ -121,7 +123,7 @@ function ProtocolTable({ layers }: ProtocolTableProps) {
               <span className="font-medium text-sm">
                 {layer.order}. {layer.name}
                 {layer.optional && (
-                  <span className="ml-1 text-xs font-normal text-muted-foreground">(opcional)</span>
+                  <span className="ml-1 text-xs font-normal text-muted-foreground">{t('components.protocol.table.optional')}</span>
                 )}
               </span>
               <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-background font-mono text-xs">
@@ -132,8 +134,8 @@ function ProtocolTable({ layers }: ProtocolTableProps) {
               {layer.resin_brand} • {layer.thickness}
             </p>
             <div className="text-xs space-y-1 mt-2 pt-2 border-t border-border/50">
-              <p><span className="text-muted-foreground">Objetivo:</span> {layer.purpose}</p>
-              <p><span className="text-muted-foreground">Técnica:</span> {layer.technique}</p>
+              <p><span className="text-muted-foreground">{t('components.protocol.table.purpose')}</span>{layer.purpose}</p>
+              <p><span className="text-muted-foreground">{t('components.protocol.table.technique')}</span>{layer.technique}</p>
             </div>
           </div>
         ))}

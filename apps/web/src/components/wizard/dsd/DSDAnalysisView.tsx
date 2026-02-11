@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -87,6 +88,7 @@ export function DSDAnalysisView({
   onRetry,
   onContinue,
 }: DSDAnalysisViewProps) {
+  const { t } = useTranslation();
   const { analysis } = result;
 
   // Check for attention observations
@@ -108,7 +110,7 @@ export function DSDAnalysisView({
         <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
           <Smile className="w-8 h-8 text-primary" />
         </div>
-        <h2 className="text-xl font-semibold font-display mb-2 text-primary">Planejamento Digital do Sorriso</h2>
+        <h2 className="text-xl font-semibold font-display mb-2 text-primary">{t('components.wizard.dsd.analysisView.title')}</h2>
         <div className="flex items-center justify-center gap-2">
           <Badge
             variant={analysis.confidence === 'alta' ? 'default' : analysis.confidence === 'média' ? 'secondary' : 'outline'}
@@ -120,7 +122,7 @@ export function DSDAnalysisView({
                   : ''
             }
           >
-            Confiança {analysis.confidence}
+            {t('components.wizard.dsd.analysisView.confidence', { level: analysis.confidence })}
           </Badge>
         </div>
       </div>
@@ -129,10 +131,10 @@ export function DSDAnalysisView({
       {hasLimitations && (
         <Alert variant="default" className="border-amber-500 bg-amber-50 dark:bg-amber-950/30">
           <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-          <AlertTitle className="text-amber-800 dark:text-amber-200">Caso com Limitações para Simulação</AlertTitle>
+          <AlertTitle className="text-amber-800 dark:text-amber-200">{t('components.wizard.dsd.analysisView.limitationsTitle')}</AlertTitle>
           <AlertDescription className="text-amber-700 dark:text-amber-300">
             {result.simulation_note ||
-              'Este caso apresenta características que limitam a precisão da simulação visual. A análise de proporções está disponível, mas o resultado final pode variar significativamente.'}
+              t('components.wizard.dsd.analysisView.limitationsDefault')}
           </AlertDescription>
         </Alert>
       )}
@@ -143,7 +145,7 @@ export function DSDAnalysisView({
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2 text-amber-800 dark:text-amber-200">
               <AlertCircle className="w-4 h-4" />
-              Pontos de Atenção
+              {t('components.wizard.dsd.analysisView.attentionPoints')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -163,9 +165,9 @@ export function DSDAnalysisView({
       {analysis.overbite_suspicion === 'sim' && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Suspeita de Sobremordida Profunda</AlertTitle>
+          <AlertTitle>{t('components.wizard.dsd.analysisView.overbiteSuspicion')}</AlertTitle>
           <AlertDescription>
-            A análise sugere possível sobremordida profunda (overbite). Recomenda-se avaliação ortodôntica antes de procedimentos restauradores anteriores. Gengivoplastia contraindicada até avaliação.
+            {t('components.wizard.dsd.analysisView.overbiteDesc')}
           </AlertDescription>
         </Alert>
       )}
@@ -179,11 +181,11 @@ export function DSDAnalysisView({
                 <Loader2 className="w-6 h-6 text-primary animate-spin" />
               </div>
               <div className="flex-1">
-                <h4 className="font-medium">Gerando camadas de simulação...</h4>
+                <h4 className="font-medium">{t('components.wizard.dsd.analysisView.generatingLayers')}</h4>
                 <p className="text-sm text-muted-foreground">
                   {layerGenerationProgress > 0
-                    ? `${layerGenerationProgress} de ${determineLayersNeeded(analysis).length} camadas processadas`
-                    : 'Você pode continuar revisando a análise enquanto processamos'}
+                    ? t('components.wizard.dsd.analysisView.layersProgress', { current: layerGenerationProgress, total: determineLayersNeeded(analysis).length })
+                    : t('components.wizard.dsd.analysisView.reviewWhileProcessing')}
                 </p>
               </div>
             </div>
@@ -199,7 +201,7 @@ export function DSDAnalysisView({
               <div className="flex items-center gap-3">
                 <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                 <span className="text-sm text-amber-700 dark:text-amber-300">
-                  Simulação não pôde ser gerada automaticamente
+                  {t('components.wizard.dsd.analysisView.simulationAutoError')}
                 </span>
               </div>
               <Button
@@ -208,7 +210,7 @@ export function DSDAnalysisView({
                 onClick={onGenerateAllLayers}
               >
                 <RefreshCw className="w-3 h-3 mr-1" />
-                Tentar novamente
+                {t('components.wizard.dsd.analysisView.tryAgain')}
               </Button>
             </div>
           </CardContent>
@@ -258,7 +260,7 @@ export function DSDAnalysisView({
           <Alert>
             <AlertCircle className="w-4 h-4" />
             <AlertDescription>
-              A simulação visual está sendo preparada. A análise de proporções está disponível abaixo.
+              {t('components.wizard.dsd.analysisView.simulationPreparing')}
             </AlertDescription>
           </Alert>
         </div>
@@ -274,7 +276,7 @@ export function DSDAnalysisView({
       {analysis.observations && analysis.observations.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Observações Gerais</CardTitle>
+            <CardTitle className="text-base">{t('components.wizard.dsd.analysisView.generalObservations')}</CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2">
@@ -295,13 +297,13 @@ export function DSDAnalysisView({
       <div className="flex flex-col sm:flex-row gap-3 pt-4">
         <Button variant="outline" onClick={onRetry} className="sm:flex-1 btn-press">
           <RefreshCw className="w-4 h-4 mr-2" />
-          Refazer Análise
+          {t('components.wizard.dsd.analysisView.retryAnalysis')}
           <span className="inline-flex items-center gap-0.5 text-xs opacity-60 ml-1">
             <Zap className="w-3 h-3" />2
           </span>
         </Button>
         <Button onClick={onContinue} className="sm:flex-1 btn-glow-gold btn-press font-semibold group">
-          Continuar para Revisão
+          {t('components.wizard.dsd.analysisView.continueToReview')}
           <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
         </Button>
       </div>
@@ -312,6 +314,7 @@ export function DSDAnalysisView({
 // ---- Internal: Suggestions card ----
 
 function DSDSuggestionsCard({ suggestions }: { suggestions: DSDSuggestion[] | undefined }) {
+  const { t } = useTranslation();
   if (!suggestions || suggestions.length === 0) return null;
 
   // Keywords that indicate a gengiva-related suggestion
@@ -340,7 +343,7 @@ function DSDSuggestionsCard({ suggestions }: { suggestions: DSDSuggestion[] | un
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
           <Lightbulb className="w-4 h-4" />
-          Sugestões de Tratamento
+          {t('components.wizard.dsd.analysisView.treatmentSuggestions')}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -352,7 +355,7 @@ function DSDSuggestionsCard({ suggestions }: { suggestions: DSDSuggestion[] | un
             >
               <div className="flex items-center gap-2 mb-2">
                 <Badge variant="outline" className="text-xs">
-                  Dente {tooth}
+                  {t('components.wizard.dsd.analysisView.toothLabel', { tooth })}
                 </Badge>
               </div>
 
@@ -360,13 +363,13 @@ function DSDSuggestionsCard({ suggestions }: { suggestions: DSDSuggestion[] | un
               {group.tooth.map((s, i) => (
                 <div key={`t-${i}`} className={group.gengiva.length > 0 ? 'mb-2' : ''}>
                   {group.gengiva.length > 0 && (
-                    <p className="text-xs font-medium text-muted-foreground mb-0.5">Dente:</p>
+                    <p className="text-xs font-medium text-muted-foreground mb-0.5">{t('components.wizard.dsd.analysisView.toothSection')}</p>
                   )}
                   <p className="text-sm text-muted-foreground mb-1">
-                    <span className="font-medium text-foreground">Atual:</span> {s.current_issue}
+                    <span className="font-medium text-foreground">{t('components.wizard.dsd.analysisView.currentLabel')}</span> {s.current_issue}
                   </p>
                   <p className="text-sm">
-                    <span className="font-medium text-primary">Proposta:</span> {s.proposed_change}
+                    <span className="font-medium text-primary">{t('components.wizard.dsd.analysisView.proposalLabel')}</span> {s.proposed_change}
                   </p>
                 </div>
               ))}
@@ -377,12 +380,12 @@ function DSDSuggestionsCard({ suggestions }: { suggestions: DSDSuggestion[] | un
                   {group.tooth.length > 0 && <div className="border-t border-border my-2" />}
                   {group.gengiva.map((s, i) => (
                     <div key={`g-${i}`}>
-                      <p className="text-xs font-medium text-muted-foreground mb-0.5">Gengiva:</p>
+                      <p className="text-xs font-medium text-muted-foreground mb-0.5">{t('components.wizard.dsd.analysisView.gingivaSection')}</p>
                       <p className="text-sm text-muted-foreground mb-1">
-                        <span className="font-medium text-foreground">Atual:</span> {s.current_issue}
+                        <span className="font-medium text-foreground">{t('components.wizard.dsd.analysisView.currentLabel')}</span> {s.current_issue}
                       </p>
                       <p className="text-sm">
-                        <span className="font-medium text-primary">Proposta:</span> {s.proposed_change}
+                        <span className="font-medium text-primary">{t('components.wizard.dsd.analysisView.proposalLabel')}</span> {s.proposed_change}
                       </p>
                     </div>
                   ))}

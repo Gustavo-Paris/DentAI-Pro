@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -35,6 +36,7 @@ interface Evaluation {
 }
 
 export function GlobalSearch() {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -86,12 +88,12 @@ export function GlobalSearch() {
       id: evals[0].id,
       session_id: sessionId,
       type: 'patient' as const,
-      title: evals[0].patient_name || 'Paciente sem nome',
+      title: evals[0].patient_name || t('components.globalSearch.noName'),
       subtitle: format(new Date(evals[0].created_at), "d 'de' MMM yyyy", { locale: ptBR }),
       teethCount: evals.length,
       teeth: evals.map((e) => e.tooth),
     }));
-  }, []);
+  }, [t]);
 
   // Search logic with debounce
   const searchEvaluations = useCallback(
@@ -173,31 +175,31 @@ export function GlobalSearch() {
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
       <CommandInput
-        placeholder="Buscar paciente, dente ou data..."
+        placeholder={t('components.globalSearch.placeholder')}
         value={query}
         onValueChange={setQuery}
-        aria-label="Buscar paciente, dente ou data"
+        aria-label={t('components.globalSearch.ariaLabel')}
       />
       <CommandList>
         <CommandEmpty>
           {loading ? (
             <div className="flex items-center justify-center py-6">
               <Loader2 className="w-4 h-4 animate-spin mr-2" />
-              <span>Buscando...</span>
+              <span>{t('components.globalSearch.searching')}</span>
             </div>
           ) : query.length < 2 ? (
             <div className="py-6 text-center text-sm text-muted-foreground">
-              Digite pelo menos 2 caracteres para buscar
+              {t('components.globalSearch.minChars')}
             </div>
           ) : (
             <div className="py-6 text-center text-sm text-muted-foreground">
-              Nenhum resultado encontrado
+              {t('components.globalSearch.noResults')}
             </div>
           )}
         </CommandEmpty>
 
         {results.length > 0 && (
-          <CommandGroup heading="Avaliações">
+          <CommandGroup heading={t('components.globalSearch.evaluations')}>
             {results.map((result) => (
               <CommandItem
                 key={result.session_id}

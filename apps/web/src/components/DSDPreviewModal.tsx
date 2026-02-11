@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -32,6 +33,7 @@ export function DSDPreviewModal({
   simulationPath,
   layers,
 }: DSDPreviewModalProps) {
+  const { t } = useTranslation();
   const [beforeUrl, setBeforeUrl] = useState<string | null>(null);
   const [afterUrl, setAfterUrl] = useState<string | null>(null);
   const [layerUrls, setLayerUrls] = useState<Record<string, string>>({});
@@ -85,9 +87,9 @@ export function DSDPreviewModal({
     : afterUrl;
 
   const LAYER_LABELS: Record<string, string> = {
-    'restorations-only': 'Restaurações',
-    'whitening-restorations': 'Clareamento + Restaurações',
-    'complete-treatment': 'Tratamento Completo',
+    'restorations-only': t('components.dsdPreview.restorations'),
+    'whitening-restorations': t('components.dsdPreview.whiteningRestorations'),
+    'complete-treatment': t('components.dsdPreview.completeTreatment'),
   };
 
   return (
@@ -96,7 +98,7 @@ export function DSDPreviewModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Smile className="w-5 h-5 text-primary" />
-            Simulação DSD
+            {t('components.dsdPreview.title')}
           </DialogTitle>
         </DialogHeader>
 
@@ -119,7 +121,7 @@ export function DSDPreviewModal({
                   >
                     {LAYER_LABELS[layer.type] || layer.type}
                     {layer.includes_gengivoplasty && (
-                      <span className="text-[10px] px-1 py-0 bg-secondary rounded">Gengiva</span>
+                      <span className="text-[10px] px-1 py-0 bg-secondary rounded">{t('components.dsdPreview.gingiva')}</span>
                     )}
                   </button>
                 ))}
@@ -129,13 +131,13 @@ export function DSDPreviewModal({
             <ComparisonSlider
               beforeImage={beforeUrl}
               afterImage={activeAfterUrl}
-              afterLabel={activeLayer ? (LAYER_LABELS[activeLayer.type] || 'Simulação DSD') : 'Simulação DSD'}
+              afterLabel={activeLayer ? (LAYER_LABELS[activeLayer.type] || t('components.dsdPreview.title')) : t('components.dsdPreview.title')}
             />
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
             <Smile className="w-12 h-12 mb-3 opacity-30" />
-            <p className="text-sm">Simulação DSD não disponível</p>
+            <p className="text-sm">{t('components.dsdPreview.notAvailable')}</p>
           </div>
         )}
       </DialogContent>

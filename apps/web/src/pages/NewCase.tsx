@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -43,6 +44,7 @@ const QUICK_ICONS = [Camera, Brain, ClipboardCheck, FileText];
 // =============================================================================
 
 export default function NewCase() {
+  const { t } = useTranslation();
   const wizard = useWizardFlow();
   const navigate = useNavigate();
 
@@ -177,7 +179,7 @@ export default function NewCase() {
         <div key="step-result" className={`wizard-step-${wizard.stepDirection}`}>
           <LoadingOverlay
             isLoading={wizard.isSubmitting}
-            message="Gerando Caso Clínico"
+            message={t('wizard.generatingCase')}
             steps={wizard.submissionSteps}
             progress={wizard.submissionSteps.filter(s => s.completed).length / Math.max(wizard.submissionSteps.length, 1) * 100}
           />
@@ -187,13 +189,13 @@ export default function NewCase() {
                 <Check className="w-8 h-8 text-primary-foreground" />
               </div>
               <p className="text-lg font-semibold text-primary animate-fade-in-up">
-                Caso criado com sucesso!
+                {t('wizard.caseCreated')}
               </p>
             </div>
           ) : !wizard.isSubmitting ? (
             <div className="flex flex-col items-center justify-center py-12 sm:py-16 space-y-4 sm:space-y-6">
               <div className="text-center">
-                <p className="text-sm text-muted-foreground">Processando...</p>
+                <p className="text-sm text-muted-foreground">{t('common.processing')}</p>
               </div>
             </div>
           ) : null}
@@ -221,7 +223,7 @@ export default function NewCase() {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       <WizardPage
-        title="Novo Caso"
+        title={t('wizard.newCase')}
         currentStep={displayStep}
         keyboardNavigation={false}
         showStepIndicator={true}
@@ -243,7 +245,7 @@ export default function NewCase() {
               {wizard.isSampleCase ? (
                 <Badge variant="secondary" className="text-xs gap-1.5 bg-primary/10 text-primary border-primary/20">
                   <Eye className="w-3 h-3" />
-                  Caso Exemplo
+                  {t('wizard.sampleCase')}
                 </Badge>
               ) : <span />}
               {wizard.step >= 4 && !wizard.isSampleCase ? (
@@ -251,12 +253,12 @@ export default function NewCase() {
                   {wizard.isSaving ? (
                     <>
                       <Save className="w-3 h-3 animate-pulse" />
-                      <span className="hidden sm:inline">Salvando...</span>
+                      <span className="hidden sm:inline">{t('common.saving')}</span>
                     </>
                   ) : wizard.lastSavedAt ? (
                     <>
                       <Check className="w-3 h-3 text-primary" />
-                      <span className="hidden sm:inline">Salvo</span>
+                      <span className="hidden sm:inline">{t('common.saved')}</span>
                     </>
                   ) : null}
                 </Badge>
@@ -268,7 +270,7 @@ export default function NewCase() {
               <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 pt-4 pb-2 sm:mt-8 sm:pt-0 sm:pb-0">
                 <Button variant="outline" onClick={wizard.handleBack} className="w-full sm:w-auto btn-press">
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Voltar
+                  {t('common.back')}
                 </Button>
 
                 {wizard.step === 5 && (
@@ -278,7 +280,7 @@ export default function NewCase() {
                       className="w-full sm:w-auto btn-glow-gold btn-press font-semibold"
                     >
                       <Sparkles className="w-4 h-4 mr-2" />
-                      Criar Meu Proprio Caso
+                      {t('wizard.createMyOwnCase')}
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
                   ) : (
@@ -290,12 +292,12 @@ export default function NewCase() {
                       {wizard.isSubmitting ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Processando...
+                          {t('common.processing')}
                         </>
                       ) : (
                         <>
                           <Sparkles className="w-4 h-4 mr-2" />
-                          Gerar Caso
+                          {t('wizard.generateCase')}
                           <ArrowRight className="w-4 h-4 ml-2" />
                         </>
                       )}

@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { BRAND_NAME } from '@/lib/branding';
 
 export default function Terms() {
+  const { t } = useTranslation();
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border">
@@ -14,14 +16,14 @@ export default function Terms() {
           <Link to="/">
             <Button variant="ghost" size="sm">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Voltar
+              {t('common.back')}
             </Button>
           </Link>
         </div>
       </header>
 
       <main className="container mx-auto px-4 sm:px-6 py-8 sm:py-12 max-w-3xl">
-        <h1 className="text-2xl sm:text-3xl font-semibold font-display mb-6 sm:mb-8">Termos de Uso</h1>
+        <h1 className="text-2xl sm:text-3xl font-semibold font-display mb-6 sm:mb-8">{t('pages.termsTitle')}</h1>
         
         <div className="prose prose-sm sm:prose-base prose-neutral dark:prose-invert max-w-none space-y-6">
           <p className="text-muted-foreground">

@@ -1,7 +1,7 @@
 ---
 title: ADR Index
 created: 2026-02-05
-updated: 2026-02-08
+updated: 2026-02-10
 author: Team AURIA
 status: published
 tags:
@@ -23,6 +23,11 @@ related:
 | [[ADR-001-3-layer-frontend-architecture\|ADR-001]] | 3-Layer Frontend Architecture | Accepted | 2026-02-04 | Frontend |
 | [[ADR-002-pageshell-design-system-adoption\|ADR-002]] | PageShell Design System Adoption | Accepted | 2026-02-04 | Frontend / Design System |
 | [[ADR-003-centralized-prompt-management\|ADR-003]] | Centralized Prompt Management | Accepted | 2026-02-04 | AI / Backend |
+| [[ADR-004-credit-model-and-monetization\|ADR-004]] | Credit Model & Monetization | Accepted | 2026-02-10 | Backend / Billing |
+| [[ADR-005-authentication-and-authorization\|ADR-005]] | Authentication & Authorization | Accepted | 2026-02-10 | Backend / Security |
+| [[ADR-006-ai-integration-strategy\|ADR-006]] | AI Integration Strategy | Accepted | 2026-02-10 | AI / Backend |
+| [[ADR-007-clinical-photo-storage\|ADR-007]] | Clinical Photo Storage | Accepted | 2026-02-10 | Backend / Storage |
+| [[ADR-008-wizard-architecture-post-refactor\|ADR-008]] | Wizard Architecture (Post-Refactor) | Accepted | 2026-02-10 | Frontend |
 
 ## Status Legend
 
@@ -52,4 +57,4 @@ related:
 - [[Templates/ADR Template]] — Blank ADR template
 
 ---
-*Updated: 2026-02-08*
+*Updated: 2026-02-10*

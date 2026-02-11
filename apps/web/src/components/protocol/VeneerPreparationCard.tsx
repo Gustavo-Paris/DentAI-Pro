@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -34,16 +35,17 @@ const PREP_NOTES = [
 ];
 
 export function VeneerPreparationCard() {
+  const { t } = useTranslation();
   return (
     <div className="space-y-4">
       <Card className="border-amber-400/30 bg-amber-50 dark:bg-amber-950/20">
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
             <ClipboardList className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-            Protocolo de Preparo para Facetas de Porcelana
+            {t('components.protocol.veneerPrep.title')}
           </CardTitle>
           <p className="text-xs text-muted-foreground">
-            Etapas preparatórias antes da cimentação
+            {t('components.protocol.veneerPrep.subtitle')}
           </p>
         </CardHeader>
       </Card>
@@ -54,12 +56,12 @@ export function VeneerPreparationCard() {
           <AccordionTrigger className="px-4 py-3 hover:no-underline">
             <div className="flex items-center gap-2">
               <Layers className="w-4 h-4 text-blue-500" />
-              <span className="font-medium text-sm">1. Enceramento Diagnóstico</span>
+              <span className="font-medium text-sm">{t('components.protocol.veneerPrep.diagnosticWaxup')}</span>
             </div>
           </AccordionTrigger>
           <AccordionContent className="px-4 pb-4">
             <p className="text-xs text-muted-foreground mb-3">
-              Visualização prévia do resultado e confecção da guia para mock-up
+              {t('components.protocol.veneerPrep.waxupDesc')}
             </p>
             <ol className="space-y-2">
               {DIAGNOSTIC_WAXUP_STEPS.map((step, i) => (
@@ -79,12 +81,12 @@ export function VeneerPreparationCard() {
           <AccordionTrigger className="px-4 py-3 hover:no-underline">
             <div className="flex items-center gap-2">
               <Layers className="w-4 h-4 text-cyan-500" />
-              <span className="font-medium text-sm">2. Mock-up Prévio</span>
+              <span className="font-medium text-sm">{t('components.protocol.veneerPrep.mockup')}</span>
             </div>
           </AccordionTrigger>
           <AccordionContent className="px-4 pb-4">
             <p className="text-xs text-muted-foreground mb-3">
-              Teste estético em boca antes do preparo definitivo
+              {t('components.protocol.veneerPrep.mockupDesc')}
             </p>
             <ol className="space-y-2">
               {MOCKUP_STEPS.map((step, i) => (
@@ -104,12 +106,12 @@ export function VeneerPreparationCard() {
           <AccordionTrigger className="px-4 py-3 hover:no-underline">
             <div className="flex items-center gap-2">
               <Wrench className="w-4 h-4 text-purple-500" />
-              <span className="font-medium text-sm">3. Sequência de Preparo</span>
+              <span className="font-medium text-sm">{t('components.protocol.veneerPrep.prepSequence')}</span>
             </div>
           </AccordionTrigger>
           <AccordionContent className="px-4 pb-4">
             <p className="text-xs text-muted-foreground mb-3">
-              Kit de brocas sugerido para preparo de facetas
+              {t('components.protocol.veneerPrep.prepDesc')}
             </p>
             <div className="space-y-3 mb-4">
               {BURS.map((bur, i) => (
@@ -128,7 +130,7 @@ export function VeneerPreparationCard() {
             <div className="border-t pt-3 space-y-2">
               <div className="flex items-center gap-2 mb-2">
                 <Ruler className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm font-medium">Orientações de Preparo</span>
+                <span className="text-sm font-medium">{t('components.protocol.veneerPrep.prepGuidelines')}</span>
               </div>
               {PREP_NOTES.map((note, i) => (
                 <p key={i} className="text-xs text-muted-foreground flex items-start gap-2">

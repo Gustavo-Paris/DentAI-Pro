@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,6 +18,7 @@ interface CreditConfirmDialogProps {
 }
 
 export function CreditConfirmDialog({ data, onConfirm }: CreditConfirmDialogProps) {
+  const { t } = useTranslation();
   if (!data) return null;
 
   const afterRemaining = data.remaining - data.cost;
@@ -27,7 +29,7 @@ export function CreditConfirmDialog({ data, onConfirm }: CreditConfirmDialogProp
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
             <Coins className="w-5 h-5 text-primary" />
-            Confirmar uso de créditos
+            {t('components.creditConfirm.title')}
           </AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="space-y-3">
@@ -36,11 +38,11 @@ export function CreditConfirmDialog({ data, onConfirm }: CreditConfirmDialogProp
                 <strong>{data.cost} {data.cost === 1 ? 'crédito' : 'créditos'}</strong>.
               </p>
               <div className="flex items-center justify-between rounded-lg bg-muted px-4 py-2.5 text-sm">
-                <span className="text-muted-foreground">Saldo atual</span>
+                <span className="text-muted-foreground">{t('components.creditConfirm.currentBalance')}</span>
                 <span className="font-semibold">{data.remaining} créditos</span>
               </div>
               <div className="flex items-center justify-between rounded-lg bg-muted px-4 py-2.5 text-sm">
-                <span className="text-muted-foreground">Após operação</span>
+                <span className="text-muted-foreground">{t('components.creditConfirm.afterOperation')}</span>
                 <span className={`font-semibold ${afterRemaining <= 1 ? 'text-destructive' : ''}`}>
                   {afterRemaining} créditos
                 </span>
