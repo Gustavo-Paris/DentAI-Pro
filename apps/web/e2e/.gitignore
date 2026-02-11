@@ -1,0 +1,2 @@
+# Authenticated state — contains session tokens
+.auth/
