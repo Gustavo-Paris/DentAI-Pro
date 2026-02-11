@@ -83,6 +83,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         },
       },
     });
+
+    // Fire-and-forget: send welcome email without blocking the UX
+    if (!error) {
+      supabase.functions.invoke('send-email', {
+        body: { template: 'welcome' },
+      }).catch((err) => logger.error('Welcome email failed (non-blocking):', err));
+    }
+
     return { error };
   };
 

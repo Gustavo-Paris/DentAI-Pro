@@ -330,7 +330,8 @@ async function handleCreditPackPurchase(supabase: any, session: Stripe.Checkout.
   const packId = session.metadata!.pack_id;
   const credits = parseInt(session.metadata!.credits, 10);
 
-  logger.important(`Credit pack purchase: pack=${packId}, credits=${credits}, user=${userId}`);
+  const paymentMethod = session.metadata?.payment_method || "card";
+  logger.important(`Credit pack purchase: pack=${packId}, credits=${credits}, user=${userId}, payment_method=${paymentMethod}`);
 
   // Record purchase (upsert by stripe_session_id for idempotency)
   const { error: purchaseError } = await supabase
