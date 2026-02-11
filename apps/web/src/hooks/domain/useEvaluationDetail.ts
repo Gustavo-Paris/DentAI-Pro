@@ -587,6 +587,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
         ai_treatment_indication: toothData.treatment_indication,
         ai_indication_reason: toothData.indication_reason,
         tooth_bounds: toothData.tooth_bounds,
+        stratification_needed: treatmentType !== 'gengivoplastia',
       };
 
       const evaluation = await evaluations.insertEvaluation(insertData);
