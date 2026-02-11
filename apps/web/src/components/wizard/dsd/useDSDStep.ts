@@ -77,14 +77,20 @@ export function useDSDStep({
   const [isSimulationGenerating, setIsSimulationGenerating] = useState(false);
   const [simulationError, setSimulationError] = useState(false);
 
-  // Multi-layer simulation states
-  const [layers, setLayers] = useState<SimulationLayer[]>([]);
+  // Multi-layer simulation states — rehydrate from draft if available
+  const [layers, setLayers] = useState<SimulationLayer[]>(initialResult?.layers || []);
   const [layerUrls, setLayerUrls] = useState<Record<string, string>>({});
   const [activeLayerIndex, setActiveLayerIndex] = useState(0);
   const [layersGenerating, setLayersGenerating] = useState(false);
   const [layerGenerationProgress, setLayerGenerationProgress] = useState(0);
   const [failedLayers, setFailedLayers] = useState<SimulationLayerType[]>([]);
   const [retryingLayer, setRetryingLayer] = useState<SimulationLayerType | null>(null);
+
+  // Gengivoplasty approval: null = not decided, true = approved, false = discarded
+  // Derive initial state from draft layers — if complete-treatment layer exists, it was previously approved
+  const [gingivoplastyApproved, setGingivoplastyApproved] = useState<boolean | null>(
+    initialResult?.layers?.some(l => l.type === 'complete-treatment') ? true : null
+  );
 
   // E4: Whitening comparison
   const [whiteningComparison, setWhiteningComparison] = useState<Record<string, string>>({});
@@ -127,6 +133,34 @@ export function useDSDStep({
 
     loadSimulationUrl();
   }, [result?.simulation_url]);
+
+  // Rehydrate layer signed URLs from persisted draft layers
+  useEffect(() => {
+    if (initialResult?.layers?.length && Object.keys(layerUrls).length === 0 && !layersGenerating) {
+      const resolveLayerUrls = async () => {
+        const urls: Record<string, string> = {};
+        for (const layer of initialResult.layers!) {
+          if (layer.simulation_url) {
+            const { data } = await supabase.storage
+              .from('dsd-simulations')
+              .createSignedUrl(layer.simulation_url, 3600);
+            if (data?.signedUrl) urls[layer.type] = data.signedUrl;
+          }
+        }
+        if (Object.keys(urls).length > 0) {
+          setLayerUrls(urls);
+          // Set active layer URL if no simulation URL yet
+          if (!simulationImageUrl) {
+            const firstLayer = initialResult.layers![0];
+            const firstUrl = urls[firstLayer?.type];
+            if (firstUrl) setSimulationImageUrl(firstUrl);
+          }
+        }
+      };
+      resolveLayerUrls();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialResult?.layers]);
 
   const toothBounds = useMemo(() => {
     const bounds = (detectedTeeth || [])
@@ -193,26 +227,26 @@ export function useDSDStep({
     run();
   }, [user, imageBase64, simulationImageUrl, result?.simulation_url, toothBounds, layers.length, layersGenerating]);
 
+  // Check if analysis has gengivoplasty suggestions
+  const hasGingivoSuggestion = useCallback((analysis: DSDAnalysis): boolean => {
+    return !!analysis.suggestions?.some(s => {
+      if (s.treatment_indication === 'gengivoplastia') return true;
+      const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
+      return text.includes('gengivoplastia') || text.includes('gengival') || text.includes('zênite');
+    });
+  }, []);
+
   // Determine which layers to generate based on analysis
   const determineLayersNeeded = useCallback((analysis: DSDAnalysis): SimulationLayerType[] => {
     const needed: SimulationLayerType[] = ['restorations-only', 'whitening-restorations'];
 
-    // Layer 3: complete-treatment with gengivoplasty
-    // Include when AI detected gingival treatment need, regardless of smile line
-    const hasGingivoSuggestion = analysis.suggestions?.some(s => {
-      // Check structured treatment_indication first (more reliable)
-      if (s.treatment_indication === 'gengivoplastia') return true;
-      // Fallback to text matching
-      const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
-      return text.includes('gengivoplastia') || text.includes('gengival') || text.includes('zênite');
-    });
-
-    if (hasGingivoSuggestion) {
+    // Layer 3: complete-treatment with gengivoplasty — only after explicit approval
+    if (gingivoplastyApproved === true && hasGingivoSuggestion(analysis)) {
       needed.push('complete-treatment');
     }
 
     return needed;
-  }, []);
+  }, [gingivoplastyApproved, hasGingivoSuggestion]);
 
   // Generate a single layer
   const generateSingleLayer = useCallback(async (
@@ -724,7 +758,7 @@ export function useDSDStep({
     const labels: Record<string, string> = {
       natural: 'Natural (A1/A2)',
       white: 'Branco (BL2/BL3)',
-      hollywood: 'Hollywood (BL1)',
+      hollywood: 'Diamond (BL1/BL2/BL3)',
     };
     // Update preferences (persists via draft auto-save)
     onPreferencesChange?.({ whiteningLevel: level });
@@ -750,6 +784,39 @@ export function useDSDStep({
     if (url) setSimulationImageUrl(url);
   };
 
+  // Gengivoplasty approval: approve and generate Layer 3
+  const handleApproveGingivoplasty = useCallback(async () => {
+    setGingivoplastyApproved(true);
+    const analysis = result?.analysis;
+    if (!analysis || !imageBase64) return;
+
+    // Generate the complete-treatment layer now
+    setRetryingLayer('complete-treatment');
+    try {
+      const layer = await generateSingleLayer(analysis, 'complete-treatment');
+      if (!layer) {
+        toast.error(t('toasts.dsd.layerError', { layer: 'Gengivoplastia' }));
+        return;
+      }
+      const { layer: processed, url } = await compositeAndResolveLayer(layer);
+      setLayers(prev => [...prev, processed]);
+      if (url) setLayerUrls(prev => ({ ...prev, [processed.type]: url }));
+      setResult(prev => prev ? { ...prev, layers: [...(prev.layers || []), processed] } : prev);
+      toast.success(t('toasts.dsd.layerReady', { layer: 'Gengivoplastia' }));
+    } catch (err) {
+      logger.error('Gengivoplasty layer error:', err);
+      setFailedLayers(prev => [...prev, 'complete-treatment']);
+      toast.error(t('toasts.dsd.layerError', { layer: 'Gengivoplastia' }));
+    } finally {
+      setRetryingLayer(null);
+    }
+  }, [result?.analysis, imageBase64, generateSingleLayer, compositeAndResolveLayer]);
+
+  // Gengivoplasty discard
+  const handleDiscardGingivoplasty = useCallback(() => {
+    setGingivoplastyApproved(false);
+  }, []);
+
   return {
     // State
     isAnalyzing,
@@ -771,6 +838,7 @@ export function useDSDStep({
     whiteningComparison,
     isComparingWhitening,
     showWhiteningComparison,
+    gingivoplastyApproved,
     showAnnotations,
     annotationContainerRef,
     annotationDimensions,
@@ -779,6 +847,7 @@ export function useDSDStep({
     // Derived
     analysisSteps,
     determineLayersNeeded,
+    hasGingivoSuggestion,
 
     // Actions
     handleRetry,
@@ -791,6 +860,8 @@ export function useDSDStep({
     setShowWhiteningComparison,
     handleSelectWhiteningLevel,
     handleSelectLayer,
+    handleApproveGingivoplasty,
+    handleDiscardGingivoplasty,
 
     // Props pass-through needed by sub-components
     imageBase64,

@@ -87,6 +87,11 @@ export default {
   				to: {
   					height: '0'
   				}
+  			},
+  			'progress-indeterminate': {
+  				'0%': { transform: 'translateX(-100%)', width: '40%' },
+  				'50%': { transform: 'translateX(60%)', width: '60%' },
+  				'100%': { transform: 'translateX(200%)', width: '40%' },
   			}
   		},
   		animation: {
@@ -94,6 +99,7 @@ export default {
   			'accordion-up': 'accordion-up 0.2s ease-out',
   			'fade-in-up': 'fade-in-up 0.4s ease-out',
   			'scale-in': 'scale-in 0.3s ease',
+  			'progress-indeterminate': 'progress-indeterminate 1.5s ease-in-out infinite',
   		},
   		boxShadow: {
   			'2xs': 'var(--shadow-2xs)',

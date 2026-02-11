@@ -811,6 +811,7 @@ Se o problema clínico é microdontia/conoide → sua sugestão deve ser "Aument
           temperature: 0.1,
           maxTokens: 4000,
           forceFunctionName: "analyze_dsd",
+          timeoutMs: 60_000,
         }
       );
       return {

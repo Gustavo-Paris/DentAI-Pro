@@ -118,7 +118,9 @@ serve(async (req) => {
   const preflightResponse = handleCorsPreFlight(req);
   if (preflightResponse) return preflightResponse;
 
-  logger.log(`[${reqId}] analyze-dental-photo: start`);
+  const t0 = Date.now();
+  const step = (label: string) => logger.log(`[${reqId}] ${label} (+${Date.now() - t0}ms)`);
+  step("analyze-dental-photo: start");
 
   // Track credit state for refund on error (must be outside try for catch access)
   let creditsConsumed = false;
@@ -140,7 +142,9 @@ serve(async (req) => {
 
     // Verify user via getUser()
     const token = authHeader.replace("Bearer ", "");
+    step("auth: getUser start");
     const { data: { user }, error: authError } = await supabaseService.auth.getUser(token);
+    step("auth: getUser done");
 
     if (authError || !user) {
       return createErrorResponse(ERROR_MESSAGES.INVALID_TOKEN, 401, corsHeaders);
@@ -149,19 +153,23 @@ serve(async (req) => {
     const userId = user.id;
     userIdForRefund = userId;
 
+    step("rateLimit: check start");
     const rateLimitResult = await checkRateLimit(supabaseService, userId, "analyze-dental-photo", RATE_LIMITS.AI_HEAVY);
     if (!rateLimitResult.allowed) {
       logger.warn(`Rate limit exceeded for user ${userId} on analyze-dental-photo`);
       return createRateLimitResponse(rateLimitResult, corsHeaders);
     }
+    step("rateLimit: ok");
 
     // Then consume credits (atomic with row locking)
+    step("credits: check start");
     const creditResult = await checkAndUseCredits(supabaseService, userId, "case_analysis", reqId);
     if (!creditResult.allowed) {
       logger.warn(`Insufficient credits for user ${userId} on case_analysis`);
       return createInsufficientCreditsResponse(creditResult, corsHeaders);
     }
     creditsConsumed = true;
+    step("credits: consumed");
 
     // Parse and validate request
     let rawData: unknown;
@@ -170,6 +178,7 @@ serve(async (req) => {
     } catch {
       return createErrorResponse(ERROR_MESSAGES.INVALID_REQUEST, 400, corsHeaders);
     }
+    step("body: parsed");
 
     const validation = validateImageRequest(rawData);
     if (!validation.success || !validation.data) {
@@ -367,7 +376,7 @@ serve(async (req) => {
     let analysisResult: PhotoAnalysisResult | null = null;
 
     try {
-      logger.log("Calling Gemini Vision API...");
+      step(`gemini: calling (image=${Math.round(base64Image.length/1024)}KB)`);
 
       const result = await withMetrics<{ text: string | null; functionCall: { name: string; args: Record<string, unknown> } | null; finishReason: string }>(metrics, promptDef.id, PROMPT_VERSION, promptDef.model)(async () => {
         const response = await callGeminiVisionWithTools(
@@ -381,6 +390,8 @@ serve(async (req) => {
             temperature: 0.1,
             maxTokens: 3000,
             forceFunctionName: "analyze_dental_photo",
+            timeoutMs: 55_000,
+            thinkingLevel: "low",
           }
         );
         return {
@@ -390,8 +401,9 @@ serve(async (req) => {
         };
       });
 
+      step("gemini: response received");
       if (result.functionCall) {
-        logger.log("Successfully got analysis from Gemini");
+        step("gemini: got function call");
         analysisResult = parseAIResponse(PhotoAnalysisResultSchema, result.functionCall.args, 'analyze-dental-photo') as PhotoAnalysisResult;
       } else if (result.text) {
         // Fallback: try to extract JSON from text response
@@ -415,7 +427,7 @@ serve(async (req) => {
           }
           return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
         }
-        logger.error("Gemini API error:", error.message);
+        logger.error(`Gemini API error (${error.statusCode}):`, error.message);
       } else {
         logger.error("AI error:", error);
       }
@@ -424,7 +436,13 @@ serve(async (req) => {
         await refundCredits(supabaseForRefund, userIdForRefund, "case_analysis", reqId);
         logger.log(`Refunded analysis credits for user ${userIdForRefund} due to AI error`);
       }
-      return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
+      const debugDetail = error instanceof GeminiError
+        ? `[${error.statusCode}] ${error.message}`
+        : (error instanceof Error ? error.message : String(error));
+      return new Response(
+        JSON.stringify({ error: ERROR_MESSAGES.AI_ERROR, debug: debugDetail }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     if (!analysisResult) {
@@ -577,12 +595,17 @@ serve(async (req) => {
       }
     );
   } catch (error: unknown) {
+    step(`CRASH: ${error instanceof Error ? error.message : String(error)}`);
     logger.error(`[${reqId}] Error analyzing photo:`, error);
     // Refund credits on unexpected errors — user paid but got nothing
     if (creditsConsumed && supabaseForRefund && userIdForRefund) {
       await refundCredits(supabaseForRefund, userIdForRefund, "case_analysis", reqId);
       logger.log(`[${reqId}] Refunded analysis credits for user ${userIdForRefund} due to error`);
     }
-    return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders, undefined, reqId);
+    const crashDebug = error instanceof Error ? error.message : String(error);
+    return new Response(
+      JSON.stringify({ error: ERROR_MESSAGES.PROCESSING_ERROR, debug: crashDebug, elapsed_ms: Date.now() - t0 }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   }
 });

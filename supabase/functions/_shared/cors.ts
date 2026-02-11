@@ -9,10 +9,11 @@ export function generateRequestId(): string {
 }
 
 const PRODUCTION_ORIGINS = [
-  "https://dentai.pro",
-  "https://www.dentai.pro",
+  "https://tosmile-ai.vercel.app",
   "https://tosmile.ai",
   "https://www.tosmile.ai",
+  "https://dentai.pro",
+  "https://www.dentai.pro",
   "https://auria-ai.vercel.app",
   "https://dentai-pro.vercel.app",
 ];

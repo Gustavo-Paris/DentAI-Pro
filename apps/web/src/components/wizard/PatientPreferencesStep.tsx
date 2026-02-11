@@ -30,7 +30,7 @@ const WHITENING_OPTIONS: {
     value: 'natural',
     labelKey: 'components.wizard.preferences.naturalLabel',
     descKey: 'components.wizard.preferences.naturalDesc',
-    shade: 'A1 / A2 / B1',
+    shade: 'B1',
     icon: Sun,
     swatchGradient: 'bg-gradient-to-r from-amber-200 to-amber-100',
     swatchGradientSelected: 'bg-gradient-to-r from-amber-300 to-amber-200',

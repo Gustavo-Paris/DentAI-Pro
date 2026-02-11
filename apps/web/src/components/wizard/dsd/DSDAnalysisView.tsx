@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Smile, Loader2, RefreshCw, Lightbulb, AlertCircle, Zap, ArrowRight } from 'lucide-react';
+import { Smile, Loader2, RefreshCw, Lightbulb, AlertCircle, Zap, ArrowRight, CheckCircle, XCircle } from 'lucide-react';
 import { ProportionsCard } from '@/components/dsd/ProportionsCard';
 import type {
   DSDAnalysis,
@@ -52,6 +52,10 @@ interface DSDAnalysisViewProps {
   onGenerateAllLayers: () => void;
   onRetry: () => void;
   onContinue: () => void;
+  gingivoplastyApproved: boolean | null;
+  hasGingivoSuggestion: boolean;
+  onApproveGingivoplasty: () => void;
+  onDiscardGingivoplasty: () => void;
 }
 
 export function DSDAnalysisView({
@@ -87,6 +91,10 @@ export function DSDAnalysisView({
   onGenerateAllLayers,
   onRetry,
   onContinue,
+  gingivoplastyApproved,
+  hasGingivoSuggestion,
+  onApproveGingivoplasty,
+  onDiscardGingivoplasty,
 }: DSDAnalysisViewProps) {
   const { t } = useTranslation();
   const { analysis } = result;
@@ -161,7 +169,7 @@ export function DSDAnalysisView({
         </Card>
       )}
 
-      {/* Overbite suspicion alert */}
+      {/* Overbite suspicion alert with gengivoplasty approval flow */}
       {analysis.overbite_suspicion === 'sim' && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
@@ -170,6 +178,63 @@ export function DSDAnalysisView({
             {t('components.wizard.dsd.analysisView.overbiteDesc')}
           </AlertDescription>
         </Alert>
+      )}
+
+      {/* Gengivoplasty approval — shown when AI detected gingival suggestions and user hasn't decided */}
+      {hasGingivoSuggestion && gingivoplastyApproved === null && (
+        <Card className="border-amber-400 bg-amber-50/50 dark:bg-amber-950/20">
+          <CardContent className="py-4">
+            <div className="flex flex-col gap-3">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                    {t('components.wizard.dsd.analysisView.gingivoplastyDetected', { defaultValue: 'Gengivoplastia detectada na análise' })}
+                  </p>
+                  <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+                    {t('components.wizard.dsd.analysisView.gingivoplastyDesc', { defaultValue: 'A análise identificou necessidade de harmonização gengival. Deseja incluir a simulação de gengivoplastia?' })}
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-2 ml-8">
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={onApproveGingivoplasty}
+                  className="gap-1"
+                >
+                  <CheckCircle className="w-3 h-3" />
+                  {t('components.wizard.dsd.analysisView.approveGingivoplasty', { defaultValue: 'Prosseguir com gengivoplastia' })}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onDiscardGingivoplasty}
+                  className="gap-1"
+                >
+                  <XCircle className="w-3 h-3" />
+                  {t('components.wizard.dsd.analysisView.discardGingivoplasty', { defaultValue: 'Descartar gengivoplastia' })}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Gengivoplasty approved confirmation */}
+      {hasGingivoSuggestion && gingivoplastyApproved === true && (
+        <div className="flex items-center gap-2 text-sm text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-lg px-3 py-2">
+          <CheckCircle className="w-4 h-4 shrink-0" />
+          <span>{t('components.wizard.dsd.analysisView.gingivoplastyApproved', { defaultValue: 'Gengivoplastia incluída na simulação' })}</span>
+        </div>
+      )}
+
+      {/* Gengivoplasty discarded confirmation */}
+      {hasGingivoSuggestion && gingivoplastyApproved === false && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground bg-secondary/50 border border-border rounded-lg px-3 py-2">
+          <XCircle className="w-4 h-4 shrink-0" />
+          <span>{t('components.wizard.dsd.analysisView.gingivoplastyDiscarded', { defaultValue: 'Gengivoplastia descartada' })}</span>
+        </div>
       )}
 
       {/* Background simulation generating card */}
