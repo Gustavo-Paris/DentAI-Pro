@@ -1,7 +1,10 @@
 import { defineConfig, devices } from "@playwright/test";
-import path from "path";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
 
-const authFile = path.join(__dirname, "e2e/.auth/user.json");
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const authFile = join(__dirname, "e2e/.auth/user.json");
 
 export default defineConfig({
   testDir: "./e2e",
@@ -17,6 +20,7 @@ export default defineConfig({
     trace: "on-first-retry",
     screenshot: "only-on-failure",
   },
+
 
   projects: [
     // Auth setup — runs once before all tests

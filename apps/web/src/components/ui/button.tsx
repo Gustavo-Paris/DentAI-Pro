@@ -17,7 +17,7 @@ const buttonVariants = cva(
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         success: "bg-success text-success-foreground hover:bg-success/90",
-        premium: "bg-gradient-to-r from-[hsl(var(--brand-gold))] to-[hsl(var(--brand-gold-light))] text-white font-semibold hover:brightness-110",
+        premium: "bg-gradient-to-r from-[hsl(var(--brand-accent))] to-[hsl(var(--brand-accent-light))] text-white font-semibold hover:brightness-110",
       },
       size: {
         default: "h-10 px-4 py-2",

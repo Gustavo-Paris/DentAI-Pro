@@ -3,36 +3,36 @@
 @tailwind components;
 @tailwind utilities;
 
-/* AURIA Design System — "Clinical Intelligence"
+/* ToSmile.ai Design System — "Clinical Teal"
  *
- * Primary: Indigo (#5E6AD2 family) — clinical trust + AI innovation
- * Brand accent: Gold — ONLY for AURIA wordmark and premium CTAs
- * Surfaces: Pure neutrals, slight cool undertone
- * Dark-first: deep charcoal is the hero experience
+ * Primary: Teal (#2A9D8F) — dental trust + clinical freshness
+ * Brand accent: Coral (#E07A5F) — warmth of a smile
+ * Surfaces: Cool neutrals with subtle teal undertone
+ * Dark-first: deep blue-charcoal is the hero experience
  */
 
 @layer base {
   :root {
-    --background: 0 0% 99%;
-    --foreground: 224 10% 12%;
+    --background: 170 8% 98%;
+    --foreground: 200 12% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 224 10% 12%;
+    --card-foreground: 200 12% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 224 10% 12%;
+    --popover-foreground: 200 12% 12%;
 
-    --primary: 235 56% 58%;
+    --primary: 173 58% 39%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 14% 94%;
-    --secondary-foreground: 224 10% 18%;
+    --secondary: 180 8% 94%;
+    --secondary-foreground: 200 10% 18%;
 
-    --muted: 220 12% 94%;
-    --muted-foreground: 220 6% 44%;
+    --muted: 180 6% 94%;
+    --muted-foreground: 200 5% 44%;
 
-    --accent: 220 14% 94%;
-    --accent-foreground: 224 10% 18%;
+    --accent: 180 8% 94%;
+    --accent-foreground: 200 10% 18%;
 
     --destructive: 0 68% 50%;
     --destructive-foreground: 0 0% 100%;
@@ -43,73 +43,73 @@
     --success: 160 84% 39%;
     --success-foreground: 0 0% 100%;
 
-    --border: 220 12% 85%;
-    --input: 220 10% 87%;
-    --ring: 235 56% 58%;
+    --border: 180 6% 85%;
+    --input: 180 5% 87%;
+    --ring: 173 58% 39%;
 
     --radius: 0.625rem;
 
-    --sidebar-background: 220 14% 97%;
-    --sidebar-foreground: 224 10% 12%;
-    --sidebar-primary: 235 56% 58%;
+    --sidebar-background: 180 8% 97%;
+    --sidebar-foreground: 200 12% 12%;
+    --sidebar-primary: 173 58% 39%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 14% 94%;
-    --sidebar-accent-foreground: 224 10% 18%;
-    --sidebar-border: 220 12% 90%;
-    --sidebar-ring: 235 56% 58%;
+    --sidebar-accent: 180 8% 94%;
+    --sidebar-accent-foreground: 200 10% 18%;
+    --sidebar-border: 180 6% 90%;
+    --sidebar-ring: 173 58% 39%;
 
-    --chart-1: 235 56% 58%;
-    --chart-2: 168 50% 42%;
-    --chart-3: 24 75% 50%;
-    --chart-4: 198 60% 48%;
-    --chart-5: 340 55% 52%;
+    --chart-1: 173 58% 39%;
+    --chart-2: 12 76% 61%;
+    --chart-3: 38 80% 50%;
+    --chart-4: 210 70% 55%;
+    --chart-5: 330 55% 52%;
 
-    --sidebar: 220 14% 97%;
+    --sidebar: 180 8% 97%;
 
-    /* Brand gold — ONLY for AURIA wordmark + premium moments */
-    --brand-gold: 40 85% 55%;
-    --brand-gold-light: 38 90% 62%;
+    /* Brand accent — coral for ToSmile wordmark + premium moments */
+    --brand-accent: 12 76% 61%;
+    --brand-accent-light: 16 80% 68%;
 
     --font-sans: 'DM Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
     --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
     --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
-    --shadow-2xs: 0 1px 2px 0px hsl(220 10% 20% / 0.03);
-    --shadow-xs: 0 1px 3px 0px hsl(220 10% 20% / 0.05);
-    --shadow-sm: 0 1px 3px 0px hsl(220 10% 20% / 0.07), 0 1px 2px -1px hsl(220 10% 20% / 0.05);
-    --shadow: 0 2px 4px 0px hsl(220 10% 20% / 0.07), 0 1px 2px -1px hsl(220 10% 20% / 0.05);
-    --shadow-md: 0 4px 8px -1px hsl(220 10% 20% / 0.09), 0 2px 4px -2px hsl(220 10% 20% / 0.05);
-    --shadow-lg: 0 8px 16px -2px hsl(220 10% 20% / 0.09), 0 4px 6px -2px hsl(220 10% 20% / 0.04);
-    --shadow-xl: 0 16px 32px -4px hsl(220 10% 20% / 0.11), 0 8px 12px -4px hsl(220 10% 20% / 0.05);
-    --shadow-2xl: 0 24px 48px -8px hsl(220 10% 20% / 0.16);
+    --shadow-2xs: 0 1px 2px 0px hsl(200 10% 20% / 0.03);
+    --shadow-xs: 0 1px 3px 0px hsl(200 10% 20% / 0.05);
+    --shadow-sm: 0 1px 3px 0px hsl(200 10% 20% / 0.07), 0 1px 2px -1px hsl(200 10% 20% / 0.05);
+    --shadow: 0 2px 4px 0px hsl(200 10% 20% / 0.07), 0 1px 2px -1px hsl(200 10% 20% / 0.05);
+    --shadow-md: 0 4px 8px -1px hsl(200 10% 20% / 0.09), 0 2px 4px -2px hsl(200 10% 20% / 0.05);
+    --shadow-lg: 0 8px 16px -2px hsl(200 10% 20% / 0.09), 0 4px 6px -2px hsl(200 10% 20% / 0.04);
+    --shadow-xl: 0 16px 32px -4px hsl(200 10% 20% / 0.11), 0 8px 12px -4px hsl(200 10% 20% / 0.05);
+    --shadow-2xl: 0 24px 48px -8px hsl(200 10% 20% / 0.16);
 
     --tracking-normal: 0em;
     --spacing: 0.25rem;
   }
 
   .dark {
-    /* Dark-first: deep charcoal, zero color cast */
-    --background: 228 8% 7%;
-    --foreground: 220 6% 93%;
+    /* Dark-first: deep blue-charcoal with subtle teal undertone */
+    --background: 200 12% 7%;
+    --foreground: 195 8% 93%;
 
-    --card: 228 6% 11%;
-    --card-foreground: 220 6% 93%;
+    --card: 200 10% 11%;
+    --card-foreground: 195 8% 93%;
 
-    --popover: 228 6% 11%;
-    --popover-foreground: 220 6% 93%;
+    --popover: 200 10% 11%;
+    --popover-foreground: 195 8% 93%;
 
-    /* Indigo lifted for dark — brighter to read on dark surfaces */
-    --primary: 235 60% 68%;
-    --primary-foreground: 228 8% 6%;
+    /* Teal lifted for dark — brighter to read on dark surfaces */
+    --primary: 173 50% 55%;
+    --primary-foreground: 200 12% 6%;
 
-    --secondary: 228 5% 15%;
-    --secondary-foreground: 220 6% 93%;
+    --secondary: 200 7% 15%;
+    --secondary-foreground: 195 8% 93%;
 
-    --muted: 228 5% 15%;
-    --muted-foreground: 220 4% 52%;
+    --muted: 200 7% 15%;
+    --muted-foreground: 195 5% 52%;
 
-    --accent: 228 5% 17%;
-    --accent-foreground: 220 6% 93%;
+    --accent: 200 7% 17%;
+    --accent-foreground: 195 8% 93%;
 
     --destructive: 0 60% 58%;
     --destructive-foreground: 0 0% 100%;
@@ -120,30 +120,30 @@
     --success: 160 72% 45%;
     --success-foreground: 0 0% 100%;
 
-    --border: 228 5% 20%;
-    --input: 228 5% 22%;
-    --ring: 235 60% 68%;
+    --border: 200 7% 20%;
+    --input: 200 7% 22%;
+    --ring: 173 50% 55%;
 
-    --sidebar-background: 228 8% 6%;
-    --sidebar-foreground: 220 6% 93%;
-    --sidebar-primary: 235 60% 68%;
-    --sidebar-primary-foreground: 228 8% 6%;
-    --sidebar-accent: 228 5% 15%;
-    --sidebar-accent-foreground: 220 6% 93%;
-    --sidebar-border: 228 5% 18%;
-    --sidebar-ring: 235 60% 68%;
+    --sidebar-background: 200 12% 6%;
+    --sidebar-foreground: 195 8% 93%;
+    --sidebar-primary: 173 50% 55%;
+    --sidebar-primary-foreground: 200 12% 6%;
+    --sidebar-accent: 200 7% 15%;
+    --sidebar-accent-foreground: 195 8% 93%;
+    --sidebar-border: 200 7% 18%;
+    --sidebar-ring: 173 50% 55%;
 
-    --chart-1: 235 60% 68%;
-    --chart-2: 168 45% 52%;
-    --chart-3: 24 65% 60%;
-    --chart-4: 198 55% 56%;
-    --chart-5: 340 50% 60%;
+    --chart-1: 173 50% 55%;
+    --chart-2: 12 78% 65%;
+    --chart-3: 38 75% 60%;
+    --chart-4: 210 65% 60%;
+    --chart-5: 330 50% 60%;
 
-    --sidebar: 228 7% 12%;
+    --sidebar: 200 10% 12%;
 
-    /* Brand gold — warm on dark for contrast */
-    --brand-gold: 40 88% 60%;
-    --brand-gold-light: 38 92% 68%;
+    /* Brand accent — coral lifted for dark */
+    --brand-accent: 12 78% 65%;
+    --brand-accent-light: 16 82% 72%;
 
     --shadow-2xs: 0 1px 2px 0px hsl(0 0% 0% / 0.18);
     --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.20);
@@ -310,25 +310,50 @@
   background-size: 128px 128px;
 }
 
-/* Gold gradient — BRAND ONLY: AURIA wordmark, premium moments */
-.text-gradient-gold {
-  background: linear-gradient(135deg, hsl(var(--brand-gold)), hsl(var(--brand-gold-light)), hsl(var(--brand-gold)));
+/* Brand gradient — ToSmile wordmark, premium moments */
+.text-gradient-brand {
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--brand-accent)), hsl(var(--primary)));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Primary glow — indigo-based for all functional buttons */
+/* Legacy alias — maps to new class */
+.text-gradient-gold {
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--brand-accent)), hsl(var(--primary)));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Primary glow — teal-based for all functional buttons */
+.btn-glow {
+  transition: box-shadow 0.3s ease, transform 0.15s ease;
+}
+
+.btn-glow:hover {
+  box-shadow: 0 0 20px hsl(173 58% 39% / 0.30), 0 0 40px hsl(173 58% 39% / 0.10);
+}
+
+.dark .btn-glow:hover {
+  box-shadow: 0 0 24px hsl(173 50% 55% / 0.25), 0 0 48px hsl(173 50% 55% / 0.08);
+}
+
+.btn-glow:active {
+  transform: scale(0.98);
+}
+
+/* Legacy alias */
 .btn-glow-gold {
   transition: box-shadow 0.3s ease, transform 0.15s ease;
 }
 
 .btn-glow-gold:hover {
-  box-shadow: 0 0 20px hsl(235 56% 58% / 0.30), 0 0 40px hsl(235 56% 58% / 0.10);
+  box-shadow: 0 0 20px hsl(173 58% 39% / 0.30), 0 0 40px hsl(173 58% 39% / 0.10);
 }
 
 .dark .btn-glow-gold:hover {
-  box-shadow: 0 0 24px hsl(235 60% 68% / 0.25), 0 0 48px hsl(235 60% 68% / 0.08);
+  box-shadow: 0 0 24px hsl(173 50% 55% / 0.25), 0 0 48px hsl(173 50% 55% / 0.08);
 }
 
 .btn-glow-gold:active {
@@ -383,20 +408,20 @@
 
 /* ─── Wizard: Progress bar with primary shimmer ─── */
 
-.progress-gold {
+.progress-bar {
   position: relative;
   overflow: hidden;
   background: hsl(var(--muted));
   border-radius: 9999px;
 }
 
-.progress-gold > div {
-  background: linear-gradient(90deg, hsl(var(--primary)), hsl(235 60% 65%), hsl(var(--primary)));
+.progress-bar > div {
+  background: linear-gradient(90deg, hsl(var(--primary)), hsl(173 50% 50%), hsl(var(--primary)));
   border-radius: 9999px;
   transition: width 0.3s ease;
 }
 
-.progress-gold::after {
+.progress-bar::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -450,14 +475,16 @@
 
 /* ─── Wizard: Stepper connector ─── */
 
+.stepper-connector,
 .stepper-connector-gold {
   height: 2px;
   background: linear-gradient(90deg, hsl(var(--primary) / 0.35), hsl(var(--primary) / 0.12));
   border-radius: 1px;
 }
 
+.stepper-connector.completed,
 .stepper-connector-gold.completed {
-  background: linear-gradient(90deg, hsl(var(--primary)), hsl(235 60% 65%));
+  background: linear-gradient(90deg, hsl(var(--primary)), hsl(173 50% 50%));
 }
 
 /* ─── Wizard: Vignette overlay for photo analysis ─── */
@@ -529,11 +556,103 @@
   animation: route-enter 0.25s ease-out;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   AI Animations — subtle indicators for AI-powered content
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* AI glow — soft pulsing border glow for AI-generated results */
+@keyframes ai-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.1), 0 0 0 0 hsl(var(--primary) / 0);
+  }
+  50% {
+    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.25), 0 0 16px 0 hsl(var(--primary) / 0.1);
+  }
+}
+
+.ai-glow {
+  animation: ai-glow 3s ease-in-out infinite;
+}
+
+/* AI shimmer border — traveling light along the border for active AI processing */
+@keyframes ai-border-travel {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.ai-shimmer-border {
+  position: relative;
+}
+
+.ai-shimmer-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(
+    90deg,
+    hsl(var(--primary) / 0.05),
+    hsl(var(--primary) / 0.5),
+    hsl(var(--brand-accent) / 0.4),
+    hsl(var(--primary) / 0.05)
+  );
+  background-size: 300% 100%;
+  animation: ai-border-travel 4s ease infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* AI dot pulse — small indicator dot that pulses */
+@keyframes ai-dot-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+.ai-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: hsl(var(--primary));
+  animation: ai-dot-pulse 1.5s ease-in-out infinite;
+}
+
+/* AI sparkle text — subtle gradient shimmer on AI labels */
+@keyframes ai-text-shimmer {
+  0% { background-position: -100% center; }
+  100% { background-position: 200% center; }
+}
+
+.ai-text {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--primary)) 0%,
+    hsl(var(--brand-accent)) 40%,
+    hsl(var(--primary)) 80%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: ai-text-shimmer 4s linear infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
+
 @media (prefers-reduced-motion: reduce) {
   .scan-line-animation::after { animation: none; opacity: 0; }
-  .progress-gold::after { animation: none; }
+  .progress-bar::after { animation: none; }
   .wizard-step-enter { animation: none; }
   .celebrate-sparkle { animation: none; opacity: 0; }
   .celebrate-confetti > span { animation: none; opacity: 0; }
   .route-enter { animation: none; }
+  .ai-glow { animation: none; }
+  .ai-shimmer-border::before { animation: none; opacity: 0.3; }
+  .ai-dot { animation: none; opacity: 0.7; }
+  .ai-text { animation: none; }
 }

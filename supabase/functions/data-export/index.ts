@@ -181,7 +181,7 @@ serve(async (req) => {
       headers: {
         ...corsHeaders,
         "Content-Type": "application/json",
-        "Content-Disposition": `attachment; filename="auria-dados-${userId.slice(0, 8)}-${new Date().toISOString().slice(0, 10)}.json"`,
+        "Content-Disposition": `attachment; filename="tosmile-dados-${userId.slice(0, 8)}-${new Date().toISOString().slice(0, 10)}.json"`,
       },
     });
   } catch (error: unknown) {

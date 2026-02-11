@@ -16,7 +16,8 @@ vi.mock('react-i18next', () => ({
 
 // Mock branding
 vi.mock('@/lib/branding', () => ({
-  BRAND_NAME: 'AURIA',
+  BRAND_NAME: 'ToSmile.ai',
+  WELCOME_STORAGE_KEY: 'tosmile-welcome-dismissed',
 }));
 
 // Mock UI components
@@ -61,7 +62,7 @@ describe('WelcomeModal', () => {
   it('should render the first slide with welcome text', () => {
     render(<WelcomeModal {...defaultProps} />);
     expect(screen.getByText('components.onboarding.welcome.welcomeTo')).toBeInTheDocument();
-    expect(screen.getByText('AURIA')).toBeInTheDocument();
+    expect(screen.getByText('ToSmile.ai')).toBeInTheDocument();
   });
 
   it('should render the description on first slide', () => {
@@ -170,6 +171,6 @@ describe('WelcomeModal', () => {
   });
 
   it('should export WELCOME_STORAGE_KEY', () => {
-    expect(WELCOME_STORAGE_KEY).toBe('auria-welcome-dismissed');
+    expect(WELCOME_STORAGE_KEY).toBe('tosmile-welcome-dismissed');
   });
 });

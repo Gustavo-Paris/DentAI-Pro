@@ -23,6 +23,7 @@ const SessionCard = memo(function SessionCard({
   isNew: boolean;
   index: number;
 }) {
+  const { t } = useTranslation();
   const isCompleted = session.status === 'completed';
 
   const borderClass = isNew
@@ -32,7 +33,7 @@ const SessionCard = memo(function SessionCard({
     : 'border-l-[3px] border-l-primary';
 
   return (
-    <Link to={`/evaluation/${session.session_id}`} aria-label={`Ver avaliação de ${session.patient_name || 'Paciente sem nome'}`}>
+    <Link to={`/evaluation/${session.session_id}`} aria-label={`Ver avaliação de ${session.patient_name || t('evaluation.patientNoName')}`}>
       <Card
         className={`p-3 sm:p-4 shadow-sm hover:shadow-md rounded-xl transition-all duration-300 cursor-pointer animate-[fade-in-up_0.6s_ease-out_both] ${borderClass}`}
         style={{ animationDelay: `${index * 0.05}s` }}
@@ -41,17 +42,17 @@ const SessionCard = memo(function SessionCard({
           <div className="flex-1">
             <div className="flex items-center gap-2 flex-wrap">
               <p className="font-medium text-sm sm:text-base">
-                {session.patient_name || 'Paciente sem nome'}
+                {session.patient_name || t('evaluation.patientNoName')}
               </p>
               {isNew && (
                 <Badge variant="secondary" className="text-xs">
-                  Nova
+                  {t('evaluation.new')}
                 </Badge>
               )}
             </div>
             <div className="flex flex-wrap items-center gap-2 mt-1">
               <p className="text-xs sm:text-sm text-muted-foreground">
-                {session.evaluationCount} {session.evaluationCount > 1 ? 'casos' : 'caso'}
+                {t('evaluation.case', { count: session.evaluationCount })}
               </p>
               <span className="text-muted-foreground hidden sm:inline">•</span>
               <div className="flex gap-1 flex-wrap">
@@ -72,11 +73,11 @@ const SessionCard = memo(function SessionCard({
             {isCompleted ? (
               <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
                 <CheckCircle className="w-3 h-3" aria-hidden="true" />
-                <span className="hidden sm:inline">Finalizado</span>
+                <span className="hidden sm:inline">{t('evaluation.completed')}</span>
               </span>
             ) : session.completedCount > 0 ? (
               <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
-                <span className="hidden sm:inline">Em andamento</span>
+                <span className="hidden sm:inline">{t('evaluation.inProgress')}</span>
                 <span className="text-muted-foreground">
                   ({session.completedCount}/{session.evaluationCount})
                 </span>
@@ -84,7 +85,7 @@ const SessionCard = memo(function SessionCard({
             ) : (
               <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
                 <CheckCircle className="w-3 h-3" aria-hidden="true" />
-                <span className="hidden sm:inline">Resultados prontos</span>
+                <span className="hidden sm:inline">{t('evaluation.resultsReady')}</span>
               </span>
             )}
             <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-muted-foreground">

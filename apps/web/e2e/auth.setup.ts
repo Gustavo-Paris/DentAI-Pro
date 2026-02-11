@@ -1,7 +1,10 @@
 import { test as setup, expect } from "@playwright/test";
-import path from "path";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
 
-const authFile = path.join(__dirname, ".auth/user.json");
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const authFile = join(__dirname, ".auth/user.json");
 
 /**
  * Shared authentication setup — runs once before all tests.
@@ -19,7 +22,12 @@ setup("authenticate", async ({ page }) => {
     );
   }
 
+  // Dismiss cookie consent banner before interacting with login
   await page.goto("/login");
+  await page.evaluate(() =>
+    localStorage.setItem("cookie-consent", "accepted")
+  );
+  await page.reload();
 
   await page.locator('input[type="email"]').fill(email);
   await page.locator('input[type="password"]').fill(password);

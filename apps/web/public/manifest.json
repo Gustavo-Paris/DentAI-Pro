@@ -1,6 +1,6 @@
 {
-  "name": "AURIA — Inteligência Clínica Estética",
-  "short_name": "AURIA",
+  "name": "ToSmile.ai — Odontologia Digital Inteligente",
+  "short_name": "ToSmile.ai",
   "icons": [
     {
       "src": "/icon-192.png",
@@ -13,8 +13,8 @@
       "type": "image/png"
     }
   ],
-  "theme_color": "#B8963E",
-  "background_color": "#FAFAF8",
+  "theme_color": "#2A9D8F",
+  "background_color": "#F9FAFA",
   "display": "standalone",
   "start_url": "/",
   "scope": "/"

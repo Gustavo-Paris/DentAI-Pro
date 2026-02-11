@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { DashboardSession } from '@/hooks/domain/useDashboard';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Smile } from 'lucide-react';
 import { getTreatmentConfig } from '@/lib/treatment-config';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -59,6 +59,12 @@ export function SessionCard({ session }: { session: DashboardSession }) {
                   </Badge>
                 )}
               </div>
+              {session.hasDSD && (
+                <Badge variant="outline" className="text-[10px] px-1.5 gap-1 border-violet-500/30 text-violet-600 dark:text-violet-400">
+                  <Smile className="w-2.5 h-2.5" />
+                  DSD
+                </Badge>
+              )}
               {session.treatmentTypes.length > 0 && (
                 <div className="flex gap-1 flex-wrap">
                   {session.treatmentTypes.map(type => {

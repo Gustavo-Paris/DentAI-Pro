@@ -2,7 +2,7 @@
  * Comprehensive tests for sanitizeForPrompt and sanitizeFieldsForPrompt.
  *
  * These functions provide defence-in-depth against prompt injection in the
- * AURIA dental AI platform's Supabase Edge Functions. The canonical
+ * ToSmile.ai dental AI platform's Supabase Edge Functions. The canonical
  * implementation lives at supabase/functions/_shared/validation.ts; we test
  * against a pure-TypeScript copy at apps/web/src/lib/sanitizeForPrompt.ts to
  * avoid Deno import issues in Vitest.

@@ -150,6 +150,37 @@ export const DSDAnalysisSchema = z
 export type DSDAnalysisParsed = z.infer<typeof DSDAnalysisSchema>;
 
 // ---------------------------------------------------------------------------
+// Enum normalization (Gemini sometimes returns English values)
+// ---------------------------------------------------------------------------
+
+const ENUM_MAPPINGS: Record<string, Record<string, string>> = {
+  smile_line: { low: "baixa", medium: "média", high: "alta" },
+  buccal_corridor: { adequate: "adequado", excessive: "excessivo", absent: "ausente" },
+  confidence: { low: "baixa", medium: "média", high: "alta" },
+  facial_midline: { centered: "centrada" },
+  dental_midline: { aligned: "alinhada" },
+  occlusal_plane: { level: "nivelado" },
+};
+
+/**
+ * Normalize enum-like fields in a DSD analysis result.
+ * Gemini occasionally returns English equivalents instead of the expected
+ * Portuguese values. This function maps known English values back to PT.
+ */
+export function normalizeAnalysisEnums<T extends Record<string, unknown>>(analysis: T): T {
+  for (const [field, mapping] of Object.entries(ENUM_MAPPINGS)) {
+    const value = analysis[field];
+    if (typeof value === "string") {
+      const normalized = mapping[value.toLowerCase()];
+      if (normalized) {
+        (analysis as Record<string, unknown>)[field] = normalized;
+      }
+    }
+  }
+  return analysis;
+}
+
+// ---------------------------------------------------------------------------
 // 3. CementationProtocol (recommend-cementation)
 // ---------------------------------------------------------------------------
 

@@ -104,7 +104,7 @@ export default function Privacy() {
               <li><strong>Informação:</strong> Saber com quem seus dados foram compartilhados</li>
             </ul>
             <p className="text-muted-foreground mt-2">
-              Para exercer qualquer desses direitos, entre em contato através do email: privacidade@auria.dental
+              Para exercer qualquer desses direitos, entre em contato através do email: privacidade@tosmile.ai
             </p>
           </section>
 
@@ -148,8 +148,8 @@ export default function Privacy() {
               entre em contato:
             </p>
             <ul className="list-none text-muted-foreground mt-2 space-y-1">
-              <li><strong>Email:</strong> privacidade@auria.dental</li>
-              <li><strong>Encarregado de Dados (DPO):</strong> dpo@auria.dental</li>
+              <li><strong>Email:</strong> privacidade@tosmile.ai</li>
+              <li><strong>Encarregado de Dados (DPO):</strong> dpo@tosmile.ai</li>
             </ul>
           </section>
         </div>

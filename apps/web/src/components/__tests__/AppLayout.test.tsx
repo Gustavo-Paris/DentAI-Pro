@@ -38,7 +38,7 @@ vi.mock('react-router-dom', () => ({
 
 // Mock branding
 vi.mock('@/lib/branding', () => ({
-  BRAND_NAME: 'AURIA',
+  BRAND_NAME: 'ToSmile.ai',
 }));
 
 // Mock CreditBadge
@@ -80,7 +80,7 @@ describe('AppLayout', () => {
 
   it('should render the brand name', () => {
     render(<AppLayout />);
-    const brandElements = screen.getAllByText('AURIA');
+    const brandElements = screen.getAllByText('ToSmile.ai');
     expect(brandElements.length).toBeGreaterThanOrEqual(1);
   });
 

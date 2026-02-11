@@ -14,6 +14,7 @@ import { ptBR } from 'date-fns/locale';
 // =============================================================================
 
 function PatientCard({ patient, index }: { patient: PatientWithStats; index: number }) {
+  const { t } = useTranslation();
   return (
     <Link to={`/patient/${patient.id}`} aria-label={`Ver paciente ${patient.name}`}>
       <Card
@@ -27,22 +28,22 @@ function PatientCard({ patient, index }: { patient: PatientWithStats; index: num
           <div className="flex-1 min-w-0">
             <h3 className="font-medium text-sm sm:text-base truncate">{patient.name}</h3>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              {patient.caseCount} {patient.caseCount === 1 ? 'caso' : 'casos'} •{' '}
-              {patient.sessionCount}{' '}
-              {patient.sessionCount === 1 ? 'avaliação' : 'avaliações'}
+              {t('patients.case', { count: patient.caseCount })} •{' '}
+              {t('patients.evaluation', { count: patient.sessionCount })}
               {patient.caseCount > 0 && (
                 <span className="ml-1">
                   •{' '}
-                  {Math.round(
-                    (patient.completedCount / patient.caseCount) * 100,
-                  )}
-                  % concluído
+                  {t('patients.percentCompleted', {
+                    percent: Math.round(
+                      (patient.completedCount / patient.caseCount) * 100,
+                    ),
+                  })}
                 </span>
               )}
             </p>
             {patient.lastVisit && (
               <p className="text-xs text-muted-foreground mt-0.5">
-                Última visita:{' '}
+                {t('patients.lastVisit')}{' '}
                 {format(new Date(patient.lastVisit), "d 'de' MMM, yyyy", {
                   locale: ptBR,
                 })}

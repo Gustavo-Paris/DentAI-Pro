@@ -237,7 +237,7 @@ export default function Result() {
             {/* Main Recommendation */}
             {r.resin && (
               <section className="mb-8">
-                <Card className="shadow-sm hover:shadow-md rounded-xl transition-shadow duration-300">
+                <Card className="shadow-sm hover:shadow-md rounded-xl transition-shadow duration-300 ai-glow">
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div>
@@ -310,7 +310,7 @@ export default function Result() {
                   <section className="mb-8">
                     <h3 className="font-semibold font-display mb-3 flex items-center gap-2">
                       <Layers className="w-4 h-4" />
-                      {t('result.stratificationProtocol')}
+                      <span className="ai-text">{t('result.stratificationProtocol')}</span>
                     </h3>
                     <ProtocolTable layers={r.layers} />
                     {r.layers.length > 0 && (
@@ -410,7 +410,7 @@ export default function Result() {
 
             {/* Confidence Indicator */}
             {r.treatmentType === 'resina' && r.hasProtocol && (
-              <section className="mb-8">
+              <section className="mb-8 ai-glow rounded-xl">
                 <ConfidenceIndicator confidence={r.confidence} />
               </section>
             )}
@@ -418,10 +418,10 @@ export default function Result() {
             {/* Ideal Resin */}
             {r.showIdealResin && r.idealResin && (
               <section className="mb-8">
-                <Card className="border-muted-foreground/20 bg-secondary/50">
+                <Card className="border-muted-foreground/20 bg-secondary/50 ai-glow">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-base flex items-center gap-2 text-muted-foreground">
-                      <Sparkles className="w-4 h-4" />
+                      <Sparkles className="w-4 h-4 ai-dot" />
                       {t('result.idealOption')}
                     </CardTitle>
                   </CardHeader>

@@ -5,11 +5,9 @@ import {
   DialogContent,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { BRAND_NAME } from '@/lib/branding';
+import { BRAND_NAME, WELCOME_STORAGE_KEY } from '@/lib/branding';
 import { Camera, Sparkles, FileText, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-const STORAGE_KEY = 'auria-welcome-dismissed';
 
 interface WelcomeModalProps {
   open: boolean;
@@ -71,7 +69,7 @@ export function WelcomeModal({ open, onClose, onTrySample, onCreateCase }: Welco
   const slide = slides[currentSlide];
 
   const handleDismiss = () => {
-    localStorage.setItem(STORAGE_KEY, 'true');
+    localStorage.setItem(WELCOME_STORAGE_KEY, 'true');
     onClose();
   };
 
@@ -181,4 +179,4 @@ export function WelcomeModal({ open, onClose, onTrySample, onCreateCase }: Welco
   );
 }
 
-export { STORAGE_KEY as WELCOME_STORAGE_KEY };
+export { WELCOME_STORAGE_KEY };

@@ -294,8 +294,8 @@ serve(async (req) => {
                     },
                     treatment_indication: {
                       type: "string",
-                      enum: ["resina", "porcelana", "coroa", "implante", "endodontia", "encaminhamento"],
-                      description: "Tipo de tratamento indicado: resina (restauração direta), porcelana (faceta/laminado), coroa (coroa total), implante (extração + implante), endodontia (canal), encaminhamento (especialista)"
+                      enum: ["resina", "porcelana", "coroa", "implante", "endodontia", "encaminhamento", "gengivoplastia", "recobrimento_radicular"],
+                      description: "Tipo de tratamento indicado: resina (restauração direta), porcelana (faceta/laminado), coroa (coroa total), implante (extração + implante), endodontia (canal), encaminhamento (especialista), gengivoplastia (remoção de excesso gengival), recobrimento_radicular (cobertura de raiz exposta)"
                     },
                     indication_reason: {
                       type: "string",
@@ -339,7 +339,7 @@ serve(async (req) => {
               },
               treatment_indication: {
                 type: "string",
-                enum: ["resina", "porcelana", "coroa", "implante", "endodontia", "encaminhamento"],
+                enum: ["resina", "porcelana", "coroa", "implante", "endodontia", "encaminhamento", "gengivoplastia", "recobrimento_radicular"],
                 description: "Indicação GERAL predominante do caso (o tipo de tratamento mais relevante para a maioria dos dentes)"
               },
               indication_reason: {

@@ -29,14 +29,15 @@ import { ReviewAnalysisStep } from '@/components/wizard/ReviewAnalysisStep';
 import { DraftRestoreModal } from '@/components/wizard/DraftRestoreModal';
 import { CreditConfirmDialog } from '@/components/CreditConfirmDialog';
 import { LoadingOverlay } from '@/components/LoadingOverlay';
-import { AuriaStepIndicator } from '@/components/wizard/AuriaStepIndicator';
+import { StepIndicator } from '@/components/wizard/StepIndicator';
 
 // Step definitions for full flow: [1:foto, 2:prefs, 3:analysis, 4:dsd, 5:review, 6:result]
 // Step definitions for quick case: [1:foto, 3:analysis, 5:review, 6:result]
 
 // Maps internal wizard.step (1-6) to display index for quick case
 const QUICK_STEP_MAP: Record<number, number> = { 1: 0, 3: 1, 5: 2, 6: 3 };
-const QUICK_LABELS = ['Foto', 'Análise', 'Revisão', 'Resultado'];
+// Resolved at render time via t() — see allSteps useMemo
+const QUICK_LABEL_KEYS = ['wizard.stepPhoto', 'wizard.stepAnalysis', 'wizard.stepReview', 'wizard.stepResult'] as const;
 const QUICK_ICONS = [Camera, Brain, ClipboardCheck, FileText];
 
 // =============================================================================
@@ -56,10 +57,12 @@ export default function NewCase() {
   const totalSteps = wizard.isQuickCase ? 4 : 6;
 
   // Build steps array conditionally
+  const quickLabels = useMemo(() => QUICK_LABEL_KEYS.map(k => t(k)), [t]);
+
   const allSteps = useMemo(() => {
     const fotoStep = {
       id: 'foto',
-      title: 'Foto',
+      title: t('wizard.stepPhoto'),
       icon: Camera,
       children: (
         <div key="step-foto" className={`wizard-step-${wizard.stepDirection}`}>
@@ -78,7 +81,7 @@ export default function NewCase() {
 
     const prefsStep = {
       id: 'preferencias',
-      title: 'Preferências',
+      title: t('wizard.stepPreferences'),
       icon: Heart,
       children: (
         <div key="step-prefs" className={`wizard-step-${wizard.stepDirection}`}>
@@ -93,7 +96,7 @@ export default function NewCase() {
 
     const analysisStep = {
       id: 'analise',
-      title: 'Análise',
+      title: t('wizard.stepAnalysis'),
       icon: Brain,
       children: (
         <div key="step-analysis" className={`wizard-step-${wizard.stepDirection}`}>
@@ -112,7 +115,7 @@ export default function NewCase() {
 
     const dsdStep = {
       id: 'dsd',
-      title: 'DSD',
+      title: t('wizard.stepDSD'),
       icon: Smile,
       children: (
         <div key="step-dsd" className={`wizard-step-${wizard.stepDirection}`}>
@@ -139,7 +142,7 @@ export default function NewCase() {
 
     const reviewStep = {
       id: 'revisao',
-      title: 'Revisão',
+      title: t('wizard.stepReview'),
       icon: ClipboardCheck,
       children: (
         <div key="step-review" className={`wizard-step-${wizard.stepDirection}`}>
@@ -174,7 +177,7 @@ export default function NewCase() {
 
     const resultStep = {
       id: 'resultado',
-      title: 'Resultado',
+      title: t('wizard.stepResult'),
       icon: FileText,
       children: (
         <div key="step-result" className={`wizard-step-${wizard.stepDirection}`}>
@@ -208,7 +211,7 @@ export default function NewCase() {
       return [fotoStep, analysisStep, reviewStep, resultStep];
     }
     return [fotoStep, prefsStep, analysisStep, dsdStep, reviewStep, resultStep];
-  }, [wizard]);
+  }, [wizard, t]);
 
   // Map display index back to internal step for step indicator clicks
   const handleStepClick = (displayIndex: number) => {
@@ -233,11 +236,11 @@ export default function NewCase() {
         steps={allSteps}
         slots={{
           stepIndicator: (
-            <AuriaStepIndicator
+            <StepIndicator
               currentStep={displayStep}
               totalSteps={totalSteps}
               onStepClick={handleStepClick}
-              stepLabels={wizard.isQuickCase ? QUICK_LABELS : undefined}
+              stepLabels={wizard.isQuickCase ? quickLabels : undefined}
               stepIcons={wizard.isQuickCase ? QUICK_ICONS : undefined}
             />
           ),
