@@ -950,6 +950,7 @@
           "approveGingivoplasty": "Prosseguir com gengivoplastia",
           "discardGingivoplasty": "Descartar gengivoplastia",
           "gingivoplastyApproved": "Gengivoplastia incluída na simulação",
+          "gingivoplastyGenerating": "Gerando simulação com gengivoplastia...",
           "gingivoplastyDiscarded": "Gengivoplastia descartada",
           "generatingLayers": "Gerando camadas de simulação...",
           "layersProgress": "{{current}} de {{total}} camadas processadas",

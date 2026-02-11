@@ -29,6 +29,7 @@ interface DSDSimulationViewerProps {
   suggestions: DSDSuggestion[];
   annotationContainerRef: RefObject<HTMLDivElement | null>;
   annotationDimensions: { width: number; height: number };
+  gingivoplastyApproved?: boolean | null;
   onSelectLayer: (idx: number, layerType: string) => void;
   onRetryFailedLayer: (layerType: SimulationLayerType) => void;
   onRegenerateSimulation: () => void;
@@ -50,6 +51,7 @@ export function DSDSimulationViewer({
   suggestions,
   annotationContainerRef,
   annotationDimensions,
+  gingivoplastyApproved,
   onSelectLayer,
   onRetryFailedLayer,
   onRegenerateSimulation,
@@ -116,6 +118,20 @@ export function DSDSimulationViewer({
               )}
             </button>
           ))}
+          {/* Generating tab: shown when complete-treatment is approved + generating but not yet in layers/failedLayers */}
+          {retryingLayer === 'complete-treatment' &&
+            !layers.some(l => l.type === 'complete-treatment') &&
+            !failedLayers.includes('complete-treatment') && (
+            <span
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-primary/30 bg-primary/5 text-primary animate-pulse"
+            >
+              <Loader2 className="w-3 h-3 animate-spin" />
+              {LAYER_LABELS['complete-treatment']}
+              <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4">
+                {t('components.wizard.dsd.simulationViewer.gingiva')}
+              </Badge>
+            </span>
+          )}
           {failedLayers.map((layerType) => (
             <button
               key={layerType}

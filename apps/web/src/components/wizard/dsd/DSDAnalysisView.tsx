@@ -221,11 +221,24 @@ export function DSDAnalysisView({
         </Card>
       )}
 
-      {/* Gengivoplasty approved confirmation */}
+      {/* Gengivoplasty approved confirmation — show generating state or done */}
       {hasGingivoSuggestion && gingivoplastyApproved === true && (
-        <div className="flex items-center gap-2 text-sm text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-lg px-3 py-2">
-          <CheckCircle className="w-4 h-4 shrink-0" />
-          <span>{t('components.wizard.dsd.analysisView.gingivoplastyApproved', { defaultValue: 'Gengivoplastia incluída na simulação' })}</span>
+        <div className={`flex items-center gap-2 text-sm rounded-lg px-3 py-2 ${
+          retryingLayer === 'complete-treatment'
+            ? 'text-primary bg-primary/5 border border-primary/30'
+            : 'text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800'
+        }`}>
+          {retryingLayer === 'complete-treatment' ? (
+            <>
+              <Loader2 className="w-4 h-4 shrink-0 animate-spin" />
+              <span>{t('components.wizard.dsd.analysisView.gingivoplastyGenerating', { defaultValue: 'Gerando simulação com gengivoplastia...' })}</span>
+            </>
+          ) : (
+            <>
+              <CheckCircle className="w-4 h-4 shrink-0" />
+              <span>{t('components.wizard.dsd.analysisView.gingivoplastyApproved', { defaultValue: 'Gengivoplastia incluída na simulação' })}</span>
+            </>
+          )}
         </div>
       )}
 
@@ -300,6 +313,7 @@ export function DSDAnalysisView({
             suggestions={analysis.suggestions || []}
             annotationContainerRef={annotationContainerRef}
             annotationDimensions={annotationDimensions}
+            gingivoplastyApproved={gingivoplastyApproved}
             onSelectLayer={onSelectLayer}
             onRetryFailedLayer={onRetryFailedLayer}
             onRegenerateSimulation={onRegenerateSimulation}
