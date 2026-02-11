@@ -23,7 +23,6 @@ import { CreditUsageHistory } from '@/components/pricing/CreditUsageHistory';
 import { CreditPackSection } from '@/components/pricing/CreditPackSection';
 import { useSubscription, formatPrice } from '@/hooks/useSubscription';
 import { DetailPage } from '@pageshell/composites';
-import { subscriptions, privacy } from '@/data';
 import { useAuth } from '@/contexts/AuthContext';
 import { logger } from '@/lib/logger';
 
@@ -51,7 +50,7 @@ export default function Profile() {
     const syncWithRetry = async (attempts = 3, delay = 2000) => {
       for (let i = 0; i < attempts; i++) {
         try {
-          const result = await subscriptions.syncCreditPurchase();
+          const result = await p.syncCreditPurchase();
           if (result?.synced) {
             toast.success(t('profile.creditsAdded', { count: result.credits_added }));
             refreshSubscription();
@@ -243,7 +242,7 @@ export default function Profile() {
         {
           id: 'privacidade',
           label: t('profile.privacyTab'),
-          content: () => <PrivacySection />,
+          content: () => <PrivacySection exportData={p.exportData} deleteAccount={p.deleteAccount} />,
         },
       ]}
       defaultTab={searchParams.get('tab') || 'perfil'}
@@ -401,7 +400,13 @@ function UpgradeCTA() {
 
 const CONFIRMATION_PHRASE = 'EXCLUIR MINHA CONTA';
 
-function PrivacySection() {
+function PrivacySection({
+  exportData,
+  deleteAccount,
+}: {
+  exportData: () => Promise<import('@/data/privacy').DataExport>;
+  deleteAccount: (confirmation: string) => Promise<import('@/data/privacy').DeleteAccountResult>;
+}) {
   const { t } = useTranslation();
   const { signOut } = useAuth();
   const navigate = useNavigate();
@@ -413,7 +418,7 @@ function PrivacySection() {
   const handleExportData = useCallback(async () => {
     setIsExporting(true);
     try {
-      const data = await privacy.exportData();
+      const data = await exportData();
 
       // Trigger browser download
       const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -435,7 +440,7 @@ function PrivacySection() {
     } finally {
       setIsExporting(false);
     }
-  }, []);
+  }, [exportData]);
 
   const handleDeleteAccount = useCallback(async () => {
     if (deleteConfirmation !== CONFIRMATION_PHRASE) {
@@ -445,7 +450,7 @@ function PrivacySection() {
 
     setIsDeleting(true);
     try {
-      const result = await privacy.deleteAccount(deleteConfirmation);
+      const result = await deleteAccount(deleteConfirmation);
 
       if (result.success) {
         toast.success(t('profile.deleteSuccess'));

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { DashboardMetrics, WeeklyTrendPoint } from '@/hooks/domain/useDashboard';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -103,10 +104,10 @@ function AnimatedValue({ value, suffix }: { value: number; suffix?: string }) {
 
 interface StatConfig {
   key: keyof DashboardMetrics;
-  label: string;
-  unit: string;
+  labelKey: string;
+  unitKey: string;
   icon: typeof FileText;
-  tooltip: string;
+  tooltipKey: string;
   accentColor: string;
   darkAccentColor: string;
   getValueColor: (v: number) => string;
@@ -117,30 +118,30 @@ interface StatConfig {
 const statConfigs: StatConfig[] = [
   {
     key: 'totalCases',
-    label: 'Total de Casos',
-    unit: 'tratamentos gerados',
+    labelKey: 'dashboard.stats.totalCases',
+    unitKey: 'dashboard.stats.totalCasesUnit',
     icon: FileText,
-    tooltip: 'Total de tratamentos gerados por avaliações',
+    tooltipKey: 'dashboard.stats.totalCasesTooltip',
     accentColor: 'from-primary to-primary/70',
     darkAccentColor: 'dark:from-primary dark:to-primary/60',
     getValueColor: () => 'text-foreground',
   },
   {
     key: 'totalPatients',
-    label: 'Pacientes',
-    unit: 'cadastrados',
+    labelKey: 'dashboard.stats.patients',
+    unitKey: 'dashboard.stats.patientsUnit',
     icon: Users,
-    tooltip: 'Total de pacientes cadastrados',
+    tooltipKey: 'dashboard.stats.patientsTooltip',
     accentColor: 'from-blue-400 to-cyan-500',
     darkAccentColor: 'dark:from-blue-400/80 dark:to-cyan-400/80',
     getValueColor: () => 'text-foreground',
   },
   {
     key: 'weeklySessions',
-    label: 'Esta Semana',
-    unit: 'novas avaliações',
+    labelKey: 'dashboard.stats.thisWeek',
+    unitKey: 'dashboard.stats.thisWeekUnit',
     icon: TrendingUp,
-    tooltip: 'Avaliações criadas esta semana',
+    tooltipKey: 'dashboard.stats.thisWeekTooltip',
     accentColor: 'from-sky-400 to-teal-500',
     darkAccentColor: 'dark:from-sky-400/80 dark:to-teal-400/80',
     getValueColor: () => 'text-foreground',
@@ -148,10 +149,10 @@ const statConfigs: StatConfig[] = [
   },
   {
     key: 'completionRate',
-    label: 'Conclusão',
-    unit: 'das avaliações concluídas',
+    labelKey: 'dashboard.stats.completion',
+    unitKey: 'dashboard.stats.completionUnit',
     icon: CheckCircle2,
-    tooltip: 'Avaliações com todos os casos concluídos',
+    tooltipKey: 'dashboard.stats.completionTooltip',
     accentColor: 'from-emerald-400 to-teal-500',
     darkAccentColor: 'dark:from-emerald-400/80 dark:to-teal-400/80',
     getValueColor: () => 'text-foreground',
@@ -160,10 +161,10 @@ const statConfigs: StatConfig[] = [
   },
   {
     key: 'pendingSessions',
-    label: 'Em Aberto',
-    unit: 'avaliações pendentes',
+    labelKey: 'dashboard.stats.open',
+    unitKey: 'dashboard.stats.openUnit',
     icon: FileWarning,
-    tooltip: 'Avaliações com casos ainda não concluídos',
+    tooltipKey: 'dashboard.stats.openTooltip',
     accentColor: 'from-amber-400 to-orange-500',
     darkAccentColor: 'dark:from-amber-400/80 dark:to-orange-400/80',
     getValueColor: (v: number) =>
@@ -171,10 +172,10 @@ const statConfigs: StatConfig[] = [
   },
   {
     key: 'pendingTeeth',
-    label: 'Casos Pendentes',
-    unit: 'casos em aberto',
+    labelKey: 'dashboard.stats.pendingCases',
+    unitKey: 'dashboard.stats.pendingCasesUnit',
     icon: Stethoscope,
-    tooltip: 'Total de casos aguardando conclusão',
+    tooltipKey: 'dashboard.stats.pendingCasesTooltip',
     accentColor: 'from-violet-400 to-purple-500',
     darkAccentColor: 'dark:from-violet-400/80 dark:to-purple-400/80',
     getValueColor: (v: number) =>
@@ -197,6 +198,7 @@ export function StatsGrid({
   weekRange: { start: string; end: string };
   weeklyTrends: WeeklyTrendPoint[];
 }) {
+  const { t } = useTranslation();
   const containerRef = useScrollRevealChildren();
 
   return (
@@ -207,7 +209,7 @@ export function StatsGrid({
         const tooltipText =
           stat.key === 'weeklySessions'
             ? `${weekRange.start} – ${weekRange.end}`
-            : stat.tooltip;
+            : t(stat.tooltipKey);
 
         return (
           <Tooltip key={stat.key}>
@@ -221,7 +223,7 @@ export function StatsGrid({
                 <div className="flex items-center gap-2 mb-2">
                   <Icon className="w-4 h-4 text-muted-foreground/70" aria-hidden="true" />
                   <p className="text-xs font-medium text-muted-foreground tracking-wide uppercase">
-                    {stat.label}
+                    {t(stat.labelKey)}
                   </p>
                 </div>
                 {loading ? (
@@ -240,7 +242,7 @@ export function StatsGrid({
                       )}
                     </div>
                     <p className="text-[10px] text-muted-foreground/60 mt-0.5 leading-tight">
-                      {stat.unit}
+                      {t(stat.unitKey)}
                     </p>
                   </>
                 )}

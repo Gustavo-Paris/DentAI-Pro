@@ -8,6 +8,7 @@ import {
   generateRequestId,
 } from "../_shared/cors.ts";
 import { logger } from "../_shared/logger.ts";
+import { checkRateLimit, createRateLimitResponse } from "../_shared/rateLimit.ts";
 
 /**
  * LGPD Data Export Edge Function
@@ -59,6 +60,20 @@ serve(async (req) => {
     }
 
     const userId = user.id;
+
+    // Rate limit: LGPD data export — restrictive to prevent abuse
+    const rateLimitResult = await checkRateLimit(
+      supabaseService,
+      userId,
+      "data-export",
+      { perMinute: 2, perHour: 10, perDay: 20 },
+    );
+
+    if (!rateLimitResult.allowed) {
+      logger.warn(`[${reqId}] Rate limit exceeded for user ${userId} on data-export`);
+      return createRateLimitResponse(rateLimitResult, corsHeaders);
+    }
+
     logger.log(`[${reqId}] Exporting data for user ${userId}`);
 
     // Fetch all user data in parallel

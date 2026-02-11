@@ -1,5 +1,6 @@
 import { subDays, startOfWeek } from 'date-fns';
 import { supabase } from './client';
+import { withQuery, withMutation } from './utils';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -56,47 +57,46 @@ export async function list({ userId, page = 0, pageSize = 20 }: EvaluationListPa
 }
 
 export async function getById(evaluationId: string) {
-  const { data, error } = await supabase
-    .from('evaluations')
-    .select(`
-      *,
-      resins:resins!recommended_resin_id(*),
-      ideal_resin:resins!ideal_resin_id(*)
-    `)
-    .eq('id', evaluationId)
-    .maybeSingle();
-
-  if (error) throw error;
-  return data;
+  return withQuery(() =>
+    supabase
+      .from('evaluations')
+      .select(`
+        *,
+        resins:resins!recommended_resin_id(*),
+        ideal_resin:resins!ideal_resin_id(*)
+      `)
+      .eq('id', evaluationId)
+      .maybeSingle(),
+  );
 }
 
 export async function listBySession(sessionId: string, userId: string) {
-  const { data, error } = await supabase
-    .from('evaluations')
-    .select(`
-      id, created_at, patient_name, patient_id, patient_age, tooth,
-      cavity_class, restoration_size, status, photo_frontal,
-      checklist_progress, stratification_protocol, treatment_type,
-      ai_treatment_indication, cementation_protocol, generic_protocol,
-      tooth_color, bruxism, aesthetic_level, budget, longevity_expectation, patient_aesthetic_goals,
-      dsd_analysis, dsd_simulation_url, dsd_simulation_layers,
-      resins!recommended_resin_id (name, manufacturer)
-    `)
-    .eq('session_id', sessionId)
-    .eq('user_id', userId)
-    .order('tooth', { ascending: true });
-
-  if (error) throw error;
+  const data = await withQuery(() =>
+    supabase
+      .from('evaluations')
+      .select(`
+        id, created_at, patient_name, patient_id, patient_age, tooth,
+        cavity_class, restoration_size, status, photo_frontal,
+        checklist_progress, stratification_protocol, treatment_type,
+        ai_treatment_indication, cementation_protocol, generic_protocol,
+        tooth_color, bruxism, aesthetic_level, budget, longevity_expectation, patient_aesthetic_goals,
+        dsd_analysis, dsd_simulation_url, dsd_simulation_layers,
+        resins!recommended_resin_id (name, manufacturer)
+      `)
+      .eq('session_id', sessionId)
+      .eq('user_id', userId)
+      .order('tooth', { ascending: true }),
+  );
   return data || [];
 }
 
 export async function updateStatus(id: string, status: string) {
-  const { error } = await supabase
-    .from('evaluations')
-    .update({ status })
-    .eq('id', id);
-
-  if (error) throw error;
+  await withMutation(() =>
+    supabase
+      .from('evaluations')
+      .update({ status })
+      .eq('id', id),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -157,26 +157,27 @@ export async function getDashboardMetrics({ userId }: DashboardMetricsParams) {
 }
 
 export async function getRecent({ userId, limit = 50 }: DashboardRecentParams) {
-  const { data, error } = await supabase
-    .from('evaluations')
-    .select('id, created_at, tooth, patient_name, session_id, status, treatment_type, is_from_inventory, patient_age')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-    .limit(limit);
-
-  if (error) throw error;
+  const data = await withQuery(() =>
+    supabase
+      .from('evaluations')
+      .select('id, created_at, tooth, patient_name, session_id, status, treatment_type, is_from_inventory, patient_age')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(limit),
+  );
   return data || [];
 }
 
 export async function getDashboardInsights({ userId, weeksBack = 8 }: DashboardInsightsParams) {
   const since = subDays(new Date(), weeksBack * 7).toISOString();
-  const { data, error } = await supabase
-    .from('evaluations')
-    .select('id, created_at, treatment_type, is_from_inventory, resins:resins!recommended_resin_id(name)')
-    .eq('user_id', userId)
-    .gte('created_at', since)
-    .order('created_at', { ascending: true });
-  if (error) throw error;
+  const data = await withQuery(() =>
+    supabase
+      .from('evaluations')
+      .select('id, created_at, treatment_type, is_from_inventory, resins:resins!recommended_resin_id(name)')
+      .eq('user_id', userId)
+      .gte('created_at', since)
+      .order('created_at', { ascending: true }),
+  );
   return data || [];
 }
 
@@ -198,14 +199,14 @@ export async function countByUserId(userId: string) {
 // ---------------------------------------------------------------------------
 
 export async function searchRecent(userId: string, limit = 100) {
-  const { data, error } = await supabase
-    .from('evaluations')
-    .select('id, patient_name, tooth, session_id, created_at')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-    .limit(limit);
-
-  if (error) throw error;
+  const data = await withQuery(() =>
+    supabase
+      .from('evaluations')
+      .select('id, patient_name, tooth, session_id, created_at')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(limit),
+  );
   return data || [];
 }
 
@@ -214,12 +215,12 @@ export async function searchRecent(userId: string, limit = 100) {
 // ---------------------------------------------------------------------------
 
 export async function updateStatusBulk(ids: string[], status: string) {
-  const { error } = await supabase
-    .from('evaluations')
-    .update({ status })
-    .in('id', ids);
-
-  if (error) throw error;
+  await withMutation(() =>
+    supabase
+      .from('evaluations')
+      .update({ status })
+      .in('id', ids),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -227,14 +228,14 @@ export async function updateStatusBulk(ids: string[], status: string) {
 // ---------------------------------------------------------------------------
 
 export async function listPendingTeeth(sessionId: string, userId: string) {
-  const { data, error } = await supabase
-    .from('session_detected_teeth')
-    .select('*')
-    .eq('session_id', sessionId)
-    .eq('user_id', userId)
-    .order('tooth', { ascending: true });
-
-  if (error) throw error;
+  const data = await withQuery(() =>
+    supabase
+      .from('session_detected_teeth')
+      .select('*')
+      .eq('session_id', sessionId)
+      .eq('user_id', userId)
+      .order('tooth', { ascending: true }),
+  );
   return data || [];
 }
 
@@ -253,8 +254,9 @@ export interface SharedEvaluationRow {
 }
 
 export async function getSharedEvaluation(token: string): Promise<SharedEvaluationRow[]> {
-  const { data, error } = await supabase.rpc('get_shared_evaluation', { p_token: token });
-  if (error) throw error;
+  const data = await withQuery(() =>
+    supabase.rpc('get_shared_evaluation', { p_token: token }),
+  );
   return (data as SharedEvaluationRow[]) || [];
 }
 
@@ -291,13 +293,14 @@ export async function getOrCreateShareLink(sessionId: string, userId: string) {
   if (existing?.token) return existing.token;
 
   // Create new link
-  const { data: created, error } = await supabase
-    .from('shared_links')
-    .insert({ user_id: userId, session_id: sessionId })
-    .select('token')
-    .single();
+  const created = await withQuery(() =>
+    supabase
+      .from('shared_links')
+      .insert({ user_id: userId, session_id: sessionId })
+      .select('token')
+      .single(),
+  );
 
-  if (error) throw error;
   return created.token as string;
 }
 
@@ -306,17 +309,16 @@ export async function getOrCreateShareLink(sessionId: string, userId: string) {
 // ---------------------------------------------------------------------------
 
 export async function getByIdWithRelations(id: string, userId: string) {
-  const { data, error } = await supabase
-    .from('evaluations')
-    .select(`
-      *,
-      resins:resins!recommended_resin_id (*),
-      ideal_resin:resins!ideal_resin_id (*)
-    `)
-    .eq('id', id)
-    .eq('user_id', userId)
-    .maybeSingle();
-
-  if (error) throw error;
-  return data;
+  return withQuery(() =>
+    supabase
+      .from('evaluations')
+      .select(`
+        *,
+        resins:resins!recommended_resin_id (*),
+        ideal_resin:resins!ideal_resin_id (*)
+      `)
+      .eq('id', id)
+      .eq('user_id', userId)
+      .maybeSingle(),
+  );
 }

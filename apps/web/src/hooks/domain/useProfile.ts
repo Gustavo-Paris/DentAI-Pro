@@ -3,8 +3,9 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/data';
-import { profiles, payments } from '@/data';
+import { profiles, payments, subscriptions, privacy } from '@/data';
 import type { ProfileFull } from '@/data/profiles';
+import type { DataExport, DeleteAccountResult } from '@/data/privacy';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -41,6 +42,9 @@ export interface ProfileActions {
   handleLogoUpload: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
   fileInputRef: React.RefObject<HTMLInputElement>;
   logoInputRef: React.RefObject<HTMLInputElement>;
+  syncCreditPurchase: () => Promise<{ synced: boolean; credits_added: number; sessions_processed: number }>;
+  exportData: () => Promise<DataExport>;
+  deleteAccount: (confirmation: string) => Promise<DeleteAccountResult>;
 }
 
 // ---------------------------------------------------------------------------
@@ -213,6 +217,18 @@ export function useProfile(): ProfileState & ProfileActions {
     }
   }, [user, profileForm.avatar_url]);
 
+  const syncCreditPurchase = useCallback(async () => {
+    return subscriptions.syncCreditPurchase();
+  }, []);
+
+  const exportData = useCallback(async () => {
+    return privacy.exportData();
+  }, []);
+
+  const deleteAccount = useCallback(async (confirmation: string) => {
+    return privacy.deleteAccount(confirmation);
+  }, []);
+
   const handleLogoUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
@@ -268,5 +284,8 @@ export function useProfile(): ProfileState & ProfileActions {
     handleLogoUpload,
     fileInputRef,
     logoInputRef,
+    syncCreditPurchase,
+    exportData,
+    deleteAccount,
   };
 }

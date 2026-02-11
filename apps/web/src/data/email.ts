@@ -1,4 +1,5 @@
 import { supabase } from './client';
+import { withQuery } from './utils';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -32,10 +33,10 @@ export async function sendEmail(
   template: EmailTemplate,
   data?: Record<string, unknown>,
 ): Promise<SendEmailResult> {
-  const { data: result, error } = await supabase.functions.invoke('send-email', {
-    body: { template, data },
-  });
-
-  if (error) throw error;
+  const result = await withQuery(() =>
+    supabase.functions.invoke('send-email', {
+      body: { template, data },
+    }),
+  );
   return result as SendEmailResult;
 }

@@ -9,6 +9,7 @@ import {
 } from "../_shared/cors.ts";
 import { logger } from "../_shared/logger.ts";
 import { sendEmail, accountDeletedEmail } from "../_shared/email.ts";
+import { checkRateLimit, createRateLimitResponse } from "../_shared/rateLimit.ts";
 
 /**
  * LGPD Account Deletion Edge Function
@@ -64,6 +65,19 @@ serve(async (req) => {
     }
 
     const userId = user.id;
+
+    // Rate limit: account deletion — very strict to prevent abuse
+    const rateLimitResult = await checkRateLimit(
+      supabaseService,
+      userId,
+      "delete-account",
+      { perMinute: 1, perHour: 3, perDay: 5 },
+    );
+
+    if (!rateLimitResult.allowed) {
+      logger.warn(`[${reqId}] Rate limit exceeded for user ${userId} on delete-account`);
+      return createRateLimitResponse(rateLimitResult, corsHeaders);
+    }
 
     // Parse and validate confirmation
     let body: { confirmation?: string };

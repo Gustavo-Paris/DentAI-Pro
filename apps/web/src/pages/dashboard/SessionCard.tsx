@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import type { DashboardSession } from '@/hooks/domain/useDashboard';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +9,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 export function SessionCard({ session }: { session: DashboardSession }) {
+  const { t } = useTranslation();
   const isCompleted = session.completedCount === session.evaluationCount;
   const progressPercent = session.evaluationCount > 0
     ? (session.completedCount / session.evaluationCount) * 100
@@ -27,7 +29,7 @@ export function SessionCard({ session }: { session: DashboardSession }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <p className="font-semibold text-sm sm:text-base truncate">
-                {session.patient_name || 'Paciente sem nome'}
+                {session.patient_name || t('evaluation.patientNoName')}
               </p>
               <Badge
                 variant="outline"
@@ -37,12 +39,12 @@ export function SessionCard({ session }: { session: DashboardSession }) {
                     : 'border-primary/30 text-primary bg-primary/5 dark:bg-primary/10'
                 }`}
               >
-                {isCompleted ? 'Concluído' : 'Em progresso'}
+                {isCompleted ? t('evaluation.completed') : t('evaluation.inProgress')}
               </Badge>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <p className="text-xs text-muted-foreground">
-                {session.evaluationCount} {session.evaluationCount > 1 ? 'casos' : 'caso'}
+                {t('evaluation.case', { count: session.evaluationCount })}
               </p>
               <span className="text-muted-foreground/40 hidden sm:inline">·</span>
               <div className="flex gap-1 flex-wrap">
@@ -75,7 +77,7 @@ export function SessionCard({ session }: { session: DashboardSession }) {
           <div className="flex items-center gap-2 text-xs text-muted-foreground self-end sm:self-center">
             <span className="hidden sm:inline">
               {format(new Date(session.created_at), "d 'de' MMM", { locale: ptBR })}
-              {session.patientAge && <span> · {session.patientAge} anos</span>}
+              {session.patientAge && <span> · {t('dashboard.session.yearsOld', { age: session.patientAge })}</span>}
             </span>
             <span className="sm:hidden">
               {format(new Date(session.created_at), 'dd/MM', { locale: ptBR })}

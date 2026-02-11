@@ -1,4 +1,5 @@
 import { supabase } from './client';
+import { withQuery } from './utils';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -40,11 +41,11 @@ export interface DeleteAccountResult {
  * a browser download of the JSON file.
  */
 export async function exportData(): Promise<DataExport> {
-  const { data, error } = await supabase.functions.invoke('data-export', {
-    body: {},
-  });
-
-  if (error) throw error;
+  const data = await withQuery(() =>
+    supabase.functions.invoke('data-export', {
+      body: {},
+    }),
+  );
   return data as DataExport;
 }
 
@@ -55,10 +56,10 @@ export async function exportData(): Promise<DataExport> {
  * @param confirmation Must be exactly "EXCLUIR MINHA CONTA"
  */
 export async function deleteAccount(confirmation: string): Promise<DeleteAccountResult> {
-  const { data, error } = await supabase.functions.invoke('delete-account', {
-    body: { confirmation },
-  });
-
-  if (error) throw error;
+  const data = await withQuery(() =>
+    supabase.functions.invoke('delete-account', {
+      body: { confirmation },
+    }),
+  );
   return data as DeleteAccountResult;
 }
