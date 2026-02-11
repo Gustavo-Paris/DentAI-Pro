@@ -248,47 +248,67 @@ export function useDSDStep({
     return needed;
   }, [gingivoplastyApproved, hasGingivoSuggestion]);
 
-  // Generate a single layer
+  // Generate a single layer (with client-side lip retry for gingival layers)
   const generateSingleLayer = useCallback(async (
     analysis: DSDAnalysis,
     layerType: SimulationLayerType,
   ): Promise<SimulationLayer | null> => {
     if (!imageBase64) return null;
 
+    const isGingivalLayer = layerType === 'complete-treatment' || layerType === 'root-coverage';
+    const MAX_LIP_RETRIES = isGingivalLayer ? 2 : 0;
+
     try {
-      const { data } = await withRetry(
-        async () => {
-          const resp = await invokeFunction<DSDResult & { layer_type?: string }>('generate-dsd', {
-            body: {
-              imageBase64,
-              toothShape: TOOTH_SHAPE,
-              regenerateSimulationOnly: true,
-              existingAnalysis: analysis,
-              patientPreferences,
-              layerType,
+      let bestResult: (DSDResult & { lips_moved?: boolean }) | null = null;
 
-            },
-          });
-          if (resp.error || !resp.data?.simulation_url) {
-            throw resp.error || new Error('Simulation returned no URL');
-          }
-          return resp;
-        },
-        {
-          maxRetries: 2,
-          baseDelay: 3000,
-          onRetry: (attempt, err) => {
-            logger.warn(`Layer ${layerType} retry ${attempt}:`, err);
+      for (let lipAttempt = 0; lipAttempt <= MAX_LIP_RETRIES; lipAttempt++) {
+        const { data } = await withRetry(
+          async () => {
+            const resp = await invokeFunction<DSDResult & { layer_type?: string; lips_moved?: boolean }>('generate-dsd', {
+              body: {
+                imageBase64,
+                toothShape: TOOTH_SHAPE,
+                regenerateSimulationOnly: true,
+                existingAnalysis: analysis,
+                patientPreferences,
+                layerType,
+              },
+            });
+            if (resp.error || !resp.data?.simulation_url) {
+              throw resp.error || new Error('Simulation returned no URL');
+            }
+            return resp;
           },
-        },
-      );
+          {
+            maxRetries: 2,
+            baseDelay: 3000,
+            onRetry: (attempt, err) => {
+              logger.warn(`Layer ${layerType} retry ${attempt}:`, err);
+            },
+          },
+        );
 
-      if (!data?.simulation_url) return null;
+        if (!data?.simulation_url) continue;
+
+        bestResult = data;
+
+        // If lips didn't move or this is not a gingival layer, accept immediately
+        if (!data.lips_moved || !isGingivalLayer) break;
+
+        // Lips moved — retry if we have attempts left
+        if (lipAttempt < MAX_LIP_RETRIES) {
+          logger.warn(`Layer ${layerType}: lips moved, retrying (${lipAttempt + 1}/${MAX_LIP_RETRIES})...`);
+        } else {
+          logger.warn(`Layer ${layerType}: lips moved on final attempt — accepting best result`);
+        }
+      }
+
+      if (!bestResult?.simulation_url) return null;
 
       return {
         type: layerType,
         label: LAYER_LABELS[layerType],
-        simulation_url: data.simulation_url,
+        simulation_url: bestResult.simulation_url,
         whitening_level: patientPreferences?.whiteningLevel || 'natural',
         includes_gengivoplasty: layerType === 'complete-treatment',
       };

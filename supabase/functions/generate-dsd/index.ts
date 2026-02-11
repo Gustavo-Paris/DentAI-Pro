@@ -257,7 +257,7 @@ async function generateSimulation(
   toothShape: string = 'natural',
   patientPreferences?: PatientPreferences,
   layerType?: 'restorations-only' | 'whitening-restorations' | 'complete-treatment' | 'root-coverage',
-): Promise<string | null> {
+): Promise<{ url: string | null; lips_moved?: boolean }> {
   const SIMULATION_TIMEOUT = 55_000; // 55s max
   
   // Get whitening level from direct UI selection (no AI analysis needed!)
@@ -474,9 +474,8 @@ async function generateSimulation(
   );
   const dsdSimulationPromptDef = getPrompt('dsd-simulation');
 
-  // Lip validation helper: checks if EITHER lip moved between original and simulation
+  // Lip validation for gingival layers: checks if EITHER lip moved
   const isGingivalLayer = layerType === 'complete-treatment' || layerType === 'root-coverage';
-  const MAX_LIP_RETRIES = isGingivalLayer ? 2 : 0; // Only retry for gingival layers
 
   async function validateLips(simImageUrl: string): Promise<boolean> {
     try {
@@ -509,76 +508,46 @@ Responda APENAS 'SIM' ou 'NÃO'.`,
       logger.log(`Lip validation for ${layerType || 'standard'} layer: ${lipsMoved ? 'FAILED (lips moved)' : 'PASSED'}`);
       return !lipsMoved; // true = valid (lips didn't move)
     } catch (lipErr) {
-      // If validation itself fails, accept the image (don't block on validation errors)
       logger.warn("Lip validation check failed (non-blocking):", lipErr);
-      return true;
+      return true; // Accept on validation error
     }
   }
 
   try {
     logger.log("Calling Gemini Image Edit for simulation...");
 
-    let finalResult: { imageUrl: string | null; text: string | null } | null = null;
-
-    for (let attempt = 0; attempt <= MAX_LIP_RETRIES; attempt++) {
-      const result = await withMetrics<{ imageUrl: string | null; text: string | null }>(metrics, dsdSimulationPromptDef.id, PROMPT_VERSION, dsdSimulationPromptDef.model)(async () => {
-        const response = await callGeminiImageEdit(
-          simulationPrompt,
-          inputBase64Data,
-          inputMimeType,
-          {
-            temperature: dsdSimulationPromptDef.temperature + (attempt * 0.05), // Slight variation on retry
-            timeoutMs: SIMULATION_TIMEOUT,
-            seed: attempt === 0 ? imageSeed : imageSeed + attempt, // Different seed on retry
-          }
-        );
-        return {
-          result: response,
-          tokensIn: 0,
-          tokensOut: 0,
-        };
-      });
-
-      if (!result.imageUrl) {
-        logger.warn(`Attempt ${attempt + 1}: No image in Gemini response, text was:`, result.text);
-        if (attempt === MAX_LIP_RETRIES) {
-          throw new Error(`Gemini returned no image after ${attempt + 1} attempts. Text: ${(result.text || 'none').substring(0, 200)}`);
+    const result = await withMetrics<{ imageUrl: string | null; text: string | null }>(metrics, dsdSimulationPromptDef.id, PROMPT_VERSION, dsdSimulationPromptDef.model)(async () => {
+      const response = await callGeminiImageEdit(
+        simulationPrompt,
+        inputBase64Data,
+        inputMimeType,
+        {
+          temperature: dsdSimulationPromptDef.temperature,
+          timeoutMs: SIMULATION_TIMEOUT,
+          seed: imageSeed,
         }
-        continue;
-      }
+      );
+      return {
+        result: response,
+        tokensIn: 0,
+        tokensOut: 0,
+      };
+    });
 
-      // For gingival layers, validate lips before accepting
-      if (isGingivalLayer) {
-        if (attempt < MAX_LIP_RETRIES) {
-          const lipsValid = await validateLips(result.imageUrl);
-          if (!lipsValid) {
-            logger.warn(`Attempt ${attempt + 1}/${MAX_LIP_RETRIES + 1}: Lip movement detected, retrying with different seed...`);
-            // Keep as fallback in case all retries fail
-            finalResult = result;
-            continue;
-          }
-        } else {
-          // Last attempt — run validation but accept regardless
-          const lipsValid = await validateLips(result.imageUrl);
-          if (!lipsValid) {
-            logger.warn(`Final attempt ${attempt + 1}: Lip movement still detected — accepting anyway (best effort)`);
-          }
-        }
-      }
-
-      finalResult = result;
-      if (attempt > 0) {
-        logger.log(`Simulation accepted on attempt ${attempt + 1}`);
-      }
-      break;
+    if (!result.imageUrl) {
+      logger.warn("No image in Gemini response, text was:", result.text);
+      throw new Error(`Gemini returned no image. Text: ${(result.text || 'none').substring(0, 200)}`);
     }
 
-    if (!finalResult?.imageUrl) {
-      throw new Error("Gemini returned no valid image after all attempts");
+    // For gingival layers, validate lips and return flag (client handles retry)
+    let lipsMoved = false;
+    if (isGingivalLayer) {
+      const lipsValid = await validateLips(result.imageUrl);
+      lipsMoved = !lipsValid;
     }
 
     // Upload generated image
-    const base64Data = finalResult.imageUrl.replace(/^data:image\/\w+;base64,/, "");
+    const base64Data = result.imageUrl.replace(/^data:image\/\w+;base64,/, "");
     const binaryData = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
 
     const fileName = `${userId}/dsd_${Date.now()}.png`;
@@ -595,8 +564,8 @@ Responda APENAS 'SIM' ou 'NÃO'.`,
       throw new Error(`Storage upload failed: ${uploadError.message}`);
     }
 
-    logger.log("Simulation generated and uploaded:", fileName);
-    return fileName;
+    logger.log("Simulation generated and uploaded:", fileName, lipsMoved ? "(lips_moved)" : "");
+    return { url: fileName, lips_moved: lipsMoved || undefined };
   } catch (err) {
     if (err instanceof GeminiError) {
       logger.warn(`Gemini simulation error (${err.statusCode}):`, err.message);
@@ -1223,8 +1192,11 @@ serve(async (req: Request) => {
     // Generate simulation image
     let simulationUrl: string | null = null;
     let simulationDebug: string | undefined;
+    let lipsMoved = false;
     try {
-      simulationUrl = await generateSimulation(imageBase64, analysis, user.id, supabase, toothShape || 'natural', patientPreferences, layerType);
+      const simResult = await generateSimulation(imageBase64, analysis, user.id, supabase, toothShape || 'natural', patientPreferences, layerType);
+      simulationUrl = simResult.url;
+      lipsMoved = simResult.lips_moved || false;
     } catch (simError) {
       const simMsg = simError instanceof Error ? simError.message : String(simError);
       logger.error("Simulation error:", simMsg);
@@ -1278,13 +1250,16 @@ serve(async (req: Request) => {
     }
 
     // Return result with note if applicable
-    const result: DSDResult & { layer_type?: string; simulation_debug?: string } = {
+    const result: DSDResult & { layer_type?: string; simulation_debug?: string; lips_moved?: boolean } = {
       analysis,
       simulation_url: simulationUrl,
       simulation_note: simulationNote,
     };
     if (layerType) {
       result.layer_type = layerType;
+    }
+    if (lipsMoved) {
+      result.lips_moved = true;
     }
     if (simulationDebug && !simulationUrl) {
       result.simulation_debug = simulationDebug;
