@@ -72,7 +72,7 @@ describe('PatientPreferencesStep', () => {
 
   it('should render shade labels', () => {
     render(<PatientPreferencesStep {...defaultProps} />);
-    expect(screen.getByText('A1 / A2 / B1')).toBeInTheDocument();
+    expect(screen.getByText('B1')).toBeInTheDocument();
     expect(screen.getByText('BL1 / BL2 / BL3')).toBeInTheDocument();
   });
 

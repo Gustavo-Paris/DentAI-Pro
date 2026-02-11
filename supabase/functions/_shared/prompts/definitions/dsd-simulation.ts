@@ -94,7 +94,8 @@ Dimensões de saída DEVEM ser iguais às dimensões de entrada.
 REFERÊNCIA ANATÔMICA FIXA:
 O lábio superior define a LINHA DO SORRISO. Sua posição é a referência
 para diagnóstico de sorriso gengival. Alterar o lábio = destruir o diagnóstico.
-O contorno, posição, e formato do lábio são IMUTÁVEIS em TODAS as camadas.`
+O contorno, posição, e formato do lábio são IMUTÁVEIS em TODAS as camadas.
+⚠️ LÁBIOS SÃO A REFERÊNCIA DIAGNÓSTICA — MOVER LÁBIOS = DESTRUIR O CASO`
 }
 
 function buildWhiteningPrioritySection(params: Params): string {
@@ -337,6 +338,15 @@ function buildWithGengivoplastyPrompt(params: Params): string {
 ${absolutePreservation}
 
 TASK: Edit teeth AND gingival contour. This is the COMPLETE treatment simulation including gengivoplasty.
+
+⚠️⚠️⚠️ REGRA #0 — MAIS IMPORTANTE QUE TUDO ⚠️⚠️⚠️
+A LINHA DO SORRISO (posição do lábio superior) é SAGRADA e INTOCÁVEL.
+O nível gengival do sorriso NÃO pode ser alterado — a gengivoplastia
+altera apenas a margem gengival ENTRE os dentes, nunca a relação
+lábio-gengiva visível no sorriso.
+
+VALIDAÇÃO: Compare a posição do lábio superior pixel a pixel.
+Se o lábio mudou de posição → REJEITAR e refazer.
 
 ⚠️ EXCEPTION TO GINGIVA PRESERVATION: In this layer, you ARE ALLOWED to modify the gingival contour.
 The gum line should be recontoured to show the effect of gengivoplasty:

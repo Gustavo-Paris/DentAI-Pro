@@ -98,27 +98,52 @@ function getStatusBadge(evaluation: EvaluationItem, getChecklistProgress: (e: Ev
 }
 
 // =============================================================================
-// Grouping helper — groups evaluations by treatment type
+// Grouping helper — groups evaluations by treatment type + identical protocol
 // =============================================================================
 
 interface EvalGroup {
   treatmentType: string;
   label: string;
+  resinName?: string;
   evaluations: EvaluationItem[];
+}
+
+/** Generates a fingerprint from a resin evaluation's protocol so identical protocols can be grouped. */
+function getProtocolFingerprint(evaluation: EvaluationItem): string {
+  const resinKey = evaluation.resins
+    ? `${evaluation.resins.name}|${evaluation.resins.manufacturer}`
+    : 'unknown';
+  if (!evaluation.stratification_protocol?.layers?.length) return resinKey;
+  const layersKey = [...evaluation.stratification_protocol.layers]
+    .sort((a, b) => a.order - b.order)
+    .map(l => `${l.resin_brand}:${l.shade}`)
+    .join('|');
+  return `${resinKey}::${layersKey}`;
 }
 
 function groupByTreatment(evaluations: EvaluationItem[]): EvalGroup[] {
   const map = new Map<string, EvaluationItem[]>();
   for (const ev of evaluations) {
-    const key = ev.treatment_type || 'outros';
+    const baseKey = ev.treatment_type || 'outros';
+    // For resina, further sub-group by identical protocol fingerprint
+    const key = baseKey === 'resina'
+      ? `resina::${getProtocolFingerprint(ev)}`
+      : baseKey;
     if (!map.has(key)) map.set(key, []);
     map.get(key)!.push(ev);
   }
-  return Array.from(map.entries()).map(([treatmentType, items]) => ({
-    treatmentType,
-    label: getTreatmentConfig(treatmentType).shortLabel,
-    evaluations: items,
-  }));
+  return Array.from(map.entries()).map(([key, items]) => {
+    const treatmentType = key.split('::')[0];
+    const resinName = treatmentType === 'resina' && items[0]?.resins?.name
+      ? items[0].resins.name
+      : undefined;
+    return {
+      treatmentType,
+      label: getTreatmentConfig(treatmentType).shortLabel,
+      resinName,
+      evaluations: items,
+    };
+  });
 }
 
 // =============================================================================
@@ -309,14 +334,14 @@ export default function EvaluationDetails() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {groupByTreatment(detail.evaluations).map((group) => {
+                    {groupByTreatment(detail.evaluations).map((group, gi) => {
                       const showGroupHeader = group.evaluations.length > 1;
                       const groupTeeth = group.evaluations.map(e => e.tooth === 'GENGIVO' ? 'Gengiva' : e.tooth).join(', ');
                       const groupIds = group.evaluations.map(e => e.id);
                       const allSelected = groupIds.every(id => detail.selectedIds.has(id));
                       return [
                         showGroupHeader && (
-                          <TableRow key={`group-${group.treatmentType}`} className="bg-muted/40 border-t">
+                          <TableRow key={`group-${gi}`} className="bg-muted/40 border-t">
                             <TableCell onClick={(e) => e.stopPropagation()}>
                               <Checkbox
                                 checked={allSelected}
@@ -333,7 +358,11 @@ export default function EvaluationDetails() {
                               <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                                 {group.label} — {group.evaluations.length} dentes: {groupTeeth}
                               </span>
-                              <span className="text-xs text-muted-foreground ml-2">({t('evaluation.sameProtocol')})</span>
+                              <span className="text-xs text-muted-foreground ml-2">
+                                ({group.resinName
+                                  ? `${t('evaluation.unifiedProtocol')} • ${group.resinName}`
+                                  : t('evaluation.sameProtocol')})
+                              </span>
                             </TableCell>
                             <TableCell className="text-right py-2">
                               <Button
@@ -409,16 +438,23 @@ export default function EvaluationDetails() {
             {/* Cases Cards - Mobile */}
             <div className="sm:hidden space-y-3">
               <h3 className="font-semibold font-display text-lg">{t('evaluation.generatedTreatments')}</h3>
-              {groupByTreatment(detail.evaluations).map((group) => {
+              {groupByTreatment(detail.evaluations).map((group, gi) => {
                 const showGroupHeader = group.evaluations.length > 1;
                 const groupTeeth = group.evaluations.map(e => e.tooth === 'GENGIVO' ? 'Gengiva' : e.tooth).join(', ');
                 return (
-                  <div key={`mgroup-${group.treatmentType}`}>
+                  <div key={`mgroup-${gi}`}>
                     {showGroupHeader && (
                       <div className="flex items-center justify-between px-2 py-2 mb-1 bg-muted/40 rounded-lg">
-                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                          {group.label} — {group.evaluations.length} dentes: {groupTeeth}
-                        </span>
+                        <div>
+                          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide block">
+                            {group.label} — {group.evaluations.length} dentes: {groupTeeth}
+                          </span>
+                          {group.resinName && (
+                            <span className="text-xs text-muted-foreground">
+                              {t('evaluation.unifiedProtocol')} • {group.resinName}
+                            </span>
+                          )}
+                        </div>
                         <Button
                           variant="ghost"
                           size="sm"

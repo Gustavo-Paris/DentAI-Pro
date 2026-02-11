@@ -189,21 +189,22 @@ TABELA DE RESINAS RECOMENDADAS POR CAMADA:
 ┌─────────────────────┬─────────────────────────────────────────────────┐
 │ Camada              │ Resinas Recomendadas                            │
 ├─────────────────────┼─────────────────────────────────────────────────┤
-│ Aumento Incisal     │ CT (Z350), Trans (Forma), Trans (Vittra APS)   │
-│                     │ Trans20 (Empress Direct)                        │
+│ Aumento Incisal     │ Trans (FORMA), Trans20 (Empress Direct), CT (Z350)│
+│                     │ Trans (Vittra APS)                                │
 ├─────────────────────┼─────────────────────────────────────────────────┤
-│ Cristas Proximais   │ XLE (Harmonize), BL-L (Empress), WE (Z350)     │
+│ Cristas Proximais   │ XLE (Harmonize), BL-L (Empress), WE (Palfique LX5)│
 │                     │ Usar 1 tom mais claro que corpo                 │
 ├─────────────────────┼─────────────────────────────────────────────────┤
-│ Dentina/Corpo       │ WB (Forma), WB/A1B/A2B (Z350), DA1/DA2 (Vittra)│
+│ Dentina/Corpo       │ WB (FORMA), DA1/DA2 (Vittra APS), WB (Z350)     │
 │                     │ D BL-L (Empress)                                │
 ├─────────────────────┼─────────────────────────────────────────────────┤
 │ Efeitos Incisais    │ Ver seção EFEITOS INCISAIS EXPANDIDA abaixo     │
 ├─────────────────────┼─────────────────────────────────────────────────┤
-│ Esmalte Vestibular  │ WE (Palfique LX5), MW (Estelite)               │
+│ Esmalte Vestibular  │ WE (Palfique LX5), MW (Estelite Omega)          │
 │ Final (acabamento)  │ A1E/A2E (Z350) — priorizar polimento superior  │
 ├─────────────────────┼─────────────────────────────────────────────────┤
-│ Dentes Clareados    │ WE (Estelite Bianco), BL (Forma)               │
+│ Dentes Clareados    │ W3/W4 (Estelite Bianco), BL (Forma)             │
+│                     │ BL-L (IPS Empress Direct)                       │
 └─────────────────────┴─────────────────────────────────────────────────┘
 
 ⚠️ REGRA CRÍTICA — DIVERSIDADE DE MARCAS (OBRIGATÓRIO):
@@ -215,6 +216,7 @@ TABELA DE RESINAS RECOMENDADAS POR CAMADA:
   • Efeitos Incisais: Corantes IVOCLAR (IPS Color) — Z350 NÃO possui corantes próprios!
   • Esmalte Vestibular Final: Palfique LX5 (WE) ou Estelite Omega (MW) — polimento superior
 - A Z350 pode ser usada em 1-2 camadas, mas NÃO em todas
+- PRIORIZE marcas especializadas para cada camada. Z350 é uma opção versátil de BACKUP, não a primeira escolha.
 - EXCEÇÃO: Se o inventário do dentista só possui Z350, então usar Z350 para todas é aceitável — mas marcar nas observações
 
 === EFEITOS INCISAIS EXPANDIDA ===
@@ -465,14 +467,14 @@ ESTRUTURA OBRIGAT\u00d3RIA - 5 CAMADAS (simplificar para 2-3 se n\u00edvel est\u
    - Objetivo: Construção da borda incisal, SE NECESSÁRIO
    - Resinas: Esmalte translúcido — Trans (FORMA), CT (Z350), Trans20 (IPS Empress Direct)
    - Espessura: 0.2-0.3mm
-   - Técnica: Incrementos de até 2mm, fotopolimerizar 20s. Aplicar incremento único na borda do dente para aumentar ou alinhar a incisal, criando base para os mamelons. NÃO fracionar em múltiplos incrementos — camada fina e única
+   - Técnica: Aplicar incremento único na borda do dente para aumentar ou alinhar a incisal, criando base para os mamelons. NÃO fracionar em múltiplos incrementos — camada fina e única
 
 2. CRISTAS PROXIMAIS (definição anatômica - ANTES da dentina):
    - Objetivo: Definição das cristas mesial e distal
    - Resinas: XLE (Harmonize), BL-L (Empress Direct), WE (Z350) — esmalte um tom mais claro que o dente
    - Para pacientes com DENTES CLAREADOS ou que desejam cor mais clara:
      → Opção padrão: XLE (Harmonize)
-     → Opção clareada: BL-L (IPS Empress Direct) ou Bianco (Estelite)
+     → Opção clareada: BL-L (IPS Empress Direct) ou W3/W4 (Estelite Bianco)
    - Espessura: 0.2mm
    - Técnica: Aplicar nas bordas proximais para criar profundidade. O incremento pode ser tracionado com tira de poliéster para melhor adaptação da resina nas bordas proximais e resultado mais uniforme
 
@@ -593,12 +595,19 @@ LINHAS COM CORES BL DISPON\u00cdVEIS:
 - Palfique LX5: BL1, BL2, BL3
 - Forma (Ultradent): BL
 - Filtek Z350 XT: WB, WE (aproxima\u00e7\u00e3o)
-- Estelite Bianco/MW: espec\u00edfica para clareados
+- Estelite Bianco: W3 (branco moderado), W4 (branco intenso) \u2014 espec\u00edfica para dentes clareados
 - IPS Empress Direct: BL-L (esmalte transl\u00facido para clareados)
+- Estelite Bianco: W3 (natural branco), W4 (diamond branco) \u2014 PRIORIDADE para dentes clareados
 
 LINHAS SEM CORES BL:
 - Estelite Sigma Quick (usar B1/A1 como aproxima\u00e7\u00e3o)
 - Vittra APS (usar A1 como aproxima\u00e7\u00e3o)
+
+=== PROTOCOLO SIMPLIFICADO PARA DENTES CLAREADOS ===
+Quando o paciente j\u00e1 realizou clareamento dental e deseja restaura\u00e7\u00f5es compat\u00edveis:
+- PRIORIDADE M\u00c1XIMA: Estelite Bianco W3 (branco moderado) ou W4 (branco intenso)
+- ALTERNATIVA: BL (Forma Ultradent) ou BL-L (IPS Empress Direct)
+- N\u00c3O sugerir Z350 como primeira op\u00e7\u00e3o para dentes clareados
 
 INSTRU\u00c7\u00d5ES PARA PROTOCOLO DE ESTRATIFICA\u00c7\u00c3O (V2):
 
@@ -815,12 +824,6 @@ FGM VITTRA APS:
 - Incrementos de 2mm, fotopolimerizar 20s
 - Boa opção custo-benefício para dentina/corpo
 
-3M FILTEK Z350 XT:
-- Nanoparticulada, ampla gama de opacidades
-- Incrementos de até 2mm, fotopolimerizar 20s
-- Shades Body (B): opacidade média ideal para substituição de dentina
-- Shades Enamel (E): translucidez natural para camada final
-
 IVOCLAR IPS EMPRESS DIRECT:
 - Nano-híbrida com opalescência natural
 - Incrementos de 2mm, fotopolimerizar 20s (Bluephase)
@@ -833,6 +836,8 @@ FGM OPALLIS / OPALLIS FLOW:
 
 REGRA: No campo "technique" de cada layer, ALÉM da técnica de inserção, adicionar a dica específica da marca recomendada.
 ⚠️ EXCEÇÃO OBRIGATÓRIA: Para a camada de EFEITOS INCISAIS, NÃO incluir dica genérica de incrementos da marca (ex: "Incrementos de até 2mm, fotopolimerizar 20s"). Efeitos incisais usam técnica de pincel/corante, não incrementos convencionais. Incluir APENAS a dica de técnica específica da camada de efeitos.
+
+⚠️ REGRA DE TÉCNICA: No campo 'technique', descrever APENAS a técnica de inserção/aplicação da camada. NÃO incluir informações genéricas de fotopolimerização ou tamanho de incremento que são comuns a todas as marcas.
 
 Responda em formato JSON:
 {

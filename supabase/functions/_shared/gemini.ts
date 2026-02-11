@@ -62,6 +62,9 @@ interface GeminiRequest {
     maxOutputTokens?: number;
     topP?: number;
     topK?: number;
+    thinkingConfig?: {
+      thinkingLevel: "minimal" | "low" | "medium" | "high";
+    };
   };
   tools?: GeminiTool[];
   toolConfig?: {
@@ -648,6 +651,8 @@ export async function callGeminiVisionWithTools(
     temperature?: number;
     maxTokens?: number;
     forceFunctionName?: string;
+    timeoutMs?: number;
+    thinkingLevel?: "minimal" | "low" | "medium" | "high";
   } = {}
 ): Promise<{
   text: string | null;
@@ -666,13 +671,21 @@ export async function callGeminiVisionWithTools(
 
   const geminiTools = convertToGeminiTools(tools);
 
+  const generationConfig: GeminiRequest["generationConfig"] = {
+    temperature: options.temperature ?? 0.1,
+    maxOutputTokens: options.maxTokens ?? 3000,
+  };
+
+  // Gemini 3+ models default to high thinking, which causes excessive latency.
+  // Set thinkingLevel explicitly to control reasoning time.
+  if (options.thinkingLevel) {
+    generationConfig!.thinkingConfig = { thinkingLevel: options.thinkingLevel };
+  }
+
   const request: GeminiRequest = {
     contents: [{ role: "user", parts }],
     tools: geminiTools,
-    generationConfig: {
-      temperature: options.temperature ?? 0.1,
-      maxOutputTokens: options.maxTokens ?? 3000,
-    },
+    generationConfig,
   };
 
   if (options.systemPrompt) {
@@ -697,7 +710,7 @@ export async function callGeminiVisionWithTools(
     };
   }
 
-  const response = await makeGeminiRequest(model, request);
+  const response = await makeGeminiRequest(model, request, 3, options.timeoutMs ?? DEFAULT_TIMEOUT_MS);
   const text = extractTextResponse(response);
   const functionCall = extractFunctionCall(response);
   const finishReason = response.candidates?.[0]?.finishReason || "UNKNOWN";

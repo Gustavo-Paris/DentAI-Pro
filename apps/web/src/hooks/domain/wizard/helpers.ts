@@ -233,7 +233,6 @@ export function getGenericProtocol(
         'Remoção de tecido gengival excedente',
         'Osteotomia/osteoplastia se necessário (aumento de coroa clínica)',
         'Sutura (se necessário) com fio 5-0 ou 6-0',
-        'Aplicação de cimento cirúrgico',
         'Prescrição: analgésico + anti-inflamatório + bochecho clorexidina 0,12%',
         'Remoção de sutura em 7-10 dias',
         'Aguardar cicatrização completa (3-6 semanas) antes de restaurações definitivas',

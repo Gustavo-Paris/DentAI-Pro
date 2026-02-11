@@ -75,6 +75,7 @@ export function useAuthenticatedFetch() {
               const enriched = new Error(serverMessage);
               (enriched as { code?: string }).code = body?.code;
               (enriched as { status?: number }).status = status;
+              (enriched as { debug?: string }).debug = body?.debug;
               logger.error(`Edge function ${functionName} error (${status}):`, serverMessage);
 
               // Check if it's a 401 and try to refresh + retry once

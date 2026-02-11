@@ -98,6 +98,10 @@ export function DSDStep(props: DSDStepProps) {
         onGenerateAllLayers={() => state.generateAllLayers()}
         onRetry={state.handleRetry}
         onContinue={state.handleContinue}
+        gingivoplastyApproved={state.gingivoplastyApproved}
+        hasGingivoSuggestion={state.result?.analysis ? state.hasGingivoSuggestion(state.result.analysis) : false}
+        onApproveGingivoplasty={state.handleApproveGingivoplasty}
+        onDiscardGingivoplasty={state.handleDiscardGingivoplasty}
       />
     );
   }

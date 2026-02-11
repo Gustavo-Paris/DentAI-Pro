@@ -17,7 +17,7 @@ interface DSDWhiteningComparisonProps {
 
 const WHITENING_LABELS: Record<string, string> = {
   natural: 'Natural (A1/A2)',
-  hollywood: 'Hollywood (BL1)',
+  hollywood: 'Diamond (BL1/BL2/BL3)',
 };
 
 export function DSDWhiteningComparison({
@@ -31,35 +31,45 @@ export function DSDWhiteningComparison({
   onSelectLevel,
 }: DSDWhiteningComparisonProps) {
   const { t } = useTranslation();
+  const hasResults = showWhiteningComparison && Object.keys(whiteningComparison).length > 0;
+
   return (
     <>
-      {/* E4: Whitening comparison button */}
-      {!showWhiteningComparison && (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onGenerateComparison}
-          disabled={isComparingWhitening}
-          className="w-full"
-        >
-          {isComparingWhitening ? (
-            <>
-              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-              {t('components.wizard.dsd.whiteningComparison.generating')}
-            </>
-          ) : (
-            <>
-              <Palette className="w-3 h-3 mr-1" />
-              {t('components.wizard.dsd.whiteningComparison.compareTitle')}
-              <span className="text-xs opacity-60 ml-1">{t('components.wizard.dsd.whiteningComparison.free')}</span>
-            </>
+      {/* Button: visible when no results yet */}
+      {!hasResults && (
+        <div className="space-y-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onGenerateComparison}
+            disabled={isComparingWhitening}
+            className="w-full"
+          >
+            {isComparingWhitening ? (
+              <>
+                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                {t('components.wizard.dsd.whiteningComparison.generating')}
+              </>
+            ) : (
+              <>
+                <Palette className="w-3 h-3 mr-1" />
+                {t('components.wizard.dsd.whiteningComparison.compareTitle')}
+                <span className="text-xs opacity-60 ml-1">{t('components.wizard.dsd.whiteningComparison.free')}</span>
+              </>
+            )}
+          </Button>
+          {/* Progress bar while generating */}
+          {isComparingWhitening && (
+            <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
+              <div className="h-full bg-primary rounded-full animate-progress-indeterminate" />
+            </div>
           )}
-        </Button>
+        </div>
       )}
 
-      {/* E4: Whitening comparison grid */}
-      {showWhiteningComparison && Object.keys(whiteningComparison).length > 0 && (
-        <div className="space-y-3">
+      {/* Results grid with fade-in animation */}
+      {hasResults && (
+        <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-medium">{t('components.wizard.dsd.whiteningComparison.title')}</h4>
             <Button
@@ -75,15 +85,15 @@ export function DSDWhiteningComparison({
             {(['natural', 'hollywood'] as const).map(level => {
               const url = whiteningComparison[level];
               if (!url) return (
-                <div key={level} className="aspect-[4/3] rounded-lg bg-secondary/50 flex items-center justify-center">
-                  <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                <div key={level} className="aspect-[4/3] rounded-lg bg-secondary/50 flex items-center justify-center animate-pulse">
+                  <div className="w-full h-full rounded-lg bg-gradient-to-r from-secondary/50 via-secondary/80 to-secondary/50" />
                 </div>
               );
               const isActive = patientPreferences?.whiteningLevel === level;
               return (
                 <div
                   key={level}
-                  className={`rounded-lg overflow-hidden border-2 cursor-pointer transition-colors ${isActive ? 'border-primary' : 'border-transparent hover:border-primary/40'}`}
+                  className={`rounded-lg overflow-hidden border-2 cursor-pointer transition-all duration-300 ${isActive ? 'border-primary shadow-md' : 'border-transparent hover:border-primary/40'}`}
                   onClick={() => {
                     if (isActive) return;
                     onSelectLevel(level, url);
