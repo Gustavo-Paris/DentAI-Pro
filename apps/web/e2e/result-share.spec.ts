@@ -22,19 +22,34 @@ test.describe("Result Page & Share", () => {
   test("evaluation list shows session cards", async ({ page }) => {
     await page.goto("/evaluations");
 
-    // Wait for list to load — either sessions or empty state
+    // Wait for page title to appear (rendered even during loading/empty)
+    await expect(
+      page.getByText(/avaliações/i).first()
+    ).toBeVisible({ timeout: 10_000 });
+
+    // Wait for loading skeleton to disappear
+    await page.waitForTimeout(3_000);
+
+    // Check for session card links (SessionCard renders as <Link to="/evaluation/{id}">)
     const hasContent = await page
-      .locator("[data-testid='session-card'], a[href*='/evaluation/']")
+      .locator("a[href*='/evaluation/']")
       .first()
-      .isVisible({ timeout: 10_000 })
+      .isVisible({ timeout: 5_000 })
       .catch(() => false);
 
+    // ListPage empty state uses data-testid="empty-state" and renders
+    // "Nenhuma avaliação encontrada" from evaluation.emptyTitle
     const hasEmptyState = await page
-      .getByText(/nenhuma avaliação/i)
+      .locator("[data-testid='empty-state']")
+      .isVisible({ timeout: 5_000 })
+      .catch(() => false);
+
+    const hasEmptyText = hasEmptyState || await page
+      .getByText(/nenhuma avaliação encontrada|nenhuma avaliação/i)
       .isVisible({ timeout: 3_000 })
       .catch(() => false);
 
-    expect(hasContent || hasEmptyState).toBeTruthy();
+    expect(hasContent || hasEmptyText).toBeTruthy();
   });
 
   test("can navigate to evaluation details", async ({ page }) => {
