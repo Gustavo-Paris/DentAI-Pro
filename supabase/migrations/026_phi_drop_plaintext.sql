@@ -225,7 +225,7 @@ SELECT
   photo_frontal, photo_45, photo_face, additional_photos,
   tooth_bounds, dsd_analysis, dsd_simulation_url, dsd_simulation_layers,
   simulation_url, patient_aesthetic_goals, patient_desired_changes,
-  session_id, created_at
+  session_id, dsd_image_hash, created_at
 FROM public.evaluations_raw;
 
 -- ============================================================
@@ -255,7 +255,7 @@ BEGIN
     photo_frontal, photo_45, photo_face, additional_photos,
     tooth_bounds, dsd_analysis, dsd_simulation_url, dsd_simulation_layers,
     simulation_url, patient_aesthetic_goals, patient_desired_changes,
-    session_id
+    session_id, dsd_image_hash
   ) VALUES (
     COALESCE(NEW.id, gen_random_uuid()),
     NEW.user_id, NEW.patient_id,
@@ -273,7 +273,7 @@ BEGIN
     NEW.photo_frontal, NEW.photo_45, NEW.photo_face, NEW.additional_photos,
     NEW.tooth_bounds, NEW.dsd_analysis, NEW.dsd_simulation_url, NEW.dsd_simulation_layers,
     NEW.simulation_url, NEW.patient_aesthetic_goals, NEW.patient_desired_changes,
-    NEW.session_id
+    NEW.session_id, NEW.dsd_image_hash
   )
   RETURNING * INTO inserted_row;
 
@@ -318,7 +318,8 @@ BEGIN
     warnings = COALESCE(NEW.warnings, evaluations_raw.warnings),
     dsd_analysis = COALESCE(NEW.dsd_analysis, evaluations_raw.dsd_analysis),
     dsd_simulation_url = COALESCE(NEW.dsd_simulation_url, evaluations_raw.dsd_simulation_url),
-    dsd_simulation_layers = COALESCE(NEW.dsd_simulation_layers, evaluations_raw.dsd_simulation_layers)
+    dsd_simulation_layers = COALESCE(NEW.dsd_simulation_layers, evaluations_raw.dsd_simulation_layers),
+    dsd_image_hash = COALESCE(NEW.dsd_image_hash, evaluations_raw.dsd_image_hash)
   WHERE id = OLD.id;
 
   RETURN NEW;

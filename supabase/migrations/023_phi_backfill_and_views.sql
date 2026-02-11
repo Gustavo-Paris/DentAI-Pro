@@ -2,15 +2,39 @@
 --
 -- Prerequisites:
 --   1. Migration 015 already ran (pgcrypto, phi_encrypt/decrypt, triggers, encrypted columns)
---   2. Encryption key stored in Supabase Vault:
---      SELECT vault.create_secret('phi_encryption_key', encode(gen_random_bytes(32), 'hex'));
 --
 -- This migration:
---   a) Adds missing notes_encrypted column to patients
---   b) Updates triggers to include notes
---   c) Backfills all encrypted columns from plaintext
---   d) Creates decrypted views for transparent read access
---   e) Adds verification function to validate encryption integrity
+--   a) Creates PHI encryption key in Supabase Vault (if missing)
+--   b) Adds missing notes_encrypted column to patients
+--   c) Updates triggers to include notes
+--   d) Backfills all encrypted columns from plaintext
+--   e) Creates decrypted views for transparent read access
+--   f) Adds verification function to validate encryption integrity
+
+-- ============================================================
+-- 0. Create PHI encryption key in Vault (idempotent)
+-- ============================================================
+
+DO $$
+DECLARE
+  key_exists BOOLEAN;
+BEGIN
+  SELECT EXISTS(
+    SELECT 1 FROM vault.secrets WHERE name = 'phi_encryption_key'
+  ) INTO key_exists;
+
+  IF NOT key_exists THEN
+    PERFORM vault.create_secret(
+      encode(extensions.gen_random_bytes(32), 'hex'),
+      'phi_encryption_key',
+      'Encryption key for PHI (Protected Health Information) columns'
+    );
+    RAISE NOTICE 'PHI encryption key created in vault';
+  ELSE
+    RAISE NOTICE 'PHI encryption key already exists in vault';
+  END IF;
+END;
+$$;
 
 -- ============================================================
 -- 1. Add missing notes_encrypted column
