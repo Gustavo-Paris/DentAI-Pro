@@ -57,7 +57,7 @@ const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
     <div className="flex flex-col items-center gap-4">
       <span className="text-xl font-semibold tracking-[0.2em] font-display text-gradient-gold animate-pulse">
-        AURIA
+        ToSmile.ai
       </span>
       <div className="w-48">
         <Skeleton className="h-1 w-full rounded-full" />

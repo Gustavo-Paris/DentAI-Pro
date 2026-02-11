@@ -36,7 +36,7 @@ export default function Landing() {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border/50">
         <nav className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between" aria-label="Main">
-          <span className="text-lg sm:text-xl font-semibold tracking-[0.2em] font-display text-primary">{BRAND_NAME}</span>
+          <span className="text-lg sm:text-xl font-semibold tracking-[0.2em] font-display text-gradient-brand">{BRAND_NAME}</span>
           <div className="flex items-center gap-2 sm:gap-4">
             <ThemeToggle />
             <Link to="/login">
@@ -70,7 +70,7 @@ export default function Landing() {
                 {t('landing.heroTagline')}
               </Badge>
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-tight mb-4 sm:mb-6 font-display animate-[fade-in-up_0.6s_ease-out_0.4s_both]">
-                O padrão <span className="text-gradient-gold">ouro</span> da odontologia estética
+                Odontologia estética <span className="text-gradient-brand">inteligente</span> com IA
               </h1>
               <p className="text-base sm:text-lg text-muted-foreground mb-8 sm:mb-10 max-w-xl mx-auto lg:mx-0 animate-[fade-in-up_0.6s_ease-out_0.6s_both]">
                 {t('landing.heroSubtitle')}

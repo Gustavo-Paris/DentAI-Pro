@@ -145,7 +145,7 @@ export function AnalyzingStep({
 
   // Loading state with scan-line + ring
   return (
-    <div className="space-y-6" role="status" aria-live="polite">
+    <div className="space-y-6 ai-shimmer-border rounded-xl p-6" role="status" aria-live="polite">
       <div className="text-center">
         <h2 className="text-2xl font-semibold font-display mb-2 text-primary">{t('components.wizard.analyzing.analyzingTitle')}</h2>
         <p className="text-muted-foreground">{currentLabel}</p>
@@ -184,8 +184,8 @@ export function AnalyzingStep({
 
       <div className="flex flex-col items-center gap-3">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Sparkles className="w-4 h-4 text-primary" />
-          <span>{t('components.wizard.analyzing.poweredBy')}</span>
+          <Sparkles className="w-4 h-4 text-primary ai-dot" />
+          <span className="ai-text">{t('components.wizard.analyzing.poweredBy')}</span>
         </div>
         {onCancel && (
           <Button variant="ghost" size="sm" onClick={onCancel} className="text-muted-foreground hover:text-foreground gap-2">

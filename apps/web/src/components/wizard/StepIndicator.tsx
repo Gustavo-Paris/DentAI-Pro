@@ -16,7 +16,7 @@ import type { LucideIcon } from 'lucide-react';
 const DEFAULT_ICONS: LucideIcon[] = [Camera, Heart, Brain, Smile, ClipboardCheck, FileText];
 const DEFAULT_LABELS = ['Foto', 'Preferências', 'Análise', 'DSD', 'Revisão', 'Resultado'];
 
-interface AuriaStepIndicatorProps {
+interface StepIndicatorProps {
   currentStep: number; // 0-indexed
   totalSteps: number;
   onStepClick?: (index: number) => void;
@@ -24,13 +24,13 @@ interface AuriaStepIndicatorProps {
   stepIcons?: LucideIcon[];
 }
 
-export function AuriaStepIndicator({
+export function StepIndicator({
   currentStep,
   totalSteps,
   onStepClick,
   stepLabels,
   stepIcons,
-}: AuriaStepIndicatorProps) {
+}: StepIndicatorProps) {
   const { t } = useTranslation();
   const icons = stepIcons || DEFAULT_ICONS;
   const labels = stepLabels || DEFAULT_LABELS;

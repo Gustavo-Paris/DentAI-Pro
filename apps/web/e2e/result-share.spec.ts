@@ -1,9 +1,13 @@
 import { test, expect } from "@playwright/test";
-import path from "path";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Use authenticated state from setup
 test.use({
-  storageState: path.join(__dirname, ".auth/user.json"),
+  storageState: join(__dirname, ".auth/user.json"),
 });
 
 test.describe("Result Page & Share", () => {

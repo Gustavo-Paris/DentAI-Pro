@@ -719,7 +719,16 @@ TABELA DE RECOMENDA\u00c7\u00c3O ADESIVA:
 Substrato atual: "${p.substrate}"
 Condi\u00e7\u00e3o do esmalte: "${p.enamelCondition || '\u00cdntegro'}"
 
-No checklist, especifique o tipo de sistema adesivo recomendado, n\u00e3o apenas "sistema adesivo conforme fabricante".
+No checklist, especifique o tipo de sistema adesivo recomendado E a marca comercial, n\u00e3o apenas "sistema adesivo conforme fabricante".
+
+MARCAS COMERCIAIS DE REFER\u00caNCIA POR TIPO:
+\u2022 Etch-and-rinse (2 passos): Single Bond 2 (3M), Ambar (FGM), XP Bond (Dentsply)
+\u2022 Etch-and-rinse (3 passos): Adper Scotchbond Multi-Purpose (3M), OptiBond FL (Kerr)
+\u2022 Self-etch (2 passos): Clearfil SE Bond (Kuraray), Tetric N-Bond Self-Etch (Ivoclar)
+\u2022 Self-etch (1 passo): Bond Force (Tokuyama), G-Premio Bond (GC), Xeno V+ (Dentsply)
+\u2022 Universal: Single Bond Universal (3M), Clearfil Universal Bond Quick (Kuraray), Prime&Bond Active (Dentsply), Adhese Universal (Ivoclar)
+
+No passo do checklist referente ao adesivo, SEMPRE inclua: tipo do sistema + marca sugerida. Ex: "Sistema adesivo universal (Single Bond Universal, 3M) em modo self-etch".
 
 === T\u00c9CNICAS OBSOLETAS - N\u00c3O INCLUIR NO CHECKLIST ===
 \u274c "Bisel em esmalte" ou "Biselamento" \u2192 T\u00e9cnica ultrapassada, N\u00c3O USE

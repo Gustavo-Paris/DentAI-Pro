@@ -3,6 +3,7 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsPreFlight, createErrorResponse, ERROR_MESSAGES, generateRequestId } from "../_shared/cors.ts";
 import { logger } from "../_shared/logger.ts";
 import {
+  callGeminiVision,
   callGeminiVisionWithTools,
   callGeminiImageEdit,
   GeminiError,
@@ -16,7 +17,7 @@ import { withMetrics } from "../_shared/prompts/index.ts";
 import type { Params as DsdAnalysisParams } from "../_shared/prompts/definitions/dsd-analysis.ts";
 import type { Params as DsdSimulationParams } from "../_shared/prompts/definitions/dsd-simulation.ts";
 import { createSupabaseMetrics, PROMPT_VERSION } from "../_shared/metrics-adapter.ts";
-import { parseAIResponse, DSDAnalysisSchema } from "../_shared/aiSchemas.ts";
+import { parseAIResponse, DSDAnalysisSchema, normalizeAnalysisEnums } from "../_shared/aiSchemas.ts";
 
 // DSD Analysis interface
 interface DSDAnalysis {
@@ -99,7 +100,7 @@ interface RequestData {
   analysisOnly?: boolean; // Return only analysis, skip simulation
   clinicalObservations?: string[]; // Observations from analyze-dental-photo to prevent contradictions
   clinicalTeethFindings?: ClinicalToothFinding[]; // Per-tooth findings to prevent false restoration claims
-  layerType?: 'restorations-only' | 'whitening-restorations' | 'complete-treatment'; // Multi-layer simulation
+  layerType?: 'restorations-only' | 'whitening-restorations' | 'complete-treatment' | 'root-coverage'; // Multi-layer simulation
 }
 
 // Validate request
@@ -167,7 +168,7 @@ function validateRequest(data: unknown): { success: boolean; error?: string; dat
     : undefined;
 
   // Validate layerType if provided
-  const validLayerTypes = ['restorations-only', 'whitening-restorations', 'complete-treatment'];
+  const validLayerTypes = ['restorations-only', 'whitening-restorations', 'complete-treatment', 'root-coverage'];
   const layerType = validLayerTypes.includes(req.layerType as string)
     ? req.layerType as RequestData['layerType']
     : undefined;
@@ -255,7 +256,7 @@ async function generateSimulation(
   supabase: any,
   toothShape: string = 'natural',
   patientPreferences?: PatientPreferences,
-  layerType?: 'restorations-only' | 'whitening-restorations' | 'complete-treatment',
+  layerType?: 'restorations-only' | 'whitening-restorations' | 'complete-treatment' | 'root-coverage',
 ): Promise<string | null> {
   const SIMULATION_TIMEOUT = 55_000; // 55s max
   
@@ -406,6 +407,20 @@ async function generateSimulation(
     }
   }
 
+  // Build root coverage suggestions for root-coverage layer
+  let rootCoverageSuggestions: string | undefined;
+  if (layerType === 'root-coverage') {
+    const rootItems = analysis.suggestions?.filter(s => {
+      const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
+      return text.includes('recobrimento') || text.includes('recessão') || text.includes('raiz exposta') || text.includes('root coverage');
+    }) || [];
+    if (rootItems.length > 0) {
+      rootCoverageSuggestions = rootItems.map(s =>
+        `- Dente ${s.tooth}: ${s.proposed_change}`
+      ).join('\n');
+    }
+  }
+
   // Build prompt via prompt management module
   const dsdSimulationPrompt = getPrompt('dsd-simulation');
   const simulationPrompt = dsdSimulationPrompt.system({
@@ -421,6 +436,7 @@ async function generateSimulation(
     allowedChangesFromAnalysis,
     layerType,
     gingivoSuggestions,
+    rootCoverageSuggestions,
   } as DsdSimulationParams);
   
   logger.log("DSD Simulation Request:", {
@@ -442,6 +458,14 @@ async function generateSimulation(
   }
   const [, inputMimeType, inputBase64Data] = dataUrlMatch;
 
+  // Compute deterministic seed from image hash for reproducibility
+  const hashSource = inputBase64Data.substring(0, 1000);
+  const encoder = new TextEncoder();
+  const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(hashSource));
+  const hashArray = new Uint8Array(hashBuffer);
+  const imageSeed = ((hashArray[0] << 24) | (hashArray[1] << 16) | (hashArray[2] << 8) | hashArray[3]) >>> 0;
+  logger.log("Simulation seed from image hash:", imageSeed);
+
   // Metrics for DSD simulation
   const metrics = createSupabaseMetrics(
     Deno.env.get('SUPABASE_URL')!,
@@ -458,8 +482,9 @@ async function generateSimulation(
         inputBase64Data,
         inputMimeType,
         {
-          temperature: 0.55,
+          temperature: dsdSimulationPromptDef.temperature,
           timeoutMs: SIMULATION_TIMEOUT,
+          seed: imageSeed,
         }
       );
       return {
@@ -472,6 +497,37 @@ async function generateSimulation(
     if (!result.imageUrl) {
       logger.warn("No image in Gemini response");
       return null;
+    }
+
+    // Post-generation lip validation for gingival layers
+    if (layerType === 'complete-treatment' || layerType === 'root-coverage') {
+      try {
+        const simBase64 = result.imageUrl.replace(/^data:image\/\w+;base64,/, "");
+        const simMimeMatch = result.imageUrl.match(/^data:([^;]+);base64,/);
+        const simMimeType = simMimeMatch ? simMimeMatch[1] : 'image/png';
+
+        const lipCheck = await callGeminiVision(
+          "gemini-2.0-flash",
+          "Imagem 1 é a ORIGINAL. Imagem 2 é a SIMULAÇÃO. Compare o lábio superior entre as duas imagens. O lábio superior mudou de posição, formato ou contorno? Responda APENAS 'SIM' ou 'NÃO'.",
+          inputBase64Data,
+          inputMimeType,
+          {
+            temperature: 0.0,
+            maxTokens: 10,
+            additionalImages: [{ data: simBase64, mimeType: simMimeType }],
+          }
+        );
+
+        const lipAnswer = (lipCheck.text || '').trim().toUpperCase();
+        if (lipAnswer.includes('SIM')) {
+          logger.warn(`Lip validation FAILED for ${layerType} layer — lip was altered. Rejecting simulation.`);
+          return null;
+        }
+        logger.log(`Lip validation passed for ${layerType} layer`);
+      } catch (lipErr) {
+        // Don't block simulation on validation failure — log and continue
+        logger.warn("Lip validation check failed (non-blocking):", lipErr);
+      }
     }
 
     // Upload generated image
@@ -765,7 +821,8 @@ Se o problema clínico é microdontia/conoide → sua sugestão deve ser "Aument
     });
 
     if (result.functionCall) {
-      return parseAIResponse(DSDAnalysisSchema, result.functionCall.args, 'generate-dsd') as DSDAnalysis;
+      const parsed = parseAIResponse(DSDAnalysisSchema, result.functionCall.args, 'generate-dsd') as DSDAnalysis;
+      return normalizeAnalysisEnums(parsed);
     }
 
     logger.error("No function call in Gemini response");
@@ -869,6 +926,7 @@ serve(async (req: Request) => {
     // Validate ownership and check existing DSD state BEFORE credit check
     // This allows server-side verification that initial call was already charged
     let evaluationHasDsdAnalysis = false;
+    let existingDbAnalysis: DSDAnalysis | null = null;
     if (evaluationId) {
       const { data: ownerCheck, error: ownerError } = await supabase
         .from("evaluations")
@@ -883,6 +941,9 @@ serve(async (req: Request) => {
         return createErrorResponse(ERROR_MESSAGES.ACCESS_DENIED, 403, corsHeaders);
       }
       evaluationHasDsdAnalysis = ownerCheck.dsd_analysis != null;
+      if (ownerCheck.dsd_analysis) {
+        existingDbAnalysis = ownerCheck.dsd_analysis as DSDAnalysis;
+      }
     }
 
     // Check and consume credits only for the initial DSD call.
@@ -910,23 +971,57 @@ serve(async (req: Request) => {
 
     let analysis: DSDAnalysis;
 
+    // Compute image hash for cross-evaluation cache
+    const imageDataMatch = imageBase64.match(/^data:[^;]+;base64,(.+)$/);
+    const rawBase64ForHash = imageDataMatch ? imageDataMatch[1] : imageBase64;
+    const hashEncoder = new TextEncoder();
+    const imageHashBuffer = await crypto.subtle.digest('SHA-256', hashEncoder.encode(rawBase64ForHash.substring(0, 2000)));
+    const imageHashArr = Array.from(new Uint8Array(imageHashBuffer));
+    const dsdImageHash = imageHashArr.map(b => b.toString(16).padStart(2, '0')).join('');
+
     // If regenerating simulation only, use existing analysis
     if (regenerateSimulationOnly && existingAnalysis) {
       analysis = existingAnalysis;
+    } else if (existingDbAnalysis && evaluationHasDsdAnalysis) {
+      // Reuse analysis already stored in this evaluation (e.g., layer calls)
+      logger.log("Reusing existing DSD analysis from evaluation (intra-evaluation cache)");
+      analysis = existingDbAnalysis;
     } else {
-      // Run full analysis - pass additional photos, preferences, clinical observations, and per-tooth findings
-      const analysisResult = await analyzeProportions(imageBase64, corsHeaders, additionalPhotos, patientPreferences, clinicalObservations, clinicalTeethFindings);
-
-      // Check if it's an error response — refund credits if analysis failed
-      if (analysisResult instanceof Response) {
-        if (creditsConsumed) {
-          await refundCredits(supabase, user.id, "dsd_simulation", reqId);
-          logger.log(`Refunded DSD credits for user ${user.id} due to analysis failure`);
+      // Check cross-evaluation cache: same image may have been analyzed before
+      let cachedAnalysis: DSDAnalysis | null = null;
+      try {
+        const { data: cached } = await supabase
+          .from("evaluations")
+          .select("dsd_analysis")
+          .eq("dsd_image_hash", dsdImageHash)
+          .not("dsd_analysis", "is", null)
+          .limit(1)
+          .single();
+        if (cached?.dsd_analysis) {
+          cachedAnalysis = cached.dsd_analysis as DSDAnalysis;
+          logger.log("Found cached DSD analysis via image hash (cross-evaluation cache)");
         }
-        return analysisResult;
+      } catch {
+        // No cache hit — proceed normally
       }
-      
-      analysis = analysisResult;
+
+      if (cachedAnalysis) {
+        analysis = cachedAnalysis;
+      } else {
+        // Run full analysis - pass additional photos, preferences, clinical observations, and per-tooth findings
+        const analysisResult = await analyzeProportions(imageBase64, corsHeaders, additionalPhotos, patientPreferences, clinicalObservations, clinicalTeethFindings);
+
+        // Check if it's an error response — refund credits if analysis failed
+        if (analysisResult instanceof Response) {
+          if (creditsConsumed) {
+            await refundCredits(supabase, user.id, "dsd_simulation", reqId);
+            logger.log(`Refunded DSD credits for user ${user.id} due to analysis failure`);
+          }
+          return analysisResult;
+        }
+
+        analysis = analysisResult;
+      }
     }
 
     // === POST-PROCESSING SAFETY NETS ===
@@ -1094,6 +1189,7 @@ serve(async (req: Request) => {
         const updateData: Record<string, unknown> = {
           dsd_analysis: analysis,
           dsd_simulation_url: simulationUrl,
+          dsd_image_hash: dsdImageHash,
         };
 
         // When layerType is present, update the layers array
@@ -1103,10 +1199,11 @@ serve(async (req: Request) => {
             type: layerType,
             label: layerType === 'restorations-only' ? 'Apenas Restaurações'
               : layerType === 'complete-treatment' ? 'Tratamento Completo'
+              : layerType === 'root-coverage' ? 'Recobrimento Radicular'
               : 'Restaurações + Clareamento',
             simulation_url: simulationUrl,
             whitening_level: patientPreferences?.whiteningLevel || 'natural',
-            includes_gengivoplasty: layerType === 'complete-treatment',
+            includes_gengivoplasty: layerType === 'complete-treatment' || layerType === 'root-coverage',
           };
           // Replace existing layer of same type or append
           const idx = existingLayers.findIndex((l) => l.type === layerType);

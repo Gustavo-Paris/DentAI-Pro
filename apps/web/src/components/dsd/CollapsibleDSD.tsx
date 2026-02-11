@@ -3,10 +3,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, ChevronUp, Smile, Sparkles, Eye } from 'lucide-react';
+import { ChevronDown, ChevronUp, Smile, Sparkles, Eye, Scissors, ArrowUp, ArrowDown, ShieldCheck } from 'lucide-react';
 import { ComparisonSlider } from './ComparisonSlider';
 import { ProportionsCard } from './ProportionsCard';
-import type { DSDAnalysis, SimulationLayer } from '@/types/dsd';
+import type { DSDAnalysis, DSDSuggestion, SimulationLayer } from '@/types/dsd';
 
 interface CollapsibleDSDProps {
   analysis: DSDAnalysis;
@@ -43,16 +43,28 @@ export function CollapsibleDSD({
 
   const hasAnySimulation = !!(afterImage || (hasLayers && Object.keys(layerUrls).length > 0));
 
+  // Gingival suggestions from DSD analysis
+  const gingivalSuggestions = analysis.suggestions?.filter(
+    (s: DSDSuggestion) =>
+      s.treatment_indication === 'gengivoplastia' ||
+      s.treatment_indication === 'recobrimento_radicular',
+  ) || [];
+  const hasGingivalFromLayers = hasLayers && layers.some(l => l.includes_gengivoplasty);
+  const hasGingival = gingivalSuggestions.length > 0 || hasGingivalFromLayers;
+  const gingivalLayerIndex = hasLayers
+    ? layers.findIndex(l => l.includes_gengivoplasty)
+    : -1;
+
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       {/* Collapsed Preview Header */}
-      <Card className="border-primary/20">
+      <Card className="border-primary/20 ai-glow">
         <CollapsibleTrigger asChild>
           <CardContent className="py-4 cursor-pointer hover:bg-secondary/30 transition-colors">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-primary/10 rounded-lg">
-                  <Smile className="w-5 h-5 text-primary" />
+                  <Smile className="w-5 h-5 text-primary ai-dot" />
                 </div>
                 <div>
                   <h3 className="font-medium flex items-center gap-2">
@@ -129,13 +141,84 @@ export function CollapsibleDSD({
           </div>
         )}
 
+        {/* Preservation badges for gingival layers */}
+        {activeLayer?.includes_gengivoplasty && (
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-1">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+              <span className="text-xs font-medium text-muted-foreground">Áreas:</span>
+            </div>
+            <Badge variant="outline" className="text-[10px] border-emerald-300 text-emerald-700 dark:border-emerald-700 dark:text-emerald-400">
+              Lábio: Preservado
+            </Badge>
+            <Badge variant="outline" className="text-[10px] border-rose-300 text-rose-700 dark:border-rose-700 dark:text-rose-400">
+              Gengiva: Alterada
+            </Badge>
+            <Badge variant="outline" className="text-[10px] border-blue-300 text-blue-700 dark:border-blue-700 dark:text-blue-400">
+              Dentes: Alterados
+            </Badge>
+          </div>
+        )}
+
         {/* Comparison Slider */}
         {beforeImage && activeAfterImage && (
           <ComparisonSlider
             beforeImage={beforeImage}
             afterImage={activeAfterImage}
             afterLabel={activeLayer?.label || 'Simulação DSD'}
+            changeIndicator={
+              activeLayer?.includes_gengivoplasty
+                ? 'Gengiva reconturada'
+                : undefined
+            }
           />
+        )}
+
+        {/* Gingival changes section */}
+        {hasGingival && (
+          <Card className="border-rose-200 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-950/20">
+            <CardContent className="py-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium flex items-center gap-1.5">
+                  <Scissors className="w-4 h-4 text-rose-500" />
+                  Alterações Gengivais
+                </h4>
+                {gingivalLayerIndex >= 0 && activeLayerIndex !== gingivalLayerIndex && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs border-rose-200 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-rose-900"
+                    onClick={() => setActiveLayerIndex(gingivalLayerIndex)}
+                  >
+                    Ver com gengiva
+                  </Button>
+                )}
+              </div>
+              {gingivalSuggestions.length > 0 ? (
+                <div className="grid gap-1.5">
+                  {gingivalSuggestions.map((s: DSDSuggestion) => (
+                    <div key={s.tooth} className="flex items-start gap-2 text-xs">
+                      <span className="flex items-center gap-1 font-mono font-medium text-rose-600 dark:text-rose-400 min-w-[2.5rem]">
+                        {s.treatment_indication === 'gengivoplastia' ? (
+                          <ArrowUp className="w-3 h-3" />
+                        ) : (
+                          <ArrowDown className="w-3 h-3" />
+                        )}
+                        {s.tooth}
+                      </span>
+                      <span className="text-muted-foreground">
+                        {s.proposed_change}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  Gengivoplastia incluída no tratamento completo. Compare as camadas para visualizar a diferença.
+                </p>
+              )}
+            </CardContent>
+          </Card>
         )}
 
         {/* Proportions */}

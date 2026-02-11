@@ -121,7 +121,7 @@ export default function Terms() {
             <h2 className="text-xl font-semibold font-display mb-3">10. Contato</h2>
             <p className="text-muted-foreground">
               Para dúvidas sobre estes Termos de Uso, entre em contato através do email: 
-              contato@auria.dental
+              contato@tosmile.ai
             </p>
           </section>
         </div>

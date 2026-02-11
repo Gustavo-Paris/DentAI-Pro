@@ -1,9 +1,13 @@
 import { test, expect } from "@playwright/test";
-import path from "path";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Use authenticated state from setup
 test.use({
-  storageState: path.join(__dirname, ".auth/user.json"),
+  storageState: join(__dirname, ".auth/user.json"),
 });
 
 test.describe("Wizard — New Case Flow", () => {
@@ -26,7 +30,7 @@ test.describe("Wizard — New Case Flow", () => {
 
     // Upload a test image
     await fileInput.setInputFiles(
-      path.join(__dirname, "fixtures/test-intraoral.jpg")
+      join(__dirname, "fixtures/test-intraoral.jpg")
     );
 
     // Preview image should appear
@@ -41,7 +45,7 @@ test.describe("Wizard — New Case Flow", () => {
     const fileInput = page.locator('input[type="file"]').first();
 
     await fileInput.setInputFiles(
-      path.join(__dirname, "fixtures/test-intraoral.jpg")
+      join(__dirname, "fixtures/test-intraoral.jpg")
     );
 
     // Wait for photo preview
@@ -62,7 +66,7 @@ test.describe("Wizard — New Case Flow", () => {
 
     const fileInput = page.locator('input[type="file"]').first();
     await fileInput.setInputFiles(
-      path.join(__dirname, "fixtures/test-intraoral.jpg")
+      join(__dirname, "fixtures/test-intraoral.jpg")
     );
 
     // Wait for photo preview
@@ -105,7 +109,7 @@ test.describe("Wizard — New Case Flow", () => {
 
     const fileInput = page.locator('input[type="file"]').first();
     await fileInput.setInputFiles(
-      path.join(__dirname, "fixtures/test-intraoral.jpg")
+      join(__dirname, "fixtures/test-intraoral.jpg")
     );
 
     await expect(
@@ -137,7 +141,7 @@ test.describe("Wizard — New Case Flow", () => {
     // Start and abandon a wizard to create a draft
     const fileInput = page.locator('input[type="file"]').first();
     await fileInput.setInputFiles(
-      path.join(__dirname, "fixtures/test-intraoral.jpg")
+      join(__dirname, "fixtures/test-intraoral.jpg")
     );
 
     await expect(

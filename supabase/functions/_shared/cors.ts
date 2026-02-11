@@ -11,6 +11,8 @@ export function generateRequestId(): string {
 const PRODUCTION_ORIGINS = [
   "https://dentai.pro",
   "https://www.dentai.pro",
+  "https://tosmile.ai",
+  "https://www.tosmile.ai",
   "https://auria-ai.vercel.app",
   "https://dentai-pro.vercel.app",
 ];

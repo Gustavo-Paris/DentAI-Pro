@@ -441,11 +441,11 @@ export function ReviewAnalysisStep({
 
       {/* 1. AI Confidence Banner */}
       {analysisResult && (
-        <Card className={`card-elevated border-l-4 ${confidence >= 80 ? 'border-l-success' : confidence >= 60 ? 'border-l-warning' : 'border-l-destructive'}`}>
+        <Card className={`card-elevated ai-glow border-l-4 ${confidence >= 80 ? 'border-l-success' : confidence >= 60 ? 'border-l-warning' : 'border-l-destructive'}`}>
           <CardContent className="py-3 flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-primary" />
-              <span className="text-sm font-medium">{t('components.wizard.review.aiAnalysis')}</span>
+              <Sparkles className="w-5 h-5 text-primary ai-dot" />
+              <span className="text-sm font-medium ai-text">{t('components.wizard.review.aiAnalysis')}</span>
             </div>
             <div className="flex items-center gap-3">
               {hasMultipleTeeth && (
@@ -1068,9 +1068,9 @@ export function ReviewAnalysisStep({
 
       {/* 8. Summary Card (NEW) */}
       {selectedTeeth.length > 0 && (
-        <div className="bg-gradient-to-r from-primary/5 to-accent/5 border border-primary/20 rounded-xl p-4 space-y-3">
+        <div className="bg-gradient-to-r from-primary/5 to-accent/5 border border-primary/20 rounded-xl p-4 space-y-3 ai-glow">
           <h4 className="font-semibold text-sm flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-primary" />
+            <Sparkles className="w-4 h-4 text-primary ai-dot" />
             {t('components.wizard.review.caseSummary')}
           </h4>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">

@@ -105,6 +105,78 @@ export class GeminiError extends Error {
   }
 }
 
+// Circuit breaker state (per-invocation, resets on each edge function cold start)
+const circuitBreaker = {
+  consecutiveFailures: 0,
+  state: "closed" as "closed" | "open" | "half-open",
+  openedAt: 0,
+  /** Max consecutive failures before opening the circuit */
+  failureThreshold: 3,
+  /** How long the circuit stays open before allowing a probe (ms) */
+  resetTimeoutMs: 30_000,
+  /** Window in which failures must occur to trip the breaker (ms) */
+  failureWindowMs: 60_000,
+  /** Timestamp of the first failure in the current window */
+  firstFailureAt: 0,
+};
+
+function circuitBreakerCheck(): void {
+  const now = Date.now();
+
+  if (circuitBreaker.state === "open") {
+    if (now - circuitBreaker.openedAt >= circuitBreaker.resetTimeoutMs) {
+      circuitBreaker.state = "half-open";
+      logger.log("Circuit breaker half-open — allowing probe request");
+      return;
+    }
+    throw new GeminiError(
+      "Serviço Gemini temporariamente indisponível (circuit breaker aberto). Tente novamente em breve.",
+      503,
+      true
+    );
+  }
+  // "closed" and "half-open" allow requests through
+}
+
+function circuitBreakerOnSuccess(): void {
+  if (circuitBreaker.state !== "closed") {
+    logger.log("Circuit breaker closed — Gemini recovered");
+  }
+  circuitBreaker.consecutiveFailures = 0;
+  circuitBreaker.firstFailureAt = 0;
+  circuitBreaker.state = "closed";
+}
+
+function circuitBreakerOnFailure(): void {
+  const now = Date.now();
+
+  // Reset window if the first failure is outside the window
+  if (
+    circuitBreaker.firstFailureAt === 0 ||
+    now - circuitBreaker.firstFailureAt > circuitBreaker.failureWindowMs
+  ) {
+    circuitBreaker.firstFailureAt = now;
+    circuitBreaker.consecutiveFailures = 1;
+  } else {
+    circuitBreaker.consecutiveFailures++;
+  }
+
+  if (circuitBreaker.consecutiveFailures >= circuitBreaker.failureThreshold) {
+    circuitBreaker.state = "open";
+    circuitBreaker.openedAt = now;
+    logger.warn(
+      `Circuit breaker opened after ${circuitBreaker.consecutiveFailures} consecutive failures`
+    );
+  } else if (circuitBreaker.state === "half-open") {
+    // Probe failed — re-open
+    circuitBreaker.state = "open";
+    circuitBreaker.openedAt = now;
+    logger.warn("Circuit breaker re-opened — probe request failed");
+  }
+}
+
+const DEFAULT_TIMEOUT_MS = 30_000;
+
 // Get API key from environment
 function getApiKey(): string {
   const apiKey = Deno.env.get("GOOGLE_AI_API_KEY");
@@ -223,11 +295,12 @@ function convertToGeminiTools(tools: OpenAITool[]): GeminiTool[] {
   return [{ functionDeclarations }];
 }
 
-// Make API request with retry logic
+// Make API request with retry logic, circuit breaker, and timeout
 async function makeGeminiRequest(
   model: string,
   request: GeminiRequest,
-  maxRetries: number = 3
+  maxRetries: number = 3,
+  timeoutMs: number = DEFAULT_TIMEOUT_MS
 ): Promise<GeminiResponse> {
   const apiKey = getApiKey();
   const url = `${GEMINI_API_BASE}/${model}:generateContent?key=${apiKey}`;
@@ -236,6 +309,12 @@ async function makeGeminiRequest(
   let retryCount = 0;
 
   while (retryCount <= maxRetries) {
+    // Check circuit breaker before each attempt
+    circuitBreakerCheck();
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
     try {
       logger.log(`Calling Gemini API (${model}), attempt ${retryCount + 1}...`);
 
@@ -245,10 +324,15 @@ async function makeGeminiRequest(
           "Content-Type": "application/json",
         },
         body: JSON.stringify(request),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       // Handle rate limiting (429)
       if (response.status === 429) {
+        circuitBreakerOnFailure();
+
         const retryAfter = response.headers.get("Retry-After");
         const waitTime = retryAfter
           ? parseInt(retryAfter, 10) * 1000
@@ -270,6 +354,8 @@ async function makeGeminiRequest(
 
       // Handle server errors (500, 503) - retry once
       if (response.status === 500 || response.status === 503) {
+        circuitBreakerOnFailure();
+
         logger.warn(`Server error (${response.status}). Retrying once...`);
 
         if (retryCount < 1) {
@@ -311,12 +397,36 @@ async function makeGeminiRequest(
         );
       }
 
+      // Success — reset circuit breaker
+      circuitBreakerOnSuccess();
+
       return data;
     } catch (error) {
+      clearTimeout(timeoutId);
+
       if (error instanceof GeminiError) {
         throw error;
       }
+
+      // Handle AbortController timeout
+      if ((error as Error).name === "AbortError") {
+        circuitBreakerOnFailure();
+        lastError = new GeminiError(
+          "Timeout na chamada do Gemini API",
+          408,
+          true
+        );
+        logger.warn(`Gemini request timed out after ${timeoutMs}ms`);
+
+        if (retryCount < maxRetries) {
+          retryCount++;
+          continue;
+        }
+        throw lastError;
+      }
+
       lastError = error as Error;
+      circuitBreakerOnFailure();
       logger.error(`Gemini request failed:`, error);
 
       if (retryCount < maxRetries) {
@@ -420,6 +530,8 @@ export async function callGeminiVision(
     systemPrompt?: string;
     temperature?: number;
     maxTokens?: number;
+    /** Additional images to include after the first image */
+    additionalImages?: Array<{ data: string; mimeType: string }>;
   } = {}
 ): Promise<{ text: string | null; finishReason: string }> {
   const parts: GeminiPart[] = [
@@ -431,6 +543,13 @@ export async function callGeminiVision(
       },
     },
   ];
+
+  // Append additional images if provided
+  if (options.additionalImages) {
+    for (const img of options.additionalImages) {
+      parts.push({ inlineData: { mimeType: img.mimeType, data: img.data } });
+    }
+  }
 
   const request: GeminiRequest = {
     contents: [{ role: "user", parts }],
@@ -602,6 +721,7 @@ export async function callGeminiImageEdit(
   options: {
     temperature?: number;
     timeoutMs?: number;
+    seed?: number;
   } = {}
 ): Promise<{ imageUrl: string | null; text: string | null }> {
   const apiKey = getApiKey();
@@ -626,6 +746,7 @@ export async function callGeminiImageEdit(
     generationConfig: {
       temperature: options.temperature ?? 0.4,
       responseModalities: ["TEXT", "IMAGE"],
+      ...(options.seed !== undefined && { seed: options.seed }),
     },
   };
 

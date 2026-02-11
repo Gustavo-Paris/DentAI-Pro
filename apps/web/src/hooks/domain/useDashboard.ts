@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { evaluations, patients, profiles } from '@/data';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useWizardDraft, WizardDraft } from '@/hooks/useWizardDraft';
+import { WELCOME_STORAGE_KEY } from '@/lib/branding';
 import { QUERY_STALE_TIMES } from '@/lib/constants';
 import { format, startOfWeek, endOfWeek, subDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -34,6 +35,7 @@ export interface DashboardSession {
   completedCount: number;
   treatmentTypes: string[];
   patientAge: number | null;
+  hasDSD: boolean;
 }
 
 export interface DashboardMetrics {
@@ -299,6 +301,7 @@ export function useDashboard(): DashboardState {
           completedCount: evals.filter(e => e.status === 'completed').length,
           treatmentTypes: [...new Set(evals.map(e => e.treatment_type).filter(Boolean))] as string[],
           patientAge: evals[0].patient_age ?? null,
+          hasDSD: evals.some(e => !!e.dsd_simulation_url),
         }));
 
       return { metrics: dashboardMetrics, sessions };
@@ -347,7 +350,7 @@ export function useDashboard(): DashboardState {
     () => sessionStorage.getItem('credits-banner-dismissed') === 'true',
   );
   const [welcomeDismissed, setWelcomeDismissed] = useState(
-    () => localStorage.getItem('auria-welcome-dismissed') === 'true',
+    () => localStorage.getItem(WELCOME_STORAGE_KEY) === 'true',
   );
 
   // --- Load draft on mount ---
@@ -406,7 +409,7 @@ export function useDashboard(): DashboardState {
   // --- Actions ---
   const dismissWelcome = useCallback(() => {
     setWelcomeDismissed(true);
-    localStorage.setItem('auria-welcome-dismissed', 'true');
+    localStorage.setItem(WELCOME_STORAGE_KEY, 'true');
   }, []);
 
   const dismissCreditsBanner = useCallback(() => {

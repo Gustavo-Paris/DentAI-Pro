@@ -160,7 +160,7 @@ export async function getRecent({ userId, limit = 50 }: DashboardRecentParams) {
   const data = await withQuery(() =>
     supabase
       .from('evaluations')
-      .select('id, created_at, tooth, patient_name, session_id, status, treatment_type, is_from_inventory, patient_age')
+      .select('id, created_at, tooth, patient_name, session_id, status, treatment_type, is_from_inventory, patient_age, dsd_simulation_url')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .limit(limit),

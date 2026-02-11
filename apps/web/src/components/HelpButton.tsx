@@ -44,7 +44,7 @@ export function HelpButton() {
             {t('components.helpButton.howItWorks')}
           </Link>
           <a
-            href="mailto:suporte@auria.com.br?subject=Relato de problema"
+            href="mailto:suporte@tosmile.ai?subject=Relato de problema"
             onClick={() => setOpen(false)}
             className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm hover:bg-accent transition-colors"
           >

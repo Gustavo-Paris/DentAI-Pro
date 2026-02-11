@@ -9,6 +9,8 @@ interface ComparisonSliderProps {
   afterLabel?: string;
   /** Optional annotation overlay rendered on top of the "before" image */
   annotationOverlay?: React.ReactNode;
+  /** Optional label indicating what was changed (e.g., "Gengiva reconturada") */
+  changeIndicator?: string;
 }
 
 const MIN_ZOOM = 1;
@@ -21,6 +23,7 @@ export function ComparisonSlider({
   beforeLabel = 'Antes',
   afterLabel = 'Simulação DSD',
   annotationOverlay,
+  changeIndicator,
 }: ComparisonSliderProps) {
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
@@ -287,6 +290,13 @@ export function ComparisonSlider({
         <div className="absolute bottom-3 right-3 px-2 py-1 bg-primary text-primary-foreground rounded text-xs font-medium z-10">
           {afterLabel}
         </div>
+
+        {/* Change indicator */}
+        {changeIndicator && (
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 px-2 py-1 bg-rose-500/90 text-white rounded-full text-[10px] font-medium z-10 pointer-events-none whitespace-nowrap">
+            {changeIndicator}
+          </div>
+        )}
       </div>
     </div>
   );

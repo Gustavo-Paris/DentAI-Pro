@@ -1,4 +1,4 @@
-// Shared email infrastructure for AURIA edge functions
+// Shared email infrastructure for ToSmile.ai edge functions
 // Uses Resend (https://resend.com) for transactional + marketing emails
 
 import { Resend } from "npm:resend";
@@ -25,7 +25,7 @@ function getResend(): Resend {
 // Core send function
 // ---------------------------------------------------------------------------
 
-const DEFAULT_FROM = "AURIA <noreply@auria-ai.com>";
+const DEFAULT_FROM = "ToSmile.ai <noreply@tosmile.ai>";
 
 interface SendEmailOptions {
   to: string;
@@ -58,7 +58,7 @@ export async function sendEmail(options: SendEmailOptions): Promise<void> {
 // Shared layout
 // ---------------------------------------------------------------------------
 
-const GOLD = "#C9A84C";
+const TEAL = "#2A9D8F";
 const DARK = "#1A1A2E";
 const GRAY_TEXT = "#555555";
 
@@ -68,7 +68,7 @@ function layout(body: string): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AURIA</title>
+  <title>ToSmile.ai</title>
 </head>
 <body style="margin:0;padding:0;background-color:#f4f4f5;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f4f4f5;">
@@ -78,8 +78,8 @@ function layout(body: string): string {
           <!-- Header -->
           <tr>
             <td style="background-color:${DARK};padding:24px 32px;text-align:center;">
-              <h1 style="margin:0;font-size:28px;font-weight:700;color:${GOLD};letter-spacing:2px;">AURIA</h1>
-              <p style="margin:4px 0 0;font-size:12px;color:#a0a0b0;letter-spacing:1px;">INTELIGENCIA CLINICA ODONTOLOGICA</p>
+              <h1 style="margin:0;font-size:28px;font-weight:700;color:${TEAL};letter-spacing:2px;">ToSmile.ai</h1>
+              <p style="margin:4px 0 0;font-size:12px;color:#a0a0b0;letter-spacing:1px;">ODONTOLOGIA DIGITAL INTELIGENTE</p>
             </td>
           </tr>
           <!-- Body -->
@@ -92,13 +92,13 @@ function layout(body: string): string {
           <tr>
             <td style="background-color:#fafafa;padding:20px 32px;border-top:1px solid #e5e5e5;">
               <p style="margin:0 0 8px;font-size:12px;color:#999;text-align:center;">
-                AURIA &mdash; Apoio a decisao clinica odontologica com IA
+                ToSmile.ai &mdash; Odontologia Digital Inteligente
               </p>
               <p style="margin:0;font-size:11px;color:#bbb;text-align:center;">
-                Voce recebeu este e-mail porque possui uma conta na AURIA.<br>
-                <a href="https://auria-ai.vercel.app/settings" style="color:${GOLD};text-decoration:underline;">Gerenciar preferencias</a>
+                Voce recebeu este e-mail porque possui uma conta no ToSmile.ai.<br>
+                <a href="https://auria-ai.vercel.app/settings" style="color:${TEAL};text-decoration:underline;">Gerenciar preferencias</a>
                 &nbsp;|&nbsp;
-                <a href="https://auria-ai.vercel.app/settings" style="color:${GOLD};text-decoration:underline;">Cancelar inscricao</a>
+                <a href="https://auria-ai.vercel.app/settings" style="color:${TEAL};text-decoration:underline;">Cancelar inscricao</a>
               </p>
               <p style="margin:8px 0 0;font-size:10px;color:#ccc;text-align:center;">
                 Em conformidade com a LGPD (Lei 13.709/2018).
@@ -120,11 +120,11 @@ function layout(body: string): string {
 export function welcomeEmail(name: string): { subject: string; html: string } {
   const firstName = name.split(" ")[0];
   return {
-    subject: "Bem-vindo(a) a AURIA!",
+    subject: "Bem-vindo(a) ao ToSmile.ai!",
     html: layout(`
       <h2 style="margin:0 0 16px;font-size:22px;color:${DARK};">Ola, ${firstName}!</h2>
       <p style="margin:0 0 16px;font-size:15px;color:${GRAY_TEXT};line-height:1.6;">
-        Sua conta na <strong style="color:${GOLD};">AURIA</strong> foi criada com sucesso.
+        Sua conta no <strong style="color:${TEAL};">ToSmile.ai</strong> foi criada com sucesso.
         Agora voce tem acesso a inteligencia clinica que vai transformar suas restauracoes.
       </p>
       <p style="margin:0 0 24px;font-size:15px;color:${GRAY_TEXT};line-height:1.6;">
@@ -133,7 +133,7 @@ export function welcomeEmail(name: string): { subject: string; html: string } {
       </p>
       <table role="presentation" cellspacing="0" cellpadding="0" style="margin:0 auto;">
         <tr>
-          <td style="background-color:${GOLD};border-radius:6px;">
+          <td style="background-color:${TEAL};border-radius:6px;">
             <a href="https://auria-ai.vercel.app/dashboard" style="display:inline-block;padding:12px 32px;font-size:15px;font-weight:600;color:${DARK};text-decoration:none;">
               Acessar meu painel
             </a>
@@ -159,7 +159,7 @@ export function creditWarningEmail(
   const firstName = name.split(" ")[0];
   const pct = total > 0 ? Math.round((remaining / total) * 100) : 0;
   return {
-    subject: `Alerta: ${remaining} credito(s) restante(s) na AURIA`,
+    subject: `Alerta: ${remaining} credito(s) restante(s) no ToSmile.ai`,
     html: layout(`
       <h2 style="margin:0 0 16px;font-size:22px;color:${DARK};">Ola, ${firstName}</h2>
       <p style="margin:0 0 16px;font-size:15px;color:${GRAY_TEXT};line-height:1.6;">
@@ -172,7 +172,7 @@ export function creditWarningEmail(
       </p>
       <table role="presentation" cellspacing="0" cellpadding="0" style="margin:0 auto;">
         <tr>
-          <td style="background-color:${GOLD};border-radius:6px;">
+          <td style="background-color:${TEAL};border-radius:6px;">
             <a href="https://auria-ai.vercel.app/settings" style="display:inline-block;padding:12px 32px;font-size:15px;font-weight:600;color:${DARK};text-decoration:none;">
               Adicionar creditos
             </a>
@@ -199,24 +199,24 @@ export function weeklyDigestEmail(
 ): { subject: string; html: string } {
   const firstName = name.split(" ")[0];
   return {
-    subject: "Seu resumo semanal AURIA",
+    subject: "Seu resumo semanal ToSmile.ai",
     html: layout(`
       <h2 style="margin:0 0 16px;font-size:22px;color:${DARK};">Ola, ${firstName}</h2>
       <p style="margin:0 0 20px;font-size:15px;color:${GRAY_TEXT};line-height:1.6;">
-        Veja o resumo da sua semana na <strong style="color:${GOLD};">AURIA</strong>:
+        Veja o resumo da sua semana no <strong style="color:${TEAL};">ToSmile.ai</strong>:
       </p>
       <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:0 0 24px;">
         <tr>
           <td width="33%" style="text-align:center;padding:16px 8px;background-color:#fafafa;border-radius:6px;">
-            <p style="margin:0;font-size:28px;font-weight:700;color:${GOLD};">${stats.casesThisWeek}</p>
+            <p style="margin:0;font-size:28px;font-weight:700;color:${TEAL};">${stats.casesThisWeek}</p>
             <p style="margin:4px 0 0;font-size:12px;color:#999;">Casos esta semana</p>
           </td>
           <td width="33%" style="text-align:center;padding:16px 8px;background-color:#fafafa;border-radius:6px;">
-            <p style="margin:0;font-size:28px;font-weight:700;color:${GOLD};">${stats.totalCases}</p>
+            <p style="margin:0;font-size:28px;font-weight:700;color:${TEAL};">${stats.totalCases}</p>
             <p style="margin:4px 0 0;font-size:12px;color:#999;">Total de casos</p>
           </td>
           <td width="33%" style="text-align:center;padding:16px 8px;background-color:#fafafa;border-radius:6px;">
-            <p style="margin:0;font-size:28px;font-weight:700;color:${GOLD};">${stats.pendingTeeth}</p>
+            <p style="margin:0;font-size:28px;font-weight:700;color:${TEAL};">${stats.pendingTeeth}</p>
             <p style="margin:4px 0 0;font-size:12px;color:#999;">Dentes pendentes</p>
           </td>
         </tr>
@@ -232,7 +232,7 @@ export function weeklyDigestEmail(
       }
       <table role="presentation" cellspacing="0" cellpadding="0" style="margin:0 auto;">
         <tr>
-          <td style="background-color:${GOLD};border-radius:6px;">
+          <td style="background-color:${TEAL};border-radius:6px;">
             <a href="https://auria-ai.vercel.app/dashboard" style="display:inline-block;padding:12px 32px;font-size:15px;font-weight:600;color:${DARK};text-decoration:none;">
               Ir para o painel
             </a>
@@ -250,11 +250,11 @@ export function weeklyDigestEmail(
 export function accountDeletedEmail(name: string): { subject: string; html: string } {
   const firstName = name.split(" ")[0];
   return {
-    subject: "Sua conta AURIA foi excluida",
+    subject: "Sua conta ToSmile.ai foi excluida",
     html: layout(`
       <h2 style="margin:0 0 16px;font-size:22px;color:${DARK};">Ola, ${firstName}</h2>
       <p style="margin:0 0 16px;font-size:15px;color:${GRAY_TEXT};line-height:1.6;">
-        Confirmamos que sua conta na <strong style="color:${GOLD};">AURIA</strong> e todos os dados
+        Confirmamos que sua conta no <strong style="color:${TEAL};">ToSmile.ai</strong> e todos os dados
         associados foram excluidos permanentemente, conforme solicitado.
       </p>
       <p style="margin:0 0 16px;font-size:15px;color:${GRAY_TEXT};line-height:1.6;">

@@ -100,7 +100,7 @@ export default function Dashboard() {
         },
         {
           id: 'insights',
-          label: t('dashboard.insights'),
+          label: t('dashboard.insightsTab'),
           icon: BarChart3,
           content: (
             <Suspense fallback={<StatsGridFallback />}>
@@ -134,7 +134,7 @@ export default function Dashboard() {
                     return <Moon className="w-5 h-5 text-muted-foreground" />;
                   })()}
                   <h1 className="text-2xl sm:text-3xl font-semibold font-display tracking-tight">
-                    {dashboard.greeting}, <span className="text-gradient-gold">{dashboard.firstName}</span>
+                    {dashboard.greeting}, <span className="text-primary">{dashboard.firstName}</span>
                   </h1>
                 </div>
                 <p className="text-sm text-muted-foreground ml-8">

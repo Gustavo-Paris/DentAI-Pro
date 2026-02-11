@@ -89,7 +89,12 @@ Dimensões de saída DEVEM ser iguais às dimensões de entrada.
   • Proporção largura/altura dos dentes ORIGINAIS — manter relação
   • Características faciais únicas (formato labial, corredor bucal)
 - O resultado deve parecer uma MELHORIA NATURAL deste paciente específico
-- NÃO deve parecer que os dentes foram "copiados" de outra pessoa`
+- NÃO deve parecer que os dentes foram "copiados" de outra pessoa
+
+REFERÊNCIA ANATÔMICA FIXA:
+O lábio superior define a LINHA DO SORRISO. Sua posição é a referência
+para diagnóstico de sorriso gengival. Alterar o lábio = destruir o diagnóstico.
+O contorno, posição, e formato do lábio são IMUTÁVEIS em TODAS as camadas.`
 }
 
 function buildWhiteningPrioritySection(params: Params): string {
@@ -342,6 +347,16 @@ The gum line should be recontoured to show the effect of gengivoplasty:
 - The gingival alteration MUST be VISUALLY EVIDENT in the before/after comparison — do not make subtle changes that are invisible at comparison zoom level
 - Minimum 0.5mm apical movement of gingival margin for the change to be perceptible
 
+⚠️ REGRA ABSOLUTA SOBRE LÁBIOS (MESMO COM GENGIVOPLASTIA):
+A gengivoplastia altera APENAS a MARGEM GENGIVAL (interface gengiva-dente).
+- O LÁBIO SUPERIOR é a REFERÊNCIA FIXA para classificação de sorriso gengival
+- Mover o lábio INVALIDA toda a análise clínica
+- DEFINIÇÃO: Margem gengival = tecido rosa entre dente e lábio
+- DEFINIÇÃO: Lábio = tecido vermelho/rosa com vermilion border acima da gengiva
+- Ao mover a margem gengival apicalmente, o ESPAÇO entre lábio e dente AUMENTA
+  (mostrando mais coroa clínica) — mas o LÁBIO PERMANECE EXATAMENTE ONDE ESTÁ
+- Se não for possível simular gengivoplastia sem mover o lábio: NÃO FAÇA
+
 ${params.gingivoSuggestions ? `GENGIVOPLASTY SPECIFICATIONS:\n${params.gingivoSuggestions}\n` : ''}
 
 ${whiteningPrioritySection}DENTAL CORRECTIONS:
@@ -379,6 +394,16 @@ The gum line should be recontoured to show the effect of root coverage:
 - The gingival alteration MUST be VISUALLY EVIDENT in the before/after comparison
 - Root surfaces that were exposed/yellowish should now be covered by healthy gum tissue
 
+⚠️ REGRA ABSOLUTA SOBRE LÁBIOS (MESMO COM RECOBRIMENTO RADICULAR):
+O recobrimento radicular altera APENAS a MARGEM GENGIVAL (interface gengiva-dente).
+- O LÁBIO SUPERIOR é a REFERÊNCIA FIXA para classificação de sorriso gengival
+- Mover o lábio INVALIDA toda a análise clínica
+- DEFINIÇÃO: Margem gengival = tecido rosa entre dente e lábio
+- DEFINIÇÃO: Lábio = tecido vermelho/rosa com vermilion border acima da gengiva
+- Ao mover a margem gengival coronalmente, o ESPAÇO entre lábio e dente DIMINUI
+  (mostrando menos raiz exposta) — mas o LÁBIO PERMANECE EXATAMENTE ONDE ESTÁ
+- Se não for possível simular recobrimento radicular sem mover o lábio: NÃO FAÇA
+
 ${params.rootCoverageSuggestions ? `ROOT COVERAGE SPECIFICATIONS:\n${params.rootCoverageSuggestions}\n` : ''}
 
 ${whiteningPrioritySection}DENTAL CORRECTIONS:
@@ -400,7 +425,7 @@ export const dsdSimulation: PromptDefinition<Params> = {
   name: 'Simulação DSD',
   description: 'Prompt de edição de imagem para simulação DSD com 4 variantes (reconstruction, restoration, intraoral, standard)',
   model: 'gemini-3-pro-image-preview',
-  temperature: 0.4,
+  temperature: 0.3,
   maxTokens: 4000,
   mode: 'image-edit',
 
