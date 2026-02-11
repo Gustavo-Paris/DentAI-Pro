@@ -178,11 +178,18 @@ export function ComparisonSlider({
     };
   }, [isDragging, isPanning, zoom, handleSliderMove, clampPan]);
 
-  // Scroll wheel zoom (desktop)
-  const handleWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault();
-    const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
-    setZoom((prev) => Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, prev + delta)));
+  // Scroll wheel zoom (desktop) — must use native listener with { passive: false }
+  // React synthetic onWheel is passive by default, so preventDefault() would fail
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
+      setZoom((prev) => Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, prev + delta)));
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
   }, []);
 
   // Zoom controls
@@ -203,7 +210,6 @@ export function ComparisonSlider({
         className={`relative w-full aspect-[4/3] rounded-xl overflow-hidden select-none touch-none bg-secondary ${cursorStyle}`}
         onMouseDown={handleMouseDown}
         onTouchStart={handleTouchStart}
-        onWheel={handleWheel}
       >
         {/* After image (full width, underneath) */}
         <div className="absolute inset-0 overflow-hidden">
