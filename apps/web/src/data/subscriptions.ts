@@ -129,9 +129,9 @@ export async function getCreditPacks() {
   return (data as CreditPack[]) || [];
 }
 
-export async function purchaseCreditPack(packId: string) {
+export async function purchaseCreditPack(packId: string, paymentMethod?: 'card' | 'pix') {
   const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-    body: { packId },
+    body: { packId, ...(paymentMethod ? { payment_method: paymentMethod } : {}) },
   });
 
   if (error) throw error;

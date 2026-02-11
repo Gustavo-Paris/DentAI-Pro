@@ -16,6 +16,7 @@ export * as payments from './payments';
 export * as creditUsage from './credit-usage';
 export * as wizard from './wizard';
 export * as privacy from './privacy';
+export * as email from './email';
 
 // Re-export client for edge cases where direct access is needed
 export { supabase } from './client';

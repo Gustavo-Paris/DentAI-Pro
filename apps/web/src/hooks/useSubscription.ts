@@ -71,9 +71,10 @@ export function useSubscription() {
     },
   });
 
-  // Purchase credit pack (one-time)
+  // Purchase credit pack (one-time) — supports card or PIX payment
   const purchasePackMutation = useMutation({
-    mutationFn: (packId: string) => subscriptions.purchaseCreditPack(packId),
+    mutationFn: ({ packId, paymentMethod }: { packId: string; paymentMethod?: 'card' | 'pix' }) =>
+      subscriptions.purchaseCreditPack(packId, paymentMethod),
     onSuccess: (data) => {
       if (data.url) window.location.href = data.url;
     },
@@ -236,7 +237,8 @@ export function useSubscription() {
     checkout: checkoutMutation.mutate,
     isCheckingOut: checkoutMutation.isPending,
 
-    purchasePack: purchasePackMutation.mutate,
+    purchasePack: (packId: string, paymentMethod?: 'card' | 'pix') =>
+      purchasePackMutation.mutate({ packId, paymentMethod }),
     isPurchasingPack: purchasePackMutation.isPending,
 
     openPortal: portalMutation.mutate,

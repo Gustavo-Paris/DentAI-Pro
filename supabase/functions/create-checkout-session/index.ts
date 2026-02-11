@@ -11,6 +11,7 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
 interface RequestBody {
   priceId?: string;   // for subscription
   packId?: string;    // for credit pack (one-time)
+  payment_method?: 'card' | 'pix'; // for credit packs only (default: card)
   successUrl?: string;
   cancelUrl?: string;
 }
@@ -51,7 +52,7 @@ serve(async (req: Request) => {
 
     // Parse request
     const body: RequestBody = await req.json();
-    const { priceId, packId, successUrl, cancelUrl } = body;
+    const { priceId, packId, payment_method, successUrl, cancelUrl } = body;
 
     if (!priceId && !packId) {
       return createErrorResponse("ID do plano ou pacote não fornecido", 400, corsHeaders);
@@ -122,10 +123,25 @@ serve(async (req: Request) => {
         return createErrorResponse("Pacote não encontrado ou sem preço configurado", 404, corsHeaders);
       }
 
+      // PIX payment method for credit packs (one-time only).
+      // NOTE: PIX must be enabled in your Stripe Dashboard under
+      // Settings > Payment methods before it will work.
+      const isPix = payment_method === "pix";
+
       const session = await stripe.checkout.sessions.create({
         customer: customerId,
         mode: "payment",
         line_items: [{ price: pack.stripe_price_id, quantity: 1 }],
+        ...(isPix
+          ? {
+              payment_method_types: ["pix"],
+              payment_method_options: {
+                pix: { expires_after_seconds: 86400 },
+              },
+            }
+          : {
+              payment_method_types: ["card"],
+            }),
         success_url: `${origin}/profile?tab=assinatura&credits=success`,
         cancel_url: `${origin}/profile?tab=assinatura`,
         metadata: {
@@ -133,6 +149,7 @@ serve(async (req: Request) => {
           pack_id: packId,
           credits: String(pack.credits),
           type: "credit_pack",
+          payment_method: isPix ? "pix" : "card",
         },
       });
 

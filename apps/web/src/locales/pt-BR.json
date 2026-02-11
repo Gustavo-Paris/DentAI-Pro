@@ -930,6 +930,12 @@
         "credits": "créditos",
         "buy": "Comprar"
       },
+      "pix": {
+        "label": "PIX",
+        "card": "Cartao",
+        "note": "Pagamento instantaneo, expira em 24h",
+        "badge": "PIX"
+      },
       "comparison": {
         "title": "Comparar Planos",
         "feature": "Recurso",

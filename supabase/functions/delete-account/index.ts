@@ -8,6 +8,7 @@ import {
   generateRequestId,
 } from "../_shared/cors.ts";
 import { logger } from "../_shared/logger.ts";
+import { sendEmail, accountDeletedEmail } from "../_shared/email.ts";
 
 /**
  * LGPD Account Deletion Edge Function
@@ -84,6 +85,20 @@ serve(async (req) => {
     logger.important(
       `[${reqId}] Account deletion confirmed for user ${userId} (${user.email})`,
     );
+
+    // Send deletion confirmation email BEFORE removing the account
+    if (user.email) {
+      const userName =
+        (user.user_metadata?.full_name as string) ?? user.email.split("@")[0];
+      const { subject, html } = accountDeletedEmail(userName);
+      try {
+        await sendEmail({ to: user.email, subject, html });
+        logger.log(`[${reqId}] Account-deleted email sent to ${user.email}`);
+      } catch (emailErr) {
+        // Non-blocking: log but don't abort deletion
+        logger.error(`[${reqId}] Failed to send deletion email:`, emailErr);
+      }
+    }
 
     // -----------------------------------------------------------------------
     // Delete user data in dependency order (children first)
