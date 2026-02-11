@@ -5,6 +5,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { patients } from '@/data';
 import type { PatientRow } from '@/data/patients';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
+import { QUERY_STALE_TIMES } from '@/lib/constants';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -85,6 +87,7 @@ export function usePatientProfile(): PatientProfileState & PatientProfileActions
   const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   // ---- Pagination ----
   const [sessionsPage, setSessionsPage] = useState(0);
@@ -97,7 +100,7 @@ export function usePatientProfile(): PatientProfileState & PatientProfileActions
       return patients.getById(patientId, user.id);
     },
     enabled: !!user && !!patientId,
-    staleTime: 60 * 1000,
+    staleTime: QUERY_STALE_TIMES.MEDIUM,
   });
 
   const {
@@ -133,7 +136,7 @@ export function usePatientProfile(): PatientProfileState & PatientProfileActions
       return { sessions, totalCount: count, hasMore: count > (sessionsPage + 1) * 20 };
     },
     enabled: !!user && !!patientId,
-    staleTime: 30 * 1000,
+    staleTime: QUERY_STALE_TIMES.SHORT,
   });
 
   const updatePatientMutation = useMutation({
@@ -220,10 +223,10 @@ export function usePatientProfile(): PatientProfileState & PatientProfileActions
         notes: editForm.notes.trim() || null,
       });
 
-      toast.success('Dados do paciente atualizados');
+      toast.success(t('toasts.patient.updated'));
       setEditDialogOpen(false);
     } catch {
-      toast.error('Erro ao salvar alterações');
+      toast.error(t('toasts.patient.saveError'));
     }
   }, [patient, patientId, editForm, updatePatientMutation]);
 

@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { evaluations, patients, inventory } from '@/data';
+import { QUERY_STALE_TIMES } from '@/lib/constants';
 
 export interface OnboardingStep {
   id: string;
@@ -34,7 +35,7 @@ export function useOnboardingProgress(): OnboardingProgress {
       return { caseCount, patientCount, inventoryCount };
     },
     enabled: !!user,
-    staleTime: 30 * 1000,
+    staleTime: QUERY_STALE_TIMES.SHORT,
   });
 
   const steps = useMemo<OnboardingStep[]>(() => [

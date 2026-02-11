@@ -5,6 +5,7 @@ import type {
   ReviewFormData,
   TreatmentType,
 } from '@/components/wizard/ReviewAnalysisStep';
+import type { Patient } from '@/components/PatientAutocomplete';
 import type { DSDResult } from '@/types/dsd';
 import type { PatientPreferences } from '@/components/wizard/PatientPreferencesStep';
 
@@ -54,6 +55,7 @@ export interface WizardFlowState {
   dobValidationError: boolean;
   isReanalyzing: boolean;
   hasInventory: boolean;
+  patients: Patient[];
 
   // Submission
   isSubmitting: boolean;

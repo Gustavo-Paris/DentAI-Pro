@@ -4,6 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { inventory } from '@/data';
 import type { CatalogResin } from '@/data/inventory';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
+import { QUERY_STALE_TIMES } from '@/lib/constants';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -43,6 +45,7 @@ export interface CsvPreview {
 export function useInventoryManagement() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   const csvInputRef = useRef<HTMLInputElement>(null);
 
   // --- Inventory data ---
@@ -58,13 +61,13 @@ export function useInventoryManagement() {
       return { items, count };
     },
     enabled: !!user,
-    staleTime: 60 * 1000,
+    staleTime: QUERY_STALE_TIMES.MEDIUM,
   });
 
   const catalogQuery = useQuery({
     queryKey: ['inventory', 'catalog'],
     queryFn: () => inventory.getCatalog(),
-    staleTime: 10 * 60 * 1000,
+    staleTime: QUERY_STALE_TIMES.EXTENDED,
   });
 
   const allItems = useMemo(() => inventoryQuery.data?.items ?? [], [inventoryQuery.data?.items]);
@@ -195,11 +198,11 @@ export function useInventoryManagement() {
     if (selectedResins.size === 0) return;
     try {
       await addMutation.mutateAsync(Array.from(selectedResins));
-      toast.success(`${selectedResins.size} resina(s) adicionada(s) ao inventário`);
+      toast.success(t('toasts.inventory.resinsAdded', { count: selectedResins.size }));
       setSelectedResins(new Set());
       setDialogOpen(false);
     } catch {
-      toast.error('Erro ao adicionar resinas');
+      toast.error(t('toasts.inventory.addError'));
     }
   }, [selectedResins, addMutation]);
 
@@ -208,9 +211,9 @@ export function useInventoryManagement() {
       setRemovingResin(inventoryItemId);
       try {
         await removeMutation.mutateAsync(inventoryItemId);
-        toast.success('Resina removida do inventário');
+        toast.success(t('toasts.inventory.resinRemoved'));
       } catch {
-        toast.error('Erro ao remover resina');
+        toast.error(t('toasts.inventory.removeError'));
       }
       setRemovingResin(null);
     },
@@ -248,7 +251,7 @@ export function useInventoryManagement() {
     link.download = `inventario-resinas-${new Date().toISOString().slice(0, 10)}.csv`;
     link.click();
     URL.revokeObjectURL(url);
-    toast.success('CSV exportado com sucesso');
+    toast.success(t('toasts.inventory.csvExported'));
   }, [allItems]);
 
   const handleCSVFile = useCallback(
@@ -311,11 +314,11 @@ export function useInventoryManagement() {
     setImporting(true);
     try {
       await addMutation.mutateAsync(csvPreview.matched.map((r) => r.id));
-      toast.success(`${csvPreview.matched.length} resina(s) importada(s)`);
+      toast.success(t('toasts.inventory.resinsImported', { count: csvPreview.matched.length }));
       setCsvPreview(null);
       setImportDialogOpen(false);
     } catch {
-      toast.error('Erro ao importar resinas');
+      toast.error(t('toasts.inventory.importError'));
     }
     setImporting(false);
   }, [csvPreview, addMutation]);

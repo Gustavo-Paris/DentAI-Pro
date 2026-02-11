@@ -12,12 +12,11 @@ interface DSDWhiteningComparisonProps {
   patientPreferences?: PatientPreferences;
   onGenerateComparison: () => void;
   onCloseComparison: () => void;
-  onSelectLevel: (level: 'natural' | 'white' | 'hollywood', url: string) => void;
+  onSelectLevel: (level: 'natural' | 'hollywood', url: string) => void;
 }
 
 const WHITENING_LABELS: Record<string, string> = {
   natural: 'Natural (A1/A2)',
-  white: 'Branco (BL2/BL3)',
   hollywood: 'Hollywood (BL1)',
 };
 
@@ -73,7 +72,7 @@ export function DSDWhiteningComparison({
             </Button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {(['natural', 'white', 'hollywood'] as const).map(level => {
+            {(['natural', 'hollywood'] as const).map(level => {
               const url = whiteningComparison[level];
               if (!url) return (
                 <div key={level} className="aspect-[4/3] rounded-lg bg-secondary/50 flex items-center justify-center">

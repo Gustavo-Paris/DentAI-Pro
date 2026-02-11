@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { patients } from '@/data';
+import { QUERY_STALE_TIMES } from '@/lib/constants';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -72,7 +73,7 @@ export function usePatientList() {
       return { patients: patientsWithStats, total: count };
     },
     enabled: !!user,
-    staleTime: 30 * 1000,
+    staleTime: QUERY_STALE_TIMES.SHORT,
   });
 
   return {

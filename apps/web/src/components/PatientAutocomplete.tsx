@@ -1,13 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { User, Plus, Check } from 'lucide-react';
 
-interface Patient {
+export interface Patient {
   id: string;
   name: string;
   phone: string | null;
@@ -18,6 +16,7 @@ interface Patient {
 interface PatientAutocompleteProps {
   value: string;
   onChange: (name: string, patientId?: string, birthDate?: string | null) => void;
+  patients: Patient[];
   placeholder?: string;
   label?: string;
   selectedPatientId?: string | null;
@@ -26,40 +25,17 @@ interface PatientAutocompleteProps {
 export function PatientAutocomplete({
   value,
   onChange,
+  patients,
   placeholder,
   label,
   selectedPatientId,
 }: PatientAutocompleteProps) {
   const { t } = useTranslation();
-  const { user } = useAuth();
-  const [patients, setPatients] = useState<Patient[]>([]);
   const [filteredPatients, setFilteredPatients] = useState<Patient[]>([]);
   const [isOpen, setIsOpen] = useState(false);
-  const [, setIsLoading] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // Fetch patients on mount
-  useEffect(() => {
-    const fetchPatients = async () => {
-      if (!user) return;
-
-      setIsLoading(true);
-      const { data, error } = await supabase
-        .from('patients')
-        .select('id, name, phone, email, birth_date')
-        .eq('user_id', user.id)
-        .order('name');
-
-      if (!error && data) {
-        setPatients(data);
-      }
-      setIsLoading(false);
-    };
-
-    fetchPatients();
-  }, [user]);
 
   // Filter patients based on input
   useEffect(() => {

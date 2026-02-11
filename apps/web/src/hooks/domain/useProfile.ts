@@ -7,7 +7,9 @@ import { profiles, payments, subscriptions, privacy } from '@/data';
 import type { ProfileFull } from '@/data/profiles';
 import type { DataExport, DeleteAccountResult } from '@/data/privacy';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { logger } from '@/lib/logger';
+import { QUERY_STALE_TIMES } from '@/lib/constants';
 import { useSubscription } from '@/hooks/useSubscription';
 
 // ---------------------------------------------------------------------------
@@ -65,6 +67,7 @@ export function useProfile(): ProfileState & ProfileActions {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { t } = useTranslation();
   const { refreshSubscription } = useSubscription();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -91,7 +94,7 @@ export function useProfile(): ProfileState & ProfileActions {
       return profiles.getFullByUserId(user.id);
     },
     enabled: !!user,
-    staleTime: 60 * 1000,
+    staleTime: QUERY_STALE_TIMES.MEDIUM,
   });
 
   const { data: paymentRecords, isLoading: isLoadingPayments } = useQuery({
@@ -101,7 +104,7 @@ export function useProfile(): ProfileState & ProfileActions {
       return payments.listByUserId(user.id);
     },
     enabled: !!user,
-    staleTime: 60 * 1000,
+    staleTime: QUERY_STALE_TIMES.MEDIUM,
   });
 
   // Sync profile data to local form state
@@ -121,7 +124,7 @@ export function useProfile(): ProfileState & ProfileActions {
   useEffect(() => {
     const status = searchParams.get('subscription');
     if (status === 'success') {
-      toast.success('Assinatura ativada com sucesso!');
+      toast.success(t('toasts.profile.subscriptionActivated'));
       const syncWithRetry = async (attempts = 3, delay = 2000) => {
         for (let i = 0; i < attempts; i++) {
           try {
@@ -140,7 +143,7 @@ export function useProfile(): ProfileState & ProfileActions {
       syncWithRetry();
       navigate('/profile', { replace: true });
     } else if (status === 'canceled') {
-      toast.info('Checkout cancelado');
+      toast.info(t('toasts.profile.checkoutCanceled'));
       navigate('/profile', { replace: true });
     }
   }, [searchParams, navigate, refreshSubscription]);
@@ -160,12 +163,12 @@ export function useProfile(): ProfileState & ProfileActions {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: profileKeys.detail(user?.id || '') });
-      toast.success('Perfil atualizado com sucesso!');
+      toast.success(t('toasts.profile.profileUpdated'));
       navigate('/dashboard');
     },
     onError: (error) => {
       logger.error('Error saving profile:', error);
-      toast.error('Erro ao salvar perfil');
+      toast.error(t('toasts.profile.saveError'));
     },
   });
 
@@ -183,11 +186,11 @@ export function useProfile(): ProfileState & ProfileActions {
     if (!file || !user) return;
 
     if (!file.type.startsWith('image/')) {
-      toast.error('Por favor, selecione uma imagem');
+      toast.error(t('toasts.profile.selectImage'));
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
-      toast.error('A imagem deve ter no máximo 2MB');
+      toast.error(t('toasts.profile.avatarMaxSize'));
       return;
     }
 
@@ -208,14 +211,14 @@ export function useProfile(): ProfileState & ProfileActions {
       const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
       setAvatarPreview(urlData.publicUrl + '?t=' + Date.now());
       setProfileForm(prev => ({ ...prev, avatar_url: filePath }));
-      toast.success('Foto atualizada!');
+      toast.success(t('toasts.profile.avatarUpdated'));
     } catch (error) {
       logger.error('Error uploading avatar:', error);
-      toast.error('Erro ao enviar foto');
+      toast.error(t('toasts.profile.avatarError'));
     } finally {
       setIsUploading(false);
     }
-  }, [user, profileForm.avatar_url]);
+  }, [user, profileForm.avatar_url, t]);
 
   const syncCreditPurchase = useCallback(async () => {
     return subscriptions.syncCreditPurchase();
@@ -234,11 +237,11 @@ export function useProfile(): ProfileState & ProfileActions {
     if (!file || !user) return;
 
     if (!file.type.startsWith('image/')) {
-      toast.error('Por favor, selecione uma imagem');
+      toast.error(t('toasts.profile.selectImage'));
       return;
     }
     if (file.size > 1 * 1024 * 1024) {
-      toast.error('A logo deve ter no máximo 1MB');
+      toast.error(t('toasts.profile.logoMaxSize'));
       return;
     }
 
@@ -259,14 +262,14 @@ export function useProfile(): ProfileState & ProfileActions {
       const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
       setLogoPreview(urlData.publicUrl + '?t=' + Date.now());
       setProfileForm(prev => ({ ...prev, clinic_logo_url: filePath }));
-      toast.success('Logo atualizada!');
+      toast.success(t('toasts.profile.logoUpdated'));
     } catch (error) {
       logger.error('Error uploading logo:', error);
-      toast.error('Erro ao enviar logo');
+      toast.error(t('toasts.profile.logoError'));
     } finally {
       setIsUploadingLogo(false);
     }
-  }, [user, profileForm.clinic_logo_url]);
+  }, [user, profileForm.clinic_logo_url, t]);
 
   return {
     profile: profileForm,

@@ -67,6 +67,7 @@ export function initWebVitals() {
   // Only track in production or if explicitly enabled
   if (!import.meta.env.PROD && !import.meta.env.VITE_ENABLE_VITALS) {
     if (import.meta.env.DEV) {
+      // eslint-disable-next-line no-console
       console.log("[Web Vitals] Disabled in development. Set VITE_ENABLE_VITALS=true to enable.");
     }
     return;
@@ -83,6 +84,7 @@ export function initWebVitals() {
     onTTFB(sendToSentry);
 
     if (import.meta.env.DEV) {
+      // eslint-disable-next-line no-console
       console.log("[Web Vitals] Monitoring initialized");
     }
   } catch (error) {

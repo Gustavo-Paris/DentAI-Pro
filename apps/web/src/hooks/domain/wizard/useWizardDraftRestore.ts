@@ -8,6 +8,7 @@ import type { DSDResult } from '@/types/dsd';
 import type { WizardDraft, AdditionalPhotos } from '@/hooks/useWizardDraft';
 import type { PatientPreferences } from '@/components/wizard/PatientPreferencesStep';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { logger } from '@/lib/logger';
 import { wizard as wizardData } from '@/data';
 
@@ -46,6 +47,7 @@ export function useWizardDraftRestore({
   setImageBase64,
   clearDraft,
 }: UseWizardDraftRestoreParams) {
+  const { t } = useTranslation();
   const [showRestoreModal, setShowRestoreModal] = useState(false);
   const [pendingDraft, setPendingDraft] = useState<WizardDraft | null>(null);
 
@@ -80,7 +82,7 @@ export function useWizardDraftRestore({
 
     setShowRestoreModal(false);
     setPendingDraft(null);
-    toast.success('Rascunho restaurado com sucesso');
+    toast.success(t('toasts.draft.restored'));
   }, [
     pendingDraft,
     setStep,

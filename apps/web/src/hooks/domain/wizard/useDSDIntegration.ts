@@ -6,6 +6,7 @@ import type {
 } from '@/components/wizard/ReviewAnalysisStep';
 import type { DSDResult } from '@/types/dsd';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { isAnterior } from './helpers';
 
 // ---------------------------------------------------------------------------
@@ -33,6 +34,7 @@ export function useDSDIntegration({
   setStep,
   setDsdResult,
 }: UseDSDIntegrationParams) {
+  const { t } = useTranslation();
   const handleDSDComplete = useCallback(
     (result: DSDResult | null) => {
       setDsdResult(result);
@@ -114,7 +116,7 @@ export function useDSDIntegration({
           ...prev,
           GENGIVO: 'gengivoplastia' as TreatmentType,
         }));
-        toast.info('Gengivoplastia adicionada automaticamente pelo DSD');
+        toast.info(t('toasts.wizard.gingivoplastyAdded'));
       }
 
       setStep(5);

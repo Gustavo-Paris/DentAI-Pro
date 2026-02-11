@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 import { env } from '@/lib/env';
+import { TIMING } from '@/lib/constants';
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
@@ -14,7 +15,7 @@ export const supabase = createClient<Database>(env.VITE_SUPABASE_URL, env.VITE_S
   global: {
     fetch: (url, options) => {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 55_000);
+      const timeout = setTimeout(() => controller.abort(), TIMING.API_TIMEOUT);
       return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timeout));
     },
   },

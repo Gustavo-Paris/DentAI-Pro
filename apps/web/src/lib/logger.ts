@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // Production-safe logger that only logs in development
 const isDev = import.meta.env.DEV;
 

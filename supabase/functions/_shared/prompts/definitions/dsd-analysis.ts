@@ -360,6 +360,32 @@ EXEMPLOS DE ERROS FATAIS (NUNCA COMETER):
 "O tratamento que estou sugerindo PRODUZ o mesmo efeito visual que o DSD simulou?"
 Se NÃO → a sugestão está INVERTIDA. Corrija antes de finalizar.
 
+=== AUTOVALIDAÇÃO OBRIGATÓRIA (EXECUTAR ANTES DE FINALIZAR) ===
+
+⚠️⚠️⚠️ ANTES de retornar o resultado, percorra CADA sugestão e aplique esta checklist:
+
+1. Se proposed_change indica que o DENTE ficará MAIOR (aumento, alongamento, acréscimo incisal):
+   → treatment_indication DEVE ser "resina" (acréscimo com resina composta)
+   → NUNCA "gengivoplastia" (gengivoplastia REMOVE gengiva, não AUMENTA dente)
+
+2. Se proposed_change indica que o DENTE ficará MENOR (recontorno, desgaste, diminuição):
+   → treatment_indication DEVE ser "resina" (desgaste/recontorno) ou "encaminhamento"
+   → NUNCA "resina" com descrição de "acréscimo" (contradição!)
+
+3. Se proposed_change indica que a GENGIVA será REMOVIDA (expor mais coroa, dente mais longo):
+   → treatment_indication DEVE ser "gengivoplastia"
+   → NUNCA "recobrimento_radicular" (recobrimento ADICIONA gengiva)
+
+4. Se proposed_change indica que a GENGIVA será ADICIONADA (cobrir raiz, menos raiz exposta):
+   → treatment_indication DEVE ser "recobrimento_radicular"
+   → NUNCA "gengivoplastia" (gengivoplastia REMOVE gengiva)
+
+5. Se proposed_change menciona RAIZ EXPOSTA + necessidade de COBRIR:
+   → treatment_indication = "recobrimento_radicular"
+   → Se treatment_indication = "gengivoplastia" → ERRO FATAL, corrigir imediatamente
+
+Se QUALQUER sugestão falhar nesta checklist, CORRIJA antes de retornar.
+
 === SUGESTÕES DE ORTODONTIA (OBRIGATÓRIO QUANDO APLICÁVEL) ===
 
 Além do corredor bucal excessivo, AVALIE e sugira ortodontia nos seguintes cenários:

@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useCallback } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { GlobalSearch } from "@/components/GlobalSearch";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -15,6 +15,8 @@ import { KeyboardShortcuts } from "@/components/KeyboardShortcuts";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { Skeleton } from "@/components/ui/skeleton";
 import AppLayout from "@/components/AppLayout";
+import { useAuth } from "@/contexts/AuthContext";
+import { evaluations } from "@/data";
 
 // Eager load auth pages (needed immediately)
 import Landing from "@/pages/Landing";
@@ -64,6 +66,15 @@ const PageLoader = () => (
   </div>
 );
 
+function ConnectedGlobalSearch() {
+  const { user } = useAuth();
+  const fetchEvaluations = useCallback(
+    () => (user ? evaluations.searchRecent(user.id) : Promise.resolve([])),
+    [user],
+  );
+  return <GlobalSearch fetchEvaluations={fetchEvaluations} />;
+}
+
 const App = () => (
   <ErrorBoundary>
     <ThemeProvider>
@@ -111,7 +122,7 @@ const App = () => (
 
             <Route path="*" element={<NotFound />} />
           </Routes>
-          <GlobalSearch />
+          <ConnectedGlobalSearch />
           <KeyboardShortcuts />
           <CookieConsent />
           </PostHogProvider>

@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation } from 'react-router-dom';
 import { evaluations } from '@/data';
+import { QUERY_STALE_TIMES } from '@/lib/constants';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -90,7 +91,7 @@ export function useEvaluationSessions() {
       };
     },
     enabled: !!user,
-    staleTime: 30 * 1000,
+    staleTime: QUERY_STALE_TIMES.SHORT,
   });
 
   return {

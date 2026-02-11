@@ -27,6 +27,7 @@ import { AlertTriangle, Check, Info, Sparkles, CircleDot, RefreshCw, Loader2, Pl
 import { Link } from 'react-router-dom';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { PatientAutocomplete } from '@/components/PatientAutocomplete';
+import type { Patient } from '@/components/PatientAutocomplete';
 import { calculateAge } from '@/lib/dateUtils';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -141,6 +142,7 @@ interface ReviewAnalysisStepProps {
   originalToothTreatments?: Record<string, TreatmentType>;
   onRestoreAiSuggestion?: (tooth: string) => void;
   hasInventory?: boolean;
+  patients?: Patient[];
   selectedPatientId?: string | null;
   onPatientSelect?: (name: string, patientId?: string, birthDate?: string | null) => void;
   patientBirthDate?: string | null;
@@ -209,6 +211,7 @@ export function ReviewAnalysisStep({
   originalToothTreatments = {},
   onRestoreAiSuggestion,
   hasInventory = true,
+  patients = [],
   selectedPatientId,
   onPatientSelect,
   patientBirthDate,
@@ -808,6 +811,7 @@ export function ReviewAnalysisStep({
                 onFormChange({ patientName: name });
                 onPatientSelect?.(name, patientId, birthDate);
               }}
+              patients={patients}
               selectedPatientId={selectedPatientId}
               placeholder={t('components.wizard.review.patientNamePlaceholder')}
               label={t('components.wizard.review.patientNameLabel')}

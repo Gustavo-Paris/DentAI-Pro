@@ -494,14 +494,12 @@ export default function EvaluationDetails() {
       </div>
 
       {/* Add Teeth Modal */}
-      {detail.evaluations.length > 0 && detail.patientDataForModal && (
+      {detail.evaluations.length > 0 && (
         <AddTeethModal
           open={detail.showAddTeethModal}
           onClose={() => detail.setShowAddTeethModal(false)}
           pendingTeeth={detail.pendingTeeth}
-          sessionId={detail.sessionId}
-          patientData={detail.patientDataForModal}
-          onSuccess={detail.handleAddTeethSuccess}
+          onSubmitTeeth={detail.handleSubmitTeeth}
         />
       )}
 

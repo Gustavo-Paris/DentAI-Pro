@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 import {
   CommandDialog,
   CommandEmpty,
@@ -16,7 +15,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { logger } from '@/lib/logger';
 
-interface SearchResult {
+export interface SearchResult {
   id: string;
   session_id: string;
   type: 'patient' | 'tooth' | 'date';
@@ -26,16 +25,19 @@ interface SearchResult {
   teeth: string[];
 }
 
-interface Evaluation {
+export interface SearchEvaluation {
   id: string;
   session_id: string | null;
   patient_name: string | null;
   tooth: string;
   created_at: string;
-  status: string | null;
 }
 
-export function GlobalSearch() {
+export interface GlobalSearchProps {
+  fetchEvaluations: () => Promise<SearchEvaluation[]>;
+}
+
+export function GlobalSearch({ fetchEvaluations }: GlobalSearchProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -73,8 +75,8 @@ export function GlobalSearch() {
   }, [open]);
 
   // Group evaluations by session_id
-  const groupBySession = useCallback((evaluations: Evaluation[]): SearchResult[] => {
-    const sessionMap = new Map<string, Evaluation[]>();
+  const groupBySession = useCallback((evaluations: SearchEvaluation[]): SearchResult[] => {
+    const sessionMap = new Map<string, SearchEvaluation[]>();
 
     evaluations.forEach((evaluation) => {
       const sessionKey = evaluation.session_id || evaluation.id;
@@ -106,45 +108,32 @@ export function GlobalSearch() {
       setLoading(true);
 
       try {
-        const { data, error } = await supabase
-          .from('evaluations')
-          .select('id, session_id, patient_name, tooth, created_at, status')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
-          .limit(100);
+        const data = await fetchEvaluations();
 
-        if (error) {
-          logger.error('Search error:', error);
-          setResults([]);
-          return;
-        }
+        const searchLower = searchTerm.toLowerCase();
 
-        if (data) {
-          const searchLower = searchTerm.toLowerCase();
+        const filtered = data.filter((e) => {
+          // Search by patient name
+          if (e.patient_name?.toLowerCase().includes(searchLower)) return true;
 
-          const filtered = data.filter((e) => {
-            // Search by patient name
-            if (e.patient_name?.toLowerCase().includes(searchLower)) return true;
+          // Search by tooth number
+          if (e.tooth.toLowerCase().includes(searchLower)) return true;
 
-            // Search by tooth number
-            if (e.tooth.toLowerCase().includes(searchLower)) return true;
-
-            // Search by date (Brazilian format)
-            const dateStr = format(new Date(e.created_at), "d 'de' MMMM yyyy", {
-              locale: ptBR,
-            });
-            if (dateStr.toLowerCase().includes(searchLower)) return true;
-
-            // Search by short date format
-            const shortDate = format(new Date(e.created_at), 'dd/MM/yyyy');
-            if (shortDate.includes(searchTerm)) return true;
-
-            return false;
+          // Search by date (Brazilian format)
+          const dateStr = format(new Date(e.created_at), "d 'de' MMMM yyyy", {
+            locale: ptBR,
           });
+          if (dateStr.toLowerCase().includes(searchLower)) return true;
 
-          const groupedResults = groupBySession(filtered);
-          setResults(groupedResults.slice(0, 10));
-        }
+          // Search by short date format
+          const shortDate = format(new Date(e.created_at), 'dd/MM/yyyy');
+          if (shortDate.includes(searchTerm)) return true;
+
+          return false;
+        });
+
+        const groupedResults = groupBySession(filtered);
+        setResults(groupedResults.slice(0, 10));
       } catch (err) {
         logger.error('Search error:', err);
         setResults([]);
@@ -152,7 +141,7 @@ export function GlobalSearch() {
         setLoading(false);
       }
     },
-    [user, groupBySession]
+    [user, groupBySession, fetchEvaluations]
   );
 
   // Debounced search
