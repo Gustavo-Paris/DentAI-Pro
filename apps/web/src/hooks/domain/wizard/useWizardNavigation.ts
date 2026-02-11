@@ -1,0 +1,169 @@
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { toast } from 'sonner';
+
+// ---------------------------------------------------------------------------
+// Params
+// ---------------------------------------------------------------------------
+
+export interface UseWizardNavigationParams {
+  analyzePhoto: () => void;
+  setAnalysisError: (error: string | null) => void;
+  setIsAnalyzing: (analyzing: boolean) => void;
+  analysisAbortedRef: React.RefObject<boolean>;
+  getCreditCost: (operation: string) => number;
+  creditsRemaining: number;
+  navigate: (path: string) => void;
+  confirmCreditUse: (
+    operation: string,
+    operationLabel: string,
+    costOverride?: number,
+  ) => Promise<boolean>;
+  setPatientPreferences: React.Dispatch<React.SetStateAction<{ whiteningLevel: string }>>;
+}
+
+// ---------------------------------------------------------------------------
+// Hook
+// ---------------------------------------------------------------------------
+
+export function useWizardNavigation({
+  analyzePhoto,
+  setAnalysisError,
+  setIsAnalyzing,
+  analysisAbortedRef,
+  getCreditCost,
+  creditsRemaining,
+  navigate,
+  confirmCreditUse,
+  setPatientPreferences,
+}: UseWizardNavigationParams) {
+  const [step, setStep] = useState(1);
+  const [stepDirection, setStepDirection] = useState<'forward' | 'backward'>('forward');
+  const [isQuickCase, setIsQuickCase] = useState(false);
+
+  const prevStepRef = useRef(1);
+  const isQuickCaseRef = useRef(false);
+  const fullFlowCreditsConfirmedRef = useRef(false);
+
+  // Track step direction for animations
+  useEffect(() => {
+    if (step !== prevStepRef.current) {
+      setStepDirection(step > prevStepRef.current ? 'forward' : 'backward');
+      prevStepRef.current = step;
+    }
+  }, [step]);
+
+  const goToStep = useCallback((targetStep: number) => {
+    // Only allow jumping to completed steps (past steps < current)
+    if (targetStep >= step || targetStep < 1 || step === 6) return;
+    // Step 3 is auto-processing — redirect to step 2 (or step 1 for quick case)
+    if (targetStep === 3) {
+      setStep(isQuickCase ? 1 : 2);
+      return;
+    }
+    // Quick case: skip steps 2 (preferences) and 4 (DSD)
+    if (isQuickCase && (targetStep === 2 || targetStep === 4)) return;
+    setStep(targetStep);
+  }, [step, isQuickCase]);
+
+  const goToPreferences = useCallback(async () => {
+    setIsQuickCase(false);
+    isQuickCaseRef.current = false;
+
+    const fullCost = getCreditCost('case_analysis') + getCreditCost('dsd_simulation');
+
+    if (creditsRemaining < fullCost) {
+      toast.error('Créditos insuficientes para análise completa. Faça upgrade do seu plano.', {
+        action: { label: 'Ver Planos', onClick: () => navigate('/pricing') },
+      });
+      return;
+    }
+
+    const confirmed = await confirmCreditUse('full_analysis', 'Análise Completa com IA', fullCost);
+    if (!confirmed) return;
+
+    fullFlowCreditsConfirmedRef.current = true;
+    setStep(2);
+  }, [getCreditCost, creditsRemaining, navigate, confirmCreditUse]);
+
+  const goToQuickCase = useCallback(() => {
+    setIsQuickCase(true);
+    isQuickCaseRef.current = true;
+    setPatientPreferences({ whiteningLevel: 'natural' });
+    analyzePhoto();
+  }, [analyzePhoto, setPatientPreferences]);
+
+  const handlePreferencesContinue = useCallback(() => {
+    analyzePhoto();
+  }, [analyzePhoto]);
+
+  const handleBack = useCallback(() => {
+    if (step === 1) {
+      navigate('/dashboard');
+    } else if (step === 2) {
+      fullFlowCreditsConfirmedRef.current = false;
+      setStep(1);
+    } else if (step === 3) {
+      if (isQuickCase) {
+        setStep(1);
+        setIsQuickCase(false);
+        isQuickCaseRef.current = false;
+      } else {
+        setStep(2);
+      }
+      setAnalysisError(null);
+      setIsAnalyzing(false);
+    } else if (step === 4) {
+      setStep(2);
+    } else if (step === 5) {
+      if (isQuickCase) {
+        setStep(3);
+      } else {
+        setStep(4);
+      }
+    }
+  }, [step, navigate, isQuickCase, setAnalysisError, setIsAnalyzing]);
+
+  const handleRetryAnalysis = useCallback(() => {
+    setAnalysisError(null);
+    analyzePhoto();
+  }, [analyzePhoto, setAnalysisError]);
+
+  const handleSkipToReview = useCallback(() => {
+    setAnalysisError(null);
+    setIsAnalyzing(false);
+    setStep(5);
+    toast.info('Prosseguindo com entrada manual.');
+  }, [setAnalysisError, setIsAnalyzing]);
+
+  const cancelAnalysis = useCallback(() => {
+    analysisAbortedRef.current = true;
+    setIsAnalyzing(false);
+    setAnalysisError(null);
+    if (isQuickCase) {
+      setStep(1);
+      setIsQuickCase(false);
+      isQuickCaseRef.current = false;
+    } else {
+      setStep(2);
+    }
+    toast.info('Análise cancelada.');
+  }, [isQuickCase, analysisAbortedRef, setIsAnalyzing, setAnalysisError]);
+
+  return {
+    step,
+    setStep,
+    stepDirection,
+    isQuickCase,
+    setIsQuickCase,
+    isQuickCaseRef,
+    fullFlowCreditsConfirmedRef,
+    goToStep,
+    goToPreferences,
+    goToQuickCase,
+    handlePreferencesContinue,
+    handleBack,
+    handleRetryAnalysis,
+    handleSkipToReview,
+    cancelAnalysis,
+  };
+}
