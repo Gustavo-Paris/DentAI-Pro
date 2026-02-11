@@ -23,6 +23,11 @@ export function ProgressRing({
       height={size}
       className={`-rotate-90 ${className ?? ''}`}
       viewBox={`0 0 ${size} ${size}`}
+      role="progressbar"
+      aria-valuenow={Math.round(progress)}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-label={`${Math.round(progress)}%`}
     >
       {/* Track */}
       <circle

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 export function HeroMockup() {
   const { t } = useTranslation();
   return (
-    <div className="relative w-full max-w-sm mx-auto animate-[fade-in-up_0.8s_ease-out_1s_both]">
+    <div className="relative w-full max-w-sm mx-auto animate-[fade-in-up_0.8s_ease-out_1s_both]" aria-hidden="true">
       {/* Float animation wrapper */}
       <div className="animate-[hero-float_6s_ease-in-out_infinite]">
         {/* Device frame */}

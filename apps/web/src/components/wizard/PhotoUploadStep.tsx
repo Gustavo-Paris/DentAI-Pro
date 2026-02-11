@@ -288,7 +288,7 @@ export function PhotoUploadStep({
           <div className="bg-card rounded-[11px] grain-overlay">
             <div className="py-16 px-4">
               {isCompressing ? (
-                <div className="flex flex-col items-center justify-center text-center">
+                <div className="flex flex-col items-center justify-center text-center" role="status" aria-live="polite">
                   <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
                     <Loader2 className="w-10 h-10 text-primary animate-spin" />
                   </div>
@@ -383,6 +383,7 @@ export function PhotoUploadStep({
         accept="image/*"
         onChange={handleFileChange}
         className="hidden"
+        aria-label={t('components.wizard.photoUpload.chooseFromGallery')}
       />
 
       {/* Input para câmera - com capture */}
@@ -393,6 +394,7 @@ export function PhotoUploadStep({
         capture="environment"
         onChange={handleFileChange}
         className="hidden"
+        aria-label={t('components.wizard.photoUpload.takePhoto')}
       />
 
       {/* Inputs ocultos para fotos opcionais */}
@@ -402,6 +404,7 @@ export function PhotoUploadStep({
         accept="image/*"
         onChange={handleOptionalFileChange('smile45')}
         className="hidden"
+        aria-label={t('components.wizard.photoUpload.smile45Label')}
       />
       <input
         ref={faceInputRef}
@@ -409,6 +412,7 @@ export function PhotoUploadStep({
         accept="image/*"
         onChange={handleOptionalFileChange('face')}
         className="hidden"
+        aria-label={t('components.wizard.photoUpload.faceLabel')}
       />
 
       {/* Fotos adicionais — always visible after main photo (dimmed if empty) */}
@@ -515,6 +519,7 @@ export function PhotoUploadStep({
                         size="icon"
                         className="absolute top-1 right-1 h-6 w-6 bg-background/80 backdrop-blur-sm"
                         onClick={() => removeOptionalPhoto('face')}
+                        aria-label={t('components.wizard.photoUpload.removeFace')}
                       >
                         <X className="w-3 h-3" />
                       </Button>

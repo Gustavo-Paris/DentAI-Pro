@@ -58,10 +58,10 @@ function ProtocolTable({ layers }: ProtocolTableProps) {
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50">
-              <TableHead className="w-[140px]">{t('components.protocol.table.layer')}</TableHead>
-              <TableHead>{t('components.protocol.table.resin')}</TableHead>
-              <TableHead className="w-[80px]">{t('components.protocol.table.color')}</TableHead>
-              <TableHead className="w-[100px]">{t('components.protocol.table.thickness')}</TableHead>
+              <TableHead scope="col" className="w-[140px]">{t('components.protocol.table.layer')}</TableHead>
+              <TableHead scope="col">{t('components.protocol.table.resin')}</TableHead>
+              <TableHead scope="col" className="w-[80px]">{t('components.protocol.table.color')}</TableHead>
+              <TableHead scope="col" className="w-[100px]">{t('components.protocol.table.thickness')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

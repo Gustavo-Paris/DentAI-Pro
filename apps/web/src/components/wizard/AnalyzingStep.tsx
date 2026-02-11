@@ -82,7 +82,7 @@ export function AnalyzingStep({
   // Friendly error state
   if (analysisError) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6" role="alert">
         <div className="text-center">
           <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-950/30 flex items-center justify-center mx-auto mb-4">
             <AlertCircle className="w-8 h-8 text-amber-600 dark:text-amber-400" />
@@ -145,7 +145,7 @@ export function AnalyzingStep({
 
   // Loading state with scan-line + ring
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" role="status" aria-live="polite">
       <div className="text-center">
         <h2 className="text-2xl font-semibold font-display mb-2 text-primary">{t('components.wizard.analyzing.analyzingTitle')}</h2>
         <p className="text-muted-foreground">{currentLabel}</p>

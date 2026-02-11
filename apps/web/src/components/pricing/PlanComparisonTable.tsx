@@ -36,9 +36,15 @@ const featureRows: FeatureRow[] = [
 function CellValue({ value }: { value: string | boolean | number }) {
   if (typeof value === 'boolean') {
     return value ? (
-      <Check className="h-4 w-4 text-success mx-auto" />
+      <>
+        <Check className="h-4 w-4 text-success mx-auto" aria-hidden="true" />
+        <span className="sr-only">Included</span>
+      </>
     ) : (
-      <Minus className="h-4 w-4 text-muted-foreground/40 mx-auto" />
+      <>
+        <Minus className="h-4 w-4 text-muted-foreground/40 mx-auto" aria-hidden="true" />
+        <span className="sr-only">Not included</span>
+      </>
     );
   }
   return <span className="text-sm font-medium">{value}</span>;
@@ -58,9 +64,9 @@ export function PlanComparisonTable() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[200px]">{t('components.pricing.comparison.feature')}</TableHead>
+            <TableHead scope="col" className="w-[200px]">{t('components.pricing.comparison.feature')}</TableHead>
             {plans.map((plan) => (
-              <TableHead key={plan.id} className="text-center">
+              <TableHead key={plan.id} scope="col" className="text-center">
                 <div className="space-y-1">
                   <div className="flex items-center justify-center gap-1.5">
                     <span className="font-semibold">{plan.name}</span>

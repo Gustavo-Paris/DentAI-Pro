@@ -13,7 +13,7 @@ export function DSDErrorState({ error, onRetry, onSkip }: DSDErrorStateProps) {
   const isCreditError = error.includes('Créditos insuficientes');
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" role="alert">
       <div className="text-center">
         <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-amber-100 dark:bg-amber-950/30 flex items-center justify-center">
           {isCreditError ? (
