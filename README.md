@@ -1,4 +1,4 @@
-# DentAI Pro
+# AURIA
 
 Sistema de apoio à decisão clínica odontológica com Inteligência Artificial.
 

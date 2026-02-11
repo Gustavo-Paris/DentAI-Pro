@@ -5,6 +5,8 @@ import { logger } from "@/lib/logger";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+// Not using PageShell composite: minimal centered 404 page — no composite fits this
+// intentionally simple layout with route logging side-effects.
 const NotFound = () => {
   const { t } = useTranslation();
   const location = useLocation();

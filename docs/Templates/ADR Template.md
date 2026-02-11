@@ -4,7 +4,7 @@ adr_id: ADR-###
 created: YYYY-MM-DD
 updated: YYYY-MM-DD
 status: proposed
-deciders: Team DentAI
+deciders: Team AURIA
 tags:
   - type/adr
   - status/proposed

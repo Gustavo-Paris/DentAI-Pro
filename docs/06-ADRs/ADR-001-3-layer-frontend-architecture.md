@@ -4,7 +4,7 @@ adr_id: ADR-001
 created: 2026-02-04
 updated: 2026-02-05
 status: accepted
-deciders: Team DentAI
+deciders: Team AURIA
 tags:
   - type/adr
   - status/accepted
@@ -24,7 +24,7 @@ related:
 
 ## Context
 
-DentAI Pro has 173 TypeScript files and 21 pages. Three structural problems limit evolution speed:
+AURIA has 173 TypeScript files and 21 pages. Three structural problems limit evolution speed:
 
 1. **No data layer.** Supabase calls are spread across 16+ files with duplicated query logic and direct coupling that prevents backend swaps or simple unit testing.
 2. **No intermediate structure.** Pages like `NewCase.tsx` have 25+ `useState` calls. Business logic, fetching, and presentation live in the same file.

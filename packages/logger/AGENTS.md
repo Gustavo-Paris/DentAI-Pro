@@ -23,7 +23,7 @@ related:
 
 ## Project Context
 
-`@repo/logger` é o logger compartilhado do monorepo DentAI Pro. Package simples com entry point em `src/index.ts`.
+`@repo/logger` é o logger compartilhado do monorepo AURIA. Package simples com entry point em `src/index.ts`.
 
 ## Key Locations
 

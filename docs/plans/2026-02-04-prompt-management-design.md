@@ -1,10 +1,10 @@
 # Prompt Management System — Design
 
-> Sistema de gestao centralizada de prompts para o DentAI Pro.
+> Sistema de gestao centralizada de prompts para o AURIA.
 
 ## Contexto
 
-O DentAI Pro usa 5 prompts de IA (Google Gemini) no fluxo de avaliacoes, todos hardcoded inline nas Supabase Edge Functions. Isso dificulta visibilidade, manutencao e rastreamento de metricas.
+O AURIA usa 5 prompts de IA (Google Gemini) no fluxo de avaliacoes, todos hardcoded inline nas Supabase Edge Functions. Isso dificulta visibilidade, manutencao e rastreamento de metricas.
 
 ## Decisoes
 

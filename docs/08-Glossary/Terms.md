@@ -22,11 +22,11 @@ related:
 
 ### DSD
 
-**Digital Smile Design.** A treatment planning methodology that uses digital tools to analyze dental proportions, simulate aesthetic outcomes, and communicate treatment plans visually. In DentAI Pro, DSD involves AI-powered proportion analysis and smile simulation via Google Gemini.
+**Digital Smile Design.** A treatment planning methodology that uses digital tools to analyze dental proportions, simulate aesthetic outcomes, and communicate treatment plans visually. In AURIA, DSD involves AI-powered proportion analysis and smile simulation via Google Gemini.
 
 ### VITA Color
 
-A standardized shade system (VITA classical / VITA 3D-Master) used worldwide to match dental restorations to natural tooth color. DentAI Pro identifies VITA shades from intraoral photos during AI analysis.
+A standardized shade system (VITA classical / VITA 3D-Master) used worldwide to match dental restorations to natural tooth color. AURIA identifies VITA shades from intraoral photos during AI analysis.
 
 ### Stratification
 
@@ -34,7 +34,7 @@ The layered application technique for dental composite resins, building up denti
 
 ### Cementation
 
-The process of bonding indirect dental restorations (crowns, veneers, inlays) using dental cements. DentAI Pro recommends cementation protocols including cement type, technique, and surface preparation.
+The process of bonding indirect dental restorations (crowns, veneers, inlays) using dental cements. AURIA recommends cementation protocols including cement type, technique, and surface preparation.
 
 ### Intraoral
 
@@ -102,7 +102,7 @@ An interface defined in the [[06-ADRs/ADR-003-centralized-prompt-management|prom
 
 ### PageShell
 
-The layered component design system used by DentAI Pro, organized in 11 packages across 5 layers: Core (L0) > Primitives (L1) > Layouts + Interactions (L2) > Features (L3) > Composites (L4). Shared across projects via monorepo. See [[06-ADRs/ADR-002-pageshell-design-system-adoption|ADR-002]].
+The layered component design system used by AURIA, organized in 11 packages across 5 layers: Core (L0) > Primitives (L1) > Layouts + Interactions (L2) > Features (L3) > Composites (L4). Shared across projects via monorepo. See [[06-ADRs/ADR-002-pageshell-design-system-adoption|ADR-002]].
 
 ---
 

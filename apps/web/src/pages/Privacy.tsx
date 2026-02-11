@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { BRAND_NAME } from '@/lib/branding';
 
+// Not using PageShell composite: static legal page with branded header — DetailPage
+// is designed for data-fetched entity views, not static content with custom navigation.
 export default function Privacy() {
   const { t } = useTranslation();
   return (

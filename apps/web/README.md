@@ -1,6 +1,6 @@
 # @dentai/web
 
-Sistema de apoio à decisão clínica odontológica com IA. App principal do monorepo DentAI Pro.
+Sistema de apoio à decisão clínica odontológica com IA. App principal do monorepo AURIA.
 
 ## Funcionalidades
 

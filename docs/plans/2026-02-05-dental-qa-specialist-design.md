@@ -5,7 +5,7 @@
 ## Visão Geral
 
 Skill que transforma o Claude em um **especialista odontológico QA** que:
-- Navega pela aplicação DentAI Pro via Playwright (browser real)
+- Navega pela aplicação AURIA via Playwright (browser real)
 - Sobe fotos dentárias, acompanha o fluxo de análise ponta-a-ponta
 - Valida clinicamente **todos os outputs de IA**: análise de foto, DSD e protocolo de estratificação
 - Checa terminologia FDI, classificação de Black, sistema VITA, visagismo, hierarquia de tratamento

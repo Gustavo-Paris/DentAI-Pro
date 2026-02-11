@@ -37,6 +37,7 @@ Sistema de apoio à decisão clínica odontológica com Inteligência Artificial
 | [[#Architecture Decision Records (ADRs)]] | Formal architecture decisions |
 | [[#Glossary]] | Domain & technical term definitions |
 | [[#Architecture Plans]] | Design documents & implementation plans |
+| [[04-Development/Architecture-Guidelines\|Architecture Guidelines]] | 3-layer pattern, PageShell composites, anti-patterns |
 | [[04-Development/Setup-Guide\|Developer Setup]] | Environment setup, scripts, conventions |
 | [[04-Development/Testing-Guide\|Testing Guide]] | Vitest conventions, patterns, utilities |
 | [[04-Development/Git-Workflow\|Git Workflow]] | Commits, branches, CI/CD, PR process |
@@ -219,7 +220,7 @@ Supabase Edge Functions (Deno runtime) handling AI processing and billing.
 
 ## Glossary
 
-Domain and technical terms used across DentAI Pro — clinical (DSD, VITA, stratification), architecture (Data Client, Domain Hook, Page Adapter), and infrastructure (Edge Function, MetricsPort, PageShell).
+Domain and technical terms used across AURIA — clinical (DSD, VITA, stratification), architecture (Data Client, Domain Hook, Page Adapter), and infrastructure (Edge Function, MetricsPort, PageShell).
 
 → [[08-Glossary/Terms]]
 

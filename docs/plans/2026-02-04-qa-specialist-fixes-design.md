@@ -1,4 +1,4 @@
-# DentAI Pro - Design: Correções QA + Avaliação Especialista
+# AURIA - Design: Correções QA + Avaliação Especialista
 
 **Data:** 2026-02-04
 **Baseado em:** Teste QA automatizado + Avaliação de Dentista Especialista
