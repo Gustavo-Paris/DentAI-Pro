@@ -4,7 +4,7 @@ adr_id: ADR-002
 created: 2026-02-04
 updated: 2026-02-05
 status: accepted
-deciders: Team DentAI
+deciders: Team AURIA
 tags:
   - type/adr
   - status/accepted
@@ -24,7 +24,7 @@ related:
 
 ## Context
 
-DentAI Pro uses shadcn/ui primitives directly in 20 of 21 pages. Only the Dashboard uses [[08-Glossary/Terms#Composite|PageShell composites]]. This creates two coexisting UI patterns:
+AURIA uses shadcn/ui primitives directly in 20 of 21 pages. Only the Dashboard uses [[08-Glossary/Terms#Composite|PageShell composites]]. This creates two coexisting UI patterns:
 
 - **Pattern A:** Hand-built pages with shadcn/ui primitives (~300-400 lines each)
 - **Pattern B:** Composite-driven pages via PageShell (~50-80 lines each)
@@ -69,7 +69,7 @@ Landing, Login, Register, Terms, Privacy, SharedEvaluation — static, auth-spec
 
 ### 2. Build Custom Design System
 
-- **Pros:** Tailored to DentAI domain
+- **Pros:** Tailored to AURIA domain
 - **Cons:** High build cost, no cross-project reuse, maintenance burden for solo dev
 - **Rejected because:** PageShell already exists and is maintained. Building from scratch is unnecessary.
 

@@ -1,4 +1,4 @@
-# DentAI Web
+# AURIA Web
 
 > Entry point. Leia primeiro.
 

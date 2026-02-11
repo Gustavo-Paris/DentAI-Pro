@@ -12,7 +12,8 @@
     "preview": "vite preview",
     "test": "vitest run --coverage",
     "test:watch": "vitest",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "check:i18n": "bash scripts/check-i18n.sh"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

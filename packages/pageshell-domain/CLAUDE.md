@@ -8,7 +8,7 @@
 
 ## Contexto
 
-- **O que**: Domain-specific UI components para DentAI Pro
+- **O que**: Domain-specific UI components para AURIA
 - **Stack**: TypeScript, React
 - **Pai**: [[../../CLAUDE.md]]
 

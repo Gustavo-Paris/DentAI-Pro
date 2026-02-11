@@ -4,7 +4,7 @@ adr_id: ADR-003
 created: 2026-02-04
 updated: 2026-02-05
 status: accepted
-deciders: Team DentAI
+deciders: Team AURIA
 tags:
   - type/adr
   - status/accepted
@@ -24,7 +24,7 @@ related:
 
 ## Context
 
-DentAI Pro uses 5 AI prompts (Google Gemini) in the evaluation flow, all hardcoded inline in Supabase [[08-Glossary/Terms#Edge Function|Edge Functions]]:
+AURIA uses 5 AI prompts (Google Gemini) in the evaluation flow, all hardcoded inline in Supabase [[08-Glossary/Terms#Edge Function|Edge Functions]]:
 
 | Prompt | Model | Mode | Current Location |
 |--------|-------|------|-----------------|

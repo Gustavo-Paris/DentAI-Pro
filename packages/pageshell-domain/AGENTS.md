@@ -35,7 +35,7 @@ It **inherits** the global rules and routing in the repo root `AGENTS.md`.
 
 ## Safe Defaults (Local)
 
-- Domain components are DentAI Pro-specific (not generic).
+- Domain components are AURIA-specific (not generic).
 - Follow Domain Primitives Pattern (ADR-0011, ADR-0033).
 - Components may depend on `@repo/types` for domain types.
 

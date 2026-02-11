@@ -1,4 +1,4 @@
-# DentAI Pro
+# AURIA
 
 > Entry point. Leia primeiro.
 

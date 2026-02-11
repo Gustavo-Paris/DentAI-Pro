@@ -2,7 +2,7 @@
 title: "AGENTS.md (apps/web)"
 created: 2026-02-04
 updated: 2026-02-04
-author: Team DentAI
+author: Team AURIA
 status: published
 tags:
   - type/guide
@@ -14,7 +14,7 @@ related:
   - "[[CLAUDE.md]]"
 ---
 
-# Agente: DentAI Web
+# Agente: AURIA Web
 
 > Instruções específicas para apps/web.
 
@@ -30,7 +30,7 @@ related:
 
 ## Project Context
 
-`@dentai/web` é o app principal do DentAI Pro. Sistema de apoio à decisão clínica odontológica com IA, incluindo análise de fotos dentais, recomendação de resinas, cimentação e Digital Smile Design (DSD).
+`@dentai/web` é o app principal do AURIA. Sistema de apoio à decisão clínica odontológica com IA, incluindo análise de fotos dentais, recomendação de resinas, cimentação e Digital Smile Design (DSD).
 
 ## Key Locations
 

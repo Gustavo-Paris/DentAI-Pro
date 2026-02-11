@@ -1,6 +1,6 @@
 # @repo/logger
 
-Logger compartilhado do monorepo DentAI Pro. Wrapper leve sobre `console` com níveis de log padronizados.
+Logger compartilhado do monorepo AURIA. Wrapper leve sobre `console` com níveis de log padronizados.
 
 ## Instalação
 

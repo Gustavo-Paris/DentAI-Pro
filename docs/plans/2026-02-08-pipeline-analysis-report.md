@@ -1,4 +1,4 @@
-# DentAI Pro — Pipeline Analysis Report
+# AURIA — Pipeline Analysis Report
 
 **Generated:** 2026-02-08
 **Pipeline version:** 3-phase parallel extraction + cross-reference + consolidation
@@ -7,7 +7,7 @@
 
 ## Executive Summary
 
-DentAI Pro (AURIA) is a dental clinical decision-support system built on a modern stack: React 18 + TypeScript frontend with a Vite build, Supabase backend (Postgres + Edge Functions), Google Gemini AI for clinical analysis, and Stripe for billing. The monorepo comprises 1 app and 12 workspace packages organized via Turborepo + pnpm. The database layer is well-structured with 18 tables, 14 migrations, 35 indexes, and 38 RLS policies across 17 of those 18 tables. The backend consists of 9 Supabase Edge Functions (Deno runtime) supported by 12 shared modules and 5 prompt definitions. The credit-based pricing system is atomically sound, using `SELECT FOR UPDATE` row-locking to prevent race conditions, with proper refund handling for AI failures.
+AURIA (formerly DentAI Pro) is a dental clinical decision-support system built on a modern stack: React 18 + TypeScript frontend with a Vite build, Supabase backend (Postgres + Edge Functions), Google Gemini AI for clinical analysis, and Stripe for billing. The monorepo comprises 1 app and 12 workspace packages organized via Turborepo + pnpm. The database layer is well-structured with 18 tables, 14 migrations, 35 indexes, and 38 RLS policies across 17 of those 18 tables. The backend consists of 9 Supabase Edge Functions (Deno runtime) supported by 12 shared modules and 5 prompt definitions. The credit-based pricing system is atomically sound, using `SELECT FOR UPDATE` row-locking to prevent race conditions, with proper refund handling for AI failures.
 
 However, the analysis uncovered several issues that require attention. The most critical is the `prompt_executions` table lacking RLS entirely -- the only table in the database without row-level security -- which could expose AI operational intelligence (models, token counts, costs, error rates) to any authenticated user via PostgREST. A second critical finding is the `skipCreditCheck` parameter in `generate-dsd` that can be set to `true` by any client, bypassing the credit system entirely. There is also an authentication pattern inconsistency where 2 of 4 AI functions use `getClaims()` (which does not validate token revocation) while the other 2 use `getUser()` (full server-side validation). Additionally, the `.env.example` documents `GEMINI_API_KEY` but the actual code reads `GOOGLE_AI_API_KEY`, meaning anyone following setup docs will have non-functioning AI endpoints.
 

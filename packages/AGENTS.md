@@ -2,7 +2,7 @@
 title: "AGENTS.md (packages)"
 created: 2026-02-04
 updated: 2026-02-04
-author: Team DentAI
+author: Team AURIA
 status: published
 tags:
   - type/guide
@@ -17,7 +17,7 @@ related:
 
 # Agentes: Packages
 
-> Índice dos packages do monorepo DentAI Pro.
+> Índice dos packages do monorepo AURIA.
 
 ## Navegação
 

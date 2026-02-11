@@ -8,7 +8,7 @@
 
 ## Problema
 
-A aplicação DentAI Pro tem 173 arquivos TypeScript, 21 páginas e funciona bem. Mas três problemas estruturais limitam a velocidade de evolução:
+A aplicação AURIA tem 173 arquivos TypeScript, 21 páginas e funciona bem. Mas três problemas estruturais limitam a velocidade de evolução:
 
 1. **Sem camada de dados.** Chamadas Supabase estão espalhadas em 16+ arquivos. Duplicação de lógica de query, acoplamento direto impossibilita troca de backend ou teste unitário simples.
 
@@ -270,6 +270,6 @@ Landing, auth pages (Login, Register, ForgotPassword, ResetPassword), Result (UI
 
 1. **Cada camada só fala com sua vizinha.** Sem atalhos.
 2. **Migração incremental.** Hooks antigos coexistem com novos. Sem big bang.
-3. **PageShell não conhece DentAI.** Lógica de domínio fica nos domain hooks, nunca nos composites.
+3. **PageShell não conhece AURIA.** Lógica de domínio fica nos domain hooks, nunca nos composites.
 4. **Sem abstrações prematuras.** Data client são funções tipadas, não classes genéricas. Domain hooks são React Query + lógica, não state machines.
 5. **Testar o que quebra.** Queries, transforms e fluxos de usuário. Ignorar o resto.

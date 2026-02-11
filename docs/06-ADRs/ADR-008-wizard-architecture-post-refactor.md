@@ -4,7 +4,7 @@ adr_id: ADR-008
 created: 2026-02-10
 updated: 2026-02-10
 status: accepted
-deciders: Team DentAI
+deciders: Team AURIA
 tags:
   - type/adr
   - status/accepted

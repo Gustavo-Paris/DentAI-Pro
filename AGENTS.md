@@ -1,8 +1,8 @@
 ---
-title: Agentes do Projeto - DentAI Pro
+title: Agentes do Projeto - AURIA
 created: 2026-02-04
 updated: 2026-02-11
-author: Team DentAI
+author: Team AURIA
 status: published
 tags:
   - type/guide
@@ -14,7 +14,7 @@ related:
   - "[[README]]"
 ---
 
-# Agentes do Projeto - DentAI Pro
+# Agentes do Projeto - AURIA
 
 > Índice de todos os agentes/apps do monorepo.
 
