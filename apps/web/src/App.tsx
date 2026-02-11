@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import AppLayout from "@/components/AppLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { evaluations } from "@/data";
+import i18n from '@/lib/i18n';
 
 // Eager load auth pages (needed immediately)
 import Landing from "@/pages/Landing";
@@ -88,7 +89,7 @@ const App = () => (
             href="#main-content"
             className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground focus:shadow-lg"
           >
-            Pular para conteúdo
+            {i18n.t('components.layout.skipToContent')}
           </a>
           <AuthProvider>
           <PostHogProvider>

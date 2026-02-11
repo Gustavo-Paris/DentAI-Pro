@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   Dialog,
@@ -12,13 +13,14 @@ import { Keyboard } from 'lucide-react';
 const isMac = typeof navigator !== 'undefined' && /Mac/.test(navigator.userAgent);
 const MOD = isMac ? '⌘' : 'Ctrl';
 
-const SHORTCUTS = [
-  { keys: `${MOD} + K`, description: 'Busca global' },
-  { keys: `${MOD} + N`, description: 'Novo caso' },
-  { keys: `?`, description: 'Atalhos de teclado' },
+const SHORTCUT_KEYS = [
+  { keys: `${MOD} + K`, descKey: 'components.keyboard.globalSearch' },
+  { keys: `${MOD} + N`, descKey: 'components.keyboard.newCase' },
+  { keys: `?`, descKey: 'components.keyboard.keyboardShortcuts' },
 ] as const;
 
 export function KeyboardShortcuts() {
+  const { t } = useTranslation();
   const [showOverlay, setShowOverlay] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -67,16 +69,16 @@ export function KeyboardShortcuts() {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Keyboard className="w-5 h-5" />
-            Atalhos de teclado
+            {t('components.keyboard.title')}
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-1">
-          {SHORTCUTS.map((shortcut) => (
+          {SHORTCUT_KEYS.map((shortcut) => (
             <div
               key={shortcut.keys}
               className="flex items-center justify-between py-2 px-1"
             >
-              <span className="text-sm text-muted-foreground">{shortcut.description}</span>
+              <span className="text-sm text-muted-foreground">{t(shortcut.descKey)}</span>
               <kbd className="inline-flex items-center gap-1 rounded border border-border bg-muted px-2 py-0.5 text-xs font-mono text-muted-foreground">
                 {shortcut.keys}
               </kbd>
