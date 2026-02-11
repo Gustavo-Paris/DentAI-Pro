@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/accordion';
 import { Sparkles, Camera, Smile, Layers, FileText, Star, Check, Zap, Users, RefreshCw } from 'lucide-react';
 import { BRAND_NAME } from '@/lib/branding';
+import { QUERY_STALE_TIMES } from '@/lib/constants';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { HeroMockup } from '@/components/landing/HeroMockup';
 import { FeaturePreview } from '@/components/landing/FeaturePreview';
@@ -407,7 +408,7 @@ function LandingPricing() {
       if (error) throw error;
       return data || [];
     },
-    staleTime: 1000 * 60 * 60,
+    staleTime: QUERY_STALE_TIMES.VERY_LONG,
   });
 
   return (

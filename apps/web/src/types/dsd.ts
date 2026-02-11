@@ -66,7 +66,7 @@ export interface SimulationLayer {
   /** Storage path (not signed URL) */
   simulation_url: string | null;
   /** Whitening level used for this layer */
-  whitening_level: 'natural' | 'white' | 'hollywood';
+  whitening_level: 'natural' | 'hollywood';
   /** Whether gengivoplasty recontouring is included */
   includes_gengivoplasty: boolean;
 }
@@ -109,5 +109,5 @@ export interface AdditionalPhotos {
 }
 
 export interface PatientPreferences {
-  whiteningLevel: 'natural' | 'white' | 'hollywood';
+  whiteningLevel: 'natural' | 'hollywood';
 }

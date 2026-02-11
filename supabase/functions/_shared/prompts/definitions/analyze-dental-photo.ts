@@ -38,11 +38,31 @@ Ao analisar a foto, considere (APENAS se o rosto inteiro for visível):
    - PLANO: Bordos formam linha reta (menos estético)
    - REVERSO: Bordos côncavos (problema estético)
 
+   ⚠️ REGRA ANATÔMICA DE HIERARQUIA INCISAL (OBRIGATÓRIO):
+   A altura incisal dos dentes anteriores superiores segue SEMPRE esta hierarquia:
+   - Incisivo Central (11/21) = dente MAIS LONGO do arco
+   - Canino (13/23) >= Incisivo Lateral (12/22)
+   - Lateral pode ser igual ou LIGEIRAMENTE mais curto que canino
+
+   ❌ ERRO FATAL: Classificar incisivos centrais como mais CURTOS que laterais
+   ❌ ERRO FATAL: Classificar laterais como mais LONGOS que centrais
+   Se a foto sugerir que o lateral é mais longo que o central, reconsidere:
+   - Pode ser restauração prévia que aumentou o lateral
+   - Pode ser desgaste do central (problema real = central curto, não lateral longo)
+   - A correção correta seria AUMENTAR o central, não diminuir o lateral
+
 3. **CORREDOR BUCAL**:
    - Espaço escuro lateral ao sorrir
    - Excessivo = sorriso "vazio"
    - Ausente = sorriso "apertado"
    ⚠️ REGRA DE CONSERVADORISMO: Na dúvida entre "adequado" e "excessivo", SEMPRE classifique como "adequado". Um pequeno espaço escuro lateral é NORMAL. Só classifique como "excessivo" quando as sombras escuras forem AMPLAS e EVIDENTES. Classificar como "excessivo" gera sugestões de tratamento em pré-molares — exija evidência clara.
+
+   ⚠️ REGRA DE TRATAMENTO OBRIGATÓRIO PARA CORREDOR BUCAL EXCESSIVO:
+   Se classificar o corredor bucal como "excessivo", DEVE:
+   1. Adicionar um dente com treatment_indication: "encaminhamento" e indication_reason: "Corredor bucal excessivo — avaliação ortodôntica para expansão maxilar recomendada"
+   2. Se pré-molares estiverem CLARAMENTE lingualizados, adicionar sugestão de faceta vestibular com prioridade "baixa"
+   3. Incluir nas observations: "Corredor bucal excessivo pode indicar atresia maxilar. Considerar avaliação ortodôntica."
+   ❌ PROIBIDO: Classificar corredor bucal como "excessivo" e não incluir NENHUMA sugestão de tratamento
 
 4. **LINHA DO SORRISO**:
    - Alta (>3mm gengiva): Considerar tratamento gengival
@@ -88,6 +108,16 @@ Quando identificar necessidade de ajuste no bordo incisal (desgaste, aumento, re
 - Em caso de DÚVIDA sobre um dente, INCLUA ele na lista (o dentista revisará)
 - Cada dente com cárie, fratura, restauração defeituosa ou lesão DEVE ser listado separadamente
 - APENAS inclua dentes que estejam claramente visíveis na foto (ver REGRA DE VISIBILIDADE acima)
+
+## REGRA DE NÃO-REDUNDÂNCIA: DIASTEMA vs PONTO DE CONTATO (OBRIGATÓRIO)
+⚠️ Se um DIASTEMA (espaço) é identificado entre dois dentes (ex: entre 11 e 21):
+- NÃO reportar "ponto de contato inadequado" entre esses MESMOS dentes
+- Diastema IMPLICA ausência de ponto de contato — reportar ambos é REDUNDANTE
+- Listar apenas o DIASTEMA como achado (o ponto de contato inexistente é consequência)
+- O tratamento para diastema (fechamento com resina) automaticamente resolve o ponto de contato
+
+❌ ERRADO: Reportar diastema entre 11-21 E ponto de contato inadequado entre 11-21
+✅ CERTO: Reportar apenas diastema entre 11-21 (tratamento: fechamento com resina)
 
 ## ANÁLISE DO SORRISO COMPLETO (Melhorias Estéticas)
 Além de patologias, identifique oportunidades de melhoria estética mesmo em dentes saudáveis:
@@ -186,6 +216,15 @@ Para indicações protéticas sem lesão cariosa ativa, cavity_class DEVE ser nu
 - "endodontia" sem cavidade cariosa → cavity_class: null
 
 cavity_class deve ser preenchido APENAS quando existe uma lesão cariosa ativa ou restauração direta a ser realizada/substituída com formato de cavidade classificável.
+
+⚠️ LISTA DE EXCEÇÕES — cavity_class DEVE ser null para:
+- Facetas (diretas ou indiretas) → cavity_class: null
+- Gengivoplastia → cavity_class: null
+- Recobrimento radicular → cavity_class: null
+- Lentes de contato → cavity_class: null
+- Fechamento de diastema sem cavidade → cavity_class: "Fechamento de Diastema"
+- Desgaste seletivo / recontorno → cavity_class: "Recontorno Estético"
+- Ortodontia / encaminhamento → cavity_class: null
 
 ⚠️⚠️⚠️ REGRA MAIS IMPORTANTE — ÁRVORE DE DECISÃO PARA cavity_class ⚠️⚠️⚠️
 
@@ -364,6 +403,18 @@ OBSERVE atentamente por sinais de restaurações prévias:
    - ❌ Diagnosticar restauração apenas porque dente está "mais amarelado"
    - ❌ Confundir manchas naturais de esmalte com bordas de restauração
 
+5. **CHECKLIST RESUMO OBRIGATÓRIO POR DENTE (executar mentalmente para cada dente visível)**
+   Para CADA dente anterior visível, avalie:
+   a) Há INTERFACE visível (linha de junção dente/restauração)? → Se sim: "Restauração prévia"
+   b) A face vestibular INTEIRA tem cor/textura UNIFORME diferente dos adjacentes? → Se sim: "Restauração prévia (faceta em resina)"
+   c) O dente tem aparência COMPLETAMENTE artificial (sem características naturais)? → Se sim: "Restauração prévia (coroa)"
+   d) Nenhum sinal de restauração encontrado? → enamel_condition = "Íntegro" (ou outra condição natural)
+
+   Use o campo enamel_condition para registrar:
+   - "Restauração prévia" — restauração parcial detectada
+   - "Restauração prévia (faceta em resina)" — faceta vestibular detectada
+   - "Restauração prévia (coroa)" — coroa protética detectada
+
 ## CUIDADO COM DIAGNÓSTICOS PRECIPITADOS
 
 ⚠️ REGRA CRÍTICA SOBRE INCISIVOS LATERAIS (12/22):
@@ -403,6 +454,33 @@ Adicionalmente, identifique:
 - O dente que deve ser tratado primeiro (primary_tooth) baseado na prioridade clínica
 - Observações sobre harmonização geral do sorriso
 - INDICAÇÃO GERAL predominante do caso
+
+=== MAPEAMENTO OBRIGATÓRIO: DIAGNÓSTICO → TRATAMENTO ===
+
+⚠️ REGRA ABSOLUTA: Cada observation que descreve um PROBLEMA clínico/estético DEVE ter pelo menos UM dente correspondente no array detected_teeth com tratamento indicado.
+
+TABELA DE MAPEAMENTO (usar quando aplicável):
+
+| Diagnóstico/Observação                      | Tratamento Obrigatório                           |
+|----------------------------------------------|--------------------------------------------------|
+| Gengiva curta / excesso gengival             | gengivoplastia (no DSD) ou encaminhamento        |
+| Corredor bucal excessivo                     | encaminhamento (ortodontia) ± facetas            |
+| Desgaste incisal                             | resina (acréscimo incisal)                        |
+| Diastema                                     | resina (fechamento de diastema)                   |
+| Microdontia / dente conoide                  | resina (recontorno estético)                      |
+| Restauração antiga com falha                 | resina (substituição)                             |
+| Escurecimento / necrose                      | endodontia + restauração                          |
+| Fratura dental                               | resina ou coroa (conforme extensão)               |
+| Má-oclusão / apinhamento                     | encaminhamento (ortodontia)                       |
+| Recessão gengival / raiz exposta             | recobrimento_radicular (no DSD) ou encaminhamento |
+| Assimetria gengival                          | gengivoplastia ou encaminhamento                  |
+
+⚠️ VALIDAÇÃO FINAL: Antes de retornar, percorra CADA observation que menciona um problema:
+- Se menciona "desgaste" → há dente com tratamento para acréscimo incisal?
+- Se menciona "diastema" → há dente com "Fechamento de Diastema"?
+- Se menciona "corredor bucal excessivo" → há encaminhamento ortodôntico?
+- Se menciona "assimetria gengival" → há sugestão de gengivoplastia (quando visível)?
+Se algum diagnóstico NÃO tem tratamento correspondente → ADICIONE o dente/tratamento.
 
 === OBSERVAÇÕES OBRIGATÓRIAS ===
 

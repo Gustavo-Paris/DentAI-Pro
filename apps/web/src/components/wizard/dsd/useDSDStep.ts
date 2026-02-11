@@ -3,9 +3,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuthenticatedFetch } from '@/hooks/useAuthenticatedFetch';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { useSubscription } from '@/hooks/useSubscription';
 import { logger } from '@/lib/logger';
 import { withRetry } from '@/lib/retry';
+import { TIMING } from '@/lib/constants';
 import { createCompositeTeethOnly } from '@/lib/compositeTeeth';
 import type {
   DSDAnalysis,
@@ -96,6 +98,7 @@ export function useDSDStep({
 
   const { invokeFunction } = useAuthenticatedFetch();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const { canUseCredits, refreshSubscription, getCreditCost } = useSubscription();
 
   const lastCompositeSourcePathRef = useRef<string | null>(null);
@@ -178,7 +181,7 @@ export function useDSDStep({
 
         // Replace the simulation URL with the composited version so later screens/PDF use the preserved image.
         setResult((prev) => (prev ? { ...prev, simulation_url: compositePath } : prev));
-        toast.success('Simulação refinada (lábios preservados)');
+        toast.success(t('toasts.dsd.simulationRefined'));
       } catch (err) {
         logger.error('DSD compositing error:', err);
         // Keep the original simulation if compositing fails
@@ -393,11 +396,11 @@ export function useDSDStep({
 
       const totalExpected = layerTypes.length;
       if (failed.length > 0) {
-        toast.success(`${compositedLayers.length} de ${totalExpected} camadas prontas`, {
-          description: `${failed.length} camada(s) falharam — tente novamente`,
+        toast.success(t('toasts.dsd.layersFailed', { success: compositedLayers.length, total: totalExpected }), {
+          description: t('toasts.dsd.layersFailedDesc', { count: failed.length }),
         });
       } else {
-        toast.success(`${compositedLayers.length} camadas de simulação prontas!`);
+        toast.success(t('toasts.dsd.layersReady', { count: compositedLayers.length }));
       }
     } catch (err) {
       logger.error('Generate all layers error:', err);
@@ -417,7 +420,7 @@ export function useDSDStep({
     try {
       const layer = await generateSingleLayer(analysis, layerType);
       if (!layer) {
-        toast.error(`Falha ao gerar camada: ${LAYER_LABELS[layerType]}`);
+        toast.error(t('toasts.dsd.layerError', { layer: LAYER_LABELS[layerType] }));
         return;
       }
 
@@ -432,10 +435,10 @@ export function useDSDStep({
         ...prev,
         layers: [...(prev.layers || []), processed],
       } : prev);
-      toast.success(`Camada "${LAYER_LABELS[layerType]}" pronta!`);
+      toast.success(t('toasts.dsd.layerReady', { layer: LAYER_LABELS[layerType] }));
     } catch (err) {
       logger.error(`Retry layer ${layerType} error:`, err);
-      toast.error(`Falha ao gerar camada: ${LAYER_LABELS[layerType]}`);
+      toast.error(t('toasts.dsd.layerError', { layer: LAYER_LABELS[layerType] }));
     } finally {
       setRetryingLayer(null);
     }
@@ -449,7 +452,7 @@ export function useDSDStep({
     setIsComparingWhitening(true);
     setShowWhiteningComparison(true);
 
-    const allLevels: Array<'natural' | 'white' | 'hollywood'> = ['natural', 'white', 'hollywood'];
+    const allLevels: Array<'natural' | 'hollywood'> = ['natural', 'hollywood'];
     const currentLevel = patientPreferences?.whiteningLevel || 'natural';
 
     // Only generate the 2 missing levels
@@ -502,10 +505,10 @@ export function useDSDStep({
       }
 
       setWhiteningComparison(urls);
-      toast.success('Comparação de clareamento pronta!');
+      toast.success(t('toasts.dsd.whiteningReady'));
     } catch (err) {
       logger.error('Whitening comparison error:', err);
-      toast.error('Erro ao gerar comparação de clareamento');
+      toast.error(t('toasts.dsd.whiteningError'));
     } finally {
       setIsComparingWhitening(false);
     }
@@ -606,8 +609,8 @@ export function useDSDStep({
         setResult(data);
         setIsAnalyzing(false);
         const dsdCost = getCreditCost('dsd_simulation');
-        toast.success('Análise de proporções concluída!', {
-          description: `${dsdCost} créditos utilizados.`,
+        toast.success(t('toasts.dsd.analysisCompleted'), {
+          description: t('toasts.dsd.creditsUsed', { count: dsdCost }),
         });
         refreshSubscription(); // Update credit count after consumption
 
@@ -635,8 +638,8 @@ export function useDSDStep({
       if (isConnectionError && retryCount < MAX_RETRIES) {
         logger.debug(`DSD retry ${retryCount + 1}/${MAX_RETRIES}...`);
         didRetry = true;
-        toast.info(`Reconectando... (tentativa ${retryCount + 1})`);
-        await new Promise(r => setTimeout(r, 2000)); // Wait 2s before retry
+        toast.info(t('toasts.dsd.reconnecting', { count: retryCount + 1 }));
+        await new Promise(r => setTimeout(r, TIMING.DSD_RETRY_DELAY));
         return analyzeDSD(retryCount + 1);
       }
 
@@ -704,10 +707,10 @@ export function useDSDStep({
       setLayerUrls({});
       setActiveLayerIndex(0);
       await generateAllLayers(result.analysis, null);
-      toast.success('Novas simulações geradas!');
+      toast.success(t('toasts.dsd.regenerated'));
     } catch (error: unknown) {
       logger.error('Regenerate simulation error:', error);
-      toast.error('Erro ao regenerar simulação. Tente novamente.');
+      toast.error(t('toasts.dsd.regenerateError'));
     } finally {
       setIsRegeneratingSimulation(false);
     }
@@ -738,7 +741,7 @@ export function useDSDStep({
     if (whiteningIdx >= 0) {
       setActiveLayerIndex(whiteningIdx);
     }
-    toast.success(`Nível de clareamento atualizado para ${labels[level]}`);
+    toast.success(t('toasts.dsd.whiteningUpdated', { level: labels[level] }));
   };
 
   const handleSelectLayer = (idx: number, layerType: string) => {

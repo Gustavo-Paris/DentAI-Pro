@@ -1,8 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { logger } from '@/lib/logger';
 import { subscriptions, creditUsage } from '@/data';
+import { QUERY_STALE_TIMES } from '@/lib/constants';
 
 export type { SubscriptionPlan, Subscription, CreditCost, CreditPack } from '@/data/subscriptions';
 export type { CreditUsageRecord } from '@/data/credit-usage';
@@ -19,19 +21,20 @@ const DEFAULT_CREDIT_COSTS: Record<string, number> = {
 export function useSubscription() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   // Fetch available plans
   const plansQuery = useQuery({
     queryKey: ['subscription-plans'],
     queryFn: () => subscriptions.getPlans(),
-    staleTime: 1000 * 60 * 60, // 1 hour
+    staleTime: QUERY_STALE_TIMES.VERY_LONG,
   });
 
   // Fetch credit costs
   const creditCostsQuery = useQuery({
     queryKey: ['credit-costs'],
     queryFn: () => subscriptions.getCreditCosts(),
-    staleTime: 1000 * 60 * 60, // 1 hour
+    staleTime: QUERY_STALE_TIMES.VERY_LONG,
   });
 
   // Fetch user's subscription
@@ -48,7 +51,7 @@ export function useSubscription() {
   const creditPacksQuery = useQuery({
     queryKey: ['credit-packs'],
     queryFn: () => subscriptions.getCreditPacks(),
-    staleTime: 1000 * 60 * 60, // 1 hour
+    staleTime: QUERY_STALE_TIMES.VERY_LONG,
   });
 
   // Create checkout session (subscription)
@@ -57,7 +60,7 @@ export function useSubscription() {
     onSuccess: (data) => {
       if (data.updated) {
         // Inline upgrade/downgrade — no redirect needed
-        toast.success('Plano alterado com sucesso!');
+        toast.success(t('toasts.subscription.planChanged'));
         refreshSubscription();
         return;
       }
@@ -67,7 +70,7 @@ export function useSubscription() {
     },
     onError: (error) => {
       logger.error('Checkout error:', error);
-      toast.error('Erro ao iniciar checkout. Tente novamente.');
+      toast.error(t('toasts.subscription.checkoutError'));
     },
   });
 
@@ -79,7 +82,7 @@ export function useSubscription() {
       if (data.url) window.location.href = data.url;
     },
     onError: () => {
-      toast.error('Erro ao iniciar compra. Tente novamente.');
+      toast.error(t('toasts.subscription.purchaseError'));
     },
   });
 
@@ -93,7 +96,7 @@ export function useSubscription() {
     },
     onError: (error) => {
       logger.error('Portal error:', error);
-      toast.error('Erro ao acessar portal. Tente novamente.');
+      toast.error(t('toasts.subscription.portalError'));
     },
   });
 

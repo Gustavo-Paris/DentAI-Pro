@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { useSubscription } from '@/hooks/useSubscription';
 
-export type WhiteningLevel = 'natural' | 'white' | 'hollywood';
+export type WhiteningLevel = 'natural' | 'hollywood';
 
 export interface PatientPreferences {
   whiteningLevel: WhiteningLevel;

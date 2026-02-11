@@ -9,8 +9,10 @@ import type { DSDResult } from '@/types/dsd';
 import type { PatientPreferences } from '@/components/wizard/PatientPreferencesStep';
 import type { SubmissionStep } from './types';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { logger } from '@/lib/logger';
 import { withRetry } from '@/lib/retry';
+import { TIMING } from '@/lib/constants';
 import { wizard as wizardData } from '@/data';
 import { inferCavityClass, getFullRegion, getGenericProtocol } from './helpers';
 
@@ -82,6 +84,7 @@ export function useWizardSubmit({
   clearDraft,
   navigate,
 }: UseWizardSubmitParams) {
+  const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionComplete, setSubmissionComplete] = useState(false);
   const [submissionStep, setSubmissionStep] = useState(0);
@@ -119,14 +122,14 @@ export function useWizardSubmit({
   const validateForm = useCallback((): boolean => {
     if (!formData.patientAge || !patientBirthDate) {
       // DOB is optional — show soft warning and default age to 30
-      toast.warning('Data de nascimento não informada. Usando idade padrão de 30 anos.', {
+      toast.warning(t('toasts.wizard.dobWarning'), {
         duration: 4000,
       });
       setFormData((prev) => ({ ...prev, patientAge: prev.patientAge || '30' }));
     }
     const teethToProcess = selectedTeeth.length > 0 ? selectedTeeth : [formData.tooth];
     if (teethToProcess.length === 0 || !teethToProcess[0]) {
-      toast.error('Selecione pelo menos um dente');
+      toast.error(t('toasts.wizard.selectTooth'));
       return false;
     }
     return true;
@@ -238,11 +241,7 @@ export function useWizardSubmit({
             patient_aesthetic_goals:
               patientPreferences.whiteningLevel === 'hollywood'
                 ? 'Clareamento intenso - nível Hollywood (BL1)'
-                : patientPreferences.whiteningLevel === 'white'
-                  ? 'Clareamento notável - dentes mais brancos (BL2/BL3)'
-                  : patientPreferences.whiteningLevel === 'natural'
-                    ? 'Aparência natural e sutil (A1/A2)'
-                    : null,
+                : 'Aparência natural e sutil (A1/A2)',
             patient_desired_changes: null,
           };
 
@@ -270,11 +269,7 @@ export function useWizardSubmit({
                     aestheticGoals:
                       patientPreferences.whiteningLevel === 'hollywood'
                         ? 'Paciente deseja clareamento INTENSO - nível Hollywood (BL1). A cor ALVO da faceta e do cimento deve ser BL1 ou compatível.'
-                        : patientPreferences.whiteningLevel === 'white'
-                          ? 'Paciente deseja clareamento NOTÁVEL (BL2/BL3). A cor ALVO da faceta e do cimento deve ser BL2/BL3 ou compatível.'
-                          : patientPreferences.whiteningLevel === 'natural'
-                            ? 'Paciente prefere aparência NATURAL (A1/A2).'
-                            : undefined,
+                        : 'Paciente prefere aparência NATURAL (A1/A2).',
                     dsdContext: cementDsdSuggestion
                       ? {
                           currentIssue: cementDsdSuggestion.current_issue,
@@ -308,11 +303,7 @@ export function useWizardSubmit({
                     aestheticGoals:
                       patientPreferences.whiteningLevel === 'hollywood'
                         ? 'Paciente deseja clareamento INTENSO - nível Hollywood (BL1). Ajustar todas as camadas 2-3 tons mais claras que a cor detectada.'
-                        : patientPreferences.whiteningLevel === 'white'
-                          ? 'Paciente deseja clareamento NOTÁVEL (BL2/BL3). Ajustar camadas 1-2 tons mais claras.'
-                          : patientPreferences.whiteningLevel === 'natural'
-                            ? 'Paciente prefere aparência NATURAL (A1/A2). Manter tons naturais.'
-                            : undefined,
+                        : 'Paciente prefere aparência NATURAL (A1/A2). Manter tons naturais.',
                     dsdContext: resinDsdSuggestion
                       ? {
                           currentIssue: resinDsdSuggestion.current_issue,
@@ -418,9 +409,9 @@ export function useWizardSubmit({
       if (successCount === 0) {
         // ALL failed — stay on step 5
         const firstErr = failedTeeth[0]?.error as { message?: string; code?: string } | undefined;
-        let errorMessage = 'Erro ao criar caso. Nenhum protocolo foi gerado.';
+        let errorMessage = t('toasts.wizard.allFailed');
         if (firstErr?.message?.includes('Failed to fetch') || firstErr?.message?.includes('edge function')) {
-          errorMessage = 'Erro de conexão com o servidor. Verifique sua internet e tente novamente.';
+          errorMessage = t('toasts.wizard.connectionErrorSubmit');
         }
         toast.error(errorMessage, { duration: 5000 });
         setStep(5);
@@ -435,18 +426,18 @@ export function useWizardSubmit({
           // Partial success — warn about failures
           const failedList = failedTeeth.map((f) => f.tooth).join(', ');
           toast.warning(
-            `${successCount} de ${teethToProcess.length} protocolos gerados. Dentes ${failedList} falharam — tente novamente.`,
+            t('toasts.wizard.partialSuccess', { success: successCount, total: teethToProcess.length, failed: failedList }),
             { duration: 8000 },
           );
         } else {
           // All succeeded
           toast.success(
-            `${successCount} protocolo${successCount > 1 ? 's' : ''} gerado${successCount > 1 ? 's' : ''} com sucesso`,
+            t('toasts.wizard.allSuccess', { count: successCount }),
           );
         }
 
         // Brief success animation before navigating
-        await new Promise((resolve) => setTimeout(resolve, 800));
+        await new Promise((resolve) => setTimeout(resolve, TIMING.WIZARD_SUBMIT_DELAY));
         setSubmissionComplete(false);
         navigate(`/evaluation/${sessionId}`);
       }
@@ -455,21 +446,21 @@ export function useWizardSubmit({
       const err = error as { message?: string; code?: string };
       logger.error('Error creating case:', error);
 
-      let errorMessage = 'Erro ao criar caso';
+      let errorMessage = t('toasts.wizard.createCaseError');
       let shouldGoBack = true;
 
       if (err.code === '23505') {
-        errorMessage = 'Paciente já cadastrado com este nome. Selecione o paciente existente.';
+        errorMessage = t('toasts.wizard.duplicatePatient');
       } else if (err.code === '23503') {
-        errorMessage = 'Erro de referência no banco de dados. Verifique os dados do paciente.';
+        errorMessage = t('toasts.wizard.referenceError');
       } else if (
         err.message?.includes('network') ||
         err.message?.includes('fetch') ||
         err.message?.includes('Failed to fetch')
       ) {
-        errorMessage = 'Erro de conexão. Verifique sua internet e tente novamente.';
+        errorMessage = t('toasts.wizard.networkErrorSubmit');
       } else if (err.message?.includes('429') || err.code === 'RATE_LIMITED') {
-        errorMessage = 'Muitas requisições. Aguarde alguns minutos.';
+        errorMessage = t('toasts.wizard.tooManyRequests');
         shouldGoBack = false;
       } else if (err.message && err.message.length < 100) {
         errorMessage = `Erro: ${err.message}`;

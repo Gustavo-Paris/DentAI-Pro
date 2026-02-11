@@ -3,13 +3,15 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { evaluations } from '@/data';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { logger } from '@/lib/logger';
+import { QUERY_STALE_TIMES } from '@/lib/constants';
 
 import type { StratificationProtocol, CementationProtocol } from '@/types/protocol';
-import type { PendingTooth } from '@/components/AddTeethModal';
+import type { PendingTooth, TreatmentType, SubmitTeethPayload } from '@/components/AddTeethModal';
 
 // ---------------------------------------------------------------------------
 // Query key factory
@@ -107,6 +109,7 @@ export interface EvaluationDetailActions {
   handleShareCase: () => void;
   setShowAddTeethModal: (show: boolean) => void;
   handleAddTeethSuccess: () => void;
+  handleSubmitTeeth: (payload: SubmitTeethPayload) => Promise<void>;
   toggleSelection: (id: string) => void;
   toggleSelectAll: () => void;
   clearSelection: () => void;
@@ -120,6 +123,129 @@ export interface EvaluationDetailActions {
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
+
+// Helper to determine full region format
+const getFullRegion = (tooth: string): string => {
+  const toothNum = parseInt(tooth);
+  const isUpper = toothNum >= 10 && toothNum <= 28;
+  const anteriorTeeth = ['11', '12', '13', '21', '22', '23', '31', '32', '33', '41', '42', '43'];
+  const isAnterior = anteriorTeeth.includes(tooth);
+
+  if (isAnterior) {
+    return isUpper ? 'anterior-superior' : 'anterior-inferior';
+  }
+  return isUpper ? 'posterior-superior' : 'posterior-inferior';
+};
+
+// Generate generic protocol for non-restorative treatments
+const getGenericProtocol = (treatmentType: TreatmentType, tooth: string, toothData: PendingTooth) => {
+  const protocols: Record<string, { summary: string; checklist: string[]; alerts: string[]; recommendations: string[] }> = {
+    implante: {
+      summary: `Dente ${tooth} indicado para extração e reabilitação com implante.`,
+      checklist: [
+        'Solicitar tomografia computadorizada cone beam',
+        'Avaliar quantidade e qualidade óssea disponível',
+        'Verificar espaço protético adequado',
+        'Avaliar condição periodontal dos dentes adjacentes',
+        'Planejar tempo de osseointegração',
+        'Discutir opções de prótese provisória',
+        'Encaminhar para cirurgião implantodontista',
+        'Agendar retorno para acompanhamento',
+      ],
+      alerts: [
+        'Avaliar contraindicações sistêmicas para cirurgia',
+        'Verificar uso de bifosfonatos ou anticoagulantes',
+      ],
+      recommendations: [
+        'Manter higiene oral adequada',
+        'Evitar fumar durante o tratamento',
+      ],
+    },
+    coroa: {
+      summary: `Dente ${tooth} indicado para restauração com coroa total.`,
+      checklist: [
+        'Realizar preparo coronário seguindo princípios biomecânicos',
+        'Avaliar necessidade de núcleo/pino intrarradicular',
+        'Selecionar material da coroa',
+        'Moldagem de trabalho',
+        'Confecção de provisório adequado',
+        'Prova da infraestrutura',
+        'Seleção de cor com escala VITA',
+        'Cimentação definitiva',
+        'Ajuste oclusal',
+        'Orientações de higiene',
+      ],
+      alerts: [
+        'Verificar saúde pulpar antes do preparo',
+        'Avaliar relação coroa-raiz',
+      ],
+      recommendations: [
+        'Proteger o provisório durante a espera',
+        'Evitar alimentos duros e pegajosos',
+      ],
+    },
+    endodontia: {
+      summary: `Dente ${tooth} necessita de tratamento endodôntico antes de restauração definitiva.`,
+      checklist: [
+        'Confirmar diagnóstico pulpar',
+        'Solicitar radiografia periapical',
+        'Avaliar anatomia radicular',
+        'Planejamento do acesso endodôntico',
+        'Instrumentação e irrigação dos canais',
+        'Medicação intracanal se necessário',
+        'Obturação dos canais radiculares',
+        'Radiografia de controle pós-obturação',
+        'Agendar restauração definitiva',
+      ],
+      alerts: [
+        'Avaliar necessidade de retratamento',
+        'Verificar presença de lesão periapical',
+      ],
+      recommendations: [
+        'Evitar mastigar do lado tratado até restauração definitiva',
+        'Retornar imediatamente se houver dor intensa ou inchaço',
+      ],
+    },
+    encaminhamento: {
+      summary: `Dente ${tooth} requer avaliação especializada.`,
+      checklist: [
+        'Documentar achados clínicos',
+        'Realizar radiografias necessárias',
+        'Preparar relatório para o especialista',
+        'Identificar especialidade adequada',
+        'Orientar paciente sobre próximos passos',
+        'Agendar retorno para acompanhamento',
+      ],
+      alerts: [
+        'Urgência do encaminhamento depende do diagnóstico',
+        'Manter comunicação com especialista',
+      ],
+      recommendations: [
+        'Levar exames e relatório ao especialista',
+        'Informar sobre medicamentos em uso',
+      ],
+    },
+  };
+
+  const protocol = protocols[treatmentType] || protocols.encaminhamento;
+
+  return {
+    treatment_type: treatmentType,
+    tooth: tooth,
+    ai_reason: toothData?.indication_reason || null,
+    ...protocol,
+  };
+};
+
+const TREATMENT_LABEL_KEYS: Record<TreatmentType, string> = {
+  resina: 'components.wizard.review.treatmentResina',
+  porcelana: 'components.wizard.review.treatmentPorcelana',
+  coroa: 'components.wizard.review.treatmentCoroa',
+  implante: 'components.wizard.review.treatmentImplante',
+  endodontia: 'components.wizard.review.treatmentEndodontia',
+  encaminhamento: 'components.wizard.review.treatmentEncaminhamento',
+  gengivoplastia: 'components.wizard.review.treatmentGengivoplastia',
+};
 
 const AESTHETIC_PROCEDURES = [
   'Faceta Direta',
@@ -136,6 +262,7 @@ const AESTHETIC_PROCEDURES = [
 export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailActions {
   const { evaluationId: sessionId = '' } = useParams<{ evaluationId: string }>();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -148,7 +275,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
     queryKey: evaluationKeys.session(sessionId),
     queryFn: () => evaluations.listBySession(sessionId, user!.id),
     enabled: !!user && !!sessionId,
-    staleTime: 30 * 1000,
+    staleTime: QUERY_STALE_TIMES.SHORT,
     retry: 1,
   });
 
@@ -161,10 +288,10 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
   useEffect(() => {
     if (loadingEvaluations || !sessionId) return;
     if (evaluationsError) {
-      toast.error('Erro ao carregar avaliação');
+      toast.error(t('toasts.evaluationDetail.loadError'));
       navigate('/dashboard');
     } else if (rawEvaluations && rawEvaluations.length === 0) {
-      toast.error('Avaliação não encontrada');
+      toast.error(t('toasts.evaluationDetail.notFound'));
       navigate('/dashboard');
     }
   }, [loadingEvaluations, evaluationsError, rawEvaluations, sessionId, navigate]);
@@ -176,7 +303,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
     queryKey: ['pendingTeeth', sessionId],
     queryFn: () => evaluations.listPendingTeeth(sessionId, user!.id),
     enabled: !!user && !!sessionId,
-    staleTime: 30 * 1000,
+    staleTime: QUERY_STALE_TIMES.SHORT,
   });
 
   // ---- Mutations ----
@@ -309,10 +436,10 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
         { id, status: 'completed' },
         {
           onSuccess: () => {
-            toast.success('Caso marcado como finalizado');
+            toast.success(t('toasts.evaluationDetail.caseCompleted'));
           },
           onError: () => {
-            toast.error('Erro ao atualizar status');
+            toast.error(t('toasts.evaluationDetail.statusError'));
           },
         },
       );
@@ -324,7 +451,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
     const pending = evals.filter((e) => e.status !== 'completed');
 
     if (pending.length === 0) {
-      toast.info('Todos os casos já estão finalizados');
+      toast.info(t('toasts.evaluationDetail.allCompleted'));
       return;
     }
 
@@ -334,22 +461,22 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
       onSuccess: () => {
         if (withIncompleteChecklist > 0) {
           toast.success(
-            `${pending.length} caso(s) finalizado(s). ${withIncompleteChecklist} tinham checklist incompleto.`,
+            t('toasts.evaluationDetail.completedWithIncomplete', { count: pending.length, incomplete: withIncompleteChecklist }),
           );
         } else {
-          toast.success(`${pending.length} caso(s) marcado(s) como finalizado(s)`);
+          toast.success(t('toasts.evaluationDetail.bulkCompleted', { count: pending.length }));
         }
         queryClient.invalidateQueries({ queryKey: evaluationKeys.session(sessionId) });
       },
       onError: () => {
-        toast.error('Erro ao atualizar status');
+        toast.error(t('toasts.evaluationDetail.statusError'));
       },
     });
   }, [evals, isChecklistComplete, bulkCompleteMutation, queryClient, sessionId]);
 
   const handleExportPDF = useCallback((id: string) => {
     window.open(`/result/${id}?print=true`, '_blank');
-    toast.info('Abrindo página para impressão...');
+    toast.info(t('toasts.evaluationDetail.openingPrint'));
   }, []);
 
   const handleShareCase = useCallback(async () => {
@@ -360,12 +487,12 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
       const token = await evaluations.getOrCreateShareLink(sessionId, user.id);
       const shareUrl = `${window.location.origin}/shared/${token}`;
       await navigator.clipboard.writeText(shareUrl);
-      toast.success('Link copiado!', {
-        description: 'O link expira em 7 dias.',
+      toast.success(t('toasts.evaluationDetail.linkCopied'), {
+        description: t('toasts.evaluationDetail.linkExpiry'),
       });
     } catch (error) {
       logger.error('Error sharing case:', error);
-      toast.error('Erro ao gerar link de compartilhamento');
+      toast.error(t('toasts.evaluationDetail.shareError'));
     }
 
     setIsSharing(false);
@@ -404,21 +531,127 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
     });
 
     if (pending.length === 0) {
-      toast.info('Todos os casos selecionados já estão finalizados');
+      toast.info(t('toasts.evaluationDetail.allSelectedCompleted'));
       return;
     }
 
     bulkCompleteMutation.mutate(pending, {
       onSuccess: () => {
-        toast.success(`${pending.length} caso(s) marcado(s) como finalizado(s)`);
+        toast.success(t('toasts.evaluationDetail.bulkCompleted', { count: pending.length }));
         queryClient.invalidateQueries({ queryKey: evaluationKeys.session(sessionId) });
         setSelectedIds(new Set());
       },
       onError: () => {
-        toast.error('Erro ao atualizar status');
+        toast.error(t('toasts.evaluationDetail.statusError'));
       },
     });
   }, [evals, bulkCompleteMutation, queryClient, sessionId]);
+
+  // ---- Submit Teeth (AddTeethModal) ----
+  const handleSubmitTeeth = useCallback(async (payload: SubmitTeethPayload) => {
+    if (!user || !patientDataForModal) return;
+
+    const treatmentCounts: Record<string, number> = {};
+
+    for (const toothNumber of payload.selectedTeeth) {
+      const toothData = payload.pendingTeeth.find(t => t.tooth === toothNumber);
+      if (!toothData) continue;
+
+      const treatmentType = (payload.toothTreatments[toothNumber] || toothData.treatment_indication || 'resina') as TreatmentType;
+      treatmentCounts[treatmentType] = (treatmentCounts[treatmentType] || 0) + 1;
+
+      // Create evaluation record
+      const insertData = {
+        user_id: user.id,
+        session_id: sessionId,
+        patient_id: patientDataForModal.id || null,
+        patient_name: patientDataForModal.name || null,
+        patient_age: patientDataForModal.age,
+        tooth: toothNumber,
+        region: toothData.tooth_region || getFullRegion(toothNumber),
+        cavity_class: toothData.cavity_class || 'Classe I',
+        restoration_size: toothData.restoration_size || 'Média',
+        substrate: toothData.substrate || 'Esmalte e Dentina',
+        tooth_color: patientDataForModal.vitaShade,
+        depth: toothData.depth || 'Média',
+        substrate_condition: toothData.substrate_condition || 'Saudável',
+        enamel_condition: toothData.enamel_condition || 'Íntegro',
+        bruxism: patientDataForModal.bruxism,
+        aesthetic_level: patientDataForModal.aestheticLevel,
+        budget: patientDataForModal.budget,
+        longevity_expectation: patientDataForModal.longevityExpectation,
+        photo_frontal: patientDataForModal.photoPath,
+        status: 'analyzing',
+        treatment_type: treatmentType,
+        desired_tooth_shape: 'natural',
+        ai_treatment_indication: toothData.treatment_indication,
+        ai_indication_reason: toothData.indication_reason,
+        tooth_bounds: toothData.tooth_bounds,
+      };
+
+      const evaluation = await evaluations.insertEvaluation(insertData);
+
+      // Call appropriate edge function based on treatment type
+      switch (treatmentType) {
+        case 'porcelana':
+          await evaluations.invokeEdgeFunction('recommend-cementation', {
+            evaluationId: evaluation.id,
+            teeth: [toothNumber],
+            shade: patientDataForModal.vitaShade,
+            ceramicType: 'Dissilicato de lítio',
+            substrate: toothData.substrate || 'Esmalte e Dentina',
+            substrateCondition: toothData.substrate_condition || 'Saudável',
+            aestheticGoals: patientDataForModal.aestheticGoals || undefined,
+          });
+          break;
+
+        case 'resina':
+          await evaluations.invokeEdgeFunction('recommend-resin', {
+            evaluationId: evaluation.id,
+            userId: user.id,
+            patientAge: String(patientDataForModal.age),
+            tooth: toothNumber,
+            region: getFullRegion(toothNumber),
+            cavityClass: toothData.cavity_class || 'Classe I',
+            restorationSize: toothData.restoration_size || 'Média',
+            substrate: toothData.substrate || 'Esmalte e Dentina',
+            bruxism: patientDataForModal.bruxism,
+            aestheticLevel: patientDataForModal.aestheticLevel,
+            toothColor: patientDataForModal.vitaShade,
+            stratificationNeeded: true,
+            budget: patientDataForModal.budget,
+            longevityExpectation: patientDataForModal.longevityExpectation,
+          });
+          break;
+
+        case 'implante':
+        case 'coroa':
+        case 'endodontia':
+        case 'encaminhamento': {
+          const genericProtocol = getGenericProtocol(treatmentType, toothNumber, toothData);
+          await evaluations.updateEvaluation(evaluation.id, {
+            generic_protocol: genericProtocol,
+            recommendation_text: genericProtocol.summary,
+          });
+          break;
+        }
+      }
+
+      // Update status to draft
+      await evaluations.updateStatus(evaluation.id, 'draft');
+    }
+
+    // Remove created teeth from session_detected_teeth
+    await evaluations.deletePendingTeeth(sessionId, payload.selectedTeeth);
+
+    // Build success message
+    const treatmentMessages = Object.entries(treatmentCounts)
+      .map(([type, count]) => `${count} ${TREATMENT_LABEL_KEYS[type as TreatmentType] ? t(TREATMENT_LABEL_KEYS[type as TreatmentType]) : type}`)
+      .join(', ');
+
+    toast.success(t('components.addTeeth.casesAdded', { details: treatmentMessages }));
+    handleAddTeethSuccess();
+  }, [user, sessionId, patientDataForModal, handleAddTeethSuccess, t]);
 
   return {
     // State
@@ -443,6 +676,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
     handleShareCase,
     setShowAddTeethModal,
     handleAddTeethSuccess,
+    handleSubmitTeeth,
     toggleSelection,
     toggleSelectAll,
     clearSelection,

@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -46,24 +44,17 @@ export interface PendingTooth {
   created_at?: string;
 }
 
+export interface SubmitTeethPayload {
+  selectedTeeth: string[];
+  toothTreatments: Record<string, TreatmentType>;
+  pendingTeeth: PendingTooth[];
+}
+
 interface AddTeethModalProps {
   open: boolean;
   onClose: () => void;
   pendingTeeth: PendingTooth[];
-  sessionId: string;
-  patientData: {
-    name: string | null;
-    age: number;
-    id: string | null;
-    vitaShade: string;
-    bruxism: boolean;
-    aestheticLevel: string;
-    budget: string;
-    longevityExpectation: string;
-    photoPath: string | null;
-    aestheticGoals: string | null;
-  };
-  onSuccess: () => void;
+  onSubmitTeeth: (payload: SubmitTeethPayload) => Promise<void>;
 }
 
 const TREATMENT_LABEL_KEYS: Record<TreatmentType, string> = {
@@ -83,129 +74,13 @@ const priorityStyles: Record<string, string> = {
   baixa: 'bg-secondary text-secondary-foreground',
 };
 
-// Helper to determine full region format
-const getFullRegion = (tooth: string): string => {
-  const toothNum = parseInt(tooth);
-  const isUpper = toothNum >= 10 && toothNum <= 28;
-  const anteriorTeeth = ['11', '12', '13', '21', '22', '23', '31', '32', '33', '41', '42', '43'];
-  const isAnterior = anteriorTeeth.includes(tooth);
-  
-  if (isAnterior) {
-    return isUpper ? 'anterior-superior' : 'anterior-inferior';
-  }
-  return isUpper ? 'posterior-superior' : 'posterior-inferior';
-};
-
-// Generate generic protocol for non-restorative treatments
-const getGenericProtocol = (treatmentType: TreatmentType, tooth: string, toothData: PendingTooth) => {
-  const protocols: Record<string, { summary: string; checklist: string[]; alerts: string[]; recommendations: string[] }> = {
-    implante: {
-      summary: `Dente ${tooth} indicado para extração e reabilitação com implante.`,
-      checklist: [
-        'Solicitar tomografia computadorizada cone beam',
-        'Avaliar quantidade e qualidade óssea disponível',
-        'Verificar espaço protético adequado',
-        'Avaliar condição periodontal dos dentes adjacentes',
-        'Planejar tempo de osseointegração',
-        'Discutir opções de prótese provisória',
-        'Encaminhar para cirurgião implantodontista',
-        'Agendar retorno para acompanhamento',
-      ],
-      alerts: [
-        'Avaliar contraindicações sistêmicas para cirurgia',
-        'Verificar uso de bifosfonatos ou anticoagulantes',
-      ],
-      recommendations: [
-        'Manter higiene oral adequada',
-        'Evitar fumar durante o tratamento',
-      ],
-    },
-    coroa: {
-      summary: `Dente ${tooth} indicado para restauração com coroa total.`,
-      checklist: [
-        'Realizar preparo coronário seguindo princípios biomecânicos',
-        'Avaliar necessidade de núcleo/pino intrarradicular',
-        'Selecionar material da coroa',
-        'Moldagem de trabalho',
-        'Confecção de provisório adequado',
-        'Prova da infraestrutura',
-        'Seleção de cor com escala VITA',
-        'Cimentação definitiva',
-        'Ajuste oclusal',
-        'Orientações de higiene',
-      ],
-      alerts: [
-        'Verificar saúde pulpar antes do preparo',
-        'Avaliar relação coroa-raiz',
-      ],
-      recommendations: [
-        'Proteger o provisório durante a espera',
-        'Evitar alimentos duros e pegajosos',
-      ],
-    },
-    endodontia: {
-      summary: `Dente ${tooth} necessita de tratamento endodôntico antes de restauração definitiva.`,
-      checklist: [
-        'Confirmar diagnóstico pulpar',
-        'Solicitar radiografia periapical',
-        'Avaliar anatomia radicular',
-        'Planejamento do acesso endodôntico',
-        'Instrumentação e irrigação dos canais',
-        'Medicação intracanal se necessário',
-        'Obturação dos canais radiculares',
-        'Radiografia de controle pós-obturação',
-        'Agendar restauração definitiva',
-      ],
-      alerts: [
-        'Avaliar necessidade de retratamento',
-        'Verificar presença de lesão periapical',
-      ],
-      recommendations: [
-        'Evitar mastigar do lado tratado até restauração definitiva',
-        'Retornar imediatamente se houver dor intensa ou inchaço',
-      ],
-    },
-    encaminhamento: {
-      summary: `Dente ${tooth} requer avaliação especializada.`,
-      checklist: [
-        'Documentar achados clínicos',
-        'Realizar radiografias necessárias',
-        'Preparar relatório para o especialista',
-        'Identificar especialidade adequada',
-        'Orientar paciente sobre próximos passos',
-        'Agendar retorno para acompanhamento',
-      ],
-      alerts: [
-        'Urgência do encaminhamento depende do diagnóstico',
-        'Manter comunicação com especialista',
-      ],
-      recommendations: [
-        'Levar exames e relatório ao especialista',
-        'Informar sobre medicamentos em uso',
-      ],
-    },
-  };
-
-  const protocol = protocols[treatmentType] || protocols.encaminhamento;
-  
-  return {
-    treatment_type: treatmentType,
-    tooth: tooth,
-    ai_reason: toothData?.indication_reason || null,
-    ...protocol,
-  };
-};
-
 export function AddTeethModal({
   open,
   onClose,
   pendingTeeth,
-  sessionId,
-  patientData,
-  onSuccess,
+  onSubmitTeeth,
 }: AddTeethModalProps) {
   const { t } = useTranslation();
-  const { user } = useAuth();
   const [selectedTeeth, setSelectedTeeth] = useState<string[]>([]);
   const [toothTreatments, setToothTreatments] = useState<Record<string, TreatmentType>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -236,140 +111,17 @@ export function AddTeethModal({
   };
 
   const handleSubmit = async () => {
-    if (!user || selectedTeeth.length === 0) return;
-    
+    if (selectedTeeth.length === 0) return;
+
     setIsSubmitting(true);
-    const createdIds: string[] = [];
-    const treatmentCounts: Record<string, number> = {};
 
     try {
-      for (const toothNumber of selectedTeeth) {
-        const toothData = pendingTeeth.find(t => t.tooth === toothNumber);
-        if (!toothData) continue;
+      await onSubmitTeeth({
+        selectedTeeth,
+        toothTreatments,
+        pendingTeeth,
+      });
 
-        const treatmentType = getToothTreatment(toothData);
-        treatmentCounts[treatmentType] = (treatmentCounts[treatmentType] || 0) + 1;
-
-        // Create evaluation record
-        const insertData = {
-          user_id: user.id,
-          session_id: sessionId,
-          patient_id: patientData.id || null,
-          patient_name: patientData.name || null,
-          patient_age: patientData.age,
-          tooth: toothNumber,
-          region: toothData.tooth_region || getFullRegion(toothNumber),
-          cavity_class: toothData.cavity_class || 'Classe I',
-          restoration_size: toothData.restoration_size || 'Média',
-          substrate: toothData.substrate || 'Esmalte e Dentina',
-          tooth_color: patientData.vitaShade,
-          depth: toothData.depth || 'Média',
-          substrate_condition: toothData.substrate_condition || 'Saudável',
-          enamel_condition: toothData.enamel_condition || 'Íntegro',
-          bruxism: patientData.bruxism,
-          aesthetic_level: patientData.aestheticLevel,
-          budget: patientData.budget,
-          longevity_expectation: patientData.longevityExpectation,
-          photo_frontal: patientData.photoPath,
-          status: 'analyzing',
-          treatment_type: treatmentType,
-          desired_tooth_shape: 'natural',
-          ai_treatment_indication: toothData.treatment_indication,
-          ai_indication_reason: toothData.indication_reason,
-          tooth_bounds: toothData.tooth_bounds,
-        };
-
-        const { data: evaluation, error: evalError } = await supabase
-          .from('evaluations')
-          .insert(insertData as never)
-          .select()
-          .single();
-
-        if (evalError) throw evalError;
-        createdIds.push(evaluation.id);
-
-        // Call appropriate edge function based on treatment type
-        switch (treatmentType) {
-          case 'porcelana': {
-            const { error: cementError } = await supabase.functions.invoke('recommend-cementation', {
-              body: {
-                evaluationId: evaluation.id,
-                teeth: [toothNumber],
-                shade: patientData.vitaShade,
-                ceramicType: 'Dissilicato de lítio',
-                substrate: toothData.substrate || 'Esmalte e Dentina',
-                substrateCondition: toothData.substrate_condition || 'Saudável',
-                aestheticGoals: patientData.aestheticGoals || undefined,
-              },
-            });
-            if (cementError) throw cementError;
-            break;
-          }
-
-          case 'resina': {
-            const { error: aiError } = await supabase.functions.invoke('recommend-resin', {
-              body: {
-                evaluationId: evaluation.id,
-                userId: user.id,
-                patientAge: String(patientData.age),
-                tooth: toothNumber,
-                region: getFullRegion(toothNumber),
-                cavityClass: toothData.cavity_class || 'Classe I',
-                restorationSize: toothData.restoration_size || 'Média',
-                substrate: toothData.substrate || 'Esmalte e Dentina',
-                bruxism: patientData.bruxism,
-                aestheticLevel: patientData.aestheticLevel,
-                toothColor: patientData.vitaShade,
-                stratificationNeeded: true,
-                budget: patientData.budget,
-                longevityExpectation: patientData.longevityExpectation,
-              },
-            });
-            if (aiError) throw aiError;
-            break;
-          }
-
-          case 'implante':
-          case 'coroa':
-          case 'endodontia':
-          case 'encaminhamento': {
-            const genericProtocol = getGenericProtocol(treatmentType, toothNumber, toothData);
-            await supabase
-              .from('evaluations')
-              .update({
-                generic_protocol: genericProtocol,
-                recommendation_text: genericProtocol.summary,
-              })
-              .eq('id', evaluation.id);
-            break;
-          }
-        }
-
-        // Update status to draft
-        await supabase
-          .from('evaluations')
-          .update({ status: 'draft' })
-          .eq('id', evaluation.id);
-      }
-
-      // Remove created teeth from session_detected_teeth
-      const { error: deleteError } = await supabase
-        .from('session_detected_teeth')
-        .delete()
-        .eq('session_id', sessionId)
-        .in('tooth', selectedTeeth);
-
-      if (deleteError) {
-        logger.error('Error deleting pending teeth:', deleteError);
-      }
-
-      // Build success message
-      const treatmentMessages = Object.entries(treatmentCounts)
-        .map(([type, count]) => `${count} ${TREATMENT_LABEL_KEYS[type as TreatmentType] ? t(TREATMENT_LABEL_KEYS[type as TreatmentType]) : type}`)
-        .join(', ');
-      
-      toast.success(t('components.addTeeth.casesAdded', { details: treatmentMessages }));
-      onSuccess();
       onClose();
     } catch (error) {
       logger.error('Error adding teeth:', error);
@@ -429,7 +181,7 @@ export function AddTeethModal({
               <div className="space-y-2">
                 {restorativeTeeth.map((tooth) => {
                   const isSelected = selectedTeeth.includes(tooth.tooth);
-                  
+
                   return (
                     <div
                       key={tooth.id}
@@ -457,7 +209,7 @@ export function AddTeethModal({
                           {tooth.restoration_size && <span> • {tooth.restoration_size}</span>}
                           {tooth.depth && <span> • {tooth.depth}</span>}
                         </div>
-                        
+
                         {/* Per-tooth treatment selector */}
                         {isSelected && (
                           <Select
@@ -496,7 +248,7 @@ export function AddTeethModal({
               <div className="space-y-2">
                 {aestheticTeeth.map((tooth) => {
                   const isSelected = selectedTeeth.includes(tooth.tooth);
-                  
+
                   return (
                     <div
                       key={tooth.id}
@@ -518,7 +270,7 @@ export function AddTeethModal({
                         {tooth.indication_reason && (
                           <p className="text-xs text-muted-foreground">{tooth.indication_reason}</p>
                         )}
-                        
+
                         {/* Per-tooth treatment selector */}
                         {isSelected && (
                           <Select
@@ -548,8 +300,8 @@ export function AddTeethModal({
           <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
             Cancelar
           </Button>
-          <Button 
-            onClick={handleSubmit} 
+          <Button
+            onClick={handleSubmit}
             disabled={isSubmitting || selectedTeeth.length === 0}
           >
             {isSubmitting ? (

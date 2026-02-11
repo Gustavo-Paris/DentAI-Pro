@@ -305,6 +305,44 @@ export async function getOrCreateShareLink(sessionId: string, userId: string) {
 }
 
 // ---------------------------------------------------------------------------
+// Insert evaluation (used by AddTeethModal flow)
+// ---------------------------------------------------------------------------
+
+export async function insertEvaluation(data: Record<string, unknown>) {
+  return withQuery(() =>
+    supabase
+      .from('evaluations')
+      .insert(data as never)
+      .select()
+      .single(),
+  );
+}
+
+export async function updateEvaluation(id: string, updates: Record<string, unknown>) {
+  await withMutation(() =>
+    supabase
+      .from('evaluations')
+      .update(updates)
+      .eq('id', id),
+  );
+}
+
+export async function deletePendingTeeth(sessionId: string, teeth: string[]) {
+  await withMutation(() =>
+    supabase
+      .from('session_detected_teeth')
+      .delete()
+      .eq('session_id', sessionId)
+      .in('tooth', teeth),
+  );
+}
+
+export async function invokeEdgeFunction(name: string, body: Record<string, unknown>) {
+  const { error } = await supabase.functions.invoke(name, { body });
+  if (error) throw error;
+}
+
+// ---------------------------------------------------------------------------
 // Full evaluation with relations (for Result page)
 // ---------------------------------------------------------------------------
 

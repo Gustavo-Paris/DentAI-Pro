@@ -27,7 +27,7 @@ vi.mock('sonner', () => ({
 
 // Mock PatientAutocomplete
 vi.mock('@/components/PatientAutocomplete', () => ({
-  PatientAutocomplete: ({ value, onChange, label }: any) => (
+  PatientAutocomplete: ({ value, onChange, label, patients }: any) => (
     <div data-testid="patient-autocomplete">
       <label>{label}</label>
       <input

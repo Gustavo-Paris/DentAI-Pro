@@ -272,8 +272,8 @@ serve(async (req) => {
                     },
                     enamel_condition: {
                       type: "string",
-                      enum: ["Íntegro", "Fraturado", "Hipoplásico", "Fluorose", "Erosão"],
-                      description: "Condição do esmalte periférico",
+                      enum: ["Íntegro", "Fraturado", "Hipoplásico", "Fluorose", "Erosão", "Restauração prévia", "Restauração prévia (faceta em resina)", "Restauração prévia (coroa)"],
+                      description: "Condição do esmalte periférico. Use 'Restauração prévia' quando há evidência de restauração existente, 'Restauração prévia (faceta em resina)' para facetas vestibulares, 'Restauração prévia (coroa)' para coroas protéticas.",
                       nullable: true
                     },
                     depth: {
@@ -490,11 +490,12 @@ serve(async (req) => {
     // Post-processing: Remove Black classification for non-applicable treatments
     // Aesthetic procedures (facetas, lentes, recontornos, acréscimos) should NOT have Classe I-VI
     const blackClassPattern = /^Classe\s+(I{1,3}V?|IV|V|VI)$/i;
-    const aestheticTreatments = ['porcelana', 'encaminhamento'];
+    const aestheticTreatments = ['porcelana', 'encaminhamento', 'gengivoplastia', 'recobrimento_radicular'];
     for (const tooth of detectedTeeth) {
       if (!tooth.cavity_class || !blackClassPattern.test(tooth.cavity_class)) continue;
       const reason = (tooth.indication_reason || '').toLowerCase();
       const treatment = (tooth.treatment_indication || '').toLowerCase();
+      const notes = (tooth.notes || '').toLowerCase();
       const isAestheticCase =
         aestheticTreatments.includes(treatment) ||
         reason.includes('faceta') ||
@@ -508,7 +509,17 @@ serve(async (req) => {
         reason.includes('conoide') ||
         reason.includes('harmoniz') ||
         reason.includes('volume') ||
-        reason.includes('reanatomiz');
+        reason.includes('reanatomiz') ||
+        reason.includes('gengivoplastia') ||
+        reason.includes('recobrimento') ||
+        reason.includes('desgaste seletivo') ||
+        reason.includes('ortodont') ||
+        notes.includes('gengivoplastia') ||
+        notes.includes('recobrimento') ||
+        notes.includes('faceta') ||
+        notes.includes('lente') ||
+        notes.includes('desgaste seletivo') ||
+        notes.includes('ortodont');
       if (isAestheticCase) {
         logger.log(`Post-processing: removing Black classification '${tooth.cavity_class}' for aesthetic tooth ${tooth.tooth} (reason: ${reason.substring(0, 50)})`);
         tooth.cavity_class = null;

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 // ---------------------------------------------------------------------------
 // Params
@@ -36,6 +37,7 @@ export function useWizardNavigation({
   confirmCreditUse,
   setPatientPreferences,
 }: UseWizardNavigationParams) {
+  const { t } = useTranslation();
   const [step, setStep] = useState(1);
   const [stepDirection, setStepDirection] = useState<'forward' | 'backward'>('forward');
   const [isQuickCase, setIsQuickCase] = useState(false);
@@ -72,8 +74,8 @@ export function useWizardNavigation({
     const fullCost = getCreditCost('case_analysis') + getCreditCost('dsd_simulation');
 
     if (creditsRemaining < fullCost) {
-      toast.error('Créditos insuficientes para análise completa. Faça upgrade do seu plano.', {
-        action: { label: 'Ver Planos', onClick: () => navigate('/pricing') },
+      toast.error(t('toasts.wizard.insufficientCredits'), {
+        action: { label: t('common.viewPlans'), onClick: () => navigate('/pricing') },
       });
       return;
     }
@@ -132,7 +134,7 @@ export function useWizardNavigation({
     setAnalysisError(null);
     setIsAnalyzing(false);
     setStep(5);
-    toast.info('Prosseguindo com entrada manual.');
+    toast.info(t('toasts.wizard.manualEntry'));
   }, [setAnalysisError, setIsAnalyzing]);
 
   const cancelAnalysis = useCallback(() => {
@@ -146,7 +148,7 @@ export function useWizardNavigation({
     } else {
       setStep(2);
     }
-    toast.info('Análise cancelada.');
+    toast.info(t('toasts.wizard.analysisCanceled'));
   }, [isQuickCase, analysisAbortedRef, setIsAnalyzing, setAnalysisError]);
 
   return {

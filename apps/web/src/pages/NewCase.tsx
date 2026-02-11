@@ -157,6 +157,7 @@ export default function NewCase() {
             originalToothTreatments={wizard.originalToothTreatments}
             onRestoreAiSuggestion={wizard.handleRestoreAiSuggestion}
             hasInventory={wizard.hasInventory}
+            patients={wizard.patients}
             dsdObservations={wizard.dsdResult?.analysis?.observations}
             dsdSuggestions={wizard.dsdResult?.analysis?.suggestions}
             selectedPatientId={wizard.selectedPatientId}

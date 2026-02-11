@@ -97,6 +97,23 @@ export async function listAll(userId: string) {
   return data || [];
 }
 
+export async function listForAutocomplete(userId: string) {
+  const data = await withQuery(() =>
+    supabase
+      .from('patients')
+      .select('id, name, phone, email, birth_date')
+      .eq('user_id', userId)
+      .order('name'),
+  );
+  return (data || []) as Array<{
+    id: string;
+    name: string;
+    phone: string | null;
+    email: string | null;
+    birth_date: string | null;
+  }>;
+}
+
 export async function countByUserId(userId: string) {
   const { count, error } = await supabase
     .from('patients')

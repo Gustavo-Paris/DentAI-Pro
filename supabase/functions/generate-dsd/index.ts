@@ -1024,6 +1024,26 @@ serve(async (req: Request) => {
       if (treatment === 'encaminhamento' && (proposed.includes('recobrimento') || issue.includes('recobrimento radicular'))) {
         (suggestion as { treatment_indication: string }).treatment_indication = 'recobrimento_radicular';
       }
+
+      // Case 4: Gum removal (issue mentions recessão/raiz exposta) + recobrimento → fix if treatment is gengivoplastia
+      const hasRootExposure = issue.includes('recessão') || issue.includes('raiz exposta') || issue.includes('recobrimento') || proposed.includes('cobrir raiz');
+      if (hasRootExposure && treatment === 'gengivoplastia') {
+        logger.log(`Post-processing: fixing inverted gum logic for tooth ${suggestion.tooth} — root exposure should be recobrimento_radicular, not gengivoplastia`);
+        (suggestion as { treatment_indication: string }).treatment_indication = 'recobrimento_radicular';
+      }
+
+      // Case 5: Root coverage (proposed mentions recobrimento) but treatment is gengivoplastia → fix
+      if (proposed.includes('recobrimento') && treatment === 'gengivoplastia') {
+        logger.log(`Post-processing: fixing inverted gum logic for tooth ${suggestion.tooth} — recobrimento proposed but gengivoplastia indicated`);
+        (suggestion as { treatment_indication: string }).treatment_indication = 'recobrimento_radicular';
+      }
+
+      // Case 6: Tooth bigger (proposed mentions aumento/acréscimo/maior/alongar) but treatment is gengivoplastia → fix to resina
+      const proposesToothBigger = proposed.includes('aument') || proposed.includes('acréscimo') || proposed.includes('acrescimo') || proposed.includes('alongar') || proposed.includes('maior');
+      if (proposesToothBigger && treatment === 'gengivoplastia' && !proposed.includes('gengivoplastia')) {
+        logger.log(`Post-processing: fixing inverted logic for tooth ${suggestion.tooth} — tooth increase should be resina, not gengivoplastia`);
+        (suggestion as { treatment_indication: string }).treatment_indication = 'resina';
+      }
     }
 
     // NEW: If analysisOnly, return immediately without generating simulation

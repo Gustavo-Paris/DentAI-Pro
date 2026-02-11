@@ -4,6 +4,7 @@ import type {
   ReviewFormData,
 } from '@/components/wizard/ReviewAnalysisStep';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { logger } from '@/lib/logger';
 import { withRetry } from '@/lib/retry';
 import { wizard as wizardData } from '@/data';
@@ -36,6 +37,8 @@ export interface UsePhotoAnalysisParams {
   refreshSubscription: () => void;
   navigate: (path: string) => void;
   setAnalysisResult: React.Dispatch<React.SetStateAction<PhotoAnalysisResult | null>>;
+  /** Patient whitening preference — when non-natural, protects vitaShade from AI override */
+  patientWhiteningLevel?: 'natural' | 'hollywood';
 }
 
 // ---------------------------------------------------------------------------
@@ -58,7 +61,9 @@ export function usePhotoAnalysis({
   refreshSubscription,
   navigate,
   setAnalysisResult,
+  patientWhiteningLevel,
 }: UsePhotoAnalysisParams) {
+  const { t } = useTranslation();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isReanalyzing, setIsReanalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
@@ -102,8 +107,8 @@ export function usePhotoAnalysis({
     // Full flow credits were already confirmed upfront in goToPreferences
     if (!fullFlowCreditsConfirmedRef.current) {
       if (!canUseCredits('case_analysis')) {
-        toast.error('Créditos insuficientes. Faça upgrade do seu plano para continuar.', {
-          action: { label: 'Ver Planos', onClick: () => navigate('/pricing') },
+        toast.error(t('toasts.analysis.insufficientCredits'), {
+          action: { label: t('common.viewPlans'), onClick: () => navigate('/pricing') },
         });
         return;
       }
@@ -135,7 +140,7 @@ export function usePhotoAnalysis({
           baseDelay: 3000,
           onRetry: (attempt) => {
             logger.warn(`Analysis retry attempt ${attempt}`);
-            toast.info('Reconectando ao servidor...', { duration: 3000 });
+            toast.info(t('toasts.analysis.reconnecting'), { duration: 3000 });
           },
         },
       );
@@ -168,19 +173,22 @@ export function usePhotoAnalysis({
             cavityClass: primaryToothData.cavity_class || prev.cavityClass,
             restorationSize: primaryToothData.restoration_size || prev.restorationSize,
             // Only update vitaShade from AI if user hasn't manually overridden it
-            vitaShade: vitaShadeManuallySetRef.current ? prev.vitaShade : (analysis.vita_shade || prev.vitaShade),
+            // and whitening preference is 'natural' (non-natural implies specific shade target)
+            vitaShade: (vitaShadeManuallySetRef.current || (patientWhiteningLevel && patientWhiteningLevel !== 'natural'))
+              ? prev.vitaShade
+              : (analysis.vita_shade || prev.vitaShade),
             substrate: primaryToothData.substrate || prev.substrate,
             substrateCondition: primaryToothData.substrate_condition || prev.substrateCondition,
             enamelCondition: primaryToothData.enamel_condition || prev.enamelCondition,
             depth: primaryToothData.depth || prev.depth,
           }));
-        } else if (analysis.vita_shade && !vitaShadeManuallySetRef.current) {
+        } else if (analysis.vita_shade && !vitaShadeManuallySetRef.current && (!patientWhiteningLevel || patientWhiteningLevel === 'natural')) {
           setFormData((prev) => ({ ...prev, vitaShade: analysis.vita_shade || prev.vitaShade }));
         }
 
         setIsAnalyzing(false);
         const cost = getCreditCost('case_analysis');
-        toast.success('Análise concluída', { description: `${cost} crédito utilizado.` });
+        toast.success(t('toasts.analysis.completed'), { description: t('toasts.analysis.creditUsed', { count: cost }) });
         refreshSubscription();
         setStep(isQuickCaseRef.current ? 5 : 4);
       } else {
@@ -198,26 +206,22 @@ export function usePhotoAnalysis({
         err.message?.includes('timeout');
 
       if (err.message?.includes('429') || err.code === 'RATE_LIMITED') {
-        errorMessage = 'Limite de requisições excedido. Aguarde 1-2 minutos antes de tentar novamente.';
+        errorMessage = t('toasts.analysis.rateLimitRetry');
       } else if (
         err.message?.includes('402') ||
         err.code === 'INSUFFICIENT_CREDITS' ||
         err.code === 'PAYMENT_REQUIRED'
       ) {
-        errorMessage = 'Créditos insuficientes. Faça upgrade do seu plano para continuar.';
+        errorMessage = t('toasts.analysis.insufficientCreditsError');
         refreshSubscription();
       } else if (err.message?.includes('não retornou dados')) {
-        errorMessage =
-          'A IA não conseguiu identificar estruturas dentárias. Dicas: use boa iluminação, foque na região intraoral e evite reflexos no espelho.';
+        errorMessage = t('toasts.analysis.noDataError');
       } else if (isNetwork) {
-        errorMessage =
-          'Erro de conexão com o servidor. Verifique sua internet e tente novamente.';
+        errorMessage = t('toasts.analysis.connectionError');
       } else if (err.message?.includes('500') || err.message?.includes('edge function')) {
-        errorMessage =
-          'Erro temporário no servidor. Seu crédito não foi consumido — tente novamente em instantes.';
+        errorMessage = t('toasts.analysis.serverError');
       } else {
-        errorMessage =
-          'Não foi possível analisar a foto. Verifique se a imagem está nítida e tente novamente.';
+        errorMessage = t('toasts.analysis.genericError');
       }
 
       setAnalysisError(errorMessage);
@@ -237,6 +241,7 @@ export function usePhotoAnalysis({
     setStep,
     setFormData,
     setAnalysisResult,
+    patientWhiteningLevel,
   ]);
 
   // -------------------------------------------------------------------------
@@ -247,8 +252,8 @@ export function usePhotoAnalysis({
     if (!imageBase64) return;
 
     if (!canUseCredits('case_analysis')) {
-      toast.error('Créditos insuficientes. Faça upgrade do seu plano para reanalisar.', {
-        action: { label: 'Ver Planos', onClick: () => navigate('/pricing') },
+      toast.error(t('toasts.analysis.insufficientReanalyze'), {
+        action: { label: t('common.viewPlans'), onClick: () => navigate('/pricing') },
       });
       return;
     }
@@ -269,7 +274,7 @@ export function usePhotoAnalysis({
           baseDelay: 3000,
           onRetry: (attempt) => {
             logger.warn(`Reanalysis retry attempt ${attempt}`);
-            toast.info('Reconectando ao servidor...', { duration: 3000 });
+            toast.info(t('toasts.analysis.reconnecting'), { duration: 3000 });
           },
         },
       );
@@ -296,7 +301,10 @@ export function usePhotoAnalysis({
             cavityClass: primaryToothData.cavity_class || prev.cavityClass,
             restorationSize: primaryToothData.restoration_size || prev.restorationSize,
             // Only update vitaShade from AI if user hasn't manually overridden it
-            vitaShade: vitaShadeManuallySetRef.current ? prev.vitaShade : (analysis.vita_shade || prev.vitaShade),
+            // and whitening preference is 'natural' (non-natural implies specific shade target)
+            vitaShade: (vitaShadeManuallySetRef.current || (patientWhiteningLevel && patientWhiteningLevel !== 'natural'))
+              ? prev.vitaShade
+              : (analysis.vita_shade || prev.vitaShade),
             substrate: primaryToothData.substrate || prev.substrate,
             substrateCondition: primaryToothData.substrate_condition || prev.substrateCondition,
             enamelCondition: primaryToothData.enamel_condition || prev.enamelCondition,
@@ -305,26 +313,26 @@ export function usePhotoAnalysis({
         }
 
         refreshSubscription();
-        toast.success('Reanálise concluída', {
-          description: `${analysis.detected_teeth?.length || 0} dente(s) detectado(s). 1 crédito utilizado.`,
+        toast.success(t('toasts.analysis.reanalysisCompleted'), {
+          description: t('toasts.analysis.teethDetected', { count: analysis.detected_teeth?.length || 0 }),
         });
       }
     } catch (error: unknown) {
       const err = error as { message?: string; code?: string };
       logger.error('Reanalysis error:', error);
       if (err.message?.includes('429') || err.code === 'RATE_LIMITED') {
-        toast.error('Limite de requisições excedido. Aguarde alguns minutos.');
+        toast.error(t('toasts.analysis.rateLimit'));
       } else if (
         err.message?.includes('402') ||
         err.code === 'INSUFFICIENT_CREDITS' ||
         err.code === 'PAYMENT_REQUIRED'
       ) {
-        toast.error('Créditos insuficientes para reanálise.', {
-          action: { label: 'Ver Planos', onClick: () => navigate('/pricing') },
+        toast.error(t('toasts.analysis.insufficientReanalysis'), {
+          action: { label: t('common.viewPlans'), onClick: () => navigate('/pricing') },
         });
         refreshSubscription();
       } else {
-        toast.error('Erro na reanálise. Tente novamente.');
+        toast.error(t('toasts.analysis.reanalysisError'));
       }
     } finally {
       setIsReanalyzing(false);

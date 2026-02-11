@@ -7,8 +7,9 @@ import { evaluations } from '@/data';
 import type { Resin, StratificationProtocol, ProtocolLayer, CementationProtocol } from '@/types/protocol';
 import type { SimulationLayer } from '@/types/dsd';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { logger } from '@/lib/logger';
-import { SIGNED_URL_EXPIRY_SECONDS } from '@/lib/constants';
+import { SIGNED_URL_EXPIRY_SECONDS, QUERY_STALE_TIMES } from '@/lib/constants';
 import { Layers, Crown, Stethoscope, ArrowUpRight, CircleX, Smile, HeartPulse } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
@@ -56,7 +57,7 @@ export interface Evaluation {
   dsd_analysis: import('@/types/dsd').DSDAnalysis | null;
   dsd_simulation_url: string | null;
   dsd_simulation_layers: SimulationLayer[] | null;
-  treatment_type: 'resina' | 'porcelana' | 'coroa' | 'implante' | 'endodontia' | 'encaminhamento' | null;
+  treatment_type: 'resina' | 'porcelana' | 'coroa' | 'implante' | 'endodontia' | 'encaminhamento' | 'gengivoplastia' | 'recobrimento_radicular' | null;
   cementation_protocol: CementationProtocol | null;
   ai_treatment_indication: string | null;
   ai_indication_reason: string | null;
@@ -221,6 +222,7 @@ export function useResult() {
   const { id = '' } = useParams<{ id: string }>();
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   const [generatingPDF, setGeneratingPDF] = useState(false);
   const [showPdfConfirmDialog, setShowPdfConfirmDialog] = useState(false);
@@ -236,7 +238,7 @@ export function useResult() {
       return evaluations.getByIdWithRelations(id, user.id) as Promise<Evaluation | null>;
     },
     enabled: !!user && !!id,
-    staleTime: 30 * 1000,
+    staleTime: QUERY_STALE_TIMES.SHORT,
   });
 
   const { data: dentistProfile } = useQuery({
@@ -251,7 +253,7 @@ export function useResult() {
       return data as DentistProfile | null;
     },
     enabled: !!user,
-    staleTime: 5 * 60 * 1000,
+    staleTime: QUERY_STALE_TIMES.LONG,
   });
 
   const { data: photoUrls = { frontal: null, angle45: null, face: null } } = useQuery({
@@ -339,7 +341,7 @@ export function useResult() {
         queryClient.setQueryData(resultKeys.detail(id), context.prev);
       }
       logger.error('Error saving checklist progress');
-      toast.error('Erro ao salvar progresso');
+      toast.error(t('toasts.result.saveError'));
     },
   });
 
@@ -481,10 +483,10 @@ export function useResult() {
         cementationProtocol: evaluation.cementation_protocol || undefined,
       });
 
-      toast.success('PDF gerado com sucesso!');
+      toast.success(t('toasts.result.pdfSuccess'));
     } catch (error) {
       logger.error('Error generating PDF:', error);
-      toast.error('Erro ao gerar PDF');
+      toast.error(t('toasts.result.pdfError'));
     } finally {
       setGeneratingPDF(false);
     }

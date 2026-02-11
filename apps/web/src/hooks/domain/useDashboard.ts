@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { evaluations, patients, profiles } from '@/data';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useWizardDraft, WizardDraft } from '@/hooks/useWizardDraft';
+import { QUERY_STALE_TIMES } from '@/lib/constants';
 import { format, startOfWeek, endOfWeek, subDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -257,7 +258,7 @@ export function useDashboard(): DashboardState {
       return { profile, avatarUrl };
     },
     enabled: !!user,
-    staleTime: 5 * 60 * 1000,
+    staleTime: QUERY_STALE_TIMES.LONG,
   });
 
   const { data: dashboardData, isLoading: loadingDashboard } = useQuery({
@@ -303,7 +304,7 @@ export function useDashboard(): DashboardState {
       return { metrics: dashboardMetrics, sessions };
     },
     enabled: !!user,
-    staleTime: 30 * 1000,
+    staleTime: QUERY_STALE_TIMES.SHORT,
   });
   const { data: countsData } = useQuery({
     queryKey: dashboardQueryKeys.counts(),
@@ -316,7 +317,7 @@ export function useDashboard(): DashboardState {
       return { totalCases, totalPatients };
     },
     enabled: !!user,
-    staleTime: 60 * 1000,
+    staleTime: QUERY_STALE_TIMES.MEDIUM,
   });
 
   const { data: insightsData, isLoading: loadingInsights } = useQuery({
@@ -327,7 +328,7 @@ export function useDashboard(): DashboardState {
       return computeInsights(raw as RawInsightRow[], 8);
     },
     enabled: !!user,
-    staleTime: 60 * 1000,
+    staleTime: QUERY_STALE_TIMES.MEDIUM,
   });
 
   const {

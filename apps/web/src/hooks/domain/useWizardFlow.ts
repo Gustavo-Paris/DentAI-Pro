@@ -4,7 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAuthenticatedFetch } from '@/hooks/useAuthenticatedFetch';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useQuery } from '@tanstack/react-query';
-import { inventory } from '@/data';
+import { inventory, patients as patientsData } from '@/data';
+import { QUERY_STALE_TIMES } from '@/lib/constants';
 import { useWizardDraft } from '@/hooks/useWizardDraft';
 import type { AdditionalPhotos } from '@/hooks/useWizardDraft';
 import type {
@@ -15,6 +16,7 @@ import type {
 import type { DSDResult } from '@/types/dsd';
 import type { PatientPreferences } from '@/components/wizard/PatientPreferencesStep';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 import { INITIAL_FORM_DATA } from './wizard/constants';
 import { SAMPLE_CASE } from '@/data/sample-case';
@@ -39,6 +41,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { t } = useTranslation();
   const { invokeFunction } = useAuthenticatedFetch();
   const {
     canUseCredits,
@@ -55,7 +58,13 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
       return { items, totalCount: count, hasMore: count > 30 };
     },
     enabled: !!user,
-    staleTime: 60 * 1000,
+    staleTime: QUERY_STALE_TIMES.MEDIUM,
+  });
+  const { data: patientsForAutocomplete } = useQuery({
+    queryKey: ['patients', 'autocomplete', user?.id],
+    queryFn: () => patientsData.listForAutocomplete(user!.id),
+    enabled: !!user,
+    staleTime: QUERY_STALE_TIMES.MEDIUM,
   });
   const { loadDraft, saveDraft, clearDraft, isSaving, lastSavedAt } = useWizardDraft(user?.id);
 
@@ -175,6 +184,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     refreshSubscription,
     navigate,
     setAnalysisResult,
+    patientWhiteningLevel: patientPreferences.whiteningLevel === 'natural' ? 'natural' : 'hollywood',
   });
 
   // Wire up forward refs now that photo hook is created
@@ -256,13 +266,13 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     const fullWorkflowCost = getCreditCost('case_analysis') + getCreditCost('dsd_simulation');
     if (creditsRemaining < fullWorkflowCost && creditsRemaining > 0) {
       toast.warning(
-        `Você tem ${creditsRemaining} crédito${creditsRemaining !== 1 ? 's' : ''}. O fluxo completo (análise + DSD) requer ${fullWorkflowCost}.`,
-        { duration: 6000, description: 'Você pode pular o DSD para economizar créditos.' },
+        t('toasts.wizard.lowCreditsWarning', { remaining: creditsRemaining, required: fullWorkflowCost }),
+        { duration: 6000, description: t('toasts.wizard.lowCreditsDescription') },
       );
     } else if (creditsRemaining === 0) {
-      toast.error('Sem créditos disponíveis.', {
-        description: 'Faça upgrade do seu plano para criar novos casos.',
-        action: { label: 'Ver Planos', onClick: () => navigate('/pricing') },
+      toast.error(t('toasts.wizard.noCredits'), {
+        description: t('toasts.wizard.noCreditsDescription'),
+        action: { label: t('common.viewPlans'), onClick: () => navigate('/pricing') },
         duration: 8000,
       });
     }
@@ -400,6 +410,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     dobValidationError,
     isReanalyzing: photo.isReanalyzing,
     hasInventory,
+    patients: patientsForAutocomplete || [],
     isSubmitting: submit.isSubmitting,
     submissionComplete: submit.submissionComplete,
     submissionStep: submit.submissionStep,

@@ -280,7 +280,7 @@ describe('useDSDIntegration', () => {
       expect(updatedTreatments['GENGIVO']).toBe('gengivoplastia');
 
       expect(toast.info).toHaveBeenCalledWith(
-        'Gengivoplastia adicionada automaticamente pelo DSD',
+        'toasts.wizard.gingivoplastyAdded',
       );
     });
 

@@ -1,13 +1,11 @@
 import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Camera, X, Loader2, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { compressImage } from '@/lib/imageUtils';
-import { SIGNED_URL_EXPIRY_SECONDS } from '@/lib/constants';
 
 interface PhotoUploaderProps {
   label: string;
@@ -15,6 +13,9 @@ interface PhotoUploaderProps {
   photoType: 'frontal' | '45' | 'face';
   value: string | null;
   onChange: (url: string | null) => void;
+  onUpload: (fileName: string, blob: Blob) => Promise<void>;
+  onRemove: (path: string) => Promise<void>;
+  getSignedUrl: (path: string) => Promise<string | undefined>;
   userId: string;
   evaluationId?: string;
 }
@@ -25,6 +26,9 @@ export default function PhotoUploader({
   photoType,
   value,
   onChange,
+  onUpload,
+  onRemove,
+  getSignedUrl,
   userId,
   evaluationId,
 }: PhotoUploaderProps) {
@@ -69,16 +73,7 @@ export default function PhotoUploader({
 
       const fileName = `${userId}/${evaluationId || 'temp'}_${photoType}_${Date.now()}.jpg`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('clinical-photos')
-        .upload(fileName, compressedBlob, { upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      // Get the public URL (result not used as we store path, not URL)
-      supabase.storage
-        .from('clinical-photos')
-        .getPublicUrl(fileName);
+      await onUpload(fileName, compressedBlob);
 
       onChange(fileName);
       toast.success(t('components.photoUploader.uploadSuccess'));
@@ -94,7 +89,7 @@ export default function PhotoUploader({
   const handleRemove = async () => {
     if (value) {
       try {
-        await supabase.storage.from('clinical-photos').remove([value]);
+        await onRemove(value);
       } catch (error) {
         logger.error('Error removing file:', error);
       }
@@ -104,13 +99,6 @@ export default function PhotoUploader({
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-  };
-
-  const getSignedUrl = async (path: string) => {
-    const { data } = await supabase.storage
-      .from('clinical-photos')
-      .createSignedUrl(path, SIGNED_URL_EXPIRY_SECONDS);
-    return data?.signedUrl;
   };
 
   // Load existing image if value is set
@@ -163,7 +151,7 @@ export default function PhotoUploader({
           <div className="flex-1 min-w-0">
             <h4 className="font-medium text-sm">{label}</h4>
             <p className="text-xs text-muted-foreground mt-1">{description}</p>
-            
+
             {!preview && !uploading && (
               <Button
                 variant="ghost"
