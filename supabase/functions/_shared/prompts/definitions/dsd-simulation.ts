@@ -333,61 +333,45 @@ Output: Same photo with teeth structurally corrected but at their ORIGINAL natur
 }
 
 function buildGengivoplastyOnlyPrompt(params: Params): string {
-  const absolutePreservation = buildAbsolutePreservation()
+  return `🔒 GENGIVOPLASTY SIMULATION — GINGIVAL RECONTOURING ONLY 🔒
 
-  return `DENTAL PHOTO EDIT - GENGIVOPLASTY ONLY (PRE-PROCESSED INPUT)
+=== YOUR TASK ===
+Simulate GENGIVOPLASTY on this dental photo. The teeth have ALREADY been corrected and whitened.
+Your ONLY job: RECONTOUR THE GUM LINE to expose more clinical crown.
 
-${absolutePreservation}
+THIS IS INPAINTING — copy the entire image, then modify ONLY the gingival tissue.
+Output dimensions MUST equal input dimensions.
 
-⚠️ CRITICAL CONTEXT: The input image ALREADY has corrected and whitened teeth from a previous simulation step.
-The teeth are FINAL. Do NOT change tooth color, shape, texture, or any dental aspect.
-Your ONLY task is to modify the GINGIVAL CONTOUR (gum line).
+=== GENGIVOPLASTY PROCEDURE (PRIMARY TASK) ===
+Perform the following gingival recontouring:
+1. MOVE the gingival margin APICALLY (toward the root) by 1-2mm on affected teeth
+2. EXPOSE more clinical crown — the teeth should appear LONGER after gengivoplasty
+3. CREATE symmetrical gingival zeniths between contralateral teeth (11↔21, 12↔22, 13↔23)
+4. HARMONIZE the gum line curvature to follow a smooth, aesthetic arc
+5. The recontouring must be CLEARLY VISIBLE in before/after comparison
+6. The new gum tissue must look NATURAL — healthy pink color, proper texture
+7. Where the gum is removed, the revealed tooth structure should match the existing enamel color
 
-⚠️⚠️⚠️ REGRA #0 — MAIS IMPORTANTE QUE TUDO ⚠️⚠️⚠️
-AMBOS OS LÁBIOS (superior E inferior) são SAGRADOS e INTOCÁVEIS.
-A gengivoplastia altera apenas a margem gengival ENTRE os dentes,
-NUNCA a posição, formato, abertura ou contorno dos lábios.
+${params.gingivoSuggestions ? `SPECIFIC TEETH FOR GENGIVOPLASTY (apply aggressively):\n${params.gingivoSuggestions}\n` : `If no specific teeth are listed, apply harmonizing gengivoplasty to the anterior teeth (13-23) to create a balanced, aesthetic gum line.\n`}
 
-O enquadramento da foto (crop, zoom, ângulo) DEVE ser IDÊNTICO.
-Os lábios são a referência anatômica fixa para o antes/depois.
-Se os lábios mudarem, a comparação clínica é DESTRUÍDA.
+EXPECTED VISUAL RESULT:
+- Teeth appear TALLER/LONGER than in the input (more crown exposed)
+- Gum line is MORE SYMMETRICAL and harmonious
+- The difference should be IMMEDIATELY OBVIOUS to the patient
+- Think of it like "crown lengthening" — revealing hidden tooth structure
 
-VALIDAÇÃO:
-- Lábio superior: mesma posição, formato e contorno pixel a pixel
-- Lábio inferior: mesma posição, formato e contorno pixel a pixel
-- Abertura labial: IDÊNTICA à foto original
-- Se qualquer lábio mudou de posição → REJEITAR e refazer
+=== PRESERVATION RULES ===
+DO NOT CHANGE (copy pixel-for-pixel from input):
+- TEETH: Color, shape, contour, texture — already corrected, do NOT alter
+- LIPS: Both upper and lower lip position, shape, contour — FIXED reference
+- SKIN: Face, background, everything outside the gingival area
+- FRAMING: Same crop, zoom, angle as input
 
-⚠️ EXCEPTION TO GINGIVA PRESERVATION: In this layer, you ARE ALLOWED and REQUIRED to modify the gingival contour.
+The lips define the smile frame. Moving lips = destroying the clinical comparison.
+The gingival margin (pink tissue between tooth and lip) is the ONLY area you modify.
+When you move the gum line up, the space between lip and tooth INCREASES — but the lip stays put.
 
-YOUR PRIMARY TASK — GENGIVOPLASTY SIMULATION:
-The gum line MUST be recontoured to show a CLEAR, VISIBLE effect of gengivoplasty:
-- Expose MORE clinical crown by moving the gingival margin apically (towards the root)
-- Create symmetrical gingival zeniths between contralateral teeth
-- Harmonize the gum line curvature across the entire visible smile
-- The recontoured gums must still look NATURAL (pink, healthy tissue)
-- The gingival alteration MUST be CLEARLY VISIBLE — at least 1-2mm apical movement
-- If the analysis suggests specific teeth for gengivoplasty, apply MORE aggressive recontouring to those teeth
-- The BEFORE vs AFTER difference in gum line should be IMMEDIATELY OBVIOUS to the patient
-
-${params.gingivoSuggestions ? `GENGIVOPLASTY SPECIFICATIONS (apply these aggressively):\n${params.gingivoSuggestions}\n` : ''}
-
-REGRA SOBRE LÁBIOS:
-- AMBOS os lábios (superior E inferior) permanecem na mesma posição
-- A gengivoplastia altera APENAS a margem gengival (interface gengiva-dente)
-- Ao mover a margem gengival apicalmente, mais coroa clínica fica visível
-- Os lábios NÃO mudam de posição — o espaço entre lábio e dente é que aumenta
-- ⚠️ ERRO COMUM: Levantar o lábio superior para "mostrar mais resultado" — PROIBIDO
-
-⚠️ TEETH PRESERVATION (PRE-PROCESSED IMAGE):
-- The teeth in this image have ALREADY been whitened and corrected
-- Do NOT re-whiten, re-shape, or alter teeth in ANY way
-- Tooth color, shape, contour, texture = COPY EXACTLY from input
-- The ONLY pixels you may change are in the GINGIVAL TISSUE area
-
-Dimensões de saída DEVEM ser iguais às dimensões de entrada.
-
-Output: Same photo with CLEARLY VISIBLE gingival recontouring. Teeth pixel-identical to input.`
+Output: Same photo with CLEARLY VISIBLE gingival recontouring applied. Teeth and lips identical to input.`
 }
 
 function buildWithGengivoplastyPrompt(params: Params): string {

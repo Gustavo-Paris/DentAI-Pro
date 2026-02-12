@@ -225,7 +225,10 @@ export function useDSDStep({
     if (!effectiveImage) return null;
 
     const isGingivalLayer = layerType === 'complete-treatment' || layerType === 'root-coverage';
-    const MAX_LIP_RETRIES = isGingivalLayer ? 2 : 0;
+    // When chaining from L2 (baseImageOverride), skip lip retries — the server
+    // already skips lip validation for inputAlreadyProcessed, and the Flash
+    // validator consistently confuses gingival recontouring with lip movement.
+    const MAX_LIP_RETRIES = (isGingivalLayer && !baseImageOverride) ? 2 : 0;
 
     try {
       let bestResult: (DSDResult & { lips_moved?: boolean }) | null = null;
