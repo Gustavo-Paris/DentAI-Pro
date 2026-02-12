@@ -531,6 +531,7 @@ serve(async (req) => {
       notes: tooth.notes ?? null,
       treatment_indication: normalizeTreatmentIndication(tooth.treatment_indication) || globalIndication,
       indication_reason: tooth.indication_reason ?? undefined,
+      tooth_bounds: tooth.tooth_bounds ?? undefined,
     }));
 
     // Deduplicate: Gemini can return the same tooth number multiple times
