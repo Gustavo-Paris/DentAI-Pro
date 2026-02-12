@@ -295,6 +295,41 @@ Output: Same photo with ONLY teeth corrected.`
 
 // --- Layer-specific builders ---
 
+function buildDewhiteningPrompt(params: Params): string {
+  const absolutePreservation = buildAbsolutePreservation()
+
+  return `DENTAL PHOTO EDIT - REVERT WHITENING ONLY (KEEP ALL CORRECTIONS)
+
+${absolutePreservation}
+
+TASK: The teeth in this image have ALREADY been corrected AND whitened.
+Revert ONLY the tooth COLOR back to the patient's NATURAL original shade.
+Keep ALL structural corrections (shape, contour, closed gaps, filled chips) EXACTLY as they are.
+
+#1 TASK - REVERT WHITENING (CRITICAL):
+- The teeth are currently whitened — restore the NATURAL original tooth color
+- Make teeth look like the patient's REAL color before any whitening procedure
+- Natural teeth have a WARM yellowish/ivory hue, NOT bright white
+- Maintain natural color variation between teeth (centrals vs laterals vs canines)
+- Canines are typically SLIGHTLY more yellow/saturated than incisors
+- Cervical areas are naturally MORE SATURATED than incisal edges
+- DO NOT make teeth darker than a natural healthy shade — aim for A2-A3 range
+
+WHAT TO PRESERVE (DO NOT CHANGE):
+- ALL structural corrections: tooth shape, contour, alignment improvements
+- Closed gaps must REMAIN closed
+- Filled chips/defects must REMAIN filled
+- Conoid corrections must REMAIN corrected
+- Tooth proportions must REMAIN as they are
+- Surface texture and translucency patterns
+
+WHAT TO CHANGE (ONLY):
+- Tooth COLOR: from whitened back to natural shade
+- Color INTENSITY: from bright/white to warm/ivory
+
+Output: Same photo with teeth at their NATURAL color but all structural corrections preserved.`
+}
+
 function buildRestorationsOnlyPrompt(params: Params): string {
   const absolutePreservation = buildAbsolutePreservation()
   const baseCorrections = buildBaseCorrections()
@@ -519,6 +554,9 @@ export const dsdSimulation: PromptDefinition<Params> = {
     if (params.layerType) {
       switch (params.layerType) {
         case 'restorations-only':
+          if (params.inputAlreadyProcessed) {
+            return buildDewhiteningPrompt(params)
+          }
           return buildRestorationsOnlyPrompt(params)
         case 'complete-treatment':
           return buildWithGengivoplastyPrompt(params)

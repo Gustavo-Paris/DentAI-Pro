@@ -329,21 +329,9 @@ export function useDSDStep({
       const resolvedUrls: Record<string, string> = {};
       const failed: SimulationLayerType[] = [];
 
-      // === Phase 1: Generate L1 and L2 in parallel from original photo ===
-      const [l1Raw, l2Raw] = await Promise.all([
-        generateSingleLayer(analysis, 'restorations-only'),
-        generateSingleLayer(analysis, 'whitening-restorations'),
-      ]);
-      setLayerGenerationProgress(2);
-
-      // Process L1
-      if (l1Raw) {
-        const { layer: l1Processed, url: l1Url } = await resolveLayerUrl(l1Raw);
-        compositedLayers.push(l1Processed);
-        if (l1Url) resolvedUrls['restorations-only'] = l1Url;
-      } else {
-        failed.push('restorations-only');
-      }
+      // === Phase 1: Generate L2 (canonical layer — corrections + whitening from original) ===
+      const l2Raw = await generateSingleLayer(analysis, 'whitening-restorations');
+      setLayerGenerationProgress(1);
 
       // Process L2
       let l2CompositedUrl: string | null = null;
@@ -356,7 +344,40 @@ export function useDSDStep({
         failed.push('whitening-restorations');
       }
 
-      // === Phase 2: Generate L3 from L2 composited (if gengivoplasty approved) ===
+      // === Phase 2: Generate L1 from L2 (dewhitening — revert color, keep corrections) ===
+      if (l2CompositedUrl) {
+        try {
+          const l2Base64 = await urlToBase64(l2CompositedUrl);
+          logger.log('Layer chaining: deriving L1 from L2 (dewhitening)');
+          const l1Raw = await generateSingleLayer(analysis, 'restorations-only', l2Base64);
+          setLayerGenerationProgress(2);
+
+          if (l1Raw) {
+            const { layer: l1Processed, url: l1Url } = await resolveLayerUrl(l1Raw);
+            compositedLayers.push(l1Processed);
+            if (l1Url) resolvedUrls['restorations-only'] = l1Url;
+          } else {
+            failed.push('restorations-only');
+          }
+        } catch (err) {
+          logger.error('L1 derivation from L2 error:', err);
+          failed.push('restorations-only');
+        }
+      } else {
+        // L2 failed, can't derive L1 — try L1 from original as fallback
+        logger.warn('L2 unavailable, generating L1 from original photo as fallback');
+        const l1Raw = await generateSingleLayer(analysis, 'restorations-only');
+        setLayerGenerationProgress(2);
+        if (l1Raw) {
+          const { layer: l1Processed, url: l1Url } = await resolveLayerUrl(l1Raw);
+          compositedLayers.push(l1Processed);
+          if (l1Url) resolvedUrls['restorations-only'] = l1Url;
+        } else {
+          failed.push('restorations-only');
+        }
+      }
+
+      // === Phase 3: Generate L3 from L2 composited (if gengivoplasty approved) ===
       if (gingivoplastyApproved === true && l2CompositedUrl) {
         try {
           const l2Base64 = await urlToBase64(l2CompositedUrl);
@@ -438,16 +459,16 @@ export function useDSDStep({
 
     setRetryingLayer(layerType);
     try {
-      // L3 retry: chain from L2 composited image
+      // L1 and L3 retry: chain from L2 composited image
       let baseImageOverride: string | undefined;
-      if (layerType === 'complete-treatment') {
+      if (layerType === 'complete-treatment' || layerType === 'restorations-only') {
         const l2CompositedUrl = layerUrls['whitening-restorations'];
         if (l2CompositedUrl) {
           try {
             baseImageOverride = await urlToBase64(l2CompositedUrl);
-            logger.log('L3 retry: chaining from L2 composited image');
+            logger.log(`${layerType} retry: chaining from L2 composited image`);
           } catch (err) {
-            logger.warn('L3 retry: failed to convert L2 URL to base64, using original:', err);
+            logger.warn(`${layerType} retry: failed to convert L2 URL to base64, using original:`, err);
           }
         }
       }
