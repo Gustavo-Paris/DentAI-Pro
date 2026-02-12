@@ -23,7 +23,7 @@ export const treatmentConfig: Record<TreatmentType, TreatmentTypeConfig> = {
   implante: { label: 'Implante', shortLabel: 'Implante', icon: CircleX, variant: 'outline', showCavityInfo: false },
   endodontia: { label: 'Endodontia', shortLabel: 'Endo', icon: Stethoscope, variant: 'outline', showCavityInfo: false },
   encaminhamento: { label: 'Encaminhamento', shortLabel: 'Encaminhar', icon: ArrowUpRight, variant: 'outline', showCavityInfo: false },
-  gengivoplastia: { label: 'Gengivoplastia Estética', shortLabel: 'Gengivo', icon: Smile, variant: 'secondary', showCavityInfo: false },
+  gengivoplastia: { label: 'Gengivoplastia Estética', shortLabel: 'Gengivoplastia', icon: Smile, variant: 'secondary', showCavityInfo: false },
   recobrimento_radicular: { label: 'Recobrimento Radicular', shortLabel: 'Recobr.', icon: HeartPulse, variant: 'secondary', showCavityInfo: false },
 };
 
