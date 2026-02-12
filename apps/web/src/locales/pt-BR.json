@@ -1,4 +1,18 @@
 {
+  "referral": {
+    "title": "Programa de Indicação",
+    "description": "Indique colegas e ganhe créditos bônus",
+    "yourCode": "Seu código de indicação",
+    "copyCode": "Copiar código",
+    "copied": "Copiado!",
+    "shareWhatsApp": "Compartilhar no WhatsApp",
+    "copyLink": "Copiar link",
+    "stats": {
+      "totalReferrals": "Total de indicações",
+      "creditsEarned": "Créditos ganhos"
+    },
+    "reward": "Você e seu colega ganham 5 créditos bônus cada!"
+  },
   "common": {
     "save": "Salvar",
     "cancel": "Cancelar",
@@ -143,9 +157,9 @@
       "step3Desc": "Organize seus pacientes e históricos"
     },
     "stats": {
-      "totalCases": "Total de Casos",
-      "totalCasesUnit": "tratamentos gerados",
-      "totalCasesTooltip": "Total de tratamentos gerados por avaliações",
+      "totalCases": "Total de Tratamentos",
+      "totalCasesUnit": "dentes avaliados",
+      "totalCasesTooltip": "Total de tratamentos individuais gerados",
       "patients": "Pacientes",
       "patientsUnit": "cadastrados",
       "patientsTooltip": "Total de pacientes cadastrados",

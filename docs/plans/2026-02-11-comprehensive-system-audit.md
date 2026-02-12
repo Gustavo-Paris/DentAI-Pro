@@ -1,5 +1,5 @@
 ---
-title: "Auditoria Completa do Sistema AURIA — Fevereiro 2026"
+title: "AURIA - Auditoria Completa do Sistema (7 Especialistas)"
 created: 2026-02-11
 updated: 2026-02-11
 status: published
@@ -8,389 +8,352 @@ tags:
   - status/published
 ---
 
-# Auditoria Completa do Sistema AURIA
+# AURIA - Auditoria Completa do Sistema
 
-> Análise automatizada por 8 agentes especializados em paralelo.
-> Data: 2026-02-11 | Baseline: commit `03cc508` (branch `main`)
-
----
-
-## Resumo Executivo
-
-| # | Área                   | Nota  | Tendência |
-|---|------------------------|-------|-----------|
-| 1 | Arquitetura            | 8.5   | ↗ estável |
-| 2 | Qualidade de Código    | 7.5   | ↗ melhorando |
-| 3 | Testes                 | 7.5   | ↗ melhorando |
-| 4 | Segurança              | 7.5   | ↗ melhorando |
-| 5 | Internacionalização    | 7.5   | → novo |
-| 6 | Design System          | 7.5   | ↗ melhorando |
-| 7 | Documentação           | 8.5   | ↗ estável |
-| 8 | Backend (Edge Fns)     | 8.5   | ↗ estável |
-| **—** | **Nota Final**     | **7.9** | **↗ positiva** |
-
-**Classificação geral: BOM** — O sistema tem fundações sólidas com arquitetura bem definida, backend robusto e documentação completa. As áreas que mais precisam de atenção são cobertura de testes (especialmente UI/páginas), completar i18n e migrar páginas restantes para PageShell.
+> Relatório executivo da análise realizada por 7 agentes especialistas em 2026-02-11.
+> Baseline: commit `a4e2b60` (branch `main`)
 
 ---
 
-## 1. Arquitetura — 8.5/10
+## Nota Final: 73/100 (B)
 
-### O que foi analisado
-- Conformidade com 3-Layer Architecture (ADR-001): `src/data/` → `src/hooks/domain/` → `src/pages/`
-- Adoção de PageShell composites (ADR-002)
-- Separação de responsabilidades e acoplamento
-
-### Pontos fortes
-- **17/21 páginas** seguem o padrão 3-layer (85% conformidade)
-- **100% das páginas in-scope** usam PageShell composites
-- ESLint configurado com `no-restricted-imports` para enforcement automático
-- Hook de wizard refatorado com sucesso (1.355 → 447 linhas)
-- Padrão claro e consistente: data clients → domain hooks → page adapters
-
-### Violações encontradas
-| Arquivo | Problema |
-|---------|----------|
-| `src/pages/Profile.tsx` | Importa diretamente de `@/data` (subscriptions, privacy) |
-| `src/components/AddTeethModal.tsx` | Importação direta do Supabase |
-| `src/components/PatientAutocomplete.tsx` | Acoplado à camada de dados |
-| `src/components/GlobalSearch.tsx` | Acoplado à camada de dados |
-| `src/components/PhotoUploader.tsx` | Importação direta do Supabase |
-
-### Ações de melhoria
-1. **[P1]** Desacoplar `Profile.tsx` — extrair `useProfileData` hook de domínio
-2. **[P2]** Desacoplar 4 componentes shared — receber dados via props/hooks
-3. **[P3]** Criar documento de guidelines de arquitetura para onboarding
-4. **[P3]** Adicionar testes de conformidade arquitetural (lint rules + CI check)
+| # | Especialista | Nota | Peso | Contribuicao |
+|---|-------------|------|------|-------------|
+| 1 | Architect | **82/100** | 15% | 12.3 |
+| 2 | Senior Dev | **78/100** | 15% | 11.7 |
+| 3 | UX Analyst | **76/100** | 15% | 11.4 |
+| 4 | QA Engineer | **64/100** | 15% | 9.6 |
+| 5 | PM Strategist | **68/100** | 15% | 10.2 |
+| 6 | Designer | **62/100** | 10% | 6.2 |
+| 7 | Prompt Engineer | **78/100** | 15% | 11.7 |
+| | **TOTAL** | **73/100** | 100% | **73.1** |
 
 ---
 
-## 2. Qualidade de Código — 7.5/10
-
-### O que foi analisado
-- TypeScript strictness e uso de `any`
-- Código morto e duplicação
-- Complexidade ciclomática
-- Code smells e padrões de naming
+## 1. Arquitetura — 82/100
 
 ### Sub-notas
-| Critério | Nota |
+| Sub-area | Nota |
 |----------|------|
-| TypeScript strictness | 8.5 |
-| Código morto | 7.0 |
-| Duplicação | 7.5 |
-| Complexidade | 6.5 |
-| Naming conventions | 9.0 |
-| Error handling | 8.0 |
-| Code smells | 7.0 |
+| 3-Layer Compliance | 88 |
+| Module Boundaries | 85 |
+| Edge Function Architecture | 78 |
+| Database Schema | 80 |
+| Code Splitting | 75 |
+| Scalability | 82 |
 
-### Pontos fortes
-- Apenas **7 `any` em produção** (82 total, maioria em test mocks)
-- **Zero TODO/FIXME/HACK** comments
-- Naming consistente (camelCase hooks, PascalCase components)
-- ESLint com regras de arquitetura
+### Destaques Positivos
+- 3-layer frontend (Data -> Hooks -> Pages) com ESLint enforcement
+- Zero dependencias circulares entre camadas
+- Credit system com row-locking atomico e refund automatico
+- Gemini client com circuit breaker e retry exponencial
+- 27 migrations bem organizadas com RLS em todas as tabelas
 
-### Problemas encontrados
-- **52 padrões repetidos** de error handling Supabase (candidato a abstração)
-- **22 magic numbers** (valores de `staleTime` espalhados)
-- `useWizardFlow.ts` ainda tem 447 linhas (maior hook do projeto)
-- Falta regra `no-console` no ESLint
+### Problemas Encontrados
+- `useDSDStep.ts` importa Supabase diretamente (violacao da arquitetura)
+- Falta de indexes em `session_id` e `status` na tabela evaluations
+- Code splitting apenas por vendor, nao por rota
+- Sem estrategia de particionamento para tabelas em crescimento
 
-### Ações de melhoria
-1. **[P1]** Abstrair error handling do Supabase em utility (`handleSupabaseError`)
-2. **[P2]** Extrair magic numbers para constantes (`STALE_TIME_5MIN`, etc.)
-3. **[P2]** Adicionar regra `no-console` ao ESLint (permitir apenas via logger)
-4. **[P3]** Avaliar decomposição adicional do `useWizardFlow` se crescer mais
-
----
-
-## 3. Testes — 7.5/10
-
-### O que foi analisado
-- Quantidade e distribuição de testes
-- Cobertura por camada arquitetural
-- Qualidade dos mocks e fixtures
-- Presença de testes E2E/integração
-
-### Métricas
-- **603 testes** passando
-- **51 arquivos de teste** em `apps/web/`
-- **~22 arquivos de teste** em `packages/`
-- Zero falhas
-
-### Cobertura por camada
-| Camada | Nota | Detalhe |
-|--------|------|---------|
-| Data layer (clients) | 9/10 | Excelente — quase todos os clients testados |
-| Domain hooks | 7/10 | Boa — hooks principais cobertos |
-| Utils/helpers | 8/10 | Boa — validação e formatação testados |
-| UI components | 4/10 | Fraca — poucos componentes testados |
-| Pages | 3/10 | Muito fraca — apenas smoke tests |
-| Contexts | 0/10 | **AuthContext completamente sem testes** |
-
-### Gaps críticos
-- **AuthContext**: 0% de cobertura — ponto central de autenticação
-- **Páginas**: Sem testes de integração (user flows)
-- **E2E**: Nenhum teste end-to-end configurado
-- **Components UI**: Apenas componentes triviais testados
-
-### Ações de melhoria
-1. **[P0]** Testar `AuthContext` — fluxos de login, logout, refresh, edge cases
-2. **[P1]** Testes de integração para wizard flow (fluxo mais crítico)
-3. **[P1]** Testar componentes com lógica: `PhotoUploader`, `AddTeethModal`
-4. **[P2]** Configurar Playwright para testes E2E dos fluxos críticos
-5. **[P2]** Criar test utilities library (renderWithProviders, mockSupabase)
-6. **[P3]** Adicionar CI coverage thresholds progressivos
+### Top 3 Acoes
+1. Criar data layer para storage — abstrair operacoes de Supabase Storage em `src/data/storage.ts`
+2. Adicionar indexes criticos — composite index `(user_id, session_id, created_at DESC)` em evaluations
+3. Implementar code splitting por rota — `lazy()` em todas as paginas com Suspense boundaries
 
 ---
 
-## 4. Segurança — 7.5/10
+## 2. Qualidade de Codigo — 78/100
 
-### O que foi analisado
-- Autenticação e autorização
-- Row-Level Security (RLS)
-- Validação de input e proteção contra injection
-- Proteção de dados sensíveis (PHI/LGPD)
-- Rate limiting
+### Sub-notas
+| Sub-area | Nota |
+|----------|------|
+| TypeScript Quality | 85 |
+| Code Complexity | 72 |
+| Error Handling | 83 |
+| Dead Code | 88 |
+| Performance Patterns | 70 |
+| Security Patterns | 90 |
 
-### Pontos fortes
-- **ES256 + verificação interna** — auth robusta em todas as edge functions
-- **RLS ativo** em todas as tabelas de usuário
-- **Validação de input** com sanitização dual-layer (prompt injection defense)
-- **CSP headers** configurados no `index.html`
-- **LGPD compliant**: data-export + delete-account funcionais
-- **Stripe webhook** com verificação de assinatura
+### Destaques Positivos
+- TypeScript strict mode com zero `@ts-ignore` em producao
+- `sanitizeForPrompt.ts` com defesa contra prompt injection
+- Error handler com i18n e mapeamento de codigos PostgreSQL
+- Zero `console.log` em producao
 
-### Vulnerabilidades
-| Severidade | Problema |
-|------------|----------|
-| **Alta** | `data-export` e `delete-account` sem rate limiting |
-| **Média** | Upload de fotos sem validação de MIME type real |
-| **Média** | PHI encryption infra criada mas colunas plaintext não removidas |
-| **Baixa** | Logs de debug podem vazar dados em produção |
+### Problemas Encontrados
+- `ReviewAnalysisStep.tsx`: 1,127 linhas (maior componente)
+- `useDSDStep.ts`: 873 linhas (precisa decomposicao adicional)
+- Zero `React.memo` — re-renders desnecessarios cascateiam
+- Coverage de funcoes em 38% (baixo para app medico)
 
-### Ações de melhoria
-1. **[P0]** Rate limiting em `data-export` e `delete-account` (AI_HEAVY tier)
-2. **[P1]** Validação MIME type real em uploads de fotos (magic bytes, não extensão)
-3. **[P1]** Completar migração PHI: dropar colunas plaintext após confirmar encryption
-4. **[P2]** Testes automatizados de autenticação (fluxos de auth)
-5. **[P2]** Structured logging com sanitização de PII
-6. **[P3]** Security audit automatizado no CI (SAST básico)
+### Top 3 Acoes
+1. Decompor `ReviewAnalysisStep.tsx` — extrair 3-4 sub-componentes (target: menos de 300 linhas)
+2. Adicionar `React.memo` em 10+ componentes chave (reduz 30-50% re-renders)
+3. Error boundaries por rota — isolar falhas sem crash do app inteiro
 
 ---
 
-## 5. Internacionalização (i18n) — 7.5/10
+## 3. UX e Acessibilidade — 76/100
 
-### O que foi analisado
-- Cobertura de chamadas `t()` no código
-- Strings hardcoded restantes
-- Estrutura dos arquivos de tradução
-- Consistência entre locales
+### Sub-notas
+| Sub-area | Nota |
+|----------|------|
+| WCAG 2.1 Compliance | 68 |
+| Responsive Design | 82 |
+| User Flow Quality | 79 |
+| i18n Coverage | 85 |
+| Error UX | 81 |
+| Visual Consistency | 73 |
 
-### Métricas
-- **845 chamadas `t()`** em 61 arquivos
-- **~75-80% de cobertura** de componentes user-facing
-- Framework: i18next + react-i18next
+### Destaques Positivos
+- 202 classes responsivas em 22 paginas
+- i18n com 400+ keys e ~80% cobertura
+- Skip-to-content link no AppLayout
+- Draft restore modal previne perda de dados
+- Empty states consistentes com CTAs acionaveis
 
-### Gaps encontrados
-| Componente/Área | Status |
-|-----------------|--------|
-| Dashboard InsightsTab | Strings hardcoded em PT |
-| Dashboard OnboardingCards | Strings hardcoded em PT |
-| PhotoUploader | Strings hardcoded em PT |
-| Toast messages (diversos) | ~50% traduzidos |
-| Form validation messages | Parcialmente traduzidos |
-| Error boundaries | Não traduzidos |
+### Problemas Encontrados
+- Touch targets abaixo de 44x44px (botoes `h-9`/`h-10`)
+- Texto hardcoded em PT-BR ainda presente (~20 strings)
+- Sem ARIA labels em botoes de icone e areas de upload
+- Dark mode parcialmente implementado (pode ter problemas de contraste)
+- Textos com 9-11px em mobile (problemas de legibilidade)
 
-### Ações de melhoria
-1. **[P1]** Traduzir componentes do Dashboard (InsightsTab, OnboardingCards)
-2. **[P1]** Traduzir `PhotoUploader` — componente com interação crítica
-3. **[P2]** Traduzir todas as toast messages restantes
-4. **[P2]** Traduzir mensagens de validação de formulários
-5. **[P3]** Adicionar lint rule para detectar strings hardcoded em PT
-6. **[P3]** Traduzir error boundaries e fallbacks
-
----
-
-## 6. Design System (PageShell) — 7.5/10
-
-### O que foi analisado
-- Adoção de PageShell composites nas páginas
-- Consistência de layout e responsividade
-- Uso de tokens semânticos vs. valores hardcoded
-- Cobertura dos packages do design system
-
-### Métricas
-- **11/19 páginas** (58%) usando PageShell composites
-- **39 ocorrências** de `max-w-*` customizado (anti-pattern)
-- **202 breakpoints responsivos** em uso
-- **362+ exports** no `@pageshell/layouts`
-
-### Páginas migradas vs. pendentes
-| Status | Páginas |
-|--------|---------|
-| ✅ Migradas | Dashboard, Patients, PatientDetail, Analysis, Settings, NewAnalysis, Wizard, Login, Register, ForgotPassword, SharedReport |
-| ❌ Pendentes | Profile, AnalysisHistory, Reports, Notifications, Help, Subscription, Admin, Legal, Onboarding |
-
-### Ações de melhoria
-1. **[P1]** Migrar `Profile` → `SettingsPage` ou `DetailPage`
-2. **[P1]** Migrar `AnalysisHistory` → `ListPage`
-3. **[P2]** Migrar `Reports` → `ListPage` + `DetailPage`
-4. **[P2]** Eliminar `max-w-*` hardcoded — usar PageShell layout tokens
-5. **[P3]** Migrar páginas restantes (Notifications, Help, Subscription, Admin, Legal, Onboarding)
-6. **[P3]** Documentar guia de migração PageShell para novas páginas
+### Top 3 Acoes
+1. Corrigir touch targets — minimo 44px em todos os interativos mobile
+2. Completar i18n — extrair ~20 strings hardcoded restantes
+3. Adicionar ARIA labels — botoes de icone, uploads, ThemeToggle
 
 ---
 
-## 7. Documentação — 8.5/10
+## 4. QA e Testes — 64/100
 
-### O que foi analisado
-- Completude e qualidade dos ADRs
-- Cobertura de wikilinks e navegabilidade
-- Consistência de frontmatter e formatação
-- Presença de guias e runbooks
+### Sub-notas
+| Sub-area | Nota |
+|----------|------|
+| Unit Test Coverage | 42 |
+| E2E Test Coverage | 68 |
+| Test Quality | 71 |
+| CI/CD Pipeline | 73 |
+| Quality Gates | 58 |
+| Monitoring | 75 |
 
-### Métricas
-- **8 ADRs completos** (001–008) com estrutura padronizada
-- **303 wikilinks** em 33 arquivos
-- **46 arquivos Markdown** no vault
-- **15 AGENTS.md** distribuídos pelo monorepo
+### Destaques Positivos
+- 5 suites E2E cobrindo fluxos criticos (login, wizard, LGPD)
+- Sentry com browser tracing, session replay e Web Vitals
+- Custom `createSupabaseBuilder` para mocks limpos
+- CI com lint, type-check, test, build e bundle size check
 
-### Pontos fortes
-- Todos os ADRs seguem o template com Context, Decision, Consequences
-- Home.md funciona como hub com 61 wikilinks
-- Glossário e índices mantidos
+### Problemas Encontrados
+- 18.64% line coverage — criticamente baixo para app medico
+- Zero coverage em todas as 26 paginas
+- Zero coverage em fluxos de pagamento
+- E2E tests com `continue-on-error: true` — nao bloqueiam deploy
+- Sem pre-commit hooks (Husky/lint-staged)
+- Sem security scanning (CodeQL, Dependabot)
 
-### Problemas encontrados
-| Problema | Localização |
-|----------|-------------|
-| AGENTS.md raiz só lista ADR 001-003 | `/AGENTS.md` |
-| Falta guia de onboarding para devs | `docs/` |
-| Falta runbook de deploy | `docs/` |
-| Branding inconsistente (DentAI vs AURIA) | Diversos arquivos |
-
-### Ações de melhoria
-1. **[P1]** Atualizar `AGENTS.md` raiz com referência a todos os 8 ADRs
-2. **[P2]** Criar guia de onboarding para novos desenvolvedores
-3. **[P2]** Criar runbook de deploy (Supabase + Vercel + Docker)
-4. **[P3]** Padronizar branding para AURIA em toda documentação
-5. **[P3]** Melhorar guia de testes com exemplos e padrões
+### Top 3 Acoes
+1. Bloquear deploy em falha E2E — remover `continue-on-error: true`
+2. Testar fluxos de pagamento — checkout, subscription, webhook
+3. Subir coverage thresholds progressivamente — 30% -> 45% -> 60% (mensal)
 
 ---
 
-## 8. Backend (Edge Functions) — 8.5/10
+## 5. Estrategia de Produto — 68/100
 
-### O que foi analisado
-- Configuração e segurança das edge functions
-- Gestão de prompts e IA
-- Sistema de créditos e monetização
-- Conformidade LGPD
-- Dependências e imports
+### Sub-notas
+| Sub-area | Nota |
+|----------|------|
+| Analytics e Insights | 55 |
+| Monetization | 75 |
+| LGPD Compliance | 85 |
+| Feature Completeness | 70 |
+| Growth e Retention | 45 |
+| Competitive Positioning | 72 |
 
-### Métricas
-- **14 edge functions** todas listadas em `config.toml`
-- **5 prompts** no registry centralizado
-- **100% migrado** de esm.sh para `jsr:` / `npm:`
-- **0 dependências** em CDN externo
+### Destaques Positivos
+- LGPD exemplar (data-export + delete-account com 13 etapas)
+- Stripe production-ready com subscriptions + credit packs + PIX
+- Wizard completo com 6 passos + atalho quick case
+- Inventory-aware recommendations (diferencial competitivo)
+- Email templates prontos (welcome, credit warning, digest)
 
-### Pontos fortes
-- Prompt management centralizado com registry e métricas
-- Sistema de créditos atômico com idempotência e refund
-- LGPD: data-export e delete-account completos
-- Stripe webhook com verificação de assinatura
-- Todas as functions com `verify_jwt = false` + auth interna
+### Problemas Encontrados
+- Zero event tracking alem de pageviews — flying blind
+- Sem free trial credits — usuarios comecam com 0, bounce alto
+- Templates de email existem mas nao sao enviados (sem triggers)
+- Sem programa de referral
+- Sem social proof no landing (testimonials, case studies)
 
-### Problemas encontrados
-| Severidade | Problema |
-|------------|----------|
-| **Alta** | `recommend-resin` e `recommend-cementation` não verificam créditos |
-| **Média** | Rate limiter usa implementação in-memory (não atômica) |
-| **Baixa** | Sem versionamento de prompts (apenas registry estático) |
-
-### Ações de melhoria
-1. **[P0]** Adicionar verificação de créditos em `recommend-resin` e `recommend-cementation`
-2. **[P1]** Implementar rate limiter atômico (Supabase RPC ou Redis)
-3. **[P2]** Adicionar versionamento de prompts com changelog
-4. **[P3]** Implementar circuit breaker para chamadas ao Gemini
-5. **[P3]** Adicionar health checks endpoint para monitoramento
+### Top 3 Acoes
+1. Implementar free trial credits — 5-10 creditos no signup (impact: 30% -> 70% activation)
+2. Ativar email automation — welcome sequence + weekly digest + re-engagement
+3. Lancar programa de referral — 50 creditos por indicacao bem-sucedida
 
 ---
 
-## Plano de Ação Consolidado
+## 6. Design System — 62/100
 
-### Prioridade P0 — Crítico (fazer agora)
-| # | Ação | Área | Esforço |
-|---|------|------|---------|
-| 1 | Verificação de créditos em recommend-resin/cementation | Backend | 2h |
-| 2 | Rate limiting em data-export e delete-account | Segurança | 2h |
-| 3 | Testar AuthContext | Testes | 4h |
+### Sub-notas
+| Sub-area | Nota |
+|----------|------|
+| Architecture | 70 |
+| Component Quality | 75 |
+| Composite Adoption | 45 |
+| Token System | 65 |
+| Visual Consistency | 58 |
+| Documentation | 55 |
 
-### Prioridade P1 — Importante (próximo sprint)
-| # | Ação | Área | Esforço |
-|---|------|------|---------|
-| 4 | Desacoplar Profile.tsx (extrair hook de domínio) | Arquitetura | 2h |
-| 5 | Abstrair error handling Supabase | Código | 3h |
-| 6 | Testes de integração do wizard flow | Testes | 4h |
-| 7 | Validação MIME type real em uploads | Segurança | 2h |
-| 8 | Completar migração PHI encryption | Segurança | 4h |
-| 9 | i18n: Dashboard components + PhotoUploader | i18n | 3h |
-| 10 | Migrar Profile e AnalysisHistory para PageShell | Design System | 4h |
-| 11 | Atualizar AGENTS.md com todos os ADRs | Docs | 1h |
-| 12 | Rate limiter atômico (backend) | Backend | 4h |
+### Destaques Positivos
+- 10 packages com hierarquia clara (Primitives -> Composites)
+- 70+ componentes primitivos com Radix UI
+- TypeScript interfaces completas
+- Token system com oklch() e fallback hex
+- 12/25 paginas usando composites (48%)
 
-### Prioridade P2 — Desejável (próximos 2 sprints)
-| # | Ação | Área | Esforço |
-|---|------|------|---------|
-| 13 | Desacoplar 4 componentes shared | Arquitetura | 4h |
-| 14 | Extrair magic numbers para constantes | Código | 2h |
-| 15 | Configurar Playwright E2E | Testes | 6h |
-| 16 | Testes automatizados de auth | Segurança | 4h |
-| 17 | Traduzir toasts e validação forms | i18n | 3h |
-| 18 | Migrar Reports + eliminar max-w hardcoded | Design System | 4h |
-| 19 | Guia de onboarding + runbook de deploy | Docs | 4h |
-| 20 | Versionamento de prompts | Backend | 3h |
+### Problemas Encontrados
+- Arquitetura dual: app importa de AMBOS PageShell (13 imports) E shadcn/ui (202 imports)
+- Dois sistemas de tokens conflitantes — PageShell oklch vs shadcn HSL
+- 52% das paginas NAO usam composites
+- Border radius inconsistente (50+ instancias com valores variados)
+- Sem Storybook ou galeria visual
 
-### Prioridade P3 — Nice to have (backlog)
-| # | Ação | Área | Esforço |
-|---|------|------|---------|
-| 21 | Guidelines doc de arquitetura | Arquitetura | 2h |
-| 22 | ESLint no-console rule | Código | 1h |
-| 23 | CI coverage thresholds progressivos | Testes | 2h |
-| 24 | SAST básico no CI | Segurança | 3h |
-| 25 | Lint rule para strings hardcoded | i18n | 2h |
-| 26 | Migrar páginas restantes para PageShell | Design System | 8h |
-| 27 | Padronizar branding AURIA | Docs | 2h |
-| 28 | Circuit breaker + health checks | Backend | 4h |
+### Top 3 Acoes
+1. Resolver arquitetura dual — escolher PageShell OU shadcn, nao ambos
+2. Consolidar tokens — criar preset AURIA no PageShell themes
+3. Migrar auth pages para FormPage — 4 paginas candidatas perfeitas
 
 ---
 
-## Evolução desde a última auditoria
+## 7. Prompt Engineering — 78/100
 
-A auditoria de 4 fases executada em 2026-02-10 (20 agentes, 136 arquivos) trouxe melhorias significativas:
+### Sub-notas
+| Sub-area | Nota |
+|----------|------|
+| Prompt Quality e Design | 82 |
+| Output Schema e Validation | 75 |
+| Safety e Guardrails | 85 |
+| Performance e Cost | 72 |
+| Template Management | 88 |
+| Integration Robustness | 80 |
 
-- **Wizard refatorado**: 1.355 → 447 linhas (hook), 1.334 → 107 linhas (DSDStep)
-- **i18n adotado**: 0 → 400+ chaves (~80% cobertura)
-- **LGPD implementado**: data-export + delete-account + UI self-service
-- **CI melhorado**: coverage thresholds + GitHub Actions summary
-- **603 testes** passando, zero erros TypeScript
-- **Prompt management** centralizado com registry e métricas
+### Destaques Positivos
+- Prompts com expertise clinica profunda (FDI notation, Black classification)
+- Filosofia conservadora ("minima intervencao") — clinicamente responsavel
+- Defesa contra prompt injection (`sanitizeForPrompt`)
+- Post-processing safety nets (gengivoplastia, visagismo)
+- Registry pattern com metricas por execucao
+- Credit refund automatico em erros de IA
+
+### Problemas Encontrados
+- `recommend-resin` sem validacao Zod (JSON.parse manual)
+- Sem contagem real de tokens (placeholder `tokensIn: 0`)
+- Prompts com ~20-30% de redundancia em tokens
+- Sem few-shot examples para edge cases
+- Sem strip de EXIF data em fotos (risco de privacidade)
+- Sem fallback de modelo (Gemini Flash -> Pro)
+
+### Top 3 Acoes
+1. Adicionar Zod schema para `recommend-resin` — validacao de saida
+2. Strip EXIF de fotos — compliance LGPD
+3. Implementar contagem real de tokens — otimizacao de custo
+
+---
+
+## Plano de Acao Consolidado (Top 20 Prioridades)
+
+### P0 — Critico (Semana 1-2)
+
+| # | Acao | Area | Impacto | Esforco |
+|---|------|------|---------|---------|
+| 1 | Implementar free trial credits (5-10 no signup) | Product | Ativacao 30%->70% | Baixo |
+| 2 | Bloquear deploy em falha E2E | QA | Previne bugs prod | Baixo |
+| 3 | Adicionar Zod schema para `recommend-resin` | Prompts | Previne crashes | Baixo |
+| 4 | Strip EXIF data de fotos | Prompts/LGPD | Privacidade | Baixo |
+| 5 | Corrigir touch targets (min 44px) | UX | WCAG compliance | Baixo |
+
+### P1 — Alto Impacto (Semana 3-4)
+
+| # | Acao | Area | Impacto | Esforco |
+|---|------|------|---------|---------|
+| 6 | Decompor ReviewAnalysisStep.tsx (1,127 -> menos de 300 linhas) | Code | Manutenibilidade | Medio |
+| 7 | Adicionar React.memo em 10+ componentes | Code | Performance 30-50% | Baixo |
+| 8 | Implementar event tracking (20-30 eventos) | Product | Data-driven decisions | Medio |
+| 9 | Ativar email automation (welcome, digest, re-engagement) | Product | Reduz churn 20-25% | Medio |
+| 10 | Adicionar indexes em evaluations (session_id, status) | Arch | Query 5-10x faster | Baixo |
+
+### P2 — Medio Impacto (Semana 5-8)
+
+| # | Acao | Area | Impacto | Esforco |
+|---|------|------|---------|---------|
+| 11 | Resolver arquitetura dual (PageShell vs shadcn) | Design | Elimina confusao | Alto |
+| 12 | Code splitting por rota (lazy em todas as paginas) | Arch | Bundle -60% | Medio |
+| 13 | Lancar programa de referral | Product | Crescimento organico | Medio |
+| 14 | Testar fluxos de pagamento (checkout, webhook) | QA | Protege receita | Medio |
+| 15 | Implementar contagem real de tokens | Prompts | Otimizacao custo | Medio |
+
+### P3 — Melhoria Continua (Mensal)
+
+| # | Acao | Area | Impacto | Esforco |
+|---|------|------|---------|---------|
+| 16 | Subir coverage thresholds (18%->30%->45%->60%) | QA | Confiabilidade | Continuo |
+| 17 | Completar i18n (~20 strings restantes) | UX | Multi-idioma ready | Baixo |
+| 18 | Adicionar security scanning (CodeQL, Dependabot) | QA | Seguranca | Baixo |
+| 19 | Refatorar prompts para -20% tokens | Prompts | Reduz custo/latencia | Medio |
+| 20 | Criar Edge Function middleware (auth, rate limit) | Arch | Reduz LOC -40% | Medio |
+
+---
+
+## Projecao de Notas Pos-Melhorias
+
+| Area | Atual | Pos-P0/P1 | Pos-P2/P3 |
+|------|-------|-----------|-----------|
+| Arquitetura | 82 | 86 | 90 |
+| Code Quality | 78 | 84 | 88 |
+| UX e Acessibilidade | 76 | 82 | 88 |
+| QA e Testes | 64 | 72 | 82 |
+| Produto | 68 | 78 | 85 |
+| Design System | 62 | 65 | 80 |
+| Prompt Engineering | 78 | 84 | 88 |
+| **GERAL** | **73** | **79** | **86** |
+
+> Meta: de B (73) para A- (86) em ~8 semanas
+
+---
+
+## Arquivos Criticos (por frequencia de citacao entre agentes)
+
+| Arquivo | Citado por | Prioridade |
+|---------|-----------|-----------|
+| `components/wizard/ReviewAnalysisStep.tsx` (1,127 linhas) | Senior Dev, UX, Architect | P1 |
+| `components/wizard/dsd/useDSDStep.ts` (873 linhas) | Senior Dev, Architect | P1 |
+| `supabase/functions/_shared/aiSchemas.ts` | Prompt Eng, QA | P0 |
+| `supabase/functions/recommend-resin/index.ts` | Prompt Eng | P0 |
+| `apps/web/src/lib/analytics.ts` | PM, QA | P1 |
+| `.github/workflows/test.yml` | QA | P0 |
+| `apps/web/src/index.css` | Designer, UX | P2 |
+| `apps/web/eslint.config.js` | Architect, QA | P2 |
 
 ---
 
 ## Metodologia
 
-Análise realizada por **8 agentes especializados** executados em paralelo:
+- 7 agentes especialistas analisaram o codigo-fonte em paralelo
+- Cada agente leu arquivos reais, buscou padroes e avaliou contra best practices
+- Notas baseadas em evidencias concretas (nao opiniao)
+- Peso ponderado por importancia para um app clinico de IA
+- Sub-agent types: `feature-dev:code-explorer` (read-only deep analysis)
 
-1. **arch-auditor** — Conformidade com ADR-001/002, 3-layer pattern
-2. **code-quality-auditor** — TypeScript, duplicação, complexidade, smells
-3. **test-auditor** — Cobertura por camada, gaps, qualidade de testes
-4. **security-auditor** — Auth, RLS, validation, LGPD, rate limiting
-5. **i18n-auditor** — Chamadas t(), strings hardcoded, cobertura
-6. **design-auditor** — PageShell composites, tokens, responsividade
-7. **docs-auditor** — ADRs, wikilinks, frontmatter, completude
-8. **backend-auditor** — Edge functions, prompts, créditos, imports
-
-Cada agente analisou o código-fonte diretamente, sem depender de relatórios anteriores.
+### Time de Agentes
+1. **Architect** — Arquitetura 3-layer, boundaries, edge functions, DB schema, code splitting
+2. **Senior Dev** — TypeScript, complexidade, error handling, dead code, performance, security
+3. **UX Analyst** — WCAG 2.1, responsive, user flows, i18n, error UX, visual consistency
+4. **QA Engineer** — Unit tests, E2E, test quality, CI/CD, quality gates, monitoring
+5. **PM Strategist** — Analytics, monetizacao, LGPD, features, growth, competitividade
+6. **Designer** — Design system arch, components, composite adoption, tokens, docs
+7. **Prompt Engineer** — Prompt quality, schemas, safety, performance, templates, robustness
 
 ---
 
-*Gerado automaticamente em 2026-02-11 por Claude Code (Opus 4.6)*
+*Gerado em 2026-02-11 por time de 7 agentes especialistas (Claude Opus 4.6)*
+*Proximo audit recomendado: 2026-03-11 (mensal)*
