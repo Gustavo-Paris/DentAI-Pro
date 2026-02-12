@@ -109,8 +109,9 @@ interface EvalGroup {
   evaluations: EvaluationItem[];
 }
 
-/** Generates a fingerprint from a resin evaluation's protocol so identical protocols can be grouped. */
-function getProtocolFingerprint(evaluation: EvaluationItem): string {
+/** Generates a fingerprint from a resin evaluation's protocol so identical protocols can be grouped.
+ *  NOTE: Must match the getProtocolFingerprint in useGroupResult.ts */
+export function getProtocolFingerprint(evaluation: EvaluationItem): string {
   const resinKey = evaluation.resins
     ? `${evaluation.resins.name}|${evaluation.resins.manufacturer}`
     : 'unknown';
@@ -377,7 +378,7 @@ export default function EvaluationDetails() {
                                 variant="ghost"
                                 size="sm"
                                 className="text-xs h-7"
-                                onClick={() => navigate(`/result/${group.evaluations[0].id}`)}
+                                onClick={() => navigate(`/result/group/${detail.sessionId}/${encodeURIComponent(getProtocolFingerprint(group.evaluations[0]))}`)}
                               >
                                 <Eye className="w-3 h-3 mr-1" />
                                 {t('evaluation.viewProtocol')}
@@ -467,7 +468,7 @@ export default function EvaluationDetails() {
                           variant="ghost"
                           size="sm"
                           className="text-xs h-7"
-                          onClick={() => navigate(`/result/${group.evaluations[0].id}`)}
+                          onClick={() => navigate(`/result/group/${detail.sessionId}/${encodeURIComponent(getProtocolFingerprint(group.evaluations[0]))}`)}
                         >
                           <Eye className="w-3 h-3 mr-1" />
                           Ver Protocolo

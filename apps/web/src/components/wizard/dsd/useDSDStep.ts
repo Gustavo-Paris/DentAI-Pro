@@ -383,8 +383,8 @@ export function useDSDStep({
     return { layer, url: signedData?.signedUrl || null };
   }, [imageBase64, toothBounds, user]);
 
-  // Generate all layers in parallel
-  const generateAllLayers = useCallback(async (analysisData?: DSDAnalysis, initialSimulationUrl?: string | null) => {
+  // Generate all layers sequentially: L1 → composite → L2 (from L1) → composite → L3 (from L2)
+  const generateAllLayers = useCallback(async (analysisData?: DSDAnalysis) => {
     const analysis = analysisData || result?.analysis;
     if (!imageBase64 || !analysis) return;
 
@@ -396,94 +396,51 @@ export function useDSDStep({
     setLayerGenerationProgress(0);
 
     try {
-      // Split layers into non-gingival (can run in parallel) and gingival (needs Layer 2 output)
-      const parallelLayers = layerTypes.filter(t => t !== 'complete-treatment' && t !== 'root-coverage');
-      const gingivalLayers = layerTypes.filter(t => t === 'complete-treatment' || t === 'root-coverage');
-
-      // Phase 1: Generate non-gingival layers in parallel
-      const parallelResults = await Promise.allSettled(
-        parallelLayers.map(async (layerType) => {
-          // Reuse the initial simulation URL for whitening-restorations (same prompt)
-          if (layerType === 'whitening-restorations' && initialSimulationUrl) {
-            setLayerGenerationProgress(prev => prev + 1);
-            return {
-              type: layerType,
-              label: LAYER_LABELS[layerType],
-              simulation_url: initialSimulationUrl,
-              whitening_level: patientPreferences?.whiteningLevel || 'natural',
-              includes_gengivoplasty: false,
-            } as SimulationLayer;
-          }
-          const layer = await generateSingleLayer(analysis, layerType);
-          setLayerGenerationProgress(prev => prev + 1);
-          return layer;
-        })
-      );
-
-      const successfulLayers: SimulationLayer[] = [];
+      const compositedLayers: SimulationLayer[] = [];
+      const resolvedUrls: Record<string, string> = {};
       const failed: SimulationLayerType[] = [];
+      let previousLayerBase64: string | undefined;
 
-      parallelResults.forEach((r, i) => {
-        if (r.status === 'fulfilled' && r.value !== null) {
-          successfulLayers.push(r.value);
-        } else {
-          failed.push(parallelLayers[i]);
-        }
-      });
+      // Sequential chaining: each layer uses the previous layer's composited output as input
+      for (const layerType of layerTypes) {
+        // First layer (restorations-only) uses original photo; subsequent layers use previous output
+        const isFirstLayer = layerType === layerTypes[0];
+        const baseImage = isFirstLayer ? undefined : previousLayerBase64;
 
-      // Phase 2: Generate gingival layers sequentially using Layer 2 composited output as input
-      if (gingivalLayers.length > 0) {
-        // Find the whitening-restorations (Layer 2) result to use as input
-        const layer2 = successfulLayers.find(l => l.type === 'whitening-restorations');
-        let layer2Base64: string | undefined;
+        const layer = await generateSingleLayer(analysis, layerType, baseImage);
+        setLayerGenerationProgress(prev => prev + 1);
 
-        if (layer2?.simulation_url) {
-          try {
-            // Composite Layer 2 first so gingival layer gets the clean composited image
-            const { layer: compositedL2, url: compositedL2Url } = await compositeAndResolveLayer(layer2);
-            // Update Layer 2 in successfulLayers with composited version
-            const l2Idx = successfulLayers.findIndex(l => l.type === 'whitening-restorations');
-            if (l2Idx >= 0) successfulLayers[l2Idx] = compositedL2;
+        if (layer) {
+          // Composite and resolve signed URL
+          const { layer: processed, url } = await compositeAndResolveLayer(layer);
+          compositedLayers.push(processed);
+          if (url) resolvedUrls[processed.type] = url;
 
-            const l2SignedUrl = compositedL2Url || (await supabase.storage
-              .from('dsd-simulations')
-              .createSignedUrl(compositedL2.simulation_url, 3600)).data?.signedUrl;
+          // Convert composited output to base64 for use as next layer's input
+          const signedUrl = url || (processed.simulation_url
+            ? (await supabase.storage.from('dsd-simulations').createSignedUrl(processed.simulation_url, 3600)).data?.signedUrl
+            : null);
 
-            if (l2SignedUrl) {
-              layer2Base64 = await urlToBase64(l2SignedUrl);
-              logger.log('Layer 2→3 chaining: converted composited Layer 2 to base64 for gingival input');
+          if (signedUrl) {
+            try {
+              previousLayerBase64 = await urlToBase64(signedUrl);
+              logger.log(`Layer chaining: ${layerType} composited → base64 ready for next layer`);
+            } catch (err) {
+              logger.warn(`Failed to convert ${layerType} to base64 for chaining:`, err);
+              // Next layer will use original photo as fallback
             }
-          } catch (err) {
-            logger.warn('Failed to convert Layer 2 to base64 for chaining, falling back to original photo:', err);
           }
-        }
-
-        for (const layerType of gingivalLayers) {
-          const layer = await generateSingleLayer(analysis, layerType, layer2Base64);
-          setLayerGenerationProgress(prev => prev + 1);
-          if (layer) {
-            successfulLayers.push(layer);
-          } else {
-            failed.push(layerType);
-          }
+        } else {
+          failed.push(layerType);
+          // Don't break the chain — next layer will use the last successful output or original photo
         }
       }
 
       setFailedLayers(failed);
 
-      if (successfulLayers.length === 0) {
+      if (compositedLayers.length === 0) {
         setSimulationError(true);
         return;
-      }
-
-      // Apply teeth-only compositing to each layer
-      const compositedLayers: SimulationLayer[] = [];
-      const resolvedUrls: Record<string, string> = {};
-
-      for (const layer of successfulLayers) {
-        const { layer: processed, url } = await compositeAndResolveLayer(layer);
-        compositedLayers.push(processed);
-        if (url) resolvedUrls[processed.type] = url;
       }
 
       setLayers(compositedLayers);
@@ -732,10 +689,9 @@ export function useDSDStep({
         });
         refreshSubscription(); // Update credit count after consumption
 
-        // PHASE 2: Generate all simulation layers in background
+        // PHASE 2: Generate all simulation layers in background (sequential chaining)
         // Note: We pass analysis directly since state update is async
-        // Pass initial simulation_url so whitening-restorations layer can reuse it
-        generateAllLayers(data.analysis, data.simulation_url);
+        generateAllLayers(data.analysis);
       } else {
         throw new Error('Dados de análise não retornados');
       }
@@ -820,11 +776,11 @@ export function useDSDStep({
     lastCompositeSourcePathRef.current = null;
 
     try {
-      // Regenerate all layers (no initial URL — force fresh generation)
+      // Regenerate all layers (sequential chaining)
       setLayers([]);
       setLayerUrls({});
       setActiveLayerIndex(0);
-      await generateAllLayers(result.analysis, null);
+      await generateAllLayers(result.analysis);
       toast.success(t('toasts.dsd.regenerated'));
     } catch (error: unknown) {
       logger.error('Regenerate simulation error:', error);
@@ -835,7 +791,11 @@ export function useDSDStep({
   };
 
   const handleContinue = () => {
-    onComplete(result);
+    // Include gingivoplastyApproved in the result so downstream (review step, submit) can use it
+    const resultWithGingivo = result
+      ? { ...result, gingivoplastyApproved: gingivoplastyApproved === true }
+      : result;
+    onComplete(resultWithGingivo);
   };
 
   const handleSelectWhiteningLevel = (level: 'natural' | 'white' | 'hollywood', url: string) => {

@@ -103,9 +103,11 @@ export function useDSDIntegration({
         });
       }
 
-      // Auto-add gengivoplasty case if DSD layers include complete-treatment with gengivoplasty
+      // Auto-add gengivoplasty case if user explicitly approved in DSD step,
+      // OR if DSD layers include complete-treatment with gengivoplasty,
       // OR if any suggestion has treatment_indication: "gengivoplastia"
-      const hasGengivoplasty = result?.layers?.some(l => l.includes_gengivoplasty) ||
+      const hasGengivoplasty = result?.gingivoplastyApproved ||
+        result?.layers?.some(l => l.includes_gengivoplasty) ||
         result?.analysis?.suggestions?.some(s => s.treatment_indication === 'gengivoplastia');
       if (hasGengivoplasty) {
         // Add a virtual "GENGIVO" tooth entry for gengivoplasty

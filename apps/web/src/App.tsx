@@ -43,6 +43,7 @@ const Patients = lazy(() => import("@/pages/Patients"));
 const PatientProfile = lazy(() => import("@/pages/PatientProfile"));
 const Profile = lazy(() => import("@/pages/Profile"));
 const Pricing = lazy(() => import("@/pages/Pricing"));
+const GroupResult = lazy(() => import("@/pages/GroupResult"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -112,6 +113,7 @@ const App = () => (
               <Route path="/dashboard" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><Dashboard /></Suspense></ErrorBoundary>} />
               <Route path="/evaluations" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><Evaluations /></Suspense></ErrorBoundary>} />
               <Route path="/evaluation/:evaluationId" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><EvaluationDetails /></Suspense></ErrorBoundary>} />
+              <Route path="/result/group/:sessionId/:fingerprint" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><GroupResult /></Suspense></ErrorBoundary>} />
               <Route path="/result/:id" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><Result /></Suspense></ErrorBoundary>} />
               <Route path="/inventory" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><Inventory /></Suspense></ErrorBoundary>} />
               <Route path="/patients" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><Patients /></Suspense></ErrorBoundary>} />

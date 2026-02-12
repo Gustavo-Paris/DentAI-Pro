@@ -295,6 +295,43 @@ Output: Same photo with ONLY teeth corrected.`
 
 // --- Layer-specific builders ---
 
+function buildWhiteningOnlyPrompt(params: Params): string {
+  const absolutePreservation = buildAbsolutePreservation()
+  const qualityRequirements = buildQualityRequirements(params)
+
+  return `DENTAL PHOTO EDIT - WHITENING ONLY (PRE-PROCESSED INPUT)
+
+${absolutePreservation}
+
+⚠️ CRITICAL CONTEXT: The input image ALREADY has structurally corrected teeth from a previous simulation step.
+The tooth shapes, contours, and proportions are FINAL. Do NOT change any structural aspect of the teeth.
+Your ONLY task is to apply WHITENING to the already-corrected teeth.
+
+⚠️ TEETH STRUCTURE PRESERVATION (PRE-PROCESSED IMAGE):
+- The teeth in this image have ALREADY been corrected (chips filled, gaps closed, shapes harmonized)
+- Do NOT re-shape, re-contour, or alter tooth structure in ANY way
+- Tooth contours, proportions, gap closures = COPY EXACTLY from input
+- The ONLY change you may make is the COLOR/BRIGHTNESS of the teeth
+
+#1 TASK - WHITENING (${params.whiteningIntensity}):
+${params.colorInstruction}
+${params.whiteningLevel === 'hollywood' ? '⚠️ HOLLYWOOD = MAXIMUM BRIGHTNESS. Teeth must be DRAMATICALLY WHITE like porcelain veneers.' : ''}
+
+WHITENING RULES:
+- Apply uniform whitening across ALL visible teeth
+- Maintain natural color gradient: slightly more saturated at cervical → lighter at incisal
+- Preserve the natural translucency of the incisal third
+- Keep micro-texture and surface characteristics (periquimácies, reflexos de luz)
+- Do NOT make teeth look "painted" or uniformly opaque
+- The whitening must be VISUALLY EVIDENT compared to the input
+
+${PROPORTION_RULES}
+
+${qualityRequirements}
+
+Output: Same photo with teeth at the target whitening level. Tooth shapes must be pixel-identical to input.`
+}
+
 function buildRestorationsOnlyPrompt(params: Params): string {
   const absolutePreservation = buildAbsolutePreservation()
   const baseCorrections = buildBaseCorrections()
@@ -538,6 +575,9 @@ export const dsdSimulation: PromptDefinition<Params> = {
         case 'root-coverage':
           return buildRootCoveragePrompt(params)
         case 'whitening-restorations':
+          if (params.inputAlreadyProcessed) {
+            return buildWhiteningOnlyPrompt(params)
+          }
           // Falls through to standard caseType routing below
           break
       }
