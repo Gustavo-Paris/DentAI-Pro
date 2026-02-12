@@ -97,6 +97,9 @@ export function useDSDStep({
   const [layersGenerating, setLayersGenerating] = useState(false);
   const [layerGenerationProgress, setLayerGenerationProgress] = useState(0);
   const [failedLayers, setFailedLayers] = useState<SimulationLayerType[]>([]);
+  // Raw (non-composited) Gemini output URLs — used for layer chaining
+  // (composited images go through canvas re-encoding which can trigger Gemini 400 errors)
+  const rawLayerUrlsRef = useRef<Record<string, string>>({});
   const [retryingLayer, setRetryingLayer] = useState<SimulationLayerType | null>(null);
 
   // Gengivoplasty approval: null = not decided, true = approved, false = discarded
@@ -383,7 +386,9 @@ export function useDSDStep({
     return { layer, url: signedData?.signedUrl || null };
   }, [imageBase64, toothBounds, user]);
 
-  // Generate all layers sequentially: L1 → composite → L2 (from L1) → composite → L3 (from L2)
+  // Generate all layers sequentially: L1 → L2 (from raw L1) → L3 (from raw L2)
+  // We use raw Gemini output (not composited) for chaining — composited images go through
+  // canvas re-encoding which can trigger Gemini's content filters on subsequent calls.
   const generateAllLayers = useCallback(async (analysisData?: DSDAnalysis) => {
     const analysis = analysisData || result?.analysis;
     if (!imageBase64 || !analysis) return;
@@ -399,37 +404,39 @@ export function useDSDStep({
       const compositedLayers: SimulationLayer[] = [];
       const resolvedUrls: Record<string, string> = {};
       const failed: SimulationLayerType[] = [];
-      let previousLayerBase64: string | undefined;
+      let previousRawLayerBase64: string | undefined;
 
-      // Sequential chaining: each layer uses the previous layer's composited output as input
+      // Sequential chaining: each layer uses the previous layer's RAW Gemini output as input
       for (const layerType of layerTypes) {
-        // First layer (restorations-only) uses original photo; subsequent layers use previous output
+        // First layer (restorations-only) uses original photo; subsequent layers use previous raw output
         const isFirstLayer = layerType === layerTypes[0];
-        const baseImage = isFirstLayer ? undefined : previousLayerBase64;
+        const baseImage = isFirstLayer ? undefined : previousRawLayerBase64;
 
         const layer = await generateSingleLayer(analysis, layerType, baseImage);
         setLayerGenerationProgress(prev => prev + 1);
 
         if (layer) {
-          // Composite and resolve signed URL
+          // Store raw URL and convert to base64 for chaining BEFORE compositing
+          // (composited images go through canvas re-encoding which can cause Gemini 400 errors)
+          if (layer.simulation_url) {
+            rawLayerUrlsRef.current[layerType] = layer.simulation_url;
+            try {
+              const { data: rawSignedData } = await supabase.storage
+                .from('dsd-simulations')
+                .createSignedUrl(layer.simulation_url, 3600);
+              if (rawSignedData?.signedUrl) {
+                previousRawLayerBase64 = await urlToBase64(rawSignedData.signedUrl);
+                logger.log(`Layer chaining: ${layerType} raw output → base64 ready for next layer`);
+              }
+            } catch (err) {
+              logger.warn(`Failed to convert ${layerType} raw output to base64 for chaining:`, err);
+            }
+          }
+
+          // Composite and resolve signed URL (for display only)
           const { layer: processed, url } = await compositeAndResolveLayer(layer);
           compositedLayers.push(processed);
           if (url) resolvedUrls[processed.type] = url;
-
-          // Convert composited output to base64 for use as next layer's input
-          const signedUrl = url || (processed.simulation_url
-            ? (await supabase.storage.from('dsd-simulations').createSignedUrl(processed.simulation_url, 3600)).data?.signedUrl
-            : null);
-
-          if (signedUrl) {
-            try {
-              previousLayerBase64 = await urlToBase64(signedUrl);
-              logger.log(`Layer chaining: ${layerType} composited → base64 ready for next layer`);
-            } catch (err) {
-              logger.warn(`Failed to convert ${layerType} to base64 for chaining:`, err);
-              // Next layer will use original photo as fallback
-            }
-          }
         } else {
           failed.push(layerType);
           // Don't break the chain — next layer will use the last successful output or original photo
@@ -828,7 +835,7 @@ export function useDSDStep({
     if (url) setSimulationImageUrl(url);
   };
 
-  // Gengivoplasty approval: approve and generate Layer 3 using Layer 2 output as input
+  // Gengivoplasty approval: approve and generate Layer 3 using Layer 2 RAW output as input
   const handleApproveGingivoplasty = useCallback(async () => {
     setGingivoplastyApproved(true);
     const analysis = result?.analysis;
@@ -837,15 +844,20 @@ export function useDSDStep({
     // Generate the complete-treatment layer now
     setRetryingLayer('complete-treatment');
     try {
-      // Find Layer 2 (whitening-restorations) and convert its composited image to base64
+      // Find Layer 2 (whitening-restorations) RAW Gemini output (not composited) for chaining
       let layer2Base64: string | undefined;
-      const layer2Url = layerUrls['whitening-restorations'];
-      if (layer2Url) {
+      const rawUrl = rawLayerUrlsRef.current['whitening-restorations'];
+      if (rawUrl) {
         try {
-          layer2Base64 = await urlToBase64(layer2Url);
-          logger.log('Gengivoplasty approval: using Layer 2 composited image as input');
+          const { data: rawSignedData } = await supabase.storage
+            .from('dsd-simulations')
+            .createSignedUrl(rawUrl, 3600);
+          if (rawSignedData?.signedUrl) {
+            layer2Base64 = await urlToBase64(rawSignedData.signedUrl);
+            logger.log('Gengivoplasty approval: using Layer 2 raw Gemini output as input');
+          }
         } catch (err) {
-          logger.warn('Failed to convert Layer 2 URL to base64, falling back to original photo:', err);
+          logger.warn('Failed to convert Layer 2 raw URL to base64, falling back to original photo:', err);
         }
       }
 
@@ -866,7 +878,7 @@ export function useDSDStep({
     } finally {
       setRetryingLayer(null);
     }
-  }, [result?.analysis, imageBase64, layerUrls, generateSingleLayer, compositeAndResolveLayer]);
+  }, [result?.analysis, imageBase64, generateSingleLayer, compositeAndResolveLayer]);
 
   // Gengivoplasty discard
   const handleDiscardGingivoplasty = useCallback(() => {
