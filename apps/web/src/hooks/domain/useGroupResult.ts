@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/data';
-import { evaluations } from '@/data';
+import { evaluations, storage } from '@/data';
 import type { Resin, StratificationProtocol, ProtocolLayer, CementationProtocol } from '@/types/protocol';
 import type { SimulationLayer } from '@/types/dsd';
 import { toast } from 'sonner';
@@ -157,8 +157,7 @@ export function useGroupResult() {
     queryKey: ['group-photo', primaryEval?.photo_frontal],
     queryFn: async () => {
       if (!primaryEval?.photo_frontal) return null;
-      const { data } = await supabase.storage.from('clinical-photos').createSignedUrl(primaryEval.photo_frontal, SIGNED_URL_EXPIRY_SECONDS);
-      return data?.signedUrl || null;
+      return storage.getSignedPhotoUrl(primaryEval.photo_frontal, SIGNED_URL_EXPIRY_SECONDS);
     },
     enabled: !!primaryEval?.photo_frontal,
     staleTime: (SIGNED_URL_EXPIRY_SECONDS - 60) * 1000,

@@ -18,6 +18,7 @@ export * as wizard from './wizard';
 export * as privacy from './privacy';
 export * as email from './email';
 export * as referral from './referral';
+export * as storage from './storage';
 
 // Re-export client for edge cases where direct access is needed
 export { supabase } from './client';

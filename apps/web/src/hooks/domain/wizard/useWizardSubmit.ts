@@ -43,14 +43,14 @@ export interface UseWizardSubmitParams {
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-function getToothData(
+export function getToothData(
   analysisResult: PhotoAnalysisResult | null,
   toothNumber: string,
 ): DetectedTooth | undefined {
   return analysisResult?.detected_teeth?.find((t) => t.tooth === toothNumber);
 }
 
-function getToothTreatment(
+export function getToothTreatment(
   tooth: string,
   toothTreatments: Record<string, TreatmentType>,
   analysisResult: PhotoAnalysisResult | null,
@@ -62,6 +62,19 @@ function getToothTreatment(
     formData.treatmentType ||
     'resina'
   );
+}
+
+export function normalizeTreatment(treatment: string): TreatmentType {
+  const mapping: Record<string, TreatmentType> = {
+    porcelain: 'porcelana',
+    resin: 'resina',
+    crown: 'coroa',
+    implant: 'implante',
+    endodontics: 'endodontia',
+    referral: 'encaminhamento',
+    gingivoplasty: 'gengivoplastia',
+  };
+  return mapping[treatment] || (treatment as TreatmentType);
 }
 
 // ---------------------------------------------------------------------------
@@ -197,11 +210,7 @@ export function useWizardSubmit({
           const toothData = getToothData(analysisResult, tooth);
           const treatmentType = getToothTreatment(tooth, toothTreatments, analysisResult, formData);
           // Normalize treatment type: Gemini sometimes returns English values
-          const normalizedTreatment = ({
-            porcelain: 'porcelana', resin: 'resina', crown: 'coroa',
-            implant: 'implante', endodontics: 'endodontia', referral: 'encaminhamento',
-            gingivoplasty: 'gengivoplastia',
-          } as Record<string, TreatmentType>)[treatmentType] || treatmentType;
+          const normalizedTreatment = normalizeTreatment(treatmentType);
 
           let evaluationId: string | null = null;
 
