@@ -386,9 +386,9 @@ export function useDSDStep({
     return { layer, url: signedData?.signedUrl || null };
   }, [imageBase64, toothBounds, user]);
 
-  // Generate all layers sequentially: L1 → L2 (from raw L1) → L3 (from raw L2)
-  // We use raw Gemini output (not composited) for chaining — composited images go through
-  // canvas re-encoding which can trigger Gemini's content filters on subsequent calls.
+  // Generate layers: L1 and L2 in parallel from original photo, then L3 chained from L2's raw output.
+  // Gemini cannot reliably re-edit its own output for "whitening only", so L1 (corrections)
+  // and L2 (corrections+whitening) are independent. Only L3 (gengivoplasty) chains from L2.
   const generateAllLayers = useCallback(async (analysisData?: DSDAnalysis) => {
     const analysis = analysisData || result?.analysis;
     if (!imageBase64 || !analysis) return;
@@ -404,42 +404,66 @@ export function useDSDStep({
       const compositedLayers: SimulationLayer[] = [];
       const resolvedUrls: Record<string, string> = {};
       const failed: SimulationLayerType[] = [];
-      let previousRawLayerBase64: string | undefined;
 
-      // Sequential chaining: each layer uses the previous layer's RAW Gemini output as input
-      for (const layerType of layerTypes) {
-        // First layer (restorations-only) uses original photo; subsequent layers use previous raw output
-        const isFirstLayer = layerType === layerTypes[0];
-        const baseImage = isFirstLayer ? undefined : previousRawLayerBase64;
+      // Separate layers: independent (from original) vs chained (from previous output)
+      const chainedTypes: SimulationLayerType[] = ['complete-treatment', 'root-coverage'];
+      const independentLayers = layerTypes.filter(t => !chainedTypes.includes(t));
+      const dependentLayers = layerTypes.filter(t => chainedTypes.includes(t));
 
-        const layer = await generateSingleLayer(analysis, layerType, baseImage);
+      // Phase 1: Generate independent layers in parallel from original photo
+      const independentResults = await Promise.allSettled(
+        independentLayers.map(layerType => generateSingleLayer(analysis, layerType)),
+      );
+
+      for (let i = 0; i < independentLayers.length; i++) {
+        const layerType = independentLayers[i];
+        const result = independentResults[i];
         setLayerGenerationProgress(prev => prev + 1);
 
-        if (layer) {
-          // Store raw URL and convert to base64 for chaining BEFORE compositing
-          // (composited images go through canvas re-encoding which can cause Gemini 400 errors)
+        if (result.status === 'fulfilled' && result.value) {
+          const layer = result.value;
+          // Store raw URL for potential chaining by dependent layers
           if (layer.simulation_url) {
             rawLayerUrlsRef.current[layerType] = layer.simulation_url;
-            try {
-              const { data: rawSignedData } = await supabase.storage
-                .from('dsd-simulations')
-                .createSignedUrl(layer.simulation_url, 3600);
-              if (rawSignedData?.signedUrl) {
-                previousRawLayerBase64 = await urlToBase64(rawSignedData.signedUrl);
-                logger.log(`Layer chaining: ${layerType} raw output → base64 ready for next layer`);
-              }
-            } catch (err) {
-              logger.warn(`Failed to convert ${layerType} raw output to base64 for chaining:`, err);
-            }
           }
-
-          // Composite and resolve signed URL (for display only)
           const { layer: processed, url } = await compositeAndResolveLayer(layer);
           compositedLayers.push(processed);
           if (url) resolvedUrls[processed.type] = url;
         } else {
           failed.push(layerType);
-          // Don't break the chain — next layer will use the last successful output or original photo
+        }
+      }
+
+      // Phase 2: Generate dependent layers chained from L2 (whitening-restorations) raw output
+      for (const layerType of dependentLayers) {
+        let baseImage: string | undefined;
+        const rawL2Url = rawLayerUrlsRef.current['whitening-restorations'];
+        if (rawL2Url) {
+          try {
+            const { data: rawSignedData } = await supabase.storage
+              .from('dsd-simulations')
+              .createSignedUrl(rawL2Url, 3600);
+            if (rawSignedData?.signedUrl) {
+              baseImage = await urlToBase64(rawSignedData.signedUrl);
+              logger.log(`Layer chaining: using whitening-restorations raw output as input for ${layerType}`);
+            }
+          } catch (err) {
+            logger.warn(`Failed to convert L2 raw output to base64 for ${layerType}:`, err);
+          }
+        }
+
+        const layer = await generateSingleLayer(analysis, layerType, baseImage);
+        setLayerGenerationProgress(prev => prev + 1);
+
+        if (layer) {
+          if (layer.simulation_url) {
+            rawLayerUrlsRef.current[layerType] = layer.simulation_url;
+          }
+          const { layer: processed, url } = await compositeAndResolveLayer(layer);
+          compositedLayers.push(processed);
+          if (url) resolvedUrls[processed.type] = url;
+        } else {
+          failed.push(layerType);
         }
       }
 
