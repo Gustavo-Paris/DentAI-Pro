@@ -362,3 +362,5 @@ export const ToothSelectionCard = memo(function ToothSelectionCard({
     </Card>
   );
 });
+
+export default ToothSelectionCard;

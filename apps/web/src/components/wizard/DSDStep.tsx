@@ -8,13 +8,14 @@ import type {
   DetectedToothForMask,
   ClinicalToothFinding,
 } from '@/types/dsd';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, lazy, Suspense } from 'react';
 import { trackEvent } from '@/lib/analytics';
 import { useDSDStep } from './dsd/useDSDStep';
 import { DSDLoadingState } from './dsd/DSDLoadingState';
 import { DSDErrorState } from './dsd/DSDErrorState';
-import { DSDAnalysisView } from './dsd/DSDAnalysisView';
+const DSDAnalysisView = lazy(() => import('./dsd/DSDAnalysisView'));
 import { DSDInitialState } from './dsd/DSDInitialState';
+import { ComponentSkeleton } from '@/components/ui/skeleton-wrapper';
 
 // Re-export types for backward compatibility with existing importers
 export type { TreatmentIndication, DSDSuggestion, DSDAnalysis, DSDResult };
@@ -75,6 +76,7 @@ export function DSDStep(props: DSDStepProps) {
   // Result state
   if (state.result) {
     return (
+      <Suspense fallback={<ComponentSkeleton height="600px" />}>
       <DSDAnalysisView
         result={state.result}
         imageBase64={state.imageBase64}
@@ -114,6 +116,7 @@ export function DSDStep(props: DSDStepProps) {
         onApproveGingivoplasty={state.handleApproveGingivoplasty}
         onDiscardGingivoplasty={state.handleDiscardGingivoplasty}
       />
+      </Suspense>
     );
   }
 

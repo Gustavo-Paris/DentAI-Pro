@@ -1,9 +1,10 @@
 /* eslint-disable react-refresh/only-export-components */
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Info } from 'lucide-react';
 import type { Patient } from '@/components/PatientAutocomplete';
 import { useSpeechToText } from '@/hooks/useSpeechToText';
+import { ComponentSkeleton } from '@/components/ui/skeleton-wrapper';
 
 // Re-export constants for backward compatibility
 export { TREATMENT_LABEL_KEYS, TREATMENT_DESC_KEYS } from './review/review-constants';
@@ -12,7 +13,7 @@ export { TREATMENT_LABEL_KEYS, TREATMENT_DESC_KEYS } from './review/review-const
 import { AiConfidenceBanner } from './review/AiConfidenceBanner';
 import { TreatmentBanners } from './review/TreatmentBanners';
 import { AnalysisWarnings } from './review/AnalysisWarnings';
-import { ToothSelectionCard } from './review/ToothSelectionCard';
+const ToothSelectionCard = lazy(() => import('./review/ToothSelectionCard'));
 import { PatientDataSection } from './review/PatientDataSection';
 import { ReviewFormAccordion } from './review/ReviewFormAccordion';
 import { CaseSummaryCard } from './review/CaseSummaryCard';
@@ -188,15 +189,17 @@ export function ReviewAnalysisStep({
 
       {/* 2. Tooth Selection Cards */}
       {hasMultipleTeeth && (
-        <ToothSelectionCard
-          analysisResult={analysisResult!}
-          selectedTeeth={selectedTeeth}
-          onSelectedTeethChange={onSelectedTeethChange}
-          toothTreatments={toothTreatments}
-          onToothTreatmentChange={onToothTreatmentChange}
-          originalToothTreatments={originalToothTreatments}
-          onRestoreAiSuggestion={onRestoreAiSuggestion}
-        />
+        <Suspense fallback={<ComponentSkeleton height="280px" />}>
+          <ToothSelectionCard
+            analysisResult={analysisResult!}
+            selectedTeeth={selectedTeeth}
+            onSelectedTeethChange={onSelectedTeethChange}
+            toothTreatments={toothTreatments}
+            onToothTreatmentChange={onToothTreatmentChange}
+            originalToothTreatments={originalToothTreatments}
+            onRestoreAiSuggestion={onRestoreAiSuggestion}
+          />
+        </Suspense>
       )}
 
       {/* 3. Observations */}
