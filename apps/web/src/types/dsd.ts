@@ -47,6 +47,8 @@ export interface DSDResult {
   simulation_note?: string;
   /** Multi-layer simulations (restorations-only, whitening-restorations, complete-treatment) */
   layers?: SimulationLayer[];
+  /** Whether the user approved gengivoplasty in the DSD step */
+  gingivoplastyApproved?: boolean;
 }
 
 // ---------------------------------------------------------------------------
