@@ -9,7 +9,7 @@ const operationConfig: Record<string, { labelKey: string; icon: typeof Camera; c
   dsd_simulation: { labelKey: 'components.pricing.creditUsage.dsdSimulation', icon: Sparkles, color: 'text-purple-500' },
 };
 
-function formatRelativeDate(dateStr: string): string {
+function formatRelativeDate(dateStr: string, t: (key: string, opts?: Record<string, unknown>) => string): string {
   const date = new Date(dateStr);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -17,10 +17,10 @@ function formatRelativeDate(dateStr: string): string {
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMin < 1) return 'Agora';
-  if (diffMin < 60) return `${diffMin}min atrás`;
-  if (diffHours < 24) return `${diffHours}h atrás`;
-  if (diffDays < 7) return `${diffDays}d atrás`;
+  if (diffMin < 1) return t('components.creditUsage.now');
+  if (diffMin < 60) return t('components.creditUsage.minutesAgo', { count: diffMin });
+  if (diffHours < 24) return t('components.creditUsage.hoursAgo', { count: diffHours });
+  if (diffDays < 7) return t('components.creditUsage.daysAgo', { count: diffDays });
   return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
 }
 
@@ -92,7 +92,7 @@ export function CreditUsageHistory() {
                     <div>
                       <p className="text-sm font-medium">{config.labelKey ? t(config.labelKey) : entry.operation}</p>
                       <p className="text-xs text-muted-foreground">
-                        {formatRelativeDate(entry.created_at)}
+                        {formatRelativeDate(entry.created_at, t)}
                       </p>
                     </div>
                   </div>

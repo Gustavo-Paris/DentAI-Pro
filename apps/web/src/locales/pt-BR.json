@@ -288,6 +288,7 @@
     "emptyTitle": "Nenhuma avaliação encontrada",
     "emptyDescription": "Você ainda não criou nenhuma avaliação.",
     "emptyAction": "Criar primeira avaliação",
+    "viewEvaluationOf": "Ver avaliação de {{name}}",
     "paginationItems": "avaliações",
     "patientNoName": "Paciente sem nome",
     "new": "Nova",
@@ -1005,6 +1006,7 @@
         },
         "simulationViewer": {
           "beforeAfter": "Comparação Antes/Depois",
+          "before": "Antes",
           "annotations": "Marcações",
           "adjusting": "Ajustando...",
           "generating": "Gerando...",
@@ -1431,6 +1433,101 @@
       "uploading": "Carregando foto...",
       "addPhoto": "Adicionar foto: {{label}}",
       "uploadButton": "Carregar foto"
+    },
+    "creditConfirm": {
+      "title": "Confirmar uso de créditos",
+      "currentBalance": "Saldo atual",
+      "afterOperation": "Após operação",
+      "willCost": "custará",
+      "credit_one": "{{count}} crédito",
+      "credit_other": "{{count}} créditos",
+      "credits": "créditos"
+    },
+    "cookieConsent": {
+      "ariaLabel": "Consentimento de cookies",
+      "essentialOnly": "Apenas essenciais",
+      "acceptAll": "Aceitar todos",
+      "message": "Utilizamos cookies essenciais para o funcionamento do site e cookies opcionais para monitoramento de erros (Sentry). Ao clicar em \"Aceitar todos\", você consente com o uso de todos os cookies conforme a",
+      "privacyLink": "Política de Privacidade",
+      "lgpdSuffix": "e a LGPD (Lei 13.709/2018)."
+    },
+    "stratification": {
+      "colorAnalysis": "Análise de Cor",
+      "baseShade": "Cor Base",
+      "cervical": "Cervical",
+      "body": "Corpo",
+      "incisal": "Incisal",
+      "specialEffects": "Efeitos especiais",
+      "layerProtocol": "Protocolo de Camadas",
+      "textureFinishing": "Textura e Acabamento",
+      "textureNotes": "Notas de textura",
+      "characteristics": "Características",
+      "recommendations": "Recomendações"
+    },
+    "caseSummary": {
+      "aestheticFunctional": "Restauração funcional com boa estética — 2-3 camadas",
+      "aestheticEsthetic": "Mimetismo natural, estratificação completa — 4-5 camadas com efeitos opcionais",
+      "aestheticBasic": "Restauração funcional, estética secundária",
+      "aestheticHigh": "Mimetismo natural exigido, paciente atento aos detalhes",
+      "aestheticVeryHigh": "DSD ativo, harmonização completa, estética de excelência",
+      "aestheticDefault": "Nível estético selecionado"
+    },
+    "veneerPrep": {
+      "waxupStep1": "Moldagem de estudo (alginato ou silicone de adição)",
+      "waxupStep2": "Vazamento em gesso tipo IV",
+      "waxupStep3": "Enceramento dos dentes envolvidos com cera para escultura",
+      "waxupStep4": "Aprovação do enceramento pelo paciente",
+      "mockupStep1": "Moldagem do enceramento com silicone de condensação (muralha)",
+      "mockupStep2": "Preenchimento da muralha com resina bisacrílica",
+      "mockupStep3": "Posicionamento em boca sobre os dentes sem preparo",
+      "mockupStep4": "Avaliação estética com o paciente (proporção, cor, forma)",
+      "mockupStep5": "Ajustes e aprovação final antes do preparo",
+      "bur1Name": "Broca esférica diamantada (1012)",
+      "bur1Purpose": "Sulcos de orientação de profundidade",
+      "bur2Name": "Broca tronco-cônica (2135)",
+      "bur2Purpose": "Desgaste vestibular controlado",
+      "bur3Name": "Broca chanfro (2068)",
+      "bur3Purpose": "Término cervical em chanfro",
+      "bur4Name": "Broca multilaminada (9714)",
+      "bur4Purpose": "Acabamento e refinamento do preparo",
+      "prepNote1": "A profundidade de desgaste varia conforme a estrutura dental remanescente",
+      "prepNote2": "Desgaste vestibular: 0,3 a 0,5mm para laminados ultrafinos; 0,5 a 0,7mm para facetas convencionais",
+      "prepNote3": "Término cervical: chanfro leve ou ombro arredondado ao nível gengival ou ligeiramente subgengival",
+      "prepNote4": "Extensão incisal: manter em esmalte quando possível; envolver bordo incisal se necessário",
+      "prepNote5": "Extensão proximal: manter ponto de contato quando possível"
+    },
+    "creditUsage": {
+      "now": "Agora",
+      "minutesAgo": "{{count}}min atrás",
+      "hoursAgo": "{{count}}h atrás",
+      "daysAgo": "{{count}}d atrás"
+    },
+    "referral": {
+      "whatsAppMessage": "Estou usando o AURIA para planejamento clínico com IA. Use meu código {{code}} e ganhe 5 créditos bônus! {{url}}"
+    },
+    "groupResult": {
+      "unifiedProtocol": "Protocolo Unificado",
+      "teeth": "dentes",
+      "applyIdenticalProtocol": "Aplicar protocolo idêntico para:",
+      "unifiedProtocolBreadcrumb": "Protocolo Unificado ({{count}} dentes)"
+    },
+    "stepIndicator": {
+      "photo": "Foto",
+      "preferences": "Preferências",
+      "analysis": "Análise",
+      "dsd": "DSD",
+      "review": "Revisão",
+      "result": "Resultado"
+    },
+    "evaluationDetail": {
+      "gingiva": "Gengiva",
+      "moreOptions": "Mais opções",
+      "viewDSD": "Ver DSD",
+      "viewProtocol": "Ver Protocolo",
+      "teethCount": "{{count}} dentes: {{teeth}}"
+    },
+    "resinLegend": {
+      "label": "Legenda:"
     }
   }
 }

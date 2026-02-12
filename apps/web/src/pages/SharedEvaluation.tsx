@@ -219,7 +219,7 @@ export default function SharedEvaluation() {
                 <ComparisonSlider
                   beforeImage={beforeImageUrl}
                   afterImage={activeAfterImage}
-                  afterLabel={activeLayer?.label || 'Simulação DSD'}
+                  afterLabel={activeLayer?.label || t('dsd.simulation')}
                 />
                 <ProportionsCard analysis={analysis} />
               </CardContent>

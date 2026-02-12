@@ -25,7 +25,7 @@ export function ReferralCard() {
   }
 
   const whatsAppMessage = encodeURIComponent(
-    `Estou usando o AURIA para planejamento clínico com IA. Use meu código ${code} e ganhe 5 créditos bônus! ${shareUrl}`,
+    t('components.referral.whatsAppMessage', { code, url: shareUrl }),
   );
   const whatsAppUrl = `https://wa.me/?text=${whatsAppMessage}`;
 

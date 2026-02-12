@@ -1,41 +1,48 @@
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { ClipboardList, Layers, Wrench, Ruler } from 'lucide-react';
 
-const DIAGNOSTIC_WAXUP_STEPS = [
-  'Moldagem de estudo (alginato ou silicone de adição)',
-  'Vazamento em gesso tipo IV',
-  'Enceramento dos dentes envolvidos com cera para escultura',
-  'Aprovação do enceramento pelo paciente',
-];
+const WAXUP_KEYS = [
+  'components.veneerPrep.waxupStep1',
+  'components.veneerPrep.waxupStep2',
+  'components.veneerPrep.waxupStep3',
+  'components.veneerPrep.waxupStep4',
+] as const;
 
-const MOCKUP_STEPS = [
-  'Moldagem do enceramento com silicone de condensação (muralha)',
-  'Preenchimento da muralha com resina bisacrílica',
-  'Posicionamento em boca sobre os dentes sem preparo',
-  'Avaliação estética com o paciente (proporção, cor, forma)',
-  'Ajustes e aprovação final antes do preparo',
-];
+const MOCKUP_KEYS = [
+  'components.veneerPrep.mockupStep1',
+  'components.veneerPrep.mockupStep2',
+  'components.veneerPrep.mockupStep3',
+  'components.veneerPrep.mockupStep4',
+  'components.veneerPrep.mockupStep5',
+] as const;
 
-const BURS = [
-  { name: 'Broca esférica diamantada (1012)', purpose: 'Sulcos de orientação de profundidade' },
-  { name: 'Broca tronco-cônica (2135)', purpose: 'Desgaste vestibular controlado' },
-  { name: 'Broca chanfro (2068)', purpose: 'Término cervical em chanfro' },
-  { name: 'Broca multilaminada (9714)', purpose: 'Acabamento e refinamento do preparo' },
-];
+const BUR_KEYS = [
+  { nameKey: 'components.veneerPrep.bur1Name', purposeKey: 'components.veneerPrep.bur1Purpose' },
+  { nameKey: 'components.veneerPrep.bur2Name', purposeKey: 'components.veneerPrep.bur2Purpose' },
+  { nameKey: 'components.veneerPrep.bur3Name', purposeKey: 'components.veneerPrep.bur3Purpose' },
+  { nameKey: 'components.veneerPrep.bur4Name', purposeKey: 'components.veneerPrep.bur4Purpose' },
+] as const;
 
-const PREP_NOTES = [
-  'A profundidade de desgaste varia conforme a estrutura dental remanescente',
-  'Desgaste vestibular: 0,3 a 0,5mm para laminados ultrafinos; 0,5 a 0,7mm para facetas convencionais',
-  'Término cervical: chanfro leve ou ombro arredondado ao nível gengival ou ligeiramente subgengival',
-  'Extensão incisal: manter em esmalte quando possível; envolver bordo incisal se necessário',
-  'Extensão proximal: manter ponto de contato quando possível',
-];
+const PREP_NOTE_KEYS = [
+  'components.veneerPrep.prepNote1',
+  'components.veneerPrep.prepNote2',
+  'components.veneerPrep.prepNote3',
+  'components.veneerPrep.prepNote4',
+  'components.veneerPrep.prepNote5',
+] as const;
 
 export function VeneerPreparationCard() {
   const { t } = useTranslation();
+
+  const waxupSteps = useMemo(() => WAXUP_KEYS.map(k => t(k)), [t]);
+  const mockupSteps = useMemo(() => MOCKUP_KEYS.map(k => t(k)), [t]);
+  const burs = useMemo(() => BUR_KEYS.map(b => ({ name: t(b.nameKey), purpose: t(b.purposeKey) })), [t]);
+  const prepNotes = useMemo(() => PREP_NOTE_KEYS.map(k => t(k)), [t]);
+
   return (
     <div className="space-y-4">
       <Card className="border-amber-400/30 bg-amber-50 dark:bg-amber-950/20">
@@ -64,7 +71,7 @@ export function VeneerPreparationCard() {
               {t('components.protocol.veneerPrep.waxupDesc')}
             </p>
             <ol className="space-y-2">
-              {DIAGNOSTIC_WAXUP_STEPS.map((step, i) => (
+              {waxupSteps.map((step, i) => (
                 <li key={i} className="flex items-start gap-3 text-sm">
                   <div className="flex-shrink-0 w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-xs font-medium text-blue-600 dark:text-blue-400">
                     {i + 1}
@@ -89,7 +96,7 @@ export function VeneerPreparationCard() {
               {t('components.protocol.veneerPrep.mockupDesc')}
             </p>
             <ol className="space-y-2">
-              {MOCKUP_STEPS.map((step, i) => (
+              {mockupSteps.map((step, i) => (
                 <li key={i} className="flex items-start gap-3 text-sm">
                   <div className="flex-shrink-0 w-5 h-5 rounded-full bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center text-xs font-medium text-cyan-600 dark:text-cyan-400">
                     {i + 1}
@@ -114,7 +121,7 @@ export function VeneerPreparationCard() {
               {t('components.protocol.veneerPrep.prepDesc')}
             </p>
             <div className="space-y-3 mb-4">
-              {BURS.map((bur, i) => (
+              {burs.map((bur, i) => (
                 <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-secondary/50 border border-border">
                   <div className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-sm font-medium text-purple-600 dark:text-purple-400">
                     {i + 1}
@@ -132,7 +139,7 @@ export function VeneerPreparationCard() {
                 <Ruler className="w-4 h-4 text-muted-foreground" />
                 <span className="text-sm font-medium">{t('components.protocol.veneerPrep.prepGuidelines')}</span>
               </div>
-              {PREP_NOTES.map((note, i) => (
+              {prepNotes.map((note, i) => (
                 <p key={i} className="text-xs text-muted-foreground flex items-start gap-2">
                   <Badge variant="outline" className="text-[10px] px-1 py-0 flex-shrink-0 mt-0.5">
                     {i + 1}

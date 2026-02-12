@@ -191,7 +191,7 @@ export default function PatientProfile() {
                                   ) : (
                                     <Clock className="w-3 h-3 mr-1" />
                                   )}
-                                  {isCompleted ? 'Concluído' : 'Em progresso'}
+                                  {isCompleted ? t('patients.completedStatus') : t('patients.inProgressStatus')}
                                 </Badge>
                               </div>
                               <ChevronRight className="w-4 h-4 text-muted-foreground" />

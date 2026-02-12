@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Layers, Palette, Sparkles } from 'lucide-react';
@@ -30,6 +31,7 @@ interface StratificationProtocolProps {
 }
 
 export default function StratificationProtocol({ protocol }: StratificationProtocolProps) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-4">
       {/* Color Analysis */}
@@ -37,32 +39,32 @@ export default function StratificationProtocol({ protocol }: StratificationProto
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
             <Palette className="w-4 h-4" />
-            Análise de Cor
+            {t('components.stratification.colorAnalysis')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
-              <span className="text-muted-foreground">Cor Base</span>
+              <span className="text-muted-foreground">{t('components.stratification.baseShade')}</span>
               <p className="font-medium">{protocol.color_analysis.base_shade}</p>
             </div>
             <div>
-              <span className="text-muted-foreground">Cervical</span>
+              <span className="text-muted-foreground">{t('components.stratification.cervical')}</span>
               <p className="font-medium">{protocol.color_analysis.cervical}</p>
             </div>
             <div>
-              <span className="text-muted-foreground">Corpo</span>
+              <span className="text-muted-foreground">{t('components.stratification.body')}</span>
               <p className="font-medium">{protocol.color_analysis.body}</p>
             </div>
             <div>
-              <span className="text-muted-foreground">Incisal</span>
+              <span className="text-muted-foreground">{t('components.stratification.incisal')}</span>
               <p className="font-medium">{protocol.color_analysis.incisal}</p>
             </div>
           </div>
 
           {protocol.color_analysis.effects && protocol.color_analysis.effects.length > 0 && (
             <div>
-              <span className="text-sm text-muted-foreground">Efeitos especiais</span>
+              <span className="text-sm text-muted-foreground">{t('components.stratification.specialEffects')}</span>
               <div className="flex flex-wrap gap-1 mt-1">
                 {protocol.color_analysis.effects.map((effect, i) => (
                   <Badge key={i} variant="secondary" className="text-xs">
@@ -80,7 +82,7 @@ export default function StratificationProtocol({ protocol }: StratificationProto
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
             <Layers className="w-4 h-4" />
-            Protocolo de Camadas
+            {t('components.stratification.layerProtocol')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -110,20 +112,20 @@ export default function StratificationProtocol({ protocol }: StratificationProto
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
             <Sparkles className="w-4 h-4" />
-            Textura e Acabamento
+            {t('components.stratification.textureFinishing')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {protocol.texture_notes && (
             <div>
-              <span className="text-sm text-muted-foreground">Notas de textura</span>
+              <span className="text-sm text-muted-foreground">{t('components.stratification.textureNotes')}</span>
               <p className="text-sm mt-1">{protocol.texture_notes}</p>
             </div>
           )}
 
           {protocol.surface_characteristics && protocol.surface_characteristics.length > 0 && (
             <div>
-              <span className="text-sm text-muted-foreground">Características</span>
+              <span className="text-sm text-muted-foreground">{t('components.stratification.characteristics')}</span>
               <div className="flex flex-wrap gap-1 mt-1">
                 {protocol.surface_characteristics.map((char, i) => (
                   <Badge key={i} variant="outline" className="text-xs">
@@ -136,7 +138,7 @@ export default function StratificationProtocol({ protocol }: StratificationProto
 
           {protocol.recommendations && (
             <div className="pt-2 border-t border-border">
-              <span className="text-sm text-muted-foreground">Recomendações</span>
+              <span className="text-sm text-muted-foreground">{t('components.stratification.recommendations')}</span>
               <p className="text-sm mt-1">{protocol.recommendations}</p>
             </div>
           )}

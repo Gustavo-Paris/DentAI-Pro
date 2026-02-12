@@ -47,14 +47,11 @@ export default function CookieConsent() {
     >
       <div className="mx-auto max-w-3xl rounded-xl border border-border bg-card p-4 sm:p-6 shadow-lg flex flex-col sm:flex-row items-start sm:items-center gap-4">
         <p className="text-sm text-card-foreground flex-1">
-          Utilizamos cookies essenciais para o funcionamento do site e cookies
-          opcionais para monitoramento de erros (Sentry). Ao clicar em
-          &ldquo;Aceitar todos&rdquo;, você consente com o uso de todos os
-          cookies conforme a{' '}
+          {t('components.cookieConsent.message')}{' '}
           <a href="/privacy" className="underline text-primary">
-            Política de Privacidade
+            {t('components.cookieConsent.privacyLink')}
           </a>{' '}
-          e a LGPD (Lei 13.709/2018).
+          {t('components.cookieConsent.lgpdSuffix')}
         </p>
         <div className="flex gap-2 shrink-0">
           <Button

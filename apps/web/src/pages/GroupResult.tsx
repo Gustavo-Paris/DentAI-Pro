@@ -37,11 +37,11 @@ export default function GroupResult() {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       <DetailPage
-        title={`${g.currentTreatmentStyle.label} — Protocolo Unificado`}
+        title={`${g.currentTreatmentStyle.label} — ${t('components.groupResult.unifiedProtocol')}`}
         breadcrumbs={[
           { label: t('result.home'), href: '/dashboard' },
           { label: t('result.evaluation'), href: `/evaluation/${g.sessionId}` },
-          { label: `Protocolo Unificado (${g.groupTeeth.length} dentes)` },
+          { label: t('components.groupResult.unifiedProtocolBreadcrumb', { count: g.groupTeeth.length }) },
         ]}
         backHref={`/evaluation/${g.sessionId}`}
         query={{ data: evaluation, isLoading: g.isLoading }}
@@ -63,7 +63,7 @@ export default function GroupResult() {
                   </div>
                   <div className="flex-1">
                     <h2 className="text-xl sm:text-2xl font-semibold font-display">
-                      Protocolo Unificado
+                      {t('components.groupResult.unifiedProtocol')}
                     </h2>
                     <p className="text-sm text-muted-foreground">
                       {g.currentTreatmentStyle.label}
@@ -77,7 +77,7 @@ export default function GroupResult() {
                     </div>
                   </div>
                   <Badge variant="secondary" className="text-xs">
-                    {g.groupTeeth.length} dentes
+                    {g.groupTeeth.length} {t('components.groupResult.teeth')}
                   </Badge>
                 </div>
               </CardContent>
@@ -107,7 +107,7 @@ export default function GroupResult() {
                     </CardHeader>
                     <CardContent>
                       <p className="text-sm text-muted-foreground mb-2">
-                        Aplicar protocolo idêntico para: <strong>{teethLabel}</strong>
+                        {t('components.groupResult.applyIdenticalProtocol')} <strong>{teethLabel}</strong>
                       </p>
                     </CardContent>
                   </Card>

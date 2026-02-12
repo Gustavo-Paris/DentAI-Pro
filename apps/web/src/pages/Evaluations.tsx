@@ -33,7 +33,7 @@ const SessionCard = memo(function SessionCard({
     : 'border-l-[3px] border-l-primary';
 
   return (
-    <Link to={`/evaluation/${session.session_id}`} aria-label={`Ver avaliação de ${session.patient_name || t('evaluation.patientNoName')}`}>
+    <Link to={`/evaluation/${session.session_id}`} aria-label={t('evaluation.viewEvaluationOf', { name: session.patient_name || t('evaluation.patientNoName') })}>
       <Card
         className={`p-3 sm:p-4 shadow-sm hover:shadow-md rounded-xl transition-all duration-300 cursor-pointer animate-[fade-in-up_0.6s_ease-out_both] ${borderClass}`}
         style={{ animationDelay: `${index * 0.05}s` }}
