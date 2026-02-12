@@ -412,21 +412,17 @@ export function useDSDStep({
         return;
       }
 
-      // Get L2 raw signed URL BEFORE compositing replaces the path
-      const l2RawPath = l2Raw.simulation_url;
-      const { data: l2RawSignedData } = await supabase.storage
-        .from('dsd-simulations')
-        .createSignedUrl(l2RawPath, 3600);
-
       // Composite L2 (whitened + corrected teeth onto original photo)
       const { layer: l2Processed, url: l2CompositedUrl } = await compositeAndResolveLayer(l2Raw);
 
-      // === Phase 2: Derive L1 from L2 raw output (canvas HSL color transfer) ===
-      if (l2RawSignedData?.signedUrl && toothBounds.length > 0 && user) {
+      // === Phase 2: Derive L1 from L2 output (canvas HSL color transfer) ===
+      // Use the composited L2 URL — within the tooth mask, pixel data is identical
+      // to the raw AI output (compositing pastes AI tooth pixels onto original background).
+      if (l2CompositedUrl && toothBounds.length > 0 && user) {
         try {
           const l1Blob = await createNaturalColorComposite({
             originalDataUrl: imageBase64,
-            aiOutputUrl: l2RawSignedData.signedUrl,
+            aiOutputUrl: l2CompositedUrl,
             bounds: toothBounds,
           });
 
@@ -460,7 +456,7 @@ export function useDSDStep({
         }
       } else {
         // Fallback: generate L1 independently (less consistent but functional)
-        logger.warn('L1 derivation not possible (missing raw URL or bounds), falling back to independent generation');
+        logger.warn(`L1 derivation not possible — l2Url: ${!!l2CompositedUrl}, bounds: ${toothBounds.length}, user: ${!!user}. Falling back to independent generation`);
         const l1Fallback = await generateSingleLayer(analysis, 'restorations-only');
         if (l1Fallback) {
           const { layer: l1Proc, url: l1Url } = await compositeAndResolveLayer(l1Fallback);
