@@ -108,7 +108,14 @@ export function useDSDIntegration({
       // OR if any suggestion has treatment_indication: "gengivoplastia"
       const hasGengivoplasty = result?.gingivoplastyApproved ||
         result?.layers?.some(l => l.includes_gengivoplasty) ||
-        result?.analysis?.suggestions?.some(s => s.treatment_indication === 'gengivoplastia');
+        result?.analysis?.suggestions?.some(s => {
+          // Check treatment_indication in both Portuguese and English
+          const indication = (s.treatment_indication || '').toLowerCase();
+          if (indication === 'gengivoplastia' || indication === 'gingivoplasty') return true;
+          // Check proposed_change text for gingival keywords
+          const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
+          return text.includes('gengivoplastia') || text.includes('gingivoplasty');
+        });
       if (hasGengivoplasty) {
         // Add a virtual "GENGIVO" tooth entry for gengivoplasty
         setSelectedTeeth((prev) =>

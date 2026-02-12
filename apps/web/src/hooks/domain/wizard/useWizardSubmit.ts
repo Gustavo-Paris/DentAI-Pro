@@ -118,8 +118,11 @@ export function useWizardSubmit({
       for (let i = 0; i < teethToShow.length; i++) {
         const isCompleted = i < currentToothIndex || submissionStep >= 4;
         const isActive = i === currentToothIndex && submissionStep >= 2 && submissionStep < 4;
+        const toothLabel = teethToShow[i] === 'GENGIVO'
+          ? 'Gengivoplastia'
+          : `Dente ${teethToShow[i]}`;
         steps.push({
-          label: `Dente ${teethToShow[i]}${isActive ? ' — gerando protocolo...' : ''}`,
+          label: `${toothLabel}${isActive ? ' — gerando protocolo...' : ''}`,
           completed: isCompleted,
         });
       }

@@ -316,7 +316,7 @@ export default function NewCase() {
                 )}
               </div>
             </div>
-          ) : null,
+          ) : <></>,
         }}
       />
 
