@@ -827,7 +827,7 @@ export async function callGeminiImageEdit(
       }
 
       throw new GeminiError(
-        `Erro na geração de imagem: ${response.status}`,
+        `Erro na geração de imagem: ${response.status} — ${errorBody.substring(0, 300)}`,
         response.status,
         response.status >= 500
       );

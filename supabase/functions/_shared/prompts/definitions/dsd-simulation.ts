@@ -333,45 +333,38 @@ Output: Same photo with teeth structurally corrected but at their ORIGINAL natur
 }
 
 function buildGengivoplastyOnlyPrompt(params: Params): string {
-  return `🔒 GENGIVOPLASTY SIMULATION — GINGIVAL RECONTOURING ONLY 🔒
+  return `DENTAL PHOTO EDIT - GUM LINE RESHAPING
 
-=== YOUR TASK ===
-Simulate GENGIVOPLASTY on this dental photo. The teeth have ALREADY been corrected and whitened.
-Your ONLY job: RECONTOUR THE GUM LINE to expose more clinical crown.
-
-THIS IS INPAINTING — copy the entire image, then modify ONLY the gingival tissue.
+This is an INPAINTING task. Edit ONLY the gum line (pink tissue above the teeth).
+The teeth in this image have ALREADY been corrected and whitened — do NOT change them.
 Output dimensions MUST equal input dimensions.
 
-=== GENGIVOPLASTY PROCEDURE (PRIMARY TASK) ===
-Perform the following gingival recontouring:
-1. MOVE the gingival margin APICALLY (toward the root) by 1-2mm on affected teeth
-2. EXPOSE more clinical crown — the teeth should appear LONGER after gengivoplasty
-3. CREATE symmetrical gingival zeniths between contralateral teeth (11↔21, 12↔22, 13↔23)
-4. HARMONIZE the gum line curvature to follow a smooth, aesthetic arc
-5. The recontouring must be CLEARLY VISIBLE in before/after comparison
-6. The new gum tissue must look NATURAL — healthy pink color, proper texture
-7. Where the gum is removed, the revealed tooth structure should match the existing enamel color
+=== WHAT TO EDIT ===
+Reshape the gum line to show more of each tooth:
+- Move the gum edge UPWARD (away from the tooth tip) to reveal more tooth surface
+- Each affected tooth should show 1-2mm MORE visible enamel than in the input
+- Make the gum line SYMMETRICAL — left side should mirror right side
+- The gum arch should follow a smooth, harmonious curve across all visible teeth
+- Where gum is removed, paint the newly exposed area to match the existing tooth enamel color and texture
+- Keep the remaining gum tissue looking natural — healthy pink color, smooth texture
 
-${params.gingivoSuggestions ? `SPECIFIC TEETH FOR GENGIVOPLASTY (apply aggressively):\n${params.gingivoSuggestions}\n` : `If no specific teeth are listed, apply harmonizing gengivoplasty to the anterior teeth (13-23) to create a balanced, aesthetic gum line.\n`}
+${params.gingivoSuggestions ? `SPECIFIC TEETH TO RESHAPE:\n${params.gingivoSuggestions}\n` : `Reshape the gum line on the upper anterior teeth (canine to canine) to create a balanced, aesthetic smile.\n`}
 
-EXPECTED VISUAL RESULT:
-- Teeth appear TALLER/LONGER than in the input (more crown exposed)
-- Gum line is MORE SYMMETRICAL and harmonious
-- The difference should be IMMEDIATELY OBVIOUS to the patient
-- Think of it like "crown lengthening" — revealing hidden tooth structure
+EXPECTED RESULT:
+- Teeth appear VISIBLY TALLER than in the input photo
+- The gum line is more even and symmetrical
+- The change should be CLEARLY NOTICEABLE in side-by-side comparison
 
-=== PRESERVATION RULES ===
-DO NOT CHANGE (copy pixel-for-pixel from input):
-- TEETH: Color, shape, contour, texture — already corrected, do NOT alter
-- LIPS: Both upper and lower lip position, shape, contour — FIXED reference
-- SKIN: Face, background, everything outside the gingival area
-- FRAMING: Same crop, zoom, angle as input
+=== DO NOT CHANGE ===
+- TEETH: Already edited — keep color, shape, contour, texture exactly as input
+- LIPS: Upper and lower lip stay in the EXACT same position and shape
+- FACE/SKIN: No changes to any facial features
+- BACKGROUND: Keep identical
 
-The lips define the smile frame. Moving lips = destroying the clinical comparison.
-The gingival margin (pink tissue between tooth and lip) is the ONLY area you modify.
-When you move the gum line up, the space between lip and tooth INCREASES — but the lip stays put.
+The ONLY pixels you may change are the PINK GUM TISSUE between the teeth and the upper lip.
+When the gum line moves up, the teeth get taller — but the lips stay exactly where they are.
 
-Output: Same photo with CLEARLY VISIBLE gingival recontouring applied. Teeth and lips identical to input.`
+Output: Same photo with reshaped gum line showing more tooth surface. Everything else identical to input.`
 }
 
 function buildWithGengivoplastyPrompt(params: Params): string {
