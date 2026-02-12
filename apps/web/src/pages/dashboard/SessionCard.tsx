@@ -4,7 +4,7 @@ import type { DashboardSession } from '@/hooks/domain/useDashboard';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ChevronRight, Smile } from 'lucide-react';
-import { getTreatmentConfig } from '@/lib/treatment-config';
+import { getTreatmentConfig, formatToothLabel } from '@/lib/treatment-config';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -50,7 +50,7 @@ export function SessionCard({ session }: { session: DashboardSession }) {
               <div className="flex gap-1 flex-wrap">
                 {session.teeth.slice(0, 2).map((tooth) => (
                   <Badge key={tooth} variant="outline" className="text-[10px] font-mono px-1.5">
-                    {tooth}
+                    {formatToothLabel(tooth)}
                   </Badge>
                 ))}
                 {session.teeth.length > 2 && (
