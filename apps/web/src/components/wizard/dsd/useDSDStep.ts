@@ -9,7 +9,8 @@ import { logger } from '@/lib/logger';
 import { trackEvent } from '@/lib/analytics';
 import { withRetry } from '@/lib/retry';
 import { TIMING } from '@/lib/constants';
-import { createCompositeTeethOnly } from '@/lib/compositeTeeth';
+// compositeTeeth.ts kept for potential future use but compositing disabled —
+// Gemini's prompt-based preservation of lips/gums produces better results
 import type {
   DSDAnalysis,
   DSDResult,
@@ -187,58 +188,8 @@ export function useDSDStep({
     );
   }, [detectedTeeth]);
 
-  // Deterministic post-processing: copy original pixels everywhere except teeth bounds
-  // Skip when multi-layer generation is active (compositing is handled inside generateAllLayers)
-  useEffect(() => {
-    const run = async () => {
-      if (!user) return;
-      if (!imageBase64) return;
-      if (!simulationImageUrl) return;
-      if (!result?.simulation_url) return;
-      if (!toothBounds.length) return;
-
-      // Skip compositing when layers are in use (handled by generateAllLayers)
-      if (layers.length > 0 || layersGenerating) return;
-
-      // Avoid infinite loops: if it's already a composited file, do nothing
-      if (result.simulation_url.includes('dsd_composited_')) return;
-
-      // Avoid re-processing the same source path multiple times
-      if (lastCompositeSourcePathRef.current === result.simulation_url) return;
-      lastCompositeSourcePathRef.current = result.simulation_url;
-
-      setIsCompositing(true);
-      try {
-        const compositeBlob = await createCompositeTeethOnly({
-          beforeDataUrl: imageBase64,
-          afterUrl: simulationImageUrl,
-          bounds: toothBounds,
-        });
-
-        const compositePath = `${user.id}/dsd_composited_${Date.now()}.jpg`;
-
-        const { error: uploadError } = await supabase.storage
-          .from('dsd-simulations')
-          .upload(compositePath, compositeBlob, {
-            upsert: true,
-            contentType: 'image/jpeg',
-          });
-
-        if (uploadError) throw uploadError;
-
-        // Replace the simulation URL with the composited version so later screens/PDF use the preserved image.
-        setResult((prev) => (prev ? { ...prev, simulation_url: compositePath } : prev));
-        toast.success(t('toasts.dsd.simulationRefined'));
-      } catch (err) {
-        logger.error('DSD compositing error:', err);
-        // Keep the original simulation if compositing fails
-      } finally {
-        setIsCompositing(false);
-      }
-    };
-
-    run();
-  }, [user, imageBase64, simulationImageUrl, result?.simulation_url, toothBounds, layers.length, layersGenerating]);
+  // Client-side compositing disabled — Gemini's prompt-based preservation produces
+  // better results than canvas mask overlays which create visible artifacts.
 
   // Check if analysis has gengivoplasty suggestions
   const hasGingivoSuggestion = useCallback((analysis: DSDAnalysis): boolean => {
@@ -339,8 +290,9 @@ export function useDSDStep({
     }
   }, [imageBase64, invokeFunction, patientPreferences]);
 
-  // Composite a single layer: upload composited version and return signed URL
-  const compositeAndResolveLayer = useCallback(async (
+  // Resolve a layer's signed URL (no client-side compositing — Gemini already
+  // preserves lips/gums/background via prompt instructions)
+  const resolveLayerUrl = useCallback(async (
     layer: SimulationLayer,
   ): Promise<{ layer: SimulationLayer; url: string | null }> => {
     if (!layer.simulation_url) return { layer, url: null };
@@ -349,39 +301,8 @@ export function useDSDStep({
       .from('dsd-simulations')
       .createSignedUrl(layer.simulation_url, 3600);
 
-    if (signedData?.signedUrl && toothBounds.length > 0 && !layer.simulation_url.includes('dsd_composited_') && user) {
-      try {
-        const compositeBlob = await createCompositeTeethOnly({
-          beforeDataUrl: imageBase64!,
-          afterUrl: signedData.signedUrl,
-          bounds: toothBounds,
-          includeGingiva: layer.includes_gengivoplasty,
-        });
-
-        const compositePath = `${user.id}/dsd_composited_${layer.type}_${Date.now()}.jpg`;
-        const { error: uploadError } = await supabase.storage
-          .from('dsd-simulations')
-          .upload(compositePath, compositeBlob, {
-            upsert: true,
-            contentType: 'image/jpeg',
-          });
-
-        if (!uploadError) {
-          const { data: compSignedData } = await supabase.storage
-            .from('dsd-simulations')
-            .createSignedUrl(compositePath, 3600);
-          return {
-            layer: { ...layer, simulation_url: compositePath },
-            url: compSignedData?.signedUrl || null,
-          };
-        }
-      } catch {
-        // Fall through to use original URL
-      }
-    }
-
     return { layer, url: signedData?.signedUrl || null };
-  }, [imageBase64, toothBounds, user]);
+  }, []);
 
   // Generate L1 and L2 in parallel from original photo, chain L3 from L2 composited.
   const generateAllLayers = useCallback(async (analysisData?: DSDAnalysis) => {
@@ -408,7 +329,7 @@ export function useDSDStep({
 
       // Process L1
       if (l1Raw) {
-        const { layer: l1Processed, url: l1Url } = await compositeAndResolveLayer(l1Raw);
+        const { layer: l1Processed, url: l1Url } = await resolveLayerUrl(l1Raw);
         compositedLayers.push(l1Processed);
         if (l1Url) resolvedUrls['restorations-only'] = l1Url;
       } else {
@@ -418,7 +339,7 @@ export function useDSDStep({
       // Process L2
       let l2CompositedUrl: string | null = null;
       if (l2Raw) {
-        const { layer: l2Processed, url } = await compositeAndResolveLayer(l2Raw);
+        const { layer: l2Processed, url } = await resolveLayerUrl(l2Raw);
         compositedLayers.push(l2Processed);
         l2CompositedUrl = url;
         if (url) resolvedUrls['whitening-restorations'] = url;
@@ -435,7 +356,7 @@ export function useDSDStep({
           setLayerGenerationProgress(3);
 
           if (l3Raw) {
-            const { layer: l3Processed, url: l3Url } = await compositeAndResolveLayer(l3Raw);
+            const { layer: l3Processed, url: l3Url } = await resolveLayerUrl(l3Raw);
             compositedLayers.push(l3Processed);
             if (l3Url) resolvedUrls['complete-treatment'] = l3Url;
           } else {
@@ -499,7 +420,7 @@ export function useDSDStep({
       setLayersGenerating(false);
       setIsSimulationGenerating(false);
     }
-  }, [imageBase64, result?.analysis, generateSingleLayer, compositeAndResolveLayer, gingivoplastyApproved]);
+  }, [imageBase64, result?.analysis, generateSingleLayer, resolveLayerUrl, gingivoplastyApproved]);
 
   // Retry a single failed layer (respects L2-first architecture)
   const retryFailedLayer = useCallback(async (layerType: SimulationLayerType) => {
@@ -528,7 +449,7 @@ export function useDSDStep({
         return;
       }
 
-      const { layer: processed, url } = await compositeAndResolveLayer(layer);
+      const { layer: processed, url } = await resolveLayerUrl(layer);
 
       setLayers(prev => [...prev, processed]);
       if (url) {
@@ -546,7 +467,7 @@ export function useDSDStep({
     } finally {
       setRetryingLayer(null);
     }
-  }, [imageBase64, result?.analysis, generateSingleLayer, compositeAndResolveLayer, layerUrls]);
+  }, [imageBase64, result?.analysis, generateSingleLayer, resolveLayerUrl, layerUrls]);
 
   // E4: Generate whitening comparison (3 levels)
   const generateWhiteningComparison = useCallback(async () => {
@@ -884,7 +805,7 @@ export function useDSDStep({
         toast.error(t('toasts.dsd.layerError', { layer: 'Gengivoplastia' }));
         return;
       }
-      const { layer: processed, url } = await compositeAndResolveLayer(layer);
+      const { layer: processed, url } = await resolveLayerUrl(layer);
       setLayers(prev => [...prev, processed]);
       if (url) setLayerUrls(prev => ({ ...prev, [processed.type]: url }));
       setResult(prev => prev ? { ...prev, layers: [...(prev.layers || []), processed] } : prev);
@@ -896,7 +817,7 @@ export function useDSDStep({
     } finally {
       setRetryingLayer(null);
     }
-  }, [result?.analysis, imageBase64, layerUrls, generateSingleLayer, compositeAndResolveLayer]);
+  }, [result?.analysis, imageBase64, layerUrls, generateSingleLayer, resolveLayerUrl]);
 
   // Gengivoplasty discard
   const handleDiscardGingivoplasty = useCallback(() => {
