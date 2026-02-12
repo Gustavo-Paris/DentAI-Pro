@@ -249,7 +249,7 @@ export function useWizardSubmit({
             substrate_condition: isGengivoplasty ? null : (toothData?.substrate_condition || formData.substrateCondition),
             enamel_condition: isGengivoplasty ? null : (toothData?.enamel_condition || formData.enamelCondition),
             bruxism: formData.bruxism,
-            aesthetic_level: formData.aestheticLevel || 'estético',
+            aesthetic_level: formData.budget === 'premium' ? 'estético' : 'funcional',
             budget: formData.budget || 'moderado',
             longevity_expectation: formData.longevityExpectation || 'longo',
             photo_frontal: uploadedPhotoPath,
@@ -322,7 +322,7 @@ export function useWizardSubmit({
                     restorationSize: toothData?.restoration_size || formData.restorationSize,
                     substrate: toothData?.substrate || formData.substrate,
                     bruxism: formData.bruxism,
-                    aestheticLevel: formData.aestheticLevel,
+                    aestheticLevel: formData.budget === 'premium' ? 'estético' : 'funcional',
                     toothColor: formData.vitaShade,
                     stratificationNeeded: true,
                     budget: formData.budget,
@@ -382,11 +382,13 @@ export function useWizardSubmit({
       );
 
       // Process results
+      const successfulEvalIds: string[] = [];
       for (const [index, result] of results.entries()) {
         if (result.status === 'fulfilled') {
           successCount++;
-          const { normalizedTreatment } = result.value;
+          const { normalizedTreatment, evaluationId } = result.value;
           treatmentCounts[normalizedTreatment] = (treatmentCounts[normalizedTreatment] || 0) + 1;
+          if (evaluationId) successfulEvalIds.push(evaluationId);
         } else {
           const tooth = teethToProcess[index];
           logger.error(`Error processing tooth ${tooth}:`, result.reason);
@@ -399,6 +401,16 @@ export function useWizardSubmit({
           if (evalId) {
             await wizardData.updateEvaluationStatus(evalId, 'error');
           }
+        }
+      }
+
+      // Step 3: Synchronize protocols across teeth in same treatment group
+      // (all resina teeth get same brand/protocol, all porcelana teeth get same cementation)
+      if (successfulEvalIds.length >= 2) {
+        try {
+          await wizardData.syncGroupProtocols(sessionId, successfulEvalIds);
+        } catch (syncError) {
+          logger.warn('Protocol sync failed (non-critical):', syncError);
         }
       }
 

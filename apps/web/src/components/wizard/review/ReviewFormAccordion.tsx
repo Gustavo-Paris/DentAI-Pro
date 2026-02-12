@@ -81,37 +81,22 @@ export function ReviewFormAccordion({
         </AccordionItem>
       )}
 
-      {/* Aesthetic & Budget */}
-      <AccordionItem value="aesthetic" className="border rounded-lg overflow-hidden">
+      {/* Budget */}
+      <AccordionItem value="budget" className="border rounded-lg overflow-hidden">
         <AccordionTrigger className="px-4 hover:no-underline">
-          <span className="text-sm font-medium">{t('components.wizard.review.aestheticAndBudget')}</span>
+          <span className="text-sm font-medium">{t('components.wizard.review.budget')}</span>
         </AccordionTrigger>
         <AccordionContent className="px-4 pb-4">
-          <div className="space-y-5 pt-2">
-            <div className="space-y-2">
-              <Label className="text-sm">{t('components.wizard.review.aestheticLevel')}</Label>
-              <PillToggle
-                options={[
-                  { value: 'funcional', label: t('components.wizard.review.functional') },
-                  { value: 'estético', label: t('components.wizard.review.aesthetic') },
-                ]}
-                value={formData.aestheticLevel}
-                onChange={(value) => onFormChange({ aestheticLevel: value })}
-                columns={2}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-sm">{t('components.wizard.review.budget')}</Label>
-              <PillToggle
-                options={[
-                  { value: 'padrão', label: t('components.wizard.review.standard') },
-                  { value: 'premium', label: t('components.wizard.review.premium') },
-                ]}
-                value={formData.budget}
-                onChange={(value) => onFormChange({ budget: value })}
-              />
-            </div>
+          <div className="pt-2">
+            <PillToggle
+              options={[
+                { value: 'padrão', label: t('components.wizard.review.standard') },
+                { value: 'premium', label: t('components.wizard.review.premium') },
+              ]}
+              value={formData.budget}
+              onChange={(value) => onFormChange({ budget: value })}
+              columns={2}
+            />
           </div>
         </AccordionContent>
       </AccordionItem>

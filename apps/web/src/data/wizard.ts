@@ -150,3 +150,98 @@ export async function savePendingTeeth(
       .insert(rows),
   );
 }
+
+// ---------------------------------------------------------------------------
+// Protocol Sync (unify protocols within same treatment group)
+// ---------------------------------------------------------------------------
+
+const RESIN_SYNC_FIELDS = [
+  'recommended_resin_id',
+  'recommendation_text',
+  'alternatives',
+  'is_from_inventory',
+  'ideal_resin_id',
+  'ideal_reason',
+  'has_inventory_at_creation',
+  'stratification_protocol',
+  'protocol_layers',
+  'alerts',
+  'warnings',
+] as const;
+
+const CEMENTATION_SYNC_FIELDS = [
+  'cementation_protocol',
+] as const;
+
+/**
+ * After parallel protocol generation, sync protocols within each treatment group
+ * so all teeth of the same type share the same brand/protocol.
+ */
+export async function syncGroupProtocols(
+  sessionId: string,
+  evaluationIds: string[],
+) {
+  if (evaluationIds.length < 2) return;
+
+  const { data: evaluations, error } = await supabase
+    .from('evaluations')
+    .select(
+      'id, treatment_type, stratification_protocol, cementation_protocol, ' +
+      'recommended_resin_id, recommendation_text, alternatives, ' +
+      'is_from_inventory, ideal_resin_id, ideal_reason, ' +
+      'has_inventory_at_creation, protocol_layers, alerts, warnings',
+    )
+    .eq('session_id', sessionId)
+    .in('id', evaluationIds);
+
+  if (error || !evaluations || evaluations.length < 2) return;
+
+  // Group by treatment_type
+  const groups: Record<string, typeof evaluations> = {};
+  for (const ev of evaluations) {
+    const tt = ev.treatment_type as string;
+    if (!groups[tt]) groups[tt] = [];
+    groups[tt].push(ev);
+  }
+
+  const updates: Promise<unknown>[] = [];
+
+  for (const [treatmentType, group] of Object.entries(groups)) {
+    if (group.length < 2) continue;
+
+    if (treatmentType === 'resina') {
+      const source = group.find((ev) => ev.stratification_protocol != null);
+      if (!source) continue;
+
+      const syncData: Record<string, unknown> = {};
+      for (const field of RESIN_SYNC_FIELDS) {
+        syncData[field] = (source as Record<string, unknown>)[field];
+      }
+
+      const targetIds = group.filter((ev) => ev.id !== source.id).map((ev) => ev.id);
+      if (targetIds.length > 0) {
+        updates.push(
+          supabase.from('evaluations').update(syncData).in('id', targetIds),
+        );
+      }
+    } else if (treatmentType === 'porcelana') {
+      const source = group.find((ev) => ev.cementation_protocol != null);
+      if (!source) continue;
+
+      const syncData: Record<string, unknown> = {};
+      for (const field of CEMENTATION_SYNC_FIELDS) {
+        syncData[field] = (source as Record<string, unknown>)[field];
+      }
+
+      const targetIds = group.filter((ev) => ev.id !== source.id).map((ev) => ev.id);
+      if (targetIds.length > 0) {
+        updates.push(
+          supabase.from('evaluations').update(syncData).in('id', targetIds),
+        );
+      }
+    }
+    // Generic treatments (implante, coroa, etc.) — no sync needed
+  }
+
+  await Promise.all(updates);
+}
