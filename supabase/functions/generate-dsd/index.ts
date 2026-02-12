@@ -469,7 +469,8 @@ async function generateSimulation(
   const encoder = new TextEncoder();
   const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(hashSource));
   const hashArray = new Uint8Array(hashBuffer);
-  const imageSeed = ((hashArray[0] << 24) | (hashArray[1] << 16) | (hashArray[2] << 8) | hashArray[3]) >>> 0;
+  // Mask to 31 bits (0x7FFFFFFF) — Gemini expects signed INT32 (max 2147483647)
+  const imageSeed = ((hashArray[0] << 24) | (hashArray[1] << 16) | (hashArray[2] << 8) | hashArray[3]) & 0x7FFFFFFF;
   logger.log("Simulation seed from image hash:", imageSeed);
 
   // Metrics for DSD simulation
