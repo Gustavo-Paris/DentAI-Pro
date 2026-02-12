@@ -574,7 +574,7 @@ TABELA DE CORES DE ESMALTE POR LINHA:
 \u2502 Harmonize           \u2502 Incisal, TN (Trans Neutral)         \u2502
 \u2502 IPS Empress Direct  \u2502 Trans 20, Trans 30, Opal            \u2502
 \u2502 Vittra APS          \u2502 Trans, INC                          \u2502
-\u2502 Palfique LX5        \u2502 Enamel shades, CE                   \u2502
+\u2502 Palfique LX5        \u2502 WE, CE, BL1, BL2, BL3, A1-A3, B1   \u2502
 \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518
 
 EXEMPLO CORRETO para cor A2 em Classe IV com Estelite Sigma Quick:
@@ -595,9 +595,8 @@ LINHAS COM CORES BL DISPON\u00cdVEIS:
 - Palfique LX5: BL1, BL2, BL3
 - Forma (Ultradent): BL
 - Filtek Z350 XT: WB, WE (aproxima\u00e7\u00e3o)
-- Estelite Bianco: W3 (branco moderado), W4 (branco intenso) \u2014 espec\u00edfica para dentes clareados
+- Estelite Bianco: W1 (ultra-branco), W2 (branco muito claro), W3 (branco moderado), W4 (branco intenso) \u2014 espec\u00edfica para dentes clareados
 - IPS Empress Direct: BL-L (esmalte transl\u00facido para clareados)
-- Estelite Bianco: W3 (natural branco), W4 (diamond branco) \u2014 PRIORIDADE para dentes clareados
 
 LINHAS SEM CORES BL:
 - Estelite Sigma Quick (usar B1/A1 como aproxima\u00e7\u00e3o)
@@ -605,7 +604,7 @@ LINHAS SEM CORES BL:
 
 === PROTOCOLO SIMPLIFICADO PARA DENTES CLAREADOS ===
 Quando o paciente j\u00e1 realizou clareamento dental e deseja restaura\u00e7\u00f5es compat\u00edveis:
-- PRIORIDADE M\u00c1XIMA: Estelite Bianco W3 (branco moderado) ou W4 (branco intenso)
+- PRIORIDADE M\u00c1XIMA: Estelite Bianco W1-W4 conforme n\u00edvel de clareamento (W1=ultra-branco, W2=muito claro, W3=moderado, W4=intenso)
 - ALTERNATIVA: BL (Forma Ultradent) ou BL-L (IPS Empress Direct)
 - N\u00c3O sugerir Z350 como primeira op\u00e7\u00e3o para dentes clareados
 

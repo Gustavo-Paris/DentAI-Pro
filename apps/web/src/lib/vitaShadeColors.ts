@@ -39,6 +39,12 @@ export const vitaShadeColors: Record<string, string> = {
   'OM2': '#F9F9F3',
   'OM3': '#F5F5ED',
   
+  // Estelite Bianco W shades (for bleached teeth)
+  'W1': '#FDFDFB',
+  'W2': '#FCFCF9',
+  'W3': '#FAF9F7',
+  'W4': '#F7F6F3',
+
   // Effect resins (translucent/opaquer)
   'Trans': 'linear-gradient(135deg, #E8F4FC 0%, #D0E8F7 100%)',
   'Trans20': 'linear-gradient(135deg, #E8F4FC 0%, #D0E8F7 100%)',
@@ -89,6 +95,16 @@ export const vitaShadeColors: Record<string, string> = {
   'CE': '#F0F3F6',
   'OE': '#F8F5EE',
   'HE': '#F2EFE8',
+
+  // Additional product-specific shades
+  'MW': '#F8F8F6',   // Milky White (Estelite Omega)
+  'JE': '#EEF2F8',   // Jet Enamel (Estelite Omega / G-aenial)
+  'XLE': '#F4F0EA',   // Extra-light Enamel (Harmonize)
+  'BL-L': '#FEFEFC',  // Bleach Light (IPS Empress Direct)
+  'DA1': '#F2DCCB',   // Dentin A1 (Vittra APS / Estelite Omega)
+  'DA2': '#E8D2C0',   // Dentin A2
+  'DA3': '#DEC8B5',   // Dentin A3
+  'INC': 'linear-gradient(135deg, #EAF0F8 0%, #DEE8F2 100%)', // Incisal (Vittra APS)
 };
 
 /**
