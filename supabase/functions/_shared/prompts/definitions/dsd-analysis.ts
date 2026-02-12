@@ -47,12 +47,17 @@ Avalie e DOCUMENTE o tipo de arco atual e se precisa de correção.
 Retorne overbite_suspicion: "sim"|"não"|"indeterminado"
 
 Critérios observacionais (foto, NAO diagnóstico clínico):
-- "sim": Superiores cobrem >2/3 da coroa dos inferiores, OU inferiores nao visíveis com sorriso amplo
-- "não": Trespasse normal (1/3 a 1/2)
-- "indeterminado": Inferiores nao visíveis OU foto nao permite avaliar
+- "sim": Inferiores CLARAMENTE VISIVEIS E superiores cobrem >2/3 da coroa dos inferiores
+- "não": Inferiores CLARAMENTE VISIVEIS E trespasse normal (1/3 a 1/2)
+- "indeterminado": Inferiores NAO visiveis, OU parcialmente visiveis, OU foto nao permite avaliar com seguranca
+
+REGRA CRITICA: Se os dentes INFERIORES nao estao CLARAMENTE VISIVEIS na foto -> OBRIGATORIAMENTE retorne "indeterminado".
+NUNCA retorne "não" (sem sobremordida) se os inferiores nao sao visiveis — isso e uma AFIRMACAO FALSO-NEGATIVA.
+Foto frontal de sorriso mostrando apenas arcada superior -> "indeterminado" (SEMPRE).
 
 FILOSOFIA CONSERVADORA: Suspeita observacional, NAO diagnóstico. Use linguagem de suspeita.
 Quando "sim": Adicione observação sobre avaliação ortodôntica, NAO sugira gengivoplastia (sobremordida pode simular sorriso gengival).
+Quando "indeterminado": Adicione observação: "Sobremordida nao avaliavel nesta foto. Avaliação clínica necessária."
 
 === CARACTERISTICAS DENTARIAS NATURAIS ===
 Preservar/criar: Mamelons, translucidez incisal, gradiente de cor (cervical saturado -> incisal claro), textura (periquimácies), caracterizações sutis.
@@ -94,9 +99,9 @@ REGRA PARA LATERAIS (12/22) - GENGIVOPLASTIA:
 CORRECAO COMPLETA DO ARCO: Ao detectar assimetria em QUALQUER dente, avaliar e sugerir para TODOS (13-23). Gerar sugestões INDIVIDUAIS por dente.
 
 FORMATO DA SUGESTAO DE GENGIVOPLASTIA:
-{ tooth_number: "dentes envolvidos", treatment_indication: "gengivoplastia"|"recobrimento_radicular", procedure_type: "complementar", description: "[justificativa]", priority: "alta", notes: "Procedimento preparatório - realizar ANTES do restaurador" }
+{ tooth_number: "dentes envolvidos", treatment_indication: "gengivoplastia"|"recobrimento_radicular", procedure_type: "complementar", description: "[justificativa]", priority: "alta", notes: "Procedimento preparatório - realizar ANTES do restaurador. Requer avaliação periodontal prévia (sondagem + radiografia periapical) para verificar nível ósseo crestal e largura biológica." }
 
-PROTOCOLO DE GENGIVOPLASTIA: Enceramento prévio + guia cirúrgica -> Avaliação periodontal -> Respeitar distâncias biológicas -> 60-90 dias maturação tecidual.
+PROTOCOLO DE GENGIVOPLASTIA: Avaliação periodontal (sondagem + radiografia periapical) -> Enceramento prévio + guia cirúrgica -> Respeitar distâncias biológicas -> 60-90 dias maturação tecidual.
 
 PADROES DE ZENITE (incluir quando gengivoplastia indicada):
 - Padrão A (Triângulo Invertido): Central e canino mesma altura, lateral ~1mm abaixo
@@ -176,9 +181,13 @@ LINGUAGEM CONSERVADORA: "considerar", "avaliar possibilidade", nao "substituir p
 ${TREATMENT_PRIORITY}
 
 === PRIORIDADE DE SUGESTOES ===
-1. Restaurações com infiltração/manchamento EVIDENTE
-2. Restaurações com cor/anatomia inadequada OBVIA
-3. Melhorias em dentes naturais
+1. Restaurações com infiltração/manchamento EVIDENTE -> prioridade ALTA
+2. Restaurações com cor/anatomia inadequada OBVIA -> prioridade ALTA
+3. Melhorias em dentes naturais -> prioridade MEDIA ou BAIXA
+
+REGRA DE CONSISTENCIA DE PRIORIDADE:
+Se nas observações você identificar algo como "principal desarmonia" ou "principal problema estético" -> a prioridade da sugestão correspondente DEVE ser "alta".
+PROIBIDO: Descrever algo como "principal problema" nas observações mas atribuir prioridade "média" ou "baixa" na sugestão. Isso é uma inconsistência interna.
 
 === INDICACAO POR SUGESTAO ===
 - "resina": Restauração direta, diastema até 2mm, correção pontual
@@ -216,11 +225,13 @@ REGRAS ESTRITAS:
 === RECOMENDACAO DE FORMATO DENTARIO ===
 Com base no visagismo: "quadrado"|"oval"|"triangular"|"retangular"|"natural". Justifique.
 
-OBSERVACOES (3-5):
+OBSERVACOES (3-6):
 - Formato facial (SOMENTE se face completa)
 - Temperamento (SOMENTE se face completa)
 - Arco do sorriso (pode avaliar com foto de sorriso)
 - Desarmonia de visagismo (SOMENTE se face completa)
+- Saúde gengival aparente: cor (rosa/avermelhada), textura (pontilhada/lisa), papilas (integras/retraidas)
+- Quando restaurações serão substituídas: mencionar se clareamento prévio deve ser considerado para adequação de cor
 
 === CONSISTENCIA INTERNA (VERIFICAR ANTES DE FINALIZAR) ===
 1. Arco do sorriso: mesma classificação em TODAS as menções
