@@ -9,7 +9,7 @@ import { logger } from '@/lib/logger';
 import { trackEvent } from '@/lib/analytics';
 import { withRetry } from '@/lib/retry';
 import { TIMING } from '@/lib/constants';
-import { createCompositeTeethOnly, createNaturalColorComposite } from '@/lib/compositeTeeth';
+import { createCompositeTeethOnly } from '@/lib/compositeTeeth';
 import type {
   DSDAnalysis,
   DSDResult,
@@ -383,8 +383,7 @@ export function useDSDStep({
     return { layer, url: signedData?.signedUrl || null };
   }, [imageBase64, toothBounds, user]);
 
-  // L2-first architecture: Generate L2 (master) from original, derive L1 via
-  // canvas color transfer (guarantees structural consistency), chain L3 from L2.
+  // Generate L1 and L2 in parallel from original photo, chain L3 from L2 composited.
   const generateAllLayers = useCallback(async (analysisData?: DSDAnalysis) => {
     const analysis = analysisData || result?.analysis;
     if (!imageBase64 || !analysis) return;
@@ -400,80 +399,34 @@ export function useDSDStep({
       const resolvedUrls: Record<string, string> = {};
       const failed: SimulationLayerType[] = [];
 
-      // === Phase 1: Generate L2 (master layer) from original photo ===
-      const l2Raw = await generateSingleLayer(analysis, 'whitening-restorations');
-      setLayerGenerationProgress(1);
-
-      if (!l2Raw) {
-        // L2 is critical — if it fails, L1 can't be derived either
-        failed.push('whitening-restorations', 'restorations-only');
-        setFailedLayers(failed);
-        setSimulationError(true);
-        return;
-      }
-
-      // Composite L2 (whitened + corrected teeth onto original photo)
-      const { layer: l2Processed, url: l2CompositedUrl } = await compositeAndResolveLayer(l2Raw);
-
-      // === Phase 2: Derive L1 from L2 output (canvas HSL color transfer) ===
-      // Use the composited L2 URL — within the tooth mask, pixel data is identical
-      // to the raw AI output (compositing pastes AI tooth pixels onto original background).
-      if (l2CompositedUrl && toothBounds.length > 0 && user) {
-        try {
-          const l1Blob = await createNaturalColorComposite({
-            originalDataUrl: imageBase64,
-            aiOutputUrl: l2CompositedUrl,
-            bounds: toothBounds,
-          });
-
-          const l1Path = `${user.id}/dsd_composited_restorations-only_${Date.now()}.jpg`;
-          const { error: l1UploadError } = await supabase.storage
-            .from('dsd-simulations')
-            .upload(l1Path, l1Blob, { upsert: true, contentType: 'image/jpeg' });
-
-          if (!l1UploadError) {
-            const { data: l1SignedData } = await supabase.storage
-              .from('dsd-simulations')
-              .createSignedUrl(l1Path, 3600);
-
-            const l1Layer: SimulationLayer = {
-              type: 'restorations-only',
-              label: LAYER_LABELS['restorations-only'],
-              simulation_url: l1Path,
-              whitening_level: 'natural',
-              includes_gengivoplasty: false,
-            };
-            compositedLayers.push(l1Layer);
-            if (l1SignedData?.signedUrl) resolvedUrls['restorations-only'] = l1SignedData.signedUrl;
-            logger.log('L1 derived from L2 via HSL color transfer');
-          } else {
-            logger.warn('L1 upload failed:', l1UploadError);
-            failed.push('restorations-only');
-          }
-        } catch (err) {
-          logger.error('L1 derivation error:', err);
-          failed.push('restorations-only');
-        }
-      } else {
-        // Fallback: generate L1 independently (less consistent but functional)
-        logger.warn(`L1 derivation not possible — l2Url: ${!!l2CompositedUrl}, bounds: ${toothBounds.length}, user: ${!!user}. Falling back to independent generation`);
-        const l1Fallback = await generateSingleLayer(analysis, 'restorations-only');
-        if (l1Fallback) {
-          const { layer: l1Proc, url: l1Url } = await compositeAndResolveLayer(l1Fallback);
-          compositedLayers.push(l1Proc);
-          if (l1Url) resolvedUrls['restorations-only'] = l1Url;
-        } else {
-          failed.push('restorations-only');
-        }
-      }
-
-      // Add L2 after L1 (display order: L1, L2, L3)
-      compositedLayers.push(l2Processed);
-      if (l2CompositedUrl) resolvedUrls['whitening-restorations'] = l2CompositedUrl;
-
+      // === Phase 1: Generate L1 and L2 in parallel from original photo ===
+      const [l1Raw, l2Raw] = await Promise.all([
+        generateSingleLayer(analysis, 'restorations-only'),
+        generateSingleLayer(analysis, 'whitening-restorations'),
+      ]);
       setLayerGenerationProgress(2);
 
-      // === Phase 3: Generate L3 from L2 composited (if gengivoplasty approved) ===
+      // Process L1
+      if (l1Raw) {
+        const { layer: l1Processed, url: l1Url } = await compositeAndResolveLayer(l1Raw);
+        compositedLayers.push(l1Processed);
+        if (l1Url) resolvedUrls['restorations-only'] = l1Url;
+      } else {
+        failed.push('restorations-only');
+      }
+
+      // Process L2
+      let l2CompositedUrl: string | null = null;
+      if (l2Raw) {
+        const { layer: l2Processed, url } = await compositeAndResolveLayer(l2Raw);
+        compositedLayers.push(l2Processed);
+        l2CompositedUrl = url;
+        if (url) resolvedUrls['whitening-restorations'] = url;
+      } else {
+        failed.push('whitening-restorations');
+      }
+
+      // === Phase 2: Generate L3 from L2 composited (if gengivoplasty approved) ===
       if (gingivoplastyApproved === true && l2CompositedUrl) {
         try {
           const l2Base64 = await urlToBase64(l2CompositedUrl);
@@ -546,7 +499,7 @@ export function useDSDStep({
       setLayersGenerating(false);
       setIsSimulationGenerating(false);
     }
-  }, [imageBase64, result?.analysis, generateSingleLayer, compositeAndResolveLayer, toothBounds, user, gingivoplastyApproved]);
+  }, [imageBase64, result?.analysis, generateSingleLayer, compositeAndResolveLayer, gingivoplastyApproved]);
 
   // Retry a single failed layer (respects L2-first architecture)
   const retryFailedLayer = useCallback(async (layerType: SimulationLayerType) => {
@@ -555,50 +508,6 @@ export function useDSDStep({
 
     setRetryingLayer(layerType);
     try {
-      // L1 retry: derive from L2 via HSL color transfer (same as generateAllLayers)
-      if (layerType === 'restorations-only') {
-        const l2Layer = layers.find(l => l.type === 'whitening-restorations');
-        if (l2Layer?.simulation_url && toothBounds.length > 0 && user) {
-          // Get raw URL from L2 — we need the raw AI output, not the composited version
-          // If the composited path exists, get its signed URL for derivation
-          const l2Url = layerUrls['whitening-restorations'];
-          if (l2Url) {
-            try {
-              const l1Blob = await createNaturalColorComposite({
-                originalDataUrl: imageBase64,
-                aiOutputUrl: l2Url,
-                bounds: toothBounds,
-              });
-              const l1Path = `${user.id}/dsd_composited_restorations-only_${Date.now()}.jpg`;
-              const { error: uploadError } = await supabase.storage
-                .from('dsd-simulations')
-                .upload(l1Path, l1Blob, { upsert: true, contentType: 'image/jpeg' });
-              if (!uploadError) {
-                const { data: l1SignedData } = await supabase.storage
-                  .from('dsd-simulations')
-                  .createSignedUrl(l1Path, 3600);
-                const l1Layer: SimulationLayer = {
-                  type: 'restorations-only',
-                  label: LAYER_LABELS['restorations-only'],
-                  simulation_url: l1Path,
-                  whitening_level: 'natural',
-                  includes_gengivoplasty: false,
-                };
-                setLayers(prev => [...prev, l1Layer]);
-                if (l1SignedData?.signedUrl) setLayerUrls(prev => ({ ...prev, 'restorations-only': l1SignedData.signedUrl }));
-                setFailedLayers(prev => prev.filter(t => t !== layerType));
-                setResult(prev => prev ? { ...prev, layers: [...(prev.layers || []), l1Layer] } : prev);
-                toast.success(t('toasts.dsd.layerReady', { layer: LAYER_LABELS[layerType] }));
-                return;
-              }
-            } catch (err) {
-              logger.warn('L1 retry derivation failed, falling back to independent generation:', err);
-            }
-          }
-        }
-        // Fallback: generate L1 independently
-      }
-
       // L3 retry: chain from L2 composited image
       let baseImageOverride: string | undefined;
       if (layerType === 'complete-treatment') {
@@ -637,7 +546,7 @@ export function useDSDStep({
     } finally {
       setRetryingLayer(null);
     }
-  }, [imageBase64, result?.analysis, generateSingleLayer, compositeAndResolveLayer, layers, layerUrls, toothBounds, user]);
+  }, [imageBase64, result?.analysis, generateSingleLayer, compositeAndResolveLayer, layerUrls]);
 
   // E4: Generate whitening comparison (3 levels)
   const generateWhiteningComparison = useCallback(async () => {
