@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
+import { useState, useRef, useCallback, useMemo, useEffect, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Camera, Upload, X, Loader2, User, Smile, Sparkles, Lightbulb, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { compressImage } from '@/lib/imageUtils';
+import { trackEvent } from '@/lib/analytics';
 // heic-to is dynamically imported to reduce initial bundle size (20MB library)
 
 export interface AdditionalPhotos {
@@ -62,7 +63,7 @@ const readFileAsDataURL = (file: File): Promise<string> => {
   });
 };
 
-export function PhotoUploadStep({
+export const PhotoUploadStep = memo(function PhotoUploadStep({
   imageBase64,
   onImageChange,
   onAnalyze,
@@ -131,6 +132,7 @@ export function PhotoUploadStep({
       // Comprimir a imagem
       const compressedBase64 = await compressImage(processedBlob);
       onImageChange(compressedBase64);
+      trackEvent('photo_uploaded', { file_size: file.size, file_type: file.type || 'unknown' });
 
     } catch {
       // Fallback: tentar conversão automática do Safari
@@ -613,4 +615,4 @@ export function PhotoUploadStep({
       </div>
     </div>
   );
-}
+});

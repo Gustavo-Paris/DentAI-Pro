@@ -8,6 +8,8 @@ import type {
   DetectedToothForMask,
   ClinicalToothFinding,
 } from '@/types/dsd';
+import { useEffect, useRef } from 'react';
+import { trackEvent } from '@/lib/analytics';
 import { useDSDStep } from './dsd/useDSDStep';
 import { DSDLoadingState } from './dsd/DSDLoadingState';
 import { DSDErrorState } from './dsd/DSDErrorState';
@@ -38,6 +40,15 @@ interface DSDStepProps {
 
 export function DSDStep(props: DSDStepProps) {
   const state = useDSDStep(props);
+  const hasFiredStartRef = useRef(false);
+
+  // Track dsd_started once
+  useEffect(() => {
+    if (!hasFiredStartRef.current) {
+      trackEvent('dsd_started');
+      hasFiredStartRef.current = true;
+    }
+  }, []);
 
   // Loading state
   if (state.isAnalyzing) {

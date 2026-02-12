@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -89,7 +90,7 @@ function StepsList({
   );
 }
 
-export function CementationProtocolCard({
+export const CementationProtocolCard = memo(function CementationProtocolCard({
   protocol,
   checkedIndices = [],
   onProgressChange
@@ -291,6 +292,6 @@ export function CementationProtocolCard({
       )}
     </div>
   );
-}
+});
 
 export default CementationProtocolCard;

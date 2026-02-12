@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { User, Plus, Check } from 'lucide-react';
+import { trackEvent } from '@/lib/analytics';
 
 export interface Patient {
   id: string;
@@ -22,7 +23,7 @@ interface PatientAutocompleteProps {
   selectedPatientId?: string | null;
 }
 
-export function PatientAutocomplete({
+export const PatientAutocomplete = memo(function PatientAutocomplete({
   value,
   onChange,
   patients,
@@ -50,6 +51,7 @@ export function PatientAutocomplete({
     );
     setFilteredPatients(filtered.slice(0, 5)); // Limit to 5 suggestions
     setHighlightedIndex(-1);
+    trackEvent('patient_searched', { result_count: filtered.length });
   }, [value, patients]);
 
   // Handle input change
@@ -212,4 +214,4 @@ export function PatientAutocomplete({
       )}
     </div>
   );
-}
+});

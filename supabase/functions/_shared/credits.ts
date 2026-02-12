@@ -3,6 +3,7 @@
 
 import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { logger } from "./logger.ts";
+import { sendEmail, creditWarningEmail } from "./email.ts";
 
 export interface CreditCheckResult {
   allowed: boolean;
@@ -88,6 +89,9 @@ export async function checkAndUseCredits(
   const creditInfo = await getCreditInfo(supabase, userId, operation);
   logger.log(`Credits consumed: user=${userId}, op=${operation}, opId=${operationId || 'none'}, remaining=${creditInfo.available}`);
 
+  // Fire-and-forget credit warning email when below 20%
+  sendCreditWarningIfNeeded(supabase, userId, creditInfo.available, creditInfo.total);
+
   return {
     allowed: true,
     creditsAvailable: creditInfo.available,
@@ -162,7 +166,7 @@ async function getCreditInfo(
   supabase: SupabaseClient,
   userId: string,
   operation: string,
-): Promise<{ available: number; cost: number; isFreeUser: boolean }> {
+): Promise<{ available: number; total: number; cost: number; isFreeUser: boolean }> {
   // Get credit cost
   const { data: costData } = await supabase
     .from("credit_costs")
@@ -180,14 +184,42 @@ async function getCreditInfo(
     .maybeSingle();
 
   if (!sub || !["active", "trialing"].includes(sub.status)) {
-    return { available: 0, cost, isFreeUser: true };
+    return { available: 0, total: 0, cost, isFreeUser: true };
   }
 
   const plan = sub.plan as { credits_per_month: number } | null;
   const totalCredits = (plan?.credits_per_month || 0) + (sub.credits_rollover || 0) + (sub.credits_bonus || 0);
   const available = Math.max(0, totalCredits - (sub.credits_used_this_month || 0));
 
-  return { available, cost, isFreeUser: sub.plan_id === "starter" || !sub.plan_id };
+  return { available, total: totalCredits, cost, isFreeUser: sub.plan_id === "starter" || !sub.plan_id };
+}
+
+/**
+ * Fire-and-forget: send a credit warning email when remaining credits
+ * drop below 20% of the user's total allocation.
+ */
+function sendCreditWarningIfNeeded(
+  supabase: SupabaseClient,
+  userId: string,
+  remaining: number,
+  total: number,
+): void {
+  if (total <= 0 || remaining / total >= 0.2) return;
+
+  // Fire-and-forget — never block the credit flow
+  (async () => {
+    const { data: { user }, error } = await supabase.auth.admin.getUserById(userId);
+    if (error || !user?.email) {
+      logger.warn(`Credit warning: could not fetch user ${userId}: ${error?.message}`);
+      return;
+    }
+    const name = user.user_metadata?.full_name || user.email;
+    const template = creditWarningEmail(name, remaining, total);
+    await sendEmail({ to: user.email, ...template });
+    logger.log(`Credit warning email sent to ${user.email} (${remaining}/${total})`);
+  })().catch((err) => {
+    logger.warn(`Credit warning email failed for user ${userId}: ${err?.message ?? err}`);
+  });
 }
 
 /**

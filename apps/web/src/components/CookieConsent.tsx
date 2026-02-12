@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as Sentry from '@sentry/react';
 import { Button } from '@/components/ui/button';
+import { trackEvent } from '@/lib/analytics';
 
 type ConsentValue = 'accepted' | 'essential';
 
@@ -32,6 +33,7 @@ export default function CookieConsent() {
   const handleConsent = (value: ConsentValue) => {
     localStorage.setItem(STORAGE_KEY, value);
     applySentryReplayPolicy(value);
+    trackEvent(value === 'accepted' ? 'cookie_consent_accepted' : 'cookie_consent_rejected');
     setVisible(false);
   };
 

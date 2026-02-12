@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { logger } from '@/lib/logger';
+import { trackEvent } from '@/lib/analytics';
 import { QUERY_STALE_TIMES } from '@/lib/constants';
 
 import type { StratificationProtocol, CementationProtocol } from '@/types/protocol';
@@ -487,6 +488,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
       const token = await evaluations.getOrCreateShareLink(sessionId, user.id);
       const shareUrl = `${window.location.origin}/shared/${token}`;
       await navigator.clipboard.writeText(shareUrl);
+      trackEvent('evaluation_shared', { method: 'clipboard_link' });
       toast.success(t('toasts.evaluationDetail.linkCopied'), {
         description: t('toasts.evaluationDetail.linkExpiry'),
       });

@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   AlertDialog,
@@ -10,6 +11,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Coins } from 'lucide-react';
+import { trackEvent } from '@/lib/analytics';
 import type { CreditConfirmData } from '@/hooks/domain/wizard/types';
 
 interface CreditConfirmDialogProps {
@@ -19,12 +21,22 @@ interface CreditConfirmDialogProps {
 
 export function CreditConfirmDialog({ data, onConfirm }: CreditConfirmDialogProps) {
   const { t } = useTranslation();
+  const trackedRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (data && trackedRef.current !== data.operation) {
+      trackEvent('credit_dialog_shown', { operation_type: data.operation });
+      trackedRef.current = data.operation;
+    }
+    if (!data) trackedRef.current = null;
+  }, [data]);
+
   if (!data) return null;
 
   const afterRemaining = data.remaining - data.cost;
 
   return (
-    <AlertDialog open onOpenChange={(open) => { if (!open) onConfirm(false); }}>
+    <AlertDialog open onOpenChange={(open) => { if (!open) { trackEvent('credit_cancelled'); onConfirm(false); } }}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
@@ -51,10 +63,10 @@ export function CreditConfirmDialog({ data, onConfirm }: CreditConfirmDialogProp
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => onConfirm(false)}>
+          <AlertDialogCancel onClick={() => { trackEvent('credit_cancelled'); onConfirm(false); }}>
             Cancelar
           </AlertDialogCancel>
-          <AlertDialogAction onClick={() => onConfirm(true)}>
+          <AlertDialogAction onClick={() => { trackEvent('credit_confirmed', { operation_type: data.operation, credits_cost: data.cost }); onConfirm(true); }}>
             Confirmar
           </AlertDialogAction>
         </AlertDialogFooter>

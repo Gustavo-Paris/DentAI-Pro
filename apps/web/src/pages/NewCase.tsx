@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 
 import { WizardPage } from '@pageshell/composites';
+import { trackEvent } from '@/lib/analytics';
 import { useWizardFlow } from '@/hooks/domain/useWizardFlow';
 import { PhotoUploadStep } from '@/components/wizard/PhotoUploadStep';
 import { PatientPreferencesStep } from '@/components/wizard/PatientPreferencesStep';
@@ -48,6 +49,11 @@ export default function NewCase() {
   const { t } = useTranslation();
   const wizard = useWizardFlow();
   const navigate = useNavigate();
+
+  // Track wizard_started on mount
+  useEffect(() => {
+    trackEvent('wizard_started');
+  }, []);
 
   // Compute display step index (0-indexed) from internal step (1-indexed)
   const displayStep = wizard.isQuickCase

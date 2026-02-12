@@ -1,10 +1,11 @@
-import { RefObject } from 'react';
+import { RefObject, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, RefreshCw, Eye, EyeOff } from 'lucide-react';
 import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
 import { AnnotationOverlay } from '@/components/dsd/AnnotationOverlay';
+import { trackEvent } from '@/lib/analytics';
 import type {
   DSDAnalysis,
   DSDSuggestion,
@@ -36,7 +37,7 @@ interface DSDSimulationViewerProps {
   onToggleAnnotations: () => void;
 }
 
-export function DSDSimulationViewer({
+export const DSDSimulationViewer = memo(function DSDSimulationViewer({
   imageBase64,
   simulationImageUrl,
   layers,
@@ -103,7 +104,10 @@ export function DSDSimulationViewer({
           {layers.map((layer, idx) => (
             <button
               key={layer.type}
-              onClick={() => onSelectLayer(idx, layer.type)}
+              onClick={() => {
+                trackEvent('dsd_layer_toggled', { layer_type: layer.type, visible: activeLayerIndex !== idx });
+                onSelectLayer(idx, layer.type);
+              }}
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${
                 activeLayerIndex === idx
                   ? 'bg-primary text-primary-foreground border-primary'
@@ -168,4 +172,4 @@ export function DSDSimulationViewer({
       </div>
     </div>
   );
-}
+});
