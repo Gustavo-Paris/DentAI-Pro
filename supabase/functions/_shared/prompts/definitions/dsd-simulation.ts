@@ -496,7 +496,7 @@ export const dsdSimulation: PromptDefinition<Params> = {
   name: 'Simulação DSD',
   description: 'Prompt de edição de imagem para simulação DSD com 4 variantes (reconstruction, restoration, intraoral, standard)',
   model: 'gemini-3-pro-image-preview',
-  temperature: 0.3,
+  temperature: 0.0,
   maxTokens: 4000,
   mode: 'image-edit',
 
