@@ -262,7 +262,13 @@ export function useDSDStep({
 
         if (!data?.simulation_url) continue;
 
-        bestResult = data;
+        // Keep the FIRST result as baseline — only overwrite if a retry
+        // actually passes lip validation (lips_moved=false).
+        // This prevents degrading quality through retries when all attempts
+        // are flagged by the lip checker.
+        if (!bestResult || !data.lips_moved) {
+          bestResult = data;
+        }
 
         // If lips didn't move or this is not a gingival layer, accept immediately
         if (!data.lips_moved || !isGingivalLayer) break;
@@ -271,7 +277,7 @@ export function useDSDStep({
         if (lipAttempt < MAX_LIP_RETRIES) {
           logger.warn(`Layer ${layerType}: lips moved, retrying (${lipAttempt + 1}/${MAX_LIP_RETRIES})...`);
         } else {
-          logger.warn(`Layer ${layerType}: lips moved on final attempt — accepting best result`);
+          logger.warn(`Layer ${layerType}: lips moved on all attempts — using first result (typically best quality)`);
         }
       }
 
