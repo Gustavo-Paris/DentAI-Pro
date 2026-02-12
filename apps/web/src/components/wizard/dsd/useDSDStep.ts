@@ -26,17 +26,6 @@ import { LAYER_LABELS } from '@/types/dsd';
 // Tooth shape is now fixed as 'natural' - removed manual selection per market research
 const TOOTH_SHAPE = 'natural' as const;
 
-/** Fetch an image URL and convert to a data URL (base64) for passing to the API */
-async function urlToBase64(url: string): Promise<string> {
-  const resp = await fetch(url);
-  const blob = await resp.blob();
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-}
 
 const analysisSteps = [
   { label: 'Detectando landmarks faciais...', duration: 2000 },
@@ -97,9 +86,6 @@ export function useDSDStep({
   const [layersGenerating, setLayersGenerating] = useState(false);
   const [layerGenerationProgress, setLayerGenerationProgress] = useState(0);
   const [failedLayers, setFailedLayers] = useState<SimulationLayerType[]>([]);
-  // Raw (non-composited) Gemini output URLs — used for layer chaining
-  // (composited images go through canvas re-encoding which can trigger Gemini 400 errors)
-  const rawLayerUrlsRef = useRef<Record<string, string>>({});
   const [retryingLayer, setRetryingLayer] = useState<SimulationLayerType | null>(null);
 
   // Gengivoplasty approval: null = not decided, true = approved, false = discarded
@@ -264,15 +250,12 @@ export function useDSDStep({
     return needed;
   }, [gingivoplastyApproved, hasGingivoSuggestion]);
 
-  // Generate a single layer (with client-side lip retry for gingival layers)
-  // baseImageOverride: when provided, uses this image instead of the original photo (for Layer 2→3 chaining)
+  // Generate a single layer from the original photo (with client-side lip retry for gingival layers)
   const generateSingleLayer = useCallback(async (
     analysis: DSDAnalysis,
     layerType: SimulationLayerType,
-    baseImageOverride?: string,
   ): Promise<SimulationLayer | null> => {
-    const effectiveImage = baseImageOverride || imageBase64;
-    if (!effectiveImage) return null;
+    if (!imageBase64) return null;
 
     const isGingivalLayer = layerType === 'complete-treatment' || layerType === 'root-coverage';
     const MAX_LIP_RETRIES = isGingivalLayer ? 2 : 0;
@@ -285,15 +268,12 @@ export function useDSDStep({
           async () => {
             const resp = await invokeFunction<DSDResult & { layer_type?: string; lips_moved?: boolean; simulation_debug?: string }>('generate-dsd', {
               body: {
-                imageBase64: effectiveImage,
+                imageBase64,
                 toothShape: TOOTH_SHAPE,
                 regenerateSimulationOnly: true,
                 existingAnalysis: analysis,
                 patientPreferences,
                 layerType,
-                // When using a pre-processed image (Layer 2 output), tell the backend
-                // to skip whitening/corrections and only apply gingival changes
-                ...(baseImageOverride ? { inputAlreadyProcessed: true } : {}),
               },
             });
             if (resp.error || !resp.data?.simulation_url) {
@@ -386,9 +366,10 @@ export function useDSDStep({
     return { layer, url: signedData?.signedUrl || null };
   }, [imageBase64, toothBounds, user]);
 
-  // Generate layers: L1 and L2 in parallel from original photo, then L3 chained from L2's raw output.
-  // Gemini cannot reliably re-edit its own output for "whitening only", so L1 (corrections)
-  // and L2 (corrections+whitening) are independent. Only L3 (gengivoplasty) chains from L2.
+  // Generate ALL layers in parallel from the original photo.
+  // Gemini cannot re-edit its own output (returns 400), so each layer uses its own
+  // combined prompt: L1 (corrections only), L2 (corrections+whitening),
+  // L3 (corrections+whitening+gengivoplasty). All independent, all parallel.
   const generateAllLayers = useCallback(async (analysisData?: DSDAnalysis) => {
     const analysis = analysisData || result?.analysis;
     if (!imageBase64 || !analysis) return;
@@ -405,60 +386,18 @@ export function useDSDStep({
       const resolvedUrls: Record<string, string> = {};
       const failed: SimulationLayerType[] = [];
 
-      // Separate layers: independent (from original) vs chained (from previous output)
-      const chainedTypes: SimulationLayerType[] = ['complete-treatment', 'root-coverage'];
-      const independentLayers = layerTypes.filter(t => !chainedTypes.includes(t));
-      const dependentLayers = layerTypes.filter(t => chainedTypes.includes(t));
-
-      // Phase 1: Generate independent layers in parallel from original photo
-      const independentResults = await Promise.allSettled(
-        independentLayers.map(layerType => generateSingleLayer(analysis, layerType)),
+      // Generate all layers in parallel from original photo (no chaining)
+      const results = await Promise.allSettled(
+        layerTypes.map(layerType => generateSingleLayer(analysis, layerType)),
       );
 
-      for (let i = 0; i < independentLayers.length; i++) {
-        const layerType = independentLayers[i];
-        const result = independentResults[i];
+      for (let i = 0; i < layerTypes.length; i++) {
+        const layerType = layerTypes[i];
+        const settledResult = results[i];
         setLayerGenerationProgress(prev => prev + 1);
 
-        if (result.status === 'fulfilled' && result.value) {
-          const layer = result.value;
-          // Store raw URL for potential chaining by dependent layers
-          if (layer.simulation_url) {
-            rawLayerUrlsRef.current[layerType] = layer.simulation_url;
-          }
-          const { layer: processed, url } = await compositeAndResolveLayer(layer);
-          compositedLayers.push(processed);
-          if (url) resolvedUrls[processed.type] = url;
-        } else {
-          failed.push(layerType);
-        }
-      }
-
-      // Phase 2: Generate dependent layers chained from L2 (whitening-restorations) raw output
-      for (const layerType of dependentLayers) {
-        let baseImage: string | undefined;
-        const rawL2Url = rawLayerUrlsRef.current['whitening-restorations'];
-        if (rawL2Url) {
-          try {
-            const { data: rawSignedData } = await supabase.storage
-              .from('dsd-simulations')
-              .createSignedUrl(rawL2Url, 3600);
-            if (rawSignedData?.signedUrl) {
-              baseImage = await urlToBase64(rawSignedData.signedUrl);
-              logger.log(`Layer chaining: using whitening-restorations raw output as input for ${layerType}`);
-            }
-          } catch (err) {
-            logger.warn(`Failed to convert L2 raw output to base64 for ${layerType}:`, err);
-          }
-        }
-
-        const layer = await generateSingleLayer(analysis, layerType, baseImage);
-        setLayerGenerationProgress(prev => prev + 1);
-
-        if (layer) {
-          if (layer.simulation_url) {
-            rawLayerUrlsRef.current[layerType] = layer.simulation_url;
-          }
+        if (settledResult.status === 'fulfilled' && settledResult.value) {
+          const layer = settledResult.value;
           const { layer: processed, url } = await compositeAndResolveLayer(layer);
           compositedLayers.push(processed);
           if (url) resolvedUrls[processed.type] = url;
@@ -859,33 +798,17 @@ export function useDSDStep({
     if (url) setSimulationImageUrl(url);
   };
 
-  // Gengivoplasty approval: approve and generate Layer 3 using Layer 2 RAW output as input
+  // Gengivoplasty approval: generate complete-treatment layer from original photo
+  // (Gemini cannot re-edit its own output, so no chaining — the complete-treatment
+  // prompt already includes corrections + whitening + gengivoplasty all at once)
   const handleApproveGingivoplasty = useCallback(async () => {
     setGingivoplastyApproved(true);
     const analysis = result?.analysis;
     if (!analysis || !imageBase64) return;
 
-    // Generate the complete-treatment layer now
     setRetryingLayer('complete-treatment');
     try {
-      // Find Layer 2 (whitening-restorations) RAW Gemini output (not composited) for chaining
-      let layer2Base64: string | undefined;
-      const rawUrl = rawLayerUrlsRef.current['whitening-restorations'];
-      if (rawUrl) {
-        try {
-          const { data: rawSignedData } = await supabase.storage
-            .from('dsd-simulations')
-            .createSignedUrl(rawUrl, 3600);
-          if (rawSignedData?.signedUrl) {
-            layer2Base64 = await urlToBase64(rawSignedData.signedUrl);
-            logger.log('Gengivoplasty approval: using Layer 2 raw Gemini output as input');
-          }
-        } catch (err) {
-          logger.warn('Failed to convert Layer 2 raw URL to base64, falling back to original photo:', err);
-        }
-      }
-
-      const layer = await generateSingleLayer(analysis, 'complete-treatment', layer2Base64);
+      const layer = await generateSingleLayer(analysis, 'complete-treatment');
       if (!layer) {
         toast.error(t('toasts.dsd.layerError', { layer: 'Gengivoplastia' }));
         return;
