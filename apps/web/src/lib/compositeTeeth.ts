@@ -1,5 +1,29 @@
 import type { ToothBoundsPct } from '@/types/dsd';
 
+// --- Image loading helpers ---
+
+/** Convert a data URL to a Blob without fetch (avoids CSP connect-src restrictions). */
+function dataUrlToBlob(dataUrl: string): Blob {
+  const [header, base64] = dataUrl.split(',');
+  const mime = header.match(/:(.*?);/)?.[1] || 'image/jpeg';
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return new Blob([bytes], { type: mime });
+}
+
+/** Load an image from a URL or data URL, returning an ImageBitmap. */
+async function loadImageBitmap(urlOrDataUrl: string): Promise<ImageBitmap> {
+  if (urlOrDataUrl.startsWith('data:')) {
+    return createImageBitmap(dataUrlToBlob(urlOrDataUrl));
+  }
+  const res = await fetch(urlOrDataUrl);
+  if (!res.ok) throw new Error(`Failed to fetch image: ${res.status}`);
+  return createImageBitmap(await res.blob());
+}
+
 // --- HSL color space helpers ---
 
 function rgbToHsl(r: number, g: number, b: number): [number, number, number] {
@@ -89,23 +113,9 @@ export async function createCompositeTeethOnly(params: {
 }): Promise<Blob> {
   const { beforeDataUrl, afterUrl, bounds, includeGingiva } = params;
 
-  const [beforeRes, afterRes] = await Promise.all([
-    fetch(beforeDataUrl),
-    fetch(afterUrl),
-  ]);
-
-  if (!beforeRes.ok || !afterRes.ok) {
-    throw new Error('Falha ao baixar imagens para composição');
-  }
-
-  const [beforeBlob, afterBlob] = await Promise.all([
-    beforeRes.blob(),
-    afterRes.blob(),
-  ]);
-
   const [beforeBitmap, afterBitmap] = await Promise.all([
-    createImageBitmap(beforeBlob),
-    createImageBitmap(afterBlob),
+    loadImageBitmap(beforeDataUrl),
+    loadImageBitmap(afterUrl),
   ]);
 
   const w = beforeBitmap.width;
@@ -205,18 +215,9 @@ export async function createNaturalColorComposite(params: {
 }): Promise<Blob> {
   const { originalDataUrl, aiOutputUrl, bounds } = params;
 
-  const [origRes, aiRes] = await Promise.all([
-    fetch(originalDataUrl),
-    fetch(aiOutputUrl),
-  ]);
-  if (!origRes.ok || !aiRes.ok) {
-    throw new Error('Failed to load images for natural color composite');
-  }
-
-  const [origBlob, aiBlob] = await Promise.all([origRes.blob(), aiRes.blob()]);
   const [origBitmap, aiBitmap] = await Promise.all([
-    createImageBitmap(origBlob),
-    createImageBitmap(aiBlob),
+    loadImageBitmap(originalDataUrl),
+    loadImageBitmap(aiOutputUrl),
   ]);
 
   const w = origBitmap.width;
