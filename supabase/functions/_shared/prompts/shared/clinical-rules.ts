@@ -107,6 +107,11 @@ ERRO FATAL: Indicar gengivoplastia para raiz exposta (PIORA o problema!)
 - Coroa precisa ficar MAIOR -> gengivoplastia
 - Coroa precisa ficar MENOR (raiz exposta) -> recobrimento radicular
 
+CAVEAT OBRIGATORIO PARA GENGIVOPLASTIA:
+Toda sugestao de gengivoplastia DEVE incluir nas notes:
+"Requer avaliação periodontal prévia (sondagem + radiografia periapical) para verificar nível ósseo crestal e largura biológica antes de qualquer remoção tecidual."
+Isso e OBRIGATORIO mesmo para remoções pequenas (1mm). Gengivoplastia sem avaliação radiográfica pode violar largura biológica.
+
 PROIBIDO: Sugerir gengivoplastia baseado APENAS em proporcao largura/altura quando gengiva NAO visivel`
 
 /**
