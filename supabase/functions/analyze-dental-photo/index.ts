@@ -450,10 +450,13 @@ serve(async (req) => {
             thinkingLevel: "low",
           }
         );
+        if (response.tokens) {
+          logger.info('gemini_tokens', { operation: 'analyze-dental-photo', ...response.tokens });
+        }
         return {
-          result: response,
-          tokensIn: 0,
-          tokensOut: 0,
+          result: { text: response.text, functionCall: response.functionCall, finishReason: response.finishReason },
+          tokensIn: response.tokens?.promptTokenCount ?? 0,
+          tokensOut: response.tokens?.candidatesTokenCount ?? 0,
         };
       });
 

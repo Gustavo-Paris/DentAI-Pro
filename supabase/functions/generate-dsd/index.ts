@@ -508,6 +508,9 @@ Responda APENAS 'SIM' ou 'NÃO'.`,
         }
       );
 
+      if (lipCheck.tokens) {
+        logger.info('gemini_tokens', { operation: 'generate-dsd:lip-validation', ...lipCheck.tokens });
+      }
       const lipAnswer = (lipCheck.text || '').trim().toUpperCase();
       const lipsMoved = lipAnswer.includes('SIM');
       logger.log(`Lip validation for ${layerType || 'standard'} layer: ${lipsMoved ? 'FAILED (lips moved)' : 'PASSED'}`);

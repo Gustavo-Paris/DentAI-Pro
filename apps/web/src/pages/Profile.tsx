@@ -27,6 +27,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { logger } from '@/lib/logger';
 
 import { useProfile } from '@/hooks/domain/useProfile';
+import { ReferralCard } from '@/components/referral/ReferralCard';
 
 // =============================================================================
 // Page Adapter
@@ -214,6 +215,7 @@ export default function Profile() {
                   </div>
                 </CardContent>
               </Card>
+              <ReferralCard />
             </div>
           ),
         },

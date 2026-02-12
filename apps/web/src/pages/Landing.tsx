@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -25,6 +26,16 @@ import { useScrollReveal, useScrollRevealChildren } from '@/hooks/useScrollRevea
 
 export default function Landing() {
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
+
+  // Capture referral code from URL and store in localStorage
+  useEffect(() => {
+    const ref = searchParams.get('ref');
+    if (ref) {
+      localStorage.setItem('referral_code', ref);
+    }
+  }, [searchParams]);
+
   const statsRef = useScrollRevealChildren<HTMLDivElement>();
   const featuresRef = useScrollRevealChildren<HTMLDivElement>();
   const testimonialsRef = useScrollRevealChildren<HTMLDivElement>();

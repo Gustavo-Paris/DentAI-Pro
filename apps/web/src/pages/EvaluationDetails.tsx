@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
@@ -54,9 +54,9 @@ import { trackEvent } from '@/lib/analytics';
 import { useEvaluationDetail } from '@/hooks/domain/useEvaluationDetail';
 import { Progress } from '@/components/ui/progress';
 import type { EvaluationItem } from '@/hooks/domain/useEvaluationDetail';
-import { AddTeethModal } from '@/components/AddTeethModal';
+const AddTeethModal = lazy(() => import('@/components/AddTeethModal'));
 import { ClinicalPhotoThumbnail } from '@/components/OptimizedImage';
-import { DSDPreviewModal } from '@/components/DSDPreviewModal';
+const DSDPreviewModal = lazy(() => import('@/components/DSDPreviewModal'));
 import { getTreatmentConfig, formatToothLabel } from '@/lib/treatment-config';
 
 // =============================================================================
@@ -539,23 +539,27 @@ export default function EvaluationDetails() {
 
       {/* Add Teeth Modal */}
       {detail.evaluations.length > 0 && (
-        <AddTeethModal
-          open={detail.showAddTeethModal}
-          onClose={() => detail.setShowAddTeethModal(false)}
-          pendingTeeth={detail.pendingTeeth}
-          onSubmitTeeth={detail.handleSubmitTeeth}
-        />
+        <Suspense fallback={null}>
+          <AddTeethModal
+            open={detail.showAddTeethModal}
+            onClose={() => detail.setShowAddTeethModal(false)}
+            pendingTeeth={detail.pendingTeeth}
+            onSubmitTeeth={detail.handleSubmitTeeth}
+          />
+        </Suspense>
       )}
 
       {/* DSD Preview Modal */}
       {hasDSD && (
-        <DSDPreviewModal
-          open={showDSD}
-          onOpenChange={setShowDSD}
-          photoPath={firstEval?.photo_frontal ?? null}
-          simulationPath={firstEval?.dsd_simulation_url ?? null}
-          layers={firstEval?.dsd_simulation_layers}
-        />
+        <Suspense fallback={null}>
+          <DSDPreviewModal
+            open={showDSD}
+            onOpenChange={setShowDSD}
+            photoPath={firstEval?.photo_frontal ?? null}
+            simulationPath={firstEval?.dsd_simulation_url ?? null}
+            layers={firstEval?.dsd_simulation_layers}
+          />
+        </Suspense>
       )}
 
       {/* Confirm completion with incomplete checklist */}

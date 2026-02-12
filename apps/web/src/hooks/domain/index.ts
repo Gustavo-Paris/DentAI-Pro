@@ -17,6 +17,9 @@ export { usePatientProfile } from './usePatientProfile';
 export type { EditForm, PatientMetrics, PatientProfileState, PatientProfileActions } from './usePatientProfile';
 
 export { useEvaluationDetail } from './useEvaluationDetail';
+
+export { useReferral } from './useReferral';
+export type { ReferralState } from './useReferral';
 export type {
   EvaluationItem,
   ChecklistProgress,
