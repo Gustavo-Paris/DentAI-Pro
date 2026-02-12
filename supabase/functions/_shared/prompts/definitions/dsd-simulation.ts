@@ -306,19 +306,13 @@ function buildRestorationsOnlyPrompt(params: Params): string {
 
 ${absolutePreservation}
 
-TASK: Apply ONLY structural corrections to the teeth. Keep the NATURAL tooth color — NO whitening.
+TASK: Edit ONLY the teeth. Everything else must be IDENTICAL to input.
 
-⚠️ CRITICAL RULE: This layer shows ONLY restorative corrections. You must:
-- Fix chips, cracks, defects, and marginal staining on restorations
-- Correct tooth shapes and contours as indicated by analysis
-- Close gaps and harmonize proportions where indicated
-- Replace old/stained restorations with material matching the CURRENT natural tooth color
-- Apply all structural improvements from the analysis
-
-⚠️ You must NOT:
-- Whiten or brighten the teeth — keep the ORIGINAL natural color
-- Make teeth lighter than they currently are
+#1 TASK - COLOR PRESERVATION (NO WHITENING):
+- Keep the ORIGINAL natural tooth color — NO whitening, NO brightening
 - The tooth color in the output must be IDENTICAL to the input color
+- Do NOT make teeth lighter than they currently are
+- Replace old/stained restorations with material matching the CURRENT natural tooth color
 
 DENTAL CORRECTIONS:
 ${baseCorrections}
@@ -329,18 +323,34 @@ ${PROPORTION_RULES}
 
 ${qualityRequirements}
 
-Output: Same photo with teeth structurally corrected but at their ORIGINAL natural color.`
+Output: Same photo with ONLY teeth structurally corrected at their ORIGINAL natural color.`
 }
 
 function buildGengivoplastyOnlyPrompt(params: Params): string {
-  return `DENTAL PHOTO EDIT - GUM LINE RESHAPING
+  const absolutePreservation = buildAbsolutePreservation()
 
-This is an INPAINTING task. Edit ONLY the gum line (pink tissue above the teeth).
-The teeth in this image have ALREADY been corrected and whitened — do NOT change them.
+  return `DENTAL PHOTO EDIT - GUM LINE RESHAPING ONLY
+
+${absolutePreservation}
+
+⚠️ OVERRIDE FOR THIS LAYER: The "GENGIVA" rule in the preservation block above is PARTIALLY LIFTED.
+You ARE allowed to modify the GINGIVAL MARGIN (the edge where gum meets tooth).
+You are NOT allowed to modify anything else — especially NOT the lips.
+
+This is an INPAINTING task on an ALREADY PROCESSED image.
+The teeth have ALREADY been corrected and whitened — do NOT change them.
 Output dimensions MUST equal input dimensions.
 
+⚠️⚠️⚠️ REGRA #0 — MAIS IMPORTANTE QUE TUDO ⚠️⚠️⚠️
+AMBOS OS LÁBIOS (superior E inferior) são SAGRADOS e INTOCÁVEIS.
+A gengivoplastia altera apenas a margem gengival ENTRE os dentes e o lábio,
+NUNCA a posição, formato, abertura ou contorno dos lábios.
+O enquadramento da foto (crop, zoom, ângulo) DEVE ser IDÊNTICO à entrada.
+⚠️ ERRO FREQUENTE: Levantar o lábio superior para "mostrar mais resultado" — PROIBIDO
+⚠️ A ABERTURA LABIAL (distância entre lábios) é FIXA — não pode aumentar nem diminuir
+
 === WHAT TO EDIT ===
-Reshape the gum line to show more of each tooth:
+Reshape ONLY the gum line (pink gingival tissue) to show more of each tooth:
 - Move the gum edge UPWARD (away from the tooth tip) to reveal more tooth surface
 - Each affected tooth should show 1-2mm MORE visible enamel than in the input
 - Make the gum line SYMMETRICAL — left side should mirror right side
@@ -354,17 +364,21 @@ EXPECTED RESULT:
 - Teeth appear VISIBLY TALLER than in the input photo
 - The gum line is more even and symmetrical
 - The change should be CLEARLY NOTICEABLE in side-by-side comparison
+- The LIPS remain in the EXACT same position — pixel-perfect match with input
 
-=== DO NOT CHANGE ===
+=== DO NOT CHANGE (ABSOLUTE) ===
 - TEETH: Already edited — keep color, shape, contour, texture exactly as input
-- LIPS: Upper and lower lip stay in the EXACT same position and shape
+- LÁBIO SUPERIOR: Mesma posição, formato, contorno — pixel a pixel idêntico à entrada
+- LÁBIO INFERIOR: Mesma posição, formato, contorno — pixel a pixel idêntico à entrada
+- ABERTURA LABIAL: Distância entre lábios IDÊNTICA à entrada
 - FACE/SKIN: No changes to any facial features
 - BACKGROUND: Keep identical
 
 The ONLY pixels you may change are the PINK GUM TISSUE between the teeth and the upper lip.
-When the gum line moves up, the teeth get taller — but the lips stay exactly where they are.
+When the gum line moves up, the teeth get taller — but the lips stay EXACTLY where they are.
+The space between the gum line and the upper lip INCREASES (more tooth visible), but the lip itself does NOT move.
 
-Output: Same photo with reshaped gum line showing more tooth surface. Everything else identical to input.`
+Output: Same photo with reshaped gum line showing more tooth surface. Lips and everything else identical to input.`
 }
 
 function buildWithGengivoplastyPrompt(params: Params): string {
