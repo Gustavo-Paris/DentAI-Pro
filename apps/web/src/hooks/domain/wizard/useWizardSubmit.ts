@@ -164,7 +164,19 @@ export function useWizardSubmit({
     setCurrentToothIndex(-1);
     setStep(6);
 
-    const teethToProcess = selectedTeeth.length > 0 ? selectedTeeth : [formData.tooth];
+    const rawTeeth = selectedTeeth.length > 0 ? selectedTeeth : [formData.tooth];
+
+    // Deduplicate gengivoplasty: when GENGIVO is present, remove per-tooth
+    // entries whose treatment is gengivoplastia (they'd all map to GENGIVO anyway)
+    const hasGengivo = rawTeeth.includes('GENGIVO');
+    const teethToProcess = hasGengivo
+      ? rawTeeth.filter(t => {
+          if (t === 'GENGIVO') return true; // keep the virtual entry
+          const tt = getToothTreatment(t, toothTreatments, analysisResult, formData);
+          return normalizeTreatment(tt) !== 'gengivoplastia';
+        })
+      : rawTeeth;
+
     const createdEvaluationIds: string[] = [];
     const sessionId = crypto.randomUUID();
     const treatmentCounts: Record<string, number> = {};
