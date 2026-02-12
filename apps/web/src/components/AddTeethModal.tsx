@@ -321,3 +321,5 @@ export function AddTeethModal({
     </Dialog>
   );
 }
+
+export default AddTeethModal;

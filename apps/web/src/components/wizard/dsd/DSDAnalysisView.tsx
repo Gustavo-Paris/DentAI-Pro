@@ -14,10 +14,11 @@ import type {
   ToothBoundsPct,
   PatientPreferences,
 } from '@/types/dsd';
-import { DSDSimulationViewer } from './DSDSimulationViewer';
+const DSDSimulationViewer = lazy(() => import('./DSDSimulationViewer'));
 import { DSDWhiteningComparison } from './DSDWhiteningComparison';
-import { memo } from 'react';
+import { memo, lazy, Suspense } from 'react';
 import type { RefObject } from 'react';
+import { ComponentSkeleton } from '@/components/ui/skeleton-wrapper';
 
 interface DSDAnalysisViewProps {
   result: DSDResult;
@@ -299,6 +300,7 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
       {/* Comparison Slider with Layer Tabs — when simulation is ready */}
       {imageBase64 && (simulationImageUrl || layers.length > 0) && (
         <div className="space-y-3">
+          <Suspense fallback={<ComponentSkeleton height="400px" />}>
           <DSDSimulationViewer
             imageBase64={imageBase64}
             simulationImageUrl={simulationImageUrl}
@@ -320,6 +322,7 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
             onRegenerateSimulation={onRegenerateSimulation}
             onToggleAnnotations={onToggleAnnotations}
           />
+          </Suspense>
 
           <DSDWhiteningComparison
             imageBase64={imageBase64}
@@ -389,9 +392,11 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
       </div>
     </div>
   );
-}
+});
 
 // ---- Internal: Suggestions card ----
+
+export default DSDAnalysisView;
 
 function DSDSuggestionsCard({ suggestions }: { suggestions: DSDSuggestion[] | undefined }) {
   const { t } = useTranslation();
@@ -477,4 +482,4 @@ function DSDSuggestionsCard({ suggestions }: { suggestions: DSDSuggestion[] | un
       </CardContent>
     </Card>
   );
-});
+}

@@ -173,3 +173,5 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
     </div>
   );
 });
+
+export default DSDSimulationViewer;

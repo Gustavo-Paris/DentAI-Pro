@@ -144,3 +144,5 @@ export function DSDPreviewModal({
     </Dialog>
   );
 }
+
+export default DSDPreviewModal;
