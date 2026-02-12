@@ -339,18 +339,39 @@ async function generateSimulation(
   });
 
   // Allow shape changes from DSD analysis (conoid laterals, visagism corrections)
-  // Only filter out truly destructive structural changes
+  // Filter out destructive changes AND gingival changes for non-gingival layers
   const destructiveKeywords = [
     'reconstruir', 'reconstruct', 'rebuild',
   ];
 
+  // Gingival suggestions must ONLY appear in complete-treatment/root-coverage layers
+  const isGingivalLayerType = layerType === 'complete-treatment' || layerType === 'root-coverage';
+
   const filteredSuggestions = analysis.suggestions?.filter(s => {
     const change = s.proposed_change.toLowerCase();
     const issue = s.current_issue.toLowerCase();
+    const treatment = (s.treatment_indication || '').toLowerCase();
     const isDestructive = destructiveKeywords.some(kw =>
       change.includes(kw) || issue.includes(kw)
     );
-    return !isDestructive;
+    if (isDestructive) return false;
+
+    // For non-gingival layers (L1, L2), strip any gengivoplasty/root-coverage suggestions
+    // so they don't leak into the prompt and cause unwanted gum changes
+    if (!isGingivalLayerType) {
+      const isGingivalSuggestion =
+        treatment === 'gengivoplastia' ||
+        treatment === 'recobrimento_radicular' ||
+        change.includes('gengivoplastia') ||
+        change.includes('gengivoplasty') ||
+        change.includes('recobrimento radicular') ||
+        change.includes('zênite') ||
+        change.includes('zenite') ||
+        change.includes('gengiv');
+      if (isGingivalSuggestion) return false;
+    }
+
+    return true;
   }) || [];
 
   const allowedChangesFromAnalysis = filteredSuggestions.length > 0
