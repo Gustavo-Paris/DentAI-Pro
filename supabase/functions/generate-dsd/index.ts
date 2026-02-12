@@ -552,11 +552,12 @@ Responda APENAS 'SIM' ou 'NÃO'.`,
     }
 
     // For gingival layers, validate lips and return flag (client handles retry).
-    // Skip validation when inputAlreadyProcessed (gengivoplasty-only from L2 output):
-    // the Flash validator consistently confuses gingival recontouring with lip movement,
-    // causing wasteful retries that produce the same result (deterministic seed).
+    // Previously skipped for inputAlreadyProcessed, but re-enabled now that:
+    // 1. Temperature is 0.0 (deterministic output)
+    // 2. Gengivoplasty-only prompt includes full absolutePreservation block
+    // 3. The validator should no longer confuse gum recontouring with lip movement
     let lipsMoved = false;
-    if (isGingivalLayer && !inputAlreadyProcessed) {
+    if (isGingivalLayer) {
       const lipsValid = await validateLips(result.imageUrl);
       lipsMoved = !lipsValid;
     }
