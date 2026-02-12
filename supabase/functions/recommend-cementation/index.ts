@@ -333,10 +333,13 @@ serve(async (req: Request) => {
             forceFunctionName: "generate_cementation_protocol",
           }
         );
+        if (response.tokens) {
+          logger.info('gemini_tokens', { operation: 'recommend-cementation', ...response.tokens });
+        }
         return {
-          result: response,
-          tokensIn: 0,
-          tokensOut: 0,
+          result: { text: response.text, functionCall: response.functionCall, finishReason: response.finishReason },
+          tokensIn: response.tokens?.promptTokenCount ?? 0,
+          tokensOut: response.tokens?.candidatesTokenCount ?? 0,
         };
       });
 

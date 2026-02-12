@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState, useRef, useCallback, Re
 import { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
+import { applyReferralCode } from '@/data/referral';
 
 const IDLE_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
 
@@ -89,6 +90,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       supabase.functions.invoke('send-email', {
         body: { template: 'welcome' },
       }).catch((err) => logger.error('Welcome email failed (non-blocking):', err));
+
+      // Fire-and-forget: apply referral code if one was stored from landing page
+      const referralCode = localStorage.getItem('referral_code');
+      if (referralCode) {
+        // We need the new user's ID; it's available from the signup response via onAuthStateChange
+        // Use a small delay to let the auth state propagate
+        setTimeout(() => {
+          supabase.auth.getUser().then(({ data }) => {
+            if (data?.user?.id) {
+              applyReferralCode(referralCode, data.user.id)
+                .then(() => localStorage.removeItem('referral_code'))
+                .catch((err) => logger.error('Referral code application failed (non-blocking):', err));
+            }
+          });
+        }, 2000);
+      }
     }
 
     return { error };

@@ -296,7 +296,7 @@ describe('ReviewAnalysisStep', () => {
     expect(screen.getByText(/Cuidado com bruxismo/)).toBeInTheDocument();
   });
 
-  it('should render multi-tooth selection cards', () => {
+  it('should render multi-tooth selection cards', async () => {
     render(
       <ReviewAnalysisStep
         {...defaultProps}
@@ -305,7 +305,7 @@ describe('ReviewAnalysisStep', () => {
         onSelectedTeethChange={vi.fn()}
       />
     );
-    expect(screen.getByText('components.wizard.review.selectTeethTitle')).toBeInTheDocument();
+    expect(await screen.findByText('components.wizard.review.selectTeethTitle')).toBeInTheDocument();
   });
 
   it('should render reanalyze button when callback provided', () => {

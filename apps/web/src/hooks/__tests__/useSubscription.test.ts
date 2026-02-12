@@ -205,3 +205,157 @@ describe('estimatedDaysRemaining calculation', () => {
     expect(result).toBe(5); // 10 remaining / 2 per day
   });
 });
+
+// ---------------------------------------------------------------------------
+// Subscription status computed properties
+// ---------------------------------------------------------------------------
+
+describe('subscription status logic', () => {
+  function computeStatus(subscription: { status: string; plan_id: string | null } | null) {
+    const isActive = subscription?.status === 'active' || subscription?.status === 'trialing';
+    const isFree = !isActive || subscription?.plan_id === 'starter' || !subscription?.plan_id;
+    const isEssencial = isActive && subscription?.plan_id === 'price_essencial_monthly';
+    const isPro = isActive && subscription?.plan_id === 'price_pro_monthly_v2';
+    const isElite = isActive && subscription?.plan_id === 'price_elite_monthly';
+    return { isActive, isFree, isEssencial, isPro, isElite };
+  }
+
+  it('should identify active subscription', () => {
+    const result = computeStatus({ status: 'active', plan_id: 'price_pro_monthly_v2' });
+    expect(result.isActive).toBe(true);
+  });
+
+  it('should identify trialing as active', () => {
+    const result = computeStatus({ status: 'trialing', plan_id: 'price_pro_monthly_v2' });
+    expect(result.isActive).toBe(true);
+  });
+
+  it('should identify inactive statuses', () => {
+    for (const status of ['inactive', 'past_due', 'canceled', 'unpaid']) {
+      const result = computeStatus({ status, plan_id: 'price_pro_monthly_v2' });
+      expect(result.isActive).toBe(false);
+    }
+  });
+
+  it('should identify free tier when no subscription', () => {
+    const result = computeStatus(null);
+    expect(result.isFree).toBe(true);
+  });
+
+  it('should identify free tier when plan_id is starter', () => {
+    const result = computeStatus({ status: 'active', plan_id: 'starter' });
+    expect(result.isFree).toBe(true);
+  });
+
+  it('should identify free tier when plan_id is null', () => {
+    const result = computeStatus({ status: 'active', plan_id: null });
+    expect(result.isFree).toBe(true);
+  });
+
+  it('should identify free tier when subscription is inactive', () => {
+    const result = computeStatus({ status: 'canceled', plan_id: 'price_pro_monthly_v2' });
+    expect(result.isFree).toBe(true);
+  });
+
+  it('should identify isPro correctly', () => {
+    const result = computeStatus({ status: 'active', plan_id: 'price_pro_monthly_v2' });
+    expect(result.isPro).toBe(true);
+    expect(result.isFree).toBe(false);
+    expect(result.isEssencial).toBe(false);
+    expect(result.isElite).toBe(false);
+  });
+
+  it('should identify isEssencial correctly', () => {
+    const result = computeStatus({ status: 'active', plan_id: 'price_essencial_monthly' });
+    expect(result.isEssencial).toBe(true);
+    expect(result.isPro).toBe(false);
+  });
+
+  it('should identify isElite correctly', () => {
+    const result = computeStatus({ status: 'active', plan_id: 'price_elite_monthly' });
+    expect(result.isElite).toBe(true);
+    expect(result.isPro).toBe(false);
+  });
+});
+
+describe('getCreditCost logic', () => {
+  const DEFAULT_CREDIT_COSTS: Record<string, number> = {
+    case_analysis: 1,
+    dsd_simulation: 2,
+  };
+
+  function getCreditCost(
+    creditCostsMap: Record<string, number>,
+    operation: string,
+  ): number {
+    return creditCostsMap[operation] || DEFAULT_CREDIT_COSTS[operation] || 1;
+  }
+
+  it('should return cost from DB map when available', () => {
+    const map = { case_analysis: 3, dsd_simulation: 5 };
+    expect(getCreditCost(map, 'case_analysis')).toBe(3);
+  });
+
+  it('should fall back to default when not in DB map', () => {
+    expect(getCreditCost({}, 'case_analysis')).toBe(1);
+    expect(getCreditCost({}, 'dsd_simulation')).toBe(2);
+  });
+
+  it('should return 1 for unknown operations', () => {
+    expect(getCreditCost({}, 'unknown_operation')).toBe(1);
+  });
+
+  it('should prefer DB value over default', () => {
+    const map = { case_analysis: 10 };
+    expect(getCreditCost(map, 'case_analysis')).toBe(10);
+  });
+});
+
+describe('legacy usage tracking logic', () => {
+  function computeLegacyUsage(plan: { cases_per_month: number; dsd_simulations_per_month: number } | undefined, subscription: { cases_used_this_month: number; dsd_used_this_month: number } | undefined) {
+    const casesLimit = plan?.cases_per_month || 3;
+    const casesUsed = subscription?.cases_used_this_month || 0;
+    const casesRemaining = casesLimit === -1 ? Infinity : Math.max(0, casesLimit - casesUsed);
+
+    const dsdLimit = plan?.dsd_simulations_per_month || 2;
+    const dsdUsed = subscription?.dsd_used_this_month || 0;
+    const dsdRemaining = dsdLimit === -1 ? Infinity : Math.max(0, dsdLimit - dsdUsed);
+
+    return { casesLimit, casesUsed, casesRemaining, dsdLimit, dsdUsed, dsdRemaining };
+  }
+
+  it('should use defaults when no plan', () => {
+    const result = computeLegacyUsage(undefined, undefined);
+    expect(result.casesLimit).toBe(3);
+    expect(result.dsdLimit).toBe(2);
+    expect(result.casesRemaining).toBe(3);
+    expect(result.dsdRemaining).toBe(2);
+  });
+
+  it('should calculate remaining correctly', () => {
+    const result = computeLegacyUsage(
+      { cases_per_month: 10, dsd_simulations_per_month: 5 },
+      { cases_used_this_month: 4, dsd_used_this_month: 2 },
+    );
+    expect(result.casesRemaining).toBe(6);
+    expect(result.dsdRemaining).toBe(3);
+  });
+
+  it('should handle unlimited plans (-1)', () => {
+    const result = computeLegacyUsage(
+      { cases_per_month: -1, dsd_simulations_per_month: -1 },
+      { cases_used_this_month: 100, dsd_used_this_month: 50 },
+    );
+    expect(result.casesRemaining).toBe(Infinity);
+    expect(result.dsdRemaining).toBe(Infinity);
+  });
+
+  it('should not go negative on remaining', () => {
+    const result = computeLegacyUsage(
+      { cases_per_month: 3, dsd_simulations_per_month: 2 },
+      { cases_used_this_month: 10, dsd_used_this_month: 5 },
+    );
+    expect(result.casesRemaining).toBe(0);
+    expect(result.dsdRemaining).toBe(0);
+  });
+});
