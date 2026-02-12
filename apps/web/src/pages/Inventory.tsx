@@ -351,7 +351,7 @@ export default function Inventory() {
                 <div>
                   <p className="text-sm font-medium flex items-center gap-2 mb-2 text-warning">
                     <FileWarning className="w-4 h-4" />
-                    {inv.csvPreview.unmatched.length} não encontrada(s) no catálogo
+                    {t('inventory.resinsUnmatched', { count: inv.csvPreview.unmatched.length })}
                   </p>
                   <div className="max-h-24 overflow-y-auto space-y-1 border rounded-lg p-2 border-warning/30">
                     {inv.csvPreview.unmatched.map((line, i) => (

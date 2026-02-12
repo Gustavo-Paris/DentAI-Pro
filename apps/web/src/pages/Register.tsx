@@ -157,7 +157,7 @@ export default function Register() {
                       <FormLabel>{t('auth.fullName')}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Dr. João Silva"
+                          placeholder={t('auth.fullNamePlaceholder')}
                           autoComplete="name"
                           aria-required="true"
                           {...field}

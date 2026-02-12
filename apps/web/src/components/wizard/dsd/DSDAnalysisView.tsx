@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Smile, Loader2, RefreshCw, Lightbulb, AlertCircle, Zap, ArrowRight, CheckCircle, XCircle } from 'lucide-react';
+import { memo, lazy, Suspense } from 'react';
+import type { RefObject } from 'react';
 import { ProportionsCard } from '@/components/dsd/ProportionsCard';
 import type {
   DSDAnalysis,
@@ -16,8 +18,6 @@ import type {
 } from '@/types/dsd';
 const DSDSimulationViewer = lazy(() => import('./DSDSimulationViewer'));
 import { DSDWhiteningComparison } from './DSDWhiteningComparison';
-import { memo, lazy, Suspense } from 'react';
-import type { RefObject } from 'react';
 import { ComponentSkeleton } from '@/components/ui/skeleton-wrapper';
 
 interface DSDAnalysisViewProps {

@@ -137,14 +137,14 @@ export const ToothSelectionCard = memo(function ToothSelectionCard({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="resina">Resina Composta</SelectItem>
-                  <SelectItem value="porcelana">Faceta de Porcelana</SelectItem>
-                  <SelectItem value="coroa">Coroa Total</SelectItem>
-                  <SelectItem value="implante">Implante</SelectItem>
-                  <SelectItem value="endodontia">Tratamento de Canal</SelectItem>
-                  <SelectItem value="encaminhamento">Encaminhamento</SelectItem>
-                  <SelectItem value="gengivoplastia">Gengivoplastia Estética</SelectItem>
-                  <SelectItem value="recobrimento_radicular">Recobrimento Radicular</SelectItem>
+                  <SelectItem value="resina">{t('components.wizard.review.treatmentResina')}</SelectItem>
+                  <SelectItem value="porcelana">{t('components.wizard.review.treatmentPorcelana')}</SelectItem>
+                  <SelectItem value="coroa">{t('components.wizard.review.treatmentCoroa')}</SelectItem>
+                  <SelectItem value="implante">{t('components.wizard.review.treatmentImplante')}</SelectItem>
+                  <SelectItem value="endodontia">{t('components.wizard.review.treatmentEndodontia')}</SelectItem>
+                  <SelectItem value="encaminhamento">{t('components.wizard.review.treatmentEncaminhamento')}</SelectItem>
+                  <SelectItem value="gengivoplastia">{t('components.wizard.review.treatmentGengivoplastia')}</SelectItem>
+                  <SelectItem value="recobrimento_radicular">{t('components.wizard.review.treatmentRecobrimentoRadicular')}</SelectItem>
                 </SelectContent>
               </Select>
               {onRestoreAiSuggestion && originalToothTreatments[tooth.tooth] &&

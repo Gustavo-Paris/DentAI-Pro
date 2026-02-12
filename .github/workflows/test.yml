@@ -26,6 +26,9 @@ jobs:
       - name: Lint
         run: pnpm turbo run lint
 
+      - name: Security audit
+        run: pnpm audit --audit-level=high || true
+
   typecheck:
     name: Type Check
     runs-on: ubuntu-latest

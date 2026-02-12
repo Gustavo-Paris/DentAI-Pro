@@ -14,7 +14,14 @@ import { cn } from '@/lib/utils';
 import type { LucideIcon } from 'lucide-react';
 
 const DEFAULT_ICONS: LucideIcon[] = [Camera, Heart, Brain, Smile, ClipboardCheck, FileText];
-const DEFAULT_LABELS = ['Foto', 'Preferências', 'Análise', 'DSD', 'Revisão', 'Resultado'];
+const DEFAULT_LABEL_KEYS = [
+  'components.stepIndicator.photo',
+  'components.stepIndicator.preferences',
+  'components.stepIndicator.analysis',
+  'components.stepIndicator.dsd',
+  'components.stepIndicator.review',
+  'components.stepIndicator.result',
+];
 
 interface StepIndicatorProps {
   currentStep: number; // 0-indexed
@@ -33,7 +40,8 @@ export function StepIndicator({
 }: StepIndicatorProps) {
   const { t } = useTranslation();
   const icons = stepIcons || DEFAULT_ICONS;
-  const labels = stepLabels || DEFAULT_LABELS;
+  const defaultLabels = useMemo(() => DEFAULT_LABEL_KEYS.map(k => t(k)), [t]);
+  const labels = stepLabels || defaultLabels;
 
   const steps = useMemo(
     () =>

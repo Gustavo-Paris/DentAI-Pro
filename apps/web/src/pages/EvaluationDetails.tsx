@@ -239,7 +239,7 @@ export default function EvaluationDetails() {
                       >
                         <ClinicalPhotoThumbnail
                           path={firstEval.photo_frontal}
-                          alt="Foto clínica"
+                          alt={t('evaluation.clinicalPhoto')}
                           size="grid"
                           className="w-full h-full"
                         />
@@ -247,7 +247,7 @@ export default function EvaluationDetails() {
                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors rounded-lg flex items-center justify-center">
                             <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 bg-background/90 px-2 py-1 rounded-full text-xs font-medium">
                               <Eye className="w-3.5 h-3.5 text-primary" />
-                              Ver DSD
+                              {t('components.evaluationDetail.viewDSD')}
                             </div>
                           </div>
                         )}
@@ -345,7 +345,7 @@ export default function EvaluationDetails() {
                   <TableBody>
                     {groupByTreatment(detail.evaluations).map((group, gi) => {
                       const showGroupHeader = group.evaluations.length > 1;
-                      const groupTeeth = group.evaluations.map(e => e.tooth === 'GENGIVO' ? 'Gengiva' : e.tooth).join(', ');
+                      const groupTeeth = group.evaluations.map(e => e.tooth === 'GENGIVO' ? t('components.evaluationDetail.gingiva') : e.tooth).join(', ');
                       const groupIds = group.evaluations.map(e => e.id);
                       const allSelected = groupIds.every(id => detail.selectedIds.has(id));
                       return [
@@ -365,7 +365,7 @@ export default function EvaluationDetails() {
                             </TableCell>
                             <TableCell colSpan={3} className="py-2">
                               <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                                {group.label} — {group.evaluations.length} dentes: {groupTeeth}
+                                {group.label} — {t('components.evaluationDetail.teethCount', { count: group.evaluations.length, teeth: groupTeeth })}
                               </span>
                               <span className="text-xs text-muted-foreground ml-2">
                                 ({group.resinName
@@ -398,7 +398,7 @@ export default function EvaluationDetails() {
                                 onCheckedChange={() => detail.toggleSelection(evaluation.id)}
                               />
                             </TableCell>
-                            <TableCell className="font-medium">{evaluation.tooth === 'GENGIVO' ? 'Gengiva' : evaluation.tooth}</TableCell>
+                            <TableCell className="font-medium">{evaluation.tooth === 'GENGIVO' ? t('components.evaluationDetail.gingiva') : evaluation.tooth}</TableCell>
                             <TableCell>{getTreatmentBadge(evaluation)}</TableCell>
                             <TableCell>
                               {getStatusBadge(evaluation, detail.getChecklistProgress)}
@@ -406,7 +406,7 @@ export default function EvaluationDetails() {
                             <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon" aria-label="Mais opções">
+                                  <Button variant="ghost" size="icon" aria-label={t('components.evaluationDetail.moreOptions')}>
                                     <MoreHorizontal className="w-4 h-4" />
                                   </Button>
                                 </DropdownMenuTrigger>
@@ -427,7 +427,7 @@ export default function EvaluationDetails() {
                                       </TooltipTrigger>
                                       {!detail.isChecklistComplete(evaluation) && (
                                         <TooltipContent>
-                                          {detail.getChecklistProgress(evaluation).current} de {detail.getChecklistProgress(evaluation).total} itens completos no checklist
+                                          {t('evaluation.checklistItems', { current: detail.getChecklistProgress(evaluation).current, total: detail.getChecklistProgress(evaluation).total })}
                                         </TooltipContent>
                                       )}
                                     </Tooltip>
@@ -449,14 +449,14 @@ export default function EvaluationDetails() {
               <h3 className="font-semibold font-display text-lg">{t('evaluation.generatedTreatments')}</h3>
               {groupByTreatment(detail.evaluations).map((group, gi) => {
                 const showGroupHeader = group.evaluations.length > 1;
-                const groupTeeth = group.evaluations.map(e => e.tooth === 'GENGIVO' ? 'Gengiva' : e.tooth).join(', ');
+                const groupTeeth = group.evaluations.map(e => e.tooth === 'GENGIVO' ? t('components.evaluationDetail.gingiva') : e.tooth).join(', ');
                 return (
                   <div key={`mgroup-${gi}`}>
                     {showGroupHeader && (
                       <div className="flex items-center justify-between px-2 py-2 mb-1 bg-muted/40 rounded-lg">
                         <div>
                           <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide block">
-                            {group.label} — {group.evaluations.length} dentes: {groupTeeth}
+                            {group.label} — {t('components.evaluationDetail.teethCount', { count: group.evaluations.length, teeth: groupTeeth })}
                           </span>
                           {group.resinName && (
                             <span className="text-xs text-muted-foreground">
@@ -471,7 +471,7 @@ export default function EvaluationDetails() {
                           onClick={() => navigate(`/result/group/${detail.sessionId}/${encodeURIComponent(getProtocolFingerprint(group.evaluations[0]))}`)}
                         >
                           <Eye className="w-3 h-3 mr-1" />
-                          Ver Protocolo
+                          {t('components.evaluationDetail.viewProtocol')}
                         </Button>
                       </div>
                     )}
@@ -508,19 +508,19 @@ export default function EvaluationDetails() {
                         <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="outline" size="sm" aria-label="Mais opções">
+                              <Button variant="outline" size="sm" aria-label={t('components.evaluationDetail.moreOptions')}>
                                 <MoreHorizontal className="w-4 h-4" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={() => detail.handleExportPDF(evaluation.id)}>
                                 <FileDown className="w-4 h-4 mr-2" />
-                                Exportar PDF
+                                {t('common.exportPDF')}
                               </DropdownMenuItem>
                               {evaluation.status !== 'completed' && (
                                 <DropdownMenuItem onClick={() => handleCompleteClick(evaluation.id)}>
                                   <CheckCircle className="w-4 h-4 mr-2" />
-                                  Marcar como finalizado
+                                  {t('common.markAsCompleted')}
                                 </DropdownMenuItem>
                               )}
                             </DropdownMenuContent>

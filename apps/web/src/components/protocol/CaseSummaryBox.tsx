@@ -22,14 +22,13 @@ const AESTHETIC_PROCEDURES = [
   'Lente de Contato',
 ];
 
-// Explicações dos níveis estéticos
-const aestheticExplanations: Record<string, string> = {
-  'funcional': 'Restauração funcional com boa estética — 2-3 camadas',
-  'estético': 'Mimetismo natural, estratificação completa — 4-5 camadas com efeitos opcionais',
-  // Backward compat for old values
-  'básico': 'Restauração funcional, estética secundária',
-  'alto': 'Mimetismo natural exigido, paciente atento aos detalhes',
-  'muito alto': 'DSD ativo, harmonização completa, estética de excelência',
+// Map aesthetic level keys to i18n keys
+const aestheticExplanationKeys: Record<string, string> = {
+  'funcional': 'components.caseSummary.aestheticFunctional',
+  'estético': 'components.caseSummary.aestheticEsthetic',
+  'básico': 'components.caseSummary.aestheticBasic',
+  'alto': 'components.caseSummary.aestheticHigh',
+  'muito alto': 'components.caseSummary.aestheticVeryHigh',
 };
 
 interface CaseSummaryBoxProps {
@@ -186,7 +185,7 @@ function CaseSummaryBox({
             </TooltipTrigger>
             <TooltipContent side="top">
               <p className="text-xs max-w-[200px]">
-                {aestheticExplanations[aestheticLevel.toLowerCase()] || 'Nível estético selecionado'}
+                {t(aestheticExplanationKeys[aestheticLevel.toLowerCase()] || 'components.caseSummary.aestheticDefault')}
               </p>
             </TooltipContent>
           </Tooltip>

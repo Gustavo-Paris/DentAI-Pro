@@ -46,17 +46,17 @@ export function CreditConfirmDialog({ data, onConfirm }: CreditConfirmDialogProp
           <AlertDialogDescription asChild>
             <div className="space-y-3">
               <p>
-                <strong>{data.operationLabel}</strong> custará{' '}
-                <strong>{data.cost} {data.cost === 1 ? 'crédito' : 'créditos'}</strong>.
+                <strong>{data.operationLabel}</strong> {t('components.creditConfirm.willCost')}{' '}
+                <strong>{t('components.creditConfirm.credit', { count: data.cost })}</strong>.
               </p>
               <div className="flex items-center justify-between rounded-lg bg-muted px-4 py-2.5 text-sm">
                 <span className="text-muted-foreground">{t('components.creditConfirm.currentBalance')}</span>
-                <span className="font-semibold">{data.remaining} créditos</span>
+                <span className="font-semibold">{data.remaining} {t('components.creditConfirm.credits')}</span>
               </div>
               <div className="flex items-center justify-between rounded-lg bg-muted px-4 py-2.5 text-sm">
                 <span className="text-muted-foreground">{t('components.creditConfirm.afterOperation')}</span>
                 <span className={`font-semibold ${afterRemaining <= 1 ? 'text-destructive' : ''}`}>
-                  {afterRemaining} créditos
+                  {afterRemaining} {t('components.creditConfirm.credits')}
                 </span>
               </div>
             </div>
@@ -64,10 +64,10 @@ export function CreditConfirmDialog({ data, onConfirm }: CreditConfirmDialogProp
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel onClick={() => { trackEvent('credit_cancelled'); onConfirm(false); }}>
-            Cancelar
+            {t('common.cancel')}
           </AlertDialogCancel>
           <AlertDialogAction onClick={() => { trackEvent('credit_confirmed', { operation_type: data.operation, credits_cost: data.cost }); onConfirm(true); }}>
-            Confirmar
+            {t('common.confirm')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { GripVertical, ZoomIn, ZoomOut, Maximize } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -20,11 +21,14 @@ const ZOOM_STEP = 0.25;
 export function ComparisonSlider({
   beforeImage,
   afterImage,
-  beforeLabel = 'Antes',
-  afterLabel = 'Simulação DSD',
+  beforeLabel,
+  afterLabel,
   annotationOverlay,
   changeIndicator,
 }: ComparisonSliderProps) {
+  const { t } = useTranslation();
+  const resolvedBeforeLabel = beforeLabel ?? t('components.wizard.dsd.simulationViewer.before');
+  const resolvedAfterLabel = afterLabel ?? t('dsd.simulation');
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
   const [zoom, setZoom] = useState(1);
@@ -215,7 +219,7 @@ export function ComparisonSlider({
         <div className="absolute inset-0 overflow-hidden">
           <img
             src={afterImage}
-            alt={afterLabel}
+            alt={resolvedAfterLabel}
             className="w-full h-full object-cover"
             style={{ transform: imageTransform, transformOrigin: 'center center' }}
             draggable={false}
@@ -229,7 +233,7 @@ export function ComparisonSlider({
         >
           <img
             src={beforeImage}
-            alt={beforeLabel}
+            alt={resolvedBeforeLabel}
             className="w-full h-full object-cover"
             style={{ transform: imageTransform, transformOrigin: 'center center' }}
             draggable={false}
@@ -291,10 +295,10 @@ export function ComparisonSlider({
 
         {/* Labels */}
         <div className="absolute bottom-3 left-3 px-2 py-1 bg-background/90 rounded text-xs font-medium z-10">
-          {beforeLabel}
+          {resolvedBeforeLabel}
         </div>
         <div className="absolute bottom-3 right-3 px-2 py-1 bg-primary text-primary-foreground rounded text-xs font-medium z-10">
-          {afterLabel}
+          {resolvedAfterLabel}
         </div>
 
         {/* Change indicator */}
