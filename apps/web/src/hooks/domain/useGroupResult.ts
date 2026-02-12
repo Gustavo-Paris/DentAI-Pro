@@ -64,16 +64,31 @@ interface GroupEvaluation {
 
 // Must match getProtocolFingerprint in EvaluationDetails.tsx
 function getProtocolFingerprint(ev: GroupEvaluation): string {
-  const resinKey = ev.resins
-    ? `${ev.resins.name}|${ev.resins.manufacturer}`
-    : 'unknown';
-  const protocol = ev.stratification_protocol;
-  if (!protocol?.layers?.length) return resinKey;
-  const layersKey = [...protocol.layers]
-    .sort((a, b) => a.order - b.order)
-    .map(l => `${l.resin_brand}:${l.shade}`)
-    .join('|');
-  return `${resinKey}::${layersKey}`;
+  const treatmentType = ev.treatment_type || 'resina';
+
+  if (treatmentType === 'resina') {
+    const resinKey = ev.resins
+      ? `${ev.resins.name}|${ev.resins.manufacturer}`
+      : 'no-resin';
+    const protocol = ev.stratification_protocol;
+    if (!protocol?.layers?.length) return `resina::${resinKey}`;
+    const layersKey = [...protocol.layers]
+      .sort((a, b) => a.order - b.order)
+      .map(l => `${l.resin_brand}:${l.shade}`)
+      .join('|');
+    return `resina::${resinKey}::${layersKey}`;
+  }
+
+  if (treatmentType === 'porcelana') {
+    const cem = ev.cementation_protocol;
+    if (cem?.cementation) {
+      return `porcelana::${cem.cementation.cement_type || ''}::${cem.cementation.cement_brand || ''}`;
+    }
+    return 'porcelana';
+  }
+
+  // Generic treatments (gengivoplastia, implante, coroa, etc.)
+  return treatmentType;
 }
 
 // ---------------------------------------------------------------------------

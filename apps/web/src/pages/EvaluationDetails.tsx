@@ -109,28 +109,41 @@ interface EvalGroup {
   evaluations: EvaluationItem[];
 }
 
-/** Generates a fingerprint from a resin evaluation's protocol so identical protocols can be grouped.
+/** Generates a fingerprint from an evaluation's protocol so identical protocols can be grouped.
+ *  Prefixed by treatment_type to prevent cross-type collisions.
  *  NOTE: Must match the getProtocolFingerprint in useGroupResult.ts */
 export function getProtocolFingerprint(evaluation: EvaluationItem): string {
-  const resinKey = evaluation.resins
-    ? `${evaluation.resins.name}|${evaluation.resins.manufacturer}`
-    : 'unknown';
-  if (!evaluation.stratification_protocol?.layers?.length) return resinKey;
-  const layersKey = [...evaluation.stratification_protocol.layers]
-    .sort((a, b) => a.order - b.order)
-    .map(l => `${l.resin_brand}:${l.shade}`)
-    .join('|');
-  return `${resinKey}::${layersKey}`;
+  const treatmentType = evaluation.treatment_type || 'resina';
+
+  if (treatmentType === 'resina') {
+    const resinKey = evaluation.resins
+      ? `${evaluation.resins.name}|${evaluation.resins.manufacturer}`
+      : 'no-resin';
+    if (!evaluation.stratification_protocol?.layers?.length) return `resina::${resinKey}`;
+    const layersKey = [...evaluation.stratification_protocol.layers]
+      .sort((a, b) => a.order - b.order)
+      .map(l => `${l.resin_brand}:${l.shade}`)
+      .join('|');
+    return `resina::${resinKey}::${layersKey}`;
+  }
+
+  if (treatmentType === 'porcelana') {
+    const cem = evaluation.cementation_protocol;
+    if (cem?.cementation) {
+      return `porcelana::${cem.cementation.cement_type || ''}::${cem.cementation.cement_brand || ''}`;
+    }
+    return 'porcelana';
+  }
+
+  // Generic treatments (gengivoplastia, implante, coroa, etc.)
+  return treatmentType;
 }
 
 function groupByTreatment(evaluations: EvaluationItem[]): EvalGroup[] {
   const map = new Map<string, EvaluationItem[]>();
   for (const ev of evaluations) {
-    const baseKey = ev.treatment_type || 'outros';
-    // For resina, further sub-group by identical protocol fingerprint
-    const key = baseKey === 'resina'
-      ? `resina::${getProtocolFingerprint(ev)}`
-      : baseKey;
+    // Use fingerprint for ALL treatment types (prevents cross-type collisions)
+    const key = getProtocolFingerprint(ev);
     if (!map.has(key)) map.set(key, []);
     map.get(key)!.push(ev);
   }
