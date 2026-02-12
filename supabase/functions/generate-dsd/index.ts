@@ -550,9 +550,12 @@ Responda APENAS 'SIM' ou 'NÃO'.`,
       throw new Error(`Gemini returned no image. Text: ${(result.text || 'none').substring(0, 200)}`);
     }
 
-    // For gingival layers, validate lips and return flag (client handles retry)
+    // For gingival layers, validate lips and return flag (client handles retry).
+    // Skip validation when inputAlreadyProcessed (gengivoplasty-only from L2 output):
+    // the Flash validator consistently confuses gingival recontouring with lip movement,
+    // causing wasteful retries that produce the same result (deterministic seed).
     let lipsMoved = false;
-    if (isGingivalLayer) {
+    if (isGingivalLayer && !inputAlreadyProcessed) {
       const lipsValid = await validateLips(result.imageUrl);
       lipsMoved = !lipsValid;
     }
