@@ -358,30 +358,26 @@ VALIDAÇÃO:
 - Abertura labial: IDÊNTICA à foto original
 - Se qualquer lábio mudou de posição → REJEITAR e refazer
 
-⚠️ EXCEPTION TO GINGIVA PRESERVATION: In this layer, you ARE ALLOWED to modify the gingival contour.
-The gum line should be recontoured to show the effect of gengivoplasty:
-- Expose more clinical crown by moving the gingival margin apically (towards the root)
+⚠️ EXCEPTION TO GINGIVA PRESERVATION: In this layer, you ARE ALLOWED and REQUIRED to modify the gingival contour.
+
+YOUR PRIMARY TASK — GENGIVOPLASTY SIMULATION:
+The gum line MUST be recontoured to show a CLEAR, VISIBLE effect of gengivoplasty:
+- Expose MORE clinical crown by moving the gingival margin apically (towards the root)
 - Create symmetrical gingival zeniths between contralateral teeth
-- Harmonize the gum line curvature across the smile
-- The recontoured gums must still look NATURAL (pink, healthy tissue appearance)
-- The gingival alteration MUST be VISUALLY EVIDENT in the before/after comparison
-- Minimum 0.5mm apical movement of gingival margin for the change to be perceptible
+- Harmonize the gum line curvature across the entire visible smile
+- The recontoured gums must still look NATURAL (pink, healthy tissue)
+- The gingival alteration MUST be CLEARLY VISIBLE — at least 1-2mm apical movement
+- If the analysis suggests specific teeth for gengivoplasty, apply MORE aggressive recontouring to those teeth
+- The BEFORE vs AFTER difference in gum line should be IMMEDIATELY OBVIOUS to the patient
 
-⚠️ REGRA ABSOLUTA SOBRE LÁBIOS (MESMO COM GENGIVOPLASTIA):
-A gengivoplastia altera APENAS a MARGEM GENGIVAL (interface gengiva-dente).
-- AMBOS os lábios (superior E inferior) são REFERÊNCIAS FIXAS
-- Mover QUALQUER lábio INVALIDA toda a análise clínica
-- DEFINIÇÃO: Margem gengival = tecido rosa entre dente e lábio
-- DEFINIÇÃO: Lábio = tecido vermelho/rosa com vermilion border
-- O LÁBIO SUPERIOR permanece EXATAMENTE na mesma posição e formato
-- O LÁBIO INFERIOR permanece EXATAMENTE na mesma posição e formato
-- A ABERTURA LABIAL (distância entre lábios) é FIXA — não pode aumentar nem diminuir
-- Ao mover a margem gengival apicalmente, o ESPAÇO entre lábio e dente AUMENTA
-  (mostrando mais coroa clínica) — mas os LÁBIOS PERMANECEM EXATAMENTE ONDE ESTÃO
-- Se não for possível simular gengivoplastia sem mover os lábios: NÃO FAÇA
-- ⚠️ ERRO COMUM: Levantar o lábio superior e/ou abaixar o inferior para "mostrar mais dente" — ISSO É PROIBIDO
+${params.gingivoSuggestions ? `GENGIVOPLASTY SPECIFICATIONS (apply these aggressively):\n${params.gingivoSuggestions}\n` : ''}
 
-${params.gingivoSuggestions ? `GENGIVOPLASTY SPECIFICATIONS:\n${params.gingivoSuggestions}\n` : ''}
+REGRA SOBRE LÁBIOS:
+- AMBOS os lábios (superior E inferior) permanecem na mesma posição
+- A gengivoplastia altera APENAS a margem gengival (interface gengiva-dente)
+- Ao mover a margem gengival apicalmente, mais coroa clínica fica visível
+- Os lábios NÃO mudam de posição — o espaço entre lábio e dente é que aumenta
+- ⚠️ ERRO COMUM: Levantar o lábio superior para "mostrar mais resultado" — PROIBIDO
 
 ⚠️ TEETH PRESERVATION (PRE-PROCESSED IMAGE):
 - The teeth in this image have ALREADY been whitened and corrected
@@ -391,7 +387,7 @@ ${params.gingivoSuggestions ? `GENGIVOPLASTY SPECIFICATIONS:\n${params.gingivoSu
 
 Dimensões de saída DEVEM ser iguais às dimensões de entrada.
 
-Output: Same photo with ONLY gingival recontouring applied. Teeth must be pixel-identical to input.`
+Output: Same photo with CLEARLY VISIBLE gingival recontouring. Teeth pixel-identical to input.`
 }
 
 function buildWithGengivoplastyPrompt(params: Params): string {
