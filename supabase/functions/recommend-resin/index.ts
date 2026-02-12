@@ -314,6 +314,23 @@ serve(async (req) => {
 
     const prompt = promptDef.user(promptParams);
 
+    // Compute deterministic seed from input hash for reproducibility
+    const seedSource = JSON.stringify({
+      tooth: data.tooth,
+      region: data.region,
+      cavityClass: data.cavityClass,
+      toothColor: data.toothColor,
+      aestheticLevel: data.aestheticLevel,
+      stratificationNeeded: data.stratificationNeeded,
+      budget: data.budget,
+      bruxism: data.bruxism,
+    });
+    const encoder = new TextEncoder();
+    const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(seedSource));
+    const hashArray = new Uint8Array(hashBuffer);
+    const inputSeed = ((hashArray[0] << 24) | (hashArray[1] << 16) | (hashArray[2] << 8) | hashArray[3]) >>> 0;
+    logger.log(`[${reqId}] Recommendation seed from input hash: ${inputSeed}`);
+
     // Metrics setup
     const metrics = createSupabaseMetrics(
       Deno.env.get('SUPABASE_URL')!,
@@ -332,14 +349,18 @@ serve(async (req) => {
           "gemini-2.0-flash",
           messages,
           {
-            temperature: 0.3,
+            temperature: 0.05,
             maxTokens: 8192,
+            seed: inputSeed,
           }
         );
+        if (response.tokens) {
+          logger.info('gemini_tokens', { operation: 'recommend-resin', ...response.tokens });
+        }
         return {
-          result: response,
-          tokensIn: 0,
-          tokensOut: 0,
+          result: { text: response.text, finishReason: response.finishReason },
+          tokensIn: response.tokens?.promptTokenCount ?? 0,
+          tokensOut: response.tokens?.candidatesTokenCount ?? 0,
         };
       });
 

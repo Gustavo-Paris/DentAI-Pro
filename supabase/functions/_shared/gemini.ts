@@ -62,6 +62,7 @@ interface GeminiRequest {
     maxOutputTokens?: number;
     topP?: number;
     topK?: number;
+    seed?: number;
     thinkingConfig?: {
       thinkingLevel: "minimal" | "low" | "medium" | "high";
     };
@@ -73,6 +74,12 @@ interface GeminiRequest {
       allowedFunctionNames?: string[];
     };
   };
+}
+
+export interface TokenUsage {
+  promptTokenCount: number;
+  candidatesTokenCount: number;
+  totalTokenCount: number;
 }
 
 interface GeminiResponse {
@@ -89,6 +96,11 @@ interface GeminiResponse {
     };
     finishReason: string;
   }>;
+  usageMetadata?: {
+    promptTokenCount?: number;
+    candidatesTokenCount?: number;
+    totalTokenCount?: number;
+  };
   error?: {
     code: number;
     message: string;
@@ -481,6 +493,17 @@ function extractFunctionCall(
   return null;
 }
 
+// Extract token usage from Gemini response
+function extractTokenUsage(response: GeminiResponse): TokenUsage | undefined {
+  const usage = response.usageMetadata;
+  if (!usage) return undefined;
+  return {
+    promptTokenCount: usage.promptTokenCount ?? 0,
+    candidatesTokenCount: usage.candidatesTokenCount ?? 0,
+    totalTokenCount: usage.totalTokenCount ?? 0,
+  };
+}
+
 /**
  * Basic chat completion with Gemini
  * @param model - Gemini model name (default: gemini-2.0-flash)
@@ -493,8 +516,9 @@ export async function callGemini(
   options: {
     temperature?: number;
     maxTokens?: number;
+    seed?: number;
   } = {}
-): Promise<{ text: string | null; finishReason: string }> {
+): Promise<{ text: string | null; finishReason: string; tokens?: TokenUsage }> {
   const { contents, systemInstruction } = convertToGeminiFormat(messages);
 
   const request: GeminiRequest = {
@@ -502,6 +526,7 @@ export async function callGemini(
     generationConfig: {
       temperature: options.temperature ?? 0.7,
       maxOutputTokens: options.maxTokens ?? 2048,
+      ...(options.seed !== undefined && { seed: options.seed }),
     },
   };
 
@@ -512,8 +537,9 @@ export async function callGemini(
   const response = await makeGeminiRequest(model, request);
   const text = extractTextResponse(response);
   const finishReason = response.candidates?.[0]?.finishReason || "UNKNOWN";
+  const tokens = extractTokenUsage(response);
 
-  return { text, finishReason };
+  return { text, finishReason, tokens };
 }
 
 /**
@@ -536,7 +562,7 @@ export async function callGeminiVision(
     /** Additional images to include after the first image */
     additionalImages?: Array<{ data: string; mimeType: string }>;
   } = {}
-): Promise<{ text: string | null; finishReason: string }> {
+): Promise<{ text: string | null; finishReason: string; tokens?: TokenUsage }> {
   const parts: GeminiPart[] = [
     { text: prompt },
     {
@@ -571,8 +597,9 @@ export async function callGeminiVision(
   const response = await makeGeminiRequest(model, request);
   const text = extractTextResponse(response);
   const finishReason = response.candidates?.[0]?.finishReason || "UNKNOWN";
+  const tokens = extractTokenUsage(response);
 
-  return { text, finishReason };
+  return { text, finishReason, tokens };
 }
 
 /**
@@ -595,6 +622,7 @@ export async function callGeminiWithTools(
   text: string | null;
   functionCall: { name: string; args: Record<string, unknown> } | null;
   finishReason: string;
+  tokens?: TokenUsage;
 }> {
   const { contents, systemInstruction } = convertToGeminiFormat(messages);
   const geminiTools = convertToGeminiTools(tools);
@@ -632,8 +660,9 @@ export async function callGeminiWithTools(
   const text = extractTextResponse(response);
   const functionCall = extractFunctionCall(response);
   const finishReason = response.candidates?.[0]?.finishReason || "UNKNOWN";
+  const tokens = extractTokenUsage(response);
 
-  return { text, functionCall, finishReason };
+  return { text, functionCall, finishReason, tokens };
 }
 
 /**
@@ -658,6 +687,7 @@ export async function callGeminiVisionWithTools(
   text: string | null;
   functionCall: { name: string; args: Record<string, unknown> } | null;
   finishReason: string;
+  tokens?: TokenUsage;
 }> {
   const parts: GeminiPart[] = [
     { text: prompt },
@@ -714,8 +744,9 @@ export async function callGeminiVisionWithTools(
   const text = extractTextResponse(response);
   const functionCall = extractFunctionCall(response);
   const finishReason = response.candidates?.[0]?.finishReason || "UNKNOWN";
+  const tokens = extractTokenUsage(response);
 
-  return { text, functionCall, finishReason };
+  return { text, functionCall, finishReason, tokens };
 }
 
 /**
@@ -736,7 +767,7 @@ export async function callGeminiImageEdit(
     timeoutMs?: number;
     seed?: number;
   } = {}
-): Promise<{ imageUrl: string | null; text: string | null }> {
+): Promise<{ imageUrl: string | null; text: string | null; tokens?: TokenUsage }> {
   const apiKey = getApiKey();
   const model = "gemini-3-pro-image-preview"; // Best quality model for image editing
   const url = `${GEMINI_API_BASE}/${model}:generateContent?key=${apiKey}`;
@@ -805,9 +836,12 @@ export async function callGeminiImageEdit(
     const data = await response.json();
     const candidate = data.candidates?.[0];
 
+    // Extract token usage from raw response
+    const tokens = extractTokenUsage(data as GeminiResponse);
+
     if (!candidate?.content?.parts) {
       logger.warn("No parts in Gemini image response");
-      return { imageUrl: null, text: null };
+      return { imageUrl: null, text: null, tokens };
     }
 
     let imageUrl: string | null = null;
@@ -823,7 +857,7 @@ export async function callGeminiImageEdit(
       }
     }
 
-    return { imageUrl, text };
+    return { imageUrl, text, tokens };
   } catch (error) {
     clearTimeout(timeoutId);
 
