@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/data';
 import { logger } from '@/lib/logger';
 import { SIGNED_URL_EXPIRY_SECONDS } from '@/lib/constants';
 

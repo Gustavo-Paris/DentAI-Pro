@@ -1,5 +1,6 @@
 import { supabase } from './client';
 import { withQuery, withMutation } from './utils';
+import { getAvatarPublicUrl as _getAvatarPublicUrl } from './storage';
 
 export interface Profile {
   full_name: string | null;
@@ -43,6 +44,5 @@ export async function updateProfile(userId: string, updates: Partial<ProfileFull
 }
 
 export function getAvatarPublicUrl(avatarPath: string): string {
-  const { data } = supabase.storage.from('avatars').getPublicUrl(avatarPath);
-  return data.publicUrl;
+  return _getAvatarPublicUrl(avatarPath);
 }

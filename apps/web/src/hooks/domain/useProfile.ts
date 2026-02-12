@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/data';
-import { profiles, payments, subscriptions, privacy } from '@/data';
+import { profiles, payments, subscriptions, privacy, storage } from '@/data';
 import type { ProfileFull } from '@/data/profiles';
 import type { DataExport, DeleteAccountResult } from '@/data/privacy';
 import { toast } from 'sonner';
@@ -196,20 +196,11 @@ export function useProfile(): ProfileState & ProfileActions {
 
     setIsUploading(true);
     try {
-      if (profileForm.avatar_url) {
-        await supabase.storage.from('avatars').remove([profileForm.avatar_url]);
-      }
-
-      const fileExt = file.name.split('.').pop();
-      const filePath = `${user.id}/avatar.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file, { upsert: true });
-      if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
-      setAvatarPreview(urlData.publicUrl + '?t=' + Date.now());
+      const filePath = await storage.uploadAvatar(
+        user.id, file, 'avatar', profileForm.avatar_url || undefined,
+      );
+      const publicUrl = storage.getAvatarPublicUrl(filePath);
+      setAvatarPreview(publicUrl + '?t=' + Date.now());
       setProfileForm(prev => ({ ...prev, avatar_url: filePath }));
       toast.success(t('toasts.profile.avatarUpdated'));
     } catch (error) {
@@ -247,20 +238,11 @@ export function useProfile(): ProfileState & ProfileActions {
 
     setIsUploadingLogo(true);
     try {
-      if (profileForm.clinic_logo_url) {
-        await supabase.storage.from('avatars').remove([profileForm.clinic_logo_url]);
-      }
-
-      const fileExt = file.name.split('.').pop();
-      const filePath = `${user.id}/clinic-logo.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file, { upsert: true });
-      if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
-      setLogoPreview(urlData.publicUrl + '?t=' + Date.now());
+      const filePath = await storage.uploadAvatar(
+        user.id, file, 'clinic-logo', profileForm.clinic_logo_url || undefined,
+      );
+      const publicUrl = storage.getAvatarPublicUrl(filePath);
+      setLogoPreview(publicUrl + '?t=' + Date.now());
       setProfileForm(prev => ({ ...prev, clinic_logo_url: filePath }));
       toast.success(t('toasts.profile.logoUpdated'));
     } catch (error) {

@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/data';
-import { evaluations } from '@/data';
+import { evaluations, storage } from '@/data';
 import type { Resin, StratificationProtocol, ProtocolLayer, CementationProtocol } from '@/types/protocol';
 import type { SimulationLayer } from '@/types/dsd';
 import { toast } from 'sonner';
@@ -262,10 +262,9 @@ export function useResult() {
       if (!evaluation) return { frontal: null, angle45: null, face: null };
       const urls: PhotoUrls = { frontal: null, angle45: null, face: null };
 
-      const signPhoto = async (path: string | null, bucket = 'clinical-photos') => {
+      const signPhoto = async (path: string | null) => {
         if (!path) return null;
-        const { data } = await supabase.storage.from(bucket).createSignedUrl(path, SIGNED_URL_EXPIRY_SECONDS);
-        return data?.signedUrl || null;
+        return storage.getSignedPhotoUrl(path, SIGNED_URL_EXPIRY_SECONDS);
       };
 
       [urls.frontal, urls.angle45, urls.face] = await Promise.all([
@@ -284,10 +283,7 @@ export function useResult() {
     queryKey: ['result-dsd-url', id],
     queryFn: async () => {
       if (!evaluation?.dsd_simulation_url) return null;
-      const { data } = await supabase.storage
-        .from('dsd-simulations')
-        .createSignedUrl(evaluation.dsd_simulation_url, SIGNED_URL_EXPIRY_SECONDS);
-      return data?.signedUrl || null;
+      return storage.getSignedDSDUrl(evaluation.dsd_simulation_url, SIGNED_URL_EXPIRY_SECONDS);
     },
     enabled: !!evaluation?.dsd_simulation_url,
     staleTime: (SIGNED_URL_EXPIRY_SECONDS - 60) * 1000,
@@ -298,18 +294,17 @@ export function useResult() {
     queryKey: ['result-dsd-layers', id],
     queryFn: async () => {
       if (!evaluation?.dsd_simulation_layers?.length) return {};
+      const paths = evaluation.dsd_simulation_layers
+        .map(l => l.simulation_url)
+        .filter((p): p is string => !!p);
+      const urlsByPath = await storage.getSignedDSDLayerUrls(paths, SIGNED_URL_EXPIRY_SECONDS);
+      // Re-key from path → layer type
       const urls: Record<string, string> = {};
-      await Promise.all(
-        evaluation.dsd_simulation_layers.map(async (layer) => {
-          if (!layer.simulation_url) return;
-          const { data } = await supabase.storage
-            .from('dsd-simulations')
-            .createSignedUrl(layer.simulation_url, SIGNED_URL_EXPIRY_SECONDS);
-          if (data?.signedUrl) {
-            urls[layer.type] = data.signedUrl;
-          }
-        })
-      );
+      for (const layer of evaluation.dsd_simulation_layers) {
+        if (layer.simulation_url && urlsByPath[layer.simulation_url]) {
+          urls[layer.type] = urlsByPath[layer.simulation_url];
+        }
+      }
       return urls;
     },
     enabled: !!evaluation?.dsd_simulation_layers?.length,
@@ -419,10 +414,8 @@ export function useResult() {
 
       let clinicLogoBase64: string | null = null;
       if (dentistProfile?.clinic_logo_url) {
-        const { data: logoUrl } = supabase.storage
-          .from('avatars')
-          .getPublicUrl(dentistProfile.clinic_logo_url);
-        clinicLogoBase64 = await fetchImageAsBase64(logoUrl.publicUrl);
+        const logoPublicUrl = storage.getAvatarPublicUrl(dentistProfile.clinic_logo_url);
+        clinicLogoBase64 = await fetchImageAsBase64(logoPublicUrl);
       }
 
       const [photoFrontalBase64, photo45Base64, photoFaceBase64, dsdSimBase64] = await Promise.all([
