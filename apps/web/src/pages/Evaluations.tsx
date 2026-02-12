@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/card';
 import { CheckCircle, ChevronRight, Calendar, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { formatToothLabel } from '@/lib/treatment-config';
 
 // =============================================================================
 // Card component (presentation only)
@@ -58,7 +59,7 @@ const SessionCard = memo(function SessionCard({
               <div className="flex gap-1 flex-wrap">
                 {session.teeth.slice(0, 3).map((tooth) => (
                   <Badge key={tooth} variant="outline" className="text-xs">
-                    {tooth}
+                    {formatToothLabel(tooth)}
                   </Badge>
                 ))}
                 {session.teeth.length > 3 && (

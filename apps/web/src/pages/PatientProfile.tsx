@@ -30,6 +30,7 @@ import { ptBR } from 'date-fns/locale';
 import { DetailPage } from '@pageshell/composites';
 
 import { usePatientProfile } from '@/hooks/domain/usePatientProfile';
+import { formatToothLabel } from '@/lib/treatment-config';
 
 // =============================================================================
 // Page Adapter
@@ -202,7 +203,7 @@ export default function PatientProfile() {
                                 <div className="flex flex-wrap gap-1.5 mb-2">
                                   {session.teeth.slice(0, 4).map((tooth, i) => (
                                     <Badge key={i} variant="outline" className="text-xs">
-                                      {tooth}
+                                      {formatToothLabel(tooth)}
                                     </Badge>
                                   ))}
                                   {session.teeth.length > 4 && (
