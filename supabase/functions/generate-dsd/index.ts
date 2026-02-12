@@ -101,6 +101,7 @@ interface RequestData {
   clinicalObservations?: string[]; // Observations from analyze-dental-photo to prevent contradictions
   clinicalTeethFindings?: ClinicalToothFinding[]; // Per-tooth findings to prevent false restoration claims
   layerType?: 'restorations-only' | 'whitening-restorations' | 'complete-treatment' | 'root-coverage'; // Multi-layer simulation
+  inputAlreadyProcessed?: boolean; // When true, input image already has corrected/whitened teeth (Layer 2→3 chaining)
 }
 
 // Validate request
@@ -187,6 +188,7 @@ function validateRequest(data: unknown): { success: boolean; error?: string; dat
       clinicalObservations,
       clinicalTeethFindings,
       layerType,
+      inputAlreadyProcessed: req.inputAlreadyProcessed === true,
     },
   };
 }
@@ -257,6 +259,7 @@ async function generateSimulation(
   toothShape: string = 'natural',
   patientPreferences?: PatientPreferences,
   layerType?: 'restorations-only' | 'whitening-restorations' | 'complete-treatment' | 'root-coverage',
+  inputAlreadyProcessed?: boolean,
 ): Promise<{ url: string | null; lips_moved?: boolean }> {
   const SIMULATION_TIMEOUT = 55_000; // 55s max
   
@@ -433,10 +436,12 @@ async function generateSimulation(
     smileArc,
     specificInstructions,
     restorationTeeth,
-    allowedChangesFromAnalysis,
+    // Skip corrections injection when input is already processed (teeth already corrected)
+    allowedChangesFromAnalysis: inputAlreadyProcessed ? '' : allowedChangesFromAnalysis,
     layerType,
     gingivoSuggestions,
     rootCoverageSuggestions,
+    inputAlreadyProcessed,
   } as DsdSimulationParams);
   
   logger.log("DSD Simulation Request:", {
@@ -527,10 +532,13 @@ Responda APENAS 'SIM' ou 'NÃO'.`,
           seed: imageSeed,
         }
       );
+      if (response.tokens) {
+        logger.info('gemini_tokens', { operation: 'generate-dsd:simulation', ...response.tokens });
+      }
       return {
-        result: response,
-        tokensIn: 0,
-        tokensOut: 0,
+        result: { imageUrl: response.imageUrl, text: response.text },
+        tokensIn: response.tokens?.promptTokenCount ?? 0,
+        tokensOut: response.tokens?.candidatesTokenCount ?? 0,
       };
     });
 
@@ -832,10 +840,13 @@ Se o problema clínico é microdontia/conoide → sua sugestão deve ser "Aument
           timeoutMs: 60_000,
         }
       );
+      if (response.tokens) {
+        logger.info('gemini_tokens', { operation: 'generate-dsd:analysis', ...response.tokens });
+      }
       return {
-        result: response,
-        tokensIn: 0,
-        tokensOut: 0,
+        result: { text: response.text, functionCall: response.functionCall, finishReason: response.finishReason },
+        tokensIn: response.tokens?.promptTokenCount ?? 0,
+        tokensOut: response.tokens?.candidatesTokenCount ?? 0,
       };
     });
 
@@ -940,6 +951,7 @@ serve(async (req: Request) => {
       clinicalObservations,
       clinicalTeethFindings,
       layerType,
+      inputAlreadyProcessed,
     } = validation.data;
 
     // Validate ownership and check existing DSD state BEFORE credit check
@@ -1194,7 +1206,7 @@ serve(async (req: Request) => {
     let simulationDebug: string | undefined;
     let lipsMoved = false;
     try {
-      const simResult = await generateSimulation(imageBase64, analysis, user.id, supabase, toothShape || 'natural', patientPreferences, layerType);
+      const simResult = await generateSimulation(imageBase64, analysis, user.id, supabase, toothShape || 'natural', patientPreferences, layerType, inputAlreadyProcessed);
       simulationUrl = simResult.url;
       lipsMoved = simResult.lips_moved || false;
     } catch (simError) {

@@ -27,6 +27,9 @@ export interface Params {
   gingivoSuggestions?: string
   /** Root coverage suggestions text, injected for root-coverage layer */
   rootCoverageSuggestions?: string
+  /** When true, the input image already has corrected/whitened teeth (Layer 2 output).
+   *  The prompt should ONLY apply gingival recontouring — no whitening, no base corrections. */
+  inputAlreadyProcessed?: boolean
 }
 
 // --- Shared prompt blocks ---
@@ -329,7 +332,74 @@ ${qualityRequirements}
 Output: Same photo with teeth structurally corrected but at their ORIGINAL natural color.`
 }
 
+function buildGengivoplastyOnlyPrompt(params: Params): string {
+  const absolutePreservation = buildAbsolutePreservation()
+
+  return `DENTAL PHOTO EDIT - GENGIVOPLASTY ONLY (PRE-PROCESSED INPUT)
+
+${absolutePreservation}
+
+⚠️ CRITICAL CONTEXT: The input image ALREADY has corrected and whitened teeth from a previous simulation step.
+The teeth are FINAL. Do NOT change tooth color, shape, texture, or any dental aspect.
+Your ONLY task is to modify the GINGIVAL CONTOUR (gum line).
+
+⚠️⚠️⚠️ REGRA #0 — MAIS IMPORTANTE QUE TUDO ⚠️⚠️⚠️
+AMBOS OS LÁBIOS (superior E inferior) são SAGRADOS e INTOCÁVEIS.
+A gengivoplastia altera apenas a margem gengival ENTRE os dentes,
+NUNCA a posição, formato, abertura ou contorno dos lábios.
+
+O enquadramento da foto (crop, zoom, ângulo) DEVE ser IDÊNTICO.
+Os lábios são a referência anatômica fixa para o antes/depois.
+Se os lábios mudarem, a comparação clínica é DESTRUÍDA.
+
+VALIDAÇÃO:
+- Lábio superior: mesma posição, formato e contorno pixel a pixel
+- Lábio inferior: mesma posição, formato e contorno pixel a pixel
+- Abertura labial: IDÊNTICA à foto original
+- Se qualquer lábio mudou de posição → REJEITAR e refazer
+
+⚠️ EXCEPTION TO GINGIVA PRESERVATION: In this layer, you ARE ALLOWED to modify the gingival contour.
+The gum line should be recontoured to show the effect of gengivoplasty:
+- Expose more clinical crown by moving the gingival margin apically (towards the root)
+- Create symmetrical gingival zeniths between contralateral teeth
+- Harmonize the gum line curvature across the smile
+- The recontoured gums must still look NATURAL (pink, healthy tissue appearance)
+- The gingival alteration MUST be VISUALLY EVIDENT in the before/after comparison
+- Minimum 0.5mm apical movement of gingival margin for the change to be perceptible
+
+⚠️ REGRA ABSOLUTA SOBRE LÁBIOS (MESMO COM GENGIVOPLASTIA):
+A gengivoplastia altera APENAS a MARGEM GENGIVAL (interface gengiva-dente).
+- AMBOS os lábios (superior E inferior) são REFERÊNCIAS FIXAS
+- Mover QUALQUER lábio INVALIDA toda a análise clínica
+- DEFINIÇÃO: Margem gengival = tecido rosa entre dente e lábio
+- DEFINIÇÃO: Lábio = tecido vermelho/rosa com vermilion border
+- O LÁBIO SUPERIOR permanece EXATAMENTE na mesma posição e formato
+- O LÁBIO INFERIOR permanece EXATAMENTE na mesma posição e formato
+- A ABERTURA LABIAL (distância entre lábios) é FIXA — não pode aumentar nem diminuir
+- Ao mover a margem gengival apicalmente, o ESPAÇO entre lábio e dente AUMENTA
+  (mostrando mais coroa clínica) — mas os LÁBIOS PERMANECEM EXATAMENTE ONDE ESTÃO
+- Se não for possível simular gengivoplastia sem mover os lábios: NÃO FAÇA
+- ⚠️ ERRO COMUM: Levantar o lábio superior e/ou abaixar o inferior para "mostrar mais dente" — ISSO É PROIBIDO
+
+${params.gingivoSuggestions ? `GENGIVOPLASTY SPECIFICATIONS:\n${params.gingivoSuggestions}\n` : ''}
+
+⚠️ TEETH PRESERVATION (PRE-PROCESSED IMAGE):
+- The teeth in this image have ALREADY been whitened and corrected
+- Do NOT re-whiten, re-shape, or alter teeth in ANY way
+- Tooth color, shape, contour, texture = COPY EXACTLY from input
+- The ONLY pixels you may change are in the GINGIVAL TISSUE area
+
+Dimensões de saída DEVEM ser iguais às dimensões de entrada.
+
+Output: Same photo with ONLY gingival recontouring applied. Teeth must be pixel-identical to input.`
+}
+
 function buildWithGengivoplastyPrompt(params: Params): string {
+  // When input is already processed (Layer 2 output), use simplified gengivoplasty-only prompt
+  if (params.inputAlreadyProcessed) {
+    return buildGengivoplastyOnlyPrompt(params)
+  }
+
   const absolutePreservation = buildAbsolutePreservation()
   const whiteningPrioritySection = buildWhiteningPrioritySection(params)
   const baseCorrections = buildBaseCorrections()
