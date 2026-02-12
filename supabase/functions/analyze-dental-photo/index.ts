@@ -17,8 +17,8 @@ interface AnalyzePhotoRequest {
   imageType?: string; // "intraoral" | "frontal_smile" | "45_smile" | "face"
 }
 
-// Expanded treatment types
-type TreatmentIndication = "resina" | "porcelana" | "coroa" | "implante" | "endodontia" | "encaminhamento";
+// Expanded treatment types (includes gingival procedures)
+type TreatmentIndication = "resina" | "porcelana" | "coroa" | "implante" | "endodontia" | "encaminhamento" | "gengivoplastia" | "recobrimento_radicular";
 
 // Gemini sometimes returns English values instead of Portuguese enum values.
 // This map normalizes them back to the expected Portuguese strings.
@@ -29,6 +29,11 @@ const TREATMENT_INDICATION_MAP: Record<string, TreatmentIndication> = {
   implant: "implante",
   endodontics: "endodontia",
   referral: "encaminhamento",
+  gingivoplasty: "gengivoplastia",
+  gingivectomy: "gengivoplastia",
+  gum_recontouring: "gengivoplastia",
+  root_coverage: "recobrimento_radicular",
+  gingival_graft: "recobrimento_radicular",
   // Also handle Portuguese values (pass-through)
   resina: "resina",
   porcelana: "porcelana",
@@ -36,6 +41,8 @@ const TREATMENT_INDICATION_MAP: Record<string, TreatmentIndication> = {
   implante: "implante",
   endodontia: "endodontia",
   encaminhamento: "encaminhamento",
+  gengivoplastia: "gengivoplastia",
+  recobrimento_radicular: "recobrimento_radicular",
 };
 
 function normalizeTreatmentIndication(value: string | undefined | null): TreatmentIndication {

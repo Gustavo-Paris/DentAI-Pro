@@ -111,8 +111,9 @@ REGRAS ABSOLUTAS GENGIVOPLASTIA:
 4. Dente curto por DESGASTE INCISAL -> acréscimo incisal, NAO gengivoplastia
    Dente curto por EXCESSO DE GENGIVA -> gengivoplastia
 
-NAO gerar gengivoplastia se: smile_line média/baixa E zênites simétricos E proporção 75-80%.
-NAO gerar gengivoplastia se gengiva NAO claramente visível.
+NAO gerar gengivoplastia se: smile_line BAIXA (gengiva nao visivel) E zênites simétricos E proporção 75-80%.
+NAO gerar gengivoplastia se gengiva NAO visivel na foto.
+Smile line MEDIA (0-3mm): AVALIAR — exposicao suficiente para detectar assimetrias e excessos.
 
 === AVALIACAO DO ARCO COMPLETO ===
 Quando tratamento em incisivos, AVALIACAO OBRIGATORIA:

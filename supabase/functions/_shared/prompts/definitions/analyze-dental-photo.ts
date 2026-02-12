@@ -123,7 +123,7 @@ DESGASTE INCISAL vs CLASSE IV:
 7. Condição do esmalte (Íntegro, Fraturado, Hipoplásico, Fluorose, Erosão)
 8. Profundidade estimada (Superficial, Média, Profunda)
 9. Prioridade: "alta" (cáries, fraturas, dor) | "média" (restaurações defeituosas, coroas) | "baixa" (estética opcional)
-10. INDICACAO DE TRATAMENTO: resina, porcelana, coroa, implante, endodontia, ou encaminhamento
+10. INDICACAO DE TRATAMENTO: resina, porcelana, coroa, implante, endodontia, encaminhamento, gengivoplastia, ou recobrimento_radicular
 11. POSICAO NA IMAGEM (tooth_bounds): x, y (centro, 0-100%), width, height (% da imagem)
 
 ${GINGIVAL_CRITERIA}

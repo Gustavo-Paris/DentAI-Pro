@@ -85,15 +85,17 @@ REGRA SOBRE PRE-MOLARES (14/15/24/25):
  */
 export const GINGIVAL_CRITERIA = `=== AVALIACAO GENGIVAL ===
 
-REGRA CRITICA - VISIBILIDADE: So avalie gengiva e sugira gengivoplastia se tecido gengival CLARAMENTE VISIVEL.
-- Labios cobrem gengiva (linha do sorriso baixa/media) -> NAO sugira gengivoplastia
+REGRA DE VISIBILIDADE:
+- Linha do sorriso ALTA (>3mm gengiva exposta): AVALIAR gengiva e sugerir gengivoplastia se indicado
+- Linha do sorriso MEDIA (0-3mm gengiva exposta): AVALIAR gengiva — exposicao suficiente para detectar assimetrias e excessos gengivais
+- Linha do sorriso BAIXA (gengiva NAO visivel / labios cobrem): NAO sugerir gengivoplastia
 - Gengiva NAO exposta na foto -> NAO mencione "proporcao coroa/gengiva"
-- Na duvida sobre visibilidade gengival -> NAO sugira gengivoplastia
 
-SE gengiva claramente visivel, avalie:
+SE gengiva visivel (linha media ou alta), avalie:
 1. Coroas clinicas curtas: proporcao altura/largura inadequada -> gengivoplastia p/ aumentar coroa
-2. Assimetria gengival: comparar homologos (12 vs 22, 13 vs 23), diferenca >1mm
-3. Sorriso gengival >3mm: considerar encaminhamento periodontia
+2. Assimetria gengival: comparar homologos (11 vs 21, 12 vs 22, 13 vs 23), diferenca >1mm -> gengivoplastia
+3. Sorriso gengival >3mm: considerar gengivoplastia ou encaminhamento periodontia
+4. Zenites assimetricos entre homologos -> gengivoplastia para harmonizar
 
 GENGIVOPLASTIA vs RECOBRIMENTO RADICULAR (diferenciar!):
 | Procedimento             | Objetivo                        | Indicacao                              |
