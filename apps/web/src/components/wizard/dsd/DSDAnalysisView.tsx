@@ -16,6 +16,7 @@ import type {
 } from '@/types/dsd';
 import { DSDSimulationViewer } from './DSDSimulationViewer';
 import { DSDWhiteningComparison } from './DSDWhiteningComparison';
+import { memo } from 'react';
 import type { RefObject } from 'react';
 
 interface DSDAnalysisViewProps {
@@ -58,7 +59,7 @@ interface DSDAnalysisViewProps {
   onDiscardGingivoplasty: () => void;
 }
 
-export function DSDAnalysisView({
+export const DSDAnalysisView = memo(function DSDAnalysisView({
   result,
   imageBase64,
   simulationImageUrl,
@@ -476,4 +477,4 @@ function DSDSuggestionsCard({ suggestions }: { suggestions: DSDSuggestion[] | un
       </CardContent>
     </Card>
   );
-}
+});

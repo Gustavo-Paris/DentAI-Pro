@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -17,7 +18,7 @@ interface CreditBadgeProps {
   showTooltip?: boolean;
 }
 
-export function CreditBadge({ variant = 'compact', className, showTooltip = true }: CreditBadgeProps) {
+export const CreditBadge = memo(function CreditBadge({ variant = 'compact', className, showTooltip = true }: CreditBadgeProps) {
   const { t } = useTranslation();
   const { creditsRemaining, creditsTotal, creditsPercentUsed, isLoading, getCreditCost } = useSubscription();
 
@@ -101,7 +102,7 @@ export function CreditBadge({ variant = 'compact', className, showTooltip = true
       </p>
     </div>
   );
-}
+});
 
 /**
  * Inline credit cost indicator for buttons.

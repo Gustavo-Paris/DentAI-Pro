@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Check } from 'lucide-react';
 
 interface CompactStepIndicatorProps {
@@ -6,7 +7,7 @@ interface CompactStepIndicatorProps {
   variant?: 'horizontal' | 'vertical-compact';
 }
 
-export function CompactStepIndicator({
+export const CompactStepIndicator = memo(function CompactStepIndicator({
   steps,
   currentIndex,
   variant = 'vertical-compact',
@@ -83,4 +84,4 @@ export function CompactStepIndicator({
       })}
     </div>
   );
-}
+});

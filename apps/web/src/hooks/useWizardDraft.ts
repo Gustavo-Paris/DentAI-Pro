@@ -3,6 +3,7 @@ import { PhotoAnalysisResult, ReviewFormData, TreatmentType } from '@/components
 import type { DSDResult } from '@/types/dsd';
 import { PatientPreferences } from '@/components/wizard/PatientPreferencesStep';
 import { logger } from '@/lib/logger';
+import { trackEvent } from '@/lib/analytics';
 import { drafts } from '@/data';
 
 export interface AdditionalPhotos {
@@ -94,6 +95,7 @@ export function useWizardDraft(userId: string | undefined) {
         await drafts.save(userId, draftWithTimestamp);
         cachedDraftRef.current = draftWithTimestamp;
         setLastSavedAt(draftWithTimestamp.lastSavedAt);
+        trackEvent('draft_saved');
       } catch (error) {
         logger.error('Error saving draft:', error);
       } finally {

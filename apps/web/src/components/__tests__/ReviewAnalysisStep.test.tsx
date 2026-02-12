@@ -56,6 +56,22 @@ vi.mock('@/lib/complexity-score', () => ({
   calculateComplexity: () => ({ level: 'simples', score: 0 }),
 }));
 
+// Mock analytics
+vi.mock('@/lib/analytics', () => ({
+  trackEvent: vi.fn(),
+}));
+
+// Mock PillToggle
+vi.mock('@/components/ui/pill-toggle', () => ({
+  PillToggle: ({ options, value, onChange }: any) => (
+    <div data-testid="pill-toggle" data-value={value}>
+      {options.map((opt: any) => (
+        <button key={opt.value} onClick={() => onChange(opt.value)}>{opt.label}</button>
+      ))}
+    </div>
+  ),
+}));
+
 // Mock date-fns
 vi.mock('date-fns', () => ({
   format: (date: Date, fmt: string) => '01/01/2000',

@@ -11,6 +11,7 @@ import type { SubmissionStep } from './types';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { logger } from '@/lib/logger';
+import { trackEvent } from '@/lib/analytics';
 import { withRetry } from '@/lib/retry';
 import { TIMING } from '@/lib/constants';
 import { wizard as wizardData } from '@/data';
@@ -178,6 +179,7 @@ export function useWizardSubmit({
           }
         } else if (newPatient) {
           patientId = newPatient.id;
+          trackEvent('patient_created');
         }
       }
 
@@ -407,6 +409,12 @@ export function useWizardSubmit({
       }
 
       // Determine outcome: all success, partial success, or all failed
+      // Track protocol/wizard completion
+      if (successCount > 0) {
+        trackEvent('protocol_generated', { teeth_count: successCount, has_inventory: selectedTeeth.length > 0 });
+        trackEvent('wizard_completed', { total_teeth: successCount });
+      }
+
       if (successCount === 0) {
         // ALL failed — stay on step 5
         const firstErr = failedTeeth[0]?.error as { message?: string; code?: string } | undefined;

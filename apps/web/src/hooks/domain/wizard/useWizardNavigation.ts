@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { trackEvent } from '@/lib/analytics';
 
 // ---------------------------------------------------------------------------
 // Params
@@ -74,6 +75,7 @@ export function useWizardNavigation({
     const fullCost = getCreditCost('case_analysis') + getCreditCost('dsd_simulation');
 
     if (creditsRemaining < fullCost) {
+      trackEvent('insufficient_credits', { operation_type: 'full_analysis' });
       toast.error(t('toasts.wizard.insufficientCredits'), {
         action: { label: t('common.viewPlans'), onClick: () => navigate('/pricing') },
       });

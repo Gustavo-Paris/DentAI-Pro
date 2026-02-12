@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Sparkles, RefreshCw, ArrowRight, ArrowLeft, Lightbulb, AlertCircle, X } from 'lucide-react';
 import { ProgressRing } from '@/components/ProgressRing';
 import { CompactStepIndicator } from '@/components/CompactStepIndicator';
+import { trackEvent } from '@/lib/analytics';
 
 interface AnalyzingStepProps {
   imageBase64: string | null;
@@ -41,6 +42,17 @@ export function AnalyzingStep({
     ...s,
     label: t(`components.wizard.analyzing.${s.key}`),
   }));
+
+  // Track when analysis completes (transitions from analyzing to not-analyzing without error)
+  const wasAnalyzingRef = useRef(false);
+  useEffect(() => {
+    if (isAnalyzing) {
+      wasAnalyzingRef.current = true;
+    } else if (wasAnalyzingRef.current && !analysisError) {
+      trackEvent('analysis_completed', { confidence: 0, teeth_count: 0 });
+      wasAnalyzingRef.current = false;
+    }
+  }, [isAnalyzing, analysisError]);
 
   // Reset animation when analysis starts
   useEffect(() => {

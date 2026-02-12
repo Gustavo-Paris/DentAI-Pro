@@ -10,6 +10,7 @@ import type { PatientPreferences } from '@/components/wizard/PatientPreferencesS
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { logger } from '@/lib/logger';
+import { trackEvent } from '@/lib/analytics';
 import { wizard as wizardData } from '@/data';
 
 // ---------------------------------------------------------------------------
@@ -82,6 +83,7 @@ export function useWizardDraftRestore({
 
     setShowRestoreModal(false);
     setPendingDraft(null);
+    trackEvent('draft_restored');
     toast.success(t('toasts.draft.restored'));
   }, [
     pendingDraft,

@@ -7,6 +7,7 @@ import { PlanComparisonTable } from '@/components/pricing/PlanComparisonTable';
 import { useSubscription } from '@/hooks/useSubscription';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
+import { trackEvent } from '@/lib/analytics';
 import { DetailPage } from '@pageshell/composites';
 import {
   Dialog,
@@ -28,6 +29,11 @@ export default function Pricing() {
   const [searchParams] = useSearchParams();
   const { refreshSubscription } = useSubscription();
   const [showSuccess, setShowSuccess] = useState(false);
+
+  // Track subscription page view
+  useEffect(() => {
+    trackEvent('subscription_viewed');
+  }, []);
 
   // Handle redirect from Stripe
   useEffect(() => {

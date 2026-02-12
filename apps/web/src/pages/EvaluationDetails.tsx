@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
@@ -50,6 +50,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 
 import { DetailPage } from '@pageshell/composites';
+import { trackEvent } from '@/lib/analytics';
 import { useEvaluationDetail } from '@/hooks/domain/useEvaluationDetail';
 import { Progress } from '@/components/ui/progress';
 import type { EvaluationItem } from '@/hooks/domain/useEvaluationDetail';
@@ -164,6 +165,13 @@ export default function EvaluationDetails() {
 
   const firstEval = detail.evaluations[0];
   const hasDSD = !!(firstEval?.dsd_simulation_url || firstEval?.dsd_simulation_layers?.length);
+
+  // Track evaluation_viewed when session loads
+  useEffect(() => {
+    if (detail.sessionId && detail.evaluations.length > 0) {
+      trackEvent('evaluation_viewed', { evaluation_id: detail.sessionId });
+    }
+  }, [detail.sessionId, detail.evaluations.length]);
 
   const handleCompleteClick = (id: string) => {
     const result = detail.handleMarkAsCompleted(id);

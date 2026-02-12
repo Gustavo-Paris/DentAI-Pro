@@ -6,6 +6,7 @@ import type {
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { logger } from '@/lib/logger';
+import { trackEvent } from '@/lib/analytics';
 import { withRetry } from '@/lib/retry';
 import { wizard as wizardData } from '@/data';
 import { isAnterior } from './helpers';
@@ -107,6 +108,7 @@ export function usePhotoAnalysis({
     // Full flow credits were already confirmed upfront in goToPreferences
     if (!fullFlowCreditsConfirmedRef.current) {
       if (!canUseCredits('case_analysis')) {
+        trackEvent('insufficient_credits', { operation_type: 'case_analysis' });
         toast.error(t('toasts.analysis.insufficientCredits'), {
           action: { label: t('common.viewPlans'), onClick: () => navigate('/pricing') },
         });

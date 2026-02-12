@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { ProgressRing } from './ProgressRing';
@@ -11,7 +12,7 @@ interface ProcessingOverlayProps {
   estimatedTime?: string;  // e.g. "~15s"
 }
 
-export function ProcessingOverlay({
+export const ProcessingOverlay = memo(function ProcessingOverlay({
   isLoading,
   steps,
   message,
@@ -58,4 +59,4 @@ export function ProcessingOverlay({
       </Card>
     </div>
   );
-}
+});

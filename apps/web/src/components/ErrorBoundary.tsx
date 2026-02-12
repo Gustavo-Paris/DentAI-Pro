@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, RefreshCw, Home } from 'lucide-react';
 import { logger } from '@/lib/logger';
+import { trackEvent } from '@/lib/analytics';
 import i18n from '@/lib/i18n';
 
 interface Props {
@@ -28,7 +29,13 @@ class ErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // Log to console for development
     logger.error('ErrorBoundary caught an error:', error, errorInfo);
-    
+
+    // Track in PostHog
+    trackEvent('error_occurred', {
+      error_type: error.name || 'Unknown',
+      page: window.location.pathname,
+    });
+
     // Report to Sentry in production
     Sentry.captureException(error, {
       extra: {
