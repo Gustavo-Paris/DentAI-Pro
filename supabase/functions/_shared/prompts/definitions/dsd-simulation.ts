@@ -60,7 +60,10 @@ WORKFLOW OBRIGATÓRIO (seguir exatamente):
 - DENTRO DA MÁSCARA (pode modificar): Superfícies de esmalte dos dentes APENAS
 - FORA DA MÁSCARA (copiar exatamente):
   • LÁBIOS: Formato, cor, textura, brilho, rugas, vermillion - INTOCÁVEIS
-  • GENGIVA: Cor rosa, contorno, papilas interdentais, zênites gengivais - PRESERVAR
+  • GENGIVA: Cor rosa, contorno, papilas interdentais, zênites gengivais - PRESERVAR EXATAMENTE
+    ⚠️ PROIBIÇÃO TOTAL DE GENGIVOPLASTIA: A LINHA GENGIVAL (margem onde gengiva encontra dente) DEVE ser IDÊNTICA à entrada.
+    Se o paciente tem sorriso gengival, MANTENHA COMO ESTÁ. NÃO tente "melhorar" removendo gengiva.
+    Gengivoplastia será simulada em camada separada — NÃO aplique nesta camada.
   • PELE: Textura, tom, pelos faciais, barba - IDÊNTICOS
   • FUNDO: Qualquer elemento de fundo - INALTERADO
   • SOMBRAS: Todas as sombras naturais da foto - MANTER
@@ -148,7 +151,13 @@ VALIDAÇÃO DE QUALIDADE:
 - Os dentes devem parecer NATURAIS, não artificiais ou "de plástico"
 - A textura do esmalte deve ter micro-variações naturais
 - O gradiente de cor cervical→incisal deve ser suave e realista
-- Os dentes devem ser VISIVELMENTE MAIS BRANCOS que a entrada, mas ainda naturais`
+- Os dentes devem ser VISIVELMENTE MAIS BRANCOS que a entrada, mas ainda naturais
+
+⚠️ VALIDAÇÃO GENGIVAL (CRÍTICO):
+- A LINHA GENGIVAL na saída DEVE ser IDÊNTICA à entrada — compare pixel a pixel
+- Se o paciente mostra gengiva ao sorrir (sorriso gengival), MANTENHA ASSIM
+- NÃO remova gengiva, NÃO recontorne a margem gengival, NÃO faça gengivoplastia
+- Qualquer alteração na margem gengival = REJEIÇÃO AUTOMÁTICA`
 }
 
 function buildBaseCorrections(): string {
@@ -306,18 +315,22 @@ TASK: The teeth in this image have ALREADY been structurally corrected AND white
 Now REVERT ONLY the whitening — restore the NATURAL original tooth color while keeping every structural correction EXACTLY as-is.
 
 ⚠️ THIS IS A COLOR-ONLY OPERATION:
-- Make teeth look like their NATURAL shade (slightly yellow/ivory, not bright white)
-- The tooth COLOR must look like a real, unwhitened but healthy smile
+- Reduce the whitening effect SLIGHTLY — teeth should look like healthy natural teeth, NOT artificially yellow
+- The result should look like professional dental work WITHOUT whitening (clean, healthy, natural shade)
 - Keep ALL structural corrections: shape, contour, alignment, closed gaps, filled chips — EXACTLY as input
 - Do NOT add new corrections, do NOT change tooth shape or position
-- The ONLY visible change should be tooth color: from whitened → natural
+- Do NOT change gum line, gum color, or any gingival tissue — PRESERVE EXACTLY as input
+- The ONLY visible change should be tooth color: from whitened → slightly less white
 
 COLOR GUIDANCE:
-- Target: A1-A2 shade (natural, slightly warm ivory — NOT yellow, NOT grey)
-- Reduce brightness/whiteness uniformly across all visible teeth
+- Reduce whiteness by approximately 20-30% — NOT a dramatic change
+- Target: teeth that look naturally healthy (B1-A2 shade range), NOT yellow or discolored
+- ⚠️ Do NOT make teeth YELLOW, GREY, or STAINED — just slightly less white than the input
+- The difference between input and output should be SUBTLE, not dramatic
 - Maintain natural translucency gradients (more translucent at incisal edges)
 - Keep subtle color variation between teeth (don't make them perfectly uniform)
 - Preserve surface texture and light reflections exactly
+- If in doubt, make LESS change rather than more — a subtle reduction is better than over-yellowing
 
 WHAT TO PRESERVE (DO NOT CHANGE — PIXEL-IDENTICAL):
 - ALL structural corrections: tooth shape, contour, alignment, closed gaps, filled chips
