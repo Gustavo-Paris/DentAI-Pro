@@ -3,7 +3,7 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsPreFlight, createErrorResponse, ERROR_MESSAGES, generateRequestId } from "../_shared/cors.ts";
 import { sanitizeForPrompt } from "../_shared/validation.ts";
 import { logger } from "../_shared/logger.ts";
-import { callGeminiWithTools, GeminiError, type OpenAIMessage, type OpenAITool } from "../_shared/gemini.ts";
+import { callClaudeWithTools, ClaudeError, type OpenAIMessage, type OpenAITool } from "../_shared/claude.ts";
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 import { checkAndUseCredits, createInsufficientCreditsResponse, refundCredits } from "../_shared/credits.ts";
 import { getPrompt, withMetrics } from "../_shared/prompts/index.ts";
@@ -314,7 +314,7 @@ serve(async (req: Request) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    // Call Gemini for protocol generation
+    // Call Claude for protocol generation
     const messages: OpenAIMessage[] = [
       { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt },
@@ -322,19 +322,19 @@ serve(async (req: Request) => {
 
     let protocol: CementationProtocol;
     try {
-      const geminiResult = await withMetrics<{ text: string | null; functionCall: { name: string; args: Record<string, unknown> } | null; finishReason: string }>(metrics, prompt.id, PROMPT_VERSION, prompt.model)(async () => {
-        const response = await callGeminiWithTools(
-          "gemini-2.5-pro",
+      const claudeResult = await withMetrics<{ text: string | null; functionCall: { name: string; args: Record<string, unknown> } | null; finishReason: string }>(metrics, prompt.id, PROMPT_VERSION, prompt.model)(async () => {
+        const response = await callClaudeWithTools(
+          "claude-sonnet-4-5-20250929",
           messages,
           tools as OpenAITool[],
           {
-            temperature: 0.3,
+            temperature: 0.0,
             maxTokens: 4000,
             forceFunctionName: "generate_cementation_protocol",
           }
         );
         if (response.tokens) {
-          logger.info('gemini_tokens', { operation: 'recommend-cementation', ...response.tokens });
+          logger.info('claude_tokens', { operation: 'recommend-cementation', ...response.tokens });
         }
         return {
           result: { text: response.text, functionCall: response.functionCall, finishReason: response.finishReason },
@@ -343,8 +343,8 @@ serve(async (req: Request) => {
         };
       });
 
-      if (!geminiResult.functionCall) {
-        logger.error("No function call in Gemini response");
+      if (!claudeResult.functionCall) {
+        logger.error("No function call in Claude response");
         if (creditsConsumed && supabaseForRefund && userIdForRefund) {
           await refundCredits(supabaseForRefund, userIdForRefund, "cementation_recommendation", reqId);
           logger.log(`[${reqId}] Refunded cementation_recommendation credits for user ${userIdForRefund} — no function call in AI response`);
@@ -352,16 +352,16 @@ serve(async (req: Request) => {
         return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
       }
 
-      protocol = parseAIResponse(CementationProtocolSchema, geminiResult.functionCall.args, 'recommend-cementation') as CementationProtocol;
+      protocol = parseAIResponse(CementationProtocolSchema, claudeResult.functionCall.args, 'recommend-cementation') as CementationProtocol;
     } catch (error) {
-      if (error instanceof GeminiError) {
+      if (error instanceof ClaudeError) {
         if (error.statusCode === 429) {
           if (creditsConsumed && supabaseForRefund && userIdForRefund) {
             await refundCredits(supabaseForRefund, userIdForRefund, "cementation_recommendation", reqId);
           }
           return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
         }
-        logger.error("Gemini API error:", error.message);
+        logger.error("Claude API error:", error.message);
       } else {
         logger.error("AI error:", error);
       }
