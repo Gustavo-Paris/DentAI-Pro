@@ -18,6 +18,34 @@ import { wizard as wizardData } from '@/data';
 import { inferCavityClass, getFullRegion, getGenericProtocol } from './helpers';
 
 // ---------------------------------------------------------------------------
+// Concurrency limiter — avoid overwhelming edge function connections
+// ---------------------------------------------------------------------------
+
+function pLimit(concurrency: number) {
+  const queue: Array<() => void> = [];
+  let active = 0;
+
+  function next() {
+    if (queue.length > 0 && active < concurrency) {
+      active++;
+      const run = queue.shift()!;
+      run();
+    }
+  }
+
+  return <T>(fn: () => Promise<T>): Promise<T> =>
+    new Promise<T>((resolve, reject) => {
+      queue.push(() => {
+        fn().then(resolve, reject).finally(() => {
+          active--;
+          next();
+        });
+      });
+      next();
+    });
+}
+
+// ---------------------------------------------------------------------------
 // Params
 // ---------------------------------------------------------------------------
 
@@ -220,8 +248,10 @@ export function useWizardSubmit({
 
       const resolvedCount = { value: 0 };
 
+      const limit = pLimit(2); // Max 2 parallel edge function calls
+
       const results = await Promise.allSettled(
-        teethToProcess.map(async (tooth) => {
+        teethToProcess.map((tooth) => limit(async () => {
           const toothData = getToothData(analysisResult, tooth);
           const treatmentType = getToothTreatment(tooth, toothTreatments, analysisResult, formData);
           // Normalize treatment type: Gemini sometimes returns English values
@@ -378,7 +408,7 @@ export function useWizardSubmit({
           setCurrentToothIndex(resolvedCount.value - 1);
 
           return { tooth, evaluationId, normalizedTreatment };
-        }),
+        })),
       );
 
       // Process results
