@@ -276,10 +276,11 @@ export const RecommendResinResponseSchema = z
         checklist: z.array(z.string()).min(1),
         alerts: z.array(z.string()).default([]),
         warnings: z.array(z.string()).default([]),
-        justification: z.string(),
+        justification: z.string().optional(),
         confidence: z.string(),
       })
       .passthrough(),
+    justification: z.string().optional(),
   })
   .passthrough();
 
