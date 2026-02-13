@@ -302,32 +302,62 @@ function buildDewhiteningPrompt(params: Params): string {
 
 ${absolutePreservation}
 
-TASK: The teeth in this image have ALREADY been corrected AND whitened.
-Revert ONLY the tooth COLOR back to the patient's NATURAL original shade.
-Keep ALL structural corrections (shape, contour, closed gaps, filled chips) EXACTLY as they are.
+TASK: The teeth in this image have ALREADY been structurally corrected AND whitened.
+Now REVERT ONLY the whitening — restore the NATURAL original tooth color while keeping every structural correction EXACTLY as-is.
 
-#1 TASK - REVERT WHITENING (CRITICAL):
-- The teeth are currently whitened — restore the NATURAL original tooth color
-- Make teeth look like the patient's REAL color before any whitening procedure
-- Natural teeth have a WARM yellowish/ivory hue, NOT bright white
-- Maintain natural color variation between teeth (centrals vs laterals vs canines)
-- Canines are typically SLIGHTLY more yellow/saturated than incisors
-- Cervical areas are naturally MORE SATURATED than incisal edges
-- DO NOT make teeth darker than a natural healthy shade — aim for A2-A3 range
+⚠️ THIS IS A COLOR-ONLY OPERATION:
+- Make teeth look like their NATURAL shade (slightly yellow/ivory, not bright white)
+- The tooth COLOR must look like a real, unwhitened but healthy smile
+- Keep ALL structural corrections: shape, contour, alignment, closed gaps, filled chips — EXACTLY as input
+- Do NOT add new corrections, do NOT change tooth shape or position
+- The ONLY visible change should be tooth color: from whitened → natural
 
-WHAT TO PRESERVE (DO NOT CHANGE):
-- ALL structural corrections: tooth shape, contour, alignment improvements
-- Closed gaps must REMAIN closed
-- Filled chips/defects must REMAIN filled
-- Conoid corrections must REMAIN corrected
-- Tooth proportions must REMAIN as they are
-- Surface texture and translucency patterns
+COLOR GUIDANCE:
+- Target: A1-A2 shade (natural, slightly warm ivory — NOT yellow, NOT grey)
+- Reduce brightness/whiteness uniformly across all visible teeth
+- Maintain natural translucency gradients (more translucent at incisal edges)
+- Keep subtle color variation between teeth (don't make them perfectly uniform)
+- Preserve surface texture and light reflections exactly
+
+WHAT TO PRESERVE (DO NOT CHANGE — PIXEL-IDENTICAL):
+- ALL structural corrections: tooth shape, contour, alignment, closed gaps, filled chips
+- Tooth proportions and positions — EXACTLY as input
+- Surface texture patterns (periquimacies, micro-texture)
+- Lips, gums, skin, background — EVERYTHING outside teeth
+- Image framing, crop, dimensions — IDENTICAL to input
+
+Output: Same photo with teeth at NATURAL color. All corrections preserved. Only whitening removed.`
+}
+
+function buildWhiteningOnlyPrompt(params: Params): string {
+  const absolutePreservation = buildAbsolutePreservation()
+
+  return `DENTAL PHOTO EDIT - WHITENING ONLY (KEEP ALL CORRECTIONS)
+
+${absolutePreservation}
+
+TASK: The teeth in this image have ALREADY been structurally corrected (shape, gaps, contours fixed).
+Now apply ONLY whitening — make the teeth brighter/whiter while keeping everything else IDENTICAL.
+Keep ALL structural corrections EXACTLY as they are. Keep EVERYTHING else pixel-identical.
+
+#1 TASK - WHITENING (${params.whiteningIntensity}):
+${params.colorInstruction}
+${params.whiteningLevel === 'hollywood' ? '⚠️ HOLLYWOOD = MAXIMUM BRIGHTNESS. Teeth must be DRAMATICALLY WHITE like porcelain veneers.' : ''}
 
 WHAT TO CHANGE (ONLY):
-- Tooth COLOR: from whitened back to natural shade
-- Color INTENSITY: from bright/white to warm/ivory
+- Tooth COLOR: make teeth whiter/brighter according to the whitening level above
+- Apply whitening UNIFORMLY across all visible teeth
+- Maintain natural translucency gradients (more translucent at incisal edges)
+- Keep subtle color variation between teeth (don't make them perfectly uniform)
 
-Output: Same photo with teeth at their NATURAL color but all structural corrections preserved.`
+WHAT TO PRESERVE (DO NOT CHANGE — PIXEL-IDENTICAL):
+- ALL structural corrections: tooth shape, contour, alignment, closed gaps, filled chips
+- Tooth proportions and positions — EXACTLY as input
+- Surface texture patterns (periquimacies, micro-texture)
+- Lips, gums, skin, background — EVERYTHING outside teeth
+- Image framing, crop, dimensions — IDENTICAL to input
+
+Output: Same photo with teeth whitened to ${params.whiteningIntensity} level. All corrections preserved. Only color changed.`
 }
 
 function buildRestorationsOnlyPrompt(params: Params): string {
@@ -563,7 +593,10 @@ export const dsdSimulation: PromptDefinition<Params> = {
         case 'root-coverage':
           return buildRootCoveragePrompt(params)
         case 'whitening-restorations':
-          // L2 always uses standard caseType routing (corrections + whitening from original photo)
+          if (params.inputAlreadyProcessed) {
+            return buildWhiteningOnlyPrompt(params)
+          }
+          // L2 from original uses standard caseType routing (corrections + whitening)
           break
       }
     }

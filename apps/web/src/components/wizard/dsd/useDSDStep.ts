@@ -314,7 +314,7 @@ export function useDSDStep({
     return { layer, url: signedData?.signedUrl || null };
   }, []);
 
-  // Generate L1 and L2 in parallel from original photo, chain L3 from L2 composited.
+  // L2-first architecture: Generate L2 (canonical) from original, derive L1 from L2, chain L3 from L2.
   const generateAllLayers = useCallback(async (analysisData?: DSDAnalysis) => {
     const analysis = analysisData || result?.analysis;
     if (!imageBase64 || !analysis) return;
@@ -330,54 +330,51 @@ export function useDSDStep({
       const resolvedUrls: Record<string, string> = {};
       const failed: SimulationLayerType[] = [];
 
-      // === Phase 1: Generate L1 (canonical — corrections only, no whitening, from original) ===
-      const l1Raw = await generateSingleLayer(analysis, 'restorations-only');
+      // === Phase 1: Generate L2 (canonical — corrections + whitening from original) ===
+      const l2Raw = await generateSingleLayer(analysis, 'whitening-restorations');
       setLayerGenerationProgress(1);
 
-      // Process L1
-      let l1CompositedUrl: string | null = null;
-      if (l1Raw) {
-        const { layer: l1Processed, url } = await resolveLayerUrl(l1Raw);
-        compositedLayers.push(l1Processed);
-        l1CompositedUrl = url;
-        if (url) resolvedUrls['restorations-only'] = url;
+      // Process L2
+      let l2CompositedUrl: string | null = null;
+      if (l2Raw) {
+        const { layer: l2Processed, url: l2Url } = await resolveLayerUrl(l2Raw);
+        compositedLayers.push(l2Processed);
+        l2CompositedUrl = l2Url;
+        if (l2Url) resolvedUrls['whitening-restorations'] = l2Url;
       } else {
-        failed.push('restorations-only');
+        failed.push('whitening-restorations');
       }
 
-      // === Phase 2: Generate L2 from L1 (add whitening to already-corrected teeth) ===
-      let l2CompositedUrl: string | null = null;
-      if (l1CompositedUrl) {
+      // === Phase 2: Generate L1 from L2 (dewhitening — revert whitening, keep corrections) ===
+      if (l2CompositedUrl) {
         try {
-          const l1Base64 = await urlToBase64(l1CompositedUrl);
-          logger.log('Layer chaining: deriving L2 from L1 (whitening-only)');
-          const l2Raw = await generateSingleLayer(analysis, 'whitening-restorations', l1Base64);
+          const l2Base64 = await urlToBase64(l2CompositedUrl);
+          logger.log('Layer chaining: deriving L1 from L2 (dewhitening)');
+          const l1Raw = await generateSingleLayer(analysis, 'restorations-only', l2Base64);
           setLayerGenerationProgress(2);
 
-          if (l2Raw) {
-            const { layer: l2Processed, url: l2Url } = await resolveLayerUrl(l2Raw);
-            compositedLayers.push(l2Processed);
-            l2CompositedUrl = l2Url;
-            if (l2Url) resolvedUrls['whitening-restorations'] = l2Url;
+          if (l1Raw) {
+            const { layer: l1Processed, url: l1Url } = await resolveLayerUrl(l1Raw);
+            compositedLayers.push(l1Processed);
+            if (l1Url) resolvedUrls['restorations-only'] = l1Url;
           } else {
-            failed.push('whitening-restorations');
+            failed.push('restorations-only');
           }
         } catch (err) {
-          logger.error('L2 derivation from L1 error:', err);
-          failed.push('whitening-restorations');
+          logger.error('L1 derivation from L2 error:', err);
+          failed.push('restorations-only');
         }
       } else {
-        // L1 failed, generate L2 from original as fallback
-        logger.warn('L1 unavailable, generating L2 from original photo as fallback');
-        const l2Raw = await generateSingleLayer(analysis, 'whitening-restorations');
+        // L2 failed, generate L1 from original as fallback
+        logger.warn('L2 unavailable, generating L1 from original photo as fallback');
+        const l1Raw = await generateSingleLayer(analysis, 'restorations-only');
         setLayerGenerationProgress(2);
-        if (l2Raw) {
-          const { layer: l2Processed, url: l2Url } = await resolveLayerUrl(l2Raw);
-          compositedLayers.push(l2Processed);
-          l2CompositedUrl = l2Url;
-          if (l2Url) resolvedUrls['whitening-restorations'] = l2Url;
+        if (l1Raw) {
+          const { layer: l1Processed, url: l1Url } = await resolveLayerUrl(l1Raw);
+          compositedLayers.push(l1Processed);
+          if (l1Url) resolvedUrls['restorations-only'] = l1Url;
         } else {
-          failed.push('whitening-restorations');
+          failed.push('restorations-only');
         }
       }
 
@@ -494,24 +491,24 @@ export function useDSDStep({
     }
   }, [imageBase64, result?.analysis, generateSingleLayer, resolveLayerUrl, gingivoplastyApproved]);
 
-  // Retry a single failed layer (respects L2-first architecture)
+  // Retry a single failed layer (L1 and L3 chain from L2; L2 regenerates from original)
   const retryFailedLayer = useCallback(async (layerType: SimulationLayerType) => {
     const analysis = result?.analysis;
     if (!imageBase64 || !analysis) return;
 
     setRetryingLayer(layerType);
     try {
-      // L2 retry: chain from L1 composited image (whitening-only)
+      // L1 retry: chain from L2 composited image (dewhitening)
       // L3 retry: chain from L2 composited image (gengivoplasty-only)
       let baseImageOverride: string | undefined;
-      if (layerType === 'whitening-restorations') {
-        const l1CompositedUrl = layerUrls['restorations-only'];
-        if (l1CompositedUrl) {
+      if (layerType === 'restorations-only') {
+        const l2CompositedUrl = layerUrls['whitening-restorations'];
+        if (l2CompositedUrl) {
           try {
-            baseImageOverride = await urlToBase64(l1CompositedUrl);
-            logger.log('L2 retry: chaining from L1 composited image');
+            baseImageOverride = await urlToBase64(l2CompositedUrl);
+            logger.log('L1 retry: chaining from L2 composited image (dewhitening)');
           } catch (err) {
-            logger.warn('L2 retry: failed to convert L1 URL to base64, using original:', err);
+            logger.warn('L1 retry: failed to convert L2 URL to base64, using original:', err);
           }
         }
       } else if (layerType === 'complete-treatment') {

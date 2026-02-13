@@ -856,7 +856,7 @@ Se o problema clínico é microdontia/conoide → sua sugestão deve ser "Aument
   try {
     const result = await withMetrics<{ text: string | null; functionCall: { name: string; args: Record<string, unknown> } | null; finishReason: string }>(metrics, dsdAnalysisPromptDef.id, PROMPT_VERSION, dsdAnalysisPromptDef.model)(async () => {
       const response = await callGeminiVisionWithTools(
-        "gemini-2.5-pro",
+        "gemini-2.0-flash",
         "Analise esta foto e retorne a análise DSD completa usando a ferramenta analyze_dsd.",
         base64Data,
         mimeType,
@@ -884,8 +884,69 @@ Se o problema clínico é microdontia/conoide → sua sugestão deve ser "Aument
       return normalizeAnalysisEnums(parsed);
     }
 
-    logger.error("No function call in Gemini response");
-    return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
+    // MALFORMED_FUNCTION_CALL or no function call: fallback to plain vision (no tools)
+    if (result.finishReason === 'MALFORMED_FUNCTION_CALL' || !result.functionCall) {
+      logger.warn(`Function calling failed (finishReason=${result.finishReason}) — falling back to plain JSON vision call`);
+
+      // Try to recover from text first
+      if (result.text) {
+        try {
+          const jsonMatch = result.text.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            const rawArgs = JSON.parse(jsonMatch[0]);
+            const parsed = parseAIResponse(DSDAnalysisSchema, rawArgs, 'generate-dsd') as DSDAnalysis;
+            logger.info("Recovered analysis from function call text response");
+            return normalizeAnalysisEnums(parsed);
+          }
+        } catch (_parseErr) {
+          logger.warn("Text JSON recovery failed, trying plain vision fallback");
+        }
+      }
+
+      // Full fallback: call Gemini WITHOUT tools, ask for raw JSON
+      const fallbackResponse = await callGeminiVision(
+        "gemini-2.0-flash",
+        `Analise esta foto odontológica e retorne a análise DSD completa.
+Responda APENAS com um objeto JSON válido (sem markdown, sem backticks) com os seguintes campos:
+facial_midline, dental_midline, smile_line, buccal_corridor, occlusal_plane,
+golden_ratio_compliance, symmetry_score, suggestions (array), observations (array),
+confidence, lip_thickness, overbite_suspicion, face_shape, perceived_temperament,
+smile_arc, recommended_tooth_shape, visagism_notes.
+Use SOMENTE valores em português conforme os enums do schema.`,
+        base64Data,
+        mimeType,
+        {
+          systemPrompt: analysisPrompt,
+          temperature: 0.1,
+          maxTokens: 4000,
+        }
+      );
+      if (fallbackResponse.tokens) {
+        logger.info('gemini_tokens', { operation: 'generate-dsd:analysis-fallback', ...fallbackResponse.tokens });
+      }
+
+      if (fallbackResponse.text) {
+        try {
+          // Strip markdown code fences if present
+          let jsonText = fallbackResponse.text.trim();
+          if (jsonText.startsWith('```')) {
+            jsonText = jsonText.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '');
+          }
+          const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            const rawArgs = JSON.parse(jsonMatch[0]);
+            const parsed = parseAIResponse(DSDAnalysisSchema, rawArgs, 'generate-dsd') as DSDAnalysis;
+            logger.info("Recovered analysis from plain vision fallback");
+            return normalizeAnalysisEnums(parsed);
+          }
+        } catch (fallbackErr) {
+          logger.error("Plain vision fallback JSON parse failed:", fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr));
+        }
+      }
+    }
+
+    logger.error("No function call in Gemini response. finishReason:", result.finishReason, "Text:", result.text?.substring(0, 300));
+    return createErrorResponse(`${ERROR_MESSAGES.AI_ERROR} (finishReason=${result.finishReason})`, 500, corsHeaders);
   } catch (error) {
     if (error instanceof GeminiError) {
       if (error.statusCode === 429) {
