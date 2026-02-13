@@ -11,10 +11,11 @@ export const dsdAnalysis: PromptDefinition<Params> = {
   id: 'dsd-analysis',
   name: 'Análise DSD',
   description: 'Análise completa de Digital Smile Design com visagismo e proporções faciais',
-  model: 'gemini-2.5-pro',
-  temperature: 0.1,
+  model: 'claude-sonnet-4-5-20250929',
+  temperature: 0.0,
   maxTokens: 4000,
   mode: 'vision-tools',
+  provider: 'claude',
 
   system: ({ additionalContext = '', preferencesContext = '', clinicalContext = '' }: Params) =>
     `Você é um especialista em Digital Smile Design (DSD), Visagismo e Odontologia Estética com mais de 20 anos de experiência.

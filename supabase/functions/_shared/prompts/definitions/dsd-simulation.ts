@@ -44,7 +44,14 @@ function buildTextureInstruction(): string {
 - NÃO criar aparência de "porcelana perfeita" ou "dentes de comercial de TV"`
 }
 
-function buildAbsolutePreservation(): string {
+function buildAbsolutePreservation(options?: { allowGingivalModification?: boolean }): string {
+  const gumRule = options?.allowGingivalModification
+    ? `  • GENGIVA: Nesta camada, a margem gengival PODE ser modificada (gengivoplastia/recobrimento). Cor e textura do tecido gengival devem permanecer naturais.`
+    : `  • GENGIVA: Cor rosa, contorno, papilas interdentais, zênites gengivais - PRESERVAR EXATAMENTE
+    ⚠️ PROIBIÇÃO TOTAL DE GENGIVOPLASTIA: A LINHA GENGIVAL (margem onde gengiva encontra dente) DEVE ser IDÊNTICA à entrada.
+    Se o paciente tem sorriso gengival, MANTENHA COMO ESTÁ. NÃO tente "melhorar" removendo gengiva.
+    Gengivoplastia será simulada em camada separada — NÃO aplique nesta camada.`
+
   return `🔒 INPAINTING MODE - DENTAL SMILE ENHANCEMENT 🔒
 
 === IDENTIDADE DO PACIENTE - PRESERVAÇÃO ABSOLUTA ===
@@ -53,17 +60,14 @@ Esta é uma foto REAL de um paciente REAL. A identidade facial deve ser 100% pre
 WORKFLOW OBRIGATÓRIO (seguir exatamente):
 1. COPIAR a imagem de entrada INTEIRA como está
 2. IDENTIFICAR APENAS a área dos dentes (superfícies de esmalte branco/marfim)
-3. MODIFICAR APENAS pixels dentro do limite dos dentes
-4. TODOS os pixels FORA do limite dos dentes = CÓPIA EXATA da entrada
+3. MODIFICAR APENAS pixels dentro do limite dos dentes${options?.allowGingivalModification ? ' E margem gengival' : ''}
+4. TODOS os pixels FORA do limite dos dentes${options?.allowGingivalModification ? '/gengiva' : ''} = CÓPIA EXATA da entrada
 
 ⚠️ DEFINIÇÃO DA MÁSCARA (CRÍTICO):
-- DENTRO DA MÁSCARA (pode modificar): Superfícies de esmalte dos dentes APENAS
+- DENTRO DA MÁSCARA (pode modificar): Superfícies de esmalte dos dentes${options?.allowGingivalModification ? ' E margem gengival' : ''} APENAS
 - FORA DA MÁSCARA (copiar exatamente):
   • LÁBIOS: Formato, cor, textura, brilho, rugas, vermillion - INTOCÁVEIS
-  • GENGIVA: Cor rosa, contorno, papilas interdentais, zênites gengivais - PRESERVAR EXATAMENTE
-    ⚠️ PROIBIÇÃO TOTAL DE GENGIVOPLASTIA: A LINHA GENGIVAL (margem onde gengiva encontra dente) DEVE ser IDÊNTICA à entrada.
-    Se o paciente tem sorriso gengival, MANTENHA COMO ESTÁ. NÃO tente "melhorar" removendo gengiva.
-    Gengivoplastia será simulada em camada separada — NÃO aplique nesta camada.
+${gumRule}
   • PELE: Textura, tom, pelos faciais, barba - IDÊNTICOS
   • FUNDO: Qualquer elemento de fundo - INALTERADO
   • SOMBRAS: Todas as sombras naturais da foto - MANTER
@@ -135,8 +139,19 @@ ${params.smileArc === 'reverso' ? '- ATENÇÃO: Arco reverso precisa de tratamen
 `
 }
 
-function buildQualityRequirements(params: Params): string {
+function buildQualityRequirements(params: Params, options?: { allowGingivalModification?: boolean }): string {
   const visagismContext = buildVisagismContext(params)
+
+  const gingivalValidation = options?.allowGingivalModification
+    ? ''
+    : `
+
+⚠️ VALIDAÇÃO GENGIVAL (CRÍTICO):
+- A LINHA GENGIVAL na saída DEVE ser IDÊNTICA à entrada — compare pixel a pixel
+- Se o paciente mostra gengiva ao sorrir (sorriso gengival), MANTENHA ASSIM
+- NÃO remova gengiva, NÃO recontorne a margem gengival, NÃO faça gengivoplastia
+- Qualquer alteração na margem gengival = REJEIÇÃO AUTOMÁTICA`
+
   return `
 ${visagismContext}
 VERIFICAÇÃO DE COMPOSIÇÃO:
@@ -147,17 +162,11 @@ Pense nisso como camadas do Photoshop:
 
 VALIDAÇÃO DE QUALIDADE:
 - Sobrepor saída na entrada → diferença deve aparecer APENAS nos dentes
-- Qualquer mudança em lábios, gengiva, pele = FALHA
+- Qualquer mudança em lábios, pele = FALHA
 - Os dentes devem parecer NATURAIS, não artificiais ou "de plástico"
 - A textura do esmalte deve ter micro-variações naturais
 - O gradiente de cor cervical→incisal deve ser suave e realista
-- Os dentes devem ser VISIVELMENTE MAIS BRANCOS que a entrada, mas ainda naturais
-
-⚠️ VALIDAÇÃO GENGIVAL (CRÍTICO):
-- A LINHA GENGIVAL na saída DEVE ser IDÊNTICA à entrada — compare pixel a pixel
-- Se o paciente mostra gengiva ao sorrir (sorriso gengival), MANTENHA ASSIM
-- NÃO remova gengiva, NÃO recontorne a margem gengival, NÃO faça gengivoplastia
-- Qualquer alteração na margem gengival = REJEIÇÃO AUTOMÁTICA`
+- Os dentes devem ser VISIVELMENTE MAIS BRANCOS que a entrada, mas ainda naturais${gingivalValidation}`
 }
 
 function buildBaseCorrections(): string {
@@ -403,15 +412,11 @@ Output: Same photo with ONLY teeth structurally corrected at their ORIGINAL natu
 }
 
 function buildGengivoplastyOnlyPrompt(params: Params): string {
-  const absolutePreservation = buildAbsolutePreservation()
+  const absolutePreservation = buildAbsolutePreservation({ allowGingivalModification: true })
 
   return `DENTAL PHOTO EDIT - GUM LINE RESHAPING ONLY
 
 ${absolutePreservation}
-
-⚠️ OVERRIDE FOR THIS LAYER: The "GENGIVA" rule in the preservation block above is PARTIALLY LIFTED.
-You ARE allowed to modify the GINGIVAL MARGIN (the edge where gum meets tooth).
-You are NOT allowed to modify anything else — especially NOT the lips.
 
 This is an INPAINTING task on an ALREADY PROCESSED image.
 The teeth have ALREADY been corrected and whitened — do NOT change them.
@@ -463,11 +468,11 @@ function buildWithGengivoplastyPrompt(params: Params): string {
     return buildGengivoplastyOnlyPrompt(params)
   }
 
-  const absolutePreservation = buildAbsolutePreservation()
+  const absolutePreservation = buildAbsolutePreservation({ allowGingivalModification: true })
   const whiteningPrioritySection = buildWhiteningPrioritySection(params)
   const baseCorrections = buildBaseCorrections()
   const textureInstruction = buildTextureInstruction()
-  const qualityRequirements = buildQualityRequirements(params)
+  const qualityRequirements = buildQualityRequirements(params, { allowGingivalModification: true })
   const allowedChangesFromAnalysis = params.allowedChangesFromAnalysis || ''
 
   return `DENTAL PHOTO EDIT - COMPLETE TREATMENT WITH GENGIVOPLASTY
@@ -491,7 +496,7 @@ VALIDAÇÃO:
 - Abertura labial: IDÊNTICA à foto original
 - Se qualquer lábio mudou de posição → REJEITAR e refazer
 
-⚠️ EXCEPTION TO GINGIVA PRESERVATION: In this layer, you ARE ALLOWED to modify the gingival contour.
+GINGIVAL MODIFICATION IS ALLOWED AND REQUIRED in this layer.
 The gum line should be recontoured to show the effect of gengivoplasty:
 - Expose more clinical crown by moving the gingival margin apically (towards the root)
 - Create symmetrical gingival zeniths between contralateral teeth
@@ -529,11 +534,11 @@ Output: Same photo with teeth corrected AND gingival recontouring applied.`
 }
 
 function buildRootCoveragePrompt(params: Params): string {
-  const absolutePreservation = buildAbsolutePreservation()
+  const absolutePreservation = buildAbsolutePreservation({ allowGingivalModification: true })
   const whiteningPrioritySection = buildWhiteningPrioritySection(params)
   const baseCorrections = buildBaseCorrections()
   const textureInstruction = buildTextureInstruction()
-  const qualityRequirements = buildQualityRequirements(params)
+  const qualityRequirements = buildQualityRequirements(params, { allowGingivalModification: true })
   const allowedChangesFromAnalysis = params.allowedChangesFromAnalysis || ''
 
   return `DENTAL PHOTO EDIT - COMPLETE TREATMENT WITH ROOT COVERAGE
@@ -589,6 +594,7 @@ export const dsdSimulation: PromptDefinition<Params> = {
   temperature: 0.0,
   maxTokens: 4000,
   mode: 'image-edit',
+  provider: 'gemini',
 
   system: (params: Params): string => {
     // Layer-specific routing takes precedence when set

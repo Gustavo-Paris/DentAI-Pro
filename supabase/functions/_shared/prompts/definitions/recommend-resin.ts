@@ -201,10 +201,11 @@ export const recommendResin: PromptDefinition<Params> = {
   id: 'recommend-resin',
   name: 'Recomendação de Resina',
   description: 'Gera recomendação completa de resina com protocolo de estratificação',
-  model: 'gemini-3-flash-preview',
-  temperature: 0.3,
+  model: 'claude-sonnet-4-5-20250929',
+  temperature: 0.0,
   maxTokens: 8192,
   mode: 'text',
+  provider: 'claude',
 
   system: () => '',
 
