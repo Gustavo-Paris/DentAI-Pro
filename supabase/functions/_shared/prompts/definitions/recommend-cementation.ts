@@ -18,10 +18,11 @@ export const recommendCementation: PromptDefinition<Params> = {
   id: 'recommend-cementation',
   name: 'Protocolo de Cimentação',
   description: 'Gera protocolo completo de cimentação de facetas cerâmicas',
-  model: 'gemini-2.5-pro',
-  temperature: 0.3,
+  model: 'claude-sonnet-4-5-20250929',
+  temperature: 0.0,
   maxTokens: 4000,
   mode: 'text-tools',
+  provider: 'claude',
 
   system: () =>
     `Você é um especialista em cimentação de facetas de porcelana com mais de 15 anos de experiência clínica em casos estéticos de alta complexidade.

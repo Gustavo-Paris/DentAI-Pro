@@ -1,5 +1,7 @@
 export type PromptMode = 'text' | 'vision' | 'vision-tools' | 'text-tools' | 'image-edit'
 
+export type PromptProvider = 'gemini' | 'claude'
+
 export interface PromptMetadata {
   id: string
   name: string
@@ -9,6 +11,7 @@ export interface PromptMetadata {
   maxTokens: number
   tags?: string[]
   mode: PromptMode
+  provider: PromptProvider
 }
 
 export interface PromptDefinition<TParams = unknown> extends PromptMetadata {

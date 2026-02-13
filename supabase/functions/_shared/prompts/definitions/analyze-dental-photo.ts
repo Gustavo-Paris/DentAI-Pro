@@ -9,10 +9,11 @@ export const analyzeDentalPhoto: PromptDefinition<Params> = {
   id: 'analyze-dental-photo',
   name: 'Análise de Foto Dental',
   description: 'Analisa foto dental identificando todos os dentes com problemas e oportunidades estéticas',
-  model: 'gemini-3-flash-preview',
-  temperature: 0.1,
+  model: 'claude-sonnet-4-5-20250929',
+  temperature: 0.0,
   maxTokens: 3000,
   mode: 'vision-tools',
+  provider: 'claude',
 
   system: () =>
     `Você é um especialista em odontologia restauradora e estética com 20 anos de experiência.
