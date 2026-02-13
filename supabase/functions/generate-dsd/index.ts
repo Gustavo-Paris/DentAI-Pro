@@ -3,12 +3,15 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsPreFlight, createErrorResponse, ERROR_MESSAGES, generateRequestId } from "../_shared/cors.ts";
 import { logger } from "../_shared/logger.ts";
 import {
-  callGeminiVision,
-  callGeminiVisionWithTools,
   callGeminiImageEdit,
   GeminiError,
   type OpenAITool
 } from "../_shared/gemini.ts";
+import {
+  callClaudeVision,
+  callClaudeVisionWithTools,
+  ClaudeError,
+} from "../_shared/claude.ts";
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 import { checkAndUseCredits, createInsufficientCreditsResponse, refundCredits } from "../_shared/credits.ts";
 import { sanitizeForPrompt } from "../_shared/validation.ts";
@@ -510,8 +513,8 @@ async function generateSimulation(
       const simMimeMatch = simImageUrl.match(/^data:([^;]+);base64,/);
       const simMimeType = simMimeMatch ? simMimeMatch[1] : 'image/png';
 
-      const lipCheck = await callGeminiVision(
-        "gemini-2.0-flash",
+      const lipCheck = await callClaudeVision(
+        "claude-sonnet-4-5-20250929",
         `Imagem 1 é a ORIGINAL. Imagem 2 é a SIMULAÇÃO odontológica.
 Compare AMBOS os lábios entre as duas imagens:
 1. O LÁBIO SUPERIOR mudou de posição, formato ou contorno?
@@ -531,7 +534,7 @@ Responda APENAS 'SIM' ou 'NÃO'.`,
       );
 
       if (lipCheck.tokens) {
-        logger.info('gemini_tokens', { operation: 'generate-dsd:lip-validation', ...lipCheck.tokens });
+        logger.info('claude_tokens', { operation: 'generate-dsd:lip-validation', ...lipCheck.tokens });
       }
       const lipAnswer = (lipCheck.text || '').trim().toUpperCase();
       const lipsMoved = lipAnswer.includes('SIM');
@@ -855,22 +858,22 @@ Se o problema clínico é microdontia/conoide → sua sugestão deve ser "Aument
 
   try {
     const result = await withMetrics<{ text: string | null; functionCall: { name: string; args: Record<string, unknown> } | null; finishReason: string }>(metrics, dsdAnalysisPromptDef.id, PROMPT_VERSION, dsdAnalysisPromptDef.model)(async () => {
-      const response = await callGeminiVisionWithTools(
-        "gemini-2.0-flash",
+      const response = await callClaudeVisionWithTools(
+        "claude-sonnet-4-5-20250929",
         "Analise esta foto e retorne a análise DSD completa usando a ferramenta analyze_dsd.",
         base64Data,
         mimeType,
         tools,
         {
           systemPrompt: analysisPrompt,
-          temperature: 0.1,
+          temperature: 0.0,
           maxTokens: 4000,
           forceFunctionName: "analyze_dsd",
           timeoutMs: 60_000,
         }
       );
       if (response.tokens) {
-        logger.info('gemini_tokens', { operation: 'generate-dsd:analysis', ...response.tokens });
+        logger.info('claude_tokens', { operation: 'generate-dsd:analysis', ...response.tokens });
       }
       return {
         result: { text: response.text, functionCall: response.functionCall, finishReason: response.finishReason },
@@ -903,9 +906,9 @@ Se o problema clínico é microdontia/conoide → sua sugestão deve ser "Aument
         }
       }
 
-      // Full fallback: call Gemini WITHOUT tools, ask for raw JSON
-      const fallbackResponse = await callGeminiVision(
-        "gemini-2.0-flash",
+      // Full fallback: call Claude WITHOUT tools, ask for raw JSON
+      const fallbackResponse = await callClaudeVision(
+        "claude-sonnet-4-5-20250929",
         `Analise esta foto odontológica e retorne a análise DSD completa.
 Responda APENAS com um objeto JSON válido (sem markdown, sem backticks) com os seguintes campos:
 facial_midline, dental_midline, smile_line, buccal_corridor, occlusal_plane,
@@ -917,12 +920,12 @@ Use SOMENTE valores em português conforme os enums do schema.`,
         mimeType,
         {
           systemPrompt: analysisPrompt,
-          temperature: 0.1,
+          temperature: 0.0,
           maxTokens: 4000,
         }
       );
       if (fallbackResponse.tokens) {
-        logger.info('gemini_tokens', { operation: 'generate-dsd:analysis-fallback', ...fallbackResponse.tokens });
+        logger.info('claude_tokens', { operation: 'generate-dsd:analysis-fallback', ...fallbackResponse.tokens });
       }
 
       if (fallbackResponse.text) {
@@ -945,15 +948,15 @@ Use SOMENTE valores em português conforme os enums do schema.`,
       }
     }
 
-    logger.error("No function call in Gemini response. finishReason:", result.finishReason, "Text:", result.text?.substring(0, 300));
+    logger.error("No function call in Claude response. finishReason:", result.finishReason, "Text:", result.text?.substring(0, 300));
     return createErrorResponse(`${ERROR_MESSAGES.AI_ERROR} (finishReason=${result.finishReason})`, 500, corsHeaders);
   } catch (error) {
-    if (error instanceof GeminiError) {
+    if (error instanceof ClaudeError) {
       if (error.statusCode === 429) {
         return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
       }
-      logger.error("Gemini analysis error:", error.message, "status:", error.statusCode);
-      // Include Gemini error details in response for debugging
+      logger.error("Claude analysis error:", error.message, "status:", error.statusCode);
+      // Include Claude error details in response for debugging
       const detail = `${ERROR_MESSAGES.AI_ERROR} (${error.statusCode}: ${error.message})`;
       return createErrorResponse(detail, 500, corsHeaders);
     } else {
