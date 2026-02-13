@@ -9,7 +9,6 @@ import { logger } from '@/lib/logger';
 import { trackEvent } from '@/lib/analytics';
 import { withRetry } from '@/lib/retry';
 import { TIMING } from '@/lib/constants';
-import { compositeGengivoplastyLips } from '@/lib/compositeGingivo';
 // compositeTeeth.ts kept for potential future use but compositing disabled —
 // Gemini's prompt-based preservation of lips/gums produces better results
 import type {
@@ -314,7 +313,8 @@ export function useDSDStep({
     return { layer, url: signedData?.signedUrl || null };
   }, []);
 
-  // L2-first architecture: Generate L2 (canonical) from original, derive L1 from L2, chain L3 from L2.
+  // L1-first sequential chaining: L1 (corrections) → L2 (whitening) → L3 (gengivoplasty)
+  // Each Gemini call does ONE thing, using the previous layer as input.
   const generateAllLayers = useCallback(async (analysisData?: DSDAnalysis) => {
     const analysis = analysisData || result?.analysis;
     if (!imageBase64 || !analysis) return;
@@ -330,104 +330,69 @@ export function useDSDStep({
       const resolvedUrls: Record<string, string> = {};
       const failed: SimulationLayerType[] = [];
 
-      // === Phase 1: Generate L2 (canonical — corrections + whitening from original) ===
-      const l2Raw = await generateSingleLayer(analysis, 'whitening-restorations');
+      // === Phase 1: Generate L1 from original (corrections only, natural color) ===
+      const l1Raw = await generateSingleLayer(analysis, 'restorations-only');
       setLayerGenerationProgress(1);
 
-      // Process L2
-      let l2CompositedUrl: string | null = null;
-      if (l2Raw) {
-        const { layer: l2Processed, url: l2Url } = await resolveLayerUrl(l2Raw);
-        compositedLayers.push(l2Processed);
-        l2CompositedUrl = l2Url;
-        if (l2Url) resolvedUrls['whitening-restorations'] = l2Url;
+      let l1Url: string | null = null;
+      if (l1Raw) {
+        const { layer: l1Processed, url } = await resolveLayerUrl(l1Raw);
+        compositedLayers.push(l1Processed);
+        l1Url = url;
+        if (url) resolvedUrls['restorations-only'] = url;
       } else {
-        failed.push('whitening-restorations');
+        failed.push('restorations-only');
       }
 
-      // === Phase 2: Generate L1 from L2 (dewhitening — revert whitening, keep corrections) ===
-      if (l2CompositedUrl) {
+      // === Phase 2: Generate L2 from L1 (whitening ONLY — everything else identical) ===
+      let l2Url: string | null = null;
+      if (l1Url) {
         try {
-          const l2Base64 = await urlToBase64(l2CompositedUrl);
-          logger.log('Layer chaining: deriving L1 from L2 (dewhitening)');
-          const l1Raw = await generateSingleLayer(analysis, 'restorations-only', l2Base64);
+          const l1Base64 = await urlToBase64(l1Url);
+          logger.log('Layer chaining: L1 → L2 (whitening only)');
+          const l2Raw = await generateSingleLayer(analysis, 'whitening-restorations', l1Base64);
           setLayerGenerationProgress(2);
 
-          if (l1Raw) {
-            const { layer: l1Processed, url: l1Url } = await resolveLayerUrl(l1Raw);
-            compositedLayers.push(l1Processed);
-            if (l1Url) resolvedUrls['restorations-only'] = l1Url;
+          if (l2Raw) {
+            const { layer: l2Processed, url } = await resolveLayerUrl(l2Raw);
+            compositedLayers.push(l2Processed);
+            l2Url = url;
+            if (url) resolvedUrls['whitening-restorations'] = url;
           } else {
-            failed.push('restorations-only');
+            failed.push('whitening-restorations');
           }
         } catch (err) {
-          logger.error('L1 derivation from L2 error:', err);
-          failed.push('restorations-only');
+          logger.error('L2 generation error:', err);
+          failed.push('whitening-restorations');
+          setLayerGenerationProgress(2);
         }
       } else {
-        // L2 failed, generate L1 from original as fallback
-        logger.warn('L2 unavailable, generating L1 from original photo as fallback');
-        const l1Raw = await generateSingleLayer(analysis, 'restorations-only');
+        // L1 failed — generate L2 from original as fallback
+        logger.warn('L1 unavailable, generating L2 from original as fallback');
+        const l2Fallback = await generateSingleLayer(analysis, 'whitening-restorations');
         setLayerGenerationProgress(2);
-        if (l1Raw) {
-          const { layer: l1Processed, url: l1Url } = await resolveLayerUrl(l1Raw);
-          compositedLayers.push(l1Processed);
-          if (l1Url) resolvedUrls['restorations-only'] = l1Url;
+        if (l2Fallback) {
+          const { layer: l2Processed, url } = await resolveLayerUrl(l2Fallback);
+          compositedLayers.push(l2Processed);
+          l2Url = url;
+          if (url) resolvedUrls['whitening-restorations'] = url;
         } else {
-          failed.push('restorations-only');
+          failed.push('whitening-restorations');
         }
       }
 
-      // === Phase 3: Generate L3 from L2 composited (if gengivoplasty approved) ===
-      if (gingivoplastyApproved === true && l2CompositedUrl) {
+      // === Phase 3: Generate L3 from L2 (gengivoplasty ONLY — if approved) ===
+      if (gingivoplastyApproved === true && l2Url) {
         try {
-          const l2Base64 = await urlToBase64(l2CompositedUrl);
-          logger.log('Layer chaining: using L2 composited image as input for complete-treatment');
+          const l2Base64 = await urlToBase64(l2Url);
+          logger.log('Layer chaining: L2 → L3 (gengivoplasty only)');
           const l3Raw = await generateSingleLayer(analysis, 'complete-treatment', l2Base64);
           setLayerGenerationProgress(3);
 
           if (l3Raw) {
             const { layer: l3Processed, url: l3Url } = await resolveLayerUrl(l3Raw);
-
-            // Lip-fix compositing: restore L2's lips onto L3 to fix Gemini's lip-lifting
-            if (l3Url && l2CompositedUrl) {
-              try {
-                logger.log('L3 lip-fix: compositing L2 lips onto L3 gengivoplasty result');
-                const composited = await compositeGengivoplastyLips(l2CompositedUrl, l3Url);
-                if (composited) {
-                  // Upload the composited image and use it as the L3 URL
-                  const base64Data = composited.replace(/^data:image\/\w+;base64,/, '');
-                  const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
-                  const fileName = `${user?.id || 'anon'}/l3_lipfix_${Date.now()}.png`;
-                  const { error: uploadErr } = await supabase.storage
-                    .from('dsd-simulations')
-                    .upload(fileName, binaryData, { contentType: 'image/png', upsert: true });
-                  if (!uploadErr) {
-                    const { data: signedData } = await supabase.storage
-                      .from('dsd-simulations')
-                      .createSignedUrl(fileName, 3600);
-                    if (signedData?.signedUrl) {
-                      l3Processed.simulation_url = fileName;
-                      resolvedUrls['complete-treatment'] = signedData.signedUrl;
-                      logger.log('L3 lip-fix: composited image uploaded and ready');
-                    }
-                  } else {
-                    logger.warn('L3 lip-fix: upload failed, using original L3:', uploadErr);
-                    if (l3Url) resolvedUrls['complete-treatment'] = l3Url;
-                  }
-                } else {
-                  logger.warn('L3 lip-fix: compositing returned null, using original L3');
-                  if (l3Url) resolvedUrls['complete-treatment'] = l3Url;
-                }
-              } catch (compErr) {
-                logger.warn('L3 lip-fix: compositing error, using original L3:', compErr);
-                if (l3Url) resolvedUrls['complete-treatment'] = l3Url;
-              }
-            } else if (l3Url) {
-              resolvedUrls['complete-treatment'] = l3Url;
-            }
-
             compositedLayers.push(l3Processed);
+            if (l3Url) resolvedUrls['complete-treatment'] = l3Url;
           } else {
             failed.push('complete-treatment');
           }
@@ -491,27 +456,16 @@ export function useDSDStep({
     }
   }, [imageBase64, result?.analysis, generateSingleLayer, resolveLayerUrl, gingivoplastyApproved]);
 
-  // Retry a single failed layer (L1 and L3 chain from L2; L2 regenerates from original)
+  // Retry a single failed layer (respects L2-first architecture)
   const retryFailedLayer = useCallback(async (layerType: SimulationLayerType) => {
     const analysis = result?.analysis;
     if (!imageBase64 || !analysis) return;
 
     setRetryingLayer(layerType);
     try {
-      // L1 retry: chain from L2 composited image (dewhitening)
-      // L3 retry: chain from L2 composited image (gengivoplasty-only)
+      // L3 retry: chain from L2 composited image
       let baseImageOverride: string | undefined;
-      if (layerType === 'restorations-only') {
-        const l2CompositedUrl = layerUrls['whitening-restorations'];
-        if (l2CompositedUrl) {
-          try {
-            baseImageOverride = await urlToBase64(l2CompositedUrl);
-            logger.log('L1 retry: chaining from L2 composited image (dewhitening)');
-          } catch (err) {
-            logger.warn('L1 retry: failed to convert L2 URL to base64, using original:', err);
-          }
-        }
-      } else if (layerType === 'complete-treatment') {
+      if (layerType === 'complete-treatment') {
         const l2CompositedUrl = layerUrls['whitening-restorations'];
         if (l2CompositedUrl) {
           try {
@@ -886,38 +840,8 @@ export function useDSDStep({
         return;
       }
       const { layer: processed, url } = await resolveLayerUrl(layer);
-
-      // Lip-fix compositing: restore L2's lips onto L3
-      let finalUrl = url;
-      if (url && l2CompositedUrl) {
-        try {
-          logger.log('Gengivoplasty approval: compositing L2 lips onto L3');
-          const composited = await compositeGengivoplastyLips(l2CompositedUrl, url);
-          if (composited) {
-            const base64Data = composited.replace(/^data:image\/\w+;base64,/, '');
-            const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
-            const fileName = `${user?.id || 'anon'}/l3_lipfix_${Date.now()}.png`;
-            const { error: uploadErr } = await supabase.storage
-              .from('dsd-simulations')
-              .upload(fileName, binaryData, { contentType: 'image/png', upsert: true });
-            if (!uploadErr) {
-              const { data: signedData } = await supabase.storage
-                .from('dsd-simulations')
-                .createSignedUrl(fileName, 3600);
-              if (signedData?.signedUrl) {
-                processed.simulation_url = fileName;
-                finalUrl = signedData.signedUrl;
-                logger.log('Gengivoplasty approval: lip-fix compositing complete');
-              }
-            }
-          }
-        } catch (compErr) {
-          logger.warn('Gengivoplasty approval: lip-fix compositing failed, using original:', compErr);
-        }
-      }
-
       setLayers(prev => [...prev, processed]);
-      if (finalUrl) setLayerUrls(prev => ({ ...prev, [processed.type]: finalUrl! }));
+      if (url) setLayerUrls(prev => ({ ...prev, [processed.type]: url }));
       setResult(prev => prev ? { ...prev, layers: [...(prev.layers || []), processed] } : prev);
       toast.success(t('toasts.dsd.layerReady', { layer: 'Gengivoplastia' }));
     } catch (err) {

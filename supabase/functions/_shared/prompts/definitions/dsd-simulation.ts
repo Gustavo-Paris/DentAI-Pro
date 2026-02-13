@@ -44,14 +44,7 @@ function buildTextureInstruction(): string {
 - NÃO criar aparência de "porcelana perfeita" ou "dentes de comercial de TV"`
 }
 
-function buildAbsolutePreservation(options?: { allowGingivalModification?: boolean }): string {
-  const gumRule = options?.allowGingivalModification
-    ? `  • GENGIVA: Nesta camada, a margem gengival PODE ser modificada (gengivoplastia/recobrimento). Cor e textura do tecido gengival devem permanecer naturais.`
-    : `  • GENGIVA: Cor rosa, contorno, papilas interdentais, zênites gengivais - PRESERVAR EXATAMENTE
-    ⚠️ PROIBIÇÃO TOTAL DE GENGIVOPLASTIA: A LINHA GENGIVAL (margem onde gengiva encontra dente) DEVE ser IDÊNTICA à entrada.
-    Se o paciente tem sorriso gengival, MANTENHA COMO ESTÁ. NÃO tente "melhorar" removendo gengiva.
-    Gengivoplastia será simulada em camada separada — NÃO aplique nesta camada.`
-
+function buildAbsolutePreservation(): string {
   return `🔒 INPAINTING MODE - DENTAL SMILE ENHANCEMENT 🔒
 
 === IDENTIDADE DO PACIENTE - PRESERVAÇÃO ABSOLUTA ===
@@ -60,14 +53,17 @@ Esta é uma foto REAL de um paciente REAL. A identidade facial deve ser 100% pre
 WORKFLOW OBRIGATÓRIO (seguir exatamente):
 1. COPIAR a imagem de entrada INTEIRA como está
 2. IDENTIFICAR APENAS a área dos dentes (superfícies de esmalte branco/marfim)
-3. MODIFICAR APENAS pixels dentro do limite dos dentes${options?.allowGingivalModification ? ' E margem gengival' : ''}
-4. TODOS os pixels FORA do limite dos dentes${options?.allowGingivalModification ? '/gengiva' : ''} = CÓPIA EXATA da entrada
+3. MODIFICAR APENAS pixels dentro do limite dos dentes
+4. TODOS os pixels FORA do limite dos dentes = CÓPIA EXATA da entrada
 
 ⚠️ DEFINIÇÃO DA MÁSCARA (CRÍTICO):
-- DENTRO DA MÁSCARA (pode modificar): Superfícies de esmalte dos dentes${options?.allowGingivalModification ? ' E margem gengival' : ''} APENAS
+- DENTRO DA MÁSCARA (pode modificar): Superfícies de esmalte dos dentes APENAS
 - FORA DA MÁSCARA (copiar exatamente):
   • LÁBIOS: Formato, cor, textura, brilho, rugas, vermillion - INTOCÁVEIS
-${gumRule}
+  • GENGIVA: Cor rosa, contorno, papilas interdentais, zênites gengivais - PRESERVAR EXATAMENTE
+    ⚠️ PROIBIÇÃO TOTAL DE GENGIVOPLASTIA: A LINHA GENGIVAL (margem onde gengiva encontra dente) DEVE ser IDÊNTICA à entrada.
+    Se o paciente tem sorriso gengival, MANTENHA COMO ESTÁ. NÃO tente "melhorar" removendo gengiva.
+    Gengivoplastia será simulada em camada separada — NÃO aplique nesta camada.
   • PELE: Textura, tom, pelos faciais, barba - IDÊNTICOS
   • FUNDO: Qualquer elemento de fundo - INALTERADO
   • SOMBRAS: Todas as sombras naturais da foto - MANTER
@@ -139,19 +135,8 @@ ${params.smileArc === 'reverso' ? '- ATENÇÃO: Arco reverso precisa de tratamen
 `
 }
 
-function buildQualityRequirements(params: Params, options?: { allowGingivalModification?: boolean }): string {
+function buildQualityRequirements(params: Params): string {
   const visagismContext = buildVisagismContext(params)
-
-  const gingivalValidation = options?.allowGingivalModification
-    ? ''
-    : `
-
-⚠️ VALIDAÇÃO GENGIVAL (CRÍTICO):
-- A LINHA GENGIVAL na saída DEVE ser IDÊNTICA à entrada — compare pixel a pixel
-- Se o paciente mostra gengiva ao sorrir (sorriso gengival), MANTENHA ASSIM
-- NÃO remova gengiva, NÃO recontorne a margem gengival, NÃO faça gengivoplastia
-- Qualquer alteração na margem gengival = REJEIÇÃO AUTOMÁTICA`
-
   return `
 ${visagismContext}
 VERIFICAÇÃO DE COMPOSIÇÃO:
@@ -162,11 +147,11 @@ Pense nisso como camadas do Photoshop:
 
 VALIDAÇÃO DE QUALIDADE:
 - Sobrepor saída na entrada → diferença deve aparecer APENAS nos dentes
-- Qualquer mudança em lábios, pele = FALHA
+- Qualquer mudança em lábios, gengiva, pele = FALHA
 - Os dentes devem parecer NATURAIS, não artificiais ou "de plástico"
 - A textura do esmalte deve ter micro-variações naturais
 - O gradiente de cor cervical→incisal deve ser suave e realista
-- Os dentes devem ser VISIVELMENTE MAIS BRANCOS que a entrada, mas ainda naturais${gingivalValidation}`
+- Os dentes devem ser VISIVELMENTE MAIS BRANCOS que a entrada, mas ainda naturais`
 }
 
 function buildBaseCorrections(): string {
@@ -313,40 +298,41 @@ Output: Same photo with ONLY teeth corrected.`
 
 // --- Layer-specific builders ---
 
-function buildDewhiteningPrompt(params: Params): string {
+function buildRestorationsOnlyPrompt(params: Params): string {
   const absolutePreservation = buildAbsolutePreservation()
+  const baseCorrections = buildBaseCorrections()
+  const textureInstruction = buildTextureInstruction()
+  const qualityRequirements = buildQualityRequirements(params)
+  const allowedChangesFromAnalysis = params.allowedChangesFromAnalysis || ''
 
-  return `DENTAL PHOTO EDIT - SLIGHT BRIGHTNESS REDUCTION ON TEETH
+  return `DENTAL PHOTO EDIT - RESTORATIONS ONLY (NO WHITENING)
 
 ${absolutePreservation}
 
-TASK: The teeth in this image have been corrected and whitened.
-Reduce ONLY the BRIGHTNESS of the teeth by a SMALL amount. Do NOT change the tooth HUE or add any color tint.
+TASK: Apply ONLY structural corrections to the teeth. Keep the NATURAL tooth color — NO whitening.
 
-⚠️ CRITICAL — THIS IS A BRIGHTNESS-ONLY OPERATION:
-- Reduce tooth brightness by approximately 10-15% — a VERY SUBTLE change
-- Do NOT add yellow, warm, or any color tint — keep the SAME white/neutral hue
-- Do NOT shift tooth color toward yellow, amber, ivory, or any warm tone
-- The teeth should still look WHITE and CLEAN, just SLIGHTLY LESS BRIGHT than the input
-- Think of it as dimming a light on white teeth, NOT changing their color
-- Keep ALL structural corrections EXACTLY as input — shape, contour, gaps, alignment
-- Do NOT change gum line, gum color, or any gingival tissue — PRESERVE EXACTLY
+⚠️ CRITICAL RULE: This layer shows ONLY restorative corrections. You must:
+- Fix chips, cracks, defects, and marginal staining on restorations
+- Correct tooth shapes and contours as indicated by analysis
+- Close gaps and harmonize proportions where indicated
+- Replace old/stained restorations with material matching the CURRENT natural tooth color
+- Apply all structural improvements from the analysis
 
-⚠️ COMMON MISTAKE TO AVOID:
-The model often ADDS YELLOW TINT when asked to reduce whitening. DO NOT DO THIS.
-The output teeth should have the SAME HUE as the input — just reduced VALUE/BRIGHTNESS.
-If the input teeth are neutral white, the output should be a slightly dimmer neutral white.
-NEVER output teeth that look yellow, stained, or discolored.
+⚠️ You must NOT:
+- Whiten or brighten the teeth — keep the ORIGINAL natural color
+- Make teeth lighter than they currently are
+- The tooth color in the output must be IDENTICAL to the input color
 
-WHAT TO PRESERVE (DO NOT CHANGE — PIXEL-IDENTICAL):
-- ALL structural corrections: tooth shape, contour, alignment, closed gaps, filled chips
-- Tooth proportions and positions — EXACTLY as input
-- Surface texture patterns (periquimacies, micro-texture)
-- Tooth HUE — keep the same white/neutral tone, only reduce brightness
-- Lips, gums, skin, background — EVERYTHING outside teeth
-- Image framing, crop, dimensions — IDENTICAL to input
+DENTAL CORRECTIONS:
+${baseCorrections}
+${textureInstruction}
+${allowedChangesFromAnalysis}
 
-Output: Same photo with teeth SLIGHTLY less bright. Same hue, same corrections, only brightness reduced.`
+${PROPORTION_RULES}
+
+${qualityRequirements}
+
+Output: Same photo with teeth structurally corrected but at their ORIGINAL natural color.`
 }
 
 function buildWhiteningOnlyPrompt(params: Params): string {
@@ -380,86 +366,87 @@ WHAT TO PRESERVE (DO NOT CHANGE — PIXEL-IDENTICAL):
 Output: Same photo with teeth whitened to ${params.whiteningIntensity} level. All corrections preserved. Only color changed.`
 }
 
-function buildRestorationsOnlyPrompt(params: Params): string {
-  const absolutePreservation = buildAbsolutePreservation()
-  const baseCorrections = buildBaseCorrections()
-  const textureInstruction = buildTextureInstruction()
-  const qualityRequirements = buildQualityRequirements(params)
-  const allowedChangesFromAnalysis = params.allowedChangesFromAnalysis || ''
-
-  return `DENTAL PHOTO EDIT - RESTORATIONS ONLY (NO WHITENING)
-
-${absolutePreservation}
-
-TASK: Edit ONLY the teeth. Everything else must be IDENTICAL to input.
-
-#1 TASK - COLOR PRESERVATION (NO WHITENING):
-- Keep the ORIGINAL natural tooth color — NO whitening, NO brightening
-- The tooth color in the output must be IDENTICAL to the input color
-- Do NOT make teeth lighter than they currently are
-- Replace old/stained restorations with material matching the CURRENT natural tooth color
-
-DENTAL CORRECTIONS:
-${baseCorrections}
-${textureInstruction}
-${allowedChangesFromAnalysis}
-
-${PROPORTION_RULES}
-
-${qualityRequirements}
-
-Output: Same photo with ONLY teeth structurally corrected at their ORIGINAL natural color.`
-}
-
 function buildGengivoplastyOnlyPrompt(params: Params): string {
-  const absolutePreservation = buildAbsolutePreservation({ allowGingivalModification: true })
+  return `DENTAL PHOTO EDIT - GINGIVAL RECONTOURING ONLY
 
-  return `DENTAL PHOTO EDIT - GUM LINE RESHAPING ONLY
+🔒 INPAINTING MODE - GINGIVAL RECONTOURING 🔒
 
-${absolutePreservation}
-
-This is an INPAINTING task on an ALREADY PROCESSED image.
-The teeth have ALREADY been corrected and whitened — do NOT change them.
+This is an INPAINTING task on an ALREADY PROCESSED dental photo.
+The teeth have ALREADY been corrected and whitened — they are PERFECT. Do NOT touch them.
 Output dimensions MUST equal input dimensions.
 
-⚠️⚠️⚠️ REGRA #0 — MAIS IMPORTANTE QUE TUDO ⚠️⚠️⚠️
-AMBOS OS LÁBIOS (superior E inferior) são SAGRADOS e INTOCÁVEIS.
-A gengivoplastia altera apenas a margem gengival ENTRE os dentes e o lábio,
-NUNCA a posição, formato, abertura ou contorno dos lábios.
-O enquadramento da foto (crop, zoom, ângulo) DEVE ser IDÊNTICO à entrada.
-⚠️ ERRO FREQUENTE: Levantar o lábio superior para "mostrar mais resultado" — PROIBIDO
-⚠️ A ABERTURA LABIAL (distância entre lábios) é FIXA — não pode aumentar nem diminuir
+⚠️⚠️⚠️ RULE #0 — MORE IMPORTANT THAN EVERYTHING ⚠️⚠️⚠️
+BOTH LIPS (upper AND lower) are SACRED and UNTOUCHABLE.
+Gengivoplasty modifies ONLY the gingival margin BETWEEN the teeth and the lip.
+NEVER change the position, shape, opening, or contour of the lips.
 
-=== WHAT TO EDIT ===
-Reshape ONLY the gum line (pink gingival tissue) to show more of each tooth:
-- Move the gum edge UPWARD (away from the tooth tip) to reveal more tooth surface
-- Each affected tooth should show 1-2mm MORE visible enamel than in the input
-- Make the gum line SYMMETRICAL — left side should mirror right side
-- The gum arch should follow a smooth, harmonious curve across all visible teeth
-- Where gum is removed, paint the newly exposed area to match the existing tooth enamel color and texture
-- Keep the remaining gum tissue looking natural — healthy pink color, smooth texture
+The photo framing (crop, zoom, angle) MUST be IDENTICAL.
+The lips are the fixed anatomical reference for before/after comparison.
+If the lips change, the clinical comparison is DESTROYED.
 
-${params.gingivoSuggestions ? `SPECIFIC TEETH TO RESHAPE:\n${params.gingivoSuggestions}\n` : `Reshape the gum line on the upper anterior teeth (canine to canine) to create a balanced, aesthetic smile.\n`}
+VALIDATION:
+- Upper lip: same position, shape and contour PIXEL BY PIXEL
+- Lower lip: same position, shape and contour PIXEL BY PIXEL
+- Lip opening (distance between lips): IDENTICAL to input
+- If ANY lip changed position → REJECT and redo
+
+⚠️ COMMON MODEL ERROR: Lifting the upper lip and/or lowering the lower lip to "show more teeth" — THIS IS FORBIDDEN.
+
+=== ANATOMICAL DEFINITIONS (CRITICAL) ===
+DEFINITION: Gingival margin = the PINK GUM TISSUE that meets the tooth surface
+DEFINITION: Lip = the tissue with VERMILION BORDER (red/pink lip tissue above the gum)
+
+The gum tissue sits BETWEEN the tooth crown and the upper lip.
+You are trimming gum tissue to REVEAL more tooth crown that is HIDDEN under the gum.
+The tooth is already there underneath — you are just uncovering it by removing pink tissue.
+
+=== INPAINTING TECHNIQUE ===
+1. COPY the entire input image EXACTLY as-is
+2. IDENTIFY the gingival margin (pink tissue where gum meets each tooth)
+3. For each affected tooth, MOVE the gingival margin APICALLY (toward the root / away from the tooth tip):
+   - REPLACE pink gum pixels with tooth-colored pixels matching the existing enamel
+   - The tooth crown EXTENDS upward as gum is removed
+   - The newly exposed area must seamlessly match the existing tooth color and texture
+4. Create SYMMETRICAL gum line — left side mirrors right side
+5. Create smooth, harmonious gingival arch across all visible teeth
+6. Keep remaining gum tissue natural — healthy pink, smooth, realistic
+
+${params.gingivoSuggestions ? `SPECIFIC TEETH TO RESHAPE (use these measurements as guide):\n${params.gingivoSuggestions}\n` : `Reshape the gum line on the upper anterior teeth (canine to canine) to create a balanced, aesthetic smile.\nTarget: 1-2mm apical movement of gingival margin per tooth.\n`}
 
 EXPECTED RESULT:
-- Teeth appear VISIBLY TALLER than in the input photo
+- Teeth appear VISIBLY TALLER than in the input photo (more crown exposed)
 - The gum line is more even and symmetrical
 - The change should be CLEARLY NOTICEABLE in side-by-side comparison
-- The LIPS remain in the EXACT same position — pixel-perfect match with input
+- But the change is CLINICAL and PRECISE — typically 1-3mm of tissue removal per tooth
 
-=== DO NOT CHANGE (ABSOLUTE) ===
-- TEETH: Already edited — keep color, shape, contour, texture exactly as input
-- LÁBIO SUPERIOR: Mesma posição, formato, contorno — pixel a pixel idêntico à entrada
-- LÁBIO INFERIOR: Mesma posição, formato, contorno — pixel a pixel idêntico à entrada
-- ABERTURA LABIAL: Distância entre lábios IDÊNTICA à entrada
-- FACE/SKIN: No changes to any facial features
+=== PIXEL-PERFECT PRESERVATION (EVERYTHING EXCEPT GUM MARGIN) ===
+- TEETH: Already corrected and whitened — keep color, shape, contour, texture EXACTLY as input
+- UPPER LIP: EXACT same position, shape, contour, color, texture — not a single pixel changed
+- LOWER LIP: EXACT same position, shape, contour, color, texture — not a single pixel changed
+- LIP OPENING: The distance between upper and lower lip is FIXED — does not change
+- FACE/SKIN: No changes to any facial features, no changes to skin
 - BACKGROUND: Keep identical
+- IMAGE FRAMING: Same crop, zoom, angle, dimensions
+
+PHYSICS OF GENGIVOPLASTY:
+When gum is trimmed (moved apically), the SPACE between the upper lip and the gum-tooth junction INCREASES.
+This reveals MORE of the tooth crown. The lips DO NOT MOVE — only the gum margin recedes.
+Think of it like rolling up a sleeve to show more arm — the shoulder (lip) stays put.
+
+⚠️ ABSOLUTE LIP RULE (EVEN WITH GENGIVOPLASTY):
+Gengivoplasty modifies ONLY the GINGIVAL MARGIN (gum-tooth interface).
+- BOTH lips (upper AND lower) are FIXED REFERENCES
+- Moving ANY lip INVALIDATES the entire clinical analysis
+- The UPPER LIP stays EXACTLY in the same position and shape
+- The LOWER LIP stays EXACTLY in the same position and shape
+- When moving the gingival margin apically, the SPACE between lip and gum line INCREASES
+  (showing more clinical crown) — but the LIPS STAY EXACTLY WHERE THEY ARE
+- If you cannot simulate gengivoplasty without moving the lips: DO NOT DO IT
+- ⚠️ COMMON ERROR: Lifting upper lip and/or lowering lower lip to "show more teeth" — FORBIDDEN
 
 The ONLY pixels you may change are the PINK GUM TISSUE between the teeth and the upper lip.
-When the gum line moves up, the teeth get taller — but the lips stay EXACTLY where they are.
-The space between the gum line and the upper lip INCREASES (more tooth visible), but the lip itself does NOT move.
 
-Output: Same photo with reshaped gum line showing more tooth surface. Lips and everything else identical to input.`
+Output: Same photo with ONLY the gum line reshaped. Teeth, lips, face, background — ALL identical to input.`
 }
 
 function buildWithGengivoplastyPrompt(params: Params): string {
@@ -468,11 +455,11 @@ function buildWithGengivoplastyPrompt(params: Params): string {
     return buildGengivoplastyOnlyPrompt(params)
   }
 
-  const absolutePreservation = buildAbsolutePreservation({ allowGingivalModification: true })
+  const absolutePreservation = buildAbsolutePreservation()
   const whiteningPrioritySection = buildWhiteningPrioritySection(params)
   const baseCorrections = buildBaseCorrections()
   const textureInstruction = buildTextureInstruction()
-  const qualityRequirements = buildQualityRequirements(params, { allowGingivalModification: true })
+  const qualityRequirements = buildQualityRequirements(params)
   const allowedChangesFromAnalysis = params.allowedChangesFromAnalysis || ''
 
   return `DENTAL PHOTO EDIT - COMPLETE TREATMENT WITH GENGIVOPLASTY
@@ -496,7 +483,7 @@ VALIDAÇÃO:
 - Abertura labial: IDÊNTICA à foto original
 - Se qualquer lábio mudou de posição → REJEITAR e refazer
 
-GINGIVAL MODIFICATION IS ALLOWED AND REQUIRED in this layer.
+⚠️ EXCEPTION TO GINGIVA PRESERVATION: In this layer, you ARE ALLOWED to modify the gingival contour.
 The gum line should be recontoured to show the effect of gengivoplasty:
 - Expose more clinical crown by moving the gingival margin apically (towards the root)
 - Create symmetrical gingival zeniths between contralateral teeth
@@ -534,11 +521,11 @@ Output: Same photo with teeth corrected AND gingival recontouring applied.`
 }
 
 function buildRootCoveragePrompt(params: Params): string {
-  const absolutePreservation = buildAbsolutePreservation({ allowGingivalModification: true })
+  const absolutePreservation = buildAbsolutePreservation()
   const whiteningPrioritySection = buildWhiteningPrioritySection(params)
   const baseCorrections = buildBaseCorrections()
   const textureInstruction = buildTextureInstruction()
-  const qualityRequirements = buildQualityRequirements(params, { allowGingivalModification: true })
+  const qualityRequirements = buildQualityRequirements(params)
   const allowedChangesFromAnalysis = params.allowedChangesFromAnalysis || ''
 
   return `DENTAL PHOTO EDIT - COMPLETE TREATMENT WITH ROOT COVERAGE
@@ -601,9 +588,6 @@ export const dsdSimulation: PromptDefinition<Params> = {
     if (params.layerType) {
       switch (params.layerType) {
         case 'restorations-only':
-          if (params.inputAlreadyProcessed) {
-            return buildDewhiteningPrompt(params)
-          }
           return buildRestorationsOnlyPrompt(params)
         case 'complete-treatment':
           return buildWithGengivoplastyPrompt(params)
