@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsPreFlight, ERROR_MESSAGES, createErrorResponse, generateRequestId } from "../_shared/cors.ts";
 import { logger } from "../_shared/logger.ts";
-import { callGeminiVisionWithTools, GeminiError, type OpenAITool } from "../_shared/gemini.ts";
+import { callClaudeVisionWithTools, ClaudeError, type OpenAITool } from "../_shared/claude.ts";
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 import { checkAndUseCredits, createInsufficientCreditsResponse, refundCredits } from "../_shared/credits.ts";
 import { getPrompt } from "../_shared/prompts/registry.ts";
@@ -20,7 +20,7 @@ interface AnalyzePhotoRequest {
 // Expanded treatment types (includes gingival procedures)
 type TreatmentIndication = "resina" | "porcelana" | "coroa" | "implante" | "endodontia" | "encaminhamento" | "gengivoplastia" | "recobrimento_radicular";
 
-// Gemini sometimes returns English values instead of Portuguese enum values.
+// The AI model sometimes returns English values instead of Portuguese enum values.
 // This map normalizes them back to the expected Portuguese strings.
 const TREATMENT_INDICATION_MAP: Record<string, TreatmentIndication> = {
   resin: "resina",
@@ -435,30 +435,29 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    // Call Gemini Vision with tools
+    // Call Claude Vision with tools
     let analysisResult: PhotoAnalysisResult | null = null;
 
     try {
-      step(`gemini: calling (image=${Math.round(base64Image.length/1024)}KB)`);
+      step(`claude: calling (image=${Math.round(base64Image.length/1024)}KB)`);
 
       const result = await withMetrics<{ text: string | null; functionCall: { name: string; args: Record<string, unknown> } | null; finishReason: string }>(metrics, promptDef.id, PROMPT_VERSION, promptDef.model)(async () => {
-        const response = await callGeminiVisionWithTools(
-          "gemini-3-flash-preview",
+        const response = await callClaudeVisionWithTools(
+          "claude-sonnet-4-5-20250929",
           userPrompt,
           base64Image,
           mimeType,
           tools,
           {
             systemPrompt,
-            temperature: 0.1,
+            temperature: 0.0,
             maxTokens: 3000,
             forceFunctionName: "analyze_dental_photo",
             timeoutMs: 55_000,
-            thinkingLevel: "low",
           }
         );
         if (response.tokens) {
-          logger.info('gemini_tokens', { operation: 'analyze-dental-photo', ...response.tokens });
+          logger.info('claude_tokens', { operation: 'analyze-dental-photo', ...response.tokens });
         }
         return {
           result: { text: response.text, functionCall: response.functionCall, finishReason: response.finishReason },
@@ -467,9 +466,9 @@ serve(async (req) => {
         };
       });
 
-      step("gemini: response received");
+      step("claude: response received");
       if (result.functionCall) {
-        step("gemini: got function call");
+        step("claude: got function call");
         analysisResult = parseAIResponse(PhotoAnalysisResultSchema, result.functionCall.args, 'analyze-dental-photo') as PhotoAnalysisResult;
       } else if (result.text) {
         // Fallback: try to extract JSON from text response
@@ -486,14 +485,14 @@ serve(async (req) => {
         }
       }
     } catch (error) {
-      if (error instanceof GeminiError) {
+      if (error instanceof ClaudeError) {
         if (error.statusCode === 429) {
           if (creditsConsumed && supabaseForRefund && userIdForRefund) {
             await refundCredits(supabaseForRefund, userIdForRefund, "case_analysis", reqId);
           }
           return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
         }
-        logger.error(`Gemini API error (${error.statusCode}):`, error.message);
+        logger.error(`Claude API error (${error.statusCode}):`, error.message);
       } else {
         logger.error("AI error:", error);
       }
@@ -502,7 +501,7 @@ serve(async (req) => {
         await refundCredits(supabaseForRefund, userIdForRefund, "case_analysis", reqId);
         logger.log(`Refunded analysis credits for user ${userIdForRefund} due to AI error`);
       }
-      const debugDetail = error instanceof GeminiError
+      const debugDetail = error instanceof ClaudeError
         ? `[${error.statusCode}] ${error.message}`
         : (error instanceof Error ? error.message : String(error));
       return new Response(
@@ -541,7 +540,7 @@ serve(async (req) => {
       tooth_bounds: tooth.tooth_bounds ?? undefined,
     }));
 
-    // Deduplicate: Gemini can return the same tooth number multiple times
+    // Deduplicate: the AI model can return the same tooth number multiple times
     // (e.g., once for mesial diastema and once for distal). Keep the first occurrence
     // which has the highest priority since the AI orders by urgency.
     const seenToothNumbers = new Set<string>();
