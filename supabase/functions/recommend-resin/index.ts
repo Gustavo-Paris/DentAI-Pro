@@ -3,7 +3,7 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsPreFlight, ERROR_MESSAGES, createErrorResponse, generateRequestId } from "../_shared/cors.ts";
 import { validateEvaluationData, sanitizeFieldsForPrompt, type EvaluationData } from "../_shared/validation.ts";
 import { logger } from "../_shared/logger.ts";
-import { callGemini, GeminiError, type OpenAIMessage } from "../_shared/gemini.ts";
+import { callClaude, ClaudeError, type OpenAIMessage } from "../_shared/claude.ts";
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 import { checkAndUseCredits, createInsufficientCreditsResponse, refundCredits } from "../_shared/credits.ts";
 import { getPrompt } from "../_shared/prompts/registry.ts";
@@ -337,25 +337,24 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    // Call Gemini API
+    // Call Claude API
     const messages: OpenAIMessage[] = [
       { role: "user", content: prompt },
     ];
 
     let content: string;
     try {
-      const geminiResult = await withMetrics<{ text: string | null; finishReason: string }>(metrics, promptDef.id, PROMPT_VERSION, promptDef.model)(async () => {
-        const response = await callGemini(
-          "gemini-2.0-flash",
+      const claudeResult = await withMetrics<{ text: string | null; finishReason: string }>(metrics, promptDef.id, PROMPT_VERSION, promptDef.model)(async () => {
+        const response = await callClaude(
+          "claude-sonnet-4-5-20250929",
           messages,
           {
-            temperature: 0.05,
+            temperature: 0.0,
             maxTokens: 8192,
-            seed: inputSeed,
           }
         );
         if (response.tokens) {
-          logger.info('gemini_tokens', { operation: 'recommend-resin', ...response.tokens });
+          logger.info('claude_tokens', { operation: 'recommend-resin', ...response.tokens });
         }
         return {
           result: { text: response.text, finishReason: response.finishReason },
@@ -364,8 +363,8 @@ serve(async (req) => {
         };
       });
 
-      if (!geminiResult.text) {
-        logger.error("Empty response from Gemini");
+      if (!claudeResult.text) {
+        logger.error("Empty response from Claude");
         if (creditsConsumed && supabaseForRefund && userIdForRefund) {
           await refundCredits(supabaseForRefund, userIdForRefund, "resin_recommendation", reqId);
           logger.log(`[${reqId}] Refunded resin_recommendation credits for user ${userIdForRefund} — empty AI response`);
@@ -373,16 +372,16 @@ serve(async (req) => {
         return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
       }
 
-      content = geminiResult.text;
+      content = claudeResult.text;
     } catch (error) {
-      if (error instanceof GeminiError) {
+      if (error instanceof ClaudeError) {
         if (error.statusCode === 429) {
           if (creditsConsumed && supabaseForRefund && userIdForRefund) {
             await refundCredits(supabaseForRefund, userIdForRefund, "resin_recommendation", reqId);
           }
           return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
         }
-        logger.error("Gemini API error:", error.message);
+        logger.error("Claude API error:", error.message);
       } else {
         logger.error("AI error:", error);
       }
