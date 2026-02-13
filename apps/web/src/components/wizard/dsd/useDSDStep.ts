@@ -401,7 +401,7 @@ export function useDSDStep({
                   // Upload the composited image and use it as the L3 URL
                   const base64Data = composited.replace(/^data:image\/\w+;base64,/, '');
                   const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
-                  const fileName = `composited/l3_lipfix_${Date.now()}.png`;
+                  const fileName = `${user?.id || 'anon'}/l3_lipfix_${Date.now()}.png`;
                   const { error: uploadErr } = await supabase.storage
                     .from('dsd-simulations')
                     .upload(fileName, binaryData, { contentType: 'image/png', upsert: true });
@@ -892,15 +892,14 @@ export function useDSDStep({
 
       // Lip-fix compositing: restore L2's lips onto L3
       let finalUrl = url;
-      const l2UrlForComposite = layerUrls['whitening-restorations'];
-      if (url && l2UrlForComposite) {
+      if (url && l2CompositedUrl) {
         try {
           logger.log('Gengivoplasty approval: compositing L2 lips onto L3');
-          const composited = await compositeGengivoplastyLips(l2UrlForComposite, url);
+          const composited = await compositeGengivoplastyLips(l2CompositedUrl, url);
           if (composited) {
             const base64Data = composited.replace(/^data:image\/\w+;base64,/, '');
             const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
-            const fileName = `composited/l3_lipfix_${Date.now()}.png`;
+            const fileName = `${user?.id || 'anon'}/l3_lipfix_${Date.now()}.png`;
             const { error: uploadErr } = await supabase.storage
               .from('dsd-simulations')
               .upload(fileName, binaryData, { contentType: 'image/png', upsert: true });
