@@ -307,39 +307,37 @@ Output: Same photo with ONLY teeth corrected.`
 function buildDewhiteningPrompt(params: Params): string {
   const absolutePreservation = buildAbsolutePreservation()
 
-  return `DENTAL PHOTO EDIT - REVERT WHITENING ONLY (KEEP ALL CORRECTIONS)
+  return `DENTAL PHOTO EDIT - SLIGHT BRIGHTNESS REDUCTION ON TEETH
 
 ${absolutePreservation}
 
-TASK: The teeth in this image have ALREADY been structurally corrected AND whitened.
-Now REVERT ONLY the whitening — restore the NATURAL original tooth color while keeping every structural correction EXACTLY as-is.
+TASK: The teeth in this image have been corrected and whitened.
+Reduce ONLY the BRIGHTNESS of the teeth by a SMALL amount. Do NOT change the tooth HUE or add any color tint.
 
-⚠️ THIS IS A COLOR-ONLY OPERATION:
-- Reduce the whitening effect SLIGHTLY — teeth should look like healthy natural teeth, NOT artificially yellow
-- The result should look like professional dental work WITHOUT whitening (clean, healthy, natural shade)
-- Keep ALL structural corrections: shape, contour, alignment, closed gaps, filled chips — EXACTLY as input
-- Do NOT add new corrections, do NOT change tooth shape or position
-- Do NOT change gum line, gum color, or any gingival tissue — PRESERVE EXACTLY as input
-- The ONLY visible change should be tooth color: from whitened → slightly less white
+⚠️ CRITICAL — THIS IS A BRIGHTNESS-ONLY OPERATION:
+- Reduce tooth brightness by approximately 10-15% — a VERY SUBTLE change
+- Do NOT add yellow, warm, or any color tint — keep the SAME white/neutral hue
+- Do NOT shift tooth color toward yellow, amber, ivory, or any warm tone
+- The teeth should still look WHITE and CLEAN, just SLIGHTLY LESS BRIGHT than the input
+- Think of it as dimming a light on white teeth, NOT changing their color
+- Keep ALL structural corrections EXACTLY as input — shape, contour, gaps, alignment
+- Do NOT change gum line, gum color, or any gingival tissue — PRESERVE EXACTLY
 
-COLOR GUIDANCE:
-- Reduce whiteness by approximately 20-30% — NOT a dramatic change
-- Target: teeth that look naturally healthy (B1-A2 shade range), NOT yellow or discolored
-- ⚠️ Do NOT make teeth YELLOW, GREY, or STAINED — just slightly less white than the input
-- The difference between input and output should be SUBTLE, not dramatic
-- Maintain natural translucency gradients (more translucent at incisal edges)
-- Keep subtle color variation between teeth (don't make them perfectly uniform)
-- Preserve surface texture and light reflections exactly
-- If in doubt, make LESS change rather than more — a subtle reduction is better than over-yellowing
+⚠️ COMMON MISTAKE TO AVOID:
+The model often ADDS YELLOW TINT when asked to reduce whitening. DO NOT DO THIS.
+The output teeth should have the SAME HUE as the input — just reduced VALUE/BRIGHTNESS.
+If the input teeth are neutral white, the output should be a slightly dimmer neutral white.
+NEVER output teeth that look yellow, stained, or discolored.
 
 WHAT TO PRESERVE (DO NOT CHANGE — PIXEL-IDENTICAL):
 - ALL structural corrections: tooth shape, contour, alignment, closed gaps, filled chips
 - Tooth proportions and positions — EXACTLY as input
 - Surface texture patterns (periquimacies, micro-texture)
+- Tooth HUE — keep the same white/neutral tone, only reduce brightness
 - Lips, gums, skin, background — EVERYTHING outside teeth
 - Image framing, crop, dimensions — IDENTICAL to input
 
-Output: Same photo with teeth at NATURAL color. All corrections preserved. Only whitening removed.`
+Output: Same photo with teeth SLIGHTLY less bright. Same hue, same corrections, only brightness reduced.`
 }
 
 function buildWhiteningOnlyPrompt(params: Params): string {
