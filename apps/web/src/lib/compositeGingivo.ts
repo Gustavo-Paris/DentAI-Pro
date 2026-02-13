@@ -26,19 +26,20 @@ function loadImage(url: string): Promise<HTMLImageElement> {
  * Tuned for dental clinical photos (bright, neutral white lighting).
  */
 function isLipPixel(r: number, g: number, b: number, y: number, height: number): boolean {
-  // Lips are only in the top 60% of a dental smile photo
-  if (y > height * 0.6) return false;
+  // Lips are only in the top 45% of a dental smile photo
+  if (y > height * 0.45) return false;
 
   const brightness = (r + g + b) / 3;
   const saturation = Math.max(r, g, b) - Math.min(r, g, b);
   const redDominance = r - g;
 
-  // Lip: moderate brightness, red-dominant, moderate-high saturation
+  // Lip: moderate brightness, strongly red-dominant, high saturation
+  // Tighter thresholds to avoid catching gum tissue (lighter pink, less red)
   return (
-    brightness > 40 &&
-    brightness < 190 &&
-    redDominance > 20 &&
-    saturation > 30
+    brightness > 50 &&
+    brightness < 170 &&
+    redDominance > 35 &&
+    saturation > 45
   );
 }
 
@@ -132,8 +133,9 @@ export async function compositeGengivoplastyLips(
     const l3Data = l3Ctx.getImageData(0, 0, width, height);
 
     // Step 1: Build lip+changed mask
-    const DIFF_THRESHOLD = 30; // Sum of RGB differences to consider "changed"
+    const DIFF_THRESHOLD = 40; // Sum of RGB differences to consider "changed"
     const lipChangedMask = new Uint8Array(width * height);
+    let rawLipCount = 0;
 
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
@@ -145,19 +147,32 @@ export async function compositeGengivoplastyLips(
         const changed = diff > DIFF_THRESHOLD;
         const lip = isLipPixel(r2, g2, b2, y, height);
 
-        lipChangedMask[y * width + x] = (lip && changed) ? 1 : 0;
+        if (lip && changed) {
+          lipChangedMask[y * width + x] = 1;
+          rawLipCount++;
+        }
       }
     }
 
-    // Step 2: Dilate the mask by 2px to catch edge artifacts
-    const dilatedMask = dilateMask(lipChangedMask, width, height, 2);
+    // Safety cap: if more than 5% of pixels are detected as "lip that changed,"
+    // the heuristic is likely over-detecting (catching gum pixels).
+    // In that case, skip compositing and return the original L3.
+    const totalPixels = width * height;
+    const rawPct = (rawLipCount / totalPixels) * 100;
+    if (rawPct > 5) {
+      logger.warn(`compositeGingivo: too many lip pixels detected (${rawPct.toFixed(1)}%), skipping compositing to avoid artifacts`);
+      return null;
+    }
 
-    // Step 3: Convert to float and blur for smooth blending (3px radius)
+    // Step 2: Dilate the mask by 1px to catch immediate edge artifacts
+    const dilatedMask = dilateMask(lipChangedMask, width, height, 1);
+
+    // Step 3: Convert to float and blur for smooth blending (2px radius)
     const floatMask = new Float32Array(dilatedMask.length);
     for (let i = 0; i < dilatedMask.length; i++) {
       floatMask[i] = dilatedMask[i];
     }
-    const blurredMask = blurMask(floatMask, width, height, 3);
+    const blurredMask = blurMask(floatMask, width, height, 2);
 
     // Step 4: Composite — blend L2 (lip) and L3 (everything else)
     const outCanvas = document.createElement('canvas');
