@@ -147,14 +147,6 @@ serve(async (req) => {
       return createRateLimitResponse(rateLimitResult, corsHeaders);
     }
 
-    // Check and consume credits
-    const creditResult = await checkAndUseCredits(supabaseService, userId, "resin_recommendation", reqId);
-    if (!creditResult.allowed) {
-      logger.warn(`Insufficient credits for user ${userId} on resin_recommendation`);
-      return createInsufficientCreditsResponse(creditResult, corsHeaders);
-    }
-    creditsConsumed = true;
-
     // Parse and validate input
     let rawData: unknown;
     try {
@@ -365,10 +357,6 @@ serve(async (req) => {
 
       if (!claudeResult.text) {
         logger.error("Empty response from Claude");
-        if (creditsConsumed && supabaseForRefund && userIdForRefund) {
-          await refundCredits(supabaseForRefund, userIdForRefund, "resin_recommendation", reqId);
-          logger.log(`[${reqId}] Refunded resin_recommendation credits for user ${userIdForRefund} — empty AI response`);
-        }
         return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
       }
 
@@ -376,19 +364,11 @@ serve(async (req) => {
     } catch (error) {
       if (error instanceof ClaudeError) {
         if (error.statusCode === 429) {
-          if (creditsConsumed && supabaseForRefund && userIdForRefund) {
-            await refundCredits(supabaseForRefund, userIdForRefund, "resin_recommendation", reqId);
-          }
           return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
         }
         logger.error("Claude API error:", error.message);
       } else {
         logger.error("AI error:", error);
-      }
-      // Refund credits on AI errors
-      if (creditsConsumed && supabaseForRefund && userIdForRefund) {
-        await refundCredits(supabaseForRefund, userIdForRefund, "resin_recommendation", reqId);
-        logger.log(`Refunded resin_recommendation credits for user ${userIdForRefund} due to AI error`);
       }
       return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     }
@@ -413,10 +393,6 @@ serve(async (req) => {
       }
     } catch (parseError) {
       logger.error("Failed to parse AI response. Raw content:", content.substring(0, 500));
-      if (creditsConsumed && supabaseForRefund && userIdForRefund) {
-        await refundCredits(supabaseForRefund, userIdForRefund, "resin_recommendation", reqId);
-        logger.log(`[${reqId}] Refunded resin_recommendation credits for user ${userIdForRefund} — AI returned unparseable response`);
-      }
       return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     }
 
@@ -424,12 +400,16 @@ serve(async (req) => {
     try {
       parseAIResponse(RecommendResinResponseSchema, recommendation, 'recommend-resin');
     } catch {
-      if (creditsConsumed && supabaseForRefund && userIdForRefund) {
-        await refundCredits(supabaseForRefund, userIdForRefund, "resin_recommendation", reqId);
-        logger.log(`[${reqId}] Refunded resin_recommendation credits for user ${userIdForRefund} — Zod validation failed`);
-      }
       return createErrorResponse("Protocolo inválido — tente novamente", 500, corsHeaders);
     }
+
+    // Credits: only charge after AI response is validated
+    const creditResult = await checkAndUseCredits(supabaseForRefund!, userIdForRefund!, "resin_recommendation", reqId);
+    if (!creditResult.allowed) {
+      logger.warn(`Insufficient credits for user ${userIdForRefund} on resin_recommendation`);
+      return createInsufficientCreditsResponse(creditResult, corsHeaders);
+    }
+    creditsConsumed = true;
 
     // Validate and fix protocol layers against resin_catalog
     if (recommendation.protocol?.layers && Array.isArray(recommendation.protocol.layers)) {
