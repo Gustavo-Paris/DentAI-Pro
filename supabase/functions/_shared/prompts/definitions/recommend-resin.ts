@@ -126,8 +126,8 @@ RESINAS RECOMENDADAS POR CAMADA:
 | Aumento Incisal    | Trans(FORMA), Trans20(Empress), CT(Z350), Trans(Vittra)   |
 | Cristas Proximais  | XLE(Harmonize), BL-L(Empress), WE(Palfique LX5) — 1 tom > claro que corpo |
 | Dentina/Corpo      | WB(FORMA), DA1/DA2(Vittra APS), WB(Z350), D BL-L(Empress)|
-| Efeitos Incisais   | IPS Color(Ivoclar), Kolor+(Kerr) — Z350 NAO tem corantes! |
-| Esmalte Final      | WE(Palfique LX5), MW(Estelite Omega), A1E/A2E(Z350)      |
+| Efeitos Incisais   | EMPRESS DIRECT COLOR White/Blue (Ivoclar) — UNICA opcao! Z350/Kolor+ NAO! |
+| Esmalte Final      | WE(Palfique LX5), A1E/A2E(Z350)                          |
 | Dentes Clareados   | W3/W4(Estelite Bianco), BL(Forma), BL-L(Empress)         |
 
 DIVERSIDADE DE MARCAS (OBRIGATORIO):
@@ -140,8 +140,8 @@ EFEITOS INCISAIS (sub-opções):
 | Efeito         | Materiais                                                |
 |----------------|----------------------------------------------------------|
 | Halo Opaco     | Opallis Flow(FGM) ou Empress Opal — 0.1mm borda incisal |
-| Corante Branco | Kolor+ White(Kerr) ou IPS Color White — micro-pontos     |
-| Corante Ambar  | Kolor+ Amber(Kerr) ou IPS Color Honey — linhas finas     |
+| Corante Branco | Empress Direct Color White — micro-pontos                |
+| Corante Ambar  | Empress Direct Color Honey/Amber — linhas finas          |
 | Mamelos        | Dentina clara (A1/B1) em projeções verticais na incisal  |
 
 Inclusão: "alto" -> halo opaco (optional:true). "muito alto" -> halo + corantes + mamelos (optional:true).
@@ -267,11 +267,11 @@ NIVEL ESTETICO ("estético"/"alto"/"muito alto") - 4-5 camadas:
    - Substrato ESCURECIDO: shades opacos (OA1/OA2/OA3/OB1/WO) como 1º incremento 0.5-1mm
    - Substrato NORMAL: shades regulares (DA1/DA2/A1/A2/B1) - NAO usar opacos
    - Substrato LEVEMENTE ESCURECIDO: shades com > opacidade (DA3/A3) sem prefixo O
-4. Efeitos Incisais (optional:true): Corantes IVOCLAR IPS Empress Direct Color ou IPS Color — NUNCA Z350! Shade DIFERENTE do esmalte (usar CT/GT/BT/YT). Aplicar com pincel fino, 0.1mm.
+4. Efeitos Incisais (optional:true): SEMPRE corantes EMPRESS DIRECT COLOR White/Blue — NUNCA Z350, NUNCA Kolor+! Shade DIFERENTE do esmalte (usar CT/GT/BT/YT). Aplicar com pincel fino, 0.1mm.
    - Z350 translúcidos: CT(Clear), GT(Gray), BT(Blue), YT(Yellow). WT NAO EXISTE -> use WB
    - OMITIR para: posteriores rotineiros, Classe I/V, nível funcional
 5. Esmalte Vestibular Final: 0.3mm, priorizar polimento superior
-   - P1: Palfique LX5 (WE), Estelite Omega (MW/WE) — acabamento espelhado
+   - P1: Palfique LX5 (WE), Estelite Omega (WE) — acabamento espelhado. MW NAO SERVE para corpo!
    - P2: Filtek Z350 XT (A1E/A2E/CT/GT), FORMA (Trans/Enamel)
    - P3: Harmonize (Incisal/TN), Vittra APS (Trans/INC)
 
@@ -279,12 +279,13 @@ CORES DE ESMALTE POR LINHA:
 | Linha               | Cores                                     |
 |---------------------|-------------------------------------------|
 | Estelite Sigma Quick| WE, CE                                    |
-| Estelite Omega      | WE, JE, CT, MW                            |
+| Estelite Omega      | WE, JE, CT                                |
 | Filtek Z350 XT      | CT, GT, BT, YT, A1E, A2E, A3E, B1E       |
 | Harmonize           | Incisal, TN                               |
 | IPS Empress Direct  | Trans 20, Trans 30, Opal                  |
 | Vittra APS          | Trans, INC                                |
 | Palfique LX5        | WE, CE, BL1, BL2, BL3, A1-A3, B1         |
+ALTERNATIVA SIMPLIFICADA: Para corpo usar WE/W3/W4 (NUNCA MW). MW e Medium White — inadequado para corpo.
 
 === CLAREAMENTO (BLEACH SHADES) ===
 Verificar se linha possui cores BL. Se NAO: usar cor mais clara (B1/A1).
