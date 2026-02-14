@@ -355,13 +355,22 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
   useEffect(() => {
     if (analysisResult?.detected_teeth && analysisResult.detected_teeth.length > 0) {
       const allTeeth = analysisResult.detected_teeth.map((t) => t.tooth);
-      setSelectedTeeth(allTeeth);
+      // Preserve virtual entries (e.g. GENGIVO for gengivoplasty) that are not
+      // part of detected_teeth but were added by DSD integration.
+      setSelectedTeeth((prev) => {
+        const virtual = prev.filter((t) => !t.match(/^\d+$/));
+        return [...allTeeth, ...virtual];
+      });
 
       setToothTreatments((prev) => {
         const merged: Record<string, TreatmentType> = {};
         analysisResult.detected_teeth.forEach((t) => {
           merged[t.tooth] = prev[t.tooth] || t.treatment_indication || 'resina';
         });
+        // Preserve virtual entries (e.g. GENGIVO)
+        for (const [key, val] of Object.entries(prev)) {
+          if (!key.match(/^\d+$/)) merged[key] = val;
+        }
         return merged;
       });
 

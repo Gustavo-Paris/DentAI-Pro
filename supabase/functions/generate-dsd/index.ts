@@ -1194,22 +1194,19 @@ serve(async (req: Request) => {
       }
     }
 
-    // Safety net #3: Filter gengivoplastia if overbite suspected
-    // Deep bite can cause compensatory eruption that mimics gummy smile — gengivoplastia contraindicated
+    // Safety net #3: WARN (don't remove) about gengivoplastia when overbite suspected.
+    // Overbite classification from a single photo is inherently uncertain — the dentist
+    // should see the suggestion with a warning and decide, rather than having it silently stripped.
     if (analysis.overbite_suspicion === 'sim') {
-      const before = analysis.suggestions.length;
-      analysis.suggestions = analysis.suggestions.filter(s => {
-        const proposed = s.proposed_change.toLowerCase();
-        return !proposed.includes('gengivoplastia');
-      });
-      const removed = before - analysis.suggestions.length;
-      if (removed > 0) {
-        logger.log(`Post-processing: removed ${removed} gengivoplastia suggestion(s) (overbite_suspicion=sim)`);
-        // Add warning observation if not already present
+      const hasGingivo = analysis.suggestions.some(s =>
+        s.proposed_change.toLowerCase().includes('gengivoplastia'),
+      );
+      if (hasGingivo) {
+        logger.log(`Post-processing: overbite_suspicion=sim with gengivoplastia suggestion(s) — adding warning (not removing)`);
         const hasWarning = analysis.observations?.some(o => o.toLowerCase().includes('sobremordida'));
         if (!hasWarning) {
           analysis.observations = analysis.observations || [];
-          analysis.observations.push('ATENÇÃO: Suspeita de sobremordida profunda — gengivoplastia contraindicada até avaliação ortodôntica.');
+          analysis.observations.push('ATENÇÃO: Suspeita de sobremordida profunda — confirmar com avaliação ortodôntica antes de gengivoplastia.');
         }
       }
     }
@@ -1335,7 +1332,11 @@ serve(async (req: Request) => {
               : 'Restaurações + Clareamento',
             simulation_url: simulationUrl,
             whitening_level: patientPreferences?.whiteningLevel || 'natural',
-            includes_gengivoplasty: layerType === 'complete-treatment' || layerType === 'root-coverage',
+            includes_gengivoplasty: (layerType === 'complete-treatment' || layerType === 'root-coverage') &&
+              analysis.suggestions.some(s => {
+                const t = (s.treatment_indication || '').toLowerCase();
+                return t === 'gengivoplastia' || t === 'recobrimento_radicular';
+              }),
           };
           // Replace existing layer of same type or append
           const idx = existingLayers.findIndex((l) => l.type === layerType);
