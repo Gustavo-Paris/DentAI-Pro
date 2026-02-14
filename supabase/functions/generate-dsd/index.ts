@@ -1070,22 +1070,10 @@ serve(async (req: Request) => {
       }
     }
 
-    // Check and consume credits only for the initial DSD call.
-    // Skip credit check when this is a follow-up layer generation call:
-    //   Option A: regenerateSimulationOnly + evaluationId + evaluation has dsd_analysis (server-verified)
-    //   Option B: regenerateSimulationOnly + existingAnalysis provided (client sends back analysis from paid call)
-    // Both cases mean the initial analysis was already charged.
+    // Determine if this is a follow-up call (credits already charged on initial call)
     const isFollowUpCall = regenerateSimulationOnly && (
       (evaluationId && evaluationHasDsdAnalysis) || existingAnalysis
     );
-    if (!isFollowUpCall) {
-      const creditResult = await checkAndUseCredits(supabase, user.id, "dsd_simulation", reqId);
-      if (!creditResult.allowed) {
-        logger.warn(`Insufficient credits for user ${user.id} on dsd_simulation`);
-        return createInsufficientCreditsResponse(creditResult, corsHeaders);
-      }
-      creditsConsumed = true;
-    }
 
     // Log if additional photos or preferences were provided
     if (additionalPhotos) {
@@ -1137,17 +1125,23 @@ serve(async (req: Request) => {
         // Run full analysis - pass additional photos, preferences, clinical observations, and per-tooth findings
         const analysisResult = await analyzeProportions(imageBase64, corsHeaders, additionalPhotos, patientPreferences, clinicalObservations, clinicalTeethFindings);
 
-        // Check if it's an error response — refund credits if analysis failed
+        // Check if it's an error response — return immediately (no credits consumed yet)
         if (analysisResult instanceof Response) {
-          if (creditsConsumed) {
-            await refundCredits(supabase, user.id, "dsd_simulation", reqId);
-            logger.log(`Refunded DSD credits for user ${user.id} due to analysis failure`);
-          }
           return analysisResult;
         }
 
         analysis = analysisResult;
       }
+    }
+
+    // Credits: only charge after analysis succeeds (skip for follow-up calls)
+    if (!isFollowUpCall) {
+      const creditResult = await checkAndUseCredits(supabase, user.id, "dsd_simulation", reqId);
+      if (!creditResult.allowed) {
+        logger.warn(`Insufficient credits for user ${user.id} on dsd_simulation`);
+        return createInsufficientCreditsResponse(creditResult, corsHeaders);
+      }
+      creditsConsumed = true;
     }
 
     // === POST-PROCESSING SAFETY NETS ===
