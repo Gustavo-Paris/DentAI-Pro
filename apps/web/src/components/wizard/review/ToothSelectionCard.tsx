@@ -86,13 +86,16 @@ export const ToothSelectionCard = memo(function ToothSelectionCard({
     const borderColor = TREATMENT_BORDER_COLORS[treatment] || 'border-l-primary';
 
     return (
-      <div
+      <button
+        type="button"
         key={`${prefix}-${tooth.tooth}-${index}`}
         className={cn(
-          'flex items-start gap-3 p-3 border rounded-lg cursor-pointer transition-all duration-200 border-l-4',
+          'flex items-start gap-3 p-3 border rounded-lg cursor-pointer transition-all duration-200 border-l-4 text-left w-full',
           borderColor,
           isSelected ? 'card-elevated border-primary/50 bg-primary/5' : 'border-border hover:border-primary/30',
         )}
+        aria-pressed={isSelected}
+        aria-label={t('components.wizard.review.toggleTooth', { number: tooth.tooth })}
         onClick={() => handleToggleTooth(tooth.tooth, !isSelected)}
       >
         <Checkbox
@@ -190,7 +193,7 @@ export const ToothSelectionCard = memo(function ToothSelectionCard({
             </TooltipProvider>
           )}
         </div>
-      </div>
+      </button>
     );
   };
 
