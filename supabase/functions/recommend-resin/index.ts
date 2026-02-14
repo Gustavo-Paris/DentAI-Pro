@@ -346,7 +346,7 @@ serve(async (req) => {
     try {
       const claudeResult = await withMetrics<{ text: string | null; finishReason: string }>(metrics, promptDef.id, PROMPT_VERSION, promptDef.model)(async () => {
         const response = await callClaude(
-          "claude-sonnet-4-5-20250929",
+          "claude-haiku-4-5-20251001",
           messages,
           {
             temperature: 0.0,

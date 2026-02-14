@@ -324,7 +324,7 @@ serve(async (req: Request) => {
     try {
       const claudeResult = await withMetrics<{ text: string | null; functionCall: { name: string; args: Record<string, unknown> } | null; finishReason: string }>(metrics, prompt.id, PROMPT_VERSION, prompt.model)(async () => {
         const response = await callClaudeWithTools(
-          "claude-sonnet-4-5-20250929",
+          "claude-haiku-4-5-20251001",
           messages,
           tools as OpenAITool[],
           {

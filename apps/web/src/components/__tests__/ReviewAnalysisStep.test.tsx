@@ -341,7 +341,7 @@ describe('ReviewAnalysisStep', () => {
   it('should render accordion sections', () => {
     render(<ReviewAnalysisStep {...defaultProps} />);
     expect(screen.getByTestId('accordion-item-photo')).toBeInTheDocument();
-    expect(screen.getByTestId('accordion-item-aesthetic')).toBeInTheDocument();
+    expect(screen.getByTestId('accordion-item-budget')).toBeInTheDocument();
     expect(screen.getByTestId('accordion-item-notes')).toBeInTheDocument();
   });
 

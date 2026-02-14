@@ -6,6 +6,7 @@ const COST_PER_1K: Record<string, { input: number; output: number }> = {
   'gemini-3-pro-image-preview': { input: 0.00125, output: 0.005 },
   'gemini-2.0-flash': { input: 0.00010, output: 0.0004 },
   'claude-sonnet-4-5-20250929': { input: 0.003, output: 0.015 },
+  'claude-haiku-4-5-20251001': { input: 0.0008, output: 0.004 },
 }
 
 export function estimateCost(model: string, tokensIn: number, tokensOut: number): number {
