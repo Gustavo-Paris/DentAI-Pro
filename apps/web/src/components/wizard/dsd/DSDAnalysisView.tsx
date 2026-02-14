@@ -182,8 +182,8 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
         </Alert>
       )}
 
-      {/* Gengivoplasty approval — always shown so dentist can decide, regardless of AI detection */}
-      {gingivoplastyApproved === null && (
+      {/* Gengivoplasty approval — conditional on smile_line and AI detection */}
+      {gingivoplastyApproved === null && (hasGingivoSuggestion || analysis.smile_line !== 'baixa') && (
         <Card className={hasGingivoSuggestion
           ? "border-amber-400 bg-amber-50/50 dark:bg-amber-950/20"
           : "border-border bg-secondary/30"
@@ -193,12 +193,26 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
               <div className="flex items-start gap-3">
                 <AlertCircle className={`w-5 h-5 mt-0.5 shrink-0 ${hasGingivoSuggestion ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'}`} />
                 <div>
-                  <p className={`text-sm font-medium ${hasGingivoSuggestion ? 'text-amber-800 dark:text-amber-200' : 'text-foreground'}`}>
-                    {hasGingivoSuggestion
-                      ? t('components.wizard.dsd.analysisView.gingivoplastyDetected', { defaultValue: 'Gengivoplastia detectada na análise' })
-                      : t('components.wizard.dsd.analysisView.gingivoplastyOption', { defaultValue: 'Incluir gengivoplastia?' })
-                    }
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className={`text-sm font-medium ${hasGingivoSuggestion ? 'text-amber-800 dark:text-amber-200' : 'text-foreground'}`}>
+                      {hasGingivoSuggestion
+                        ? t('components.wizard.dsd.analysisView.gingivoplastyDetected', { defaultValue: 'Gengivoplastia detectada na análise' })
+                        : t('components.wizard.dsd.analysisView.gingivoplastyOption', { defaultValue: 'Incluir gengivoplastia?' })
+                      }
+                    </p>
+                    <Badge
+                      variant={hasGingivoSuggestion ? 'default' : 'secondary'}
+                      className={hasGingivoSuggestion
+                        ? 'bg-amber-500 hover:bg-amber-500 text-white text-[10px] px-1.5 py-0'
+                        : 'text-[10px] px-1.5 py-0'
+                      }
+                    >
+                      {hasGingivoSuggestion
+                        ? t('components.wizard.dsd.analysisView.aiRecommended', { defaultValue: 'Recomendado pela IA' })
+                        : t('components.wizard.dsd.analysisView.optional', { defaultValue: 'Opcional' })
+                      }
+                    </Badge>
+                  </div>
                   <p className={`text-xs mt-1 ${hasGingivoSuggestion ? 'text-amber-700 dark:text-amber-300' : 'text-muted-foreground'}`}>
                     {hasGingivoSuggestion
                       ? t('components.wizard.dsd.analysisView.gingivoplastyDesc', { defaultValue: 'A análise identificou necessidade de harmonização gengival. Deseja incluir a simulação de gengivoplastia?' })

@@ -97,6 +97,11 @@ SE gengiva visivel (linha media ou alta), avalie:
 3. Sorriso gengival >3mm: considerar gengivoplastia ou encaminhamento periodontia
 4. Zenites assimetricos entre homologos -> gengivoplastia para harmonizar
 
+CROSS-VALIDACAO SMILE_LINE (VERIFICAR ANTES DE FINALIZAR):
+Se sugestoes mencionam "sorriso gengival >3mm" ou "excesso gengival significativo" MAS smile_line classificada como "média" → INCONSISTENCIA.
+Acao: Reclassificar smile_line para "alta". Sorriso gengival >3mm e POR DEFINICAO smile_line alta.
+Se observacoes mencionam "sorriso gengival" ou gengiva "ampla"/"extensa"/"significativa" E smile_line = "média" → REVISAR classificacao.
+
 GENGIVOPLASTIA vs RECOBRIMENTO RADICULAR (diferenciar!):
 | Procedimento             | Objetivo                        | Indicacao                              |
 |--------------------------|--------------------------------|---------------------------------------|
