@@ -223,16 +223,6 @@ serve(async (req) => {
     }
     step("rateLimit: ok");
 
-    // Then consume credits (atomic with row locking)
-    step("credits: check start");
-    const creditResult = await checkAndUseCredits(supabaseService, userId, "case_analysis", reqId);
-    if (!creditResult.allowed) {
-      logger.warn(`Insufficient credits for user ${userId} on case_analysis`);
-      return createInsufficientCreditsResponse(creditResult, corsHeaders);
-    }
-    creditsConsumed = true;
-    step("credits: consumed");
-
     // Parse and validate request
     let rawData: unknown;
     try {
@@ -487,19 +477,11 @@ serve(async (req) => {
     } catch (error) {
       if (error instanceof ClaudeError) {
         if (error.statusCode === 429) {
-          if (creditsConsumed && supabaseForRefund && userIdForRefund) {
-            await refundCredits(supabaseForRefund, userIdForRefund, "case_analysis", reqId);
-          }
           return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
         }
         logger.error(`Claude API error (${error.statusCode}):`, error.message);
       } else {
         logger.error("AI error:", error);
-      }
-      // Refund credits on AI errors
-      if (creditsConsumed && supabaseForRefund && userIdForRefund) {
-        await refundCredits(supabaseForRefund, userIdForRefund, "case_analysis", reqId);
-        logger.log(`Refunded analysis credits for user ${userIdForRefund} due to AI error`);
       }
       const debugDetail = error instanceof ClaudeError
         ? `[${error.statusCode}] ${error.message}`
@@ -511,13 +493,18 @@ serve(async (req) => {
     }
 
     if (!analysisResult) {
-      // Refund credits — AI returned unusable result but user already paid
-      if (creditsConsumed && supabaseForRefund && userIdForRefund) {
-        await refundCredits(supabaseForRefund, userIdForRefund, "case_analysis", reqId);
-        logger.log(`[${reqId}] Refunded analysis credits for user ${userIdForRefund} — AI returned no usable result`);
-      }
       return createErrorResponse(ERROR_MESSAGES.ANALYSIS_FAILED, 500, corsHeaders);
     }
+
+    // Credits: only charge after AI analysis succeeds
+    step("credits: check start");
+    const creditResult = await checkAndUseCredits(supabaseService, userId, "case_analysis", reqId);
+    if (!creditResult.allowed) {
+      logger.warn(`Insufficient credits for user ${userId} on case_analysis`);
+      return createInsufficientCreditsResponse(creditResult, corsHeaders);
+    }
+    creditsConsumed = true;
+    step("credits: consumed");
 
     // Ensure required fields have defaults and normalize detected_teeth
     // Use the global treatment_indication as fallback instead of always defaulting to "resina"
