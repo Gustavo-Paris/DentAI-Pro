@@ -30,11 +30,11 @@ export function usePatientList() {
     queryFn: async () => {
       if (!user) throw new Error('User not authenticated');
 
-      // Load all patients (dental practices typically have < 500)
+      // Load first page of patients with stats
       const { rows: patientsData, count } = await patients.list({
         userId: user.id,
         page: 0,
-        pageSize: 1000,
+        pageSize: 100,
       });
 
       if (!patientsData || patientsData.length === 0) {

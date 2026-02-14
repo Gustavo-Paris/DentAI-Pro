@@ -79,11 +79,11 @@ export function useEvaluationSessions() {
     queryKey: ['evaluations', 'all-sessions', user?.id],
     queryFn: async () => {
       if (!user) throw new Error('User not authenticated');
-      // Load a generous batch — dental practices typically have < 1000 evaluations
+      // Load first page — 100 raw evaluations typically produce ~20-30 sessions
       const { rows, count } = await evaluations.list({
         userId: user.id,
         page: 0,
-        pageSize: 1000,
+        pageSize: 100,
       });
       return {
         sessions: groupBySession(rows as RawEvaluation[]),
