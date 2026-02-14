@@ -300,12 +300,12 @@ export const ToothSelectionCard = memo(function ToothSelectionCard({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="resina">Resina Composta</SelectItem>
-                            <SelectItem value="porcelana">Faceta de Porcelana</SelectItem>
-                            <SelectItem value="coroa">Coroa Total</SelectItem>
-                            <SelectItem value="implante">Implante</SelectItem>
-                            <SelectItem value="endodontia">Tratamento de Canal</SelectItem>
-                            <SelectItem value="encaminhamento">Encaminhamento</SelectItem>
+                            <SelectItem value="resina">{t('components.wizard.review.treatmentResina')}</SelectItem>
+                            <SelectItem value="porcelana">{t('components.wizard.review.treatmentPorcelana')}</SelectItem>
+                            <SelectItem value="coroa">{t('components.wizard.review.treatmentCoroa')}</SelectItem>
+                            <SelectItem value="implante">{t('components.wizard.review.treatmentImplante')}</SelectItem>
+                            <SelectItem value="endodontia">{t('components.wizard.review.treatmentEndodontia')}</SelectItem>
+                            <SelectItem value="encaminhamento">{t('components.wizard.review.treatmentEncaminhamento')}</SelectItem>
                           </SelectContent>
                         </Select>
                       )}
@@ -348,7 +348,7 @@ export const ToothSelectionCard = memo(function ToothSelectionCard({
               {t('components.wizard.review.add')}
             </Button>
             <Button variant="ghost" onClick={() => setShowManualAdd(false)}>
-              Cancelar
+              {t('components.wizard.review.cancel')}
             </Button>
           </div>
         )}

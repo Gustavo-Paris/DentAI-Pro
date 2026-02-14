@@ -933,7 +933,8 @@
         "descEndodontia": "Tratamento endodôntico necessário",
         "descEncaminhamento": "Encaminhamento para especialista",
         "descGengivoplastia": "Protocolo de gengivoplastia estética",
-        "descRecobrimentoRadicular": "Protocolo de recobrimento radicular"
+        "descRecobrimentoRadicular": "Protocolo de recobrimento radicular",
+        "cancel": "Cancelar"
       },
       "draftRestore": {
         "title": "Continuar avaliação anterior?",
@@ -1255,7 +1256,14 @@
       "generating": "Gerando...",
       "addCount": "Adicionar {{count}} dente(s)",
       "casesAdded": "Casos adicionados: {{details}}",
-      "addError": "Erro ao adicionar casos"
+      "addError": "Erro ao adicionar casos",
+      "cancel": "Cancelar",
+      "treatmentResina": "\uD83D\uDD27 Resina Composta",
+      "treatmentPorcelana": "\uD83D\uDC51 Faceta de Porcelana",
+      "treatmentCoroa": "\uD83D\uDC8E Coroa Total",
+      "treatmentImplante": "\uD83E\uDDB7 Implante",
+      "treatmentEndodontia": "\uD83D\uDD2C Tratamento de Canal",
+      "treatmentEncaminhamento": "➡️ Encaminhamento"
     },
     "processingOverlay": {
       "defaultMessage": "Processando...",
