@@ -151,14 +151,6 @@ serve(async (req: Request) => {
       return createRateLimitResponse(rateLimitResult, corsHeaders);
     }
 
-    // Check and consume credits
-    const creditResult = await checkAndUseCredits(supabase, user.id, "cementation_recommendation", reqId);
-    if (!creditResult.allowed) {
-      logger.warn(`Insufficient credits for user ${user.id} on cementation_recommendation`);
-      return createInsufficientCreditsResponse(creditResult, corsHeaders);
-    }
-    creditsConsumed = true;
-
     // Parse and validate request body
     const body = await req.json();
     const validation = validateRequest(body);
@@ -345,30 +337,25 @@ serve(async (req: Request) => {
 
       if (!claudeResult.functionCall) {
         logger.error("No function call in Claude response");
-        if (creditsConsumed && supabaseForRefund && userIdForRefund) {
-          await refundCredits(supabaseForRefund, userIdForRefund, "cementation_recommendation", reqId);
-          logger.log(`[${reqId}] Refunded cementation_recommendation credits for user ${userIdForRefund} — no function call in AI response`);
-        }
         return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
       }
 
       protocol = parseAIResponse(CementationProtocolSchema, claudeResult.functionCall.args, 'recommend-cementation') as CementationProtocol;
+
+      // Credits: only charge after AI response is validated
+      const creditResult = await checkAndUseCredits(supabase, user.id, "cementation_recommendation", reqId);
+      if (!creditResult.allowed) {
+        return createInsufficientCreditsResponse(creditResult, corsHeaders);
+      }
+      creditsConsumed = true;
     } catch (error) {
       if (error instanceof ClaudeError) {
         if (error.statusCode === 429) {
-          if (creditsConsumed && supabaseForRefund && userIdForRefund) {
-            await refundCredits(supabaseForRefund, userIdForRefund, "cementation_recommendation", reqId);
-          }
           return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
         }
         logger.error("Claude API error:", error.message);
       } else {
         logger.error("AI error:", error);
-      }
-      // Refund credits on AI errors
-      if (creditsConsumed && supabaseForRefund && userIdForRefund) {
-        await refundCredits(supabaseForRefund, userIdForRefund, "cementation_recommendation", reqId);
-        logger.log(`Refunded cementation_recommendation credits for user ${userIdForRefund} due to AI error`);
       }
       return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     }
