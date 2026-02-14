@@ -27,6 +27,24 @@ export async function authenticateRequest(
   if (error || !user) {
     return createErrorResponse(ERROR_MESSAGES.INVALID_TOKEN, 401, corsHeaders);
   }
+
+  // Check if user has been soft-deleted (Supabase sets deleted_at but doesn't revoke JWTs)
+  // deno-lint-ignore no-explicit-any
+  const userAny = user as any;
+  if (userAny.deleted_at) {
+    logger.warn("Deleted user attempted access", { userId: user.id, deletedAt: userAny.deleted_at });
+    return createErrorResponse("Conta excluída", 401, corsHeaders);
+  }
+
+  // Check if user is banned (banned_until in the future means active ban)
+  if (userAny.banned_until) {
+    const bannedUntil = new Date(userAny.banned_until);
+    if (bannedUntil > new Date()) {
+      logger.warn("Banned user attempted access", { userId: user.id, bannedUntil: userAny.banned_until });
+      return createErrorResponse("Conta suspensa", 403, corsHeaders);
+    }
+  }
+
   return { user };
 }
 
