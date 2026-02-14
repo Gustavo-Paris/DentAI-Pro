@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
-import { supabase } from '@/integrations/supabase/client';
+import { getSession, onAuthStateChange, updateUserPassword } from '@/data/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -40,14 +40,14 @@ export default function ResetPassword() {
   useEffect(() => {
     // Check if user has a valid recovery session
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await getSession();
       if (session) {
         setSessionReady(true);
       }
     };
 
     // Listen for auth state changes (recovery link click)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY' && session) {
         setSessionReady(true);
       }
@@ -61,7 +61,7 @@ export default function ResetPassword() {
   const onSubmit = async (data: ResetPasswordFormData) => {
     setLoading(true);
 
-    const { error } = await supabase.auth.updateUser({ password: data.password });
+    const { error } = await updateUserPassword(data.password);
 
     if (error) {
       toast.error(t('auth.updatePasswordError'), {

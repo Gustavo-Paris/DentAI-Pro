@@ -138,6 +138,15 @@ export async function purchaseCreditPack(packId: string, paymentMethod?: 'card' 
   return data as { url: string };
 }
 
+export async function syncSubscription() {
+  const data = await withQuery(() =>
+    supabase.functions.invoke('sync-subscription', {
+      body: {},
+    }),
+  );
+  return data as { synced?: boolean };
+}
+
 export async function syncCreditPurchase() {
   const data = await withQuery(() =>
     supabase.functions.invoke('sync-credit-purchase', {

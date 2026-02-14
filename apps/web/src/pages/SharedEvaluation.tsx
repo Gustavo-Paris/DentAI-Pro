@@ -9,8 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { BRAND_NAME } from '@/lib/branding';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { supabase } from '@/data/client';
-import { SIGNED_URL_EXPIRY_SECONDS } from '@/lib/constants';
+import { getSignedPhotoUrl, getSignedDSDUrl } from '@/data/storage';
 import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
 import { ProportionsCard } from '@/components/dsd/ProportionsCard';
 import type { DSDAnalysis, SimulationLayer } from '@/types/dsd';
@@ -88,17 +87,13 @@ export default function SharedEvaluation() {
     const resolve = async () => {
       // Before image (clinical photo)
       if (dsdData.photo_frontal) {
-        const { data } = await supabase.storage
-          .from('clinical-photos')
-          .createSignedUrl(dsdData.photo_frontal, SIGNED_URL_EXPIRY_SECONDS);
-        if (data?.signedUrl) setBeforeImageUrl(data.signedUrl);
+        const url = await getSignedPhotoUrl(dsdData.photo_frontal);
+        if (url) setBeforeImageUrl(url);
       }
       // Main simulation URL
       if (dsdData.dsd_simulation_url) {
-        const { data } = await supabase.storage
-          .from('dsd-simulations')
-          .createSignedUrl(dsdData.dsd_simulation_url, SIGNED_URL_EXPIRY_SECONDS);
-        if (data?.signedUrl) setSimulationUrl(data.signedUrl);
+        const url = await getSignedDSDUrl(dsdData.dsd_simulation_url);
+        if (url) setSimulationUrl(url);
       }
       // Layer URLs
       if (dsdData.dsd_simulation_layers?.length) {
@@ -106,10 +101,8 @@ export default function SharedEvaluation() {
         await Promise.all(
           dsdData.dsd_simulation_layers.map(async (layer) => {
             if (!layer.simulation_url) return;
-            const { data } = await supabase.storage
-              .from('dsd-simulations')
-              .createSignedUrl(layer.simulation_url, SIGNED_URL_EXPIRY_SECONDS);
-            if (data?.signedUrl) urls[layer.type] = data.signedUrl;
+            const url = await getSignedDSDUrl(layer.simulation_url);
+            if (url) urls[layer.type] = url;
           })
         );
         setLayerUrls(urls);

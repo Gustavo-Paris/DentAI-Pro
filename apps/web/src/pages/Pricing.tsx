@@ -5,7 +5,7 @@ import { CheckCircle2 } from 'lucide-react';
 import { PricingSection } from '@/components/pricing/PricingSection';
 import { PlanComparisonTable } from '@/components/pricing/PlanComparisonTable';
 import { useSubscription } from '@/hooks/useSubscription';
-import { supabase } from '@/integrations/supabase/client';
+import { syncSubscription } from '@/data/subscriptions';
 import { logger } from '@/lib/logger';
 import { trackEvent } from '@/lib/analytics';
 import { DetailPage } from '@pageshell/composites';
@@ -45,7 +45,7 @@ export default function Pricing() {
       const syncWithRetry = async (attempts = 3, delay = 2000) => {
         for (let i = 0; i < attempts; i++) {
           try {
-            const { data } = await supabase.functions.invoke('sync-subscription', { body: {} });
+            const data = await syncSubscription();
             if (data?.synced) {
               refreshSubscription();
               return;
