@@ -130,11 +130,12 @@ RESINAS RECOMENDADAS POR CAMADA:
 | Esmalte Final      | MW/WE(Palfique LX5), Empress esmalte cores claras, W3(Estelite Bianco) p/ clareados — PROIBIDO translúcidas (CT/GT/Trans)! |
 | Dentes Clareados   | W3/W4(Estelite Bianco), BL(Forma), BL-L(Empress)         |
 
-DIVERSIDADE DE MARCAS (OBRIGATORIO):
-- PROIBIDO mesma linha para TODAS as 5 camadas
-- Cada camada deve usar a resina MAIS INDICADA para sua função
-- Z350 em 1-2 camadas max, nao todas
-- EXCECAO: Inventário só tem Z350 -> aceitável, marcar nas observações
+DIVERSIDADE DE MARCAS (CONDICIONAL AO NUMERO DE CAMADAS):
+- 2-3 camadas: PERMITIDO mesma marca em todas. Priorizar CONSISTENCIA de sistema adesivo e compatibilidade.
+- 4-5 camadas: PROIBIDO mesma marca em TODAS. Diversificar conforme funcao de cada camada.
+- Cada camada deve usar a resina MAIS INDICADA para sua funcao
+- Z350 em 1-2 camadas max quando 4-5 camadas
+- EXCECAO: Inventario limitado -> aceitavel mesma marca, marcar nas observacoes
 
 EFEITOS INCISAIS (sub-opções):
 | Efeito         | Materiais                                                |
@@ -195,6 +196,51 @@ ${JSON.stringify(contralateralProtocol, null, 2)}
 COPIAR: Mesmo nº camadas, mesmos shades, mesma resina, mesma técnica, mesma confiança. Adapte APENAS o nº do dente.`
 }
 
+function buildLayerCapSection(restorationSize: string, cavityClass: string): string {
+  const isDiastema = cavityClass.toLowerCase().includes('diastema') || cavityClass.toLowerCase().includes('fechamento')
+  const sizeNorm = restorationSize.toLowerCase()
+
+  let maxLayers: number | null = null
+  let scenario = ''
+
+  if (isDiastema) {
+    if (sizeNorm.includes('pequen') || sizeNorm.includes('médi') || sizeNorm.includes('medi')) {
+      maxLayers = 2
+      scenario = 'Diastema Pequeno/Médio (≤2mm): Máx 2 camadas (Corpo + Esmalte)'
+    } else {
+      maxLayers = 3
+      scenario = 'Diastema Grande/Extenso: Máx 3 camadas (Corpo + Esmalte + Efeitos opcional)'
+    }
+  } else {
+    if (sizeNorm.includes('pequen')) {
+      maxLayers = 2
+      scenario = 'Restauração Pequena: Máx 2 camadas'
+    } else if (sizeNorm.includes('médi') || sizeNorm.includes('medi')) {
+      maxLayers = 3
+      scenario = 'Restauração Média: Máx 3 camadas'
+    }
+    // Grande/Extensa: no cap (follows aesthetic level)
+  }
+
+  if (maxLayers === null) return ''
+
+  return `=== LIMITE DE CAMADAS POR VOLUME (PREVALECE SOBRE NIVEL ESTETICO) ===
+Cenário detectado: ${scenario}
+MAXIMO DE CAMADAS PERMITIDO: ${maxLayers}
+Se o nível estético sugere mais camadas, o limite de volume PREVALECE.
+Camadas OBRIGATORIAS: Corpo/Dentina + Esmalte. Camadas adicionais somente se maxLayers permitir.
+PROIBIDO gerar ${maxLayers + 1}+ camadas para este volume de restauração.
+
+| Cenário                        | Máx Camadas |
+|--------------------------------|-------------|
+| Diastema Pequeno/Médio (≤2mm) | 2           |
+| Diastema Grande/Extenso        | 3           |
+| Restauração Pequena            | 2           |
+| Restauração Média              | 3           |
+| Grande/Extensa                 | Sem limite  |
+`
+}
+
 // ---------- prompt definition ----------
 
 export const recommendResin: PromptDefinition<Params> = {
@@ -215,6 +261,7 @@ export const recommendResin: PromptDefinition<Params> = {
     const inventory = buildInventorySection(p.hasInventory, p.budget, p.budgetAppropriateInventory, p.inventoryResins)
     const inventoryInstr = buildInventoryInstructions(p.hasInventory, p.budget)
     const advancedStrat = buildAdvancedStratificationSection(p.aestheticLevel)
+    const layerCap = buildLayerCapSection(p.restorationSize, p.cavityClass)
     const bruxism = buildBruxismSection(p.bruxism)
     const aestheticGoals = buildAestheticGoalsSection(p.aestheticGoals)
     const dsdContext = buildDSDContextSection(p.dsdContext)
@@ -252,10 +299,12 @@ Se cavityClass = "Recontorno Estético" E indicação menciona DIMINUIR bordo in
 
 ${advancedStrat}
 
+${layerCap}
+
 === PROTOCOLO DE ESTRATIFICACAO V2 ===
 A cor DEVE corresponder ao tipo da camada E existir na linha de produto!
 
-ESTRUTURA 2-5 CAMADAS conforme nível estético:
+ESTRUTURA 2-5 CAMADAS conforme nível estético E volume da restauração (limite de volume PREVALECE):
 
 NIVEL FUNCIONAL ("funcional"/"baixo"/"médio") - 2-3 camadas:
 1. Dentina/Corpo | 2. Esmalte Vestibular Final | 3. Aumento Incisal (SE NECESSARIO)
@@ -287,11 +336,23 @@ CORES DE ESMALTE POR LINHA:
 | Palfique LX5        | MW, WE, CE, BL1, BL2, BL3, A1-A3, B1     |
 ALTERNATIVA SIMPLIFICADA: Para corpo usar WE/W3/W4 (NUNCA MW). MW e Medium White — inadequado para corpo.
 
-=== CLAREAMENTO (BLEACH SHADES) ===
-Verificar se linha possui cores BL. Se NAO: usar cor mais clara (B1/A1).
-COM BL: Palfique LX5 (BL1-3), Forma (BL), Z350 (WB/WE aprox.), Estelite Bianco (W1-W4), Empress (BL-L).
-SEM BL: Estelite Sigma Quick, Vittra APS (usar B1/A1).
-Dentes clareados: PRIORIDADE Estelite Bianco W1-W4, ALTERNATIVA BL(Forma)/BL-L(Empress).
+=== CLAREAMENTO (BLEACH SHADES) — CONDICIONADO AO OBJETIVO ESTETICO ===
+
+REGRA: Verificar objetivo estetico do paciente (seção PREFERENCIAS ESTETICAS acima) ANTES de escolher shades.
+
+SE objetivo inclui "hollywood", "clareamento", "branco", "white", "BL" ou paciente deseja dentes MUITO claros:
+  Shades BL/W PERMITIDOS.
+  COM BL: Palfique LX5 (BL1-3), Forma (BL), Z350 (WB/WE aprox.), Estelite Bianco (W1-W4), Empress (BL-L).
+  SEM BL na linha: usar cor mais clara disponivel (B1/A1).
+  Dentes clareados: PRIORIDADE Estelite Bianco W1-W4, ALTERNATIVA BL(Forma)/BL-L(Empress).
+
+SE objetivo e "natural", "discreto", "mimetismo" ou NAO menciona clareamento:
+  Shades BL e W PROIBIDOS. Maximo A1/B1.
+  Se cor VITA atual ja e A1/B1 e objetivo natural → MANTER. NAO escalar para BL/W.
+  PROIBIDO: BL1, BL2, BL3, W1, W2, W3, W4, BL-L neste cenario.
+  Priorizar naturalidade e mimetismo com dentes adjacentes.
+
+SE nenhuma preferencia informada: DEFAULT para shades naturais (A1/B1). NAO assumir clareamento.
 
 === PROTOCOLO ADESIVO ===
 | Situação                | Sistema recomendado                        |

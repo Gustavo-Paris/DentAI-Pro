@@ -203,6 +203,16 @@ export function useDSDStep({
     if (hasExplicit) return true;
     // Secondary: high smile line (>3mm gum display) — always offer option
     if (analysis.smile_line === 'alta') return true;
+    // Tertiary: medium smile line — check suggestion text for gingivoplasty keywords
+    // (catches cases where treatment_indication enum wasn't filled correctly)
+    if (analysis.smile_line === 'média') {
+      const gingivoKeywords = ['gengivoplastia', 'excesso gengival', 'sorriso gengival', 'coroa clínica curta', 'coroa clinica curta'];
+      const hasKeywordInSuggestions = !!analysis.suggestions?.some(s => {
+        const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
+        return gingivoKeywords.some(kw => text.includes(kw));
+      });
+      if (hasKeywordInSuggestions) return true;
+    }
     return false;
   }, []);
 

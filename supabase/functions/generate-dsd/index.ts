@@ -1258,6 +1258,27 @@ serve(async (req: Request) => {
       }
     }
 
+    // Safety net #5: Cross-validate smile_line vs gengivoplastia suggestions
+    // If gengivoplastia was suggested with mentions of ">3mm" or "sorriso gengival"
+    // but smile_line is "média", auto-correct to "alta" (clinical inconsistency)
+    if (analysis.smile_line === 'média') {
+      const hasGingivoWithHighExposure = analysis.suggestions.some(s => {
+        const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
+        const treatment = (s.treatment_indication || '').toLowerCase();
+        return (treatment === 'gengivoplastia') &&
+          (text.includes('>3mm') || text.includes('3mm') || text.includes('sorriso gengival') || text.includes('excesso gengival'));
+      });
+      const observationsMentionGummySmile = analysis.observations?.some(obs => {
+        const lower = obs.toLowerCase();
+        return (lower.includes('sorriso gengival') || lower.includes('>3mm')) &&
+          lower.includes('gengiv');
+      });
+      if (hasGingivoWithHighExposure || observationsMentionGummySmile) {
+        logger.log('Post-processing: auto-correcting smile_line from "média" to "alta" (gengivoplastia with >3mm indicators detected)');
+        analysis.smile_line = 'alta';
+      }
+    }
+
     // NEW: If analysisOnly, return immediately without generating simulation
     if (analysisOnly) {
       const destructionCheck = hasSevereDestruction(analysis);

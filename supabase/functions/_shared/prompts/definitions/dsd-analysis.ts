@@ -31,10 +31,27 @@ Avalie e DOCUMENTE o tipo de arco atual e se precisa de correção.
 
 === ANALISE LABIAL (CRITICA PARA SIMULACAO) ===
 
-1. Linha do Sorriso vs Lábio Superior:
-   - Alta (>3mm gengiva): Considerar gengivoplastia ou nao alongar dentes demais
-   - Média (0-3mm): Ideal para facetas
-   - Baixa (parcialmente cobertos): Alongamento incisal pode melhorar
+1. Linha do Sorriso vs Lábio Superior (CLASSIFICACAO CRITICA — SEGUIR PROTOCOLO):
+
+   DEFINICOES CALIBRADAS:
+   - ALTA (>3mm gengiva exposta): Faixa CONTINUA de gengiva visivel acima dos zenites dos centrais. Gengiva E papilas CLARAMENTE expostas. Sorriso gengival evidente.
+   - MEDIA (0-3mm gengiva exposta): Margem gengival TANGENCIA o labio superior. Apenas zenites e/ou pontas de papilas visiveis. Pouca ou nenhuma faixa continua de gengiva.
+   - BAIXA (gengiva NAO visivel): Labio superior COBRE completamente a margem gengival. Dentes parcialmente cobertos pelo labio.
+
+   EXEMPLOS DE REFERENCIA:
+   - Sorriso mostrando faixa rosa AMPLA acima dos dentes → ALTA
+   - Sorriso onde labio tangencia gengiva, papilas visiveis mas sem faixa rosa → MEDIA
+   - Sorriso com labio cobrindo margem gengival, so dentes visiveis → BAIXA
+   - Sorriso com >3mm de gengiva E observacoes mencionando "sorriso gengival" → ALTA (NUNCA media!)
+   - Duvida entre media e alta com gengiva claramente visivel → ALTA (vies de seguranca)
+
+   AUTO-VERIFICACAO OBRIGATORIA (4 passos ANTES de classificar):
+   Passo 1: Localizar borda do labio superior em repouso no sorriso
+   Passo 2: Localizar zenites gengivais dos incisivos centrais (11/21)
+   Passo 3: Estimar distancia vertical entre labio e zenites (mm)
+   Passo 4: Classificar: >3mm=ALTA, 0-3mm=MEDIA, gengiva coberta=BAIXA
+
+   REGRA ANTI-VIES: Na duvida entre media e alta, quando gengiva CLARAMENTE visivel acima dos zenites → classifique como ALTA. Erro de subclassificar sorriso gengival e PIOR que superclassificar (gengivoplastia nao detectada = problema clinico perdido).
 
 2. Espessura Labial (RETORNO OBRIGATORIO - lip_thickness):
    - "fino": Dentes proeminentes parecem excessivos. Se aumento de volume sugerido: "Labios finos: considerar preenchimento com acido hialuronico."
