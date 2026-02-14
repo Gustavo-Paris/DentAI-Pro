@@ -220,12 +220,12 @@ export function AddTeethModal({
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="resina">🔧 Resina Composta</SelectItem>
-                              <SelectItem value="porcelana">👑 Faceta de Porcelana</SelectItem>
-                              <SelectItem value="coroa">💎 Coroa Total</SelectItem>
-                              <SelectItem value="implante">🦷 Implante</SelectItem>
-                              <SelectItem value="endodontia">🔬 Tratamento de Canal</SelectItem>
-                              <SelectItem value="encaminhamento">➡️ Encaminhamento</SelectItem>
+                              <SelectItem value="resina">{t('components.addTeeth.treatmentResina')}</SelectItem>
+                              <SelectItem value="porcelana">{t('components.addTeeth.treatmentPorcelana')}</SelectItem>
+                              <SelectItem value="coroa">{t('components.addTeeth.treatmentCoroa')}</SelectItem>
+                              <SelectItem value="implante">{t('components.addTeeth.treatmentImplante')}</SelectItem>
+                              <SelectItem value="endodontia">{t('components.addTeeth.treatmentEndodontia')}</SelectItem>
+                              <SelectItem value="encaminhamento">{t('components.addTeeth.treatmentEncaminhamento')}</SelectItem>
                             </SelectContent>
                           </Select>
                         )}
@@ -281,9 +281,9 @@ export function AddTeethModal({
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="resina">🔧 Resina Composta</SelectItem>
-                              <SelectItem value="porcelana">👑 Faceta de Porcelana</SelectItem>
-                              <SelectItem value="coroa">💎 Coroa Total</SelectItem>
+                              <SelectItem value="resina">{t('components.addTeeth.treatmentResina')}</SelectItem>
+                              <SelectItem value="porcelana">{t('components.addTeeth.treatmentPorcelana')}</SelectItem>
+                              <SelectItem value="coroa">{t('components.addTeeth.treatmentCoroa')}</SelectItem>
                             </SelectContent>
                           </Select>
                         )}
@@ -298,7 +298,7 @@ export function AddTeethModal({
 
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
-            Cancelar
+            {t('components.addTeeth.cancel')}
           </Button>
           <Button
             onClick={handleSubmit}
