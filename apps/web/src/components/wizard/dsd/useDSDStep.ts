@@ -191,13 +191,19 @@ export function useDSDStep({
   // Client-side compositing disabled — Gemini's prompt-based preservation produces
   // better results than canvas mask overlays which create visible artifacts.
 
-  // Check if analysis has gengivoplasty suggestions
+  // Check if analysis has gengivoplasty suggestions — use structured fields only
+  // for consistency. Text keyword matching is unreliable and causes the same
+  // photo to sometimes detect gengivoplasty, sometimes not.
   const hasGingivoSuggestion = useCallback((analysis: DSDAnalysis): boolean => {
-    return !!analysis.suggestions?.some(s => {
-      if (s.treatment_indication === 'gengivoplastia') return true;
-      const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
-      return text.includes('gengivoplastia') || text.includes('gengival') || text.includes('zênite');
+    // Primary: AI explicitly chose gengivoplasty as treatment_indication
+    const hasExplicit = !!analysis.suggestions?.some(s => {
+      const indication = (s.treatment_indication || '').toLowerCase();
+      return indication === 'gengivoplastia' || indication === 'gingivoplasty';
     });
+    if (hasExplicit) return true;
+    // Secondary: high smile line (>3mm gum display) — always offer option
+    if (analysis.smile_line === 'alta') return true;
+    return false;
   }, []);
 
   // Determine which layers to generate based on analysis
