@@ -18,34 +18,6 @@ import { wizard as wizardData } from '@/data';
 import { inferCavityClass, getFullRegion, getGenericProtocol } from './helpers';
 
 // ---------------------------------------------------------------------------
-// Concurrency limiter — avoid overwhelming edge function connections
-// ---------------------------------------------------------------------------
-
-function pLimit(concurrency: number) {
-  const queue: Array<() => void> = [];
-  let active = 0;
-
-  function next() {
-    if (queue.length > 0 && active < concurrency) {
-      active++;
-      const run = queue.shift()!;
-      run();
-    }
-  }
-
-  return <T>(fn: () => Promise<T>): Promise<T> =>
-    new Promise<T>((resolve, reject) => {
-      queue.push(() => {
-        fn().then(resolve, reject).finally(() => {
-          active--;
-          next();
-        });
-      });
-      next();
-    });
-}
-
-// ---------------------------------------------------------------------------
 // Params
 // ---------------------------------------------------------------------------
 
@@ -243,15 +215,26 @@ export function useWizardSubmit({
         await wizardData.updatePatientBirthDate(patientId, patientBirthDate);
       }
 
-      // Step 2: Evaluations + Protocols (per-tooth with retry) — PARALLEL
+      // Step 2: Evaluations + Protocols
+      // Strategy: call AI only for ONE representative tooth per treatment group,
+      // then syncGroupProtocols copies the protocol to siblings. This avoids
+      // concurrent edge-function calls that hit the Supabase 60s timeout.
       setSubmissionStep(2);
 
       const resolvedCount = { value: 0 };
 
-      const limit = pLimit(2); // Max 2 parallel edge function calls
+      // Pre-compute treatment types and pick one "primary" tooth per group
+      const primaryPerGroup: Record<string, string> = {}; // treatmentType → first tooth
+      for (const tooth of teethToProcess) {
+        const tt = normalizeTreatment(
+          getToothTreatment(tooth, toothTreatments, analysisResult, formData),
+        );
+        if (!primaryPerGroup[tt]) primaryPerGroup[tt] = tooth;
+      }
 
+      // Process ALL teeth sequentially — only primary teeth call the AI edge function
       const results = await Promise.allSettled(
-        teethToProcess.map((tooth) => limit(async () => {
+        teethToProcess.map((tooth) => (async () => {
           const toothData = getToothData(analysisResult, tooth);
           const treatmentType = getToothTreatment(tooth, toothTreatments, analysisResult, formData);
           // Normalize treatment type: Gemini sometimes returns English values
@@ -261,6 +244,9 @@ export function useWizardSubmit({
 
           // Gengivoplasty is a tissue procedure, not per-tooth — use sensible defaults
           const isGengivoplasty = tooth === 'GENGIVO' || normalizedTreatment === 'gengivoplastia';
+
+          // Is this tooth the primary (first) in its treatment group?
+          const isPrimary = primaryPerGroup[normalizedTreatment] === tooth;
 
           // Insert evaluation (DB is fast, no retry needed)
           const insertData = {
@@ -306,100 +292,111 @@ export function useWizardSubmit({
           evaluationId = evaluation.id;
           createdEvaluationIds.push(evaluation.id);
 
-          // Generate protocol WITH retry (2 retries, 2s exponential backoff)
-          await withRetry(
-            async () => {
-              switch (normalizedTreatment) {
-                case 'porcelana': {
-                  // Build DSD context for this tooth if available
-                  const cementDsdSuggestion = dsdResult?.analysis?.suggestions?.find(
-                    s => s.tooth === tooth,
-                  );
-                  await wizardData.invokeRecommendCementation({
-                    evaluationId: evaluation.id,
-                    teeth: [tooth],
-                    shade: formData.vitaShade,
-                    ceramicType: 'Dissilicato de lítio',
-                    substrate: toothData?.substrate || formData.substrate,
-                    substrateCondition:
-                      toothData?.substrate_condition || formData.substrateCondition,
-                    aestheticGoals:
-                      patientPreferences.whiteningLevel === 'hollywood'
-                        ? 'Paciente deseja clareamento INTENSO - nível Hollywood (BL1). A cor ALVO da faceta e do cimento deve ser BL1 ou compatível.'
-                        : 'Paciente prefere aparência NATURAL (A1/A2).',
-                    dsdContext: cementDsdSuggestion
-                      ? {
-                          currentIssue: cementDsdSuggestion.current_issue,
-                          proposedChange: cementDsdSuggestion.proposed_change,
-                          observations: dsdResult?.analysis?.observations || [],
-                        }
-                      : undefined,
-                  });
-                  break;
-                }
-                case 'resina': {
-                  // Build DSD context for this tooth if available
-                  const resinDsdSuggestion = dsdResult?.analysis?.suggestions?.find(
-                    s => s.tooth === tooth,
-                  );
-                  await wizardData.invokeRecommendResin({
-                    evaluationId: evaluation.id,
-                    userId: user.id,
-                    patientAge: formData.patientAge || '30',
-                    tooth,
-                    region: getFullRegion(tooth),
-                    cavityClass: inferCavityClass(toothData, formData.cavityClass, normalizedTreatment),
-                    restorationSize: toothData?.restoration_size || formData.restorationSize,
-                    substrate: toothData?.substrate || formData.substrate,
-                    bruxism: formData.bruxism,
-                    aestheticLevel: formData.budget === 'premium' ? 'estético' : 'funcional',
-                    toothColor: formData.vitaShade,
-                    stratificationNeeded: true,
-                    budget: formData.budget,
-                    longevityExpectation: formData.longevityExpectation,
-                    aestheticGoals:
-                      patientPreferences.whiteningLevel === 'hollywood'
-                        ? 'Paciente deseja clareamento INTENSO - nível Hollywood (BL1). Ajustar todas as camadas 2-3 tons mais claras que a cor detectada.'
-                        : 'Paciente prefere aparência NATURAL (A1/A2). Manter tons naturais.',
-                    dsdContext: resinDsdSuggestion
-                      ? {
-                          currentIssue: resinDsdSuggestion.current_issue,
-                          proposedChange: resinDsdSuggestion.proposed_change,
-                          observations: dsdResult?.analysis?.observations || [],
-                        }
-                      : undefined,
-                  });
-                  break;
-                }
-                case 'implante':
-                case 'coroa':
-                case 'endodontia':
-                case 'encaminhamento':
-                case 'gengivoplastia': {
-                  const genericProtocol = getGenericProtocol(normalizedTreatment, tooth, toothData);
-                  // Enrich gengivoplasty summary with DSD details if available
-                  if (normalizedTreatment === 'gengivoplastia' && dsdResult?.analysis?.suggestions) {
-                    const gingivoSuggestions = dsdResult.analysis.suggestions.filter(s => {
-                      const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
-                      return text.includes('gengiv') || text.includes('zênite') || text.includes('zenite');
+          // Only call AI edge functions for the primary tooth of each group.
+          // Non-primary teeth of the same type will be synced via syncGroupProtocols.
+          const needsAICall = isPrimary ||
+            normalizedTreatment === 'implante' ||
+            normalizedTreatment === 'coroa' ||
+            normalizedTreatment === 'endodontia' ||
+            normalizedTreatment === 'encaminhamento' ||
+            normalizedTreatment === 'gengivoplastia';
+
+          if (needsAICall) {
+            // Generate protocol WITH retry (2 retries, 2s exponential backoff)
+            await withRetry(
+              async () => {
+                switch (normalizedTreatment) {
+                  case 'porcelana': {
+                    // Build DSD context for this tooth if available
+                    const cementDsdSuggestion = dsdResult?.analysis?.suggestions?.find(
+                      s => s.tooth === tooth,
+                    );
+                    await wizardData.invokeRecommendCementation({
+                      evaluationId: evaluation.id,
+                      teeth: [tooth],
+                      shade: formData.vitaShade,
+                      ceramicType: 'Dissilicato de lítio',
+                      substrate: toothData?.substrate || formData.substrate,
+                      substrateCondition:
+                        toothData?.substrate_condition || formData.substrateCondition,
+                      aestheticGoals:
+                        patientPreferences.whiteningLevel === 'hollywood'
+                          ? 'Paciente deseja clareamento INTENSO - nível Hollywood (BL1). A cor ALVO da faceta e do cimento deve ser BL1 ou compatível.'
+                          : 'Paciente prefere aparência NATURAL (A1/A2).',
+                      dsdContext: cementDsdSuggestion
+                        ? {
+                            currentIssue: cementDsdSuggestion.current_issue,
+                            proposedChange: cementDsdSuggestion.proposed_change,
+                            observations: dsdResult?.analysis?.observations || [],
+                          }
+                        : undefined,
                     });
-                    if (gingivoSuggestions.length > 0) {
-                      genericProtocol.summary += ` Dentes envolvidos: ${gingivoSuggestions.map(s => s.tooth).join(', ')}. Observações DSD: ${gingivoSuggestions.map(s => s.proposed_change).join('; ')}.`;
-                    }
+                    break;
                   }
-                  await wizardData.updateEvaluationProtocol(evaluation.id, genericProtocol);
-                  break;
+                  case 'resina': {
+                    // Build DSD context for this tooth if available
+                    const resinDsdSuggestion = dsdResult?.analysis?.suggestions?.find(
+                      s => s.tooth === tooth,
+                    );
+                    await wizardData.invokeRecommendResin({
+                      evaluationId: evaluation.id,
+                      userId: user.id,
+                      patientAge: formData.patientAge || '30',
+                      tooth,
+                      region: getFullRegion(tooth),
+                      cavityClass: inferCavityClass(toothData, formData.cavityClass, normalizedTreatment),
+                      restorationSize: toothData?.restoration_size || formData.restorationSize,
+                      substrate: toothData?.substrate || formData.substrate,
+                      bruxism: formData.bruxism,
+                      aestheticLevel: formData.budget === 'premium' ? 'estético' : 'funcional',
+                      toothColor: formData.vitaShade,
+                      stratificationNeeded: true,
+                      budget: formData.budget,
+                      longevityExpectation: formData.longevityExpectation,
+                      aestheticGoals:
+                        patientPreferences.whiteningLevel === 'hollywood'
+                          ? 'Paciente deseja clareamento INTENSO - nível Hollywood (BL1). Ajustar todas as camadas 2-3 tons mais claras que a cor detectada.'
+                          : 'Paciente prefere aparência NATURAL (A1/A2). Manter tons naturais.',
+                      dsdContext: resinDsdSuggestion
+                        ? {
+                            currentIssue: resinDsdSuggestion.current_issue,
+                            proposedChange: resinDsdSuggestion.proposed_change,
+                            observations: dsdResult?.analysis?.observations || [],
+                          }
+                        : undefined,
+                    });
+                    break;
+                  }
+                  case 'implante':
+                  case 'coroa':
+                  case 'endodontia':
+                  case 'encaminhamento':
+                  case 'gengivoplastia': {
+                    const genericProtocol = getGenericProtocol(normalizedTreatment, tooth, toothData);
+                    // Enrich gengivoplasty summary with DSD details if available
+                    if (normalizedTreatment === 'gengivoplastia' && dsdResult?.analysis?.suggestions) {
+                      const gingivoSuggestions = dsdResult.analysis.suggestions.filter(s => {
+                        const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
+                        return text.includes('gengiv') || text.includes('zênite') || text.includes('zenite');
+                      });
+                      if (gingivoSuggestions.length > 0) {
+                        genericProtocol.summary += ` Dentes envolvidos: ${gingivoSuggestions.map(s => s.tooth).join(', ')}. Observações DSD: ${gingivoSuggestions.map(s => s.proposed_change).join('; ')}.`;
+                      }
+                    }
+                    await wizardData.updateEvaluationProtocol(evaluation.id, genericProtocol);
+                    break;
+                  }
                 }
-              }
-            },
-            {
-              maxRetries: 2,
-              baseDelay: 2000,
-              onRetry: (attempt, err) => {
-                logger.warn(`Retry ${attempt} for tooth ${tooth}:`, err);
               },
-            },
-          );
+              {
+                maxRetries: 2,
+                baseDelay: 2000,
+                onRetry: (attempt, err) => {
+                  logger.warn(`Retry ${attempt} for tooth ${tooth}:`, err);
+                },
+              },
+            );
+          }
 
           await wizardData.updateEvaluationStatus(evaluation.id, 'draft');
 
@@ -408,7 +405,7 @@ export function useWizardSubmit({
           setCurrentToothIndex(resolvedCount.value - 1);
 
           return { tooth, evaluationId, normalizedTreatment };
-        })),
+        })()),
       );
 
       // Process results
