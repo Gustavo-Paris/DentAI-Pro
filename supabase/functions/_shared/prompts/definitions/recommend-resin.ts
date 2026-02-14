@@ -121,13 +121,13 @@ function buildAdvancedStratificationSection(aestheticLevel: string): string {
   return `=== ESTRATIFICACAO AVANCADA (${aestheticLevel.toUpperCase()}) ===
 
 RESINAS RECOMENDADAS POR CAMADA:
-| Camada             | Resinas                                                    |
+| Camada             | Resinas OBRIGATORIAS                                       |
 |--------------------|------------------------------------------------------------|
-| Aumento Incisal    | Trans(FORMA), Trans20(Empress), CT(Z350), Trans(Vittra)   |
-| Cristas Proximais  | XLE(Harmonize), BL-L(Empress), WE(Palfique LX5) — 1 tom > claro que corpo |
-| Dentina/Corpo      | WB(FORMA), DA1/DA2(Vittra APS), WB(Z350), D BL-L(Empress)|
+| Aumento Incisal    | SOMENTE Trans(FORMA) ou CT(Z350) ou Trans20(Empress) ou Trans(Vittra) — PROIBIDO esmalte/corpo! |
+| Cristas Proximais  | SOMENTE XLE(Harmonize) ou BL-L/BL-XL(Empress) — esmalte 1 tom > claro que corpo |
+| Dentina/Corpo      | SOMENTE corpo: WB(FORMA), WB(Z350), DA1/DA2(Vittra APS), D BL-L(Empress) — PROIBIDO esmalte (A1E/WE/CT)! |
 | Efeitos Incisais   | EMPRESS DIRECT COLOR White/Blue (Ivoclar) — UNICA opcao! Z350/Kolor+ NAO! |
-| Esmalte Final      | WE(Palfique LX5), A1E/A2E(Z350)                          |
+| Esmalte Final      | MW/WE(Palfique LX5), Empress esmalte cores claras, W3(Estelite Bianco) p/ clareados — PROIBIDO translúcidas (CT/GT/Trans)! |
 | Dentes Clareados   | W3/W4(Estelite Bianco), BL(Forma), BL-L(Empress)         |
 
 DIVERSIDADE DE MARCAS (OBRIGATORIO):
@@ -261,19 +261,19 @@ NIVEL FUNCIONAL ("funcional"/"baixo"/"médio") - 2-3 camadas:
 1. Dentina/Corpo | 2. Esmalte Vestibular Final | 3. Aumento Incisal (SE NECESSARIO)
 
 NIVEL ESTETICO ("estético"/"alto"/"muito alto") - 4-5 camadas:
-1. Aumento Incisal (SE NECESSARIO): Esmalte translúcido (Trans/CT/Trans20), 0.2-0.3mm, incremento único
-2. Cristas Proximais: XLE/BL-L/WE — 1 tom > claro, 0.2mm, tira de poliéster p/ adaptação
-3. Dentina/Corpo (OPCIONAL p/ alterações mínimas): WB/DA1/DA2, 0.5-1.0mm, reproduzir mamelos. Opaco NAO e camada separada - e shade dentro da dentina!
+1. Aumento Incisal (SE NECESSARIO): OBRIGATÓRIO resina translúcida — Trans(FORMA) ou CT(Z350) ou Trans20(Empress). PROIBIDO usar shades de esmalte (BL1/BL2/WE) ou corpo! 0.2-0.3mm, incremento único
+2. Cristas Proximais: OBRIGATÓRIO XLE(Harmonize) ou Esmalte BL-L/BL-XL(Empress). Cor de esmalte 1 tom mais claro que corpo. 0.2mm, tira de poliéster p/ adaptação
+3. Dentina/Corpo (OPCIONAL p/ alterações mínimas): OBRIGATÓRIO resina de CORPO — WB(FORMA), WB(Z350), DA1/DA2(Vittra APS), D BL-L(Empress). PROIBIDO shades de esmalte (A1E/A2E/WE/CT/BL1/BL2)! 0.5-1.0mm, reproduzir mamelos. Opaco NAO e camada separada - e shade dentro da dentina!
    - Substrato ESCURECIDO: shades opacos (OA1/OA2/OA3/OB1/WO) como 1º incremento 0.5-1mm
-   - Substrato NORMAL: shades regulares (DA1/DA2/A1/A2/B1) - NAO usar opacos
+   - Substrato NORMAL: shades regulares de corpo (WB/DA1/DA2/A1/A2/B1) - NAO usar opacos NEM esmalte
    - Substrato LEVEMENTE ESCURECIDO: shades com > opacidade (DA3/A3) sem prefixo O
 4. Efeitos Incisais (optional:true): SEMPRE corantes EMPRESS DIRECT COLOR White/Blue — NUNCA Z350, NUNCA Kolor+! Shade DIFERENTE do esmalte (usar CT/GT/BT/YT). Aplicar com pincel fino, 0.1mm.
    - Z350 translúcidos: CT(Clear), GT(Gray), BT(Blue), YT(Yellow). WT NAO EXISTE -> use WB
    - OMITIR para: posteriores rotineiros, Classe I/V, nível funcional
-5. Esmalte Vestibular Final: 0.3mm, priorizar polimento superior
-   - P1: Palfique LX5 (WE), Estelite Omega (WE) — acabamento espelhado. MW NAO SERVE para corpo!
-   - P2: Filtek Z350 XT (A1E/A2E/CT/GT), FORMA (Trans/Enamel)
-   - P3: Harmonize (Incisal/TN), Vittra APS (Trans/INC)
+5. Esmalte Vestibular Final: 0.3mm, priorizar polimento superior. PROIBIDO resinas translúcidas (CT/GT/Trans)! SOMENTE shades de esmalte.
+   - P1: Palfique LX5 (MW/WE), Estelite Omega (WE) — acabamento espelhado. Para dentes mais claros: W3(Estelite Bianco)
+   - P2: Filtek Z350 XT (A1E/A2E), FORMA (Enamel). IPS Empress Direct (esmalte cores claras)
+   - P3: Harmonize (Incisal/TN), Vittra APS (INC)
 
 CORES DE ESMALTE POR LINHA:
 | Linha               | Cores                                     |
@@ -284,7 +284,7 @@ CORES DE ESMALTE POR LINHA:
 | Harmonize           | Incisal, TN                               |
 | IPS Empress Direct  | Trans 20, Trans 30, Opal                  |
 | Vittra APS          | Trans, INC                                |
-| Palfique LX5        | WE, CE, BL1, BL2, BL3, A1-A3, B1         |
+| Palfique LX5        | MW, WE, CE, BL1, BL2, BL3, A1-A3, B1     |
 ALTERNATIVA SIMPLIFICADA: Para corpo usar WE/W3/W4 (NUNCA MW). MW e Medium White — inadequado para corpo.
 
 === CLAREAMENTO (BLEACH SHADES) ===
