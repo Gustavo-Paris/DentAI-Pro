@@ -399,7 +399,7 @@ export default function EvaluationDetails() {
                             </TableCell>
                           </TableRow>
                         ),
-                        ...group.evaluations.map((evaluation) => (
+                        ...(!showGroupHeader ? group.evaluations.map((evaluation) => (
                           <TableRow
                             key={evaluation.id}
                             className="hover:bg-secondary/30 transition-colors cursor-pointer"
@@ -449,7 +449,7 @@ export default function EvaluationDetails() {
                               </DropdownMenu>
                             </TableCell>
                           </TableRow>
-                        )),
+                        )) : []),
                       ];
                     })}
                   </TableBody>
