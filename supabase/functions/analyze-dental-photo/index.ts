@@ -471,11 +471,8 @@ serve(async (req) => {
       } else {
         logger.error("AI error:", error);
       }
-      const debugDetail = error instanceof ClaudeError
-        ? `[${error.statusCode}] ${error.message}`
-        : (error instanceof Error ? error.message : String(error));
       return new Response(
-        JSON.stringify({ error: ERROR_MESSAGES.AI_ERROR, debug: debugDetail }),
+        JSON.stringify({ error: ERROR_MESSAGES.AI_ERROR }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -643,9 +640,8 @@ serve(async (req) => {
       await refundCredits(supabaseForRefund, userIdForRefund, "case_analysis", reqId);
       logger.log(`[${reqId}] Refunded analysis credits for user ${userIdForRefund} due to error`);
     }
-    const crashDebug = error instanceof Error ? error.message : String(error);
     return new Response(
-      JSON.stringify({ error: ERROR_MESSAGES.PROCESSING_ERROR, debug: crashDebug, elapsed_ms: Date.now() - t0 }),
+      JSON.stringify({ error: ERROR_MESSAGES.PROCESSING_ERROR }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

@@ -140,7 +140,7 @@ export default function Inventory() {
           ...(inv.allItems.length > 0
             ? [{ label: 'CSV', icon: 'download' as const, onClick: inv.exportCSV, variant: 'outline' as const }]
             : []),
-          { label: 'Importar', icon: 'upload' as const, onClick: () => inv.csvInputRef.current?.click(), variant: 'outline' as const },
+          { label: t('inventory.import'), icon: 'upload' as const, onClick: () => inv.csvInputRef.current?.click(), variant: 'outline' as const },
         ]}
         createAction={{
           label: t('inventory.addResins'),
@@ -179,7 +179,7 @@ export default function Inventory() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar cor, marca..."
+                placeholder={t('inventory.searchColorBrand')}
                 value={inv.catalogFilters.search}
                 onChange={(e) => inv.setCatalogFilters((f) => ({ ...f, search: e.target.value }))}
                 className="pl-10"
@@ -190,10 +190,10 @@ export default function Inventory() {
               onValueChange={(v) => inv.setCatalogFilters((f) => ({ ...f, brand: v }))}
             >
               <SelectTrigger className="w-full sm:w-[160px]">
-                <SelectValue placeholder="Marca" />
+                <SelectValue placeholder={t('inventory.brandFilter')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todas as marcas</SelectItem>
+                <SelectItem value="all">{t('inventory.allBrands')}</SelectItem>
                 {inv.catalogBrands.map((brand) => (
                   <SelectItem key={brand} value={brand}>
                     {brand}
@@ -206,10 +206,10 @@ export default function Inventory() {
               onValueChange={(v) => inv.setCatalogFilters((f) => ({ ...f, type: v }))}
             >
               <SelectTrigger className="w-full sm:w-[140px]">
-                <SelectValue placeholder="Tipo" />
+                <SelectValue placeholder={t('inventory.typeFilter')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos os tipos</SelectItem>
+                <SelectItem value="all">{t('inventory.allTypes')}</SelectItem>
                 {inv.catalogTypes.map((type) => (
                   <SelectItem key={type} value={type}>
                     {type}
@@ -336,7 +336,7 @@ export default function Inventory() {
                 <div>
                   <p className="text-sm font-medium flex items-center gap-2 mb-2">
                     <Check className="w-4 h-4 text-success" />
-                    {inv.csvPreview.matched.length} resina(s) encontrada(s)
+                    {t('inventory.resinsMatched', { count: inv.csvPreview.matched.length })}
                   </p>
                   <div className="max-h-40 overflow-y-auto space-y-1 border rounded-lg p-2">
                     {inv.csvPreview.matched.map((r) => (
