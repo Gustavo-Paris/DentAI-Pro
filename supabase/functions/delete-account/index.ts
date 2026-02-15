@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "jsr:@supabase/supabase-js@2";
 import {
   getCorsHeaders,
   handleCorsPreFlight,
@@ -8,6 +7,7 @@ import {
   generateRequestId,
 } from "../_shared/cors.ts";
 import { logger } from "../_shared/logger.ts";
+import { getSupabaseClient, authenticateRequest, isAuthError } from "../_shared/middleware.ts";
 import { sendEmail, accountDeletedEmail } from "../_shared/email.ts";
 import { checkRateLimit, createRateLimitResponse } from "../_shared/rateLimit.ts";
 
@@ -38,31 +38,10 @@ serve(async (req) => {
   logger.important(`[${reqId}] delete-account: start`);
 
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-
-    // Validate authentication
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return createErrorResponse(ERROR_MESSAGES.UNAUTHORIZED, 401, corsHeaders);
-    }
-
-    const supabaseService = createClient(supabaseUrl, supabaseServiceKey);
-
-    // Verify user via getUser()
-    const token = authHeader.replace("Bearer ", "");
-    const {
-      data: { user },
-      error: authError,
-    } = await supabaseService.auth.getUser(token);
-
-    if (authError || !user) {
-      return createErrorResponse(
-        ERROR_MESSAGES.INVALID_TOKEN,
-        401,
-        corsHeaders,
-      );
-    }
+    const supabaseService = getSupabaseClient();
+    const authResult = await authenticateRequest(req, supabaseService, corsHeaders);
+    if (isAuthError(authResult)) return authResult;
+    const { user } = authResult;
 
     const userId = user.id;
 

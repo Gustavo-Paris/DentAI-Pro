@@ -2,6 +2,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import Stripe from "npm:stripe@14.14.0";
 import { getCorsHeaders, createErrorResponse } from "../_shared/cors.ts";
 import { getSupabaseClient, authenticateRequest, isAuthError, withErrorBoundary } from "../_shared/middleware.ts";
+import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
+import { logger } from "../_shared/logger.ts";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
   apiVersion: "2023-10-16",
@@ -10,6 +12,23 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
 
 interface RequestBody {
   returnUrl?: string;
+}
+
+const ALLOWED_ORIGINS = [
+  "https://dentai.pro",
+  "https://www.dentai.pro",
+  "https://auria-ai.vercel.app",
+  "https://dentai-pro.vercel.app",
+];
+
+function isAllowedRedirectUrl(url: string | undefined): boolean {
+  if (!url) return true;
+  try {
+    const parsed = new URL(url);
+    return ALLOWED_ORIGINS.some((o) => parsed.origin === new URL(o).origin);
+  } catch {
+    return false;
+  }
 }
 
 serve(withErrorBoundary(async (req: Request) => {
@@ -27,6 +46,13 @@ serve(withErrorBoundary(async (req: Request) => {
   if (isAuthError(authResult)) return authResult;
   const { user } = authResult;
 
+  // Rate limit
+  const rateLimitResult = await checkRateLimit(supabase, user.id, "create-portal-session", RATE_LIMITS.STANDARD);
+  if (!rateLimitResult.allowed) {
+    logger.warn(`Rate limit exceeded for user ${user.id} on create-portal-session`);
+    return createRateLimitResponse(rateLimitResult, corsHeaders);
+  }
+
   // Get user's subscription with Stripe customer ID
   const { data: subscription, error: subError } = await supabase
     .from("subscriptions")
@@ -38,11 +64,14 @@ serve(withErrorBoundary(async (req: Request) => {
     return createErrorResponse("Nenhuma assinatura encontrada", 404, corsHeaders);
   }
 
-  // Parse request
+  // Parse request with redirect URL validation
   let returnUrl: string;
   try {
     const body: RequestBody = await req.json();
     const origin = req.headers.get("origin") || "https://dentai.pro";
+    if (!isAllowedRedirectUrl(body.returnUrl)) {
+      return createErrorResponse("URL de redirecionamento não permitida", 400, corsHeaders);
+    }
     returnUrl = body.returnUrl || `${origin}/profile`;
   } catch {
     const origin = req.headers.get("origin") || "https://dentai.pro";

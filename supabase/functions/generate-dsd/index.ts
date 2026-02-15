@@ -977,7 +977,7 @@ Se o problema clínico é microdontia/conoide → sua sugestão deve ser "Aument
           temperature: 0.0,
           maxTokens: 4000,
           forceFunctionName: "analyze_dsd",
-          timeoutMs: 60_000,
+          timeoutMs: 50_000,
         }
       );
       if (response.tokens) {
@@ -1066,20 +1066,18 @@ Use SOMENTE valores em português conforme os enums do schema.`,
     }
 
     logger.error("No function call in Claude response. finishReason:", result.finishReason, "Text:", result.text?.substring(0, 300));
-    return createErrorResponse(`${ERROR_MESSAGES.AI_ERROR} (finishReason=${result.finishReason})`, 500, corsHeaders);
+    return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
   } catch (error) {
     if (error instanceof ClaudeError) {
       if (error.statusCode === 429) {
         return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
       }
       logger.error("Claude analysis error:", error.message, "status:", error.statusCode);
-      // Include Claude error details in response for debugging
-      const detail = `${ERROR_MESSAGES.AI_ERROR} (${error.statusCode}: ${error.message})`;
-      return createErrorResponse(detail, 500, corsHeaders);
+      return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     } else {
       const msg = error instanceof Error ? error.message : String(error);
       logger.error("AI analysis error:", msg);
-      return createErrorResponse(`${ERROR_MESSAGES.AI_ERROR} (${msg})`, 500, corsHeaders);
+      return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     }
   }
 }
