@@ -85,22 +85,29 @@ REGRA SOBRE PRE-MOLARES (14/15/24/25):
  */
 export const GINGIVAL_CRITERIA = `=== AVALIACAO GENGIVAL ===
 
+CLASSIFICACAO DA LINHA DO SORRISO (ARVORE DE DECISAO):
+- "alta": QUALQUER tecido gengival rosa visivel ACIMA dos dentes (entre labio e coroas) OU papilas totalmente visiveis de canino a canino OU contorno gengival dos centrais visivel. Se voce ve ONDE a gengiva encontra o dente → "alta".
+- "media": Labio tangencia EXATAMENTE a margem gengival — apenas 1-2 pontas de papilas visiveis, SEM faixa contínua de gengiva rosa.
+- "baixa": Labio cobre completamente a margem gengival, gengiva NAO visivel.
+VIES DE SEGURANCA: Na duvida entre media e alta → SEMPRE "alta". Subclassificar e clinicamente perigoso.
+
 REGRA DE VISIBILIDADE:
-- Linha do sorriso ALTA (>3mm gengiva exposta): AVALIAR gengiva e sugerir gengivoplastia se indicado
-- Linha do sorriso MEDIA (0-3mm gengiva exposta): AVALIAR gengiva — exposicao suficiente para detectar assimetrias e excessos gengivais
+- Linha do sorriso ALTA: AVALIAR gengiva e sugerir gengivoplastia se indicado
+- Linha do sorriso MEDIA: AVALIAR gengiva — exposicao pode ser suficiente para detectar assimetrias
 - Linha do sorriso BAIXA (gengiva NAO visivel / labios cobrem): NAO sugerir gengivoplastia
 - Gengiva NAO exposta na foto -> NAO mencione "proporcao coroa/gengiva"
 
 SE gengiva visivel (linha media ou alta), avalie:
 1. Coroas clinicas curtas: proporcao altura/largura inadequada -> gengivoplastia p/ aumentar coroa
 2. Assimetria gengival: comparar homologos (11 vs 21, 12 vs 22, 13 vs 23), diferenca >1mm -> gengivoplastia
-3. Sorriso gengival >3mm: considerar gengivoplastia ou encaminhamento periodontia
+3. Sorriso gengival com exposicao gengival significativa: considerar gengivoplastia ou encaminhamento periodontia
 4. Zenites assimetricos entre homologos -> gengivoplastia para harmonizar
 
 CROSS-VALIDACAO SMILE_LINE (VERIFICAR ANTES DE FINALIZAR):
-Se sugestoes mencionam "sorriso gengival >3mm" ou "excesso gengival significativo" MAS smile_line classificada como "média" → INCONSISTENCIA.
-Acao: Reclassificar smile_line para "alta". Sorriso gengival >3mm e POR DEFINICAO smile_line alta.
-Se observacoes mencionam "sorriso gengival" ou gengiva "ampla"/"extensa"/"significativa" E smile_line = "média" → REVISAR classificacao.
+Se sugestoes mencionam "sorriso gengival" ou "excesso gengival" MAS smile_line classificada como "média" → INCONSISTENCIA.
+Acao: Reclassificar smile_line para "alta". Se gengiva e mencionada como problema estetico, POR DEFINICAO e smile_line alta.
+Se observacoes mencionam gengiva "ampla"/"extensa"/"significativa"/"visivel acima dos dentes" E smile_line = "média" → RECLASSIFICAR para "alta".
+Se papilas interdentais estao TOTALMENTE visiveis entre todos os dentes anteriores → smile_line = "alta" (nao "media").
 
 GENGIVOPLASTIA vs RECOBRIMENTO RADICULAR (diferenciar!):
 | Procedimento             | Objetivo                        | Indicacao                              |

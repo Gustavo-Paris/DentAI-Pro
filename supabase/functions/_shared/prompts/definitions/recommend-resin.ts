@@ -115,8 +115,11 @@ is_from_inventory DEVE ser true quando dentista tem inventário.`
 Nao recomende Premium se orçamento nao for premium!`
 }
 
-function buildAdvancedStratificationSection(aestheticLevel: string): string {
-  if (!['estético', 'alto', 'muito alto'].includes(aestheticLevel)) return ''
+function buildAdvancedStratificationSection(aestheticLevel: string, cavityClass?: string): string {
+  const classLower = cavityClass?.toLowerCase() || ''
+  const isAnteriorAesthetic = classLower.includes('diastema') || classLower.includes('fechamento') || classLower.includes('recontorno') || classLower.includes('faceta') || classLower.includes('lente')
+  // Anterior aesthetic procedures always need advanced stratification regardless of aesthetic level
+  if (!isAnteriorAesthetic && !['estético', 'alto', 'muito alto'].includes(aestheticLevel)) return ''
 
   return `=== ESTRATIFICACAO AVANCADA (${aestheticLevel.toUpperCase()}) ===
 
@@ -145,9 +148,11 @@ EFEITOS INCISAIS (sub-opções):
 | Corante Ambar  | Empress Direct Color Honey/Amber — linhas finas          |
 | Mamelos        | Dentina clara (A1/B1) em projeções verticais na incisal  |
 
-Inclusão: "alto" -> halo opaco (optional:true). "muito alto" -> halo + corantes + mamelos (optional:true).
+Inclusão: "estético" -> Efeitos Incisais optional:true. "alto"/"muito alto" -> Efeitos Incisais OBRIGATORIO (halo + corantes + mamelos).
 
-CARACTERIZACAO (OPCIONAL): White spots, craze lines, mamelons, halo incisal, foseta proximal. MODERACAO - copie dentes adjacentes.
+CARACTERIZACAO (OPCIONAL p/ "muito alto"): White spots, craze lines, mamelons, halo incisal, foseta proximal. MODERACAO - copie dentes adjacentes.
+
+⚠️ REGRA: Nível "estético"/"alto"/"muito alto" DEVE gerar no MINIMO 4 camadas: Aumento Incisal + Cristas Proximais + Dentina/Corpo + Esmalte. Gerar apenas Corpo + Esmalte (2 camadas) para nível estético é ERRO — insuficiente para resultado estético.
 
 COMBINACAO:
 1. Priorize inventário do usuário
@@ -196,45 +201,71 @@ ${JSON.stringify(contralateralProtocol, null, 2)}
 COPIAR: Mesmo nº camadas, mesmos shades, mesma resina, mesma técnica, mesma confiança. Adapte APENAS o nº do dente.`
 }
 
-function buildLayerCapSection(restorationSize: string, cavityClass: string): string {
-  const isDiastema = cavityClass.toLowerCase().includes('diastema') || cavityClass.toLowerCase().includes('fechamento')
+function buildLayerCapSection(restorationSize: string, cavityClass: string, aestheticLevel: string, region: string): string {
+  const classLower = cavityClass.toLowerCase()
+  const isDiastema = classLower.includes('diastema') || classLower.includes('fechamento')
+  const isAnteriorAesthetic = classLower.includes('recontorno') || classLower.includes('faceta') || classLower.includes('lente')
+  const isAnteriorRegion = region.toLowerCase().includes('anterior')
   const sizeNorm = restorationSize.toLowerCase()
+  const isAesthetic = ['estético', 'alto', 'muito alto'].includes(aestheticLevel)
+  // Diastema closures and anterior aesthetic procedures are ALWAYS aesthetic
+  const forceAesthetic = isDiastema || (isAnteriorAesthetic && isAnteriorRegion)
 
   let maxLayers: number | null = null
   let scenario = ''
 
-  if (isDiastema) {
-    if (sizeNorm.includes('pequen') || sizeNorm.includes('médi') || sizeNorm.includes('medi')) {
-      maxLayers = 2
-      scenario = 'Diastema Pequeno/Médio (≤2mm): Máx 2 camadas (Corpo + Esmalte)'
+  if (isDiastema || (isAnteriorAesthetic && isAnteriorRegion)) {
+    // Anterior aesthetic procedures always require full stratification — never cap below 4
+    maxLayers = 4
+    if (isDiastema) {
+      if (sizeNorm.includes('pequen') || sizeNorm.includes('médi') || sizeNorm.includes('medi')) {
+        scenario = 'Diastema Pequeno/Médio: Mín 4 camadas (Aumento Incisal + Cristas Proximais + Corpo + Esmalte)'
+      } else {
+        scenario = 'Diastema Grande/Extenso: Mín 4 camadas + Efeitos Incisais recomendado (5 camadas)'
+      }
     } else {
-      maxLayers = 3
-      scenario = 'Diastema Grande/Extenso: Máx 3 camadas (Corpo + Esmalte + Efeitos opcional)'
+      scenario = 'Recontorno/Faceta Anterior Estético: Mín 4 camadas (Aumento Incisal + Cristas Proximais + Corpo + Esmalte)'
     }
   } else {
     if (sizeNorm.includes('pequen')) {
-      maxLayers = 2
-      scenario = 'Restauração Pequena: Máx 2 camadas'
+      maxLayers = isAesthetic ? 4 : 2
+      scenario = isAesthetic
+        ? 'Restauração Pequena + Nível Estético: Mín 4 camadas'
+        : 'Restauração Pequena Funcional: Máx 2 camadas'
     } else if (sizeNorm.includes('médi') || sizeNorm.includes('medi')) {
-      maxLayers = 3
-      scenario = 'Restauração Média: Máx 3 camadas'
+      maxLayers = isAesthetic ? 4 : 3
+      scenario = isAesthetic
+        ? 'Restauração Média + Nível Estético: Mín 4 camadas'
+        : 'Restauração Média Funcional: Máx 3 camadas'
     }
     // Grande/Extensa: no cap (follows aesthetic level)
   }
 
   if (maxLayers === null) return ''
 
-  return `=== LIMITE DE CAMADAS POR VOLUME (PREVALECE SOBRE NIVEL ESTETICO) ===
+  if (isAesthetic || forceAesthetic) {
+    return `=== CAMADAS OBRIGATORIAS (PROCEDIMENTO ESTETICO ANTERIOR) ===
+Cenário detectado: ${scenario}
+MINIMO DE CAMADAS OBRIGATORIO: ${maxLayers}
+${isDiastema ? 'Fechamento de diastema é procedimento estético anterior — requer estratificação completa.' : ''}
+${isAnteriorAesthetic ? 'Recontorno/faceta estético anterior — requer estratificação completa para resultado natural.' : ''}
+Camadas OBRIGATORIAS (gerar EXATAMENTE nesta ordem):
+1. Aumento Incisal (resina translúcida)
+2. Cristas Proximais (esmalte 1 tom mais claro que corpo)
+3. Dentina/Corpo (resina de corpo, shade VITA)
+4. Esmalte Vestibular Final (esmalte, polimento superior)
+PROIBIDO gerar menos de ${maxLayers} camadas. 2-3 camadas em anterior estético = ERRO GRAVE.
+`
+  }
+
+  return `=== LIMITE DE CAMADAS POR VOLUME (NIVEL FUNCIONAL) ===
 Cenário detectado: ${scenario}
 MAXIMO DE CAMADAS PERMITIDO: ${maxLayers}
-Se o nível estético sugere mais camadas, o limite de volume PREVALECE.
 Camadas OBRIGATORIAS: Corpo/Dentina + Esmalte. Camadas adicionais somente se maxLayers permitir.
 PROIBIDO gerar ${maxLayers + 1}+ camadas para este volume de restauração.
 
 | Cenário                        | Máx Camadas |
 |--------------------------------|-------------|
-| Diastema Pequeno/Médio (≤2mm) | 2           |
-| Diastema Grande/Extenso        | 3           |
 | Restauração Pequena            | 2           |
 | Restauração Média              | 3           |
 | Grande/Extensa                 | Sem limite  |
@@ -260,8 +291,8 @@ export const recommendResin: PromptDefinition<Params> = {
     const resinsByPrice = buildResinsByPriceSection(p.allGroups)
     const inventory = buildInventorySection(p.hasInventory, p.budget, p.budgetAppropriateInventory, p.inventoryResins)
     const inventoryInstr = buildInventoryInstructions(p.hasInventory, p.budget)
-    const advancedStrat = buildAdvancedStratificationSection(p.aestheticLevel)
-    const layerCap = buildLayerCapSection(p.restorationSize, p.cavityClass)
+    const advancedStrat = buildAdvancedStratificationSection(p.aestheticLevel, p.cavityClass)
+    const layerCap = buildLayerCapSection(p.restorationSize, p.cavityClass, p.aestheticLevel, p.region)
     const bruxism = buildBruxismSection(p.bruxism)
     const aestheticGoals = buildAestheticGoalsSection(p.aestheticGoals)
     const dsdContext = buildDSDContextSection(p.dsdContext)
@@ -292,8 +323,8 @@ Se cavityClass = "Recontorno Estético" E indicação menciona DIMINUIR bordo in
 - NAO gere camadas de estratificação. Gere protocolo de recontorno:
   1. Planejamento e Marcação (caneta para resina + carbono articular)
   2. Desgaste Inicial (diamantada 2135, 0.5-1.0mm, alta rotação c/ spray)
-  3. Refinamento (diamantada FF 3118FF/2135FF, 0.1-0.2mm)
-  4. Acabamento (Sof-Lex: Preto->Azul escuro->Azul médio->Azul claro)
+  3. Refinamento (diamantada FF 3118FF/2135FF, 0.1-0.2mm, inclui face palatina/lingual)
+  4. Acabamento (Sof-Lex: Preto->Azul escuro->Azul médio->Azul claro OU sequência vermelha)
   5. Polimento Final (Diamond Excel + feltro, baixa rotação 40-60s)
 - Se NAO menciona diminuir -> use protocolo normal.
 
@@ -306,23 +337,42 @@ A cor DEVE corresponder ao tipo da camada E existir na linha de produto!
 
 ESTRUTURA 2-5 CAMADAS conforme nível estético E volume da restauração (limite de volume PREVALECE):
 
-NIVEL FUNCIONAL ("funcional"/"baixo"/"médio") - 2-3 camadas:
+⚠️ EXCECAO OBRIGATORIA — PROCEDIMENTO ESTETICO ANTERIOR:
+Se cavityClass contém "Diastema", "Fechamento", "Recontorno" ou "Faceta" E região é anterior: IGNORAR nível estético informado → SEMPRE usar caminho NIVEL ESTETICO abaixo (mín 4 camadas).
+Procedimentos estéticos anteriores EXIGEM estratificação completa: Aumento Incisal + Cristas Proximais + Corpo + Esmalte.
+
+NIVEL FUNCIONAL ("funcional"/"baixo"/"médio") - 2-3 camadas (NAO APLICAVEL para anterior estético!):
 1. Dentina/Corpo | 2. Esmalte Vestibular Final | 3. Aumento Incisal (SE NECESSARIO)
 
-NIVEL ESTETICO ("estético"/"alto"/"muito alto") - 4-5 camadas:
-1. Aumento Incisal (SE NECESSARIO): OBRIGATÓRIO resina translúcida — Trans(FORMA) ou CT(Z350) ou Trans20(Empress). PROIBIDO usar shades de esmalte (BL1/BL2/WE) ou corpo! 0.2-0.3mm, incremento único
-2. Cristas Proximais: OBRIGATÓRIO XLE(Harmonize) ou Esmalte BL-L/BL-XL(Empress). Cor de esmalte 1 tom mais claro que corpo. 0.2mm, tira de poliéster p/ adaptação
-3. Dentina/Corpo (OPCIONAL p/ alterações mínimas): OBRIGATÓRIO resina de CORPO — WB(FORMA), WB(Z350), DA1/DA2(Vittra APS), D BL-L(Empress). PROIBIDO shades de esmalte (A1E/A2E/WE/CT/BL1/BL2)! 0.5-1.0mm, reproduzir mamelos. Opaco NAO e camada separada - e shade dentro da dentina!
+NIVEL ESTETICO ("estético"/"alto"/"muito alto" OU Fechamento de Diastema) - 4-5 camadas OBRIGATORIAS:
+⚠️ REGRA: Para nível estético, TODAS as 5 camadas abaixo DEVEM ser geradas (exceto Efeitos Incisais que é optional:true para "estético", obrigatório para "alto"/"muito alto"). Gerar apenas 2 camadas (Corpo + Esmalte) é ERRO GRAVE.
+
+1. Aumento Incisal: OBRIGATÓRIO resina translúcida — Trans(FORMA) ou CT(Z350) ou Trans20(Empress) ou Trans(Vittra). PROIBIDO usar shades de esmalte (BL1/BL2/WE) ou corpo! 0.2-0.3mm, incremento único em forma de cunha.
+   - Objetivo: Reproduzir FORMA e comprimento da borda incisal. Criar translucidez natural da borda.
+   - Técnica: Incremento único adaptado contra matriz/guia de silicone. Fotopolimerizar 20s.
+   - INCLUIR SEMPRE que houver: reanatomização, fechamento de diastema, aumento de comprimento ou DSD indicando aumento incisal.
+2. Cristas Proximais: OBRIGATÓRIO XLE(Harmonize) ou Esmalte BL-L/BL-XL(Empress). Cor de esmalte 1 tom mais claro que corpo. 0.2mm, tira de poliéster p/ adaptação.
+   - Objetivo: Restabelecer cristas marginais e pontos de contato proximais. Definir anatomia proximal.
+   - Técnica: Incremento fino contra tira de poliéster, adaptar com espátula. Manter contato proximal firme. Fotopolimerizar 20s.
+   - INCLUIR SEMPRE que houver: fechamento de diastema, restauração Classe III/IV, reconstrução proximal.
+3. Dentina/Corpo: OBRIGATÓRIO resina de CORPO — WB(FORMA), WB(Z350), DA1/DA2(Vittra APS), D BL-L(Empress). PROIBIDO shades de esmalte (A1E/A2E/WE/CT/BL1/BL2)! 0.5-1.0mm. Opaco NAO e camada separada - e shade dentro da dentina!
+   - Objetivo: Reproduzir volume e opacidade da dentina natural. Dar CORPO e SATURAÇÃO à restauração.
+   - Técnica: Incrementos oblíquos de 1-2mm. Reproduzir mamelos com projeções verticais na incisal (se aplicável). Fotopolimerizar 20s cada incremento.
    - Substrato ESCURECIDO: shades opacos (OA1/OA2/OA3/OB1/WO) como 1º incremento 0.5-1mm
    - Substrato NORMAL: shades regulares de corpo (WB/DA1/DA2/A1/A2/B1) - NAO usar opacos NEM esmalte
    - Substrato LEVEMENTE ESCURECIDO: shades com > opacidade (DA3/A3) sem prefixo O
-4. Efeitos Incisais (optional:true): SEMPRE corantes EMPRESS DIRECT COLOR White/Blue — NUNCA Z350, NUNCA Kolor+! Shade DIFERENTE do esmalte (usar CT/GT/BT/YT). Aplicar com pincel fino, 0.1mm.
-   - Z350 translúcidos: CT(Clear), GT(Gray), BT(Blue), YT(Yellow). WT NAO EXISTE -> use WB
-   - OMITIR para: posteriores rotineiros, Classe I/V, nível funcional
-5. Esmalte Vestibular Final: 0.3mm, priorizar polimento superior. PROIBIDO resinas translúcidas (CT/GT/Trans)! SOMENTE shades de esmalte.
-   - P1: Palfique LX5 (WE), Estelite Omega (WE) — acabamento espelhado. MW NAO SERVE para corpo! Para dentes mais claros: W3(Estelite Bianco)
+4. Efeitos Incisais (optional:true para "estético", obrigatório para "alto"/"muito alto"): SEMPRE corantes EMPRESS DIRECT COLOR White/Blue — NUNCA Z350, NUNCA Kolor+! Aplicar com pincel fino, 0.1mm.
+   - Objetivo: Reproduzir efeitos ópticos naturais (halo opaco, linhas de craze, mamelos).
+   - Técnica: Empress Direct Color White para micro-pontos e halo opaco incisal. Blue para linhas de craze. Aplicar com pincel fino antes da camada de esmalte.
+   - Sub-opções: Halo Opaco (Opallis Flow/Empress Opal — 0.1mm borda incisal), Corante Branco (Empress Direct Color White), Corante Ambar (Empress Direct Color Honey/Amber — linhas finas).
+   - OMITIR APENAS para: posteriores rotineiros, Classe I/V, nível funcional.
+5. Esmalte Vestibular Final: 0.3mm, priorizar polimento SUPERIOR. PROIBIDO resinas translúcidas (CT/GT/Trans)! SOMENTE shades de esmalte.
+   - Objetivo: Camada final de esmalte mimetizando brilho natural e integração com dente adjacente. Cor 1 tom mais claro que corpo conforme preferência estética do paciente.
+   - Técnica: Incremento único cobrindo face vestibular terço médio e incisal. Aplicar com espátula de inserção, pressionando levemente contra parede vestibular. Fotopolimerizar 20s. Priorizar polimento superior com Sof-Lex para brilho espelhado.
+   - P1 (PREFERENCIAL): Palfique LX5 (WE), Estelite Omega (WE) — acabamento espelhado superior. MW(Estelite) para resultado natural sem clareamento. Para dentes clareados: W3(Estelite Bianco)
    - P2: Filtek Z350 XT (A1E/A2E), FORMA (Enamel). IPS Empress Direct (esmalte cores claras)
    - P3: Harmonize (Incisal/TN), Vittra APS (INC)
+   - ⚠️ PREFERIR Estelite/Palfique sobre Z350 para camada de esmalte final (polimento superior)
 
 CORES DE ESMALTE POR LINHA:
 | Linha               | Cores                                     |
@@ -334,7 +384,7 @@ CORES DE ESMALTE POR LINHA:
 | IPS Empress Direct  | Trans 20, Trans 30, Opal                  |
 | Vittra APS          | Trans, INC                                |
 | Palfique LX5        | MW, WE, CE, BL1, BL2, BL3, A1-A3, B1     |
-ALTERNATIVA SIMPLIFICADA: Para corpo usar WE/W3/W4 (NUNCA MW). MW e Medium White — inadequado para corpo.
+ALTERNATIVA SIMPLIFICADA (2 camadas): Corpo usar WB(FORMA), WB(Z350), DA1(Empress) ou DA1(Vittra) — cor SATURADA de dentina. Esmalte usar WE(Palfique/Estelite). PROIBIDO para corpo: WE, MW, CE, TN(Harmonize), Incisal(Harmonize), Trans, CT — são cores de ESMALTE ou translúcidas! TN = Translucent Natural = cor de ESMALTE, NUNCA corpo.
 
 === CLAREAMENTO (BLEACH SHADES) — CONDICIONADO AO OBJETIVO ESTETICO ===
 
@@ -380,8 +430,15 @@ USAR: "Chanfro suave", "Sem preparo adicional", "Condicionamento conforme substr
 
 === ACABAMENTO E POLIMENTO (OBRIGATORIO) ===
 1. Remoção excessos: Bisturi nº12, sonda exploradora
-2. Contorno: Diamantadas FF (3118FF/2135FF), movimentos leves
-3. Discos Sof-Lex: Preto->Azul escuro->Azul médio->Azul claro, unidirecionais, úmidos
+2. Contorno: Diamantadas FF (3118FF/2135FF), alta rotação com spray, movimentos leves sem pressão
+   - 3118FF: Refinamento de contorno proximal, face vestibular E remoção de excessos PALATINOS/LINGUAIS
+   - 2135FF: Refinamento de bordas incisais e superfícies planas
+3. Discos Sof-Lex (SEQUENCIA AZUL — padrão):
+   - Preto (Grosso) -> Azul Escuro (Médio) -> Azul Médio (Fino) -> Azul Claro (Ultrafino)
+   - Baixa rotação, manter úmido, movimentos unidirecionais, sem pressão excessiva
+   ALTERNATIVA Sof-Lex (SEQUENCIA VERMELHA — para maior agressividade):
+   - Vermelho Escuro (Grosso) -> Vermelho Médio -> Vermelho Claro (Fino) -> Vermelho Ultrafino
+   - Mesma sequência de uso, indicada para resinas com maior rugosidade inicial
 4. Interproximal: Tiras de lixa, verificar ponto de contato
 5. Borrachas: DHPro/American Burrs, 40-60s cada, baixa rotação, sem aquecer
 6. Brilho final: Diamond Excel + feltro, baixa rotação, 40-60s
@@ -433,6 +490,10 @@ REGRAS CRITICAS:
 
 ALERTA GUIA DE SILICONE: Se anterior (11-13/21-23) + reanatomização + Grande/Extensa -> "Considerar guia de silicone (mock-up)".
 1ª RECOMENDACAO CHECKLIST: Se paciente deseja BL1/BL2/Hollywood -> "Considerar clareamento previamente às resinas".
+
+⚠️ VERIFICACAO FINAL ANTES DE GERAR JSON:
+Se cavityClass contém "Diastema", "Fechamento", "Recontorno" ou "Faceta" E região anterior → CONTAR camadas no layers[]. Se < 4 → ADICIONAR camadas faltantes (Cristas Proximais é a mais frequentemente omitida).
+Ordem obrigatória: 1. Aumento Incisal, 2. Cristas Proximais, 3. Dentina/Corpo, 4. Esmalte Vestibular Final.
 
 Responda APENAS JSON:
 {

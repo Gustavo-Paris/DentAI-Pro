@@ -103,30 +103,61 @@ function applySmileLineOverride(
 ): void {
   if (!classifierResult) {
     logger.log("Smile line classifier: no result (failed or skipped) — keeping original");
-    return;
+  } else {
+    const severityMap: Record<string, number> = { baixa: 0, 'média': 1, alta: 2 };
+    const mainSeverity = severityMap[analysis.smile_line] ?? 1;
+    const classifierSeverity = severityMap[classifierResult.smile_line] ?? 1;
+
+    if (classifierSeverity > mainSeverity) {
+      logger.log(
+        `Smile line classifier OVERRIDE: "${analysis.smile_line}" → "${classifierResult.smile_line}" ` +
+        `(exposure=${classifierResult.gingival_exposure_mm}mm, confidence=${classifierResult.confidence}, ` +
+        `reason="${classifierResult.justification}")`
+      );
+      analysis.smile_line = classifierResult.smile_line;
+      analysis.observations = analysis.observations || [];
+      analysis.observations.push(
+        `Classificação da linha do sorriso ajustada para "${classifierResult.smile_line}" pelo classificador dedicado ` +
+        `(exposição gengival estimada: ${classifierResult.gingival_exposure_mm}mm).`
+      );
+    } else {
+      logger.log(
+        `Smile line classifier: no override needed (main="${analysis.smile_line}", classifier="${classifierResult.smile_line}")`
+      );
+    }
   }
 
-  const severityMap: Record<string, number> = { baixa: 0, 'média': 1, alta: 2 };
-  const mainSeverity = severityMap[analysis.smile_line] ?? 1;
-  const classifierSeverity = severityMap[classifierResult.smile_line] ?? 1;
+  // Safety net: keyword-based cross-validation of observations vs smile_line
+  // If the AI's own text describes visible gingiva features but classified as "média", force upgrade
+  if (analysis.smile_line === 'média' || analysis.smile_line === 'media') {
+    const allText = [
+      ...(analysis.observations || []),
+      ...(analysis.suggestions || []).map((s: { description?: string; notes?: string }) => `${s.description || ''} ${s.notes || ''}`),
+    ].join(' ').toLowerCase();
 
-  if (classifierSeverity > mainSeverity) {
-    logger.log(
-      `Smile line classifier OVERRIDE: "${analysis.smile_line}" → "${classifierResult.smile_line}" ` +
-      `(exposure=${classifierResult.gingival_exposure_mm}mm, confidence=${classifierResult.confidence}, ` +
-      `reason="${classifierResult.justification}")`
-    );
-    analysis.smile_line = classifierResult.smile_line;
-    // Add informative observation
-    analysis.observations = analysis.observations || [];
-    analysis.observations.push(
-      `Classificação da linha do sorriso ajustada para "${classifierResult.smile_line}" pelo classificador dedicado ` +
-      `(exposição gengival estimada: ${classifierResult.gingival_exposure_mm}mm).`
-    );
-  } else {
-    logger.log(
-      `Smile line classifier: no override needed (main="${analysis.smile_line}", classifier="${classifierResult.smile_line}")`
-    );
+    const gingivalKeywords = [
+      'zênites visíveis', 'zenites visíveis', 'zênites visiveis', 'zenites visiveis',
+      'papilas visíveis', 'papilas visiveis', 'papilas totalmente',
+      'contorno gengival visível', 'contorno gengival visivel',
+      'gengiva exposta', 'exposição gengival significativa', 'exposicao gengival significativa',
+      'sorriso gengival', 'excesso gengival', 'excesso de gengiva',
+      'faixa de gengiva', 'banda de gengiva', 'gengiva rosa acima',
+      '>3mm', '>2mm',
+    ];
+
+    const matched = gingivalKeywords.filter(kw => allText.includes(kw));
+    if (matched.length >= 1) {
+      logger.log(
+        `Smile line SAFETY NET: observations mention gingival visibility (${matched.join(', ')}) ` +
+        `but smile_line="${analysis.smile_line}" — upgrading to "alta"`
+      );
+      analysis.smile_line = 'alta';
+      analysis.observations = analysis.observations || [];
+      analysis.observations.push(
+        `Linha do sorriso reclassificada para "alta" por cross-validação: ` +
+        `observações indicam exposição gengival (${matched.join(', ')}) incompatível com classificação "média".`
+      );
+    }
   }
 }
 

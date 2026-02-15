@@ -373,6 +373,7 @@ function buildGengivoplastyOnlyPrompt(params: Params): string {
 
 This is an INPAINTING task on an ALREADY PROCESSED dental photo.
 The teeth have ALREADY been corrected and whitened — they are PERFECT. Do NOT touch them.
+⚠️ The teeth in this photo are the patient's ACTUAL teeth (corrected). Do NOT apply a generic template or change their appearance in ANY way. Every tooth must remain PIXEL-IDENTICAL to the input.
 Output dimensions MUST equal input dimensions.
 
 ⚠️⚠️⚠️ RULE #0 — MORE IMPORTANT THAN EVERYTHING ⚠️⚠️⚠️
@@ -420,7 +421,7 @@ EXPECTED RESULT:
 - But the change is CLINICAL and PRECISE — typically 1-3mm of tissue removal per tooth
 
 === PIXEL-PERFECT PRESERVATION (EVERYTHING EXCEPT GUM MARGIN) ===
-- TEETH: Already corrected and whitened — keep color, shape, contour, texture EXACTLY as input
+- TEETH: Already corrected and whitened — keep color, shape, contour, texture EXACTLY as input. Do NOT apply a generic "smile template" — these are THIS PATIENT's teeth.
 - UPPER LIP: EXACT same position, shape, contour, color, texture — not a single pixel changed
 - LOWER LIP: EXACT same position, shape, contour, color, texture — not a single pixel changed
 - LIP OPENING: The distance between upper and lower lip is FIXED — does not change
@@ -466,12 +467,15 @@ function buildWithGengivoplastyPrompt(params: Params): string {
 
 ${absolutePreservation}
 
-TASK: Edit teeth AND gingival contour. This is the COMPLETE treatment simulation including gengivoplasty.
+TASK: Edit ONLY the gingival contour. The teeth must remain EXACTLY as they appear in the input.
 
 ⚠️⚠️⚠️ REGRA #0 — MAIS IMPORTANTE QUE TUDO ⚠️⚠️⚠️
-AMBOS OS LÁBIOS (superior E inferior) são SAGRADOS e INTOCÁVEIS.
-A gengivoplastia altera apenas a margem gengival ENTRE os dentes,
-NUNCA a posição, formato, abertura ou contorno dos lábios.
+1. AMBOS OS LÁBIOS (superior E inferior) são SAGRADOS e INTOCÁVEIS.
+2. Os DENTES são SAGRADOS e INTOCÁVEIS — NÃO alterar cor, formato, contorno ou posição dos dentes!
+   Este paciente já tem simulações de outras camadas (Restaurações, Clareamento). Mudar os dentes nesta camada
+   DESTRÓI a consistência entre as camadas e perde a referência dos dentes do paciente.
+A gengivoplastia altera APENAS a margem gengival ENTRE os dentes e o lábio,
+NUNCA a posição, formato, abertura ou contorno dos lábios NEM dos dentes.
 
 O enquadramento da foto (crop, zoom, ângulo) DEVE ser IDÊNTICO.
 Os lábios são a referência anatômica fixa para o antes/depois.
@@ -506,7 +510,12 @@ A gengivoplastia altera APENAS a MARGEM GENGIVAL (interface gengiva-dente).
 - Se não for possível simular gengivoplastia sem mover os lábios: NÃO FAÇA
 - ⚠️ ERRO COMUM: Levantar o lábio superior e/ou abaixar o inferior para "mostrar mais dente" — ISSO É PROIBIDO
 
-${params.gingivoSuggestions ? `GENGIVOPLASTY SPECIFICATIONS:\n${params.gingivoSuggestions}\n` : ''}
+${params.gingivoSuggestions ? `GENGIVOPLASTY SPECIFICATIONS (dentes específicos):\n${params.gingivoSuggestions}\n` : ''}
+
+⚠️ CONSISTENCIA ENTRE CAMADAS:
+Esta simulação será COMPARADA com as camadas "Restaurações" e "Clareamento+Restaurações" do MESMO paciente.
+Os dentes DEVEM ter a MESMA aparência entre todas as camadas. A ÚNICA diferença desta camada é o contorno gengival.
+Se você alterar a forma/cor/posição dos dentes, o paciente verá inconsistência ao alternar entre camadas.
 
 ${whiteningPrioritySection}DENTAL CORRECTIONS:
 ${baseCorrections}
