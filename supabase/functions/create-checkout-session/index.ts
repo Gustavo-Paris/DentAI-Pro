@@ -2,6 +2,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import Stripe from "npm:stripe@14.14.0";
 import { getCorsHeaders, createErrorResponse } from "../_shared/cors.ts";
 import { getSupabaseClient, authenticateRequest, isAuthError, withErrorBoundary } from "../_shared/middleware.ts";
+import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
+import { logger } from "../_shared/logger.ts";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
   apiVersion: "2023-10-16",
@@ -31,9 +33,38 @@ serve(withErrorBoundary(async (req: Request) => {
   if (isAuthError(authResult)) return authResult;
   const { user } = authResult;
 
+  // Rate limit: standard API limits
+  const rateLimitResult = await checkRateLimit(supabase, user.id, "create-checkout-session", RATE_LIMITS.STANDARD);
+  if (!rateLimitResult.allowed) {
+    logger.warn(`Rate limit exceeded for user ${user.id} on create-checkout-session`);
+    return createRateLimitResponse(rateLimitResult, corsHeaders);
+  }
+
   // Parse request
   const body: RequestBody = await req.json();
   const { priceId, packId, payment_method, successUrl, cancelUrl } = body;
+
+  // Validate redirect URLs against allowed origins to prevent open redirect
+  const ALLOWED_ORIGINS = [
+    "https://dentai.pro",
+    "https://www.dentai.pro",
+    "https://auria-ai.vercel.app",
+    "https://dentai-pro.vercel.app",
+  ];
+
+  function isAllowedRedirectUrl(url: string | undefined): boolean {
+    if (!url) return true; // fallback to origin-based URL
+    try {
+      const parsed = new URL(url);
+      return ALLOWED_ORIGINS.some(o => parsed.origin === new URL(o).origin);
+    } catch {
+      return false;
+    }
+  }
+
+  if (!isAllowedRedirectUrl(successUrl) || !isAllowedRedirectUrl(cancelUrl)) {
+    return createErrorResponse("URL de redirecionamento não permitida", 400, corsHeaders);
+  }
 
   if (!priceId && !packId) {
     return createErrorResponse("ID do plano ou pacote não fornecido", 400, corsHeaders);

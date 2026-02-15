@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "jsr:@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsPreFlight, createErrorResponse, ERROR_MESSAGES, generateRequestId } from "../_shared/cors.ts";
+import { getSupabaseClient, authenticateRequest, isAuthError } from "../_shared/middleware.ts";
 import { logger } from "../_shared/logger.ts";
 import {
   callGeminiImageEdit,
@@ -56,6 +56,78 @@ interface DSDResult {
   analysis: DSDAnalysis;
   simulation_url: string | null;
   simulation_note?: string;
+}
+
+// Dual-pass smile line classifier result
+interface SmileLineClassifierResult {
+  smile_line: "alta" | "média" | "baixa";
+  gingival_exposure_mm: number;
+  confidence: "alta" | "média" | "baixa";
+  justification: string;
+}
+
+// Parse the smile line classifier plain-text response into structured result
+function parseSmileLineClassifierResponse(text: string): SmileLineClassifierResult | null {
+  try {
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return null;
+    const raw = JSON.parse(jsonMatch[0]);
+
+    // Normalize "media" → "média" (classifier prompt uses unaccented)
+    let smileLine = (raw.smile_line || '').toLowerCase().trim();
+    if (smileLine === 'media') smileLine = 'média';
+    if (!['alta', 'média', 'baixa'].includes(smileLine)) return null;
+
+    let confidence = (raw.confidence || '').toLowerCase().trim();
+    if (confidence === 'media') confidence = 'média';
+    if (!['alta', 'média', 'baixa'].includes(confidence)) confidence = 'média';
+
+    const mm = typeof raw.gingival_exposure_mm === 'number' ? raw.gingival_exposure_mm : 0;
+    const justification = typeof raw.justification === 'string' ? raw.justification : '';
+
+    return {
+      smile_line: smileLine as SmileLineClassifierResult['smile_line'],
+      gingival_exposure_mm: mm,
+      confidence: confidence as SmileLineClassifierResult['confidence'],
+      justification,
+    };
+  } catch {
+    return null;
+  }
+}
+
+// Apply smile line override: only UPGRADE severity, never downgrade
+function applySmileLineOverride(
+  analysis: DSDAnalysis,
+  classifierResult: SmileLineClassifierResult | null,
+): void {
+  if (!classifierResult) {
+    logger.log("Smile line classifier: no result (failed or skipped) — keeping original");
+    return;
+  }
+
+  const severityMap: Record<string, number> = { baixa: 0, 'média': 1, alta: 2 };
+  const mainSeverity = severityMap[analysis.smile_line] ?? 1;
+  const classifierSeverity = severityMap[classifierResult.smile_line] ?? 1;
+
+  if (classifierSeverity > mainSeverity) {
+    logger.log(
+      `Smile line classifier OVERRIDE: "${analysis.smile_line}" → "${classifierResult.smile_line}" ` +
+      `(exposure=${classifierResult.gingival_exposure_mm}mm, confidence=${classifierResult.confidence}, ` +
+      `reason="${classifierResult.justification}")`
+    );
+    analysis.smile_line = classifierResult.smile_line;
+    // Add informative observation
+    analysis.observations = analysis.observations || [];
+    analysis.observations.push(
+      `Classificação da linha do sorriso ajustada para "${classifierResult.smile_line}" pelo classificador dedicado ` +
+      `(exposição gengival estimada: ${classifierResult.gingival_exposure_mm}mm).`
+    );
+  } else {
+    logger.log(
+      `Smile line classifier: no override needed (main="${analysis.smile_line}", classifier="${classifierResult.smile_line}")`
+    );
+  }
 }
 
 interface AdditionalPhotos {
@@ -856,6 +928,42 @@ Se o problema clínico é microdontia/conoide → sua sugestão deve ser "Aument
   );
   const dsdAnalysisPromptDef = getPrompt('dsd-analysis');
 
+  // Dual-pass: start smile line classifier in PARALLEL (Haiku 4.5, ~2-3s)
+  // Non-blocking: if it fails, main analysis is unaffected
+  const classifierPromptDef = getPrompt('smile-line-classifier');
+  const classifierPromise: Promise<SmileLineClassifierResult | null> = (async () => {
+    try {
+      const classifierResponse = await withMetrics<{ text: string | null }>(
+        metrics, classifierPromptDef.id, PROMPT_VERSION, classifierPromptDef.model
+      )(async () => {
+        const resp = await callClaudeVision(
+          classifierPromptDef.model,
+          classifierPromptDef.user({}),
+          base64Data,
+          mimeType,
+          {
+            systemPrompt: classifierPromptDef.system({}),
+            temperature: classifierPromptDef.temperature,
+            maxTokens: classifierPromptDef.maxTokens,
+          }
+        );
+        if (resp.tokens) {
+          logger.info('claude_tokens', { operation: 'generate-dsd:smile-line-classifier', ...resp.tokens });
+        }
+        return {
+          result: { text: resp.text },
+          tokensIn: resp.tokens?.promptTokenCount ?? 0,
+          tokensOut: resp.tokens?.candidatesTokenCount ?? 0,
+        };
+      });
+      return parseSmileLineClassifierResponse(classifierResponse.text || '');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      logger.warn("Smile line classifier failed (non-blocking):", msg);
+      return null;
+    }
+  })();
+
   try {
     const result = await withMetrics<{ text: string | null; functionCall: { name: string; args: Record<string, unknown> } | null; finishReason: string }>(metrics, dsdAnalysisPromptDef.id, PROMPT_VERSION, dsdAnalysisPromptDef.model)(async () => {
       const response = await callClaudeVisionWithTools(
@@ -884,7 +992,10 @@ Se o problema clínico é microdontia/conoide → sua sugestão deve ser "Aument
 
     if (result.functionCall) {
       const parsed = parseAIResponse(DSDAnalysisSchema, result.functionCall.args, 'generate-dsd') as DSDAnalysis;
-      return normalizeAnalysisEnums(parsed);
+      const normalized = normalizeAnalysisEnums(parsed);
+      const classifierResult = await classifierPromise;
+      applySmileLineOverride(normalized, classifierResult);
+      return normalized;
     }
 
     // MALFORMED_FUNCTION_CALL or no function call: fallback to plain vision (no tools)
@@ -899,7 +1010,10 @@ Se o problema clínico é microdontia/conoide → sua sugestão deve ser "Aument
             const rawArgs = JSON.parse(jsonMatch[0]);
             const parsed = parseAIResponse(DSDAnalysisSchema, rawArgs, 'generate-dsd') as DSDAnalysis;
             logger.info("Recovered analysis from function call text response");
-            return normalizeAnalysisEnums(parsed);
+            const normalized = normalizeAnalysisEnums(parsed);
+            const classifierResult = await classifierPromise;
+            applySmileLineOverride(normalized, classifierResult);
+            return normalized;
           }
         } catch (_parseErr) {
           logger.warn("Text JSON recovery failed, trying plain vision fallback");
@@ -940,7 +1054,10 @@ Use SOMENTE valores em português conforme os enums do schema.`,
             const rawArgs = JSON.parse(jsonMatch[0]);
             const parsed = parseAIResponse(DSDAnalysisSchema, rawArgs, 'generate-dsd') as DSDAnalysis;
             logger.info("Recovered analysis from plain vision fallback");
-            return normalizeAnalysisEnums(parsed);
+            const normalized = normalizeAnalysisEnums(parsed);
+            const classifierResult = await classifierPromise;
+            applySmileLineOverride(normalized, classifierResult);
+            return normalized;
           }
         } catch (fallbackErr) {
           logger.error("Plain vision fallback JSON parse failed:", fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr));
@@ -978,37 +1095,18 @@ serve(async (req: Request) => {
 
   // Track credit state for refund on error (must be outside try for catch access)
   let creditsConsumed = false;
-  let supabaseForRefund: ReturnType<typeof createClient> | null = null;
+  let supabaseForRefund: ReturnType<typeof getSupabaseClient> | null = null;
   let userIdForRefund: string | null = null;
 
   try {
-    // Get environment variables
-    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-      logger.error("Missing required environment variables");
-      return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
-    }
-
-    // Validate authentication
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return createErrorResponse(ERROR_MESSAGES.UNAUTHORIZED, 401, corsHeaders);
-    }
-
-    // Create Supabase client
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
-    // Validate user token
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-
-    if (authError || !user) {
-      return createErrorResponse(ERROR_MESSAGES.INVALID_TOKEN, 401, corsHeaders);
-    }
-
+    // Create service role client
+    const supabase = getSupabaseClient();
     supabaseForRefund = supabase;
+
+    // Validate authentication (includes deleted/banned checks)
+    const authResult = await authenticateRequest(req, supabase, corsHeaders);
+    if (isAuthError(authResult)) return authResult;
+    const { user } = authResult;
     userIdForRefund = user.id;
 
     // Check rate limit (AI_HEAVY: 10/min, 50/hour, 200/day)
@@ -1258,26 +1356,8 @@ serve(async (req: Request) => {
       }
     }
 
-    // Safety net #5: Cross-validate smile_line vs gengivoplastia suggestions
-    // If gengivoplastia was suggested with mentions of ">3mm" or "sorriso gengival"
-    // but smile_line is "média", auto-correct to "alta" (clinical inconsistency)
-    if (analysis.smile_line === 'média') {
-      const hasGingivoWithHighExposure = analysis.suggestions.some(s => {
-        const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
-        const treatment = (s.treatment_indication || '').toLowerCase();
-        return (treatment === 'gengivoplastia') &&
-          (text.includes('>3mm') || text.includes('3mm') || text.includes('sorriso gengival') || text.includes('excesso gengival'));
-      });
-      const observationsMentionGummySmile = analysis.observations?.some(obs => {
-        const lower = obs.toLowerCase();
-        return (lower.includes('sorriso gengival') || lower.includes('>3mm')) &&
-          lower.includes('gengiv');
-      });
-      if (hasGingivoWithHighExposure || observationsMentionGummySmile) {
-        logger.log('Post-processing: auto-correcting smile_line from "média" to "alta" (gengivoplastia with >3mm indicators detected)');
-        analysis.smile_line = 'alta';
-      }
-    }
+    // Safety net #5 (replaced by dual-pass classifier): observability log
+    logger.log(`Post-processing: smile_line="${analysis.smile_line}" (dual-pass applied in analyzeProportions)`);
 
     // NEW: If analysisOnly, return immediately without generating simulation
     if (analysisOnly) {

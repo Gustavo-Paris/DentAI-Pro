@@ -7,6 +7,7 @@ import {
 } from "../_shared/cors.ts";
 import { logger } from "../_shared/logger.ts";
 import { getSupabaseClient, authenticateRequest, isAuthError, withErrorBoundary } from "../_shared/middleware.ts";
+import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 import {
   sendEmail,
   welcomeEmail,
@@ -53,6 +54,13 @@ serve(withErrorBoundary(async (req) => {
   const authResult = await authenticateRequest(req, supabase, corsHeaders);
   if (isAuthError(authResult)) return authResult;
   const { user } = authResult;
+
+  // Rate limit: standard API limits
+  const rateLimitResult = await checkRateLimit(supabase, user.id, "send-email", RATE_LIMITS.STANDARD);
+  if (!rateLimitResult.allowed) {
+    logger.warn(`[${reqId}] Rate limit exceeded for user ${user.id} on send-email`);
+    return createRateLimitResponse(rateLimitResult, corsHeaders);
+  }
 
   // Parse body
   let body: { template?: string; data?: Record<string, unknown> };

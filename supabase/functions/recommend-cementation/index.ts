@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "jsr:@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsPreFlight, createErrorResponse, ERROR_MESSAGES, generateRequestId } from "../_shared/cors.ts";
+import { getSupabaseClient, authenticateRequest, isAuthError } from "../_shared/middleware.ts";
 import { sanitizeForPrompt } from "../_shared/validation.ts";
 import { logger } from "../_shared/logger.ts";
 import { callClaudeWithTools, ClaudeError, type OpenAIMessage, type OpenAITool } from "../_shared/claude.ts";
@@ -105,37 +105,18 @@ serve(async (req: Request) => {
 
   // Track credit state for refund on error (must be outside try for catch access)
   let creditsConsumed = false;
-  let supabaseForRefund: ReturnType<typeof createClient> | null = null;
+  let supabaseForRefund: ReturnType<typeof getSupabaseClient> | null = null;
   let userIdForRefund: string | null = null;
 
   try {
-    // Get environment variables
-    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-      logger.error("Missing required environment variables");
-      return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
-    }
-
-    // Validate authentication
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return createErrorResponse(ERROR_MESSAGES.UNAUTHORIZED, 401, corsHeaders);
-    }
-
-    // Create Supabase client
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    // Create service role client
+    const supabase = getSupabaseClient();
     supabaseForRefund = supabase;
 
-    // Validate user token
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-
-    if (authError || !user) {
-      return createErrorResponse(ERROR_MESSAGES.INVALID_TOKEN, 401, corsHeaders);
-    }
-
+    // Validate authentication (includes deleted/banned checks)
+    const authResult = await authenticateRequest(req, supabase, corsHeaders);
+    if (isAuthError(authResult)) return authResult;
+    const { user } = authResult;
     userIdForRefund = user.id;
 
     // Check rate limit (AI_LIGHT: 20/min, 100/hour, 500/day)

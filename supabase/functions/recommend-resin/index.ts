@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "jsr:@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsPreFlight, ERROR_MESSAGES, createErrorResponse, generateRequestId } from "../_shared/cors.ts";
+import { getSupabaseClient, authenticateRequest, isAuthError } from "../_shared/middleware.ts";
 import { validateEvaluationData, sanitizeFieldsForPrompt, type EvaluationData } from "../_shared/validation.ts";
 import { logger } from "../_shared/logger.ts";
 import { callClaude, ClaudeError, type OpenAIMessage } from "../_shared/claude.ts";
@@ -107,31 +107,18 @@ serve(async (req) => {
 
   // Track credit state for refund on error (must be outside try for catch access)
   let creditsConsumed = false;
-  let supabaseForRefund: ReturnType<typeof createClient> | null = null;
+  let supabaseForRefund: ReturnType<typeof getSupabaseClient> | null = null;
   let userIdForRefund: string | null = null;
 
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-
-    // Validate authentication
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return createErrorResponse(ERROR_MESSAGES.UNAUTHORIZED, 401, corsHeaders);
-    }
-
-    // Create service role client for all operations
-    const supabaseService = createClient(supabaseUrl, supabaseServiceKey);
+    // Create service role client
+    const supabaseService = getSupabaseClient();
     supabaseForRefund = supabaseService;
 
-    // Verify user via getUser()
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: authError } = await supabaseService.auth.getUser(token);
-
-    if (authError || !user) {
-      return createErrorResponse(ERROR_MESSAGES.INVALID_TOKEN, 401, corsHeaders);
-    }
-
+    // Validate authentication (includes deleted/banned checks)
+    const authResult = await authenticateRequest(req, supabaseService, corsHeaders);
+    if (isAuthError(authResult)) return authResult;
+    const { user } = authResult;
     const userId = user.id;
     userIdForRefund = userId;
 
@@ -174,7 +161,7 @@ serve(async (req) => {
     }
 
     // Use service role client for database operations
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabase = supabaseService;
 
     // Fetch all resins from database
     const { data: resins, error: resinsError } = await supabase

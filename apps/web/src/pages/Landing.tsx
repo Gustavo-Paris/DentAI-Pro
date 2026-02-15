@@ -18,8 +18,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { HeroMockup } from '@/components/landing/HeroMockup';
 import { FeaturePreview } from '@/components/landing/FeaturePreview';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import type { SubscriptionPlan } from '@/hooks/useSubscription';
+import { subscriptions } from '@/data';
 import { formatPrice } from '@/hooks/useSubscription';
 import { getInitials } from '@/lib/utils';
 import { useScrollReveal, useScrollRevealChildren } from '@/hooks/useScrollReveal';
@@ -410,15 +409,7 @@ function LandingPricing() {
   const { t } = useTranslation();
   const { data: plans, isLoading } = useQuery({
     queryKey: ['subscription-plans'],
-    queryFn: async (): Promise<SubscriptionPlan[]> => {
-      const { data, error } = await supabase
-        .from('subscription_plans')
-        .select('*')
-        .eq('is_active', true)
-        .order('sort_order');
-      if (error) throw error;
-      return data || [];
-    },
+    queryFn: () => subscriptions.getPlans(),
     staleTime: QUERY_STALE_TIMES.VERY_LONG,
   });
 
