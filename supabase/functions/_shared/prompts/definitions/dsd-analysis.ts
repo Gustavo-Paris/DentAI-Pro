@@ -136,17 +136,34 @@ REGRAS ABSOLUTAS GENGIVOPLASTIA:
 
 NAO gerar gengivoplastia se: smile_line BAIXA (gengiva nao visivel) E zênites simétricos E proporção 75-80%.
 NAO gerar gengivoplastia se gengiva NAO visivel na foto.
-Smile line MEDIA (0-3mm): AVALIAR — exposicao suficiente para detectar assimetrias e excessos.
+Smile line MEDIA: AVALIAR — exposicao pode ser suficiente para detectar assimetrias.
+IMPORTANTE: Se papilas estao totalmente visiveis ou contorno gengival dos centrais e visivel → reclassificar para "alta", nao "media".
+
+IDENTIFICACAO DE DENTES PARA GENGIVOPLASTIA (OBRIGATORIO quando gengivoplastia indicada):
+- Listar CADA dente que precisa de gengivoplastia como sugestão SEPARADA
+- Especificar quanto de tecido remover em mm para cada dente (ex: "Gengivoplastia ~1.5mm")
+- Indicar sequencia no tratamento: gengivoplastia ANTES das restaurações (60-90 dias de cicatrização)
+
+=== DETECCAO DE ANOMALIAS DENTARIAS (OBRIGATORIA) ===
+ANTES de analisar, verificar:
+1. AGENESIA de laterais (12/22): Se caninos ocupam posição dos laterais (dentes pontiagudos na posição 12/22), IDENTIFICAR como agenesia. Caninos na posição de laterais têm formato cônico/pontiagudo — DIFERENTE de laterais normais (arredondados, menores).
+2. TRANSPOSICAO: Dentes fora de posição (ex: canino na posição de pré-molar).
+3. SUPRANUMERARIOS: Dentes extras na arcada.
+4. RESTAURACOES/COROAS com COR ou FORMATO insatisfatório: Restaurações antigas que precisam substituição por discrepância visível com dentes naturais.
+
+Se anomalia detectada: OBRIGATORIO incluir nas observations + gerar sugestão de tratamento específica.
+Para agenesia de laterais com caninos no lugar: sugerir reanatomização dos caninos em laterais (resina/faceta) E/OU ortodontia para reposicionamento.
 
 === AVALIACAO DO ARCO COMPLETO ===
 Quando tratamento em incisivos, AVALIACAO OBRIGATORIA:
 
 CANINOS (13/23): Corredor bucal? Proeminência adequada?
-PRE-MOLARES (14/15/24/25) - ANALISE CONSERVADORA:
-- Incluir APENAS se: corredor bucal "excessivo" (com evidência), OU 4+ anteriores receberão tratamento, OU foto 45° disponível
-- NAO sugerir tratamento se corredor "adequado" ou pré-molares em posição normal
+PRE-MOLARES (14/15/24/25) - INCLUIR NA ANALISE:
+- Incluir se: corredor bucal "excessivo" (com evidência), OU 2+ anteriores receberão tratamento, OU foto 45° disponível, OU pré-molares VISIVEIS na foto com problemas estéticos (cor, formato, restaurações antigas)
+- Se pré-molares são visíveis no sorriso e apresentam QUALQUER desarmonia estética com os anteriores (cor diferente, restaurações antigas, escurecimento) → INCLUIR nas sugestões
+- NAO sugerir tratamento APENAS se: corredor "adequado" E pré-molares em posição normal E sem problemas estéticos visíveis
 
-Se >=4 anteriores precisam de intervenção -> AVALIE 6-8 dentes do arco.
+Se >=2 anteriores precisam de intervenção -> AVALIE 6-10 dentes do arco (13-23 OBRIGATÓRIO + 14/15/24/25 se visíveis).
 
 === MATRIZ DE DECISAO: ALTERACAO DSD -> TRATAMENTO ===
 

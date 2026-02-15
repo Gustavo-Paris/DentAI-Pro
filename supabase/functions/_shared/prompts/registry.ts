@@ -4,6 +4,7 @@ import { analyzeDentalPhoto } from './definitions/analyze-dental-photo.ts'
 import { recommendResin } from './definitions/recommend-resin.ts'
 import { dsdAnalysis } from './definitions/dsd-analysis.ts'
 import { dsdSimulation } from './definitions/dsd-simulation.ts'
+import { smileLineClassifier } from './definitions/smile-line-classifier.ts'
 
 // deno-lint-ignore no-explicit-any
 const registry: Record<string, PromptDefinition<any>> = {
@@ -12,6 +13,7 @@ const registry: Record<string, PromptDefinition<any>> = {
   [recommendResin.id]: recommendResin,
   [dsdAnalysis.id]: dsdAnalysis,
   [dsdSimulation.id]: dsdSimulation,
+  [smileLineClassifier.id]: smileLineClassifier,
 }
 
 export type PromptId = keyof typeof registry
