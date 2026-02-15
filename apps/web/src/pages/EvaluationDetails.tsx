@@ -488,7 +488,7 @@ export default function EvaluationDetails() {
                         </Button>
                       </div>
                     )}
-                    {group.evaluations.map((evaluation) => {
+                    {!showGroupHeader && group.evaluations.map((evaluation) => {
                       const treatmentConfig = getTreatmentConfig(evaluation.treatment_type);
                       const borderColor = treatmentConfig.variant === 'default' ? 'border-l-primary' : 'border-l-amber-500';
                       return (
