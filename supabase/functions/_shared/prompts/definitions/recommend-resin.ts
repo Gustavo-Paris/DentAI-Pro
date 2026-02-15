@@ -127,7 +127,7 @@ RESINAS RECOMENDADAS POR CAMADA:
 | Cristas Proximais  | SOMENTE XLE(Harmonize) ou BL-L/BL-XL(Empress) — esmalte 1 tom > claro que corpo |
 | Dentina/Corpo      | SOMENTE corpo: WB(FORMA), WB(Z350), DA1/DA2(Vittra APS), D BL-L(Empress) — PROIBIDO esmalte (A1E/WE/CT)! |
 | Efeitos Incisais   | EMPRESS DIRECT COLOR White/Blue (Ivoclar) — UNICA opcao! Z350/Kolor+ NAO! |
-| Esmalte Final      | MW/WE(Palfique LX5), Empress esmalte cores claras, W3(Estelite Bianco) p/ clareados — PROIBIDO translúcidas (CT/GT/Trans)! |
+| Esmalte Final      | WE(Palfique LX5), Empress esmalte cores claras, W3(Estelite Bianco) p/ clareados — PROIBIDO translúcidas (CT/GT/Trans)! |
 | Dentes Clareados   | W3/W4(Estelite Bianco), BL(Forma), BL-L(Empress)         |
 
 DIVERSIDADE DE MARCAS (CONDICIONAL AO NUMERO DE CAMADAS):
@@ -320,7 +320,7 @@ NIVEL ESTETICO ("estético"/"alto"/"muito alto") - 4-5 camadas:
    - Z350 translúcidos: CT(Clear), GT(Gray), BT(Blue), YT(Yellow). WT NAO EXISTE -> use WB
    - OMITIR para: posteriores rotineiros, Classe I/V, nível funcional
 5. Esmalte Vestibular Final: 0.3mm, priorizar polimento superior. PROIBIDO resinas translúcidas (CT/GT/Trans)! SOMENTE shades de esmalte.
-   - P1: Palfique LX5 (MW/WE), Estelite Omega (WE) — acabamento espelhado. Para dentes mais claros: W3(Estelite Bianco)
+   - P1: Palfique LX5 (WE), Estelite Omega (WE) — acabamento espelhado. MW NAO SERVE para corpo! Para dentes mais claros: W3(Estelite Bianco)
    - P2: Filtek Z350 XT (A1E/A2E), FORMA (Enamel). IPS Empress Direct (esmalte cores claras)
    - P3: Harmonize (Incisal/TN), Vittra APS (INC)
 
