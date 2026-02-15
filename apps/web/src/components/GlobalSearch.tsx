@@ -200,7 +200,7 @@ export function GlobalSearch({ fetchEvaluations }: GlobalSearchProps) {
                 <div className="flex flex-col flex-1 min-w-0">
                   <span className="font-medium truncate">{result.title}</span>
                   <span className="text-xs text-muted-foreground">
-                    {result.teethCount} dente{result.teethCount > 1 ? 's' : ''}: {result.teeth.slice(0, 3).join(', ')}
+                    {t('components.globalSearch.teethCount', { count: result.teethCount })}: {result.teeth.slice(0, 3).join(', ')}
                     {result.teeth.length > 3 && ` +${result.teeth.length - 3}`}
                   </span>
                 </div>

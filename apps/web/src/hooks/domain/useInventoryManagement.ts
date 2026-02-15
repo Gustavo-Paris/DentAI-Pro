@@ -56,7 +56,7 @@ export function useInventoryManagement() {
       const { items, count } = await inventory.list({
         userId: user.id,
         page: 0,
-        pageSize: 5000,
+        pageSize: 100,
       });
       return { items, count };
     },

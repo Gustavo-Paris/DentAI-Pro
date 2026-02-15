@@ -1233,7 +1233,9 @@
       "minChars": "Digite pelo menos 2 caracteres para buscar",
       "noResults": "Nenhum resultado encontrado",
       "evaluations": "Avaliações",
-      "noName": "Paciente sem nome"
+      "noName": "Paciente sem nome",
+      "teethCount_one": "{{count}} dente",
+      "teethCount_other": "{{count}} dentes"
     },
     "creditConfirm": {
       "title": "Confirmar uso de créditos",

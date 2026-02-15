@@ -213,8 +213,7 @@ export default function PatientProfile() {
                                   )}
                                 </div>
                                 <p className="text-xs text-muted-foreground">
-                                  {session.evaluationCount}{' '}
-                                  {session.evaluationCount === 1 ? 'caso' : 'casos'}
+                                  {t('patients.case', { count: session.evaluationCount })}
                                 </p>
                               </div>
 
@@ -240,7 +239,7 @@ export default function PatientProfile() {
                           {profile.isFetchingSessions ? (
                             <>
                               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                              Carregando...
+                              {t('common.loading')}
                             </>
                           ) : (
                             t('patients.loadMoreEvaluations')
