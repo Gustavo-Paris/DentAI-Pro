@@ -37,7 +37,7 @@
     "@pageshell/theme": "workspace:*",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-collapsible": "^1.1.12",
-    "lucide-react": "^0.563.0"
+    "lucide-react": "^0.564.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",

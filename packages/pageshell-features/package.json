@@ -34,7 +34,7 @@
     "@pageshell/layouts": "workspace:*",
     "@pageshell/primitives": "workspace:*",
     "@pageshell/theme": "workspace:*",
-    "lucide-react": "^0.563.0"
+    "lucide-react": "^0.564.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
