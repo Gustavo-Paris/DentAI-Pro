@@ -86,6 +86,13 @@ Para resultado REALISTA (não artificial):
 Isto é EDIÇÃO de imagem (inpainting), NÃO GERAÇÃO de imagem.
 Dimensões de saída DEVEM ser iguais às dimensões de entrada.
 
+=== OUTPUT DE ROSTO COMPLETO ===
+Se a imagem de entrada mostra o ROSTO COMPLETO do paciente (olhos, testa, queixo):
+- O output DEVE mostrar o rosto completo com a simulação aplicada no sorriso
+- NÃO cropar a imagem para mostrar apenas a boca
+- Manter TODAS as características faciais idênticas (olhos, nariz, cabelo, pele)
+- A simulação se limita APENAS à área dos dentes — todo o resto do rosto é cópia exata
+
 === PERSONALIZAÇÃO POR PACIENTE (CRÍTICO) ===
 ⚠️ CADA PACIENTE É ÚNICO - NÃO APLIQUE UM TEMPLATE GENÉRICO!
 - Os dentes deste paciente têm contornos, proporções e características ÚNICAS
@@ -168,7 +175,15 @@ function buildBaseCorrections(): string {
 SHAPE CORRECTIONS (quando análise sugere):
 - Modificar contornos dos dentes para harmonizar com recommended_tooth_shape
 - Para laterais conoides: adicionar volume para proporção adequada (lateral = ~62% da largura do central)
-- Para dentes com formato inadequado ao visagismo: ajustar contornos suavemente`
+- Para dentes com formato inadequado ao visagismo: ajustar contornos suavemente
+
+=== EXTENSAO ATE PRE-MOLARES ===
+Se pré-molares (14/15/24/25) são VISIVEIS na foto:
+- INCLUIR na simulação: aplicar whitening, harmonização de cor, correção de restaurações
+- Manter proporções naturais: pré-molares são naturalmente menores que caninos
+- Se pré-molares têm restaurações antigas, escurecimento ou desarmonia visível → corrigir
+- ZONA DE SIMULACAO: Toda a arcada visível no sorriso (NÃO limitar a canino-a-canino)
+- Pré-molares devem receber o MESMO nível de whitening dos anteriores`
 }
 
 const PROPORTION_RULES = `PROPORTION RULES:
