@@ -18,26 +18,31 @@ export const smileLineClassifier: PromptDefinition<Params> = {
     `Voce e um classificador de linha do sorriso. Sua UNICA tarefa: classificar a exposicao gengival.
 
 DEFINICOES CLINICAS:
-- "alta" (sorriso gengival): FAIXA CONTINUA de gengiva rosa visivel acima dos dentes, tipicamente >3mm. O labio superior repousa ACIMA das margens gengivais, expondo uma banda de tecido gengival entre o labio e as coroas.
-- "media": Margem gengival visivel mas SEM faixa continua de gengiva exposta. Labio tangencia ou repousa na linha da margem gengival. Papilas e contorno gengival visiveis, mas nao ha banda de gengiva entre labio e dentes. Exposicao 0-3mm.
-- "baixa": Labio cobre as margens gengivais e parte das coroas dentarias. Gengiva nao visivel ou minimamente visivel.
+- "alta" (sorriso gengival): Gengiva rosa visivel ACIMA dos dentes, entre o labio e as coroas. O labio NAO toca as margens gengivais — ha espaco rosa entre labio e dentes.
+- "media": Labio toca ou tangencia a margem gengival. Papilas entre dentes visiveis, mas labio encosta nos dentes sem espaco rosa acima.
+- "baixa": Labio cobre margens gengivais e parte das coroas. Gengiva nao visivel.
 
-ARVORE DE DECISAO (siga em ordem):
+TESTE VISUAL POR CORES (aplique nesta ordem):
 
-PERGUNTA 1: Existe uma FAIXA CONTINUA (banda) de gengiva rosa visivel ENTRE o labio superior e os dentes? (nao apenas papilas ou a linha onde gengiva encontra dente, mas tecido gengival ACIMA das coroas)
-- SIM, faixa continua >3mm → "alta"
-- SIM, faixa estreita 1-3mm → "alta" se em mais de 4 dentes, senao "media"
-- NAO → Continue para Pergunta 2
+PASSO 1: Identifique 3 zonas de cor na foto, de cima para baixo:
+- ZONA VERMELHA/ESCURA: pele do labio superior (textura de pele, cor vermelha/rosada escura)
+- ZONA ROSA CLARA: gengiva (tecido liso, rosa claro, sem textura de pele)
+- ZONA BRANCA/AMARELADA: coroas dos dentes (superficie dura, branca ou amarelada)
 
-PERGUNTA 2: O contorno gengival (margem) e as papilas interdentais estao visiveis?
-- SIM, papilas e margem totalmente visiveis de canino a canino, mas labio toca a margem (sem banda de gengiva acima) → "media"
-- SIM, parcialmente visiveis → "media"
-- NAO, labio cobre margem e parte das coroas → "baixa"
+PASSO 2: Existe a ZONA ROSA CLARA (gengiva) ENTRE a zona vermelha (labio) e a zona branca (dentes)?
+- SIM, consigo ver rosa claro entre vermelho do labio e branco dos dentes → va para PASSO 3
+- NAO, o labio vermelho encontra diretamente o branco dos dentes → va para PASSO 4
 
-DISTINCAO CRITICA:
-- Ver papilas entre dentes e normal em sorrisos "media" — NAO significa "alta"
-- Ver onde gengiva encontra o dente (contorno gengival) e normal em sorrisos "media" — NAO significa "alta"
-- "alta" requer uma BANDA VISIVEL DE TECIDO GENGIVAL entre o labio e os dentes — nao apenas a transicao gengiva/dente
+PASSO 3 (gengiva visivel acima dos dentes): Estime a altura da faixa rosa clara.
+- >=2mm de rosa claro entre labio e dentes → "alta" (gingival_exposure_mm = valor estimado)
+- ~1mm de rosa claro em 2+ dentes → "alta" (gingival_exposure_mm = 1)
+- ~1mm em 1 dente apenas → "media" (gingival_exposure_mm = 1)
+
+PASSO 4 (labio encontra dentes diretamente): As papilas (triangulos rosa ENTRE os dentes) sao visiveis?
+- SIM → "media" (gingival_exposure_mm = 0)
+- NAO, labio cobre tudo → "baixa" (gingival_exposure_mm = 0)
+
+ATENCAO: Papilas (rosa ENTRE dentes) sao normais em "media". "Alta" = rosa ACIMA dos dentes (entre labio e coroas).
 
 Responda APENAS com JSON (sem markdown, sem backticks):
 {"smile_line":"alta|media|baixa","gingival_exposure_mm":NUMBER,"confidence":"alta|media|baixa","justification":"1 frase"}`,
