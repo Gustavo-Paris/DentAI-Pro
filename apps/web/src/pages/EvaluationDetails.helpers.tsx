@@ -14,6 +14,7 @@ export { getProtocolFingerprint };
 export interface EvalGroup {
   treatmentType: string;
   label: string;
+  labelKey: string;
   resinName?: string;
   evaluations: EvaluationItem[];
 }
@@ -22,14 +23,14 @@ export interface EvalGroup {
 // Presentation helpers
 // =============================================================================
 
-export function getTreatmentBadge(evaluation: EvaluationItem) {
+export function getTreatmentBadge(evaluation: EvaluationItem, t: (key: string) => string) {
   const config = getTreatmentConfig(evaluation.treatment_type);
   const IconComponent = config.icon;
 
   return (
     <Badge variant={config.variant} className="gap-1">
       <IconComponent className="w-3 h-3" />
-      <span className="hidden md:inline">{config.shortLabel}</span>
+      <span className="hidden md:inline">{t(config.shortLabelKey)}</span>
     </Badge>
   );
 }
@@ -78,9 +79,11 @@ export function groupByTreatment(evaluations: EvaluationItem[]): EvalGroup[] {
     const resinName = treatmentType === 'resina' && items[0]?.resins?.name
       ? items[0].resins.name
       : undefined;
+    const config = getTreatmentConfig(treatmentType);
     return {
       treatmentType,
-      label: getTreatmentConfig(treatmentType).shortLabel,
+      label: config.shortLabel,
+      labelKey: config.shortLabelKey,
       resinName,
       evaluations: items,
     };

@@ -72,7 +72,7 @@ export function SessionCard({ session }: { session: DashboardSession }) {
                     return (
                       <Badge key={type} variant="outline" className="text-[10px] px-1.5 gap-1">
                         <config.icon className="w-2.5 h-2.5" />
-                        {config.shortLabel}
+                        {t(config.shortLabelKey)}
                       </Badge>
                     );
                   })}

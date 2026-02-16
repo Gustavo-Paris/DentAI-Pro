@@ -43,10 +43,14 @@ export function getCorsHeaders(req: Request): Record<string, string> {
       // Localhost in development (any port)
       (isDevelopment && isLocalhostOrigin(origin)));
 
+  // For disallowed origins, set first production origin — browser will block the
+  // mismatch. We don't omit the header entirely because some Supabase infra
+  // requires it present; using a non-matching value is the standard pattern.
   return {
     "Access-Control-Allow-Origin": isAllowed ? origin : PRODUCTION_ORIGINS[0],
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Vary": "Origin",
   };
 }
 

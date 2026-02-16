@@ -284,7 +284,7 @@ export default function EvaluationDetails() {
                             </TableCell>
                             <TableCell colSpan={3} className="py-2">
                               <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                                {group.label} — {t('components.evaluationDetail.teethCount', { count: group.evaluations.length, teeth: groupTeeth })}
+                                {t(group.labelKey)} — {t('components.evaluationDetail.teethCount', { count: group.evaluations.length, teeth: groupTeeth })}
                               </span>
                               <span className="text-xs text-muted-foreground ml-2">
                                 ({group.resinName
@@ -318,7 +318,7 @@ export default function EvaluationDetails() {
                               />
                             </TableCell>
                             <TableCell className="font-medium">{evaluation.tooth === 'GENGIVO' ? t('components.evaluationDetail.gingiva') : evaluation.tooth}</TableCell>
-                            <TableCell>{getTreatmentBadge(evaluation)}</TableCell>
+                            <TableCell>{getTreatmentBadge(evaluation, t)}</TableCell>
                             <TableCell>
                               {getStatusBadge(evaluation, detail.getChecklistProgress, t)}
                             </TableCell>
@@ -375,7 +375,7 @@ export default function EvaluationDetails() {
                       <div className="flex items-center justify-between px-2 py-2 mb-1 bg-muted/40 rounded-lg">
                         <div>
                           <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide block">
-                            {group.label} — {t('components.evaluationDetail.teethCount', { count: group.evaluations.length, teeth: groupTeeth })}
+                            {t(group.labelKey)} — {t('components.evaluationDetail.teethCount', { count: group.evaluations.length, teeth: groupTeeth })}
                           </span>
                           {group.resinName && (
                             <span className="text-xs text-muted-foreground">
@@ -411,7 +411,7 @@ export default function EvaluationDetails() {
                                 onCheckedChange={() => detail.toggleSelection(evaluation.id)}
                               />
                             </div>
-                            {getTreatmentBadge(evaluation)}
+                            {getTreatmentBadge(evaluation, t)}
                             <p className="font-semibold">{formatToothLabel(evaluation.tooth)}</p>
                           </div>
                           {getStatusBadge(evaluation, detail.getChecklistProgress, t)}
