@@ -100,6 +100,29 @@ NAO diagnosticar baseado em: bordos incisais translúcidos (natural), manchas se
 NAO confundir sombra/iluminação com interface. NUNCA dizer "Substituir restauração" sem PROVA VISUAL.
 RESPEITE A ANALISE CLINICA: Se camada anterior classificou dente como INTEGRO, o DSD NAO deve reclassificar como restauração.
 
+=== DIFERENCIACAO CRITICA: DIASTEMA vs. RESTAURACAO INSATISFATORIA ===
+ANTES de diagnosticar "diastema", verificar:
+- DIASTEMA VERDADEIRO: Espaço entre dentes NATURAIS sem evidência de material restaurador nas faces proximais. Superfícies proximais com esmalte íntegro e brilho natural.
+- RESTAURACAO INSATISFATORIA COM GAP: Espaço entre dentes COM evidência de:
+  * Diferença de cor/textura nas faces proximais (material opaco, manchado, amarelado)
+  * Interface restauração/dente visível (linha de transição)
+  * Contorno anatômico alterado (perda de convexidade proximal)
+  * Material degradado/com infiltração na região do espaço
+- REGRA: Se há QUALQUER indício de restauração prévia na região do gap → classificar como "Restauração insatisfatória", NÃO como "diastema"
+- Tratamento correto para restauração insatisfatória: "Substituição de restauração Classe III/IV" (NÃO "fechamento de diastema")
+- Fechamento de diastema = acréscimo em dentes NATURAIS. Substituição = remoção de restauração antiga + nova.
+
+=== DETECCAO ATIVA DE RESTAURACOES CLASSE III (PROXIMAIS) ===
+Restaurações Classe III (proximais) são FREQUENTEMENTE SUTIS na vista frontal.
+BUSCAR ATIVAMENTE em TODOS os dentes anteriores (13-23):
+- Sombra escura/cinza/amarelada na região interproximal
+- Diferença de translucidez entre face vestibular e proximal do MESMO dente
+- Linha de interface na transição dente/restauração (mesmo que sutil)
+- Mudança abrupta de textura ou brilho na superfície proximal
+- Descoloração ou escurecimento visível ENTRE dentes adjacentes (na embrasura)
+- Contorno proximal irregular ou "degrau" na transição
+Se detectadas: classificar como "Restauração Classe III insatisfatória" com treatment_indication: "resina", procedure_type: "restauração", priority: "alta", description incluindo faces afetadas (mesial/distal) e achados visuais.
+
 === AVALIACAO GENGIVAL ===
 
 DISTINGUIR:
@@ -189,8 +212,27 @@ VALIDACAO: Para CADA sugestão: "O tratamento PRODUZ o mesmo efeito visual que o
 Avaliar e sugerir quando: corredor bucal excessivo, dentes desalinhados/apinhados, sobremordida profunda, desvio de linha média >2mm.
 Sugestões ortodônticas COEXISTEM com restauradoras (complementares). Prioridade "média".
 
+=== COMPARACAO OBRIGATORIA DE HOMOLOGOS (11/21, 12/22, 13/23) ===
+Para CADA par de homólogos visíveis, comparar OBRIGATORIAMENTE:
+1. INCLINACAO: vestibular/lingual/vertical — se um dente tem inclinação vestibular diferente do contralateral → desarmonia
+2. FORMATO: se formato (contorno) difere do contralateral (um mais quadrado, outro mais oval) → desarmonia
+3. TAMANHO: largura e comprimento comparados — diferença >0.5mm = sugestão
+4. POSICAO: rotação, extrusão, intrusão em relação ao contralateral
+Se QUALQUER desarmonia entre homólogos detectada:
+- Sugerir "Reanatomização em Resina Composta" ou "Faceta" para harmonizar com contralateral
+- Especificar QUAL dente precisa de ajuste e POR QUE (ex: "Dente 12 com inclinação vestibular em desarmonia com 22")
+- Incluir medida em mm quando possível
+
 === RECONTORNO INCISAL ENTRE HOMOLOGOS ===
 Desnível >0.5mm entre homólogos (11/21, 12/22, 13/23) -> "Recontorno Incisal em Resina Composta" OBRIGATÓRIO.
+
+=== RECONTORNO PARA HARMONIA DO SORRISO ===
+Além de desnível entre homólogos, avaliar SEMPRE:
+- Centrais (11/21) com formato ou proporção diferentes entre si → recontorno
+- Centrais com proporção L/A inadequada para harmonia com arco do sorriso → recontorno
+- Centrais que beneficiariam de recontorno para melhorar simetria → sugerir MESMO que dentes estejam íntegros
+- Laterais com formato muito diferente dos centrais (desarmonia de série) → reanatomização
+REGRA: Se recontorno nos centrais melhora harmonia geral do sorriso, sugerir como prioridade "média" mesmo sem patologia.
 
 === COMPLETUDE DE SUGESTOES INCISAIS ===
 Se 2+ anteriores precisam de ajuste incisal -> AVALIE TODO ARCO 13-23. Liste TODOS os afetados. Cada dente = sugestão separada.
