@@ -11,6 +11,7 @@ import { withRetry } from '@/lib/retry';
 import { TIMING } from '@/lib/constants';
 // compositeTeeth.ts kept for potential future use but compositing disabled —
 // Gemini's prompt-based preservation of lips/gums produces better results
+import { compositeGengivoplastyLips } from '@/lib/compositeGingivo';
 import type {
   DSDAnalysis,
   DSDResult,
@@ -188,8 +189,8 @@ export function useDSDStep({
     );
   }, [detectedTeeth]);
 
-  // Client-side compositing disabled — Gemini's prompt-based preservation produces
-  // better results than canvas mask overlays which create visible artifacts.
+  // Client-side lip compositing enabled as fallback — applied after lip retries
+  // are exhausted and lips_moved is still true (see generateSingleLayer).
 
   // Check if analysis has gengivoplasty suggestions — use structured fields only
   // for consistency. Text keyword matching is unreliable and causes the same
@@ -236,15 +237,15 @@ export function useDSDStep({
     analysis: DSDAnalysis,
     layerType: SimulationLayerType,
     baseImageOverride?: string,
+    l2SignedUrl?: string,
   ): Promise<SimulationLayer | null> => {
     const effectiveImage = baseImageOverride || imageBase64;
     if (!effectiveImage) return null;
 
     const isGingivalLayer = layerType === 'complete-treatment' || layerType === 'root-coverage';
-    // When chaining from L2 (baseImageOverride), skip lip retries — the server
-    // already skips lip validation for inputAlreadyProcessed, and the Flash
-    // validator consistently confuses gingival recontouring with lip movement.
-    const MAX_LIP_RETRIES = (isGingivalLayer && !baseImageOverride) ? 2 : 0;
+    // Lip retries: L3 from original gets 2 retries, L3 chained from L2 gets 1 retry,
+    // non-gingival layers get 0. Server validates lips and returns lips_moved=true.
+    const MAX_LIP_RETRIES = isGingivalLayer ? (baseImageOverride ? 1 : 2) : 0;
 
     try {
       let bestResult: (DSDResult & { lips_moved?: boolean }) | null = null;
@@ -297,6 +298,24 @@ export function useDSDStep({
           logger.warn(`Layer ${layerType}: lips moved, retrying (${lipAttempt + 1}/${MAX_LIP_RETRIES})...`);
         } else {
           logger.warn(`Layer ${layerType}: lips moved on all attempts — using first result (typically best quality)`);
+        }
+      }
+
+      // Post-processing: composite L2 lips onto L3 if lips moved after retries exhausted
+      if (bestResult?.lips_moved && isGingivalLayer && l2SignedUrl && bestResult.simulation_url) {
+        try {
+          const { data: l3Signed } = await supabase.storage
+            .from('dsd-simulations')
+            .createSignedUrl(bestResult.simulation_url, 3600);
+          if (l3Signed?.signedUrl) {
+            const composited = await compositeGengivoplastyLips(l2SignedUrl, l3Signed.signedUrl);
+            if (composited) {
+              bestResult = { ...bestResult, simulation_url: composited, lips_moved: false };
+              logger.log('Lip compositing applied to gengivoplasty layer');
+            }
+          }
+        } catch (err) {
+          logger.warn('Lip compositing failed, using original L3:', err);
         }
       }
 
@@ -402,7 +421,7 @@ export function useDSDStep({
         try {
           const l2Base64 = await urlToBase64(l2Url);
           logger.log('Layer chaining: L2 → L3 (gengivoplasty only)');
-          const l3Raw = await generateSingleLayer(analysis, 'complete-treatment', l2Base64);
+          const l3Raw = await generateSingleLayer(analysis, 'complete-treatment', l2Base64, l2Url);
           setLayerGenerationProgress(3);
 
           if (l3Raw) {
@@ -850,7 +869,8 @@ export function useDSDStep({
         }
       }
 
-      const layer = await generateSingleLayer(analysis, 'complete-treatment', l2Base64);
+      const l2SignedUrl = layerUrls['whitening-restorations'];
+      const layer = await generateSingleLayer(analysis, 'complete-treatment', l2Base64, l2SignedUrl);
       if (!layer) {
         toast.error(t('toasts.dsd.layerError', { layer: 'Gengivoplastia' }));
         return;

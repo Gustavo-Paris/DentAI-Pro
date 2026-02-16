@@ -527,6 +527,10 @@ async function generateSimulation(
   let gingivoSuggestions: string | undefined;
   if (layerType === 'complete-treatment') {
     const gingivoItems = analysis.suggestions?.filter(s => {
+      // Primary: treatment_indication field (aligned with frontend useDSDStep detection)
+      const indication = (s.treatment_indication || '').toLowerCase();
+      if (indication === 'gengivoplastia' || indication === 'gingivoplasty') return true;
+      // Secondary: keywords in text
       const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
       return text.includes('gengiv') || text.includes('zênite') || text.includes('zenite') || text.includes('gengivoplastia');
     }) || [];
