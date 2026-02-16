@@ -1542,7 +1542,29 @@
       "teethCount": "{{count}} dentes: {{teeth}}"
     },
     "resinLegend": {
-      "label": "Legenda:"
+      "label": "Legenda:",
+      "types": {
+        "Esmalte": "Esmalte",
+        "Dentina": "Dentina",
+        "Body": "Body",
+        "Opaco": "Opaco",
+        "Translúcido": "Translúcido",
+        "Universal": "Universal"
+      }
     }
+  },
+  "treatments": {
+    "resina": { "label": "Resina Composta", "shortLabel": "Resina" },
+    "porcelana": { "label": "Faceta de Porcelana", "shortLabel": "Faceta" },
+    "coroa": { "label": "Coroa Total", "shortLabel": "Coroa" },
+    "implante": { "label": "Implante", "shortLabel": "Implante" },
+    "endodontia": { "label": "Endodontia", "shortLabel": "Endo" },
+    "encaminhamento": { "label": "Encaminhamento", "shortLabel": "Encaminhar" },
+    "gengivoplastia": { "label": "Gengivoplastia Estética", "shortLabel": "Gengivoplastia" },
+    "recobrimento_radicular": { "label": "Recobrimento Radicular", "shortLabel": "Recobr." }
+  },
+  "toothLabel": {
+    "gingiva": "Gengiva",
+    "tooth": "Dente {{number}}"
   }
 }

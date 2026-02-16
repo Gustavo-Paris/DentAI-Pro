@@ -1,4 +1,5 @@
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import type { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import Stripe from "npm:stripe@14.14.0";
 import { logger } from "../_shared/logger.ts";
 
@@ -13,8 +14,7 @@ const WEBHOOK_SECRET = Deno.env.get("STRIPE_WEBHOOK_SECRET") || "";
  * Resolve our internal plan ID from a Stripe price ID.
  * Falls back to the Stripe price ID if no mapping found.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function resolveInternalPlanId(supabase: any, stripePriceId: string): Promise<string> {
+async function resolveInternalPlanId(supabase: SupabaseClient, stripePriceId: string): Promise<string> {
   const { data } = await supabase
     .from("subscription_plans")
     .select("id")
@@ -114,8 +114,7 @@ Deno.serve(async (req: Request) => {
   }
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function handleCheckoutCompleted(supabase: any, session: Stripe.Checkout.Session) {
+async function handleCheckoutCompleted(supabase: SupabaseClient, session: Stripe.Checkout.Session) {
   // Check if this is a credit pack purchase (one-time payment)
   if (session.mode === "payment" && session.metadata?.type === "credit_pack") {
     await handleCreditPackPurchase(supabase, session);
@@ -178,8 +177,7 @@ async function handleCheckoutCompleted(supabase: any, session: Stripe.Checkout.S
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function handleSubscriptionUpdate(supabase: any, subscription: Stripe.Subscription) {
+async function handleSubscriptionUpdate(supabase: SupabaseClient, subscription: Stripe.Subscription) {
   const customerId = subscription.customer as string;
   let userId = subscription.metadata.supabase_user_id;
 
@@ -225,8 +223,7 @@ async function handleSubscriptionUpdate(supabase: any, subscription: Stripe.Subs
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function handleSubscriptionDeleted(supabase: any, subscription: Stripe.Subscription) {
+async function handleSubscriptionDeleted(supabase: SupabaseClient, subscription: Stripe.Subscription) {
   const customerId = subscription.customer as string;
 
   const { error } = await supabase
@@ -244,8 +241,7 @@ async function handleSubscriptionDeleted(supabase: any, subscription: Stripe.Sub
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function handleInvoicePaid(supabase: any, invoice: Stripe.Invoice) {
+async function handleInvoicePaid(supabase: SupabaseClient, invoice: Stripe.Invoice) {
   const customerId = invoice.customer as string;
 
   // Find user by customer ID
@@ -285,8 +281,7 @@ async function handleInvoicePaid(supabase: any, invoice: Stripe.Invoice) {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function handleInvoiceFailed(supabase: any, invoice: Stripe.Invoice) {
+async function handleInvoiceFailed(supabase: SupabaseClient, invoice: Stripe.Invoice) {
   const customerId = invoice.customer as string;
 
   // Find user by customer ID
@@ -323,8 +318,7 @@ async function handleInvoiceFailed(supabase: any, invoice: Stripe.Invoice) {
   logger.warn(`Payment failed for invoice ${invoice.id}`);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function handleCreditPackPurchase(supabase: any, session: Stripe.Checkout.Session) {
+async function handleCreditPackPurchase(supabase: SupabaseClient, session: Stripe.Checkout.Session) {
   const userId = session.metadata!.supabase_user_id;
   const packId = session.metadata!.pack_id;
   const credits = parseInt(session.metadata!.credits, 10);

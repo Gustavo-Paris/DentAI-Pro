@@ -38,6 +38,19 @@ const ERROR_CODE_KEYS: Record<string, string> = {
   'invalid_file_type': 'errors.invalidFileType',
 };
 
+/** Check if an error message contains internal/sensitive details that shouldn't be shown to users */
+function containsSensitiveInfo(lowerMsg: string): boolean {
+  const sensitivePatterns = [
+    'sql', 'select ', 'insert ', 'update ', 'delete from',
+    'relation ', 'column ', 'constraint', 'violates',
+    'stack', 'trace', 'at ', '/src/', '/node_modules/',
+    'econnrefused', 'enotfound', 'etimedout',
+    'supabase', 'postgres', 'deno', 'edge function',
+    'secret', 'key', 'password', 'credential',
+  ];
+  return sensitivePatterns.some(p => lowerMsg.includes(p));
+}
+
 /**
  * Handle errors and show user-friendly toast messages
  */
@@ -65,8 +78,8 @@ export function handleError(
       message = i18n.t('errors.authExpired');
     } else if (lowerMessage.includes('duplicate') || lowerMessage.includes('unique')) {
       message = i18n.t('errors.23505');
-    } else if (appError.message.length < 100) {
-      // Use the original message if it's short enough
+    } else if (appError.message.length < 100 && !containsSensitiveInfo(lowerMessage)) {
+      // Use the original message if it's short and safe to display
       message = appError.message;
     }
   }

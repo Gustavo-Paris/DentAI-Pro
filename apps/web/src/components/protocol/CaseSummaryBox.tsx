@@ -141,7 +141,7 @@ function CaseSummaryBox({
                 <TreatmentIcon className="w-3 h-3" />
                 {t('components.protocol.caseSummary.treatment')}
               </div>
-              <p className="font-medium text-sm sm:text-base">{config.label}</p>
+              <p className="font-medium text-sm sm:text-base">{t(config.labelKey)}</p>
               {indicationReason && (
                 <p className="text-xs text-muted-foreground line-clamp-2">{indicationReason}</p>
               )}
@@ -201,7 +201,7 @@ function CaseSummaryBox({
           )}
           {!showCavityInfo && (
             <Badge variant="secondary" className="text-xs">
-              {config.label}
+              {t(config.labelKey)}
             </Badge>
           )}
         </div>
