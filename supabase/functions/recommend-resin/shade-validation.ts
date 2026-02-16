@@ -86,6 +86,42 @@ export async function validateAndFixProtocolLayers({
       // For enamel layer, ensure we use specific enamel shades when available
       const isEnamelLayer = layerType.includes('esmalte') || layerType.includes('enamel');
 
+      const isCristasLayer = layerType.includes('crista') || layerType.includes('proxima');
+
+      // Enforce: cristas should use Harmonize XLE or Empress BL-L — flag if not
+      if (isCristasLayer && productLine) {
+        const plLower = productLine.toLowerCase();
+        const isAllowedForCristas = plLower.includes('harmonize') || plLower.includes('empress') || (plLower.includes('z350') && layer.shade === 'WE');
+        if (!isAllowedForCristas) {
+          validationAlerts.push(
+            `Cristas Proximais: ${productLine} (${layer.shade}) não é ideal. Recomendado: XLE(Harmonize) ou BL-L(Empress Direct).`
+          );
+          logger.warn(`Cristas enforcement: ${productLine} ${layer.shade} flagged — should use Harmonize/Empress`);
+        }
+      }
+
+      // Enforce: Z350 cannot have BL1/BL2/BL3 shades (they don't exist in this product line)
+      if (productLine && /z350/i.test(productLine) && layer.shade && /^BL\d?$/i.test(layer.shade)) {
+        const originalShade = layer.shade;
+        // Find best Z350 alternative based on layer type
+        const z350Rows = getRowsForLine(productLine);
+        const z350NonBL = z350Rows.filter(r => !(/^BL/i.test(r.shade)));
+        let replacement: { shade: string } | undefined;
+        if (isEnamelLayer) {
+          replacement = z350NonBL.find(r => r.shade === 'A1E') || z350NonBL.find(r => r.type?.toLowerCase().includes('esmalte'));
+        } else {
+          replacement = z350NonBL.find(r => r.shade === 'A1') || z350NonBL[0];
+        }
+        if (replacement) {
+          layer.shade = replacement.shade;
+          shadeReplacements[originalShade] = replacement.shade;
+          validationAlerts.push(
+            `Cor ${originalShade} NÃO EXISTE na linha Filtek Z350 XT. Substituída por ${replacement.shade}.`
+          );
+          logger.warn(`Z350 BL enforcement: ${originalShade} → ${replacement.shade}`);
+        }
+      }
+
       if (isEnamelLayer) {
         const enamelShades = lineRows.filter((r) =>
           r.type?.toLowerCase().includes('esmalte')
