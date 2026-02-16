@@ -127,11 +127,26 @@ RESINAS RECOMENDADAS POR CAMADA:
 | Camada             | Resinas OBRIGATORIAS                                       |
 |--------------------|------------------------------------------------------------|
 | Aumento Incisal    | SOMENTE Trans(FORMA) ou CT(Z350) ou Trans20(Empress) ou Trans(Vittra) — PROIBIDO esmalte/corpo! |
-| Cristas Proximais  | SOMENTE XLE(Harmonize) ou BL-L/BL-XL(Empress) — esmalte 1 tom > claro que corpo |
+| Cristas Proximais  | SOMENTE XLE(Harmonize) ou BL-L/BL-XL(Empress) ou WE(Z350) — PROIBIDO: Z350 BL1, JE, CT, FORMA, Vittra, Palfique para cristas! |
 | Dentina/Corpo      | SOMENTE corpo: WB(FORMA), WB(Z350), DA1/DA2(Vittra APS), D BL-L(Empress) — PROIBIDO esmalte (A1E/WE/CT)! |
 | Efeitos Incisais   | EMPRESS DIRECT COLOR White/Blue (Ivoclar) — UNICA opcao! Z350/Kolor+ NAO! |
-| Esmalte Final      | WE(Palfique LX5), Empress esmalte cores claras, W3(Estelite Bianco) p/ clareados — PROIBIDO translúcidas (CT/GT/Trans)! |
+| Esmalte Final      | WE(Palfique LX5) ou WE/MW(Estelite Omega) OBRIGATORIO — Z350 SOMENTE se Palfique/Estelite indisponíveis! Clareados: W3/W4(Estelite Bianco). PROIBIDO: CT/GT/Trans/BL1! |
 | Dentes Clareados   | W3/W4(Estelite Bianco), BL(Forma), BL-L(Empress)         |
+
+GLOSSARIO DE SIGLAS — USAR EXATAMENTE NA DESCRICAO DE CADA CAMADA (OBRIGATORIO):
+- WB = White Body (corpo branco/neutro) — NUNCA escrever "Warm Bleach"
+- CT = Clear Translucent — NUNCA "Cool Tone"
+- WE = White Enamel
+- MW = Milky White (esmalte natural sem clareamento)
+- JE = Jewel Enamel (SOMENTE Estelite Omega)
+- BL-L = Bleach Light (SOMENTE Empress Direct)
+- XLE = Extra Light Enamel (SOMENTE Harmonize)
+- DA1/DA2 = Dentin A1/A2 (SOMENTE Vittra APS)
+
+⚠️ SHADES QUE NAO EXISTEM POR LINHA (PROIBIDO GERAR):
+- Filtek Z350 XT: NAO possui BL1, BL2, BL3, WB. Usar WB somente de FORMA ou outra linha.
+- Estelite Omega: NAO possui shades BL. Para clareados usar Estelite Bianco W3/W4.
+- Harmonize: NAO possui WE, BL. Para clareados usar outra linha.
 
 DIVERSIDADE DE MARCAS (CONDICIONAL AO NUMERO DE CAMADAS):
 - 2-3 camadas: PERMITIDO mesma marca em todas. Priorizar CONSISTENCIA de sistema adesivo e compatibilidade.
@@ -355,6 +370,7 @@ NIVEL ESTETICO ("estético"/"alto"/"muito alto" OU Fechamento de Diastema) - 4-5
    - Objetivo: Restabelecer cristas marginais e pontos de contato proximais. Definir anatomia proximal.
    - Técnica: Incremento fino contra tira de poliéster, adaptar com espátula. Manter contato proximal firme. Fotopolimerizar 20s.
    - INCLUIR SEMPRE que houver: fechamento de diastema, restauração Classe III/IV, reconstrução proximal.
+   - ⚠️ PROIBIDO para Cristas Proximais: Z350 (qualquer shade exceto WE), FORMA, Vittra, Palfique. SOMENTE Harmonize XLE ou Empress BL-L/BL-XL ou Z350 WE.
 3. Dentina/Corpo: OBRIGATÓRIO resina de CORPO — WB(FORMA), WB(Z350), DA1/DA2(Vittra APS), D BL-L(Empress). PROIBIDO shades de esmalte (A1E/A2E/WE/CT/BL1/BL2)! 0.5-1.0mm. Opaco NAO e camada separada - e shade dentro da dentina!
    - Objetivo: Reproduzir volume e opacidade da dentina natural. Dar CORPO e SATURAÇÃO à restauração.
    - Técnica: Incrementos oblíquos de 1-2mm. Reproduzir mamelos com projeções verticais na incisal (se aplicável). Fotopolimerizar 20s cada incremento.
@@ -369,7 +385,7 @@ NIVEL ESTETICO ("estético"/"alto"/"muito alto" OU Fechamento de Diastema) - 4-5
 5. Esmalte Vestibular Final: 0.3mm, priorizar polimento SUPERIOR. PROIBIDO resinas translúcidas (CT/GT/Trans)! SOMENTE shades de esmalte.
    - Objetivo: Camada final de esmalte mimetizando brilho natural e integração com dente adjacente. Cor 1 tom mais claro que corpo conforme preferência estética do paciente.
    - Técnica: Incremento único cobrindo face vestibular terço médio e incisal. Aplicar com espátula de inserção, pressionando levemente contra parede vestibular. Fotopolimerizar 20s. Priorizar polimento superior com Sof-Lex para brilho espelhado.
-   - P1 (PREFERENCIAL): Palfique LX5 (WE), Estelite Omega (WE) — acabamento espelhado superior. MW(Estelite) para resultado natural sem clareamento. Para dentes clareados: W3(Estelite Bianco)
+   - P1 (OBRIGATORIO quando disponível): Palfique LX5 (WE), Estelite Omega (WE/MW). MW para resultado natural. Clareados: W3/W4(Estelite Bianco). ⚠️ Z350 para Esmalte Final SOMENTE se P1 indisponível — shade A1E/A2E (NUNCA BL1, NAO EXISTE em Z350!)
    - P2: Filtek Z350 XT (A1E/A2E), FORMA (Enamel). IPS Empress Direct (esmalte cores claras)
    - P3: Harmonize (Incisal/TN), Vittra APS (INC)
    - ⚠️ PREFERIR Estelite/Palfique sobre Z350 para camada de esmalte final (polimento superior)
@@ -379,12 +395,17 @@ CORES DE ESMALTE POR LINHA:
 |---------------------|-------------------------------------------|
 | Estelite Sigma Quick| WE, CE                                    |
 | Estelite Omega      | WE, JE, CT                                |
-| Filtek Z350 XT      | CT, GT, BT, YT, A1E, A2E, A3E, B1E       |
+| Filtek Z350 XT      | CT, GT, BT, YT, A1E, A2E, A3E, B1E (⚠️ NAO possui BL1/BL2/BL3!) |
 | Harmonize           | Incisal, TN                               |
 | IPS Empress Direct  | Trans 20, Trans 30, Opal                  |
 | Vittra APS          | Trans, INC                                |
 | Palfique LX5        | MW, WE, CE, BL1, BL2, BL3, A1-A3, B1     |
-ALTERNATIVA SIMPLIFICADA (2 camadas): Corpo usar WB(FORMA), WB(Z350), DA1(Empress) ou DA1(Vittra) — cor SATURADA de dentina. Esmalte usar WE(Palfique/Estelite). PROIBIDO para corpo: WE, MW, CE, TN(Harmonize), Incisal(Harmonize), Trans, CT — são cores de ESMALTE ou translúcidas! TN = Translucent Natural = cor de ESMALTE, NUNCA corpo.
+ALTERNATIVA SIMPLIFICADA (2 camadas):
+- Corpo: WB(FORMA), WB(Z350), DA1(Empress) ou DA1(Vittra) — cor SATURADA de dentina. PROIBIDO para corpo: WE, MW, CE, TN, Incisal, Trans, CT — são cores de ESMALTE!
+- Esmalte: WE(Palfique LX5) — preferencial. MW(Estelite Omega) para natural.
+- Dentes clareados: W3/W4(Estelite Bianco) ou BL(Forma)/BL-L(Empress)
+- Cristas (se 3+ camadas na alternativa): XLE(Harmonize) ou BL-L(Empress). PROIBIDO JE para cristas.
+- TN = Translucent Natural = cor de ESMALTE, NUNCA corpo.
 
 === CLAREAMENTO (BLEACH SHADES) — CONDICIONADO AO OBJETIVO ESTETICO ===
 
@@ -392,7 +413,7 @@ REGRA: Verificar objetivo estetico do paciente (seção PREFERENCIAS ESTETICAS a
 
 SE objetivo inclui "hollywood", "clareamento", "branco", "white", "BL" ou paciente deseja dentes MUITO claros:
   Shades BL/W PERMITIDOS.
-  COM BL: Palfique LX5 (BL1-3), Forma (BL), Z350 (WB/WE aprox.), Estelite Bianco (W1-W4), Empress (BL-L).
+  COM BL: Palfique LX5 (BL1-3), Forma (BL), Estelite Bianco (W1-W4), Empress (BL-L). ⚠️ Z350 NAO possui shades BL — usar WE/A1E como aproximação.
   SEM BL na linha: usar cor mais clara disponivel (B1/A1).
   Dentes clareados: PRIORIDADE Estelite Bianco W1-W4, ALTERNATIVA BL(Forma)/BL-L(Empress).
 
