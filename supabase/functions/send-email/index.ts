@@ -45,7 +45,7 @@ serve(withErrorBoundary(async (req) => {
 
   // Only accept POST
   if (req.method !== "POST") {
-    return createErrorResponse("Metodo nao permitido", 405, corsHeaders);
+    return createErrorResponse("Método não permitido", 405, corsHeaders);
   }
 
   logger.log(`[${reqId}] send-email: start`);

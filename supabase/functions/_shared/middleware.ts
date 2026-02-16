@@ -5,6 +5,12 @@ import { logger } from "./logger.ts";
 // Types
 import type { SupabaseClient, User } from "jsr:@supabase/supabase-js@2";
 
+/** Extended User fields set by Supabase Auth admin actions (not in SDK types) */
+interface UserAdminFields {
+  deleted_at?: string | null;
+  banned_until?: string | null;
+}
+
 /** Create a Supabase client with service role key */
 export function getSupabaseClient(): SupabaseClient {
   const url = Deno.env.get("SUPABASE_URL")!;
@@ -28,19 +34,20 @@ export async function authenticateRequest(
     return createErrorResponse(ERROR_MESSAGES.INVALID_TOKEN, 401, corsHeaders);
   }
 
+  // Check admin-only fields not exposed in SDK types
+  const { deleted_at, banned_until } = user as User & UserAdminFields;
+
   // Check if user has been soft-deleted (Supabase sets deleted_at but doesn't revoke JWTs)
-  // deno-lint-ignore no-explicit-any
-  const userAny = user as any;
-  if (userAny.deleted_at) {
-    logger.warn("Deleted user attempted access", { userId: user.id, deletedAt: userAny.deleted_at });
+  if (deleted_at) {
+    logger.warn("Deleted user attempted access", { userId: user.id, deletedAt: deleted_at });
     return createErrorResponse("Conta excluída", 401, corsHeaders);
   }
 
   // Check if user is banned (banned_until in the future means active ban)
-  if (userAny.banned_until) {
-    const bannedUntil = new Date(userAny.banned_until);
-    if (bannedUntil > new Date()) {
-      logger.warn("Banned user attempted access", { userId: user.id, bannedUntil: userAny.banned_until });
+  if (banned_until) {
+    const bannedDate = new Date(banned_until);
+    if (bannedDate > new Date()) {
+      logger.warn("Banned user attempted access", { userId: user.id, bannedUntil: banned_until });
       return createErrorResponse("Conta suspensa", 403, corsHeaders);
     }
   }

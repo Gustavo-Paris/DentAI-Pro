@@ -80,7 +80,7 @@ export default function Landing() {
                 {t('landing.heroTagline')}
               </Badge>
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-tight mb-4 sm:mb-6 font-display animate-[fade-in-up_0.6s_ease-out_0.4s_both]">
-                Odontologia estética <span className="text-gradient-brand">inteligente</span> com IA
+                {t('landing.heroTitlePre')} <span className="text-gradient-brand">{t('landing.heroTitleHighlight')}</span> {t('landing.heroTitlePost')}
               </h1>
               <p className="text-base sm:text-lg text-muted-foreground mb-8 sm:mb-10 max-w-xl mx-auto lg:mx-0 animate-[fade-in-up_0.6s_ease-out_0.6s_both]">
                 {t('landing.heroSubtitle')}
