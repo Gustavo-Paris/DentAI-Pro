@@ -1518,7 +1518,7 @@
       "daysAgo": "{{count}}d atrás"
     },
     "referral": {
-      "whatsAppMessage": "Estou usando o AURIA para planejamento clínico com IA. Use meu código {{code}} e ganhe 5 créditos bônus! {{url}}"
+      "whatsAppMessage": "Estou usando o ToSmile.ai para planejamento clínico com IA. Use meu código {{code}} e ganhe 5 créditos bônus! {{url}}"
     },
     "groupResult": {
       "unifiedProtocol": "Protocolo Unificado",

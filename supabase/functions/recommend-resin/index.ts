@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders, handleCorsPreFlight, ERROR_MESSAGES, createErrorResponse, generateRequestId } from "../_shared/cors.ts";
 import { getSupabaseClient, authenticateRequest, isAuthError } from "../_shared/middleware.ts";
 import { validateEvaluationData, sanitizeFieldsForPrompt, type EvaluationData } from "../_shared/validation.ts";
@@ -95,7 +94,7 @@ const getWhiteningColors = (baseColor: string): string[] => {
   return whiteningColorMap[normalized] || [];
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   const reqId = generateRequestId();
 
@@ -325,7 +324,7 @@ serve(async (req) => {
     try {
       const claudeResult = await withMetrics<{ text: string | null; finishReason: string }>(metrics, promptDef.id, PROMPT_VERSION, promptDef.model)(async () => {
         const response = await callClaude(
-          "claude-haiku-4-5-20251001",
+          promptDef.model,
           messages,
           {
             temperature: 0.0,
@@ -667,7 +666,7 @@ serve(async (req) => {
       .eq("id", data.evaluationId);
 
     if (updateError) {
-      console.error("Database error saving result:", updateError);
+      logger.error("Database error saving result:", updateError);
       return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
     }
 

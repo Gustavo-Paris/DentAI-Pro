@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders, handleCorsPreFlight, createErrorResponse, ERROR_MESSAGES, generateRequestId } from "../_shared/cors.ts";
 import { getSupabaseClient, authenticateRequest, isAuthError } from "../_shared/middleware.ts";
 import { sanitizeForPrompt } from "../_shared/validation.ts";
@@ -94,7 +93,7 @@ function validateRequest(data: unknown): { success: boolean; error?: string; dat
   };
 }
 
-serve(async (req: Request) => {
+Deno.serve(async (req: Request) => {
   // Handle CORS preflight
   const corsResponse = handleCorsPreFlight(req);
   if (corsResponse) return corsResponse;
@@ -297,7 +296,7 @@ serve(async (req: Request) => {
     try {
       const claudeResult = await withMetrics<{ text: string | null; functionCall: { name: string; args: Record<string, unknown> } | null; finishReason: string }>(metrics, prompt.id, PROMPT_VERSION, prompt.model)(async () => {
         const response = await callClaudeWithTools(
-          "claude-haiku-4-5-20251001",
+          prompt.model,
           messages,
           tools as OpenAITool[],
           {
@@ -351,7 +350,7 @@ serve(async (req: Request) => {
       .eq("id", evaluationId);
 
     if (updateError) {
-      console.error("Update error:", updateError);
+      logger.error("Update error:", updateError);
     }
 
     return new Response(

@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import Stripe from "npm:stripe@14.14.0";
 import { getCorsHeaders, createErrorResponse } from "../_shared/cors.ts";
 import { getSupabaseClient, authenticateRequest, isAuthError, withErrorBoundary } from "../_shared/middleware.ts";
@@ -31,13 +30,13 @@ function isAllowedRedirectUrl(url: string | undefined): boolean {
   }
 }
 
-serve(withErrorBoundary(async (req: Request) => {
+Deno.serve(withErrorBoundary(async (req: Request) => {
   const corsHeaders = getCorsHeaders(req);
 
   // Validate Stripe env
   const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY");
   if (!STRIPE_SECRET_KEY) {
-    console.error("Missing required environment variables");
+    logger.error("Missing required environment variables");
     return createErrorResponse("Configuração incompleta", 500, corsHeaders);
   }
 

@@ -1,16 +1,11 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { getCorsHeaders, handleCorsPreFlight } from "../_shared/cors.ts";
 
-serve(async (req: Request) => {
-  const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey",
-    "Content-Type": "application/json",
-  };
+Deno.serve(async (req: Request) => {
+  const corsHeaders = { ...getCorsHeaders(req), "Content-Type": "application/json" };
 
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return handleCorsPreFlight(req);
   }
 
   const start = Date.now();
