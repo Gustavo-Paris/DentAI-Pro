@@ -50,6 +50,7 @@ const InventoryResinCard = memo(function InventoryResinCard({
   item: FlatInventoryItem;
   onRemove: (id: string) => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="group relative p-2 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
       <ResinBadge shade={item.shade} type={item.type} size="md" showColorSwatch />
@@ -58,8 +59,8 @@ const InventoryResinCard = memo(function InventoryResinCard({
       <button
         onClick={() => onRemove(item.id)}
         className="absolute -top-1 -right-1 p-0.5 rounded-full bg-destructive/10 hover:bg-destructive/20 transition-colors opacity-0 group-hover:opacity-100"
-        title="Remover"
-        aria-label="Remover resina"
+        title={t('common.remove')}
+        aria-label={t('inventory.removeResin')}
       >
         <X className="h-3 w-3 text-destructive" />
       </button>

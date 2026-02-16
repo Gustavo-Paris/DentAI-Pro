@@ -58,108 +58,14 @@ const AddTeethModal = lazy(() => import('@/components/AddTeethModal'));
 import { ClinicalPhotoThumbnail } from '@/components/OptimizedImage';
 const DSDPreviewModal = lazy(() => import('@/components/DSDPreviewModal'));
 import { getTreatmentConfig, formatToothLabel } from '@/lib/treatment-config';
+import {
+  getProtocolFingerprint,
+  getTreatmentBadge,
+  getStatusBadge,
+  groupByTreatment,
+} from './EvaluationDetails.helpers';
 
-// =============================================================================
-// Presentation helpers
-// =============================================================================
-
-function getTreatmentBadge(evaluation: EvaluationItem) {
-  const config = getTreatmentConfig(evaluation.treatment_type);
-  const IconComponent = config.icon;
-
-  return (
-    <Badge variant={config.variant} className="gap-1">
-      <IconComponent className="w-3 h-3" />
-      <span className="hidden md:inline">{config.shortLabel}</span>
-    </Badge>
-  );
-}
-
-function getStatusBadge(evaluation: EvaluationItem, getChecklistProgress: (e: EvaluationItem) => { current: number; total: number }) {
-  if (evaluation.status === 'completed') {
-    return (
-      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
-        <CheckCircle className="w-3 h-3" />
-        <span className="hidden sm:inline">Finalizado</span>
-      </span>
-    );
-  }
-
-  const { current, total } = getChecklistProgress(evaluation);
-  const hasChecklist = total > 0;
-
-  return (
-    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
-      <span className="hidden sm:inline">Planejado</span>
-      {hasChecklist && (
-        <span className="text-muted-foreground">({current}/{total})</span>
-      )}
-    </span>
-  );
-}
-
-// =============================================================================
-// Grouping helper — groups evaluations by treatment type + identical protocol
-// =============================================================================
-
-interface EvalGroup {
-  treatmentType: string;
-  label: string;
-  resinName?: string;
-  evaluations: EvaluationItem[];
-}
-
-/** Generates a fingerprint from an evaluation's protocol so identical protocols can be grouped.
- *  Prefixed by treatment_type to prevent cross-type collisions.
- *  NOTE: Must match the getProtocolFingerprint in useGroupResult.ts */
-export function getProtocolFingerprint(evaluation: EvaluationItem): string {
-  const treatmentType = evaluation.treatment_type || 'resina';
-
-  if (treatmentType === 'resina') {
-    const resinKey = evaluation.resins
-      ? `${evaluation.resins.name}|${evaluation.resins.manufacturer}`
-      : 'no-resin';
-    if (!evaluation.stratification_protocol?.layers?.length) return `resina::${resinKey}`;
-    const layersKey = [...evaluation.stratification_protocol.layers]
-      .sort((a, b) => a.order - b.order)
-      .map(l => `${l.resin_brand}:${l.shade}`)
-      .join('|');
-    return `resina::${resinKey}::${layersKey}`;
-  }
-
-  if (treatmentType === 'porcelana') {
-    const cem = evaluation.cementation_protocol;
-    if (cem?.cementation) {
-      return `porcelana::${cem.cementation.cement_type || ''}::${cem.cementation.cement_brand || ''}`;
-    }
-    return 'porcelana';
-  }
-
-  // Generic treatments (gengivoplastia, implante, coroa, etc.)
-  return treatmentType;
-}
-
-function groupByTreatment(evaluations: EvaluationItem[]): EvalGroup[] {
-  const map = new Map<string, EvaluationItem[]>();
-  for (const ev of evaluations) {
-    // Use fingerprint for ALL treatment types (prevents cross-type collisions)
-    const key = getProtocolFingerprint(ev);
-    if (!map.has(key)) map.set(key, []);
-    map.get(key)!.push(ev);
-  }
-  return Array.from(map.entries()).map(([key, items]) => {
-    const treatmentType = key.split('::')[0];
-    const resinName = treatmentType === 'resina' && items[0]?.resins?.name
-      ? items[0].resins.name
-      : undefined;
-    return {
-      treatmentType,
-      label: getTreatmentConfig(treatmentType).shortLabel,
-      resinName,
-      evaluations: items,
-    };
-  });
-}
+// Helpers, grouping logic, and getProtocolFingerprint imported from EvaluationDetails.helpers.tsx
 
 // =============================================================================
 // Page Adapter
@@ -414,7 +320,7 @@ export default function EvaluationDetails() {
                             <TableCell className="font-medium">{evaluation.tooth === 'GENGIVO' ? t('components.evaluationDetail.gingiva') : evaluation.tooth}</TableCell>
                             <TableCell>{getTreatmentBadge(evaluation)}</TableCell>
                             <TableCell>
-                              {getStatusBadge(evaluation, detail.getChecklistProgress)}
+                              {getStatusBadge(evaluation, detail.getChecklistProgress, t)}
                             </TableCell>
                             <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                               <DropdownMenu>
@@ -508,7 +414,7 @@ export default function EvaluationDetails() {
                             {getTreatmentBadge(evaluation)}
                             <p className="font-semibold">{formatToothLabel(evaluation.tooth)}</p>
                           </div>
-                          {getStatusBadge(evaluation, detail.getChecklistProgress)}
+                          {getStatusBadge(evaluation, detail.getChecklistProgress, t)}
                         </div>
 
                         {evaluation.treatment_type === 'resina' && evaluation.resins && (

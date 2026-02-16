@@ -203,7 +203,7 @@ export default function SharedEvaluation() {
                       >
                         {LAYER_LABELS[layer.type as keyof typeof LAYER_LABELS] || layer.label}
                         {layer.includes_gengivoplasty && (
-                          <Badge variant="secondary" className="ml-1 text-[10px] px-1">Gengivo</Badge>
+                          <Badge variant="secondary" className="ml-1 text-[10px] px-1">{t('components.evaluationDetail.gingiva')}</Badge>
                         )}
                       </Button>
                     ))}

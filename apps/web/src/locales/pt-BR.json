@@ -492,7 +492,9 @@
   },
   "landing": {
     "heroTagline": "Inteligência Clínica Estética",
-    "heroTitle": "O futuro da odontologia estética",
+    "heroTitlePre": "Odontologia estética",
+    "heroTitleHighlight": "inteligente",
+    "heroTitlePost": "com IA",
     "heroSubtitle": "IA que analisa, planeja e gera protocolos personalizados com precisão.",
     "heroCTA": "Testar Grátis em 2 Minutos",
     "heroNoCreditCard": "Sem cartão de crédito. 3 créditos grátis.",
@@ -745,7 +747,9 @@
       "linkCopied": "Link copiado!",
       "linkExpiry": "O link expira em 7 dias.",
       "shareError": "Erro ao gerar link de compartilhamento",
-      "allSelectedCompleted": "Todos os casos selecionados já estão finalizados"
+      "allSelectedCompleted": "Todos os casos selecionados já estão finalizados",
+      "statusCompleted": "Finalizado",
+      "statusPlanned": "Planejado"
     },
     "profile": {
       "subscriptionActivated": "Assinatura ativada com sucesso!",

@@ -11,47 +11,15 @@ import type { PromptDefinition } from "../_shared/prompts/types.ts";
 import type { Params as AnalyzePhotoParams } from "../_shared/prompts/definitions/analyze-dental-photo.ts";
 import { createSupabaseMetrics, PROMPT_VERSION } from "../_shared/metrics-adapter.ts";
 import { parseAIResponse, PhotoAnalysisResultSchema } from "../_shared/aiSchemas.ts";
+import { stripJpegExif } from "../_shared/image-utils.ts";
+import { normalizeTreatmentIndication, type TreatmentIndication } from "../_shared/treatment-normalization.ts";
 
 interface AnalyzePhotoRequest {
   imageBase64: string;
   imageType?: string; // "intraoral" | "frontal_smile" | "45_smile" | "face"
 }
 
-// Expanded treatment types (includes gingival procedures)
-type TreatmentIndication = "resina" | "porcelana" | "coroa" | "implante" | "endodontia" | "encaminhamento" | "gengivoplastia" | "recobrimento_radicular";
-
-// The AI model sometimes returns English values instead of Portuguese enum values.
-// This map normalizes them back to the expected Portuguese strings.
-const TREATMENT_INDICATION_MAP: Record<string, TreatmentIndication> = {
-  resin: "resina",
-  porcelain: "porcelana",
-  crown: "coroa",
-  implant: "implante",
-  endodontics: "endodontia",
-  referral: "encaminhamento",
-  gingivoplasty: "gengivoplastia",
-  gingivectomy: "gengivoplastia",
-  gum_recontouring: "gengivoplastia",
-  root_coverage: "recobrimento_radicular",
-  gingival_graft: "recobrimento_radicular",
-  // Also handle Portuguese values (pass-through)
-  resina: "resina",
-  porcelana: "porcelana",
-  coroa: "coroa",
-  implante: "implante",
-  endodontia: "endodontia",
-  encaminhamento: "encaminhamento",
-  gengivoplastia: "gengivoplastia",
-  recobrimento_radicular: "recobrimento_radicular",
-};
-
-function normalizeTreatmentIndication(value: string | undefined | null): TreatmentIndication {
-  if (!value) return "resina";
-  const normalized = TREATMENT_INDICATION_MAP[value.toLowerCase().trim()];
-  if (normalized) return normalized;
-  logger.warn(`Unknown treatment_indication: "${value}", defaulting to "resina"`);
-  return "resina";
-}
+// TreatmentIndication type and normalizeTreatmentIndication imported from _shared/treatment-normalization.ts
 
 interface ToothBounds {
   x: number;       // Center X position (0-100%)
@@ -117,60 +85,7 @@ function validateImageRequest(data: unknown): { success: boolean; error?: string
   };
 }
 
-/**
- * Strip EXIF (and other APP markers) from a JPEG image encoded as base64.
- * Removes APP1–APP15 markers (0xFFE1–0xFFEF) which contain GPS, device info, etc.
- * Returns a clean base64 string without metadata.
- */
-function stripJpegExif(base64: string): string {
-  const raw = atob(base64);
-  const src = new Uint8Array(raw.length);
-  for (let i = 0; i < raw.length; i++) src[i] = raw.charCodeAt(i);
-
-  // Must start with SOI (0xFFD8)
-  if (src[0] !== 0xFF || src[1] !== 0xD8) return base64;
-
-  const out: number[] = [0xFF, 0xD8];
-  let pos = 2;
-
-  while (pos < src.length - 1) {
-    if (src[pos] !== 0xFF) break;
-
-    const marker = src[pos + 1];
-
-    // SOS (0xFFDA) — start of scan, rest is image data
-    if (marker === 0xDA) {
-      // Copy everything from SOS to end
-      for (let i = pos; i < src.length; i++) out.push(src[i]);
-      break;
-    }
-
-    // APP1–APP15 markers (0xE1–0xEF): skip (these contain EXIF, XMP, etc.)
-    if (marker >= 0xE1 && marker <= 0xEF) {
-      const segLen = (src[pos + 2] << 8) | src[pos + 3];
-      pos += 2 + segLen;
-      continue;
-    }
-
-    // Any other marker: keep it
-    if (marker === 0xD8 || marker === 0xD9 || (marker >= 0xD0 && marker <= 0xD7)) {
-      // Standalone markers (no length field)
-      out.push(src[pos], src[pos + 1]);
-      pos += 2;
-    } else {
-      // Marker with length
-      const segLen = (src[pos + 2] << 8) | src[pos + 3];
-      for (let i = 0; i < 2 + segLen; i++) out.push(src[pos + i]);
-      pos += 2 + segLen;
-    }
-  }
-
-  // Re-encode to base64
-  const bytes = new Uint8Array(out);
-  let binary = '';
-  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-  return btoa(binary);
-}
+// stripJpegExif imported from _shared/image-utils.ts
 
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
