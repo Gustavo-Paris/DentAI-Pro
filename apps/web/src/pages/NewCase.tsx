@@ -203,14 +203,23 @@ export default function NewCase() {
               <p className="text-lg font-semibold text-primary animate-fade-in-up">
                 {t('wizard.caseCreated')}
               </p>
-              <Button
-                variant="outline"
-                onClick={wizard.handleBack}
-                className="animate-fade-in-up print:hidden"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                {t('result.recalculate')}
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-3 animate-fade-in-up">
+                <Button
+                  onClick={() => navigate(`/evaluation/${wizard.completedSessionId}`)}
+                  className="btn-press"
+                >
+                  <Eye className="w-4 h-4 mr-2" />
+                  {t('result.viewCase')}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={wizard.handleBack}
+                  className="print:hidden btn-press"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  {t('result.recalculate')}
+                </Button>
+              </div>
             </div>
           ) : !wizard.isSubmitting ? (
             <div className="flex flex-col items-center justify-center py-12 sm:py-16 space-y-4 sm:space-y-6">

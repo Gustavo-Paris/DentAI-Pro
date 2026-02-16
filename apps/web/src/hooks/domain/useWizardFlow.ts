@@ -254,6 +254,13 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
 
   const canGoBack = nav.step >= 1 && nav.step <= 5;
 
+  const handleBackWithReset = useCallback(() => {
+    if (nav.step === 6) {
+      submit.resetSubmission();
+    }
+    nav.handleBack();
+  }, [nav.step, nav.handleBack, submit.resetSubmission]);
+
   // -------------------------------------------------------------------------
   // Side Effects
   // -------------------------------------------------------------------------
@@ -422,6 +429,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     patients: patientsForAutocomplete || [],
     isSubmitting: submit.isSubmitting,
     submissionComplete: submit.submissionComplete,
+    completedSessionId: submit.completedSessionId,
     submissionStep: submit.submissionStep,
     submissionSteps: submit.submissionSteps,
     uploadedPhotoPath: photo.uploadedPhotoPath,
@@ -444,7 +452,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     goToPreferences: nav.goToPreferences,
     goToQuickCase: nav.goToQuickCase,
     handlePreferencesContinue: nav.handlePreferencesContinue,
-    handleBack: nav.handleBack,
+    handleBack: handleBackWithReset,
     handleRetryAnalysis: nav.handleRetryAnalysis,
     handleSkipToReview: nav.handleSkipToReview,
     cancelAnalysis: nav.cancelAnalysis,

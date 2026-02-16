@@ -60,6 +60,7 @@ export interface WizardFlowState {
   // Submission
   isSubmitting: boolean;
   submissionComplete: boolean;
+  completedSessionId: string | null;
   submissionStep: number;
   submissionSteps: SubmissionStep[];
 
