@@ -592,6 +592,7 @@
     "completed_other": "{{count}} concluídos"
   },
   "result": {
+    "recalculate": "Recalcular Caso",
     "notFound": "Avaliação não encontrada",
     "generatingPDF": "Gerando PDF...",
     "home": "Início",
