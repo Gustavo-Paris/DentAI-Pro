@@ -85,11 +85,11 @@ REGRA SOBRE PRE-MOLARES (14/15/24/25):
  */
 export const GINGIVAL_CRITERIA = `=== AVALIACAO GENGIVAL ===
 
-CLASSIFICACAO DA LINHA DO SORRISO (ARVORE DE DECISAO):
-- "alta": QUALQUER tecido gengival rosa visivel ACIMA dos dentes (entre labio e coroas) OU papilas totalmente visiveis de canino a canino OU contorno gengival dos centrais visivel. Se voce ve ONDE a gengiva encontra o dente → "alta".
-- "media": Labio tangencia EXATAMENTE a margem gengival — apenas 1-2 pontas de papilas visiveis, SEM faixa contínua de gengiva rosa.
-- "baixa": Labio cobre completamente a margem gengival, gengiva NAO visivel.
-VIES DE SEGURANCA: Na duvida entre media e alta → SEMPRE "alta". Subclassificar e clinicamente perigoso.
+CLASSIFICACAO DA LINHA DO SORRISO (DEFINICOES CLINICAS):
+- "alta" (sorriso gengival): FAIXA CONTINUA de gengiva rosa visivel ENTRE o labio superior e as coroas dentarias, tipicamente >3mm. O labio repousa ACIMA das margens gengivais, expondo uma BANDA de tecido gengival. Requer tecido gengival visivel ALEM da margem e papilas — gengiva "extra" acima dos dentes.
+- "media": Margem gengival e papilas interdentais visiveis, mas SEM faixa continua de gengiva acima dos dentes. Labio tangencia ou repousa na margem gengival. Ver onde gengiva encontra dente e ver papilas e NORMAL para "media" — NAO classifique como "alta" apenas por isso.
+- "baixa": Labio cobre completamente a margem gengival e parte das coroas. Gengiva NAO visivel.
+DISTINCAO CRITICA: Papilas visiveis entre dentes e contorno gengival visivel sao NORMAIS em sorrisos "media". "Alta" requer uma BANDA de gengiva ACIMA dos dentes, nao apenas a transicao gengiva/dente.
 
 REGRA DE VISIBILIDADE:
 - Linha do sorriso ALTA: AVALIAR gengiva e sugerir gengivoplastia se indicado
@@ -104,10 +104,9 @@ SE gengiva visivel (linha media ou alta), avalie:
 4. Zenites assimetricos entre homologos -> gengivoplastia para harmonizar
 
 CROSS-VALIDACAO SMILE_LINE (VERIFICAR ANTES DE FINALIZAR):
-Se sugestoes mencionam "sorriso gengival" ou "excesso gengival" MAS smile_line classificada como "média" → INCONSISTENCIA.
-Acao: Reclassificar smile_line para "alta". Se gengiva e mencionada como problema estetico, POR DEFINICAO e smile_line alta.
-Se observacoes mencionam gengiva "ampla"/"extensa"/"significativa"/"visivel acima dos dentes" E smile_line = "média" → RECLASSIFICAR para "alta".
-Se papilas interdentais estao TOTALMENTE visiveis entre todos os dentes anteriores → smile_line = "alta" (nao "media").
+Se sugestoes mencionam "sorriso gengival" ou "excesso gengival" MAS smile_line = "média" → RECLASSIFICAR para "alta".
+Se observacoes descrevem gengiva como "ampla"/"extensa"/"banda de gengiva acima dos dentes" E smile_line = "média" → RECLASSIFICAR para "alta".
+ATENCAO: Papilas visiveis e contorno gengival visivel NAO indicam "alta" sozinhos — sao normais em "media". Apenas FAIXA CONTINUA de gengiva acima dos dentes indica "alta".
 
 GENGIVOPLASTIA vs RECOBRIMENTO RADICULAR (diferenciar!):
 | Procedimento             | Objetivo                        | Indicacao                              |
