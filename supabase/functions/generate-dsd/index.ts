@@ -128,27 +128,26 @@ function applySmileLineOverride(
   }
 
   // Safety net: keyword-based cross-validation of observations vs smile_line
-  // If the AI's own text describes visible gingiva features but classified as "média", force upgrade
+  // Only upgrade to "alta" if observations describe TRUE gummy smile indicators
+  // (continuous band of gum, >3mm exposure), NOT normal anatomy (visible papillae, contour)
   if (analysis.smile_line === 'média' || analysis.smile_line === 'media') {
     const allText = [
       ...(analysis.observations || []),
       ...(analysis.suggestions || []).map((s: { description?: string; notes?: string }) => `${s.description || ''} ${s.notes || ''}`),
     ].join(' ').toLowerCase();
 
-    const gingivalKeywords = [
-      'zênites visíveis', 'zenites visíveis', 'zênites visiveis', 'zenites visiveis',
-      'papilas visíveis', 'papilas visiveis', 'papilas totalmente',
-      'contorno gengival visível', 'contorno gengival visivel',
-      'gengiva exposta', 'exposição gengival significativa', 'exposicao gengival significativa',
+    // Only keywords that indicate TRUE gummy smile (not normal anatomy)
+    const gummySmileKeywords = [
       'sorriso gengival', 'excesso gengival', 'excesso de gengiva',
       'faixa de gengiva', 'banda de gengiva', 'gengiva rosa acima',
-      '>3mm', '>2mm',
+      'exposição gengival significativa', 'exposicao gengival significativa',
+      '>3mm',
     ];
 
-    const matched = gingivalKeywords.filter(kw => allText.includes(kw));
+    const matched = gummySmileKeywords.filter(kw => allText.includes(kw));
     if (matched.length >= 1) {
       logger.log(
-        `Smile line SAFETY NET: observations mention gingival visibility (${matched.join(', ')}) ` +
+        `Smile line SAFETY NET: observations mention gummy smile indicators (${matched.join(', ')}) ` +
         `but smile_line="${analysis.smile_line}" — upgrading to "alta"`
       );
       analysis.smile_line = 'alta';

@@ -43,7 +43,7 @@ export function getStatusBadge(
     return (
       <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
         <CheckCircle className="w-3 h-3" />
-        <span className="hidden sm:inline">{t('toast.evaluationDetail.statusCompleted')}</span>
+        <span className="hidden sm:inline">{t('toasts.evaluationDetail.statusCompleted')}</span>
       </span>
     );
   }
@@ -53,7 +53,7 @@ export function getStatusBadge(
 
   return (
     <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
-      <span className="hidden sm:inline">{t('toast.evaluationDetail.statusPlanned')}</span>
+      <span className="hidden sm:inline">{t('toasts.evaluationDetail.statusPlanned')}</span>
       {hasChecklist && (
         <span className="text-muted-foreground">({current}/{total})</span>
       )}

@@ -17,27 +17,27 @@ export const smileLineClassifier: PromptDefinition<Params> = {
   system: () =>
     `Voce e um classificador de linha do sorriso. Sua UNICA tarefa: classificar a exposicao gengival.
 
-ARVORE DE DECISAO (siga em ordem, pare no primeiro SIM):
+DEFINICOES CLINICAS:
+- "alta" (sorriso gengival): FAIXA CONTINUA de gengiva rosa visivel acima dos dentes, tipicamente >3mm. O labio superior repousa ACIMA das margens gengivais, expondo uma banda de tecido gengival entre o labio e as coroas.
+- "media": Margem gengival visivel mas SEM faixa continua de gengiva exposta. Labio tangencia ou repousa na linha da margem gengival. Papilas e contorno gengival visiveis, mas nao ha banda de gengiva entre labio e dentes. Exposicao 0-3mm.
+- "baixa": Labio cobre as margens gengivais e parte das coroas dentarias. Gengiva nao visivel ou minimamente visivel.
 
-PERGUNTA 1: Voce consegue ver QUALQUER area de gengiva rosa ACIMA dos dentes (entre a borda do labio superior e as coroas dentarias)?
-- SIM → "alta" (PARE AQUI — qualquer gengiva visivel acima dos dentes = alta)
+ARVORE DE DECISAO (siga em ordem):
+
+PERGUNTA 1: Existe uma FAIXA CONTINUA (banda) de gengiva rosa visivel ENTRE o labio superior e os dentes? (nao apenas papilas ou a linha onde gengiva encontra dente, mas tecido gengival ACIMA das coroas)
+- SIM, faixa continua >3mm → "alta"
+- SIM, faixa estreita 1-3mm → "alta" se em mais de 4 dentes, senao "media"
 - NAO → Continue para Pergunta 2
 
-PERGUNTA 2: As papilas interdentais (triangulos de gengiva entre os dentes) estao totalmente visiveis de canino a canino?
-- SIM → "alta" (PARE AQUI — papilas totalmente expostas = labio esta acima da margem gengival)
-- NAO → Continue para Pergunta 3
+PERGUNTA 2: O contorno gengival (margem) e as papilas interdentais estao visiveis?
+- SIM, papilas e margem totalmente visiveis de canino a canino, mas labio toca a margem (sem banda de gengiva acima) → "media"
+- SIM, parcialmente visiveis → "media"
+- NAO, labio cobre margem e parte das coroas → "baixa"
 
-PERGUNTA 3: O contorno gengival (a linha onde a gengiva encontra os dentes) esta visivel nos incisivos centrais?
-- SIM → "alta" (PARE AQUI — se voce ve ONDE a gengiva termina e o dente comeca, ha exposicao gengival)
-- NAO → Continue para Pergunta 4
-
-PERGUNTA 4: O labio superior cobre completamente a margem gengival, mostrando apenas as coroas dos dentes?
-- SIM, so vejo coroas → "media" (labio tangencia a margem, exposicao minima)
-- SIM, e cobre parte das coroas tambem → "baixa" (labio cobre ate parte dos dentes)
-
-REGRA ABSOLUTA: Se ha QUALQUER tecido gengival rosa visivel na foto que NAO seja apenas a ponta de 1-2 papilas → "alta". Ponto final.
-
-VIES DE SEGURANCA: Na duvida → SEMPRE "alta". Classificar erroneamente como "media" um sorriso gengival e clinicamente PERIGOSO (paciente perde indicacao de gengivoplastia). Superclassificar e SEGURO.
+DISTINCAO CRITICA:
+- Ver papilas entre dentes e normal em sorrisos "media" — NAO significa "alta"
+- Ver onde gengiva encontra o dente (contorno gengival) e normal em sorrisos "media" — NAO significa "alta"
+- "alta" requer uma BANDA VISIVEL DE TECIDO GENGIVAL entre o labio e os dentes — nao apenas a transicao gengiva/dente
 
 Responda APENAS com JSON (sem markdown, sem backticks):
 {"smile_line":"alta|media|baixa","gingival_exposure_mm":NUMBER,"confidence":"alta|media|baixa","justification":"1 frase"}`,
