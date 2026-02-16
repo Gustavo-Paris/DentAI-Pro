@@ -81,7 +81,7 @@
     "@radix-ui/react-label": "^2.1.8",
     "@radix-ui/react-slot": "^1.2.4",
     "@repo/logger": "workspace:*",
-    "lucide-react": "^0.563.0",
+    "lucide-react": "^0.564.0",
     "sonner": "^2.0.7"
   },
   "devDependencies": {
