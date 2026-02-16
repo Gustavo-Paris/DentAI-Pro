@@ -65,35 +65,22 @@ export function applySmileLineOverride(
     }
   }
 
-  // Safety net: keyword-based cross-validation of observations vs smile_line
-  // Only upgrade to "alta" if observations describe TRUE gummy smile indicators
-  // (continuous band of gum, >3mm exposure), NOT normal anatomy (visible papillae, contour)
-  if (analysis.smile_line === 'média' || analysis.smile_line === 'media') {
-    const allText = [
-      ...(analysis.observations || []),
-      ...(analysis.suggestions || []).map((s: { description?: string; notes?: string }) => `${s.description || ''} ${s.notes || ''}`),
-    ].join(' ').toLowerCase();
-
-    // Only keywords that indicate TRUE gummy smile (not normal anatomy)
-    const gummySmileKeywords = [
-      'sorriso gengival', 'excesso gengival', 'excesso de gengiva',
-      'faixa de gengiva', 'banda de gengiva', 'gengiva rosa acima',
-      'exposição gengival significativa', 'exposicao gengival significativa',
-      '>3mm',
-    ];
-
-    const matched = gummySmileKeywords.filter(kw => allText.includes(kw));
-    if (matched.length >= 1) {
-      logger.log(
-        `Smile line SAFETY NET: observations mention gummy smile indicators (${matched.join(', ')}) ` +
-        `but smile_line="${analysis.smile_line}" — upgrading to "alta"`
-      );
-      analysis.smile_line = 'alta';
-      analysis.observations = analysis.observations || [];
-      analysis.observations.push(
-        `Linha do sorriso reclassificada para "alta" por cross-validação: ` +
-        `observações indicam exposição gengival (${matched.join(', ')}) incompatível com classificação "média".`
-      );
-    }
+  // Quantitative override: if classifier reports ≥2mm exposure but classified as
+  // non-alta, force "alta" since ≥2mm is the clinical threshold for gummy smile
+  if (classifierResult && classifierResult.gingival_exposure_mm >= 2 && analysis.smile_line !== 'alta') {
+    logger.log(
+      `Smile line NUMERIC OVERRIDE: classifier reported ${classifierResult.gingival_exposure_mm}mm ` +
+      `gingival exposure (≥2mm threshold) but smile_line="${analysis.smile_line}" → forcing "alta"`
+    );
+    analysis.smile_line = 'alta';
+    analysis.observations = analysis.observations || [];
+    analysis.observations.push(
+      `Linha do sorriso reclassificada para "alta": exposição gengival estimada de ` +
+      `${classifierResult.gingival_exposure_mm}mm (≥2mm = sorriso gengival).`
+    );
   }
+
+  // Note: keyword-based safety net was removed — it caused false positives
+  // when observations contained negated phrases (e.g., "Não há gengiva rosa acima").
+  // The classifier + numeric override (≥2mm) are sufficient and more reliable.
 }

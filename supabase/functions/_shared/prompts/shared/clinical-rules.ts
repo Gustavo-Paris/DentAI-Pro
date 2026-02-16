@@ -86,10 +86,10 @@ REGRA SOBRE PRE-MOLARES (14/15/24/25):
 export const GINGIVAL_CRITERIA = `=== AVALIACAO GENGIVAL ===
 
 CLASSIFICACAO DA LINHA DO SORRISO (DEFINICOES CLINICAS):
-- "alta" (sorriso gengival): FAIXA CONTINUA de gengiva rosa visivel ENTRE o labio superior e as coroas dentarias, tipicamente >3mm. O labio repousa ACIMA das margens gengivais, expondo uma BANDA de tecido gengival. Requer tecido gengival visivel ALEM da margem e papilas — gengiva "extra" acima dos dentes.
-- "media": Margem gengival e papilas interdentais visiveis, mas SEM faixa continua de gengiva acima dos dentes. Labio tangencia ou repousa na margem gengival. Ver onde gengiva encontra dente e ver papilas e NORMAL para "media" — NAO classifique como "alta" apenas por isso.
+- "alta" (sorriso gengival): Gengiva rosa visivel ACIMA dos dentes, entre labio e coroas. O labio NAO toca as margens gengivais — ha faixa rosa (>=2mm) entre onde o labio termina e onde os dentes comecam. TESTE: se entre a borda do labio e o topo dos dentes existe rosa → "alta".
+- "media": Labio TOCA ou tangencia a margem gengival — sem espaco rosa entre labio e dentes. Papilas interdentais visiveis ENTRE os dentes (triangulos rosa entre coroas) sao normais para "media".
 - "baixa": Labio cobre completamente a margem gengival e parte das coroas. Gengiva NAO visivel.
-DISTINCAO CRITICA: Papilas visiveis entre dentes e contorno gengival visivel sao NORMAIS em sorrisos "media". "Alta" requer uma BANDA de gengiva ACIMA dos dentes, nao apenas a transicao gengiva/dente.
+DISTINCAO CRITICA: "alta" = faixa rosa HORIZONTAL acima dos dentes (entre labio e coroas). "media" = papilas VERTICAIS entre os dentes mas labio encosta na margem. Papilas entre dentes NAO indicam "alta" — apenas gengiva ACIMA dos dentes indica "alta".
 
 REGRA DE VISIBILIDADE:
 - Linha do sorriso ALTA: AVALIAR gengiva e sugerir gengivoplastia se indicado
@@ -103,10 +103,7 @@ SE gengiva visivel (linha media ou alta), avalie:
 3. Sorriso gengival com exposicao gengival significativa: considerar gengivoplastia ou encaminhamento periodontia
 4. Zenites assimetricos entre homologos -> gengivoplastia para harmonizar
 
-CROSS-VALIDACAO SMILE_LINE (VERIFICAR ANTES DE FINALIZAR):
-Se sugestoes mencionam "sorriso gengival" ou "excesso gengival" MAS smile_line = "média" → RECLASSIFICAR para "alta".
-Se observacoes descrevem gengiva como "ampla"/"extensa"/"banda de gengiva acima dos dentes" E smile_line = "média" → RECLASSIFICAR para "alta".
-ATENCAO: Papilas visiveis e contorno gengival visivel NAO indicam "alta" sozinhos — sao normais em "media". Apenas FAIXA CONTINUA de gengiva acima dos dentes indica "alta".
+NOTA: A classificacao da linha do sorriso sera validada por um classificador dedicado pos-analise. Nao reclassifique manualmente — apenas descreva o que voce observa com precisao.
 
 GENGIVOPLASTIA vs RECOBRIMENTO RADICULAR (diferenciar!):
 | Procedimento             | Objetivo                        | Indicacao                              |
