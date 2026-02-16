@@ -101,6 +101,7 @@ export function useWizardSubmit({
   const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionComplete, setSubmissionComplete] = useState(false);
+  const [completedSessionId, setCompletedSessionId] = useState<string | null>(null);
   const [submissionStep, setSubmissionStep] = useState(0);
   const [currentToothIndex, setCurrentToothIndex] = useState(-1);
 
@@ -490,6 +491,7 @@ export function useWizardSubmit({
       } else {
         // At least some succeeded — show success animation then navigate
         clearDraft();
+        setCompletedSessionId(sessionId);
         toast.dismiss();
         setIsSubmitting(false);
         setSubmissionComplete(true);
@@ -508,10 +510,8 @@ export function useWizardSubmit({
           );
         }
 
-        // Brief success animation before navigating
+        // Brief delay for success animation — user chooses next action via buttons
         await new Promise((resolve) => setTimeout(resolve, TIMING.WIZARD_SUBMIT_DELAY));
-        setSubmissionComplete(false);
-        navigate(`/evaluation/${sessionId}`);
       }
     } catch (error: unknown) {
       // This catch handles errors BEFORE the loop (patient creation, etc.)
@@ -562,13 +562,22 @@ export function useWizardSubmit({
     setFormData,
   ]);
 
+  const resetSubmission = useCallback(() => {
+    setSubmissionComplete(false);
+    setCompletedSessionId(null);
+    setSubmissionStep(0);
+    setCurrentToothIndex(-1);
+  }, []);
+
   return {
     isSubmitting,
     submissionComplete,
+    completedSessionId,
     submissionStep,
     submissionSteps,
     currentToothIndex,
     handleSubmit,
     validateForm,
+    resetSubmission,
   };
 }

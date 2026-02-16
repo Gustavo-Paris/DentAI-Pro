@@ -593,6 +593,7 @@
   },
   "result": {
     "recalculate": "Recalcular Caso",
+    "viewCase": "Ver Caso",
     "notFound": "Avaliação não encontrada",
     "generatingPDF": "Gerando PDF...",
     "home": "Início",
