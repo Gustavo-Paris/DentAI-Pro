@@ -289,6 +289,6 @@ Deno.serve(async (req: Request) => {
       await refundCredits(supabaseForRefund, userIdForRefund, "dsd_simulation", reqId);
       logger.log(`[${reqId}] Refunded DSD credits for user ${userIdForRefund} due to error`);
     }
-    return createErrorResponse(`${ERROR_MESSAGES.PROCESSING_ERROR} (${msg})`, 500, corsHeaders, undefined, reqId);
+    return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders, undefined, reqId);
   }
 });
