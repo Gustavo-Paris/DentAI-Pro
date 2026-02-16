@@ -1566,5 +1566,17 @@
   "toothLabel": {
     "gingiva": "Gengiva",
     "tooth": "Dente {{number}}"
+  },
+  "consent": {
+    "title": "Termos de Uso — Inteligência Artificial",
+    "intro": "Antes de iniciar, leia e aceite os termos abaixo:",
+    "bullet1": "Este sistema utiliza Inteligência Artificial para gerar sugestões de tratamento odontológico.",
+    "bullet2": "As sugestões são ferramentas de apoio ao diagnóstico e NÃO substituem a avaliação clínica do cirurgião-dentista.",
+    "bullet3": "A decisão final de tratamento é sempre do profissional responsável.",
+    "bullet4": "As imagens e dados dos pacientes são protegidos conforme a LGPD (Lei Geral de Proteção de Dados).",
+    "bullet5": "Os resultados dependem de múltiplos fatores clínicos e podem variar.",
+    "checkbox": "Li e aceito os termos acima",
+    "accept": "Continuar",
+    "footer": "Ao aceitar, você concorda com nossa"
   }
 }

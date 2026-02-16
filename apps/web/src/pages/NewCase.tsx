@@ -29,6 +29,7 @@ import { DSDStep } from '@/components/wizard/DSDStep';
 import { ReviewAnalysisStep } from '@/components/wizard/ReviewAnalysisStep';
 import { DraftRestoreModal } from '@/components/wizard/DraftRestoreModal';
 import { CreditConfirmDialog } from '@/components/CreditConfirmDialog';
+import { useAiDisclaimer, AiDisclaimerModal } from '@/components/AiDisclaimerModal';
 import { LoadingOverlay } from '@/components/LoadingOverlay';
 import { StepIndicator } from '@/components/wizard/StepIndicator';
 
@@ -48,6 +49,7 @@ const QUICK_ICONS = [Camera, Brain, ClipboardCheck, FileText];
 export default function NewCase() {
   const { t } = useTranslation();
   const wizard = useWizardFlow();
+  const disclaimer = useAiDisclaimer();
   const navigate = useNavigate();
 
   // Track wizard_started on mount
@@ -231,6 +233,11 @@ export default function NewCase() {
   };
 
   return (
+    <>
+    <AiDisclaimerModal
+      open={!disclaimer.accepted}
+      onAccept={disclaimer.accept}
+    />
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       <WizardPage
         title={t('wizard.newCase')}
@@ -335,5 +342,6 @@ export default function NewCase() {
         onConfirm={wizard.handleCreditConfirm}
       />
     </div>
+    </>
   );
 }
