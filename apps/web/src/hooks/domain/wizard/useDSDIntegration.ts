@@ -103,17 +103,9 @@ export function useDSDIntegration({
         });
       }
 
-      // Auto-add gengivoplasty case if user explicitly approved in DSD step,
-      // OR if DSD layers include complete-treatment with gengivoplasty,
-      // OR if any suggestion has treatment_indication: "gengivoplastia"
-      // NOTE: Only use structured fields (treatment_indication) — text keyword matching
-      // is unreliable and causes inconsistent gengivoplasty detection across runs.
-      const hasGengivoplasty = result?.gingivoplastyApproved ||
-        result?.layers?.some(l => l.includes_gengivoplasty) ||
-        result?.analysis?.suggestions?.some(s => {
-          const indication = (s.treatment_indication || '').toLowerCase();
-          return indication === 'gengivoplastia' || indication === 'gingivoplasty';
-        });
+      // Auto-add gengivoplasty ONLY if user explicitly approved in DSD step.
+      // If gingivoplastyApproved is explicitly false, the user discarded it — respect that.
+      const hasGengivoplasty = result?.gingivoplastyApproved === true;
       if (hasGengivoplasty) {
         // Add a virtual "GENGIVO" tooth entry for gengivoplasty
         setSelectedTeeth((prev) =>
