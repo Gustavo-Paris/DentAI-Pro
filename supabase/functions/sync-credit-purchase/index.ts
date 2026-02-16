@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import Stripe from "npm:stripe@14.14.0";
 import { getCorsHeaders, createErrorResponse } from "../_shared/cors.ts";
 import { logger } from "../_shared/logger.ts";
@@ -14,7 +13,7 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
  * Called by the frontend after checkout completes to ensure credits are applied.
  * Fallback for webhook delivery issues — idempotent via stripe_session_id UNIQUE.
  */
-serve(withErrorBoundary(async (req: Request) => {
+Deno.serve(withErrorBoundary(async (req: Request) => {
   const corsHeaders = getCorsHeaders(req);
   const supabase = getSupabaseClient();
   const authResult = await authenticateRequest(req, supabase, corsHeaders);

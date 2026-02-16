@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import {
   getCorsHeaders,
   handleCorsPreFlight,
@@ -17,7 +16,7 @@ import { checkRateLimit, createRateLimitResponse } from "../_shared/rateLimit.ts
  * right to data portability (Art. 18, V — LGPD).
  */
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   const reqId = generateRequestId();
 

@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import Stripe from "npm:stripe@14.14.0";
 import { logger } from "../_shared/logger.ts";
@@ -25,7 +24,7 @@ async function resolveInternalPlanId(supabase: any, stripePriceId: string): Prom
   return data?.id || stripePriceId;
 }
 
-serve(async (req: Request) => {
+Deno.serve(async (req: Request) => {
   // Only allow POST
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });

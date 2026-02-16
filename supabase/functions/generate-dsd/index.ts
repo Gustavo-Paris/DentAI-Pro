@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders, handleCorsPreFlight, createErrorResponse, ERROR_MESSAGES, generateRequestId } from "../_shared/cors.ts";
 import { getSupabaseClient, authenticateRequest, isAuthError } from "../_shared/middleware.ts";
 import { logger } from "../_shared/logger.ts";
@@ -96,7 +95,9 @@ function parseSmileLineClassifierResponse(text: string): SmileLineClassifierResu
   }
 }
 
-// Apply smile line override: only UPGRADE severity, never downgrade
+// Apply smile line override: classifier is authoritative (can both upgrade AND downgrade)
+// The dedicated classifier uses a calibrated prompt focused solely on smile line,
+// making it more accurate than the general-purpose DSD analysis.
 function applySmileLineOverride(
   analysis: DSDAnalysis,
   classifierResult: SmileLineClassifierResult | null,
@@ -108,9 +109,10 @@ function applySmileLineOverride(
     const mainSeverity = severityMap[analysis.smile_line] ?? 1;
     const classifierSeverity = severityMap[classifierResult.smile_line] ?? 1;
 
-    if (classifierSeverity > mainSeverity) {
+    if (classifierSeverity !== mainSeverity) {
+      const direction = classifierSeverity > mainSeverity ? 'UPGRADE' : 'DOWNGRADE';
       logger.log(
-        `Smile line classifier OVERRIDE: "${analysis.smile_line}" → "${classifierResult.smile_line}" ` +
+        `Smile line classifier ${direction}: "${analysis.smile_line}" → "${classifierResult.smile_line}" ` +
         `(exposure=${classifierResult.gingival_exposure_mm}mm, confidence=${classifierResult.confidence}, ` +
         `reason="${classifierResult.justification}")`
       );
@@ -122,7 +124,7 @@ function applySmileLineOverride(
       );
     } else {
       logger.log(
-        `Smile line classifier: no override needed (main="${analysis.smile_line}", classifier="${classifierResult.smile_line}")`
+        `Smile line classifier: agrees with main analysis (both="${analysis.smile_line}")`
       );
     }
   }
@@ -620,7 +622,7 @@ async function generateSimulation(
       const simMimeType = simMimeMatch ? simMimeMatch[1] : 'image/png';
 
       const lipCheck = await callClaudeVision(
-        "claude-sonnet-4-5-20250929",
+        dsdAnalysisPromptDef.model,
         `Imagem 1 é a ORIGINAL. Imagem 2 é a SIMULAÇÃO odontológica.
 Compare AMBOS os lábios entre as duas imagens:
 1. O LÁBIO SUPERIOR mudou de posição, formato ou contorno?
@@ -1001,7 +1003,7 @@ Se o problema clínico é microdontia/conoide → sua sugestão deve ser "Aument
   try {
     const result = await withMetrics<{ text: string | null; functionCall: { name: string; args: Record<string, unknown> } | null; finishReason: string }>(metrics, dsdAnalysisPromptDef.id, PROMPT_VERSION, dsdAnalysisPromptDef.model)(async () => {
       const response = await callClaudeVisionWithTools(
-        "claude-sonnet-4-5-20250929",
+        dsdAnalysisPromptDef.model,
         "Analise esta foto e retorne a análise DSD completa usando a ferramenta analyze_dsd.",
         base64Data,
         mimeType,
@@ -1056,7 +1058,7 @@ Se o problema clínico é microdontia/conoide → sua sugestão deve ser "Aument
 
       // Full fallback: call Claude WITHOUT tools, ask for raw JSON
       const fallbackResponse = await callClaudeVision(
-        "claude-sonnet-4-5-20250929",
+        dsdAnalysisPromptDef.model,
         `Analise esta foto odontológica e retorne a análise DSD completa.
 Responda APENAS com um objeto JSON válido (sem markdown, sem backticks) com os seguintes campos:
 facial_midline, dental_midline, smile_line, buccal_corridor, occlusal_plane,
@@ -1116,7 +1118,7 @@ Use SOMENTE valores em português conforme os enums do schema.`,
   }
 }
 
-serve(async (req: Request) => {
+Deno.serve(async (req: Request) => {
   // Handle CORS preflight
   const corsResponse = handleCorsPreFlight(req);
   if (corsResponse) return corsResponse;

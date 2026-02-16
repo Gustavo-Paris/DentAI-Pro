@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import {
   getCorsHeaders,
   ERROR_MESSAGES,
@@ -39,7 +38,7 @@ const VALID_TEMPLATES: TemplateName[] = [
   "account-deleted",
 ];
 
-serve(withErrorBoundary(async (req) => {
+Deno.serve(withErrorBoundary(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   const reqId = generateRequestId();
 

@@ -8,6 +8,7 @@
  */
 
 import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
+import { logger } from "./logger.ts";
 
 export interface RateLimitConfig {
   /** Requests allowed per minute */
@@ -96,7 +97,7 @@ export async function checkRateLimit(
     });
 
     if (error || !data || data.length === 0) {
-      console.error("Rate limit RPC error:", error);
+      logger.error("Rate limit RPC error:", error);
       // Fail closed: deny on DB error to prevent bypass
       return createDeniedResult(minuteReset, hourReset, dayReset);
     }
@@ -151,7 +152,7 @@ export async function checkRateLimit(
       },
     };
   } catch (error) {
-    console.error("Rate limit error:", error);
+    logger.error("Rate limit error:", error);
     // Fail closed: deny on unexpected error to prevent bypass
     return createDeniedResult(minuteReset, hourReset, dayReset);
   }

@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import {
   getCorsHeaders,
   handleCorsPreFlight,
@@ -22,7 +21,7 @@ import { checkRateLimit, createRateLimitResponse } from "../_shared/rateLimit.ts
 
 const CONFIRMATION_PHRASE = "EXCLUIR MINHA CONTA";
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   const reqId = generateRequestId();
 
