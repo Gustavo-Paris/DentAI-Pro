@@ -11,88 +11,10 @@ import type { Params as RecommendResinParams } from "../_shared/prompts/definiti
 import { createSupabaseMetrics, PROMPT_VERSION } from "../_shared/metrics-adapter.ts";
 import { parseAIResponse, RecommendResinResponseSchema } from "../_shared/aiSchemas.ts";
 
-function getContralateral(tooth: string): string | null {
-  const num = parseInt(tooth);
-  if (num >= 11 && num <= 18) return String(num + 10);
-  if (num >= 21 && num <= 28) return String(num - 10);
-  if (num >= 31 && num <= 38) return String(num + 10);
-  if (num >= 41 && num <= 48) return String(num - 10);
-  return null;
-}
-
-interface ProtocolLayer {
-  order: number;
-  name: string;
-  resin_brand: string;
-  shade: string;
-  thickness: string;
-  purpose: string;
-  technique: string;
-}
-
-interface ProtocolAlternative {
-  resin: string;
-  shade: string;
-  technique: string;
-  tradeoff: string;
-}
-
-interface PolishingStep {
-  order: number;
-  tool: string;
-  grit?: string;
-  speed: string;
-  time: string;
-  tip: string;
-}
-
-interface FinishingProtocol {
-  contouring: PolishingStep[];
-  polishing: PolishingStep[];
-  final_glaze?: string;
-  maintenance_advice: string;
-}
-
-interface StratificationProtocol {
-  layers: ProtocolLayer[];
-  alternative: ProtocolAlternative;
-  finishing?: FinishingProtocol;
-  checklist: string[];
-  alerts: string[];
-  warnings: string[];
-  justification: string;
-  confidence: "alta" | "média" | "baixa";
-}
-
-// Mapeamento de cores VITA para clareamento (sincronizado com frontend)
-const whiteningColorMap: Record<string, string[]> = {
-  'A4': ['A3', 'A2'],
-  'A3.5': ['A2', 'A1'],
-  'A3': ['A2', 'A1'],
-  'A2': ['A1', 'BL4'],
-  'A1': ['BL4', 'BL3'],
-  'B4': ['B3', 'B2'],
-  'B3': ['B2', 'B1'],
-  'B2': ['B1', 'A1'],
-  'B1': ['A1', 'BL4'],
-  'C4': ['C3', 'C2'],
-  'C3': ['C2', 'C1'],
-  'C2': ['C1', 'B1'],
-  'C1': ['B1', 'A1'],
-  'D4': ['D3', 'D2'],
-  'D3': ['D2', 'A3'],
-  'D2': ['A2', 'A1'],
-  'BL4': ['BL3', 'BL2'],
-  'BL3': ['BL2', 'BL1'],
-  'BL2': ['BL1'],
-  'BL1': [],
-};
-
-// Helper to get adjusted whitening colors
-const getWhiteningColors = (baseColor: string): string[] => {
-  const normalized = baseColor.toUpperCase().trim();
-  return whiteningColorMap[normalized] || [];
-}
+import { getContralateral } from "./tooth-utils.ts";
+import type { StratificationProtocol } from "./types.ts";
+import { groupResinsByPrice, getBudgetAppropriateResins, validateInventoryRecommendation } from "./inventory.ts";
+import { validateAndFixProtocolLayers } from "./shade-validation.ts";
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -182,40 +104,16 @@ Deno.serve(async (req) => {
       logger.error("Error fetching inventory:", inventoryError);
     }
 
-    const inventoryResinIds = userInventory?.map((i) => i.resin_id) || [];
+    const inventoryResinIds = userInventory?.map((i: { resin_id: string }) => i.resin_id) || [];
     const hasInventory = inventoryResinIds.length > 0;
 
     // Separate resins into inventory and non-inventory groups
-    const inventoryResins = resins.filter((r) =>
+    const inventoryResins = resins.filter((r: { id: string }) =>
       inventoryResinIds.includes(r.id)
     );
     const otherResins = resins.filter(
-      (r) => !inventoryResinIds.includes(r.id)
+      (r: { id: string }) => !inventoryResinIds.includes(r.id)
     );
-
-    // Group resins by price range for better budget-aware recommendations
-    const groupResinsByPrice = (resinList: typeof resins) => ({
-      economico: resinList.filter((r) => r.price_range === "Econômico"),
-      intermediario: resinList.filter((r) => r.price_range === "Intermediário"),
-      medioAlto: resinList.filter((r) => r.price_range === "Médio-alto"),
-      premium: resinList.filter((r) => r.price_range === "Premium"),
-    });
-
-    // Get budget-appropriate resins based on user's budget selection
-    const getBudgetAppropriateResins = (
-      resinList: typeof resins,
-      budget: string
-    ) => {
-      const groups = groupResinsByPrice(resinList);
-      switch (budget) {
-        case "padrão":
-          return [...groups.economico, ...groups.intermediario, ...groups.medioAlto];
-        case "premium":
-          return resinList; // All resins available for premium budget
-        default:
-          return resinList;
-      }
-    };
 
     // Filter inventory resins by budget if user has inventory
     const budgetAppropriateInventory = hasInventory
@@ -398,222 +296,21 @@ Deno.serve(async (req) => {
     creditsConsumed = true;
 
     // Validate and fix protocol layers against resin_catalog
-    if (recommendation.protocol?.layers && Array.isArray(recommendation.protocol.layers)) {
-      const validatedLayers = [];
-      const validationAlerts: string[] = [];
-      const shadeReplacements: Record<string, string> = {}; // Track all shade corrections for checklist sync
-
-      // Check if patient requested whitening (BL shades)
-      const wantsWhitening = data.aestheticGoals?.toLowerCase().includes('hollywood') ||
-                             data.aestheticGoals?.toLowerCase().includes('bl1') ||
-                             data.aestheticGoals?.toLowerCase().includes('bl2') ||
-                             data.aestheticGoals?.toLowerCase().includes('bl3') ||
-                             data.aestheticGoals?.toLowerCase().includes('intenso') ||
-                             data.aestheticGoals?.toLowerCase().includes('notável');
-
-      // Track if any layer uses a product line without BL shades
-      let productLineWithoutBL: string | null = null;
-
-      // ── Batch prefetch: single query replaces N+1 per-layer lookups ──
-      const productLines = new Set<string>();
-      for (const layer of recommendation.protocol.layers) {
-        if (layer.shade === 'WT' && layer.resin_brand?.includes('Z350')) {
-          shadeReplacements['WT'] = 'CT';
-          layer.shade = 'CT';
-        }
-        const brandMatch = layer.resin_brand?.match(/^(.+?)\s*-\s*(.+)$/);
-        const pl = brandMatch ? brandMatch[2].trim() : layer.resin_brand;
-        if (pl) productLines.add(pl);
-      }
-
-      // Single DB call: fetch all catalog rows for every product line mentioned
-      const catalogRows: Array<{ shade: string; type: string; product_line: string }> = [];
-      if (productLines.size > 0) {
-        // ilike OR chain: product_line ilike %line1% OR ilike %line2% ...
-        const orFilter = Array.from(productLines)
-          .map((pl) => `product_line.ilike.%${pl}%`)
-          .join(",");
-        const { data: rows } = await supabase
-          .from("resin_catalog")
-          .select("shade, type, product_line")
-          .or(orFilter);
-        if (rows) catalogRows.push(...rows);
-      }
-
-      // Build in-memory indexes for O(1) lookups
-      // Index: (product_line_keyword, shade) → catalog row
-      function matchesLine(catalogLine: string, keyword: string): boolean {
-        return catalogLine.toLowerCase().includes(keyword.toLowerCase());
-      }
-      function getRowsForLine(keyword: string) {
-        return catalogRows.filter((r) => matchesLine(r.product_line, keyword));
-      }
-
-      for (const layer of recommendation.protocol.layers) {
-        const brandMatch = layer.resin_brand?.match(/^(.+?)\s*-\s*(.+)$/);
-        const productLine = brandMatch ? brandMatch[2].trim() : layer.resin_brand;
-        const layerType = layer.name?.toLowerCase() || '';
-
-        if (productLine && layer.shade) {
-          const lineRows = getRowsForLine(productLine);
-
-          // Check if shade exists in the product line (was: per-layer DB query)
-          const catalogMatch = lineRows.find((r) => r.shade === layer.shade);
-
-          // For enamel layer, ensure we use specific enamel shades when available
-          const isEnamelLayer = layerType.includes('esmalte') || layerType.includes('enamel');
-
-          if (isEnamelLayer) {
-            const enamelShades = lineRows.filter((r) =>
-              r.type?.toLowerCase().includes('esmalte')
-            );
-
-            if (enamelShades.length > 0) {
-              const currentIsUniversal = !['WE', 'CE', 'JE', 'CT', 'Trans', 'IT', 'TN', 'Opal', 'INC'].some(
-                prefix => layer.shade.toUpperCase().includes(prefix)
-              );
-
-              if (currentIsUniversal) {
-                const preferredOrder = ['WE', 'CE', 'JE', 'CT', 'Trans'];
-                let bestEnamel = enamelShades[0];
-
-                for (const pref of preferredOrder) {
-                  const found = enamelShades.find(e => e.shade.toUpperCase().includes(pref));
-                  if (found) {
-                    bestEnamel = found;
-                    break;
-                  }
-                }
-
-                const originalShade = layer.shade;
-                layer.shade = bestEnamel.shade;
-                shadeReplacements[originalShade] = bestEnamel.shade;
-                validationAlerts.push(
-                  `Camada de esmalte otimizada: ${originalShade} → ${bestEnamel.shade} para máxima translucidez incisal.`
-                );
-                logger.warn(`Enamel optimization: ${originalShade} → ${bestEnamel.shade} for ${productLine}`);
-              }
-            }
-          }
-
-          // Check if patient wants BL but product line doesn't have it (in-memory check)
-          if (wantsWhitening && !productLineWithoutBL) {
-            const hasBL = lineRows.some(
-              (r) => /bl|bianco/i.test(r.shade)
-            );
-            if (!hasBL) {
-              productLineWithoutBL = productLine;
-            }
-          }
-
-          if (!catalogMatch) {
-            // Shade doesn't exist - find appropriate alternative from cached rows
-            let typeFilter = '';
-            if (layerType.includes('opaco') || layerType.includes('mascaramento')) {
-              typeFilter = 'opaco';
-            } else if (layerType.includes('dentina') || layerType.includes('body')) {
-              typeFilter = 'universal';
-            } else if (isEnamelLayer) {
-              typeFilter = 'esmalte';
-            }
-
-            const alternatives = typeFilter
-              ? lineRows.filter((r) => r.type?.toLowerCase().includes(typeFilter)).slice(0, 5)
-              : lineRows.slice(0, 5);
-
-            if (alternatives.length > 0) {
-              const originalShade = layer.shade;
-              const baseShade = originalShade.replace(/^O/, '').replace(/[DE]$/, '');
-              const closestAlt = alternatives.find(a => a.shade.includes(baseShade)) || alternatives[0];
-
-              layer.shade = closestAlt.shade;
-              shadeReplacements[originalShade] = closestAlt.shade;
-              validationAlerts.push(
-                `Cor ${originalShade} substituída por ${closestAlt.shade}: a cor original não está disponível na linha ${productLine}.`
-              );
-              logger.warn(`Shade validation: ${originalShade} → ${closestAlt.shade} for ${productLine}`);
-            } else {
-              logger.warn(`No valid shades found for ${productLine}, keeping original: ${layer.shade}`);
-            }
-          }
-        }
-
-        validatedLayers.push(layer);
-      }
-      
-      // Add BL availability alert if needed
-      if (wantsWhitening && productLineWithoutBL) {
-        validationAlerts.push(
-          `A linha ${productLineWithoutBL} não possui cores BL (Bleach). Para atingir nível de clareamento Hollywood, considere linhas como Palfique LX5, Forma (Ultradent) ou Estelite Bianco que oferecem cores BL.`
-        );
-        logger.warn(`BL shades not available in ${productLineWithoutBL}, patient wants whitening`);
-      }
-      
-      // Update layers with validated versions
-      recommendation.protocol.layers = validatedLayers;
-
-      // Apply ALL shade replacements to checklist text so steps match validated layers
-      if (recommendation.protocol.checklist && Object.keys(shadeReplacements).length > 0) {
-        logger.log(`Applying ${Object.keys(shadeReplacements).length} shade replacements to checklist: ${JSON.stringify(shadeReplacements)}`);
-        recommendation.protocol.checklist = recommendation.protocol.checklist.map(
-          (item: string) => {
-            if (typeof item !== 'string') return item;
-            let fixed = item;
-            for (const [original, replacement] of Object.entries(shadeReplacements)) {
-              // Use word-boundary regex to avoid partial matches (e.g., "A1E" inside "DA1E")
-              fixed = fixed.replace(new RegExp(`\\b${original}\\b`, 'g'), replacement);
-            }
-            return fixed;
-          }
-        );
-      }
-
-      // Add validation alerts to protocol alerts (with deduplication)
-      if (validationAlerts.length > 0) {
-        const existingAlerts: string[] = recommendation.protocol.alerts || [];
-        // Filter out validation alerts that duplicate AI-generated ones
-        const newAlerts = validationAlerts.filter((va: string) => {
-          const vaLower = va.toLowerCase();
-          return !existingAlerts.some((ea: string) => {
-            const eaLower = ea.toLowerCase();
-            // Both mention BL/bleach for same concept = duplicate
-            return (vaLower.includes('bl') || vaLower.includes('bleach')) &&
-                   (eaLower.includes('bl') || eaLower.includes('bleach'));
-          });
-        });
-        recommendation.protocol.alerts = [...existingAlerts, ...newAlerts];
-      }
-    }
+    await validateAndFixProtocolLayers({
+      recommendation,
+      aestheticGoals: data.aestheticGoals,
+      supabase,
+    });
 
     // Post-AI inventory validation: ensure recommended resin is from inventory
-    if (hasInventory && recommendation.recommended_resin_name) {
-      const recNameLower = recommendation.recommended_resin_name.toLowerCase();
-      const isInInventory = inventoryResins.some(
-        (r) => r.name.toLowerCase() === recNameLower
-      );
-      if (!isInInventory) {
-        logger.warn(`AI ignored inventory! Recommended "${recommendation.recommended_resin_name}" is NOT in user inventory. Attempting fallback...`);
-        // Find best inventory match based on budget
-        const fallback = budgetAppropriateInventory[0] || inventoryResins[0];
-        if (fallback) {
-          recommendation.ideal_resin_name = recommendation.recommended_resin_name;
-          recommendation.ideal_reason = `Resina ideal tecnicamente, mas não está no seu inventário. Usando ${fallback.name} do inventário como alternativa.`;
-          recommendation.recommended_resin_name = fallback.name;
-          recommendation.is_from_inventory = true;
-          logger.log(`Inventory fallback: "${fallback.name}" (${fallback.manufacturer})`);
-        }
-      } else {
-        // Ensure is_from_inventory is correctly set
-        recommendation.is_from_inventory = true;
-      }
-    }
+    validateInventoryRecommendation(recommendation, hasInventory, inventoryResins, budgetAppropriateInventory);
 
     // Log budget compliance for debugging
     logger.log(`Budget: ${data.budget}, Recommended: ${recommendation.recommended_resin_name}, Price Range: ${recommendation.price_range}, Budget Compliant: ${recommendation.budget_compliance}`);
 
     // Find the recommended resin in database
     const recommendedResin = resins.find(
-      (r) =>
+      (r: { name: string }) =>
         r.name.toLowerCase() ===
         recommendation.recommended_resin_name.toLowerCase()
     );
@@ -626,7 +323,7 @@ Deno.serve(async (req) => {
         recommendation.recommended_resin_name.toLowerCase()
     ) {
       idealResin = resins.find(
-        (r) =>
+        (r: { name: string }) =>
           r.name.toLowerCase() === recommendation.ideal_resin_name.toLowerCase()
       );
     }

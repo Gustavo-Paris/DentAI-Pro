@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { getSignedDSDUrl } from '@/data/storage';
 import { useAuthenticatedFetch } from '@/hooks/useAuthenticatedFetch';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -136,12 +136,9 @@ export function useDSDStep({
   useEffect(() => {
     const loadSimulationUrl = async () => {
       if (result?.simulation_url) {
-        const { data } = await supabase.storage
-          .from('dsd-simulations')
-          .createSignedUrl(result.simulation_url, 3600);
-
-        if (data?.signedUrl) {
-          setSimulationImageUrl(data.signedUrl);
+        const signedUrl = await getSignedDSDUrl(result.simulation_url);
+        if (signedUrl) {
+          setSimulationImageUrl(signedUrl);
         }
       }
     };
@@ -156,10 +153,8 @@ export function useDSDStep({
         const urls: Record<string, string> = {};
         for (const layer of initialResult.layers!) {
           if (layer.simulation_url) {
-            const { data } = await supabase.storage
-              .from('dsd-simulations')
-              .createSignedUrl(layer.simulation_url, 3600);
-            if (data?.signedUrl) urls[layer.type] = data.signedUrl;
+            const signedUrl = await getSignedDSDUrl(layer.simulation_url);
+            if (signedUrl) urls[layer.type] = signedUrl;
           }
         }
         if (Object.keys(urls).length > 0) {
@@ -304,11 +299,9 @@ export function useDSDStep({
       // Post-processing: composite L2 lips onto L3 if lips moved after retries exhausted
       if (bestResult?.lips_moved && isGingivalLayer && l2SignedUrl && bestResult.simulation_url) {
         try {
-          const { data: l3Signed } = await supabase.storage
-            .from('dsd-simulations')
-            .createSignedUrl(bestResult.simulation_url, 3600);
-          if (l3Signed?.signedUrl) {
-            const composited = await compositeGengivoplastyLips(l2SignedUrl, l3Signed.signedUrl);
+          const l3SignedUrl = await getSignedDSDUrl(bestResult.simulation_url);
+          if (l3SignedUrl) {
+            const composited = await compositeGengivoplastyLips(l2SignedUrl, l3SignedUrl);
             if (composited) {
               bestResult = { ...bestResult, simulation_url: composited, lips_moved: false };
               logger.log('Lip compositing applied to gengivoplasty layer');
@@ -340,12 +333,8 @@ export function useDSDStep({
     layer: SimulationLayer,
   ): Promise<{ layer: SimulationLayer; url: string | null }> => {
     if (!layer.simulation_url) return { layer, url: null };
-
-    const { data: signedData } = await supabase.storage
-      .from('dsd-simulations')
-      .createSignedUrl(layer.simulation_url, 3600);
-
-    return { layer, url: signedData?.signedUrl || null };
+    const url = await getSignedDSDUrl(layer.simulation_url);
+    return { layer, url };
   }, []);
 
   // L1-first sequential chaining: L1 (corrections) → L2 (whitening) → L3 (gengivoplasty)
@@ -464,11 +453,9 @@ export function useDSDStep({
         if (mainUrl) {
           setSimulationImageUrl(mainUrl);
         } else {
-          const { data: mainSignedData } = await supabase.storage
-            .from('dsd-simulations')
-            .createSignedUrl(mainLayer.simulation_url, 3600);
-          if (mainSignedData?.signedUrl) {
-            setSimulationImageUrl(mainSignedData.signedUrl);
+          const mainSignedUrl = await getSignedDSDUrl(mainLayer.simulation_url);
+          if (mainSignedUrl) {
+            setSimulationImageUrl(mainSignedUrl);
           }
         }
       }
@@ -576,10 +563,8 @@ export function useDSDStep({
           );
 
           if (data?.simulation_url) {
-            const { data: signedData } = await supabase.storage
-              .from('dsd-simulations')
-              .createSignedUrl(data.simulation_url, 3600);
-            return { level, url: signedData?.signedUrl || null };
+            const signedUrl = await getSignedDSDUrl(data.simulation_url);
+            return { level, url: signedUrl };
           }
           return { level, url: null };
         })

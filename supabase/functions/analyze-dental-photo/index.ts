@@ -1,7 +1,7 @@
 import { getCorsHeaders, handleCorsPreFlight, ERROR_MESSAGES, createErrorResponse, generateRequestId } from "../_shared/cors.ts";
 import { getSupabaseClient, authenticateRequest, isAuthError } from "../_shared/middleware.ts";
 import { logger } from "../_shared/logger.ts";
-import { callClaudeVisionWithTools, ClaudeError, type OpenAITool } from "../_shared/claude.ts";
+import { callClaudeVisionWithTools, ClaudeError } from "../_shared/claude.ts";
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 import { checkAndUseCredits, createInsufficientCreditsResponse, refundCredits } from "../_shared/credits.ts";
 import { getPrompt } from "../_shared/prompts/registry.ts";
@@ -11,78 +11,11 @@ import type { Params as AnalyzePhotoParams } from "../_shared/prompts/definition
 import { createSupabaseMetrics, PROMPT_VERSION } from "../_shared/metrics-adapter.ts";
 import { parseAIResponse, PhotoAnalysisResultSchema } from "../_shared/aiSchemas.ts";
 import { stripJpegExif } from "../_shared/image-utils.ts";
-import { normalizeTreatmentIndication, type TreatmentIndication } from "../_shared/treatment-normalization.ts";
 
-interface AnalyzePhotoRequest {
-  imageBase64: string;
-  imageType?: string; // "intraoral" | "frontal_smile" | "45_smile" | "face"
-}
-
-// TreatmentIndication type and normalizeTreatmentIndication imported from _shared/treatment-normalization.ts
-
-interface ToothBounds {
-  x: number;       // Center X position (0-100%)
-  y: number;       // Center Y position (0-100%)
-  width: number;   // Width as percentage (0-100%)
-  height: number;  // Height as percentage (0-100%)
-}
-
-interface DetectedTooth {
-  tooth: string;
-  tooth_region: string | null;
-  cavity_class: string | null;
-  restoration_size: string | null;
-  substrate: string | null;
-  substrate_condition: string | null;
-  enamel_condition: string | null;
-  depth: string | null;
-  priority: "alta" | "média" | "baixa";
-  notes: string | null;
-  treatment_indication?: TreatmentIndication;
-  indication_reason?: string;
-  tooth_bounds?: ToothBounds;
-}
-
-interface PhotoAnalysisResult {
-  detected: boolean;
-  confidence: number;
-  detected_teeth: DetectedTooth[];
-  primary_tooth: string | null;
-  vita_shade: string | null;
-  observations: string[];
-  warnings: string[];
-  treatment_indication?: TreatmentIndication;
-  indication_reason?: string;
-}
-
-// Validate image request data
-function validateImageRequest(data: unknown): { success: boolean; error?: string; data?: AnalyzePhotoRequest } {
-  if (!data || typeof data !== "object") {
-    return { success: false, error: ERROR_MESSAGES.INVALID_REQUEST };
-  }
-
-  const obj = data as Record<string, unknown>;
-
-  if (!obj.imageBase64 || typeof obj.imageBase64 !== "string") {
-    return { success: false, error: ERROR_MESSAGES.IMAGE_INVALID };
-  }
-
-  // Validate imageType if provided
-  if (obj.imageType !== undefined) {
-    const validTypes = ["intraoral", "frontal_smile", "45_smile", "face"];
-    if (typeof obj.imageType !== "string" || !validTypes.includes(obj.imageType)) {
-      obj.imageType = "intraoral"; // Default to intraoral
-    }
-  }
-
-  return {
-    success: true,
-    data: {
-      imageBase64: obj.imageBase64 as string,
-      imageType: (obj.imageType as string) || "intraoral",
-    },
-  };
-}
+import type { PhotoAnalysisResult } from "./types.ts";
+import { validateImageRequest } from "./validation.ts";
+import { ANALYZE_PHOTO_TOOL } from "./tool-schema.ts";
+import { processAnalysisResult } from "./post-processing.ts";
 
 // stripJpegExif imported from _shared/image-utils.ts
 
@@ -142,10 +75,10 @@ Deno.serve(async (req) => {
     const data = validation.data;
 
     // Server-side validation of image data
-    const base64Data = data.imageBase64.includes(",") 
-      ? data.imageBase64.split(",")[1] 
+    const base64Data = data.imageBase64.includes(",")
+      ? data.imageBase64.split(",")[1]
       : data.imageBase64;
-    
+
     // Validate base64 format
     if (!/^[A-Za-z0-9+/=]+$/.test(base64Data)) {
       return createErrorResponse(ERROR_MESSAGES.IMAGE_INVALID, 400, corsHeaders);
@@ -161,7 +94,7 @@ Deno.serve(async (req) => {
     const isJPEG = bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF;
     const isPNG = bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47;
     const isWEBP = bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46;
-    
+
     if (!isJPEG && !isPNG && !isWEBP) {
       return createErrorResponse(ERROR_MESSAGES.IMAGE_FORMAT_UNSUPPORTED, 400, corsHeaders);
     }
@@ -175,148 +108,6 @@ Deno.serve(async (req) => {
     const promptParams: AnalyzePhotoParams = { imageType: data.imageType || "intraoral" };
     const systemPrompt = promptDef.system(promptParams);
     const userPrompt = promptDef.user(promptParams);
-
-    // Tool definition for structured output - MULTI-TOOTH SUPPORT
-    const tools: OpenAITool[] = [
-      {
-        type: "function",
-        function: {
-          name: "analyze_dental_photo",
-          description: "Retorna a análise estruturada de uma foto dental intraoral, detectando TODOS os dentes com problemas",
-          parameters: {
-            type: "object",
-            properties: {
-              detected: {
-                type: "boolean",
-                description: "Se foi possível detectar pelo menos um dente com problema na foto"
-              },
-              confidence: {
-                type: "number",
-                description: "Nível de confiança geral da análise de 0 a 100"
-              },
-              detected_teeth: {
-                type: "array",
-                description: "Lista de TODOS os dentes detectados com problemas, ordenados por prioridade",
-                items: {
-                  type: "object",
-                  properties: {
-                    tooth: {
-                      type: "string",
-                      description: "Número do dente (notação FDI: 11-18, 21-28, 31-38, 41-48)"
-                    },
-                    tooth_region: {
-                      type: "string",
-                      enum: ["anterior-superior", "anterior-inferior", "posterior-superior", "posterior-inferior"],
-                      description: "Região do dente na arcada",
-                      nullable: true
-                    },
-                    cavity_class: {
-                      type: "string",
-                      enum: ["Classe I", "Classe II", "Classe III", "Classe IV", "Classe V", "Classe VI", "Fechamento de Diastema", "Recontorno Estético", "Faceta Direta", "Lente de Contato"],
-                      description: "Classificação de Black da cavidade (Classes I-VI) OU procedimento estético sem cavidade cariosa (Fechamento de Diastema, Recontorno Estético, Faceta Direta, Lente de Contato). Use null para tratamentos protéticos (coroa, implante, endodontia).",
-                      nullable: true
-                    },
-                    restoration_size: {
-                      type: "string",
-                      enum: ["Pequena", "Média", "Grande", "Extensa"],
-                      description: "Tamanho estimado da restauração",
-                      nullable: true
-                    },
-                    substrate: {
-                      type: "string",
-                      enum: ["Esmalte", "Dentina", "Esmalte e Dentina", "Dentina profunda"],
-                      description: "Tipo de substrato principal visível",
-                      nullable: true
-                    },
-                    substrate_condition: {
-                      type: "string",
-                      enum: ["Saudável", "Esclerótico", "Manchado", "Cariado", "Desidratado"],
-                      description: "Condição do substrato dentário",
-                      nullable: true
-                    },
-                    enamel_condition: {
-                      type: "string",
-                      enum: ["Íntegro", "Fraturado", "Hipoplásico", "Fluorose", "Erosão", "Restauração prévia", "Restauração prévia (faceta em resina)", "Restauração prévia (coroa)"],
-                      description: "Condição do esmalte periférico. Use 'Restauração prévia' quando há evidência de restauração existente, 'Restauração prévia (faceta em resina)' para facetas vestibulares, 'Restauração prévia (coroa)' para coroas protéticas.",
-                      nullable: true
-                    },
-                    depth: {
-                      type: "string",
-                      enum: ["Superficial", "Média", "Profunda"],
-                      description: "Profundidade estimada da cavidade",
-                      nullable: true
-                    },
-                    priority: {
-                      type: "string",
-                      enum: ["alta", "média", "baixa"],
-                      description: "Prioridade de tratamento baseada na urgência clínica"
-                    },
-                    notes: {
-                      type: "string",
-                      description: "Observações específicas sobre este dente",
-                      nullable: true
-                    },
-                    treatment_indication: {
-                      type: "string",
-                      enum: ["resina", "porcelana", "coroa", "implante", "endodontia", "encaminhamento", "gengivoplastia", "recobrimento_radicular"],
-                      description: "Tipo de tratamento indicado: resina (restauração direta), porcelana (faceta/laminado), coroa (coroa total), implante (extração + implante), endodontia (canal), encaminhamento (especialista), gengivoplastia (remoção de excesso gengival), recobrimento_radicular (cobertura de raiz exposta)"
-                    },
-                    indication_reason: {
-                      type: "string",
-                      description: "Razão detalhada da indicação de tratamento",
-                      nullable: true
-                    },
-                    tooth_bounds: {
-                      type: "object",
-                      description: "Posição aproximada do dente na imagem, em porcentagem (0-100). SEMPRE forneça para o dente principal.",
-                      properties: {
-                        x: { type: "number", description: "Posição X do centro do dente (0-100%)" },
-                        y: { type: "number", description: "Posição Y do centro do dente (0-100%)" },
-                        width: { type: "number", description: "Largura aproximada do dente (0-100%)" },
-                        height: { type: "number", description: "Altura aproximada do dente (0-100%)" }
-                      },
-                      required: ["x", "y", "width", "height"]
-                    }
-                  },
-                  required: ["tooth", "priority", "treatment_indication"]
-                }
-              },
-              primary_tooth: {
-                type: "string",
-                description: "Número do dente que deve ser tratado primeiro (mais urgente)",
-                nullable: true
-              },
-              vita_shade: {
-                type: "string",
-                description: "Cor VITA geral da arcada (ex: A1, A2, A3, A3.5, B1, B2, C1, D2)",
-                nullable: true
-              },
-              observations: {
-                type: "array",
-                items: { type: "string" },
-                description: "Observações clínicas gerais sobre a arcada/foto"
-              },
-              warnings: {
-                type: "array",
-                items: { type: "string" },
-                description: "Alertas ou pontos de atenção para o operador"
-              },
-              treatment_indication: {
-                type: "string",
-                enum: ["resina", "porcelana", "coroa", "implante", "endodontia", "encaminhamento", "gengivoplastia", "recobrimento_radicular"],
-                description: "Indicação GERAL predominante do caso (o tipo de tratamento mais relevante para a maioria dos dentes)"
-              },
-              indication_reason: {
-                type: "string",
-                description: "Razão detalhada da indicação de tratamento predominante"
-              }
-            },
-            required: ["detected", "confidence", "detected_teeth", "observations", "warnings"],
-            additionalProperties: false
-          }
-        }
-      }
-    ];
 
     // Determine MIME type from magic bytes
     const mimeType = isJPEG ? "image/jpeg" : isPNG ? "image/png" : "image/webp";
@@ -339,7 +130,7 @@ Deno.serve(async (req) => {
           userPrompt,
           base64Image,
           mimeType,
-          tools,
+          ANALYZE_PHOTO_TOOL,
           {
             systemPrompt,
             temperature: 0.0,
@@ -405,137 +196,8 @@ Deno.serve(async (req) => {
     creditsConsumed = true;
     step("credits: consumed");
 
-    // Ensure required fields have defaults and normalize detected_teeth
-    // Use the global treatment_indication as fallback instead of always defaulting to "resina"
-    // This prevents the inconsistency where the case-level banner says "Facetas de Porcelana"
-    // but every individual tooth shows "Resina Composta"
-    const globalIndication = normalizeTreatmentIndication(analysisResult.treatment_indication);
-    const rawTeeth: DetectedTooth[] = (analysisResult.detected_teeth || []).map((tooth: Partial<DetectedTooth>) => ({
-      tooth: String(tooth.tooth || "desconhecido"),
-      tooth_region: tooth.tooth_region ?? null,
-      cavity_class: tooth.cavity_class ?? null,
-      restoration_size: tooth.restoration_size ?? null,
-      substrate: tooth.substrate ?? null,
-      substrate_condition: tooth.substrate_condition ?? null,
-      enamel_condition: tooth.enamel_condition ?? null,
-      depth: tooth.depth ?? null,
-      priority: tooth.priority || "média",
-      notes: tooth.notes ?? null,
-      treatment_indication: normalizeTreatmentIndication(tooth.treatment_indication) || globalIndication,
-      indication_reason: tooth.indication_reason ?? undefined,
-      tooth_bounds: tooth.tooth_bounds ?? undefined,
-    }));
-
-    // Deduplicate: the AI model can return the same tooth number multiple times
-    // (e.g., once for mesial diastema and once for distal). Keep the first occurrence
-    // which has the highest priority since the AI orders by urgency.
-    const seenToothNumbers = new Set<string>();
-    const detectedTeeth: DetectedTooth[] = rawTeeth.filter(t => {
-      if (seenToothNumbers.has(t.tooth)) return false;
-      seenToothNumbers.add(t.tooth);
-      return true;
-    });
-
-    // Filter out lower teeth when photo predominantly shows upper arch
-    // This is a backend guardrail because the AI sometimes ignores prompt rules
-    const upperTeeth = detectedTeeth.filter(t => {
-      const num = parseInt(t.tooth);
-      return num >= 11 && num <= 28;
-    });
-    const lowerTeeth = detectedTeeth.filter(t => {
-      const num = parseInt(t.tooth);
-      return num >= 31 && num <= 48;
-    });
-
-    // If majority of detected teeth are upper arch, remove lower teeth
-    let filteredLowerWarning: string | null = null;
-    if (upperTeeth.length > 0 && lowerTeeth.length > 0 && upperTeeth.length >= lowerTeeth.length) {
-      const removedNumbers = lowerTeeth.map(t => t.tooth);
-      logger.warn(`Removing lower teeth ${removedNumbers.join(', ')} — photo predominantly shows upper arch (${upperTeeth.length} upper vs ${lowerTeeth.length} lower)`);
-      filteredLowerWarning = `Dentes inferiores (${removedNumbers.join(', ')}) removidos da análise — foto mostra predominantemente a arcada superior.`;
-      // Keep only upper teeth
-      detectedTeeth.splice(0, detectedTeeth.length, ...upperTeeth);
-    }
-
-    // Post-processing: Remove Black classification for non-applicable treatments
-    // Aesthetic procedures (facetas, lentes, recontornos, acréscimos) should NOT have Classe I-VI
-    const blackClassPattern = /^Classe\s+(I{1,3}V?|IV|V|VI)$/i;
-    const aestheticTreatments = ['porcelana', 'encaminhamento', 'gengivoplastia', 'recobrimento_radicular'];
-    for (const tooth of detectedTeeth) {
-      if (!tooth.cavity_class || !blackClassPattern.test(tooth.cavity_class)) continue;
-      const reason = (tooth.indication_reason || '').toLowerCase();
-      const treatment = (tooth.treatment_indication || '').toLowerCase();
-      const notes = (tooth.notes || '').toLowerCase();
-      const isAestheticCase =
-        aestheticTreatments.includes(treatment) ||
-        reason.includes('faceta') ||
-        reason.includes('lente') ||
-        reason.includes('laminado') ||
-        reason.includes('recontorno') ||
-        reason.includes('acréscimo') ||
-        reason.includes('acrescimo') ||
-        reason.includes('diastema') ||
-        reason.includes('microdontia') ||
-        reason.includes('conoide') ||
-        reason.includes('harmoniz') ||
-        reason.includes('volume') ||
-        reason.includes('reanatomiz') ||
-        reason.includes('gengivoplastia') ||
-        reason.includes('recobrimento') ||
-        reason.includes('desgaste seletivo') ||
-        reason.includes('ortodont') ||
-        notes.includes('gengivoplastia') ||
-        notes.includes('recobrimento') ||
-        notes.includes('faceta') ||
-        notes.includes('lente') ||
-        notes.includes('desgaste seletivo') ||
-        notes.includes('ortodont');
-      if (isAestheticCase) {
-        logger.log(`Post-processing: removing Black classification '${tooth.cavity_class}' for aesthetic tooth ${tooth.tooth} (reason: ${reason.substring(0, 50)})`);
-        tooth.cavity_class = null;
-      }
-    }
-
-    // Sort by priority: alta > média > baixa
-    const priorityOrder = { alta: 0, média: 1, baixa: 2 };
-    detectedTeeth.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
-
-    // Fix primary_tooth if it was a filtered-out lower tooth
-    let primaryTooth = analysisResult.primary_tooth ?? (detectedTeeth.length > 0 ? detectedTeeth[0].tooth : null);
-    if (primaryTooth && !detectedTeeth.some(t => t.tooth === primaryTooth)) {
-      primaryTooth = detectedTeeth.length > 0 ? detectedTeeth[0].tooth : null;
-    }
-
-    const result: PhotoAnalysisResult = {
-      detected: analysisResult.detected ?? detectedTeeth.length > 0,
-      confidence: analysisResult.confidence ?? 0,
-      detected_teeth: detectedTeeth,
-      primary_tooth: primaryTooth,
-      vita_shade: analysisResult.vita_shade ?? null,
-      observations: analysisResult.observations ?? [],
-      warnings: analysisResult.warnings ?? [],
-      treatment_indication: normalizeTreatmentIndication(analysisResult.treatment_indication),
-      indication_reason: analysisResult.indication_reason ?? undefined,
-    };
-
-    // Log detection results for debugging
-    logger.log(`Multi-tooth detection complete: ${detectedTeeth.length} teeth found`);
-    logger.log(`Primary tooth: ${result.primary_tooth}, Confidence: ${result.confidence}%`);
-
-    // Add warning about filtered lower teeth
-    if (filteredLowerWarning) {
-      result.warnings.push(filteredLowerWarning);
-    }
-
-    // Add warning if multiple teeth detected
-    if (detectedTeeth.length > 1) {
-      result.warnings.unshift(`Detectados ${detectedTeeth.length} dentes com necessidade de tratamento. Selecione qual deseja tratar primeiro.`);
-    }
-
-    // Add warning if only 1 tooth detected with low confidence (might be missing teeth)
-    if (detectedTeeth.length === 1 && result.confidence < 85) {
-      result.warnings.push("Apenas 1 dente detectado. Se houver mais dentes com problema na foto, use 'Reanalisar' ou adicione manualmente.");
-    }
+    // Post-process AI result: normalize, deduplicate, filter, sort, add warnings
+    const result = processAnalysisResult(analysisResult);
 
     return new Response(
       JSON.stringify({
