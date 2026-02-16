@@ -57,7 +57,9 @@ export function useWizardNavigation({
 
   const goToStep = useCallback((targetStep: number) => {
     // Only allow jumping to completed steps (past steps < current)
-    if (targetStep >= step || targetStep < 1 || step === 6) return;
+    if (targetStep >= step || targetStep < 1) return;
+    // Allow going back from result (step 6) to review (step 5) only
+    if (step === 6 && targetStep !== 5) return;
     // Step 3 is auto-processing — redirect to step 2 (or step 1 for quick case)
     if (targetStep === 3) {
       setStep(isQuickCase ? 1 : 2);
@@ -124,6 +126,8 @@ export function useWizardNavigation({
       } else {
         setStep(4);
       }
+    } else if (step === 6) {
+      setStep(5);
     }
   }, [step, navigate, isQuickCase, setAnalysisError, setIsAnalyzing]);
 
