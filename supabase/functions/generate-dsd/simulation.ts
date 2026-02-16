@@ -1,0 +1,387 @@
+import { logger } from "../_shared/logger.ts";
+import {
+  callGeminiImageEdit,
+  GeminiError,
+} from "../_shared/gemini.ts";
+import {
+  callClaudeVision,
+} from "../_shared/claude.ts";
+import { getPrompt } from "../_shared/prompts/registry.ts";
+import { withMetrics } from "../_shared/prompts/index.ts";
+import type { Params as DsdSimulationParams } from "../_shared/prompts/definitions/dsd-simulation.ts";
+import { createSupabaseMetrics, PROMPT_VERSION } from "../_shared/metrics-adapter.ts";
+import type { DSDAnalysis, PatientPreferences } from "./types.ts";
+import { WHITENING_INSTRUCTIONS } from "./types.ts";
+
+// SIMPLIFIED: Generate simulation image - single attempt, no blend, no verification
+export async function generateSimulation(
+  imageBase64: string,
+  analysis: DSDAnalysis,
+  userId: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
+  toothShape: string = 'natural',
+  patientPreferences?: PatientPreferences,
+  layerType?: 'restorations-only' | 'whitening-restorations' | 'complete-treatment' | 'root-coverage',
+  inputAlreadyProcessed?: boolean,
+): Promise<{ url: string | null; lips_moved?: boolean }> {
+  const SIMULATION_TIMEOUT = 55_000; // 55s max
+
+  // Get whitening level from direct UI selection (no AI analysis needed!)
+  const whiteningLevel = patientPreferences?.whiteningLevel || 'natural';
+  const whiteningConfig = WHITENING_INSTRUCTIONS[whiteningLevel] || WHITENING_INSTRUCTIONS.natural;
+
+  logger.log("Whitening config from UI selection:", {
+    selectedLevel: whiteningLevel,
+    intensity: whiteningConfig.intensity
+  });
+
+  // Build simple, direct instructions
+  const colorInstruction = `- ${whiteningConfig.instruction}`;
+  const whiteningIntensity = whiteningConfig.intensity;
+
+  // Get visagism data for context-aware simulation
+  const faceShape = analysis.face_shape || 'oval';
+  const toothShapeRecommendation = analysis.recommended_tooth_shape || toothShape || 'natural';
+  const smileArc = analysis.smile_arc || 'consonante';
+
+  // Check if case needs reconstruction (missing/destroyed teeth)
+  const needsReconstruction = analysis.suggestions.some(s => {
+    const issue = s.current_issue.toLowerCase();
+    const change = s.proposed_change.toLowerCase();
+    return issue.includes('ausente') ||
+           issue.includes('destruição') ||
+           issue.includes('destruído') ||
+           issue.includes('fratura') ||
+           issue.includes('raiz residual') ||
+           change.includes('implante') ||
+           change.includes('coroa total') ||
+           change.includes('extração');
+  });
+
+  // Check if case has old restorations that need replacement
+  const needsRestorationReplacement = analysis.suggestions.some(s => {
+    const issue = s.current_issue.toLowerCase();
+    const change = s.proposed_change.toLowerCase();
+    return issue.includes('restauração') ||
+           issue.includes('restauracao') ||
+           issue.includes('resina') ||
+           issue.includes('manchamento') ||
+           issue.includes('interface') ||
+           issue.includes('infiltração') ||
+           issue.includes('infiltracao') ||
+           change.includes('substituir') ||
+           change.includes('substituição') ||
+           change.includes('substituicao') ||
+           change.includes('nova restauração') ||
+           change.includes('nova restauracao');
+  });
+
+  // Get list of teeth needing restoration replacement for the prompt
+  let restorationTeeth = '';
+  if (needsRestorationReplacement) {
+    restorationTeeth = analysis.suggestions
+      .filter(s => {
+        const issue = s.current_issue.toLowerCase();
+        return issue.includes('restauração') ||
+               issue.includes('restauracao') ||
+               issue.includes('resina') ||
+               issue.includes('manchamento') ||
+               issue.includes('interface');
+      })
+      .map(s => s.tooth)
+      .join(', ');
+  }
+
+  // Check if it's a TRUE intraoral photo
+  const isIntraoralPhoto = analysis.observations?.some(obs => {
+    const lower = obs.toLowerCase();
+    return lower.includes('afastador') ||
+           lower.includes('retrator') ||
+           (lower.includes('intraoral') && (lower.includes('interna') || lower.includes('sem lábio'))) ||
+           lower.includes('close-up extremo');
+  });
+
+  // Allow shape changes from DSD analysis (conoid laterals, visagism corrections)
+  // Filter out destructive changes AND gingival changes for non-gingival layers
+  const destructiveKeywords = [
+    'reconstruir', 'reconstruct', 'rebuild',
+  ];
+
+  // Gingival suggestions must ONLY appear in complete-treatment/root-coverage layers
+  const isGingivalLayerType = layerType === 'complete-treatment' || layerType === 'root-coverage';
+
+  const filteredSuggestions = analysis.suggestions?.filter(s => {
+    const change = s.proposed_change.toLowerCase();
+    const issue = s.current_issue.toLowerCase();
+    const treatment = (s.treatment_indication || '').toLowerCase();
+    const isDestructive = destructiveKeywords.some(kw =>
+      change.includes(kw) || issue.includes(kw)
+    );
+    if (isDestructive) return false;
+
+    // For non-gingival layers (L1, L2), strip any gengivoplasty/root-coverage suggestions
+    // so they don't leak into the prompt and cause unwanted gum changes
+    if (!isGingivalLayerType) {
+      const isGingivalSuggestion =
+        treatment === 'gengivoplastia' ||
+        treatment === 'recobrimento_radicular' ||
+        change.includes('gengivoplastia') ||
+        change.includes('gengivoplasty') ||
+        change.includes('recobrimento radicular') ||
+        change.includes('zênite') ||
+        change.includes('zenite') ||
+        change.includes('gengiv');
+      if (isGingivalSuggestion) return false;
+    }
+
+    return true;
+  }) || [];
+
+  const allowedChangesFromAnalysis = filteredSuggestions.length > 0
+    ? `\nSPECIFIC CORRECTIONS FROM ANALYSIS (apply these changes):\n${filteredSuggestions.map(s =>
+        `- Tooth ${s.tooth}: ${s.proposed_change}`
+      ).join('\n')}`
+    : '';
+
+  // Determine case type for prompt variant selection
+  const promptType = needsReconstruction ? 'reconstruction' :
+                     (needsRestorationReplacement ? 'restoration-replacement' :
+                     (isIntraoralPhoto ? 'intraoral' : 'standard')) as DsdSimulationParams['caseType'];
+
+  // Build specific instructions for reconstruction cases
+  let specificInstructions: string | undefined;
+  if (needsReconstruction) {
+    const teethToReconstruct = analysis.suggestions
+      .filter(s => {
+        const issue = s.current_issue.toLowerCase();
+        const change = s.proposed_change.toLowerCase();
+        return issue.includes('ausente') ||
+               issue.includes('destruição') ||
+               issue.includes('destruído') ||
+               issue.includes('fratura') ||
+               issue.includes('raiz') ||
+               change.includes('implante') ||
+               change.includes('coroa');
+      });
+
+    specificInstructions = teethToReconstruct.map(s => {
+      const toothNum = parseInt(s.tooth);
+      let contralateral = '';
+      if (toothNum >= 11 && toothNum <= 18) {
+        contralateral = String(toothNum + 10);
+      } else if (toothNum >= 21 && toothNum <= 28) {
+        contralateral = String(toothNum - 10);
+      } else if (toothNum >= 31 && toothNum <= 38) {
+        contralateral = String(toothNum + 10);
+      } else if (toothNum >= 41 && toothNum <= 48) {
+        contralateral = String(toothNum - 10);
+      }
+      return `Dente ${s.tooth}: COPIE do ${contralateral || 'vizinho'}`;
+    }).join(', ');
+  }
+
+  // Build gengivoplasty suggestions for complete-treatment layer
+  let gingivoSuggestions: string | undefined;
+  if (layerType === 'complete-treatment') {
+    const gingivoItems = analysis.suggestions?.filter(s => {
+      // Primary: treatment_indication field (aligned with frontend useDSDStep detection)
+      const indication = (s.treatment_indication || '').toLowerCase();
+      if (indication === 'gengivoplastia' || indication === 'gingivoplasty') return true;
+      // Secondary: keywords in text
+      const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
+      return text.includes('gengiv') || text.includes('zênite') || text.includes('zenite') || text.includes('gengivoplastia');
+    }) || [];
+    if (gingivoItems.length > 0) {
+      gingivoSuggestions = gingivoItems.map(s =>
+        `- Dente ${s.tooth}: ${s.proposed_change}`
+      ).join('\n');
+    }
+  }
+
+  // Build root coverage suggestions for root-coverage layer
+  let rootCoverageSuggestions: string | undefined;
+  if (layerType === 'root-coverage') {
+    const rootItems = analysis.suggestions?.filter(s => {
+      const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
+      return text.includes('recobrimento') || text.includes('recessão') || text.includes('raiz exposta') || text.includes('root coverage');
+    }) || [];
+    if (rootItems.length > 0) {
+      rootCoverageSuggestions = rootItems.map(s =>
+        `- Dente ${s.tooth}: ${s.proposed_change}`
+      ).join('\n');
+    }
+  }
+
+  // Build prompt via prompt management module
+  const dsdSimulationPrompt = getPrompt('dsd-simulation');
+  const simulationPrompt = dsdSimulationPrompt.system({
+    whiteningLevel,
+    colorInstruction,
+    whiteningIntensity,
+    caseType: promptType,
+    faceShape,
+    toothShapeRecommendation,
+    smileArc,
+    specificInstructions,
+    restorationTeeth,
+    // Skip corrections injection when input is already processed (teeth already corrected)
+    allowedChangesFromAnalysis: inputAlreadyProcessed ? '' : allowedChangesFromAnalysis,
+    layerType,
+    gingivoSuggestions,
+    rootCoverageSuggestions,
+    inputAlreadyProcessed,
+  } as DsdSimulationParams);
+
+  logger.log("DSD Simulation Request:", {
+    promptType,
+    approach: "absolutePreservation + whiteningPriority",
+    wantsWhitening: true,
+    whiteningIntensity,
+    whiteningLevel: whiteningLevel,
+    colorInstruction: colorInstruction.substring(0, 80) + '...',
+    promptLength: simulationPrompt.length,
+    promptPreview: simulationPrompt.substring(0, 400) + '...',
+  });
+
+  // Extract base64 data and mime type from data URL
+  const dataUrlMatch = imageBase64.match(/^data:([^;]+);base64,(.+)$/);
+  if (!dataUrlMatch) {
+    const preview = imageBase64.substring(0, 80);
+    logger.error(`Invalid image data URL format. Preview: ${preview}`);
+    throw new Error(`Invalid image format (expected data:...;base64,...). Got: ${preview}...`);
+  }
+  const [, inputMimeType, inputBase64Data] = dataUrlMatch;
+
+  // Compute deterministic seed from image hash for reproducibility
+  const hashSource = inputBase64Data.substring(0, 1000);
+  const encoder = new TextEncoder();
+  const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(hashSource));
+  const hashArray = new Uint8Array(hashBuffer);
+  // Mask to 31 bits (0x7FFFFFFF) — Gemini expects signed INT32 (max 2147483647)
+  const imageSeed = ((hashArray[0] << 24) | (hashArray[1] << 16) | (hashArray[2] << 8) | hashArray[3]) & 0x7FFFFFFF;
+  logger.log("Simulation seed from image hash:", imageSeed);
+
+  // Metrics for DSD simulation
+  const metrics = createSupabaseMetrics(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  );
+  const dsdSimulationPromptDef = getPrompt('dsd-simulation');
+
+  // Lip validation for gingival layers: checks if EITHER lip moved
+  const isGingivalLayer = layerType === 'complete-treatment' || layerType === 'root-coverage';
+
+  // Need the analysis prompt def for lip validation model
+  const dsdAnalysisPromptDef = getPrompt('dsd-analysis');
+
+  async function validateLips(simImageUrl: string): Promise<boolean> {
+    try {
+      const simBase64 = simImageUrl.replace(/^data:image\/\w+;base64,/, "");
+      const simMimeMatch = simImageUrl.match(/^data:([^;]+);base64,/);
+      const simMimeType = simMimeMatch ? simMimeMatch[1] : 'image/png';
+
+      const lipCheck = await callClaudeVision(
+        dsdAnalysisPromptDef.model,
+        `Imagem 1 é a ORIGINAL. Imagem 2 é a SIMULAÇÃO odontológica.
+Compare AMBOS os lábios entre as duas imagens:
+1. O LÁBIO SUPERIOR mudou de posição, formato ou contorno?
+2. O LÁBIO INFERIOR mudou de posição, formato ou contorno?
+3. A ABERTURA LABIAL (distância entre lábios) mudou?
+
+Se QUALQUER um dos itens acima mudou, responda 'SIM'.
+Se ambos os lábios estão na MESMA posição exata, responda 'NÃO'.
+Responda APENAS 'SIM' ou 'NÃO'.`,
+        inputBase64Data,
+        inputMimeType,
+        {
+          temperature: 0.0,
+          maxTokens: 10,
+          additionalImages: [{ data: simBase64, mimeType: simMimeType }],
+        }
+      );
+
+      if (lipCheck.tokens) {
+        logger.info('claude_tokens', { operation: 'generate-dsd:lip-validation', ...lipCheck.tokens });
+      }
+      const lipAnswer = (lipCheck.text || '').trim().toUpperCase();
+      const lipsMoved = lipAnswer.includes('SIM');
+      logger.log(`Lip validation for ${layerType || 'standard'} layer: ${lipsMoved ? 'FAILED (lips moved)' : 'PASSED'}`);
+      return !lipsMoved; // true = valid (lips didn't move)
+    } catch (lipErr) {
+      logger.warn("Lip validation check failed (non-blocking):", lipErr);
+      return true; // Accept on validation error
+    }
+  }
+
+  try {
+    logger.log("Calling Gemini Image Edit for simulation...");
+
+    const result = await withMetrics<{ imageUrl: string | null; text: string | null }>(metrics, dsdSimulationPromptDef.id, PROMPT_VERSION, dsdSimulationPromptDef.model)(async () => {
+      const response = await callGeminiImageEdit(
+        simulationPrompt,
+        inputBase64Data,
+        inputMimeType,
+        {
+          temperature: dsdSimulationPromptDef.temperature,
+          timeoutMs: SIMULATION_TIMEOUT,
+          seed: imageSeed,
+        }
+      );
+      if (response.tokens) {
+        logger.info('gemini_tokens', { operation: 'generate-dsd:simulation', ...response.tokens });
+      }
+      return {
+        result: { imageUrl: response.imageUrl, text: response.text },
+        tokensIn: response.tokens?.promptTokenCount ?? 0,
+        tokensOut: response.tokens?.candidatesTokenCount ?? 0,
+      };
+    });
+
+    if (!result.imageUrl) {
+      logger.warn("No image in Gemini response, text was:", result.text);
+      throw new Error(`Gemini returned no image. Text: ${(result.text || 'none').substring(0, 200)}`);
+    }
+
+    // For gingival layers, validate lips and return flag (client handles retry).
+    // Previously skipped for inputAlreadyProcessed, but re-enabled now that:
+    // 1. Temperature is 0.0 (deterministic output)
+    // 2. Gengivoplasty-only prompt includes full absolutePreservation block
+    // 3. The validator should no longer confuse gum recontouring with lip movement
+    let lipsMoved = false;
+    if (isGingivalLayer) {
+      const lipsValid = await validateLips(result.imageUrl);
+      lipsMoved = !lipsValid;
+    }
+
+    // Upload generated image
+    const base64Data = result.imageUrl.replace(/^data:image\/\w+;base64,/, "");
+    const binaryData = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
+
+    const fileName = `${userId}/dsd_${Date.now()}.png`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("dsd-simulations")
+      .upload(fileName, binaryData, {
+        contentType: "image/png",
+        upsert: true,
+      });
+
+    if (uploadError) {
+      logger.error("Upload error:", uploadError);
+      throw new Error(`Storage upload failed: ${uploadError.message}`);
+    }
+
+    logger.log("Simulation generated and uploaded:", fileName, lipsMoved ? "(lips_moved)" : "");
+    return { url: fileName, lips_moved: lipsMoved || undefined };
+  } catch (err) {
+    if (err instanceof GeminiError) {
+      logger.warn(`Gemini simulation error (${err.statusCode}):`, err.message);
+      throw new Error(`GeminiError ${err.statusCode}: ${err.message}`);
+    }
+    // Re-throw with context for debugging
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.warn("Simulation error:", msg);
+    throw new Error(`Simulation failed: ${msg}`);
+  }
+}
