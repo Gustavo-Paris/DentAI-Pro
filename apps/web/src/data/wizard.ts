@@ -121,10 +121,14 @@ export async function updateEvaluationStatus(
   evalId: string,
   status: string,
 ) {
-  await supabase
+  const { error } = await supabase
     .from('evaluations')
     .update({ status })
     .eq('id', evalId);
+  if (error) {
+    logger.error(`Failed to update evaluation ${evalId} status to ${status}:`, error);
+    throw error;
+  }
 }
 
 // ---------------------------------------------------------------------------

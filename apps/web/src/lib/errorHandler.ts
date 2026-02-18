@@ -119,10 +119,13 @@ export function handleSupabaseError(
   logger.error(`Supabase error in ${context}:`, error);
 
   const key = error.code ? ERROR_CODE_KEYS[error.code] : null;
-  const message =
-    (key ? i18n.t(key) : null) ||
-    error.message ||
-    i18n.t('errors.errorContext', { context });
+  let safeMessage: string | null = null;
+  if (key) {
+    safeMessage = i18n.t(key);
+  } else if (error.message && !containsSensitiveInfo(error.message.toLowerCase()) && error.message.length <= 120) {
+    safeMessage = error.message;
+  }
+  const message = safeMessage || i18n.t('errors.errorContext', { context });
 
   toast.error(message, { duration: 5000 });
   return true;

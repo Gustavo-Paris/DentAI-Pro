@@ -150,14 +150,28 @@ describe('handleSupabaseError', () => {
     expect(toast.error).toHaveBeenCalled();
   });
 
-  it('should use error message when no code match', () => {
+  it('should use safe error message when no code match', () => {
     const result = handleSupabaseError(
-      { message: 'Custom Supabase error' },
+      { message: 'Dados não encontrados' },
       'buscar dados'
     );
-    
+
     expect(result).toBe(true);
-    expect(toast.error).toHaveBeenCalledWith('Custom Supabase error', { duration: 5000 });
+    expect(toast.error).toHaveBeenCalledWith('Dados não encontrados', { duration: 5000 });
+  });
+
+  it('should use context fallback when message contains sensitive info', () => {
+    const result = handleSupabaseError(
+      { message: 'supabase connection pool exhausted' },
+      'buscar dados'
+    );
+
+    expect(result).toBe(true);
+    // Should NOT expose the internal error message
+    expect(toast.error).not.toHaveBeenCalledWith(
+      'supabase connection pool exhausted',
+      expect.anything()
+    );
   });
 
   it('should use context as fallback', () => {
