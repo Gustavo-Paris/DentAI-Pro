@@ -12,7 +12,7 @@ export const dsdAnalysis: PromptDefinition<Params> = {
   id: 'dsd-analysis',
   name: 'Análise DSD',
   description: 'Análise completa de Digital Smile Design com visagismo e proporções faciais',
-  model: 'claude-sonnet-4-6',
+  model: 'claude-sonnet-4-5-20250929',
   temperature: 0.0,
   maxTokens: 4000,
   mode: 'vision-tools',
