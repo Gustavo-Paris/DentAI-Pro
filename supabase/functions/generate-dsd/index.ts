@@ -17,7 +17,16 @@ Deno.serve(async (req: Request) => {
   if (corsResponse) return corsResponse;
 
   const corsHeaders = getCorsHeaders(req);
-  const reqId = generateRequestId();
+  // Use client-provided reqId for idempotency (same retry = same reqId = no double charge)
+  let reqId: string;
+  try {
+    const clonedBody = await req.clone().json();
+    reqId = (typeof clonedBody.reqId === 'string' && clonedBody.reqId.length > 0)
+      ? clonedBody.reqId
+      : generateRequestId();
+  } catch {
+    reqId = generateRequestId();
+  }
   logger.log(`[${reqId}] generate-dsd: start`);
 
   // Track credit state for refund on error (must be outside try for catch access)

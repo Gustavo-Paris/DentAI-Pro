@@ -49,6 +49,10 @@ export interface Params {
     currentIssue: string
     proposedChange: string
     observations: string[]
+    smileLine?: string
+    faceShape?: string
+    symmetryScore?: number
+    smileArc?: string
   }
 }
 
@@ -189,13 +193,19 @@ function buildAestheticGoalsSection(aestheticGoals?: string): string {
 Extraia preferências e aplique: clareamento -> cores 1-2 tons mais claros em TODAS camadas. Natural/discreto -> translucidez e mimetismo. Sensibilidade -> self-etch. Durabilidade -> alta resistência. Conservador -> técnicas minimamente invasivas.`
 }
 
-function buildDSDContextSection(dsdContext?: { currentIssue: string; proposedChange: string; observations: string[] }): string {
+function buildDSDContextSection(dsdContext?: { currentIssue: string; proposedChange: string; observations: string[]; smileLine?: string; faceShape?: string; symmetryScore?: number; smileArc?: string }): string {
   if (!dsdContext) return ''
   const obs = dsdContext.observations?.length ? dsdContext.observations.map(o => `- ${o}`).join('\n') : ''
+  const extra = [
+    dsdContext.smileLine && `- Linha do sorriso: ${dsdContext.smileLine}`,
+    dsdContext.faceShape && `- Formato facial: ${dsdContext.faceShape}`,
+    dsdContext.symmetryScore != null && `- Score de simetria: ${dsdContext.symmetryScore}%`,
+    dsdContext.smileArc && `- Arco do sorriso: ${dsdContext.smileArc}`,
+  ].filter(Boolean).join('\n')
   return `=== CONTEXTO DSD ===
 - Situação atual: ${dsdContext.currentIssue}
 - Mudança proposta: ${dsdContext.proposedChange}
-${obs ? `Observações:\n${obs}` : ''}
+${obs ? `Observações:\n${obs}` : ''}${extra ? `\nContexto clínico adicional:\n${extra}` : ''}
 O protocolo DEVE considerar estes achados (aumento incisal -> camada adequada, correção de proporção -> ajustar espessuras, simetria -> consistência contralateral).`
 }
 

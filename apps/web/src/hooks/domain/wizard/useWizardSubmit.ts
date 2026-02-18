@@ -363,6 +363,10 @@ export function useWizardSubmit({
                             currentIssue: resinDsdSuggestion.current_issue,
                             proposedChange: resinDsdSuggestion.proposed_change,
                             observations: dsdResult?.analysis?.observations || [],
+                            smileLine: dsdResult?.analysis?.smile_line,
+                            faceShape: dsdResult?.analysis?.face_shape,
+                            symmetryScore: dsdResult?.analysis?.symmetry_score,
+                            smileArc: dsdResult?.analysis?.smile_arc,
                           }
                         : undefined,
                     });
