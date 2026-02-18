@@ -468,32 +468,27 @@
 }
 
 /* ─── Dropdown Menu Polish ─── */
-/* Softer border and separators */
+/* Rendered in portal at body level, NOT inside .ui-theme */
 
-.ui-theme .themed-dropdown {
-  border-color: hsl(var(--border) / 0.5);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12), 0 0 0 1px hsl(var(--border) / 0.3);
+.themed-dropdown {
+  border-color: hsl(var(--border) / 0.4) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12), 0 0 0 1px hsl(var(--border) / 0.2);
 }
 
-.dark .ui-theme .themed-dropdown {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 0 1px hsl(var(--border) / 0.4);
+.dark .themed-dropdown {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
 /* Softer separators inside dropdown */
-.ui-theme .themed-dropdown > div[class*="h-px"] {
-  opacity: 0.4;
+.themed-dropdown > div[class*="h-px"] {
+  opacity: 0.3;
 }
 
-/* "ACCOUNT" label — translate to pt and tone down */
-.ui-theme .themed-dropdown > div:first-child {
-  opacity: 0.45;
+/* "ACCOUNT" label — tone down */
+.themed-dropdown > div:first-child:not([role]) {
+  opacity: 0.4;
   font-size: 0.65rem;
   letter-spacing: 0.08em;
-}
-
-/* Sign out — less aggressive red */
-.ui-theme .themed-dropdown [class*="text-destructive"] {
-  opacity: 0.8;
 }
 
 @keyframes fade-in-up {
