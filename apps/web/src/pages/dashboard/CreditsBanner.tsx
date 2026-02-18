@@ -15,11 +15,11 @@ export function CreditsBanner({
   return (
     <div className="relative overflow-hidden rounded-xl border border-primary/20 dark:border-primary/15 shadow-sm">
       <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/3 to-primary/5 dark:from-primary/8 dark:via-primary/4 dark:to-primary/8" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_hsl(var(--primary)/0.06),_transparent_60%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgb(var(--color-primary-rgb)/0.06),_transparent_60%)]" />
 
       <div className="relative flex items-center gap-3 p-4">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/15">
-          <AlertTriangle className="w-4.5 h-4.5 text-primary" />
+          <AlertTriangle className="w-4 h-4 text-primary" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-foreground">
