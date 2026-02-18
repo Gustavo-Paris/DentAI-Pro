@@ -34,8 +34,8 @@ PASSO 2: Existe a ZONA ROSA CLARA (gengiva) ENTRE a zona vermelha (labio) e a zo
 - NAO, o labio vermelho encontra diretamente o branco dos dentes → va para PASSO 4
 
 PASSO 3 (gengiva visivel acima dos dentes): Estime a altura da faixa rosa clara.
-- >=2mm de rosa claro entre labio e dentes → "alta" (gingival_exposure_mm = valor estimado)
-- ~1mm de rosa claro em 2+ dentes → "alta" (gingival_exposure_mm = 1)
+- >=3mm de rosa claro entre labio e dentes → "alta" (gingival_exposure_mm = valor estimado)
+- 1-2mm de rosa claro em 2+ dentes → "media" (gingival_exposure_mm = valor estimado)
 - ~1mm em 1 dente apenas → "media" (gingival_exposure_mm = 1)
 
 PASSO 4 (labio encontra dentes diretamente): As papilas (triangulos rosa ENTRE os dentes) sao visiveis?

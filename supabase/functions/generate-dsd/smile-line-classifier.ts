@@ -65,22 +65,22 @@ export function applySmileLineOverride(
     }
   }
 
-  // Quantitative override: if classifier reports ≥2mm exposure but classified as
-  // non-alta, force "alta" since ≥2mm is the clinical threshold for gummy smile
-  if (classifierResult && classifierResult.gingival_exposure_mm >= 2 && analysis.smile_line !== 'alta') {
+  // Quantitative override: if classifier reports ≥3mm exposure but classified as
+  // non-alta, force "alta" since ≥3mm is the clinical threshold for gummy smile
+  if (classifierResult && classifierResult.gingival_exposure_mm >= 3 && analysis.smile_line !== 'alta') {
     logger.log(
       `Smile line NUMERIC OVERRIDE: classifier reported ${classifierResult.gingival_exposure_mm}mm ` +
-      `gingival exposure (≥2mm threshold) but smile_line="${analysis.smile_line}" → forcing "alta"`
+      `gingival exposure (≥3mm threshold) but smile_line="${analysis.smile_line}" → forcing "alta"`
     );
     analysis.smile_line = 'alta';
     analysis.observations = analysis.observations || [];
     analysis.observations.push(
       `Linha do sorriso reclassificada para "alta": exposição gengival estimada de ` +
-      `${classifierResult.gingival_exposure_mm}mm (≥2mm = sorriso gengival).`
+      `${classifierResult.gingival_exposure_mm}mm (≥3mm = sorriso gengival).`
     );
   }
 
   // Note: keyword-based safety net was removed — it caused false positives
   // when observations contained negated phrases (e.g., "Não há gengiva rosa acima").
-  // The classifier + numeric override (≥2mm) are sufficient and more reliable.
+  // The classifier + numeric override (≥3mm) are sufficient and more reliable.
 }
