@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { DashboardModuleCard } from '@pageshell/composites/dashboard';
-import type { ModuleConfig } from '@pageshell/composites/dashboard';
+import { DashboardModuleCard } from '@parisgroup-ai/pageshell/composites';
+import type { ModuleConfig } from '@parisgroup-ai/pageshell/composites';
 import type { DashboardSession } from '@/hooks/domain/useDashboard';
 import { WizardDraft } from '@/hooks/useWizardDraft';
 import { Button } from '@/components/ui/button';

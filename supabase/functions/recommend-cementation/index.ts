@@ -351,6 +351,12 @@ Deno.serve(async (req: Request) => {
 
     if (updateError) {
       logger.error("Update error:", updateError);
+      // Refund credits since protocol won't be persisted
+      if (creditsConsumed && supabaseForRefund && userIdForRefund) {
+        await refundCredits(supabaseForRefund, userIdForRefund, "cementation_recommendation", reqId);
+        logger.log(`[${reqId}] Refunded cementation_recommendation credits due to DB write failure`);
+      }
+      return createErrorResponse("Protocolo gerado mas falhou ao salvar. Tente novamente.", 500, corsHeaders);
     }
 
     return new Response(

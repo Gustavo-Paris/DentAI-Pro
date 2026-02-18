@@ -211,22 +211,20 @@ export function ComparisonSlider({
     <div className="relative">
       <div
         ref={containerRef}
-        className={`relative w-full aspect-[4/3] rounded-xl overflow-hidden select-none touch-none bg-secondary ${cursorStyle}`}
+        className={`relative w-full rounded-xl overflow-hidden select-none touch-none bg-secondary ${cursorStyle}`}
         onMouseDown={handleMouseDown}
         onTouchStart={handleTouchStart}
       >
-        {/* After image (full width, underneath) */}
-        <div className="absolute inset-0 overflow-hidden">
-          <img
-            src={afterImage}
-            alt={resolvedAfterLabel}
-            className="w-full h-full object-cover"
-            style={{ transform: imageTransform, transformOrigin: 'center center' }}
-            draggable={false}
-          />
-        </div>
+        {/* After image (in-flow, sets container height via object-contain) */}
+        <img
+          src={afterImage}
+          alt={resolvedAfterLabel}
+          className="w-full max-h-[80vh] object-contain"
+          style={{ transform: imageTransform, transformOrigin: 'center center' }}
+          draggable={false}
+        />
 
-        {/* Before image (clipped) */}
+        {/* Before image (clipped overlay) */}
         <div
           className="absolute inset-0 overflow-hidden"
           style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
@@ -234,7 +232,7 @@ export function ComparisonSlider({
           <img
             src={beforeImage}
             alt={resolvedBeforeLabel}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
             style={{ transform: imageTransform, transformOrigin: 'center center' }}
             draggable={false}
           />

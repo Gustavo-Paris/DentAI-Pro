@@ -1,4 +1,4 @@
-import { useTheme } from "next-themes";
+import { usePageShellColorMode } from '@parisgroup-ai/pageshell/theme';
 import { Sun, Moon, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,11 +15,13 @@ const labels: Record<string, string> = {
 };
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
+  const { colorMode, setColorMode } = usePageShellColorMode();
+
+  const theme = colorMode ?? "system";
 
   const cycle = () => {
     const idx = modes.indexOf(theme as (typeof modes)[number]);
-    setTheme(modes[(idx + 1) % modes.length]);
+    setColorMode(modes[(idx + 1) % modes.length]);
   };
 
   const icon =
@@ -39,13 +41,13 @@ export function ThemeToggle() {
           size="icon"
           className="h-8 w-8"
           onClick={cycle}
-          aria-label={`Tema: ${labels[theme ?? "system"]}`}
+          aria-label={`Tema: ${labels[theme]}`}
         >
           {icon}
         </Button>
       </TooltipTrigger>
       <TooltipContent>
-        <p>Tema: {labels[theme ?? "system"]}</p>
+        <p>Tema: {labels[theme]}</p>
       </TooltipContent>
     </Tooltip>
   );

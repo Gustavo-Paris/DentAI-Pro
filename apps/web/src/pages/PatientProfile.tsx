@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { DetailPage } from '@pageshell/composites';
+import { DetailPage } from '@parisgroup-ai/pageshell/composites';
 
 import { usePatientProfile } from '@/hooks/domain/usePatientProfile';
 import { formatToothLabel } from '@/lib/treatment-config';

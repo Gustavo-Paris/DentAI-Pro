@@ -2,11 +2,11 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ThemeToggle } from '../ThemeToggle';
 
-const mockSetTheme = vi.fn();
-let mockTheme = 'system';
+const mockSetColorMode = vi.fn();
+let mockColorMode = 'system';
 
-vi.mock('next-themes', () => ({
-  useTheme: () => ({ theme: mockTheme, setTheme: mockSetTheme }),
+vi.mock('@parisgroup-ai/pageshell/theme', () => ({
+  usePageShellColorMode: () => ({ colorMode: mockColorMode, setColorMode: mockSetColorMode }),
 }));
 
 vi.mock('@/components/ui/button', () => ({
@@ -29,46 +29,46 @@ vi.mock('lucide-react', () => ({
 
 describe('ThemeToggle', () => {
   it('should render with system icon by default', () => {
-    mockTheme = 'system';
+    mockColorMode = 'system';
     render(<ThemeToggle />);
     expect(screen.getByTestId('icon-monitor')).toBeInTheDocument();
   });
 
   it('should render sun icon in light mode', () => {
-    mockTheme = 'light';
+    mockColorMode = 'light';
     render(<ThemeToggle />);
     expect(screen.getByTestId('icon-sun')).toBeInTheDocument();
   });
 
   it('should render moon icon in dark mode', () => {
-    mockTheme = 'dark';
+    mockColorMode = 'dark';
     render(<ThemeToggle />);
     expect(screen.getByTestId('icon-moon')).toBeInTheDocument();
   });
 
   it('should cycle theme on click: system → light', () => {
-    mockTheme = 'system';
+    mockColorMode = 'system';
     render(<ThemeToggle />);
     fireEvent.click(screen.getByRole('button'));
-    expect(mockSetTheme).toHaveBeenCalledWith('light');
+    expect(mockSetColorMode).toHaveBeenCalledWith('light');
   });
 
   it('should cycle theme on click: light → dark', () => {
-    mockTheme = 'light';
+    mockColorMode = 'light';
     render(<ThemeToggle />);
     fireEvent.click(screen.getByRole('button'));
-    expect(mockSetTheme).toHaveBeenCalledWith('dark');
+    expect(mockSetColorMode).toHaveBeenCalledWith('dark');
   });
 
   it('should cycle theme on click: dark → system', () => {
-    mockTheme = 'dark';
+    mockColorMode = 'dark';
     render(<ThemeToggle />);
     fireEvent.click(screen.getByRole('button'));
-    expect(mockSetTheme).toHaveBeenCalledWith('system');
+    expect(mockSetColorMode).toHaveBeenCalledWith('system');
   });
 
   it('should have accessible aria-label', () => {
-    mockTheme = 'dark';
+    mockColorMode = 'dark';
     render(<ThemeToggle />);
     expect(screen.getByLabelText('Tema: Escuro')).toBeInTheDocument();
   });

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Camera, Upload, X, Loader2, User, Smile, Sparkles, Lightbulb, Zap } from 'lucide-react';
 import { toast } from 'sonner';
-import { compressImage } from '@/lib/imageUtils';
+import { compressImage, getImageDimensions } from '@/lib/imageUtils';
 import { trackEvent } from '@/lib/analytics';
 // heic-to is dynamically imported to reduce initial bundle size (20MB library)
 
@@ -48,7 +48,7 @@ const convertHeicToJpeg = async (file: File): Promise<Blob> => {
   const jpegBlob = await heicTo({
     blob: file,
     type: 'image/jpeg',
-    quality: 0.7,
+    quality: 0.88,
   });
   return jpegBlob;
 };
@@ -127,10 +127,33 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
       if (fileIsHeic) {
         toast.info(t('components.wizard.photoUpload.convertingIphone'));
         processedBlob = await convertHeicToJpeg(file);
+        // HEIC already converted to JPEG at 0.88 — only resize, skip recompression
+        const compressedBase64 = await compressImage(processedBlob, 1280, 1.0);
+
+        // Minimum size warning (non-blocking) — P2-57
+        try {
+          const dims = await getImageDimensions(compressedBase64);
+          if (dims.width < 640 || dims.height < 480) {
+            toast.warning(t('components.wizard.photoUpload.imageTooSmall'));
+          }
+        } catch { /* ignore dimension check errors */ }
+
+        onImageChange(compressedBase64);
+        trackEvent('photo_uploaded', { file_size: file.size, file_type: 'heic' });
+        return;
       }
 
-      // Comprimir a imagem
+      // Comprimir a imagem (non-HEIC)
       const compressedBase64 = await compressImage(processedBlob);
+
+      // Minimum size warning (non-blocking) — P2-57
+      try {
+        const dims = await getImageDimensions(compressedBase64);
+        if (dims.width < 640 || dims.height < 480) {
+          toast.warning(t('components.wizard.photoUpload.imageTooSmall'));
+        }
+      } catch { /* ignore dimension check errors */ }
+
       onImageChange(compressedBase64);
       trackEvent('photo_uploaded', { file_size: file.size, file_type: file.type || 'unknown' });
 
@@ -211,6 +234,18 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
       const fileIsHeic = await checkIsHeic(file);
       if (fileIsHeic) {
         processedBlob = await convertHeicToJpeg(file);
+        // HEIC already converted — only resize, skip recompression
+        const compressedBase64 = await compressImage(processedBlob, 1280, 1.0);
+
+        if (onAdditionalPhotosChange) {
+          onAdditionalPhotosChange({
+            ...additionalPhotos,
+            [type]: compressedBase64,
+          });
+        }
+
+        toast.success(type === 'smile45' ? t('components.wizard.photoUpload.photo45Added') : t('components.wizard.photoUpload.faceAdded'));
+        return;
       }
 
       const compressedBase64 = await compressImage(processedBlob);

@@ -1,8 +1,8 @@
 import { lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { DashboardPage } from '@pageshell/composites/dashboard';
-import type { ModuleConfig, DashboardTab } from '@pageshell/composites/dashboard';
+import { DashboardPage } from '@parisgroup-ai/pageshell/composites';
+import type { ModuleConfig, DashboardTab } from '@parisgroup-ai/pageshell/composites';
 import { useDashboard } from '@/hooks/domain/useDashboard';
 import {
   TooltipProvider,
