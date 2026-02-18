@@ -11,7 +11,7 @@ export const dsdAnalysis: PromptDefinition<Params> = {
   id: 'dsd-analysis',
   name: 'Análise DSD',
   description: 'Análise completa de Digital Smile Design com visagismo e proporções faciais',
-  model: 'claude-sonnet-4-5-20250929',
+  model: 'claude-sonnet-4-6-20250929',
   temperature: 0.0,
   maxTokens: 4000,
   mode: 'vision-tools',
@@ -34,7 +34,7 @@ Avalie e DOCUMENTE o tipo de arco atual e se precisa de correção.
 1. Linha do Sorriso vs Lábio Superior (CLASSIFICACAO CRITICA — SEGUIR PROTOCOLO):
 
    DEFINICOES CALIBRADAS:
-   - ALTA (>3mm gengiva exposta): Faixa CONTINUA de gengiva visivel acima dos zenites dos centrais. Gengiva E papilas CLARAMENTE expostas. Sorriso gengival evidente.
+   - ALTA (>=3mm gengiva exposta): Faixa CONTINUA de gengiva visivel acima dos zenites dos centrais. Gengiva E papilas CLARAMENTE expostas. Sorriso gengival evidente.
    - MEDIA (0-3mm gengiva exposta): Margem gengival TANGENCIA o labio superior. Apenas zenites e/ou pontas de papilas visiveis. Pouca ou nenhuma faixa continua de gengiva.
    - BAIXA (gengiva NAO visivel): Labio superior COBRE completamente a margem gengival. Dentes parcialmente cobertos pelo labio.
 
@@ -49,7 +49,7 @@ Avalie e DOCUMENTE o tipo de arco atual e se precisa de correção.
    Passo 1: Localizar borda do labio superior em repouso no sorriso
    Passo 2: Localizar zenites gengivais dos incisivos centrais (11/21)
    Passo 3: Estimar distancia vertical entre labio e zenites (mm)
-   Passo 4: Classificar: >3mm=ALTA, 0-3mm=MEDIA, gengiva coberta=BAIXA
+   Passo 4: Classificar: >=3mm=ALTA, 0-3mm(exclusive)=MEDIA, gengiva coberta=BAIXA
 
    REGRA ANTI-VIES: Na duvida entre media e alta, quando gengiva CLARAMENTE visivel acima dos zenites → classifique como ALTA. Erro de subclassificar sorriso gengival e PIOR que superclassificar (gengivoplastia nao detectada = problema clinico perdido).
 
@@ -64,15 +64,13 @@ Avalie e DOCUMENTE o tipo de arco atual e se precisa de correção.
 
 Retorne overbite_suspicion: "sim"|"não"|"indeterminado"
 
-Critérios observacionais (foto, NAO diagnóstico clínico):
-- "sim": Inferiores CLARAMENTE VISIVEIS E superiores cobrem >2/3 da coroa dos inferiores
-- "não": Inferiores CLARAMENTE VISIVEIS E trespasse normal (1/3 a 1/2)
-- "indeterminado": Inferiores NAO visiveis, OU parcialmente visiveis, OU foto nao permite avaliar com seguranca
+Critérios observacionais INDIRETOS (avaliáveis em foto frontal de sorriso):
+- "sim": Bordos incisais superiores cobrem VISIVELMENTE >2/3 dos inferiores (quando ambas arcadas visíveis), OU dentes superiores apresentam desgaste incisal severo compatível com contato excessivo, OU linha do sorriso alta com incisivos superiores alongados e curva de Spee acentuada visível.
+- "não": Arcada inferior CLARAMENTE VISÍVEL com trespasse vertical normal (1/3 a 1/2).
+- "indeterminado": Inferiores NÃO visíveis na foto (caso mais comum em foto frontal de sorriso), OU evidência insuficiente.
 
-REGRA CRITICA: Se os dentes INFERIORES nao estao CLARAMENTE VISIVEIS na foto -> OBRIGATORIAMENTE retorne "indeterminado".
-NUNCA retorne "não" (sem sobremordida) se os inferiores nao sao visiveis — isso e uma AFIRMACAO FALSO-NEGATIVA.
-Foto frontal de sorriso mostrando apenas arcada superior -> "indeterminado" (SEMPRE).
-
+REGRA: Foto frontal mostrando APENAS arcada superior → SEMPRE "indeterminado".
+REGRA: Na dúvida → "indeterminado" (NUNCA "não" sem evidência positiva).
 FILOSOFIA CONSERVADORA: Suspeita observacional, NAO diagnóstico. Use linguagem de suspeita.
 Quando "sim": Adicione observação sobre avaliação ortodôntica, NAO sugira gengivoplastia (sobremordida pode simular sorriso gengival).
 Quando "indeterminado": Adicione observação: "Sobremordida nao avaliavel nesta foto. Avaliação clínica necessária."

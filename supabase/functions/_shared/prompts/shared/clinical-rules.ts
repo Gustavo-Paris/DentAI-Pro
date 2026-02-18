@@ -99,7 +99,7 @@ REGRA DE VISIBILIDADE:
 
 SE gengiva visivel (linha media ou alta), avalie:
 1. Coroas clinicas curtas: proporcao altura/largura inadequada -> gengivoplastia p/ aumentar coroa
-2. Assimetria gengival: comparar homologos (11 vs 21, 12 vs 22, 13 vs 23), diferenca >1mm -> gengivoplastia
+2. Assimetria gengival: comparar homologos (11 vs 21, 12 vs 22, 13 vs 23), diferenca >1.5mm -> gengivoplastia
 3. Sorriso gengival com exposicao gengival significativa: considerar gengivoplastia ou encaminhamento periodontia
 4. Zenites assimetricos entre homologos -> gengivoplastia para harmonizar
 

@@ -253,14 +253,16 @@ export async function generateSimulation(
   }
   const [, inputMimeType, inputBase64Data] = dataUrlMatch;
 
-  // Compute deterministic seed from image hash for reproducibility
+  // Compute semi-deterministic seed: image hash + time offset for regeneration variability
   const hashSource = inputBase64Data.substring(0, 1000);
   const encoder = new TextEncoder();
   const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(hashSource));
   const hashArray = new Uint8Array(hashBuffer);
-  // Mask to 31 bits (0x7FFFFFFF) — Gemini expects signed INT32 (max 2147483647)
-  const imageSeed = ((hashArray[0] << 24) | (hashArray[1] << 16) | (hashArray[2] << 8) | hashArray[3]) & 0x7FFFFFFF;
-  logger.log("Simulation seed from image hash:", imageSeed);
+  const baseSeed = ((hashArray[0] << 24) | (hashArray[1] << 16) | (hashArray[2] << 8) | hashArray[3]) & 0x7FFFFFFF;
+  // Add time-based offset so "regenerate" produces a different result (different minute = different seed)
+  const timeOffset = Math.floor(Date.now() / 60000) % 1000;
+  const imageSeed = (baseSeed + timeOffset) & 0x7FFFFFFF;
+  logger.log("Simulation seed from image hash:", imageSeed, "(base:", baseSeed, "offset:", timeOffset, ")");
 
   // Metrics for DSD simulation
   const metrics = createSupabaseMetrics(
@@ -272,8 +274,8 @@ export async function generateSimulation(
   // Lip validation for gingival layers: checks if EITHER lip moved
   const isGingivalLayer = layerType === 'complete-treatment' || layerType === 'root-coverage';
 
-  // Need the analysis prompt def for lip validation model
-  const dsdAnalysisPromptDef = getPrompt('dsd-analysis');
+  // Use Haiku for lip validation — binary SIM/NÃO task doesn't need Sonnet
+  const smileLinePromptDef = getPrompt('smile-line-classifier');
 
   async function validateLips(simImageUrl: string): Promise<boolean> {
     try {
@@ -282,7 +284,7 @@ export async function generateSimulation(
       const simMimeType = simMimeMatch ? simMimeMatch[1] : 'image/png';
 
       const lipCheck = await callClaudeVision(
-        dsdAnalysisPromptDef.model,
+        smileLinePromptDef.model,
         `Imagem 1 é a ORIGINAL. Imagem 2 é a SIMULAÇÃO odontológica.
 Compare AMBOS os lábios entre as duas imagens:
 1. O LÁBIO SUPERIOR mudou de posição, formato ou contorno?
