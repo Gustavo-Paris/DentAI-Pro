@@ -45,7 +45,7 @@ Avalie e DOCUMENTE o tipo de arco atual e se precisa de correção.
    - Sorriso com >3mm de gengiva E observacoes mencionando "sorriso gengival" → ALTA (NUNCA media!)
    - Duvida entre media e alta com gengiva claramente visivel → ALTA (vies de seguranca)
 
-   AUTO-VERIFICACAO OBRIGATORIA (4 passos ANTES de classificar):
+   AUTO-VERIFICACAO (4 passos ANTES de classificar):
    Passo 1: Localizar borda do labio superior em repouso no sorriso
    Passo 2: Localizar zenites gengivais dos incisivos centrais (11/21)
    Passo 3: Estimar distancia vertical entre labio e zenites (mm)
@@ -53,7 +53,7 @@ Avalie e DOCUMENTE o tipo de arco atual e se precisa de correção.
 
    REGRA ANTI-VIES: Na duvida entre media e alta, quando gengiva CLARAMENTE visivel acima dos zenites → classifique como ALTA. Erro de subclassificar sorriso gengival e PIOR que superclassificar (gengivoplastia nao detectada = problema clinico perdido).
 
-2. Espessura Labial (RETORNO OBRIGATORIO - lip_thickness):
+2. Espessura Labial (lip_thickness — sempre retornar):
    - "fino": Dentes proeminentes parecem excessivos. Se aumento de volume sugerido: "Labios finos: considerar preenchimento com acido hialuronico."
    - "médio": Proporção equilibrada
    - "volumoso": Suportam dentes com mais volume vestibular
@@ -78,7 +78,7 @@ Quando "indeterminado": Adicione observação: "Sobremordida nao avaliavel nesta
 === CARACTERISTICAS DENTARIAS NATURAIS ===
 Preservar/criar: Mamelons, translucidez incisal, gradiente de cor (cervical saturado -> incisal claro), textura (periquimácies), caracterizações sutis.
 
-=== ANALISE TECNICA OBRIGATORIA ===
+=== ANALISE TECNICA (7 componentes) ===
 1. Linha Média Facial: centrada ou desviada
 2. Linha Média Dental: alinhada com facial
 3. Linha do Sorriso: exposição gengival (alta/média/baixa)
@@ -138,9 +138,9 @@ REGRA PARA LATERAIS (12/22) - GENGIVOPLASTIA:
 - Gengivoplastia nos laterais SOMENTE se: assimetria entre 12 e 22 >1mm, proporcao L/A >90%, ou sorriso gengival >3mm afetando laterais
 - Proporção ideal: Central > Lateral > Canino
 
-CORRECAO COMPLETA DO ARCO: Ao detectar assimetria em QUALQUER dente, avaliar e sugerir para TODOS (13-23). Gerar sugestões INDIVIDUAIS por dente.
+CORRECAO COMPLETA DO ARCO: Ao detectar assimetria em qualquer dente, avaliar e sugerir para TODOS (13-23). Gerar sugestões individuais por dente.
 
-FORMATO DA SUGESTAO DE GENGIVOPLASTIA:
+FORMATO DA SUGESTAO DE GENGIVOPLASTIA (seguir quando indicada):
 { tooth_number: "dentes envolvidos", treatment_indication: "gengivoplastia"|"recobrimento_radicular", procedure_type: "complementar", description: "[justificativa]", priority: "alta", notes: "Procedimento preparatório - realizar ANTES do restaurador. Requer avaliação periodontal prévia (sondagem + radiografia periapical) para verificar nível ósseo crestal e largura biológica." }
 
 PROTOCOLO DE GENGIVOPLASTIA: Avaliação periodontal (sondagem + radiografia periapical) -> Enceramento prévio + guia cirúrgica -> Respeitar distâncias biológicas -> 60-90 dias maturação tecidual.
@@ -163,31 +163,31 @@ NAO gerar gengivoplastia se gengiva NAO visivel na foto.
 Smile line MEDIA: AVALIAR — exposicao pode ser suficiente para detectar assimetrias.
 IMPORTANTE: Se papilas estao totalmente visiveis ou contorno gengival dos centrais e visivel → reclassificar para "alta", nao "media".
 
-IDENTIFICACAO DE DENTES PARA GENGIVOPLASTIA (OBRIGATORIO quando gengivoplastia indicada):
+IDENTIFICACAO DE DENTES PARA GENGIVOPLASTIA (quando indicada):
 - Listar CADA dente que precisa de gengivoplastia como sugestão SEPARADA
 - Especificar quanto de tecido remover em mm para cada dente (ex: "Gengivoplastia ~1.5mm")
 - Indicar sequencia no tratamento: gengivoplastia ANTES das restaurações (60-90 dias de cicatrização)
 
-=== DETECCAO DE ANOMALIAS DENTARIAS (OBRIGATORIA) ===
+=== DETECCAO DE ANOMALIAS DENTARIAS ===
 ANTES de analisar, verificar:
 1. AGENESIA de laterais (12/22): Se caninos ocupam posição dos laterais (dentes pontiagudos na posição 12/22), IDENTIFICAR como agenesia. Caninos na posição de laterais têm formato cônico/pontiagudo — DIFERENTE de laterais normais (arredondados, menores).
 2. TRANSPOSICAO: Dentes fora de posição (ex: canino na posição de pré-molar).
 3. SUPRANUMERARIOS: Dentes extras na arcada.
 4. RESTAURACOES/COROAS com COR ou FORMATO insatisfatório: Restaurações antigas que precisam substituição por discrepância visível com dentes naturais.
 
-Se anomalia detectada: OBRIGATORIO incluir nas observations + gerar sugestão de tratamento específica.
+Se anomalia detectada: incluir nas observations + gerar sugestão de tratamento específica.
 Para agenesia de laterais com caninos no lugar: sugerir reanatomização dos caninos em laterais (resina/faceta) E/OU ortodontia para reposicionamento.
 
 === AVALIACAO DO ARCO COMPLETO ===
-Quando tratamento em incisivos, AVALIACAO OBRIGATORIA:
+Quando tratamento em incisivos, AVALIAR:
 
 CANINOS (13/23): Corredor bucal? Proeminência adequada?
-PRE-MOLARES (14/15/24/25) - INCLUIR NA ANALISE:
+PRE-MOLARES (14/15/24/25) — incluir na análise quando:
 - Incluir se: corredor bucal "excessivo" (com evidência), OU 2+ anteriores receberão tratamento, OU foto 45° disponível, OU pré-molares VISIVEIS na foto com problemas estéticos (cor, formato, restaurações antigas)
 - Se pré-molares são visíveis no sorriso e apresentam QUALQUER desarmonia estética com os anteriores (cor diferente, restaurações antigas, escurecimento) → INCLUIR nas sugestões
 - NAO sugerir tratamento APENAS se: corredor "adequado" E pré-molares em posição normal E sem problemas estéticos visíveis
 
-Se >=2 anteriores precisam de intervenção -> AVALIE 6-10 dentes do arco (13-23 OBRIGATÓRIO + 14/15/24/25 se visíveis).
+Se >=2 anteriores precisam de intervenção -> avaliar 6-10 dentes do arco (13-23 sempre + 14/15/24/25 se visíveis).
 
 === MATRIZ DE DECISAO: ALTERACAO DSD -> TRATAMENTO ===
 
@@ -225,10 +225,10 @@ Se QUALQUER desarmonia entre homólogos detectada:
 - Incluir medida em mm quando possível
 
 EXEMPLO CONCRETO DE ASSIMETRIA:
-Se incisivo central 11 é visivelmente mais LARGO ou mais ESTREITO que o 21 → sugestão OBRIGATÓRIA de "Reanatomização em Resina Composta" para harmonizar larguras. Especificar: "Dente [X] com largura diferente do contralateral [Y] — reanatomização para equalizar proporções."
+Se incisivo central 11 é visivelmente mais LARGO ou mais ESTREITO que o 21 → sugerir "Reanatomização em Resina Composta" para harmonizar larguras. Especificar: "Dente [X] com largura diferente do contralateral [Y] — reanatomização para equalizar proporções."
 
 === RECONTORNO INCISAL ENTRE HOMOLOGOS ===
-Desnível >0.5mm entre homólogos (11/21, 12/22, 13/23) -> "Recontorno Incisal em Resina Composta" OBRIGATÓRIO.
+Desnível >0.5mm entre homólogos (11/21, 12/22, 13/23) -> sugerir "Recontorno Incisal em Resina Composta".
 
 === RECONTORNO PARA HARMONIA DO SORRISO ===
 Além de desnível entre homólogos, avaliar SEMPRE:

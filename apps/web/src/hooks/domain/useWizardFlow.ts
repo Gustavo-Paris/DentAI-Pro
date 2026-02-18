@@ -246,6 +246,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     setPatientPreferences,
     setImageBase64,
     clearDraft,
+    vitaShadeManuallySetRef: photo.vitaShadeManuallySetRef,
   });
 
   // -------------------------------------------------------------------------
@@ -328,6 +329,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
         uploadedPhotoPath: photo.uploadedPhotoPath,
         additionalPhotos,
         patientPreferences,
+        vitaShadeManuallySet: photo.vitaShadeManuallySetRef.current,
       });
     }
   }, [
