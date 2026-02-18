@@ -48,6 +48,16 @@ export function DSDStep(props: DSDStepProps) {
     [state.setShowAnnotations]
   );
 
+  const handleCloseWhiteningComparison = useCallback(
+    () => state.setShowWhiteningComparison(false),
+    [state.setShowWhiteningComparison]
+  );
+
+  const handleGenerateAllLayers = useCallback(
+    () => state.generateAllLayers(),
+    [state.generateAllLayers]
+  );
+
   // Track dsd_started once
   useEffect(() => {
     if (!hasFiredStartRef.current) {
@@ -110,9 +120,9 @@ export function DSDStep(props: DSDStepProps) {
         onRegenerateSimulation={state.handleRegenerateSimulation}
         onToggleAnnotations={handleToggleAnnotations}
         onGenerateWhiteningComparison={state.generateWhiteningComparison}
-        onCloseWhiteningComparison={() => state.setShowWhiteningComparison(false)}
+        onCloseWhiteningComparison={handleCloseWhiteningComparison}
         onSelectWhiteningLevel={state.handleSelectWhiteningLevel}
-        onGenerateAllLayers={() => state.generateAllLayers()}
+        onGenerateAllLayers={handleGenerateAllLayers}
         onRetry={state.handleRetry}
         onContinue={state.handleContinue}
         gingivoplastyApproved={state.gingivoplastyApproved}

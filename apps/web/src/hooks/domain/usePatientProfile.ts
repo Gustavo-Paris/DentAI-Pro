@@ -133,7 +133,7 @@ export function usePatientProfile(): PatientProfileState & PatientProfileActions
         created_at: sessionData.created_at,
       }));
 
-      return { sessions, totalCount: count, hasMore: count >= (sessionsPage + 1) * 20 };
+      return { sessions, totalCount: count, hasMore: count > (sessionsPage + 1) * 20 };
     },
     enabled: !!user && !!patientId,
     staleTime: QUERY_STALE_TIMES.SHORT,

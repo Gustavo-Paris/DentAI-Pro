@@ -116,17 +116,28 @@ Deno.serve(async (req) => {
 
     // Log any individual errors but don't fail the whole export
     const errors: string[] = [];
-    if (profileResult.error) errors.push(`profile: ${profileResult.error.message}`);
-    if (evaluationsResult.error) errors.push(`evaluations: ${evaluationsResult.error.message}`);
-    if (patientsResult.error) errors.push(`patients: ${patientsResult.error.message}`);
-    if (draftsResult.error) errors.push(`drafts: ${draftsResult.error.message}`);
-    if (creditUsageResult.error) errors.push(`credit_usage: ${creditUsageResult.error.message}`);
-    if (subscriptionResult.error) errors.push(`subscription: ${subscriptionResult.error.message}`);
-    if (inventoryResult.error) errors.push(`inventory: ${inventoryResult.error.message}`);
-    if (paymentHistoryResult.error) errors.push(`payment_history: ${paymentHistoryResult.error.message}`);
+    if (profileResult.error) errors.push("profile");
+    if (evaluationsResult.error) errors.push("evaluations");
+    if (patientsResult.error) errors.push("patients");
+    if (draftsResult.error) errors.push("drafts");
+    if (creditUsageResult.error) errors.push("credit_usage");
+    if (subscriptionResult.error) errors.push("subscription");
+    if (inventoryResult.error) errors.push("inventory");
+    if (paymentHistoryResult.error) errors.push("payment_history");
 
-    if (errors.length > 0) {
-      logger.warn(`[${reqId}] Partial export errors: ${errors.join(", ")}`);
+    // Log full errors server-side only
+    const detailedErrors: string[] = [];
+    if (profileResult.error) detailedErrors.push(`profile: ${profileResult.error.message}`);
+    if (evaluationsResult.error) detailedErrors.push(`evaluations: ${evaluationsResult.error.message}`);
+    if (patientsResult.error) detailedErrors.push(`patients: ${patientsResult.error.message}`);
+    if (draftsResult.error) detailedErrors.push(`drafts: ${draftsResult.error.message}`);
+    if (creditUsageResult.error) detailedErrors.push(`credit_usage: ${creditUsageResult.error.message}`);
+    if (subscriptionResult.error) detailedErrors.push(`subscription: ${subscriptionResult.error.message}`);
+    if (inventoryResult.error) detailedErrors.push(`inventory: ${inventoryResult.error.message}`);
+    if (paymentHistoryResult.error) detailedErrors.push(`payment_history: ${paymentHistoryResult.error.message}`);
+
+    if (detailedErrors.length > 0) {
+      logger.warn(`[${reqId}] Partial export errors: ${detailedErrors.join(", ")}`);
     }
 
     const exportData = {

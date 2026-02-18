@@ -35,7 +35,7 @@ export default function Landing() {
   // Capture referral code from URL and store in localStorage
   useEffect(() => {
     const ref = searchParams.get('ref');
-    if (ref) {
+    if (ref && /^[A-Z0-9-]{4,20}$/i.test(ref)) {
       localStorage.setItem('referral_code', ref);
     }
   }, [searchParams]);
