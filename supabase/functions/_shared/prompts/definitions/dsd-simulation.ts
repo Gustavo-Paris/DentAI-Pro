@@ -169,8 +169,10 @@ function buildBaseCorrections(): string {
 4. PRESERVAR mamelons se visíveis (projeções naturais da borda incisal)
 5. MANTER micro-textura natural do esmalte - NÃO deixar dentes "lisos demais"
 6. PRESERVAR translucidez incisal natural - NÃO tornar dentes opacos uniformemente
-7. Corrigir formato de incisivos laterais conoides (12/22) - aumentar largura e comprimento para proporção adequada
-8. Aplicar contorno recomendado pelo visagismo quando o formato atual for inadequado
+7. CORRIGIR ARESTAS INCISAIS DE CANINOS (13/23): Se caninos apresentam bordos incisais fraturados, lascados ou irregulares, RESTAURAR o contorno pontudo natural do canino. Caninos devem ter ponta incisal definida — não plana ou arredondada por fratura.
+8. CORRIGIR BORDOS INCISAIS de TODOS os dentes anteriores (13-23): lascas, irregularidades, assimetrias de comprimento entre homólogos devem ser corrigidas para harmonia do arco
+9. Corrigir formato de incisivos laterais conoides (12/22) - aumentar largura e comprimento para proporção adequada
+10. Aplicar contorno recomendado pelo visagismo quando o formato atual for inadequado
 
 SHAPE CORRECTIONS (quando análise sugere):
 - Modificar contornos dos dentes para harmonizar com recommended_tooth_shape
