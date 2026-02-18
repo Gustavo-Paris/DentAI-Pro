@@ -113,11 +113,10 @@ export type PhotoAnalysisResultParsed = z.infer<typeof PhotoAnalysisResultSchema
 // 2. DSDAnalysis (generate-dsd)
 // ---------------------------------------------------------------------------
 
-const FDI_TOOTH_PATTERN = /^[1-4][1-8]$/;
-
 const DSDSuggestionSchema = z
   .object({
-    tooth: z.string().regex(FDI_TOOTH_PATTERN, "Tooth must be FDI notation (11-48)"),
+    // FDI validation moved to post-processing (AI sometimes returns non-FDI values for gingival procedures)
+    tooth: z.string(),
     current_issue: z.string(),
     proposed_change: z.string(),
     treatment_indication: z.string().optional(),
