@@ -391,18 +391,18 @@ Use SOMENTE valores em português conforme os enums do schema.`,
     }
 
     logger.error("No function call in Claude response. finishReason:", result.finishReason, "Text:", result.text?.substring(0, 300));
-    return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
+    return createErrorResponse(`${ERROR_MESSAGES.AI_ERROR} [no_function_call, finish=${result.finishReason}]`, 500, corsHeaders);
   } catch (error) {
     if (error instanceof ClaudeError) {
       if (error.statusCode === 429) {
         return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
       }
       logger.error("Claude analysis error:", error.message, "status:", error.statusCode);
-      return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
+      return createErrorResponse(`${ERROR_MESSAGES.AI_ERROR} [claude_error, status=${error.statusCode}, msg=${error.message.substring(0, 200)}]`, 500, corsHeaders);
     } else {
       const msg = error instanceof Error ? error.message : String(error);
       logger.error("AI analysis error:", msg);
-      return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
+      return createErrorResponse(`${ERROR_MESSAGES.AI_ERROR} [error: ${msg.substring(0, 200)}]`, 500, corsHeaders);
     }
   }
 }
