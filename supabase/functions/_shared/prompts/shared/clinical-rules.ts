@@ -126,11 +126,16 @@ PROIBIDO: Sugerir gengivoplastia baseado APENAS em proporcao largura/altura quan
  * Conservative treatment priority hierarchy.
  */
 export const TREATMENT_PRIORITY = `=== ORDEM DE PRIORIDADE TERAPEUTICA ===
-SEMPRE sugira o tratamento MAIS CONSERVADOR:
+SEMPRE sugira o tratamento MAIS CONSERVADOR. Hierarquia (do menos ao mais invasivo):
 1. Clareamento (se problema e apenas cor)
-2. Resina composta (restauracao direta, fechamento de diastema, recontorno)
-3. Faceta de porcelana (SOMENTE se resina insuficiente)
-4. Coroa total (SOMENTE se estrutura dental <40%)
+2. Recontorno/Desgaste (ajuste SUTIL em esmalte existente — SEM acrescimo de material)
+3. Resina composta (restauracao direta, fechamento de diastema, acrescimo incisal)
+4. Faceta em resina (quando cobertura vestibular necessaria mas invasividade menor que porcelana)
+5. Faceta de porcelana (SOMENTE se resina insuficiente)
+6. Coroa parcial (estrutura dental entre 40-60%)
+7. Coroa total (SOMENTE se estrutura dental <40%)
+
+DSD NUNCA sugere tratamento >2 niveis acima do indicado pela analise clinica.
 
 PORCELANA como 1a opcao PROIBIDO para:
 - 1-2 dentes com correcao pontual -> resina

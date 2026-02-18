@@ -32,7 +32,9 @@ export interface DSDAnalysis {
   observations: string[];
   confidence: "alta" | "média" | "baixa";
   simulation_limitation?: string;
+  /** Displayed in ProportionsCard (DSD step, Result page, SharedEvaluation) */
   lip_thickness?: "fino" | "médio" | "volumoso";
+  /** Displayed in ProportionsCard + overbite alert in DSDAnalysisView */
   overbite_suspicion?: "sim" | "não" | "indeterminado";
   face_shape?: "oval" | "quadrado" | "triangular" | "retangular" | "redondo";
   perceived_temperament?: "colérico" | "sanguíneo" | "melancólico" | "fleumático" | "misto";
@@ -68,7 +70,7 @@ export interface SimulationLayer {
   /** Storage path (not signed URL) */
   simulation_url: string | null;
   /** Whitening level used for this layer */
-  whitening_level: 'natural' | 'hollywood';
+  whitening_level: 'natural' | 'white' | 'hollywood';
   /** Whether gengivoplasty recontouring is included */
   includes_gengivoplasty: boolean;
 }

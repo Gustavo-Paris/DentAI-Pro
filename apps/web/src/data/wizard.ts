@@ -152,6 +152,62 @@ export async function savePendingTeeth(
 }
 
 // ---------------------------------------------------------------------------
+// Contralateral Tooth Lookup (cross-session)
+// ---------------------------------------------------------------------------
+
+/**
+ * Contralateral mapping: swap first digit (1↔2, 3↔4), keep second digit.
+ * e.g. "11" → "21", "13" → "23", "34" → "44"
+ */
+export function getContralateralTooth(tooth: string): string | null {
+  if (tooth.length !== 2) return null;
+  const quadrant = parseInt(tooth[0]);
+  const number = tooth[1];
+  const SWAP: Record<number, number> = { 1: 2, 2: 1, 3: 4, 4: 3 };
+  const mapped = SWAP[quadrant];
+  if (!mapped) return null;
+  return `${mapped}${number}`;
+}
+
+/**
+ * Query previous evaluations for the same patient to find a contralateral
+ * tooth that already has a protocol (generic_protocol IS NOT NULL).
+ *
+ * Returns the protocol data if found, null otherwise.
+ */
+export async function findContralateralProtocol(
+  patientId: string,
+  tooth: string,
+): Promise<{
+  evaluationId: string;
+  tooth: string;
+  treatmentType: string;
+  protocol: Record<string, unknown>;
+} | null> {
+  const contralateral = getContralateralTooth(tooth);
+  if (!contralateral) return null;
+
+  const { data, error } = await supabase
+    .from('evaluations')
+    .select('id, tooth, treatment_type, generic_protocol')
+    .eq('patient_id', patientId)
+    .eq('tooth', contralateral)
+    .not('generic_protocol', 'is', null)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error || !data) return null;
+
+  return {
+    evaluationId: data.id as string,
+    tooth: data.tooth as string,
+    treatmentType: data.treatment_type as string,
+    protocol: data.generic_protocol as Record<string, unknown>,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Protocol Sync (unify protocols within same treatment group)
 // ---------------------------------------------------------------------------
 

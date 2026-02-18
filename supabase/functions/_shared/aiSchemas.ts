@@ -95,7 +95,8 @@ const DetectedToothSchema = z
 export const PhotoAnalysisResultSchema = z
   .object({
     detected: z.boolean(),
-    confidence: z.number(),
+    // P2-55: Bounded confidence score to prevent nonsensical AI values
+    confidence: z.number().min(0).max(1),
     detected_teeth: z.array(DetectedToothSchema).default([]),
     primary_tooth: z.string().nullable().optional(),
     vita_shade: z.string().nullable().optional(),
@@ -130,8 +131,9 @@ export const DSDAnalysisSchema = z
     smile_line: z.string(),
     buccal_corridor: z.string(),
     occlusal_plane: z.string(),
-    golden_ratio_compliance: z.number(),
-    symmetry_score: z.number(),
+    // P2-55: Bounded numeric scores to prevent nonsensical AI values
+    golden_ratio_compliance: z.number().min(0).max(100),
+    symmetry_score: z.number().min(0).max(100),
     suggestions: z.array(DSDSuggestionSchema).default([]),
     observations: z.array(z.string()).default([]),
     confidence: z.string(),

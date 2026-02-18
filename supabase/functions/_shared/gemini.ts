@@ -120,7 +120,12 @@ export class GeminiError extends Error {
   }
 }
 
-// Circuit breaker state (per-invocation, resets on each edge function cold start)
+// Circuit breaker state (per-invocation, resets on each edge function cold start).
+// NOTE (P2-47): In Deno Deploy / serverless, module-level state is lost on cold starts.
+// This means the circuit breaker resets whenever the isolate is recycled. This is
+// acceptable because (1) cold starts are infrequent under load, (2) the retry logic
+// in makeGeminiRequest already handles transient failures, and (3) a persistent
+// circuit breaker would require external state (e.g., Redis/KV) which adds latency.
 const circuitBreaker = {
   consecutiveFailures: 0,
   state: "closed" as "closed" | "open" | "half-open",
@@ -769,127 +774,159 @@ export async function callGeminiImageEdit(
   } = {}
 ): Promise<{ imageUrl: string | null; text: string | null; tokens?: TokenUsage }> {
   const apiKey = getApiKey();
-  const model = "gemini-3-pro-image-preview"; // Best quality model for image editing
-  const url = `${GEMINI_API_BASE}/${model}:generateContent?key=${apiKey}`;
 
-  const request = {
-    contents: [
-      {
-        role: "user",
-        parts: [
-          { text: prompt },
-          {
-            inlineData: {
-              mimeType,
-              data: imageBase64,
+  // P1-23: Fallback model chain for image generation
+  const PRIMARY_MODEL = "gemini-3-pro-image-preview";
+  const FALLBACK_MODEL = "gemini-2.0-flash-exp";
+  const models = [PRIMARY_MODEL, FALLBACK_MODEL];
+
+  for (let modelIdx = 0; modelIdx < models.length; modelIdx++) {
+    const model = models[modelIdx];
+    const isFallback = modelIdx > 0;
+    const url = `${GEMINI_API_BASE}/${model}:generateContent?key=${apiKey}`;
+
+    if (isFallback) {
+      logger.warn(`Falling back to ${model} after primary model failure`);
+    }
+
+    const request = {
+      contents: [
+        {
+          role: "user",
+          parts: [
+            { text: prompt },
+            {
+              inlineData: {
+                mimeType,
+                data: imageBase64,
+              },
             },
-          },
-        ],
+          ],
+        },
+      ],
+      generationConfig: {
+        temperature: options.temperature ?? 0.4,
+        responseModalities: ["TEXT", "IMAGE"],
+        ...(options.seed !== undefined && { seed: options.seed }),
       },
-    ],
-    generationConfig: {
-      temperature: options.temperature ?? 0.4,
-      responseModalities: ["TEXT", "IMAGE"],
-      ...(options.seed !== undefined && { seed: options.seed }),
-    },
-    thinkingConfig: {
-      thinkingLevel: "low",
-    },
-  };
+      thinkingConfig: {
+        thinkingLevel: "low",
+      },
+    };
 
-  const MAX_RETRIES = 2;
-  const BASE_RETRY_DELAYS = [2000, 5000];
+    const MAX_RETRIES = 2;
+    const BASE_RETRY_DELAYS = [2000, 5000];
 
-  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(
-      () => controller.abort(),
-      options.timeoutMs ?? 60000
-    );
+    let nonRetryableModelError = false;
 
-    try {
-      logger.log(`Calling Gemini Image Edit API (attempt ${attempt + 1}/${MAX_RETRIES + 1})...`);
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(
+        () => controller.abort(),
+        options.timeoutMs ?? 60000
+      );
 
-      const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(request),
-        signal: controller.signal,
-      });
+      try {
+        logger.log(`Calling Gemini Image Edit API (${model}, attempt ${attempt + 1}/${MAX_RETRIES + 1})...`);
 
-      clearTimeout(timeoutId);
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(request),
+          signal: controller.signal,
+        });
 
-      if (!response.ok) {
-        const errorBody = await response.text();
-        logger.error(`Gemini Image API error: ${response.status}`, errorBody);
+        clearTimeout(timeoutId);
 
-        // Retry on 503/429 if attempts remain
-        if ((response.status === 503 || response.status === 429) && attempt < MAX_RETRIES) {
-          const retryDelay = BASE_RETRY_DELAYS[attempt] + Math.floor(Math.random() * 1000);
-          logger.warn(`Gemini Image API ${response.status}, retrying in ${retryDelay}ms...`);
-          await new Promise(r => setTimeout(r, retryDelay));
-          continue;
+        if (!response.ok) {
+          const errorBody = await response.text();
+          logger.error(`Gemini Image API error (${model}): ${response.status}`, errorBody);
+
+          // Non-retryable model errors: try fallback model instead of retrying
+          if ((response.status === 404 || response.status === 400) && !isFallback) {
+            const isModelError = errorBody.toLowerCase().includes('model') ||
+                                 errorBody.toLowerCase().includes('not found') ||
+                                 errorBody.toLowerCase().includes('not supported');
+            if (response.status === 404 || isModelError) {
+              logger.warn(`Model ${model} unavailable (${response.status}), trying fallback...`);
+              nonRetryableModelError = true;
+              break; // Break retry loop to try fallback model
+            }
+          }
+
+          // Retry on 503/429 if attempts remain
+          if ((response.status === 503 || response.status === 429) && attempt < MAX_RETRIES) {
+            const retryDelay = BASE_RETRY_DELAYS[attempt] + Math.floor(Math.random() * 1000);
+            logger.warn(`Gemini Image API ${response.status}, retrying in ${retryDelay}ms...`);
+            await new Promise(r => setTimeout(r, retryDelay));
+            continue;
+          }
+
+          if (response.status === 429) {
+            throw new GeminiError("Taxa de requisições excedida. Tente novamente.", 429, true);
+          }
+
+          throw new GeminiError(
+            `Erro na geração de imagem: ${response.status} — ${errorBody.substring(0, 300)}`,
+            response.status,
+            response.status >= 500
+          );
         }
 
-        if (response.status === 429) {
-          throw new GeminiError("Taxa de requisições excedida. Tente novamente.", 429, true);
+        // Success — parse response
+        const data = await response.json();
+        const candidate = data.candidates?.[0];
+        const tokens = extractTokenUsage(data as GeminiResponse);
+
+        if (!candidate?.content?.parts) {
+          logger.warn("No parts in Gemini image response");
+          return { imageUrl: null, text: null, tokens };
         }
 
-        throw new GeminiError(
-          `Erro na geração de imagem: ${response.status} — ${errorBody.substring(0, 300)}`,
-          response.status,
-          response.status >= 500
-        );
-      }
+        let imageUrl: string | null = null;
+        let text: string | null = null;
 
-      // Success — parse response
-      const data = await response.json();
-      const candidate = data.candidates?.[0];
-      const tokens = extractTokenUsage(data as GeminiResponse);
-
-      if (!candidate?.content?.parts) {
-        logger.warn("No parts in Gemini image response");
-        return { imageUrl: null, text: null, tokens };
-      }
-
-      let imageUrl: string | null = null;
-      let text: string | null = null;
-
-      for (const part of candidate.content.parts) {
-        if (part.inlineData?.data) {
-          const imgMimeType = part.inlineData.mimeType || "image/png";
-          imageUrl = `data:${imgMimeType};base64,${part.inlineData.data}`;
+        for (const part of candidate.content.parts) {
+          if (part.inlineData?.data) {
+            const imgMimeType = part.inlineData.mimeType || "image/png";
+            imageUrl = `data:${imgMimeType};base64,${part.inlineData.data}`;
+          }
+          if (part.text) {
+            text = part.text;
+          }
         }
-        if (part.text) {
-          text = part.text;
+
+        return { imageUrl, text, tokens };
+      } catch (error) {
+        clearTimeout(timeoutId);
+
+        if (error instanceof GeminiError) {
+          throw error;
         }
-      }
 
-      return { imageUrl, text, tokens };
-    } catch (error) {
-      clearTimeout(timeoutId);
-
-      if (error instanceof GeminiError) {
-        throw error;
-      }
-
-      if ((error as Error).name === "AbortError") {
-        if (attempt < MAX_RETRIES) {
-          const retryDelay = BASE_RETRY_DELAYS[attempt] + Math.floor(Math.random() * 1000);
-          logger.warn(`Gemini Image timeout, retrying in ${retryDelay}ms...`);
-          await new Promise(r => setTimeout(r, retryDelay));
-          continue;
+        if ((error as Error).name === "AbortError") {
+          if (attempt < MAX_RETRIES) {
+            const retryDelay = BASE_RETRY_DELAYS[attempt] + Math.floor(Math.random() * 1000);
+            logger.warn(`Gemini Image timeout, retrying in ${retryDelay}ms...`);
+            await new Promise(r => setTimeout(r, retryDelay));
+            continue;
+          }
+          throw new GeminiError("Timeout na geração de imagem", 408, true);
         }
-        throw new GeminiError("Timeout na geração de imagem", 408, true);
-      }
 
-      logger.error("Gemini Image Edit error:", error);
-      throw new GeminiError("Erro na comunicação com Gemini API", 500, true);
+        logger.error("Gemini Image Edit error:", error);
+        throw new GeminiError("Erro na comunicação com Gemini API", 500, true);
+      }
+    }
+
+    // If we broke out of retry loop due to non-retryable model error, try next model
+    if (nonRetryableModelError && !isFallback) {
+      continue;
     }
   }
 
   // Should never reach here, but TypeScript needs it
-  throw new GeminiError("Máximo de tentativas excedido", 500, true);
+  throw new GeminiError("Máximo de tentativas excedido em todos os modelos", 500, true);
 }
 
 // Export default model for convenience

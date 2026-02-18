@@ -12,6 +12,11 @@ import type { DetectedTooth, PhotoAnalysisResult } from "./types.ts";
  * - Sorts by priority
  * - Fixes primary_tooth if it was filtered out
  * - Adds contextual warnings
+ *
+ * TODO [P1-29]: The DSD analysis prompt requires 2+ visual signs to diagnose
+ * an existing restoration, but the analyze-dental-photo prompt only lists signs
+ * without an explicit 2+ threshold. Align the analyze-dental-photo prompt
+ * to also require 2+ signs for restoration detection (prompt agent task).
  */
 export function processAnalysisResult(analysisResult: PhotoAnalysisResult): PhotoAnalysisResult {
   // Ensure required fields have defaults and normalize detected_teeth
