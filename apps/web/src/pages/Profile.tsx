@@ -78,7 +78,7 @@ export default function Profile() {
         {
           id: 'perfil',
           label: t('profile.tab'),
-          content: () => (
+          children: () => (
             <div className="space-y-6">
               <Card>
                 <CardHeader className="text-center pb-2">
@@ -121,7 +121,16 @@ export default function Profile() {
                       <div className="relative">
                         <div
                           className="w-20 h-20 rounded-lg border-2 border-dashed border-border bg-muted/50 flex items-center justify-center cursor-pointer hover:border-primary/50 transition-colors overflow-hidden"
+                          role="button"
+                          tabIndex={0}
+                          aria-label={t('profile.uploadClinicLogo', { defaultValue: 'Enviar logo da clinica' })}
                           onClick={() => p.logoInputRef.current?.click()}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              p.logoInputRef.current?.click();
+                            }
+                          }}
                         >
                           {p.isUploadingLogo ? (
                             <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
@@ -222,7 +231,7 @@ export default function Profile() {
         {
           id: 'assinatura',
           label: t('profile.subscriptionTab'),
-          content: () => (
+          children: () => (
             <div className="space-y-6">
               <SubscriptionStatus />
               <CreditPackSection />
@@ -234,7 +243,7 @@ export default function Profile() {
         {
           id: 'faturas',
           label: t('profile.invoicesTab'),
-          content: () => (
+          children: () => (
             <PaymentHistorySection
               paymentRecords={p.paymentRecords}
               isLoading={p.isLoadingPayments}
@@ -244,7 +253,7 @@ export default function Profile() {
         {
           id: 'privacidade',
           label: t('profile.privacyTab'),
-          content: () => <PrivacySection exportData={p.exportData} deleteAccount={p.deleteAccount} />,
+          children: () => <PrivacySection exportData={p.exportData} deleteAccount={p.deleteAccount} />,
         },
       ]}
       defaultTab={searchParams.get('tab') || 'perfil'}
@@ -607,6 +616,7 @@ function PrivacySection({
                 onChange={(e) => setDeleteConfirmation(e.target.value)}
                 placeholder={CONFIRMATION_PHRASE}
                 autoComplete="off"
+                autoFocus
               />
             </div>
           </div>

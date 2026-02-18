@@ -88,17 +88,18 @@ export default function SharedEvaluation() {
 
   // Resolve signed URLs for DSD images
   useEffect(() => {
+    let mounted = true;
     if (!dsdData) return;
     const resolve = async () => {
       // Before image (clinical photo)
       if (dsdData.photo_frontal) {
         const url = await getSignedPhotoUrl(dsdData.photo_frontal);
-        if (url) setBeforeImageUrl(url);
+        if (mounted && url) setBeforeImageUrl(url);
       }
       // Main simulation URL
       if (dsdData.dsd_simulation_url) {
         const url = await getSignedDSDUrl(dsdData.dsd_simulation_url);
-        if (url) setSimulationUrl(url);
+        if (mounted && url) setSimulationUrl(url);
       }
       // Layer URLs
       if (dsdData.dsd_simulation_layers?.length) {
@@ -110,10 +111,11 @@ export default function SharedEvaluation() {
             if (url) urls[layer.type] = url;
           })
         );
-        setLayerUrls(urls);
+        if (mounted) setLayerUrls(urls);
       }
     };
     resolve();
+    return () => { mounted = false; };
   }, [dsdData]);
 
   if (loading) {
@@ -130,9 +132,9 @@ export default function SharedEvaluation() {
 
   if (expired) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+      <main className="min-h-screen bg-background flex items-center justify-center px-4">
         <div className="text-center">
-          <AlertTriangle className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
+          <AlertTriangle className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
           <h1 className="text-xl font-semibold font-display mb-2">{t('pages.sharedExpiredTitle')}</h1>
           <p className="text-sm text-muted-foreground mb-6">
             {t('pages.sharedExpiredDescription')}
@@ -141,7 +143,7 @@ export default function SharedEvaluation() {
             <Link to="/">{t('pages.goTo', { name: BRAND_NAME })}</Link>
           </Button>
         </div>
-      </div>
+      </main>
     );
   }
 

@@ -200,9 +200,8 @@ describe('findPatientByName', () => {
 
     await findPatientByName('user-1', '  Maria  ');
 
-    // The function passes name.trim() — the mock chain is called but
-    // we verify the trim happened via the eq mock
-    expect(mockEq).toHaveBeenCalled();
+    // The function passes name.trim() — verify the trimmed value was used
+    expect(mockEq).toHaveBeenCalledWith('name', 'Maria');
   });
 });
 

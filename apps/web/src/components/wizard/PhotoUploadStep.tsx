@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useMemo, useEffect, memo } from 'react';
+import { useState, useRef, useCallback, useEffect, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -63,6 +63,11 @@ const readFileAsDataURL = (file: File): Promise<string> => {
   });
 };
 
+// Module-level constant: userAgent doesn't change during app lifetime
+const IS_MOBILE_DEVICE = typeof navigator !== 'undefined'
+  ? /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+  : false;
+
 export const PhotoUploadStep = memo(function PhotoUploadStep({
   imageBase64,
   onImageChange,
@@ -84,11 +89,7 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
   const smile45InputRef = useRef<HTMLInputElement>(null);
   const faceInputRef = useRef<HTMLInputElement>(null);
 
-  // Detecta dispositivo móvel real via userAgent
-  const isMobileDevice = useMemo(() => {
-    if (typeof navigator === 'undefined') return false;
-    return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  }, []);
+  const isMobileDevice = IS_MOBILE_DEVICE;
 
   // Detecta tela pequena para layout responsivo
   useEffect(() => {
@@ -279,11 +280,17 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
     }
   }, [additionalPhotos, onAdditionalPhotosChange, t]);
 
-  const handleOptionalFileChange = (type: 'smile45' | 'face') => (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSmile45FileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      handleOptionalFile(e.target.files[0], type);
+      handleOptionalFile(e.target.files[0], 'smile45');
     }
-  };
+  }, [handleOptionalFile]);
+
+  const handleFaceFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      handleOptionalFile(e.target.files[0], 'face');
+    }
+  }, [handleOptionalFile]);
 
   const removeOptionalPhoto = (type: 'smile45' | 'face') => {
     if (onAdditionalPhotosChange) {
@@ -312,6 +319,8 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
       {!imageBase64 ? (
         /* Premium Drop Zone */
         <div
+          role="region"
+          aria-label={t('components.wizard.photoUpload.dropZoneLabel', { defaultValue: 'Zona de upload de foto' })}
           className={`relative rounded-xl p-[2px] transition-all duration-300 ${
             dragActive
               ? 'bg-gradient-to-br from-primary via-primary/60 to-primary/30 scale-[1.02]'
@@ -439,7 +448,7 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
         ref={smile45InputRef}
         type="file"
         accept="image/*"
-        onChange={handleOptionalFileChange('smile45')}
+        onChange={handleSmile45FileChange}
         className="hidden"
         aria-label={t('components.wizard.photoUpload.smile45Label')}
       />
@@ -447,7 +456,7 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
         ref={faceInputRef}
         type="file"
         accept="image/*"
-        onChange={handleOptionalFileChange('face')}
+        onChange={handleFaceFileChange}
         className="hidden"
         aria-label={t('components.wizard.photoUpload.faceLabel')}
       />

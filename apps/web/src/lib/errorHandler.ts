@@ -78,10 +78,9 @@ export function handleError(
       message = i18n.t('errors.authExpired');
     } else if (lowerMessage.includes('duplicate') || lowerMessage.includes('unique')) {
       message = i18n.t('errors.23505');
-    } else if (appError.message.length < 100 && !containsSensitiveInfo(lowerMessage)) {
-      // Use the original message if it's short and safe to display
-      message = appError.message;
     }
+    // All other messages fall back to fallbackMessage — we only show messages
+    // that match an explicit safe pattern above to avoid leaking internal details.
   }
 
   toast.error(message, { duration: 5000 });

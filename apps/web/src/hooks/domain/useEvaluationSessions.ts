@@ -79,7 +79,8 @@ export function useEvaluationSessions() {
     queryKey: ['evaluations', 'all-sessions', user?.id],
     queryFn: async () => {
       if (!user) throw new Error('User not authenticated');
-      // Load first page — 100 raw evaluations typically produce ~20-30 sessions
+      // TODO: Hard limit of 100 rows — users with large histories may not see all sessions.
+      // Consider implementing cursor-based pagination or incremental loading.
       const { rows, count } = await evaluations.list({
         userId: user.id,
         page: 0,

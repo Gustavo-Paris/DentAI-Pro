@@ -121,9 +121,11 @@ export function useProfile(): ProfileState & ProfileActions {
   }, [profileData]);
 
   // ---- Handle Stripe redirect ----
+  const hasRunStripeRedirectRef = useRef(false);
   useEffect(() => {
     const status = searchParams.get('subscription');
-    if (status === 'success') {
+    if (status === 'success' && !hasRunStripeRedirectRef.current) {
+      hasRunStripeRedirectRef.current = true;
       toast.success(t('toasts.profile.subscriptionActivated'));
       const syncWithRetry = async (attempts = 3, delay = 2000) => {
         for (let i = 0; i < attempts; i++) {
@@ -142,7 +144,8 @@ export function useProfile(): ProfileState & ProfileActions {
       };
       syncWithRetry();
       navigate('/profile', { replace: true });
-    } else if (status === 'canceled') {
+    } else if (status === 'canceled' && !hasRunStripeRedirectRef.current) {
+      hasRunStripeRedirectRef.current = true;
       toast.info(t('toasts.profile.checkoutCanceled'));
       navigate('/profile', { replace: true });
     }

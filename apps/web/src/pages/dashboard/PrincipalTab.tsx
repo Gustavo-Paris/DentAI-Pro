@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { DashboardModuleCard } from '@parisgroup-ai/pageshell/composites';
 import type { ModuleConfig } from '@parisgroup-ai/pageshell/composites';
 import type { DashboardSession } from '@/hooks/domain/useDashboard';
 import { WizardDraft } from '@/hooks/useWizardDraft';
@@ -220,11 +219,27 @@ export function PrincipalTab({
     <div className="space-y-6">
       {/* Module cards */}
       <div ref={modulesRef} className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {modules.map((mod, i) => (
-          <div key={mod.id} className={`scroll-reveal scroll-reveal-delay-${i + 1}`}>
-            <DashboardModuleCard module={mod} />
-          </div>
-        ))}
+        {modules.map((mod, i) => {
+          const Icon = mod.icon;
+          const isPrimary = mod.variant === 'primary';
+          return (
+            <Link key={mod.id} to={mod.href!} className={`scroll-reveal scroll-reveal-delay-${i + 1}`}>
+              <Card className={`group relative overflow-hidden p-4 sm:p-5 rounded-xl transition-all duration-300 cursor-pointer h-full hover:shadow-md hover:-translate-y-0.5 ${isPrimary ? 'bg-primary text-primary-foreground shadow-md' : 'border border-border/50 hover:border-border shadow-sm'}`}>
+                {!isPrimary && <div className="absolute inset-0 bg-gradient-to-br from-muted/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />}
+                <div className="relative flex items-center gap-3">
+                  <div className={`flex h-10 w-10 items-center justify-center rounded-xl shrink-0 transition-transform duration-200 group-hover:scale-110 ${isPrimary ? 'bg-white/20' : 'bg-primary/10 dark:bg-primary/15'}`}>
+                    {Icon && <Icon className={`w-5 h-5 ${isPrimary ? '' : 'text-primary'}`} />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm">{mod.title}</h3>
+                    <p className={`text-xs ${isPrimary ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>{mod.description}</p>
+                  </div>
+                  <ChevronRight className={`w-4 h-4 shrink-0 group-hover:translate-x-0.5 transition-transform ${isPrimary ? 'text-primary-foreground/60' : 'text-muted-foreground/40'}`} aria-hidden="true" />
+                </div>
+              </Card>
+            </Link>
+          );
+        })}
       </div>
 
       {/* Pending actions */}

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Sparkles, RefreshCw, ArrowRight, ArrowLeft, Lightbulb, AlertCircle, X } from 'lucide-react';
@@ -38,10 +38,10 @@ export function AnalyzingStep({
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);
 
-  const analysisSteps = analysisStepKeys.map(s => ({
+  const analysisSteps = useMemo(() => analysisStepKeys.map(s => ({
     ...s,
     label: t(`components.wizard.analyzing.${s.key}`),
-  }));
+  })), [t]);
 
   // Track when analysis completes (transitions from analyzing to not-analyzing without error)
   const wasAnalyzingRef = useRef(false);
@@ -146,10 +146,10 @@ export function AnalyzingStep({
   }
 
   // Build step data for CompactStepIndicator
-  const compactSteps = analysisSteps.map((step, index) => ({
+  const compactSteps = useMemo(() => analysisSteps.map((step, index) => ({
     label: step.label.replace('...', ''),
     completed: currentStep > index + 1,
-  }));
+  })), [analysisSteps, currentStep]);
   const activeIndex = Math.max(0, currentStep - 1);
   const currentLabel = currentStep > 0 && currentStep <= analysisSteps.length
     ? analysisSteps[currentStep - 1].label

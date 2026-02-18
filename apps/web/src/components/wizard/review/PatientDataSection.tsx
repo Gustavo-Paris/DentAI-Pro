@@ -71,12 +71,13 @@ export function PatientDataSection({
 
           {/* Birth date + calculated age */}
           <div className="space-y-2">
-            <Label>
+            <Label htmlFor="patient-dob">
               {t('components.wizard.review.birthDateLabel')}
             </Label>
             <div className="flex gap-2 items-center">
               <div className="relative flex-1">
                 <Input
+                  id="patient-dob"
                   type="text"
                   inputMode="numeric"
                   placeholder={t('components.wizard.review.birthDatePlaceholder')}

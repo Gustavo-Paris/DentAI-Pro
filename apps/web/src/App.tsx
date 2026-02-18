@@ -20,7 +20,6 @@ import { evaluations } from "@/data";
 
 
 // Eager load auth pages (needed immediately)
-import Landing from "@/pages/Landing";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import ForgotPassword from "@/pages/ForgotPassword";
@@ -30,6 +29,7 @@ import Privacy from "@/pages/Privacy";
 import NotFound from "@/pages/NotFound";
 
 // Lazy load public pages
+const Landing = lazy(() => import("@/pages/Landing"));
 const SharedEvaluation = lazy(() => import("@/pages/SharedEvaluation"));
 
 // Lazy load protected pages
@@ -89,8 +89,8 @@ const App = () => (
           <AuthProvider>
           <PostHogProvider>
           <Routes>
-            {/* Public routes - eagerly loaded */}
-            <Route path="/" element={<Landing />} />
+            {/* Public routes */}
+            <Route path="/" element={<Suspense fallback={<PageLoader />}><Landing /></Suspense>} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />

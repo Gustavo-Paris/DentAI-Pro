@@ -10,7 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Coins } from 'lucide-react';
+import { Coins, AlertTriangle } from 'lucide-react';
 import { trackEvent } from '@/lib/analytics';
 import type { CreditConfirmData } from '@/hooks/domain/wizard/types';
 
@@ -55,8 +55,10 @@ export function CreditConfirmDialog({ data, onConfirm }: CreditConfirmDialogProp
               </div>
               <div className="flex items-center justify-between rounded-lg bg-muted px-4 py-2.5 text-sm">
                 <span className="text-muted-foreground">{t('components.creditConfirm.afterOperation')}</span>
-                <span className={`font-semibold ${afterRemaining <= 1 ? 'text-destructive' : ''}`}>
+                <span className={`font-semibold flex items-center gap-1 ${afterRemaining <= 1 ? 'text-destructive' : ''}`}>
+                  {afterRemaining <= 1 && <AlertTriangle className="w-3.5 h-3.5 inline-block" />}
                   {afterRemaining} {t('components.creditConfirm.credits')}
+                  {afterRemaining <= 1 && <span className="text-xs font-normal">({t('components.creditConfirm.lowBalance', { defaultValue: 'saldo baixo' })})</span>}
                 </span>
               </div>
             </div>

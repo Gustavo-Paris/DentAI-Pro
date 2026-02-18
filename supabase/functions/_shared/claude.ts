@@ -2,6 +2,8 @@
 // Mirrors the interface of gemini.ts so edge functions can swap imports.
 
 import { logger } from "./logger.ts";
+import { createCircuitBreaker } from "./circuit-breaker.ts";
+import { sleep, parseDataUrl } from "./http-utils.ts";
 
 // Re-export shared types from gemini.ts so edge functions can import from either client
 export type { OpenAIMessage, OpenAIContentPart, OpenAITool, TokenUsage } from "./gemini.ts";
@@ -38,77 +40,11 @@ export class ClaudeError extends Error {
 }
 
 // ---------------------------------------------------------------------------
-// Circuit breaker (same logic as gemini.ts)
+// Circuit breaker (shared implementation)
 // ---------------------------------------------------------------------------
 
-const circuitBreaker = {
-  consecutiveFailures: 0,
-  state: "closed" as "closed" | "open" | "half-open",
-  openedAt: 0,
-  /** Max consecutive failures before opening the circuit */
-  failureThreshold: 3,
-  /** How long the circuit stays open before allowing a probe (ms) */
-  resetTimeoutMs: 30_000,
-  /** Window in which failures must occur to trip the breaker (ms) */
-  failureWindowMs: 60_000,
-  /** Timestamp of the first failure in the current window */
-  firstFailureAt: 0,
-};
-
-function circuitBreakerCheck(): void {
-  const now = Date.now();
-
-  if (circuitBreaker.state === "open") {
-    if (now - circuitBreaker.openedAt >= circuitBreaker.resetTimeoutMs) {
-      circuitBreaker.state = "half-open";
-      logger.log("Circuit breaker half-open — allowing probe request");
-      return;
-    }
-    throw new ClaudeError(
-      "Serviço Claude temporariamente indisponível (circuit breaker aberto). Tente novamente em breve.",
-      503,
-      true,
-    );
-  }
-  // "closed" and "half-open" allow requests through
-}
-
-function circuitBreakerOnSuccess(): void {
-  if (circuitBreaker.state !== "closed") {
-    logger.log("Circuit breaker closed — Claude recovered");
-  }
-  circuitBreaker.consecutiveFailures = 0;
-  circuitBreaker.firstFailureAt = 0;
-  circuitBreaker.state = "closed";
-}
-
-function circuitBreakerOnFailure(): void {
-  const now = Date.now();
-
-  // Reset window if the first failure is outside the window
-  if (
-    circuitBreaker.firstFailureAt === 0 ||
-    now - circuitBreaker.firstFailureAt > circuitBreaker.failureWindowMs
-  ) {
-    circuitBreaker.firstFailureAt = now;
-    circuitBreaker.consecutiveFailures = 1;
-  } else {
-    circuitBreaker.consecutiveFailures++;
-  }
-
-  if (circuitBreaker.consecutiveFailures >= circuitBreaker.failureThreshold) {
-    circuitBreaker.state = "open";
-    circuitBreaker.openedAt = now;
-    logger.warn(
-      `Circuit breaker opened after ${circuitBreaker.consecutiveFailures} consecutive failures`,
-    );
-  } else if (circuitBreaker.state === "half-open") {
-    // Probe failed — re-open
-    circuitBreaker.state = "open";
-    circuitBreaker.openedAt = now;
-    logger.warn("Circuit breaker re-opened — probe request failed");
-  }
-}
+const { check: circuitBreakerCheck, onSuccess: circuitBreakerOnSuccess, onFailure: circuitBreakerOnFailure } =
+  createCircuitBreaker(ClaudeError, "Claude");
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -120,10 +56,6 @@ function getApiKey(): string {
     throw new ClaudeError("ANTHROPIC_API_KEY not configured", 500, false);
   }
   return apiKey;
-}
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 // ---------------------------------------------------------------------------
@@ -265,15 +197,6 @@ function convertToClaudeFormat(messages: OpenAIMessage[]): {
   }
 
   return { claudeMessages, system };
-}
-
-// Parse data URL to extract mime type and base64 data
-function parseDataUrl(url: string): { mimeType: string; data: string } | null {
-  const match = url.match(/^data:([^;]+);base64,(.+)$/);
-  if (match) {
-    return { mimeType: match[1], data: match[2] };
-  }
-  return null;
 }
 
 // ---------------------------------------------------------------------------

@@ -15,6 +15,9 @@ export const QUERY_STALE_TIMES = {
   VERY_LONG: 60 * 60 * 1000,
 } as const;
 
+/** Bonus credits awarded to both referrer and referred user on successful referral. */
+export const BONUS_CREDITS = 5;
+
 /** setTimeout / retry delay presets (in milliseconds). */
 export const TIMING = {
   /** Supabase fetch abort timeout. */

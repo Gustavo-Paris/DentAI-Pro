@@ -207,6 +207,24 @@ export function ComparisonSlider({
   const imageTransform = `scale(${zoom}) translate(${pan.x / zoom}%, ${pan.y / zoom}%)`;
   const cursorStyle = isDragging ? 'cursor-ew-resize' : isPanning ? 'cursor-grabbing' : zoom > 1 ? 'cursor-grab' : 'cursor-ew-resize';
 
+  // Keyboard handler for arrow keys
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    const step = e.shiftKey ? 10 : 1;
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSliderPosition(prev => Math.max(0, prev - step));
+    } else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSliderPosition(prev => Math.min(100, prev + step));
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      setSliderPosition(0);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      setSliderPosition(100);
+    }
+  }, []);
+
   return (
     <div className="relative">
       <div
@@ -214,6 +232,13 @@ export function ComparisonSlider({
         className={`relative w-full rounded-xl overflow-hidden select-none touch-none bg-secondary ${cursorStyle}`}
         onMouseDown={handleMouseDown}
         onTouchStart={handleTouchStart}
+        role="slider"
+        aria-valuenow={Math.round(sliderPosition)}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={t('components.wizard.dsd.comparisonSlider.ariaLabel', { defaultValue: 'Comparação antes e depois' })}
+        tabIndex={0}
+        onKeyDown={handleKeyDown}
       >
         {/* After image (in-flow, sets container height via object-contain) */}
         <img

@@ -1,6 +1,6 @@
 import { supabase } from './client';
 import { withQuery, withMutation } from './utils';
-import { getAvatarPublicUrl as _getAvatarPublicUrl } from './storage';
+export { getAvatarPublicUrl } from './storage';
 
 export interface Profile {
   full_name: string | null;
@@ -41,8 +41,4 @@ export async function updateProfile(userId: string, updates: Partial<ProfileFull
       .update(updates)
       .eq('user_id', userId),
   );
-}
-
-export function getAvatarPublicUrl(avatarPath: string): string {
-  return _getAvatarPublicUrl(avatarPath);
 }

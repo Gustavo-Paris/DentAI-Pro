@@ -7,7 +7,6 @@ const COST_PER_1K: Record<string, { input: number; output: number }> = {
   'gemini-2.0-flash': { input: 0.00010, output: 0.0004 },
   'claude-sonnet-4-5-20250929': { input: 0.003, output: 0.015 },
   'claude-sonnet-4-6': { input: 0.003, output: 0.015 },
-  'claude-sonnet-4-6-20250929': { input: 0.003, output: 0.015 },
   'claude-haiku-4-5-20251001': { input: 0.0008, output: 0.004 },
 }
 

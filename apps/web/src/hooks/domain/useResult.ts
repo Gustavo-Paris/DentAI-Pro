@@ -483,7 +483,7 @@ export function useResult() {
     } finally {
       setGeneratingPDF(false);
     }
-  }, [evaluation, dentistProfile, photoUrls, dsdSimulationUrl]);
+  }, [evaluation, dentistProfile, photoUrls, dsdSimulationUrl, t]);
 
   const handlePdfButtonClick = useCallback(() => {
     const status = getChecklistCompletionStatus();

@@ -95,10 +95,10 @@ Deno.serve(async (req) => {
         .select("*")
         .eq("user_id", userId)
         .order("created_at", { ascending: false }),
-      // Subscription
+      // Subscription — exclude internal Stripe IDs
       supabaseService
         .from("subscriptions")
-        .select("*, plan:subscription_plans(*)")
+        .select("user_id, status, plan_id, credits_remaining, credits_per_month, current_period_start, current_period_end, created_at, updated_at, plan:subscription_plans(*)")
         .eq("user_id", userId)
         .maybeSingle(),
       // Inventory
@@ -106,10 +106,10 @@ Deno.serve(async (req) => {
         .from("user_inventory")
         .select("*, resin:resins(*)")
         .eq("user_id", userId),
-      // Payment history
+      // Payment history — exclude internal Stripe IDs
       supabaseService
         .from("payment_history")
-        .select("*")
+        .select("user_id, type, amount, currency, status, description, credits_added, pack_id, created_at")
         .eq("user_id", userId)
         .order("created_at", { ascending: false }),
     ]);

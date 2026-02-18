@@ -10,15 +10,15 @@ export function generateRequestId(): string {
 
 const PRODUCTION_ORIGINS = [
   // Current production
-  "https://auria-ai.vercel.app",
-  // Legacy domains — keep until DNS migration confirmed and traffic verified at zero
-  // TODO(2026-Q2): verify traffic on legacy domains and remove unused ones
-  "https://dentai.pro",
-  "https://www.dentai.pro",
-  "https://dentai-pro.vercel.app",
   "https://tosmile-ai.vercel.app",
   "https://tosmile.ai",
   "https://www.tosmile.ai",
+  // Legacy domains — keep until DNS migration confirmed and traffic verified at zero
+  // TODO(2026-Q2): verify traffic on legacy domains and remove unused ones
+  "https://auria-ai.vercel.app",
+  "https://dentai.pro",
+  "https://www.dentai.pro",
+  "https://dentai-pro.vercel.app",
 ];
 
 // Check environment - only allow localhost origins in development

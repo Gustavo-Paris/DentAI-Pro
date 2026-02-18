@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { PDFData } from '@/types/protocol';
 import { getConfidenceConfig } from '@/lib/confidence-config';
+import { logger } from '@/lib/logger';
 
 export type { PDFData };
 
@@ -121,7 +122,7 @@ export async function generateProtocolPDF(data: PDFData): Promise<void> {
       pdf.addImage(data.clinicLogo, 'PNG', margin, 6, 26, 26);
       headerTextStartX = margin + 30;
     } catch (e) {
-      console.warn('Could not add clinic logo to PDF:', e);
+      logger.warn('Could not add clinic logo to PDF:', e);
     }
   }
   

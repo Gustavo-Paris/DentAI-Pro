@@ -1,6 +1,9 @@
 import { subDays, startOfWeek } from 'date-fns';
 import { supabase } from './client';
-import { withQuery, withMutation } from './utils';
+import type { Database } from './client';
+import { withQuery, withMutation, countByUser } from './utils';
+
+type EvaluationInsert = Database['public']['Tables']['evaluations']['Insert'];
 
 // ---------------------------------------------------------------------------
 // Types
@@ -129,7 +132,7 @@ export async function getDashboardMetrics({ userId }: DashboardMetricsParams) {
   // Group by session to compute session-level stats
   const sessionMap = new Map<string, { total: number; completed: number }>();
   for (const row of allEvalsResult.data || []) {
-    const sid = row.session_id || row.status || 'unknown'; // fallback for legacy rows
+    const sid = row.session_id || row.id; // fallback: each legacy row becomes its own session
     if (!sessionMap.has(sid)) sessionMap.set(sid, { total: 0, completed: 0 });
     const entry = sessionMap.get(sid)!;
     entry.total++;
@@ -186,12 +189,7 @@ export async function getDashboardInsights({ userId, weeksBack = 8 }: DashboardI
 // ---------------------------------------------------------------------------
 
 export async function countByUserId(userId: string) {
-  const { count, error } = await supabase
-    .from('evaluations')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', userId);
-  if (error) throw error;
-  return count || 0;
+  return countByUser('evaluations', userId);
 }
 
 // ---------------------------------------------------------------------------
@@ -304,6 +302,16 @@ export async function getOrCreateShareLink(sessionId: string, userId: string) {
     return created.token as string;
   } catch {
     await new Promise(r => setTimeout(r, 2000));
+    // Re-check for existing token before retrying insert (avoid double-insert)
+    const { data: recheck } = await supabase
+      .from('shared_links')
+      .select('token')
+      .eq('session_id', sessionId)
+      .eq('user_id', userId)
+      .gt('expires_at', new Date().toISOString())
+      .maybeSingle();
+    if (recheck?.token) return recheck.token;
+
     const created = await withQuery(() =>
       supabase
         .from('shared_links')
@@ -319,11 +327,11 @@ export async function getOrCreateShareLink(sessionId: string, userId: string) {
 // Insert evaluation (used by AddTeethModal flow)
 // ---------------------------------------------------------------------------
 
-export async function insertEvaluation(data: Record<string, unknown>) {
+export async function insertEvaluation(data: EvaluationInsert) {
   return withQuery(() =>
     supabase
       .from('evaluations')
-      .insert(data as never)
+      .insert(data)
       .select()
       .single(),
   );

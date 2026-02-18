@@ -17,7 +17,7 @@ function ConfidenceIndicator({ confidence }: ConfidenceIndicatorProps) {
         <div className="flex items-center gap-3">
           <span className={cn("font-medium", current.color)}>{current.label}</span>
           {/* Confidence bars */}
-          <div className="flex gap-1">
+          <div className="flex gap-1" aria-hidden="true">
             {[1, 2, 3].map((bar) => (
               <div
                 key={bar}
@@ -28,6 +28,9 @@ function ConfidenceIndicator({ confidence }: ConfidenceIndicatorProps) {
               />
             ))}
           </div>
+          <span className="sr-only">
+            {current.bars === 3 ? 'Alta' : current.bars === 2 ? 'Média' : 'Baixa'} ({current.bars}/3)
+          </span>
         </div>
         <p className="text-sm text-muted-foreground mt-1">{current.description}</p>
       </div>

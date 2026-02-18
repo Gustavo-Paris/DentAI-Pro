@@ -42,7 +42,7 @@ export default function PostHogProvider({
     // If null (no choice yet), we stay opted out by default
   }, []);
 
-  // --- 2. Listen for consent changes via storage events + polling ---
+  // --- 2. Listen for consent changes via storage events + custom event ---
   useEffect(() => {
     // Handle cross-tab consent changes
     const handleStorage = (e: StorageEvent) => {
@@ -52,17 +52,17 @@ export default function PostHogProvider({
     };
     window.addEventListener('storage', handleStorage);
 
-    // Poll for same-tab consent changes (CookieConsent sets localStorage
-    // synchronously and does not emit a custom event)
-    const interval = setInterval(() => {
-      const consent = localStorage.getItem(COOKIE_CONSENT_KEY);
+    // Handle same-tab consent changes via CustomEvent dispatched by CookieConsent
+    const handleConsentChange = (e: Event) => {
+      const consent = (e as CustomEvent).detail?.consent;
       if (consent === 'accepted') optInCapturing();
       else if (consent === 'essential') optOutCapturing();
-    }, 2_000);
+    };
+    window.addEventListener('cookie-consent-change', handleConsentChange);
 
     return () => {
       window.removeEventListener('storage', handleStorage);
-      clearInterval(interval);
+      window.removeEventListener('cookie-consent-change', handleConsentChange);
     };
   }, []);
 

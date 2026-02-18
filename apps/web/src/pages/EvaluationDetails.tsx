@@ -234,6 +234,7 @@ export default function EvaluationDetails() {
                   size="icon"
                   className="w-7 h-7"
                   onClick={detail.clearSelection}
+                  aria-label={t('common.clearSelection', { defaultValue: 'Limpar selecao' })}
                 >
                   <X className="w-4 h-4" />
                 </Button>
@@ -309,7 +310,15 @@ export default function EvaluationDetails() {
                           <TableRow
                             key={evaluation.id}
                             className="hover:bg-secondary/30 transition-colors cursor-pointer"
+                            role="button"
+                            tabIndex={0}
                             onClick={() => navigate(`/result/${evaluation.id}`)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                navigate(`/result/${evaluation.id}`);
+                              }
+                            }}
                           >
                             <TableCell onClick={(e) => e.stopPropagation()}>
                               <Checkbox

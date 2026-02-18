@@ -17,17 +17,19 @@ Deno.serve(async (req: Request) => {
   if (corsResponse) return corsResponse;
 
   const corsHeaders = getCorsHeaders(req);
-  // Use client-provided reqId for idempotency (same retry = same reqId = no double charge)
-  let reqId: string;
+  // Always generate reqId server-side for billing idempotency — never trust client value
+  const reqId = generateRequestId();
+  // Accept client-provided tracking ID for response correlation only
+  let clientReqId: string | undefined;
   try {
     const clonedBody = await req.clone().json();
-    reqId = (typeof clonedBody.reqId === 'string' && clonedBody.reqId.length > 0 && clonedBody.reqId.length <= 64)
-      ? clonedBody.reqId
-      : generateRequestId();
+    if (typeof clonedBody.reqId === 'string' && clonedBody.reqId.length > 0 && clonedBody.reqId.length <= 64) {
+      clientReqId = clonedBody.reqId;
+    }
   } catch {
-    reqId = generateRequestId();
+    // ignore parse errors
   }
-  logger.log(`[${reqId}] generate-dsd: start`);
+  logger.log(`[${reqId}] generate-dsd: start${clientReqId ? ` (clientReqId=${clientReqId})` : ''}`);
 
   // Track credit state for refund on error (must be outside try for catch access)
   let creditsConsumed = false;
@@ -274,8 +276,13 @@ Deno.serve(async (req: Request) => {
       }
     }
 
+    // Log simulation debug info server-side only (never send to client)
+    if (simulationDebug && !simulationUrl) {
+      logger.warn(`[${reqId}] Simulation failed (debug): ${simulationDebug}`);
+    }
+
     // Return result with note if applicable
-    const result: DSDResult & { layer_type?: string; simulation_debug?: string; lips_moved?: boolean } = {
+    const result: DSDResult & { layer_type?: string; lips_moved?: boolean } = {
       analysis,
       simulation_url: simulationUrl,
       simulation_note: simulationNote,
@@ -285,9 +292,6 @@ Deno.serve(async (req: Request) => {
     }
     if (lipsMoved) {
       result.lips_moved = true;
-    }
-    if (simulationDebug && !simulationUrl) {
-      result.simulation_debug = simulationDebug;
     }
 
     return new Response(JSON.stringify(result), {
@@ -301,6 +305,6 @@ Deno.serve(async (req: Request) => {
       await refundCredits(supabaseForRefund, userIdForRefund, "dsd_simulation", reqId);
       logger.log(`[${reqId}] Refunded DSD credits for user ${userIdForRefund} due to error`);
     }
-    return createErrorResponse(`${ERROR_MESSAGES.PROCESSING_ERROR} [${msg.substring(0, 200)}]`, 500, corsHeaders, undefined, reqId);
+    return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders, undefined, reqId);
   }
 });

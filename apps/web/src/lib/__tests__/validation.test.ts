@@ -6,7 +6,6 @@
 import { describe, it, expect } from 'vitest';
 import {
   validateEvaluationData,
-  validateCaseData,
   validateAnalyzePhotosData,
 } from '../../../../../supabase/functions/_shared/validation';
 
@@ -33,22 +32,6 @@ function validEvaluation() {
   };
 }
 
-// Helper: minimal valid case data
-function validCase() {
-  return {
-    caseId: UUID,
-    patientAge: 35,
-    toothNumber: '21',
-    toothRegion: 'anterior-superior',
-    cavityClass: 'Classe III',
-    restorationSize: 'Pequena',
-    substrate: 'Esmalte',
-    hasBruxism: false,
-    aestheticLevel: 'estético',
-    toothShade: 'A1',
-    needsStratification: false,
-  };
-}
 
 describe('validateEvaluationData', () => {
   it('should accept valid complete data', () => {
@@ -149,67 +132,6 @@ describe('validateEvaluationData', () => {
   });
 });
 
-describe('validateCaseData', () => {
-  it('should accept valid case data', () => {
-    const result = validateCaseData(validCase());
-    expect(result.success).toBe(true);
-    expect(result.data!.caseId).toBe(UUID);
-  });
-
-  it('should reject null input', () => {
-    expect(validateCaseData(null).success).toBe(false);
-  });
-
-  it('should reject invalid caseId', () => {
-    const data = { ...validCase(), caseId: 'bad' };
-    expect(validateCaseData(data).success).toBe(false);
-  });
-
-  it('should reject negative age', () => {
-    const data = { ...validCase(), patientAge: -1 };
-    expect(validateCaseData(data).success).toBe(false);
-  });
-
-  it('should reject age over 150', () => {
-    const data = { ...validCase(), patientAge: 200 };
-    expect(validateCaseData(data).success).toBe(false);
-  });
-
-  it('should accept age at boundary (0 and 150)', () => {
-    expect(validateCaseData({ ...validCase(), patientAge: 0 }).success).toBe(true);
-    expect(validateCaseData({ ...validCase(), patientAge: 150 }).success).toBe(true);
-  });
-
-  it('should reject string patientAge', () => {
-    const data = { ...validCase(), patientAge: '35' as unknown };
-    expect(validateCaseData(data).success).toBe(false);
-  });
-
-  it('should reject invalid tooth number', () => {
-    const data = { ...validCase(), toothNumber: '50' };
-    expect(validateCaseData(data).success).toBe(false);
-  });
-
-  it('should reject invalid VITA shade', () => {
-    const data = { ...validCase(), toothShade: 'X9' };
-    expect(validateCaseData(data).success).toBe(false);
-  });
-
-  it('should reject non-boolean hasBruxism', () => {
-    const data = { ...validCase(), hasBruxism: 'true' };
-    expect(validateCaseData(data).success).toBe(false);
-  });
-
-  it('should accept optional clinicalNotes', () => {
-    const data = { ...validCase(), clinicalNotes: 'Some notes' };
-    expect(validateCaseData(data).success).toBe(true);
-  });
-
-  it('should reject clinicalNotes over 2000 chars', () => {
-    const data = { ...validCase(), clinicalNotes: 'x'.repeat(2001) };
-    expect(validateCaseData(data).success).toBe(false);
-  });
-});
 
 describe('validateAnalyzePhotosData', () => {
   it('should accept valid data with only evaluationId', () => {

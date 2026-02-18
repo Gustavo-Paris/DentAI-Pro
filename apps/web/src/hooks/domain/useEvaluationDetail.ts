@@ -556,119 +556,136 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
     const treatmentCounts: Record<string, number> = {};
     const newEvalIds: string[] = [];
 
-    for (const toothNumber of payload.selectedTeeth) {
-      const toothData = payload.pendingTeeth.find(t => t.tooth === toothNumber);
-      if (!toothData) continue;
+    try {
+      for (const toothNumber of payload.selectedTeeth) {
+        const toothData = payload.pendingTeeth.find(t => t.tooth === toothNumber);
+        if (!toothData) continue;
 
-      const treatmentType = (payload.toothTreatments[toothNumber] || toothData.treatment_indication || 'resina') as TreatmentType;
-      treatmentCounts[treatmentType] = (treatmentCounts[treatmentType] || 0) + 1;
+        const treatmentType = (payload.toothTreatments[toothNumber] || toothData.treatment_indication || 'resina') as TreatmentType;
+        treatmentCounts[treatmentType] = (treatmentCounts[treatmentType] || 0) + 1;
 
-      // Create evaluation record
-      const insertData = {
-        user_id: user.id,
-        session_id: sessionId,
-        patient_id: patientDataForModal.id || null,
-        patient_name: patientDataForModal.name || null,
-        patient_age: patientDataForModal.age,
-        tooth: toothNumber,
-        region: toothData.tooth_region || getFullRegion(toothNumber),
-        cavity_class: toothData.cavity_class || 'Classe I',
-        restoration_size: toothData.restoration_size || 'Média',
-        substrate: toothData.substrate || 'Esmalte e Dentina',
-        tooth_color: patientDataForModal.vitaShade,
-        depth: toothData.depth || 'Média',
-        substrate_condition: toothData.substrate_condition || 'Saudável',
-        enamel_condition: toothData.enamel_condition || 'Íntegro',
-        bruxism: patientDataForModal.bruxism,
-        aesthetic_level: patientDataForModal.aestheticLevel,
-        budget: patientDataForModal.budget,
-        longevity_expectation: patientDataForModal.longevityExpectation,
-        photo_frontal: patientDataForModal.photoPath,
-        status: 'analyzing',
-        treatment_type: treatmentType,
-        desired_tooth_shape: 'natural',
-        ai_treatment_indication: toothData.treatment_indication,
-        ai_indication_reason: toothData.indication_reason,
-        tooth_bounds: toothData.tooth_bounds,
-        stratification_needed: treatmentType !== 'gengivoplastia',
-      };
+        // Create evaluation record
+        const insertData = {
+          user_id: user.id,
+          session_id: sessionId,
+          patient_id: patientDataForModal.id || null,
+          patient_name: patientDataForModal.name || null,
+          patient_age: patientDataForModal.age,
+          tooth: toothNumber,
+          region: toothData.tooth_region || getFullRegion(toothNumber),
+          cavity_class: toothData.cavity_class || 'Classe I',
+          restoration_size: toothData.restoration_size || 'Média',
+          substrate: toothData.substrate || 'Esmalte e Dentina',
+          tooth_color: patientDataForModal.vitaShade,
+          depth: toothData.depth || 'Média',
+          substrate_condition: toothData.substrate_condition || 'Saudável',
+          enamel_condition: toothData.enamel_condition || 'Íntegro',
+          bruxism: patientDataForModal.bruxism,
+          aesthetic_level: patientDataForModal.aestheticLevel,
+          budget: patientDataForModal.budget,
+          longevity_expectation: patientDataForModal.longevityExpectation,
+          photo_frontal: patientDataForModal.photoPath,
+          status: 'analyzing',
+          treatment_type: treatmentType,
+          desired_tooth_shape: 'natural',
+          ai_treatment_indication: toothData.treatment_indication,
+          ai_indication_reason: toothData.indication_reason,
+          tooth_bounds: toothData.tooth_bounds,
+          stratification_needed: treatmentType !== 'gengivoplastia',
+        };
 
-      const evaluation = await evaluations.insertEvaluation(insertData);
-      newEvalIds.push(evaluation.id);
+        const evaluation = await evaluations.insertEvaluation(insertData);
+        newEvalIds.push(evaluation.id);
 
-      // Call appropriate edge function based on treatment type
-      switch (treatmentType) {
-        case 'porcelana':
-          await evaluations.invokeEdgeFunction('recommend-cementation', {
-            evaluationId: evaluation.id,
-            teeth: [toothNumber],
-            shade: patientDataForModal.vitaShade,
-            ceramicType: 'Dissilicato de lítio',
-            substrate: toothData.substrate || 'Esmalte e Dentina',
-            substrateCondition: toothData.substrate_condition || 'Saudável',
-            aestheticGoals: patientDataForModal.aestheticGoals || undefined,
-          });
-          break;
+        // Call appropriate edge function based on treatment type
+        switch (treatmentType) {
+          case 'porcelana':
+            await evaluations.invokeEdgeFunction('recommend-cementation', {
+              evaluationId: evaluation.id,
+              teeth: [toothNumber],
+              shade: patientDataForModal.vitaShade,
+              ceramicType: 'Dissilicato de lítio',
+              substrate: toothData.substrate || 'Esmalte e Dentina',
+              substrateCondition: toothData.substrate_condition || 'Saudável',
+              aestheticGoals: patientDataForModal.aestheticGoals || undefined,
+            });
+            break;
 
-        case 'resina':
-          await evaluations.invokeEdgeFunction('recommend-resin', {
-            evaluationId: evaluation.id,
-            userId: user.id,
-            patientAge: String(patientDataForModal.age),
-            tooth: toothNumber,
-            region: getFullRegion(toothNumber),
-            cavityClass: toothData.cavity_class || 'Classe I',
-            restorationSize: toothData.restoration_size || 'Média',
-            substrate: toothData.substrate || 'Esmalte e Dentina',
-            bruxism: patientDataForModal.bruxism,
-            aestheticLevel: patientDataForModal.aestheticLevel,
-            toothColor: patientDataForModal.vitaShade,
-            stratificationNeeded: true,
-            budget: patientDataForModal.budget,
-            longevityExpectation: patientDataForModal.longevityExpectation,
-          });
-          break;
+          case 'resina':
+            await evaluations.invokeEdgeFunction('recommend-resin', {
+              evaluationId: evaluation.id,
+              userId: user.id,
+              patientAge: String(patientDataForModal.age),
+              tooth: toothNumber,
+              region: getFullRegion(toothNumber),
+              cavityClass: toothData.cavity_class || 'Classe I',
+              restorationSize: toothData.restoration_size || 'Média',
+              substrate: toothData.substrate || 'Esmalte e Dentina',
+              bruxism: patientDataForModal.bruxism,
+              aestheticLevel: patientDataForModal.aestheticLevel,
+              toothColor: patientDataForModal.vitaShade,
+              stratificationNeeded: true,
+              budget: patientDataForModal.budget,
+              longevityExpectation: patientDataForModal.longevityExpectation,
+            });
+            break;
 
-        case 'implante':
-        case 'coroa':
-        case 'endodontia':
-        case 'encaminhamento': {
-          const genericProtocol = getGenericProtocol(treatmentType, toothNumber, toothData);
-          await evaluations.updateEvaluation(evaluation.id, {
-            generic_protocol: genericProtocol,
-            recommendation_text: genericProtocol.summary,
-          });
-          break;
+          case 'implante':
+          case 'coroa':
+          case 'endodontia':
+          case 'encaminhamento': {
+            const genericProtocol = getGenericProtocol(treatmentType, toothNumber, toothData);
+            await evaluations.updateEvaluation(evaluation.id, {
+              generic_protocol: genericProtocol,
+              recommendation_text: genericProtocol.summary,
+            });
+            break;
+          }
+        }
+
+        // Update status to draft
+        await evaluations.updateStatus(evaluation.id, 'draft');
+      }
+
+      // Re-sync protocols across ALL evaluations in this session (P1-34)
+      // Combines existing + newly added IDs so late additions get same protocol.
+      try {
+        const existingEvalIds = (evals || []).map(e => e.id);
+        const allEvalIds = [...new Set([...existingEvalIds, ...newEvalIds])];
+        if (allEvalIds.length >= 2) {
+          await wizard.syncGroupProtocols(sessionId, allEvalIds);
+        }
+      } catch (syncError) {
+        logger.warn('Post-add protocol sync failed (non-critical):', syncError);
+      }
+
+      // Build success message
+      const treatmentMessages = Object.entries(treatmentCounts)
+        .map(([type, count]) => `${count} ${TREATMENT_LABEL_KEYS[type as TreatmentType] ? t(TREATMENT_LABEL_KEYS[type as TreatmentType]) : type}`)
+        .join(', ');
+
+      toast.success(t('components.addTeeth.casesAdded', { details: treatmentMessages }));
+      handleAddTeethSuccess();
+    } catch (error) {
+      logger.error('Error in handleSubmitTeeth:', error);
+      // Mark any created evaluations as error status
+      for (const evalId of newEvalIds) {
+        try {
+          await evaluations.updateStatus(evalId, 'error');
+        } catch (statusError) {
+          logger.error(`Failed to mark evaluation ${evalId} as error:`, statusError);
         }
       }
-
-      // Update status to draft
-      await evaluations.updateStatus(evaluation.id, 'draft');
-    }
-
-    // Remove created teeth from session_detected_teeth
-    await evaluations.deletePendingTeeth(sessionId, payload.selectedTeeth);
-
-    // Re-sync protocols across ALL evaluations in this session (P1-34)
-    // Combines existing + newly added IDs so late additions get same protocol.
-    try {
-      const existingEvalIds = (evals || []).map(e => e.id);
-      const allEvalIds = [...new Set([...existingEvalIds, ...newEvalIds])];
-      if (allEvalIds.length >= 2) {
-        await wizard.syncGroupProtocols(sessionId, allEvalIds);
+      toast.error(t('toasts.evaluationDetail.addTeethError', 'Erro ao adicionar dentes. Tente novamente.'));
+    } finally {
+      // Always clean up pending teeth that were processed
+      try {
+        await evaluations.deletePendingTeeth(sessionId, payload.selectedTeeth);
+      } catch (deleteError) {
+        logger.error('Error deleting pending teeth:', deleteError);
       }
-    } catch (syncError) {
-      logger.warn('Post-add protocol sync failed (non-critical):', syncError);
     }
-
-    // Build success message
-    const treatmentMessages = Object.entries(treatmentCounts)
-      .map(([type, count]) => `${count} ${TREATMENT_LABEL_KEYS[type as TreatmentType] ? t(TREATMENT_LABEL_KEYS[type as TreatmentType]) : type}`)
-      .join(', ');
-
-    toast.success(t('components.addTeeth.casesAdded', { details: treatmentMessages }));
-    handleAddTeethSuccess();
-  }, [user, sessionId, patientDataForModal, handleAddTeethSuccess, t]);
+  }, [user, sessionId, patientDataForModal, evals, handleAddTeethSuccess, t]);
 
   return {
     // State

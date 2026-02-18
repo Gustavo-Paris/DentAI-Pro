@@ -167,6 +167,8 @@ export function StepIndicator({
                 step.isFuture && 'w-2 h-2 bg-muted-foreground/30',
               )}
               aria-label={t('components.wizard.stepIndicator.goToStep', { index: index + 1, label: step.label })}
+              aria-current={step.isActive ? 'step' : undefined}
+              aria-disabled={step.isFuture ? true : undefined}
             />
           ))}
         </div>

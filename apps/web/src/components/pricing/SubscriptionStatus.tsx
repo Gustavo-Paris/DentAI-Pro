@@ -167,6 +167,7 @@ export function SubscriptionStatus() {
             <Progress
               value={creditsPercentUsed}
               className={cn(creditsPercentUsed > 80 && '[&>div]:bg-warning')}
+              aria-label={t('components.pricing.subscription.creditUsageLabel', { defaultValue: 'Uso de créditos do mês' })}
             />
           </div>
 

@@ -54,8 +54,7 @@ export interface StratificationProtocol {
   alternative?: ProtocolAlternative;
   finishing?: FinishingProtocol;
   checklist?: string[];
-  confidence?: "alta" | "média" | "baixa" | string;
-  [key: string]: unknown;
+  confidence?: "alta" | "média" | "baixa";
 }
 
 // Cementation protocol for porcelain veneers

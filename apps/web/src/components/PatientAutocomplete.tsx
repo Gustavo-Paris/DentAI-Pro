@@ -51,7 +51,6 @@ export const PatientAutocomplete = memo(function PatientAutocomplete({
     );
     setFilteredPatients(filtered.slice(0, 5)); // Limit to 5 suggestions
     setHighlightedIndex(-1);
-    trackEvent('patient_searched', { result_count: filtered.length });
   }, [value, patients]);
 
   // Handle input change
@@ -59,6 +58,10 @@ export const PatientAutocomplete = memo(function PatientAutocomplete({
     const newValue = e.target.value;
     onChange(newValue, undefined); // Clear patient ID when typing
     setIsOpen(true);
+    // Track search event only on actual user input, not on every filter re-run
+    if (newValue.trim().length >= 2) {
+      trackEvent('patient_searched', { query_length: newValue.trim().length });
+    }
   };
 
   // Handle selecting a patient

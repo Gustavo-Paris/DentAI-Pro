@@ -96,9 +96,9 @@ function layout(body: string): string {
               </p>
               <p style="margin:0;font-size:11px;color:#bbb;text-align:center;">
                 Voce recebeu este e-mail porque possui uma conta no ToSmile.ai.<br>
-                <a href="https://auria-ai.vercel.app/settings" style="color:${TEAL};text-decoration:underline;">Gerenciar preferencias</a>
+                <a href="https://tosmile.ai/settings" style="color:${TEAL};text-decoration:underline;">Gerenciar preferencias</a>
                 &nbsp;|&nbsp;
-                <a href="https://auria-ai.vercel.app/settings" style="color:${TEAL};text-decoration:underline;">Cancelar inscricao</a>
+                <a href="https://tosmile.ai/settings" style="color:${TEAL};text-decoration:underline;">Cancelar inscricao</a>
               </p>
               <p style="margin:8px 0 0;font-size:10px;color:#ccc;text-align:center;">
                 Em conformidade com a LGPD (Lei 13.709/2018).
@@ -134,7 +134,7 @@ export function welcomeEmail(name: string): { subject: string; html: string } {
       <table role="presentation" cellspacing="0" cellpadding="0" style="margin:0 auto;">
         <tr>
           <td style="background-color:${TEAL};border-radius:6px;">
-            <a href="https://auria-ai.vercel.app/dashboard" style="display:inline-block;padding:12px 32px;font-size:15px;font-weight:600;color:${DARK};text-decoration:none;">
+            <a href="https://tosmile.ai/dashboard" style="display:inline-block;padding:12px 32px;font-size:15px;font-weight:600;color:${DARK};text-decoration:none;">
               Acessar meu painel
             </a>
           </td>
@@ -173,7 +173,7 @@ export function creditWarningEmail(
       <table role="presentation" cellspacing="0" cellpadding="0" style="margin:0 auto;">
         <tr>
           <td style="background-color:${TEAL};border-radius:6px;">
-            <a href="https://auria-ai.vercel.app/settings" style="display:inline-block;padding:12px 32px;font-size:15px;font-weight:600;color:${DARK};text-decoration:none;">
+            <a href="https://tosmile.ai/settings" style="display:inline-block;padding:12px 32px;font-size:15px;font-weight:600;color:${DARK};text-decoration:none;">
               Adicionar creditos
             </a>
           </td>
@@ -233,7 +233,7 @@ export function weeklyDigestEmail(
       <table role="presentation" cellspacing="0" cellpadding="0" style="margin:0 auto;">
         <tr>
           <td style="background-color:${TEAL};border-radius:6px;">
-            <a href="https://auria-ai.vercel.app/dashboard" style="display:inline-block;padding:12px 32px;font-size:15px;font-weight:600;color:${DARK};text-decoration:none;">
+            <a href="https://tosmile.ai/dashboard" style="display:inline-block;padding:12px 32px;font-size:15px;font-weight:600;color:${DARK};text-decoration:none;">
               Ir para o painel
             </a>
           </td>

@@ -19,6 +19,8 @@ export function HelpButton() {
         <Button
           variant="outline"
           size="icon"
+          // NOTE: On very small screens (<320px), this button may overlap with bottom navigation.
+          // Consider hiding it or adjusting position via a breakpoint if overlap reports arise.
           className="fixed bottom-20 right-4 z-40 lg:bottom-6 lg:right-6 h-12 w-12 rounded-full shadow-lg bg-background/95 backdrop-blur-sm border-border hover:border-primary/50 hover:shadow-xl transition-all duration-200"
           aria-label={t('components.helpButton.ariaLabel')}
         >

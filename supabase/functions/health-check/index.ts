@@ -1,5 +1,6 @@
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsPreFlight } from "../_shared/cors.ts";
+import { authenticateRequest, isAuthError } from "../_shared/middleware.ts";
 
 Deno.serve(async (req: Request) => {
   const corsHeaders = { ...getCorsHeaders(req), "Content-Type": "application/json" };
@@ -12,11 +13,12 @@ Deno.serve(async (req: Request) => {
   let dbOk = false;
   let geminiResult: Record<string, unknown> = {};
 
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  );
+
   try {
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    );
     const { error } = await supabase.from("profiles").select("id").limit(1);
     dbOk = !error;
   } catch {
@@ -25,8 +27,15 @@ Deno.serve(async (req: Request) => {
 
   const url = new URL(req.url);
 
+  // Gemini test branches require authentication to prevent unauthenticated AI proxy
+  const geminiParam = url.searchParams.get("gemini");
+  if (geminiParam) {
+    const authResult = await authenticateRequest(req, supabase, corsHeaders);
+    if (isAuthError(authResult)) return authResult;
+  }
+
   // Test Gemini simple text
-  if (url.searchParams.get("gemini") === "1") {
+  if (geminiParam === "1") {
     const apiKey = Deno.env.get("GOOGLE_AI_API_KEY");
     if (!apiKey) {
       geminiResult = { error: "GOOGLE_AI_API_KEY not set" };
@@ -53,7 +62,7 @@ Deno.serve(async (req: Request) => {
   }
 
   // Test Gemini with function calling + tools
-  if (url.searchParams.get("gemini") === "tools") {
+  if (geminiParam === "tools") {
     const apiKey = Deno.env.get("GOOGLE_AI_API_KEY");
     if (!apiKey) {
       geminiResult = { error: "GOOGLE_AI_API_KEY not set" };
@@ -82,7 +91,7 @@ Deno.serve(async (req: Request) => {
   }
 
   // Test Gemini with image + function calling (POST body must include imageBase64)
-  if (url.searchParams.get("gemini") === "vision") {
+  if (geminiParam === "vision") {
     const apiKey = Deno.env.get("GOOGLE_AI_API_KEY");
     if (!apiKey) {
       geminiResult = { error: "GOOGLE_AI_API_KEY not set" };
@@ -136,7 +145,7 @@ Deno.serve(async (req: Request) => {
   }
 
   // Test Gemini with image + function calling + tools (full analysis simulation)
-  if (url.searchParams.get("gemini") === "vision-tools") {
+  if (geminiParam === "vision-tools") {
     const apiKey = Deno.env.get("GOOGLE_AI_API_KEY");
     if (!apiKey) {
       geminiResult = { error: "GOOGLE_AI_API_KEY not set" };

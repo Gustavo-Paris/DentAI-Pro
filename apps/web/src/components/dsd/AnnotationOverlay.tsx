@@ -65,6 +65,7 @@ export function AnnotationOverlay({
 
   return (
     <svg
+      aria-hidden="true"
       className="absolute inset-0 pointer-events-none transition-opacity duration-300"
       width={containerWidth}
       height={containerHeight}

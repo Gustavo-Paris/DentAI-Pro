@@ -8,7 +8,7 @@ import type {
   DetectedToothForMask,
   ClinicalToothFinding,
 } from '@/types/dsd';
-import { useEffect, useRef, lazy, Suspense } from 'react';
+import { useEffect, useRef, useCallback, lazy, Suspense } from 'react';
 import { trackEvent } from '@/lib/analytics';
 import { useDSDStep } from './dsd/useDSDStep';
 import { DSDLoadingState } from './dsd/DSDLoadingState';
@@ -42,6 +42,11 @@ interface DSDStepProps {
 export function DSDStep(props: DSDStepProps) {
   const state = useDSDStep(props);
   const hasFiredStartRef = useRef(false);
+
+  const handleToggleAnnotations = useCallback(
+    () => state.setShowAnnotations(prev => !prev),
+    [state.setShowAnnotations]
+  );
 
   // Track dsd_started once
   useEffect(() => {
@@ -84,7 +89,6 @@ export function DSDStep(props: DSDStepProps) {
         isSimulationGenerating={state.isSimulationGenerating}
         simulationError={state.simulationError}
         layers={state.layers}
-        layerUrls={state.layerUrls}
         activeLayerIndex={state.activeLayerIndex}
         layersGenerating={state.layersGenerating}
         layerGenerationProgress={state.layerGenerationProgress}
@@ -104,7 +108,7 @@ export function DSDStep(props: DSDStepProps) {
         onSelectLayer={state.handleSelectLayer}
         onRetryFailedLayer={state.retryFailedLayer}
         onRegenerateSimulation={state.handleRegenerateSimulation}
-        onToggleAnnotations={() => state.setShowAnnotations(prev => !prev)}
+        onToggleAnnotations={handleToggleAnnotations}
         onGenerateWhiteningComparison={state.generateWhiteningComparison}
         onCloseWhiteningComparison={() => state.setShowWhiteningComparison(false)}
         onSelectWhiteningLevel={state.handleSelectWhiteningLevel}

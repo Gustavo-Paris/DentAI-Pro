@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ChevronRight, Lightbulb, AlertCircle, Zap, RefreshCw } from 'lucide-react';
 
@@ -10,6 +11,7 @@ interface DSDErrorStateProps {
 
 export function DSDErrorState({ error, onRetry, onSkip }: DSDErrorStateProps) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const isCreditError = error.includes('Créditos insuficientes');
 
   return (
@@ -42,7 +44,7 @@ export function DSDErrorState({ error, onRetry, onSkip }: DSDErrorStateProps) {
 
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
         {isCreditError ? (
-          <Button onClick={() => window.location.href = '/pricing'} className="btn-glow-gold btn-press font-semibold">
+          <Button onClick={() => navigate('/pricing')} className="btn-glow-gold btn-press font-semibold">
             <Zap className="w-4 h-4 mr-2" />
             {t('components.wizard.dsd.errorState.viewPlans')}
           </Button>

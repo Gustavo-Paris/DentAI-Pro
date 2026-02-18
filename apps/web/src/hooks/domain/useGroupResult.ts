@@ -169,11 +169,26 @@ export function useGroupResult() {
     },
     onMutate: async (indices) => {
       await queryClient.cancelQueries({ queryKey: ['group-result', sessionId] });
+      const previousData = queryClient.getQueryData(['group-result', sessionId]);
+      // Optimistic update: set checklist_progress on all group evaluations
+      queryClient.setQueryData(['group-result', sessionId], (old: unknown) => {
+        if (!Array.isArray(old)) return old;
+        return old.map((ev: GroupEvaluation) =>
+          groupEvaluations.some(ge => ge.id === ev.id)
+            ? { ...ev, checklist_progress: indices }
+            : ev,
+        );
+      });
+      return { previousData };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['group-result', sessionId] });
     },
-    onError: () => {
+    onError: (_err, _vars, context) => {
+      // Rollback to previous data on error
+      if (context?.previousData) {
+        queryClient.setQueryData(['group-result', sessionId], context.previousData);
+      }
       logger.error('Error saving group checklist progress');
       toast.error(t('toasts.result.saveError'));
     },

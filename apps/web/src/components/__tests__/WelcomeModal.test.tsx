@@ -24,6 +24,7 @@ vi.mock('@/lib/branding', () => ({
 vi.mock('@/components/ui/dialog', () => ({
   Dialog: ({ children, open }: any) => open ? <div data-testid="dialog" role="dialog">{children}</div> : null,
   DialogContent: ({ children }: any) => <div data-testid="dialog-content">{children}</div>,
+  DialogTitle: ({ children, className }: any) => <h2 className={className}>{children}</h2>,
 }));
 
 vi.mock('@/components/ui/button', () => ({

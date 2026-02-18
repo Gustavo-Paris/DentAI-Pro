@@ -214,8 +214,9 @@ export function useInventoryManagement() {
         toast.success(t('toasts.inventory.resinRemoved'));
       } catch {
         toast.error(t('toasts.inventory.removeError'));
+      } finally {
+        setRemovingResin(null);
       }
-      setRemovingResin(null);
     },
     [removeMutation],
   );

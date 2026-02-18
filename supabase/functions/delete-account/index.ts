@@ -252,6 +252,11 @@ Deno.serve(async (req) => {
         `Errors: [${deletionErrors.join(", ") || "none"}]`,
     );
 
+    // Log detailed deletion errors server-side only — never expose DB error strings to client
+    if (deletionErrors.length > 0) {
+      logger.error(`[${reqId}] Detailed deletion errors: ${deletionErrors.join(", ")}`);
+    }
+
     return new Response(
       JSON.stringify({
         success: deletionErrors.length === 0,
@@ -260,7 +265,6 @@ Deno.serve(async (req) => {
             ? "Conta e todos os dados foram excluídos permanentemente."
             : "Conta excluída com alguns erros parciais. Entre em contato com o suporte se necessário.",
         deleted: deletionLog,
-        errors: deletionErrors.length > 0 ? deletionErrors : undefined,
       }),
       {
         status: 200,

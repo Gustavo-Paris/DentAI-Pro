@@ -1,4 +1,5 @@
 import type { PostgrestError } from '@supabase/supabase-js';
+import { supabase } from './client';
 
 /**
  * Wraps a Supabase query that returns `{ data, error }` and throws on error.
@@ -11,6 +12,8 @@ export async function withQuery<T>(
 ): Promise<T> {
   const { data, error } = await queryFn();
   if (error) throw error;
+  // For .maybeSingle() callers, T already includes null so this cast is safe.
+  // For .single() and list queries, data should never be null when error is also null.
   return data as T;
 }
 
@@ -25,4 +28,16 @@ export async function withMutation(
 ): Promise<void> {
   const { error } = await queryFn();
   if (error) throw error;
+}
+
+/**
+ * Generic count-by-user query. DRYs up identical patterns across data modules.
+ */
+export async function countByUser(table: string, userId: string): Promise<number> {
+  const { count, error } = await supabase
+    .from(table)
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId);
+  if (error) throw error;
+  return count || 0;
 }

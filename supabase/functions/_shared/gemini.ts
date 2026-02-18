@@ -1,6 +1,8 @@
 // Google Gemini API client for DentAI Pro Supabase Edge Functions
 
 import { logger } from "./logger.ts";
+import { createCircuitBreaker } from "./circuit-breaker.ts";
+import { sleep, parseDataUrl } from "./http-utils.ts";
 
 const GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
 const DEFAULT_MODEL = "gemini-2.0-flash";
@@ -120,80 +122,9 @@ export class GeminiError extends Error {
   }
 }
 
-// Circuit breaker state (per-invocation, resets on each edge function cold start).
-// NOTE (P2-47): In Deno Deploy / serverless, module-level state is lost on cold starts.
-// This means the circuit breaker resets whenever the isolate is recycled. This is
-// acceptable because (1) cold starts are infrequent under load, (2) the retry logic
-// in makeGeminiRequest already handles transient failures, and (3) a persistent
-// circuit breaker would require external state (e.g., Redis/KV) which adds latency.
-const circuitBreaker = {
-  consecutiveFailures: 0,
-  state: "closed" as "closed" | "open" | "half-open",
-  openedAt: 0,
-  /** Max consecutive failures before opening the circuit */
-  failureThreshold: 3,
-  /** How long the circuit stays open before allowing a probe (ms) */
-  resetTimeoutMs: 30_000,
-  /** Window in which failures must occur to trip the breaker (ms) */
-  failureWindowMs: 60_000,
-  /** Timestamp of the first failure in the current window */
-  firstFailureAt: 0,
-};
-
-function circuitBreakerCheck(): void {
-  const now = Date.now();
-
-  if (circuitBreaker.state === "open") {
-    if (now - circuitBreaker.openedAt >= circuitBreaker.resetTimeoutMs) {
-      circuitBreaker.state = "half-open";
-      logger.log("Circuit breaker half-open — allowing probe request");
-      return;
-    }
-    throw new GeminiError(
-      "Serviço Gemini temporariamente indisponível (circuit breaker aberto). Tente novamente em breve.",
-      503,
-      true
-    );
-  }
-  // "closed" and "half-open" allow requests through
-}
-
-function circuitBreakerOnSuccess(): void {
-  if (circuitBreaker.state !== "closed") {
-    logger.log("Circuit breaker closed — Gemini recovered");
-  }
-  circuitBreaker.consecutiveFailures = 0;
-  circuitBreaker.firstFailureAt = 0;
-  circuitBreaker.state = "closed";
-}
-
-function circuitBreakerOnFailure(): void {
-  const now = Date.now();
-
-  // Reset window if the first failure is outside the window
-  if (
-    circuitBreaker.firstFailureAt === 0 ||
-    now - circuitBreaker.firstFailureAt > circuitBreaker.failureWindowMs
-  ) {
-    circuitBreaker.firstFailureAt = now;
-    circuitBreaker.consecutiveFailures = 1;
-  } else {
-    circuitBreaker.consecutiveFailures++;
-  }
-
-  if (circuitBreaker.consecutiveFailures >= circuitBreaker.failureThreshold) {
-    circuitBreaker.state = "open";
-    circuitBreaker.openedAt = now;
-    logger.warn(
-      `Circuit breaker opened after ${circuitBreaker.consecutiveFailures} consecutive failures`
-    );
-  } else if (circuitBreaker.state === "half-open") {
-    // Probe failed — re-open
-    circuitBreaker.state = "open";
-    circuitBreaker.openedAt = now;
-    logger.warn("Circuit breaker re-opened — probe request failed");
-  }
-}
+// Circuit breaker (shared implementation)
+const { check: circuitBreakerCheck, onSuccess: circuitBreakerOnSuccess, onFailure: circuitBreakerOnFailure } =
+  createCircuitBreaker(GeminiError, "Gemini");
 
 const DEFAULT_TIMEOUT_MS = 30_000;
 
@@ -204,11 +135,6 @@ function getApiKey(): string {
     throw new GeminiError("GOOGLE_AI_API_KEY not configured", 500, false);
   }
   return apiKey;
-}
-
-// Sleep helper for retry backoff
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 // Convert OpenAI-style messages to Gemini format
@@ -261,19 +187,6 @@ function convertToGeminiFormat(messages: OpenAIMessage[]): {
   }
 
   return { contents, systemInstruction };
-}
-
-// Parse data URL to extract mime type and base64 data
-function parseDataUrl(url: string): { mimeType: string; data: string } | null {
-  // Handle data URLs: data:image/jpeg;base64,/9j/4AAQ...
-  const dataUrlMatch = url.match(/^data:([^;]+);base64,(.+)$/);
-  if (dataUrlMatch) {
-    return {
-      mimeType: dataUrlMatch[1],
-      data: dataUrlMatch[2],
-    };
-  }
-  return null;
 }
 
 // Remove incompatible fields from JSON schema for Gemini API

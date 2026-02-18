@@ -34,10 +34,10 @@ export const CreditBadge = memo(function CreditBadge({ variant = 'compact', clas
       : 'text-muted-foreground';
 
   const bgClass = isCritical
-    ? 'bg-destructive/10 border-destructive/20 dark:bg-destructive/10 dark:border-destructive/30'
+    ? 'bg-destructive/10 dark:bg-destructive/10'
     : isLow
-      ? 'bg-warning/10 border-warning/20 dark:bg-warning/10 dark:border-warning/30'
-      : 'bg-secondary/50 border-border';
+      ? 'bg-warning/10 dark:bg-warning/10'
+      : 'bg-secondary/50';
 
   const barColor = isCritical
     ? 'bg-destructive'
@@ -50,7 +50,7 @@ export const CreditBadge = memo(function CreditBadge({ variant = 'compact', clas
       <Link
         to="/profile?tab=assinatura"
         className={cn(
-          'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-medium transition-colors hover:bg-secondary',
+          'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors hover:bg-secondary',
           bgClass,
           colorClass,
           className

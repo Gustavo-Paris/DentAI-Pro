@@ -27,7 +27,7 @@ describe('logger', () => {
     expect(typeof logger.error).toBe('function');
     expect(typeof logger.info).toBe('function');
     expect(typeof logger.debug).toBe('function');
-    expect(typeof logger.edgeDebug).toBe('function');
+    expect(typeof logger.verboseDebug).toBe('function');
   });
 
   it('should not throw when called with multiple arguments', async () => {

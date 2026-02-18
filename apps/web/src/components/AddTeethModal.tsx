@@ -183,14 +183,15 @@ export function AddTeethModal({
                   const isSelected = selectedTeeth.includes(tooth.tooth);
 
                   return (
-                    <div
+                    <label
                       key={tooth.id}
+                      htmlFor={`restorative-tooth-${tooth.tooth}`}
                       className={`flex items-start gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
                         isSelected ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
                       }`}
-                      onClick={() => handleToggleTooth(tooth.tooth, !isSelected)}
                     >
                       <Checkbox
+                        id={`restorative-tooth-${tooth.tooth}`}
                         checked={isSelected}
                         onCheckedChange={(checked) => handleToggleTooth(tooth.tooth, !!checked)}
                         className="mt-1"
@@ -230,7 +231,7 @@ export function AddTeethModal({
                           </Select>
                         )}
                       </div>
-                    </div>
+                    </label>
                   );
                 })}
               </div>
@@ -250,14 +251,15 @@ export function AddTeethModal({
                   const isSelected = selectedTeeth.includes(tooth.tooth);
 
                   return (
-                    <div
+                    <label
                       key={tooth.id}
+                      htmlFor={`aesthetic-tooth-${tooth.tooth}`}
                       className={`flex items-start gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
                         isSelected ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
                       }`}
-                      onClick={() => handleToggleTooth(tooth.tooth, !isSelected)}
                     >
                       <Checkbox
+                        id={`aesthetic-tooth-${tooth.tooth}`}
                         checked={isSelected}
                         onCheckedChange={(checked) => handleToggleTooth(tooth.tooth, !!checked)}
                         className="mt-1"
@@ -288,7 +290,7 @@ export function AddTeethModal({
                           </Select>
                         )}
                       </div>
-                    </div>
+                    </label>
                   );
                 })}
               </div>

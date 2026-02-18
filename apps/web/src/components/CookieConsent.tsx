@@ -34,6 +34,8 @@ export default function CookieConsent() {
     localStorage.setItem(STORAGE_KEY, value);
     applySentryReplayPolicy(value);
     trackEvent(value === 'accepted' ? 'cookie_consent_accepted' : 'cookie_consent_rejected');
+    // Dispatch custom event so PostHogProvider can react immediately (no polling needed)
+    window.dispatchEvent(new CustomEvent('cookie-consent-change', { detail: { consent: value } }));
     setVisible(false);
   };
 

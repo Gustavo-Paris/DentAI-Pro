@@ -1,4 +1,4 @@
-import type { PromptDefinition } from './types.ts'
+import type { PromptDefinition, PromptMode } from './types.ts'
 import { recommendCementation } from './definitions/recommend-cementation.ts'
 import { analyzeDentalPhoto } from './definitions/analyze-dental-photo.ts'
 import { recommendResin } from './definitions/recommend-resin.ts'
@@ -6,36 +6,36 @@ import { dsdAnalysis } from './definitions/dsd-analysis.ts'
 import { dsdSimulation } from './definitions/dsd-simulation.ts'
 import { smileLineClassifier } from './definitions/smile-line-classifier.ts'
 
-// deno-lint-ignore no-explicit-any
-const registry: Record<string, PromptDefinition<any>> = {
-  [recommendCementation.id]: recommendCementation,
-  [analyzeDentalPhoto.id]: analyzeDentalPhoto,
-  [recommendResin.id]: recommendResin,
-  [dsdAnalysis.id]: dsdAnalysis,
-  [dsdSimulation.id]: dsdSimulation,
-  [smileLineClassifier.id]: smileLineClassifier,
+/** Widen a specific PromptDefinition<T> to PromptDefinition<unknown> for registry storage */
+function register<T>(def: PromptDefinition<T>): PromptDefinition<unknown> {
+  return def as PromptDefinition<unknown>
+}
+
+const registry: Record<string, PromptDefinition<unknown>> = {
+  [recommendCementation.id]: register(recommendCementation),
+  [analyzeDentalPhoto.id]: register(analyzeDentalPhoto),
+  [recommendResin.id]: register(recommendResin),
+  [dsdAnalysis.id]: register(dsdAnalysis),
+  [dsdSimulation.id]: register(dsdSimulation),
+  [smileLineClassifier.id]: register(smileLineClassifier),
 }
 
 export type PromptId = keyof typeof registry
 
-// deno-lint-ignore no-explicit-any
-export function getPrompt(id: string): PromptDefinition<any> {
+export function getPrompt<T = unknown>(id: string): PromptDefinition<T> {
   const prompt = registry[id]
   if (!prompt) throw new Error(`Prompt not found: ${id}`)
-  return prompt
+  return prompt as PromptDefinition<T>
 }
 
-// deno-lint-ignore no-explicit-any
-export function listPrompts(): PromptDefinition<any>[] {
+export function listPrompts(): PromptDefinition<unknown>[] {
   return Object.values(registry)
 }
 
-// deno-lint-ignore no-explicit-any
-export function listByMode(mode: PromptDefinition<any>['mode']): PromptDefinition<any>[] {
+export function listByMode(mode: PromptMode): PromptDefinition<unknown>[] {
   return Object.values(registry).filter(p => p.mode === mode)
 }
 
-// deno-lint-ignore no-explicit-any
-export function listByTag(tag: string): PromptDefinition<any>[] {
+export function listByTag(tag: string): PromptDefinition<unknown>[] {
   return Object.values(registry).filter(p => p.tags?.includes(tag))
 }
