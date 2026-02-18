@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useTranslation } from 'react-i18next';
 import { logger } from "@/lib/logger";
 import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@parisgroup-ai/pageshell/primitives";
 
 // Not using PageShell composite: minimal centered 404 page — no composite fits this
 // intentionally simple layout with route logging side-effects.
