@@ -66,6 +66,7 @@ export function useWizardDraftRestore({
     setUploadedPhotoPath(pendingDraft.uploadedPhotoPath);
     setAdditionalPhotos(pendingDraft.additionalPhotos || { smile45: null, face: null });
     setPatientPreferences(pendingDraft.patientPreferences || { whiteningLevel: 'natural' });
+    // Restore manual shade override flag — only sets `true` since `false` is the useRef default
     if (vitaShadeManuallySetRef && pendingDraft.vitaShadeManuallySet) {
       vitaShadeManuallySetRef.current = true;
     }
