@@ -792,90 +792,102 @@ export async function callGeminiImageEdit(
       responseModalities: ["TEXT", "IMAGE"],
       ...(options.seed !== undefined && { seed: options.seed }),
     },
+    thinkingConfig: {
+      thinkingLevel: "low",
+    },
   };
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(
-    () => controller.abort(),
-    options.timeoutMs ?? 60000
-  );
+  const MAX_RETRIES = 2;
+  const RETRY_DELAYS = [2000, 5000];
 
-  try {
-    logger.log(`Calling Gemini Image Edit API...`);
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(
+      () => controller.abort(),
+      options.timeoutMs ?? 60000
+    );
 
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(request),
-      signal: controller.signal,
-    });
+    try {
+      logger.log(`Calling Gemini Image Edit API (attempt ${attempt + 1}/${MAX_RETRIES + 1})...`);
 
-    clearTimeout(timeoutId);
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(request),
+        signal: controller.signal,
+      });
 
-    if (!response.ok) {
-      const errorBody = await response.text();
-      logger.error(`Gemini Image API error: ${response.status}`, errorBody);
+      clearTimeout(timeoutId);
 
-      if (response.status === 429) {
+      if (!response.ok) {
+        const errorBody = await response.text();
+        logger.error(`Gemini Image API error: ${response.status}`, errorBody);
+
+        // Retry on 503/429 if attempts remain
+        if ((response.status === 503 || response.status === 429) && attempt < MAX_RETRIES) {
+          logger.warn(`Gemini Image API ${response.status}, retrying in ${RETRY_DELAYS[attempt]}ms...`);
+          await new Promise(r => setTimeout(r, RETRY_DELAYS[attempt]));
+          continue;
+        }
+
+        if (response.status === 429) {
+          throw new GeminiError("Taxa de requisições excedida. Tente novamente.", 429, true);
+        }
+
         throw new GeminiError(
-          "Taxa de requisições excedida. Tente novamente.",
-          429,
-          true
+          `Erro na geração de imagem: ${response.status} — ${errorBody.substring(0, 300)}`,
+          response.status,
+          response.status >= 500
         );
       }
 
-      throw new GeminiError(
-        `Erro na geração de imagem: ${response.status} — ${errorBody.substring(0, 300)}`,
-        response.status,
-        response.status >= 500
-      );
-    }
+      // Success — parse response
+      const data = await response.json();
+      const candidate = data.candidates?.[0];
+      const tokens = extractTokenUsage(data as GeminiResponse);
 
-    const data = await response.json();
-    const candidate = data.candidates?.[0];
-
-    // Extract token usage from raw response
-    const tokens = extractTokenUsage(data as GeminiResponse);
-
-    if (!candidate?.content?.parts) {
-      logger.warn("No parts in Gemini image response");
-      return { imageUrl: null, text: null, tokens };
-    }
-
-    let imageUrl: string | null = null;
-    let text: string | null = null;
-
-    for (const part of candidate.content.parts) {
-      if (part.inlineData?.data) {
-        const imgMimeType = part.inlineData.mimeType || "image/png";
-        imageUrl = `data:${imgMimeType};base64,${part.inlineData.data}`;
+      if (!candidate?.content?.parts) {
+        logger.warn("No parts in Gemini image response");
+        return { imageUrl: null, text: null, tokens };
       }
-      if (part.text) {
-        text = part.text;
+
+      let imageUrl: string | null = null;
+      let text: string | null = null;
+
+      for (const part of candidate.content.parts) {
+        if (part.inlineData?.data) {
+          const imgMimeType = part.inlineData.mimeType || "image/png";
+          imageUrl = `data:${imgMimeType};base64,${part.inlineData.data}`;
+        }
+        if (part.text) {
+          text = part.text;
+        }
       }
+
+      return { imageUrl, text, tokens };
+    } catch (error) {
+      clearTimeout(timeoutId);
+
+      if (error instanceof GeminiError) {
+        throw error;
+      }
+
+      if ((error as Error).name === "AbortError") {
+        if (attempt < MAX_RETRIES) {
+          logger.warn(`Gemini Image timeout, retrying in ${RETRY_DELAYS[attempt]}ms...`);
+          await new Promise(r => setTimeout(r, RETRY_DELAYS[attempt]));
+          continue;
+        }
+        throw new GeminiError("Timeout na geração de imagem", 408, true);
+      }
+
+      logger.error("Gemini Image Edit error:", error);
+      throw new GeminiError("Erro na comunicação com Gemini API", 500, true);
     }
-
-    return { imageUrl, text, tokens };
-  } catch (error) {
-    clearTimeout(timeoutId);
-
-    if (error instanceof GeminiError) {
-      throw error;
-    }
-
-    if ((error as Error).name === "AbortError") {
-      throw new GeminiError("Timeout na geração de imagem", 408, true);
-    }
-
-    logger.error("Gemini Image Edit error:", error);
-    throw new GeminiError(
-      "Erro na comunicação com Gemini API",
-      500,
-      true
-    );
   }
+
+  // Should never reach here, but TypeScript needs it
+  throw new GeminiError("Máximo de tentativas excedido", 500, true);
 }
 
 // Export default model for convenience

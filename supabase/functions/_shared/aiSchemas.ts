@@ -112,9 +112,11 @@ export type PhotoAnalysisResultParsed = z.infer<typeof PhotoAnalysisResultSchema
 // 2. DSDAnalysis (generate-dsd)
 // ---------------------------------------------------------------------------
 
+const FDI_TOOTH_PATTERN = /^[1-4][1-8]$/;
+
 const DSDSuggestionSchema = z
   .object({
-    tooth: z.string(),
+    tooth: z.string().regex(FDI_TOOTH_PATTERN, "Tooth must be FDI notation (11-48)"),
     current_issue: z.string(),
     proposed_change: z.string(),
     treatment_indication: z.string().optional(),
@@ -157,9 +159,14 @@ const ENUM_MAPPINGS: Record<string, Record<string, string>> = {
   smile_line: { low: "baixa", medium: "média", high: "alta" },
   buccal_corridor: { adequate: "adequado", excessive: "excessivo", absent: "ausente" },
   confidence: { low: "baixa", medium: "média", high: "alta" },
-  facial_midline: { centered: "centrada" },
-  dental_midline: { aligned: "alinhada" },
-  occlusal_plane: { level: "nivelado" },
+  facial_midline: { centered: "centrada", deviated: "desviada" },
+  dental_midline: { aligned: "alinhada", deviated: "desviada" },
+  occlusal_plane: { level: "nivelado", tilted: "inclinado" },
+  lip_thickness: { thin: "fino", medium: "médio", thick: "volumoso" },
+  overbite_suspicion: { yes: "sim", no: "não", undetermined: "indeterminado" },
+  face_shape: { oval: "oval", square: "quadrado", triangular: "triangular", rectangular: "retangular", round: "redondo" },
+  perceived_temperament: { choleric: "colérico", sanguine: "sanguíneo", melancholic: "melancólico", phlegmatic: "fleumático" },
+  smile_arc: { consonant: "consonante", flat: "plano", reverse: "reverso" },
 };
 
 /**
