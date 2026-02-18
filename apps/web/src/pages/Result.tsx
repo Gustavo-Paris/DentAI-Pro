@@ -31,7 +31,7 @@ import { FinishingPolishingCard } from '@/components/protocol/FinishingPolishing
 import { BruxismAlert } from '@/components/protocol/BruxismAlert';
 import { CollapsibleDSD } from '@/components/dsd/CollapsibleDSD';
 import { LoadingOverlay } from '@/components/LoadingOverlay';
-import { DetailPage } from '@pageshell/composites';
+import { DetailPage } from '@parisgroup-ai/pageshell/composites';
 
 import { useTranslation } from 'react-i18next';
 import { useResult } from '@/hooks/domain/useResult';

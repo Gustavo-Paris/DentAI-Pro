@@ -49,6 +49,10 @@ export interface Params {
     currentIssue: string
     proposedChange: string
     observations: string[]
+    smileLine?: string
+    faceShape?: string
+    symmetryScore?: number
+    smileArc?: string
   }
 }
 
@@ -66,6 +70,11 @@ function buildBudgetRulesSection(budget: string): string {
   return `=== REGRAS DE ORCAMENTO ===
 Orçamento do paciente: "${budget}"
 - "padrão": Resinas Econômico/Intermediário/Médio-alto. EVITAR Premium.
+  PREFERIR resinas de AMPLA DISPONIBILIDADE (Z350, Harmonize, FORMA, Opallis) por padrão.
+  Resinas premium (Estelite Omega, Vittra APS, GC Essentia, Palfique LX5) SOMENTE quando:
+    * Necessidade clínica justificada (ex: polimento superior em camada de esmalte final anterior)
+    * Inventário do dentista já possui a resina premium
+  Se usar premium em orçamento "padrão", JUSTIFICAR na "justification" do JSON.
 - "premium": QUALQUER faixa, priorizando as melhores.
 REGRA CRITICA: Recomendação principal DEVE respeitar o orçamento!`
 }
@@ -127,7 +136,7 @@ RESINAS RECOMENDADAS POR CAMADA:
 | Camada             | Resinas OBRIGATORIAS                                       |
 |--------------------|------------------------------------------------------------|
 | Aumento Incisal    | SOMENTE Trans(FORMA) ou CT(Z350) ou Trans20(Empress) ou Trans(Vittra) — PROIBIDO esmalte/corpo! |
-| Cristas Proximais  | SOMENTE XLE(Harmonize) ou BL-L/BL-XL(Empress) ou WE(Z350) — PROIBIDO: Z350 BL1, JE, CT, FORMA, Vittra, Palfique para cristas! |
+| Cristas Proximais  | SOMENTE XLE(Harmonize) ou BL-L/BL-XL(Empress) ou WE(Z350 XT) — PROIBIDO: Z350 BL1, JE, CT, FORMA, Vittra, Palfique para cristas! |
 | Dentina/Corpo      | SOMENTE corpo: WB(FORMA), WB(Z350), DA1/DA2(Vittra APS), D BL-L(Empress) — PROIBIDO esmalte (A1E/WE/CT)! |
 | Efeitos Incisais   | EMPRESS DIRECT COLOR White/Blue (Ivoclar) — UNICA opcao! Z350/Kolor+ NAO! |
 | Esmalte Final      | WE(Palfique LX5) ou WE/MW(Estelite Omega) OBRIGATORIO — Z350 SOMENTE se Palfique/Estelite indisponíveis! Clareados: W3/W4(Estelite Bianco). PROIBIDO: CT/GT/Trans/BL1! |
@@ -138,15 +147,15 @@ GLOSSARIO DE SIGLAS — USAR EXATAMENTE NA DESCRICAO DE CADA CAMADA (OBRIGATORIO
 - CT = Clear Translucent — NUNCA "Cool Tone"
 - WE = White Enamel
 - MW = Milky White (esmalte natural sem clareamento)
-- JE = Jewel Enamel (SOMENTE Estelite Omega)
+- JE = Jewel Enamel (SOMENTE Estelite Sigma Quick)
 - BL-L = Bleach Light (SOMENTE Empress Direct)
 - XLE = Extra Light Enamel (SOMENTE Harmonize)
 - DA1/DA2 = Dentin A1/A2 (SOMENTE Vittra APS)
 
 ⚠️ SHADES QUE NAO EXISTEM POR LINHA (PROIBIDO GERAR):
-- Filtek Z350 XT: NAO possui BL1, BL2, BL3. Possui WB (Body).
-- Estelite Omega: NAO possui shades BL. Para clareados usar Estelite Bianco W3/W4.
-- Harmonize: NAO possui WE, BL. Para clareados usar outra linha.
+- Filtek Z350 XT: NAO possui BL1, BL2, BL3. Possui WB (Body) e WE (White Enamel — disponível em catálogos regionais 3M).
+- Estelite Omega: Possui BL1, BL2 para clareados. Alternativa: Estelite Bianco W3/W4.
+- Harmonize: NAO possui WE, BL. Para clareados usar outra linha. Possui shades Enamel: A1E, A2E, A3E, B1E, B2E, C2E, XLE (Extra Light Enamel).
 
 DIVERSIDADE DE MARCAS (CONDICIONAL AO NUMERO DE CAMADAS):
 - 2-3 camadas: PERMITIDO mesma marca em todas. Priorizar CONSISTENCIA de sistema adesivo e compatibilidade.
@@ -189,13 +198,19 @@ function buildAestheticGoalsSection(aestheticGoals?: string): string {
 Extraia preferências e aplique: clareamento -> cores 1-2 tons mais claros em TODAS camadas. Natural/discreto -> translucidez e mimetismo. Sensibilidade -> self-etch. Durabilidade -> alta resistência. Conservador -> técnicas minimamente invasivas.`
 }
 
-function buildDSDContextSection(dsdContext?: { currentIssue: string; proposedChange: string; observations: string[] }): string {
+function buildDSDContextSection(dsdContext?: { currentIssue: string; proposedChange: string; observations: string[]; smileLine?: string; faceShape?: string; symmetryScore?: number; smileArc?: string }): string {
   if (!dsdContext) return ''
   const obs = dsdContext.observations?.length ? dsdContext.observations.map(o => `- ${o}`).join('\n') : ''
+  const extra = [
+    dsdContext.smileLine && `- Linha do sorriso: ${dsdContext.smileLine}`,
+    dsdContext.faceShape && `- Formato facial: ${dsdContext.faceShape}`,
+    dsdContext.symmetryScore != null && `- Score de simetria: ${dsdContext.symmetryScore}%`,
+    dsdContext.smileArc && `- Arco do sorriso: ${dsdContext.smileArc}`,
+  ].filter(Boolean).join('\n')
   return `=== CONTEXTO DSD ===
 - Situação atual: ${dsdContext.currentIssue}
 - Mudança proposta: ${dsdContext.proposedChange}
-${obs ? `Observações:\n${obs}` : ''}
+${obs ? `Observações:\n${obs}` : ''}${extra ? `\nContexto clínico adicional:\n${extra}` : ''}
 O protocolo DEVE considerar estes achados (aumento incisal -> camada adequada, correção de proporção -> ajustar espessuras, simetria -> consistência contralateral).`
 }
 
@@ -339,9 +354,16 @@ Se cavityClass = "Recontorno Estético" E indicação menciona DIMINUIR bordo in
   1. Planejamento e Marcação (caneta para resina + carbono articular)
   2. Desgaste Inicial (diamantada 2135, 0.5-1.0mm, alta rotação c/ spray)
   3. Refinamento (diamantada FF 3118FF/2135FF, 0.1-0.2mm, inclui face palatina/lingual)
-  4. Acabamento (Sof-Lex: Preto->Azul escuro->Azul médio->Azul claro OU sequência vermelha)
+  4. Acabamento (Sof-Lex: Laranja Escuro->Laranja Médio->Laranja Claro->Amarelo OU sequência vermelha)
   5. Polimento Final (Diamond Excel + feltro, baixa rotação 40-60s)
 - Se NAO menciona diminuir -> use protocolo normal.
+
+REGRA RECONTORNO vs ESTRATIFICACAO (MUTUAMENTE EXCLUSIVOS):
+- Recontorno (desgaste): SOMENTE para DIMINUIR — ajuste SUTIL de esmalte existente sem acréscimo de material. Aplicável quando dente precisa ficar MENOR/mais curto.
+- Estratificação (buildup): SOMENTE para AUMENTAR — acréscimo de resina em camadas. Aplicável quando dente precisa ficar MAIOR/mais longo.
+- Se o dente precisa de ACRESCIMO (estratificação), NUNCA gere protocolo de recontorno junto. O buildup define a nova forma.
+- Se o dente precisa APENAS de ajuste fino em esmalte natural sem acréscimo → recontorno.
+- PROIBIDO: Gerar recontorno + estratificação para o MESMO dente. Escolha UM.
 
 ${advancedStrat}
 
@@ -385,21 +407,21 @@ NIVEL ESTETICO ("estético"/"alto"/"muito alto" OU Fechamento de Diastema) - 4-5
 5. Esmalte Vestibular Final: 0.3mm, priorizar polimento SUPERIOR. PROIBIDO resinas translúcidas (CT/GT/Trans)! SOMENTE shades de esmalte.
    - Objetivo: Camada final de esmalte mimetizando brilho natural e integração com dente adjacente. Cor 1 tom mais claro que corpo conforme preferência estética do paciente.
    - Técnica: Incremento único cobrindo face vestibular terço médio e incisal. Aplicar com espátula de inserção, pressionando levemente contra parede vestibular. Fotopolimerizar 20s. Priorizar polimento superior com Sof-Lex para brilho espelhado.
-   - P1 (OBRIGATORIO quando disponível): Palfique LX5 (WE), Estelite Omega (WE/MW). MW para resultado natural. Clareados: W3/W4(Estelite Bianco). ⚠️ Z350 para Esmalte Final SOMENTE se P1 indisponível — shade A1E/A2E (NUNCA BL1, NAO EXISTE em Z350!)
+   - P1 (OBRIGATORIO quando disponível): Palfique LX5 (WE), Estelite Omega (WE/MW). MW para resultado natural. Clareados: BL1/BL2(Estelite Omega), W3/W4(Estelite Bianco). ⚠️ Z350 para Esmalte Final SOMENTE se P1 indisponível — shade A1E/A2E (NUNCA BL1, NAO EXISTE em Z350!)
    - P2: Filtek Z350 XT (A1E/A2E), FORMA (Enamel). IPS Empress Direct (esmalte cores claras)
-   - P3: Harmonize (Incisal/TN), Vittra APS (INC)
+   - P3: Harmonize (Incisal/TN), Vittra APS (Trans)
    - ⚠️ PREFERIR Estelite/Palfique sobre Z350 para camada de esmalte final (polimento superior)
 
 CORES DE ESMALTE POR LINHA:
 | Linha               | Cores                                     |
 |---------------------|-------------------------------------------|
 | Estelite Sigma Quick| WE, CE                                    |
-| Estelite Omega      | WE, JE, CT                                |
-| Filtek Z350 XT      | CT, GT, BT, YT, A1E, A2E, A3E, B1E (⚠️ NAO possui BL1/BL2/BL3!) |
-| Harmonize           | Incisal, TN                               |
+| Estelite Omega      | WE, MW, CT, BL1, BL2                      |
+| Filtek Z350 XT      | WE, CT, GT, BT, YT, A1E, A2E, A3E, B1E (⚠️ NAO possui BL1/BL2/BL3!) |
+| Harmonize           | A1E, A2E, A3E, B1E, B2E, C2E, XLE, Incisal, TN |
 | IPS Empress Direct  | Trans 20, Trans 30, Opal                  |
-| Vittra APS          | Trans, INC                                |
-| Palfique LX5        | MW, WE, CE, BL1, BL2, BL3, A1-A3, B1     |
+| Vittra APS          | Trans, Trans OPL, Trans N, EA1, EA2       |
+| Palfique LX5        | WE, CE, BW, SW, A1-A3, B1                 |
 ALTERNATIVA SIMPLIFICADA (2 camadas):
 - Corpo: WB(FORMA), WB(Z350), DA1(Empress) ou DA1(Vittra) — cor SATURADA de dentina. PROIBIDO para corpo: WE, MW, CE, TN, Incisal, Trans, CT — são cores de ESMALTE!
 - Esmalte: WE(Palfique LX5) — preferencial. MW(Estelite Omega) para natural.
@@ -413,7 +435,7 @@ REGRA: Verificar objetivo estetico do paciente (seção PREFERENCIAS ESTETICAS a
 
 SE objetivo inclui "hollywood", "clareamento", "branco", "white", "BL" ou paciente deseja dentes MUITO claros:
   Shades BL/W PERMITIDOS.
-  COM BL: Palfique LX5 (BL1-3), Forma (BL), Estelite Bianco (W1-W4), Empress (BL-L). ⚠️ Z350 NAO possui shades BL — usar WE/A1E como aproximação.
+  COM BL: Palfique LX5 (BW/SW), Estelite Omega (BL1/BL2), Forma (BL), Estelite Bianco (W1-W4), Empress (BL-L). ⚠️ Z350 NAO possui shades BL — usar WE/A1E como aproximação.
   SEM BL na linha: usar cor mais clara disponivel (B1/A1).
   Dentes clareados: PRIORIDADE Estelite Bianco W1-W4, ALTERNATIVA BL(Forma)/BL-L(Empress).
 
@@ -454,8 +476,8 @@ USAR: "Chanfro suave", "Sem preparo adicional", "Condicionamento conforme substr
 2. Contorno: Diamantadas FF (3118FF/2135FF), alta rotação com spray, movimentos leves sem pressão
    - 3118FF: Refinamento de contorno proximal, face vestibular E remoção de excessos PALATINOS/LINGUAIS
    - 2135FF: Refinamento de bordas incisais e superfícies planas
-3. Discos Sof-Lex (SEQUENCIA AZUL — padrão):
-   - Preto (Grosso) -> Azul Escuro (Médio) -> Azul Médio (Fino) -> Azul Claro (Ultrafino)
+3. Discos Sof-Lex (SEQUENCIA LARANJA — padrão):
+   - Laranja Escuro (Grosso) -> Laranja Médio (Médio) -> Laranja Claro (Fino) -> Amarelo (Ultrafino)
    - Baixa rotação, manter úmido, movimentos unidirecionais, sem pressão excessiva
    ALTERNATIVA Sof-Lex (SEQUENCIA VERMELHA — para maior agressividade):
    - Vermelho Escuro (Grosso) -> Vermelho Médio -> Vermelho Claro (Fino) -> Vermelho Ultrafino
@@ -533,10 +555,10 @@ Responda APENAS JSON:
     "finishing": {
       "contouring": [{"order":1,"tool":"...","grit":"...","speed":"...","time":"...","tip":"..."}],
       "polishing": [
-        {"order":1,"tool":"Disco Sof-Lex Preto","grit":"Grossa","speed":"Baixa rotação","time":"30s","tip":"Cervical-incisal"},
-        {"order":2,"tool":"Disco Sof-Lex Azul Escuro","grit":"Média","speed":"Baixa rotação","time":"30s","tip":"Manter úmido"},
-        {"order":3,"tool":"Disco Sof-Lex Azul Médio","grit":"Fina","speed":"Baixa rotação","time":"30s","tip":"Sem pressão"},
-        {"order":4,"tool":"Disco Sof-Lex Azul Claro","grit":"Ultrafina","speed":"Baixa rotação","time":"30s","tip":"Polimento final"},
+        {"order":1,"tool":"Disco Sof-Lex Laranja Escuro","grit":"Grossa","speed":"Baixa rotação","time":"30s","tip":"Cervical-incisal"},
+        {"order":2,"tool":"Disco Sof-Lex Laranja Médio","grit":"Média","speed":"Baixa rotação","time":"30s","tip":"Manter úmido"},
+        {"order":3,"tool":"Disco Sof-Lex Laranja Claro","grit":"Fina","speed":"Baixa rotação","time":"30s","tip":"Sem pressão"},
+        {"order":4,"tool":"Disco Sof-Lex Amarelo","grit":"Ultrafina","speed":"Baixa rotação","time":"30s","tip":"Polimento final"},
         {"order":5,"tool":"Borracha grossa (DHPro)","speed":"Baixa rotação","time":"40-60s","tip":"Intermitente, sem aquecer"},
         {"order":6,"tool":"Borracha média","speed":"Baixa rotação","time":"40-60s","tip":"Úmido"},
         {"order":7,"tool":"Borracha fina","speed":"Baixa rotação","time":"40-60s","tip":"Intermediário"},

@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { evaluations } from '@/data';
+import { evaluations, wizard } from '@/data';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -554,6 +554,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
     if (!user || !patientDataForModal) return;
 
     const treatmentCounts: Record<string, number> = {};
+    const newEvalIds: string[] = [];
 
     for (const toothNumber of payload.selectedTeeth) {
       const toothData = payload.pendingTeeth.find(t => t.tooth === toothNumber);
@@ -593,6 +594,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
       };
 
       const evaluation = await evaluations.insertEvaluation(insertData);
+      newEvalIds.push(evaluation.id);
 
       // Call appropriate edge function based on treatment type
       switch (treatmentType) {
@@ -646,6 +648,18 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
 
     // Remove created teeth from session_detected_teeth
     await evaluations.deletePendingTeeth(sessionId, payload.selectedTeeth);
+
+    // Re-sync protocols across ALL evaluations in this session (P1-34)
+    // Combines existing + newly added IDs so late additions get same protocol.
+    try {
+      const existingEvalIds = (evals || []).map(e => e.id);
+      const allEvalIds = [...new Set([...existingEvalIds, ...newEvalIds])];
+      if (allEvalIds.length >= 2) {
+        await wizard.syncGroupProtocols(sessionId, allEvalIds);
+      }
+    } catch (syncError) {
+      logger.warn('Post-add protocol sync failed (non-critical):', syncError);
+    }
 
     // Build success message
     const treatmentMessages = Object.entries(treatmentCounts)

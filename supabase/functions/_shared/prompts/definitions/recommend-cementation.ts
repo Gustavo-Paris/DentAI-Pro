@@ -84,6 +84,16 @@ Gere um protocolo COMPLETO e DETALHADO de cimentação para facetas cerâmicas, 
    - ❌ ERRADO: "Aplicar adesivo e fotopolimerizar por 10 segundos"
    - ✅ CERTO: "Aplicar adesivo em camada fina (NÃO fotopolimerizar)"
 
+10. **CONCENTRAÇÃO DE ÁCIDO FLUORÍDRICO (HF) — DECISÃO POR TIPO CERÂMICO**:
+   | Tipo Cerâmico | Concentração HF | Tempo | Produto Referência |
+   |---|---|---|---|
+   | Dissilicato de lítio (IPS e.max) | 5% | 20s | Condac Porcelana 5% (FGM) |
+   | Leucita (IPS Empress) | 5% | 60s | Condac Porcelana 5% (FGM) |
+   | Feldspática (VITA Mark II, Laminados) | 5-10% | 60-120s | Condac Porcelana 10% (FGM) |
+   | Zircônia (Vitallium, Lava, BruxZir) | NÃO USAR HF | — | Jateamento Al₂O₃ 50μm + primer MDP |
+   - REGRA: Se tipo cerâmico é zircônia → NÃO condicionar com HF. Usar jateamento com Al₂O₃ 50μm + primer universal com MDP (Monobond Plus ou Z-Prime Plus)
+   - REGRA: Dissilicato de lítio (e.max) = SEMPRE 5% por 20s. NUNCA 10% (sobrecondicionamento fragiliza a superfície)
+
 IMPORTANTE:
 - Seja específico com marcas e materiais brasileiros quando possível
 - Inclua tempos precisos para cada etapa

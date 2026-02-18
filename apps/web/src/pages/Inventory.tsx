@@ -33,7 +33,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { memo } from 'react';
 import { Plus, Search, Loader2, X, FileWarning, Check } from 'lucide-react';
-import { ListPage } from '@pageshell/composites/list';
+import { ListPage } from '@parisgroup-ai/pageshell/composites';
 import { useInventoryManagement } from '@/hooks/domain/useInventoryManagement';
 import type { FlatInventoryItem } from '@/hooks/domain/useInventoryManagement';
 import { ResinBadge } from '@/components/ResinBadge';

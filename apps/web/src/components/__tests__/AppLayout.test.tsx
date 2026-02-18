@@ -1,151 +1,129 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import AppLayout from '../AppLayout';
 
-// Mock react-i18next
+// Capture props passed to ReactRouterAppShell
+let capturedProps: Record<string, unknown> = {};
+
+vi.mock('@parisgroup-ai/pageshell/layouts/adapters/react-router', () => ({
+  ReactRouterAppShell: (props: any) => {
+    capturedProps = props;
+    return (
+      <div data-testid="app-shell" data-theme={props.theme}>
+        {props.footer}
+        {props.headerRight}
+        {props.themeToggle}
+        {props.children}
+      </div>
+    );
+  },
+}));
+
+vi.mock('react-router-dom', () => ({
+  Outlet: () => <div data-testid="outlet">Page Content</div>,
+}));
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
     i18n: { language: 'pt-BR', changeLanguage: vi.fn() },
   }),
-  Trans: ({ children }: any) => children,
 }));
 
-// Mock AuthContext
 const mockSignOut = vi.fn();
 vi.mock('@/contexts/AuthContext', () => ({
   useAuth: () => ({
-    user: { id: 'test-user', email: 'test@test.com' },
+    user: {
+      id: 'test-user',
+      email: 'test@test.com',
+      user_metadata: { full_name: 'Dr. Test', avatar_url: 'https://example.com/avatar.jpg' },
+    },
     session: { access_token: 'test-token' },
     loading: false,
     signOut: mockSignOut,
   }),
 }));
 
-// Mock react-router-dom
-vi.mock('react-router-dom', () => ({
-  Outlet: () => <div data-testid="outlet">Page Content</div>,
-  useLocation: () => ({ pathname: '/dashboard' }),
-  NavLink: ({ children, to, className, ...props }: any) => {
-    const resolvedClass = typeof className === 'function' ? className({ isActive: to === '/dashboard' }) : className;
-    return (
-      <a href={to} className={resolvedClass} data-testid={`nav-${to}`} {...props}>
-        {children}
-      </a>
-    );
-  },
-}));
-
-// Mock branding
 vi.mock('@/lib/branding', () => ({
   BRAND_NAME: 'ToSmile.ai',
 }));
 
-// Mock CreditBadge
 vi.mock('@/components/CreditBadge', () => ({
   CreditBadge: (props: any) => <span data-testid="credit-badge">Credits</span>,
 }));
 
-// Mock ThemeToggle
 vi.mock('@/components/ThemeToggle', () => ({
   ThemeToggle: () => <button data-testid="theme-toggle">Theme</button>,
 }));
 
-// Mock HelpButton
 vi.mock('@/components/HelpButton', () => ({
   HelpButton: () => <button data-testid="help-button">Help</button>,
-}));
-
-// Mock UI components
-vi.mock('@/components/ui/button', () => ({
-  Button: ({ children, onClick, ...props }: any) => (
-    <button onClick={onClick} {...props}>{children}</button>
-  ),
-}));
-
-vi.mock('@/components/ui/tooltip', () => ({
-  Tooltip: ({ children }: any) => <>{children}</>,
-  TooltipContent: ({ children }: any) => <div>{children}</div>,
-  TooltipTrigger: ({ children }: any) => <>{children}</>,
-}));
-
-vi.mock('@/lib/utils', () => ({
-  cn: (...args: any[]) => args.filter(Boolean).join(' '),
 }));
 
 describe('AppLayout', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    capturedProps = {};
   });
 
-  it('should render the brand name', () => {
+  it('should render ReactRouterAppShell with odonto-ai theme', () => {
     render(<AppLayout />);
-    const brandElements = screen.getAllByText('ToSmile.ai');
-    expect(brandElements.length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByTestId('app-shell')).toHaveAttribute('data-theme', 'odonto-ai');
   });
 
-  it('should render the outlet for page content', () => {
+  it('should pass brand config with BRAND_NAME', () => {
+    render(<AppLayout />);
+    expect(capturedProps.brand).toEqual(
+      expect.objectContaining({ title: 'ToSmile.ai', href: '/dashboard' })
+    );
+  });
+
+  it('should pass 5 navigation items', () => {
+    render(<AppLayout />);
+    const sections = capturedProps.navigation as Array<{ items: unknown[] }>;
+    expect(sections).toHaveLength(1);
+    expect(sections[0].items).toHaveLength(5);
+  });
+
+  it('should pass navigation items with correct hrefs', () => {
+    render(<AppLayout />);
+    const items = (capturedProps.navigation as Array<{ items: Array<{ href: string }> }>)[0].items;
+    const hrefs = items.map((i) => i.href);
+    expect(hrefs).toEqual(['/dashboard', '/evaluations', '/patients', '/inventory', '/profile']);
+  });
+
+  it('should pass user profile from auth context', () => {
+    render(<AppLayout />);
+    expect(capturedProps.user).toEqual({
+      name: 'Dr. Test',
+      email: 'test@test.com',
+      image: 'https://example.com/avatar.jpg',
+    });
+  });
+
+  it('should pass signOut callback', () => {
+    render(<AppLayout />);
+    expect(capturedProps.onSignOut).toBe(mockSignOut);
+  });
+
+  it('should render Outlet as children', () => {
     render(<AppLayout />);
     expect(screen.getByTestId('outlet')).toBeInTheDocument();
   });
 
-  it('should render navigation links', () => {
-    render(<AppLayout />);
-    // Each nav item appears in both desktop sidebar and mobile bottom nav
-    expect(screen.getAllByText('components.layout.home').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText('components.layout.evaluations').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText('components.layout.patients').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText('components.layout.inventory').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText('components.layout.profile').length).toBeGreaterThanOrEqual(1);
-  });
-
-  it('should render navigation links in desktop sidebar and mobile bottom nav', () => {
-    render(<AppLayout />);
-    // Each nav item appears twice (desktop sidebar + mobile bottom nav)
-    const homeLinks = screen.getAllByText('components.layout.home');
-    expect(homeLinks.length).toBe(2);
-  });
-
-  it('should render credit badge', () => {
+  it('should render CreditBadge in footer and headerRight', () => {
     render(<AppLayout />);
     const badges = screen.getAllByTestId('credit-badge');
-    expect(badges.length).toBeGreaterThanOrEqual(1);
+    expect(badges.length).toBe(2);
   });
 
-  it('should render theme toggle', () => {
+  it('should render ThemeToggle', () => {
     render(<AppLayout />);
-    const toggles = screen.getAllByTestId('theme-toggle');
-    expect(toggles.length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByTestId('theme-toggle')).toBeInTheDocument();
   });
 
-  it('should render help button', () => {
+  it('should render HelpButton', () => {
     render(<AppLayout />);
     expect(screen.getByTestId('help-button')).toBeInTheDocument();
-  });
-
-  it('should render sign out buttons', () => {
-    render(<AppLayout />);
-    const signOutBtns = screen.getAllByLabelText('components.layout.signOut');
-    expect(signOutBtns.length).toBeGreaterThanOrEqual(1);
-  });
-
-  it('should call signOut when sign out button is clicked', () => {
-    render(<AppLayout />);
-    const signOutBtns = screen.getAllByLabelText('components.layout.signOut');
-    fireEvent.click(signOutBtns[0]);
-    expect(mockSignOut).toHaveBeenCalled();
-  });
-
-  it('should render the mobile search button', () => {
-    render(<AppLayout />);
-    expect(screen.getByLabelText('components.layout.searchLabel')).toBeInTheDocument();
-  });
-
-  it('should dispatch open-global-search event when search is clicked', () => {
-    const dispatchSpy = vi.spyOn(document, 'dispatchEvent');
-    render(<AppLayout />);
-    fireEvent.click(screen.getByLabelText('components.layout.searchLabel'));
-    expect(dispatchSpy).toHaveBeenCalledWith(expect.any(CustomEvent));
-    dispatchSpy.mockRestore();
   });
 });

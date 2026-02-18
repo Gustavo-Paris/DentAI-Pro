@@ -1,11 +1,35 @@
 /**
+ * Get the natural dimensions of an image from a base64 data URL.
+ */
+export function getImageDimensions(
+  base64: string,
+): Promise<{ width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const timeout = setTimeout(() => {
+      reject(new Error('Timeout getting image dimensions'));
+    }, 5000);
+
+    img.onload = () => {
+      clearTimeout(timeout);
+      resolve({ width: img.naturalWidth, height: img.naturalHeight });
+    };
+    img.onerror = () => {
+      clearTimeout(timeout);
+      reject(new Error('Failed to load image for dimension check'));
+    };
+    img.src = base64;
+  });
+}
+
+/**
  * Compress an image file to JPEG with configurable dimensions and quality.
  * Maintains aspect ratio and includes a safety timeout for mobile devices.
  */
 export async function compressImage(
   file: File | Blob,
   maxWidth: number = 1280,
-  quality: number = 0.7
+  quality: number = 0.88
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     const img = new Image();

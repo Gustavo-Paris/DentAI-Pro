@@ -95,7 +95,8 @@ const DetectedToothSchema = z
 export const PhotoAnalysisResultSchema = z
   .object({
     detected: z.boolean(),
-    confidence: z.number(),
+    // P2-55: Bounded confidence score to prevent nonsensical AI values
+    confidence: z.number().min(0).max(1),
     detected_teeth: z.array(DetectedToothSchema).default([]),
     primary_tooth: z.string().nullable().optional(),
     vita_shade: z.string().nullable().optional(),
@@ -112,9 +113,11 @@ export type PhotoAnalysisResultParsed = z.infer<typeof PhotoAnalysisResultSchema
 // 2. DSDAnalysis (generate-dsd)
 // ---------------------------------------------------------------------------
 
+const FDI_TOOTH_PATTERN = /^[1-4][1-8]$/;
+
 const DSDSuggestionSchema = z
   .object({
-    tooth: z.string(),
+    tooth: z.string().regex(FDI_TOOTH_PATTERN, "Tooth must be FDI notation (11-48)"),
     current_issue: z.string(),
     proposed_change: z.string(),
     treatment_indication: z.string().optional(),
@@ -128,8 +131,9 @@ export const DSDAnalysisSchema = z
     smile_line: z.string(),
     buccal_corridor: z.string(),
     occlusal_plane: z.string(),
-    golden_ratio_compliance: z.number(),
-    symmetry_score: z.number(),
+    // P2-55: Bounded numeric scores to prevent nonsensical AI values
+    golden_ratio_compliance: z.number().min(0).max(100),
+    symmetry_score: z.number().min(0).max(100),
     suggestions: z.array(DSDSuggestionSchema).default([]),
     observations: z.array(z.string()).default([]),
     confidence: z.string(),
@@ -157,9 +161,14 @@ const ENUM_MAPPINGS: Record<string, Record<string, string>> = {
   smile_line: { low: "baixa", medium: "média", high: "alta" },
   buccal_corridor: { adequate: "adequado", excessive: "excessivo", absent: "ausente" },
   confidence: { low: "baixa", medium: "média", high: "alta" },
-  facial_midline: { centered: "centrada" },
-  dental_midline: { aligned: "alinhada" },
-  occlusal_plane: { level: "nivelado" },
+  facial_midline: { centered: "centrada", deviated: "desviada" },
+  dental_midline: { aligned: "alinhada", deviated: "desviada" },
+  occlusal_plane: { level: "nivelado", tilted: "inclinado" },
+  lip_thickness: { thin: "fino", medium: "médio", thick: "volumoso" },
+  overbite_suspicion: { yes: "sim", no: "não", undetermined: "indeterminado" },
+  face_shape: { oval: "oval", square: "quadrado", triangular: "triangular", rectangular: "retangular", round: "redondo" },
+  perceived_temperament: { choleric: "colérico", sanguine: "sanguíneo", melancholic: "melancólico", phlegmatic: "fleumático" },
+  smile_arc: { consonant: "consonante", flat: "plano", reverse: "reverso" },
 };
 
 /**

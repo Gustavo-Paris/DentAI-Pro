@@ -21,6 +21,7 @@ export interface WizardDraft {
   uploadedPhotoPath: string | null;
   additionalPhotos?: AdditionalPhotos;
   patientPreferences?: PatientPreferences;
+  vitaShadeManuallySet?: boolean;
   lastSavedAt: string;
 }
 

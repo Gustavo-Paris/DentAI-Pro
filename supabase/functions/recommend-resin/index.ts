@@ -2,7 +2,7 @@ import { getCorsHeaders, handleCorsPreFlight, ERROR_MESSAGES, createErrorRespons
 import { getSupabaseClient, authenticateRequest, isAuthError } from "../_shared/middleware.ts";
 import { validateEvaluationData, sanitizeFieldsForPrompt, type EvaluationData } from "../_shared/validation.ts";
 import { logger } from "../_shared/logger.ts";
-import { callClaude, ClaudeError, type OpenAIMessage } from "../_shared/claude.ts";
+import { callClaudeWithTools, ClaudeError, type OpenAIMessage, type OpenAITool } from "../_shared/claude.ts";
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 import { checkAndUseCredits, createInsufficientCreditsResponse, refundCredits } from "../_shared/credits.ts";
 import { getPrompt } from "../_shared/prompts/registry.ts";
@@ -213,38 +213,182 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    // Call Claude API
+    // Tool definition for structured output (matches RecommendResinResponseSchema)
+    const tools: OpenAITool[] = [
+      {
+        type: "function",
+        function: {
+          name: "generate_resin_protocol",
+          description: "Gera um protocolo completo de resina composta com estratificação, incluindo camadas, alternativas, acabamento e checklist",
+          parameters: {
+            type: "object",
+            properties: {
+              protocol: {
+                type: "object",
+                description: "Protocolo de estratificação completo",
+                properties: {
+                  layers: {
+                    type: "array",
+                    description: "Camadas de estratificação da resina",
+                    items: {
+                      type: "object",
+                      properties: {
+                        order: { type: "number" },
+                        name: { type: "string" },
+                        resin_brand: { type: "string" },
+                        shade: { type: "string" },
+                        thickness: { type: "string" },
+                        purpose: { type: "string" },
+                        technique: { type: "string" },
+                      },
+                      required: ["order", "name", "resin_brand", "shade", "thickness", "purpose", "technique"],
+                    },
+                  },
+                  alternative: {
+                    type: "object",
+                    description: "Alternativa simplificada de protocolo",
+                    properties: {
+                      resin: { type: "string" },
+                      shade: { type: "string" },
+                      technique: { type: "string" },
+                      tradeoff: { type: "string" },
+                    },
+                    required: ["resin", "shade", "technique", "tradeoff"],
+                  },
+                  finishing: {
+                    type: "object",
+                    description: "Protocolo de acabamento e polimento",
+                    properties: {
+                      contouring: {
+                        type: "array",
+                        items: {
+                          type: "object",
+                          properties: {
+                            order: { type: "number" },
+                            tool: { type: "string" },
+                            grit: { type: "string" },
+                            speed: { type: "string" },
+                            time: { type: "string" },
+                            tip: { type: "string" },
+                          },
+                          required: ["order", "tool", "speed", "time", "tip"],
+                        },
+                      },
+                      polishing: {
+                        type: "array",
+                        items: {
+                          type: "object",
+                          properties: {
+                            order: { type: "number" },
+                            tool: { type: "string" },
+                            grit: { type: "string" },
+                            speed: { type: "string" },
+                            time: { type: "string" },
+                            tip: { type: "string" },
+                          },
+                          required: ["order", "tool", "speed", "time", "tip"],
+                        },
+                      },
+                      final_glaze: { type: "string" },
+                      maintenance_advice: { type: "string" },
+                    },
+                    required: ["contouring", "polishing", "maintenance_advice"],
+                  },
+                  checklist: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "Checklist passo a passo para o dentista",
+                  },
+                  alerts: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "O que NÃO fazer durante o procedimento",
+                  },
+                  warnings: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "Pontos de atenção importantes",
+                  },
+                  justification: { type: "string", description: "Justificativa para a escolha do protocolo" },
+                  confidence: {
+                    type: "string",
+                    enum: ["alta", "média", "baixa"],
+                    description: "Nível de confiança do protocolo",
+                  },
+                },
+                required: ["layers", "alternative", "checklist", "confidence"],
+              },
+              recommended_resin_name: { type: "string", description: "Nome da resina recomendada" },
+              justification: { type: "string", description: "Justificativa geral da recomendação" },
+              is_from_inventory: { type: "boolean", description: "Se a resina é do inventário do usuário" },
+              ideal_resin_name: { type: "string", description: "Nome da resina ideal (se diferente da recomendada)" },
+              ideal_reason: { type: "string", description: "Razão pela qual a resina ideal é diferente" },
+              price_range: { type: "string", description: "Faixa de preço da resina recomendada" },
+              budget_compliance: { type: "boolean", description: "Se a resina atende ao orçamento" },
+              inventory_alternatives: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    name: { type: "string" },
+                    reason: { type: "string" },
+                  },
+                },
+                description: "Alternativas do inventário do usuário",
+              },
+              external_alternatives: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    name: { type: "string" },
+                    reason: { type: "string" },
+                  },
+                },
+                description: "Alternativas externas ao inventário",
+              },
+            },
+            required: ["protocol", "recommended_resin_name", "justification", "is_from_inventory"],
+          },
+        },
+      },
+    ];
+
+    // Call Claude API with tool calling
     const messages: OpenAIMessage[] = [
       { role: "user", content: prompt },
     ];
 
-    let content: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let recommendation: any;
     try {
-      const claudeResult = await withMetrics<{ text: string | null; finishReason: string }>(metrics, promptDef.id, PROMPT_VERSION, promptDef.model)(async () => {
-        const response = await callClaude(
+      const claudeResult = await withMetrics<{ text: string | null; functionCall: { name: string; args: Record<string, unknown> } | null; finishReason: string }>(metrics, promptDef.id, PROMPT_VERSION, promptDef.model)(async () => {
+        const response = await callClaudeWithTools(
           promptDef.model,
           messages,
+          tools,
           {
             temperature: 0.0,
-            maxTokens: 8192,
+            maxTokens: 4000,
+            forceFunctionName: "generate_resin_protocol",
           }
         );
         if (response.tokens) {
           logger.info('claude_tokens', { operation: 'recommend-resin', ...response.tokens });
         }
         return {
-          result: { text: response.text, finishReason: response.finishReason },
+          result: { text: response.text, functionCall: response.functionCall, finishReason: response.finishReason },
           tokensIn: response.tokens?.promptTokenCount ?? 0,
           tokensOut: response.tokens?.candidatesTokenCount ?? 0,
         };
       });
 
-      if (!claudeResult.text) {
-        logger.error("Empty response from Claude");
+      if (!claudeResult.functionCall) {
+        logger.error("No function call in Claude response");
         return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
       }
 
-      content = claudeResult.text;
+      recommendation = parseAIResponse(RecommendResinResponseSchema, claudeResult.functionCall.args, 'recommend-resin');
     } catch (error) {
       if (error instanceof ClaudeError) {
         if (error.statusCode === 429) {
@@ -255,36 +399,6 @@ Deno.serve(async (req) => {
         logger.error("AI error:", error);
       }
       return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
-    }
-
-    // Parse JSON from AI response
-    let recommendation;
-    try {
-      // Strip markdown code fences if present (```json ... ```)
-      const cleaned = content.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '');
-
-      // Try direct parse first
-      try {
-        recommendation = JSON.parse(cleaned);
-      } catch {
-        // Fallback: extract first JSON object from response
-        const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          recommendation = JSON.parse(jsonMatch[0]);
-        } else {
-          throw new Error("No JSON found in response");
-        }
-      }
-    } catch (parseError) {
-      logger.error("Failed to parse AI response. Raw content:", content.substring(0, 500));
-      return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
-    }
-
-    // Validate response structure with Zod (covers empty layers/checklist via .min(1))
-    try {
-      parseAIResponse(RecommendResinResponseSchema, recommendation, 'recommend-resin');
-    } catch {
-      return createErrorResponse("Protocolo inválido — tente novamente", 500, corsHeaders);
     }
 
     // Credits: only charge after AI response is validated

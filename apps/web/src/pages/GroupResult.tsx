@@ -12,7 +12,7 @@ import AlternativeBox from '@/components/protocol/AlternativeBox';
 import { CementationProtocolCard } from '@/components/protocol/CementationProtocolCard';
 import { VeneerPreparationCard } from '@/components/protocol/VeneerPreparationCard';
 import { FinishingPolishingCard } from '@/components/protocol/FinishingPolishingCard';
-import { DetailPage } from '@pageshell/composites';
+import { DetailPage } from '@parisgroup-ai/pageshell/composites';
 
 import { useTranslation } from 'react-i18next';
 import { useGroupResult } from '@/hooks/domain/useGroupResult';

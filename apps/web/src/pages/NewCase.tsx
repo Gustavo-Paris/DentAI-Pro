@@ -19,7 +19,7 @@ import {
   Eye,
 } from 'lucide-react';
 
-import { WizardPage } from '@pageshell/composites';
+import { WizardPage } from '@parisgroup-ai/pageshell/composites';
 import { trackEvent } from '@/lib/analytics';
 import { useWizardFlow } from '@/hooks/domain/useWizardFlow';
 import { PhotoUploadStep } from '@/components/wizard/PhotoUploadStep';

@@ -22,7 +22,7 @@ import { SubscriptionStatus } from '@/components/pricing/SubscriptionStatus';
 import { CreditUsageHistory } from '@/components/pricing/CreditUsageHistory';
 import { CreditPackSection } from '@/components/pricing/CreditPackSection';
 import { useSubscription, formatPrice } from '@/hooks/useSubscription';
-import { DetailPage } from '@pageshell/composites';
+import { DetailPage } from '@parisgroup-ai/pageshell/composites';
 import { useAuth } from '@/contexts/AuthContext';
 import { logger } from '@/lib/logger';
 

@@ -246,10 +246,13 @@ export function useDSDStep({
       let bestResult: (DSDResult & { lips_moved?: boolean }) | null = null;
 
       for (let lipAttempt = 0; lipAttempt <= MAX_LIP_RETRIES; lipAttempt++) {
+        // Generate reqId once per lip attempt so withRetry retries reuse the same ID (idempotency)
+        const reqId = crypto.randomUUID();
         const { data } = await withRetry(
           async () => {
             const resp = await invokeFunction<DSDResult & { layer_type?: string; lips_moved?: boolean; simulation_debug?: string }>('generate-dsd', {
               body: {
+                reqId,
                 imageBase64: effectiveImage,
                 toothShape: TOOTH_SHAPE,
                 regenerateSimulationOnly: true,
@@ -542,16 +545,17 @@ export function useDSDStep({
     try {
       const results = await Promise.allSettled(
         missingLevels.map(async (level) => {
+          const reqId = crypto.randomUUID();
           const { data } = await withRetry(
             async () => {
               const resp = await invokeFunction<DSDResult>('generate-dsd', {
                 body: {
+                  reqId,
                   imageBase64,
                   toothShape: TOOTH_SHAPE,
                   regenerateSimulationOnly: true,
                   existingAnalysis: analysis,
                   patientPreferences: { whiteningLevel: level },
-
                 },
               });
               if (resp.error || !resp.data?.simulation_url) {
@@ -641,6 +645,7 @@ export function useDSDStep({
     try {
       // Build request body with optional additional photos and patient preferences
       const requestBody: Record<string, unknown> = {
+        reqId: crypto.randomUUID(),
         imageBase64,
         toothShape: TOOTH_SHAPE,
         analysisOnly: true, // NEW: Request only analysis, simulation will be background

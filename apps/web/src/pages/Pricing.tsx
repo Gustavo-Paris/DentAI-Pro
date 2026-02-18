@@ -8,7 +8,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { syncSubscription } from '@/data/subscriptions';
 import { logger } from '@/lib/logger';
 import { trackEvent } from '@/lib/analytics';
-import { DetailPage } from '@pageshell/composites';
+import { DetailPage } from '@parisgroup-ai/pageshell/composites';
 import {
   Dialog,
   DialogContent,
