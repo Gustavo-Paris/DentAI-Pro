@@ -658,6 +658,7 @@ describe('useDSDIntegration', () => {
       const dsdResult = {
         analysis: { suggestions: [], observations: [] },
         simulation_url: null,
+        gingivoplastyApproved: true,
         layers: [{ includes_gengivoplasty: true }],
       };
 
@@ -690,6 +691,7 @@ describe('useDSDIntegration', () => {
       const dsdResult = {
         analysis: { suggestions: [], observations: [] },
         simulation_url: null,
+        gingivoplastyApproved: true,
         layers: [{ includes_gengivoplasty: true }],
       };
 
