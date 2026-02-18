@@ -1,8 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
-import { Clock, Trash2, RotateCcw } from 'lucide-react';
+import { Clock, Trash2, RotateCcw, Loader2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,7 +18,7 @@ interface DraftRestoreModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   lastSavedAt: string | null;
-  onRestore: () => void;
+  onRestore: () => void | Promise<void>;
   onDiscard: () => void;
 }
 
@@ -30,9 +30,19 @@ export function DraftRestoreModal({
   onDiscard,
 }: DraftRestoreModalProps) {
   const { t } = useTranslation();
+  const [isRestoring, setIsRestoring] = useState(false);
   const timeAgo = useMemo(() => lastSavedAt
     ? formatDistanceToNow(new Date(lastSavedAt), { addSuffix: true, locale: ptBR })
     : 'recentemente', [lastSavedAt]);
+
+  const handleRestore = useCallback(async () => {
+    setIsRestoring(true);
+    try {
+      await onRestore();
+    } finally {
+      setIsRestoring(false);
+    }
+  }, [onRestore]);
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -58,13 +68,19 @@ export function DraftRestoreModal({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-          <AlertDialogCancel onClick={onDiscard} className="gap-2">
+          <AlertDialogCancel onClick={onDiscard} disabled={isRestoring} className="gap-2">
             <Trash2 className="w-4 h-4" />
             {t('components.wizard.draftRestore.startOver')}
           </AlertDialogCancel>
-          <AlertDialogAction onClick={onRestore} className="gap-2">
-            <RotateCcw className="w-4 h-4" />
-            {t('components.wizard.draftRestore.continue')}
+          <AlertDialogAction onClick={handleRestore} disabled={isRestoring} className="gap-2">
+            {isRestoring ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <RotateCcw className="w-4 h-4" />
+            )}
+            {isRestoring
+              ? t('components.wizard.draftRestore.restoring', 'Restaurando...')
+              : t('components.wizard.draftRestore.continue')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
