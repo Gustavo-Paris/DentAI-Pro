@@ -2,10 +2,10 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { ThemeProvider } from '../ThemeProvider';
 
-// Mock next-themes
-vi.mock('next-themes', () => ({
-  ThemeProvider: ({ children, ...props }: React.PropsWithChildren<Record<string, unknown>>) => (
-    <div data-testid="theme-provider" data-attribute={props.attribute} data-default-theme={props.defaultTheme}>
+// Mock @parisgroup-ai/pageshell/theme
+vi.mock('@parisgroup-ai/pageshell/theme', () => ({
+  PageShellProvider: ({ children, theme }: React.PropsWithChildren<{ theme: string }>) => (
+    <div data-testid="pageshell-provider" data-theme={theme}>
       {children}
     </div>
   ),
@@ -21,14 +21,13 @@ describe('ThemeProvider', () => {
     expect(screen.getByText('App content')).toBeInTheDocument();
   });
 
-  it('should pass correct props to NextThemesProvider', () => {
+  it('should pass odonto-ai theme to PageShellProvider', () => {
     render(
       <ThemeProvider>
         <div>content</div>
       </ThemeProvider>
     );
-    const provider = screen.getByTestId('theme-provider');
-    expect(provider.dataset.attribute).toBe('class');
-    expect(provider.dataset.defaultTheme).toBe('system');
+    const provider = screen.getByTestId('pageshell-provider');
+    expect(provider.dataset.theme).toBe('odonto-ai');
   });
 });
