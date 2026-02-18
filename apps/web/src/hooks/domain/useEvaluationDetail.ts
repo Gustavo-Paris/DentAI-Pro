@@ -668,10 +668,14 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
       handleAddTeethSuccess();
     } catch (error) {
       logger.error('Error in handleSubmitTeeth:', error);
-      // Mark any created evaluations as error status
+      // Only mark evaluations still in 'analyzing' status as error
+      // Evaluations already set to 'draft' completed successfully and should not be rolled back
       for (const evalId of newEvalIds) {
         try {
-          await evaluations.updateStatus(evalId, 'error');
+          const evalData = await evaluations.getById(evalId);
+          if (evalData?.status === 'analyzing') {
+            await evaluations.updateStatus(evalId, 'error');
+          }
         } catch (statusError) {
           logger.error(`Failed to mark evaluation ${evalId} as error:`, statusError);
         }
