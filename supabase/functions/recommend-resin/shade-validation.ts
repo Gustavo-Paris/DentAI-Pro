@@ -88,15 +88,59 @@ export async function validateAndFixProtocolLayers({
 
       const isCristasLayer = layerType.includes('crista') || layerType.includes('proxima');
 
-      // Enforce: cristas should use Harmonize XLE or Empress BL-L — flag if not
+      // Enforce: cristas MUST use Harmonize XLE, Empress BL-L/BL-XL, or Z350 WE — auto-fix if not
       if (isCristasLayer && productLine) {
         const plLower = productLine.toLowerCase();
         const isAllowedForCristas = plLower.includes('harmonize') || plLower.includes('empress') || (plLower.includes('z350') && layer.shade === 'WE');
         if (!isAllowedForCristas) {
+          const originalBrand = layer.resin_brand;
+          const originalShade = layer.shade;
+          // Try to find Harmonize or Empress in catalog
+          const harmonizeRows = catalogRows.filter(r => r.product_line.toLowerCase().includes('harmonize'));
+          const empressRows = catalogRows.filter(r => r.product_line.toLowerCase().includes('empress'));
+          if (harmonizeRows.length > 0) {
+            const xle = harmonizeRows.find(r => r.shade === 'XLE') || harmonizeRows.find(r => r.type?.toLowerCase().includes('esmalte'));
+            if (xle) {
+              layer.resin_brand = `Kerr - Harmonize`;
+              layer.shade = xle.shade;
+              shadeReplacements[originalShade] = xle.shade;
+            }
+          } else if (empressRows.length > 0) {
+            const blL = empressRows.find(r => /BL-?L/i.test(r.shade)) || empressRows.find(r => r.type?.toLowerCase().includes('esmalte'));
+            if (blL) {
+              layer.resin_brand = `Ivoclar - IPS Empress Direct`;
+              layer.shade = blL.shade;
+              shadeReplacements[originalShade] = blL.shade;
+            }
+          }
           validationAlerts.push(
-            `Cristas Proximais: ${productLine} (${layer.shade}) não é ideal. Recomendado: XLE(Harmonize) ou BL-L(Empress Direct).`
+            `Cristas Proximais: ${originalBrand} (${originalShade}) substituído por ${layer.resin_brand} (${layer.shade}). Cristas requerem XLE(Harmonize) ou BL-L(Empress Direct).`
           );
-          logger.warn(`Cristas enforcement: ${productLine} ${layer.shade} flagged — should use Harmonize/Empress`);
+          logger.warn(`Cristas auto-fix: ${originalBrand} ${originalShade} → ${layer.resin_brand} ${layer.shade}`);
+        }
+      }
+
+      // Enforce: dentina/corpo layers must NOT use enamel shades
+      const isDentinaCorpoLayer = layerType.includes('dentina') || layerType.includes('corpo') || layerType.includes('body');
+      if (isDentinaCorpoLayer && layer.shade) {
+        const enamelShadesList = ['WE', 'A1E', 'A2E', 'A3E', 'B1E', 'B2E', 'CT', 'GT', 'BT', 'YT', 'MW', 'CE', 'JE', 'TN', 'INC'];
+        const isEnamelShadeForBody = enamelShadesList.some(es => layer.shade.toUpperCase() === es.toUpperCase());
+        if (isEnamelShadeForBody) {
+          const originalShade = layer.shade;
+          // Prefer WB, then DA1, then A1 as body shade
+          const bodyRows = lineRows.filter(r => r.type?.toLowerCase().includes('body') || r.type?.toLowerCase().includes('dentina') || r.type?.toLowerCase().includes('universal'));
+          const wbRow = bodyRows.find(r => r.shade === 'WB');
+          const da1Row = bodyRows.find(r => r.shade === 'DA1');
+          const a1Row = bodyRows.find(r => r.shade.startsWith('A1'));
+          const replacement = wbRow || da1Row || a1Row || bodyRows[0];
+          if (replacement) {
+            layer.shade = replacement.shade;
+            shadeReplacements[originalShade] = replacement.shade;
+            validationAlerts.push(
+              `Dentina/Corpo: shade ${originalShade} é shade de ESMALTE, inválido para camada de corpo. Substituído por ${replacement.shade}.`
+            );
+            logger.warn(`Dentina/corpo enforcement: ${originalShade} → ${replacement.shade}`);
+          }
         }
       }
 
@@ -106,19 +150,29 @@ export async function validateAndFixProtocolLayers({
         // Find best Z350 alternative based on layer type
         const z350Rows = getRowsForLine(productLine);
         const z350NonBL = z350Rows.filter(r => !(/^BL/i.test(r.shade)));
-        let replacement: { shade: string } | undefined;
-        if (isEnamelLayer) {
-          replacement = z350NonBL.find(r => r.shade === 'A1E') || z350NonBL.find(r => r.type?.toLowerCase().includes('esmalte'));
-        } else {
-          replacement = z350NonBL.find(r => r.shade === 'A1') || z350NonBL[0];
-        }
-        if (replacement) {
-          layer.shade = replacement.shade;
-          shadeReplacements[originalShade] = replacement.shade;
+        if (z350NonBL.length === 0) {
+          // Catalog missing or empty — force safe default
+          layer.shade = isEnamelLayer ? 'A1E' : 'A1';
+          shadeReplacements[originalShade] = layer.shade;
           validationAlerts.push(
-            `Cor ${originalShade} NÃO EXISTE na linha Filtek Z350 XT. Substituída por ${replacement.shade}.`
+            `Cor ${originalShade} NÃO EXISTE na linha Filtek Z350 XT. Substituída por ${layer.shade} (catálogo indisponível).`
           );
-          logger.warn(`Z350 BL enforcement: ${originalShade} → ${replacement.shade}`);
+          logger.warn(`Z350 BL enforcement fallback: ${originalShade} → ${layer.shade} (no catalog rows)`);
+        } else {
+          let replacement: { shade: string } | undefined;
+          if (isEnamelLayer) {
+            replacement = z350NonBL.find(r => r.shade === 'A1E') || z350NonBL.find(r => r.type?.toLowerCase().includes('esmalte'));
+          } else {
+            replacement = z350NonBL.find(r => r.shade === 'A1') || z350NonBL[0];
+          }
+          if (replacement) {
+            layer.shade = replacement.shade;
+            shadeReplacements[originalShade] = replacement.shade;
+            validationAlerts.push(
+              `Cor ${originalShade} NÃO EXISTE na linha Filtek Z350 XT. Substituída por ${replacement.shade}.`
+            );
+            logger.warn(`Z350 BL enforcement: ${originalShade} → ${replacement.shade}`);
+          }
         }
       }
 
@@ -151,6 +205,29 @@ export async function validateAndFixProtocolLayers({
               `Camada de esmalte otimizada: ${originalShade} → ${bestEnamel.shade} para máxima translucidez incisal.`
             );
             logger.warn(`Enamel optimization: ${originalShade} → ${bestEnamel.shade} for ${productLine}`);
+          }
+        }
+      }
+
+      // Enforce: esmalte vestibular final must NOT use translucent shades
+      if (isEnamelLayer && layer.shade) {
+        const translucentShades = ['CT', 'GT', 'BT', 'YT', 'WT'];
+        const isTranslucent = translucentShades.some(ts => layer.shade.toUpperCase() === ts.toUpperCase());
+        const isVestibularFinal = layerType.includes('vestibular') || layerType.includes('final');
+        if (isTranslucent && isVestibularFinal) {
+          const originalShade = layer.shade;
+          // Prefer WE, then MW, then A1E
+          const weRow = lineRows.find(r => r.shade === 'WE');
+          const mwRow = lineRows.find(r => r.shade === 'MW');
+          const a1eRow = lineRows.find(r => r.shade === 'A1E');
+          const replacement = weRow || mwRow || a1eRow;
+          if (replacement) {
+            layer.shade = replacement.shade;
+            shadeReplacements[originalShade] = replacement.shade;
+            validationAlerts.push(
+              `Esmalte Vestibular Final: shade translúcido ${originalShade} inválido para esmalte final. Substituído por ${replacement.shade}.`
+            );
+            logger.warn(`Enamel final enforcement: ${originalShade} → ${replacement.shade}`);
           }
         }
       }
