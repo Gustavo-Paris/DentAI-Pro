@@ -1,7 +1,7 @@
 import { useEffect, memo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ListPage } from '@pageshell/composites/list';
+import { ListPage } from '@parisgroup-ai/pageshell/composites';
 import { useEvaluationSessions } from '@/hooks/domain/useEvaluationSessions';
 import type { EvaluationSession } from '@/hooks/domain/useEvaluationSessions';
 import { Badge } from '@/components/ui/badge';
