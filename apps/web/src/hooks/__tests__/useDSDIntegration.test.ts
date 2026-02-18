@@ -254,6 +254,7 @@ describe('useDSDIntegration', () => {
       );
 
       const dsdResult = makeDSDResult({
+        gingivoplastyApproved: true,
         layers: [
           {
             type: 'complete-treatment',
@@ -296,6 +297,7 @@ describe('useDSDIntegration', () => {
       );
 
       const dsdResult = makeDSDResult({
+        gingivoplastyApproved: true,
         analysis: {
           ...makeDSDResult().analysis,
           suggestions: [
@@ -323,6 +325,7 @@ describe('useDSDIntegration', () => {
       );
 
       const dsdResult = makeDSDResult({
+        gingivoplastyApproved: true,
         layers: [
           {
             type: 'complete-treatment',
