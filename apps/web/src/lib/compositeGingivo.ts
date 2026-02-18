@@ -74,23 +74,35 @@ function dilateMask(mask: Uint8Array, width: number, height: number, radius: num
 
 /**
  * Apply box blur to a float mask for smooth blending at boundaries.
+ * Uses separable 2-pass approach (horizontal then vertical) for O(n*r) instead of O(n*r²).
  */
 function blurMask(mask: Float32Array, width: number, height: number, radius: number): Float32Array {
-  const out = new Float32Array(mask.length);
-  const kernelSize = (2 * radius + 1) * (2 * radius + 1);
+  // Pass 1: Horizontal blur
+  const temp = new Float32Array(mask.length);
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       let sum = 0;
       let count = 0;
-      for (let dy = -radius; dy <= radius; dy++) {
-        for (let dx = -radius; dx <= radius; dx++) {
-          const ny = y + dy;
-          const nx = x + dx;
-          if (ny >= 0 && ny < height && nx >= 0 && nx < width) {
-            sum += mask[ny * width + nx];
-            count++;
-          }
-        }
+      const x0 = Math.max(0, x - radius);
+      const x1 = Math.min(width - 1, x + radius);
+      for (let nx = x0; nx <= x1; nx++) {
+        sum += mask[y * width + nx];
+        count++;
+      }
+      temp[y * width + x] = sum / count;
+    }
+  }
+  // Pass 2: Vertical blur on horizontal result
+  const out = new Float32Array(mask.length);
+  for (let y = 0; y < height; y++) {
+    const y0 = Math.max(0, y - radius);
+    const y1 = Math.min(height - 1, y + radius);
+    for (let x = 0; x < width; x++) {
+      let sum = 0;
+      let count = 0;
+      for (let ny = y0; ny <= y1; ny++) {
+        sum += temp[ny * width + x];
+        count++;
       }
       out[y * width + x] = sum / count;
     }
