@@ -108,7 +108,7 @@ Deno.serve(async (req: Request) => {
   } catch (error) {
     logger.error("Webhook error:", error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
+      JSON.stringify({ error: "Erro ao processar webhook" }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
