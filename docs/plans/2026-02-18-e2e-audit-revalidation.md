@@ -297,21 +297,21 @@ After implementing 111 fixes across 5 implementation agents (Phase 3), we re-ran
 
 ## Remaining Work (Prioritized)
 
-### P0-P1 — Should address soon
-1. `create-portal-session` missing tosmile.ai domains (NEW, P1 — billing flow broken)
-2. `proportions-analysis.ts` leaks Claude API errors to client (NEW, P1)
-3. `updateEvaluationStatus` silently swallows errors (NEW, P1)
-4. `handleSubmitTeeth` over-broad error cleanup marks successful teeth as error (NEW, P1)
-5. `handleSupabaseError` raw `error.message` reaches toast (P2, security)
+### P0-P1 — ~~Should address soon~~ ALL RESOLVED (Cycle 2)
+1. ~~`create-portal-session` missing tosmile.ai domains~~ — FIXED: added tosmile.ai, www.tosmile.ai, tosmile-ai.vercel.app
+2. ~~`proportions-analysis.ts` leaks Claude API errors to client~~ — FIXED: generic error message only
+3. ~~`updateEvaluationStatus` silently swallows errors~~ — FIXED: now throws on error
+4. ~~`handleSubmitTeeth` over-broad error cleanup~~ — FIXED: only marks 'analyzing' status evals as error
+5. ~~`handleSupabaseError` raw `error.message` reaches toast~~ — FIXED: filtered through containsSensitiveInfo()
 
-### P2 — Address in next sprint
-6. Referral code no format/length validation from URL
-7. `supabase/config.toml` site_url still auria-ai.vercel.app
-8. `stripe-webhook` raw exception message in response
-9. `data-export` partial_errors leaks DB schema
-10. Pagination off-by-one in usePatientProfile
-11. DSDStep inline arrows defeating memo
-12. Google Fonts render-blocking link
+### P2 — ~~Address in next sprint~~ ALL RESOLVED (Cycle 2)
+6. ~~Referral code no format/length validation from URL~~ — FIXED: regex validation before localStorage
+7. ~~`supabase/config.toml` site_url still auria-ai.vercel.app~~ — FIXED: updated to tosmile.ai
+8. ~~`stripe-webhook` raw exception message in response~~ — FIXED: generic error response
+9. ~~`data-export` partial_errors leaks DB schema~~ — FIXED: category names only, details server-side
+10. ~~Pagination off-by-one in usePatientProfile~~ — FIXED: >= changed to >
+11. ~~DSDStep inline arrows defeating memo~~ — FIXED: useCallback wrappers
+12. ~~Google Fonts render-blocking link~~ — FIXED: preload + async swap
 
 ### P3 / Deferred
 - Test coverage for complex components (6 untested components/hooks)
@@ -329,4 +329,4 @@ After implementing 111 fixes across 5 implementation agents (Phase 3), we re-ran
 - [[2026-02-18-e2e-audit-plan|Audit Implementation Plan]]
 
 ---
-*Generated: 2026-02-18 | Audit cycle: Phase 1 → Phase 2 → Phase 3 (111 fixes) → Phase 4 (this report)*
+*Generated: 2026-02-18 | Audit cycle: Phase 1 → Phase 2 → Phase 3 (111 fixes) → Phase 4 → Cycle 2 (12 fixes)*
