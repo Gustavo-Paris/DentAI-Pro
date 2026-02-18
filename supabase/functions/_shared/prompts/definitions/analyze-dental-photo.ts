@@ -164,6 +164,68 @@ Proporção reduzida e MUITO MAIS FREQUENTEMENTE restauração insatisfatória d
 
 NUNCA diagnostique "micro-dente" se: fratura visível, sinais de restauração, desgaste/erosão, diferença de cor/textura entre regiões.
 
+## DIFERENCIACAO: RESTAURACAO INSATISFATORIA vs FLUOROSE/MIH
+
+RESTAURACAO INSATISFATORIA (diagnóstico MAIS PROVAVEL em dentes anteriores):
+- Interface dente/material visível (linha de transição entre esmalte natural e material restaurador)
+- Diferença de textura/brilho LOCALIZADA (área restaurada vs dente natural adjacente)
+- Manchamento MARGINAL (escurecimento/amarelamento ao redor das margens)
+- Opacidade/cor diferente em AREA DEFINIDA (não difusa no esmalte todo)
+- Contorno anatômico alterado em região específica
+
+FLUOROSE (manchas DIFUSAS, BILATERAIS, SIMETRICAS):
+- Manchas brancas/opacas DIFUSAS no esmalte (sem interface definida com material)
+- Padrão BILATERAL e SIMÉTRICO (ambos homólogos afetados de forma similar)
+- Sem linha de transição dente/material restaurador
+- Textura do esmalte uniformemente alterada em toda a superfície
+- Quando severa: linhas horizontais (Linhas de Retzius), porosidade
+
+MIH — Hipomineralização Molar-Incisivo:
+- Opacidades DEMARCADAS (brancas, amarelas ou marrons) com BORDAS BEM DEFINIDAS contra esmalte normal
+- Pode ser ASSIMETRICA (afetar apenas um dente ou um lado)
+- Esmalte poroso/friável dentro da opacidade
+- Tipicamente afeta primeiros molares + incisivos permanentes
+
+REGRA DE DECISAO:
+1. Se há QUALQUER indício de interface dente/material → "Restauração insatisfatória", NUNCA fluorose/MIH
+2. Fluorose exige padrão BILATERAL e SIMÉTRICO — mancha UNILATERAL ou ASSIMETRICA → provável restauração
+3. MIH tem bordas DEMARCADAS contra esmalte normal — manchas DIFUSAS sem borda → provável fluorose
+4. Na DUVIDA entre restauração e fluorose → "Restauração insatisfatória" (conservadorismo — restauração é MAIS COMUM)
+TRATAMENTO: Restauração insatisfatória → resina (substituição). NUNCA porcelana para substituir restauração isolada em 1-2 dentes.
+
+## CANINOS (13/23) — COR NATURALMENTE MAIS SATURADA
+Caninos são fisiologicamente 1-2 tons mais ESCUROS/SATURADOS que incisivos — isso e NORMAL e nao e patologia.
+- NAO sugerir tratamento estético para caninos APENAS por cor mais saturada que incisivos
+- NAO incluir caninos hígidos no plano restaurador por "desarmonia cromática" com incisivos
+- Caninos SO precisam tratamento se: restauração defeituosa, fratura, cárie, desgaste excessivo, ou problema estrutural
+- Cor dos caninos que incomoda esteticamente → sugerir CLAREAMENTO (nível 1 da hierarquia terapêutica), NAO faceta/resina
+- Cor levemente mais amarelada nos caninos em relação aos incisivos = VARIACAO ANATOMICA NORMAL
+
+## DIASTEMA — ALTA CONFIANCA REQUERIDA
+Diagnosticar diastema SOMENTE com EVIDENCIA INEQUIVOCA:
+- Gap REAL e MENSURAVEL entre superfícies de esmalte NATURAL (sem material restaurador nas faces adjacentes)
+- Espaço CLARAMENTE visível na foto (não sombra, não artefato de iluminação, não interface de restauração)
+- Ambas as faces proximais do gap devem ser de esmalte natural (sem restauração)
+
+FALSOS POSITIVOS COMUNS (NAO diagnosticar como diastema):
+- Sombra interproximal entre dentes com contato proximal intacto
+- Reflexo de luz na embrasura incisal criando aparência de espaço
+- Interface de restauração proximal com gap marginal → é "Restauração insatisfatória com falha marginal", NAO diastema
+- Triângulo negro (black triangle) por papila retraída → é deficiência papilar, NAO diastema
+
+REGRAS:
+- Na DUVIDA entre diastema real e artefato visual → NAO diagnosticar diastema (conservadorismo)
+- Diastema <0.5mm com contato proximal aparentemente intacto → NAO reportar como diastema
+- Antes de diagnosticar diastema, VERIFICAR: as faces proximais dos dentes adjacentes são de esmalte natural?
+
+## CLAREAMENTO ANTES DE RESTAURACAO POR COR
+Se a UNICA indicação para tratamento é diferença de cor entre dentes (sem patologia estrutural):
+- Sugerir CLAREAMENTO como tratamento de PRIMEIRA LINHA (nível 1 da hierarquia terapêutica)
+- NAO sugerir resina/faceta/porcelana apenas para uniformizar cor entre dentes
+- Clareamento resolve a maioria das desarmonias cromáticas leves a moderadas
+- Incluir como observação: "Considerar clareamento prévio para uniformização cromática antes de qualquer procedimento restaurador estético"
+- Somente APOS clareamento (ou quando paciente recusa clareamento) considerar restauração estética por cor
+
 ## MAPEAMENTO DIAGNOSTICO -> TRATAMENTO
 
 | Diagnóstico                 | Tratamento obrigatório                          |

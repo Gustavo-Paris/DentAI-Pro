@@ -120,6 +120,43 @@ export async function validateAndFixProtocolLayers({
         }
       }
 
+      // Enforce: aumento incisal MUST use translucent shades (Trans/CT family)
+      const isAumentoIncisal = (layerType.includes('aumento') && layerType.includes('incisal')) ||
+                               layerType.includes('incisal build');
+      if (isAumentoIncisal && !layerType.includes('efeito') && layer.shade) {
+        const translucentShades = ['CT', 'GT', 'Trans', 'Trans20', 'Trans30'];
+        const isTranslucent = translucentShades.some(ts =>
+          layer.shade.toUpperCase().includes(ts.toUpperCase())
+        );
+        if (!isTranslucent) {
+          const originalShade = layer.shade;
+          const originalBrand = layer.resin_brand;
+          // Prefer CT from Z350 or Trans from FORMA in catalog
+          const z350CT = catalogRows.find(r => r.shade === 'CT' && matchesLine(r.product_line, 'Z350'));
+          const formaTrans = catalogRows.find(r => /^Trans$/i.test(r.shade) && matchesLine(r.product_line, 'FORMA'));
+          const empressTrans = catalogRows.find(r => /Trans20/i.test(r.shade) && matchesLine(r.product_line, 'Empress'));
+          const vittraTrans = catalogRows.find(r => /^Trans$/i.test(r.shade) && matchesLine(r.product_line, 'Vittra'));
+          const replacement = z350CT || formaTrans || empressTrans || vittraTrans;
+          if (replacement) {
+            layer.shade = replacement.shade;
+            if (z350CT && !/z350/i.test(originalBrand || '')) {
+              layer.resin_brand = '3M ESPE - Filtek Z350 XT';
+            } else if (formaTrans && !/forma/i.test(originalBrand || '')) {
+              layer.resin_brand = 'Ultradent - FORMA';
+            }
+            shadeReplacements[originalShade] = replacement.shade;
+          } else {
+            // Fallback: force CT if no catalog match
+            layer.shade = 'CT';
+            shadeReplacements[originalShade] = 'CT';
+          }
+          validationAlerts.push(
+            `Aumento Incisal: shade ${originalShade} inválido — requer resina translúcida (Trans/CT). Substituído por ${layer.shade}.`
+          );
+          logger.warn(`Aumento incisal enforcement: ${originalBrand} ${originalShade} → ${layer.resin_brand} ${layer.shade}`);
+        }
+      }
+
       // Enforce: dentina/corpo layers must NOT use enamel shades
       const isDentinaCorpoLayer = layerType.includes('dentina') || layerType.includes('corpo') || layerType.includes('body');
       if (isDentinaCorpoLayer && layer.shade) {
@@ -228,6 +265,30 @@ export async function validateAndFixProtocolLayers({
               `Esmalte Vestibular Final: shade translúcido ${originalShade} inválido para esmalte final. Substituído por ${replacement.shade}.`
             );
             logger.warn(`Enamel final enforcement: ${originalShade} → ${replacement.shade}`);
+          }
+        }
+
+        // Prefer Estelite Omega or Palfique LX5 over Z350 for esmalte vestibular final
+        if (isVestibularFinal && productLine && /z350/i.test(productLine)) {
+          const palfiqueWE = catalogRows.find(r =>
+            matchesLine(r.product_line, 'Palfique') && r.shade === 'WE'
+          );
+          const esteliteWE = catalogRows.find(r =>
+            matchesLine(r.product_line, 'Estelite Omega') && (r.shade === 'WE' || r.shade === 'MW')
+          );
+          const preferred = palfiqueWE || esteliteWE;
+          if (preferred) {
+            const originalBrand = layer.resin_brand;
+            const originalShade = layer.shade;
+            layer.resin_brand = palfiqueWE
+              ? 'Tokuyama - Palfique LX5'
+              : 'Tokuyama - Estelite Omega';
+            layer.shade = preferred.shade;
+            shadeReplacements[originalShade] = preferred.shade;
+            validationAlerts.push(
+              `Esmalte Vestibular Final: ${originalBrand} (${originalShade}) → ${layer.resin_brand} (${preferred.shade}) — polimento superior para camada de esmalte anterior.`
+            );
+            logger.warn(`Enamel final preference: ${originalBrand} ${originalShade} → ${layer.resin_brand} ${preferred.shade}`);
           }
         }
       }
