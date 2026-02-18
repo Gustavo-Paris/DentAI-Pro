@@ -21,7 +21,7 @@ Deno.serve(async (req: Request) => {
   let reqId: string;
   try {
     const clonedBody = await req.clone().json();
-    reqId = (typeof clonedBody.reqId === 'string' && clonedBody.reqId.length > 0)
+    reqId = (typeof clonedBody.reqId === 'string' && clonedBody.reqId.length > 0 && clonedBody.reqId.length <= 64)
       ? clonedBody.reqId
       : generateRequestId();
   } catch {

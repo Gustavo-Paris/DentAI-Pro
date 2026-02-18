@@ -798,7 +798,7 @@ export async function callGeminiImageEdit(
   };
 
   const MAX_RETRIES = 2;
-  const RETRY_DELAYS = [2000, 5000];
+  const BASE_RETRY_DELAYS = [2000, 5000];
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     const controller = new AbortController();
@@ -825,8 +825,9 @@ export async function callGeminiImageEdit(
 
         // Retry on 503/429 if attempts remain
         if ((response.status === 503 || response.status === 429) && attempt < MAX_RETRIES) {
-          logger.warn(`Gemini Image API ${response.status}, retrying in ${RETRY_DELAYS[attempt]}ms...`);
-          await new Promise(r => setTimeout(r, RETRY_DELAYS[attempt]));
+          const retryDelay = BASE_RETRY_DELAYS[attempt] + Math.floor(Math.random() * 1000);
+          logger.warn(`Gemini Image API ${response.status}, retrying in ${retryDelay}ms...`);
+          await new Promise(r => setTimeout(r, retryDelay));
           continue;
         }
 
@@ -874,8 +875,9 @@ export async function callGeminiImageEdit(
 
       if ((error as Error).name === "AbortError") {
         if (attempt < MAX_RETRIES) {
-          logger.warn(`Gemini Image timeout, retrying in ${RETRY_DELAYS[attempt]}ms...`);
-          await new Promise(r => setTimeout(r, RETRY_DELAYS[attempt]));
+          const retryDelay = BASE_RETRY_DELAYS[attempt] + Math.floor(Math.random() * 1000);
+          logger.warn(`Gemini Image timeout, retrying in ${retryDelay}ms...`);
+          await new Promise(r => setTimeout(r, retryDelay));
           continue;
         }
         throw new GeminiError("Timeout na geração de imagem", 408, true);
