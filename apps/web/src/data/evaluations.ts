@@ -292,16 +292,27 @@ export async function getOrCreateShareLink(sessionId: string, userId: string) {
 
   if (existing?.token) return existing.token;
 
-  // Create new link
-  const created = await withQuery(() =>
-    supabase
-      .from('shared_links')
-      .insert({ user_id: userId, session_id: sessionId })
-      .select('token')
-      .single(),
-  );
-
-  return created.token as string;
+  // Create new link with single retry for transient errors
+  try {
+    const created = await withQuery(() =>
+      supabase
+        .from('shared_links')
+        .insert({ user_id: userId, session_id: sessionId })
+        .select('token')
+        .single(),
+    );
+    return created.token as string;
+  } catch {
+    await new Promise(r => setTimeout(r, 2000));
+    const created = await withQuery(() =>
+      supabase
+        .from('shared_links')
+        .insert({ user_id: userId, session_id: sessionId })
+        .select('token')
+        .single(),
+    );
+    return created.token as string;
+  }
 }
 
 // ---------------------------------------------------------------------------
