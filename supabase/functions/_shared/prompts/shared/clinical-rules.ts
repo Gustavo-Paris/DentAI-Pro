@@ -86,7 +86,7 @@ REGRA SOBRE PRE-MOLARES (14/15/24/25):
 export const GINGIVAL_CRITERIA = `=== AVALIACAO GENGIVAL ===
 
 CLASSIFICACAO DA LINHA DO SORRISO (DEFINICOES CLINICAS):
-- "alta" (sorriso gengival): Gengiva rosa visivel ACIMA dos dentes, entre labio e coroas. O labio NAO toca as margens gengivais — ha faixa rosa (>=2mm) entre onde o labio termina e onde os dentes comecam. TESTE: se entre a borda do labio e o topo dos dentes existe rosa → "alta".
+- "alta" (sorriso gengival): Gengiva rosa visivel ACIMA dos dentes, entre labio e coroas. O labio NAO toca as margens gengivais — ha faixa rosa (>=3mm) entre onde o labio termina e onde os dentes comecam. TESTE: se entre a borda do labio e o topo dos dentes existe rosa → "alta".
 - "media": Labio TOCA ou tangencia a margem gengival — sem espaco rosa entre labio e dentes. Papilas interdentais visiveis ENTRE os dentes (triangulos rosa entre coroas) sao normais para "media".
 - "baixa": Labio cobre completamente a margem gengival e parte das coroas. Gengiva NAO visivel.
 DISTINCAO CRITICA: "alta" = faixa rosa HORIZONTAL acima dos dentes (entre labio e coroas). "media" = papilas VERTICAIS entre os dentes mas labio encosta na margem. Papilas entre dentes NAO indicam "alta" — apenas gengiva ACIMA dos dentes indica "alta".
