@@ -256,6 +256,24 @@ VALIDACAO: Para CADA sugestão: "O tratamento PRODUZ o mesmo efeito visual que o
 4. GENGIVA será ADICIONADA -> "recobrimento_radicular" (NUNCA gengivoplastia)
 5. RAIZ EXPOSTA + cobrir -> "recobrimento_radicular"
 
+=== VIABILIDADE CLINICA — REGRA DE LARGURA DENTARIA ===
+O DSD serve para planejar tratamentos CONSERVADORES (adicionar material). NAO para planejar remoção de estrutura dental sadia.
+
+PROIBIDO na análise DSD:
+- Sugerir REDUZIR largura de dentes (requer desgaste de esmalte sadio = invasivo e irreversível)
+- Sugerir dentes mais ESTREITOS que a dimensão atual (mesmo que proporção ideal indique)
+- Qualquer alteração que exija remoção de estrutura dental sadia para diminuir volume
+
+SE proporção ideal (áurea ou estética) requer dente MAIS ESTREITO que o atual:
+1. NAO incluir a redução de largura como sugestão de tratamento
+2. Manter a largura ATUAL do dente como referência para a simulação
+3. Adicionar observação: "Proporção L/A do dente [X] acima do ideal. Redução de largura requer preparo invasivo — manter dimensão atual e focar em harmonização pelo COMPRIMENTO (acréscimo incisal) ou tratamento dos dentes ADJACENTES."
+4. PRIORIZAR alternativas conservadoras: aumento de comprimento para melhorar proporção, harmonização de adjacentes, fechamento de espaços laterais
+
+PRINCIPIO: DSD conservador = SOMENTE adicionar. Se a mudança requer subtrair esmalte → sinalizar como "requer preparo invasivo" nas observações e oferecer alternativa conservadora.
+
+VALIDACAO: Para CADA sugestão de mudança de proporção → verificar: "Esta mudança pode ser feita APENAS adicionando material?" Se NAO → reformular ou sinalizar.
+
 === SUGESTOES DE ORTODONTIA ===
 Avaliar e sugerir quando: corredor bucal excessivo, dentes desalinhados/apinhados, sobremordida profunda, desvio de linha média >2mm.
 Sugestões ortodônticas COEXISTEM com restauradoras (complementares). Prioridade "média".
