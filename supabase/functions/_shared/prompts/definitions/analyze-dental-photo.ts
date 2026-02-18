@@ -9,7 +9,7 @@ export const analyzeDentalPhoto: PromptDefinition<Params> = {
   id: 'analyze-dental-photo',
   name: 'Análise de Foto Dental',
   description: 'Analisa foto dental identificando todos os dentes com problemas e oportunidades estéticas',
-  model: 'claude-sonnet-4-6',
+  model: 'claude-sonnet-4-5-20250929',
   temperature: 0.0,
   maxTokens: 3000,
   mode: 'vision-tools',
