@@ -95,8 +95,8 @@ const DetectedToothSchema = z
 export const PhotoAnalysisResultSchema = z
   .object({
     detected: z.boolean(),
-    // P2-55: Bounded confidence score to prevent nonsensical AI values
-    confidence: z.number().min(0).max(1),
+    // P2-55: Bounded confidence score (tool schema uses 0-100 scale)
+    confidence: z.number().min(0).max(100),
     detected_teeth: z.array(DetectedToothSchema).default([]),
     primary_tooth: z.string().nullable().optional(),
     vita_shade: z.string().nullable().optional(),
