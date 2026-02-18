@@ -391,8 +391,10 @@ async function makeClaudeRequest(
 
         logger.warn(`Server error (${response.status}). Retrying...`);
 
-        if (retryCount < 1) {
-          await sleep(2000);
+        if (retryCount < maxRetries) {
+          const backoffMs = Math.min(2000 * Math.pow(2, retryCount), 16000);
+          logger.warn(`Retrying in ${backoffMs}ms (attempt ${retryCount + 1}/${maxRetries})...`);
+          await sleep(backoffMs);
           retryCount++;
           continue;
         }
