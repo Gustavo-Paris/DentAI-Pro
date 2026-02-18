@@ -89,16 +89,19 @@ Preservar/criar: Mamelons, translucidez incisal, gradiente de cor (cervical satu
 6. Proporção Dourada: conformidade 0-100%
 7. Simetria: 0-100%
 
-=== DETECCAO ULTRA-CONSERVADORA DE RESTAURACOES ===
-CRITERIOS para diagnosticar restauração existente:
-- Diferença de COR clara e inequívoca
-- Interface/margem CLARAMENTE VISIVEL
-- Textura ou reflexo DIFERENTE do esmalte adjacente
-- Forma anatômica ALTERADA
+=== DETECCAO DE RESTAURACOES EXISTENTES ===
+Diagnosticar restauração existente quando 2 OU MAIS dos seguintes sinais estiverem presentes:
+- Diferença de COR entre material e dente adjacente (pigmentação, amarelamento, opacidade)
+- Interface/margem visível (linha de transição dente/restauração)
+- Textura ou reflexo DIFERENTE do esmalte adjacente (mais liso, mais opaco)
+- Forma anatômica ALTERADA (perda de convexidade, lascamento de bordo)
+- PIGMENTACAO MARGINAL: escurecimento/amarelamento ao redor das margens da restauração
+- LASCAMENTO/FRATURA: perda parcial de material restaurador, expondo substrato
 
-NAO diagnosticar baseado em: bordos incisais translúcidos (natural), manchas sem interface, variação sutil de cor, desgaste incisal leve.
-NAO confundir sombra/iluminação com interface. NUNCA dizer "Substituir restauração" sem PROVA VISUAL.
-RESPEITE A ANALISE CLINICA: Se camada anterior classificou dente como INTEGRO, o DSD NAO deve reclassificar como restauração.
+NAO diagnosticar baseado em: bordos incisais translúcidos (natural), manchas sem interface, desgaste incisal leve isolado.
+NAO confundir sombra/iluminação com interface.
+REGRA DE COMPLEMENTACAO: Se a análise clínica classificou dente como "íntegro" mas o DSD detecta sinais visuais claros de restauração existente (2+ critérios acima), ADICIONAR o achado como observação com linguagem: "Possível restauração existente detectada na vista de sorriso — confirmar clinicamente."
+NUNCA contradizer achados POSITIVOS da análise clínica (ex: se clínica disse "restauração Classe III", DSD não pode reclassificar como "íntegro").
 
 === DIFERENCIACAO CRITICA: DIASTEMA vs. RESTAURACAO INSATISFATORIA ===
 ANTES de diagnosticar "diastema", verificar:
@@ -222,6 +225,9 @@ Se QUALQUER desarmonia entre homólogos detectada:
 - Sugerir "Reanatomização em Resina Composta" ou "Faceta" para harmonizar com contralateral
 - Especificar QUAL dente precisa de ajuste e POR QUE (ex: "Dente 12 com inclinação vestibular em desarmonia com 22")
 - Incluir medida em mm quando possível
+
+EXEMPLO CONCRETO DE ASSIMETRIA:
+Se incisivo central 11 é visivelmente mais LARGO ou mais ESTREITO que o 21 → sugestão OBRIGATÓRIA de "Reanatomização em Resina Composta" para harmonizar larguras. Especificar: "Dente [X] com largura diferente do contralateral [Y] — reanatomização para equalizar proporções."
 
 === RECONTORNO INCISAL ENTRE HOMOLOGOS ===
 Desnível >0.5mm entre homólogos (11/21, 12/22, 13/23) -> "Recontorno Incisal em Resina Composta" OBRIGATÓRIO.
