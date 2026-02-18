@@ -49,7 +49,7 @@ import {
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 
-import { DetailPage } from '@pageshell/composites';
+import { DetailPage } from '@parisgroup-ai/pageshell/composites';
 import { trackEvent } from '@/lib/analytics';
 import { useEvaluationDetail } from '@/hooks/domain/useEvaluationDetail';
 import { Progress } from '@/components/ui/progress';

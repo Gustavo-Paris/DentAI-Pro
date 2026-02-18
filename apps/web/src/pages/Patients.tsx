@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ListPage } from '@pageshell/composites/list';
+import { ListPage } from '@parisgroup-ai/pageshell/composites';
 import { usePatientList } from '@/hooks/domain/usePatientList';
 import type { PatientWithStats } from '@/hooks/domain/usePatientList';
 import { Card } from '@/components/ui/card';
