@@ -144,7 +144,7 @@ GLOSSARIO DE SIGLAS — USAR EXATAMENTE NA DESCRICAO DE CADA CAMADA (OBRIGATORIO
 - DA1/DA2 = Dentin A1/A2 (SOMENTE Vittra APS)
 
 ⚠️ SHADES QUE NAO EXISTEM POR LINHA (PROIBIDO GERAR):
-- Filtek Z350 XT: NAO possui BL1, BL2, BL3, WB. Usar WB somente de FORMA ou outra linha.
+- Filtek Z350 XT: NAO possui BL1, BL2, BL3. Possui WB (Body).
 - Estelite Omega: NAO possui shades BL. Para clareados usar Estelite Bianco W3/W4.
 - Harmonize: NAO possui WE, BL. Para clareados usar outra linha.
 
