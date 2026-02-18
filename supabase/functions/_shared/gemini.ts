@@ -809,9 +809,6 @@ export async function callGeminiImageEdit(
         responseModalities: ["TEXT", "IMAGE"],
         ...(options.seed !== undefined && { seed: options.seed }),
       },
-      thinkingConfig: {
-        thinkingLevel: "low",
-      },
     };
 
     const MAX_RETRIES = 2;
