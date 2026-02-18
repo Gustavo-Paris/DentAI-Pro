@@ -9,6 +9,7 @@ import { hasSevereDestruction } from "./analysis-helpers.ts";
 import { generateSimulation } from "./simulation.ts";
 import { analyzeProportions } from "./proportions-analysis.ts";
 import { applyPostProcessingSafetyNets } from "./post-processing.ts";
+import { PROMPT_VERSION } from "../_shared/metrics-adapter.ts";
 
 Deno.serve(async (req: Request) => {
   // Handle CORS preflight
@@ -113,7 +114,8 @@ Deno.serve(async (req: Request) => {
     const imageDataMatch = imageBase64.match(/^data:[^;]+;base64,(.+)$/);
     const rawBase64ForHash = imageDataMatch ? imageDataMatch[1] : imageBase64;
     const hashEncoder = new TextEncoder();
-    const imageHashBuffer = await crypto.subtle.digest('SHA-256', hashEncoder.encode(rawBase64ForHash.substring(0, 2000)));
+    const hashSource = `${PROMPT_VERSION}:${rawBase64ForHash.substring(0, 50000)}`;
+    const imageHashBuffer = await crypto.subtle.digest('SHA-256', hashEncoder.encode(hashSource));
     const imageHashArr = Array.from(new Uint8Array(imageHashBuffer));
     const dsdImageHash = imageHashArr.map(b => b.toString(16).padStart(2, '0')).join('');
 
@@ -132,6 +134,7 @@ Deno.serve(async (req: Request) => {
           .from("evaluations")
           .select("dsd_analysis")
           .eq("dsd_image_hash", dsdImageHash)
+          .eq("user_id", user.id)
           .not("dsd_analysis", "is", null)
           .limit(1)
           .single();
