@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import type {
   PhotoAnalysisResult,
   ReviewFormData,
@@ -99,6 +99,7 @@ export function useWizardSubmit({
   navigate,
 }: UseWizardSubmitParams) {
   const { t } = useTranslation();
+  const isSubmittingRef = useRef(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionComplete, setSubmissionComplete] = useState(false);
   const [completedSessionId, setCompletedSessionId] = useState<string | null>(null);
@@ -158,7 +159,8 @@ export function useWizardSubmit({
   // -------------------------------------------------------------------------
 
   const handleSubmit = useCallback(async () => {
-    if (!user || !validateForm()) return;
+    if (isSubmittingRef.current || !user || !validateForm()) return;
+    isSubmittingRef.current = true;
 
     setIsSubmitting(true);
     setSubmissionStep(0);
@@ -497,7 +499,6 @@ export function useWizardSubmit({
         clearDraft();
         setCompletedSessionId(sessionId);
         toast.dismiss();
-        setIsSubmitting(false);
         setSubmissionComplete(true);
 
         if (failedTeeth.length > 0) {
@@ -545,6 +546,7 @@ export function useWizardSubmit({
       toast.error(errorMessage, { duration: 5000 });
       if (shouldGoBack) setStep(5);
     } finally {
+      isSubmittingRef.current = false;
       setIsSubmitting(false);
     }
   }, [

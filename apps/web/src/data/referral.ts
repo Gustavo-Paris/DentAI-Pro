@@ -1,5 +1,7 @@
 import { supabase } from './client';
 import { withQuery } from './utils';
+import { logger } from '@/lib/logger';
+import { BONUS_CREDITS } from '@/lib/constants';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -87,8 +89,6 @@ export async function getReferralStats(userId: string): Promise<ReferralStats> {
 // Mutations
 // ---------------------------------------------------------------------------
 
-const BONUS_CREDITS = 5;
-
 export async function applyReferralCode(
   code: string,
   newUserId: string,
@@ -137,12 +137,9 @@ export async function applyReferralCode(
     amount: BONUS_CREDITS,
   });
 
-  // If RPC doesn't exist, fall back to direct update
   if (referrerError) {
-    await supabase
-      .from('subscriptions')
-      .update({ credits_bonus: BONUS_CREDITS })
-      .eq('user_id', referralCode.user_id);
+    logger.error('Failed to increment referrer bonus credits via RPC:', referrerError);
+    throw referrerError;
   }
 
   // Grant bonus credits to referred user
@@ -152,9 +149,7 @@ export async function applyReferralCode(
   });
 
   if (referredError) {
-    await supabase
-      .from('subscriptions')
-      .update({ credits_bonus: BONUS_CREDITS })
-      .eq('user_id', newUserId);
+    logger.error('Failed to increment referred user bonus credits via RPC:', referredError);
+    throw referredError;
   }
 }

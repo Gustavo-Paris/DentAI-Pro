@@ -1,3 +1,4 @@
+// TODO: These types should be moved to src/types/ to avoid importing from component files.
 import type {
   PhotoAnalysisResult,
   ReviewFormData,

@@ -13,7 +13,7 @@ export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
   const { t } = useTranslation();
 
   return (
-    <div className="min-h-screen bg-background flex" role="main">
+    <main className="min-h-screen bg-background flex">
       {/* Brand panel — desktop only */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden grain-overlay bg-background" aria-hidden="true">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_hsl(235_56%_58%/0.08),_transparent_60%)]" />
@@ -45,6 +45,6 @@ export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
           {children}
         </div>
       </div>
-    </div>
+    </main>
   );
 }

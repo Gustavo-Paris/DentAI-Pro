@@ -140,7 +140,7 @@ export default function Evaluations() {
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       {/* Success Banner for New Session */}
       {newSessionId && (
-        <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-primary/10 border border-primary/20 rounded-xl shadow-sm flex items-center gap-3 animate-[fade-in-up_0.6s_ease-out_both]">
+        <div role="status" aria-live="polite" className="mb-4 sm:mb-6 p-3 sm:p-4 bg-primary/10 border border-primary/20 rounded-xl shadow-sm flex items-center gap-3 animate-[fade-in-up_0.6s_ease-out_both]">
           <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" aria-hidden="true" />
           <div>
             <p className="font-medium text-sm sm:text-base">

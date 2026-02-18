@@ -27,7 +27,6 @@ interface DSDAnalysisViewProps {
   isSimulationGenerating: boolean;
   simulationError: boolean;
   layers: SimulationLayer[];
-  layerUrls: Record<string, string>;
   activeLayerIndex: number;
   layersGenerating: boolean;
   layerGenerationProgress: number;

@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +23,14 @@ export function TreatmentBanners({
   dsdSuggestions,
 }: TreatmentBannersProps) {
   const { t } = useTranslation();
+
+  const gingivaSuggestions = useMemo(() => {
+    if (!dsdSuggestions) return [];
+    return dsdSuggestions.filter(s => {
+      const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
+      return text.includes('gengiv') || text.includes('zênite') || text.includes('zenite');
+    });
+  }, [dsdSuggestions]);
 
   return (
     <>
@@ -56,15 +65,9 @@ export function TreatmentBanners({
                 <p className="text-sm text-pink-700 dark:text-pink-300">
                   {t('components.wizard.review.gingivoplastyDesc')}
                 </p>
-                {dsdSuggestions && dsdSuggestions.filter(s => {
-                  const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
-                  return text.includes('gengiv') || text.includes('zênite') || text.includes('zenite');
-                }).length > 0 && (
+                {gingivaSuggestions.length > 0 && (
                   <ul className="mt-2 space-y-1">
-                    {dsdSuggestions.filter(s => {
-                      const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
-                      return text.includes('gengiv') || text.includes('zênite') || text.includes('zenite');
-                    }).map((s, i) => (
+                    {gingivaSuggestions.map((s, i) => (
                       <li key={i} className="text-xs text-pink-600 dark:text-pink-400">
                         {t('components.wizard.review.tooth', { number: s.tooth })}: {s.proposed_change}
                       </li>

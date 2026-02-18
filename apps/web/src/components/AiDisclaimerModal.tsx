@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -34,6 +34,18 @@ interface AiDisclaimerModalProps {
 export function AiDisclaimerModal({ open, onAccept }: AiDisclaimerModalProps) {
   const { t } = useTranslation();
   const [checked, setChecked] = useState(false);
+  const checkboxRef = useRef<HTMLButtonElement>(null);
+
+  // Focus the first interactive element (checkbox) when dialog opens
+  useEffect(() => {
+    if (open) {
+      // Small delay to allow dialog animation to complete
+      const timer = setTimeout(() => {
+        checkboxRef.current?.focus();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
 
   return (
     <Dialog open={open}>
@@ -62,6 +74,7 @@ export function AiDisclaimerModal({ open, onAccept }: AiDisclaimerModalProps) {
 
         <div className="flex items-center gap-2 py-2">
           <Checkbox
+            ref={checkboxRef}
             id="consent-check"
             checked={checked}
             onCheckedChange={(v) => setChecked(v === true)}
@@ -82,9 +95,14 @@ export function AiDisclaimerModal({ open, onAccept }: AiDisclaimerModalProps) {
             </a>
             .
           </p>
-          <Button onClick={onAccept} disabled={!checked}>
+          <Button onClick={onAccept} disabled={!checked} aria-describedby="consent-disabled-reason">
             {t('consent.accept')}
           </Button>
+          {!checked && (
+            <span id="consent-disabled-reason" className="sr-only">
+              {t('consent.checkbox')}
+            </span>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

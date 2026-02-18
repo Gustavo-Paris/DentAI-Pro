@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, X, AlertCircle, Minus, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -106,7 +106,7 @@ export function ProportionsCard({ analysis }: ProportionsCardProps) {
   const { t } = useTranslation();
   const [showReferences, setShowReferences] = useState(false);
 
-  const proportionItems = [
+  const proportionItems = useMemo(() => [
     {
       label: t('components.dsd.proportions.facialMidline'),
       apiKey: 'facial_midline',
@@ -151,7 +151,7 @@ export function ProportionsCard({ analysis }: ProportionsCardProps) {
       value: analysis.overbite_suspicion,
       status: (analysis.overbite_suspicion === 'sim' ? 'warning' : 'good') as 'good' | 'warning' | 'bad',
     }] : []),
-  ];
+  ], [analysis, t]);
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-emerald-600 dark:text-emerald-400';

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
@@ -116,7 +116,7 @@ export function usePatientProfile(): PatientProfileState & PatientProfileActions
       // Group by session
       const sessionMap = new Map<string, { teeth: string[]; statuses: string[]; created_at: string }>();
       (data || []).forEach((evaluation) => {
-        const sessionId = evaluation.session_id || evaluation.tooth;
+        const sessionId = evaluation.session_id || `legacy-${evaluation.id}`;
         if (!sessionMap.has(sessionId)) {
           sessionMap.set(sessionId, { teeth: [], statuses: [], created_at: evaluation.created_at });
         }
@@ -133,7 +133,7 @@ export function usePatientProfile(): PatientProfileState & PatientProfileActions
         created_at: sessionData.created_at,
       }));
 
-      return { sessions, totalCount: count, hasMore: count > (sessionsPage + 1) * 20 };
+      return { sessions, totalCount: count, hasMore: count >= (sessionsPage + 1) * 20 };
     },
     enabled: !!user && !!patientId,
     staleTime: QUERY_STALE_TIMES.SHORT,
@@ -174,9 +174,11 @@ export function usePatientProfile(): PatientProfileState & PatientProfileActions
   const isLoading = (loadingPatient || loadingSessions) && sessionsPage === 0;
 
   // ---- Redirect if patient not found (after loading) ----
-  if (!isLoading && !loadingPatient && !patient) {
-    navigate('/patients');
-  }
+  useEffect(() => {
+    if (!isLoading && !loadingPatient && !patient) {
+      navigate('/patients');
+    }
+  }, [isLoading, loadingPatient, patient, navigate]);
 
   // ---- Actions ----
   const initializeForm = useCallback(() => {

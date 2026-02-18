@@ -71,24 +71,30 @@ describe('handleError', () => {
     expect(result).toBe('Este registro já existe. Verifique os dados.');
   });
 
-  it('should use original message if short enough', () => {
+  it('should use fallback for unrecognized messages (prevents info leaks)', () => {
     const result = handleError({ message: 'Custom error message' });
-    
-    expect(result).toBe('Custom error message');
+
+    // Unmatched messages now fall through to fallback to prevent leaking internal details
+    expect(result).not.toBe('Custom error message');
+    expect(typeof result).toBe('string');
+    expect(result.length).toBeGreaterThan(0);
   });
 
   it('should use fallback for very long messages', () => {
     const longMessage = 'A'.repeat(150);
     const result = handleError({ message: longMessage }, 'Fallback');
-    
+
     expect(result).toBe('Fallback');
   });
 
-  it('should handle Error objects', () => {
+  it('should handle Error objects with fallback', () => {
     const error = new Error('Standard error');
     const result = handleError(error);
-    
-    expect(result).toBe('Standard error');
+
+    // Unmatched Error messages fall through to fallback
+    expect(result).not.toBe('Standard error');
+    expect(typeof result).toBe('string');
+    expect(result.length).toBeGreaterThan(0);
   });
 });
 

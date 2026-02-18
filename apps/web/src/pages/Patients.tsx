@@ -16,7 +16,7 @@ import { ptBR } from 'date-fns/locale';
 function PatientCard({ patient, index }: { patient: PatientWithStats; index: number }) {
   const { t } = useTranslation();
   return (
-    <Link to={`/patient/${patient.id}`} aria-label={`Ver paciente ${patient.name}`}>
+    <Link to={`/patient/${patient.id}`} aria-label={t('patients.viewPatient', { name: patient.name, defaultValue: `Ver paciente ${patient.name}` })}>
       <Card
         className="p-3 sm:p-4 shadow-sm hover:shadow-md rounded-xl transition-all duration-300 cursor-pointer border-l-[3px] border-l-primary animate-[fade-in-up_0.6s_ease-out_both]"
         style={{ animationDelay: `${index * 0.05}s` }}

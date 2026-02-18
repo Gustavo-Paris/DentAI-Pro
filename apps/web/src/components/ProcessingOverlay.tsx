@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { ProgressRing } from './ProgressRing';
@@ -20,6 +20,15 @@ export const ProcessingOverlay = memo(function ProcessingOverlay({
   estimatedTime,
 }: ProcessingOverlayProps) {
   const { t } = useTranslation();
+  const overlayRef = useRef<HTMLDivElement>(null);
+
+  // Auto-focus the overlay on mount for focus trapping
+  useEffect(() => {
+    if (isLoading && overlayRef.current) {
+      overlayRef.current.focus();
+    }
+  }, [isLoading]);
+
   if (!isLoading) return null;
 
   const displayMessage = message || t('components.processingOverlay.defaultMessage');
@@ -29,7 +38,14 @@ export const ProcessingOverlay = memo(function ProcessingOverlay({
     : -1;
 
   return (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 grain-overlay" role="status" aria-live="polite">
+    <div
+      ref={overlayRef}
+      className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 grain-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label={displayMessage}
+      tabIndex={-1}
+    >
       <Card className="w-full max-w-md rounded-2xl card-elevated animate-[scale-in_0.3s_ease-out]">
         <CardContent className="p-6 flex flex-col items-center text-center">
           <ProgressRing progress={progress} size={128} />

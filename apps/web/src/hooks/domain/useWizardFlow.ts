@@ -269,22 +269,23 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
   // Low-credit warning on mount
   useEffect(() => {
     if (hasShownCreditWarningRef.current) return;
-    hasShownCreditWarningRef.current = true;
 
     const fullWorkflowCost = getCreditCost('case_analysis') + getCreditCost('dsd_simulation');
     if (creditsRemaining < fullWorkflowCost && creditsRemaining > 0) {
+      hasShownCreditWarningRef.current = true;
       toast.warning(
         t('toasts.wizard.lowCreditsWarning', { remaining: creditsRemaining, required: fullWorkflowCost }),
         { duration: 6000, description: t('toasts.wizard.lowCreditsDescription') },
       );
     } else if (creditsRemaining === 0) {
+      hasShownCreditWarningRef.current = true;
       toast.error(t('toasts.wizard.noCredits'), {
         description: t('toasts.wizard.noCreditsDescription'),
         action: { label: t('common.viewPlans'), onClick: () => navigate('/pricing') },
         duration: 8000,
       });
     }
-  }, [creditsRemaining, getCreditCost, navigate]);
+  }, [creditsRemaining, getCreditCost, navigate, t]);
 
   // Check for pending draft on mount
   useEffect(() => {
@@ -318,7 +319,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
 
   // Auto-save when state changes (from step 1 with image)
   useEffect(() => {
-    if (nav.step >= 1 && imageBase64 !== null && user) {
+    if (nav.step >= 1 && nav.step < 6 && imageBase64 !== null && user) {
       saveDraft({
         step: nav.step,
         formData,

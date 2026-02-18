@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { BRAND_NAME, WELCOME_STORAGE_KEY } from '@/lib/branding';
@@ -91,7 +92,7 @@ export function WelcomeModal({ open, onClose, onTrySample, onCreateCase }: Welco
           {slide.illustration && <div className="mb-2">{slide.illustration}</div>}
 
           {/* Title */}
-          <h2 className="text-xl font-semibold font-display">
+          <DialogTitle className="text-xl font-semibold font-display">
             {slide.id === 'welcome' ? (
               <>
                 {t('components.onboarding.welcome.welcomeTo')}{' '}
@@ -100,7 +101,7 @@ export function WelcomeModal({ open, onClose, onTrySample, onCreateCase }: Welco
             ) : (
               slide.title
             )}
-          </h2>
+          </DialogTitle>
 
           {/* Description */}
           <p className="text-sm text-muted-foreground leading-relaxed max-w-sm mx-auto">
@@ -148,6 +149,7 @@ export function WelcomeModal({ open, onClose, onTrySample, onCreateCase }: Welco
                     : 'bg-muted-foreground/30 hover:bg-muted-foreground/50',
                 )}
                 aria-label={t('components.onboarding.welcome.slideLabel', { index: i + 1 })}
+                aria-current={i === currentSlide ? 'true' : undefined}
               />
             ))}
           </div>

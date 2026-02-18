@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { getProtocolFingerprint } from '@/lib/protocol-fingerprint';
 
 // ---------------------------------------------------------------------------
 // Test the pure computation logic from useGroupResult
@@ -78,35 +79,6 @@ interface GroupEvaluation {
   ai_indication_reason: string | null;
   generic_protocol: GenericProtocol | null;
   session_id: string;
-}
-
-// Mirror getProtocolFingerprint from useGroupResult
-function getProtocolFingerprint(ev: GroupEvaluation): string {
-  const treatmentType = ev.treatment_type || 'resina';
-
-  if (treatmentType === 'resina') {
-    const resinKey = ev.resins
-      ? `${ev.resins.name}|${ev.resins.manufacturer}`
-      : 'no-resin';
-    const protocol = ev.stratification_protocol;
-    if (!protocol?.layers?.length) return `resina::${resinKey}`;
-    const layersKey = [...protocol.layers]
-      .sort((a, b) => a.order - b.order)
-      .map(l => `${l.resin_brand}:${l.shade}`)
-      .join('|');
-    return `resina::${resinKey}::${layersKey}`;
-  }
-
-  if (treatmentType === 'porcelana') {
-    const cem = ev.cementation_protocol;
-    if (cem?.cementation) {
-      return `porcelana::${cem.cementation.cement_type || ''}::${cem.cementation.cement_brand || ''}`;
-    }
-    return 'porcelana';
-  }
-
-  // Generic treatments
-  return treatmentType;
 }
 
 // Mirror the group filtering logic

@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -38,19 +38,21 @@ interface CementationProtocolCardProps {
   onProgressChange?: (indices: number[]) => void;
 }
 
-function StepsList({ 
-  title, 
-  icon: Icon, 
-  steps, 
-  iconColor = "text-primary" 
-}: { 
-  title: string; 
-  icon: React.ComponentType<{ className?: string }>; 
-  steps: CementationStep[]; 
+function StepsList({
+  title,
+  icon: Icon,
+  steps,
+  iconColor = "text-primary"
+}: {
+  title: string;
+  icon: React.ComponentType<{ className?: string }>;
+  steps: CementationStep[];
   iconColor?: string;
 }) {
+  const sortedSteps = useMemo(() => [...steps].sort((a, b) => a.order - b.order), [steps]);
+
   if (!steps || steps.length === 0) return null;
-  
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -61,7 +63,7 @@ function StepsList({
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {steps.sort((a, b) => a.order - b.order).map((step, index) => (
+          {sortedSteps.map((step, index) => (
             <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-secondary/50 border border-border">
               <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium text-primary">
                 {step.order}

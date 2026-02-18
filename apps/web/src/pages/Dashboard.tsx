@@ -129,9 +129,9 @@ export default function Dashboard() {
                 <div className="flex items-center gap-3 mb-1">
                   {(() => {
                     const hour = new Date().getHours();
-                    if (hour >= 6 && hour < 12) return <Sun className="w-5 h-5 text-primary" />;
-                    if (hour >= 12 && hour < 18) return <Sunset className="w-5 h-5 text-primary/80" />;
-                    return <Moon className="w-5 h-5 text-muted-foreground" />;
+                    if (hour >= 6 && hour < 12) return <Sun className="w-5 h-5 text-primary" aria-hidden="true" />;
+                    if (hour >= 12 && hour < 18) return <Sunset className="w-5 h-5 text-primary/80" aria-hidden="true" />;
+                    return <Moon className="w-5 h-5 text-muted-foreground" aria-hidden="true" />;
                   })()}
                   <h1 className="text-2xl sm:text-3xl font-semibold font-display tracking-tight">
                     {dashboard.greeting}, <span className="text-primary">{dashboard.firstName}</span>

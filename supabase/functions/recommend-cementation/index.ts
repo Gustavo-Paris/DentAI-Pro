@@ -54,6 +54,9 @@ interface RequestData {
   dsdContext?: DSDContext;
 }
 
+// FDI tooth notation regex: 2 digits, first digit 1-8
+const FDI_TOOTH_REGEX = /^[1-8][1-8]$/;
+
 // Validate request
 function validateRequest(data: unknown): { success: boolean; error?: string; data?: RequestData } {
   if (!data || typeof data !== "object") {
@@ -68,6 +71,13 @@ function validateRequest(data: unknown): { success: boolean; error?: string; dat
 
   if (!req.teeth || !Array.isArray(req.teeth) || req.teeth.length === 0) {
     return { success: false, error: "Dentes não especificados" };
+  }
+
+  // Validate each tooth matches FDI notation (2 digits, first digit 1-8)
+  for (const tooth of req.teeth) {
+    if (typeof tooth !== "string" || !FDI_TOOTH_REGEX.test(tooth)) {
+      return { success: false, error: `Dente inválido: ${String(tooth).substring(0, 10)}` };
+    }
   }
 
   if (!req.shade || typeof req.shade !== "string") {
@@ -139,8 +149,13 @@ Deno.serve(async (req: Request) => {
       return createErrorResponse(validation.error || ERROR_MESSAGES.INVALID_REQUEST, 400, corsHeaders);
     }
 
-    const { evaluationId, teeth, shade, ceramicType, substrate, substrateCondition, aestheticGoals: rawGoals, dsdContext } = validation.data;
-    const aestheticGoals = rawGoals ? sanitizeForPrompt(rawGoals) : rawGoals;
+    const { evaluationId, teeth, dsdContext } = validation.data;
+    // Sanitize all free-text fields before passing to AI prompt
+    const shade = sanitizeForPrompt(validation.data.shade);
+    const ceramicType = sanitizeForPrompt(validation.data.ceramicType!);
+    const substrate = sanitizeForPrompt(validation.data.substrate);
+    const substrateCondition = validation.data.substrateCondition ? sanitizeForPrompt(validation.data.substrateCondition) : validation.data.substrateCondition;
+    const aestheticGoals = validation.data.aestheticGoals ? sanitizeForPrompt(validation.data.aestheticGoals) : validation.data.aestheticGoals;
 
     // Verify evaluation ownership
     const { data: evalData, error: evalError } = await supabase

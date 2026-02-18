@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -66,11 +66,22 @@ export function GlobalSearch({ fetchEvaluations }: GlobalSearchProps) {
     return () => document.removeEventListener('open-global-search', handler);
   }, []);
 
+  // Cache evaluation list on first dialog open; filter client-side on subsequent keystrokes
+  const cachedEvaluationsRef = useRef<SearchEvaluation[] | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
   // Reset state when dialog closes
   useEffect(() => {
     if (!open) {
       setQuery('');
       setResults([]);
+      // Invalidate cache when dialog closes so next open fetches fresh data
+      cachedEvaluationsRef.current = null;
+      // Abort any in-flight request
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
     }
   }, [open]);
 
@@ -97,7 +108,7 @@ export function GlobalSearch({ fetchEvaluations }: GlobalSearchProps) {
     }));
   }, [t]);
 
-  // Search logic with debounce
+  // Search logic with debounce — caches evaluation list on first call per dialog open
   const searchEvaluations = useCallback(
     async (searchTerm: string) => {
       if (!user || searchTerm.length < 2) {
@@ -107,8 +118,23 @@ export function GlobalSearch({ fetchEvaluations }: GlobalSearchProps) {
 
       setLoading(true);
 
+      // Cancel any previous in-flight request
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
       try {
-        const data = await fetchEvaluations();
+        // Use cached evaluations if available; otherwise fetch and cache
+        let data: SearchEvaluation[];
+        if (cachedEvaluationsRef.current) {
+          data = cachedEvaluationsRef.current;
+        } else {
+          data = await fetchEvaluations();
+          if (controller.signal.aborted) return;
+          cachedEvaluationsRef.current = data;
+        }
 
         const searchLower = searchTerm.toLowerCase();
 
@@ -132,13 +158,17 @@ export function GlobalSearch({ fetchEvaluations }: GlobalSearchProps) {
           return false;
         });
 
+        if (controller.signal.aborted) return;
         const groupedResults = groupBySession(filtered);
         setResults(groupedResults.slice(0, 10));
       } catch (err) {
+        if (controller.signal.aborted) return;
         logger.error('Search error:', err);
         setResults([]);
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     },
     [user, groupBySession, fetchEvaluations]
@@ -172,7 +202,7 @@ export function GlobalSearch({ fetchEvaluations }: GlobalSearchProps) {
       <CommandList>
         <CommandEmpty>
           {loading ? (
-            <div className="flex items-center justify-center py-6">
+            <div className="flex items-center justify-center py-6" role="status" aria-live="polite">
               <Loader2 className="w-4 h-4 animate-spin mr-2" />
               <span>{t('components.globalSearch.searching')}</span>
             </div>

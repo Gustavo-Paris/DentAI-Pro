@@ -222,8 +222,9 @@ export default function NewCase() {
               </div>
             </div>
           ) : !wizard.isSubmitting ? (
-            <div className="flex flex-col items-center justify-center py-12 sm:py-16 space-y-4 sm:space-y-6">
-              <div className="text-center">
+            <div className="flex flex-col items-center justify-center py-12 sm:py-16 space-y-4 sm:space-y-6" role="status" aria-live="polite">
+              <div className="text-center flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
                 <p className="text-sm text-muted-foreground">{t('common.processing')}</p>
               </div>
             </div>
@@ -347,7 +348,7 @@ export default function NewCase() {
       {/* Draft Restore Modal */}
       <DraftRestoreModal
         open={wizard.showRestoreModal}
-        onOpenChange={wizard.handleDiscardDraft}
+        onOpenChange={() => {/* no-op: user must explicitly choose Restore or Discard */}}
         lastSavedAt={wizard.pendingDraft?.lastSavedAt || null}
         onRestore={wizard.handleRestoreDraft}
         onDiscard={wizard.handleDiscardDraft}

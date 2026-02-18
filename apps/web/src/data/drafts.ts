@@ -8,6 +8,8 @@ import { withQuery, withMutation } from './utils';
 export interface DraftRow {
   id: string;
   user_id: string;
+  // TODO: Type this as WizardDraft from @/hooks/useWizardDraft once the type
+  // can be imported without circular dependency issues.
   draft_data: unknown;
   created_at: string;
   updated_at: string;
@@ -32,28 +34,18 @@ export async function load(userId: string) {
 // ---------------------------------------------------------------------------
 
 export async function save(userId: string, draftData: unknown) {
-  const existing = await load(userId);
-
-  if (existing) {
-    await withMutation(() =>
-      supabase
-        .from('evaluation_drafts')
-        .update({
-          draft_data: JSON.parse(JSON.stringify(draftData)),
-          updated_at: new Date().toISOString(),
-        })
-        .eq('user_id', userId),
-    );
-  } else {
-    await withMutation(() =>
-      supabase
-        .from('evaluation_drafts')
-        .insert([{
+  await withMutation(() =>
+    supabase
+      .from('evaluation_drafts')
+      .upsert(
+        {
           user_id: userId,
           draft_data: JSON.parse(JSON.stringify(draftData)),
-        }]),
-    );
-  }
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'user_id' },
+      ),
+  );
 }
 
 export async function remove(userId: string) {

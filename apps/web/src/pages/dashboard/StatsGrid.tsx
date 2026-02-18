@@ -108,8 +108,7 @@ interface StatConfig {
   unitKey: string;
   icon: typeof FileText;
   tooltipKey: string;
-  accentColor: string;
-  darkAccentColor: string;
+  iconBg: string;
   getValueColor: (v: number) => string;
   suffix?: string;
   extra?: 'sparkline' | 'progress-ring';
@@ -122,8 +121,7 @@ const statConfigs: StatConfig[] = [
     unitKey: 'dashboard.stats.totalCasesUnit',
     icon: FileText,
     tooltipKey: 'dashboard.stats.totalCasesTooltip',
-    accentColor: 'from-primary to-primary/70',
-    darkAccentColor: 'dark:from-primary dark:to-primary/60',
+    iconBg: 'bg-primary/10 text-primary dark:bg-primary/15',
     getValueColor: () => 'text-foreground',
   },
   {
@@ -132,8 +130,7 @@ const statConfigs: StatConfig[] = [
     unitKey: 'dashboard.stats.patientsUnit',
     icon: Users,
     tooltipKey: 'dashboard.stats.patientsTooltip',
-    accentColor: 'from-blue-400 to-cyan-500',
-    darkAccentColor: 'dark:from-blue-400/80 dark:to-cyan-400/80',
+    iconBg: 'bg-blue-500/10 text-blue-600 dark:bg-blue-400/15 dark:text-blue-400',
     getValueColor: () => 'text-foreground',
   },
   {
@@ -142,8 +139,7 @@ const statConfigs: StatConfig[] = [
     unitKey: 'dashboard.stats.thisWeekUnit',
     icon: TrendingUp,
     tooltipKey: 'dashboard.stats.thisWeekTooltip',
-    accentColor: 'from-sky-400 to-teal-500',
-    darkAccentColor: 'dark:from-sky-400/80 dark:to-teal-400/80',
+    iconBg: 'bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-400',
     getValueColor: () => 'text-foreground',
     extra: 'sparkline',
   },
@@ -153,8 +149,7 @@ const statConfigs: StatConfig[] = [
     unitKey: 'dashboard.stats.completionUnit',
     icon: CheckCircle2,
     tooltipKey: 'dashboard.stats.completionTooltip',
-    accentColor: 'from-emerald-400 to-teal-500',
-    darkAccentColor: 'dark:from-emerald-400/80 dark:to-teal-400/80',
+    iconBg: 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-400/15 dark:text-emerald-400',
     getValueColor: () => 'text-foreground',
     suffix: '%',
     extra: 'progress-ring',
@@ -165,8 +160,7 @@ const statConfigs: StatConfig[] = [
     unitKey: 'dashboard.stats.openUnit',
     icon: FileWarning,
     tooltipKey: 'dashboard.stats.openTooltip',
-    accentColor: 'from-amber-400 to-orange-500',
-    darkAccentColor: 'dark:from-amber-400/80 dark:to-orange-400/80',
+    iconBg: 'bg-amber-500/10 text-amber-600 dark:bg-amber-400/15 dark:text-amber-400',
     getValueColor: (v: number) =>
       v > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-foreground',
   },
@@ -176,8 +170,7 @@ const statConfigs: StatConfig[] = [
     unitKey: 'dashboard.stats.pendingCasesUnit',
     icon: Stethoscope,
     tooltipKey: 'dashboard.stats.pendingCasesTooltip',
-    accentColor: 'from-violet-400 to-purple-500',
-    darkAccentColor: 'dark:from-violet-400/80 dark:to-purple-400/80',
+    iconBg: 'bg-violet-500/10 text-violet-600 dark:bg-violet-400/15 dark:text-violet-400',
     getValueColor: (v: number) =>
       v > 0 ? 'text-violet-600 dark:text-violet-400' : 'text-foreground',
   },
@@ -215,14 +208,13 @@ export function StatsGrid({
           <Tooltip key={stat.key}>
             <TooltipTrigger asChild>
               <Card
-                className={`scroll-reveal scroll-reveal-delay-${i + 1} group relative overflow-hidden p-3 sm:p-4 cursor-default shadow-sm hover:shadow-md rounded-xl transition-all duration-300`}
+                className={`scroll-reveal scroll-reveal-delay-${i + 1} group relative overflow-hidden p-3 sm:p-4 cursor-default shadow-sm hover:shadow-md rounded-xl border border-border/50 hover:border-border transition-all duration-300`}
               >
-                <div
-                  className={`absolute left-0 top-0 bottom-0 w-[3px] bg-gradient-to-b ${stat.accentColor} ${stat.darkAccentColor} opacity-60 group-hover:opacity-100 transition-opacity`}
-                />
-                <div className="flex items-center gap-2 mb-2">
-                  <Icon className="w-4 h-4 text-muted-foreground/70" aria-hidden="true" />
-                  <p className="text-xs font-medium text-muted-foreground tracking-wide uppercase">
+                <div className="flex items-center gap-2.5 mb-2.5">
+                  <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${stat.iconBg} transition-transform duration-200 group-hover:scale-110`}>
+                    <Icon className="w-4 h-4" aria-hidden="true" />
+                  </div>
+                  <p className="text-[11px] font-semibold text-muted-foreground tracking-wide uppercase leading-tight">
                     {t(stat.labelKey)}
                   </p>
                 </div>

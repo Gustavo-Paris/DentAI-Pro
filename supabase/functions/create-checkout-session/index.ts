@@ -45,6 +45,9 @@ Deno.serve(withErrorBoundary(async (req: Request) => {
 
   // Validate redirect URLs against allowed origins to prevent open redirect
   const ALLOWED_ORIGINS = [
+    "https://tosmile-ai.vercel.app",
+    "https://tosmile.ai",
+    "https://www.tosmile.ai",
     "https://dentai.pro",
     "https://www.dentai.pro",
     "https://auria-ai.vercel.app",

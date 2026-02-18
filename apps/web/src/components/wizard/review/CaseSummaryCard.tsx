@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, ShieldCheck, ShieldAlert, Shield } from 'lucide-react';
@@ -27,7 +27,7 @@ export const CaseSummaryCard = memo(function CaseSummaryCard({
   const realSelectedTeeth = selectedTeeth.filter(st => st !== 'GENGIVO');
   const hasGengivoplasty = selectedTeeth.includes('GENGIVO');
 
-  const treatmentBreakdown = (() => {
+  const treatmentBreakdown = useMemo(() => {
     const counts: Record<TreatmentType, number> = {
       resina: 0, porcelana: 0, coroa: 0, implante: 0, endodontia: 0, encaminhamento: 0, gengivoplastia: 0, recobrimento_radicular: 0,
     };
@@ -37,7 +37,7 @@ export const CaseSummaryCard = memo(function CaseSummaryCard({
     }
     if (hasGengivoplasty) counts.gengivoplastia = 1;
     return Object.entries(counts).filter(([, count]) => count > 0) as [TreatmentType, number][];
-  })();
+  }, [realSelectedTeeth, toothTreatments, detectedTeeth, hasGengivoplasty]);
 
   const complexity = calculateComplexity(detectedTeeth.filter(dt => selectedTeeth.includes(dt.tooth)));
 

@@ -59,7 +59,8 @@ export default function ProtocolChecklist({
           const isChecked = checkedSet.has(index);
           return (
             <label
-              key={index}
+              key={`step-${index}-${item.slice(0, 20)}`}
+              htmlFor={`checklist-item-${index}`}
               className={cn(
                 "flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-colors",
                 isChecked
@@ -68,6 +69,7 @@ export default function ProtocolChecklist({
               )}
             >
               <Checkbox
+                id={`checklist-item-${index}`}
                 checked={isChecked}
                 onCheckedChange={() => toggleItem(index)}
                 className="mt-0.5"

@@ -19,8 +19,9 @@ export const logger = {
   debug: (...args: unknown[]) => {
     if (isDev) console.debug(...args);
   },
-  // For Edge Functions debugging - always log but prefix with [DEBUG]
-  edgeDebug: (...args: unknown[]) => {
+  // Verbose debug logging — dev-only, prefixed with [DEBUG] for easy filtering.
+  // (Originally named edgeDebug; renamed to debug for clarity in the web logger.)
+  verboseDebug: (...args: unknown[]) => {
     if (isDev) console.log('[DEBUG]', ...args);
   },
 };

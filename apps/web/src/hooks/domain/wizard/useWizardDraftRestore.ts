@@ -103,13 +103,18 @@ export function useWizardDraftRestore({
     setAdditionalPhotos,
     setPatientPreferences,
     setImageBase64,
+    clearDraft,
+    vitaShadeManuallySetRef,
   ]);
 
   const handleDiscardDraft = useCallback(() => {
     clearDraft();
+    if (vitaShadeManuallySetRef) {
+      vitaShadeManuallySetRef.current = false;
+    }
     setShowRestoreModal(false);
     setPendingDraft(null);
-  }, [clearDraft]);
+  }, [clearDraft, vitaShadeManuallySetRef]);
 
   return {
     showRestoreModal,

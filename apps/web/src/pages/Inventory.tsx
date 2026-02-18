@@ -184,6 +184,7 @@ export default function Inventory() {
                 value={inv.catalogFilters.search}
                 onChange={(e) => inv.setCatalogFilters((f) => ({ ...f, search: e.target.value }))}
                 className="pl-10"
+                aria-label={t('inventory.searchColorBrand')}
               />
             </div>
             <Select

@@ -1,5 +1,5 @@
 import { supabase } from './client';
-import { withQuery, withMutation } from './utils';
+import { withQuery, withMutation, countByUser } from './utils';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -67,7 +67,7 @@ export async function listSessions(
 ) {
   const { data, error, count } = await supabase
     .from('evaluations')
-    .select('session_id, tooth, status, created_at', { count: 'exact' })
+    .select('id, session_id, tooth, status, created_at', { count: 'exact' })
     .eq('patient_id', patientId)
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
@@ -115,11 +115,5 @@ export async function listForAutocomplete(userId: string) {
 }
 
 export async function countByUserId(userId: string) {
-  const { count, error } = await supabase
-    .from('patients')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', userId);
-
-  if (error) throw error;
-  return count || 0;
+  return countByUser('patients', userId);
 }

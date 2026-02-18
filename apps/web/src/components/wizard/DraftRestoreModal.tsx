@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
@@ -29,9 +30,9 @@ export function DraftRestoreModal({
   onDiscard,
 }: DraftRestoreModalProps) {
   const { t } = useTranslation();
-  const timeAgo = lastSavedAt
+  const timeAgo = useMemo(() => lastSavedAt
     ? formatDistanceToNow(new Date(lastSavedAt), { addSuffix: true, locale: ptBR })
-    : 'recentemente';
+    : 'recentemente', [lastSavedAt]);
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>

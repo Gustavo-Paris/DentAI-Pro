@@ -68,6 +68,9 @@ export function OnboardingProgress() {
                   step.completed && 'text-muted-foreground line-through'
                 )}>
                   {step.label}
+                  {step.completed && (
+                    <span className="sr-only"> - {t('components.onboarding.progress.completed', { defaultValue: 'concluído' })}</span>
+                  )}
                 </p>
                 <p className="text-[11px] text-muted-foreground truncate">
                   {step.description}

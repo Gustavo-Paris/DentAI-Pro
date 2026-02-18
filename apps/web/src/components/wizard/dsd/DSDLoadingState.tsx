@@ -22,7 +22,7 @@ export function DSDLoadingState({ imageBase64, currentStep, analysisSteps }: DSD
   const dsdProgress = Math.min((currentStep / analysisSteps.length) * 100, 95);
 
   return (
-    <div className="space-y-6" role="status" aria-live="polite">
+    <div className="space-y-6" role="status" aria-live="polite" aria-label={t('components.wizard.dsd.loadingState.title')}>
       <div className="text-center">
         <h2 className="text-xl font-semibold font-display mb-2 text-primary">{t('components.wizard.dsd.loadingState.title')}</h2>
         <p className="text-muted-foreground">{currentLabel}</p>

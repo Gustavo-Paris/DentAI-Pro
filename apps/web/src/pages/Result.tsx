@@ -49,8 +49,14 @@ export default function Result() {
 
   if (!r.evaluation && !r.isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">{t('result.notFound')}</p>
+      <div role="main" className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <h1 className="text-lg font-semibold">{t('result.notFound')}</h1>
+          <p className="text-sm text-muted-foreground">{t('result.notFoundDescription', { defaultValue: 'O resultado solicitado nao foi encontrado.' })}</p>
+          <Link to="/evaluations">
+            <Button variant="outline">{t('evaluation.title')}</Button>
+          </Link>
+        </div>
       </div>
     );
   }

@@ -1,5 +1,9 @@
 import { supabase } from './client';
+import type { Database } from './client';
 import { withQuery, withMutation } from './utils';
+import { logger } from '@/lib/logger';
+
+type EvaluationInsert = Database['public']['Tables']['evaluations']['Insert'];
 
 // ---------------------------------------------------------------------------
 // Storage
@@ -66,21 +70,24 @@ export async function updatePatientBirthDate(
   patientId: string,
   birthDate: string,
 ) {
-  await supabase
+  const { error } = await supabase
     .from('patients')
     .update({ birth_date: birthDate })
     .eq('id', patientId);
+  if (error) {
+    logger.warn('Failed to update patient birth date:', error);
+  }
 }
 
 // ---------------------------------------------------------------------------
 // Evaluations
 // ---------------------------------------------------------------------------
 
-export async function createEvaluation(data: Record<string, unknown>) {
+export async function createEvaluation(data: EvaluationInsert) {
   return withQuery(() =>
     supabase
       .from('evaluations')
-      .insert(data as never)
+      .insert(data)
       .select()
       .single(),
   );
@@ -98,13 +105,16 @@ export async function updateEvaluationProtocol(
     ai_reason: string | null;
   },
 ) {
-  await supabase
+  const { error } = await supabase
     .from('evaluations')
     .update({
       generic_protocol: protocol,
       recommendation_text: protocol.summary,
     })
     .eq('id', evalId);
+  if (error) {
+    logger.warn('Failed to update evaluation protocol:', error);
+  }
 }
 
 export async function updateEvaluationStatus(
@@ -163,7 +173,7 @@ export function getContralateralTooth(tooth: string): string | null {
   if (tooth.length !== 2) return null;
   const quadrant = parseInt(tooth[0]);
   const number = tooth[1];
-  const SWAP: Record<number, number> = { 1: 2, 2: 1, 3: 4, 4: 3 };
+  const SWAP: Record<number, number> = { 1: 2, 2: 1, 3: 4, 4: 3, 5: 6, 6: 5, 7: 8, 8: 7 };
   const mapped = SWAP[quadrant];
   if (!mapped) return null;
   return `${mapped}${number}`;
