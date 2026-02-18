@@ -13,8 +13,14 @@ import type { OpenAIMessage, OpenAITool, TokenUsage } from "./gemini.ts";
 
 const CLAUDE_API_URL = "https://api.anthropic.com/v1/messages";
 const ANTHROPIC_VERSION = "2023-06-01";
-const DEFAULT_MODEL = "claude-sonnet-4-5-20250929";
+const DEFAULT_MODEL = "claude-sonnet-4-6";
 const DEFAULT_TIMEOUT_MS = 50_000;
+
+// Fallback models for 529 (overloaded) — after 2 failed attempts, switch model
+const FALLBACK_MODELS: Record<string, string> = {
+  "claude-sonnet-4-6": "claude-sonnet-4-5-20250929",
+};
+const FALLBACK_AFTER_ATTEMPT = 2; // switch on 3rd attempt (0-indexed)
 
 // ---------------------------------------------------------------------------
 // Error class (mirrors GeminiError)
@@ -381,7 +387,7 @@ async function makeClaudeRequest(
         );
       }
 
-      // Handle server errors (500, 503, 529) — retry
+      // Handle server errors (500, 503, 529) — retry with model fallback
       if (
         response.status === 500 ||
         response.status === 503 ||
@@ -392,6 +398,15 @@ async function makeClaudeRequest(
         logger.warn(`Server error (${response.status}). Retrying...`);
 
         if (retryCount < maxRetries) {
+          // After FALLBACK_AFTER_ATTEMPT failed attempts with 529, switch to fallback model
+          if (response.status === 529 && retryCount + 1 >= FALLBACK_AFTER_ATTEMPT) {
+            const fallback = FALLBACK_MODELS[request.model];
+            if (fallback && request.model !== fallback) {
+              logger.warn(`Model ${request.model} overloaded — falling back to ${fallback}`);
+              request = { ...request, model: fallback };
+            }
+          }
+
           const backoffMs = Math.min(2000 * Math.pow(2, retryCount), 16000);
           logger.warn(`Retrying in ${backoffMs}ms (attempt ${retryCount + 1}/${maxRetries})...`);
           await sleep(backoffMs);
