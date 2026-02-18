@@ -70,6 +70,11 @@ function buildBudgetRulesSection(budget: string): string {
   return `=== REGRAS DE ORCAMENTO ===
 Orçamento do paciente: "${budget}"
 - "padrão": Resinas Econômico/Intermediário/Médio-alto. EVITAR Premium.
+  PREFERIR resinas de AMPLA DISPONIBILIDADE (Z350, Harmonize, FORMA, Opallis) por padrão.
+  Resinas premium (Estelite Omega, Vittra APS, GC Essentia, Palfique LX5) SOMENTE quando:
+    * Necessidade clínica justificada (ex: polimento superior em camada de esmalte final anterior)
+    * Inventário do dentista já possui a resina premium
+  Se usar premium em orçamento "padrão", JUSTIFICAR na "justification" do JSON.
 - "premium": QUALQUER faixa, priorizando as melhores.
 REGRA CRITICA: Recomendação principal DEVE respeitar o orçamento!`
 }
@@ -131,7 +136,7 @@ RESINAS RECOMENDADAS POR CAMADA:
 | Camada             | Resinas OBRIGATORIAS                                       |
 |--------------------|------------------------------------------------------------|
 | Aumento Incisal    | SOMENTE Trans(FORMA) ou CT(Z350) ou Trans20(Empress) ou Trans(Vittra) — PROIBIDO esmalte/corpo! |
-| Cristas Proximais  | SOMENTE XLE(Harmonize) ou BL-L/BL-XL(Empress) ou WE(Z350) — PROIBIDO: Z350 BL1, JE, CT, FORMA, Vittra, Palfique para cristas! |
+| Cristas Proximais  | SOMENTE XLE(Harmonize) ou BL-L/BL-XL(Empress) ou WE(Z350 XT) — PROIBIDO: Z350 BL1, JE, CT, FORMA, Vittra, Palfique para cristas! |
 | Dentina/Corpo      | SOMENTE corpo: WB(FORMA), WB(Z350), DA1/DA2(Vittra APS), D BL-L(Empress) — PROIBIDO esmalte (A1E/WE/CT)! |
 | Efeitos Incisais   | EMPRESS DIRECT COLOR White/Blue (Ivoclar) — UNICA opcao! Z350/Kolor+ NAO! |
 | Esmalte Final      | WE(Palfique LX5) ou WE/MW(Estelite Omega) OBRIGATORIO — Z350 SOMENTE se Palfique/Estelite indisponíveis! Clareados: W3/W4(Estelite Bianco). PROIBIDO: CT/GT/Trans/BL1! |
@@ -148,9 +153,9 @@ GLOSSARIO DE SIGLAS — USAR EXATAMENTE NA DESCRICAO DE CADA CAMADA (OBRIGATORIO
 - DA1/DA2 = Dentin A1/A2 (SOMENTE Vittra APS)
 
 ⚠️ SHADES QUE NAO EXISTEM POR LINHA (PROIBIDO GERAR):
-- Filtek Z350 XT: NAO possui BL1, BL2, BL3. Possui WB (Body).
+- Filtek Z350 XT: NAO possui BL1, BL2, BL3. Possui WB (Body) e WE (White Enamel — disponível em catálogos regionais 3M).
 - Estelite Omega: Possui BL1, BL2 para clareados. Alternativa: Estelite Bianco W3/W4.
-- Harmonize: NAO possui WE, BL. Para clareados usar outra linha.
+- Harmonize: NAO possui WE, BL. Para clareados usar outra linha. Possui shades Enamel: A1E, A2E, A3E, B1E, B2E, C2E, XLE (Extra Light Enamel).
 
 DIVERSIDADE DE MARCAS (CONDICIONAL AO NUMERO DE CAMADAS):
 - 2-3 camadas: PERMITIDO mesma marca em todas. Priorizar CONSISTENCIA de sistema adesivo e compatibilidade.
@@ -353,6 +358,13 @@ Se cavityClass = "Recontorno Estético" E indicação menciona DIMINUIR bordo in
   5. Polimento Final (Diamond Excel + feltro, baixa rotação 40-60s)
 - Se NAO menciona diminuir -> use protocolo normal.
 
+REGRA RECONTORNO vs ESTRATIFICACAO (MUTUAMENTE EXCLUSIVOS):
+- Recontorno (desgaste): SOMENTE para DIMINUIR — ajuste SUTIL de esmalte existente sem acréscimo de material. Aplicável quando dente precisa ficar MENOR/mais curto.
+- Estratificação (buildup): SOMENTE para AUMENTAR — acréscimo de resina em camadas. Aplicável quando dente precisa ficar MAIOR/mais longo.
+- Se o dente precisa de ACRESCIMO (estratificação), NUNCA gere protocolo de recontorno junto. O buildup define a nova forma.
+- Se o dente precisa APENAS de ajuste fino em esmalte natural sem acréscimo → recontorno.
+- PROIBIDO: Gerar recontorno + estratificação para o MESMO dente. Escolha UM.
+
 ${advancedStrat}
 
 ${layerCap}
@@ -405,8 +417,8 @@ CORES DE ESMALTE POR LINHA:
 |---------------------|-------------------------------------------|
 | Estelite Sigma Quick| WE, CE                                    |
 | Estelite Omega      | WE, MW, CT, BL1, BL2                      |
-| Filtek Z350 XT      | CT, GT, BT, YT, A1E, A2E, A3E, B1E (⚠️ NAO possui BL1/BL2/BL3!) |
-| Harmonize           | Incisal, TN                               |
+| Filtek Z350 XT      | WE, CT, GT, BT, YT, A1E, A2E, A3E, B1E (⚠️ NAO possui BL1/BL2/BL3!) |
+| Harmonize           | A1E, A2E, A3E, B1E, B2E, C2E, XLE, Incisal, TN |
 | IPS Empress Direct  | Trans 20, Trans 30, Opal                  |
 | Vittra APS          | Trans, Trans OPL, Trans N, EA1, EA2       |
 | Palfique LX5        | WE, CE, BW, SW, A1-A3, B1                 |

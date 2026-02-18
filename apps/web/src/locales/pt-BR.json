@@ -798,6 +798,7 @@
         "optional": "Opcional",
         "photo45Added": "Foto 45° adicionada",
         "faceAdded": "Foto de face adicionada",
+        "imageTooSmall": "Imagem muito pequena. Para melhor análise, use resolução mínima de 640x480.",
         "optionalPhotoError": "Erro ao processar foto opcional",
         "photoError": "Erro ao processar foto",
         "sending": "Enviando...",
@@ -1217,7 +1218,9 @@
         "pdfExport": "Exportação PDF",
         "dedicatedSupport": "Suporte dedicado",
         "personalOnboarding": "Onboarding personalizado",
-        "unlimited": "Ilimitado"
+        "unlimited": "Ilimitado",
+        "included": "Incluído",
+        "notIncluded": "Não incluído"
       }
     },
     "layout": {

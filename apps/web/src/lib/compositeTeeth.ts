@@ -1,5 +1,10 @@
 import type { ToothBoundsPct } from '@/types/dsd';
 
+/** Yield to the main thread to prevent blocking the UI during heavy computation. */
+function yieldToMain(): Promise<void> {
+  return new Promise(resolve => requestAnimationFrame(() => resolve()));
+}
+
 // --- Image loading helpers ---
 
 /** Convert a data URL to a Blob without fetch (avoids CSP connect-src restrictions). */
@@ -46,6 +51,9 @@ export async function createCompositeTeethOnly(params: {
 
   const w = beforeBitmap.width;
   const h = beforeBitmap.height;
+
+  // Yield before heavy canvas operations to keep UI responsive
+  await yieldToMain();
 
   // Base canvas (original)
   const base = document.createElement('canvas');
@@ -118,6 +126,9 @@ export async function createCompositeTeethOnly(params: {
   maskCtx.ellipse(cx, cy, rx * 1.1, ry * 1.1, 0, 0, Math.PI * 2);
   maskCtx.fill();
   maskCtx.restore();
+
+  // Yield before compositing
+  await yieldToMain();
 
   // Apply mask to overlay (keep only dental region)
   overlayCtx.globalCompositeOperation = 'destination-in';

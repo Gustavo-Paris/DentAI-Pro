@@ -109,7 +109,7 @@ Se o problema clínico é microdontia/conoide → sua sugestão deve ser "Aument
   }
 
   const dsdPrompt = getPrompt('dsd-analysis');
-  const analysisPrompt = dsdPrompt.system({ additionalContext, preferencesContext, clinicalContext } as DsdAnalysisParams);
+  const analysisPrompt = dsdPrompt.system({ additionalContext, preferencesContext, clinicalContext, additionalPhotos } as DsdAnalysisParams);
 
   // Tool definition for DSD analysis
   const tools: OpenAITool[] = [

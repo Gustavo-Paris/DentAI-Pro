@@ -13,6 +13,23 @@ import { createSupabaseMetrics, PROMPT_VERSION } from "../_shared/metrics-adapte
 import type { DSDAnalysis, PatientPreferences } from "./types.ts";
 import { WHITENING_INSTRUCTIONS } from "./types.ts";
 
+// P2-56: Sanitize AI-generated text before interpolating into Gemini prompts.
+// Prevents prompt injection from analysis text that flows into the simulation prompt.
+function sanitizeAnalysisText(text: string, maxLength: number = 500): string {
+  return text
+    // Remove potential prompt injection prefixes
+    .replace(/^(system|instructions|ignore previous|disregard|override)\s*:/gi, '')
+    // Remove markdown formatting that could confuse the model
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/#{1,6}\s/g, '')
+    .replace(/\*{1,2}([^*]+)\*{1,2}/g, '$1')
+    // Remove XML-like tags
+    .replace(/<[^>]+>/g, '')
+    // Truncate to prevent excessively long injections
+    .substring(0, maxLength)
+    .trim();
+}
+
 // SIMPLIFIED: Generate simulation image - single attempt, no blend, no verification
 export async function generateSimulation(
   imageBase64: string,
@@ -102,10 +119,21 @@ export async function generateSimulation(
            lower.includes('close-up extremo');
   });
 
+  // P2-46: Check if treatment includes lower teeth (FDI 3x, 4x)
+  const hasLowerTeeth = analysis.suggestions?.some(s => {
+    const toothNum = parseInt(s.tooth);
+    return toothNum >= 31 && toothNum <= 48;
+  });
+
   // Allow shape changes from DSD analysis (conoid laterals, visagism corrections)
   // Filter out destructive changes AND gingival changes for non-gingival layers
+  // P2-60: Expanded destructive keyword filter to cover severe pathology
   const destructiveKeywords = [
     'reconstruir', 'reconstruct', 'rebuild',
+    'destruição severa', 'perda total', 'avulsão', 'avulsao',
+    'fratura radicular', 'mobilidade grau iii', 'mobilidade grau 3',
+    'necrose pulpar', 'reabsorção radicular', 'reabsorcao radicular',
+    'exodontia', 'extração indicada', 'extracao indicada',
   ];
 
   // Gingival suggestions must ONLY appear in complete-treatment/root-coverage layers
@@ -138,9 +166,10 @@ export async function generateSimulation(
     return true;
   }) || [];
 
+  // P2-56: Sanitize AI text before interpolation into Gemini prompt
   const allowedChangesFromAnalysis = filteredSuggestions.length > 0
     ? `\nSPECIFIC CORRECTIONS FROM ANALYSIS (apply these changes):\n${filteredSuggestions.map(s =>
-        `- Tooth ${s.tooth}: ${s.proposed_change}`
+        `- Tooth ${s.tooth}: ${sanitizeAnalysisText(s.proposed_change, 200)}`
       ).join('\n')}`
     : '';
 
@@ -213,6 +242,14 @@ export async function generateSimulation(
     }
   }
 
+  // P2-46: Add lower arch perspective instruction when lower teeth are involved
+  const lowerArchInstruction = hasLowerTeeth
+    ? '\nSe o tratamento inclui dentes inferiores (31-38, 41-48), ajustar perspectiva da simulação para incluir arco inferior.'
+    : '';
+
+  // P2-50: White balance instruction to maintain color consistency
+  const whiteBalanceInstruction = '\nManter o balanço de branco e temperatura de cor consistentes com a foto original. Não alterar a iluminação ambiente.';
+
   // Build prompt via prompt management module
   const dsdSimulationPrompt = getPrompt('dsd-simulation');
   const simulationPrompt = dsdSimulationPrompt.system({
@@ -231,7 +268,7 @@ export async function generateSimulation(
     gingivoSuggestions,
     rootCoverageSuggestions,
     inputAlreadyProcessed,
-  } as DsdSimulationParams);
+  } as DsdSimulationParams) + lowerArchInstruction + whiteBalanceInstruction;
 
   logger.log("DSD Simulation Request:", {
     promptType,
@@ -311,12 +348,17 @@ Responda APENAS 'SIM' ou 'NÃO'.`,
       logger.log(`Lip validation for ${layerType || 'standard'} layer: ${lipsMoved ? 'FAILED (lips moved)' : 'PASSED'}`);
       return !lipsMoved; // true = valid (lips didn't move)
     } catch (lipErr) {
-      logger.warn("Lip validation check failed (non-blocking):", lipErr);
-      return true; // Accept on validation error
+      // P2-54: Fail-CLOSED — if the lip validator errors, REJECT the simulation
+      // rather than silently accepting a potentially distorted image.
+      logger.warn("Lip validation check failed — rejecting simulation (fail-closed):", lipErr);
+      return false; // Reject on validation error
     }
   }
 
   try {
+    // P2-53: callGeminiImageEdit now includes fallback model chain (P1-23).
+    // If the primary model fails with a non-retryable error, it automatically
+    // falls back to the secondary model before throwing.
     logger.log("Calling Gemini Image Edit for simulation...");
 
     const result = await withMetrics<{ imageUrl: string | null; text: string | null }>(metrics, dsdSimulationPromptDef.id, PROMPT_VERSION, dsdSimulationPromptDef.model)(async () => {

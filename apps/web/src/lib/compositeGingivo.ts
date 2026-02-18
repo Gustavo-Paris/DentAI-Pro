@@ -10,6 +10,11 @@
 
 import { logger } from './logger';
 
+/** Yield to the main thread to prevent blocking the UI during heavy computation. */
+function yieldToMain(): Promise<void> {
+  return new Promise(resolve => requestAnimationFrame(() => resolve()));
+}
+
 /** Load an image URL into an HTMLImageElement */
 function loadImage(url: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -132,6 +137,9 @@ export async function compositeGengivoplastyLips(
     const l2Data = l2Ctx.getImageData(0, 0, width, height);
     const l3Data = l3Ctx.getImageData(0, 0, width, height);
 
+    // Yield before heavy pixel processing to keep UI responsive
+    await yieldToMain();
+
     // Step 1: Build lip+changed mask
     const DIFF_THRESHOLD = 40; // Sum of RGB differences to consider "changed"
     const lipChangedMask = new Uint8Array(width * height);
@@ -164,6 +172,9 @@ export async function compositeGengivoplastyLips(
       return null;
     }
 
+    // Yield between heavy phases
+    await yieldToMain();
+
     // Step 2: Dilate the mask by 1px to catch immediate edge artifacts
     const dilatedMask = dilateMask(lipChangedMask, width, height, 1);
 
@@ -173,6 +184,9 @@ export async function compositeGengivoplastyLips(
       floatMask[i] = dilatedMask[i];
     }
     const blurredMask = blurMask(floatMask, width, height, 2);
+
+    // Yield before final compositing pass
+    await yieldToMain();
 
     // Step 4: Composite — blend L2 (lip) and L3 (everything else)
     const outCanvas = document.createElement('canvas');

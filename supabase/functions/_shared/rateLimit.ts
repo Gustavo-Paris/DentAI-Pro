@@ -107,10 +107,13 @@ export async function checkRateLimit(
     const hourCount = row.hour_count;
     const dayCount = row.day_count;
 
-    // Check limits against post-increment counts
-    const minuteExceeded = minuteCount > config.perMinute;
-    const hourExceeded = hourCount > config.perHour;
-    const dayExceeded = dayCount > config.perDay;
+    // P2-58: Fix off-by-one — the RPC increments and returns the updated count.
+    // Previously used `>` which allowed N+1 requests when the RPC returns
+    // pre-increment values. Changed to `>=` so that exactly N requests are
+    // allowed per window (e.g., limit=10 allows requests 0-9, denies at 10).
+    const minuteExceeded = minuteCount >= config.perMinute;
+    const hourExceeded = hourCount >= config.perHour;
+    const dayExceeded = dayCount >= config.perDay;
 
     if (minuteExceeded || hourExceeded || dayExceeded) {
       let retryAfter = 0;
