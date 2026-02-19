@@ -152,14 +152,22 @@ export function useGroupResult() {
     queryKey: ['group-dsd-layers', primaryEval?.id],
     queryFn: async () => {
       if (!primaryEval?.dsd_simulation_layers?.length) return {};
-      const paths = primaryEval.dsd_simulation_layers
-        .map(l => l.simulation_url)
-        .filter((p): p is string => !!p);
-      const urlsByPath = await storage.getSignedDSDLayerUrls(paths, SIGNED_URL_EXPIRY_SECONDS);
       const urls: Record<string, string> = {};
+      const storagePaths: string[] = [];
       for (const layer of primaryEval.dsd_simulation_layers) {
-        if (layer.simulation_url && urlsByPath[layer.simulation_url]) {
-          urls[layer.type] = urlsByPath[layer.simulation_url];
+        if (!layer.simulation_url) continue;
+        if (layer.simulation_url.startsWith('data:') || layer.simulation_url.startsWith('http')) {
+          urls[layer.type] = layer.simulation_url;
+        } else {
+          storagePaths.push(layer.simulation_url);
+        }
+      }
+      if (storagePaths.length > 0) {
+        const urlsByPath = await storage.getSignedDSDLayerUrls(storagePaths, SIGNED_URL_EXPIRY_SECONDS);
+        for (const layer of primaryEval.dsd_simulation_layers) {
+          if (layer.simulation_url && urlsByPath[layer.simulation_url]) {
+            urls[layer.type] = urlsByPath[layer.simulation_url];
+          }
         }
       }
       return urls;
@@ -169,20 +177,11 @@ export function useGroupResult() {
   });
 
   // Unified checklist: checking an item updates ALL evaluations in the group
-  // TODO: could be optimized with a bulk updateChecklistBulk in data/evaluations.ts
   const checklistMutation = useMutation({
     mutationFn: async (indices: number[]) => {
       if (!user) throw new Error('User not authenticated');
       const ids = groupEvaluations.map(ev => ev.id);
-      // Update all evaluations in the group sequentially (no bulk endpoint yet)
-      for (const id of ids) {
-        const { error } = await supabase
-          .from('evaluations')
-          .update({ checklist_progress: indices })
-          .eq('id', id)
-          .eq('user_id', user.id);
-        if (error) throw error;
-      }
+      await evaluations.updateChecklistBulk(ids, user.id, indices);
     },
     onMutate: async (indices) => {
       await queryClient.cancelQueries({ queryKey: ['group-result', sessionId] });
