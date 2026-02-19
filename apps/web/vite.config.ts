@@ -23,6 +23,9 @@ export default defineConfig(() => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  optimizeDeps: {
+    exclude: ['@parisgroup-ai/domain-odonto-ai'],
+  },
   build: {
     rollupOptions: {
       output: {
