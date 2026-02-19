@@ -110,7 +110,7 @@ export default function Dashboard() {
     return alerts;
   }, [dashboard.loading, dashboard.isActive, dashboard.isFree, dashboard.creditsRemaining, t]);
 
-  const tabsConfig: DashboardTab[] | undefined = isTabbed
+  const tabsConfig: DashboardTab[] | undefined = useMemo(() => isTabbed
     ? [
         {
           id: 'principal',
@@ -142,7 +142,70 @@ export default function Dashboard() {
           ),
         },
       ]
-    : undefined;
+    : undefined, [isTabbed, t, modules, dashboard.sessions, dashboard.loading, dashboard.pendingDraft, dashboard.metrics.pendingSessions, dashboard.requestDiscardDraft, dashboard.clinicalInsights, dashboard.weeklyTrends]);
+
+  const hour = new Date().getHours();
+  const TimeIcon = hour >= 6 && hour < 12
+    ? <Sun className="w-5 h-5 text-primary" aria-hidden="true" />
+    : hour >= 12 && hour < 18
+      ? <Sunset className="w-5 h-5 text-primary/80" aria-hidden="true" />
+      : <Moon className="w-5 h-5 text-muted-foreground" aria-hidden="true" />;
+
+  const slotsConfig = useMemo(() => ({
+    header: (
+      <div className="mb-4">
+        <div className="flex items-center gap-3 mb-1">
+          {TimeIcon}
+          <h1 className="text-2xl sm:text-3xl font-semibold font-display tracking-tight">
+            {dashboard.greeting}, <span className="text-primary">{dashboard.firstName}</span>
+          </h1>
+        </div>
+        <p className="text-sm text-muted-foreground ml-8">
+          {format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR }).replace(/^\w/, (c) => c.toUpperCase())}
+        </p>
+      </div>
+    ),
+    afterHeader: (
+      <>
+        {dashboard.showCreditsBanner && (
+          <CreditsBanner
+            creditsRemaining={dashboard.creditsRemaining}
+            onDismiss={dashboard.dismissCreditsBanner}
+          />
+        )}
+        {clinicAlerts.length > 0 && (
+          <div className="mb-4">
+            <PageClinicAlerts alerts={clinicAlerts} />
+          </div>
+        )}
+        {isTabbed && (
+          <Suspense fallback={<StatsGridFallback />}>
+            <StatsGrid
+              metrics={dashboard.metrics}
+              loading={dashboard.loading}
+              weekRange={dashboard.weekRange}
+              weeklyTrends={dashboard.weeklyTrends}
+            />
+          </Suspense>
+        )}
+      </>
+    ),
+    ...(!isTabbed
+      ? {
+          stats: (
+            <Suspense fallback={<StatsGridFallback />}>
+              <StatsGrid
+                metrics={dashboard.metrics}
+                loading={dashboard.loading}
+                weekRange={dashboard.weekRange}
+                weeklyTrends={dashboard.weeklyTrends}
+              />
+            </Suspense>
+          ),
+          afterStats: <OnboardingProgress />,
+        }
+      : {}),
+  }), [TimeIcon, dashboard.greeting, dashboard.firstName, dashboard.showCreditsBanner, dashboard.creditsRemaining, dashboard.dismissCreditsBanner, clinicAlerts, isTabbed, dashboard.metrics, dashboard.loading, dashboard.weekRange, dashboard.weeklyTrends]);
 
   return (
     <TooltipProvider>
@@ -152,66 +215,7 @@ export default function Dashboard() {
           containerVariant="shell"
           modules={isTabbed ? undefined : modules}
           tabs={tabsConfig}
-          slots={{
-            header: (
-              <div className="mb-4">
-                <div className="flex items-center gap-3 mb-1">
-                  {(() => {
-                    const hour = new Date().getHours();
-                    if (hour >= 6 && hour < 12) return <Sun className="w-5 h-5 text-primary" aria-hidden="true" />;
-                    if (hour >= 12 && hour < 18) return <Sunset className="w-5 h-5 text-primary/80" aria-hidden="true" />;
-                    return <Moon className="w-5 h-5 text-muted-foreground" aria-hidden="true" />;
-                  })()}
-                  <h1 className="text-2xl sm:text-3xl font-semibold font-display tracking-tight">
-                    {dashboard.greeting}, <span className="text-primary">{dashboard.firstName}</span>
-                  </h1>
-                </div>
-                <p className="text-sm text-muted-foreground ml-8">
-                  {format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR }).replace(/^\w/, (c) => c.toUpperCase())}
-                </p>
-              </div>
-            ),
-            afterHeader: (
-              <>
-                {dashboard.showCreditsBanner && (
-                  <CreditsBanner
-                    creditsRemaining={dashboard.creditsRemaining}
-                    onDismiss={dashboard.dismissCreditsBanner}
-                  />
-                )}
-                {clinicAlerts.length > 0 && (
-                  <div className="mb-4">
-                    <PageClinicAlerts alerts={clinicAlerts} />
-                  </div>
-                )}
-                {isTabbed && (
-                  <Suspense fallback={<StatsGridFallback />}>
-                    <StatsGrid
-                      metrics={dashboard.metrics}
-                      loading={dashboard.loading}
-                      weekRange={dashboard.weekRange}
-                      weeklyTrends={dashboard.weeklyTrends}
-                    />
-                  </Suspense>
-                )}
-              </>
-            ),
-            ...(!isTabbed
-              ? {
-                  stats: (
-                    <Suspense fallback={<StatsGridFallback />}>
-                      <StatsGrid
-                        metrics={dashboard.metrics}
-                        loading={dashboard.loading}
-                        weekRange={dashboard.weekRange}
-                        weeklyTrends={dashboard.weeklyTrends}
-                      />
-                    </Suspense>
-                  ),
-                  afterStats: <OnboardingProgress />,
-                }
-              : {}),
-          }}
+          slots={slotsConfig}
         />
 
         <PageConfirmDialog

@@ -1,4 +1,4 @@
-import { useEffect, memo, useMemo } from 'react';
+import { useCallback, useEffect, memo, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ListPage } from '@parisgroup-ai/pageshell/composites';
@@ -171,6 +171,14 @@ export default function Evaluations() {
     [t],
   );
 
+  const renderCard = useCallback((session: EvaluationSession, index?: number) => (
+    <SessionCard
+      session={session}
+      isNew={newSessionId === session.session_id}
+      index={index ?? 0}
+    />
+  ), [newSessionId]);
+
   if (isError) {
     return (
       <ErrorState
@@ -202,14 +210,8 @@ export default function Evaluations() {
           viewMode="cards"
           items={sessions}
           isLoading={isLoading}
-          itemKey={(s) => s.session_id}
-          renderCard={(session, index) => (
-            <SessionCard
-              session={session}
-              isNew={newSessionId === session.session_id}
-              index={index ?? 0}
-            />
-          )}
+          itemKey="session_id"
+          renderCard={renderCard}
           gridClassName="grid grid-cols-1 gap-3"
           searchConfig={searchConfig}
           filters={filtersConfig}

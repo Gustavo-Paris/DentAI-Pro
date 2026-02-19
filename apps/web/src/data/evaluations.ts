@@ -117,7 +117,8 @@ export async function getDashboardMetrics({ userId }: DashboardMetricsParams) {
     supabase
       .from('evaluations')
       .select('session_id, status')
-      .eq('user_id', userId),
+      .eq('user_id', userId)
+      .limit(1000),
     // This week's evaluations: session_id (for weekly session count)
     supabase
       .from('evaluations')
@@ -221,6 +222,20 @@ export async function updateStatusBulk(ids: string[], status: string) {
       .from('evaluations')
       .update({ status })
       .in('id', ids),
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Bulk checklist update
+// ---------------------------------------------------------------------------
+
+export async function updateChecklistBulk(ids: string[], userId: string, indices: number[]) {
+  await withMutation(() =>
+    supabase
+      .from('evaluations')
+      .update({ checklist_progress: indices })
+      .in('id', ids)
+      .eq('user_id', userId),
   );
 }
 

@@ -61,6 +61,14 @@ export default defineConfig(() => ({
           'vendor-heic': ['heic-to'],
           // Charts (Dashboard only)
           'vendor-recharts': ['recharts'],
+          // PageShell design system
+          'vendor-pageshell': [
+            '@parisgroup-ai/pageshell/primitives',
+            '@parisgroup-ai/pageshell/composites',
+            '@parisgroup-ai/pageshell/interactions',
+            '@parisgroup-ai/pageshell/core',
+            '@parisgroup-ai/pageshell/theme',
+          ],
         },
       },
     },

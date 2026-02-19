@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ListPage } from '@parisgroup-ai/pageshell/composites';
 import { PagePatientCard } from '@parisgroup-ai/domain-odonto-ai/patients';
@@ -21,11 +21,11 @@ const PAGINATION_CONFIG = { defaultPageSize: 20 } as const;
 // Card adapter (maps PatientWithStats → PagePatientCard)
 // =============================================================================
 
-function PatientCardAdapter({ patient, index }: { patient: PatientWithStats; index: number }) {
+const PatientCardAdapter = memo(function PatientCardAdapter({ patient, index }: { patient: PatientWithStats; index: number }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const patientInfo: PatientInfo = {
+  const patientInfo: PatientInfo = useMemo(() => ({
     id: patient.id,
     name: patient.name,
     status: 'active' as const,
@@ -37,17 +37,19 @@ function PatientCardAdapter({ patient, index }: { patient: PatientWithStats; ind
       : undefined,
     createdAt: '',
     updatedAt: '',
-  };
+  }), [patient.id, patient.name, patient.phone, patient.email, patient.lastVisit]);
+
+  const onSelect = useCallback((id: string) => navigate(`/patient/${id}`), [navigate]);
 
   return (
     <PagePatientCard
       patient={patientInfo}
-      onSelect={(id) => navigate(`/patient/${id}`)}
+      onSelect={onSelect}
       animationDelay={index}
       lastVisitLabel={t('patients.lastVisit')}
     />
   );
-}
+});
 
 // =============================================================================
 // Page Adapter
@@ -123,6 +125,13 @@ export default function Patients() {
     [t],
   );
 
+  const renderCard = useCallback(
+    (patient: PatientWithStats, index?: number) => (
+      <PatientCardAdapter patient={patient} index={index ?? 0} />
+    ),
+    [],
+  );
+
   if (isError) {
     return (
       <ErrorState
@@ -133,23 +142,22 @@ export default function Patients() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-      <ListPage<PatientWithStats>
-          title={t('patients.title')}
-          description={t('patients.count', { count: total })}
-          viewMode="cards"
-          items={patients}
-          isLoading={isLoading}
-          itemKey="id"
-          renderCard={(patient, index) => <PatientCardAdapter patient={patient} index={index ?? 0} />}
-          gridClassName="grid grid-cols-1 gap-3"
-          searchConfig={searchConfig}
-          sort={sortConfig}
-          pagination={PAGINATION_CONFIG}
-          createAction={createAction}
-          emptyState={emptyState}
-          labels={labels}
-        />
-    </div>
+    <ListPage<PatientWithStats>
+        className="max-w-5xl mx-auto"
+        title={t('patients.title')}
+        description={t('patients.count', { count: total })}
+        viewMode="cards"
+        items={patients}
+        isLoading={isLoading}
+        itemKey="id"
+        renderCard={renderCard}
+        gridClassName="grid grid-cols-1 gap-3"
+        searchConfig={searchConfig}
+        sort={sortConfig}
+        pagination={PAGINATION_CONFIG}
+        createAction={createAction}
+        emptyState={emptyState}
+        labels={labels}
+      />
   );
 }

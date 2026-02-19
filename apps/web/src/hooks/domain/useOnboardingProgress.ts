@@ -35,7 +35,7 @@ export function useOnboardingProgress(): OnboardingProgress {
       return { caseCount, patientCount, inventoryCount };
     },
     enabled: !!user,
-    staleTime: QUERY_STALE_TIMES.SHORT,
+    staleTime: QUERY_STALE_TIMES.MEDIUM,
   });
 
   const steps = useMemo<OnboardingStep[]>(() => [
