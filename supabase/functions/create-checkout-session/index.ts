@@ -12,6 +12,7 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
 interface RequestBody {
   priceId?: string;   // for subscription
   packId?: string;    // for credit pack (one-time)
+  billingCycle?: 'monthly' | 'annual'; // for subscription billing period
   payment_method?: 'card' | 'pix'; // for credit packs only (default: card)
   successUrl?: string;
   cancelUrl?: string;
@@ -41,7 +42,7 @@ Deno.serve(withErrorBoundary(async (req: Request) => {
 
   // Parse request
   const body: RequestBody = await req.json();
-  const { priceId, packId, payment_method, successUrl, cancelUrl } = body;
+  const { priceId, packId, billingCycle, payment_method, successUrl, cancelUrl } = body;
 
   // Validate redirect URLs against allowed origins to prevent open redirect
   const ALLOWED_ORIGINS = [
@@ -177,14 +178,17 @@ Deno.serve(withErrorBoundary(async (req: Request) => {
   // PATH 2: Subscription (upgrade/downgrade or new)
   // =========================================================================
 
-  // Resolve Stripe Price ID from our internal plan ID
+  // Resolve Stripe Price ID from our internal plan ID, respecting billing cycle
   const { data: planData } = await supabase
     .from("subscription_plans")
-    .select("stripe_price_id")
+    .select("stripe_price_id, stripe_price_id_yearly")
     .eq("id", priceId)
     .maybeSingle();
 
-  const stripePriceId = planData?.stripe_price_id || priceId;
+  const stripePriceId =
+    (billingCycle === "annual" && planData?.stripe_price_id_yearly)
+      ? planData.stripe_price_id_yearly
+      : planData?.stripe_price_id || priceId;
 
   // Check if user already has an ACTIVE Stripe subscription → inline upgrade/downgrade
   if (
