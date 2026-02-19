@@ -18,7 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { useResult } from '@/hooks/domain/useResult';
 import { BRAND_NAME } from '@/lib/branding';
 import { formatToothLabel } from '@/lib/treatment-config';
-import { PageOdontogram } from '@parisgroup-ai/domain-odonto-ai/treatments';
+
 
 // =============================================================================
 // Page Adapter
@@ -170,45 +170,6 @@ export default function Result() {
                 secondaryPhotos={{ angle45: r.photoUrls.angle45, face: r.photoUrls.face }}
               />
             </section>
-
-            {/* Odontogram — hide for gingival treatments (no specific tooth) */}
-            {evaluation.tooth !== 'GENGIVO' && (
-              <section className="mb-8">
-                <PageOdontogram
-                  teeth={[
-                    {
-                      number: parseInt(evaluation.tooth, 10),
-                      condition: (() => {
-                        const map: Record<string, string> = {
-                          resina: 'filled',
-                          porcelana: 'veneer',
-                          coroa: 'crown',
-                          implante: 'implant',
-                          endodontia: 'root-canal',
-                          encaminhamento: 'extraction-indicated',
-                        };
-                        return (map[r.treatmentType] || 'healthy') as 'healthy' | 'caries' | 'filled' | 'crown' | 'missing' | 'implant' | 'root-canal' | 'extraction-indicated';
-                      })(),
-                    },
-                  ]}
-                  title={t('result.odontogram', { defaultValue: 'Odontograma' })}
-                  conditionLabels={{
-                    healthy: t('odontogram.healthy', { defaultValue: 'Saudável' }),
-                    caries: t('odontogram.caries', { defaultValue: 'Cárie' }),
-                    filled: t('odontogram.filled', { defaultValue: 'Restaurado' }),
-                    crown: t('odontogram.crown', { defaultValue: 'Coroa' }),
-                    missing: t('odontogram.missing', { defaultValue: 'Ausente' }),
-                    implant: t('odontogram.implant', { defaultValue: 'Implante' }),
-                    'root-canal': t('odontogram.rootCanal', { defaultValue: 'Endodontia' }),
-                    bridge: t('odontogram.bridge', { defaultValue: 'Ponte' }),
-                    veneer: t('odontogram.veneer', { defaultValue: 'Faceta' }),
-                    fracture: t('odontogram.fracture', { defaultValue: 'Fratura' }),
-                    'extraction-indicated': t('odontogram.extractionIndicated', { defaultValue: 'Extração' }),
-                  }}
-                  className="print:hidden"
-                />
-              </section>
-            )}
 
             {/* DSD Section */}
             {evaluation.dsd_analysis && (
