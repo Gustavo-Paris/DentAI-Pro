@@ -373,7 +373,7 @@ Deno.serve(async (req) => {
             temperature: 0.0,
             maxTokens: promptDef.maxTokens,
             forceFunctionName: "generate_resin_protocol",
-            timeoutMs: 25_000,
+            timeoutMs: 45_000,
           }
         );
         if (response.tokens) {
