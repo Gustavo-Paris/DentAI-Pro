@@ -9,8 +9,8 @@ import {
   CardTitle,
   Badge,
 } from '@parisgroup-ai/pageshell/primitives';
-import { SharedDetailPage } from '@/components/evaluation/SharedDetailPage';
-import { EvaluationToothCard } from '@/components/evaluation/EvaluationToothCard';
+import { SharedDetailPage } from '@parisgroup-ai/domain-odonto-ai/shared';
+import { PageEvaluationToothCard } from '@parisgroup-ai/domain-odonto-ai/evaluations';
 import { PageImageCompare } from '@parisgroup-ai/domain-odonto-ai/imaging';
 import { BRAND_NAME } from '@/lib/branding';
 import { getTreatmentConfig } from '@/lib/treatment-config';
@@ -153,7 +153,7 @@ export default function SharedEvaluation() {
           const config = getTreatmentConfig(treatmentType);
 
           return (
-            <EvaluationToothCard
+            <PageEvaluationToothCard
               key={index}
               evaluation={{
                 tooth: evaluation.tooth,

@@ -1,8 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { DashboardSession } from '@/hooks/domain/useDashboard';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, Badge } from '@parisgroup-ai/pageshell/primitives';
 import { ChevronRight, Smile } from 'lucide-react';
 import { getTreatmentConfig, formatToothLabel } from '@/lib/treatment-config';
 import { format } from 'date-fns';
@@ -16,7 +15,7 @@ export function SessionCard({ session }: { session: DashboardSession }) {
     : 0;
 
   return (
-    <Link to={`/evaluation/${session.session_id}`}>
+    <Link to={`/evaluation/${session.session_id}`} aria-label={`${session.patient_name || t('evaluation.patientNoName')} — ${t('evaluation.case', { count: session.evaluationCount })}`}>
       <Card className="group relative overflow-hidden p-3 sm:p-4 shadow-sm hover:shadow-md rounded-xl transition-all duration-300 cursor-pointer">
         <div
           className={`absolute left-0 top-0 bottom-0 w-[3px] ${
@@ -91,7 +90,7 @@ export function SessionCard({ session }: { session: DashboardSession }) {
             <ChevronRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-muted-foreground group-hover:translate-x-0.5 transition-all" aria-hidden="true" />
           </div>
         </div>
-        <div className="mt-2 h-1 rounded-full bg-secondary overflow-hidden">
+        <div className="mt-2 h-1 rounded-full bg-secondary overflow-hidden" role="progressbar" aria-valuenow={Math.round(progressPercent)} aria-valuemin={0} aria-valuemax={100} aria-label={t('evaluation.progress', { defaultValue: 'Progresso da avaliação' })}>
           <div
             className={`h-full rounded-full transition-all duration-500 ${isCompleted ? 'bg-emerald-500' : 'bg-primary'}`}
             style={{ width: `${progressPercent}%` }}

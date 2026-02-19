@@ -5,10 +5,7 @@ import { PageClinicActivityFeed } from '@parisgroup-ai/domain-odonto-ai/dashboar
 import type { ActivityFeedItem } from '@parisgroup-ai/domain-odonto-ai/dashboard';
 import type { DashboardSession } from '@/hooks/domain/useDashboard';
 import { WizardDraft } from '@/hooks/useWizardDraft';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Button, Card, Badge, Skeleton } from '@parisgroup-ai/pageshell/primitives';
 import {
   FileText, FileWarning, ChevronRight, ArrowRight, Plus,
 } from 'lucide-react';

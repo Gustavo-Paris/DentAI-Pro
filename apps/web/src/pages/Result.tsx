@@ -1,7 +1,5 @@
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Link, useNavigate } from 'react-router-dom';
+import { Button, Card, CardContent, CardHeader, CardTitle, Badge } from '@parisgroup-ai/pageshell/primitives';
 import { PageConfirmDialog } from '@parisgroup-ai/pageshell/interactions';
 import { Download, Plus, CheckCircle, Package, Sparkles, Layers, Loader2, Crown, Stethoscope, ArrowUpRight, CircleX, Heart, Palette, AlertTriangle, Smile, HeartPulse } from 'lucide-react';
 import { format } from 'date-fns';
@@ -38,7 +36,7 @@ import type { OdontogramTooth } from '@parisgroup-ai/domain-odonto-ai/treatments
 export default function Result() {
   const { t } = useTranslation();
   const r = useResult();
-
+  const navigate = useNavigate();
 
   if (!r.evaluation && !r.isLoading) {
     return (
@@ -82,7 +80,7 @@ export default function Result() {
           {
             label: t('result.newCase'),
             icon: Plus,
-            onClick: () => { window.location.href = '/new-case'; },
+            onClick: () => { navigate('/new-case'); },
             variant: 'default',
           },
         ]}
@@ -199,7 +197,7 @@ export default function Result() {
                         gengivoplastia: 'healthy',
                         recobrimento_radicular: 'healthy',
                       };
-                      return (map[r.treatmentType] || 'healthy') as import('@parisgroup-ai/domain-odonto-ai/shared').ToothCondition;
+                      return (map[r.treatmentType] || 'healthy') as 'healthy' | 'caries' | 'filled' | 'crown' | 'missing' | 'implant' | 'root-canal' | 'extraction-indicated';
                     })(),
                   },
                 ]}

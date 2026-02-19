@@ -1,16 +1,22 @@
-import { useEffect, memo } from 'react';
+import { useEffect, memo, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ListPage } from '@parisgroup-ai/pageshell/composites';
 import { useEvaluationSessions } from '@/hooks/domain/useEvaluationSessions';
 import type { EvaluationSession } from '@/hooks/domain/useEvaluationSessions';
-import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
+import { Badge, Card } from '@parisgroup-ai/pageshell/primitives';
 import { CheckCircle, ChevronRight, Calendar } from 'lucide-react';
 import { ErrorState } from '@/components/ui/error-state';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatToothLabel } from '@/lib/treatment-config';
+
+// =============================================================================
+// Static configs (no hook dependencies)
+// =============================================================================
+
+const SEARCH_FIELDS: ('patient_name')[] = ['patient_name'];
+const PAGINATION_CONFIG = { defaultPageSize: 20 } as const;
 
 // =============================================================================
 // Card component (presentation only)
@@ -123,6 +129,48 @@ export default function Evaluations() {
     }
   }, [newSessionId]);
 
+  const searchConfig = useMemo(
+    () => ({ fields: SEARCH_FIELDS, placeholder: t('evaluation.searchByPatient') }),
+    [t],
+  );
+
+  const filtersConfig = useMemo(
+    () => ({
+      status: {
+        label: t('evaluation.statusFilter'),
+        options: [
+          { value: 'all', label: t('evaluation.statusAll') },
+          { value: 'pending', label: t('evaluation.statusPending') },
+          { value: 'completed', label: t('evaluation.statusCompleted') },
+        ],
+        default: 'all',
+      },
+    }),
+    [t],
+  );
+
+  const createAction = useMemo(
+    () => ({ label: t('evaluation.newEvaluation'), href: '/new-case' }),
+    [t],
+  );
+
+  const emptyState = useMemo(
+    () => ({
+      title: t('evaluation.emptyTitle'),
+      description: t('evaluation.emptyDescription'),
+      action: { label: t('evaluation.emptyAction'), href: '/new-case' },
+    }),
+    [t],
+  );
+
+  const labels = useMemo(
+    () => ({
+      search: { placeholder: t('evaluation.searchByPatient') },
+      pagination: { showing: t('common.showingOf'), of: t('common.of'), items: t('evaluation.paginationItems') },
+    }),
+    [t],
+  );
+
   if (isError) {
     return (
       <ErrorState
@@ -163,35 +211,12 @@ export default function Evaluations() {
             />
           )}
           gridClassName="grid grid-cols-1 gap-3"
-          searchConfig={{
-            fields: ['patient_name'],
-            placeholder: t('evaluation.searchByPatient'),
-          }}
-          filters={{
-            status: {
-              label: t('evaluation.statusFilter'),
-              options: [
-                { value: 'all', label: t('evaluation.statusAll') },
-                { value: 'pending', label: t('evaluation.statusPending') },
-                { value: 'completed', label: t('evaluation.statusCompleted') },
-              ],
-              default: 'all',
-            },
-          }}
-          pagination={{ defaultPageSize: 20 }}
-          createAction={{
-            label: t('evaluation.newEvaluation'),
-            href: '/new-case',
-          }}
-          emptyState={{
-            title: t('evaluation.emptyTitle'),
-            description: t('evaluation.emptyDescription'),
-            action: { label: t('evaluation.emptyAction'), href: '/new-case' },
-          }}
-          labels={{
-            search: { placeholder: t('evaluation.searchByPatient') },
-            pagination: { showing: t('common.showingOf'), of: t('common.of'), items: t('evaluation.paginationItems') },
-          }}
+          searchConfig={searchConfig}
+          filters={filtersConfig}
+          pagination={PAGINATION_CONFIG}
+          createAction={createAction}
+          emptyState={emptyState}
+          labels={labels}
         />
     </div>
   );

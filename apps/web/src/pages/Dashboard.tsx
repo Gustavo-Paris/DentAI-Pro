@@ -4,11 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { DashboardPage } from '@parisgroup-ai/pageshell/composites';
 import type { ModuleConfig, DashboardTab } from '@parisgroup-ai/pageshell/composites';
 import { useDashboard } from '@/hooks/domain/useDashboard';
-import {
-  TooltipProvider,
-} from '@/components/ui/tooltip';
+import { TooltipProvider, Skeleton } from '@parisgroup-ai/pageshell/primitives';
 import { PageConfirmDialog } from '@parisgroup-ai/pageshell/interactions';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   Sparkles, Users, Package, Sun, Moon, Sunset,
   LayoutDashboard, BarChart3,
@@ -24,6 +21,7 @@ import { PageClinicAlerts } from '@parisgroup-ai/domain-odonto-ai/dashboard';
 import type { ClinicAlert } from '@parisgroup-ai/domain-odonto-ai/dashboard';
 import { OnboardingProgress } from '@/components/onboarding/OnboardingProgress';
 import { WelcomeModal } from '@/components/onboarding/WelcomeModal';
+import { ErrorState } from '@/components/ui/error-state';
 
 function StatsGridFallback() {
   return (
@@ -57,6 +55,15 @@ export default function Dashboard() {
       navigate(returnTo, { replace: true });
     }
   }, [navigate]);
+
+  if (dashboard.isError) {
+    return (
+      <ErrorState
+        title={t('dashboard.loadError', { defaultValue: 'Erro ao carregar dashboard' })}
+        description={t('errors.tryReloadPage')}
+      />
+    );
+  }
 
   const modules: ModuleConfig[] = useMemo(() => [
     {

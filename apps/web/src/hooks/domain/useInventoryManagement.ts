@@ -335,6 +335,7 @@ export function useInventoryManagement() {
     flatItems,
     total: inventoryQuery.data?.count ?? 0,
     isLoading: inventoryQuery.isLoading,
+    isError: inventoryQuery.isError,
     catalog,
 
     // ListPage filter options

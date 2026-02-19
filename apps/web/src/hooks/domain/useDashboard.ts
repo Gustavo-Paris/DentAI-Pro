@@ -60,9 +60,10 @@ export interface DashboardState {
   sessions: DashboardSession[];
   weekRange: { start: string; end: string };
 
-  // Loading states
+  // Loading & error states
   loading: boolean;
   loadingCredits: boolean;
+  isError: boolean;
 
   // Derived flags
   isNewUser: boolean;
@@ -243,7 +244,7 @@ export function useDashboard(): DashboardState {
   const { user } = useAuth();
 
   // --- Data fetching (inline React Query) ---
-  const { data: profileData, isLoading: loadingProfile } = useQuery({
+  const { data: profileData, isLoading: loadingProfile, isError: profileError } = useQuery({
     queryKey: dashboardQueryKeys.profile(),
     queryFn: async () => {
       if (!user) throw new Error('User not authenticated');
@@ -258,7 +259,7 @@ export function useDashboard(): DashboardState {
     staleTime: QUERY_STALE_TIMES.LONG,
   });
 
-  const { data: dashboardData, isLoading: loadingDashboard } = useQuery({
+  const { data: dashboardData, isLoading: loadingDashboard, isError: dashboardError } = useQuery({
     queryKey: dashboardQueryKeys.metrics(),
     queryFn: async () => {
       if (!user) throw new Error('User not authenticated');
@@ -318,7 +319,7 @@ export function useDashboard(): DashboardState {
     staleTime: QUERY_STALE_TIMES.MEDIUM,
   });
 
-  const { data: insightsData, isLoading: loadingInsights } = useQuery({
+  const { data: insightsData, isLoading: loadingInsights, isError: insightsError } = useQuery({
     queryKey: dashboardQueryKeys.insights(),
     queryFn: async () => {
       if (!user) throw new Error('User not authenticated');
@@ -363,6 +364,7 @@ export function useDashboard(): DashboardState {
 
   // --- Derived values ---
   const loading = loadingProfile || loadingDashboard || loadingInsights;
+  const isError = profileError || dashboardError || insightsError;
   const profile = profileData?.profile;
   const avatarUrl = profileData?.avatarUrl ?? null;
   const firstName = extractFirstName(profile?.full_name);
@@ -435,6 +437,7 @@ export function useDashboard(): DashboardState {
     weekRange,
     loading,
     loadingCredits,
+    isError,
     isNewUser,
     showWelcome,
     dismissWelcome,

@@ -1,4 +1,4 @@
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@parisgroup-ai/pageshell/primitives';
 import { CheckCircle } from 'lucide-react';
 import { getTreatmentConfig } from '@/lib/treatment-config';
 import { getProtocolFingerprint } from '@/lib/protocol-fingerprint';

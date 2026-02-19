@@ -1,18 +1,18 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import {
+  Card,
+  Button,
+  Input,
+  Textarea,
+  Label,
+  Badge,
+  Progress,
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from '@parisgroup-ai/pageshell/primitives';
 import {
   Phone,
   Mail,
