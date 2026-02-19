@@ -19,16 +19,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 import AppLayout from "@/components/AppLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { evaluations } from "@/data";
+import { QUERY_STALE_TIMES } from "@/lib/constants";
 
-
-// Eager load auth pages (needed immediately)
-import Login from "@/pages/Login";
-import Register from "@/pages/Register";
-import ForgotPassword from "@/pages/ForgotPassword";
-import ResetPassword from "@/pages/ResetPassword";
+// Eager load static legal pages (small, no PageShell dependency)
 import Terms from "@/pages/Terms";
 import Privacy from "@/pages/Privacy";
-import NotFound from "@/pages/NotFound";
+
+// Lazy load auth pages (import PageShell primitives)
+const Login = lazy(() => import("@/pages/Login"));
+const Register = lazy(() => import("@/pages/Register"));
+const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
+const NotFound = lazy(() => import("@/pages/NotFound"));
 
 // Lazy load public pages
 const Landing = lazy(() => import("@/pages/Landing"));
@@ -52,6 +54,7 @@ const queryClient = new QueryClient({
     queries: {
       refetchOnWindowFocus: false,
       retry: 1,
+      staleTime: QUERY_STALE_TIMES.SHORT,
     },
   },
 });
@@ -131,10 +134,10 @@ const App = () => (
           <Routes>
             {/* Public routes */}
             <Route path="/" element={<Suspense fallback={<PageLoader />}><Landing /></Suspense>} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/login" element={<Suspense fallback={<PageLoader />}><Login /></Suspense>} />
+            <Route path="/register" element={<Suspense fallback={<PageLoader />}><Register /></Suspense>} />
+            <Route path="/forgot-password" element={<Suspense fallback={<PageLoader />}><ForgotPassword /></Suspense>} />
+            <Route path="/reset-password" element={<Suspense fallback={<PageLoader />}><ResetPassword /></Suspense>} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/shared/:token" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><SharedEvaluation /></Suspense></ErrorBoundary>} />
@@ -157,7 +160,7 @@ const App = () => (
               <Route path="/new-case" element={<RouteErrorBoundary><Suspense fallback={<PageLoader />}><NewCase /></Suspense></RouteErrorBoundary>} />
             </Route>
 
-            <Route path="*" element={<NotFound />} />
+            <Route path="*" element={<Suspense fallback={<PageLoader />}><NotFound /></Suspense>} />
           </Routes>
           <ConnectedGlobalSearch />
           <KeyboardShortcuts />

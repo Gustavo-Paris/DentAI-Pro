@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ReactRouterAppShell } from '@parisgroup-ai/pageshell/layouts/adapters/react-router';
@@ -18,6 +19,32 @@ export default function AppLayout() {
   const { t } = useTranslation();
   const { user, signOut } = useAuth();
 
+  const navigation = useMemo(() => [
+    {
+      items: [
+        { title: t('components.layout.home'), href: '/dashboard', icon: LayoutDashboard, exact: true },
+        { title: t('components.layout.evaluations'), href: '/evaluations', icon: FileText },
+        { title: t('components.layout.patients'), href: '/patients', icon: Users },
+        { title: t('components.layout.inventory'), href: '/inventory', icon: Package },
+        { title: t('components.layout.profile'), href: '/profile', icon: User },
+      ],
+    },
+  ], [t]);
+
+  const userInfo = useMemo(() => ({
+    name: user?.user_metadata?.full_name ?? user?.email,
+    email: user?.email,
+    image: user?.user_metadata?.avatar_url,
+  }), [user?.user_metadata?.full_name, user?.email, user?.user_metadata?.avatar_url]);
+
+  const userMenuItems = useMemo(() => [
+    { label: t('components.layout.profile'), href: '/profile', icon: User },
+  ], [t]);
+
+  const themeToggleSlot = useMemo(() => <ThemeToggle />, []);
+  const footerSlot = useMemo(() => <CreditBadge variant="compact" className="w-full justify-center" />, []);
+  const headerRightSlot = useMemo(() => <CreditBadge variant="compact" />, []);
+
   return (
     <ReactRouterAppShell
       theme="odonto-ai"
@@ -26,29 +53,13 @@ export default function AppLayout() {
         title: BRAND_NAME,
         href: '/dashboard',
       }}
-      navigation={[
-        {
-          items: [
-            { title: t('components.layout.home'), href: '/dashboard', icon: LayoutDashboard, exact: true },
-            { title: t('components.layout.evaluations'), href: '/evaluations', icon: FileText },
-            { title: t('components.layout.patients'), href: '/patients', icon: Users },
-            { title: t('components.layout.inventory'), href: '/inventory', icon: Package },
-            { title: t('components.layout.profile'), href: '/profile', icon: User },
-          ],
-        },
-      ]}
-      user={{
-        name: user?.user_metadata?.full_name ?? user?.email,
-        email: user?.email,
-        image: user?.user_metadata?.avatar_url,
-      }}
-      userMenuItems={[
-        { label: t('components.layout.profile'), href: '/profile', icon: User },
-      ]}
+      navigation={navigation}
+      user={userInfo}
+      userMenuItems={userMenuItems}
       onSignOut={signOut}
-      themeToggle={<ThemeToggle />}
-      footer={<CreditBadge variant="compact" className="w-full justify-center" />}
-      headerRight={<CreditBadge variant="compact" />}
+      themeToggle={themeToggleSlot}
+      footer={footerSlot}
+      headerRight={headerRightSlot}
     >
       <HelpButton />
       <Outlet />

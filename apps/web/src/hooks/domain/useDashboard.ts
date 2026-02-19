@@ -229,11 +229,11 @@ function computeInsights(
 // ---------------------------------------------------------------------------
 
 const dashboardQueryKeys = {
-  all: ['dashboard'] as const,
-  profile: () => [...dashboardQueryKeys.all, 'profile'] as const,
-  metrics: () => [...dashboardQueryKeys.all, 'metrics'] as const,
-  counts: () => [...dashboardQueryKeys.all, 'counts'] as const,
-  insights: () => [...dashboardQueryKeys.all, 'insights'] as const,
+  all: (userId?: string) => ['dashboard', userId] as const,
+  profile: (userId?: string) => [...dashboardQueryKeys.all(userId), 'profile'] as const,
+  metrics: (userId?: string) => [...dashboardQueryKeys.all(userId), 'metrics'] as const,
+  counts: (userId?: string) => [...dashboardQueryKeys.all(userId), 'counts'] as const,
+  insights: (userId?: string) => [...dashboardQueryKeys.all(userId), 'insights'] as const,
 };
 
 // ---------------------------------------------------------------------------
@@ -245,7 +245,7 @@ export function useDashboard(): DashboardState {
 
   // --- Data fetching (inline React Query) ---
   const { data: profileData, isLoading: loadingProfile, isError: profileError } = useQuery({
-    queryKey: dashboardQueryKeys.profile(),
+    queryKey: dashboardQueryKeys.profile(user?.id),
     queryFn: async () => {
       if (!user) throw new Error('User not authenticated');
       const profile = await profiles.getByUserId(user.id);
@@ -260,7 +260,7 @@ export function useDashboard(): DashboardState {
   });
 
   const { data: dashboardData, isLoading: loadingDashboard, isError: dashboardError } = useQuery({
-    queryKey: dashboardQueryKeys.metrics(),
+    queryKey: dashboardQueryKeys.metrics(user?.id),
     queryFn: async () => {
       if (!user) throw new Error('User not authenticated');
 
@@ -306,7 +306,7 @@ export function useDashboard(): DashboardState {
     staleTime: QUERY_STALE_TIMES.SHORT,
   });
   const { data: countsData } = useQuery({
-    queryKey: dashboardQueryKeys.counts(),
+    queryKey: dashboardQueryKeys.counts(user?.id),
     queryFn: async () => {
       if (!user) throw new Error('User not authenticated');
       const [totalCases, totalPatients] = await Promise.all([
@@ -320,7 +320,7 @@ export function useDashboard(): DashboardState {
   });
 
   const { data: insightsData, isLoading: loadingInsights, isError: insightsError } = useQuery({
-    queryKey: dashboardQueryKeys.insights(),
+    queryKey: dashboardQueryKeys.insights(user?.id),
     queryFn: async () => {
       if (!user) throw new Error('User not authenticated');
       const raw = await evaluations.getDashboardInsights({ userId: user.id, weeksBack: 8 });

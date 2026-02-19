@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -56,35 +57,7 @@ export default function PatientProfile() {
   const sessionsList = sessions?.sessions || [];
   const hasMoreSessions = sessions?.hasMore || false;
 
-  return (
-    <>
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-      <DetailPage
-        title={(data) => data?.name ?? '...'}
-        description={t('patients.profileTitle')}
-        backHref="/patients"
-        breadcrumbs={[
-          { label: t('nav.dashboard'), href: '/dashboard' },
-          { label: t('dashboard.patients'), href: '/patients' },
-          { label: patient?.name || '...' },
-        ]}
-        query={{ data: patient, isLoading: profile.isLoading }}
-        headerActions={[
-          { label: t('common.edit'), icon: Pencil, onClick: profile.openEditDialog, variant: 'outline' },
-        ]}
-        slots={{
-          beforeContent: patient && (
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
-                {profile.getInitials(patient.name)}
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">{t('patients.profileTitle')}</p>
-              </div>
-            </div>
-          ),
-        }}
-        sections={[
+  const sections = useMemo(() => [
           {
             id: 'contact',
             title: t('patients.contactInfo'),
@@ -295,7 +268,37 @@ export default function PatientProfile() {
               </div>
             ),
           },
+  ], [t, patient, metrics, sessionsList, patientId, hasMoreSessions, profile.openEditDialog, profile.loadMoreSessions, profile.isFetchingSessions]);
+
+  return (
+    <>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <DetailPage
+        title={(data) => data?.name ?? '...'}
+        description={t('patients.profileTitle')}
+        backHref="/patients"
+        breadcrumbs={[
+          { label: t('nav.dashboard'), href: '/dashboard' },
+          { label: t('dashboard.patients'), href: '/patients' },
+          { label: patient?.name || '...' },
         ]}
+        query={{ data: patient, isLoading: profile.isLoading }}
+        headerActions={[
+          { label: t('common.edit'), icon: Pencil, onClick: profile.openEditDialog, variant: 'outline' },
+        ]}
+        slots={{
+          beforeContent: patient && (
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
+                {profile.getInitials(patient.name)}
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">{t('patients.profileTitle')}</p>
+              </div>
+            </div>
+          ),
+        }}
+        sections={sections}
       />
       </div>
 

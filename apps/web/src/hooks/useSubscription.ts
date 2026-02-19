@@ -45,6 +45,7 @@ export function useSubscription() {
       return subscriptions.getByUserId(user.id);
     },
     enabled: !!user,
+    staleTime: QUERY_STALE_TIMES.LONG,
   });
 
   // Fetch available credit packs
@@ -108,6 +109,7 @@ export function useSubscription() {
       return creditUsage.listByUserId(user.id, { limit: 20 });
     },
     enabled: !!user,
+    staleTime: QUERY_STALE_TIMES.MEDIUM,
   });
 
   // Computed values

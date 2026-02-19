@@ -54,7 +54,8 @@ export async function getEvaluationStats(userId: string, patientIds: string[]) {
       .from('evaluations')
       .select('patient_id, session_id, status, created_at')
       .eq('user_id', userId)
-      .in('patient_id', patientIds),
+      .in('patient_id', patientIds)
+      .limit(1000),
   );
   return data || [];
 }
@@ -92,7 +93,8 @@ export async function listAll(userId: string) {
       .from('patients')
       .select('id, name')
       .eq('user_id', userId)
-      .order('name'),
+      .order('name')
+      .limit(500),
   );
   return data || [];
 }
@@ -103,7 +105,8 @@ export async function listForAutocomplete(userId: string) {
       .from('patients')
       .select('id, name, phone, email, birth_date')
       .eq('user_id', userId)
-      .order('name'),
+      .order('name')
+      .limit(200),
   );
   return (data || []) as Array<{
     id: string;
