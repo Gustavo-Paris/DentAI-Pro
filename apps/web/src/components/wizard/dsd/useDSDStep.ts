@@ -728,7 +728,9 @@ export function useDSDStep({
       // Check if it's a connection/timeout error that can be retried
       const isConnectionError =
         err.name === 'AbortError' ||
+        err.name === 'FunctionsFetchError' ||
         err.message?.includes('Failed to fetch') ||
+        err.message?.includes('Failed to send a request') ||
         err.message?.includes('fetch') ||
         err.message?.includes('timeout') ||
         err.message?.includes('network');
