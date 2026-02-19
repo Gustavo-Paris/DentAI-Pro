@@ -20,3 +20,7 @@ export type {
   MoneyAmount,
   BaseEntity,
 } from './types';
+
+// Components
+export { SharedDetailPage } from './SharedDetailPage';
+export type { SharedDetailPageProps } from './SharedDetailPage';

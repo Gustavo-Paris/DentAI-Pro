@@ -12,6 +12,7 @@ export default defineConfig({
     inventory: './src/inventory/index.ts',
     imaging: './src/imaging/index.ts',
     prescriptions: './src/prescriptions/index.ts',
+    evaluations: './src/evaluations/index.ts',
   },
   format: ['esm'],
   target: 'es2022',

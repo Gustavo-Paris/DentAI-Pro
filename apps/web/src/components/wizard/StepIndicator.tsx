@@ -56,7 +56,7 @@ export function StepIndicator({
   );
 
   return (
-    <nav aria-label="Wizard progress" className="mb-6">
+    <nav aria-label="Wizard progress" className="mb-8">
       {/* Desktop Stepper */}
       <ol className="hidden sm:flex items-center justify-between" role="list">
         {steps.map((step, index) => {
@@ -82,7 +82,7 @@ export function StepIndicator({
                     step.isCompleted &&
                       'bg-primary text-primary-foreground shadow-sm',
                     step.isActive &&
-                      'bg-primary text-primary-foreground ring-2 ring-primary/30 ring-offset-2 ring-offset-background btn-glow-gold shadow-md',
+                      'bg-primary text-primary-foreground ring-2 ring-primary/20 ring-offset-2 ring-offset-background shadow-sm',
                     step.isFuture && 'bg-muted text-muted-foreground',
                     isClickable && 'group-hover:shadow-md',
                   )}
