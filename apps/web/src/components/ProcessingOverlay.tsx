@@ -1,4 +1,5 @@
 import { memo, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { ProgressRing } from './ProgressRing';
@@ -79,7 +80,8 @@ export const ProcessingOverlay = memo(function ProcessingOverlay({
     ? steps.findIndex((s) => !s.completed)
     : -1;
 
-  return (
+  // Portal to document.body to escape AppShell stacking context
+  const overlay = (
     <div
       ref={overlayRef}
       className="fixed inset-0 bg-background z-50 flex items-center justify-center p-4 pb-[max(1rem,env(safe-area-inset-bottom))] grain-overlay"
@@ -117,4 +119,6 @@ export const ProcessingOverlay = memo(function ProcessingOverlay({
       </Card>
     </div>
   );
+
+  return createPortal(overlay, document.body);
 });
