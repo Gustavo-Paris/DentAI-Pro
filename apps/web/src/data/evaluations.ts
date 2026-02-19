@@ -374,6 +374,12 @@ export async function deletePendingTeeth(sessionId: string, teeth: string[]) {
   );
 }
 
+export async function deleteSession(sessionId: string, userId: string) {
+  await withMutation(() =>
+    supabase.from('evaluations').delete().eq('session_id', sessionId).eq('user_id', userId),
+  );
+}
+
 export async function invokeEdgeFunction(name: string, body: Record<string, unknown>) {
   const { error } = await supabase.functions.invoke(name, { body });
   if (error) throw error;

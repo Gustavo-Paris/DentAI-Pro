@@ -57,7 +57,8 @@ export function useSubscription() {
 
   // Create checkout session (subscription)
   const checkoutMutation = useMutation({
-    mutationFn: (priceId: string) => subscriptions.createCheckoutSession(priceId),
+    mutationFn: ({ priceId, billingCycle }: { priceId: string; billingCycle?: 'monthly' | 'annual' }) =>
+      subscriptions.createCheckoutSession(priceId, billingCycle),
     onSuccess: (data) => {
       if (data.updated) {
         // Inline upgrade/downgrade — no redirect needed
@@ -239,7 +240,8 @@ export function useSubscription() {
     canCreateDsd,
 
     // Actions
-    checkout: checkoutMutation.mutate,
+    checkout: (planId: string, billingCycle?: 'monthly' | 'annual') =>
+      checkoutMutation.mutate({ priceId: planId, billingCycle }),
     isCheckingOut: checkoutMutation.isPending,
 
     purchasePack: (packId: string, paymentMethod?: 'card' | 'pix') =>

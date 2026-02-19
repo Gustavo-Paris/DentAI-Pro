@@ -47,7 +47,9 @@
     "moreOptions": "Mais opções",
     "showingOf": "Mostrando",
     "of": "de",
-    "discard": "Descartar"
+    "discard": "Descartar",
+    "clearSelection": "Limpar seleção",
+    "siteNavigation": "Navegação do site"
   },
   "auth": {
     "login": "Entrar",
@@ -134,6 +136,16 @@
     "myInventory": "Meu Inventário",
     "availableResins": "Resinas disponíveis",
     "principal": "Principal",
+    "loadError": "Erro ao carregar dados do painel",
+    "alerts": {
+      "lowCreditsTitle": "Créditos baixos",
+      "lowCreditsDescription": "Você tem {{count}} créditos restantes.",
+      "upgrade": "Fazer upgrade"
+    },
+    "activityFeed": {
+      "title": "Atividade Recente",
+      "empty": "Nenhuma atividade recente"
+    },
     "discardDraftTitle": "Descartar rascunho?",
     "discardDraftDescription": "O rascunho será apagado permanentemente. Esta ação não pode ser desfeita.",
     "greetingMorning": "Bom dia",
@@ -272,7 +284,15 @@
     "retryAnalysis": "Refazer Análise",
     "skipDSD": "Pular DSD",
     "viewDSD": "Ver DSD",
-    "simulation": "Simulação DSD"
+    "simulation": "Simulação DSD",
+    "original": "Original",
+    "viewSimulation": "Ver Simulação",
+    "generatingLayer": "Gerando camada {{current}} de {{total}}",
+    "processing": "Processando...",
+    "estimatedTime": "~30 segundos por camada",
+    "layerLabelRestorations": "Gerando correções restauradoras...",
+    "layerLabelWhitening": "Aplicando simulação de clareamento...",
+    "layerLabelGingivoplasty": "Simulando gengivoplastia..."
   },
   "evaluation": {
     "tooth": "Dente",
@@ -329,7 +349,19 @@
     "teethEvaluated_one": "{{count}} dente avaliado",
     "teethEvaluated_other": "{{count}} dentes avaliados",
     "completed_one": "{{count}} concluído",
-    "completed_other": "{{count}} concluídos"
+    "completed_other": "{{count}} concluídos",
+    "cancelled": "Cancelado",
+    "deleteSession": "Excluir sessão",
+    "deleteSessionTitle": "Excluir sessão de avaliação",
+    "deleteSessionDescription": "Esta ação excluirá permanentemente esta sessão e todos os {{count}} caso(s) associados. Esta ação não pode ser desfeita.",
+    "treatmentFilter": "Tipo de tratamento",
+    "treatmentAll": "Todos",
+    "treatmentResina": "Resina",
+    "treatmentPorcelana": "Porcelana",
+    "treatmentEndodontia": "Endodontia",
+    "treatmentImplante": "Implante",
+    "treatmentCoroa": "Coroa",
+    "treatmentEncaminhamento": "Encaminhamento"
   },
   "patients": {
     "title": "Meus Pacientes",
@@ -372,7 +404,11 @@
     "clinicalNotes": "Notas clínicas",
     "clinicalNotesPlaceholder": "Alergias, preferências, observações...",
     "inProgressStatus": "Em progresso",
-    "completedStatus": "Concluído"
+    "completedStatus": "Concluído",
+    "newEvaluation": "Nova Avaliação",
+    "createPatient": "Novo Paciente",
+    "treatmentTimeline": "Linha do Tempo",
+    "noTreatmentHistory": "Nenhum histórico de tratamento"
   },
   "inventory": {
     "title": "Meu Inventário",
@@ -429,6 +465,7 @@
     "saveChanges": "Salvar Alterações",
     "changeAvatar": "Mudar foto de perfil",
     "changeClinicLogo": "Alterar logo do consultório",
+    "uploadClinicLogo": "Enviar logo da clínica",
     "creditsAdded": "{{count}} créditos adicionados com sucesso!",
     "creditsAddedGeneric": "Créditos adicionados com sucesso!",
     "paymentHistory": "Histórico de pagamentos",
@@ -485,7 +522,9 @@
     "deleteSuccess": "Conta excluída com sucesso.",
     "deleteTypeExact": "Digite exatamente: \"{{phrase}}\"",
     "deleteError": "Erro ao excluir conta. Entre em contato com o suporte.",
-    "deleteRetryError": "Erro ao excluir conta. Tente novamente."
+    "deleteRetryError": "Erro ao excluir conta. Tente novamente.",
+    "deleteConfirmPhrase": "EXCLUIR MINHA CONTA",
+    "exportFilename": "tosmile-meus-dados"
   },
   "pricing": {
     "title": "Planos e Preços",
@@ -499,7 +538,9 @@
     "creditsPerMonth": "{{count}} créditos/mês",
     "creditExplanation": "1 crédito = 1 análise | 2 créditos = 1 simulação DSD",
     "users": "{{count}} usuários",
-    "rollover": "Rollover",
+    "rollover": "Acúmulo",
+    "creditRollover": "Acúmulo de créditos",
+    "maxRollover": "Máx. acúmulo",
     "startFree": "Começar Grátis",
     "start": "Começar",
     "mostPopular": "Mais Popular",
@@ -581,9 +622,12 @@
     "testimonial4Clinic": "Juliana Santos Odontologia",
     "footer": "Ferramenta de apoio à decisão clínica.",
     "termsOfUse": "Termos de Uso",
-    "privacy": "Privacidade"
+    "privacy": "Privacidade",
+    "starRating": "{{rating}} de 5 estrelas",
+    "illustrativeTestimonial": "Depoimento ilustrativo"
   },
   "pages": {
+    "dsdComparison": "Comparação DSD",
     "termsTitle": "Termos de Uso",
     "privacyTitle": "Política de Privacidade",
     "lastUpdated": "Última atualização:",
@@ -604,7 +648,96 @@
     "teethEvaluated_one": "{{count}} dente avaliado",
     "teethEvaluated_other": "{{count}} dentes avaliados",
     "completed_one": "{{count}} concluído",
-    "completed_other": "{{count}} concluídos"
+    "completed_other": "{{count}} concluídos",
+    "terms": {
+      "s1Title": "1. Aceitação dos Termos",
+      "s1Text": "Ao acessar e usar o {{brandName}}, você concorda com estes Termos de Uso. Se você não concordar com qualquer parte destes termos, não deve usar nosso serviço.",
+      "s2Title": "2. Descrição do Serviço",
+      "s2Text": "O {{brandName}} é uma ferramenta de apoio à decisão clínica que utiliza inteligência artificial para sugerir resinas compostas adequadas para casos odontológicos. O serviço fornece recomendações baseadas em dados inseridos pelo usuário e um banco de dados de materiais restauradores.",
+      "s3Title": "3. Limitação de Responsabilidade",
+      "s3Important": "IMPORTANTE:",
+      "s3Text1": "O {{brandName}} é uma ferramenta de apoio e NÃO substitui o julgamento clínico profissional. As recomendações fornecidas são sugestões baseadas em algoritmos e não devem ser consideradas como diagnóstico ou prescrição médica/odontológica.",
+      "s3Text2": "O profissional de saúde é o único responsável pelas decisões clínicas tomadas em relação ao tratamento de seus pacientes. Não nos responsabilizamos por quaisquer danos ou prejuízos resultantes do uso das recomendações fornecidas pela plataforma.",
+      "s4Title": "4. Uso Adequado",
+      "s4Intro": "Você concorda em:",
+      "s4Item1": "Fornecer informações precisas e verdadeiras ao usar o serviço",
+      "s4Item2": "Não compartilhar suas credenciais de acesso com terceiros",
+      "s4Item3": "Não utilizar o serviço para fins ilegais ou não autorizados",
+      "s4Item4": "Não tentar acessar áreas restritas do sistema",
+      "s4Item5": "Respeitar a privacidade e dados de pacientes",
+      "s5Title": "5. Propriedade Intelectual",
+      "s5Text": "Todo o conteúdo do {{brandName}}, incluindo mas não limitado a textos, gráficos, logos, ícones, imagens, algoritmos e software, é propriedade exclusiva do {{brandName}} ou de seus licenciadores e é protegido por leis de propriedade intelectual.",
+      "s6Title": "6. Conta do Usuário",
+      "s6Text": "Você é responsável por manter a confidencialidade de sua conta e senha. Qualquer atividade realizada em sua conta é de sua responsabilidade. Notifique-nos imediatamente sobre qualquer uso não autorizado de sua conta.",
+      "s7Title": "7. Modificações do Serviço",
+      "s7Text": "Reservamo-nos o direito de modificar, suspender ou descontinuar o serviço a qualquer momento, com ou sem aviso prévio. Também podemos atualizar estes Termos de Uso periodicamente.",
+      "s8Title": "8. Rescisão",
+      "s8Text": "Podemos encerrar ou suspender seu acesso ao serviço imediatamente, sem aviso prévio, por qualquer motivo, incluindo violação destes Termos de Uso.",
+      "s9Title": "9. Lei Aplicável",
+      "s9Text": "Estes Termos de Uso são regidos pelas leis da República Federativa do Brasil. Qualquer disputa será submetida ao foro da comarca de São Paulo, SP.",
+      "s10Title": "10. Contato",
+      "s10Text": "Para dúvidas sobre estes Termos de Uso, entre em contato através do email:"
+    },
+    "privacy": {
+      "s1Title": "1. Introdução",
+      "s1Text": "O {{brandName}} está comprometido com a proteção da privacidade e dos dados pessoais de seus usuários, em conformidade com a Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/2018).",
+      "s2Title": "2. Dados Coletados",
+      "s2Intro": "Coletamos os seguintes tipos de dados:",
+      "s2Item1Label": "Dados de cadastro:",
+      "s2Item1Text": "Nome completo, email profissional, CRO (opcional)",
+      "s2Item2Label": "Dados clínicos:",
+      "s2Item2Text": "Informações sobre casos odontológicos inseridos para análise (idade do paciente, região do dente, tipo de cavidade, etc.)",
+      "s2Item3Label": "Dados de uso:",
+      "s2Item3Text": "Histórico de avaliações realizadas, preferências de resinas",
+      "s2Item4Label": "Dados técnicos:",
+      "s2Item4Text": "Endereço IP, tipo de dispositivo, navegador utilizado",
+      "s3Title": "3. Finalidade do Uso dos Dados",
+      "s3Intro": "Utilizamos seus dados para:",
+      "s3Item1": "Fornecer recomendações personalizadas de resinas compostas",
+      "s3Item2": "Manter histórico de avaliações realizadas",
+      "s3Item3": "Melhorar nossos algoritmos e qualidade do serviço",
+      "s3Item4": "Enviar comunicações sobre o serviço (quando autorizado)",
+      "s3Item5": "Cumprir obrigações legais",
+      "s4Title": "4. Armazenamento e Segurança",
+      "s4Text": "Seus dados são armazenados em servidores seguros com criptografia de ponta a ponta. Utilizamos as melhores práticas de segurança da informação, incluindo:",
+      "s4Item1": "Criptografia SSL/TLS para transmissão de dados",
+      "s4Item2": "Criptografia em repouso para dados sensíveis",
+      "s4Item3": "Controle de acesso baseado em funções (RBAC)",
+      "s4Item4": "Monitoramento contínuo de segurança",
+      "s4Item5": "Backups regulares com recuperação de desastres",
+      "s5Title": "5. Compartilhamento de Dados",
+      "s5Text": "Não vendemos, alugamos ou compartilhamos seus dados pessoais com terceiros para fins comerciais. Seus dados podem ser compartilhados apenas nas seguintes situações:",
+      "s5Item1": "Com provedores de serviço essenciais (hospedagem, infraestrutura)",
+      "s5Item2": "Quando exigido por lei ou ordem judicial",
+      "s5Item3": "Para proteger nossos direitos legais",
+      "s6Title": "6. Seus Direitos (LGPD)",
+      "s6Intro": "De acordo com a LGPD, você tem direito a:",
+      "s6Item1Label": "Acesso:",
+      "s6Item1Text": "Solicitar cópia dos seus dados pessoais",
+      "s6Item2Label": "Correção:",
+      "s6Item2Text": "Solicitar correção de dados incompletos ou incorretos",
+      "s6Item3Label": "Exclusão:",
+      "s6Item3Text": "Solicitar a eliminação dos seus dados pessoais",
+      "s6Item4Label": "Portabilidade:",
+      "s6Item4Text": "Receber seus dados em formato estruturado",
+      "s6Item5Label": "Revogação:",
+      "s6Item5Text": "Revogar consentimento a qualquer momento",
+      "s6Item6Label": "Informação:",
+      "s6Item6Text": "Saber com quem seus dados foram compartilhados",
+      "s6Contact": "Para exercer qualquer desses direitos, entre em contato através do email:",
+      "s7Title": "7. Cookies",
+      "s7Text": "Utilizamos cookies essenciais para o funcionamento do serviço, como manutenção de sessão e preferências de usuário. Não utilizamos cookies de rastreamento de terceiros para publicidade.",
+      "s8Title": "8. Retenção de Dados",
+      "s8Text": "Mantemos seus dados enquanto sua conta estiver ativa ou conforme necessário para fornecer nossos serviços. Após a exclusão da conta, seus dados serão removidos em até 30 dias, exceto quando houver obrigação legal de retenção.",
+      "s9Title": "9. Menores de Idade",
+      "s9Text": "O {{brandName}} é destinado exclusivamente a profissionais de odontologia. Não coletamos intencionalmente dados de menores de 18 anos.",
+      "s10Title": "10. Alterações nesta Política",
+      "s10Text": "Podemos atualizar esta Política de Privacidade periodicamente. Notificaremos sobre alterações significativas através do email cadastrado ou aviso no serviço.",
+      "s11Title": "11. Contato",
+      "s11Text": "Para dúvidas sobre esta Política de Privacidade ou sobre o tratamento dos seus dados, entre em contato:",
+      "s11EmailLabel": "Email:",
+      "s11DpoLabel": "Encarregado de Dados (DPO):"
+    }
   },
   "result": {
     "recalculate": "Recalcular Caso",
@@ -643,7 +776,10 @@
     "referralGuidelines": "Orientações de Encaminhamento",
     "gingivoplastyProtocol": "Protocolo de Gengivoplastia",
     "rootCoverageProtocol": "Protocolo de Recobrimento Radicular",
-    "odontogram": "Odontograma"
+    "odontogram": "Odontograma",
+    "notFoundDescription": "O resultado solicitado não foi encontrado.",
+    "protocolUnavailable": "Protocolo não disponível",
+    "protocolUnavailableDesc": "A geração do protocolo de resina não foi concluída. Tente reprocessar este caso."
   },
   "odontogram": {
     "healthy": "Saudável",
@@ -664,7 +800,7 @@
     "pageNotFoundDescription": "O endereço que você tentou acessar não existe ou foi removido.",
     "tryReloadPage": "Tente recarregar a página. Se o problema persistir, entre em contato com o suporte.",
     "23505": "Este registro já existe. Verifique os dados.",
-    "23503": "Erro de referência. Dados relacionados não encontrados.",
+    "23503": "Não foi possível completar a ação. Verifique se todos os dados estão corretos.",
     "23502": "Campo obrigatório não preenchido.",
     "22P02": "Formato de dados inválido.",
     "PGRST116": "Nenhum registro encontrado.",
@@ -689,7 +825,8 @@
     "noAnalysisData": "Dados de análise não retornados",
     "rateLimitExceeded": "Limite de requisições excedido. Aguarde alguns minutos.",
     "connectionError": "Erro de conexão. Verifique sua internet e tente novamente.",
-    "dsdGenerationFailed": "Não foi possível gerar a análise DSD. Você pode pular esta etapa."
+    "dsdGenerationFailed": "Não foi possível gerar a análise DSD. Você pode pular esta etapa.",
+    "loadFailed": "Erro ao carregar dados. Tente novamente."
   },
   "toasts": {
     "subscription": {
@@ -700,7 +837,9 @@
     },
     "patient": {
       "updated": "Dados do paciente atualizados",
-      "saveError": "Erro ao salvar alterações"
+      "saveError": "Erro ao salvar alterações",
+      "created": "Paciente criado com sucesso",
+      "createError": "Erro ao criar paciente"
     },
     "draft": {
       "restored": "Rascunho restaurado com sucesso"
@@ -735,7 +874,7 @@
     "result": {
       "saveError": "Erro ao salvar progresso",
       "pdfSuccess": "PDF gerado com sucesso!",
-      "pdfError": "Erro ao gerar PDF"
+      "pdfError": "Erro ao gerar PDF. Tente novamente."
     },
     "wizard": {
       "insufficientCredits": "Créditos insuficientes para análise completa. Faça upgrade do seu plano.",
@@ -743,12 +882,12 @@
       "analysisCanceled": "Análise cancelada.",
       "dobWarning": "Data de nascimento não informada. Usando idade padrão de 30 anos.",
       "selectTooth": "Selecione pelo menos um dente",
-      "allFailed": "Erro ao criar caso. Nenhum protocolo foi gerado.",
+      "allFailed": "Erro ao criar caso. Nenhum protocolo foi gerado. Tente novamente ou entre em contato com o suporte.",
       "connectionErrorSubmit": "Erro de conexão com o servidor. Verifique sua internet e tente novamente.",
       "partialSuccess": "{{success}} de {{total}} protocolos gerados. Dentes {{failed}} falharam — tente novamente.",
       "allSuccess": "{{count}} protocolo(s) gerado(s) com sucesso",
       "duplicatePatient": "Paciente já cadastrado com este nome. Selecione o paciente existente.",
-      "referenceError": "Erro de referência no banco de dados. Verifique os dados do paciente.",
+      "referenceError": "Erro ao salvar os dados. Verifique as informações do paciente e tente novamente.",
       "networkErrorSubmit": "Erro de conexão. Verifique sua internet e tente novamente.",
       "tooManyRequests": "Muitas requisições. Aguarde alguns minutos.",
       "createCaseError": "Erro ao criar caso",
@@ -788,7 +927,9 @@
       "shareError": "Erro ao gerar link de compartilhamento",
       "allSelectedCompleted": "Todos os casos selecionados já estão finalizados",
       "statusCompleted": "Finalizado",
-      "statusPlanned": "Planejado"
+      "statusPlanned": "Planejado",
+      "sessionDeleted": "Sessão excluída com sucesso",
+      "deleteError": "Erro ao excluir sessão"
     },
     "profile": {
       "subscriptionActivated": "Assinatura ativada com sucesso!",
@@ -846,7 +987,8 @@
         "tipsTitle": "Dicas para melhor análise",
         "tip1": "Foto bem iluminada e focada na cavidade",
         "tip2": "Dentes limpos e secos para melhor visualização",
-        "tip3": "Escala VITA próxima ao dente, se disponível"
+        "tip3": "Escala VITA próxima ao dente, se disponível",
+        "dropZoneLabel": "Arraste uma foto intraoral ou clique para selecionar"
       },
       "analyzing": {
         "step1": "Processando imagem...",
@@ -863,7 +1005,7 @@
         "analyzingTitle": "Analisando Foto",
         "photoAnalyzing": "Foto sendo analisada",
         "estimatedTime": "~8-15 segundos",
-        "poweredBy": "Powered by Gemini 3 Flash Preview",
+        "poweredBy": "Desenvolvido com Gemini 3 Flash Preview",
         "cancel": "Cancelar",
         "defaultStep": "Detectando estruturas dentárias..."
       },
@@ -966,7 +1108,7 @@
         "treatmentPorcelana": "Faceta de Porcelana",
         "treatmentCoroa": "Coroa Total",
         "treatmentImplante": "Implante",
-        "treatmentEndodontia": "Tratamento de Canal",
+        "treatmentEndodontia": "Endodontia",
         "treatmentEncaminhamento": "Encaminhamento",
         "treatmentGengivoplastia": "Gengivoplastia Estética",
         "treatmentRecobrimentoRadicular": "Recobrimento Radicular",
@@ -1015,6 +1157,12 @@
           "gingivoplastyDiscarded": "Gengivoplastia descartada",
           "generatingLayers": "Gerando camadas de simulação...",
           "layersProgress": "{{current}} de {{total}} camadas processadas",
+          "generatingLayerOf": "Gerando camada {{current}} de {{total}}",
+          "layerLabelRestorations": "Gerando correções restauradoras...",
+          "layerLabelWhitening": "Aplicando simulação de clareamento...",
+          "layerLabelGingivoplasty": "Simulando gengivoplastia...",
+          "processing": "Processando...",
+          "estimatedTimePerLayer": "~30 segundos por camada",
           "reviewWhileProcessing": "Você pode continuar revisando a análise enquanto processamos",
           "simulationAutoError": "Simulação não pôde ser gerada automaticamente",
           "tryAgain": "Tentar novamente",
@@ -1027,7 +1175,11 @@
           "currentLabel": "Atual:",
           "proposalLabel": "Proposta:",
           "toothSection": "Dente:",
-          "gingivaSection": "Gengiva:"
+          "gingivaSection": "Gengiva:",
+          "gingivoplastyOption": "Opção de gengivoplastia",
+          "aiRecommended": "Recomendado pela IA",
+          "optional": "Opcional",
+          "gingivoplastyOptionalDesc": "A gengivoplastia é opcional. Você pode prosseguir sem ela."
         },
         "errorState": {
           "insufficientCredits": "Créditos Insuficientes",
@@ -1051,6 +1203,7 @@
           "estimatedTime": "~15-25 segundos"
         },
         "simulationViewer": {
+          "layerTabs": "Camadas da simulação",
           "beforeAfter": "Comparação Antes/Depois",
           "before": "Antes",
           "annotations": "Marcações",
@@ -1069,6 +1222,9 @@
           "close": "Fechar",
           "selected": "Selecionado",
           "clickToSelect": "Clique para selecionar"
+        },
+        "comparisonSlider": {
+          "ariaLabel": "Comparação antes e depois"
         }
       }
     },
@@ -1168,7 +1324,7 @@
         "resin": "Resina",
         "color": "Cor",
         "technique": "Técnica",
-        "tradeoff": "Tradeoff: "
+        "tradeoff": "Custo-benefício: "
       }
     },
     "pricing": {
@@ -1182,7 +1338,7 @@
         "creditsPerMonth": "{{count}} créditos/mês",
         "creditExplainer": "1 crédito = 1 análise | 2 créditos = 1 simulação DSD",
         "users": "{{count}} usuários",
-        "rollover": "Rollover",
+        "rollover": "Acúmulo",
         "processing": "Processando...",
         "currentPlanBtn": "Plano Atual",
         "freePlanBtn": "Plano Gratuito",
@@ -1217,7 +1373,8 @@
         "statusCanceled": "Cancelado",
         "statusInactive": "Inativo",
         "statusUnpaid": "Não Pago",
-        "freeLabel": "Gratuito"
+        "freeLabel": "Gratuito",
+        "creditUsageLabel": "Uso de créditos"
       },
       "creditUsage": {
         "title": "Histórico de Uso",
@@ -1246,8 +1403,8 @@
         "creditsMonth": "Créditos/mês",
         "caseAnalyses": "Análises de caso",
         "dsdSimulations": "Simulações DSD",
-        "creditRollover": "Rollover de créditos",
-        "maxRollover": "Máx. rollover",
+        "creditRollover": "Acúmulo de créditos",
+        "maxRollover": "Máx. acúmulo",
         "users": "Usuários",
         "prioritySupport": "Suporte prioritário",
         "resinRecommendations": "Recomendações de resina",
@@ -1327,7 +1484,8 @@
       "acceptAll": "Aceitar todos"
     },
     "offlineBanner": {
-      "message": "Sem conexão com a internet"
+      "message": "Sem conexão com a internet",
+      "backOnline": "Conexão restaurada"
     },
     "helpButton": {
       "ariaLabel": "Ajuda",
@@ -1369,7 +1527,8 @@
       },
       "progress": {
         "firstSteps": "Primeiros passos",
-        "completedOf": "{{completed}} de {{total}} completos"
+        "completedOf": "{{completed}} de {{total}} completos",
+        "completed": "concluído"
       }
     },
     "landing": {
@@ -1500,7 +1659,8 @@
       "willCost": "custará",
       "credit_one": "{{count}} crédito",
       "credit_other": "{{count}} créditos",
-      "credits": "créditos"
+      "credits": "créditos",
+      "lowBalanceWarning": "Atenção: saldo baixo após esta operação"
     },
     "cookieConsent": {
       "ariaLabel": "Consentimento de cookies",

@@ -132,19 +132,27 @@ Deno.serve(async (req) => {
     if (contralateralTooth) {
       const { data: currentEval } = await supabase
         .from('evaluations')
-        .select('session_id')
+        .select('session_id, patient_id')
         .eq('id', data.evaluationId)
         .single();
 
       if (currentEval?.session_id) {
-        const { data: contraEval } = await supabase
+        // Build query with patient_id filter to prevent cross-patient protocol contamination.
+        // If two patients share a session, without this filter the wrong patient's
+        // contralateral protocol could be returned.
+        let contraQuery = supabase
           .from('evaluations')
           .select('stratification_protocol, tooth')
           .eq('session_id', currentEval.session_id)
           .eq('tooth', contralateralTooth)
           .eq('user_id', data.userId)
-          .not('stratification_protocol', 'is', null)
-          .maybeSingle();
+          .not('stratification_protocol', 'is', null);
+
+        if (currentEval.patient_id) {
+          contraQuery = contraQuery.eq('patient_id', currentEval.patient_id);
+        }
+
+        const { data: contraEval } = await contraQuery.maybeSingle();
 
         if (contraEval?.stratification_protocol) {
           contralateralProtocol = contraEval.stratification_protocol;
@@ -421,10 +429,13 @@ Deno.serve(async (req) => {
       recommendation,
       aestheticGoals: data.aestheticGoals,
       supabase,
+      tooth: data.tooth,
+      cavityClass: data.cavityClass,
     });
 
     // Post-AI inventory validation: ensure recommended resin is from inventory
-    validateInventoryRecommendation(recommendation, hasInventory, inventoryResins, budgetAppropriateInventory);
+    // Pass region so fallback picks a clinically appropriate resin for the tooth
+    validateInventoryRecommendation(recommendation, hasInventory, inventoryResins, budgetAppropriateInventory, data.region);
 
     // Log budget compliance for debugging
     logger.log(`Budget: ${data.budget}, Recommended: ${recommendation.recommended_resin_name}, Price Range: ${recommendation.price_range}, Budget Compliant: ${recommendation.budget_compliance}`);

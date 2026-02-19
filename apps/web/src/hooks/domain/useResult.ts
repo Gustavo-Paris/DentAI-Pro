@@ -118,6 +118,8 @@ export function useResult() {
   const {
     data: evaluation,
     isLoading: loadingEvaluation,
+    isError,
+    error,
   } = useQuery({
     queryKey: resultKeys.detail(id),
     queryFn: async () => {
@@ -393,6 +395,8 @@ export function useResult() {
     // Data
     evaluation,
     isLoading: loadingEvaluation,
+    isError,
+    error,
     dentistProfile: dentistProfile ?? null,
     photoUrls,
     dsdSimulationUrl,

@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Button, Card, CardContent, CardHeader, CardTitle, Badge } from '@parisgroup-ai/pageshell/primitives';
 import { PageConfirmDialog } from '@parisgroup-ai/pageshell/interactions';
-import { Download, Plus, CheckCircle, Package, Sparkles, Loader2, Heart, AlertTriangle } from 'lucide-react';
+import { Download, Plus, CheckCircle, Package, Sparkles, Loader2, Heart, AlertTriangle, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -14,6 +14,7 @@ import { CollapsibleDSD } from '@/components/dsd/CollapsibleDSD';
 import { LoadingOverlay } from '@/components/LoadingOverlay';
 import { DetailPage } from '@parisgroup-ai/pageshell/composites';
 
+import { ErrorState } from '@/components/ui/error-state';
 import { useTranslation } from 'react-i18next';
 import { useResult } from '@/hooks/domain/useResult';
 import { BRAND_NAME } from '@/lib/branding';
@@ -29,17 +30,17 @@ export default function Result() {
   const r = useResult();
   const navigate = useNavigate();
 
-  if (!r.evaluation && !r.isLoading) {
+  if ((!r.evaluation && !r.isLoading) || r.isError) {
     return (
-      <div role="main" className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-3">
-          <h1 className="text-lg font-semibold">{t('result.notFound')}</h1>
-          <p className="text-sm text-muted-foreground">{t('result.notFoundDescription', { defaultValue: 'O resultado solicitado nao foi encontrado.' })}</p>
-          <Link to="/evaluations">
-            <Button variant="outline">{t('evaluation.title')}</Button>
-          </Link>
-        </div>
-      </div>
+      <ErrorState
+        variant="fullscreen"
+        title={t('result.notFound')}
+        description={r.isError
+          ? t('errors.loadFailed', { defaultValue: 'Erro ao carregar dados. Tente novamente.' })
+          : t('result.notFoundDescription', { defaultValue: 'O resultado solicitado nao foi encontrado.' })
+        }
+        action={{ label: t('common.back', { defaultValue: 'Voltar' }), onClick: () => window.history.back() }}
+      />
     );
   }
 
@@ -152,76 +153,6 @@ export default function Result() {
               </Card>
             )}
 
-            {/* Case Summary */}
-            <section className="mb-8">
-              <CaseSummaryBox
-                treatmentType={r.treatmentType}
-                patientAge={evaluation.patient_age}
-                tooth={evaluation.tooth}
-                region={evaluation.region}
-                cavityClass={evaluation.cavity_class}
-                restorationSize={evaluation.restoration_size}
-                toothColor={evaluation.tooth_color}
-                aestheticLevel={evaluation.aesthetic_level}
-                bruxism={evaluation.bruxism}
-                stratificationNeeded={evaluation.stratification_needed}
-                indicationReason={evaluation.ai_indication_reason || r.genericProtocol?.ai_reason}
-                whiteningGoal={evaluation.patient_aesthetic_goals}
-                secondaryPhotos={{ angle45: r.photoUrls.angle45, face: r.photoUrls.face }}
-              />
-            </section>
-
-            {/* DSD Section */}
-            {evaluation.dsd_analysis && (
-              <section className="mb-8">
-                <CollapsibleDSD
-                  analysis={evaluation.dsd_analysis}
-                  beforeImage={r.photoUrls.frontal}
-                  afterImage={r.dsdSimulationUrl}
-                  defaultOpen={false}
-                  layers={r.dsdSimulationLayers}
-                  layerUrls={r.dsdLayerUrls}
-                />
-              </section>
-            )}
-
-            {/* Patient Preferences */}
-            {evaluation.patient_aesthetic_goals && (
-              <section className="mb-8">
-                <Card className="border-primary/20 bg-primary/5 dark:bg-primary/10">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <Heart className="w-4 h-4 text-primary" />
-                      {t('result.patientPreferences')}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground italic">
-                      "{evaluation.patient_aesthetic_goals}"
-                    </p>
-                  </CardContent>
-                </Card>
-              </section>
-            )}
-
-            {/* Whitening Preference Alert */}
-            {r.treatmentType === 'resina' && (
-              <section className="mb-8">
-                <WhiteningPreferenceAlert
-                  originalColor={evaluation.tooth_color}
-                  aestheticGoals={evaluation.patient_aesthetic_goals}
-                  protocolLayers={r.layers}
-                />
-              </section>
-            )}
-
-            {/* Bruxism Alert */}
-            {evaluation.bruxism && (
-              <section className="mb-8">
-                <BruxismAlert show={true} treatmentType={r.treatmentType} />
-              </section>
-            )}
-
             {/* Protocol unavailable fallback */}
             {!r.resin && !r.isSpecialTreatment && r.treatmentType === 'resina' && (
               <section className="mb-8">
@@ -229,11 +160,20 @@ export default function Result() {
                   <CardContent className="py-4">
                     <div className="flex items-start gap-3">
                       <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-                      <div>
+                      <div className="flex-1">
                         <p className="text-sm font-medium">{t('result.protocolUnavailable', { defaultValue: 'Protocolo não disponível' })}</p>
                         <p className="text-xs text-muted-foreground mt-1">
                           {t('result.protocolUnavailableDesc', { defaultValue: 'A geração do protocolo de resina não foi concluída. Tente reprocessar este caso.' })}
                         </p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="mt-3 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/30"
+                          onClick={() => window.location.href = '/new-case'}
+                        >
+                          <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+                          {t('result.reprocess', { defaultValue: 'Reprocessar caso' })}
+                        </Button>
                       </div>
                     </div>
                   </CardContent>
@@ -318,6 +258,24 @@ export default function Result() {
               printHideStepByStep
             />
 
+            {/* Whitening Preference Alert */}
+            {r.treatmentType === 'resina' && (
+              <section className="mb-8">
+                <WhiteningPreferenceAlert
+                  originalColor={evaluation.tooth_color}
+                  aestheticGoals={evaluation.patient_aesthetic_goals}
+                  protocolLayers={r.layers}
+                />
+              </section>
+            )}
+
+            {/* Bruxism Alert */}
+            {evaluation.bruxism && (
+              <section className="mb-8">
+                <BruxismAlert show={true} treatmentType={r.treatmentType} />
+              </section>
+            )}
+
             {/* Ideal Resin */}
             {r.showIdealResin && r.idealResin && (
               <section className="mb-8">
@@ -359,6 +317,58 @@ export default function Result() {
                     </Card>
                   ))}
                 </div>
+              </section>
+            )}
+
+            {/* Case Summary */}
+            <section className="mb-8">
+              <CaseSummaryBox
+                treatmentType={r.treatmentType}
+                patientAge={evaluation.patient_age}
+                tooth={evaluation.tooth}
+                region={evaluation.region}
+                cavityClass={evaluation.cavity_class}
+                restorationSize={evaluation.restoration_size}
+                toothColor={evaluation.tooth_color}
+                aestheticLevel={evaluation.aesthetic_level}
+                bruxism={evaluation.bruxism}
+                stratificationNeeded={evaluation.stratification_needed}
+                indicationReason={evaluation.ai_indication_reason || r.genericProtocol?.ai_reason}
+                whiteningGoal={evaluation.patient_aesthetic_goals}
+                secondaryPhotos={{ angle45: r.photoUrls.angle45, face: r.photoUrls.face }}
+              />
+            </section>
+
+            {/* DSD Section */}
+            {evaluation.dsd_analysis && (
+              <section className="mb-8">
+                <CollapsibleDSD
+                  analysis={evaluation.dsd_analysis}
+                  beforeImage={r.photoUrls.frontal}
+                  afterImage={r.dsdSimulationUrl}
+                  defaultOpen={true}
+                  layers={r.dsdSimulationLayers}
+                  layerUrls={r.dsdLayerUrls}
+                />
+              </section>
+            )}
+
+            {/* Patient Preferences */}
+            {evaluation.patient_aesthetic_goals && (
+              <section className="mb-8">
+                <Card className="border-primary/20 bg-primary/5 dark:bg-primary/10">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Heart className="w-4 h-4 text-primary" />
+                      {t('result.patientPreferences')}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground italic">
+                      "{evaluation.patient_aesthetic_goals}"
+                    </p>
+                  </CardContent>
+                </Card>
               </section>
             )}
 

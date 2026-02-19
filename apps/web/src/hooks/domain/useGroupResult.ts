@@ -78,7 +78,7 @@ export function useGroupResult() {
   const [generatingPDF, setGeneratingPDF] = useState(false);
 
   // Load all evaluations for the session
-  const { data: allEvaluations, isLoading } = useQuery({
+  const { data: allEvaluations, isLoading, isError, error } = useQuery({
     queryKey: ['group-result', sessionId],
     queryFn: () => evaluations.listBySession(sessionId, user!.id),
     enabled: !!user && !!sessionId,
@@ -231,6 +231,8 @@ export function useGroupResult() {
     // Data
     sessionId,
     isLoading,
+    isError,
+    error,
     groupEvaluations,
     primaryEval,
     groupTeeth,

@@ -27,16 +27,46 @@ export function sanitizeForPrompt(input: string): string {
     ""
   );
 
-  // Remove "ignore previous" / "forget" patterns
+  // Remove "ignore previous" / "forget" patterns (English)
   sanitized = sanitized.replace(
     /(?:ignore|forget|disregard|override|bypass)\s+(?:all\s+)?(?:previous|above|prior|earlier)\s+(?:instructions?|context|prompts?|rules?)/gi,
     "[removed]"
   );
 
-  // Remove "you are now" / "act as" / "pretend" override patterns
+  // Remove "you are now" / "act as" / "pretend" override patterns (English)
   sanitized = sanitized.replace(
     /(?:you\s+are\s+now|act\s+as|pretend\s+(?:to\s+be|you\s+are)|from\s+now\s+on\s+you\s+are)/gi,
     "[removed]"
+  );
+
+  // Portuguese injection patterns: "ignore/esqueça/desconsidere... instruções/contexto/regras"
+  sanitized = sanitized.replace(
+    /(?:ignore|ignor[ea]|esqueça|desconsider[ea]|sobrescreva|pule|burle)\s+.*?\s+(?:instruções?|contexto|prompts?|regras?|anteriores?|sistema)/gi,
+    "[removed]"
+  );
+
+  // Portuguese "act as" / "pretend" patterns
+  sanitized = sanitized.replace(
+    /(?:aja|atue|comporte-se|finja|simule)\s+como\s+/gi,
+    "[removed] "
+  );
+
+  // Portuguese "don't follow" patterns
+  sanitized = sanitized.replace(
+    /não\s+sig[au]\s+/gi,
+    "[removed] "
+  );
+
+  // Portuguese "new role" patterns
+  sanitized = sanitized.replace(
+    /novo\s+(?:papel|role)\s*/gi,
+    "[removed] "
+  );
+
+  // Portuguese "from now on" — common injection prefix
+  sanitized = sanitized.replace(
+    /a\s+partir\s+de\s+agora\s+/gi,
+    "[removed] "
   );
 
   // Remove XML/HTML-like injection tags

@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle, Badge } from '@parisgroup-ai/pageshell/primitives';
-import { CheckCircle, AlertTriangle } from 'lucide-react';
+import { Button, Card, CardContent, CardHeader, CardTitle, Badge } from '@parisgroup-ai/pageshell/primitives';
+import { CheckCircle, AlertTriangle, RefreshCw } from 'lucide-react';
 import { ErrorState } from '@/components/ui/error-state';
 
 import { ProtocolSections } from '@/components/protocol/ProtocolSections';
@@ -14,12 +14,15 @@ export default function GroupResult() {
   const { t } = useTranslation();
   const g = useGroupResult();
 
-  if (!g.primaryEval && !g.isLoading) {
+  if ((!g.primaryEval && !g.isLoading) || g.isError) {
     return (
       <ErrorState
         variant="fullscreen"
         title={t('result.notFound')}
-        description={t('result.notFoundDescription', { defaultValue: 'O resultado solicitado nao foi encontrado.' })}
+        description={g.isError
+          ? t('errors.loadFailed', { defaultValue: 'Erro ao carregar dados. Tente novamente.' })
+          : t('result.notFoundDescription', { defaultValue: 'O resultado solicitado nao foi encontrado.' })
+        }
         action={{ label: t('common.back', { defaultValue: 'Voltar' }), onClick: () => window.history.back() }}
       />
     );
@@ -91,11 +94,20 @@ export default function GroupResult() {
                     <CardContent className="py-4">
                       <div className="flex items-start gap-3">
                         <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-                        <div>
+                        <div className="flex-1">
                           <p className="text-sm font-medium">{t('result.protocolUnavailable', { defaultValue: 'Protocolo não disponível' })}</p>
                           <p className="text-xs text-muted-foreground mt-1">
                             {t('result.protocolUnavailableDesc', { defaultValue: 'A geração do protocolo de resina não foi concluída. Tente reprocessar este caso.' })}
                           </p>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="mt-3 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/30"
+                            onClick={() => window.location.href = '/new-case'}
+                          >
+                            <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+                            {t('result.reprocess', { defaultValue: 'Reprocessar caso' })}
+                          </Button>
                         </div>
                       </div>
                     </CardContent>
@@ -135,7 +147,7 @@ export default function GroupResult() {
                     analysis={g.dsdAnalysis}
                     beforeImage={g.photoUrl}
                     afterImage={g.dsdSimulationUrl}
-                    defaultOpen={false}
+                    defaultOpen={true}
                     layers={g.dsdSimulationLayers}
                     layerUrls={g.dsdLayerUrls}
                   />

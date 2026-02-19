@@ -227,9 +227,9 @@ export default function Pricing() {
     [plans, subscription?.plan_id, currentPlanSortOrder, t],
   );
 
-  // Wire onSelectPlan to existing Stripe checkout
+  // Wire onSelectPlan to existing Stripe checkout, forwarding billing cycle
   const handleSelectPlan = useCallback(
-    (planId: string, _cycle: BillingCycle) => {
+    (planId: string, cycle: BillingCycle) => {
       // Find the original plan to check if it's free or current
       const plan = plans.find((p) => p.id === planId);
       if (!plan) return;
@@ -237,7 +237,8 @@ export default function Pricing() {
       const isCurrent = subscription?.plan_id === planId;
       if (isFree || isCurrent) return;
 
-      checkout(planId);
+      trackEvent('checkout_started', { planId, billingCycle: cycle });
+      checkout(planId, cycle);
     },
     [plans, subscription?.plan_id, checkout],
   );

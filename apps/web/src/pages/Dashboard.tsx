@@ -99,10 +99,7 @@ export default function Dashboard() {
         id: 'low-credits',
         type: dashboard.creditsRemaining <= 1 ? 'error' : 'warning',
         title: t('dashboard.alerts.lowCreditsTitle', { defaultValue: 'Créditos baixos' }),
-        description: t('dashboard.alerts.lowCreditsDescription', {
-          count: dashboard.creditsRemaining,
-          defaultValue: `Você tem ${dashboard.creditsRemaining} créditos restantes.`,
-        }),
+        description: t('dashboard.alerts.lowCreditsDescription', { count: dashboard.creditsRemaining }),
         action: { label: t('dashboard.alerts.upgrade', { defaultValue: 'Ver planos' }), href: '/pricing' },
       });
     }

@@ -57,6 +57,100 @@ interface RequestData {
 // FDI tooth notation regex: 2 digits, first digit 1-8
 const FDI_TOOTH_REGEX = /^[1-8][1-8]$/;
 
+// Valid ceramic types — closed enum to prevent wrong HF acid protocol
+const VALID_CERAMIC_TYPES = [
+  'dissilicato_de_litio',      // e.max
+  'leucita',                    // IPS Empress
+  'feldspatica',               // Feldspathic
+  'zirconia',                   // Zirconia
+  'zirconia_reforcada',        // Reinforced zirconia
+  'resina_cad_cam',            // CAD/CAM resin
+] as const;
+
+// Map Portuguese display names → normalized keys
+const CERAMIC_TYPE_ALIASES: Record<string, typeof VALID_CERAMIC_TYPES[number]> = {
+  'dissilicato de litio':       'dissilicato_de_litio',
+  'dissilicato de lítio':       'dissilicato_de_litio',
+  'e.max':                      'dissilicato_de_litio',
+  'emax':                       'dissilicato_de_litio',
+  'ips e.max':                  'dissilicato_de_litio',
+  'leucita':                    'leucita',
+  'ips empress':                'leucita',
+  'empress':                    'leucita',
+  'feldspatica':                'feldspatica',
+  'feldspática':                'feldspatica',
+  'ceramica feldspática':       'feldspatica',
+  'ceramica feldspatica':       'feldspatica',
+  'porcelana feldspática':      'feldspatica',
+  'porcelana feldspatica':      'feldspatica',
+  'zirconia':                   'zirconia',
+  'zircônia':                   'zirconia',
+  'zirconia reforcada':         'zirconia_reforcada',
+  'zircônia reforçada':         'zirconia_reforcada',
+  'zirconia reforçada':         'zirconia_reforcada',
+  'zircônia reforcada':         'zirconia_reforcada',
+  'resina cad cam':             'resina_cad_cam',
+  'resina cad/cam':             'resina_cad_cam',
+  'cad cam':                    'resina_cad_cam',
+  'cad/cam':                    'resina_cad_cam',
+};
+
+/**
+ * Normalize a ceramicType input string: lowercase, trim, strip accents for
+ * matching, then look up in alias map or direct enum match.
+ * Returns the normalized key or null if invalid.
+ */
+function normalizeCeramicType(raw: string): typeof VALID_CERAMIC_TYPES[number] | null {
+  const trimmed = raw.trim().toLowerCase();
+  // Strip Unicode accents for matching
+  const stripped = trimmed.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  // Direct enum match (already a valid key)
+  if ((VALID_CERAMIC_TYPES as readonly string[]).includes(trimmed)) {
+    return trimmed as typeof VALID_CERAMIC_TYPES[number];
+  }
+  if ((VALID_CERAMIC_TYPES as readonly string[]).includes(stripped)) {
+    return stripped as typeof VALID_CERAMIC_TYPES[number];
+  }
+
+  // Alias lookup (try with accents first, then without)
+  if (CERAMIC_TYPE_ALIASES[trimmed]) {
+    return CERAMIC_TYPE_ALIASES[trimmed];
+  }
+  // Try alias lookup with stripped accents on all alias keys
+  for (const [alias, key] of Object.entries(CERAMIC_TYPE_ALIASES)) {
+    const aliasStripped = alias.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (aliasStripped === stripped) {
+      return key;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Derives the correct treatment_type for the evaluations table from the ceramic type.
+ * Cementation protocols are used for porcelain/ceramic restorations but the specific
+ * treatment_type depends on what kind of restoration is being cemented.
+ *
+ * Maps:
+ * - Zirconia full crowns → "coroa"
+ * - Everything else (veneers, onlays, overlays, etc.) → "porcelana"
+ *
+ * NOTE: This is a best-effort mapping from ceramicType. Future improvement could
+ * accept an explicit treatment_type in the request payload.
+ */
+function deriveTreatmentType(ceramicTypeRaw: string): string {
+  const normalized = normalizeCeramicType(ceramicTypeRaw);
+  // Zirconia and reinforced zirconia are primarily used for full crowns
+  if (normalized === "zirconia" || normalized === "zirconia_reforcada") {
+    return "coroa";
+  }
+  // All other ceramic types (lithium disilicate, leucite, feldspathic, CAD/CAM resin)
+  // are typically used for veneers/laminates — "porcelana"
+  return "porcelana";
+}
+
 // Validate request
 function validateRequest(data: unknown): { success: boolean; error?: string; data?: RequestData } {
   if (!data || typeof data !== "object") {
@@ -92,13 +186,22 @@ function validateRequest(data: unknown): { success: boolean; error?: string; dat
     return { success: false, error: "ceramicType é obrigatório para gerar protocolo de cimentação" };
   }
 
+  // Validate ceramicType against closed enum — wrong type → wrong HF acid protocol → irreversible damage
+  const normalizedCeramicType = normalizeCeramicType(req.ceramicType as string);
+  if (!normalizedCeramicType) {
+    return {
+      success: false,
+      error: `Tipo cerâmico inválido: "${String(req.ceramicType).substring(0, 50)}". Tipos aceitos: ${VALID_CERAMIC_TYPES.join(', ')}`,
+    };
+  }
+
   return {
     success: true,
     data: {
       evaluationId: req.evaluationId as string,
       teeth: req.teeth as string[],
       shade: req.shade as string,
-      ceramicType: req.ceramicType as string,
+      ceramicType: normalizedCeramicType,
       substrate: req.substrate as string,
       substrateCondition: req.substrateCondition as string | undefined,
       aestheticGoals: req.aestheticGoals as string | undefined,
@@ -360,12 +463,17 @@ Deno.serve(async (req: Request) => {
       return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     }
 
+    // Derive treatment_type from the ceramic type in the request.
+    // "porcelana" is the most common but not the only option — e.g., "coroa"
+    // for full crowns, or other ceramic-based restorations.
+    const treatmentType = deriveTreatmentType(ceramicType);
+
     // Update evaluation with cementation protocol
     const { error: updateError } = await supabase
       .from("evaluations")
       .update({
         cementation_protocol: protocol,
-        treatment_type: "porcelana",
+        treatment_type: treatmentType,
       })
       .eq("id", evaluationId);
 

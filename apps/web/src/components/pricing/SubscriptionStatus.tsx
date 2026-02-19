@@ -181,7 +181,7 @@ export function SubscriptionStatus() {
               <div className="p-3 bg-muted/30 rounded-lg">
                 <div className="flex items-center gap-1 text-muted-foreground text-xs">
                   <RefreshCw className="h-3 w-3" />
-                  <span>Rollover</span>
+                  <span>{t('pricing.creditRollover', { defaultValue: 'Acúmulo de créditos' })}</span>
                 </div>
                 <div className="font-semibold text-success">+{creditsRollover}</div>
               </div>

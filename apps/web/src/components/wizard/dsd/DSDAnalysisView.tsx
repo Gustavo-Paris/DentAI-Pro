@@ -274,26 +274,54 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
         </div>
       )}
 
-      {/* Background simulation generating card */}
-      {isSimulationGenerating && !simulationImageUrl && (
-        <Card className="border-primary/30 bg-primary/5">
-          <CardContent className="py-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <Loader2 className="w-6 h-6 text-primary animate-spin" />
-              </div>
-              <div className="flex-1">
-                <h4 className="font-medium">{t('components.wizard.dsd.analysisView.generatingLayers')}</h4>
-                <p className="text-sm text-muted-foreground">
-                  {layerGenerationProgress > 0
-                    ? t('components.wizard.dsd.analysisView.layersProgress', { current: layerGenerationProgress, total: determineLayersNeeded(analysis).length })
-                    : t('components.wizard.dsd.analysisView.reviewWhileProcessing')}
+      {/* Background simulation generating card — granular layer progress */}
+      {isSimulationGenerating && !simulationImageUrl && (() => {
+        const totalLayers = determineLayersNeeded(analysis).length;
+        const currentLayer = layerGenerationProgress; // 0-based: 0 = generating L1, 1 = generating L2, etc.
+        const layerLabels: Record<number, string> = {
+          0: t('components.wizard.dsd.analysisView.layerLabelRestorations', { defaultValue: 'Gerando correções restauradoras...' }),
+          1: t('components.wizard.dsd.analysisView.layerLabelWhitening', { defaultValue: 'Aplicando simulação de clareamento...' }),
+          2: t('components.wizard.dsd.analysisView.layerLabelGingivoplasty', { defaultValue: 'Simulando gengivoplastia...' }),
+        };
+        const progressPercent = totalLayers > 0 ? (currentLayer / totalLayers) * 100 : 0;
+
+        return (
+          <Card className="border-primary/30 bg-primary/5">
+            <CardContent className="py-6">
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                </div>
+                <div className="text-center">
+                  <h4 className="font-medium">
+                    {t('components.wizard.dsd.analysisView.generatingLayerOf', {
+                      current: currentLayer + 1,
+                      total: totalLayers,
+                      defaultValue: `Gerando camada ${currentLayer + 1} de ${totalLayers}`,
+                    })}
+                  </h4>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {layerLabels[currentLayer] || t('components.wizard.dsd.analysisView.processing', { defaultValue: 'Processando...' })}
+                  </p>
+                </div>
+                {/* Progress bar */}
+                <div className="w-full max-w-xs bg-muted rounded-full h-2">
+                  <div
+                    className="bg-primary h-2 rounded-full transition-all duration-500"
+                    style={{ width: `${progressPercent}%` }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {t('components.wizard.dsd.analysisView.estimatedTimePerLayer', { defaultValue: '~30 segundos por camada' })}
+                </p>
+                <p className="text-xs text-muted-foreground -mt-2">
+                  {t('components.wizard.dsd.analysisView.reviewWhileProcessing')}
                 </p>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            </CardContent>
+          </Card>
+        );
+      })()}
 
       {/* Background simulation error card */}
       {simulationError && !simulationImageUrl && !isSimulationGenerating && (

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, memo, useMemo } from 'react';
+import { useCallback, useEffect, useState, memo, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ListPage } from '@parisgroup-ai/pageshell/composites';
@@ -17,6 +17,16 @@ import { formatToothLabel } from '@/lib/treatment-config';
 
 const SEARCH_FIELDS: ('patient_name')[] = ['patient_name'];
 const PAGINATION_CONFIG = { defaultPageSize: 20 } as const;
+
+const TREATMENT_TYPE_OPTIONS = [
+  { value: 'all', labelKey: 'evaluation.treatmentAll' },
+  { value: 'resina', labelKey: 'evaluation.treatmentResina' },
+  { value: 'porcelana', labelKey: 'evaluation.treatmentPorcelana' },
+  { value: 'endodontia', labelKey: 'evaluation.treatmentEndodontia' },
+  { value: 'implante', labelKey: 'evaluation.treatmentImplante' },
+  { value: 'coroa', labelKey: 'evaluation.treatmentCoroa' },
+  { value: 'encaminhamento', labelKey: 'evaluation.treatmentEncaminhamento' },
+] as const;
 
 // =============================================================================
 // Card component (presentation only)
@@ -84,16 +94,16 @@ const SessionCard = memo(function SessionCard({
                 <span className="hidden sm:inline">{t('evaluation.completed')}</span>
               </span>
             ) : session.completedCount > 0 ? (
-              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
-                <span className="hidden sm:inline">{t('evaluation.inProgress')}</span>
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                <CheckCircle className="w-3 h-3" aria-hidden="true" />
+                <span className="hidden sm:inline">{t('evaluation.resultsReady')}</span>
                 <span className="text-muted-foreground">
                   ({session.completedCount}/{session.evaluationCount})
                 </span>
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                <CheckCircle className="w-3 h-3" aria-hidden="true" />
-                <span className="hidden sm:inline">{t('evaluation.resultsReady')}</span>
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
+                <span className="hidden sm:inline">{t('evaluation.statusPending')}</span>
               </span>
             )}
             <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
@@ -121,6 +131,12 @@ export default function Evaluations() {
   const { t } = useTranslation();
   const { sessions, isLoading, isError, newSessionId, newTeethCount } =
     useEvaluationSessions();
+  const [treatmentFilter, setTreatmentFilter] = useState<string>('all');
+
+  const filteredSessions = useMemo(() => {
+    if (treatmentFilter === 'all') return sessions;
+    return sessions.filter((s) => s.treatmentTypes.includes(treatmentFilter));
+  }, [sessions, treatmentFilter]);
 
   // Clear navigation state after viewing
   useEffect(() => {
@@ -205,10 +221,29 @@ export default function Evaluations() {
         </div>
       )}
 
+      {/* Treatment type filter pills */}
+      {!isLoading && sessions.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-4" role="group" aria-label={t('evaluation.treatmentFilter')}>
+          {TREATMENT_TYPE_OPTIONS.map(({ value, labelKey }) => (
+            <button
+              key={value}
+              onClick={() => setTreatmentFilter(value)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                treatmentFilter === value
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+              }`}
+            >
+              {t(labelKey)}
+            </button>
+          ))}
+        </div>
+      )}
+
       <ListPage<EvaluationSession>
           title={t('evaluation.title')}
           viewMode="cards"
-          items={sessions}
+          items={filteredSessions}
           isLoading={isLoading}
           itemKey="session_id"
           renderCard={renderCard}

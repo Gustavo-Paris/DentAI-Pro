@@ -1,12 +1,26 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { memo, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ListPage } from '@parisgroup-ai/pageshell/composites';
+import {
+  Button,
+  Input,
+  Textarea,
+  Label,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@parisgroup-ai/pageshell/primitives';
 import { PagePatientCard } from '@parisgroup-ai/domain-odonto-ai/patients';
 import type { PatientInfo } from '@parisgroup-ai/domain-odonto-ai/patients';
+import { useAuth } from '@/contexts/AuthContext';
+import { patients } from '@/data';
 import { usePatientList } from '@/hooks/domain/usePatientList';
 import type { PatientWithStats } from '@/hooks/domain/usePatientList';
 import { ErrorState } from '@/components/ui/error-state';
+import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -42,12 +56,24 @@ const PatientCardAdapter = memo(function PatientCardAdapter({ patient, index }: 
   const onSelect = useCallback((id: string) => navigate(`/patient/${id}`), [navigate]);
 
   return (
-    <PagePatientCard
-      patient={patientInfo}
-      onSelect={onSelect}
-      animationDelay={index}
-      lastVisitLabel={t('patients.lastVisit')}
-    />
+    <div className="relative">
+      <PagePatientCard
+        patient={patientInfo}
+        onSelect={onSelect}
+        animationDelay={index}
+        lastVisitLabel={t('patients.lastVisit')}
+      />
+      {patient.caseCount > 0 && (
+        <div className="absolute top-3 right-3 flex items-center gap-1.5">
+          <span className="text-[10px] text-muted-foreground bg-muted/80 px-2 py-0.5 rounded-full font-medium">
+            {t('patients.casesSummary', {
+              defaultValue: '{{count}} avaliações',
+              count: patient.caseCount,
+            })}
+          </span>
+        </div>
+      )}
+    </div>
   );
 });
 
@@ -57,7 +83,41 @@ const PatientCardAdapter = memo(function PatientCardAdapter({ patient, index }: 
 
 export default function Patients() {
   const { t } = useTranslation();
-  const { patients, total, isLoading, isError } = usePatientList();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const { patients: patientsList, total, isLoading, isError } = usePatientList();
+
+  // ---- Create patient dialog ----
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [createForm, setCreateForm] = useState({ name: '', phone: '', email: '', notes: '' });
+
+  const createMutation = useMutation({
+    mutationFn: async (data: { name: string; phone?: string; email?: string; notes?: string }) => {
+      if (!user) throw new Error('User not authenticated');
+      return patients.create(user.id, data);
+    },
+    onSuccess: (newPatient) => {
+      queryClient.invalidateQueries({ queryKey: ['patients'] });
+      toast.success(t('toasts.patient.created', { defaultValue: 'Paciente criado com sucesso' }));
+      setShowCreateDialog(false);
+      setCreateForm({ name: '', phone: '', email: '', notes: '' });
+      navigate(`/patient/${newPatient.id}`);
+    },
+    onError: () => {
+      toast.error(t('toasts.patient.createError', { defaultValue: 'Erro ao criar paciente' }));
+    },
+  });
+
+  const handleCreatePatient = useCallback(() => {
+    if (!createForm.name.trim()) return;
+    createMutation.mutate({
+      name: createForm.name.trim(),
+      phone: createForm.phone.trim() || undefined,
+      email: createForm.email.trim() || undefined,
+      notes: createForm.notes.trim() || undefined,
+    });
+  }, [createForm, createMutation]);
 
   const searchConfig = useMemo(
     () => ({ fields: SEARCH_FIELDS, placeholder: t('patients.searchPlaceholder') }),
@@ -104,7 +164,7 @@ export default function Patients() {
   );
 
   const createAction = useMemo(
-    () => ({ label: t('evaluation.newEvaluation'), href: '/new-case' }),
+    () => ({ label: t('patients.createPatient', { defaultValue: 'Novo Paciente' }), onClick: () => setShowCreateDialog(true) }),
     [t],
   );
 
@@ -142,12 +202,13 @@ export default function Patients() {
   }
 
   return (
-    <ListPage<PatientWithStats>
+    <>
+      <ListPage<PatientWithStats>
         className="max-w-5xl mx-auto"
         title={t('patients.title')}
         description={t('patients.count', { count: total })}
         viewMode="cards"
-        items={patients}
+        items={patientsList}
         isLoading={isLoading}
         itemKey="id"
         renderCard={renderCard}
@@ -159,5 +220,67 @@ export default function Patients() {
         emptyState={emptyState}
         labels={labels}
       />
+
+      {/* Create Patient Dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('patients.createPatient', { defaultValue: 'Novo Paciente' })}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <div>
+              <Label htmlFor="create-name">{t('patients.name')}</Label>
+              <Input
+                id="create-name"
+                value={createForm.name}
+                onChange={(e) => setCreateForm((prev) => ({ ...prev, name: e.target.value }))}
+                placeholder={t('patients.namePlaceholder')}
+                autoFocus
+              />
+            </div>
+            <div>
+              <Label htmlFor="create-phone">{t('patients.phone')}</Label>
+              <Input
+                id="create-phone"
+                value={createForm.phone}
+                onChange={(e) => setCreateForm((prev) => ({ ...prev, phone: e.target.value }))}
+                placeholder={t('patients.phonePlaceholder')}
+              />
+            </div>
+            <div>
+              <Label htmlFor="create-email">{t('auth.email')}</Label>
+              <Input
+                id="create-email"
+                type="email"
+                value={createForm.email}
+                onChange={(e) => setCreateForm((prev) => ({ ...prev, email: e.target.value }))}
+                placeholder={t('patients.emailPlaceholder')}
+              />
+            </div>
+            <div>
+              <Label htmlFor="create-notes">{t('patients.clinicalNotes')}</Label>
+              <Textarea
+                id="create-notes"
+                value={createForm.notes}
+                onChange={(e) => setCreateForm((prev) => ({ ...prev, notes: e.target.value }))}
+                placeholder={t('patients.clinicalNotesPlaceholder')}
+                rows={3}
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+                {t('common.cancel')}
+              </Button>
+              <Button
+                onClick={handleCreatePatient}
+                disabled={createMutation.isPending || !createForm.name.trim()}
+              >
+                {createMutation.isPending ? t('common.saving') : t('common.save')}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

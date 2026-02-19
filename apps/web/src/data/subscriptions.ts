@@ -100,10 +100,10 @@ export async function getByUserId(userId: string) {
 // Edge functions (Stripe)
 // ---------------------------------------------------------------------------
 
-export async function createCheckoutSession(priceId: string) {
+export async function createCheckoutSession(priceId: string, billingCycle?: 'monthly' | 'annual') {
   const data = await withQuery(() =>
     supabase.functions.invoke('create-checkout-session', {
-      body: { priceId },
+      body: { priceId, billingCycle },
     }),
   );
   return data as { sessionId?: string; url?: string; updated?: boolean };

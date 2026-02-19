@@ -23,8 +23,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { logger } from '@/lib/logger';
 import type { DataExport, DeleteAccountResult } from '@/data/privacy';
 
-const CONFIRMATION_PHRASE = 'EXCLUIR MINHA CONTA';
-
 export function PrivacySection({
   exportData,
   deleteAccount,
@@ -33,6 +31,7 @@ export function PrivacySection({
   deleteAccount: (confirmation: string) => Promise<DeleteAccountResult>;
 }) {
   const { t } = useTranslation();
+  const CONFIRMATION_PHRASE = t('profile.deleteConfirmPhrase');
   const { signOut } = useAuth();
   const navigate = useNavigate();
   const [isExporting, setIsExporting] = useState(false);
@@ -52,7 +51,7 @@ export function PrivacySection({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `tosmile-meus-dados-${new Date().toISOString().slice(0, 10)}.json`;
+      a.download = `${t('profile.exportFilename')}-${new Date().toISOString().slice(0, 10)}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

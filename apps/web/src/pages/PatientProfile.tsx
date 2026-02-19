@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   Card,
@@ -16,6 +17,7 @@ import {
   Mail,
   FileText,
   Pencil,
+  Sparkles,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -33,6 +35,7 @@ import { PatientSessionList } from '@/components/patient/PatientSessionList';
 
 export default function PatientProfile() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const profile = usePatientProfile();
 
   if (!profile.patient && !profile.isLoading) {
@@ -170,6 +173,7 @@ export default function PatientProfile() {
         ]}
         query={{ data: patient, isLoading: profile.isLoading }}
         headerActions={[
+          { label: t('patients.newEvaluation', { defaultValue: 'Nova Avaliação' }), icon: Sparkles, onClick: () => navigate(`/new-case?patientId=${patientId}`), variant: 'default' },
           { label: t('common.edit'), icon: Pencil, onClick: profile.openEditDialog, variant: 'outline' },
         ]}
         slots={{

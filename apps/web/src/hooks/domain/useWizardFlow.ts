@@ -117,6 +117,9 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
   // We use a stable ref that gets patched after the photo hook is created.
   const analyzePhotoRef = useRef<() => void>(() => {});
 
+  // Forward ref: navigation calls abortAnalysis, but photo hook is created after navigation.
+  const abortAnalysisRef = useRef<() => void>(() => {});
+
   // Forward refs for photo analysis setters needed by navigation
   const photoSettersRef = useRef({
     setAnalysisError: (_error: string | null) => {},
@@ -157,6 +160,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
   // Navigation (uses forward refs to break circular dependency with photo analysis)
   const nav = useWizardNavigation({
     analyzePhoto: () => analyzePhotoRef.current(),
+    abortAnalysis: () => abortAnalysisRef.current(),
     setAnalysisError: (error) => photoSettersRef.current.setAnalysisError(error),
     setIsAnalyzing: (analyzing) => photoSettersRef.current.setIsAnalyzing(analyzing),
     analysisAbortedRef,
@@ -189,6 +193,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
 
   // Wire up forward refs now that photo hook is created
   analyzePhotoRef.current = photo.analyzePhoto;
+  abortAnalysisRef.current = photo.abortAnalysis;
   photoSettersRef.current.setAnalysisError = photo.setAnalysisError;
   photoSettersRef.current.setIsAnalyzing = photo.setIsAnalyzing;
 

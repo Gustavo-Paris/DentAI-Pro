@@ -9,7 +9,7 @@ import { Button, Card, Badge, Skeleton } from '@parisgroup-ai/pageshell/primitiv
 import {
   FileText, FileWarning, ChevronRight, ArrowRight, Plus,
 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useScrollReveal, useScrollRevealChildren } from '@/hooks/useScrollReveal';
 import { SessionCard } from './SessionCard';
@@ -216,8 +216,12 @@ function ActivityFeedSection({ sessions }: { sessions: DashboardSession[] }) {
     feedItems.push({
       id: session.session_id,
       type: 'treatment' as const,
-      title: session.patient_name || t('evaluation.patientNoName'),
-      description: `${session.teeth.length} ${session.teeth.length === 1 ? t('patients.caseOne', { defaultValue: 'caso' }) : t('patients.caseOther', { defaultValue: 'casos' })} \u2022 ${session.treatmentTypes.join(', ')}`,
+      title: session.patient_name || t('dashboard.session.unnamedCase', {
+        defaultValue: 'Caso {{date}} — {{count}} dentes',
+        date: format(new Date(session.created_at), 'dd/MM', { locale: ptBR }),
+        count: session.teeth.length,
+      }),
+      description: `${session.teeth.length} ${session.teeth.length === 1 ? 'caso' : 'casos'} \u2022 ${session.treatmentTypes.join(', ')}`,
       timestamp: session.created_at,
     });
     if (session.hasDSD) {
@@ -297,14 +301,15 @@ export function PrincipalTab({
         onDiscardDraft={onDiscardDraft}
       />
 
-      {/* Recent sessions */}
-      <RecentSessions
-        sessions={sessions}
-        loading={loading}
-      />
-
-      {/* Activity Feed */}
-      <ActivityFeedSection sessions={sessions} />
+      {/* 2-column layout on desktop */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div className="lg:col-span-3">
+          <RecentSessions sessions={sessions} loading={loading} />
+        </div>
+        <div className="lg:col-span-2">
+          <ActivityFeedSection sessions={sessions} />
+        </div>
+      </div>
     </div>
   );
 }

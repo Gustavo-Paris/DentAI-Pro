@@ -233,7 +233,7 @@ export default function NewCase() {
                 </Button>
               </div>
             </div>
-          ) : !isSubmitting ? (
+          ) : isSubmitting ? (
             <div className="flex flex-col items-center justify-center py-12 sm:py-16 space-y-4 sm:space-y-6" role="status" aria-live="polite">
               <div className="text-center flex items-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />

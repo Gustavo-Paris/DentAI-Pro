@@ -10,6 +10,7 @@ import {
   Loader2 as ShareLoader,
   X,
   Sparkles,
+  Trash2,
 } from 'lucide-react';
 
 import { DetailPage } from '@parisgroup-ai/pageshell/composites';
@@ -37,6 +38,7 @@ export default function EvaluationDetails() {
     current: number;
     total: number;
   }>({ open: false, evaluationId: '', current: 0, total: 0 });
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showDSD, setShowDSD] = useState(false);
 
   const firstEval = detail.evaluations[0];
@@ -99,6 +101,12 @@ export default function EvaluationDetails() {
             onClick: detail.handleMarkAllAsCompleted,
             disabled: detail.completedCount === detail.evaluations.length,
             variant: 'outline',
+          },
+          {
+            label: t('evaluation.deleteSession'),
+            icon: Trash2,
+            onClick: () => setShowDeleteDialog(true),
+            variant: 'ghost',
           },
         ]}
         slots={{
@@ -206,6 +214,21 @@ export default function EvaluationDetails() {
         cancelText={t('common.cancel')}
         onConfirm={handleConfirmComplete}
         variant="warning"
+      />
+
+      {/* Confirm session deletion */}
+      <PageConfirmDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        title={t('evaluation.deleteSessionTitle')}
+        description={t('evaluation.deleteSessionDescription', { count: detail.evaluations.length })}
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
+        onConfirm={() => {
+          setShowDeleteDialog(false);
+          detail.handleDeleteSession();
+        }}
+        variant="destructive"
       />
     </>
   );
