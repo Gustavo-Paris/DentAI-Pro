@@ -8,101 +8,72 @@ const sectionHeadingClass = "text-xl font-semibold font-display mb-3";
 // is designed for data-fetched entity views, not static content with custom navigation.
 export default function Terms() {
   const { t } = useTranslation();
+  const b = { brandName: BRAND_NAME };
   return (
     <LegalPageLayout title={t('pages.termsTitle')}>
       <p className="text-muted-foreground">
-        Última atualização: {new Date().toLocaleDateString('pt-BR')}
+        {t('pages.lastUpdated')} {new Date().toLocaleDateString('pt-BR')}
       </p>
 
       <section>
-        <h2 className={sectionHeadingClass}>1. Aceitação dos Termos</h2>
-        <p className="text-muted-foreground">
-          Ao acessar e usar o {BRAND_NAME}, você concorda com estes Termos de Uso.
-          Se você não concordar com qualquer parte destes termos, não deve usar nosso serviço.
-        </p>
+        <h2 className={sectionHeadingClass}>{t('pages.terms.s1Title')}</h2>
+        <p className="text-muted-foreground">{t('pages.terms.s1Text', b)}</p>
       </section>
 
       <section>
-        <h2 className={sectionHeadingClass}>2. Descrição do Serviço</h2>
-        <p className="text-muted-foreground">
-          O {BRAND_NAME} é uma ferramenta de apoio à decisão clínica que utiliza inteligência artificial
-          para sugerir resinas compostas adequadas para casos odontológicos. O serviço fornece recomendações
-          baseadas em dados inseridos pelo usuário e um banco de dados de materiais restauradores.
-        </p>
+        <h2 className={sectionHeadingClass}>{t('pages.terms.s2Title')}</h2>
+        <p className="text-muted-foreground">{t('pages.terms.s2Text', b)}</p>
       </section>
 
       <section>
-        <h2 className={sectionHeadingClass}>3. Limitação de Responsabilidade</h2>
+        <h2 className={sectionHeadingClass}>{t('pages.terms.s3Title')}</h2>
         <p className="text-muted-foreground">
-          <strong>IMPORTANTE:</strong> O {BRAND_NAME} é uma ferramenta de apoio e NÃO substitui o julgamento
-          clínico profissional. As recomendações fornecidas são sugestões baseadas em algoritmos e não devem
-          ser consideradas como diagnóstico ou prescrição médica/odontológica.
+          <strong>{t('pages.terms.s3Important')}</strong> {t('pages.terms.s3Text1', b)}
         </p>
-        <p className="text-muted-foreground mt-2">
-          O profissional de saúde é o único responsável pelas decisões clínicas tomadas em relação ao
-          tratamento de seus pacientes. Não nos responsabilizamos por quaisquer danos ou prejuízos
-          resultantes do uso das recomendações fornecidas pela plataforma.
-        </p>
+        <p className="text-muted-foreground mt-2">{t('pages.terms.s3Text2')}</p>
       </section>
 
       <section>
-        <h2 className={sectionHeadingClass}>4. Uso Adequado</h2>
-        <p className="text-muted-foreground">Você concorda em:</p>
+        <h2 className={sectionHeadingClass}>{t('pages.terms.s4Title')}</h2>
+        <p className="text-muted-foreground">{t('pages.terms.s4Intro')}</p>
         <ul className="list-disc list-inside text-muted-foreground mt-2 space-y-1">
-          <li>Fornecer informações precisas e verdadeiras ao usar o serviço</li>
-          <li>Não compartilhar suas credenciais de acesso com terceiros</li>
-          <li>Não utilizar o serviço para fins ilegais ou não autorizados</li>
-          <li>Não tentar acessar áreas restritas do sistema</li>
-          <li>Respeitar a privacidade e dados de pacientes</li>
+          <li>{t('pages.terms.s4Item1')}</li>
+          <li>{t('pages.terms.s4Item2')}</li>
+          <li>{t('pages.terms.s4Item3')}</li>
+          <li>{t('pages.terms.s4Item4')}</li>
+          <li>{t('pages.terms.s4Item5')}</li>
         </ul>
       </section>
 
       <section>
-        <h2 className={sectionHeadingClass}>5. Propriedade Intelectual</h2>
-        <p className="text-muted-foreground">
-          Todo o conteúdo do {BRAND_NAME}, incluindo mas não limitado a textos, gráficos, logos, ícones,
-          imagens, algoritmos e software, é propriedade exclusiva do {BRAND_NAME} ou de seus licenciadores
-          e é protegido por leis de propriedade intelectual.
-        </p>
+        <h2 className={sectionHeadingClass}>{t('pages.terms.s5Title')}</h2>
+        <p className="text-muted-foreground">{t('pages.terms.s5Text', b)}</p>
       </section>
 
       <section>
-        <h2 className={sectionHeadingClass}>6. Conta do Usuário</h2>
-        <p className="text-muted-foreground">
-          Você é responsável por manter a confidencialidade de sua conta e senha. Qualquer atividade
-          realizada em sua conta é de sua responsabilidade. Notifique-nos imediatamente sobre qualquer
-          uso não autorizado de sua conta.
-        </p>
+        <h2 className={sectionHeadingClass}>{t('pages.terms.s6Title')}</h2>
+        <p className="text-muted-foreground">{t('pages.terms.s6Text')}</p>
       </section>
 
       <section>
-        <h2 className={sectionHeadingClass}>7. Modificações do Serviço</h2>
-        <p className="text-muted-foreground">
-          Reservamo-nos o direito de modificar, suspender ou descontinuar o serviço a qualquer momento,
-          com ou sem aviso prévio. Também podemos atualizar estes Termos de Uso periodicamente.
-        </p>
+        <h2 className={sectionHeadingClass}>{t('pages.terms.s7Title')}</h2>
+        <p className="text-muted-foreground">{t('pages.terms.s7Text')}</p>
       </section>
 
       <section>
-        <h2 className={sectionHeadingClass}>8. Rescisão</h2>
-        <p className="text-muted-foreground">
-          Podemos encerrar ou suspender seu acesso ao serviço imediatamente, sem aviso prévio, por qualquer
-          motivo, incluindo violação destes Termos de Uso.
-        </p>
+        <h2 className={sectionHeadingClass}>{t('pages.terms.s8Title')}</h2>
+        <p className="text-muted-foreground">{t('pages.terms.s8Text')}</p>
       </section>
 
       <section>
-        <h2 className={sectionHeadingClass}>9. Lei Aplicável</h2>
-        <p className="text-muted-foreground">
-          Estes Termos de Uso são regidos pelas leis da República Federativa do Brasil. Qualquer disputa
-          será submetida ao foro da comarca de São Paulo, SP.
-        </p>
+        <h2 className={sectionHeadingClass}>{t('pages.terms.s9Title')}</h2>
+        <p className="text-muted-foreground">{t('pages.terms.s9Text')}</p>
       </section>
 
       <section>
-        <h2 className={sectionHeadingClass}>10. Contato</h2>
+        <h2 className={sectionHeadingClass}>{t('pages.terms.s10Title')}</h2>
         <p className="text-muted-foreground">
-          Para dúvidas sobre estes Termos de Uso, entre em contato através do email:{' '}
+          {t('pages.terms.s10Text')}{' '}
           <a href="mailto:contato@tosmile.ai" className="text-primary hover:underline">contato@tosmile.ai</a>
         </p>
       </section>

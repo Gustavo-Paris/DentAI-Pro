@@ -33,6 +33,7 @@ export function useWizardDraft(userId: string | undefined) {
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const cachedDraftRef = useRef<WizardDraft | null>(null);
+  const lastDraftRef = useRef<WizardDraft | null>(null);
 
   // Check if draft is expired
   const isDraftExpired = useCallback((draft: WizardDraft): boolean => {
@@ -86,15 +87,18 @@ export function useWizardDraft(userId: string | undefined) {
 
     setIsSaving(true);
 
+    // Capture latest draft data for flush-on-unmount
+    const draftWithTimestamp: WizardDraft = {
+      ...draft,
+      lastSavedAt: new Date().toISOString(),
+    };
+    lastDraftRef.current = draftWithTimestamp;
+
     debounceRef.current = setTimeout(async () => {
       try {
-        const draftWithTimestamp: WizardDraft = {
-          ...draft,
-          lastSavedAt: new Date().toISOString(),
-        };
-
         await drafts.save(userId, draftWithTimestamp);
         cachedDraftRef.current = draftWithTimestamp;
+        lastDraftRef.current = null; // Clear — save completed, no flush needed
         setLastSavedAt(draftWithTimestamp.lastSavedAt);
         trackEvent('draft_saved');
       } catch (error) {
@@ -119,11 +123,17 @@ export function useWizardDraft(userId: string | undefined) {
   }, [userId]);
 
 
-  // Cleanup timeout on unmount
+  // Cleanup timeout on unmount — flush pending save immediately
   useEffect(() => {
     return () => {
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);
+        // Flush pending save immediately on unmount
+        if (lastDraftRef.current && userId) {
+          drafts.save(userId, lastDraftRef.current).catch((err) =>
+            logger.error('Error flushing draft on unmount:', err)
+          );
+        }
       }
     };
   }, []);

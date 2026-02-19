@@ -71,6 +71,7 @@ export function usePhotoAnalysis({
   const [uploadedPhotoPath, setUploadedPhotoPath] = useState<string | null>(null);
 
   const vitaShadeManuallySetRef = useRef(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // -------------------------------------------------------------------------
   // Upload
@@ -124,16 +125,37 @@ export function usePhotoAnalysis({
     setAnalysisError(null);
     analysisAbortedRef.current = false;
 
+    // Create a new AbortController for this analysis run
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     try {
       const photoPath = await uploadImageToStorage(imageBase64);
       if (photoPath) setUploadedPhotoPath(photoPath);
 
       const { data } = await withRetry(
         async () => {
-          const result = await invokeFunction<{ analysis: PhotoAnalysisResult }>(
-            'analyze-dental-photo',
-            { body: { imageBase64, imageType: 'intraoral' } },
-          );
+          // Check if aborted before starting the request
+          if (controller.signal.aborted) {
+            const abortError = new DOMException('Analysis aborted by user', 'AbortError');
+            throw abortError;
+          }
+
+          const result = await Promise.race([
+            invokeFunction<{ analysis: PhotoAnalysisResult }>(
+              'analyze-dental-photo',
+              { body: { imageBase64, imageType: 'intraoral' } },
+            ),
+            new Promise<never>((_, reject) => {
+              if (controller.signal.aborted) {
+                reject(new DOMException('Analysis aborted by user', 'AbortError'));
+                return;
+              }
+              controller.signal.addEventListener('abort', () => {
+                reject(new DOMException('Analysis aborted by user', 'AbortError'));
+              }, { once: true });
+            }),
+          ]);
           if (result.error) throw result.error;
           return result;
         },
@@ -141,6 +163,10 @@ export function usePhotoAnalysis({
           maxRetries: 2,
           baseDelay: 3000,
           onRetry: (attempt) => {
+            // Don't retry if aborted
+            if (controller.signal.aborted) {
+              throw new DOMException('Analysis aborted by user', 'AbortError');
+            }
             logger.warn(`Analysis retry attempt ${attempt}`);
             toast.info(t('toasts.analysis.reconnecting'), { duration: 3000 });
           },
@@ -148,7 +174,7 @@ export function usePhotoAnalysis({
       );
 
       // If user cancelled while request was in-flight, discard result
-      if (analysisAbortedRef.current) {
+      if (analysisAbortedRef.current || controller.signal.aborted) {
         analysisAbortedRef.current = false;
         return;
       }
@@ -198,11 +224,17 @@ export function usePhotoAnalysis({
       }
     } catch (error: unknown) {
       const err = error as { message?: string; code?: string; name?: string; status?: number };
+
+      // User-initiated abort — exit silently without error toast or state change
+      if (err.name === 'AbortError' || controller.signal.aborted) {
+        logger.debug('Analysis aborted by user');
+        return;
+      }
+
       logger.error('Analysis error:', error);
 
       let errorMessage: string;
       const isNetwork =
-        err.name === 'AbortError' ||
         err.message?.includes('Failed to fetch') ||
         err.message?.includes('network') ||
         err.message?.includes('timeout');
@@ -228,6 +260,8 @@ export function usePhotoAnalysis({
 
       setAnalysisError(errorMessage);
       setIsAnalyzing(false);
+    } finally {
+      abortControllerRef.current = null;
     }
   }, [
     imageBase64,
@@ -245,6 +279,15 @@ export function usePhotoAnalysis({
     setAnalysisResult,
     patientWhiteningLevel,
   ]);
+
+  // -------------------------------------------------------------------------
+  // Abort
+  // -------------------------------------------------------------------------
+
+  const abortAnalysis = useCallback(() => {
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
+  }, []);
 
   // -------------------------------------------------------------------------
   // Reanalyze
@@ -351,6 +394,7 @@ export function usePhotoAnalysis({
     setIsAnalyzing,
     setUploadedPhotoPath,
     analyzePhoto,
+    abortAnalysis,
     handleReanalyze,
   };
 }

@@ -173,7 +173,6 @@ export function useWizardSubmit({
         })
       : rawTeeth;
 
-    const createdEvaluationIds: string[] = [];
     const sessionId = crypto.randomUUID();
     const treatmentCounts: Record<string, number> = {};
     let successCount = 0;
@@ -238,6 +237,8 @@ export function useWizardSubmit({
 
           let evaluationId: string | null = null;
 
+          try {
+
           // Gengivoplasty is a tissue procedure, not per-tooth — use sensible defaults
           const isGengivoplasty = tooth === 'GENGIVO' || normalizedTreatment === 'gengivoplastia';
 
@@ -286,7 +287,6 @@ export function useWizardSubmit({
 
           const evaluation = await wizardData.createEvaluation(insertData);
           evaluationId = evaluation.id;
-          createdEvaluationIds.push(evaluation.id);
 
           // Only call AI edge functions for the primary tooth of each group.
           // Non-primary teeth of the same type will be synced via syncGroupProtocols.
@@ -405,6 +405,12 @@ export function useWizardSubmit({
           setCurrentToothIndex(resolvedCount.value - 1);
 
           return { tooth, evaluationId, normalizedTreatment };
+          } catch (err) {
+            // Attach evaluationId to the error so the caller can mark it as 'error'
+            const wrappedError = err instanceof Error ? err : new Error(String(err));
+            (wrappedError as Error & { evaluationId?: string | null }).evaluationId = evaluationId;
+            throw wrappedError;
+          }
         })()),
       );
 
@@ -422,9 +428,8 @@ export function useWizardSubmit({
           failedTeeth.push({ tooth, error: result.reason });
 
           // Mark the evaluation as 'error' so the user can identify it
-          // Find if an evaluation was created before the failure
-          // (the evaluationId may have been set before the protocol generation failed)
-          const evalId = createdEvaluationIds[index];
+          // The evaluationId is attached to the rejection reason by the inner try/catch
+          const evalId = (result.reason as { evaluationId?: string | null })?.evaluationId;
           if (evalId) {
             await wizardData.updateEvaluationStatus(evalId, 'error');
           }

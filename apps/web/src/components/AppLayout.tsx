@@ -13,6 +13,8 @@ import {
   Users,
   Package,
   User,
+  CreditCard,
+  HelpCircle,
 } from 'lucide-react';
 
 export default function AppLayout() {
@@ -39,6 +41,8 @@ export default function AppLayout() {
 
   const userMenuItems = useMemo(() => [
     { label: t('components.layout.profile'), href: '/profile', icon: User },
+    { label: t('components.layout.subscription', { defaultValue: 'Assinatura' }), href: '/profile?tab=assinatura', icon: CreditCard },
+    { label: t('components.layout.support', { defaultValue: 'Suporte' }), href: 'mailto:suporte@tosmile.ai', icon: HelpCircle },
   ], [t]);
 
   const themeToggleSlot = useMemo(() => <ThemeToggle />, []);

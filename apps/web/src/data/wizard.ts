@@ -313,5 +313,9 @@ export async function syncGroupProtocols(
     // Generic treatments (implante, coroa, etc.) — no sync needed
   }
 
-  await Promise.all(updates);
+  const results = await Promise.allSettled(updates);
+  const failures = results.filter(r => r.status === 'rejected');
+  if (failures.length > 0) {
+    logger.warn(`syncGroupProtocols: ${failures.length}/${results.length} updates failed`);
+  }
 }

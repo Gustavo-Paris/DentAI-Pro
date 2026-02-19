@@ -21,6 +21,8 @@ export interface UseWizardNavigationParams {
     costOverride?: number,
   ) => Promise<boolean>;
   setPatientPreferences: React.Dispatch<React.SetStateAction<{ whiteningLevel: string }>>;
+  /** Abort the in-flight HTTP request for photo analysis (prevents wasted credits) */
+  abortAnalysis?: () => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -37,6 +39,7 @@ export function useWizardNavigation({
   navigate,
   confirmCreditUse,
   setPatientPreferences,
+  abortAnalysis,
 }: UseWizardNavigationParams) {
   const { t } = useTranslation();
   const [step, setStep] = useState(1);
@@ -145,6 +148,8 @@ export function useWizardNavigation({
 
   const cancelAnalysis = useCallback(() => {
     analysisAbortedRef.current = true;
+    // Abort the in-flight HTTP request to prevent wasted credits
+    abortAnalysis?.();
     setIsAnalyzing(false);
     setAnalysisError(null);
     if (isQuickCase) {
@@ -155,7 +160,7 @@ export function useWizardNavigation({
       setStep(2);
     }
     toast.info(t('toasts.wizard.analysisCanceled'));
-  }, [isQuickCase, analysisAbortedRef, setIsAnalyzing, setAnalysisError]);
+  }, [isQuickCase, analysisAbortedRef, setIsAnalyzing, setAnalysisError, abortAnalysis]);
 
   return {
     step,

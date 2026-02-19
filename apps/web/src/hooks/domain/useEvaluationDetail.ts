@@ -108,6 +108,7 @@ export interface EvaluationDetailActions {
   handleBulkComplete: (ids: string[]) => void;
   handleExportPDF: (id: string) => void;
   handleShareCase: () => void;
+  handleDeleteSession: () => Promise<void>;
   setShowAddTeethModal: (show: boolean) => void;
   handleAddTeethSuccess: () => void;
   handleSubmitTeeth: (payload: SubmitTeethPayload) => Promise<void>;
@@ -500,6 +501,21 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
     setIsSharing(false);
   }, [user, sessionId]);
 
+  const handleDeleteSession = useCallback(async () => {
+    if (!user || !sessionId) return;
+
+    try {
+      await evaluations.deleteSession(sessionId, user.id);
+      trackEvent('session_deleted', { session_id: sessionId });
+      queryClient.invalidateQueries({ queryKey: evaluationKeys.all });
+      toast.success(t('toasts.evaluationDetail.sessionDeleted'));
+      navigate('/evaluations');
+    } catch (error) {
+      logger.error('Error deleting session:', error);
+      toast.error(t('toasts.evaluationDetail.deleteError'));
+    }
+  }, [user, sessionId, queryClient, navigate, t]);
+
   const handleAddTeethSuccess = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: evaluationKeys.session(sessionId) });
     queryClient.invalidateQueries({ queryKey: ['pendingTeeth', sessionId] });
@@ -712,6 +728,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
     handleBulkComplete,
     handleExportPDF,
     handleShareCase,
+    handleDeleteSession,
     setShowAddTeethModal,
     handleAddTeethSuccess,
     handleSubmitTeeth,

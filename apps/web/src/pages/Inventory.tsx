@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { PageConfirmDialog } from '@parisgroup-ai/pageshell/interactions';
 import { memo, useMemo } from 'react';
-import { X } from 'lucide-react';
+import { Lightbulb, Plus, X } from 'lucide-react';
 import { ListPage } from '@parisgroup-ai/pageshell/composites';
+import { Button, Card, CardContent } from '@parisgroup-ai/pageshell/primitives';
 import { useInventoryManagement } from '@/hooks/domain/useInventoryManagement';
 import type { FlatInventoryItem } from '@/hooks/domain/useInventoryManagement';
 import { ResinBadge } from '@/components/ResinBadge';
@@ -36,7 +37,7 @@ const InventoryResinCard = memo(function InventoryResinCard({
       <p className="text-[10px] text-muted-foreground truncate">{item.product_line}</p>
       <button
         onClick={() => onRemove(item.id)}
-        className="absolute -top-1 -right-1 p-0.5 rounded-full bg-destructive/10 hover:bg-destructive/20 transition-colors opacity-0 group-hover:opacity-100"
+        className="absolute -top-1 -right-1 p-1.5 rounded-full bg-destructive/10 hover:bg-destructive/20 transition-colors sm:opacity-0 sm:group-hover:opacity-100"
         title={t('common.remove')}
         aria-label={t('inventory.removeResin')}
       >
@@ -176,6 +177,32 @@ export default function Inventory() {
         emptyState={emptyState}
         labels={labels}
       />
+
+      {/* Tip for sparse inventory */}
+      {!inv.isLoading && inv.flatItems.length > 0 && inv.flatItems.length < 5 && (
+        <Card className="mt-4 border-dashed border-primary/30 bg-primary/5">
+          <CardContent className="py-4">
+            <div className="flex items-start gap-3">
+              <Lightbulb className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium">{t('inventory.tipTitle', { defaultValue: 'Dica: Adicione mais resinas' })}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {t('inventory.tipDescription', { defaultValue: 'Com mais cores no inventário, as recomendações de IA ficam mais precisas e personalizadas para o seu consultório.' })}
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-2"
+                  onClick={inv.openDialog}
+                >
+                  <Plus className="w-3.5 h-3.5 mr-1.5" />
+                  {t('inventory.addResins')}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Hidden CSV file input */}
       <input

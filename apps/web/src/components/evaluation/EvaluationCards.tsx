@@ -81,13 +81,14 @@ export function EvaluationCards({
                 </Button>
               </div>
             )}
-            {!showGroupHeader && group.evaluations.map((evaluation) => {
+            {group.evaluations.map((evaluation) => {
               const treatmentConfig = getTreatmentConfig(evaluation.treatment_type);
               const borderColor = treatmentConfig.variant === 'default' ? 'border-l-primary' : 'border-l-amber-500';
+              const isGrouped = showGroupHeader;
               return (
               <Card
                 key={evaluation.id}
-                className={`p-4 shadow-sm rounded-xl border-l-[3px] ${borderColor} cursor-pointer hover:shadow-md transition-shadow mb-2`}
+                className={`shadow-sm rounded-xl border-l-[3px] ${borderColor} cursor-pointer hover:shadow-md transition-shadow mb-2 ${isGrouped ? 'ml-3 border-l-2 p-3' : 'p-4'}`}
                 onClick={() => navigate(`/result/${evaluation.id}`)}
               >
                 <div className="flex items-start justify-between mb-3">
@@ -98,13 +99,13 @@ export function EvaluationCards({
                         onCheckedChange={() => toggleSelection(evaluation.id)}
                       />
                     </div>
-                    {getTreatmentBadge(evaluation, t)}
-                    <p className="font-semibold">{formatToothLabel(evaluation.tooth)}</p>
+                    {!isGrouped && getTreatmentBadge(evaluation, t)}
+                    <p className={isGrouped ? 'font-medium text-sm' : 'font-semibold'}>{formatToothLabel(evaluation.tooth)}</p>
                   </div>
                   {getStatusBadge(evaluation, getChecklistProgress, t)}
                 </div>
 
-                {evaluation.treatment_type === 'resina' && evaluation.resins && (
+                {!isGrouped && evaluation.treatment_type === 'resina' && evaluation.resins && (
                   <div className="mb-3 p-2 bg-muted/50 rounded">
                     <p className="text-sm font-medium">{evaluation.resins.name}</p>
                     <p className="text-xs text-muted-foreground">{evaluation.resins.manufacturer}</p>

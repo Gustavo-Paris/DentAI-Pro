@@ -4,7 +4,19 @@ import type { DSDAnalysis } from "./types.ts";
 export function hasSevereDestruction(analysis: DSDAnalysis): { isLimited: boolean; reason: string | null } {
   const destructionKeywords = [
     'ausente', 'destruição', 'raiz residual', 'implante', 'extração',
-    'fratura extensa', 'destruído', 'coroa total', 'prótese', 'sem coroa'
+    'fratura extensa', 'destruído', 'coroa total', 'prótese', 'sem coroa',
+    // Avulsion / tooth loss
+    'avulsionado', 'avulsão',
+    // Edentulism
+    'edêntulo', 'edentulo', 'edentulous',
+    'missing', 'tooth loss',
+    // Root surgery / sectioning
+    'rizectomia', 'hemissecção', 'hemisseccao',
+    // Indicated extraction / residual root variants
+    'extração indicada',
+    'remanescente radicular',
+    // Hopeless prognosis
+    'hopeless',
   ];
 
   const hasDestructionInSuggestions = analysis.suggestions.some(s =>

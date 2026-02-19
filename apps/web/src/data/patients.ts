@@ -78,6 +78,25 @@ export async function listSessions(
   return { rows: data || [], count: count || 0 };
 }
 
+export async function create(
+  userId: string,
+  data: { name: string; phone?: string; email?: string; notes?: string },
+) {
+  return withQuery(() =>
+    supabase
+      .from('patients')
+      .insert({
+        user_id: userId,
+        name: data.name,
+        phone: data.phone || null,
+        email: data.email || null,
+        notes: data.notes || null,
+      })
+      .select()
+      .single(),
+  ) as Promise<PatientRow>;
+}
+
 export async function update(id: string, updates: Partial<PatientRow>) {
   await withMutation(() =>
     supabase

@@ -6,6 +6,73 @@ interface ShadeValidationParams {
   aestheticGoals: string | undefined;
   // deno-lint-ignore no-explicit-any
   supabase: any;
+  /** FDI tooth notation (e.g. "11") — used for layer count validation */
+  tooth?: string;
+  /** Cavity class (e.g. "Classe III") — used for layer count validation */
+  cavityClass?: string;
+}
+
+// ---------------------------------------------------------------------------
+// Minimum layer count validation
+// ---------------------------------------------------------------------------
+
+interface LayerCountContext {
+  tooth: string;          // FDI notation, e.g. "11", "36"
+  cavityClass: string;    // e.g. "Classe III", "Classe IV", "Fechamento de Diastema"
+}
+
+// Anterior teeth: 13-23 (upper), 33-43 (lower) in FDI notation
+function isAnteriorTooth(tooth: string): boolean {
+  if (tooth.length !== 2) return false;
+  const quadrant = parseInt(tooth[0], 10);
+  const position = parseInt(tooth[1], 10);
+  // Quadrants 1,2 (upper) and 3,4 (lower); positions 1-3 (incisors + canine)
+  return [1, 2, 3, 4].includes(quadrant) && position >= 1 && position <= 3;
+}
+
+// Aesthetic cavity classes that require full stratification
+const AESTHETIC_CLASSES = [
+  'classe iii', 'classe iv', 'classe v',
+  'faceta direta', 'fechamento de diastema',
+  'recontorno estético', 'lente de contato',
+];
+
+/**
+ * Validates that the protocol has a clinically appropriate minimum number of layers.
+ *
+ * - Anterior teeth with aesthetic cases (Class III, IV, V, diastema, faceta): minimum 3 layers
+ *   (dentina + efeitos/translucidez + esmalte)
+ * - Posterior teeth with Class I/II: minimum 2 layers acceptable
+ *
+ * Does NOT block the protocol — only adds a warning to alerts if the count is too low.
+ */
+// deno-lint-ignore no-explicit-any
+export function validateMinimumLayerCount(layers: any[], context: LayerCountContext): string | null {
+  if (!layers || !Array.isArray(layers)) return null;
+
+  const layerCount = layers.length;
+  const anterior = isAnteriorTooth(context.tooth);
+  const classLower = context.cavityClass?.toLowerCase() || '';
+  const isAestheticCase = AESTHETIC_CLASSES.some(c => classLower.includes(c));
+
+  if (anterior && isAestheticCase) {
+    const minRequired = 3;
+    if (layerCount < minRequired) {
+      const warning = `Protocolo gerou apenas ${layerCount} camada(s) para dente anterior estético (${context.tooth}, ${context.cavityClass}). Mínimo recomendado: ${minRequired} camadas (dentina + efeitos/translucidez + esmalte).`;
+      logger.warn(`Layer count validation: ${warning}`);
+      return warning;
+    }
+  } else {
+    // Posterior teeth or non-aesthetic cases
+    const minRequired = 2;
+    if (layerCount < minRequired) {
+      const warning = `Protocolo gerou apenas ${layerCount} camada(s) para dente ${context.tooth} (${context.cavityClass}). Mínimo recomendado: ${minRequired} camadas.`;
+      logger.warn(`Layer count validation: ${warning}`);
+      return warning;
+    }
+  }
+
+  return null;
 }
 
 /**
@@ -17,6 +84,8 @@ export async function validateAndFixProtocolLayers({
   recommendation,
   aestheticGoals,
   supabase,
+  tooth,
+  cavityClass,
 }: ShadeValidationParams): Promise<void> {
   if (!recommendation.protocol?.layers || !Array.isArray(recommendation.protocol.layers)) {
     return;
@@ -379,5 +448,17 @@ export async function validateAndFixProtocolLayers({
       });
     });
     recommendation.protocol.alerts = [...existingAlerts, ...newAlerts];
+  }
+
+  // Validate minimum layer count if clinical context is available
+  if (tooth && cavityClass && recommendation.protocol?.layers) {
+    const layerWarning = validateMinimumLayerCount(
+      recommendation.protocol.layers,
+      { tooth, cavityClass },
+    );
+    if (layerWarning) {
+      recommendation.protocol.warnings = recommendation.protocol.warnings || [];
+      recommendation.protocol.warnings.push(layerWarning);
+    }
   }
 }

@@ -1,6 +1,26 @@
-import { normalizeTreatmentIndication } from "../_shared/treatment-normalization.ts";
+import { normalizeTreatmentIndication, UnknownTreatmentError } from "../_shared/treatment-normalization.ts";
+import type { TreatmentIndication } from "../_shared/treatment-normalization.ts";
 import { logger } from "../_shared/logger.ts";
 import type { DetectedTooth, PhotoAnalysisResult } from "./types.ts";
+
+/**
+ * Safe wrapper: normalizes treatment indication, logging a warning and returning
+ * the fallback on unknown values instead of crashing the entire analysis pipeline.
+ */
+function safeNormalizeTreatment(
+  value: string | undefined | null,
+  fallback: TreatmentIndication = "resina",
+): TreatmentIndication {
+  try {
+    return normalizeTreatmentIndication(value, fallback);
+  } catch (e) {
+    if (e instanceof UnknownTreatmentError) {
+      logger.warn(`Post-processing: unknown treatment "${e.rawValue}", using fallback "${fallback}"`);
+      return fallback;
+    }
+    throw e;
+  }
+}
 
 /**
  * Post-processes the raw AI analysis result:
@@ -23,7 +43,7 @@ export function processAnalysisResult(analysisResult: PhotoAnalysisResult): Phot
   // Use the global treatment_indication as fallback instead of always defaulting to "resina"
   // This prevents the inconsistency where the case-level banner says "Facetas de Porcelana"
   // but every individual tooth shows "Resina Composta"
-  const globalIndication = normalizeTreatmentIndication(analysisResult.treatment_indication);
+  const globalIndication = safeNormalizeTreatment(analysisResult.treatment_indication);
   const rawTeeth: DetectedTooth[] = (analysisResult.detected_teeth || []).map((tooth: Partial<DetectedTooth>) => ({
     tooth: String(tooth.tooth || "desconhecido"),
     tooth_region: tooth.tooth_region ?? null,
@@ -35,7 +55,7 @@ export function processAnalysisResult(analysisResult: PhotoAnalysisResult): Phot
     depth: tooth.depth ?? null,
     priority: tooth.priority || "média",
     notes: tooth.notes ?? null,
-    treatment_indication: normalizeTreatmentIndication(tooth.treatment_indication) || globalIndication,
+    treatment_indication: safeNormalizeTreatment(tooth.treatment_indication, globalIndication),
     indication_reason: tooth.indication_reason ?? undefined,
     tooth_bounds: tooth.tooth_bounds ?? undefined,
   }));
@@ -128,7 +148,7 @@ export function processAnalysisResult(analysisResult: PhotoAnalysisResult): Phot
     vita_shade: analysisResult.vita_shade ?? null,
     observations: analysisResult.observations ?? [],
     warnings: analysisResult.warnings ?? [],
-    treatment_indication: normalizeTreatmentIndication(analysisResult.treatment_indication),
+    treatment_indication: safeNormalizeTreatment(analysisResult.treatment_indication),
     indication_reason: analysisResult.indication_reason ?? undefined,
   };
 

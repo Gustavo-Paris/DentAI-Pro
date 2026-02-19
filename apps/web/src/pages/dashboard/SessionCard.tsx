@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { DashboardSession } from '@/hooks/domain/useDashboard';
 import { Card, Badge } from '@parisgroup-ai/pageshell/primitives';
 import { ChevronRight, Smile } from 'lucide-react';
-import { getTreatmentConfig, formatToothLabel } from '@/lib/treatment-config';
+import { getTreatmentConfig } from '@/lib/treatment-config';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -34,7 +34,7 @@ export function SessionCard({ session }: { session: DashboardSession }) {
     : 0;
 
   return (
-    <Link to={`/evaluation/${session.session_id}`} aria-label={`${session.patient_name || t('evaluation.patientNoName')} — ${t('evaluation.case', { count: session.evaluationCount })}`}>
+    <Link to={`/evaluation/${session.session_id}`} aria-label={`${session.patient_name || t('dashboard.session.unnamedCase', { defaultValue: 'Caso {{date}} — {{count}} dentes', date: format(new Date(session.created_at), 'dd/MM', { locale: ptBR }), count: session.teeth.length })} — ${t('evaluation.case', { count: session.evaluationCount })}`}>
       <Card className="group relative overflow-hidden p-3 sm:p-4 shadow-sm hover:shadow-md rounded-xl transition-all duration-300 cursor-pointer">
         <div
           className={`absolute left-0 top-0 bottom-0 w-[3px] ${
@@ -47,7 +47,11 @@ export function SessionCard({ session }: { session: DashboardSession }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <p className="font-semibold text-sm sm:text-base truncate">
-                {session.patient_name || t('evaluation.patientNoName')}
+                {session.patient_name || t('dashboard.session.unnamedCase', {
+                  defaultValue: 'Caso {{date}} — {{count}} dentes',
+                  date: format(new Date(session.created_at), 'dd/MM', { locale: ptBR }),
+                  count: session.teeth.length,
+                })}
               </p>
               <Badge
                 variant="outline"
@@ -60,41 +64,34 @@ export function SessionCard({ session }: { session: DashboardSession }) {
                 {isCompleted ? t('evaluation.completed') : t('evaluation.inProgress')}
               </Badge>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
               <p className="text-xs text-muted-foreground">
                 {t('evaluation.case', { count: session.evaluationCount })}
               </p>
-              <span className="text-muted-foreground/40 hidden sm:inline">·</span>
-              <div className="flex gap-1 flex-wrap">
-                {session.teeth.slice(0, 2).map((tooth) => (
-                  <Badge key={tooth} variant="outline" className="text-[10px] font-mono px-1.5">
-                    {formatToothLabel(tooth)}
-                  </Badge>
-                ))}
-                {session.teeth.length > 2 && (
-                  <Badge variant="outline" className="text-[10px] px-1.5">
-                    +{session.teeth.length - 2}
-                  </Badge>
-                )}
-              </div>
               {session.hasDSD && (
-                <Badge variant="outline" className={`text-[10px] px-1.5 gap-1 ${DSD_BADGE_CLASS}`}>
-                  <Smile className="w-2.5 h-2.5" aria-hidden="true" />
-                  DSD
-                </Badge>
+                <>
+                  <span className="text-muted-foreground/40">·</span>
+                  <Badge variant="outline" className={`text-[10px] px-1.5 gap-1 ${DSD_BADGE_CLASS}`}>
+                    <Smile className="w-2.5 h-2.5" aria-hidden="true" />
+                    DSD
+                  </Badge>
+                </>
               )}
               {session.treatmentTypes.length > 0 && (
-                <div className="flex gap-1 flex-wrap">
-                  {session.treatmentTypes.map(type => {
-                    const config = getTreatmentConfig(type);
-                    return (
-                      <Badge key={type} variant="outline" className="text-[10px] px-1.5 gap-1">
-                        <config.icon className="w-2.5 h-2.5" />
-                        {t(config.shortLabelKey)}
-                      </Badge>
-                    );
-                  })}
-                </div>
+                <>
+                  <span className="text-muted-foreground/40">·</span>
+                  <div className="flex gap-1 flex-wrap">
+                    {session.treatmentTypes.map(type => {
+                      const config = getTreatmentConfig(type);
+                      return (
+                        <Badge key={type} variant="outline" className="text-[10px] px-1.5 gap-1">
+                          <config.icon className="w-2.5 h-2.5" />
+                          {t(config.shortLabelKey)}
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                </>
               )}
             </div>
           </div>
