@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/data';
-import { evaluations, storage } from '@/data';
+import { evaluations, storage, profiles } from '@/data';
 import type { Resin, StratificationProtocol, ProtocolLayer, CementationProtocol } from '@/types/protocol';
 import type { SimulationLayer } from '@/types/dsd';
 import { toast } from 'sonner';
@@ -98,7 +98,7 @@ export type { TreatmentStyle } from '@/lib/treatment-config';
 
 const resultKeys = {
   detail: (id: string) => ['result', id] as const,
-  dentistProfile: (userId: string) => ['dentist-profile', userId] as const,
+  dentistProfile: (userId: string) => ['profile', userId] as const,
 };
 
 // ---------------------------------------------------------------------------
@@ -132,12 +132,7 @@ export function useResult() {
     queryKey: resultKeys.dentistProfile(user?.id || ''),
     queryFn: async () => {
       if (!user) throw new Error('User not authenticated');
-      const { data } = await supabase
-        .from('profiles')
-        .select('full_name, cro, clinic_name, clinic_logo_url')
-        .eq('user_id', user.id)
-        .single();
-      return data as DentistProfile | null;
+      return profiles.getFullByUserId(user.id) as Promise<DentistProfile | null>;
     },
     enabled: !!user,
     staleTime: QUERY_STALE_TIMES.LONG,
@@ -181,15 +176,24 @@ export function useResult() {
     queryKey: ['result-dsd-layers', id],
     queryFn: async () => {
       if (!evaluation?.dsd_simulation_layers?.length) return {};
-      const paths = evaluation.dsd_simulation_layers
-        .map(l => l.simulation_url)
-        .filter((p): p is string => !!p);
-      const urlsByPath = await storage.getSignedDSDLayerUrls(paths, SIGNED_URL_EXPIRY_SECONDS);
-      // Re-key from path → layer type
       const urls: Record<string, string> = {};
+      // Separate data/http URLs (already displayable) from storage paths (need signing)
+      const storagePaths: string[] = [];
       for (const layer of evaluation.dsd_simulation_layers) {
-        if (layer.simulation_url && urlsByPath[layer.simulation_url]) {
-          urls[layer.type] = urlsByPath[layer.simulation_url];
+        if (!layer.simulation_url) continue;
+        if (layer.simulation_url.startsWith('data:') || layer.simulation_url.startsWith('http')) {
+          urls[layer.type] = layer.simulation_url;
+        } else {
+          storagePaths.push(layer.simulation_url);
+        }
+      }
+      // Sign only storage paths
+      if (storagePaths.length > 0) {
+        const urlsByPath = await storage.getSignedDSDLayerUrls(storagePaths, SIGNED_URL_EXPIRY_SECONDS);
+        for (const layer of evaluation.dsd_simulation_layers) {
+          if (layer.simulation_url && urlsByPath[layer.simulation_url]) {
+            urls[layer.type] = urlsByPath[layer.simulation_url];
+          }
         }
       }
       return urls;
