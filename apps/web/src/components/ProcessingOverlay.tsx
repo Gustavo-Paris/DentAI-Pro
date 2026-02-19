@@ -22,11 +22,53 @@ export const ProcessingOverlay = memo(function ProcessingOverlay({
   const { t } = useTranslation();
   const overlayRef = useRef<HTMLDivElement>(null);
 
-  // Auto-focus the overlay on mount for focus trapping
+  // Auto-focus the overlay on mount for screen reader announcement
   useEffect(() => {
     if (isLoading && overlayRef.current) {
       overlayRef.current.focus();
     }
+  }, [isLoading]);
+
+  // Focus trap: keep Tab/Shift+Tab cycling within the overlay (WCAG 2.4.3)
+  useEffect(() => {
+    if (!isLoading) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        return;
+      }
+
+      if (e.key !== 'Tab') return;
+
+      const overlay = overlayRef.current;
+      if (!overlay) return;
+
+      const focusable = overlay.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])',
+      );
+
+      if (focusable.length === 0) {
+        // No focusable children — keep focus on the overlay itself
+        e.preventDefault();
+        overlay.focus();
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isLoading]);
 
   if (!isLoading) return null;

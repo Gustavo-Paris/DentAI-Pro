@@ -12,7 +12,7 @@ import {
 import type { ChartConfig } from '@/components/ui/chart';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
-  PieChart, Pie, Cell,
+  PieChart, Pie, Cell, Tooltip as RechartsTooltip,
   BarChart, Bar,
 } from 'recharts';
 import { BarChart3 } from 'lucide-react';
@@ -26,7 +26,7 @@ function WeeklyTrendsChart({ data, loading }: { data: WeeklyTrendPoint[]; loadin
   const { t } = useTranslation();
   const containerRef = useScrollReveal();
   const chartConfig: ChartConfig = {
-    value: { label: t('dashboard.insights.evaluationsLabel'), color: 'hsl(var(--primary))' },
+    value: { label: t('dashboard.insights.evaluationsLabel'), color: 'var(--color-primary)' },
   };
 
   const totalPeriod = data.reduce((sum, d) => sum + d.value, 0);
@@ -48,8 +48,8 @@ function WeeklyTrendsChart({ data, loading }: { data: WeeklyTrendPoint[]; loadin
           <AreaChart data={data}>
             <defs>
               <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
-                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                <stop offset="0%" stopColor="var(--color-primary)" stopOpacity={0.2} />
+                <stop offset="100%" stopColor="var(--color-primary)" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -90,6 +90,21 @@ function TreatmentDonut({ items }: { items: Array<{ label: string; value: number
         <div className="flex flex-col items-center">
           <div className="relative w-[180px] h-[180px]">
             <PieChart width={180} height={180}>
+              <RechartsTooltip
+                content={({ active, payload }) => {
+                  if (!active || !payload?.length) return null;
+                  const { label, value, color } = payload[0].payload;
+                  return (
+                    <div className="rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl">
+                      <div className="flex items-center gap-2">
+                        <div className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: color }} />
+                        <span className="text-muted-foreground">{label}</span>
+                        <span className="font-mono font-medium tabular-nums text-foreground">{value}</span>
+                      </div>
+                    </div>
+                  );
+                }}
+              />
               <Pie
                 data={items}
                 dataKey="value"
@@ -99,7 +114,7 @@ function TreatmentDonut({ items }: { items: Array<{ label: string; value: number
                 innerRadius="55%"
                 outerRadius="80%"
                 strokeWidth={2}
-                stroke="hsl(var(--card))"
+                stroke="var(--color-card)"
               >
                 {items.map((item, i) => (
                   <Cell key={i} fill={item.color} />
@@ -139,7 +154,7 @@ function TopResinsChart({ resins }: { resins: Array<{ name: string; count: numbe
   if (resins.length === 0) return null;
 
   const chartConfig: ChartConfig = {
-    count: { label: t('dashboard.insights.usesLabel'), color: 'hsl(var(--chart-1))' },
+    count: { label: t('dashboard.insights.usesLabel'), color: 'var(--chart-1)' },
   };
 
   return (

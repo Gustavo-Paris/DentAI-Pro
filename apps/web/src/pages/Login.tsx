@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
@@ -24,6 +24,8 @@ export default function Login() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const { signIn, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const returnTo = (location.state as { returnTo?: string })?.returnTo;
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -50,7 +52,7 @@ export default function Login() {
       }
     } else {
       toast.success(t('auth.welcomeBack'));
-      navigate('/dashboard');
+      navigate(returnTo || '/dashboard');
     }
 
     setLoading(false);
@@ -58,11 +60,16 @@ export default function Login() {
 
   const handleGoogleLogin = async () => {
     setGoogleLoading(true);
+    // Persist returnTo across OAuth redirect (location state is lost during redirect)
+    if (returnTo) {
+      sessionStorage.setItem('returnTo', returnTo);
+    }
     const { error } = await signInWithGoogle();
     if (error) {
       toast.error(t('auth.googleLoginError'), {
         description: error.message,
       });
+      sessionStorage.removeItem('returnTo');
       setGoogleLoading(false);
     }
   };

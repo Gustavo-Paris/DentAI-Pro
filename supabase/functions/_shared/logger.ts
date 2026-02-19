@@ -14,7 +14,8 @@ export const logger = {
     console.error(...args);
   },
   info: (...args: unknown[]) => {
-    if (isDev) console.info(...args);
+    // Always log info (includes token usage for cost monitoring)
+    console.info(...args);
   },
   debug: (...args: unknown[]) => {
     if (isDev) console.log('[DEBUG]', ...args);

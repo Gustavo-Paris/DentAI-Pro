@@ -6,6 +6,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { useWizardDraft, WizardDraft } from '@/hooks/useWizardDraft';
 import { WELCOME_STORAGE_KEY } from '@/lib/branding';
 import { QUERY_STALE_TIMES } from '@/lib/constants';
+import { normalizeTreatmentType } from '@/lib/treatment-config';
 import i18n from '@/lib/i18n';
 import { format, startOfWeek, endOfWeek, subDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -117,16 +118,6 @@ function extractFirstName(fullName: string | null | undefined): string {
 // Insights computation (pure function)
 // ---------------------------------------------------------------------------
 
-// Gemini sometimes returns English enum values — normalize to Portuguese
-const TREATMENT_NORMALIZE: Record<string, string> = {
-  porcelain: 'porcelana',
-  resin: 'resina',
-  crown: 'coroa',
-  implant: 'implante',
-  endodontics: 'endodontia',
-  referral: 'encaminhamento',
-};
-
 const TREATMENT_COLORS: Record<string, string> = {
   resina: '#3b82f6',
   porcelana: '#a855f7',
@@ -165,7 +156,7 @@ function computeInsights(
 
   for (const row of rows) {
     const raw = row.treatment_type;
-    const t = raw ? (TREATMENT_NORMALIZE[raw.toLowerCase()] || raw.toLowerCase()) : null;
+    const t = raw ? normalizeTreatmentType(raw) : null;
     if (t) typeCounts.set(t, (typeCounts.get(t) || 0) + 1);
     if (row.is_from_inventory) inventoryCount++;
   }

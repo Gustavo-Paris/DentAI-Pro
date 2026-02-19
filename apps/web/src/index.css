@@ -5,157 +5,106 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ToSmile.ai Design System — "Clinical Teal"
- *
- * Primary: Teal (#2A9D8F) — dental trust + clinical freshness
- * Brand accent: Coral (#E07A5F) — warmth of a smile
- * Surfaces: Cool neutrals with subtle teal undertone
- * Dark-first: deep blue-charcoal is the hero experience
- */
+/* ═══ Tokens suplementares — odonto-ai theme enforcement ═══ */
+/* portal-base.css define defaults violeta para .ui-theme.
+   .dark .ui-theme (specificity 0,2,0) vence .ui-theme-odonto-ai (0,1,0).
+   Precisamos forçar cyan aqui (source order posterior aos @imports).
+   Hex values referenciam tokens.css primitives via var().
+   RGB companions são literais (CSS não decompõe hex → R G B). */
 
-@layer base {
-  :root {
-    --background: 170 8% 98%;
-    --foreground: 200 12% 12%;
+.ui-theme,
+.ui-theme-odonto-ai {
+  /* Primary — cyan (ref: tokens.css --color-cyan-*) */
+  --color-primary: var(--color-cyan-500);
+  --color-primary-rgb: 6 182 212;            /* --color-cyan-500 decomposed */
+  --color-primary-hover-rgb: 34 211 238;     /* --color-cyan-400 decomposed */
+  --color-primary-foreground: #000000;
 
-    --card: 0 0% 100%;
-    --card-foreground: 200 12% 12%;
+  /* Accent — sky (ref: tokens.css --color-sky-*) */
+  --color-accent: var(--color-sky-500);
+  --color-accent-rgb: 14 165 233;            /* --color-sky-500 decomposed */
+  --color-accent-hover-rgb: 56 189 248;      /* --color-sky-400 decomposed */
+  --color-accent-foreground: #000000;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 200 12% 12%;
+  /* Ring — PageShell não define este token */
+  --color-ring: var(--color-cyan-500);
 
-    --primary: 173 58% 39%;
-    --primary-foreground: 0 0% 100%;
+  /* RGB companions — portal-base não fornece variantes RGB para surfaces */
+  --color-background-rgb: 250 249 247;       /* portal-base --color-background */
+  --color-foreground-rgb: 15 23 42;          /* portal-base --color-foreground */
+  --color-card-rgb: 255 255 255;             /* portal-base --color-card */
+  --color-muted-rgb: 243 242 239;            /* portal-base --color-muted */
+  --color-muted-foreground-rgb: 71 85 105;   /* portal-base --color-muted-foreground */
+  --color-secondary-rgb: 241 245 249;        /* portal-base --color-secondary */
+  --color-border-rgb: 226 232 240;           /* portal-base --color-border */
+  --color-destructive-rgb: 220 38 38;        /* portal-base --color-destructive */
+  --color-warning-rgb: 217 119 6;            /* portal-base --color-warning */
+  --color-success-rgb: 22 163 74;            /* portal-base --color-success */
+  --color-info: 59 130 246;                  /* blue-500 — semantic info token */
 
-    --secondary: 180 8% 94%;
-    --secondary-foreground: 200 10% 18%;
+  /* Foreground tokens que PageShell não define */
+  --color-destructive-foreground: #ffffff;
+  --color-warning-foreground: #451a03;
+  --color-success-foreground: #ffffff;
 
-    --muted: 180 6% 94%;
-    --muted-foreground: 200 5% 44%;
+  /* Chart palette — semântico sobre tokens PageShell */
+  --chart-1: var(--color-primary);
+  --chart-2: var(--color-accent);
+  --chart-3: var(--color-warning);
+  --chart-4: rgb(var(--color-info));
+  --chart-5: var(--color-destructive);
 
-    --accent: 180 8% 94%;
-    --accent-foreground: 200 10% 18%;
+  /* Sidebar user card */
+  --sidebar-user-card-bg: #eff2f1;
+  --sidebar-user-card-border: #e0e4e3;
 
-    --destructive: 0 68% 50%;
-    --destructive-foreground: 0 0% 100%;
+  /* Brand accent — coral para ToSmile wordmark */
+  --brand-accent: #e07a5f;
+  --brand-accent-light: #e89880;
+}
 
-    --warning: 38 92% 50%;
-    --warning-foreground: 38 92% 15%;
+/* Dark mode — specificity 0,2,0 to beat portal-base .dark .ui-theme */
+.dark .ui-theme,
+.dark .ui-theme-odonto-ai,
+.ui-theme.dark,
+.ui-theme-odonto-ai.dark {
+  /* Primary — cyan (beats portal-base .dark .ui-theme violet) */
+  --color-primary: var(--color-cyan-500);
+  --color-primary-rgb: 6 182 212;            /* --color-cyan-500 decomposed */
+  --color-primary-hover-rgb: 34 211 238;     /* --color-cyan-400 decomposed */
+  --color-primary-foreground: #000000;
 
-    --success: 160 84% 39%;
-    --success-foreground: 0 0% 100%;
+  /* Accent — sky */
+  --color-accent: var(--color-sky-500);
+  --color-accent-rgb: 14 165 233;            /* --color-sky-500 decomposed */
+  --color-accent-hover-rgb: 56 189 248;      /* --color-sky-400 decomposed */
+  --color-accent-foreground: #000000;
 
-    --border: 180 6% 85%;
-    --input: 180 5% 87%;
-    --ring: 173 58% 39%;
+  /* Ring */
+  --color-ring: var(--color-cyan-500);
 
-    --radius: 0.625rem;
+  /* RGB companions (dark) — derivados do portal-base dark values */
+  --color-background-rgb: 8 8 12;            /* portal-base dark --color-background */
+  --color-foreground-rgb: 228 228 235;       /* portal-base dark --color-foreground */
+  --color-card-rgb: 20 20 28;               /* portal-base dark --color-card */
+  --color-muted-rgb: 26 26 36;              /* portal-base dark --color-muted */
+  --color-muted-foreground-rgb: 113 113 122; /* portal-base dark --color-muted-foreground */
+  --color-secondary-rgb: 26 26 36;           /* portal-base dark --color-secondary */
+  --color-border-rgb: 42 42 58;             /* portal-base dark --color-border */
+  --color-destructive-rgb: 239 68 68;        /* portal-base dark --color-destructive */
+  --color-warning-rgb: 245 158 11;           /* portal-base dark --color-warning */
+  --color-success-rgb: 16 185 129;           /* portal-base dark --color-success */
+  --color-info: 96 165 250;                  /* blue-400 — semantic info token (dark) */
 
-    --sidebar-background: 170 6% 97%;
-    --sidebar-foreground: 200 12% 12%;
-    --sidebar-primary: 173 58% 39%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 170 6% 93%;
-    --sidebar-accent-foreground: 200 10% 18%;
-    --sidebar-border: 170 5% 90%;
-    --sidebar-ring: 173 58% 39%;
+  --color-destructive-foreground: #ffffff;
+  --color-warning-foreground: #fef3c7;
+  --color-success-foreground: #ffffff;
 
-    --chart-1: 173 58% 39%;
-    --chart-2: 12 76% 61%;
-    --chart-3: 38 80% 50%;
-    --chart-4: 210 70% 55%;
-    --chart-5: 330 55% 52%;
+  --sidebar-user-card-bg: #242729;
+  --sidebar-user-card-border: #2b2f31;
 
-    --sidebar: 170 6% 97%;
-
-    /* Brand accent — coral for ToSmile wordmark + premium moments */
-    --brand-accent: 12 76% 61%;
-    --brand-accent-light: 16 80% 68%;
-
-    --font-sans: 'DM Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-    --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-
-    --shadow-2xs: 0 1px 2px 0px hsl(200 10% 20% / 0.03);
-    --shadow-xs: 0 1px 3px 0px hsl(200 10% 20% / 0.05);
-    --shadow-sm: 0 1px 3px 0px hsl(200 10% 20% / 0.07), 0 1px 2px -1px hsl(200 10% 20% / 0.05);
-    --shadow: 0 2px 4px 0px hsl(200 10% 20% / 0.07), 0 1px 2px -1px hsl(200 10% 20% / 0.05);
-    --shadow-md: 0 4px 8px -1px hsl(200 10% 20% / 0.09), 0 2px 4px -2px hsl(200 10% 20% / 0.05);
-    --shadow-lg: 0 8px 16px -2px hsl(200 10% 20% / 0.09), 0 4px 6px -2px hsl(200 10% 20% / 0.04);
-    --shadow-xl: 0 16px 32px -4px hsl(200 10% 20% / 0.11), 0 8px 12px -4px hsl(200 10% 20% / 0.05);
-    --shadow-2xl: 0 24px 48px -8px hsl(200 10% 20% / 0.16);
-
-    --tracking-normal: 0em;
-    --spacing: 0.25rem;
-  }
-
-  .dark {
-    /* Dark-first: deep blue-charcoal with subtle teal undertone */
-    --background: 200 12% 7%;
-    --foreground: 195 8% 93%;
-
-    --card: 200 10% 11%;
-    --card-foreground: 195 8% 93%;
-
-    --popover: 200 10% 11%;
-    --popover-foreground: 195 8% 93%;
-
-    /* Teal lifted for dark — brighter to read on dark surfaces */
-    --primary: 173 50% 55%;
-    --primary-foreground: 200 12% 6%;
-
-    --secondary: 200 7% 15%;
-    --secondary-foreground: 195 8% 93%;
-
-    --muted: 200 7% 15%;
-    --muted-foreground: 195 5% 52%;
-
-    --accent: 200 7% 17%;
-    --accent-foreground: 195 8% 93%;
-
-    --destructive: 0 60% 58%;
-    --destructive-foreground: 0 0% 100%;
-
-    --warning: 38 92% 50%;
-    --warning-foreground: 38 92% 90%;
-
-    --success: 160 72% 45%;
-    --success-foreground: 0 0% 100%;
-
-    --border: 200 7% 20%;
-    --input: 200 7% 22%;
-    --ring: 173 50% 55%;
-
-    --sidebar-background: 200 12% 10%;
-    --sidebar-foreground: 195 8% 93%;
-    --sidebar-primary: 173 50% 55%;
-    --sidebar-primary-foreground: 200 12% 6%;
-    --sidebar-accent: 200 7% 15%;
-    --sidebar-accent-foreground: 195 8% 93%;
-    --sidebar-border: 200 7% 18%;
-    --sidebar-ring: 173 50% 55%;
-
-    --chart-1: 173 50% 55%;
-    --chart-2: 12 78% 65%;
-    --chart-3: 38 75% 60%;
-    --chart-4: 210 65% 60%;
-    --chart-5: 330 50% 60%;
-
-    --sidebar: 200 12% 10%;
-
-    /* Brand accent — coral lifted for dark */
-    --brand-accent: 12 78% 65%;
-    --brand-accent-light: 16 82% 72%;
-
-    --shadow-2xs: 0 1px 2px 0px hsl(0 0% 0% / 0.18);
-    --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.20);
-    --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.22), 0 1px 2px -1px hsl(0 0% 0% / 0.18);
-    --shadow: 0 2px 4px 0px hsl(0 0% 0% / 0.22), 0 1px 2px -1px hsl(0 0% 0% / 0.18);
-    --shadow-md: 0 4px 8px -1px hsl(0 0% 0% / 0.28), 0 2px 4px -2px hsl(0 0% 0% / 0.18);
-    --shadow-lg: 0 8px 16px -2px hsl(0 0% 0% / 0.28), 0 4px 6px -2px hsl(0 0% 0% / 0.18);
-    --shadow-xl: 0 16px 32px -4px hsl(0 0% 0% / 0.32), 0 8px 12px -4px hsl(0 0% 0% / 0.20);
-    --shadow-2xl: 0 24px 48px -8px hsl(0 0% 0% / 0.42);
-  }
+  --brand-accent: #ec8e75;
+  --brand-accent-light: #f0a48f;
 }
 
 @layer base {
@@ -203,174 +152,6 @@
   }
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   PageShell Bridge — unify --color-* tokens with our "Clinical Teal" palette.
-
-   Problem: PageShell (sidebar, AppShell, composites) uses --color-* variables
-   from portal-base.css (warm/purple-neutral, cyan primary) while shadcn/ui
-   uses --background/--card etc from our @layer base (cool blue-neutral, teal
-   primary). These are DIFFERENT colors → sidebar vs content look disconnected.
-
-   Fix: Override --color-* inside .ui-theme scope with hex equivalents of our
-   palette. Must be UNLAYERED (outside @layer) to win over portal-base.css.
-   ══════════════════════════════════════════════════════════════════════════ */
-
-/* --- Teal color primitives (PageShell base tokens lack teal) --- */
-:root {
-  --color-teal-600: #228b7e;
-  --color-teal-500: #2a9d8f;
-  --color-teal-400: #3db0a0;
-  --color-teal-300: #6ec7bb;
-  --color-teal-muted: rgba(42, 157, 143, 0.15);
-  --color-teal-glow: rgba(42, 157, 143, 0.40);
-}
-
-/* --- Light Mode: cool-neutral surfaces + teal primary --- */
-.ui-theme,
-.ui-theme-odonto-ai,
-.ui-theme[data-theme="odonto-ai"] {
-  /* Surfaces — cool neutral (NOT portal-base warm off-white #faf9f7) */
-  --color-background: #f8fafa;
-  --color-foreground: #1a2128;
-  --color-card: #ffffff;
-  --color-card-foreground: #1a2128;
-  --color-popover: #ffffff;
-  --color-popover-foreground: #1a2128;
-  --color-muted: #eef1f0;
-  --color-muted-foreground: #6a7074;
-  --color-secondary: #edf0ef;
-  --color-secondary-foreground: #1a2128;
-  --color-border: #d5dada;
-  --color-input: #dadfde;
-
-  /* Primary — Teal (our brand), NOT PageShell cyan #06b6d4 */
-  --color-primary: #2a9d8f;
-  --color-primary-foreground: #ffffff;
-  --color-primary-rgb: 42 157 143;
-  --color-primary-hover-rgb: 61 176 160;
-
-  /* Accent — sky as secondary complement */
-  --color-accent-rgb: 14 165 233;
-  --color-accent-hover-rgb: 56 189 248;
-  --color-accent-foreground: #000000;
-
-  /* Theme glow/effect tokens */
-  --theme-primary: #2a9d8f;
-  --theme-primary-hover: #3db0a0;
-  --theme-primary-muted: rgba(42, 157, 143, 0.15);
-  --theme-primary-glow: rgba(42, 157, 143, 0.40);
-  --theme-primary-text: #ffffff;
-  --theme-glow: #2a9d8f;
-  --glow-primary: 0 0 20px rgba(42, 157, 143, 0.25);
-  --glow-accent: 0 0 20px rgba(14, 165, 233, 0.25);
-
-  /* Sidebar — near-identical to content bg, distinguished by border only */
-  --sidebar: #f6f8f8;
-  --sidebar-foreground: #1a2128;
-  --sidebar-border: #e4e8e7;
-  --sidebar-primary: #2a9d8f;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #edf0ef;
-  --sidebar-accent-foreground: #1a2128;
-  --color-sidebar: #f6f8f8;
-  --color-sidebar-foreground: #1a2128;
-  --color-sidebar-primary: #2a9d8f;
-  --color-sidebar-primary-foreground: #ffffff;
-  --color-sidebar-accent: #edf0ef;
-  --color-sidebar-accent-foreground: #1a2128;
-  --color-sidebar-border: #e4e8e7;
-
-  /* User card in sidebar */
-  --sidebar-user-card-bg: #eff2f1;
-  --sidebar-user-card-border: #e0e4e3;
-
-  /* Shadows — cool-tinted */
-  --shadow-sm: 0 1px 2px rgba(20, 35, 45, 0.05);
-  --shadow-md: 0 4px 12px rgba(20, 35, 45, 0.08);
-  --shadow-lg: 0 8px 24px rgba(20, 35, 45, 0.12);
-
-  /* Glass */
-  --glass-bg: rgba(0, 0, 0, 0.02);
-  --glass-border: rgba(0, 0, 0, 0.06);
-  --glass-highlight: rgba(0, 0, 0, 0.02);
-}
-
-/* --- Dark Mode: blue-charcoal (NOT portal-base purple-neutral #08080c) --- */
-.dark .ui-theme,
-.dark .ui-theme-odonto-ai,
-.dark .ui-theme[data-theme="odonto-ai"],
-.ui-theme.dark,
-.ui-theme-odonto-ai.dark,
-.ui-theme[data-theme="odonto-ai"].dark,
-.ui-theme[data-mode="dark"],
-.ui-theme-odonto-ai[data-mode="dark"],
-.ui-theme[data-theme="odonto-ai"][data-mode="dark"] {
-  /* Surfaces — blue-charcoal, matching index.css .dark values */
-  --color-background: #101314;
-  --color-foreground: #ebeef0;
-  --color-card: #191d1f;
-  --color-card-foreground: #ebeef0;
-  --color-popover: #191d1f;
-  --color-popover-foreground: #ebeef0;
-  --color-muted: #242729;
-  --color-muted-foreground: #7e8689;
-  --color-secondary: #242729;
-  --color-secondary-foreground: #ebeef0;
-  --color-border: #2f3437;
-  --color-input: #34393c;
-
-  /* Primary — Teal lifted for dark */
-  --color-primary: #53c6b8;
-  --color-primary-foreground: #101314;
-  --color-primary-rgb: 83 198 184;
-  --color-primary-hover-rgb: 110 199 187;
-
-  /* Accent */
-  --color-accent-rgb: 14 165 233;
-  --color-accent-hover-rgb: 56 189 248;
-  --color-accent-foreground: #000000;
-
-  /* Theme glow/effect tokens */
-  --theme-primary: #53c6b8;
-  --theme-primary-hover: #6ec7bb;
-  --theme-primary-muted: rgba(83, 198, 184, 0.15);
-  --theme-primary-glow: rgba(83, 198, 184, 0.40);
-  --theme-primary-text: #101314;
-  --theme-glow: #53c6b8;
-  --glow-primary: 0 0 20px rgba(83, 198, 184, 0.20);
-  --glow-accent: 0 0 20px rgba(14, 165, 233, 0.20);
-
-  /* Sidebar — slight lift from bg for panel effect */
-  --sidebar: #161b1d;
-  --sidebar-foreground: #ebeef0;
-  --sidebar-border: #2b2f31;
-  --sidebar-primary: #53c6b8;
-  --sidebar-primary-foreground: #101314;
-  --sidebar-accent: #242729;
-  --sidebar-accent-foreground: #ebeef0;
-  --color-sidebar: #161b1d;
-  --color-sidebar-foreground: #ebeef0;
-  --color-sidebar-primary: #53c6b8;
-  --color-sidebar-primary-foreground: #101314;
-  --color-sidebar-accent: #242729;
-  --color-sidebar-accent-foreground: #ebeef0;
-  --color-sidebar-border: #2b2f31;
-
-  /* User card in sidebar */
-  --sidebar-user-card-bg: #242729;
-  --sidebar-user-card-border: #2b2f31;
-
-  /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.55);
-
-  /* Glass */
-  --glass-bg: rgba(255, 255, 255, 0.03);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-highlight: rgba(255, 255, 255, 0.05);
-}
-
 /* ──────────────────────────────────────────────────────────────────── */
 
 /* ─── Keyframes ─── */
@@ -383,7 +164,7 @@
 }
 
 .skeleton-shimmer {
-  background: linear-gradient(90deg, hsl(var(--muted)) 25%, hsl(var(--muted-foreground) / 0.06) 50%, hsl(var(--muted)) 75%);
+  background: linear-gradient(90deg, var(--color-muted) 25%, rgb(var(--color-muted-foreground-rgb) / 0.06) 50%, var(--color-muted) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
 }
@@ -471,8 +252,8 @@
 /* Rendered in portal at body level, NOT inside .ui-theme */
 
 .themed-dropdown {
-  border-color: hsl(var(--border) / 0.4) !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12), 0 0 0 1px hsl(var(--border) / 0.2);
+  border-color: rgb(var(--color-border-rgb) / 0.4) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12), 0 0 0 1px rgb(var(--color-border-rgb) / 0.2);
 }
 
 .dark .themed-dropdown {
@@ -502,8 +283,8 @@
 }
 
 @keyframes badge-pulse-ring {
-  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.35); }
-  50%      { box-shadow: 0 0 0 8px hsl(var(--primary) / 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgb(var(--color-primary-rgb) / 0.35); }
+  50%      { box-shadow: 0 0 0 8px rgb(var(--color-primary-rgb) / 0); }
 }
 
 @keyframes float {
@@ -554,7 +335,7 @@
     transform: none;
     transition: none;
   }
-  .skeleton-shimmer { animation: none; background: hsl(var(--muted)); }
+  .skeleton-shimmer { animation: none; background: var(--color-muted); }
   .btn-press:active { transform: none; }
 }
 
@@ -577,7 +358,7 @@
 
 /* Brand gradient — ToSmile wordmark, premium moments */
 .text-gradient-brand {
-  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--brand-accent)), hsl(var(--primary)));
+  background: linear-gradient(135deg, var(--color-primary), var(--brand-accent), var(--color-primary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -585,42 +366,29 @@
 
 /* Legacy alias — maps to new class */
 .text-gradient-gold {
-  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--brand-accent)), hsl(var(--primary)));
+  background: linear-gradient(135deg, var(--color-primary), var(--brand-accent), var(--color-primary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Primary glow — teal-based for all functional buttons */
-.btn-glow {
-  transition: box-shadow 0.3s ease, transform 0.15s ease;
-}
-
-.btn-glow:hover {
-  box-shadow: 0 0 20px hsl(173 58% 39% / 0.30), 0 0 40px hsl(173 58% 39% / 0.10);
-}
-
-.dark .btn-glow:hover {
-  box-shadow: 0 0 24px hsl(173 50% 55% / 0.25), 0 0 48px hsl(173 50% 55% / 0.08);
-}
-
-.btn-glow:active {
-  transform: scale(0.98);
-}
-
-/* Legacy alias */
+/* Primary glow — for all functional buttons (.btn-glow-gold is a legacy alias) */
+.btn-glow,
 .btn-glow-gold {
   transition: box-shadow 0.3s ease, transform 0.15s ease;
 }
 
+.btn-glow:hover,
 .btn-glow-gold:hover {
-  box-shadow: 0 0 20px hsl(173 58% 39% / 0.30), 0 0 40px hsl(173 58% 39% / 0.10);
+  box-shadow: 0 0 20px rgb(var(--color-primary-rgb) / 0.30), 0 0 40px rgb(var(--color-primary-rgb) / 0.10);
 }
 
+.dark .btn-glow:hover,
 .dark .btn-glow-gold:hover {
-  box-shadow: 0 0 24px hsl(173 50% 55% / 0.25), 0 0 48px hsl(173 50% 55% / 0.08);
+  box-shadow: 0 0 24px rgb(var(--color-primary-rgb) / 0.25), 0 0 48px rgb(var(--color-primary-rgb) / 0.08);
 }
 
+.btn-glow:active,
 .btn-glow-gold:active {
   transform: scale(0.98);
 }
@@ -636,7 +404,7 @@
   top: 0;
   bottom: 0;
   width: 2px;
-  background: linear-gradient(to bottom, hsl(var(--primary) / 0.3), hsl(var(--primary) / 0.05));
+  background: linear-gradient(to bottom, rgb(var(--color-primary-rgb) / 0.3), rgb(var(--color-primary-rgb) / 0.05));
 }
 
 @media (min-width: 640px) {
@@ -665,9 +433,9 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.8), transparent);
+  background: linear-gradient(90deg, transparent, rgb(var(--color-primary-rgb) / 0.8), transparent);
   border-radius: 2px;
-  box-shadow: 0 0 16px 4px hsl(var(--primary) / 0.25);
+  box-shadow: 0 0 16px 4px rgb(var(--color-primary-rgb) / 0.25);
   animation: scan-line 2.5s ease-in-out infinite;
 }
 
@@ -676,12 +444,12 @@
 .progress-bar {
   position: relative;
   overflow: hidden;
-  background: hsl(var(--muted));
+  background: var(--color-muted);
   border-radius: 9999px;
 }
 
 .progress-bar > div {
-  background: linear-gradient(90deg, hsl(var(--primary)), hsl(173 50% 50%), hsl(var(--primary)));
+  background: linear-gradient(90deg, var(--color-primary), var(--color-primary), var(--color-primary));
   border-radius: 9999px;
   transition: width 0.3s ease;
 }
@@ -690,7 +458,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent 30%, hsl(0 0% 100% / 0.25) 50%, transparent 70%);
+  background: linear-gradient(90deg, transparent 30%, rgba(255, 255, 255, 0.25) 50%, transparent 70%);
   background-size: 200% 100%;
   animation: shimmer 2s ease-in-out infinite;
 }
@@ -726,11 +494,11 @@
     position: sticky;
     bottom: 0;
     z-index: 40;
-    background: hsl(var(--background) / 0.92);
+    background: rgb(var(--color-background-rgb) / 0.92);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
-    border-top: 1px solid hsl(var(--border));
+    border-top: 1px solid var(--color-border);
     margin-left: -1rem;
     margin-right: -1rem;
     padding-left: 1rem;
@@ -743,13 +511,13 @@
 .stepper-connector,
 .stepper-connector-gold {
   height: 2px;
-  background: linear-gradient(90deg, hsl(var(--primary) / 0.35), hsl(var(--primary) / 0.12));
+  background: linear-gradient(90deg, rgb(var(--color-primary-rgb) / 0.35), rgb(var(--color-primary-rgb) / 0.12));
   border-radius: 1px;
 }
 
 .stepper-connector.completed,
 .stepper-connector-gold.completed {
-  background: linear-gradient(90deg, hsl(var(--primary)), hsl(173 50% 50%));
+  background: linear-gradient(90deg, var(--color-primary), var(--color-primary));
 }
 
 /* ─── Wizard: Vignette overlay for photo analysis ─── */
@@ -763,7 +531,7 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: radial-gradient(circle, transparent 40%, hsl(var(--background)) 100%);
+  background: radial-gradient(circle, transparent 40%, var(--color-background) 100%);
   pointer-events: none;
   z-index: 1;
 }
@@ -828,10 +596,10 @@
 /* AI glow — soft pulsing border glow for AI-generated results */
 @keyframes ai-glow {
   0%, 100% {
-    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.1), 0 0 0 0 hsl(var(--primary) / 0);
+    box-shadow: 0 0 0 1px rgb(var(--color-primary-rgb) / 0.1), 0 0 0 0 rgb(var(--color-primary-rgb) / 0);
   }
   50% {
-    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.25), 0 0 16px 0 hsl(var(--primary) / 0.1);
+    box-shadow: 0 0 0 1px rgb(var(--color-primary-rgb) / 0.25), 0 0 16px 0 rgb(var(--color-primary-rgb) / 0.1);
   }
 }
 
@@ -858,10 +626,10 @@
   padding: 1.5px;
   background: linear-gradient(
     90deg,
-    hsl(var(--primary) / 0.05),
-    hsl(var(--primary) / 0.5),
-    hsl(var(--brand-accent) / 0.4),
-    hsl(var(--primary) / 0.05)
+    rgb(var(--color-primary-rgb) / 0.05),
+    rgb(var(--color-primary-rgb) / 0.5),
+    color-mix(in srgb, var(--brand-accent) 40%, transparent),
+    rgb(var(--color-primary-rgb) / 0.05)
   );
   background-size: 300% 100%;
   animation: ai-border-travel 4s ease infinite;
@@ -883,7 +651,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: hsl(var(--primary));
+  background: var(--color-primary);
   animation: ai-dot-pulse 1.5s ease-in-out infinite;
 }
 
@@ -896,9 +664,9 @@
 .ai-text {
   background: linear-gradient(
     90deg,
-    hsl(var(--primary)) 0%,
-    hsl(var(--brand-accent)) 40%,
-    hsl(var(--primary)) 80%
+    var(--color-primary) 0%,
+    var(--brand-accent) 40%,
+    var(--color-primary) 80%
   );
   background-size: 200% auto;
   -webkit-background-clip: text;

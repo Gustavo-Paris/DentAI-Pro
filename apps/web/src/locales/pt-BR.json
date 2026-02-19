@@ -246,8 +246,14 @@
     "sampleCase": "Caso Exemplo",
     "generatingCase": "Gerando Caso Clínico",
     "caseCreated": "Caso criado com sucesso!",
-    "createMyOwnCase": "Criar Meu Proprio Caso",
-    "generateCase": "Gerar Caso"
+    "createMyOwnCase": "Criar Meu Próprio Caso",
+    "generateCase": "Gerar Caso",
+    "submission": {
+      "preparingPatient": "Preparando dados do paciente...",
+      "generatingProtocol": "gerando protocolo...",
+      "finalizing": "Finalizando e salvando...",
+      "toothLabel": "{{tooth}}"
+    }
   },
   "dsd": {
     "title": "Planejamento Digital do Sorriso",
@@ -954,11 +960,11 @@
       },
       "stepIndicator": {
         "stepOf": "Etapa {{current}} de {{total}}",
-        "completed": "Completed: ",
-        "current": "Current: ",
-        "upcoming": "Upcoming: ",
-        "stepLabel": "Step {{index}}, {{label}}",
-        "goToStep": "Go to step {{index}}: {{label}}"
+        "completed": "Concluído: ",
+        "current": "Atual: ",
+        "upcoming": "Próximo: ",
+        "stepLabel": "Etapa {{index}}, {{label}}",
+        "goToStep": "Ir para etapa {{index}}: {{label}}"
       },
       "dsd": {
         "analysisView": {
@@ -1198,8 +1204,8 @@
       },
       "pix": {
         "label": "PIX",
-        "card": "Cartao",
-        "note": "Pagamento instantaneo, expira em 24h",
+        "card": "Cartão",
+        "note": "Pagamento instantâneo, expira em 24h",
         "badge": "PIX"
       },
       "comparison": {
@@ -1558,6 +1564,12 @@
         "Translúcido": "Translúcido",
         "Universal": "Universal"
       }
+    },
+    "themeToggle": {
+      "system": "Sistema",
+      "light": "Claro",
+      "dark": "Escuro",
+      "tooltip": "Alternar tema"
     }
   },
   "treatments": {

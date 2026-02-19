@@ -375,7 +375,11 @@ export function useResult() {
   const hasProtocol = isPorcelain ? !!cementationProtocol : isSpecialTreatment ? !!genericProtocol : layers.length > 0;
   const hasPhotos = !!(photoUrls.frontal || photoUrls.angle45 || photoUrls.face);
 
-  const currentTreatmentStyle = treatmentStyles[treatmentType] || treatmentStyles.resina;
+  const baseTreatmentStyle = treatmentStyles[treatmentType] || treatmentStyles.resina;
+  const currentTreatmentStyle = {
+    ...baseTreatmentStyle,
+    label: t(`treatments.${treatmentType}.label`, baseTreatmentStyle.label),
+  };
 
   // ---- PDF export ----
   const fetchImageAsBase64 = async (url: string): Promise<string | null> => {

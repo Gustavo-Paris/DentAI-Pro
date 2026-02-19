@@ -339,7 +339,7 @@ export function usePhotoAnalysis({
     } finally {
       setIsReanalyzing(false);
     }
-  }, [imageBase64, canUseCredits, navigate, invokeFunction, refreshSubscription, setFormData, setAnalysisResult]);
+  }, [imageBase64, canUseCredits, navigate, invokeFunction, refreshSubscription, setFormData, setAnalysisResult, patientWhiteningLevel, t]);
 
   return {
     isAnalyzing,

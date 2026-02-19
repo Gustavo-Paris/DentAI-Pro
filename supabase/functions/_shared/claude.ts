@@ -531,6 +531,7 @@ export async function callClaudeWithTools(
     temperature?: number;
     maxTokens?: number;
     forceFunctionName?: string;
+    timeoutMs?: number;
   } = {},
 ): Promise<{
   text: string | null;
@@ -560,7 +561,11 @@ export async function callClaudeWithTools(
     request.tool_choice = { type: "auto" };
   }
 
-  const response = await makeClaudeRequest(request);
+  const response = await makeClaudeRequest(
+    request,
+    3,
+    options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
+  );
   const text = extractTextResponse(response);
   const functionCall = extractFunctionCall(response);
   const finishReason = response.stop_reason || "UNKNOWN";

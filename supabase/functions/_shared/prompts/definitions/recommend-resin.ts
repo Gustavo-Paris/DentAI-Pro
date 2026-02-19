@@ -314,39 +314,7 @@ export const recommendResin: PromptDefinition<Params> = {
   mode: 'text',
   provider: 'claude',
 
-  system: () => '',
-
-  user: (p: Params) => {
-    const budgetRules = buildBudgetRulesSection(p.budget)
-    const resinsByPrice = buildResinsByPriceSection(p.allGroups)
-    const inventory = buildInventorySection(p.hasInventory, p.budget, p.budgetAppropriateInventory, p.inventoryResins)
-    const inventoryInstr = buildInventoryInstructions(p.hasInventory, p.budget)
-    const advancedStrat = buildAdvancedStratificationSection(p.aestheticLevel, p.cavityClass)
-    const layerCap = buildLayerCapSection(p.restorationSize, p.cavityClass, p.aestheticLevel, p.region)
-    const bruxism = buildBruxismSection(p.bruxism)
-    const aestheticGoals = buildAestheticGoalsSection(p.aestheticGoals)
-    const dsdContext = buildDSDContextSection(p.dsdContext)
-    const contralateral = buildContralateralSection(p.contralateralTooth, p.contralateralProtocol)
-
-    return `Você é um especialista em materiais dentários e técnicas restauradoras. Analise o caso e forneça recomendação COMPLETA com protocolo de estratificação.
-
-${budgetRules}
-
-CASO CLINICO:
-- Idade: ${p.patientAge} anos | Dente: ${p.tooth} | Região: ${p.region}
-- Classe: ${p.cavityClass} | Tamanho: ${p.restorationSize} | Profundidade: ${p.depth || 'N/A'}
-- Substrato: ${p.substrate} | Condição substrato: ${p.substrateCondition || 'Normal'} | Esmalte: ${p.enamelCondition || 'Íntegro'}
-- Nível estético: ${p.aestheticLevel} | Cor VITA: ${p.toothColor}
-- Estratificação: ${p.stratificationNeeded ? 'Sim' : 'Não'} | Bruxismo: ${p.bruxism ? 'Sim' : 'Não'}
-- Longevidade: ${p.longevityExpectation} | Orçamento: ${p.budget}
-${p.clinicalNotes ? `- Observações: ${p.clinicalNotes}` : ''}
-${aestheticGoals}
-${dsdContext}
-
-${resinsByPrice}
-${inventory}
-${inventoryInstr}
-${contralateral}
+  system: () => `Você é um especialista em materiais dentários e técnicas restauradoras. Analise o caso e forneça recomendação COMPLETA com protocolo de estratificação usando a função generate_resin_protocol.
 
 === PROTOCOLO RECONTORNO INCISAL (DESGASTE) ===
 Se cavityClass = "Recontorno Estético" E indicação menciona DIMINUIR bordo incisal:
@@ -364,10 +332,6 @@ REGRA RECONTORNO vs ESTRATIFICACAO (MUTUAMENTE EXCLUSIVOS):
 - Se o dente precisa de ACRESCIMO (estratificação), NUNCA gere protocolo de recontorno junto. O buildup define a nova forma.
 - Se o dente precisa APENAS de ajuste fino em esmalte natural sem acréscimo → recontorno.
 - PROIBIDO: Gerar recontorno + estratificação para o MESMO dente. Escolha UM.
-
-${advancedStrat}
-
-${layerCap}
 
 === PROTOCOLO DE ESTRATIFICACAO V2 ===
 A cor DEVE corresponder ao tipo da camada E existir na linha de produto!
@@ -431,7 +395,7 @@ ALTERNATIVA SIMPLIFICADA (2 camadas):
 
 === CLAREAMENTO (BLEACH SHADES) — CONDICIONADO AO OBJETIVO ESTETICO ===
 
-REGRA: Verificar objetivo estetico do paciente (seção PREFERENCIAS ESTETICAS acima) ANTES de escolher shades.
+REGRA: Verificar objetivo estetico do paciente (seção PREFERENCIAS ESTETICAS no caso clínico) ANTES de escolher shades.
 
 SE objetivo inclui "hollywood", "clareamento", "branco", "white", "BL" ou paciente deseja dentes MUITO claros:
   Shades BL/W PERMITIDOS.
@@ -456,8 +420,6 @@ SE nenhuma preferencia informada: DEFAULT para shades naturais (A1/B1). NAO assu
 | Dentes jovens/vitais    | Self-etch (menor sensibilidade)            |
 | Dentes despolpados      | Etch-and-rinse (dentina esclerótica)       |
 | Recobrimento de pino    | Universal com silano                       |
-
-Substrato: "${p.substrate}" | Esmalte: "${p.enamelCondition || 'Íntegro'}"
 
 MARCAS POR TIPO:
 - Etch-and-rinse 2p: Single Bond 2(3M), Ambar(FGM), XP Bond(Dentsply)
@@ -487,8 +449,6 @@ USAR: "Chanfro suave", "Sem preparo adicional", "Condicionamento conforme substr
 6. Brilho final: Diamond Excel + feltro, baixa rotação, 40-60s
 7. Texturização (OPCIONAL anterior): Diamantada fina p/ periquimáceas, face vestibular terço médio/incisal
 
-${bruxism}
-
 === DICAS POR MARCA (incluir no "technique" de cada camada) ===
 | Marca              | Dica                                                          |
 |--------------------|---------------------------------------------------------------|
@@ -507,9 +467,6 @@ EXCECAO: Camada de EFEITOS INCISAIS usa pincel/corante, NAO incrementos convenci
 | Normal/Saudável     | 0.2-0.3mm  | 0.5-1.0mm | 0.3mm   |
 | Escurecido/Manchado | 0.5-0.8mm  | 0.5mm     | 0.3mm   |
 | Restauração prévia  | 0.3-0.5mm  | 0.5mm     | 0.3mm   |
-
-Substrato: "${p.substrateCondition || 'Normal'}"
-${p.substrateCondition === 'Escurecido' ? 'SUBSTRATO ESCURECIDO: Opaco espesso (0.5-0.8mm)!' : ''}
 
 === NATURALIDADE (ANTERIOR) ===
 - Gradiente: cervical saturado/opaco -> médio (VITA) -> incisal translúcido
@@ -536,44 +493,49 @@ ALERTA GUIA DE SILICONE: Se anterior (11-13/21-23) + reanatomização + Grande/E
 
 ⚠️ VERIFICACAO FINAL ANTES DE GERAR JSON:
 Se cavityClass contém "Diastema", "Fechamento", "Recontorno" ou "Faceta" E região anterior → CONTAR camadas no layers[]. Se < 4 → ADICIONAR camadas faltantes (Cristas Proximais é a mais frequentemente omitida).
-Ordem obrigatória: 1. Aumento Incisal, 2. Cristas Proximais, 3. Dentina/Corpo, 4. Esmalte Vestibular Final.
+Ordem obrigatória: 1. Aumento Incisal, 2. Cristas Proximais, 3. Dentina/Corpo, 4. Esmalte Vestibular Final.`,
 
-Responda APENAS JSON:
-{
-  "recommended_resin_name": "nome (DEVE respeitar orçamento!)",
-  "is_from_inventory": true|false,
-  "ideal_resin_name": "null se recommended JA e ideal",
-  "ideal_reason": "null se nao aplicável",
-  "budget_compliance": true|false,
-  "price_range": "Econômico|Intermediário|Médio-alto|Premium",
-  "justification": "2-3 frases incluindo orçamento",
-  "inventory_alternatives": [{"name":"...","manufacturer":"...","reason":"..."}],
-  "external_alternatives": [{"name":"...","manufacturer":"...","reason":"..."}],
-  "protocol": {
-    "layers": [{"order":1,"name":"...","resin_brand":"Fabricante - Linha","shade":"...","thickness":"...","purpose":"...","technique":"...","optional":"true apenas p/ Efeitos Incisais"}],
-    "alternative": {"resin":"...","shade":"...","technique":"...","tradeoff":"..."},
-    "finishing": {
-      "contouring": [{"order":1,"tool":"...","grit":"...","speed":"...","time":"...","tip":"..."}],
-      "polishing": [
-        {"order":1,"tool":"Disco Sof-Lex Laranja Escuro","grit":"Grossa","speed":"Baixa rotação","time":"30s","tip":"Cervical-incisal"},
-        {"order":2,"tool":"Disco Sof-Lex Laranja Médio","grit":"Média","speed":"Baixa rotação","time":"30s","tip":"Manter úmido"},
-        {"order":3,"tool":"Disco Sof-Lex Laranja Claro","grit":"Fina","speed":"Baixa rotação","time":"30s","tip":"Sem pressão"},
-        {"order":4,"tool":"Disco Sof-Lex Amarelo","grit":"Ultrafina","speed":"Baixa rotação","time":"30s","tip":"Polimento final"},
-        {"order":5,"tool":"Borracha grossa (DHPro)","speed":"Baixa rotação","time":"40-60s","tip":"Intermitente, sem aquecer"},
-        {"order":6,"tool":"Borracha média","speed":"Baixa rotação","time":"40-60s","tip":"Úmido"},
-        {"order":7,"tool":"Borracha fina","speed":"Baixa rotação","time":"40-60s","tip":"Intermediário"},
-        {"order":8,"tool":"Espiral polimento","speed":"Baixa rotação","time":"40-60s","tip":"Brilho pré-final"}
-      ],
-      "final_glaze": "Diamond Excel + feltro, baixa rotação, 40s",
-      "maintenance_advice": "Manutenção 6/6 meses, pastas RDA<70, cuidado alimentos duros (cortar), evitar parafunção, retorno se sensibilidade/alteração cor."
-    },
-    "checklist": ["Passo 1: Profilaxia sem flúor","Passo 2: Seleção cor luz natural","Passo 3: Isolamento","Passo 4: Condicionamento conforme substrato","Passo 5: Sistema adesivo [tipo+marca]","..."],
-    "alerts": ["Protocolo adesivo varia entre fabricantes","..."],
-    "warnings": ["..."],
-    "confidence": "alta|média|baixa"
-  }
-}
+  user: (p: Params) => {
+    const budgetRules = buildBudgetRulesSection(p.budget)
+    const resinsByPrice = buildResinsByPriceSection(p.allGroups)
+    const inventory = buildInventorySection(p.hasInventory, p.budget, p.budgetAppropriateInventory, p.inventoryResins)
+    const inventoryInstr = buildInventoryInstructions(p.hasInventory, p.budget)
+    const advancedStrat = buildAdvancedStratificationSection(p.aestheticLevel, p.cavityClass)
+    const layerCap = buildLayerCapSection(p.restorationSize, p.cavityClass, p.aestheticLevel, p.region)
+    const bruxism = buildBruxismSection(p.bruxism)
+    const aestheticGoals = buildAestheticGoalsSection(p.aestheticGoals)
+    const dsdContext = buildDSDContextSection(p.dsdContext)
+    const contralateral = buildContralateralSection(p.contralateralTooth, p.contralateralProtocol)
 
-Responda APENAS com o JSON.`
+    return `${budgetRules}
+
+CASO CLINICO:
+- Idade: ${p.patientAge} anos | Dente: ${p.tooth} | Região: ${p.region}
+- Classe: ${p.cavityClass} | Tamanho: ${p.restorationSize} | Profundidade: ${p.depth || 'N/A'}
+- Substrato: ${p.substrate} | Condição substrato: ${p.substrateCondition || 'Normal'} | Esmalte: ${p.enamelCondition || 'Íntegro'}
+- Nível estético: ${p.aestheticLevel} | Cor VITA: ${p.toothColor}
+- Estratificação: ${p.stratificationNeeded ? 'Sim' : 'Não'} | Bruxismo: ${p.bruxism ? 'Sim' : 'Não'}
+- Longevidade: ${p.longevityExpectation} | Orçamento: ${p.budget}
+${p.clinicalNotes ? `- Observações: ${p.clinicalNotes}` : ''}
+${aestheticGoals}
+${dsdContext}
+
+${resinsByPrice}
+${inventory}
+${inventoryInstr}
+${contralateral}
+
+${advancedStrat}
+
+${layerCap}
+
+Substrato: "${p.substrate}" | Esmalte: "${p.enamelCondition || 'Íntegro'}"
+
+Substrato: "${p.substrateCondition || 'Normal'}"
+${p.substrateCondition === 'Escurecido' ? 'SUBSTRATO ESCURECIDO: Opaco espesso (0.5-0.8mm)!' : ''}
+
+${bruxism}
+
+Gere o protocolo completo usando a função generate_resin_protocol.`
   },
 }

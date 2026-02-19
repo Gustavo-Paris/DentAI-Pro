@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { DashboardPage } from '@parisgroup-ai/pageshell/composites';
@@ -56,7 +56,16 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const isTabbed = !dashboard.isNewUser;
 
-  const modules: ModuleConfig[] = [
+  // Handle return-to-origin after Google OAuth redirect
+  useEffect(() => {
+    const returnTo = sessionStorage.getItem('returnTo');
+    if (returnTo) {
+      sessionStorage.removeItem('returnTo');
+      navigate(returnTo, { replace: true });
+    }
+  }, [navigate]);
+
+  const modules: ModuleConfig[] = useMemo(() => [
     {
       id: 'new-case',
       title: t('dashboard.newEvaluation'),
@@ -79,7 +88,7 @@ export default function Dashboard() {
       icon: Package,
       href: '/inventory',
     },
-  ];
+  ], [t]);
 
   const tabsConfig: DashboardTab[] | undefined = isTabbed
     ? [
