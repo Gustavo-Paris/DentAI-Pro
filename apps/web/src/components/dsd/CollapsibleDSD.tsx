@@ -40,7 +40,7 @@ export function CollapsibleDSD({
   const hasLayers = layers && layers.length > 0;
   const activeLayer = hasLayers ? layers[activeLayerIndex] : null;
   const activeAfterImage = activeLayer
-    ? layerUrls[activeLayer.type] || afterImage
+    ? layerUrls[activeLayer.type] || (activeLayerIndex === 0 ? afterImage : null)
     : afterImage;
 
   const hasAnySimulation = !!(afterImage || (hasLayers && Object.keys(layerUrls).length > 0));
