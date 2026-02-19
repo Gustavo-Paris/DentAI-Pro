@@ -35,7 +35,7 @@ export function ProgressRing({
         cy={size / 2}
         r={radius}
         fill="none"
-        stroke="hsl(var(--muted))"
+        stroke="var(--color-muted)"
         strokeWidth={strokeWidth}
       />
       {/* Progress arc */}
@@ -44,7 +44,7 @@ export function ProgressRing({
         cy={size / 2}
         r={radius}
         fill="none"
-        stroke="hsl(var(--primary))"
+        stroke="var(--color-primary)"
         strokeWidth={strokeWidth}
         strokeLinecap="round"
         strokeDasharray={circumference}

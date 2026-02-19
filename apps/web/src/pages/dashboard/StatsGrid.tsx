@@ -10,7 +10,6 @@ import {
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import {
   FileText, Users, TrendingUp, CheckCircle2,
-  FileWarning, Stethoscope,
 } from 'lucide-react';
 import { useScrollRevealChildren } from '@/hooks/useScrollReveal';
 import { useCountAnimation } from './useCountAnimation';
@@ -156,26 +155,6 @@ const statConfigs: StatConfig[] = [
     suffix: '%',
     extra: 'progress-ring',
   },
-  {
-    key: 'pendingSessions',
-    labelKey: 'dashboard.stats.open',
-    unitKey: 'dashboard.stats.openUnit',
-    icon: FileWarning,
-    tooltipKey: 'dashboard.stats.openTooltip',
-    iconBg: 'bg-amber-500/10 text-amber-600 dark:bg-amber-400/15 dark:text-amber-400',
-    getValueColor: (v: number) =>
-      v > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-foreground',
-  },
-  {
-    key: 'pendingTeeth',
-    labelKey: 'dashboard.stats.pendingCases',
-    unitKey: 'dashboard.stats.pendingCasesUnit',
-    icon: Stethoscope,
-    tooltipKey: 'dashboard.stats.pendingCasesTooltip',
-    iconBg: 'bg-violet-500/10 text-violet-600 dark:bg-violet-400/15 dark:text-violet-400',
-    getValueColor: (v: number) =>
-      v > 0 ? 'text-violet-600 dark:text-violet-400' : 'text-foreground',
-  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -197,7 +176,7 @@ export function StatsGrid({
   const containerRef = useScrollRevealChildren();
 
   return (
-    <div ref={containerRef} className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+    <div ref={containerRef} className="grid grid-cols-2 sm:grid-cols-4 gap-3">
       {statConfigs.map((stat, i) => {
         const Icon = stat.icon;
         const value = metrics[stat.key];

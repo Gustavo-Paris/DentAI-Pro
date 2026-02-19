@@ -1,59 +1,44 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ListPage } from '@parisgroup-ai/pageshell/composites';
+import { PagePatientCard } from '@parisgroup-ai/domain-odonto-ai/patients';
+import type { PatientInfo } from '@parisgroup-ai/domain-odonto-ai/patients';
 import { usePatientList } from '@/hooks/domain/usePatientList';
 import type { PatientWithStats } from '@/hooks/domain/usePatientList';
 import { Card } from '@/components/ui/card';
-import { ChevronRight, AlertTriangle } from 'lucide-react';
-import { getInitials } from '@/lib/utils';
+import { AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 // =============================================================================
-// Card component (presentation only)
+// Card adapter (maps PatientWithStats → PagePatientCard)
 // =============================================================================
 
-function PatientCard({ patient, index }: { patient: PatientWithStats; index: number }) {
+function PatientCardAdapter({ patient, index }: { patient: PatientWithStats; index: number }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+
+  const patientInfo: PatientInfo = {
+    id: patient.id,
+    name: patient.name,
+    status: 'active' as const,
+    birthDate: '',
+    phone: patient.phone,
+    email: patient.email,
+    lastVisit: patient.lastVisit
+      ? format(new Date(patient.lastVisit), "d 'de' MMM, yyyy", { locale: ptBR })
+      : undefined,
+    createdAt: '',
+    updatedAt: '',
+  };
+
   return (
-    <Link to={`/patient/${patient.id}`} aria-label={t('patients.viewPatient', { name: patient.name, defaultValue: `Ver paciente ${patient.name}` })}>
-      <Card
-        className="p-3 sm:p-4 shadow-sm hover:shadow-md rounded-xl transition-all duration-300 cursor-pointer border-l-[3px] border-l-primary animate-[fade-in-up_0.6s_ease-out_both]"
-        style={{ animationDelay: `${index * 0.05}s` }}
-      >
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold shrink-0 text-sm sm:text-base">
-            {getInitials(patient.name)}
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="font-medium text-sm sm:text-base truncate">{patient.name}</h3>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              {t('patients.case', { count: patient.caseCount })} •{' '}
-              {t('patients.evaluation', { count: patient.sessionCount })}
-              {patient.caseCount > 0 && (
-                <span className="ml-1">
-                  •{' '}
-                  {t('patients.percentCompleted', {
-                    percent: Math.round(
-                      (patient.completedCount / patient.caseCount) * 100,
-                    ),
-                  })}
-                </span>
-              )}
-            </p>
-            {patient.lastVisit && (
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {t('patients.lastVisit')}{' '}
-                {format(new Date(patient.lastVisit), "d 'de' MMM, yyyy", {
-                  locale: ptBR,
-                })}
-              </p>
-            )}
-          </div>
-          <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" aria-hidden="true" />
-        </div>
-      </Card>
-    </Link>
+    <PagePatientCard
+      patient={patientInfo}
+      onSelect={(id) => navigate(`/patient/${id}`)}
+      animationDelay={index}
+      lastVisitLabel={t('patients.lastVisit')}
+    />
   );
 }
 
@@ -88,7 +73,7 @@ export default function Patients() {
           items={patients}
           isLoading={isLoading}
           keyExtractor={(p) => p.id}
-          renderCard={(patient, index) => <PatientCard patient={patient} index={index ?? 0} />}
+          renderCard={(patient, index) => <PatientCardAdapter patient={patient} index={index ?? 0} />}
           gridClassName="grid grid-cols-1 gap-3"
           searchConfig={{
             fields: ['name', 'phone', 'email'],

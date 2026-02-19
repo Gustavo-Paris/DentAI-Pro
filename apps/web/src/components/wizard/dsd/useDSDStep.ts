@@ -172,6 +172,17 @@ export function useDSDStep({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialResult?.layers]);
 
+  // Reactive sync: update simulationImageUrl whenever activeLayerIndex or layerUrls change.
+  // This ensures the displayed image always matches the selected layer tab, even if
+  // handleSelectLayer's layerUrls lookup missed a data URL or async timing issue.
+  useEffect(() => {
+    if (layers.length > 0 && activeLayerIndex < layers.length) {
+      const activeLayer = layers[activeLayerIndex];
+      const url = layerUrls[activeLayer.type] || activeLayer.simulation_url;
+      if (url) setSimulationImageUrl(url);
+    }
+  }, [activeLayerIndex, layers, layerUrls]);
+
   const toothBounds = useMemo(() => {
     const bounds = (detectedTeeth || [])
       .map((t) => t.tooth_bounds)
@@ -336,6 +347,10 @@ export function useDSDStep({
     layer: SimulationLayer,
   ): Promise<{ layer: SimulationLayer; url: string | null }> => {
     if (!layer.simulation_url) return { layer, url: null };
+    // Data URLs (from lip compositing) and full URLs are already displayable
+    if (layer.simulation_url.startsWith('data:') || layer.simulation_url.startsWith('http')) {
+      return { layer, url: layer.simulation_url };
+    }
     const url = await getSignedDSDUrl(layer.simulation_url);
     return { layer, url };
   }, []);
@@ -866,7 +881,12 @@ export function useDSDStep({
         return;
       }
       const { layer: processed, url } = await resolveLayerUrl(layer);
-      setLayers(prev => [...prev, processed]);
+      setLayers(prev => {
+        const updated = [...prev, processed];
+        // Auto-select the new gengivoplasty layer so user sees it immediately
+        setActiveLayerIndex(updated.length - 1);
+        return updated;
+      });
       if (url) setLayerUrls(prev => ({ ...prev, [processed.type]: url }));
       setResult(prev => prev ? { ...prev, layers: [...(prev.layers || []), processed] } : prev);
       toast.success(t('toasts.dsd.layerReady', { layer: 'Gengivoplastia' }));

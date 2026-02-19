@@ -41,9 +41,15 @@ export function useAuthenticatedFetch() {
       if (timeUntilExpiry < SESSION_REFRESH_THRESHOLD_MS) {
         logger.debug('Session expiring soon, refreshing token...');
         const { error: refreshError } = await supabase.auth.refreshSession();
-        
+
         if (refreshError) {
           logger.error('Token refresh failed:', refreshError);
+          // If refresh token is gone, redirect to login
+          if (refreshError.message?.includes('Refresh Token Not Found') || refreshError.message?.includes('Invalid Refresh Token')) {
+            await supabase.auth.signOut();
+            window.location.href = '/login';
+            return { data: null, error: refreshError };
+          }
           // Continue anyway - the call might still work
         } else {
           logger.debug('Token refreshed successfully');
@@ -84,6 +90,10 @@ export function useAuthenticatedFetch() {
                 const { error: refreshError } = await supabase.auth.refreshSession();
                 if (refreshError) {
                   logger.error('Token refresh after 401 failed:', refreshError);
+                  if (refreshError.message?.includes('Refresh Token Not Found') || refreshError.message?.includes('Invalid Refresh Token')) {
+                    await supabase.auth.signOut();
+                    window.location.href = '/login';
+                  }
                   return { data: null, error: enriched };
                 }
                 const retryResult = await supabase.functions.invoke<T>(functionName, {
@@ -108,6 +118,10 @@ export function useAuthenticatedFetch() {
           const { error: refreshError } = await supabase.auth.refreshSession();
           if (refreshError) {
             logger.error('Token refresh after 401 failed:', refreshError);
+            if (refreshError.message?.includes('Refresh Token Not Found') || refreshError.message?.includes('Invalid Refresh Token')) {
+              await supabase.auth.signOut();
+              window.location.href = '/login';
+            }
             return { data: null, error };
           }
 

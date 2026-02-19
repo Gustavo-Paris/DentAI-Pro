@@ -86,17 +86,29 @@ export const ToothSelectionCard = memo(function ToothSelectionCard({
     const borderColor = TREATMENT_BORDER_COLORS[treatment] || 'border-l-primary';
 
     return (
-      <button
-        type="button"
+      <div
         key={`${prefix}-${tooth.tooth}-${index}`}
+        role="checkbox"
+        aria-checked={isSelected}
+        aria-label={t('components.wizard.review.toggleTooth', { number: tooth.tooth })}
+        tabIndex={0}
         className={cn(
           'flex items-start gap-3 p-3 border rounded-lg cursor-pointer transition-all duration-200 border-l-4 text-left w-full',
           borderColor,
           isSelected ? 'card-elevated border-primary/50 bg-primary/5' : 'border-border hover:border-primary/30',
         )}
-        aria-pressed={isSelected}
-        aria-label={t('components.wizard.review.toggleTooth', { number: tooth.tooth })}
-        onClick={() => handleToggleTooth(tooth.tooth, !isSelected)}
+        onClick={(e) => {
+          // Only toggle if the click wasn't on an interactive child (Select, Button, etc.)
+          const target = e.target as HTMLElement;
+          if (target.closest('button, [role="combobox"], [role="listbox"], [data-radix-collection-item]')) return;
+          handleToggleTooth(tooth.tooth, !isSelected);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            handleToggleTooth(tooth.tooth, !isSelected);
+          }
+        }}
       >
         <Checkbox
           checked={isSelected}
@@ -193,7 +205,7 @@ export const ToothSelectionCard = memo(function ToothSelectionCard({
             </TooltipProvider>
           )}
         </div>
-      </button>
+      </div>
     );
   };
 

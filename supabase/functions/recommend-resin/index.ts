@@ -392,6 +392,10 @@ Deno.serve(async (req) => {
       }
 
       recommendation = parseAIResponse(RecommendResinResponseSchema, claudeResult.functionCall.args, 'recommend-resin');
+
+      if (!recommendation.protocol) {
+        logger.warn(`[${reqId}] Claude omitted protocol object — response will lack stratification details`);
+      }
     } catch (error) {
       if (error instanceof ClaudeError) {
         if (error.statusCode === 429) {

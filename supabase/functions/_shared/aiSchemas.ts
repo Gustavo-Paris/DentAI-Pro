@@ -276,6 +276,8 @@ const FinishingProtocolSchema = z
 
 export const RecommendResinResponseSchema = z
   .object({
+    // protocol may be omitted by Claude when the response is large —
+    // the handler already gracefully degrades via optional chaining.
     protocol: z
       .object({
         layers: z.array(ProtocolLayerSchema).min(1),
@@ -287,7 +289,8 @@ export const RecommendResinResponseSchema = z
         justification: z.string().optional(),
         confidence: z.string(),
       })
-      .passthrough(),
+      .passthrough()
+      .optional(),
     justification: z.string().optional(),
   })
   .passthrough();

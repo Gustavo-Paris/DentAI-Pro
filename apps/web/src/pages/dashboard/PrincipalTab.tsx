@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { ModuleConfig } from '@parisgroup-ai/pageshell/composites';
+import { PageClinicActivityFeed } from '@parisgroup-ai/domain-odonto-ai/dashboard';
+import type { ActivityFeedItem } from '@parisgroup-ai/domain-odonto-ai/dashboard';
 import type { DashboardSession } from '@/hooks/domain/useDashboard';
 import { WizardDraft } from '@/hooks/useWizardDraft';
 import { Button } from '@/components/ui/button';
@@ -195,6 +197,45 @@ function RecentSessions({
 }
 
 // ---------------------------------------------------------------------------
+// Activity Feed Section
+// ---------------------------------------------------------------------------
+
+function ActivityFeedSection({ sessions }: { sessions: DashboardSession[] }) {
+  const { t } = useTranslation();
+  if (sessions.length === 0) return null;
+
+  const items: ActivityFeedItem[] = sessions.flatMap((session) => {
+    const feedItems: ActivityFeedItem[] = [];
+    feedItems.push({
+      id: session.session_id,
+      type: 'treatment' as const,
+      title: session.patient_name || t('evaluation.patientNoName'),
+      description: `${session.teeth.length} ${session.teeth.length === 1 ? t('patients.caseOne', { defaultValue: 'caso' }) : t('patients.caseOther', { defaultValue: 'casos' })} \u2022 ${session.treatmentTypes.join(', ')}`,
+      timestamp: session.created_at,
+    });
+    if (session.hasDSD) {
+      feedItems.push({
+        id: `${session.session_id}-dsd`,
+        type: 'patient' as const,
+        title: t('dsd.simulation', { defaultValue: 'Simulação DSD' }),
+        description: session.patient_name || '',
+        timestamp: session.created_at,
+      });
+    }
+    return feedItems;
+  });
+
+  return (
+    <PageClinicActivityFeed
+      items={items}
+      maxItems={8}
+      title={t('dashboard.activityFeed.title', { defaultValue: 'Atividade Recente' })}
+      emptyText={t('dashboard.activityFeed.empty', { defaultValue: 'Nenhuma atividade recente' })}
+    />
+  );
+}
+
+// ---------------------------------------------------------------------------
 // PrincipalTab
 // ---------------------------------------------------------------------------
 
@@ -254,6 +295,9 @@ export function PrincipalTab({
         sessions={sessions}
         loading={loading}
       />
+
+      {/* Activity Feed */}
+      <ActivityFeedSection sessions={sessions} />
     </div>
   );
 }

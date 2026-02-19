@@ -29,13 +29,15 @@ const StatsGrid = lazy(() => import('./dashboard/StatsGrid').then(m => ({ defaul
 import { PrincipalTab } from './dashboard/PrincipalTab';
 const InsightsTab = lazy(() => import('./dashboard/InsightsTab').then(m => ({ default: m.InsightsTab })));
 import { CreditsBanner } from './dashboard/CreditsBanner';
+import { PageClinicAlerts } from '@parisgroup-ai/domain-odonto-ai/dashboard';
+import type { ClinicAlert } from '@parisgroup-ai/domain-odonto-ai/dashboard';
 import { OnboardingProgress } from '@/components/onboarding/OnboardingProgress';
 import { WelcomeModal } from '@/components/onboarding/WelcomeModal';
 
 function StatsGridFallback() {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-      {Array.from({ length: 6 }).map((_, i) => (
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      {Array.from({ length: 4 }).map((_, i) => (
         <Skeleton key={i} className="h-[88px] rounded-xl" />
       ))}
     </div>
@@ -90,6 +92,26 @@ export default function Dashboard() {
     },
   ], [t]);
 
+  const clinicAlerts = useMemo((): ClinicAlert[] => {
+    const alerts: ClinicAlert[] = [];
+
+    // Low credits alert
+    if (!dashboard.loading && dashboard.isActive && !dashboard.isFree && dashboard.creditsRemaining <= 5) {
+      alerts.push({
+        id: 'low-credits',
+        type: dashboard.creditsRemaining <= 1 ? 'error' : 'warning',
+        title: t('dashboard.alerts.lowCreditsTitle', { defaultValue: 'Créditos baixos' }),
+        description: t('dashboard.alerts.lowCreditsDescription', {
+          count: dashboard.creditsRemaining,
+          defaultValue: `Você tem ${dashboard.creditsRemaining} créditos restantes.`,
+        }),
+        action: { label: t('dashboard.alerts.upgrade', { defaultValue: 'Ver planos' }), href: '/pricing' },
+      });
+    }
+
+    return alerts;
+  }, [dashboard.loading, dashboard.isActive, dashboard.isFree, dashboard.creditsRemaining, t]);
+
   const tabsConfig: DashboardTab[] | undefined = isTabbed
     ? [
         {
@@ -134,7 +156,7 @@ export default function Dashboard() {
           tabs={tabsConfig}
           slots={{
             header: (
-              <div className="mb-6">
+              <div className="mb-4">
                 <div className="flex items-center gap-3 mb-1">
                   {(() => {
                     const hour = new Date().getHours();
@@ -158,6 +180,11 @@ export default function Dashboard() {
                     creditsRemaining={dashboard.creditsRemaining}
                     onDismiss={dashboard.dismissCreditsBanner}
                   />
+                )}
+                {clinicAlerts.length > 0 && (
+                  <div className="mb-4">
+                    <PageClinicAlerts alerts={clinicAlerts} />
+                  </div>
                 )}
                 {isTabbed && (
                   <Suspense fallback={<StatsGridFallback />}>
