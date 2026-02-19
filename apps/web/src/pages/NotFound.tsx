@@ -18,8 +18,8 @@ const NotFound = () => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="text-center">
-        <h1 className="text-6xl font-semibold font-display text-muted-foreground/50 mb-2">404</h1>
-        <p className="text-xl font-semibold font-display mb-2">{t('errors.pageNotFound')}</p>
+        <p className="text-6xl font-semibold font-display text-muted-foreground/50 mb-2" aria-hidden="true">404</p>
+        <h1 className="text-xl font-semibold font-display mb-2">{t('errors.pageNotFound')}</h1>
         <p className="text-sm text-muted-foreground mb-6">
           {t('errors.pageNotFoundDescription')}
         </p>

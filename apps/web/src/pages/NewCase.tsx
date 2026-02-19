@@ -66,6 +66,19 @@ export default function NewCase() {
   // Build steps array conditionally
   const quickLabels = useMemo(() => QUICK_LABEL_KEYS.map(k => t(k)), [t]);
 
+  const {
+    stepDirection, imageBase64, setImageBase64, goToPreferences, goToQuickCase,
+    additionalPhotos, setAdditionalPhotos, patientPreferences, setPatientPreferences,
+    handlePreferencesContinue, isAnalyzing, analysisError, handleRetryAnalysis,
+    handleSkipToReview, handleBack, cancelAnalysis, handleDSDComplete, handleDSDSkip,
+    analysisResult, dsdResult, handleDSDResultChange, formData, updateFormData,
+    handleReanalyze, isReanalyzing, selectedTeeth, setSelectedTeeth, toothTreatments,
+    handleToothTreatmentChange, originalToothTreatments, handleRestoreAiSuggestion,
+    hasInventory, patients, selectedPatientId, patientBirthDate,
+    handlePatientBirthDateChange, dobValidationError, setDobValidationError,
+    handlePatientSelect, submissionComplete, completedSessionId, isSubmitting, isQuickCase,
+  } = wizard;
+
   const allSteps = useMemo(() => {
     const fotoStep = {
       id: 1,
@@ -73,15 +86,15 @@ export default function NewCase() {
       label: t('wizard.stepPhoto'),
       icon: Camera,
       children: (
-        <div key="step-foto" className={`wizard-step-${wizard.stepDirection}`}>
+        <div key="step-foto" className={`wizard-step-${stepDirection}`}>
           <PhotoUploadStep
-            imageBase64={wizard.imageBase64}
-            onImageChange={wizard.setImageBase64}
-            onAnalyze={wizard.goToPreferences}
-            onQuickCase={wizard.goToQuickCase}
+            imageBase64={imageBase64}
+            onImageChange={setImageBase64}
+            onAnalyze={goToPreferences}
+            onQuickCase={goToQuickCase}
             isUploading={false}
-            additionalPhotos={wizard.additionalPhotos}
-            onAdditionalPhotosChange={wizard.setAdditionalPhotos}
+            additionalPhotos={additionalPhotos}
+            onAdditionalPhotosChange={setAdditionalPhotos}
           />
         </div>
       ),
@@ -93,11 +106,11 @@ export default function NewCase() {
       label: t('wizard.stepPreferences'),
       icon: Heart,
       children: (
-        <div key="step-prefs" className={`wizard-step-${wizard.stepDirection}`}>
+        <div key="step-prefs" className={`wizard-step-${stepDirection}`}>
           <PatientPreferencesStep
-            preferences={wizard.patientPreferences}
-            onPreferencesChange={wizard.setPatientPreferences}
-            onContinue={wizard.handlePreferencesContinue}
+            preferences={patientPreferences}
+            onPreferencesChange={setPatientPreferences}
+            onContinue={handlePreferencesContinue}
           />
         </div>
       ),
@@ -109,15 +122,15 @@ export default function NewCase() {
       label: t('wizard.stepAnalysis'),
       icon: Brain,
       children: (
-        <div key="step-analysis" className={`wizard-step-${wizard.stepDirection}`}>
+        <div key="step-analysis" className={`wizard-step-${stepDirection}`}>
           <AnalyzingStep
-            imageBase64={wizard.imageBase64}
-            isAnalyzing={wizard.isAnalyzing}
-            analysisError={wizard.analysisError}
-            onRetry={wizard.handleRetryAnalysis}
-            onSkipToReview={wizard.handleSkipToReview}
-            onBack={wizard.handleBack}
-            onCancel={wizard.cancelAnalysis}
+            imageBase64={imageBase64}
+            isAnalyzing={isAnalyzing}
+            analysisError={analysisError}
+            onRetry={handleRetryAnalysis}
+            onSkipToReview={handleSkipToReview}
+            onBack={handleBack}
+            onCancel={cancelAnalysis}
           />
         </div>
       ),
@@ -129,23 +142,23 @@ export default function NewCase() {
       label: t('wizard.stepDSD'),
       icon: Smile,
       children: (
-        <div key="step-dsd" className={`wizard-step-${wizard.stepDirection}`}>
+        <div key="step-dsd" className={`wizard-step-${stepDirection}`}>
           <DSDStep
-            imageBase64={wizard.imageBase64}
-            onComplete={wizard.handleDSDComplete}
-            onSkip={wizard.handleDSDSkip}
-            additionalPhotos={wizard.additionalPhotos}
-            patientPreferences={wizard.patientPreferences}
-            detectedTeeth={wizard.analysisResult?.detected_teeth}
-            initialResult={wizard.dsdResult}
-            clinicalObservations={wizard.analysisResult?.observations}
-            clinicalTeethFindings={wizard.analysisResult?.detected_teeth?.map((t) => ({
+            imageBase64={imageBase64}
+            onComplete={handleDSDComplete}
+            onSkip={handleDSDSkip}
+            additionalPhotos={additionalPhotos}
+            patientPreferences={patientPreferences}
+            detectedTeeth={analysisResult?.detected_teeth}
+            initialResult={dsdResult}
+            clinicalObservations={analysisResult?.observations}
+            clinicalTeethFindings={analysisResult?.detected_teeth?.map((t) => ({
               tooth: t.tooth,
               indication_reason: t.indication_reason,
               treatment_indication: t.treatment_indication,
             }))}
-            onResultChange={wizard.handleDSDResultChange}
-            onPreferencesChange={wizard.setPatientPreferences}
+            onResultChange={handleDSDResultChange}
+            onPreferencesChange={setPatientPreferences}
           />
         </div>
       ),
@@ -157,31 +170,31 @@ export default function NewCase() {
       label: t('wizard.stepReview'),
       icon: ClipboardCheck,
       children: (
-        <div key="step-review" className={`wizard-step-${wizard.stepDirection}`}>
+        <div key="step-review" className={`wizard-step-${stepDirection}`}>
           <ReviewAnalysisStep
-            analysisResult={wizard.analysisResult}
-            formData={wizard.formData}
-            onFormChange={wizard.updateFormData}
-            imageBase64={wizard.imageBase64}
-            onReanalyze={wizard.handleReanalyze}
-            isReanalyzing={wizard.isReanalyzing}
-            selectedTeeth={wizard.selectedTeeth}
-            onSelectedTeethChange={wizard.setSelectedTeeth}
-            toothTreatments={wizard.toothTreatments}
-            onToothTreatmentChange={wizard.handleToothTreatmentChange}
-            originalToothTreatments={wizard.originalToothTreatments}
-            onRestoreAiSuggestion={wizard.handleRestoreAiSuggestion}
-            hasInventory={wizard.hasInventory}
-            patients={wizard.patients}
-            dsdObservations={wizard.dsdResult?.analysis?.observations}
-            dsdSuggestions={wizard.dsdResult?.analysis?.suggestions}
-            selectedPatientId={wizard.selectedPatientId}
-            patientBirthDate={wizard.patientBirthDate}
-            onPatientBirthDateChange={wizard.handlePatientBirthDateChange}
-            dobError={wizard.dobValidationError}
-            onDobErrorChange={wizard.setDobValidationError}
-            whiteningLevel={wizard.patientPreferences.whiteningLevel}
-            onPatientSelect={wizard.handlePatientSelect}
+            analysisResult={analysisResult}
+            formData={formData}
+            onFormChange={updateFormData}
+            imageBase64={imageBase64}
+            onReanalyze={handleReanalyze}
+            isReanalyzing={isReanalyzing}
+            selectedTeeth={selectedTeeth}
+            onSelectedTeethChange={setSelectedTeeth}
+            toothTreatments={toothTreatments}
+            onToothTreatmentChange={handleToothTreatmentChange}
+            originalToothTreatments={originalToothTreatments}
+            onRestoreAiSuggestion={handleRestoreAiSuggestion}
+            hasInventory={hasInventory}
+            patients={patients}
+            dsdObservations={dsdResult?.analysis?.observations}
+            dsdSuggestions={dsdResult?.analysis?.suggestions}
+            selectedPatientId={selectedPatientId}
+            patientBirthDate={patientBirthDate}
+            onPatientBirthDateChange={handlePatientBirthDateChange}
+            dobError={dobValidationError}
+            onDobErrorChange={setDobValidationError}
+            whiteningLevel={patientPreferences.whiteningLevel}
+            onPatientSelect={handlePatientSelect}
           />
         </div>
       ),
@@ -193,8 +206,8 @@ export default function NewCase() {
       label: t('wizard.stepResult'),
       icon: FileText,
       children: (
-        <div key="step-result" className={`wizard-step-${wizard.stepDirection}`}>
-          {wizard.submissionComplete ? (
+        <div key="step-result" className={`wizard-step-${stepDirection}`}>
+          {submissionComplete ? (
             <div className="flex flex-col items-center justify-center py-16 sm:py-24 space-y-4">
               <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center animate-scale-in">
                 <Check className="w-8 h-8 text-primary-foreground" />
@@ -204,7 +217,7 @@ export default function NewCase() {
               </p>
               <div className="flex flex-col sm:flex-row gap-3 animate-fade-in-up">
                 <Button
-                  onClick={() => navigate(`/evaluation/${wizard.completedSessionId}`)}
+                  onClick={() => navigate(`/evaluation/${completedSessionId}`)}
                   className="btn-press"
                 >
                   <Eye className="w-4 h-4 mr-2" />
@@ -212,7 +225,7 @@ export default function NewCase() {
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={wizard.handleBack}
+                  onClick={handleBack}
                   className="print:hidden btn-press"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
@@ -220,7 +233,7 @@ export default function NewCase() {
                 </Button>
               </div>
             </div>
-          ) : !wizard.isSubmitting ? (
+          ) : !isSubmitting ? (
             <div className="flex flex-col items-center justify-center py-12 sm:py-16 space-y-4 sm:space-y-6" role="status" aria-live="polite">
               <div className="text-center flex items-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
@@ -232,12 +245,24 @@ export default function NewCase() {
       ),
     };
 
-    if (wizard.isQuickCase) {
+    if (isQuickCase) {
       // Re-number IDs sequentially (1-4) for quick case
       return [fotoStep, analysisStep, reviewStep, resultStep].map((step, i) => ({ ...step, id: i + 1 }));
     }
     return [fotoStep, prefsStep, analysisStep, dsdStep, reviewStep, resultStep];
-  }, [wizard, t]);
+  }, [
+    stepDirection, imageBase64, setImageBase64, goToPreferences, goToQuickCase,
+    additionalPhotos, setAdditionalPhotos, patientPreferences, setPatientPreferences,
+    handlePreferencesContinue, isAnalyzing, analysisError, handleRetryAnalysis,
+    handleSkipToReview, handleBack, cancelAnalysis, handleDSDComplete, handleDSDSkip,
+    analysisResult, dsdResult, handleDSDResultChange, formData, updateFormData,
+    handleReanalyze, isReanalyzing, selectedTeeth, setSelectedTeeth, toothTreatments,
+    handleToothTreatmentChange, originalToothTreatments, handleRestoreAiSuggestion,
+    hasInventory, patients, selectedPatientId, patientBirthDate,
+    handlePatientBirthDateChange, dobValidationError, setDobValidationError,
+    handlePatientSelect, submissionComplete, completedSessionId, isSubmitting, isQuickCase,
+    navigate, t,
+  ]);
 
   // Map display index back to internal step for step indicator clicks
   const handleStepClick = (displayIndex: number) => {
@@ -268,7 +293,7 @@ export default function NewCase() {
         title={t('wizard.newCase')}
         currentStep={displayStep + 1}
         totalSteps={totalSteps}
-        enableKeyboardNav={false}
+        enableKeyboardNav={false} // Disabled: wizard steps contain form inputs that need arrow/tab keys
         showProgress={true}
         scrollToTop={true}
         containerVariant="narrow"

@@ -1,4 +1,5 @@
 import { Suspense, lazy, useCallback, Component, type ReactNode, type ErrorInfo } from 'react';
+import { AlertCircle } from 'lucide-react';
 import { Toaster } from "@/components/ui/toaster";
 import { GlobalSearch } from "@/components/GlobalSearch";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -60,17 +61,15 @@ function RouteErrorFallback() {
   return (
     <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
       <div className="w-12 h-12 mb-4 rounded-full bg-destructive/10 flex items-center justify-center">
-        <svg className="w-6 h-6 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
+        <AlertCircle className="w-6 h-6 text-destructive" />
       </div>
-      <h2 className="text-lg font-semibold mb-1">Something went wrong</h2>
-      <p className="text-sm text-muted-foreground mb-4">An unexpected error occurred on this page.</p>
+      <h2 className="text-lg font-semibold mb-1">Algo deu errado</h2>
+      <p className="text-sm text-muted-foreground mb-4">Ocorreu um erro inesperado nesta página.</p>
       <a
         href="/dashboard"
         className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
       >
-        Go back to Dashboard
+        Voltar ao Dashboard
       </a>
     </div>
   );

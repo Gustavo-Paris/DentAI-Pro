@@ -186,6 +186,7 @@ export default function Landing() {
             {t('landing.testimonialsTitle')}
           </h2>
           <div ref={testimonialsRef} className="grid md:grid-cols-2 gap-6">
+            {/* Gradient colors are intentional brand accent colors — each testimonial gets a distinct hue for visual variety */}
             {[
               {
                 quote: t('landing.testimonial1Quote'),
@@ -228,17 +229,18 @@ export default function Landing() {
                 key={i}
                 className={`scroll-reveal scroll-reveal-delay-${i + 1} relative bg-background rounded-xl p-6 border-l-4 border-l-primary/40`}
               >
-                <span className="absolute top-2 right-4 text-7xl leading-none font-serif text-primary/[0.05] select-none">&ldquo;</span>
+                <span className="absolute top-2 right-4 text-7xl leading-none font-serif text-primary/[0.05] select-none" aria-hidden="true">&ldquo;</span>
                 {testimonial.highlight && (
                   <Badge variant="secondary" className="mb-3 text-xs">
                     <Zap className="w-3 h-3 mr-1" />
                     {testimonial.highlight}
                   </Badge>
                 )}
-                <div className="flex gap-1 mb-3">
+                <div className="flex gap-1 mb-3" aria-label={t('landing.starRating', { defaultValue: '5 de 5 estrelas' })}>
                   {Array.from({ length: 5 }).map((_, j) => (
                     <Star
                       key={j}
+                      aria-hidden="true"
                       className={`w-4 h-4 ${j < testimonial.rating ? 'fill-primary text-primary' : 'text-muted-foreground/30'}`}
                     />
                   ))}

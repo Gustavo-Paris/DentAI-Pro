@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, memo } from 'react';
+import { useState, useEffect, useMemo, useRef, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -32,26 +32,20 @@ export const PatientAutocomplete = memo(function PatientAutocomplete({
   selectedPatientId,
 }: PatientAutocompleteProps) {
   const { t } = useTranslation();
-  const [filteredPatients, setFilteredPatients] = useState<Patient[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Filter patients based on input
-  useEffect(() => {
-    if (!value.trim()) {
-      setFilteredPatients([]);
-      return;
-    }
-
+  // Filter patients based on input (pure derivation — no side effects)
+  const filteredPatients = useMemo(() => {
+    if (!value.trim()) return [];
     const query = value.toLowerCase().trim();
-    const filtered = patients.filter((p) =>
-      p.name.toLowerCase().includes(query)
-    );
-    setFilteredPatients(filtered.slice(0, 5)); // Limit to 5 suggestions
-    setHighlightedIndex(-1);
+    return patients.filter((p) => p.name.toLowerCase().includes(query)).slice(0, 5);
   }, [value, patients]);
+
+  // Reset highlighted index when filter inputs change (side effect)
+  useEffect(() => { setHighlightedIndex(-1); }, [value, patients]);
 
   // Handle input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

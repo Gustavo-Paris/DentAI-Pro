@@ -172,7 +172,7 @@ export function PatientPreferencesStep({
             <Button
               onClick={onContinue}
               disabled={creditsRemaining === 0}
-              className="w-auto min-w-[280px] gap-2 btn-glow-gold btn-press font-semibold group"
+              className="w-full sm:w-auto gap-2 btn-glow-gold btn-press font-semibold group"
               size="lg"
             >
               {t('components.wizard.preferences.continueSimulation')}

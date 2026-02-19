@@ -172,11 +172,14 @@ export default function Pricing() {
 
     if (status === 'success') {
       setShowSuccess(true);
+      let cancelled = false;
       // Sync subscription from Stripe with retry (bypasses webhook timing issues)
       const syncWithRetry = async (attempts = 3, delay = 2000) => {
         for (let i = 0; i < attempts; i++) {
+          if (cancelled) return;
           try {
             const data = await syncSubscription();
+            if (cancelled) return;
             if (data?.synced) {
               refreshSubscription();
               return;
@@ -184,13 +187,15 @@ export default function Pricing() {
           } catch (e) {
             logger.error(`Sync attempt ${i + 1} failed:`, e);
           }
-          if (i < attempts - 1)
-            await new Promise((r) => setTimeout(r, delay));
+          if (i < attempts - 1 && !cancelled) {
+            await new Promise<void>((r) => setTimeout(r, delay));
+          }
         }
-        refreshSubscription();
+        if (!cancelled) refreshSubscription();
       };
       syncWithRetry();
       navigate('/pricing', { replace: true });
+      return () => { cancelled = true; };
     } else if (status === 'canceled') {
       navigate('/pricing', { replace: true });
     }

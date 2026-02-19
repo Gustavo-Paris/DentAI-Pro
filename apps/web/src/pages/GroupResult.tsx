@@ -1,16 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle, Badge } from '@parisgroup-ai/pageshell/primitives';
-import { CheckCircle, Layers, Crown, Stethoscope, ArrowUpRight, Smile, HeartPulse, Palette, AlertTriangle } from 'lucide-react';
+import { CheckCircle, AlertTriangle } from 'lucide-react';
 import { ErrorState } from '@/components/ui/error-state';
 
-import ProtocolTable from '@/components/protocol/ProtocolTable';
-import ProtocolChecklist from '@/components/protocol/ProtocolChecklist';
-import AlertsSection from '@/components/protocol/AlertsSection';
-import WarningsSection from '@/components/protocol/WarningsSection';
-import ConfidenceIndicator from '@/components/protocol/ConfidenceIndicator';
-import AlternativeBox from '@/components/protocol/AlternativeBox';
-import { CementationProtocolCard } from '@/components/protocol/CementationProtocolCard';
-import { VeneerPreparationCard } from '@/components/protocol/VeneerPreparationCard';
-import { FinishingPolishingCard } from '@/components/protocol/FinishingPolishingCard';
+import { ProtocolSections } from '@/components/protocol/ProtocolSections';
 import { DetailPage } from '@parisgroup-ai/pageshell/composites';
 
 import { useTranslation } from 'react-i18next';
@@ -92,7 +84,7 @@ export default function GroupResult() {
           return (
             <>
               {/* Protocol unavailable fallback */}
-              {!g.resin && !g.isSpecialTreatment && g.treatmentType === 'resina' && (
+              {!g.hasProtocol && !g.isSpecialTreatment && g.treatmentType === 'resina' && (
                 <section className="mb-8">
                   <Card className="border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20">
                     <CardContent className="py-4">
@@ -135,125 +127,26 @@ export default function GroupResult() {
                 </section>
               )}
 
-              {/* Protocol sections — porcelain vs resin vs special */}
-              {g.isPorcelain && g.cementationProtocol ? (
-                <>
-                  <section className="mb-8">
-                    <VeneerPreparationCard />
-                  </section>
-                  <section className="mb-8">
-                    <CementationProtocolCard
-                      protocol={g.cementationProtocol}
-                      checkedIndices={evaluation.checklist_progress || []}
-                      onProgressChange={g.handleChecklistChange}
-                    />
-                  </section>
-                </>
-              ) : (
-                <>
-                  {g.hasProtocol && g.treatmentType === 'resina' && (
-                    <section className="mb-8">
-                      <h3 className="font-semibold font-display mb-3 flex items-center gap-2">
-                        <Layers className="w-4 h-4" />
-                        <span>{t('result.stratificationProtocol')}</span>
-                      </h3>
-                      <ProtocolTable layers={g.layers} />
-                      {g.layers.length > 0 && (
-                        <Card className="mt-4 border-primary/20">
-                          <CardHeader className="py-3">
-                            <CardTitle className="text-sm flex items-center gap-2">
-                              <Palette className="w-4 h-4" />
-                              {t('result.resinsUsed')}
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent className="py-2">
-                            <div className="flex flex-wrap gap-2">
-                              {[...new Set(g.layers.map(l => `${l.resin_brand} ${l.shade}`))].map((resin, i) => (
-                                <Badge key={i} variant="secondary" className="text-xs">
-                                  {resin}
-                                </Badge>
-                              ))}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      )}
-                    </section>
-                  )}
-
-                  {g.treatmentType === 'resina' && evaluation.stratification_protocol?.finishing && (
-                    <section className="mb-8">
-                      <FinishingPolishingCard protocol={evaluation.stratification_protocol.finishing} />
-                    </section>
-                  )}
-
-                  {g.isSpecialTreatment && g.genericProtocol && (
-                    <section className="mb-8">
-                      <Card>
-                        <CardHeader className="pb-3">
-                          <CardTitle className="text-base flex items-center gap-2">
-                            {g.treatmentType === 'coroa' && <Crown className="w-4 h-4" />}
-                            {g.treatmentType === 'implante' && <></>}
-                            {g.treatmentType === 'endodontia' && <Stethoscope className="w-4 h-4" />}
-                            {g.treatmentType === 'encaminhamento' && <ArrowUpRight className="w-4 h-4" />}
-                            {g.treatmentType === 'gengivoplastia' && <Smile className="w-4 h-4" />}
-                            {g.treatmentType === 'recobrimento_radicular' && <HeartPulse className="w-4 h-4" />}
-                            {g.currentTreatmentStyle.label}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          {g.genericProtocol.summary && (
-                            <p className="text-sm text-muted-foreground mb-4">{g.genericProtocol.summary}</p>
-                          )}
-                          <ProtocolChecklist
-                            items={g.genericProtocol.checklist}
-                            checkedIndices={evaluation.checklist_progress || []}
-                            onProgressChange={g.handleChecklistChange}
-                          />
-                        </CardContent>
-                      </Card>
-                    </section>
-                  )}
-
-                  {g.treatmentType === 'resina' && g.protocolAlternative && (
-                    <section className="mb-8">
-                      <AlternativeBox alternative={g.protocolAlternative} />
-                    </section>
-                  )}
-                </>
-              )}
-
-              {/* Checklist */}
-              {g.treatmentType === 'resina' && g.checklist.length > 0 && (
-                <section className="mb-8">
-                  <Card>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-base">{t('result.stepByStep')}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ProtocolChecklist
-                        items={g.checklist}
-                        checkedIndices={evaluation.checklist_progress || []}
-                        onProgressChange={g.handleChecklistChange}
-                      />
-                    </CardContent>
-                  </Card>
-                </section>
-              )}
-
-              {/* Alerts and Warnings */}
-              {(g.alerts.length > 0 || g.warnings.length > 0) && (
-                <section className="mb-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <AlertsSection alerts={g.alerts} />
-                  <WarningsSection warnings={g.warnings} />
-                </section>
-              )}
-
-              {/* Confidence */}
-              {g.treatmentType === 'resina' && g.hasProtocol && (
-                <section className="mb-8">
-                  <ConfidenceIndicator confidence={g.confidence} />
-                </section>
-              )}
+              {/* Protocol sections -- porcelain vs resin vs special */}
+              <ProtocolSections
+                treatmentType={g.treatmentType}
+                hasProtocol={g.hasProtocol}
+                isPorcelain={g.isPorcelain}
+                isSpecialTreatment={g.isSpecialTreatment}
+                layers={g.layers}
+                finishingProtocol={evaluation.stratification_protocol?.finishing}
+                genericProtocol={g.genericProtocol}
+                cementationProtocol={g.cementationProtocol}
+                protocolAlternative={g.protocolAlternative}
+                checklist={g.checklist}
+                alerts={g.alerts}
+                warnings={g.warnings}
+                confidence={g.confidence}
+                checkedIndices={evaluation.checklist_progress || []}
+                onProgressChange={g.handleChecklistChange}
+                t={t}
+                treatmentStyleLabel={g.currentTreatmentStyle.label}
+              />
             </>
           );
         }}

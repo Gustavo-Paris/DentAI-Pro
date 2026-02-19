@@ -1,31 +1,15 @@
 import { useTranslation } from 'react-i18next';
-import {
-  Button,
-  Input,
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@parisgroup-ai/pageshell/primitives';
 import { PageConfirmDialog } from '@parisgroup-ai/pageshell/interactions';
 import { memo, useMemo } from 'react';
-import { Plus, Search, Loader2, X, FileWarning, Check } from 'lucide-react';
+import { X } from 'lucide-react';
 import { ListPage } from '@parisgroup-ai/pageshell/composites';
 import { useInventoryManagement } from '@/hooks/domain/useInventoryManagement';
 import type { FlatInventoryItem } from '@/hooks/domain/useInventoryManagement';
 import { ResinBadge } from '@/components/ResinBadge';
 import { ResinTypeLegend } from '@/components/ResinTypeLegend';
 import { ErrorState } from '@/components/ui/error-state';
+import { AddResinsDialog } from '@/components/inventory/AddResinsDialog';
+import { CSVImportDialog } from '@/components/inventory/CSVImportDialog';
 
 // =============================================================================
 // Static configs (no hook dependencies)
@@ -203,127 +187,20 @@ export default function Inventory() {
       />
 
       {/* Add Resins Dialog */}
-      <Dialog open={inv.dialogOpen} onOpenChange={(open) => (open ? inv.openDialog() : inv.closeDialog())}>
-        <DialogContent className="max-w-3xl max-h-[85vh] overflow-hidden flex flex-col">
-          <DialogHeader>
-            <DialogTitle>{t('inventory.addToInventoryTitle')}</DialogTitle>
-          </DialogHeader>
-
-          <ResinTypeLegend />
-
-          <div className="flex flex-col sm:flex-row gap-3 mt-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder={t('inventory.searchColorBrand')}
-                value={inv.catalogFilters.search}
-                onChange={(e) => inv.setCatalogFilters((f) => ({ ...f, search: e.target.value }))}
-                className="pl-10"
-                aria-label={t('inventory.searchColorBrand')}
-              />
-            </div>
-            <Select
-              value={inv.catalogFilters.brand}
-              onValueChange={(v) => inv.setCatalogFilters((f) => ({ ...f, brand: v }))}
-            >
-              <SelectTrigger className="w-full sm:w-[160px]">
-                <SelectValue placeholder={t('inventory.brandFilter')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('inventory.allBrands')}</SelectItem>
-                {inv.catalogBrands.map((brand) => (
-                  <SelectItem key={brand} value={brand}>
-                    {brand}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select
-              value={inv.catalogFilters.type}
-              onValueChange={(v) => inv.setCatalogFilters((f) => ({ ...f, type: v }))}
-            >
-              <SelectTrigger className="w-full sm:w-[140px]">
-                <SelectValue placeholder={t('inventory.typeFilter')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('inventory.allTypes')}</SelectItem>
-                {inv.catalogTypes.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {type}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="overflow-y-auto flex-1 mt-4 pr-2">
-            {Object.keys(inv.groupedCatalog).length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">
-                {inv.catalogFilters.search ||
-                inv.catalogFilters.brand !== 'all' ||
-                inv.catalogFilters.type !== 'all'
-                  ? t('inventory.noResinsFound')
-                  : t('inventory.allResinsInInventory')}
-              </p>
-            ) : (
-              <Accordion
-                type="multiple"
-                defaultValue={Object.keys(inv.groupedCatalog)}
-                className="space-y-2"
-              >
-                {Object.entries(inv.groupedCatalog).map(([brand, productLines]) => (
-                  <AccordionItem key={brand} value={brand} className="border rounded-lg px-4">
-                    <AccordionTrigger className="hover:no-underline">
-                      <span className="font-semibold">{brand}</span>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <div className="space-y-4 pb-2">
-                        {Object.entries(productLines).map(([productLine, resins]) => (
-                          <div key={productLine}>
-                            <p className="text-sm font-medium text-muted-foreground mb-2">
-                              {productLine}
-                            </p>
-                            <div className="flex flex-wrap gap-2">
-                              {resins.map((resin) => (
-                                <ResinBadge
-                                  key={resin.id}
-                                  shade={resin.shade}
-                                  type={resin.type}
-                                  selected={inv.selectedResins.has(resin.id)}
-                                  onClick={() => inv.toggleResinSelection(resin.id)}
-                                />
-                              ))}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            )}
-          </div>
-
-          <DialogFooter className="mt-4 pt-4 border-t border-border">
-            <div className="flex items-center justify-between w-full">
-              <span className="text-sm text-muted-foreground">
-                {t('inventory.resinsSelected', { count: inv.selectedResins.size })}
-              </span>
-              <Button
-                onClick={inv.addSelectedToInventory}
-                disabled={inv.selectedResins.size === 0 || inv.isAdding}
-              >
-                {inv.isAdding ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <Plus className="h-4 w-4 mr-2" />
-                )}
-                {t('inventory.addToInventory')}
-              </Button>
-            </div>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <AddResinsDialog
+        dialogOpen={inv.dialogOpen}
+        openDialog={inv.openDialog}
+        closeDialog={inv.closeDialog}
+        groupedCatalog={inv.groupedCatalog}
+        catalogBrands={inv.catalogBrands}
+        catalogTypes={inv.catalogTypes}
+        catalogFilters={inv.catalogFilters}
+        setCatalogFilters={inv.setCatalogFilters}
+        selectedResins={inv.selectedResins}
+        toggleResinSelection={inv.toggleResinSelection}
+        addSelectedToInventory={inv.addSelectedToInventory}
+        isAdding={inv.isAdding}
+      />
 
       {/* Remove Confirmation */}
       <PageConfirmDialog
@@ -345,75 +222,13 @@ export default function Inventory() {
       />
 
       {/* CSV Import Preview */}
-      <Dialog
-        open={inv.importDialogOpen}
-        onOpenChange={(open) => {
-          if (!open) inv.closeImportDialog();
-        }}
-      >
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{t('inventory.importCSVTitle')}</DialogTitle>
-          </DialogHeader>
-
-          {inv.csvPreview && (
-            <div className="space-y-4">
-              {inv.csvPreview.matched.length > 0 && (
-                <div>
-                  <p className="text-sm font-medium flex items-center gap-2 mb-2">
-                    <Check className="w-4 h-4 text-success" />
-                    {t('inventory.resinsMatched', { count: inv.csvPreview.matched.length })}
-                  </p>
-                  <div className="max-h-40 overflow-y-auto space-y-1 border rounded-lg p-2">
-                    {inv.csvPreview.matched.map((r) => (
-                      <p key={r.id} className="text-xs text-muted-foreground">
-                        {r.brand} &middot; {r.product_line} &middot; {r.shade}
-                      </p>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {inv.csvPreview.unmatched.length > 0 && (
-                <div>
-                  <p className="text-sm font-medium flex items-center gap-2 mb-2 text-warning">
-                    <FileWarning className="w-4 h-4" />
-                    {t('inventory.resinsUnmatched', { count: inv.csvPreview.unmatched.length })}
-                  </p>
-                  <div className="max-h-24 overflow-y-auto space-y-1 border rounded-lg p-2 border-warning/30">
-                    {inv.csvPreview.unmatched.map((line, i) => (
-                      <p key={i} className="text-xs text-muted-foreground">
-                        {line}
-                      </p>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {inv.csvPreview.matched.length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  {t('inventory.noCSVMatch')}
-                </p>
-              )}
-            </div>
-          )}
-
-          <DialogFooter>
-            <Button variant="outline" onClick={inv.closeImportDialog}>
-              {t('common.cancel')}
-            </Button>
-            <Button
-              onClick={inv.confirmImport}
-              disabled={!inv.csvPreview?.matched.length || inv.importing}
-            >
-              {inv.importing ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Plus className="h-4 w-4 mr-2" />
-              )}
-              {t('inventory.addResinsCount', { count: inv.csvPreview?.matched.length || 0 })}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <CSVImportDialog
+        importDialogOpen={inv.importDialogOpen}
+        closeImportDialog={inv.closeImportDialog}
+        csvPreview={inv.csvPreview}
+        confirmImport={inv.confirmImport}
+        importing={inv.importing}
+      />
     </div>
   );
 }
