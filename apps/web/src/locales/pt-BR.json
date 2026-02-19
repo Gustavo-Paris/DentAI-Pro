@@ -633,7 +633,21 @@
     "endodonticProtocol": "Protocolo Endodôntico",
     "referralGuidelines": "Orientações de Encaminhamento",
     "gingivoplastyProtocol": "Protocolo de Gengivoplastia",
-    "rootCoverageProtocol": "Protocolo de Recobrimento Radicular"
+    "rootCoverageProtocol": "Protocolo de Recobrimento Radicular",
+    "odontogram": "Odontograma"
+  },
+  "odontogram": {
+    "healthy": "Saudável",
+    "caries": "Cárie",
+    "filled": "Restaurado",
+    "crown": "Coroa",
+    "missing": "Ausente",
+    "implant": "Implante",
+    "rootCanal": "Endodontia",
+    "bridge": "Ponte",
+    "veneer": "Faceta",
+    "fracture": "Fratura",
+    "extractionIndicated": "Extração indicada"
   },
   "errors": {
     "pageNotFound": "Página não encontrada",

@@ -48,16 +48,16 @@ export interface PageOdontogramProps {
 
 const CONDITION_COLORS: Record<ToothCondition, string> = {
   healthy: 'bg-green-500/15 text-green-500 border-green-500/30',
-  caries: 'bg-red-500/15 text-red-500 border-red-500/30',
-  filled: 'bg-blue-500/15 text-blue-500 border-blue-500/30',
-  crown: 'bg-yellow-500/15 text-yellow-500 border-yellow-500/30',
+  caries: 'bg-red-500/25 text-red-400 border-red-500/40',
+  filled: 'bg-blue-500/25 text-blue-400 border-blue-500/40',
+  crown: 'bg-yellow-500/25 text-yellow-400 border-yellow-500/40',
   missing: 'bg-muted text-muted-foreground border-border',
-  implant: 'bg-purple-500/15 text-purple-500 border-purple-500/30',
-  'root-canal': 'bg-orange-500/15 text-orange-500 border-orange-500/30',
-  bridge: 'bg-teal-500/15 text-teal-500 border-teal-500/30',
-  veneer: 'bg-cyan-500/15 text-cyan-500 border-cyan-500/30',
-  fracture: 'bg-rose-500/15 text-rose-500 border-rose-500/30',
-  'extraction-indicated': 'bg-red-500/25 text-red-400 border-red-500/40',
+  implant: 'bg-purple-500/25 text-purple-400 border-purple-500/40',
+  'root-canal': 'bg-orange-500/25 text-orange-400 border-orange-500/40',
+  bridge: 'bg-teal-500/25 text-teal-400 border-teal-500/40',
+  veneer: 'bg-cyan-500/25 text-cyan-400 border-cyan-500/40',
+  fracture: 'bg-rose-500/25 text-rose-400 border-rose-500/40',
+  'extraction-indicated': 'bg-red-500/30 text-red-400 border-red-500/50',
 };
 
 const CONDITION_LABEL: Record<ToothCondition, string> = {
@@ -87,10 +87,12 @@ const LOWER_RIGHT: ToothNumber[] = [48, 47, 46, 45, 44, 43, 42, 41];
 function ToothCell({
   number,
   tooth,
+  labels,
   onClick,
 }: {
   number: ToothNumber;
   tooth?: OdontogramTooth;
+  labels: Record<ToothCondition, string>;
   onClick?: (n: ToothNumber) => void;
 }) {
   const condition: ToothCondition = tooth?.condition ?? 'healthy';
@@ -99,8 +101,8 @@ function ToothCell({
   return (
     <button
       type="button"
-      title={`${number} - ${CONDITION_LABEL[condition]}`}
-      aria-label={`${tPageShell('domain.odonto.treatments.odontogram.tooth', 'Tooth')} ${number}: ${CONDITION_LABEL[condition]}`}
+      title={`${number} - ${labels[condition]}`}
+      aria-label={`${tPageShell('domain.odonto.treatments.odontogram.tooth', 'Tooth')} ${number}: ${labels[condition]}`}
       className={cn(
         'w-9 h-9 rounded border text-xs font-medium flex items-center justify-center transition-transform hover:scale-110',
         colorClass,
@@ -116,10 +118,12 @@ function ToothCell({
 function QuadrantRow({
   numbers,
   teethMap,
+  labels,
   onToothClick,
 }: {
   numbers: ToothNumber[];
   teethMap: Map<ToothNumber, OdontogramTooth>;
+  labels: Record<ToothCondition, string>;
   onToothClick?: (n: ToothNumber) => void;
 }) {
   return (
@@ -129,6 +133,7 @@ function QuadrantRow({
           key={num}
           number={num}
           tooth={teethMap.get(num)}
+          labels={labels}
           onClick={onToothClick}
         />
       ))}
@@ -161,9 +166,9 @@ export function PageOdontogram({
 
       {/* Upper arch */}
       <div className="flex justify-center gap-2 mb-1">
-        <QuadrantRow numbers={UPPER_RIGHT} teethMap={teethMap} onToothClick={onToothClick} />
+        <QuadrantRow numbers={UPPER_RIGHT} teethMap={teethMap} labels={resolvedLabels} onToothClick={onToothClick} />
         <div className="w-px bg-border" />
-        <QuadrantRow numbers={UPPER_LEFT} teethMap={teethMap} onToothClick={onToothClick} />
+        <QuadrantRow numbers={UPPER_LEFT} teethMap={teethMap} labels={resolvedLabels} onToothClick={onToothClick} />
       </div>
 
       {/* Arch separator */}
@@ -171,9 +176,9 @@ export function PageOdontogram({
 
       {/* Lower arch */}
       <div className="flex justify-center gap-2 mt-1">
-        <QuadrantRow numbers={LOWER_RIGHT} teethMap={teethMap} onToothClick={onToothClick} />
+        <QuadrantRow numbers={LOWER_RIGHT} teethMap={teethMap} labels={resolvedLabels} onToothClick={onToothClick} />
         <div className="w-px bg-border" />
-        <QuadrantRow numbers={LOWER_LEFT} teethMap={teethMap} onToothClick={onToothClick} />
+        <QuadrantRow numbers={LOWER_LEFT} teethMap={teethMap} labels={resolvedLabels} onToothClick={onToothClick} />
       </div>
 
       {/* Legend */}
