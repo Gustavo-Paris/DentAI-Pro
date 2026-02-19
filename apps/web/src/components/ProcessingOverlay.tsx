@@ -82,7 +82,7 @@ export const ProcessingOverlay = memo(function ProcessingOverlay({
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 grain-overlay"
+      className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 pb-[max(1rem,env(safe-area-inset-bottom))] grain-overlay"
       role="dialog"
       aria-modal="true"
       aria-label={displayMessage}
@@ -90,7 +90,7 @@ export const ProcessingOverlay = memo(function ProcessingOverlay({
     >
       <Card className="w-full max-w-md rounded-2xl card-elevated animate-[scale-in_0.3s_ease-out]">
         <CardContent className="p-6 flex flex-col items-center text-center">
-          <ProgressRing progress={progress} size={128} />
+          <ProgressRing progress={progress} size={100} />
 
           <p className="mt-4 font-semibold text-primary">{displayMessage}</p>
 
@@ -110,7 +110,7 @@ export const ProcessingOverlay = memo(function ProcessingOverlay({
             </p>
           )}
 
-          <p className="text-xs text-muted-foreground mt-2 animate-pulse">
+          <p className="text-xs text-muted-foreground mt-2 animate-pulse" aria-live="polite">
             {t('components.processingOverlay.doNotClose')}
           </p>
         </CardContent>

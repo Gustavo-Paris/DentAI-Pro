@@ -21,16 +21,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { PageConfirmDialog } from '@parisgroup-ai/pageshell/interactions';
 import { memo } from 'react';
 import { Plus, Search, Loader2, X, FileWarning, Check } from 'lucide-react';
 import { ListPage } from '@parisgroup-ai/pageshell/composites';
@@ -291,34 +282,23 @@ export default function Inventory() {
       </Dialog>
 
       {/* Remove Confirmation */}
-      <AlertDialog
+      <PageConfirmDialog
         open={!!inv.deletingItemId}
         onOpenChange={(open) => {
           if (!open) inv.setDeletingItemId(null);
         }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('inventory.confirmRemoveTitle')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('inventory.confirmRemoveDescription')}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                if (inv.deletingItemId) {
-                  inv.removeFromInventory(inv.deletingItemId);
-                  inv.setDeletingItemId(null);
-                }
-              }}
-            >
-              {t('common.remove')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        title={t('inventory.confirmRemoveTitle')}
+        description={t('inventory.confirmRemoveDescription')}
+        confirmText={t('common.remove')}
+        cancelText={t('common.cancel')}
+        onConfirm={() => {
+          if (inv.deletingItemId) {
+            inv.removeFromInventory(inv.deletingItemId);
+            inv.setDeletingItemId(null);
+          }
+        }}
+        variant="destructive"
+      />
 
       {/* CSV Import Preview */}
       <Dialog

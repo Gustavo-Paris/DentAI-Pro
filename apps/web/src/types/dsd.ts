@@ -7,11 +7,14 @@
  *   Layer 3: complete-treatment (with gengivoplasty, conditional)
  */
 
+import type { TreatmentType } from '@/lib/treatment-config';
+
 // ---------------------------------------------------------------------------
 // Treatment & Analysis Types
 // ---------------------------------------------------------------------------
 
-export type TreatmentIndication = "resina" | "porcelana" | "coroa" | "implante" | "endodontia" | "encaminhamento" | "gengivoplastia" | "recobrimento_radicular";
+/** @deprecated Use TreatmentType from '@/lib/treatment-config' directly. Kept for backward compatibility. */
+export type TreatmentIndication = TreatmentType;
 
 export interface DSDSuggestion {
   tooth: string;

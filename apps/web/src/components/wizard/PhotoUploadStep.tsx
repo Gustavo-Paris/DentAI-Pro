@@ -308,7 +308,7 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="text-center">
         <h2 className="text-2xl font-semibold font-display mb-2">{t('components.wizard.photoUpload.title')}</h2>
         <p className="text-muted-foreground">
@@ -400,7 +400,7 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
               <img
                 src={imageBase64}
                 alt={t('components.wizard.photoUpload.altIntraoral')}
-                className="w-full max-h-[400px] object-contain ring-2 ring-primary/20 rounded-xl"
+                className="w-full max-h-[250px] md:max-h-[400px] object-contain ring-2 ring-primary/20 rounded-xl"
               />
               {/* Badge overlay */}
               <Badge className="absolute top-3 left-3 bg-background/80 backdrop-blur-sm text-foreground border border-border/50">

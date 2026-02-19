@@ -73,7 +73,7 @@ export function PatientPreferencesStep({
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4 sm:space-y-6">
           {/* Whitening Level Cards with Color Swatches */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" role="radiogroup" aria-label={t('components.wizard.preferences.title')}>
             {WHITENING_OPTIONS.map((option) => {
@@ -97,11 +97,10 @@ export function PatientPreferencesStep({
                       : 'border-border bg-card'
                   )}
                 >
-                  {/* Color swatch bar at top */}
+                  {/* Color swatch bar at top — fixed height to prevent layout shift */}
                   <div
                     className={cn(
-                      'w-full transition-all duration-200',
-                      isSelected ? 'h-2' : 'h-1',
+                      'w-full h-1.5 transition-colors duration-200',
                       isSelected ? option.swatchGradientSelected : option.swatchGradient,
                     )}
                   />

@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { CheckCircle, Layers, Crown, Stethoscope, ArrowUpRight, Smile, HeartPulse, Palette } from 'lucide-react';
+import { CheckCircle, Layers, Crown, Stethoscope, ArrowUpRight, Smile, HeartPulse, Palette, AlertTriangle } from 'lucide-react';
+import { ErrorState } from '@/components/ui/error-state';
 
 import ProtocolTable from '@/components/protocol/ProtocolTable';
 import ProtocolChecklist from '@/components/protocol/ProtocolChecklist';
@@ -24,13 +24,12 @@ export default function GroupResult() {
 
   if (!g.primaryEval && !g.isLoading) {
     return (
-      <div role="main" className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-3">
-          <h1 className="text-lg font-semibold">{t('result.notFound')}</h1>
-          <p className="text-sm text-muted-foreground">{t('result.notFoundDescription', { defaultValue: 'O resultado solicitado nao foi encontrado.' })}</p>
-          <Button variant="outline" onClick={() => window.history.back()}>{t('common.back', { defaultValue: 'Voltar' })}</Button>
-        </div>
-      </div>
+      <ErrorState
+        variant="fullscreen"
+        title={t('result.notFound')}
+        description={t('result.notFoundDescription', { defaultValue: 'O resultado solicitado nao foi encontrado.' })}
+        action={{ label: t('common.back', { defaultValue: 'Voltar' }), onClick: () => window.history.back() }}
+      />
     );
   }
 
@@ -93,6 +92,25 @@ export default function GroupResult() {
           if (!evaluation) return null;
           return (
             <>
+              {/* Protocol unavailable fallback */}
+              {!g.resin && !g.isSpecialTreatment && g.treatmentType === 'resina' && (
+                <section className="mb-8">
+                  <Card className="border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20">
+                    <CardContent className="py-4">
+                      <div className="flex items-start gap-3">
+                        <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-sm font-medium">{t('result.protocolUnavailable', { defaultValue: 'Protocolo não disponível' })}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {t('result.protocolUnavailableDesc', { defaultValue: 'A geração do protocolo de resina não foi concluída. Tente reprocessar este caso.' })}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </section>
+              )}
+
               {/* Resin recommendation */}
               {g.resin && (
                 <section className="mb-8">
@@ -225,7 +243,7 @@ export default function GroupResult() {
 
               {/* Alerts and Warnings */}
               {(g.alerts.length > 0 || g.warnings.length > 0) && (
-                <section className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <section className="mb-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <AlertsSection alerts={g.alerts} />
                   <WarningsSection warnings={g.warnings} />
                 </section>
