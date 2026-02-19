@@ -26,7 +26,7 @@ const patientKeys = {
 // Types
 // ---------------------------------------------------------------------------
 
-interface PatientSession {
+export interface PatientSession {
   session_id: string;
   teeth: string[];
   evaluationCount: number;

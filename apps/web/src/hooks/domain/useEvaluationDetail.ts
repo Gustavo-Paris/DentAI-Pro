@@ -335,7 +335,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   // ---- Computed ----
-  const patientName = evals[0]?.patient_name || 'Paciente sem nome';
+  const patientName = evals[0]?.patient_name || t('evaluation.patientNoName', { defaultValue: 'Paciente sem nome' });
   const evaluationDate = evals[0]?.created_at
     ? format(new Date(evals[0].created_at), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })
     : '';

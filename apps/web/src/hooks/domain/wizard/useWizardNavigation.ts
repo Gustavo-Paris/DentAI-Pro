@@ -84,7 +84,7 @@ export function useWizardNavigation({
       return;
     }
 
-    const confirmed = await confirmCreditUse('full_analysis', 'Análise Completa com IA', fullCost);
+    const confirmed = await confirmCreditUse('full_analysis', t('wizard.creditLabel.fullAnalysis', { defaultValue: 'Análise Completa com IA' }), fullCost);
     if (!confirmed) return;
 
     fullFlowCreditsConfirmedRef.current = true;

@@ -253,6 +253,10 @@
       "generatingProtocol": "gerando protocolo...",
       "finalizing": "Finalizando e salvando...",
       "toothLabel": "{{tooth}}"
+    },
+    "creditLabel": {
+      "photoAnalysis": "Análise com IA",
+      "fullAnalysis": "Análise Completa com IA"
     }
   },
   "dsd": {
@@ -401,7 +405,12 @@
     "noCSVMatch": "Nenhuma resina do CSV foi encontrada no catálogo.",
     "addResinsCount": "Adicionar {{count}} resina(s)",
     "removeResin": "Remover resina",
-    "goToInventory": "Ir para Inventário"
+    "goToInventory": "Ir para Inventário",
+    "brand": "Marca",
+    "line": "Linha",
+    "shade": "Cor",
+    "type": "Tipo",
+    "opacity": "Opacidade"
   },
   "profile": {
     "title": "Meu Perfil",
@@ -647,7 +656,8 @@
     "bridge": "Ponte",
     "veneer": "Faceta",
     "fracture": "Fratura",
-    "extractionIndicated": "Extração indicada"
+    "extractionIndicated": "Extração indicada",
+    "gingiva": "Gengiva"
   },
   "errors": {
     "pageNotFound": "Página não encontrada",
@@ -672,7 +682,14 @@
     "fileTooLarge": "Arquivo muito grande. Máximo: 10MB.",
     "invalidFileType": "Tipo de arquivo não suportado.",
     "unexpectedError": "Ocorreu um erro inesperado",
-    "errorContext": "Erro ao {{context}}"
+    "errorContext": "Erro ao {{context}}",
+    "patientNotFound": "Paciente não encontrado",
+    "noImageAvailable": "Nenhuma imagem disponível para análise",
+    "insufficientCredits": "Créditos insuficientes para simulação DSD. Faça upgrade do seu plano.",
+    "noAnalysisData": "Dados de análise não retornados",
+    "rateLimitExceeded": "Limite de requisições excedido. Aguarde alguns minutos.",
+    "connectionError": "Erro de conexão. Verifique sua internet e tente novamente.",
+    "dsdGenerationFailed": "Não foi possível gerar a análise DSD. Você pode pular esta etapa."
   },
   "toasts": {
     "subscription": {
