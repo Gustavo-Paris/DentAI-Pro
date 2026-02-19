@@ -88,7 +88,7 @@ export default function PatientProfile() {
           {
             id: 'contact',
             title: t('patients.contactInfo'),
-            content: () => (
+            children: () => (
               <Card className="p-4">
                 <div className="flex flex-wrap gap-4 text-sm">
                   {patient?.phone && (
@@ -124,7 +124,7 @@ export default function PatientProfile() {
           {
             id: 'metrics',
             title: t('patients.metrics'),
-            content: () => (
+            children: () => (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
                   { value: metrics.totalSessions, label: t('patients.evaluationsLabel') },
@@ -147,10 +147,10 @@ export default function PatientProfile() {
           {
             id: 'timeline',
             title: t('patients.treatmentTimeline', { defaultValue: 'Linha do Tempo' }),
-            content: () => {
+            children: () => {
               const entries: ProcedureInfo[] = sessionsList.map((session) => ({
                 id: session.session_id,
-                name: session.treatmentTypes.join(', ') || t('evaluation.dental'),
+                name: t('evaluation.dental'),
                 code: '',
                 tooth: session.teeth.length > 0 ? parseInt(session.teeth[0], 10) : undefined,
                 status: session.completedCount === session.evaluationCount ? 'completed' as const : 'in-progress' as const,
@@ -180,7 +180,7 @@ export default function PatientProfile() {
           {
             id: 'sessions',
             title: t('patients.sessionHistory'),
-            content: () => (
+            children: () => (
               <div>
                 <div className="flex items-center justify-end mb-4">
                   <Link to={`/new-case?patient=${patientId}`}>
