@@ -533,6 +533,8 @@
 
 .wizard-nav-sticky {
   position: relative;
+  border-top: 1px solid rgb(var(--color-border-rgb) / 0.5);
+  margin-top: 1.5rem;
 }
 
 @media (max-width: 639px) {
@@ -549,6 +551,7 @@
     margin-right: -1rem;
     padding-left: 1rem;
     padding-right: 1rem;
+    margin-top: 0;
   }
 }
 
@@ -557,13 +560,14 @@
 .stepper-connector,
 .stepper-connector-gold {
   height: 2px;
-  background: linear-gradient(90deg, rgb(var(--color-primary-rgb) / 0.35), rgb(var(--color-primary-rgb) / 0.12));
+  background: rgb(var(--color-primary-rgb) / 0.18);
   border-radius: 1px;
+  transition: background 0.4s ease;
 }
 
 .stepper-connector.completed,
 .stepper-connector-gold.completed {
-  background: linear-gradient(90deg, var(--color-primary), var(--color-primary));
+  background: var(--color-primary);
 }
 
 /* ─── Wizard: Vignette overlay for photo analysis ─── */

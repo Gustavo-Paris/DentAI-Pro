@@ -19,7 +19,7 @@ import {
   Eye,
 } from 'lucide-react';
 
-import { WizardPage } from '@parisgroup-ai/pageshell/composites';
+import { PageShellWizard } from '@parisgroup-ai/pageshell/interactions';
 import { trackEvent } from '@/lib/analytics';
 import { useWizardFlow } from '@/hooks/domain/useWizardFlow';
 import { PhotoUploadStep } from '@/components/wizard/PhotoUploadStep';
@@ -69,8 +69,9 @@ export default function NewCase() {
 
   const allSteps = useMemo(() => {
     const fotoStep = {
-      id: 'foto',
-      title: t('wizard.stepPhoto'),
+      id: 1,
+      key: 'foto',
+      label: t('wizard.stepPhoto'),
       icon: Camera,
       children: (
         <div key="step-foto" className={`wizard-step-${wizard.stepDirection}`}>
@@ -88,8 +89,9 @@ export default function NewCase() {
     };
 
     const prefsStep = {
-      id: 'preferencias',
-      title: t('wizard.stepPreferences'),
+      id: 2,
+      key: 'preferencias',
+      label: t('wizard.stepPreferences'),
       icon: Heart,
       children: (
         <div key="step-prefs" className={`wizard-step-${wizard.stepDirection}`}>
@@ -103,8 +105,9 @@ export default function NewCase() {
     };
 
     const analysisStep = {
-      id: 'analise',
-      title: t('wizard.stepAnalysis'),
+      id: 3,
+      key: 'analise',
+      label: t('wizard.stepAnalysis'),
       icon: Brain,
       children: (
         <div key="step-analysis" className={`wizard-step-${wizard.stepDirection}`}>
@@ -122,8 +125,9 @@ export default function NewCase() {
     };
 
     const dsdStep = {
-      id: 'dsd',
-      title: t('wizard.stepDSD'),
+      id: 4,
+      key: 'dsd',
+      label: t('wizard.stepDSD'),
       icon: Smile,
       children: (
         <div key="step-dsd" className={`wizard-step-${wizard.stepDirection}`}>
@@ -149,8 +153,9 @@ export default function NewCase() {
     };
 
     const reviewStep = {
-      id: 'revisao',
-      title: t('wizard.stepReview'),
+      id: 5,
+      key: 'revisao',
+      label: t('wizard.stepReview'),
       icon: ClipboardCheck,
       children: (
         <div key="step-review" className={`wizard-step-${wizard.stepDirection}`}>
@@ -184,17 +189,12 @@ export default function NewCase() {
     };
 
     const resultStep = {
-      id: 'resultado',
-      title: t('wizard.stepResult'),
+      id: 6,
+      key: 'resultado',
+      label: t('wizard.stepResult'),
       icon: FileText,
       children: (
         <div key="step-result" className={`wizard-step-${wizard.stepDirection}`}>
-          <LoadingOverlay
-            isLoading={wizard.isSubmitting}
-            message={t('wizard.generatingCase')}
-            steps={wizard.submissionSteps}
-            progress={wizard.submissionSteps.filter(s => s.completed).length / Math.max(wizard.submissionSteps.length, 1) * 100}
-          />
           {wizard.submissionComplete ? (
             <div className="flex flex-col items-center justify-center py-16 sm:py-24 space-y-4">
               <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center animate-scale-in">
@@ -234,7 +234,8 @@ export default function NewCase() {
     };
 
     if (wizard.isQuickCase) {
-      return [fotoStep, analysisStep, reviewStep, resultStep];
+      // Re-number IDs sequentially (1-4) for quick case
+      return [fotoStep, analysisStep, reviewStep, resultStep].map((step, i) => ({ ...step, id: i + 1 }));
     }
     return [fotoStep, prefsStep, analysisStep, dsdStep, reviewStep, resultStep];
   }, [wizard, t]);
@@ -256,17 +257,26 @@ export default function NewCase() {
       open={!disclaimer.accepted}
       onAccept={disclaimer.accept}
     />
+    <LoadingOverlay
+      isLoading={wizard.isSubmitting}
+      message={t('wizard.generatingCase')}
+      steps={wizard.submissionSteps}
+      progress={wizard.submissionSteps.filter(s => s.completed).length / Math.max(wizard.submissionSteps.length, 1) * 100}
+    />
     <div>
-      <WizardPage
+      <PageShellWizard
+        theme="odonto-ai"
         title={t('wizard.newCase')}
-        currentStep={displayStep}
-        keyboardNavigation={false}
-        showStepIndicator={true}
+        currentStep={displayStep + 1}
+        totalSteps={totalSteps}
+        enableKeyboardNav={false}
+        showProgress={true}
         scrollToTop={true}
-        containerVariant="shell"
+        containerVariant="narrow"
+        hideNavigation={true}
         steps={allSteps}
         slots={{
-          stepIndicator: (
+          progress: (
             <StepIndicator
               currentStep={displayStep}
               totalSteps={totalSteps}
@@ -275,7 +285,7 @@ export default function NewCase() {
               stepIcons={wizard.isQuickCase ? QUICK_ICONS : undefined}
             />
           ),
-          betweenHeaderAndContent: (
+          beforeContent: (
             <div className="flex items-center justify-between mb-2">
               {wizard.isSampleCase ? (
                 <Badge variant="secondary" className="text-xs gap-1.5 bg-primary/10 text-primary border-primary/20">
@@ -300,9 +310,9 @@ export default function NewCase() {
               ) : <span />}
             </div>
           ),
-          navigation: wizard.canGoBack ? (
+          footer: wizard.canGoBack ? (
             <div className="wizard-nav-sticky">
-              <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 pt-4 pb-2 sm:mt-8 sm:pt-0 sm:pb-0">
+              <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 pt-4 pb-2 sm:pt-4 sm:pb-0">
                 <Button variant="outline" onClick={wizard.handleBack} className="w-full sm:w-auto btn-press">
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   {t('common.back')}
