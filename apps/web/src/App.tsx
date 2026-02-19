@@ -9,6 +9,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { PageShellI18nProvider, PT_BR_MESSAGES } from '@parisgroup-ai/pageshell/core';
 import CookieConsent from "@/components/CookieConsent";
 import PostHogProvider from "@/components/PostHogProvider";
 import { KeyboardShortcuts } from "@/components/KeyboardShortcuts";
@@ -119,6 +120,7 @@ function ConnectedGlobalSearch() {
 const App = () => (
   <ErrorBoundary>
     <ThemeProvider>
+    <PageShellI18nProvider locale="pt-BR" bundle={{ locale: 'pt-BR', messages: PT_BR_MESSAGES, currency: 'BRL' }}>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
@@ -166,6 +168,7 @@ const App = () => (
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
+    </PageShellI18nProvider>
     </ThemeProvider>
   </ErrorBoundary>
 );

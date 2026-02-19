@@ -677,6 +677,11 @@
 
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
+/* ─── Profile menu popover — softer border in dark mode ─── */
+.dark [data-radix-popper-content-wrapper] [role="menu"] {
+  border-color: hsl(var(--border));
+}
+
 @media (prefers-reduced-motion: reduce) {
   .scan-line-animation::after { animation: none; opacity: 0; }
   .progress-bar::after { animation: none; }

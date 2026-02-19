@@ -28,6 +28,8 @@ import {
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { DetailPage } from '@parisgroup-ai/pageshell/composites';
+import { PageTreatmentTimeline } from '@parisgroup-ai/domain-odonto-ai/treatments';
+import type { ProcedureInfo } from '@parisgroup-ai/domain-odonto-ai/treatments';
 
 import { usePatientProfile } from '@/hooks/domain/usePatientProfile';
 import { formatToothLabel } from '@/lib/treatment-config';
@@ -141,6 +143,39 @@ export default function PatientProfile() {
                 ))}
               </div>
             ),
+          },
+          {
+            id: 'timeline',
+            title: t('patients.treatmentTimeline', { defaultValue: 'Linha do Tempo' }),
+            content: () => {
+              const entries: ProcedureInfo[] = sessionsList.map((session) => ({
+                id: session.session_id,
+                name: session.treatmentTypes.join(', ') || t('evaluation.dental'),
+                code: '',
+                tooth: session.teeth.length > 0 ? parseInt(session.teeth[0], 10) : undefined,
+                status: session.completedCount === session.evaluationCount ? 'completed' as const : 'in-progress' as const,
+                cost: { value: 0, currency: 'BRL' },
+                performedDate: format(new Date(session.created_at), "d 'de' MMM, yyyy", { locale: ptBR }),
+                createdAt: session.created_at,
+                updatedAt: session.created_at,
+              }));
+
+              if (entries.length === 0) return null;
+
+              return (
+                <PageTreatmentTimeline
+                  entries={entries}
+                  toothLabel={t('odontogram.tooth', { defaultValue: 'Dente' })}
+                  emptyText={t('patients.noTreatmentHistory', { defaultValue: 'Nenhum histórico de tratamento' })}
+                  statusLabels={{
+                    planned: t('evaluation.planned', { defaultValue: 'Planejado' }),
+                    'in-progress': t('evaluation.inProgress', { defaultValue: 'Em andamento' }),
+                    completed: t('evaluation.completed', { defaultValue: 'Concluído' }),
+                    cancelled: t('evaluation.cancelled', { defaultValue: 'Cancelado' }),
+                  }}
+                />
+              );
+            },
           },
           {
             id: 'sessions',

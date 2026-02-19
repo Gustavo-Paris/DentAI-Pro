@@ -332,11 +332,11 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
           onDrop={handleDrop}
         >
           <div className="bg-card rounded-[11px] grain-overlay">
-            <div className="py-16 px-4">
+            <div className="py-10 px-4">
               {isCompressing ? (
                 <div className="flex flex-col items-center justify-center text-center" role="status" aria-live="polite">
-                  <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
-                    <Loader2 className="w-10 h-10 text-primary animate-spin" />
+                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                    <Loader2 className="w-8 h-8 text-primary animate-spin" />
                   </div>
                   <h3 className="text-lg font-medium mb-2">
                     {t('components.wizard.photoUpload.processing')}
@@ -347,8 +347,8 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center text-center">
-                  <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
-                    <Camera className="w-10 h-10 text-primary animate-[float_3s_ease-in-out_infinite]" />
+                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                    <Camera className="w-8 h-8 text-primary animate-[float_3s_ease-in-out_infinite]" />
                   </div>
 
                   <h3 className="text-lg font-medium mb-2">

@@ -15,6 +15,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
 import { ProportionsCard } from '@/components/dsd/ProportionsCard';
+import { PageImageCompare } from '@parisgroup-ai/domain-odonto-ai/imaging';
 import type { DSDAnalysis, SimulationLayer } from '@/types/dsd';
 import { LAYER_LABELS } from '@/types/dsd';
 import { useSharedEvaluation } from '@/hooks/domain/useSharedEvaluation';
@@ -152,12 +153,42 @@ export default function SharedEvaluation() {
                     ))}
                   </div>
                 )}
-                <ComparisonSlider
-                  beforeImage={beforeImageUrl}
-                  afterImage={activeAfterImage}
-                  afterLabel={activeLayer?.label || t('dsd.simulation')}
-                />
+                <div className="print:hidden">
+                  <ComparisonSlider
+                    beforeImage={beforeImageUrl}
+                    afterImage={activeAfterImage}
+                    afterLabel={activeLayer?.label || t('dsd.simulation')}
+                  />
+                </div>
                 <ProportionsCard analysis={analysis} />
+                <PageImageCompare
+                  pair={{
+                    before: {
+                      id: 'original',
+                      url: beforeImageUrl,
+                      type: 'intraoral-photo',
+                      patientId: '',
+                      patientName: evaluations[0]?.patient_name || '',
+                      capturedDate: evalDate,
+                      createdAt: evaluations[0]?.created_at || '',
+                      updatedAt: evaluations[0]?.created_at || '',
+                    },
+                    after: {
+                      id: 'simulation',
+                      url: activeAfterImage,
+                      type: 'intraoral-photo',
+                      patientId: '',
+                      patientName: evaluations[0]?.patient_name || '',
+                      capturedDate: evalDate,
+                      createdAt: evaluations[0]?.created_at || '',
+                      updatedAt: evaluations[0]?.created_at || '',
+                    },
+                    label: t('pages.dsdComparison', { defaultValue: 'Comparação DSD' }),
+                  }}
+                  beforeLabel={t('dsd.original', { defaultValue: 'Original' })}
+                  afterLabel={t('dsd.simulation', { defaultValue: 'Simulação' })}
+                  className="mt-4 hidden print:block"
+                />
               </CardContent>
             </Card>
           );

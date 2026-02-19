@@ -56,7 +56,7 @@ export function StepIndicator({
   );
 
   return (
-    <nav aria-label="Wizard progress" className="mb-8">
+    <nav aria-label="Wizard progress" className="mb-6">
       {/* Desktop Stepper */}
       <ol className="hidden sm:flex items-center justify-between" role="list">
         {steps.map((step, index) => {
@@ -78,7 +78,7 @@ export function StepIndicator({
               >
                 <span
                   className={cn(
-                    'w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300',
+                    'w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300',
                     step.isCompleted &&
                       'bg-primary text-primary-foreground shadow-sm',
                     step.isActive &&
@@ -88,9 +88,9 @@ export function StepIndicator({
                   )}
                 >
                   {step.isCompleted ? (
-                    <Check className="w-4.5 h-4.5 animate-scale-in" />
+                    <Check className="w-4 h-4 animate-scale-in" />
                   ) : (
-                    <Icon className="w-4.5 h-4.5" />
+                    <Icon className="w-4 h-4" />
                   )}
                   <span className="sr-only">
                     {step.isCompleted
@@ -121,7 +121,7 @@ export function StepIndicator({
                 <div
                   aria-hidden="true"
                   className={cn(
-                    'flex-1 mx-3 stepper-connector-gold',
+                    'flex-1 mx-2 stepper-connector-gold',
                     step.isCompleted && 'completed',
                   )}
                 />
