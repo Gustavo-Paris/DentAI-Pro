@@ -322,7 +322,7 @@ Deno.serve(async (req: Request) => {
             temperature: 0.0,
             maxTokens: 4000,
             forceFunctionName: "generate_cementation_protocol",
-            timeoutMs: 25_000,
+            timeoutMs: 45_000,
           }
         );
         if (response.tokens) {
