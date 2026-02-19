@@ -276,17 +276,21 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    // Log simulation debug info server-side only (never send to client)
+    // Log simulation debug info server-side
     if (simulationDebug && !simulationUrl) {
       logger.warn(`[${reqId}] Simulation failed (debug): ${simulationDebug}`);
     }
 
     // Return result with note if applicable
-    const result: DSDResult & { layer_type?: string; lips_moved?: boolean } = {
+    const result: DSDResult & { layer_type?: string; lips_moved?: boolean; simulation_debug?: string } = {
       analysis,
       simulation_url: simulationUrl,
       simulation_note: simulationNote,
     };
+    // Include debug info for layer generation calls (helps client-side error logging)
+    if (simulationDebug && !simulationUrl && regenerateSimulationOnly) {
+      result.simulation_debug = simulationDebug.substring(0, 300);
+    }
     if (layerType) {
       result.layer_type = layerType;
     }

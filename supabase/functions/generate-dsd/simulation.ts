@@ -370,6 +370,9 @@ Responda APENAS 'SIM' ou 'NÃO'.`,
           temperature: dsdSimulationPromptDef.temperature,
           timeoutMs: SIMULATION_TIMEOUT,
           seed: imageSeed,
+          // No internal retries — client handles retries via withRetry.
+          // Internal retries (55s × 3 attempts) exceed the 60s Supabase edge function limit.
+          maxRetries: 0,
         }
       );
       if (response.tokens) {
