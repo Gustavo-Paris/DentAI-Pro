@@ -1,4 +1,5 @@
 import { usePageShellColorMode } from '@parisgroup-ai/pageshell/theme';
+import { useTranslation } from 'react-i18next';
 import { Sun, Moon, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,16 +9,19 @@ import {
 } from "@/components/ui/tooltip";
 
 const modes = ["system", "light", "dark"] as const;
-const labels: Record<string, string> = {
-  system: "Sistema",
-  light: "Claro",
-  dark: "Escuro",
-};
 
 export function ThemeToggle() {
   const { colorMode, setColorMode } = usePageShellColorMode();
+  const { t } = useTranslation();
 
   const theme = colorMode ?? "system";
+
+  // i18n keys: components.themeToggle.system, .light, .dark, .label
+  const labels: Record<string, string> = {
+    system: t('components.themeToggle.system', 'Sistema'),
+    light: t('components.themeToggle.light', 'Claro'),
+    dark: t('components.themeToggle.dark', 'Escuro'),
+  };
 
   const cycle = () => {
     const idx = modes.indexOf(theme as (typeof modes)[number]);
@@ -33,6 +37,8 @@ export function ThemeToggle() {
       <Monitor className="w-4 h-4" />
     );
 
+  const themeLabel = t('components.themeToggle.label', 'Tema');
+
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -41,13 +47,13 @@ export function ThemeToggle() {
           size="icon"
           className="h-8 w-8"
           onClick={cycle}
-          aria-label={`Tema: ${labels[theme]}`}
+          aria-label={`${themeLabel}: ${labels[theme]}`}
         >
           {icon}
         </Button>
       </TooltipTrigger>
       <TooltipContent>
-        <p>Tema: {labels[theme]}</p>
+        <p>{themeLabel}: {labels[theme]}</p>
       </TooltipContent>
     </Tooltip>
   );

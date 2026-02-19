@@ -35,6 +35,35 @@ export function getTreatmentConfig(type: string | null | undefined): TreatmentTy
   return treatmentConfig[(type || 'resina') as TreatmentType] || treatmentConfig.resina;
 }
 
+/**
+ * Normalize treatment type strings from AI (English or mixed-case) to
+ * canonical Portuguese keys used throughout the app.
+ */
+const TREATMENT_NORMALIZE: Record<string, TreatmentType> = {
+  // English → Portuguese
+  porcelain: 'porcelana',
+  resin: 'resina',
+  crown: 'coroa',
+  implant: 'implante',
+  endodontics: 'endodontia',
+  referral: 'encaminhamento',
+  gingivoplasty: 'gengivoplastia',
+  'root_coverage': 'recobrimento_radicular',
+  // Portuguese identity (lowercase)
+  porcelana: 'porcelana',
+  resina: 'resina',
+  coroa: 'coroa',
+  implante: 'implante',
+  endodontia: 'endodontia',
+  encaminhamento: 'encaminhamento',
+  gengivoplastia: 'gengivoplastia',
+  recobrimento_radicular: 'recobrimento_radicular',
+};
+
+export function normalizeTreatmentType(raw: string): TreatmentType {
+  return TREATMENT_NORMALIZE[raw.toLowerCase()] || (raw.toLowerCase() as TreatmentType);
+}
+
 export function formatToothLabel(tooth: string, t?: (key: string, opts?: Record<string, unknown>) => string): string {
   if (tooth === 'GENGIVO') return t ? t('toothLabel.gingiva') : 'Gengiva';
   return t ? t('toothLabel.tooth', { number: tooth }) : `Dente ${tooth}`;

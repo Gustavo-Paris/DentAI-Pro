@@ -355,8 +355,10 @@ Deno.serve(async (req) => {
     ];
 
     // Call Claude API with tool calling
+    const systemPrompt = promptDef.system({} as RecommendResinParams);
     const messages: OpenAIMessage[] = [
-      { role: "user", content: prompt },
+      ...(systemPrompt ? [{ role: "system" as const, content: systemPrompt }] : []),
+      { role: "user" as const, content: prompt },
     ];
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -369,8 +371,9 @@ Deno.serve(async (req) => {
           tools,
           {
             temperature: 0.0,
-            maxTokens: 4000,
+            maxTokens: promptDef.maxTokens,
             forceFunctionName: "generate_resin_protocol",
+            timeoutMs: 25_000,
           }
         );
         if (response.tokens) {

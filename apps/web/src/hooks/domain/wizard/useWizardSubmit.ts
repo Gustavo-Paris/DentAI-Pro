@@ -15,6 +15,7 @@ import { trackEvent } from '@/lib/analytics';
 import { withRetry } from '@/lib/retry';
 import { TIMING } from '@/lib/constants';
 import { wizard as wizardData } from '@/data';
+import { normalizeTreatmentType } from '@/lib/treatment-config';
 import { inferCavityClass, getFullRegion, getGenericProtocol } from './helpers';
 
 // ---------------------------------------------------------------------------
@@ -64,17 +65,9 @@ export function getToothTreatment(
   );
 }
 
+/** @deprecated Use normalizeTreatmentType from @/lib/treatment-config directly */
 export function normalizeTreatment(treatment: string): TreatmentType {
-  const mapping: Record<string, TreatmentType> = {
-    porcelain: 'porcelana',
-    resin: 'resina',
-    crown: 'coroa',
-    implant: 'implante',
-    endodontics: 'endodontia',
-    referral: 'encaminhamento',
-    gingivoplasty: 'gengivoplastia',
-  };
-  return mapping[treatment] || (treatment as TreatmentType);
+  return normalizeTreatmentType(treatment) as TreatmentType;
 }
 
 // ---------------------------------------------------------------------------
@@ -113,7 +106,7 @@ export function useWizardSubmit({
   const submissionSteps = useMemo(() => {
     const teethToShow = selectedTeeth.length > 0 ? selectedTeeth : [formData.tooth].filter(Boolean);
     const steps: SubmissionStep[] = [
-      { label: 'Preparando dados do paciente...', completed: submissionStep >= 1 },
+      { label: t('wizard.submission.preparingPatient'), completed: submissionStep >= 1 },
     ];
 
     if (submissionStep >= 2 && teethToShow.length > 0) {
@@ -121,18 +114,18 @@ export function useWizardSubmit({
         const isCompleted = i < currentToothIndex || submissionStep >= 4;
         const isActive = i === currentToothIndex && submissionStep >= 2 && submissionStep < 4;
         const toothLabel = teethToShow[i] === 'GENGIVO'
-          ? 'Gengivoplastia'
-          : `Dente ${teethToShow[i]}`;
+          ? t('components.wizard.review.treatmentGengivoplastia')
+          : t('toothLabel.tooth', { number: teethToShow[i] });
         steps.push({
-          label: `${toothLabel}${isActive ? ' — gerando protocolo...' : ''}`,
+          label: `${toothLabel}${isActive ? ` — ${t('wizard.submission.generatingProtocol')}` : ''}`,
           completed: isCompleted,
         });
       }
     }
 
-    steps.push({ label: 'Finalizando e salvando...', completed: submissionStep >= 4 });
+    steps.push({ label: t('wizard.submission.finalizing'), completed: submissionStep >= 4 });
     return steps;
-  }, [submissionStep, selectedTeeth, formData.tooth, currentToothIndex]);
+  }, [submissionStep, selectedTeeth, formData.tooth, currentToothIndex, t]);
 
   // -------------------------------------------------------------------------
   // Validation

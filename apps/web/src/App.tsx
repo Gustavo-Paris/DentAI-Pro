@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback } from 'react';
+import { Suspense, lazy, useCallback, Component, type ReactNode, type ErrorInfo } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { GlobalSearch } from "@/components/GlobalSearch";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -54,6 +54,45 @@ const queryClient = new QueryClient({
   },
 });
 
+// Route-level error fallback — lighter than the root ErrorBoundary
+function RouteErrorFallback() {
+  return (
+    <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
+      <div className="w-12 h-12 mb-4 rounded-full bg-destructive/10 flex items-center justify-center">
+        <svg className="w-6 h-6 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <h2 className="text-lg font-semibold mb-1">Something went wrong</h2>
+      <p className="text-sm text-muted-foreground mb-4">An unexpected error occurred on this page.</p>
+      <a
+        href="/dashboard"
+        className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+      >
+        Go back to Dashboard
+      </a>
+    </div>
+  );
+}
+
+// Route-level error boundary — scoped to a single route, not the entire app
+class RouteErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError(): { hasError: boolean } {
+    return { hasError: true };
+  }
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('RouteErrorBoundary caught:', error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) return <RouteErrorFallback />;
+    return this.props.children;
+  }
+}
+
 // Loading fallback for lazy-loaded pages
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
@@ -106,15 +145,15 @@ const App = () => (
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
               <Route path="/dashboard" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><Dashboard /></Suspense></ErrorBoundary>} />
               <Route path="/evaluations" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><Evaluations /></Suspense></ErrorBoundary>} />
-              <Route path="/evaluation/:evaluationId" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><EvaluationDetails /></Suspense></ErrorBoundary>} />
-              <Route path="/result/group/:sessionId/:fingerprint" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><GroupResult /></Suspense></ErrorBoundary>} />
-              <Route path="/result/:id" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><Result /></Suspense></ErrorBoundary>} />
+              <Route path="/evaluation/:evaluationId" element={<RouteErrorBoundary><Suspense fallback={<PageLoader />}><EvaluationDetails /></Suspense></RouteErrorBoundary>} />
+              <Route path="/result/group/:sessionId/:fingerprint" element={<RouteErrorBoundary><Suspense fallback={<PageLoader />}><GroupResult /></Suspense></RouteErrorBoundary>} />
+              <Route path="/result/:id" element={<RouteErrorBoundary><Suspense fallback={<PageLoader />}><Result /></Suspense></RouteErrorBoundary>} />
               <Route path="/inventory" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><Inventory /></Suspense></ErrorBoundary>} />
               <Route path="/patients" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><Patients /></Suspense></ErrorBoundary>} />
               <Route path="/patient/:patientId" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><PatientProfile /></Suspense></ErrorBoundary>} />
               <Route path="/profile" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><Profile /></Suspense></ErrorBoundary>} />
               <Route path="/pricing" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><Pricing /></Suspense></ErrorBoundary>} />
-              <Route path="/new-case" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><NewCase /></Suspense></ErrorBoundary>} />
+              <Route path="/new-case" element={<RouteErrorBoundary><Suspense fallback={<PageLoader />}><NewCase /></Suspense></RouteErrorBoundary>} />
             </Route>
 
             <Route path="*" element={<NotFound />} />

@@ -7,7 +7,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { AreaChart, Area } from 'recharts';
+import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import {
   FileText, Users, TrendingUp, CheckCircle2,
   FileWarning, Stethoscope,
@@ -34,7 +34,7 @@ function ProgressRing({ percent }: { percent: number }) {
         cy={size / 2}
         r={radius}
         fill="none"
-        stroke="hsl(var(--muted))"
+        stroke="var(--color-muted)"
         strokeWidth={strokeWidth}
       />
       {/* Progress arc */}
@@ -43,7 +43,7 @@ function ProgressRing({ percent }: { percent: number }) {
         cy={size / 2}
         r={radius}
         fill="none"
-        stroke="hsl(var(--chart-2))"
+        stroke="var(--chart-2)"
         strokeWidth={strokeWidth}
         strokeLinecap="round"
         strokeDasharray={circumference}
@@ -64,23 +64,25 @@ function ProgressRing({ percent }: { percent: number }) {
 function MiniSparkline({ data }: { data: WeeklyTrendPoint[] }) {
   if (data.length === 0) return null;
   return (
-    <div className="shrink-0">
-      <AreaChart width={60} height={28} data={data} margin={{ top: 2, right: 0, bottom: 2, left: 0 }}>
-        <defs>
-          <linearGradient id="sparkFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.15} />
-            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-          </linearGradient>
-        </defs>
-        <Area
-          type="monotone"
-          dataKey="value"
-          stroke="hsl(var(--primary))"
-          strokeWidth={1.5}
-          fill="url(#sparkFill)"
-          isAnimationActive={false}
-        />
-      </AreaChart>
+    <div className="shrink-0 w-[60px] sm:w-[80px]">
+      <ResponsiveContainer width="100%" height={28}>
+        <AreaChart data={data} margin={{ top: 2, right: 0, bottom: 2, left: 0 }}>
+          <defs>
+            <linearGradient id="sparkFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="var(--color-primary)" stopOpacity={0.15} />
+              <stop offset="100%" stopColor="var(--color-primary)" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <Area
+            type="monotone"
+            dataKey="value"
+            stroke="var(--color-primary)"
+            strokeWidth={1.5}
+            fill="url(#sparkFill)"
+            isAnimationActive={false}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
     </div>
   );
 }

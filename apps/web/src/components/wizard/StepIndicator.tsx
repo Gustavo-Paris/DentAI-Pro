@@ -152,24 +152,28 @@ export function StepIndicator({
           </div>
         </div>
 
-        {/* Progress dots */}
-        <div className="flex items-center gap-2">
+        {/* Progress dots — 44px touch targets with small visual dots */}
+        <div className="flex items-center gap-0">
           {steps.map((step, index) => (
             <button
               key={index}
               type="button"
               onClick={() => step.isCompleted && onStepClick?.(index)}
               disabled={!step.isCompleted}
-              className={cn(
-                'rounded-full transition-all duration-300',
-                step.isActive && 'w-6 h-2 bg-primary',
-                step.isCompleted && 'w-2 h-2 bg-primary/60',
-                step.isFuture && 'w-2 h-2 bg-muted-foreground/30',
-              )}
+              className="relative flex items-center justify-center min-w-[44px] min-h-[44px]"
               aria-label={t('components.wizard.stepIndicator.goToStep', { index: index + 1, label: step.label })}
               aria-current={step.isActive ? 'step' : undefined}
               aria-disabled={step.isFuture ? true : undefined}
-            />
+            >
+              <span
+                className={cn(
+                  'rounded-full transition-all duration-300',
+                  step.isActive && 'w-6 h-2 bg-primary',
+                  step.isCompleted && 'w-2 h-2 bg-primary/60',
+                  step.isFuture && 'w-2 h-2 bg-muted-foreground/30',
+                )}
+              />
+            </button>
           ))}
         </div>
       </div>

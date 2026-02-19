@@ -47,7 +47,7 @@ interface RequestData {
   evaluationId: string;
   teeth: string[];
   shade: string;
-  ceramicType?: string;
+  ceramicType: string;
   substrate: string;
   substrateCondition?: string;
   aestheticGoals?: string;
@@ -88,13 +88,17 @@ function validateRequest(data: unknown): { success: boolean; error?: string; dat
     return { success: false, error: "Substrato não especificado" };
   }
 
+  if (!req.ceramicType || typeof req.ceramicType !== "string") {
+    return { success: false, error: "ceramicType é obrigatório para gerar protocolo de cimentação" };
+  }
+
   return {
     success: true,
     data: {
       evaluationId: req.evaluationId as string,
       teeth: req.teeth as string[],
       shade: req.shade as string,
-      ceramicType: (req.ceramicType as string) || "Dissilicato de lítio",
+      ceramicType: req.ceramicType as string,
       substrate: req.substrate as string,
       substrateCondition: req.substrateCondition as string | undefined,
       aestheticGoals: req.aestheticGoals as string | undefined,
@@ -152,7 +156,7 @@ Deno.serve(async (req: Request) => {
     const { evaluationId, teeth, dsdContext } = validation.data;
     // Sanitize all free-text fields before passing to AI prompt
     const shade = sanitizeForPrompt(validation.data.shade);
-    const ceramicType = sanitizeForPrompt(validation.data.ceramicType!);
+    const ceramicType = sanitizeForPrompt(validation.data.ceramicType);
     const substrate = sanitizeForPrompt(validation.data.substrate);
     const substrateCondition = validation.data.substrateCondition ? sanitizeForPrompt(validation.data.substrateCondition) : validation.data.substrateCondition;
     const aestheticGoals = validation.data.aestheticGoals ? sanitizeForPrompt(validation.data.aestheticGoals) : validation.data.aestheticGoals;
@@ -170,8 +174,8 @@ Deno.serve(async (req: Request) => {
 
     // AI prompt for cementation protocol (from prompt registry)
     const prompt = getPrompt('recommend-cementation');
-    const systemPrompt = prompt.system({ teeth, shade, ceramicType: ceramicType!, substrate, substrateCondition, aestheticGoals, dsdContext });
-    const userPrompt = prompt.user({ teeth, shade, ceramicType: ceramicType!, substrate, substrateCondition, aestheticGoals, dsdContext });
+    const systemPrompt = prompt.system({ teeth, shade, ceramicType, substrate, substrateCondition, aestheticGoals, dsdContext });
+    const userPrompt = prompt.user({ teeth, shade, ceramicType, substrate, substrateCondition, aestheticGoals, dsdContext });
 
     // Tool definition for structured output
     const tools = [
@@ -318,6 +322,7 @@ Deno.serve(async (req: Request) => {
             temperature: 0.0,
             maxTokens: 4000,
             forceFunctionName: "generate_cementation_protocol",
+            timeoutMs: 25_000,
           }
         );
         if (response.tokens) {

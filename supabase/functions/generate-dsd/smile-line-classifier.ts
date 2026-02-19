@@ -31,9 +31,10 @@ export function parseSmileLineClassifierResponse(text: string): SmileLineClassif
   }
 }
 
-// Apply smile line override: classifier is authoritative (can both upgrade AND downgrade)
+// Apply smile line override: classifier can both upgrade AND downgrade, but only
+// when confidence is sufficient. Low-confidence results should not override Sonnet.
 // The dedicated classifier uses a calibrated prompt focused solely on smile line,
-// making it more accurate than the general-purpose DSD analysis.
+// making it more accurate than the general-purpose DSD analysis when confident.
 export function applySmileLineOverride(
   analysis: DSDAnalysis,
   classifierResult: SmileLineClassifierResult | null,
@@ -46,18 +47,28 @@ export function applySmileLineOverride(
     const classifierSeverity = severityMap[classifierResult.smile_line] ?? 1;
 
     if (classifierSeverity !== mainSeverity) {
-      const direction = classifierSeverity > mainSeverity ? 'UPGRADE' : 'DOWNGRADE';
-      logger.log(
-        `Smile line classifier ${direction}: "${analysis.smile_line}" → "${classifierResult.smile_line}" ` +
-        `(exposure=${classifierResult.gingival_exposure_mm}mm, confidence=${classifierResult.confidence}, ` +
-        `reason="${classifierResult.justification}")`
-      );
-      analysis.smile_line = classifierResult.smile_line;
-      analysis.observations = analysis.observations || [];
-      analysis.observations.push(
-        `Classificação da linha do sorriso ajustada para "${classifierResult.smile_line}" pelo classificador dedicado ` +
-        `(exposição gengival estimada: ${classifierResult.gingival_exposure_mm}mm).`
-      );
+      // Text-based override: only apply when classifier confidence is alta or média
+      if (classifierResult.confidence === 'baixa') {
+        logger.log(
+          `Smile line classifier: would ${classifierSeverity > mainSeverity ? 'UPGRADE' : 'DOWNGRADE'} ` +
+          `"${analysis.smile_line}" → "${classifierResult.smile_line}" but confidence is "baixa" — ` +
+          `keeping main analysis result (exposure=${classifierResult.gingival_exposure_mm}mm, ` +
+          `reason="${classifierResult.justification}")`
+        );
+      } else {
+        const direction = classifierSeverity > mainSeverity ? 'UPGRADE' : 'DOWNGRADE';
+        logger.log(
+          `Smile line classifier ${direction}: "${analysis.smile_line}" → "${classifierResult.smile_line}" ` +
+          `(exposure=${classifierResult.gingival_exposure_mm}mm, confidence=${classifierResult.confidence}, ` +
+          `reason="${classifierResult.justification}")`
+        );
+        analysis.smile_line = classifierResult.smile_line;
+        analysis.observations = analysis.observations || [];
+        analysis.observations.push(
+          `Classificação da linha do sorriso ajustada para "${classifierResult.smile_line}" pelo classificador dedicado ` +
+          `(exposição gengival estimada: ${classifierResult.gingival_exposure_mm}mm).`
+        );
+      }
     } else {
       logger.log(
         `Smile line classifier: agrees with main analysis (both="${analysis.smile_line}")`
@@ -66,7 +77,8 @@ export function applySmileLineOverride(
   }
 
   // Quantitative override: if classifier reports ≥3mm exposure but classified as
-  // non-alta, force "alta" since ≥3mm is the clinical threshold for gummy smile
+  // non-alta, force "alta" since ≥3mm is the clinical threshold for gummy smile.
+  // This ALWAYS applies regardless of confidence — quantitative threshold is reliable.
   if (classifierResult && classifierResult.gingival_exposure_mm >= 3 && analysis.smile_line !== 'alta') {
     logger.log(
       `Smile line NUMERIC OVERRIDE: classifier reported ${classifierResult.gingival_exposure_mm}mm ` +

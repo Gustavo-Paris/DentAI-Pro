@@ -160,7 +160,6 @@ export function AnalyzingStep({
     <div className="space-y-6 ai-shimmer-border rounded-xl p-6" role="status" aria-live="polite">
       <div className="text-center">
         <h2 className="text-2xl font-semibold font-display mb-2 text-primary">{t('components.wizard.analyzing.analyzingTitle')}</h2>
-        <p className="text-muted-foreground">{currentLabel}</p>
       </div>
 
       {/* Photo with scan-line animation */}
