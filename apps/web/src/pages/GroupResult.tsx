@@ -3,6 +3,7 @@ import { CheckCircle, AlertTriangle } from 'lucide-react';
 import { ErrorState } from '@/components/ui/error-state';
 
 import { ProtocolSections } from '@/components/protocol/ProtocolSections';
+import { CollapsibleDSD } from '@/components/dsd/CollapsibleDSD';
 import { DetailPage } from '@parisgroup-ai/pageshell/composites';
 
 import { useTranslation } from 'react-i18next';
@@ -124,6 +125,20 @@ export default function GroupResult() {
                       </p>
                     </CardContent>
                   </Card>
+                </section>
+              )}
+
+              {/* DSD Section */}
+              {g.dsdAnalysis && (
+                <section className="mb-8">
+                  <CollapsibleDSD
+                    analysis={g.dsdAnalysis}
+                    beforeImage={g.photoUrl}
+                    afterImage={g.dsdSimulationUrl}
+                    defaultOpen={false}
+                    layers={g.dsdSimulationLayers}
+                    layerUrls={g.dsdLayerUrls}
+                  />
                 </section>
               )}
 

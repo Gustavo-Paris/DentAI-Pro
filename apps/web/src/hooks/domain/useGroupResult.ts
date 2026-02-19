@@ -136,12 +136,45 @@ export function useGroupResult() {
     staleTime: (SIGNED_URL_EXPIRY_SECONDS - 60) * 1000,
   });
 
+  // DSD simulation signed URL
+  const { data: dsdSimulationUrl = null } = useQuery({
+    queryKey: ['group-dsd-url', primaryEval?.id],
+    queryFn: async () => {
+      if (!primaryEval?.dsd_simulation_url) return null;
+      return storage.getSignedDSDUrl(primaryEval.dsd_simulation_url, SIGNED_URL_EXPIRY_SECONDS);
+    },
+    enabled: !!primaryEval?.dsd_simulation_url,
+    staleTime: (SIGNED_URL_EXPIRY_SECONDS - 60) * 1000,
+  });
+
+  // DSD layer signed URLs
+  const { data: dsdLayerUrls = {} } = useQuery({
+    queryKey: ['group-dsd-layers', primaryEval?.id],
+    queryFn: async () => {
+      if (!primaryEval?.dsd_simulation_layers?.length) return {};
+      const paths = primaryEval.dsd_simulation_layers
+        .map(l => l.simulation_url)
+        .filter((p): p is string => !!p);
+      const urlsByPath = await storage.getSignedDSDLayerUrls(paths, SIGNED_URL_EXPIRY_SECONDS);
+      const urls: Record<string, string> = {};
+      for (const layer of primaryEval.dsd_simulation_layers) {
+        if (layer.simulation_url && urlsByPath[layer.simulation_url]) {
+          urls[layer.type] = urlsByPath[layer.simulation_url];
+        }
+      }
+      return urls;
+    },
+    enabled: !!primaryEval?.dsd_simulation_layers?.length,
+    staleTime: (SIGNED_URL_EXPIRY_SECONDS - 60) * 1000,
+  });
+
   // Unified checklist: checking an item updates ALL evaluations in the group
+  // TODO: could be optimized with a bulk updateChecklistBulk in data/evaluations.ts
   const checklistMutation = useMutation({
     mutationFn: async (indices: number[]) => {
       if (!user) throw new Error('User not authenticated');
       const ids = groupEvaluations.map(ev => ev.id);
-      // Update all evaluations in the group
+      // Update all evaluations in the group sequentially (no bulk endpoint yet)
       for (const id of ids) {
         const { error } = await supabase
           .from('evaluations')
@@ -186,13 +219,8 @@ export function useGroupResult() {
   const handleMarkAllCompleted = useCallback(async () => {
     if (!user) return;
     try {
-      for (const ev of groupEvaluations) {
-        await supabase
-          .from('evaluations')
-          .update({ status: 'completed' })
-          .eq('id', ev.id)
-          .eq('user_id', user.id);
-      }
+      const ids = groupEvaluations.map(ev => ev.id);
+      await evaluations.updateStatusBulk(ids, 'completed');
       queryClient.invalidateQueries({ queryKey: ['group-result', sessionId] });
       toast.success(t('toasts.result.markedComplete', { count: groupEvaluations.length }));
     } catch {
@@ -226,6 +254,10 @@ export function useGroupResult() {
     hasProtocol,
     resin,
     photoUrl,
+    dsdSimulationUrl,
+    dsdLayerUrls,
+    dsdAnalysis: primaryEval?.dsd_analysis ?? null,
+    dsdSimulationLayers: primaryEval?.dsd_simulation_layers ?? null,
 
     // Actions
     handleChecklistChange,
