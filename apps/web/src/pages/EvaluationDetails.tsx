@@ -1,9 +1,7 @@
 import { useEffect, useState, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Badge, Button, Card, CardContent, Progress } from '@parisgroup-ai/pageshell/primitives';
 import { PageConfirmDialog } from '@parisgroup-ai/pageshell/interactions';
 import {
   CheckCircle,
@@ -21,7 +19,6 @@ import {
 import { DetailPage } from '@parisgroup-ai/pageshell/composites';
 import { trackEvent } from '@/lib/analytics';
 import { useEvaluationDetail } from '@/hooks/domain/useEvaluationDetail';
-import { Progress } from '@/components/ui/progress';
 const AddTeethModal = lazy(() => import('@/components/AddTeethModal'));
 import { ClinicalPhotoThumbnail } from '@/components/OptimizedImage';
 const DSDPreviewModal = lazy(() => import('@/components/DSDPreviewModal'));

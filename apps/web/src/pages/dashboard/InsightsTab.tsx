@@ -1,9 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { ClinicalInsights, WeeklyTrendPoint } from '@/hooks/domain/useDashboard';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Card, Badge, Progress, Skeleton } from '@parisgroup-ai/pageshell/primitives';
 import {
   ChartContainer,
   ChartTooltip,

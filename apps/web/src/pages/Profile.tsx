@@ -1,19 +1,25 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
+  Button,
+  Input,
+  Label,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from '@parisgroup-ai/pageshell/primitives';
 import { Camera, Loader2, Save, Building2, ImageIcon, Sparkles, Download, Trash2, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { getInitials } from '@/lib/utils';

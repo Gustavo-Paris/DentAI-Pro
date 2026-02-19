@@ -1,34 +1,37 @@
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
+  Button,
+  Input,
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/components/ui/dialog';
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/components/ui/accordion';
+} from '@parisgroup-ai/pageshell/primitives';
 import { PageConfirmDialog } from '@parisgroup-ai/pageshell/interactions';
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { Plus, Search, Loader2, X, FileWarning, Check } from 'lucide-react';
 import { ListPage } from '@parisgroup-ai/pageshell/composites';
 import { useInventoryManagement } from '@/hooks/domain/useInventoryManagement';
 import type { FlatInventoryItem } from '@/hooks/domain/useInventoryManagement';
 import { ResinBadge } from '@/components/ResinBadge';
 import { ResinTypeLegend } from '@/components/ResinTypeLegend';
+import { ErrorState } from '@/components/ui/error-state';
+
+// =============================================================================
+// Static configs (no hook dependencies)
+// =============================================================================
+
+const SEARCH_FIELDS: ('shade' | 'brand' | 'product_line')[] = ['shade', 'brand', 'product_line'];
 
 // =============================================================================
 // Card component (presentation only)
@@ -67,6 +70,105 @@ export default function Inventory() {
   const { t } = useTranslation();
   const inv = useInventoryManagement();
 
+  const searchConfig = useMemo(
+    () => ({ fields: SEARCH_FIELDS, placeholder: t('inventory.searchPlaceholder') }),
+    [t],
+  );
+
+  const filtersConfig = useMemo(
+    () => ({
+      brand: {
+        label: t('inventory.brandFilter'),
+        options: [
+          { value: 'all', label: t('inventory.allBrands') },
+          ...inv.brandOptions,
+        ],
+        default: 'all',
+      },
+      type: {
+        label: t('inventory.typeFilter'),
+        options: [
+          { value: 'all', label: t('inventory.allTypes') },
+          ...inv.typeOptions,
+        ],
+        default: 'all',
+      },
+    }),
+    [t, inv.brandOptions, inv.typeOptions],
+  );
+
+  const sortConfig = useMemo(
+    () => ({
+      options: [
+        {
+          value: 'brand-asc' as const,
+          label: t('inventory.sortBrandAsc'),
+          compare: (a: FlatInventoryItem, b: FlatInventoryItem) =>
+            a.brand.localeCompare(b.brand) ||
+            a.product_line.localeCompare(b.product_line) ||
+            a.shade.localeCompare(b.shade),
+        },
+        {
+          value: 'shade-asc' as const,
+          label: t('inventory.sortShadeAsc'),
+          compare: (a: FlatInventoryItem, b: FlatInventoryItem) =>
+            a.shade.localeCompare(b.shade),
+        },
+        {
+          value: 'type-asc' as const,
+          label: t('inventory.sortType'),
+          compare: (a: FlatInventoryItem, b: FlatInventoryItem) =>
+            a.type.localeCompare(b.type) || a.shade.localeCompare(b.shade),
+        },
+      ],
+      default: 'brand-asc',
+    }),
+    [t],
+  );
+
+  const headerActions = useMemo(
+    () => [
+      ...(inv.allItems.length > 0
+        ? [{ label: 'CSV', icon: 'download' as const, onClick: inv.exportCSV, variant: 'outline' as const }]
+        : []),
+      { label: t('inventory.import'), icon: 'upload' as const, onClick: () => inv.csvInputRef.current?.click(), variant: 'outline' as const },
+    ],
+    [t, inv.allItems.length, inv.exportCSV, inv.csvInputRef],
+  );
+
+  const createAction = useMemo(
+    () => ({ label: t('inventory.addResins'), onClick: inv.openDialog }),
+    [t, inv.openDialog],
+  );
+
+  const slotsConfig = useMemo(
+    () => ({ beforeTableSlot: <ResinTypeLegend /> }),
+    [],
+  );
+
+  const emptyState = useMemo(
+    () => ({
+      title: t('inventory.emptyTitle'),
+      description: t('inventory.emptyDescription'),
+      action: { label: t('inventory.addResins'), onClick: inv.openDialog },
+    }),
+    [t, inv.openDialog],
+  );
+
+  const labels = useMemo(
+    () => ({ search: { placeholder: t('inventory.searchPlaceholder') } }),
+    [t],
+  );
+
+  if (inv.isError) {
+    return (
+      <ErrorState
+        title={t('inventory.loadError', { defaultValue: 'Erro ao carregar inventário' })}
+        description={t('errors.tryReloadPage')}
+      />
+    );
+  }
+
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       <ListPage<FlatInventoryItem>
@@ -75,78 +177,20 @@ export default function Inventory() {
         viewMode="cards"
         items={inv.flatItems}
         isLoading={inv.isLoading}
-        keyExtractor={(item) => item.id}
+        itemKey="id"
         renderCard={(item) => (
           <InventoryResinCard item={item} onRemove={inv.setDeletingItemId} />
         )}
         gridClassName="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2"
-        searchConfig={{
-          fields: ['shade', 'brand', 'product_line'],
-          placeholder: t('inventory.searchPlaceholder'),
-        }}
-        filters={{
-          brand: {
-            label: t('inventory.brandFilter'),
-            options: [
-              { value: 'all', label: t('inventory.allBrands') },
-              ...inv.brandOptions,
-            ],
-            default: 'all',
-          },
-          type: {
-            label: t('inventory.typeFilter'),
-            options: [
-              { value: 'all', label: t('inventory.allTypes') },
-              ...inv.typeOptions,
-            ],
-            default: 'all',
-          },
-        }}
-        sort={{
-          options: [
-            {
-              value: 'brand-asc',
-              label: t('inventory.sortBrandAsc'),
-              compare: (a: FlatInventoryItem, b: FlatInventoryItem) =>
-                a.brand.localeCompare(b.brand) ||
-                a.product_line.localeCompare(b.product_line) ||
-                a.shade.localeCompare(b.shade),
-            },
-            {
-              value: 'shade-asc',
-              label: t('inventory.sortShadeAsc'),
-              compare: (a: FlatInventoryItem, b: FlatInventoryItem) =>
-                a.shade.localeCompare(b.shade),
-            },
-            {
-              value: 'type-asc',
-              label: t('inventory.sortType'),
-              compare: (a: FlatInventoryItem, b: FlatInventoryItem) =>
-                a.type.localeCompare(b.type) || a.shade.localeCompare(b.shade),
-            },
-          ],
-          default: 'brand-asc',
-        }}
+        searchConfig={searchConfig}
+        filters={filtersConfig}
+        sort={sortConfig}
         pagination={false}
-        headerActions={[
-          ...(inv.allItems.length > 0
-            ? [{ label: 'CSV', icon: 'download' as const, onClick: inv.exportCSV, variant: 'outline' as const }]
-            : []),
-          { label: t('inventory.import'), icon: 'upload' as const, onClick: () => inv.csvInputRef.current?.click(), variant: 'outline' as const },
-        ]}
-        createAction={{
-          label: t('inventory.addResins'),
-          onClick: inv.openDialog,
-        }}
-        slots={{ beforeTableSlot: <ResinTypeLegend /> }}
-        emptyState={{
-          title: t('inventory.emptyTitle'),
-          description: t('inventory.emptyDescription'),
-          action: { label: t('inventory.addResins'), onClick: inv.openDialog },
-        }}
-        labels={{
-          search: { placeholder: t('inventory.searchPlaceholder') },
-        }}
+        headerActions={headerActions}
+        createAction={createAction}
+        slots={slotsConfig}
+        emptyState={emptyState}
+        labels={labels}
       />
 
       {/* Hidden CSV file input */}

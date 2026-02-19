@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
+import { Button } from '@parisgroup-ai/pageshell/primitives';
 import { AlertTriangle, ArrowRight, X } from 'lucide-react';
 
 export function CreditsBanner({

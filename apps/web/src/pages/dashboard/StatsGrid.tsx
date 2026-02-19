@@ -1,12 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { DashboardMetrics, WeeklyTrendPoint } from '@/hooks/domain/useDashboard';
-import { Card } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Card, Skeleton, Tooltip, TooltipContent, TooltipTrigger } from '@parisgroup-ai/pageshell/primitives';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import {
   FileText, Users, TrendingUp, CheckCircle2,

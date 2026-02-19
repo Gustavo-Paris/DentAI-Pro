@@ -1,5 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle, Badge } from '@parisgroup-ai/pageshell/primitives';
 import { CheckCircle, Layers, Crown, Stethoscope, ArrowUpRight, Smile, HeartPulse, Palette, AlertTriangle } from 'lucide-react';
 import { ErrorState } from '@/components/ui/error-state';
 
