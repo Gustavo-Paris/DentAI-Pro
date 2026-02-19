@@ -238,7 +238,7 @@ export function useInventoryManagement() {
 
   // --- CSV operations ---
   const exportCSV = useCallback(() => {
-    const header = 'Marca,Linha,Cor,Tipo,Opacidade';
+    const header = [t('inventory.brand'), t('inventory.line'), t('inventory.shade'), t('inventory.type'), t('inventory.opacity')].join(',');
     const rows = allItems.map((item) =>
       [item.resin.brand, item.resin.product_line, item.resin.shade, item.resin.type, item.resin.opacity]
         .map((v) => `"${(v || '').replace(/"/g, '""')}"`)

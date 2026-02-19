@@ -633,13 +633,13 @@ export function useDSDStep({
     let hasError = false;
 
     if (!imageBase64) {
-      setError('Nenhuma imagem disponível para análise');
+      setError(t('errors.noImageAvailable', { defaultValue: 'Nenhuma imagem disponível para análise' }));
       return;
     }
 
     // Pre-check credits before starting DSD
     if (!canUseCredits('dsd_simulation')) {
-      setError('Créditos insuficientes para simulação DSD. Faça upgrade do seu plano.');
+      setError(t('errors.insufficientCredits', { defaultValue: 'Créditos insuficientes para simulação DSD. Faça upgrade do seu plano.' }));
       return;
     }
 
@@ -717,7 +717,7 @@ export function useDSDStep({
         // Note: We pass analysis directly since state update is async
         generateAllLayers(data.analysis);
       } else {
-        throw new Error('Dados de análise não retornados');
+        throw new Error(t('errors.noAnalysisData', { defaultValue: 'Dados de análise não retornados' }));
       }
     } catch (error: unknown) {
       clearInterval(stepInterval);
@@ -745,16 +745,16 @@ export function useDSDStep({
 
       hasError = true;
       if (err.status === 429 || err.message?.includes('429') || err.code === 'RATE_LIMITED') {
-        setError('Limite de requisições excedido. Aguarde alguns minutos.');
+        setError(t('errors.rateLimitExceeded', { defaultValue: 'Limite de requisições excedido. Aguarde alguns minutos.' }));
       } else if (err.status === 402 || err.message?.includes('402') || err.code === 'INSUFFICIENT_CREDITS' || err.code === 'PAYMENT_REQUIRED') {
-        setError('Créditos insuficientes para simulação DSD. Faça upgrade do seu plano.');
+        setError(t('errors.insufficientCredits', { defaultValue: 'Créditos insuficientes para simulação DSD. Faça upgrade do seu plano.' }));
         refreshSubscription();
       } else if (isConnectionError) {
-        setError('Erro de conexão. Verifique sua internet e tente novamente.');
+        setError(t('errors.connectionError', { defaultValue: 'Erro de conexão. Verifique sua internet e tente novamente.' }));
       } else {
         // Show actual server error when available, otherwise generic message
         const serverMsg = err.message && !err.message.includes('non-2xx') ? err.message : null;
-        setError(serverMsg || 'Não foi possível gerar a análise DSD. Você pode pular esta etapa.');
+        setError(serverMsg || t('errors.dsdGenerationFailed', { defaultValue: 'Não foi possível gerar a análise DSD. Você pode pular esta etapa.' }));
       }
       setIsAnalyzing(false);
     } finally {

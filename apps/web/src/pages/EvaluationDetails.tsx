@@ -63,8 +63,8 @@ export default function EvaluationDetails() {
 
   return (
     <>
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       <DetailPage
+        className="max-w-5xl mx-auto"
         title={detail.patientName}
         breadcrumbs={[
           { label: t('evaluation.title'), href: '/evaluations' },
@@ -168,7 +168,6 @@ export default function EvaluationDetails() {
           </>
         )}
       </DetailPage>
-      </div>
 
       {/* Add Teeth Modal */}
       {detail.evaluations.length > 0 && (

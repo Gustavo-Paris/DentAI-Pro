@@ -115,7 +115,7 @@ export function usePhotoAnalysis({
         return;
       }
 
-      const confirmed = await confirmCreditUse('case_analysis', 'Análise com IA');
+      const confirmed = await confirmCreditUse('case_analysis', t('wizard.creditLabel.photoAnalysis', { defaultValue: 'Análise com IA' }));
       if (!confirmed) return;
     }
 

@@ -191,7 +191,7 @@ describe('useWizardNavigation', () => {
       });
 
       // Full cost = 1 + 2 = 3, credits = 3, should pass
-      expect(confirmCreditUse).toHaveBeenCalledWith('full_analysis', 'Análise Completa com IA', 3);
+      expect(confirmCreditUse).toHaveBeenCalledWith('full_analysis', expect.any(String), 3);
       expect(result.current.step).toBe(2);
     });
   });
