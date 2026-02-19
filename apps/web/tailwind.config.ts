@@ -2,7 +2,14 @@ import type { Config } from "tailwindcss";
 
 export default {
   darkMode: ["class"],
-  content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}", "./node_modules/@parisgroup-ai/pageshell/dist/**/*.{js,mjs}"],
+  content: [
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
+    "./node_modules/@parisgroup-ai/pageshell/dist/**/*.{js,mjs}",
+    "../../packages/domain-odonto-ai/src/**/*.{ts,tsx}",
+  ],
   prefix: "",
   theme: {
   	container: {
