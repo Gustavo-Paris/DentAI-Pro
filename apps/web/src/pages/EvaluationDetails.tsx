@@ -3,40 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import { PageConfirmDialog } from '@parisgroup-ai/pageshell/interactions';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import {
-  FileDown,
   CheckCircle,
-  MoreHorizontal,
   Calendar,
   User,
   Image as ImageIcon,
@@ -47,23 +17,17 @@ import {
   X,
   Sparkles,
 } from 'lucide-react';
-import { Checkbox } from '@/components/ui/checkbox';
 
 import { DetailPage } from '@parisgroup-ai/pageshell/composites';
 import { trackEvent } from '@/lib/analytics';
 import { useEvaluationDetail } from '@/hooks/domain/useEvaluationDetail';
 import { Progress } from '@/components/ui/progress';
-import type { EvaluationItem } from '@/hooks/domain/useEvaluationDetail';
 const AddTeethModal = lazy(() => import('@/components/AddTeethModal'));
 import { ClinicalPhotoThumbnail } from '@/components/OptimizedImage';
 const DSDPreviewModal = lazy(() => import('@/components/DSDPreviewModal'));
-import { getTreatmentConfig, formatToothLabel } from '@/lib/treatment-config';
-import {
-  getProtocolFingerprint,
-  getTreatmentBadge,
-  getStatusBadge,
-  groupByTreatment,
-} from './EvaluationDetails.helpers';
+import { formatToothLabel } from '@/lib/treatment-config';
+import { EvaluationTable } from '@/components/evaluation/EvaluationTable';
+import { EvaluationCards } from '@/components/evaluation/EvaluationCards';
 
 // Helpers, grouping logic, and getProtocolFingerprint imported from EvaluationDetails.helpers.tsx
 
@@ -242,225 +206,28 @@ export default function EvaluationDetails() {
             )}
 
             {/* Cases Table - Desktop */}
-            <Card className="hidden sm:block shadow-sm rounded-xl">
-              <CardHeader>
-                <CardTitle className="text-lg font-display">{t('evaluation.generatedTreatments')}</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-secondary/50">
-                      <TableHead className="w-10">
-                        <Checkbox
-                          checked={detail.selectedIds.size === detail.evaluations.length && detail.evaluations.length > 0}
-                          onCheckedChange={() => detail.toggleSelectAll()}
-                        />
-                      </TableHead>
-                      <TableHead>{t('evaluation.tooth')}</TableHead>
-                      <TableHead>{t('evaluation.treatment')}</TableHead>
-                      <TableHead>{t('evaluation.status')}</TableHead>
-                      <TableHead className="text-right">{t('evaluation.actions')}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {groupByTreatment(detail.evaluations).map((group, gi) => {
-                      const showGroupHeader = group.evaluations.length > 1;
-                      const groupTeeth = group.evaluations.map(e => e.tooth === 'GENGIVO' ? t('components.evaluationDetail.gingiva') : e.tooth).join(', ');
-                      const groupIds = group.evaluations.map(e => e.id);
-                      const allSelected = groupIds.every(id => detail.selectedIds.has(id));
-                      return [
-                        showGroupHeader && (
-                          <TableRow key={`group-${gi}`} className="bg-muted/40 border-t">
-                            <TableCell onClick={(e) => e.stopPropagation()}>
-                              <Checkbox
-                                checked={allSelected}
-                                onCheckedChange={() => {
-                                  for (const id of groupIds) {
-                                    if (allSelected || !detail.selectedIds.has(id)) {
-                                      detail.toggleSelection(id);
-                                    }
-                                  }
-                                }}
-                              />
-                            </TableCell>
-                            <TableCell colSpan={3} className="py-2">
-                              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                                {t(group.labelKey)} — {t('components.evaluationDetail.teethCount', { count: group.evaluations.length, teeth: groupTeeth })}
-                              </span>
-                              <span className="text-xs text-muted-foreground ml-2">
-                                ({group.resinName
-                                  ? `${t('evaluation.unifiedProtocol')} • ${group.resinName}`
-                                  : t('evaluation.sameProtocol')})
-                              </span>
-                            </TableCell>
-                            <TableCell className="text-right py-2">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-xs h-7"
-                                onClick={() => navigate(`/result/group/${detail.sessionId}/${encodeURIComponent(getProtocolFingerprint(group.evaluations[0]))}`)}
-                              >
-                                <Eye className="w-3 h-3 mr-1" />
-                                {t('evaluation.viewProtocol')}
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ),
-                        ...(!showGroupHeader ? group.evaluations.map((evaluation) => (
-                          <TableRow
-                            key={evaluation.id}
-                            className="hover:bg-secondary/30 transition-colors cursor-pointer"
-                            role="button"
-                            tabIndex={0}
-                            onClick={() => navigate(`/result/${evaluation.id}`)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' || e.key === ' ') {
-                                e.preventDefault();
-                                navigate(`/result/${evaluation.id}`);
-                              }
-                            }}
-                          >
-                            <TableCell onClick={(e) => e.stopPropagation()}>
-                              <Checkbox
-                                checked={detail.selectedIds.has(evaluation.id)}
-                                onCheckedChange={() => detail.toggleSelection(evaluation.id)}
-                              />
-                            </TableCell>
-                            <TableCell className="font-medium">{evaluation.tooth === 'GENGIVO' ? t('components.evaluationDetail.gingiva') : evaluation.tooth}</TableCell>
-                            <TableCell>{getTreatmentBadge(evaluation, t)}</TableCell>
-                            <TableCell>
-                              {getStatusBadge(evaluation, detail.getChecklistProgress, t)}
-                            </TableCell>
-                            <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon" aria-label={t('components.evaluationDetail.moreOptions')}>
-                                    <MoreHorizontal className="w-4 h-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem onClick={() => detail.handleExportPDF(evaluation.id)}>
-                                    <FileDown className="w-4 h-4 mr-2" />
-                                    {t('common.exportPDF')}
-                                  </DropdownMenuItem>
-                                  {evaluation.status !== 'completed' && (
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <DropdownMenuItem
-                                          onClick={() => handleCompleteClick(evaluation.id)}
-                                        >
-                                          <CheckCircle className="w-4 h-4 mr-2" />
-                                          {t('common.markAsCompleted')}
-                                        </DropdownMenuItem>
-                                      </TooltipTrigger>
-                                      {!detail.isChecklistComplete(evaluation) && (
-                                        <TooltipContent>
-                                          {t('evaluation.checklistItems', { current: detail.getChecklistProgress(evaluation).current, total: detail.getChecklistProgress(evaluation).total })}
-                                        </TooltipContent>
-                                      )}
-                                    </Tooltip>
-                                  )}
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </TableCell>
-                          </TableRow>
-                        )) : []),
-                      ];
-                    })}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+            <EvaluationTable
+              evaluations={detail.evaluations}
+              sessionId={detail.sessionId}
+              selectedIds={detail.selectedIds}
+              toggleSelection={detail.toggleSelection}
+              toggleSelectAll={detail.toggleSelectAll}
+              handleExportPDF={detail.handleExportPDF}
+              handleCompleteClick={handleCompleteClick}
+              isChecklistComplete={detail.isChecklistComplete}
+              getChecklistProgress={detail.getChecklistProgress}
+            />
 
             {/* Cases Cards - Mobile */}
-            <div className="sm:hidden space-y-3">
-              <h3 className="font-semibold font-display text-lg">{t('evaluation.generatedTreatments')}</h3>
-              {groupByTreatment(detail.evaluations).map((group, gi) => {
-                const showGroupHeader = group.evaluations.length > 1;
-                const groupTeeth = group.evaluations.map(e => e.tooth === 'GENGIVO' ? t('components.evaluationDetail.gingiva') : e.tooth).join(', ');
-                return (
-                  <div key={`mgroup-${gi}`}>
-                    {showGroupHeader && (
-                      <div className="flex items-center justify-between px-2 py-2 mb-1 bg-muted/40 rounded-lg">
-                        <div>
-                          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide block">
-                            {t(group.labelKey)} — {t('components.evaluationDetail.teethCount', { count: group.evaluations.length, teeth: groupTeeth })}
-                          </span>
-                          {group.resinName && (
-                            <span className="text-xs text-muted-foreground">
-                              {t('evaluation.unifiedProtocol')} • {group.resinName}
-                            </span>
-                          )}
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-xs h-7"
-                          onClick={() => navigate(`/result/group/${detail.sessionId}/${encodeURIComponent(getProtocolFingerprint(group.evaluations[0]))}`)}
-                        >
-                          <Eye className="w-3 h-3 mr-1" />
-                          {t('components.evaluationDetail.viewProtocol')}
-                        </Button>
-                      </div>
-                    )}
-                    {!showGroupHeader && group.evaluations.map((evaluation) => {
-                      const treatmentConfig = getTreatmentConfig(evaluation.treatment_type);
-                      const borderColor = treatmentConfig.variant === 'default' ? 'border-l-primary' : 'border-l-amber-500';
-                      return (
-                      <Card
-                        key={evaluation.id}
-                        className={`p-4 shadow-sm rounded-xl border-l-[3px] ${borderColor} cursor-pointer hover:shadow-md transition-shadow mb-2`}
-                        onClick={() => navigate(`/result/${evaluation.id}`)}
-                      >
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            <div onClick={(e) => e.stopPropagation()}>
-                              <Checkbox
-                                checked={detail.selectedIds.has(evaluation.id)}
-                                onCheckedChange={() => detail.toggleSelection(evaluation.id)}
-                              />
-                            </div>
-                            {getTreatmentBadge(evaluation, t)}
-                            <p className="font-semibold">{formatToothLabel(evaluation.tooth)}</p>
-                          </div>
-                          {getStatusBadge(evaluation, detail.getChecklistProgress, t)}
-                        </div>
-
-                        {evaluation.treatment_type === 'resina' && evaluation.resins && (
-                          <div className="mb-3 p-2 bg-muted/50 rounded">
-                            <p className="text-sm font-medium">{evaluation.resins.name}</p>
-                            <p className="text-xs text-muted-foreground">{evaluation.resins.manufacturer}</p>
-                          </div>
-                        )}
-
-                        <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="outline" size="sm" aria-label={t('components.evaluationDetail.moreOptions')}>
-                                <MoreHorizontal className="w-4 h-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => detail.handleExportPDF(evaluation.id)}>
-                                <FileDown className="w-4 h-4 mr-2" />
-                                {t('common.exportPDF')}
-                              </DropdownMenuItem>
-                              {evaluation.status !== 'completed' && (
-                                <DropdownMenuItem onClick={() => handleCompleteClick(evaluation.id)}>
-                                  <CheckCircle className="w-4 h-4 mr-2" />
-                                  {t('common.markAsCompleted')}
-                                </DropdownMenuItem>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </Card>
-                      );
-                    })}
-                  </div>
-                );
-              })}
-            </div>
+            <EvaluationCards
+              evaluations={detail.evaluations}
+              sessionId={detail.sessionId}
+              selectedIds={detail.selectedIds}
+              toggleSelection={detail.toggleSelection}
+              handleExportPDF={detail.handleExportPDF}
+              handleCompleteClick={handleCompleteClick}
+              getChecklistProgress={detail.getChecklistProgress}
+            />
           </>
         )}
       </DetailPage>
@@ -492,27 +259,18 @@ export default function EvaluationDetails() {
       )}
 
       {/* Confirm completion with incomplete checklist */}
-      <AlertDialog
+      <PageConfirmDialog
         open={confirmDialog.open}
         onOpenChange={(open) => {
           if (!open) setConfirmDialog({ open: false, evaluationId: '', current: 0, total: 0 });
         }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('evaluation.incompleteChecklistTitle')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('evaluation.incompleteChecklistDescription', { current: confirmDialog.current, total: confirmDialog.total })}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmComplete}>
-              {t('evaluation.finishAnyway')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        title={t('evaluation.incompleteChecklistTitle')}
+        description={t('evaluation.incompleteChecklistDescription', { current: confirmDialog.current, total: confirmDialog.total })}
+        confirmText={t('evaluation.finishAnyway')}
+        cancelText={t('common.cancel')}
+        onConfirm={handleConfirmComplete}
+        variant="warning"
+      />
     </>
   );
 }

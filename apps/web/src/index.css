@@ -5,6 +5,52 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ═══ Global RGB fallbacks — Radix portals render outside .ui-theme ═══ */
+/* AlertDialog, Dialog, Popover etc. portal to document.body which is OUTSIDE
+   the .ui-theme wrapper. Without these :root fallbacks, Tailwind utilities
+   like bg-background resolve to rgb(undefined) = transparent. */
+:root {
+  --color-background-rgb: 250 249 247;
+  --color-foreground-rgb: 15 23 42;
+  --color-card-rgb: 255 255 255;
+  --color-muted-rgb: 243 242 239;
+  --color-muted-foreground-rgb: 71 85 105;
+  --color-secondary-rgb: 241 245 249;
+  --color-border-rgb: 226 232 240;
+  --color-destructive-rgb: 220 38 38;
+  --color-warning-rgb: 217 119 6;
+  --color-success-rgb: 22 163 74;
+  --color-primary-rgb: 6 182 212;
+  --color-primary-foreground: #000000;
+  --color-accent-rgb: 14 165 233;
+  --color-accent-foreground: #000000;
+  --color-ring: var(--color-cyan-500);
+  --color-destructive-foreground: #ffffff;
+  --color-warning-foreground: #451a03;
+  --color-success-foreground: #ffffff;
+}
+
+.dark {
+  --color-background-rgb: 8 8 12;
+  --color-foreground-rgb: 228 228 235;
+  --color-card-rgb: 20 20 28;
+  --color-muted-rgb: 26 26 36;
+  --color-muted-foreground-rgb: 113 113 122;
+  --color-secondary-rgb: 26 26 36;
+  --color-border-rgb: 42 42 58;
+  --color-destructive-rgb: 239 68 68;
+  --color-warning-rgb: 245 158 11;
+  --color-success-rgb: 16 185 129;
+  --color-primary-rgb: 6 182 212;
+  --color-primary-foreground: #000000;
+  --color-accent-rgb: 14 165 233;
+  --color-accent-foreground: #000000;
+  --color-ring: var(--color-cyan-500);
+  --color-destructive-foreground: #ffffff;
+  --color-warning-foreground: #fef3c7;
+  --color-success-foreground: #ffffff;
+}
+
 /* ═══ Tokens suplementares — odonto-ai theme enforcement ═══ */
 /* portal-base.css define defaults violeta para .ui-theme.
    .dark .ui-theme (specificity 0,2,0) vence .ui-theme-odonto-ai (0,1,0).

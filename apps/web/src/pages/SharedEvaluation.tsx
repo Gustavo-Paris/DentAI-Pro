@@ -11,6 +11,7 @@ import {
   Skeleton,
 } from '@parisgroup-ai/pageshell/primitives';
 import { BRAND_NAME } from '@/lib/branding';
+import { getTreatmentConfig } from '@/lib/treatment-config';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
@@ -22,32 +23,9 @@ import { useSharedEvaluation } from '@/hooks/domain/useSharedEvaluation';
 import {
   CheckCircle,
   Calendar,
-  Layers,
-  Crown,
-  Stethoscope,
-  ArrowUpRight,
-  CircleX,
   AlertTriangle,
   Clock,
 } from 'lucide-react';
-
-const treatmentIcons: Record<string, typeof Layers> = {
-  resina: Layers,
-  porcelana: Crown,
-  coroa: Crown,
-  implante: CircleX,
-  endodontia: Stethoscope,
-  encaminhamento: ArrowUpRight,
-};
-
-const treatmentLabelKeys: Record<string, string> = {
-  resina: 'pages.treatmentResina',
-  porcelana: 'pages.treatmentPorcelana',
-  coroa: 'pages.treatmentCoroa',
-  implante: 'pages.treatmentImplante',
-  endodontia: 'pages.treatmentEndodontia',
-  encaminhamento: 'pages.treatmentEncaminhamento',
-};
 
 export default function SharedEvaluation() {
   const { t } = useTranslation();
@@ -197,10 +175,9 @@ export default function SharedEvaluation() {
         <div className="space-y-3">
           {evaluations.map((evaluation, index) => {
             const treatmentType = evaluation.treatment_type || 'resina';
-            const TreatmentIcon = treatmentIcons[treatmentType] || Layers;
-            const treatmentLabel = treatmentLabelKeys[treatmentType]
-              ? t(treatmentLabelKeys[treatmentType])
-              : t('pages.treatmentDefault');
+            const config = getTreatmentConfig(treatmentType);
+            const TreatmentIcon = config.icon;
+            const treatmentLabel = t(config.shortLabelKey);
 
             return (
               <Card key={index} className="shadow-sm rounded-xl">

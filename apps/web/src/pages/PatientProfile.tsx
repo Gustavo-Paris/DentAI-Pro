@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,6 +32,7 @@ import { PageTreatmentTimeline } from '@parisgroup-ai/domain-odonto-ai/treatment
 import type { ProcedureInfo } from '@parisgroup-ai/domain-odonto-ai/treatments';
 
 import { usePatientProfile } from '@/hooks/domain/usePatientProfile';
+import { ErrorState } from '@/components/ui/error-state';
 import { formatToothLabel } from '@/lib/treatment-config';
 
 // =============================================================================
@@ -40,15 +41,14 @@ import { formatToothLabel } from '@/lib/treatment-config';
 
 export default function PatientProfile() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const profile = usePatientProfile();
 
   if (!profile.patient && !profile.isLoading) {
     return (
-      <div className="max-w-5xl mx-auto px-4 py-8 text-center">
-        <h1 className="font-semibold text-lg mb-2">Paciente nao encontrado</h1>
-        <Button variant="outline" onClick={() => navigate('/patients')}>Voltar</Button>
-      </div>
+      <ErrorState
+        title="Paciente nao encontrado"
+        action={{ label: 'Voltar', href: '/patients' }}
+      />
     );
   }
 

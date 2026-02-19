@@ -1586,6 +1586,20 @@
     "gingiva": "Gengiva",
     "tooth": "Dente {{number}}"
   },
+  "confidence": {
+    "high": {
+      "label": "Alta Confiança",
+      "description": "Caso bem documentado, protocolo recomendado com segurança"
+    },
+    "medium": {
+      "label": "Confiança Média",
+      "description": "Considere validar detalhes clínicos adicionais"
+    },
+    "low": {
+      "label": "Baixa Confiança",
+      "description": "Dados insuficientes, revise antes de aplicar"
+    }
+  },
   "consent": {
     "title": "Termos de Uso — Inteligência Artificial",
     "intro": "Antes de iniciar, leia e aceite os termos abaixo:",

@@ -5,8 +5,7 @@ import { PagePatientCard } from '@parisgroup-ai/domain-odonto-ai/patients';
 import type { PatientInfo } from '@parisgroup-ai/domain-odonto-ai/patients';
 import { usePatientList } from '@/hooks/domain/usePatientList';
 import type { PatientWithStats } from '@/hooks/domain/usePatientList';
-import { Card } from '@/components/ui/card';
-import { AlertTriangle } from 'lucide-react';
+import { ErrorState } from '@/components/ui/error-state';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -52,15 +51,10 @@ export default function Patients() {
 
   if (isError) {
     return (
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <Card className="p-6 text-center">
-          <AlertTriangle className="w-8 h-8 text-destructive mx-auto mb-3" />
-          <p className="font-medium">{t('patients.loadError')}</p>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t('errors.tryReloadPage')}
-          </p>
-        </Card>
-      </div>
+      <ErrorState
+        title={t('patients.loadError')}
+        description={t('errors.tryReloadPage')}
+      />
     );
   }
 

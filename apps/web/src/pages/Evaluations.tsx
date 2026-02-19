@@ -6,7 +6,8 @@ import { useEvaluationSessions } from '@/hooks/domain/useEvaluationSessions';
 import type { EvaluationSession } from '@/hooks/domain/useEvaluationSessions';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { CheckCircle, ChevronRight, Calendar, AlertTriangle } from 'lucide-react';
+import { CheckCircle, ChevronRight, Calendar } from 'lucide-react';
+import { ErrorState } from '@/components/ui/error-state';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatToothLabel } from '@/lib/treatment-config';
@@ -124,15 +125,10 @@ export default function Evaluations() {
 
   if (isError) {
     return (
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <Card className="p-6 text-center">
-          <AlertTriangle className="w-8 h-8 text-destructive mx-auto mb-3" />
-          <p className="font-medium">{t('evaluation.loadError')}</p>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t('errors.tryReloadPage')}
-          </p>
-        </Card>
-      </div>
+      <ErrorState
+        title={t('evaluation.loadError')}
+        description={t('errors.tryReloadPage')}
+      />
     );
   }
 
@@ -158,7 +154,7 @@ export default function Evaluations() {
           viewMode="cards"
           items={sessions}
           isLoading={isLoading}
-          keyExtractor={(s) => s.session_id}
+          itemKey={(s) => s.session_id}
           renderCard={(session, index) => (
             <SessionCard
               session={session}

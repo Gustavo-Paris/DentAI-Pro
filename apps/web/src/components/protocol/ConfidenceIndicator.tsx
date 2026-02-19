@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { cn } from "@/lib/utils";
 import { getConfidenceConfig } from "@/lib/confidence-config";
 
@@ -7,6 +8,7 @@ interface ConfidenceIndicatorProps {
 }
 
 function ConfidenceIndicator({ confidence }: ConfidenceIndicatorProps) {
+  const { t } = useTranslation();
   const current = getConfidenceConfig(confidence);
   const Icon = current.icon;
 
@@ -15,7 +17,7 @@ function ConfidenceIndicator({ confidence }: ConfidenceIndicatorProps) {
       <Icon className={cn("w-8 h-8", current.color)} />
       <div className="flex-1">
         <div className="flex items-center gap-3">
-          <span className={cn("font-medium", current.color)}>{current.label}</span>
+          <span className={cn("font-medium", current.color)}>{t(current.labelKey)}</span>
           {/* Confidence bars */}
           <div className="flex gap-1" aria-hidden="true">
             {[1, 2, 3].map((bar) => (
@@ -32,7 +34,7 @@ function ConfidenceIndicator({ confidence }: ConfidenceIndicatorProps) {
             {current.bars === 3 ? 'Alta' : current.bars === 2 ? 'Média' : 'Baixa'} ({current.bars}/3)
           </span>
         </div>
-        <p className="text-sm text-muted-foreground mt-1">{current.description}</p>
+        <p className="text-sm text-muted-foreground mt-1">{t(current.descriptionKey)}</p>
       </div>
     </div>
   );

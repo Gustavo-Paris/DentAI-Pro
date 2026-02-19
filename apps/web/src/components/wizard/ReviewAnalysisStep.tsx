@@ -153,7 +153,7 @@ export function ReviewAnalysisStep({
   const hasMultipleTeeth = detectedTeeth.length > 1;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="text-center">
         <h2 className="text-2xl font-semibold font-display mb-2">{t('components.wizard.review.title')}</h2>
         <p className="text-muted-foreground">

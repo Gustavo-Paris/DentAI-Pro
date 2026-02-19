@@ -41,13 +41,15 @@ export function AiConfidenceBanner({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Badge variant="secondary" className={cn('gap-1.5 cursor-help', confidenceColor)}>
-                  <span className={cn(
-                    'w-2 h-2 rounded-full',
-                    confidence >= 80 ? 'bg-success' : confidence >= 60 ? 'bg-warning' : 'bg-destructive',
-                  )} />
-                  {confidence}% — {confidence >= 80 ? t('components.wizard.review.highConfidence') : confidence >= 60 ? t('components.wizard.review.mediumConfidence') : t('components.wizard.review.lowConfidence')}
-                </Badge>
+                <span className="inline-flex">
+                  <Badge variant="secondary" className={cn('gap-1.5 cursor-help', confidenceColor)}>
+                    <span className={cn(
+                      'w-2 h-2 rounded-full',
+                      confidence >= 80 ? 'bg-success' : confidence >= 60 ? 'bg-warning' : 'bg-destructive',
+                    )} />
+                    {confidence}% — {confidence >= 80 ? t('components.wizard.review.highConfidence') : confidence >= 60 ? t('components.wizard.review.mediumConfidence') : t('components.wizard.review.lowConfidence')}
+                  </Badge>
+                </span>
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
                 <p>{t('components.wizard.review.confidenceTooltip')}</p>

@@ -2,16 +2,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { PageConfirmDialog } from '@parisgroup-ai/pageshell/interactions';
 import { Download, Plus, CheckCircle, Package, Sparkles, Layers, Loader2, Crown, Stethoscope, ArrowUpRight, CircleX, Heart, Palette, AlertTriangle, Smile, HeartPulse } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -281,6 +272,25 @@ export default function Result() {
               </section>
             )}
 
+            {/* Protocol unavailable fallback */}
+            {!r.resin && !r.isSpecialTreatment && r.treatmentType === 'resina' && (
+              <section className="mb-8">
+                <Card className="border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20">
+                  <CardContent className="py-4">
+                    <div className="flex items-start gap-3">
+                      <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium">{t('result.protocolUnavailable', { defaultValue: 'Protocolo não disponível' })}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {t('result.protocolUnavailableDesc', { defaultValue: 'A geração do protocolo de resina não foi concluída. Tente reprocessar este caso.' })}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </section>
+            )}
+
             {/* Main Recommendation */}
             {r.resin && (
               <section className="mb-8">
@@ -449,7 +459,7 @@ export default function Result() {
 
             {/* Alerts and Warnings */}
             {r.treatmentType === 'resina' && (r.alerts.length > 0 || r.warnings.length > 0) && (
-              <section className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <section className="mb-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <AlertsSection alerts={r.alerts} />
                 <WarningsSection warnings={r.warnings} />
               </section>
@@ -510,7 +520,7 @@ export default function Result() {
             <div className="mt-8 p-4 rounded-xl shadow-sm border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30">
               <div className="flex items-start gap-3">
                 <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-                <p className="text-xs text-amber-800 dark:text-amber-200">
+                <p className="text-sm text-amber-800 dark:text-amber-200">
                   {t('result.disclaimer')}
                 </p>
               </div>
@@ -522,22 +532,16 @@ export default function Result() {
       </div>
 
       {/* PDF Confirmation Dialog */}
-      <AlertDialog open={r.showPdfConfirmDialog} onOpenChange={r.setShowPdfConfirmDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('evaluation.incompleteChecklistTitle')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('result.pdfChecklistIncomplete')}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-            <AlertDialogAction onClick={r.handleExportPDF}>
-              {t('result.generatePDF')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <PageConfirmDialog
+        open={r.showPdfConfirmDialog}
+        onOpenChange={r.setShowPdfConfirmDialog}
+        title={t('evaluation.incompleteChecklistTitle')}
+        description={t('result.pdfChecklistIncomplete')}
+        confirmText={t('result.generatePDF')}
+        cancelText={t('common.cancel')}
+        onConfirm={r.handleExportPDF}
+        variant="warning"
+      />
     </>
   );
 }

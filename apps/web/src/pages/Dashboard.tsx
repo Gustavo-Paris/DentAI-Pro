@@ -7,16 +7,7 @@ import { useDashboard } from '@/hooks/domain/useDashboard';
 import {
   TooltipProvider,
 } from '@/components/ui/tooltip';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { PageConfirmDialog } from '@parisgroup-ai/pageshell/interactions';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Sparkles, Users, Package, Sun, Moon, Sunset,
@@ -216,25 +207,16 @@ export default function Dashboard() {
           }}
         />
 
-        <AlertDialog
+        <PageConfirmDialog
           open={dashboard.showDiscardConfirm}
-          onOpenChange={dashboard.cancelDiscardDraft}
-        >
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>{t('dashboard.discardDraftTitle')}</AlertDialogTitle>
-              <AlertDialogDescription>
-                {t('dashboard.discardDraftDescription')}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-              <AlertDialogAction onClick={dashboard.confirmDiscardDraft}>
-                {t('common.discard')}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+          onOpenChange={() => dashboard.cancelDiscardDraft()}
+          title={t('dashboard.discardDraftTitle')}
+          description={t('dashboard.discardDraftDescription')}
+          confirmText={t('common.discard')}
+          cancelText={t('common.cancel')}
+          onConfirm={dashboard.confirmDiscardDraft}
+          variant="destructive"
+        />
 
         <WelcomeModal
           open={dashboard.showWelcome}
