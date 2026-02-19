@@ -178,10 +178,12 @@ function CaseSummaryBox({
         <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-3 sm:mt-4 pt-2 sm:pt-3 border-t border-border">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Badge variant="outline" className="capitalize text-xs cursor-help gap-1">
-                <Info className="w-3 h-3" />
-                {t('components.protocol.caseSummary.aestheticLabel', { level: aestheticLevel })}
-              </Badge>
+              <span className="inline-flex">
+                <Badge variant="outline" className="capitalize text-xs cursor-help gap-1">
+                  <Info className="w-3 h-3" />
+                  {t('components.protocol.caseSummary.aestheticLabel', { level: aestheticLevel })}
+                </Badge>
+              </span>
             </TooltipTrigger>
             <TooltipContent side="top">
               <p className="text-xs max-w-[200px]">
