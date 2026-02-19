@@ -91,7 +91,7 @@ const SessionCard = memo(function SessionCard({
                 </span>
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400">
                 <CheckCircle className="w-3 h-3" aria-hidden="true" />
                 <span className="hidden sm:inline">{t('evaluation.resultsReady')}</span>
               </span>

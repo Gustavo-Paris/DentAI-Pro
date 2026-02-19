@@ -8,6 +8,9 @@ interface AnnotationOverlayProps {
   containerHeight: number;
 }
 
+// SVG attributes require resolved color values — CSS custom properties
+// not universally supported in SVG stroke/fill attributes.
+// TODO: Migrate to style={{ stroke: 'var(--chart-N)' }} when browser support is confirmed.
 const TREATMENT_COLORS: Record<string, string> = {
   resina: '#3b82f6',       // blue
   porcelana: '#f59e0b',    // amber

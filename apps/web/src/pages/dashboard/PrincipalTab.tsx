@@ -15,6 +15,16 @@ import { useScrollReveal, useScrollRevealChildren } from '@/hooks/useScrollRevea
 import { SessionCard } from './SessionCard';
 
 // ---------------------------------------------------------------------------
+// Color tokens — centralized hardcoded gradients
+// ---------------------------------------------------------------------------
+
+/** Left-accent bar for draft cards (primary brand) */
+const DRAFT_ACCENT_GRADIENT = 'bg-gradient-to-b from-primary to-primary/70';
+
+/** Left-accent bar for pending evaluations (amber → orange warning) */
+const PENDING_ACCENT_GRADIENT = 'bg-gradient-to-b from-amber-400 to-orange-500';
+
+// ---------------------------------------------------------------------------
 // DraftCard (pending action)
 // ---------------------------------------------------------------------------
 
@@ -30,7 +40,7 @@ function DraftCard({
 
   return (
     <Card className="relative overflow-hidden p-3 sm:p-4 animate-scale-in">
-      <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-gradient-to-b from-primary to-primary/70" />
+      <div className={`absolute left-0 top-0 bottom-0 w-[3px] ${DRAFT_ACCENT_GRADIENT}`} />
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
@@ -106,7 +116,7 @@ function PendingActions({
         {pendingSessions > 0 && (
           <Link to="/evaluations">
             <Card className="group relative overflow-hidden p-3 sm:p-4 shadow-sm hover:shadow-md rounded-xl transition-all duration-300 cursor-pointer">
-              <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-gradient-to-b from-amber-400 to-orange-500" />
+              <div className={`absolute left-0 top-0 bottom-0 w-[3px] ${PENDING_ACCENT_GRADIENT}`} />
               <div className="flex items-center justify-between">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">

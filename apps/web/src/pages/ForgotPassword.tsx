@@ -6,6 +6,7 @@ import { Button, Input, Label } from '@parisgroup-ai/pageshell/primitives';
 import { toast } from 'sonner';
 import { ArrowLeft, Mail } from 'lucide-react';
 import { AuthLayout } from '@/components/auth/AuthLayout';
+import { IconCircle } from '@/components/shared/IconCircle';
 
 export default function ForgotPassword() {
   const { t } = useTranslation();
@@ -44,9 +45,9 @@ export default function ForgotPassword() {
       {sent ? (
         <div className="space-y-6 animate-[scale-in_0.6s_ease-out_both]">
           <div className="flex items-center justify-center">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+            <IconCircle>
               <Mail className="w-8 h-8 text-primary" />
-            </div>
+            </IconCircle>
           </div>
           <p className="text-center text-sm text-muted-foreground">
             {t('auth.verifyEmailSent')} <strong>{email}</strong>.

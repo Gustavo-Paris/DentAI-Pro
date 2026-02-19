@@ -146,7 +146,7 @@ export default function Dashboard() {
 
   return (
     <TooltipProvider>
-      <div id="main-content" className="max-w-[960px] mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <div id="main-content" className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <DashboardPage
           title=""
           containerVariant="shell"

@@ -8,10 +8,10 @@ import { Button, Input, Checkbox } from '@parisgroup-ai/pageshell/primitives';
 import { toast } from 'sonner';
 import { registerSchema, type RegisterFormData } from '@/lib/schemas/auth';
 import { PasswordRequirements } from '@/components/PasswordRequirements';
-import { BRAND_NAME } from '@/lib/branding';
 import { GoogleIcon } from '@/components/GoogleIcon';
 import { Mail } from 'lucide-react';
 import { AuthLayout } from '@/components/auth/AuthLayout';
+import { IconCircle } from '@/components/shared/IconCircle';
 import {
   Form,
   FormControl,
@@ -71,27 +71,19 @@ export default function Register() {
 
   if (emailSent) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4 sm:px-6 py-8">
-        <div className="w-full max-w-sm text-center">
-          <Link to="/" className="font-display tracking-[0.2em] text-gradient-gold text-lg sm:text-xl font-semibold">
-            {BRAND_NAME}
+      <AuthLayout
+        title={t('auth.verifyEmail')}
+        subtitle={t('auth.verifyEmailSent') + ' ' + form.getValues('email') + '. ' + t('auth.verifyEmailClickLink')}
+      >
+        <div className="animate-[scale-in_0.6s_ease-out_both]">
+          <IconCircle>
+            <Mail className="w-8 h-8 text-primary" />
+          </IconCircle>
+          <Link to="/login">
+            <Button className="w-full btn-glow-gold">{t('common.goToLogin')}</Button>
           </Link>
-          <div className="mt-6 sm:mt-8 animate-[scale-in_0.6s_ease-out_both]">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mx-auto mb-4">
-              <Mail className="w-8 h-8 text-primary" />
-            </div>
-            <h1 className="text-xl sm:text-2xl font-semibold font-display mb-2">{t('auth.verifyEmail')}</h1>
-            <p className="text-sm text-muted-foreground mb-6">
-              {t('auth.verifyEmailSent')}{' '}
-              <span className="font-medium text-foreground">{form.getValues('email')}</span>.
-              {t('auth.verifyEmailClickLink')}
-            </p>
-            <Link to="/login">
-              <Button className="w-full btn-glow-gold">{t('common.goToLogin')}</Button>
-            </Link>
-          </div>
         </div>
-      </div>
+      </AuthLayout>
     );
   }
 
@@ -236,11 +228,11 @@ export default function Register() {
                   <div className="space-y-1 leading-none">
                     <FormLabel className="text-sm leading-relaxed cursor-pointer font-normal">
                       {t('auth.acceptTerms')}{' '}
-                      <Link to="/terms" className="underline underline-offset-4 hover:text-foreground" target="_blank">
+                      <Link to="/terms" className="underline underline-offset-4 hover:text-foreground" target="_blank" rel="noopener noreferrer">
                         {t('auth.termsOfUse')}
                       </Link>
                       {' '}{t('auth.and')}{' '}
-                      <Link to="/privacy" className="underline underline-offset-4 hover:text-foreground" target="_blank">
+                      <Link to="/privacy" className="underline underline-offset-4 hover:text-foreground" target="_blank" rel="noopener noreferrer">
                         {t('auth.privacyPolicy')}
                       </Link>
                     </FormLabel>

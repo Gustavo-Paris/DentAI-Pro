@@ -10,6 +10,7 @@ import { CheckCircle } from 'lucide-react';
 import { resetPasswordSchema, type ResetPasswordFormData } from '@/lib/schemas/auth';
 import { PasswordRequirements } from '@/components/PasswordRequirements';
 import { AuthLayout } from '@/components/auth/AuthLayout';
+import { IconCircle } from '@/components/shared/IconCircle';
 import {
   Form,
   FormControl,
@@ -57,6 +58,12 @@ export default function ResetPassword() {
     return () => subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (!success) return;
+    const timer = setTimeout(() => navigate('/dashboard'), 2000);
+    return () => clearTimeout(timer);
+  }, [success, navigate]);
+
   const onSubmit = async (data: ResetPasswordFormData) => {
     setLoading(true);
 
@@ -69,9 +76,6 @@ export default function ResetPassword() {
     } else {
       setSuccess(true);
       toast.success(t('auth.updatePasswordSuccess'));
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 2000);
     }
 
     setLoading(false);
@@ -99,10 +103,10 @@ export default function ResetPassword() {
       }
     >
       {success ? (
-        <div className="flex flex-col items-center gap-4 animate-[scale-in_0.6s_ease-out_both]">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4 animate-[scale-in_0.6s_ease-out_both]" role="status" aria-live="polite">
+          <IconCircle>
             <CheckCircle className="w-8 h-8 text-primary" />
-          </div>
+          </IconCircle>
           <p className="text-sm text-muted-foreground text-center">
             {t('auth.redirectingToDashboard')}
           </p>

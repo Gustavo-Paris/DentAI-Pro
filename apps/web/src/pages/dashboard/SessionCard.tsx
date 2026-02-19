@@ -7,6 +7,25 @@ import { getTreatmentConfig, formatToothLabel } from '@/lib/treatment-config';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
+// ---------------------------------------------------------------------------
+// Status-based style tokens (semantic colors for completed / in-progress)
+// ---------------------------------------------------------------------------
+
+const STATUS_STYLES = {
+  completed: {
+    accent: 'bg-gradient-to-b from-emerald-400 to-teal-500',
+    bar: 'bg-emerald-500',
+    badge: 'border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30',
+  },
+  inProgress: {
+    accent: 'bg-gradient-to-b from-primary to-primary/70',
+    bar: 'bg-primary',
+    badge: 'border-primary/30 text-primary bg-primary/5 dark:bg-primary/10',
+  },
+} as const;
+
+const DSD_BADGE_CLASS = 'border-violet-500/30 text-violet-600 dark:text-violet-400';
+
 export function SessionCard({ session }: { session: DashboardSession }) {
   const { t } = useTranslation();
   const isCompleted = session.completedCount === session.evaluationCount;
@@ -20,8 +39,8 @@ export function SessionCard({ session }: { session: DashboardSession }) {
         <div
           className={`absolute left-0 top-0 bottom-0 w-[3px] ${
             isCompleted
-              ? 'bg-gradient-to-b from-emerald-400 to-teal-500'
-              : 'bg-gradient-to-b from-primary to-primary/70'
+              ? STATUS_STYLES.completed.accent
+              : STATUS_STYLES.inProgress.accent
           }`}
         />
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
@@ -34,8 +53,8 @@ export function SessionCard({ session }: { session: DashboardSession }) {
                 variant="outline"
                 className={`text-[10px] font-semibold uppercase tracking-wider shrink-0 ${
                   isCompleted
-                    ? 'border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30'
-                    : 'border-primary/30 text-primary bg-primary/5 dark:bg-primary/10'
+                    ? STATUS_STYLES.completed.badge
+                    : STATUS_STYLES.inProgress.badge
                 }`}
               >
                 {isCompleted ? t('evaluation.completed') : t('evaluation.inProgress')}
@@ -59,8 +78,8 @@ export function SessionCard({ session }: { session: DashboardSession }) {
                 )}
               </div>
               {session.hasDSD && (
-                <Badge variant="outline" className="text-[10px] px-1.5 gap-1 border-violet-500/30 text-violet-600 dark:text-violet-400">
-                  <Smile className="w-2.5 h-2.5" />
+                <Badge variant="outline" className={`text-[10px] px-1.5 gap-1 ${DSD_BADGE_CLASS}`}>
+                  <Smile className="w-2.5 h-2.5" aria-hidden="true" />
                   DSD
                 </Badge>
               )}
@@ -92,7 +111,7 @@ export function SessionCard({ session }: { session: DashboardSession }) {
         </div>
         <div className="mt-2 h-1 rounded-full bg-secondary overflow-hidden" role="progressbar" aria-valuenow={Math.round(progressPercent)} aria-valuemin={0} aria-valuemax={100} aria-label={t('evaluation.progress', { defaultValue: 'Progresso da avaliação' })}>
           <div
-            className={`h-full rounded-full transition-all duration-500 ${isCompleted ? 'bg-emerald-500' : 'bg-primary'}`}
+            className={`h-full rounded-full transition-all duration-500 ${isCompleted ? STATUS_STYLES.completed.bar : STATUS_STYLES.inProgress.bar}`}
             style={{ width: `${progressPercent}%` }}
           />
         </div>

@@ -1,23 +1,15 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Button, Card, CardContent, CardHeader, CardTitle, Badge } from '@parisgroup-ai/pageshell/primitives';
 import { PageConfirmDialog } from '@parisgroup-ai/pageshell/interactions';
-import { Download, Plus, CheckCircle, Package, Sparkles, Layers, Loader2, Crown, Stethoscope, ArrowUpRight, CircleX, Heart, Palette, AlertTriangle, Smile, HeartPulse } from 'lucide-react';
+import { Download, Plus, CheckCircle, Package, Sparkles, Loader2, Heart, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 // Protocol components
-import ProtocolTable from '@/components/protocol/ProtocolTable';
-import ProtocolChecklist from '@/components/protocol/ProtocolChecklist';
-import AlertsSection from '@/components/protocol/AlertsSection';
-import WarningsSection from '@/components/protocol/WarningsSection';
-import ConfidenceIndicator from '@/components/protocol/ConfidenceIndicator';
-import AlternativeBox from '@/components/protocol/AlternativeBox';
 import CaseSummaryBox from '@/components/protocol/CaseSummaryBox';
 import WhiteningPreferenceAlert from '@/components/protocol/WhiteningPreferenceAlert';
-import { CementationProtocolCard } from '@/components/protocol/CementationProtocolCard';
-import { VeneerPreparationCard } from '@/components/protocol/VeneerPreparationCard';
-import { FinishingPolishingCard } from '@/components/protocol/FinishingPolishingCard';
 import { BruxismAlert } from '@/components/protocol/BruxismAlert';
+import { ProtocolSections } from '@/components/protocol/ProtocolSections';
 import { CollapsibleDSD } from '@/components/dsd/CollapsibleDSD';
 import { LoadingOverlay } from '@/components/LoadingOverlay';
 import { DetailPage } from '@parisgroup-ai/pageshell/composites';
@@ -27,7 +19,6 @@ import { useResult } from '@/hooks/domain/useResult';
 import { BRAND_NAME } from '@/lib/branding';
 import { formatToothLabel } from '@/lib/treatment-config';
 import { PageOdontogram } from '@parisgroup-ai/domain-odonto-ai/treatments';
-import type { OdontogramTooth } from '@parisgroup-ai/domain-odonto-ai/treatments';
 
 // =============================================================================
 // Page Adapter
@@ -346,129 +337,25 @@ export default function Result() {
             )}
 
             {/* Protocol sections */}
-            {r.isPorcelain && r.cementationProtocol ? (
-              <>
-                <section className="mb-8">
-                  <VeneerPreparationCard />
-                </section>
-                <section className="mb-8">
-                  <CementationProtocolCard
-                    protocol={r.cementationProtocol}
-                    checkedIndices={evaluation.checklist_progress || []}
-                    onProgressChange={r.handleChecklistChange}
-                  />
-                </section>
-              </>
-            ) : (
-              <>
-                {r.hasProtocol && r.treatmentType === 'resina' && (
-                  <section className="mb-8">
-                    <h3 className="font-semibold font-display mb-3 flex items-center gap-2">
-                      <Layers className="w-4 h-4" />
-                      <span className="ai-text">{t('result.stratificationProtocol')}</span>
-                    </h3>
-                    <ProtocolTable layers={r.layers} />
-                    {r.layers.length > 0 && (
-                      <Card className="mt-4 border-primary/20">
-                        <CardHeader className="py-3">
-                          <CardTitle className="text-sm flex items-center gap-2">
-                            <Palette className="w-4 h-4" />
-                            {t('result.resinsUsed')}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="py-2">
-                          <div className="flex flex-wrap gap-2">
-                            {[...new Set(r.layers.map(l => `${l.resin_brand} ${l.shade}`))].map((resin, i) => (
-                              <Badge key={i} variant="secondary" className="text-xs">
-                                {resin}
-                              </Badge>
-                            ))}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    )}
-                  </section>
-                )}
-
-                {r.treatmentType === 'resina' && evaluation.stratification_protocol?.finishing && (
-                  <section className="mb-8">
-                    <FinishingPolishingCard protocol={evaluation.stratification_protocol.finishing} />
-                  </section>
-                )}
-
-                {r.isSpecialTreatment && r.genericProtocol && (
-                  <section className="mb-8">
-                    <Card>
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-base flex items-center gap-2">
-                          {r.treatmentType === 'coroa' && <Crown className="w-4 h-4" />}
-                          {r.treatmentType === 'implante' && <CircleX className="w-4 h-4" />}
-                          {r.treatmentType === 'endodontia' && <Stethoscope className="w-4 h-4" />}
-                          {r.treatmentType === 'encaminhamento' && <ArrowUpRight className="w-4 h-4" />}
-                          {r.treatmentType === 'gengivoplastia' && <Smile className="w-4 h-4" />}
-                          {r.treatmentType === 'recobrimento_radicular' && <HeartPulse className="w-4 h-4" />}
-                          {r.treatmentType === 'coroa' && t('result.crownPlanning')}
-                          {r.treatmentType === 'implante' && t('result.implantPlanning')}
-                          {r.treatmentType === 'endodontia' && t('result.endodonticProtocol')}
-                          {r.treatmentType === 'encaminhamento' && t('result.referralGuidelines')}
-                          {r.treatmentType === 'gengivoplastia' && t('result.gingivoplastyProtocol')}
-                          {r.treatmentType === 'recobrimento_radicular' && t('result.rootCoverageProtocol')}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        {r.genericProtocol.summary && (
-                          <p className="text-sm text-muted-foreground mb-4">{r.genericProtocol.summary}</p>
-                        )}
-                        <ProtocolChecklist
-                          items={r.genericProtocol.checklist}
-                          checkedIndices={evaluation.checklist_progress || []}
-                          onProgressChange={r.handleChecklistChange}
-                        />
-                      </CardContent>
-                    </Card>
-                  </section>
-                )}
-
-                {r.treatmentType === 'resina' && r.protocolAlternative && (
-                  <section className="mb-8">
-                    <AlternativeBox alternative={r.protocolAlternative} />
-                  </section>
-                )}
-              </>
-            )}
-
-            {/* Step-by-Step Checklist */}
-            {r.treatmentType === 'resina' && r.checklist.length > 0 && (
-              <section className="mb-8 print:hidden">
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">{t('result.stepByStep')}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ProtocolChecklist
-                      items={r.checklist}
-                      checkedIndices={evaluation.checklist_progress || []}
-                      onProgressChange={r.handleChecklistChange}
-                    />
-                  </CardContent>
-                </Card>
-              </section>
-            )}
-
-            {/* Alerts and Warnings */}
-            {r.treatmentType === 'resina' && (r.alerts.length > 0 || r.warnings.length > 0) && (
-              <section className="mb-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <AlertsSection alerts={r.alerts} />
-                <WarningsSection warnings={r.warnings} />
-              </section>
-            )}
-
-            {/* Confidence Indicator */}
-            {r.treatmentType === 'resina' && r.hasProtocol && (
-              <section className="mb-8 ai-glow rounded-xl">
-                <ConfidenceIndicator confidence={r.confidence} />
-              </section>
-            )}
+            <ProtocolSections
+              treatmentType={r.treatmentType}
+              hasProtocol={r.hasProtocol}
+              isPorcelain={r.isPorcelain}
+              isSpecialTreatment={r.isSpecialTreatment}
+              layers={r.layers}
+              finishingProtocol={evaluation.stratification_protocol?.finishing}
+              genericProtocol={r.genericProtocol}
+              cementationProtocol={r.cementationProtocol}
+              protocolAlternative={r.protocolAlternative}
+              checklist={r.checklist}
+              alerts={r.treatmentType === 'resina' ? r.alerts : []}
+              warnings={r.treatmentType === 'resina' ? r.warnings : []}
+              confidence={r.confidence}
+              checkedIndices={evaluation.checklist_progress || []}
+              onProgressChange={r.handleChecklistChange}
+              t={t}
+              printHideStepByStep
+            />
 
             {/* Ideal Resin */}
             {r.showIdealResin && r.idealResin && (
