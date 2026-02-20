@@ -21,33 +21,60 @@ import { useAuth } from "@/contexts/AuthContext";
 import { evaluations } from "@/data";
 import { QUERY_STALE_TIMES } from "@/lib/constants";
 
+// Retry lazy imports on chunk loading failure (stale deploy).
+// After a new Vercel deploy, old chunk hashes become 404.
+// This auto-reloads the page once to fetch fresh assets.
+function lazyRetry<T extends { default: React.ComponentType<unknown> }>(
+  importFn: () => Promise<T>,
+): React.LazyExoticComponent<T['default']> {
+  return lazy(async () => {
+    try {
+      return await importFn();
+    } catch (error) {
+      const isChunkError =
+        error instanceof TypeError &&
+        error.message.includes('dynamically imported module');
+      if (isChunkError) {
+        const key = 'chunk-retry-' + window.location.pathname;
+        if (!sessionStorage.getItem(key)) {
+          sessionStorage.setItem(key, '1');
+          window.location.reload();
+          return new Promise(() => {}); // never resolves — reload takes over
+        }
+        sessionStorage.removeItem(key);
+      }
+      throw error;
+    }
+  });
+}
+
 // Eager load static legal pages (small, no PageShell dependency)
 import Terms from "@/pages/Terms";
 import Privacy from "@/pages/Privacy";
 
 // Lazy load auth pages (import PageShell primitives)
-const Login = lazy(() => import("@/pages/Login"));
-const Register = lazy(() => import("@/pages/Register"));
-const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
-const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
-const NotFound = lazy(() => import("@/pages/NotFound"));
+const Login = lazyRetry(() => import("@/pages/Login"));
+const Register = lazyRetry(() => import("@/pages/Register"));
+const ForgotPassword = lazyRetry(() => import("@/pages/ForgotPassword"));
+const ResetPassword = lazyRetry(() => import("@/pages/ResetPassword"));
+const NotFound = lazyRetry(() => import("@/pages/NotFound"));
 
 // Lazy load public pages
-const Landing = lazy(() => import("@/pages/Landing"));
-const SharedEvaluation = lazy(() => import("@/pages/SharedEvaluation"));
+const Landing = lazyRetry(() => import("@/pages/Landing"));
+const SharedEvaluation = lazyRetry(() => import("@/pages/SharedEvaluation"));
 
 // Lazy load protected pages
-const Dashboard = lazy(() => import("@/pages/Dashboard"));
-const NewCase = lazy(() => import("@/pages/NewCase"));
-const Inventory = lazy(() => import("@/pages/Inventory"));
-const Result = lazy(() => import("@/pages/Result"));
-const Evaluations = lazy(() => import("@/pages/Evaluations"));
-const EvaluationDetails = lazy(() => import("@/pages/EvaluationDetails"));
-const Patients = lazy(() => import("@/pages/Patients"));
-const PatientProfile = lazy(() => import("@/pages/PatientProfile"));
-const Profile = lazy(() => import("@/pages/Profile"));
-const Pricing = lazy(() => import("@/pages/Pricing"));
-const GroupResult = lazy(() => import("@/pages/GroupResult"));
+const Dashboard = lazyRetry(() => import("@/pages/Dashboard"));
+const NewCase = lazyRetry(() => import("@/pages/NewCase"));
+const Inventory = lazyRetry(() => import("@/pages/Inventory"));
+const Result = lazyRetry(() => import("@/pages/Result"));
+const Evaluations = lazyRetry(() => import("@/pages/Evaluations"));
+const EvaluationDetails = lazyRetry(() => import("@/pages/EvaluationDetails"));
+const Patients = lazyRetry(() => import("@/pages/Patients"));
+const PatientProfile = lazyRetry(() => import("@/pages/PatientProfile"));
+const Profile = lazyRetry(() => import("@/pages/Profile"));
+const Pricing = lazyRetry(() => import("@/pages/Pricing"));
+const GroupResult = lazyRetry(() => import("@/pages/GroupResult"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
