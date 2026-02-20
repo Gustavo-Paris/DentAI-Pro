@@ -236,7 +236,7 @@ export default function Landing() {
                     {testimonial.highlight}
                   </Badge>
                 )}
-                <div className="flex gap-1 mb-3" aria-label={t('landing.starRating', { defaultValue: '5 de 5 estrelas' })}>
+                <div className="flex gap-1 mb-3" aria-label={t('landing.starRating', { rating: testimonial.rating, defaultValue: `${testimonial.rating} de 5 estrelas` })}>
                   {Array.from({ length: 5 }).map((_, j) => (
                     <Star
                       key={j}
