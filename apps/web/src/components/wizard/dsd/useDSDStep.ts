@@ -28,15 +28,31 @@ import { LAYER_LABELS } from '@/types/dsd';
 // Tooth shape is now fixed as 'natural' - removed manual selection per market research
 const TOOTH_SHAPE = 'natural' as const;
 
-/** Fetch an image URL and convert to a data URL (base64) */
+/**
+ * Fetch an image URL and convert to a high-quality JPEG data URL (base64).
+ * Re-encodes as JPEG to keep payload size manageable for inter-layer chaining
+ * (Gemini returns PNG which can be 5-10MB in base64 at 2048px — JPEG 0.95 is ~1-2MB).
+ */
 async function urlToBase64(url: string): Promise<string> {
   const resp = await fetch(url);
   const blob = await resp.blob();
   return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { reject(new Error('No canvas context')); return; }
+        ctx.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/jpeg', 0.95));
+      } catch (err) {
+        reject(err);
+      }
+    };
+    img.onerror = () => reject(new Error('Failed to load image for base64 conversion'));
+    img.src = URL.createObjectURL(blob);
   });
 }
 

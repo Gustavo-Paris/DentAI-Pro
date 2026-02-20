@@ -245,7 +245,7 @@ export function ComparisonSlider({
           src={afterImage}
           alt={resolvedAfterLabel}
           className="w-full max-h-[80vh] object-contain"
-          style={{ transform: imageTransform, transformOrigin: 'center center' }}
+          style={{ transform: imageTransform, transformOrigin: 'center center', imageRendering: zoom > 1 ? 'high-quality' : undefined }}
           draggable={false}
         />
 
@@ -258,7 +258,7 @@ export function ComparisonSlider({
             src={beforeImage}
             alt={resolvedBeforeLabel}
             className="w-full h-full object-contain"
-            style={{ transform: imageTransform, transformOrigin: 'center center' }}
+            style={{ transform: imageTransform, transformOrigin: 'center center', imageRendering: zoom > 1 ? 'high-quality' : undefined }}
             draggable={false}
           />
           {/* Annotation overlay on the "before" side */}

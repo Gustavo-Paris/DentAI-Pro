@@ -56,15 +56,6 @@ export default function Dashboard() {
     }
   }, [navigate]);
 
-  if (dashboard.isError) {
-    return (
-      <ErrorState
-        title={t('dashboard.loadError', { defaultValue: 'Erro ao carregar dashboard' })}
-        description={t('errors.tryReloadPage')}
-      />
-    );
-  }
-
   const modules: ModuleConfig[] = useMemo(() => [
     {
       id: 'new-case',
@@ -142,11 +133,12 @@ export default function Dashboard() {
     : undefined, [isTabbed, t, modules, dashboard.sessions, dashboard.loading, dashboard.pendingDraft, dashboard.metrics.pendingSessions, dashboard.requestDiscardDraft, dashboard.clinicalInsights, dashboard.weeklyTrends]);
 
   const hour = new Date().getHours();
-  const TimeIcon = hour >= 6 && hour < 12
-    ? <Sun className="w-5 h-5 text-primary" aria-hidden="true" />
-    : hour >= 12 && hour < 18
-      ? <Sunset className="w-5 h-5 text-primary/80" aria-hidden="true" />
-      : <Moon className="w-5 h-5 text-muted-foreground" aria-hidden="true" />;
+
+  const TimeIcon = useMemo(() => {
+    if (hour >= 6 && hour < 12) return <Sun className="w-5 h-5 text-primary" aria-hidden="true" />;
+    if (hour >= 12 && hour < 18) return <Sunset className="w-5 h-5 text-primary/80" aria-hidden="true" />;
+    return <Moon className="w-5 h-5 text-muted-foreground" aria-hidden="true" />;
+  }, [hour]);
 
   const slotsConfig = useMemo(() => ({
     header: (
@@ -208,6 +200,15 @@ export default function Dashboard() {
         }
       : {}),
   }), [TimeIcon, dashboard.greeting, dashboard.firstName, dashboard.showCreditsBanner, dashboard.creditsRemaining, dashboard.dismissCreditsBanner, clinicAlerts, isTabbed, dashboard.metrics, dashboard.loading, dashboard.weekRange, dashboard.weeklyTrends]);
+
+  if (dashboard.isError) {
+    return (
+      <ErrorState
+        title={t('dashboard.loadError', { defaultValue: 'Erro ao carregar dashboard' })}
+        description={t('errors.tryReloadPage')}
+      />
+    );
+  }
 
   return (
     <TooltipProvider>

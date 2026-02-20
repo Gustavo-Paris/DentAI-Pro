@@ -91,6 +91,16 @@ export function AnalyzingStep({
     };
   }, [isAnalyzing]);
 
+  // Build step data for CompactStepIndicator
+  const compactSteps = useMemo(() => analysisSteps.map((step, index) => ({
+    label: step.label.replace('...', ''),
+    completed: currentStep > index + 1,
+  })), [analysisSteps, currentStep]);
+  const activeIndex = Math.max(0, currentStep - 1);
+  const currentLabel = currentStep > 0 && currentStep <= analysisSteps.length
+    ? analysisSteps[currentStep - 1].label
+    : t('components.wizard.analyzing.defaultStep');
+
   // Friendly error state
   if (analysisError) {
     return (
@@ -144,16 +154,6 @@ export function AnalyzingStep({
       </div>
     );
   }
-
-  // Build step data for CompactStepIndicator
-  const compactSteps = useMemo(() => analysisSteps.map((step, index) => ({
-    label: step.label.replace('...', ''),
-    completed: currentStep > index + 1,
-  })), [analysisSteps, currentStep]);
-  const activeIndex = Math.max(0, currentStep - 1);
-  const currentLabel = currentStep > 0 && currentStep <= analysisSteps.length
-    ? analysisSteps[currentStep - 1].label
-    : t('components.wizard.analyzing.defaultStep');
 
   // Loading state with scan-line + ring
   return (
