@@ -387,16 +387,28 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
         </div>
       )}
 
-      {/* If no simulation and not generating, show info */}
+      {/* If no simulation and not generating, show actionable fallback */}
       {imageBase64 && !simulationImageUrl && !isSimulationGenerating && !simulationError && layers.length === 0 && (
-        <div className="space-y-3">
-          <Alert>
-            <AlertCircle className="w-4 h-4" />
-            <AlertDescription>
-              {t('components.wizard.dsd.analysisView.simulationPreparing')}
-            </AlertDescription>
-          </Alert>
-        </div>
+        <Card className="border-primary/30 bg-primary/5">
+          <CardContent className="py-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="w-5 h-5 text-primary" />
+                <span className="text-sm">
+                  {t('components.wizard.dsd.analysisView.simulationPreparing')}
+                </span>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onGenerateAllLayers}
+              >
+                <RefreshCw className="w-3 h-3 mr-1" />
+                {t('components.wizard.dsd.analysisView.generateSimulation', { defaultValue: 'Gerar simulação' })}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Proportions Analysis */}
