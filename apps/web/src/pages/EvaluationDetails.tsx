@@ -166,6 +166,8 @@ export default function EvaluationDetails() {
               toggleSelectAll={detail.toggleSelectAll}
               handleExportPDF={detail.handleExportPDF}
               handleCompleteClick={handleCompleteClick}
+              handleRetryEvaluation={detail.handleRetryEvaluation}
+              retryingEvaluationId={detail.retryingEvaluationId}
               isChecklistComplete={detail.isChecklistComplete}
               getChecklistProgress={detail.getChecklistProgress}
             />
@@ -178,6 +180,8 @@ export default function EvaluationDetails() {
               toggleSelection={detail.toggleSelection}
               handleExportPDF={detail.handleExportPDF}
               handleCompleteClick={handleCompleteClick}
+              handleRetryEvaluation={detail.handleRetryEvaluation}
+              retryingEvaluationId={detail.retryingEvaluationId}
               getChecklistProgress={detail.getChecklistProgress}
             />
           </>

@@ -175,7 +175,7 @@ export default function Result() {
                           variant="outline"
                           size="sm"
                           className="mt-3 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/30"
-                          onClick={() => window.location.href = '/new-case'}
+                          onClick={() => r.evaluation?.session_id && navigate(`/evaluation/${r.evaluation.session_id}`)}
                         >
                           <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
                           {t('result.reprocess', { defaultValue: 'Reprocessar caso' })}

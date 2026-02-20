@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { FileDown, CheckCircle, MoreHorizontal, Eye } from 'lucide-react';
+import { FileDown, CheckCircle, MoreHorizontal, Eye, RefreshCw, Loader2 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 
 import type { EvaluationItem, ChecklistProgress } from '@/hooks/domain/useEvaluationDetail';
@@ -31,6 +31,8 @@ export interface EvaluationCardsProps {
   toggleSelection: (id: string) => void;
   handleExportPDF: (id: string) => void;
   handleCompleteClick: (id: string) => void;
+  handleRetryEvaluation?: (id: string) => Promise<void>;
+  retryingEvaluationId?: string | null;
   getChecklistProgress: (evaluation: EvaluationItem) => ChecklistProgress;
 }
 
@@ -45,6 +47,8 @@ export function EvaluationCards({
   toggleSelection,
   handleExportPDF,
   handleCompleteClick,
+  handleRetryEvaluation,
+  retryingEvaluationId,
   getChecklistProgress,
 }: EvaluationCardsProps) {
   const { t } = useTranslation();
@@ -120,6 +124,17 @@ export function EvaluationCards({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      {evaluation.status === 'error' && handleRetryEvaluation && (
+                        <DropdownMenuItem
+                          onClick={() => handleRetryEvaluation(evaluation.id)}
+                          disabled={retryingEvaluationId === evaluation.id}
+                        >
+                          {retryingEvaluationId === evaluation.id
+                            ? <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            : <RefreshCw className="w-4 h-4 mr-2" />}
+                          {t('evaluation.retryProtocol', { defaultValue: 'Reprocessar protocolo' })}
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem onClick={() => handleExportPDF(evaluation.id)}>
                         <FileDown className="w-4 h-4 mr-2" />
                         {t('common.exportPDF')}

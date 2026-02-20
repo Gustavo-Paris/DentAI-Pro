@@ -53,6 +53,8 @@ export interface EvaluationItem {
   aesthetic_level: string;
   budget: string;
   longevity_expectation: string;
+  region?: string | null;
+  substrate?: string | null;
   patient_aesthetic_goals?: string | null;
   dsd_analysis?: Record<string, unknown> | null;
   dsd_simulation_url?: string | null;
@@ -112,6 +114,8 @@ export interface EvaluationDetailActions {
   setShowAddTeethModal: (show: boolean) => void;
   handleAddTeethSuccess: () => void;
   handleSubmitTeeth: (payload: SubmitTeethPayload) => Promise<void>;
+  handleRetryEvaluation: (evaluationId: string) => Promise<void>;
+  retryingEvaluationId: string | null;
   toggleSelection: (id: string) => void;
   toggleSelectAll: () => void;
   clearSelection: () => void;
@@ -334,6 +338,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
   const [showAddTeethModal, setShowAddTeethModal] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [retryingEvaluationId, setRetryingEvaluationId] = useState<string | null>(null);
 
   // ---- Computed ----
   const patientName = evals[0]?.patient_name || t('evaluation.patientNoName', { defaultValue: 'Paciente sem nome' });
@@ -707,6 +712,85 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
     }
   }, [user, sessionId, patientDataForModal, evals, handleAddTeethSuccess, t]);
 
+  // ---- Retry failed evaluation ----
+  const handleRetryEvaluation = useCallback(async (evaluationId: string) => {
+    if (!user) return;
+    const evaluation = evals.find(e => e.id === evaluationId);
+    if (!evaluation) return;
+
+    setRetryingEvaluationId(evaluationId);
+    try {
+      await evaluations.updateStatus(evaluationId, 'analyzing');
+      queryClient.invalidateQueries({ queryKey: evaluationKeys.session(sessionId) });
+
+      const treatmentType = evaluation.treatment_type || 'resina';
+      switch (treatmentType) {
+        case 'resina':
+          await evaluations.invokeEdgeFunction('recommend-resin', {
+            evaluationId,
+            userId: user.id,
+            patientAge: String(evaluation.patient_age),
+            tooth: evaluation.tooth,
+            region: evaluation.region || getFullRegion(evaluation.tooth),
+            cavityClass: evaluation.cavity_class || 'Classe I',
+            restorationSize: evaluation.restoration_size || 'Média',
+            substrate: evaluation.substrate || 'Esmalte e Dentina',
+            bruxism: evaluation.bruxism,
+            aestheticLevel: evaluation.aesthetic_level,
+            toothColor: evaluation.tooth_color,
+            stratificationNeeded: true,
+            budget: evaluation.budget,
+            longevityExpectation: evaluation.longevity_expectation,
+          });
+          break;
+        case 'porcelana':
+          await evaluations.invokeEdgeFunction('recommend-cementation', {
+            evaluationId,
+            teeth: [evaluation.tooth],
+            shade: evaluation.tooth_color,
+            ceramicType: 'Dissilicato de lítio',
+            substrate: evaluation.substrate || 'Esmalte e Dentina',
+            substrateCondition: 'Saudável',
+          });
+          break;
+        default: {
+          const genericProtocol = getGenericProtocol(
+            treatmentType as TreatmentType,
+            evaluation.tooth,
+            { indication_reason: evaluation.ai_indication_reason } as PendingTooth,
+          );
+          await evaluations.updateEvaluation(evaluationId, {
+            generic_protocol: genericProtocol,
+            recommendation_text: genericProtocol.summary,
+          });
+          break;
+        }
+      }
+
+      await evaluations.updateStatus(evaluationId, 'draft');
+
+      // Sync protocols so the retried tooth joins the group
+      const allEvalIds = evals.map(e => e.id);
+      if (allEvalIds.length >= 2) {
+        try {
+          await wizard.syncGroupProtocols(sessionId, allEvalIds);
+        } catch (syncError) {
+          logger.warn('Post-retry protocol sync failed (non-critical):', syncError);
+        }
+      }
+
+      queryClient.invalidateQueries({ queryKey: evaluationKeys.sessions() });
+      queryClient.invalidateQueries({ queryKey: evaluationKeys.lists() });
+      toast.success(t('toasts.evaluationDetail.retrySuccess', { defaultValue: 'Protocolo regenerado com sucesso' }));
+    } catch (error) {
+      logger.error('Error retrying evaluation:', error);
+      await evaluations.updateStatus(evaluationId, 'error').catch(() => {});
+      toast.error(t('toasts.evaluationDetail.retryError', { defaultValue: 'Erro ao reprocessar. Tente novamente.' }));
+    } finally {
+      setRetryingEvaluationId(null);
+    }
+  }, [user, evals, sessionId, queryClient, t]);
+
   return {
     // State
     sessionId,
@@ -732,6 +816,8 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
     setShowAddTeethModal,
     handleAddTeethSuccess,
     handleSubmitTeeth,
+    handleRetryEvaluation,
+    retryingEvaluationId,
     toggleSelection,
     toggleSelectAll,
     clearSelection,
