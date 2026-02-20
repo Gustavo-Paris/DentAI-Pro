@@ -408,13 +408,12 @@ The gum sits BETWEEN the tooth crown and the upper lip.
 5. Create smooth, harmonious gingival arch across all visible teeth
 6. Keep remaining gum tissue natural — healthy pink, smooth, realistic
 
-${params.gingivoSuggestions ? `SPECIFIC TEETH TO RESHAPE:\n${params.gingivoSuggestions}\n` : `Reshape the gum line on the upper anterior teeth (canine to canine) to create a balanced, aesthetic smile.\nTarget: 2-3mm apical movement of gingival margin per tooth. This is a SIGNIFICANT reshaping.\n`}
+${params.gingivoSuggestions ? `SPECIFIC TEETH TO RESHAPE:\n${params.gingivoSuggestions}\n` : `Reshape the gum line on the upper anterior teeth (canine to canine) to create a balanced, aesthetic smile.\nTarget: 1-2mm apical movement of gingival margin per tooth.\n`}
 
 EXPECTED RESULT:
-- Teeth appear DRAMATICALLY TALLER (much more crown exposed) — change must be VERY OBVIOUS in before/after comparison
+- Teeth appear VISIBLY TALLER (more crown exposed) — change must be CLEARLY NOTICEABLE
 - Gum line is more even and symmetrical
-- Clinical and precise: typically 2-4mm of tissue removal per tooth
-- If the before/after looks almost the same, the edit FAILED — the difference must be striking
+- Clinical and precise: typically 1-3mm of tissue removal per tooth
 
 === PRESERVATION RULE ===
 PRESERVE pixel-identical: teeth (shape, color, contour, texture), BOTH lips (position, shape, opening), face, skin, background, image framing.
@@ -459,7 +458,7 @@ Expose more clinical crown by moving the gingival margin APICALLY (toward the ro
 - Create symmetrical gingival zeniths between contralateral teeth
 - Harmonize the gum line curvature across the smile
 - Recontoured gums must look NATURAL (healthy pink tissue)
-- The change MUST be VISUALLY DRAMATIC — minimum 1.5mm apical movement per tooth, target 2-3mm
+- The change MUST be VISUALLY EVIDENT — minimum 0.5mm apical movement per tooth
 
 ${params.gingivoSuggestions ? `GENGIVOPLASTY SPECIFICATIONS (per tooth):\n${params.gingivoSuggestions}\n` : ''}
 
