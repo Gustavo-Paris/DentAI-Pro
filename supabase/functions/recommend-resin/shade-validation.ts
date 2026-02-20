@@ -117,6 +117,9 @@ export async function validateAndFixProtocolLayers({
     const pl = brandMatch ? brandMatch[2].trim() : layer.resin_brand;
     if (pl) productLines.add(pl);
   }
+  // Always include Harmonize and Empress Direct for cristas proximais auto-fix
+  productLines.add('Harmonize');
+  productLines.add('Empress Direct');
 
   // Single DB call: fetch all catalog rows for every product line mentioned
   const catalogRows: Array<{ shade: string; type: string; product_line: string }> = [];
@@ -182,10 +185,18 @@ export async function validateAndFixProtocolLayers({
               shadeReplacements[originalShade] = blL.shade;
             }
           }
-          validationAlerts.push(
-            `Cristas Proximais: ${originalBrand} (${originalShade}) substituído por ${layer.resin_brand} (${layer.shade}). Cristas requerem XLE(Harmonize) ou BL-L(Empress Direct).`
-          );
-          logger.warn(`Cristas auto-fix: ${originalBrand} ${originalShade} → ${layer.resin_brand} ${layer.shade}`);
+          const actuallyChanged = layer.resin_brand !== originalBrand || layer.shade !== originalShade;
+          if (actuallyChanged) {
+            validationAlerts.push(
+              `Cristas Proximais: ${originalBrand} (${originalShade}) substituído por ${layer.resin_brand} (${layer.shade}). Cristas requerem XLE(Harmonize) ou BL-L(Empress Direct).`
+            );
+            logger.warn(`Cristas auto-fix: ${originalBrand} ${originalShade} → ${layer.resin_brand} ${layer.shade}`);
+          } else {
+            validationAlerts.push(
+              `Cristas Proximais: ${originalBrand} (${originalShade}) não é ideal para cristas — substituição automática não foi possível. Recomendado: XLE(Harmonize) ou BL-L(Empress Direct).`
+            );
+            logger.warn(`Cristas auto-fix failed: ${originalBrand} ${originalShade} — no replacement found in catalog`);
+          }
         }
       }
 
@@ -367,7 +378,9 @@ export async function validateAndFixProtocolLayers({
         const hasBL = lineRows.some(
           (r) => /bl|bianco/i.test(r.shade)
         );
-        if (!hasBL) {
+        // Lines known to have BL shades should never be flagged
+        const isKnownBLLine = /omega|bianco|empress|forma/i.test(productLine);
+        if (!hasBL && !isKnownBLLine) {
           productLineWithoutBL = productLine;
         }
       }

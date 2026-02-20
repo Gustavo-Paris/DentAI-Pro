@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { Button, Card, CardContent, CardHeader, CardTitle, Badge } from '@parisgroup-ai/pageshell/primitives';
 import { CheckCircle, AlertTriangle, RefreshCw } from 'lucide-react';
 import { ErrorState } from '@/components/ui/error-state';
@@ -13,6 +14,7 @@ import { formatToothLabel } from '@/lib/treatment-config';
 export default function GroupResult() {
   const { t } = useTranslation();
   const g = useGroupResult();
+  const navigate = useNavigate();
 
   if ((!g.primaryEval && !g.isLoading) || g.isError) {
     return (
@@ -48,6 +50,14 @@ export default function GroupResult() {
             label: t('evaluation.markAllCompleted'),
             icon: CheckCircle,
             onClick: g.handleMarkAllCompleted,
+            variant: 'outline',
+          },
+        ]}
+        footerActions={[
+          {
+            label: t('wizard.recalculate'),
+            icon: RefreshCw,
+            onClick: () => { navigate('/new-case'); },
             variant: 'outline',
           },
         ]}

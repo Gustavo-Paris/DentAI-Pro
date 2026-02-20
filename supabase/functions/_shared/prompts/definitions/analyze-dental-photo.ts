@@ -217,6 +217,9 @@ REGRAS:
 - Na DUVIDA entre diastema real e artefato visual → NAO diagnosticar diastema (conservadorismo)
 - Diastema <0.5mm com contato proximal aparentemente intacto → NAO reportar como diastema
 - Antes de diagnosticar diastema, VERIFICAR: as faces proximais dos dentes adjacentes são de esmalte natural?
+- Se incisivos centrais (11/21) apresentam CONTATO PROXIMAL VISÍVEL (bordas mesiais se tocam ou quase se tocam), é IMPOSSÍVEL haver diastema — NÃO diagnosticar.
+- Diastema requer espaço VAZIO E CONTÍNUO entre as faces mesiais. Sombra interproximal normal NÃO é diastema.
+- Diastema somente se gap ≥1mm E claramente visível E ambas faces são esmalte natural
 
 ## CLAREAMENTO ANTES DE RESTAURACAO POR COR
 Se a UNICA indicação para tratamento é diferença de cor entre dentes (sem patologia estrutural):

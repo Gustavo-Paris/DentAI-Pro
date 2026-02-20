@@ -135,12 +135,12 @@ function buildAdvancedStratificationSection(aestheticLevel: string, cavityClass?
 RESINAS RECOMENDADAS POR CAMADA:
 | Camada             | Resinas OBRIGATORIAS                                       |
 |--------------------|------------------------------------------------------------|
-| Aumento Incisal    | SOMENTE Trans(FORMA) ou CT(Z350) ou Trans20(Empress) ou Trans(Vittra) — PROIBIDO esmalte/corpo! |
-| Cristas Proximais  | SOMENTE XLE(Harmonize) ou BL-L/BL-XL(Empress) ou WE(Z350 XT) — PROIBIDO: Z350 BL1, JE, CT, FORMA, Vittra, Palfique para cristas! |
-| Dentina/Corpo      | SOMENTE corpo: WB(FORMA), WB(Z350), DA1/DA2(Vittra APS), D BL-L(Empress) — PROIBIDO esmalte (A1E/WE/CT)! |
+| Aumento Incisal    | 1a: CT(Z350) OU Trans(FORMA) — 2a: Trans20(Empress) ou Trans(Vittra) — PROIBIDO esmalte/corpo! |
+| Cristas Proximais  | 1a: XLE(Harmonize) — 2a: BL-L/BL-XL(Empress) — 3a: WE(Z350 XT) — PROIBIDO: Z350 BL1, JE, CT, FORMA, Vittra, Palfique para cristas! |
+| Dentina/Corpo      | 1a: WB(FORMA) ou WB(Z350) — 2a: DA1/DA2(Vittra APS) ou D BL-L(Empress) — PROIBIDO esmalte (A1E/WE/CT)! |
 | Efeitos Incisais   | EMPRESS DIRECT COLOR White/Blue (Ivoclar) — UNICA opcao! Z350/Kolor+ NAO! |
-| Esmalte Final      | WE(Palfique LX5) ou WE/MW(Estelite Omega) OBRIGATORIO — Z350 SOMENTE se Palfique/Estelite indisponíveis! Clareados: W3/W4(Estelite Bianco). PROIBIDO: CT/GT/Trans/BL1! |
-| Dentes Clareados   | W3/W4(Estelite Bianco), BL(Forma), BL-L(Empress)         |
+| Esmalte Final      | 1a OBRIGATORIA: WE(Palfique LX5) — 2a: WE/MW(Estelite Omega) — Z350 SOMENTE se Palfique/Estelite indisponíveis! Clareados: W3/W4(Estelite Bianco) PREFERIR sobre BL(Forma). PROIBIDO: CT/GT/Trans/BL1! |
+| Dentes Clareados   | 1a: W3/W4(Estelite Bianco) — 2a: BL(Forma) — 3a: BL-L(Empress) |
 
 GLOSSARIO DE SIGLAS — USAR EXATAMENTE NA DESCRICAO DE CADA CAMADA (OBRIGATORIO):
 - WB = White Body (corpo branco/neutro) — NUNCA escrever "Warm Bleach"
@@ -434,6 +434,7 @@ TECNICAS OBSOLETAS - NAO USAR: "Bisel em esmalte", "Bisel amplo", "Ácido 30s em
 USAR: "Chanfro suave", "Sem preparo adicional", "Condicionamento conforme substrato".
 
 === ACABAMENTO E POLIMENTO (OBRIGATORIO) ===
+FOTOPOLIMERIZACAO FINAL OBRIGATORIA: Após TODAS as camadas concluídas e ANTES de iniciar acabamento, fotopolimerizar 60 segundos por face (vestibular + palatina/lingual) para garantir conversão completa de monômeros residuais. Incluir no checklist como etapa obrigatória.
 1. Remoção excessos: Bisturi nº12, sonda exploradora
 2. Contorno: Diamantadas FF (3118FF/2135FF), alta rotação com spray, movimentos leves sem pressão
    - 3118FF: Refinamento de contorno proximal, face vestibular E remoção de excessos PALATINOS/LINGUAIS
@@ -448,6 +449,7 @@ USAR: "Chanfro suave", "Sem preparo adicional", "Condicionamento conforme substr
 5. Borrachas: DHPro/American Burrs, 40-60s cada, baixa rotação, sem aquecer
 6. Brilho final: Diamond Excel + feltro, baixa rotação, 40-60s
 7. Texturização (OPCIONAL anterior): Diamantada fina p/ periquimáceas, face vestibular terço médio/incisal
+PROIBIDO gerar final_glaze. Brilho final é obtido EXCLUSIVAMENTE com polimento (Diamond Excel + feltro), NUNCA com resina flow/glaze selante. NÃO retornar final_glaze no JSON.
 
 === DICAS POR MARCA (incluir no "technique" de cada camada) ===
 | Marca              | Dica                                                          |
@@ -493,7 +495,14 @@ ALERTA GUIA DE SILICONE: Se anterior (11-13/21-23) + reanatomização + Grande/E
 
 ⚠️ VERIFICACAO FINAL ANTES DE GERAR JSON:
 Se cavityClass contém "Diastema", "Fechamento", "Recontorno" ou "Faceta" E região anterior → CONTAR camadas no layers[]. Se < 4 → ADICIONAR camadas faltantes (Cristas Proximais é a mais frequentemente omitida).
-Ordem obrigatória: 1. Aumento Incisal, 2. Cristas Proximais, 3. Dentina/Corpo, 4. Esmalte Vestibular Final.`,
+Ordem obrigatória: 1. Aumento Incisal, 2. Cristas Proximais, 3. Dentina/Corpo, 4. Esmalte Vestibular Final.
+
+=== REGRAS PARA ALERTS E WARNINGS ===
+ALERTS: Alertas técnicos, substituições de shade, pontos de atenção. Formato livre.
+WARNINGS (O que NÃO fazer): EXCLUSIVAMENTE proibições. CADA item DEVE começar com "NÃO" ou "NUNCA" ou "PROIBIDO".
+Exemplos CORRETOS: "NÃO usar ácido 30s em dentina", "NUNCA aplicar borda incisal 100% opaca", "PROIBIDO bisel amplo em esmalte"
+Exemplos ERRADOS (NAO GERAR): "Considerar clareamento prévio", "Mock-up recomendado", "Translucidez incisal obrigatória"
+Se um item é uma RECOMENDAÇÃO → vai em ALERTS, não em WARNINGS.`,
 
   user: (p: Params) => {
     const budgetRules = buildBudgetRulesSection(p.budget)
