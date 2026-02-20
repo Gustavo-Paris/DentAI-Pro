@@ -179,7 +179,7 @@ export default function Inventory() {
       />
 
       {/* Tip for sparse inventory */}
-      {!inv.isLoading && inv.flatItems.length > 0 && inv.flatItems.length < 5 && (
+      {!inv.isLoading && inv.flatItems.length > 0 && inv.flatItems.length <= 10 && (
         <Card className="mt-4 border-dashed border-primary/30 bg-primary/5">
           <CardContent className="py-4">
             <div className="flex items-start gap-3">
