@@ -172,6 +172,10 @@ export function useDSDStep({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialResult?.layers]);
 
+  // Auto-generate layers when restored from a draft — defined as ref here,
+  // useEffect moved below generateAllLayers to avoid TDZ (temporal dead zone).
+  const layerAutoGenTriggered = useRef(false);
+
   // Reactive sync: update simulationImageUrl whenever activeLayerIndex or layerUrls change.
   // This ensures the displayed image always matches the selected layer tab, even if
   // handleSelectLayer's layerUrls lookup missed a data URL or async timing issue.
@@ -495,6 +499,28 @@ export function useDSDStep({
       setIsSimulationGenerating(false);
     }
   }, [imageBase64, result?.analysis, generateSingleLayer, resolveLayerUrl, gingivoplastyApproved]);
+
+  // Auto-generate layers when restored from a draft that has analysis but no layers.
+  // This handles the case where the draft was saved after analysis completed but before
+  // layer generation finished (e.g., user navigated away mid-generation).
+  // Placed AFTER generateAllLayers definition to avoid TDZ error.
+  useEffect(() => {
+    if (
+      !layerAutoGenTriggered.current &&
+      initialResult?.analysis &&
+      !initialResult?.layers?.length &&
+      result?.analysis &&
+      layers.length === 0 &&
+      !isSimulationGenerating &&
+      !simulationError &&
+      !layersGenerating &&
+      imageBase64
+    ) {
+      layerAutoGenTriggered.current = true;
+      logger.log('Auto-triggering layer generation for draft restored without layers');
+      generateAllLayers(result.analysis);
+    }
+  }, [result?.analysis, layers.length, isSimulationGenerating, simulationError, layersGenerating, imageBase64, generateAllLayers, initialResult]);
 
   // Retry a single failed layer (respects L2-first architecture)
   const retryFailedLayer = useCallback(async (layerType: SimulationLayerType) => {
