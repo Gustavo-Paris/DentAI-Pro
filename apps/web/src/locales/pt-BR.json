@@ -335,6 +335,7 @@
     "viewProtocol": "Ver Protocolo",
     "teeth": "dente(s)",
     "share": "Compartilhar",
+    "recalculateCase": "Recalcular Caso",
     "addMoreTeeth": "Adicionar mais dentes ({{count}})",
     "markAllCompleted": "Marcar todos como concluídos",
     "progress": "Progresso:",

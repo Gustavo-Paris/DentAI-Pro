@@ -315,6 +315,7 @@
     "viewProtocol": "View Protocol",
     "teeth": "tooth/teeth",
     "share": "Share",
+    "recalculateCase": "Recalculate Case",
     "addMoreTeeth": "Add more teeth ({{count}})",
     "markAllCompleted": "Mark all as completed",
     "progress": "Progress:",

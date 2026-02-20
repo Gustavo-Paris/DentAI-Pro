@@ -41,7 +41,8 @@ function buildTextureInstruction(): string {
 - Criar GRADIENTE DE TRANSLUCIDEZ: opaco cervical → translúcido incisal
 - Manter variações sutis de cor entre dentes adjacentes (100% idênticos = artificial)
 - Preservar CARACTERIZAÇÕES naturais visíveis (manchas brancas sutis, craze lines)
-- NÃO criar aparência de "porcelana perfeita" ou "dentes de comercial de TV"`
+- NÃO criar aparência de "porcelana perfeita" ou "dentes de comercial de TV"
+- CADA DENTE deve ter variação INDIVIDUAL de cor e textura — nunca aplicar a mesma textura/cor uniforme em todos os dentes`
 }
 
 function buildAbsolutePreservation(): string {
@@ -112,6 +113,11 @@ Os lábios (superior E inferior) definem a MOLDURA DO SORRISO.
 Alterar QUALQUER lábio = destruir o diagnóstico e a comparação antes/depois.
 O contorno, posição, formato e abertura dos lábios são IMUTÁVEIS em TODAS as camadas.
 ⚠️ LÁBIOS SÃO A REFERÊNCIA DIAGNÓSTICA — MOVER LÁBIOS = DESTRUIR O CASO
+=== POSIÇÃO E ALINHAMENTO DOS DENTES (CRÍTICO) ===
+NÃO mover, rotacionar ou reposicionar os dentes. APENAS modificar superfície/cor/textura na posição EXATA onde estão.
+Os dentes devem permanecer nas MESMAS coordenadas da imagem original — qualquer deslocamento invalida o resultado.
+A simulação deve parecer uma EDIÇÃO SUTIL da foto original, NÃO uma sobreposição de dentes genéricos de banco de imagens.
+
 ⚠️ ERRO FREQUENTE DO MODELO: Levantar o lábio superior e abaixar o inferior para "mostrar mais resultado" — PROIBIDO`
 }
 
@@ -173,6 +179,11 @@ function buildBaseCorrections(): string {
 8. CORRIGIR BORDOS INCISAIS de TODOS os dentes anteriores (13-23): lascas, irregularidades, assimetrias de comprimento entre homólogos devem ser corrigidas para harmonia do arco
 9. Corrigir formato de incisivos laterais conoides (12/22) - aumentar largura e comprimento para proporção adequada
 10. Aplicar contorno recomendado pelo visagismo quando o formato atual for inadequado
+
+ILUMINAÇÃO E BLENDING (CRÍTICO para naturalidade):
+- As correções devem ter EXATAMENTE a mesma iluminação, sombras e temperatura de cor da foto original
+- Interfaces entre áreas modificadas e não-modificadas devem ser INVISÍVEIS — sem bordas nítidas, transição gradual
+- Se um dente tem formato natural levemente irregular, PRESERVAR essa irregularidade. Não uniformizar todos os dentes
 
 SHAPE CORRECTIONS (quando análise sugere):
 - Modificar contornos dos dentes para harmonizar com recommended_tooth_shape
