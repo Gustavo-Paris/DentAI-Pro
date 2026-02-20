@@ -10,6 +10,7 @@ import { getPrompt } from "../_shared/prompts/registry.ts";
 import { withMetrics } from "../_shared/prompts/index.ts";
 import type { Params as DsdSimulationParams } from "../_shared/prompts/definitions/dsd-simulation.ts";
 import { createSupabaseMetrics, PROMPT_VERSION } from "../_shared/metrics-adapter.ts";
+import { callFluxImageEdit, FluxError } from "../_shared/flux.ts";
 import type { DSDAnalysis, PatientPreferences } from "./types.ts";
 import { WHITENING_INSTRUCTIONS } from "./types.ts";
 
@@ -355,6 +356,8 @@ Responda APENAS 'SIM' ou 'NÃO'.`,
     }
   }
 
+  const simulationStartTime = Date.now();
+
   try {
     // P2-53: callGeminiImageEdit now includes fallback model chain (P1-23).
     // If the primary model fails with a non-retryable error, it automatically
@@ -422,13 +425,63 @@ Responda APENAS 'SIM' ou 'NÃO'.`,
     logger.log("Simulation generated and uploaded:", fileName, lipsMoved ? "(lips_moved)" : "");
     return { url: fileName, lips_moved: lipsMoved || undefined };
   } catch (err) {
-    if (err instanceof GeminiError) {
-      logger.warn(`Gemini simulation error (${err.statusCode}):`, err.message);
-      throw new Error(`GeminiError ${err.statusCode}: ${err.message}`);
+    // Primary (Gemini) failed — try FLUX Kontext Pro as fallback
+    const geminiMsg = err instanceof Error ? err.message : String(err);
+    logger.warn(`Gemini simulation failed: ${geminiMsg}. Trying FLUX fallback...`);
+
+    try {
+      const remainingMs = Math.max(SIMULATION_TIMEOUT - (Date.now() - simulationStartTime), 15_000);
+      const fluxResult = await callFluxImageEdit(
+        simulationPrompt,
+        inputBase64Data,
+        inputMimeType,
+        {
+          seed: imageSeed,
+          timeoutMs: remainingMs,
+        },
+      );
+
+      if (!fluxResult.imageUrl) {
+        throw new Error("FLUX returned no image");
+      }
+
+      logger.log("FLUX fallback simulation succeeded");
+
+      // Lip validation for gingival layers (same as primary path)
+      let lipsMoved = false;
+      if (isGingivalLayer) {
+        const lipsValid = await validateLips(fluxResult.imageUrl);
+        lipsMoved = !lipsValid;
+      }
+
+      // Upload FLUX image (same pattern as primary path)
+      const base64Data = fluxResult.imageUrl.replace(/^data:image\/\w+;base64,/, "");
+      const binaryData = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
+      const fileName = `${userId}/dsd_${Date.now()}.png`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("dsd-simulations")
+        .upload(fileName, binaryData, {
+          contentType: "image/png",
+          upsert: true,
+        });
+
+      if (uploadError) {
+        logger.error("FLUX upload error:", uploadError);
+        throw new Error(`Storage upload failed: ${uploadError.message}`);
+      }
+
+      logger.log("FLUX fallback simulation uploaded:", fileName, lipsMoved ? "(lips_moved)" : "");
+      return { url: fileName, lips_moved: lipsMoved || undefined };
+    } catch (fluxErr) {
+      // Both Gemini and FLUX failed — propagate with context from both
+      const fluxMsg = fluxErr instanceof Error ? fluxErr.message : String(fluxErr);
+      logger.warn(`FLUX fallback also failed: ${fluxMsg}`);
+
+      if (err instanceof GeminiError) {
+        throw new Error(`GeminiError ${(err as GeminiError).statusCode}: ${(err as GeminiError).message} (FLUX fallback: ${fluxMsg})`);
+      }
+      throw new Error(`Simulation failed: ${geminiMsg} (FLUX fallback: ${fluxMsg})`);
     }
-    // Re-throw with context for debugging
-    const msg = err instanceof Error ? err.message : String(err);
-    logger.warn("Simulation error:", msg);
-    throw new Error(`Simulation failed: ${msg}`);
   }
 }
