@@ -414,10 +414,12 @@ export default function Landing() {
 
 function LandingPricing() {
   const { t } = useTranslation();
-  const { data: plans, isLoading } = useQuery({
+  const { data: plans, isLoading, isError } = useQuery({
     queryKey: ['subscription-plans'],
     queryFn: () => subscriptions.getPlans(),
     staleTime: QUERY_STALE_TIMES.VERY_LONG,
+    retry: 2,
+    retryDelay: 1000,
   });
 
   return (
@@ -432,7 +434,7 @@ function LandingPricing() {
           </p>
         </div>
 
-        {isLoading ? (
+        {isLoading && !isError ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 max-w-6xl mx-auto">
             {[1, 2, 3, 4].map((i) => (
               <Skeleton key={i} className="h-[400px] rounded-xl" />
@@ -523,7 +525,11 @@ function LandingPricing() {
               );
             })}
           </div>
-        ) : null}
+        ) : (
+          <p className="text-center text-muted-foreground py-8">
+            {t('pricing.startFreeUpgrade')}
+          </p>
+        )}
 
         <p className="text-center text-sm text-muted-foreground mt-8">
           {t('pricing.guarantee')}

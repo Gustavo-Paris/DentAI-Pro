@@ -51,40 +51,61 @@ function buildFeatureValues(
   plan: SubscriptionPlan,
   t: (key: string) => string,
 ): PlanFeatureValue[] {
+  const label = (id: string) => t(`components.pricing.comparison.${id}`);
   const unlimited = t('components.pricing.comparison.unlimited');
 
+  // Build all features with descriptive string values for included features,
+  // and boolean false for excluded ones (composite renders ✓/— accordingly).
   return [
-    { featureId: 'creditsMonth', value: String(plan.credits_per_month) },
+    { featureId: 'creditsMonth', value: `${plan.credits_per_month} créditos/mês` },
     {
       featureId: 'caseAnalyses',
       value:
         plan.cases_per_month === -1
-          ? unlimited
-          : String(plan.cases_per_month),
+          ? `${unlimited} análises de caso`
+          : `~${plan.cases_per_month} análises de caso`,
     },
     {
       featureId: 'dsdSimulations',
       value:
         plan.dsd_simulations_per_month === -1
-          ? unlimited
-          : String(plan.dsd_simulations_per_month),
+          ? `${unlimited} simulações DSD`
+          : `~${plan.dsd_simulations_per_month} simulações DSD`,
     },
-    { featureId: 'creditRollover', value: plan.allows_rollover },
+    {
+      featureId: 'creditRollover',
+      value: plan.allows_rollover ? label('creditRollover') : false,
+    },
     {
       featureId: 'maxRollover',
       value: plan.rollover_max
-        ? String(plan.rollover_max)
+        ? `${label('maxRollover')}: ${plan.rollover_max}`
         : plan.allows_rollover
-          ? unlimited
+          ? `${label('maxRollover')}: ${unlimited}`
           : false,
     },
-    { featureId: 'users', value: String(plan.max_users) },
-    { featureId: 'prioritySupport', value: plan.priority_support },
-    { featureId: 'resinRecommendations', value: true },
-    { featureId: 'cementationProtocols', value: plan.sort_order >= 1 },
-    { featureId: 'pdfExport', value: plan.sort_order >= 1 },
-    { featureId: 'dedicatedSupport', value: plan.sort_order >= 3 },
-    { featureId: 'personalOnboarding', value: plan.sort_order >= 3 },
+    { featureId: 'users', value: `${plan.max_users} ${plan.max_users === 1 ? 'usuário' : 'usuários'}` },
+    {
+      featureId: 'prioritySupport',
+      value: plan.priority_support ? label('prioritySupport') : false,
+    },
+    { featureId: 'resinRecommendations', value: label('resinRecommendations') },
+    {
+      featureId: 'cementationProtocols',
+      value: plan.sort_order >= 1 ? label('cementationProtocols') : false,
+    },
+    {
+      featureId: 'pdfExport',
+      value: plan.sort_order >= 1 ? label('pdfExport') : false,
+    },
+    {
+      featureId: 'dedicatedSupport',
+      value: plan.sort_order >= 3 ? label('dedicatedSupport') : false,
+    },
+    {
+      featureId: 'personalOnboarding',
+      value: plan.sort_order >= 3 ? label('personalOnboarding') : false,
+    },
   ];
 }
 
@@ -132,13 +153,13 @@ function mapToPricingPlan(
     label: plan.name,
     description: plan.description,
     price: {
-      monthly: plan.price_monthly,
-      annual: plan.price_yearly ?? plan.price_monthly * 12,
+      monthly: plan.price_monthly / 100,
+      annual: (plan.price_yearly ?? plan.price_monthly * 12) / 100,
     },
     cta,
     featured: opts.isPopular && !opts.isCurrentPlan,
     badge,
-    features: buildFeatureValues(plan, t),
+    features: buildFeatureValues(plan, t).filter((f) => f.value !== false),
   };
 }
 
