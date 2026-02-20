@@ -38,15 +38,6 @@ export default function PatientProfile() {
   const navigate = useNavigate();
   const profile = usePatientProfile();
 
-  if (!profile.patient && !profile.isLoading) {
-    return (
-      <ErrorState
-        title={t('errors.patientNotFound', { defaultValue: 'Paciente não encontrado' })}
-        action={{ label: t('common.back', { defaultValue: 'Voltar' }), href: '/patients' }}
-      />
-    );
-  }
-
   const { patient, sessions, metrics, editForm, patientId } = profile;
   const sessionsList = sessions?.sessions || [];
   const hasMoreSessions = sessions?.hasMore || false;
@@ -158,6 +149,15 @@ export default function PatientProfile() {
             ),
           },
   ], [t, patient, metrics, sessionsList, patientId, hasMoreSessions, profile.openEditDialog, profile.loadMoreSessions, profile.isFetchingSessions]);
+
+  if (!profile.patient && !profile.isLoading) {
+    return (
+      <ErrorState
+        title={t('errors.patientNotFound', { defaultValue: 'Paciente não encontrado' })}
+        action={{ label: t('common.back', { defaultValue: 'Voltar' }), href: '/patients' }}
+      />
+    );
+  }
 
   return (
     <>

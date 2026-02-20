@@ -129,7 +129,8 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
         toast.info(t('components.wizard.photoUpload.convertingIphone'));
         processedBlob = await convertHeicToJpeg(file);
         // HEIC already converted to JPEG at 0.88 — only resize, skip recompression
-        const compressedBase64 = await compressImage(processedBlob, 1280, 1.0);
+        // Use 2048px for DSD simulation quality (higher resolution = better Gemini output)
+        const compressedBase64 = await compressImage(processedBlob, 2048, 1.0);
 
         // Minimum size warning (non-blocking) — P2-57
         try {
@@ -144,8 +145,8 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
         return;
       }
 
-      // Comprimir a imagem (non-HEIC)
-      const compressedBase64 = await compressImage(processedBlob);
+      // Comprimir a imagem (non-HEIC) — 2048px / 0.92 for DSD simulation quality
+      const compressedBase64 = await compressImage(processedBlob, 2048, 0.92);
 
       // Minimum size warning (non-blocking) — P2-57
       try {
