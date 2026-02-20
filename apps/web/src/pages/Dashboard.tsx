@@ -154,7 +154,12 @@ export default function Dashboard() {
         <div className="flex items-center gap-3 mb-1">
           {TimeIcon}
           <h1 className="text-2xl sm:text-3xl font-semibold font-display tracking-tight">
-            {dashboard.greeting}, <span className="text-primary">{dashboard.firstName}</span>
+            {dashboard.greeting},{' '}
+            {dashboard.loading ? (
+              <Skeleton className="inline-block h-7 w-32 align-middle rounded-md" />
+            ) : (
+              <span className="text-primary">{dashboard.firstName}</span>
+            )}
           </h1>
         </div>
         <p className="text-sm text-muted-foreground ml-8">
@@ -208,7 +213,7 @@ export default function Dashboard() {
     <TooltipProvider>
       <div id="main-content" className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <DashboardPage
-          title=""
+          title={" "}
           containerVariant="shell"
           modules={isTabbed ? undefined : modules}
           tabs={tabsConfig}

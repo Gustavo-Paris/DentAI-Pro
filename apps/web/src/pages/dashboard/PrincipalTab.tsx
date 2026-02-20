@@ -229,7 +229,7 @@ function ActivityFeedSection({ sessions }: { sessions: DashboardSession[] }) {
         id: `${session.session_id}-dsd`,
         type: 'patient' as const,
         title: t('dsd.simulation', { defaultValue: 'Simulação DSD' }),
-        description: session.patient_name || '',
+        description: session.patient_name || t('dashboard.activityFeed.dsdCompleted', { defaultValue: 'Simulação concluída' }),
         timestamp: session.created_at,
       });
     }

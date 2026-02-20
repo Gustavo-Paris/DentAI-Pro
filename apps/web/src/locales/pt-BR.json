@@ -158,6 +158,7 @@
     "treatmentImplante": "Implante",
     "treatmentEndodontia": "Endodontia",
     "treatmentEncaminhamento": "Encaminhamento",
+    "treatmentGengivoplastia": "Gengivoplastia",
     "onboarding": {
       "firstSteps": "Primeiros passos",
       "step": "Passo {{step}}",

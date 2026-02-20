@@ -146,6 +146,7 @@
     "treatmentImplante": "Implant",
     "treatmentEndodontia": "Endodontics",
     "treatmentEncaminhamento": "Referral",
+    "treatmentGengivoplastia": "Gingivoplasty",
     "onboarding": {
       "firstSteps": "First steps",
       "step": "Step {{step}}",
