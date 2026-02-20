@@ -40,7 +40,6 @@ export default function AppLayout() {
   }), [user?.user_metadata?.full_name, user?.email, user?.user_metadata?.avatar_url]);
 
   const userMenuItems = useMemo(() => [
-    { label: t('components.layout.profile'), href: '/profile', icon: User },
     { label: t('components.layout.subscription', { defaultValue: 'Assinatura' }), href: '/profile?tab=assinatura', icon: CreditCard },
     { label: t('components.layout.support', { defaultValue: 'Suporte' }), href: 'mailto:suporte@tosmile.ai', icon: HelpCircle },
   ], [t]);
@@ -53,7 +52,7 @@ export default function AppLayout() {
     <ReactRouterAppShell
       theme="odonto-ai"
       brand={{
-        logoSrc: '/favicon.svg',
+        logoSrc: '/logo.svg',
         icon: LayoutDashboard,
         title: BRAND_NAME,
         href: '/dashboard',
