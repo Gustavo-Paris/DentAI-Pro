@@ -69,18 +69,18 @@ const SessionCard = memo(function SessionCard({
               )}
             </div>
             <div className="flex flex-wrap items-center gap-2 mt-1">
-              <p className="text-xs sm:text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground flex-shrink-0">
                 {t('evaluation.case', { count: session.evaluationCount })}
               </p>
-              <span className="text-muted-foreground hidden sm:inline">•</span>
-              <div className="flex gap-1 flex-wrap">
+              <span className="text-muted-foreground hidden sm:inline flex-shrink-0">•</span>
+              <div className="flex gap-1 flex-wrap items-center min-w-0">
                 {session.teeth.slice(0, 3).map((tooth) => (
-                  <Badge key={tooth} variant="outline" className="text-xs">
+                  <Badge key={tooth} variant="outline" className="text-xs whitespace-nowrap">
                     {formatToothLabel(tooth)}
                   </Badge>
                 ))}
                 {session.teeth.length > 3 && (
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant="outline" className="text-xs whitespace-nowrap">
                     +{session.teeth.length - 3}
                   </Badge>
                 )}
