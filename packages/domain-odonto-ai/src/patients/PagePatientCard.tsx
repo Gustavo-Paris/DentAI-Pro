@@ -61,9 +61,9 @@ const STATUS_VARIANT: Record<PatientStatus, 'accent' | 'muted' | 'outline'> = {
 };
 
 const STATUS_LABEL: Record<PatientStatus, string> = {
-  active: tPageShell('domain.odonto.patients.card.statusActive', 'Active'),
-  inactive: tPageShell('domain.odonto.patients.card.statusInactive', 'Inactive'),
-  archived: tPageShell('domain.odonto.patients.card.statusArchived', 'Archived'),
+  active: tPageShell('domain.odonto.patients.card.statusActive', 'Ativo'),
+  inactive: tPageShell('domain.odonto.patients.card.statusInactive', 'Inativo'),
+  archived: tPageShell('domain.odonto.patients.card.statusArchived', 'Arquivado'),
 };
 
 function getInitials(name: string): string {

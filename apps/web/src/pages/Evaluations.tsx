@@ -89,12 +89,12 @@ const SessionCard = memo(function SessionCard({
           </div>
           <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4">
             {isCompleted ? (
-              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">
                 <CheckCircle className="w-3 h-3" aria-hidden="true" />
                 <span className="hidden sm:inline">{t('evaluation.completed')}</span>
               </span>
             ) : session.completedCount > 0 ? (
-              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400">
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">
                 <CheckCircle className="w-3 h-3" aria-hidden="true" />
                 <span className="hidden sm:inline">{t('evaluation.resultsReady')}</span>
                 <span className="text-muted-foreground">
@@ -102,7 +102,7 @@ const SessionCard = memo(function SessionCard({
                 </span>
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                 <span className="hidden sm:inline">{t('evaluation.statusPending')}</span>
               </span>
             )}

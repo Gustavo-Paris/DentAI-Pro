@@ -11,7 +11,6 @@ import {
   X,
   Sparkles,
   Trash2,
-  RefreshCw,
 } from 'lucide-react';
 
 import { DetailPage } from '@parisgroup-ai/pageshell/composites';
@@ -82,12 +81,6 @@ export default function EvaluationDetails() {
             variant: 'default',
           },
           {
-            label: t('evaluation.recalculateCase'),
-            icon: RefreshCw,
-            onClick: () => navigate('/new-case'),
-            variant: 'outline',
-          },
-          {
             label: t('evaluation.share'),
             icon: detail.isSharing ? ShareLoader : Share2,
             onClick: detail.handleShareCase,
@@ -106,7 +99,7 @@ export default function EvaluationDetails() {
             label: t('evaluation.markAllCompleted'),
             icon: CheckCircle,
             onClick: detail.handleMarkAllAsCompleted,
-            disabled: detail.completedCount === detail.evaluations.length,
+            show: detail.completedCount < detail.evaluations.length,
             variant: 'outline',
           },
           {

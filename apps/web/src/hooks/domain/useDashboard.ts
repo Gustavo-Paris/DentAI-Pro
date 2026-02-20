@@ -305,7 +305,7 @@ export function useDashboard(): DashboardState {
       return { metrics: dashboardMetrics, sessions };
     },
     enabled: !!user,
-    staleTime: QUERY_STALE_TIMES.SHORT,
+    staleTime: QUERY_STALE_TIMES.LONG,
   });
   const { data: countsData } = useQuery({
     queryKey: dashboardQueryKeys.counts(user?.id),
