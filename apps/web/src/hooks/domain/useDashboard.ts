@@ -126,6 +126,7 @@ const TREATMENT_COLORS: Record<string, string> = {
   implante: '#ef4444',
   endodontia: '#10b981',
   encaminhamento: '#6b7280',
+  gengivoplastia: '#ec4899',
 };
 
 function getTreatmentLabels(): Record<string, string> {
@@ -136,6 +137,7 @@ function getTreatmentLabels(): Record<string, string> {
     implante: i18n.t('dashboard.treatmentImplante'),
     endodontia: i18n.t('dashboard.treatmentEndodontia'),
     encaminhamento: i18n.t('dashboard.treatmentEncaminhamento'),
+    gengivoplastia: i18n.t('dashboard.treatmentGengivoplastia', { defaultValue: 'Gengivoplastia' }),
   };
 }
 

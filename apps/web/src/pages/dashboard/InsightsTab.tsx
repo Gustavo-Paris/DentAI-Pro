@@ -45,8 +45,8 @@ function WeeklyTrendsChart({ data, loading }: { data: WeeklyTrendPoint[]; loadin
           <AreaChart data={data}>
             <defs>
               <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--color-primary)" stopOpacity={0.2} />
-                <stop offset="100%" stopColor="var(--color-primary)" stopOpacity={0} />
+                <stop offset="0%" stopColor="var(--color-primary)" stopOpacity={0.4} />
+                <stop offset="100%" stopColor="var(--color-primary)" stopOpacity={0.05} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -57,8 +57,10 @@ function WeeklyTrendsChart({ data, loading }: { data: WeeklyTrendPoint[]; loadin
               type="monotone"
               dataKey="value"
               stroke="var(--color-value)"
-              strokeWidth={2}
+              strokeWidth={2.5}
               fill="url(#areaFill)"
+              dot={{ fill: 'var(--color-primary)', r: 3 }}
+              activeDot={{ r: 5, strokeWidth: 2 }}
             />
           </AreaChart>
         </ChartContainer>
@@ -112,6 +114,8 @@ function TreatmentDonut({ items }: { items: Array<{ label: string; value: number
                 outerRadius="80%"
                 strokeWidth={2}
                 stroke="var(--color-card)"
+                label={false}
+                isAnimationActive={false}
               >
                 {items.map((item, i) => (
                   <Cell key={i} fill={item.color} />
