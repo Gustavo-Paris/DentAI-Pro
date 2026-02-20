@@ -76,13 +76,16 @@ Avalie e DOCUMENTE o tipo de arco atual e se precisa de correção.
 
 Retorne overbite_suspicion: "sim"|"não"|"indeterminado"
 
-Critérios observacionais INDIRETOS (avaliáveis em foto frontal de sorriso):
-- "sim": Bordos incisais superiores cobrem VISIVELMENTE >2/3 dos inferiores (quando ambas arcadas visíveis), OU dentes superiores apresentam desgaste incisal severo compatível com contato excessivo, OU linha do sorriso alta com incisivos superiores alongados e curva de Spee acentuada visível.
-- "não": Arcada inferior CLARAMENTE VISÍVEL com trespasse vertical normal (1/3 a 1/2).
-- "indeterminado": Inferiores NÃO visíveis na foto (caso mais comum em foto frontal de sorriso), OU evidência insuficiente.
-
+REGRA ABSOLUTA: Se arcada INFERIOR NÃO está CLARAMENTE VISÍVEL com dentes inferiores individualizáveis → overbite_suspicion = "indeterminado". NUNCA classificar como "sim" baseado apenas em formato/comprimento dos dentes superiores.
+Exemplo: Foto de sorriso mostrando apenas dentes superiores e lábio inferior = "indeterminado"
 REGRA: Foto frontal mostrando APENAS arcada superior → SEMPRE "indeterminado".
 REGRA: Na dúvida → "indeterminado" (NUNCA "não" sem evidência positiva).
+
+Critérios observacionais INDIRETOS (avaliáveis em foto frontal de sorriso):
+- "indeterminado": Inferiores NÃO visíveis na foto (caso mais comum em foto frontal de sorriso), OU evidência insuficiente.
+- "sim": Bordos incisais superiores cobrem VISIVELMENTE >2/3 dos inferiores (quando ambas arcadas visíveis), OU dentes superiores apresentam desgaste incisal severo compatível com contato excessivo, OU linha do sorriso alta com incisivos superiores alongados e curva de Spee acentuada visível.
+- "não": Arcada inferior CLARAMENTE VISÍVEL com trespasse vertical normal (1/3 a 1/2).
+
 FILOSOFIA CONSERVADORA: Suspeita observacional, NAO diagnóstico. Use linguagem de suspeita.
 Quando "sim": Adicione observação sobre avaliação ortodôntica, NAO sugira gengivoplastia (sobremordida pode simular sorriso gengival).
 Quando "indeterminado": Adicione observação: "Sobremordida nao avaliavel nesta foto. Avaliação clínica necessária."
@@ -139,6 +142,9 @@ ANTES de diagnosticar "diastema", verificar:
 - REGRA: Se há QUALQUER indício de restauração prévia na região do gap → classificar como "Restauração insatisfatória", NÃO como "diastema"
 - Tratamento correto para restauração insatisfatória: "Substituição de restauração Classe III/IV" (NÃO "fechamento de diastema")
 - Fechamento de diastema = acréscimo em dentes NATURAIS. Substituição = remoção de restauração antiga + nova.
+- Se incisivos centrais (11/21) apresentam CONTATO PROXIMAL VISÍVEL (bordas mesiais se tocam ou quase se tocam), é IMPOSSÍVEL haver diastema — NÃO diagnosticar.
+- Diastema requer espaço VAZIO E CONTÍNUO entre as faces mesiais. Sombra interproximal normal NÃO é diastema.
+- Diastema somente se gap ≥1mm E claramente visível E ambas faces são esmalte natural
 
 === DETECCAO ATIVA DE RESTAURACOES CLASSE III (PROXIMAIS) ===
 Restaurações Classe III (proximais) são FREQUENTEMENTE SUTIS na vista frontal.
@@ -166,6 +172,7 @@ REGRA PARA LATERAIS (12/22) - GENGIVOPLASTIA:
 - Proporção ideal: Central > Lateral > Canino
 
 CORRECAO COMPLETA DO ARCO: Ao detectar assimetria em qualquer dente, avaliar e sugerir para TODOS (13-23). Gerar sugestões individuais por dente.
+REGRA DE COMPLETUDE GENGIVAL: Ao indicar gengivoplastia para QUALQUER dente anterior, OBRIGATORIAMENTE avaliar e gerar sugestão individual para CADA dente do arco (13, 12, 11, 21, 22, 23). Se dente não necessita → NÃO incluir. Se necessita → INCLUIR com medida específica. NÃO omitir dentes por conveniência.
 
 FORMATO DA SUGESTAO DE GENGIVOPLASTIA (seguir quando indicada):
 { tooth_number: "dentes envolvidos", treatment_indication: "gengivoplastia"|"recobrimento_radicular", procedure_type: "complementar", description: "[justificativa]", priority: "alta", notes: "Procedimento preparatório - realizar ANTES do restaurador. Requer avaliação periodontal prévia (sondagem + radiografia periapical) para verificar nível ósseo crestal e largura biológica." }
@@ -244,6 +251,7 @@ Se >=2 anteriores precisam de intervenção -> avaliar 6-10 dentes do arco (13-2
 | DIMINUIR bordo incisal (dente menor)    | Recontorno/Desgaste incisal       | Acréscimo incisal     |
 | DIMINUIR gengiva (mais dente exposto)   | Gengivoplastia                    | Recobrimento radicular|
 | AUMENTAR gengiva (menos dente exposto)  | Recobrimento radicular            | Gengivoplastia        |
+| Bordos incisais irregulares/assimétricos | Recontorno incisal (desgaste seletivo) | Acréscimo desnecessário |
 | ALARGAR arco / preencher corredor       | Expansão ortodôntica + facetas    | -                     |
 | ALINHAR dentes                          | Ortodontia (encaminhamento)       | -                     |
 
@@ -255,6 +263,7 @@ VALIDACAO: Para CADA sugestão: "O tratamento PRODUZ o mesmo efeito visual que o
 3. GENGIVA será REMOVIDA -> "gengivoplastia" (NUNCA recobrimento)
 4. GENGIVA será ADICIONADA -> "recobrimento_radicular" (NUNCA gengivoplastia)
 5. RAIZ EXPOSTA + cobrir -> "recobrimento_radicular"
+6. Se DSD propõe arredondar/suavizar bordo incisal SEM aumentar comprimento → treatment: "resina" com "recontorno incisal" na proposed_change
 
 === VIABILIDADE CLINICA — REGRA DE LARGURA DENTARIA ===
 O DSD serve para planejar tratamentos CONSERVADORES (adicionar material). NAO para planejar remoção de estrutura dental sadia.

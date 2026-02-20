@@ -194,7 +194,10 @@ const PROPORTION_RULES = `PROPORTION RULES:
 - For dark/old crowns or restorations: REPLACE the color completely to match target whitening level
 - Only add material to fill defects on HEALTHY teeth - reshape contours when clinically indicated by analysis
 - Maintain natural width-to-height ratio EXCEPT when shape correction is prescribed
-- NEVER make teeth appear thinner or narrower than original`
+- NEVER make teeth appear thinner or narrower than original
+- NUNCA alterar proporção largura/altura de dentes que NÃO estão sendo tratados
+- Mudanças de formato devem ser SUTIS (máx 5-10% de volume) exceto para laterais conoides (15-20%)
+- COMPARAR antes/depois: dentes não tratados devem ter EXATAMENTE o mesmo formato`
 
 // --- Variant builders ---
 

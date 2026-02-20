@@ -63,6 +63,12 @@ export default function Result() {
         query={{ data: evaluation, isLoading: r.isLoading }}
         footerActions={[
           {
+            label: t('wizard.recalculate'),
+            icon: RefreshCw,
+            onClick: () => { navigate('/new-case'); },
+            variant: 'outline',
+          },
+          {
             label: t('result.downloadPDF'),
             icon: r.generatingPDF ? Loader2 : Download,
             onClick: r.handlePdfButtonClick,

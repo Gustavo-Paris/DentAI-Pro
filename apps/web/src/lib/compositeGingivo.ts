@@ -38,8 +38,13 @@ function isLipPixel(r: number, g: number, b: number, y: number, height: number):
   const saturation = Math.max(r, g, b) - Math.min(r, g, b);
   const redDominance = r - g;
 
-  // Lip: moderate brightness, strongly red-dominant, high saturation
-  // Tighter thresholds to avoid catching gum tissue (lighter pink, less red)
+  // Lip: moderate brightness, strongly red-dominant, high saturation.
+  // These thresholds are tuned to distinguish lip tissue from gum tissue:
+  //   - brightness 50-170: excludes dark shadows (<50) and bright teeth/skin (>170)
+  //   - redDominance >35: lips are more red-dominant than gums (gums are lighter pink)
+  //   - saturation >45: ensures vivid color, filtering out desaturated skin tones
+  // Kept conservative to avoid false positives on gum tissue which would cause
+  // the compositor to incorrectly restore gum pixels from L2 (undoing gengivoplasty).
   return (
     brightness > 50 &&
     brightness < 170 &&
@@ -174,12 +179,15 @@ export async function compositeGengivoplastyLips(
       }
     }
 
-    // Safety cap: if more than 5% of pixels are detected as "lip that changed,"
+    // Safety cap: if more than 8% of pixels are detected as "lip that changed,"
     // the heuristic is likely over-detecting (catching gum pixels).
     // In that case, skip compositing and return the original L3.
+    // Raised from 5% to 8% to allow more aggressive lip restoration — Gemini
+    // frequently moves lip pixels in gengivoplasty simulations and 5% was too
+    // conservative, causing the compositing to bail out on valid corrections.
     const totalPixels = width * height;
     const rawPct = (rawLipCount / totalPixels) * 100;
-    if (rawPct > 5) {
+    if (rawPct > 8) {
       logger.warn(`compositeGingivo: too many lip pixels detected (${rawPct.toFixed(1)}%), skipping compositing to avoid artifacts`);
       return null;
     }
@@ -187,8 +195,11 @@ export async function compositeGengivoplastyLips(
     // Yield between heavy phases
     await yieldToMain();
 
-    // Step 2: Dilate the mask by 1px to catch immediate edge artifacts
-    const dilatedMask = dilateMask(lipChangedMask, width, height, 1);
+    // Step 2: Dilate the mask by 2px to catch lip edge artifacts.
+    // Increased from 1px to 2px — Gemini's lip modifications often bleed 1-2px
+    // beyond the detected lip boundary, so a 2px dilation ensures we restore
+    // those fringe pixels from L2 rather than leaving subtle color shifts.
+    const dilatedMask = dilateMask(lipChangedMask, width, height, 2);
 
     // Step 3: Convert to float and blur for smooth blending (2px radius)
     const floatMask = new Float32Array(dilatedMask.length);

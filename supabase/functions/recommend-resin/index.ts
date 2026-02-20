@@ -297,7 +297,7 @@ Deno.serve(async (req) => {
                           required: ["order", "tool", "speed", "time", "tip"],
                         },
                       },
-                      final_glaze: { type: "string" },
+                      final_glaze: { type: "string", description: "NÃO USAR — campo depreciado. Brilho obtido com polimento, não glaze." },
                       maintenance_advice: { type: "string" },
                     },
                     required: ["contouring", "polishing", "maintenance_advice"],
@@ -310,12 +310,12 @@ Deno.serve(async (req) => {
                   alerts: {
                     type: "array",
                     items: { type: "string" },
-                    description: "O que NÃO fazer durante o procedimento",
+                    description: "Alertas técnicos e pontos de atenção durante o procedimento",
                   },
                   warnings: {
                     type: "array",
                     items: { type: "string" },
-                    description: "Pontos de atenção importantes",
+                    description: "PROIBIÇÕES — o que o dentista NÃO DEVE fazer. SOMENTE itens negativos no formato 'NÃO [ação]: [razão]'. NUNCA incluir dicas, recomendações ou coisas que DEVE fazer.",
                   },
                   justification: { type: "string", description: "Justificativa para a escolha do protocolo" },
                   confidence: {
