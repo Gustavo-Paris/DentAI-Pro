@@ -136,7 +136,7 @@ RESINAS RECOMENDADAS POR CAMADA:
 | Camada             | Resinas OBRIGATORIAS                                       |
 |--------------------|------------------------------------------------------------|
 | Aumento Incisal    | 1a: CT(Z350) OU Trans(FORMA) — 2a: Trans20(Empress) ou Trans(Vittra) — PROIBIDO esmalte/corpo! |
-| Cristas Proximais  | 1a: XLE(Harmonize) — 2a: BL-L/BL-XL(Empress) — 3a: WE(Z350 XT) — PROIBIDO: Z350 BL1, JE, CT, FORMA, Vittra, Palfique para cristas! |
+| Cristas Proximais  | 1a: XLE(Harmonize) — 2a: BL-L/BL-XL(Empress) — 3a: WE(Palfique LX5) — PROIBIDO: Z350 BL1, JE, CT, FORMA, Vittra para cristas! |
 | Dentina/Corpo      | 1a: WB(FORMA) ou WB(Z350) — 2a: DA1/DA2(Vittra APS) ou D BL-L(Empress) — PROIBIDO esmalte (A1E/WE/CT)! |
 | Efeitos Incisais   | EMPRESS DIRECT COLOR White/Blue (Ivoclar) — UNICA opcao! Z350/Kolor+ NAO! |
 | Esmalte Final      | 1a OBRIGATORIA: WE(Palfique LX5) — 2a: WE/MW(Estelite Omega) — Z350 SOMENTE se Palfique/Estelite indisponíveis! Clareados: W3/W4(Estelite Bianco) PREFERIR sobre BL(Forma). PROIBIDO: CT/GT/Trans/BL1! |
@@ -172,7 +172,7 @@ EFEITOS INCISAIS (sub-opções):
 | Corante Ambar  | Empress Direct Color Honey/Amber — linhas finas          |
 | Mamelos        | Dentina clara (A1/B1) em projeções verticais na incisal  |
 
-Inclusão: "estético" -> Efeitos Incisais optional:true. "alto"/"muito alto" -> Efeitos Incisais OBRIGATORIO (halo + corantes + mamelos).
+Inclusão: PREMIUM/ESTETICO anterior: SEMPRE incluir Efeitos Incisais. "estético" -> Efeitos Incisais optional:true. "alto"/"muito alto" -> Efeitos Incisais OBRIGATORIO (halo + corantes + mamelos).
 
 CARACTERIZACAO (OPCIONAL p/ "muito alto"): White spots, craze lines, mamelons, halo incisal, foseta proximal. MODERACAO - copie dentes adjacentes.
 
@@ -356,7 +356,7 @@ NIVEL ESTETICO ("estético"/"alto"/"muito alto" OU Fechamento de Diastema) - 4-5
    - Objetivo: Restabelecer cristas marginais e pontos de contato proximais. Definir anatomia proximal.
    - Técnica: Incremento fino contra tira de poliéster, adaptar com espátula. Manter contato proximal firme. Fotopolimerizar 20s.
    - INCLUIR SEMPRE que houver: fechamento de diastema, restauração Classe III/IV, reconstrução proximal.
-   - ⚠️ PROIBIDO para Cristas Proximais: Z350 (qualquer shade exceto WE), FORMA, Vittra, Palfique. SOMENTE Harmonize XLE ou Empress BL-L/BL-XL ou Z350 WE.
+   - ⚠️ PROIBIDO para Cristas Proximais: Z350 (qualquer shade exceto WE), FORMA, Vittra. SOMENTE Harmonize XLE ou Empress BL-L/BL-XL ou Palfique LX5 WE.
 3. Dentina/Corpo: OBRIGATÓRIO resina de CORPO — WB(FORMA), WB(Z350), DA1/DA2(Vittra APS), D BL-L(Empress). PROIBIDO shades de esmalte (A1E/A2E/WE/CT/BL1/BL2)! 0.5-1.0mm. Opaco NAO e camada separada - e shade dentro da dentina!
    - Objetivo: Reproduzir volume e opacidade da dentina natural. Dar CORPO e SATURAÇÃO à restauração.
    - Técnica: Incrementos oblíquos de 1-2mm. Reproduzir mamelos com projeções verticais na incisal (se aplicável). Fotopolimerizar 20s cada incremento.
@@ -374,6 +374,7 @@ NIVEL ESTETICO ("estético"/"alto"/"muito alto" OU Fechamento de Diastema) - 4-5
    - P1 (OBRIGATORIO quando disponível): Palfique LX5 (WE), Estelite Omega (WE/MW). MW para resultado natural. Clareados: BL1/BL2(Estelite Omega), W3/W4(Estelite Bianco). ⚠️ Z350 para Esmalte Final SOMENTE se P1 indisponível — shade A1E/A2E (NUNCA BL1, NAO EXISTE em Z350!)
    - P2: Filtek Z350 XT (A1E/A2E), FORMA (Enamel). IPS Empress Direct (esmalte cores claras)
    - P3: Harmonize (Incisal/TN), Vittra APS (Trans)
+   - ⚠️ Orçamento PREMIUM: OBRIGATÓRIO Palfique LX5 (WE) ou Estelite Omega (WE/MW) ou Estelite Bianco (conforme necessidade de clarear). Z350 PROIBIDO em Esmalte Final para orçamento Premium.
    - ⚠️ PREFERIR Estelite/Palfique sobre Z350 para camada de esmalte final (polimento superior)
 
 CORES DE ESMALTE POR LINHA:
@@ -390,6 +391,7 @@ ALTERNATIVA SIMPLIFICADA (2 camadas):
 - Corpo: WB(FORMA), WB(Z350), DA1(Empress) ou DA1(Vittra) — cor SATURADA de dentina. PROIBIDO para corpo: WE, MW, CE, TN, Incisal, Trans, CT — são cores de ESMALTE!
 - Esmalte: WE(Palfique LX5) — preferencial. MW(Estelite Omega) para natural.
 - Dentes clareados: W3/W4(Estelite Bianco) ou BL(Forma)/BL-L(Empress)
+- Dentes clareados ALTERNATIVA CAMADA ÚNICA: W3 ou W4 (Estelite Bianco) — camada única para resultado rápido e natural.
 - Cristas (se 3+ camadas na alternativa): XLE(Harmonize) ou BL-L(Empress). PROIBIDO JE para cristas.
 - TN = Translucent Natural = cor de ESMALTE, NUNCA corpo.
 
@@ -429,6 +431,10 @@ MARCAS POR TIPO:
 - Universal: Single Bond Universal(3M), Clearfil Universal Quick(Kuraray), Prime&Bond Active(Dentsply), Adhese Universal(Ivoclar)
 
 No checklist: tipo + marca. Ex: "Sistema universal (Single Bond Universal, 3M) em modo self-etch".
+Fotopolimerizar adesivo por 20 segundos.
+
+=== ISOLAMENTO ===
+Procedimentos estéticos anteriores → SEMPRE isolamento ABSOLUTO (lençol de borracha). Nunca sugerir isolamento relativo para anteriores estéticos.
 
 TECNICAS OBSOLETAS - NAO USAR: "Bisel em esmalte", "Bisel amplo", "Ácido 30s em dentina".
 USAR: "Chanfro suave", "Sem preparo adicional", "Condicionamento conforme substrato".
@@ -500,6 +506,7 @@ Ordem obrigatória: 1. Aumento Incisal, 2. Cristas Proximais, 3. Dentina/Corpo, 
 === REGRAS PARA ALERTS E WARNINGS ===
 ALERTS: Alertas técnicos, substituições de shade, pontos de atenção. Formato livre.
 WARNINGS (O que NÃO fazer): EXCLUSIVAMENTE proibições. CADA item DEVE começar com "NÃO" ou "NUNCA" ou "PROIBIDO".
+PROIBIDO gerar warning sobre sequência vermelha Sof-Lex — ambas sequências (laranja e vermelha) são válidas e clinicamente corretas.
 Exemplos CORRETOS: "NÃO usar ácido 30s em dentina", "NUNCA aplicar borda incisal 100% opaca", "PROIBIDO bisel amplo em esmalte"
 Exemplos ERRADOS (NAO GERAR): "Considerar clareamento prévio", "Mock-up recomendado", "Translucidez incisal obrigatória"
 Se um item é uma RECOMENDAÇÃO → vai em ALERTS, não em WARNINGS.`,

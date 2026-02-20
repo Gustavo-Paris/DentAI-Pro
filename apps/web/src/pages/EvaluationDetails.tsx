@@ -11,6 +11,7 @@ import {
   X,
   Sparkles,
   Trash2,
+  RefreshCw,
 } from 'lucide-react';
 
 import { DetailPage } from '@parisgroup-ai/pageshell/composites';
@@ -79,6 +80,12 @@ export default function EvaluationDetails() {
             icon: Sparkles,
             onClick: () => navigate('/new-case'),
             variant: 'default',
+          },
+          {
+            label: t('evaluation.recalculateCase'),
+            icon: RefreshCw,
+            onClick: () => navigate('/new-case'),
+            variant: 'outline',
           },
           {
             label: t('evaluation.share'),

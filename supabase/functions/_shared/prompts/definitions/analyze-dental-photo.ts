@@ -158,9 +158,12 @@ c) Aparência completamente artificial? -> "Restauração prévia (coroa)"
 d) Nenhum sinal? -> enamel_condition natural
 
 ## INCISIVOS LATERAIS (12/22)
-Proporção reduzida e MUITO MAIS FREQUENTEMENTE restauração insatisfatória do que microdontia verdadeira (<2% prevalência).
+Laterais são FISIOLOGICAMENTE menores que centrais: 62-65% da largura do central é NORMAL e NÃO é microdontia.
+Proporção reduzida é MUITO MAIS FREQUENTEMENTE restauração insatisfatória do que microdontia verdadeira (<2% prevalência).
 - Diagnóstico MAIS PROVAVEL: "Restauração em resina insatisfatória"
-- So diagnostique microdontia se uniformemente pequeno SEM sinal de restauração e SEM diferença de cor/textura
+- Só diagnostique microdontia se largura <50% da largura do central adjacente E uniformemente pequeno SEM sinal de restauração e SEM diferença de cor/textura
+- Proporção reduzida (50-65% do central) SEM sinais de patologia = variação anatômica NORMAL → NÃO reportar como microdontia
+- REGRA: Na DÚVIDA entre microdontia e variação normal → variação normal (conservadorismo)
 
 NUNCA diagnostique "micro-dente" se: fratura visível, sinais de restauração, desgaste/erosão, diferença de cor/textura entre regiões.
 
