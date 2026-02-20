@@ -7,7 +7,6 @@ import { BRAND_NAME } from '@/lib/branding';
 import { CreditBadge } from '@/components/CreditBadge';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { HelpButton } from '@/components/HelpButton';
-import { ToSmileLogo } from '@/components/ToSmileLogo';
 import {
   LayoutDashboard,
   FileText,
@@ -54,7 +53,8 @@ export default function AppLayout() {
     <ReactRouterAppShell
       theme="odonto-ai"
       brand={{
-        icon: ToSmileLogo,
+        logoSrc: '/favicon.svg',
+        icon: LayoutDashboard,
         title: BRAND_NAME,
         href: '/dashboard',
       }}
