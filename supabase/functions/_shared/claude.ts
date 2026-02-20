@@ -18,9 +18,10 @@ const ANTHROPIC_VERSION = "2023-06-01";
 const DEFAULT_MODEL = "claude-sonnet-4-6";
 const DEFAULT_TIMEOUT_MS = 50_000;
 
-// Fallback models for 529 (overloaded) — after 2 failed attempts, switch model
+// Fallback models for 5xx errors — after 2 failed attempts, switch model
 const FALLBACK_MODELS: Record<string, string> = {
   "claude-sonnet-4-6": "claude-sonnet-4-5-20250929",
+  "claude-haiku-4-5-20251001": "claude-sonnet-4-6",
 };
 const FALLBACK_AFTER_ATTEMPT = 2; // switch on 3rd attempt (0-indexed)
 
@@ -321,11 +322,11 @@ async function makeClaudeRequest(
         logger.warn(`Server error (${response.status}). Retrying...`);
 
         if (retryCount < maxRetries) {
-          // After FALLBACK_AFTER_ATTEMPT failed attempts with 529, switch to fallback model
-          if (response.status === 529 && retryCount + 1 >= FALLBACK_AFTER_ATTEMPT) {
+          // After FALLBACK_AFTER_ATTEMPT failed 5xx attempts, switch to fallback model
+          if (retryCount + 1 >= FALLBACK_AFTER_ATTEMPT) {
             const fallback = FALLBACK_MODELS[request.model];
             if (fallback && request.model !== fallback) {
-              logger.warn(`Model ${request.model} overloaded — falling back to ${fallback}`);
+              logger.warn(`Model ${request.model} failed with ${response.status} — falling back to ${fallback}`);
               request = { ...request, model: fallback };
             }
           }
