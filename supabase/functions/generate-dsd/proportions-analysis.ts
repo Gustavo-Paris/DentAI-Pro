@@ -2,6 +2,11 @@ import { createErrorResponse, ERROR_MESSAGES } from "../_shared/cors.ts";
 import { logger } from "../_shared/logger.ts";
 import type { OpenAITool } from "../_shared/gemini.ts";
 import {
+  callGeminiVision,
+  callGeminiVisionWithTools,
+  GeminiError,
+} from "../_shared/gemini.ts";
+import {
   callClaudeVision,
   callClaudeVisionWithTools,
   ClaudeError,
@@ -289,9 +294,37 @@ Se o problema clínico é microdontia/conoide → sua sugestão deve ser "Aument
     }
   })();
 
+  // Helper to parse DSD result from function call or text fallback
+  const parseDsdResult = (result: { text: string | null; functionCall: { name: string; args: Record<string, unknown> } | null }): DSDAnalysis | null => {
+    if (result.functionCall) {
+      return parseAIResponse(DSDAnalysisSchema, result.functionCall.args, 'generate-dsd') as DSDAnalysis;
+    }
+    if (result.text) {
+      let jsonText = result.text.trim();
+      if (jsonText.startsWith('```')) {
+        jsonText = jsonText.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '');
+      }
+      const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        try {
+          return parseAIResponse(DSDAnalysisSchema, JSON.parse(jsonMatch[0]), 'generate-dsd') as DSDAnalysis;
+        } catch { /* fall through */ }
+      }
+    }
+    return null;
+  };
+
+  const finalizeResult = async (parsed: DSDAnalysis): Promise<DSDAnalysis> => {
+    const normalized = normalizeAnalysisEnums(parsed);
+    const classifierResult = await classifierPromise;
+    applySmileLineOverride(normalized, classifierResult);
+    return normalized;
+  };
+
   try {
+    // Primary: Gemini 3.1 Pro Vision with tools
     const result = await withMetrics<{ text: string | null; functionCall: { name: string; args: Record<string, unknown> } | null; finishReason: string }>(metrics, dsdAnalysisPromptDef.id, PROMPT_VERSION, dsdAnalysisPromptDef.model)(async () => {
-      const response = await callClaudeVisionWithTools(
+      const response = await callGeminiVisionWithTools(
         dsdAnalysisPromptDef.model,
         "Analise esta foto e retorne a análise DSD completa usando a ferramenta analyze_dsd.",
         base64Data,
@@ -303,10 +336,11 @@ Se o problema clínico é microdontia/conoide → sua sugestão deve ser "Aument
           maxTokens: 4000,
           forceFunctionName: "analyze_dsd",
           timeoutMs: 50_000,
+          thinkingLevel: "low",
         }
       );
       if (response.tokens) {
-        logger.info('claude_tokens', { operation: 'generate-dsd:analysis', ...response.tokens });
+        logger.info('gemini_tokens', { operation: 'generate-dsd:analysis', ...response.tokens });
       }
       return {
         result: { text: response.text, functionCall: response.functionCall, finishReason: response.finishReason },
@@ -315,93 +349,92 @@ Se o problema clínico é microdontia/conoide → sua sugestão deve ser "Aument
       };
     });
 
-    if (result.functionCall) {
-      const parsed = parseAIResponse(DSDAnalysisSchema, result.functionCall.args, 'generate-dsd') as DSDAnalysis;
-      const normalized = normalizeAnalysisEnums(parsed);
-      const classifierResult = await classifierPromise;
-      applySmileLineOverride(normalized, classifierResult);
-      return normalized;
-    }
+    const parsed = parseDsdResult(result);
+    if (parsed) return await finalizeResult(parsed);
 
     // MALFORMED_FUNCTION_CALL or no function call: fallback to plain vision (no tools)
-    if (result.finishReason === 'MALFORMED_FUNCTION_CALL' || !result.functionCall) {
-      logger.warn(`Function calling failed (finishReason=${result.finishReason}) — falling back to plain JSON vision call`);
+    logger.warn(`Gemini function calling failed (finishReason=${result.finishReason}) — falling back to plain JSON vision call`);
 
-      // Try to recover from text first
-      if (result.text) {
-        try {
-          const jsonMatch = result.text.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            const rawArgs = JSON.parse(jsonMatch[0]);
-            const parsed = parseAIResponse(DSDAnalysisSchema, rawArgs, 'generate-dsd') as DSDAnalysis;
-            logger.info("Recovered analysis from function call text response");
-            const normalized = normalizeAnalysisEnums(parsed);
-            const classifierResult = await classifierPromise;
-            applySmileLineOverride(normalized, classifierResult);
-            return normalized;
-          }
-        } catch (_parseErr) {
-          logger.warn("Text JSON recovery failed, trying plain vision fallback");
-        }
-      }
-
-      // Full fallback: call Claude WITHOUT tools, ask for raw JSON
-      const fallbackResponse = await callClaudeVision(
-        dsdAnalysisPromptDef.model,
-        `Analise esta foto odontológica e retorne a análise DSD completa.
+    const plainResponse = await callGeminiVision(
+      dsdAnalysisPromptDef.model,
+      `Analise esta foto odontológica e retorne a análise DSD completa.
 Responda APENAS com um objeto JSON válido (sem markdown, sem backticks) com os seguintes campos:
 facial_midline, dental_midline, smile_line, buccal_corridor, occlusal_plane,
 golden_ratio_compliance, symmetry_score, suggestions (array), observations (array),
 confidence, lip_thickness, overbite_suspicion, face_shape, perceived_temperament,
 smile_arc, recommended_tooth_shape, visagism_notes.
 Use SOMENTE valores em português conforme os enums do schema.`,
-        base64Data,
-        mimeType,
-        {
-          systemPrompt: analysisPrompt,
-          temperature: 0.0,
-          maxTokens: 4000,
-        }
-      );
-      if (fallbackResponse.tokens) {
-        logger.info('claude_tokens', { operation: 'generate-dsd:analysis-fallback', ...fallbackResponse.tokens });
+      base64Data,
+      mimeType,
+      {
+        systemPrompt: analysisPrompt,
+        temperature: 0.0,
+        maxTokens: 4000,
       }
-
-      if (fallbackResponse.text) {
-        try {
-          // Strip markdown code fences if present
-          let jsonText = fallbackResponse.text.trim();
-          if (jsonText.startsWith('```')) {
-            jsonText = jsonText.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '');
-          }
-          const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            const rawArgs = JSON.parse(jsonMatch[0]);
-            const parsed = parseAIResponse(DSDAnalysisSchema, rawArgs, 'generate-dsd') as DSDAnalysis;
-            logger.info("Recovered analysis from plain vision fallback");
-            const normalized = normalizeAnalysisEnums(parsed);
-            const classifierResult = await classifierPromise;
-            applySmileLineOverride(normalized, classifierResult);
-            return normalized;
-          }
-        } catch (fallbackErr) {
-          logger.error("Plain vision fallback JSON parse failed:", fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr));
-        }
-      }
+    );
+    if (plainResponse.tokens) {
+      logger.info('gemini_tokens', { operation: 'generate-dsd:analysis-plain-fallback', ...plainResponse.tokens });
     }
 
-    logger.error("No function call in Claude response. finishReason:", result.finishReason, "Text:", result.text?.substring(0, 300));
+    const plainParsed = parseDsdResult({ text: plainResponse.text, functionCall: null });
+    if (plainParsed) {
+      logger.info("Recovered DSD analysis from Gemini plain vision fallback");
+      return await finalizeResult(plainParsed);
+    }
+
+    logger.error("Gemini: no parseable response. finishReason:", result.finishReason, "Text:", result.text?.substring(0, 300));
     return createErrorResponse(`${ERROR_MESSAGES.AI_ERROR} [no_function_call, finish=${result.finishReason}]`, 500, corsHeaders);
-  } catch (error) {
-    if (error instanceof ClaudeError) {
-      if (error.statusCode === 429) {
+  } catch (primaryError) {
+    // Gemini failed — try Claude Sonnet 4.6 as cross-provider fallback
+    const errMsg = primaryError instanceof Error ? primaryError.message : String(primaryError);
+    const statusCode = primaryError instanceof GeminiError ? primaryError.statusCode : 0;
+    logger.warn(`Gemini DSD analysis failed (${statusCode}): ${errMsg}. Trying Claude fallback...`);
+
+    if (statusCode === 429) {
+      return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
+    }
+
+    try {
+      const fallbackModel = "claude-sonnet-4-6";
+      const fallbackResult = await withMetrics<{ text: string | null; functionCall: { name: string; args: Record<string, unknown> } | null; finishReason: string }>(metrics, dsdAnalysisPromptDef.id, PROMPT_VERSION, fallbackModel)(async () => {
+        const response = await callClaudeVisionWithTools(
+          fallbackModel,
+          "Analise esta foto e retorne a análise DSD completa usando a ferramenta analyze_dsd.",
+          base64Data,
+          mimeType,
+          tools,
+          {
+            systemPrompt: analysisPrompt,
+            temperature: 0.0,
+            maxTokens: 4000,
+            forceFunctionName: "analyze_dsd",
+            timeoutMs: 45_000,
+          }
+        );
+        if (response.tokens) {
+          logger.info('claude_tokens', { operation: 'generate-dsd:analysis-fallback', ...response.tokens });
+        }
+        return {
+          result: { text: response.text, functionCall: response.functionCall, finishReason: response.finishReason },
+          tokensIn: response.tokens?.promptTokenCount ?? 0,
+          tokensOut: response.tokens?.candidatesTokenCount ?? 0,
+        };
+      });
+
+      const fallbackParsed = parseDsdResult(fallbackResult);
+      if (fallbackParsed) {
+        logger.info("Claude fallback DSD analysis succeeded");
+        return await finalizeResult(fallbackParsed);
+      }
+
+      logger.error("Claude fallback: no parseable response. finishReason:", fallbackResult.finishReason);
+      return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
+    } catch (fallbackError) {
+      if (fallbackError instanceof ClaudeError && fallbackError.statusCode === 429) {
         return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
       }
-      logger.error("Claude analysis error:", error.message, "status:", error.statusCode);
-      return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
-    } else {
-      const msg = error instanceof Error ? error.message : String(error);
-      logger.error("AI analysis error:", msg);
+      const fbMsg = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
+      logger.error(`Both Gemini and Claude failed for DSD. Gemini: ${errMsg}. Claude: ${fbMsg}`);
       return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     }
   }

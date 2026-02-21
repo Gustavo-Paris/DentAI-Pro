@@ -1,6 +1,7 @@
 import { getCorsHeaders, handleCorsPreFlight, ERROR_MESSAGES, createErrorResponse, generateRequestId } from "../_shared/cors.ts";
 import { getSupabaseClient, authenticateRequest, isAuthError } from "../_shared/middleware.ts";
 import { logger } from "../_shared/logger.ts";
+import { callGeminiVisionWithTools, GeminiError } from "../_shared/gemini.ts";
 import { callClaudeVisionWithTools, ClaudeError } from "../_shared/claude.ts";
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 import { checkAndUseCredits, createInsufficientCreditsResponse, refundCredits } from "../_shared/credits.ts";
@@ -118,14 +119,28 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    // Call Claude Vision with tools
+    // Call Gemini 3.1 Pro Vision (primary) with Claude Sonnet fallback
     let analysisResult: PhotoAnalysisResult | null = null;
 
+    const parseVisionResult = (result: { text: string | null; functionCall: { name: string; args: Record<string, unknown> } | null }) => {
+      if (result.functionCall) {
+        return parseAIResponse(PhotoAnalysisResultSchema, result.functionCall.args, 'analyze-dental-photo') as PhotoAnalysisResult;
+      }
+      if (result.text) {
+        const jsonMatch = result.text.match(/```json\s*([\s\S]*?)\s*```/) || result.text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const jsonStr = jsonMatch[1] || jsonMatch[0];
+          return parseAIResponse(PhotoAnalysisResultSchema, JSON.parse(jsonStr), 'analyze-dental-photo') as PhotoAnalysisResult;
+        }
+      }
+      return null;
+    };
+
     try {
-      step(`claude: calling (image=${Math.round(base64Image.length/1024)}KB)`);
+      step(`gemini: calling (image=${Math.round(base64Image.length/1024)}KB)`);
 
       const result = await withMetrics<{ text: string | null; functionCall: { name: string; args: Record<string, unknown> } | null; finishReason: string }>(metrics, promptDef.id, PROMPT_VERSION, promptDef.model)(async () => {
-        const response = await callClaudeVisionWithTools(
+        const response = await callGeminiVisionWithTools(
           promptDef.model,
           userPrompt,
           base64Image,
@@ -137,10 +152,11 @@ Deno.serve(async (req) => {
             maxTokens: 3000,
             forceFunctionName: "analyze_dental_photo",
             timeoutMs: 55_000,
+            thinkingLevel: "low",
           }
         );
         if (response.tokens) {
-          logger.info('claude_tokens', { operation: 'analyze-dental-photo', ...response.tokens });
+          logger.info('gemini_tokens', { operation: 'analyze-dental-photo', ...response.tokens });
         }
         return {
           result: { text: response.text, functionCall: response.functionCall, finishReason: response.finishReason },
@@ -149,37 +165,61 @@ Deno.serve(async (req) => {
         };
       });
 
-      step("claude: response received");
-      if (result.functionCall) {
-        step("claude: got function call");
-        analysisResult = parseAIResponse(PhotoAnalysisResultSchema, result.functionCall.args, 'analyze-dental-photo') as PhotoAnalysisResult;
-      } else if (result.text) {
-        // Fallback: try to extract JSON from text response
-        logger.log("No function call, checking text for JSON...");
-        const jsonMatch = result.text.match(/```json\s*([\s\S]*?)\s*```/) || result.text.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          try {
-            const jsonStr = jsonMatch[1] || jsonMatch[0];
-            const parsed = JSON.parse(jsonStr);
-            analysisResult = parseAIResponse(PhotoAnalysisResultSchema, parsed, 'analyze-dental-photo') as PhotoAnalysisResult;
-          } catch (parseErr) {
-            logger.error("Failed to parse/validate JSON from text response:", parseErr);
-          }
-        }
+      step("gemini: response received");
+      analysisResult = parseVisionResult(result);
+      if (analysisResult) step("gemini: parsed ok");
+    } catch (primaryError) {
+      // Gemini failed — try Claude Sonnet 4.6 as fallback
+      const errMsg = primaryError instanceof Error ? primaryError.message : String(primaryError);
+      const statusCode = primaryError instanceof GeminiError ? primaryError.statusCode : 0;
+      logger.warn(`Gemini failed (${statusCode}): ${errMsg}. Trying Claude fallback...`);
+
+      if (statusCode === 429) {
+        return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
       }
-    } catch (error) {
-      if (error instanceof ClaudeError) {
-        if (error.statusCode === 429) {
+
+      try {
+        step("claude-fallback: calling");
+        const fallbackModel = "claude-sonnet-4-6";
+        const fallbackResult = await withMetrics<{ text: string | null; functionCall: { name: string; args: Record<string, unknown> } | null; finishReason: string }>(metrics, promptDef.id, PROMPT_VERSION, fallbackModel)(async () => {
+          const response = await callClaudeVisionWithTools(
+            fallbackModel,
+            userPrompt,
+            base64Image,
+            mimeType,
+            ANALYZE_PHOTO_TOOL,
+            {
+              systemPrompt,
+              temperature: 0.0,
+              maxTokens: 3000,
+              forceFunctionName: "analyze_dental_photo",
+              timeoutMs: 50_000,
+            }
+          );
+          if (response.tokens) {
+            logger.info('claude_tokens', { operation: 'analyze-dental-photo-fallback', ...response.tokens });
+          }
+          return {
+            result: { text: response.text, functionCall: response.functionCall, finishReason: response.finishReason },
+            tokensIn: response.tokens?.promptTokenCount ?? 0,
+            tokensOut: response.tokens?.candidatesTokenCount ?? 0,
+          };
+        });
+
+        step("claude-fallback: response received");
+        analysisResult = parseVisionResult(fallbackResult);
+        if (analysisResult) step("claude-fallback: parsed ok");
+      } catch (fallbackError) {
+        if (fallbackError instanceof ClaudeError && fallbackError.statusCode === 429) {
           return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
         }
-        logger.error(`Claude API error (${error.statusCode}):`, error.message);
-      } else {
-        logger.error("AI error:", error);
+        const fbMsg = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
+        logger.error(`Both Gemini and Claude failed. Gemini: ${errMsg}. Claude: ${fbMsg}`);
+        return new Response(
+          JSON.stringify({ error: ERROR_MESSAGES.AI_ERROR }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
-      return new Response(
-        JSON.stringify({ error: ERROR_MESSAGES.AI_ERROR }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
     }
 
     if (!analysisResult) {

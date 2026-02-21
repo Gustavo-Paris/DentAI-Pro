@@ -1,6 +1,7 @@
 import type { MetricsPort } from './types.ts'
 
 const COST_PER_1K: Record<string, { input: number; output: number }> = {
+  'gemini-3.1-pro-preview': { input: 0.002, output: 0.012 },
   'gemini-3-flash-preview': { input: 0.00015, output: 0.0006 },
   'gemini-2.5-pro': { input: 0.00125, output: 0.005 },
   'gemini-3-pro-image-preview': { input: 0.0025, output: 0.01 },

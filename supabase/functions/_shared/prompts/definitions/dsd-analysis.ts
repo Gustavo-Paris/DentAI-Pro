@@ -12,11 +12,11 @@ export const dsdAnalysis: PromptDefinition<Params> = {
   id: 'dsd-analysis',
   name: 'Análise DSD',
   description: 'Análise completa de Digital Smile Design com visagismo e proporções faciais',
-  model: 'claude-sonnet-4-6',
+  model: 'gemini-3.1-pro-preview',
   temperature: 0.0,
   maxTokens: 4000,
   mode: 'vision-tools',
-  provider: 'claude',
+  provider: 'gemini',
 
   system: ({ additionalContext = '', preferencesContext = '', clinicalContext = '', additionalPhotos }: Params) => {
     const hasFacePhoto = !!additionalPhotos?.face
