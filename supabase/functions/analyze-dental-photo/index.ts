@@ -152,7 +152,6 @@ Deno.serve(async (req) => {
             maxTokens: 3000,
             forceFunctionName: "analyze_dental_photo",
             timeoutMs: 55_000,
-            thinkingLevel: "low",
           }
         );
         if (response.tokens) {
