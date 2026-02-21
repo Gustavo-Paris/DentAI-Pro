@@ -3,7 +3,8 @@ import { PageConfirmDialog } from '@parisgroup-ai/pageshell/interactions';
 import { memo, useMemo } from 'react';
 import { Lightbulb, Plus, X } from 'lucide-react';
 import { ListPage } from '@parisgroup-ai/pageshell/composites';
-import { Button, Card, CardContent } from '@parisgroup-ai/pageshell/primitives';
+import { Button } from '@parisgroup-ai/pageshell/primitives';
+import { TipBanner } from '@/components/TipBanner';
 import { useInventoryManagement } from '@/hooks/domain/useInventoryManagement';
 import type { FlatInventoryItem } from '@/hooks/domain/useInventoryManagement';
 import { ResinBadge } from '@/components/ResinBadge';
@@ -180,28 +181,17 @@ export default function Inventory() {
 
       {/* Tip for sparse inventory */}
       {!inv.isLoading && inv.flatItems.length > 0 && inv.flatItems.length <= 10 && (
-        <Card className="mt-4 border-dashed border-primary/30 bg-primary/5">
-          <CardContent className="py-4">
-            <div className="flex items-start gap-3">
-              <Lightbulb className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium">{t('inventory.tipTitle', { defaultValue: 'Dica: Adicione mais resinas' })}</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {t('inventory.tipDescription', { defaultValue: 'Com mais cores no inventário, as recomendações de IA ficam mais precisas e personalizadas para o seu consultório.' })}
-                </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-2"
-                  onClick={inv.openDialog}
-                >
-                  <Plus className="w-3.5 h-3.5 mr-1.5" />
-                  {t('inventory.addResins')}
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <TipBanner
+          className="mt-4"
+          icon={Lightbulb}
+          title={t('inventory.tipTitle', { defaultValue: 'Dica: Adicione mais resinas' })}
+          description={t('inventory.tipDescription', { defaultValue: 'Com mais cores no inventário, as recomendações de IA ficam mais precisas e personalizadas para o seu consultório.' })}
+          action={{
+            label: t('inventory.addResins'),
+            icon: Plus,
+            onClick: inv.openDialog,
+          }}
+        />
       )}
 
       {/* Hidden CSV file input */}

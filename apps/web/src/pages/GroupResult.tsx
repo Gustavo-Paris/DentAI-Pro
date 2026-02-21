@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, CardContent, CardHeader, CardTitle, Badge } from '@parisgroup-ai/pageshell/primitives';
-import { CheckCircle, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, Badge } from '@parisgroup-ai/pageshell/primitives';
+import { CheckCircle, RefreshCw } from 'lucide-react';
+import { ProtocolUnavailableAlert } from '@/components/ProtocolUnavailableAlert';
 import { ErrorState } from '@/components/ui/error-state';
 
 import { ProtocolSections } from '@/components/protocol/ProtocolSections';
@@ -99,30 +100,9 @@ export default function GroupResult() {
             <>
               {/* Protocol unavailable fallback */}
               {!g.hasProtocol && !g.isSpecialTreatment && g.treatmentType === 'resina' && (
-                <section className="mb-8">
-                  <Card className="border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20">
-                    <CardContent className="py-4">
-                      <div className="flex items-start gap-3">
-                        <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-                        <div className="flex-1">
-                          <p className="text-sm font-medium">{t('result.protocolUnavailable', { defaultValue: 'Protocolo não disponível' })}</p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {t('result.protocolUnavailableDesc', { defaultValue: 'A geração do protocolo de resina não foi concluída. Tente reprocessar este caso.' })}
-                          </p>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="mt-3 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/30"
-                            onClick={() => navigate(`/evaluation/${g.sessionId}`)}
-                          >
-                            <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
-                            {t('result.reprocess', { defaultValue: 'Reprocessar caso' })}
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </section>
+                <ProtocolUnavailableAlert
+                  onReprocess={() => navigate(`/evaluation/${g.sessionId}`)}
+                />
               )}
 
               {/* Resin recommendation */}

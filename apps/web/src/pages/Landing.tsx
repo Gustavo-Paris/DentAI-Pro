@@ -412,15 +412,65 @@ export default function Landing() {
   );
 }
 
+// Static fallback plans for when Supabase query fails (anonymous landing page)
+const LANDING_FALLBACK_PLANS = [
+  {
+    id: 'free',
+    name: 'Free',
+    description: 'Para experimentar',
+    price_monthly: 0,
+    credits_per_month: 5,
+    max_users: 1,
+    allows_rollover: false,
+    features: ['5 créditos/mês', 'Recomendação de resina', 'Análise com IA'],
+    isPopular: false,
+  },
+  {
+    id: 'starter',
+    name: 'Starter',
+    description: 'Para dentistas individuais',
+    price_monthly: 5900,
+    credits_per_month: 30,
+    max_users: 1,
+    allows_rollover: false,
+    features: ['30 créditos/mês', 'Protocolos completos', 'Export PDF'],
+    isPopular: false,
+  },
+  {
+    id: 'pro',
+    name: 'Pro',
+    description: 'Para consultórios',
+    price_monthly: 11900,
+    credits_per_month: 80,
+    max_users: 3,
+    allows_rollover: true,
+    features: ['80 créditos/mês', 'Rollover de créditos', 'DSD Simulações', 'Até 3 usuários'],
+    isPopular: true,
+  },
+  {
+    id: 'elite',
+    name: 'Elite',
+    description: 'Para clínicas',
+    price_monthly: 24900,
+    credits_per_month: 200,
+    max_users: 10,
+    allows_rollover: true,
+    features: ['200 créditos/mês', 'Rollover ilimitado', 'Suporte prioritário', 'Até 10 usuários'],
+    isPopular: false,
+  },
+] as const;
+
 function LandingPricing() {
   const { t } = useTranslation();
   const { data: plans, isLoading, isError } = useQuery({
     queryKey: ['subscription-plans'],
     queryFn: () => subscriptions.getPlans(),
     staleTime: QUERY_STALE_TIMES.VERY_LONG,
-    retry: 2,
+    retry: 1,
     retryDelay: 1000,
   });
+
+  const displayPlans = plans && plans.length > 0 ? plans : null;
 
   return (
     <section id="pricing" className="py-12 sm:py-20 border-t border-border bg-secondary/30">
@@ -440,9 +490,9 @@ function LandingPricing() {
               <Skeleton key={i} className="h-[400px] rounded-xl" />
             ))}
           </div>
-        ) : plans && plans.length > 0 ? (
+        ) : displayPlans ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 max-w-6xl mx-auto">
-            {plans.map((plan) => {
+            {displayPlans.map((plan) => {
               const isFree = plan.price_monthly === 0;
               const isPopular = plan.name === 'Pro';
               const features = Array.isArray(plan.features)
@@ -526,9 +576,63 @@ function LandingPricing() {
             })}
           </div>
         ) : (
-          <p className="text-center text-muted-foreground py-8">
-            {t('pricing.startFreeUpgrade')}
-          </p>
+          /* Fallback: static plans when Supabase query fails (anonymous landing) */
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 max-w-6xl mx-auto">
+            {LANDING_FALLBACK_PLANS.map((plan) => {
+              const isFree = plan.price_monthly === 0;
+              return (
+                <Card
+                  key={plan.id}
+                  className={`relative flex flex-col ${plan.isPopular ? 'border-primary shadow-lg scale-105' : ''}`}
+                >
+                  {plan.isPopular && (
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary">
+                      {t('pricing.mostPopular')}
+                    </Badge>
+                  )}
+                  <CardHeader className="text-center pb-2">
+                    <CardTitle className="text-xl">{plan.name}</CardTitle>
+                    <CardDescription>{plan.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex-1">
+                    <div className="text-center mb-4">
+                      <div className="flex items-baseline justify-center gap-1">
+                        <span className="text-4xl font-bold">
+                          {isFree ? t('pricing.free') : formatPrice(plan.price_monthly)}
+                        </span>
+                        {!isFree && <span className="text-muted-foreground">{t('pricing.perMonth')}</span>}
+                      </div>
+                    </div>
+                    <div className="bg-primary/10 rounded-lg p-3 mb-4 text-center">
+                      <div className="flex items-center justify-center gap-2 text-primary font-semibold">
+                        <Zap className="h-4 w-4" />
+                        <span>{t('pricing.creditsPerMonth', { count: plan.credits_per_month })}</span>
+                      </div>
+                    </div>
+                    <ul className="space-y-2">
+                      {plan.features.map((feature, index) => (
+                        <li key={index} className="flex items-start gap-2">
+                          <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                          <span className="text-sm">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                  <CardFooter>
+                    <Button
+                      className="w-full"
+                      variant={plan.isPopular ? 'default' : 'outline'}
+                      asChild
+                    >
+                      <Link to="/register">
+                        {isFree ? t('pricing.startFree') : t('pricing.start')}
+                      </Link>
+                    </Button>
+                  </CardFooter>
+                </Card>
+              );
+            })}
+          </div>
         )}
 
         <p className="text-center text-sm text-muted-foreground mt-8">

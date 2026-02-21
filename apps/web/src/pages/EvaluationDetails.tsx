@@ -13,6 +13,7 @@ import {
   Trash2,
   Lightbulb,
 } from 'lucide-react';
+import { TipBanner } from '@/components/TipBanner';
 
 import { DetailPage } from '@parisgroup-ai/pageshell/composites';
 import { trackEvent } from '@/lib/analytics';
@@ -181,53 +182,36 @@ export default function EvaluationDetails() {
 
             {/* Tip: add more teeth when evaluation is sparse */}
             {detail.evaluations.length <= 3 && detail.pendingTeeth.length > 0 && (
-              <div className="mt-4 flex items-start gap-3 rounded-lg border border-dashed border-primary/30 bg-primary/5 p-4">
-                <Lightbulb className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium">
-                    {t('evaluation.tipAddMoreTitle', { defaultValue: 'Avalie mais dentes neste caso' })}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {t('evaluation.tipAddMoreDescription', {
-                      count: detail.pendingTeeth.length,
-                      defaultValue: `Ainda há ${detail.pendingTeeth.length} dentes pendentes que podem ser adicionados a esta sessão para uma avaliação mais completa.`,
-                    })}
-                  </p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="mt-2"
-                    onClick={() => detail.setShowAddTeethModal(true)}
-                  >
-                    <Plus className="w-3.5 h-3.5 mr-1.5" />
-                    {t('evaluation.addMoreTeeth', { count: detail.pendingTeeth.length })}
-                  </Button>
-                </div>
-              </div>
+              <TipBanner
+                className="mt-4"
+                icon={Lightbulb}
+                title={t('evaluation.tipAddMoreTitle', { defaultValue: 'Avalie mais dentes neste caso' })}
+                description={t('evaluation.tipAddMoreDescription', {
+                  count: detail.pendingTeeth.length,
+                  defaultValue: `Ainda há ${detail.pendingTeeth.length} dentes pendentes que podem ser adicionados a esta sessão para uma avaliação mais completa.`,
+                })}
+                action={{
+                  label: t('evaluation.addMoreTeeth', { count: detail.pendingTeeth.length }),
+                  icon: Plus,
+                  onClick: () => detail.setShowAddTeethModal(true),
+                }}
+              />
             )}
 
             {/* Tip: start new case when evaluation is sparse and no pending teeth */}
             {detail.evaluations.length <= 2 && detail.pendingTeeth.length === 0 && (
-              <div className="mt-4 flex items-start gap-3 rounded-lg border border-dashed border-muted-foreground/20 bg-muted/30 p-4">
-                <Sparkles className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium">
-                    {t('evaluation.tipNewCaseTitle', { defaultValue: 'Precisa avaliar mais dentes?' })}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {t('evaluation.tipNewCaseDescription', { defaultValue: 'Inicie uma nova avaliação para analisar outros dentes deste paciente com recomendações de IA.' })}
-                  </p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="mt-2"
-                    onClick={() => navigate('/new-case')}
-                  >
-                    <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-                    {t('evaluation.newEvaluation')}
-                  </Button>
-                </div>
-              </div>
+              <TipBanner
+                className="mt-4"
+                variant="muted"
+                icon={Sparkles}
+                title={t('evaluation.tipNewCaseTitle', { defaultValue: 'Precisa avaliar mais dentes?' })}
+                description={t('evaluation.tipNewCaseDescription', { defaultValue: 'Inicie uma nova avaliação para analisar outros dentes deste paciente com recomendações de IA.' })}
+                action={{
+                  label: t('evaluation.newEvaluation'),
+                  icon: Sparkles,
+                  onClick: () => navigate('/new-case'),
+                }}
+              />
             )}
           </>
         )}
