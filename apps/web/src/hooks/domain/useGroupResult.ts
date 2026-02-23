@@ -2,7 +2,6 @@ import { useState, useCallback, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/data';
 import { evaluations, storage } from '@/data';
 import type { Resin, StratificationProtocol, ProtocolLayer, CementationProtocol } from '@/types/protocol';
 import type { SimulationLayer } from '@/types/dsd';
@@ -10,8 +9,8 @@ import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { logger } from '@/lib/logger';
 import { SIGNED_URL_EXPIRY_SECONDS, QUERY_STALE_TIMES } from '@/lib/constants';
-import { getTreatmentStyle, isSpecialTreatmentType } from '@/lib/treatment-config';
 import { getProtocolFingerprint } from '@/lib/protocol-fingerprint';
+import { computeProtocol } from './protocolComputed';
 
 // ---------------------------------------------------------------------------
 // Types (reuse from useResult where possible)
@@ -98,32 +97,14 @@ export function useGroupResult() {
   const groupTeeth = groupEvaluations.map(ev => ev.tooth === 'GENGIVO' ? t('odontogram.gingiva', { defaultValue: 'Gengiva' }) : ev.tooth);
 
   // Protocol data (from first evaluation — they're identical in the group)
-  const treatmentType = primaryEval?.treatment_type || 'resina';
-  const isPorcelain = treatmentType === 'porcelana';
-  const isSpecialTreatment = isSpecialTreatmentType(treatmentType);
-  const cementationProtocol = primaryEval?.cementation_protocol as CementationProtocol | null;
-  const genericProtocol = primaryEval?.generic_protocol ?? null;
-  const protocol = primaryEval?.stratification_protocol ?? null;
-
-  const layers = protocol?.layers || primaryEval?.protocol_layers || [];
-  const checklist = useMemo(() => isPorcelain
-    ? (cementationProtocol?.checklist || [])
-    : isSpecialTreatment && genericProtocol
-      ? genericProtocol.checklist
-      : (protocol?.checklist || []),
-    [isPorcelain, cementationProtocol?.checklist, isSpecialTreatment, genericProtocol, protocol?.checklist]);
-  const alerts = isPorcelain
-    ? (cementationProtocol?.alerts || [])
-    : isSpecialTreatment && genericProtocol
-      ? genericProtocol.alerts
-      : (primaryEval?.alerts || []);
-  const warnings = isPorcelain ? (cementationProtocol?.warnings || []) : (primaryEval?.warnings || []);
-  const confidence = isPorcelain ? (cementationProtocol?.confidence || 'média') : (protocol?.confidence || 'média');
-  const protocolAlternative = protocol?.alternative;
-
-  const resin = primaryEval?.resins ?? null;
-  const hasProtocol = isPorcelain ? !!cementationProtocol : isSpecialTreatment ? !!genericProtocol : layers.length > 0;
-  const currentTreatmentStyle = getTreatmentStyle(treatmentType);
+  const pc = useMemo(() => computeProtocol(primaryEval), [primaryEval]);
+  const {
+    treatmentType, isPorcelain, isSpecialTreatment,
+    cementationProtocol, genericProtocol, layers,
+    checklist, alerts, warnings, confidence,
+    protocolAlternative, resin, hasProtocol, currentTreatmentStyle,
+  } = pc;
+  const protocol = pc.protocol;
 
   // Signed photo URL
   const { data: photoUrl = null } = useQuery({
