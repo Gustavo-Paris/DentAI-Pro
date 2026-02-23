@@ -193,19 +193,19 @@ export default function Result() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                      <div className="bg-secondary/30 rounded-lg p-3">
+                      <div className="bg-secondary/30 rounded-xl p-3">
                         <span className="text-muted-foreground">{t('result.opacity')}</span>
                         <p className="font-medium">{r.resin.opacity}</p>
                       </div>
-                      <div className="bg-secondary/30 rounded-lg p-3">
+                      <div className="bg-secondary/30 rounded-xl p-3">
                         <span className="text-muted-foreground">{t('result.resistance')}</span>
                         <p className="font-medium">{r.resin.resistance}</p>
                       </div>
-                      <div className="bg-secondary/30 rounded-lg p-3">
+                      <div className="bg-secondary/30 rounded-xl p-3">
                         <span className="text-muted-foreground">{t('result.polishing')}</span>
                         <p className="font-medium">{r.resin.polishing}</p>
                       </div>
-                      <div className="bg-secondary/30 rounded-lg p-3">
+                      <div className="bg-secondary/30 rounded-xl p-3">
                         <span className="text-muted-foreground">{t('result.aesthetics')}</span>
                         <p className="font-medium">{r.resin.aesthetics}</p>
                       </div>

@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+import { Button } from '@parisgroup-ai/pageshell/primitives';
 
 interface EmptyStateProps {
   icon: LucideIcon;

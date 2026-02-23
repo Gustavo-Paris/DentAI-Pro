@@ -72,7 +72,7 @@ const SessionCard = memo(function SessionCard({
       >
         <div className="space-y-2 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
           <div className="flex-1">
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
               <p className="font-medium text-sm sm:text-base">
                 {session.patient_name || t('evaluation.patientNoName')}
               </p>
@@ -82,7 +82,7 @@ const SessionCard = memo(function SessionCard({
                 </Badge>
               )}
             </div>
-            <div className="flex flex-wrap items-center gap-2 mt-1">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-1">
               <p className="text-xs sm:text-sm text-muted-foreground flex-shrink-0">
                 {t('evaluation.case', { count: session.evaluationCount })}
               </p>

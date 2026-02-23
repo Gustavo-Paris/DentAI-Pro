@@ -235,7 +235,7 @@ export default function PatientProfile() {
                 rows={4}
               />
             </div>
-            <div className="flex justify-end gap-2 pt-2">
+            <div className="flex justify-end gap-3 pt-2">
               <Button variant="outline" onClick={profile.closeEditDialog}>
                 {t('common.cancel')}
               </Button>
