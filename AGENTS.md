@@ -1,7 +1,7 @@
 ---
 title: Agentes do Projeto - AURIA
 created: 2026-02-04
-updated: 2026-02-11
+updated: 2026-02-23
 author: Team AURIA
 status: published
 tags:
@@ -29,31 +29,25 @@ related:
 ```
 AGENTS.md (este arquivo)
 ├── apps/
-│   └── web/AGENTS.md          → App principal
+│   └── web/AGENTS.md              → App principal
 ├── packages/
-│   ├── AGENTS.md              → Índice de packages
+│   ├── AGENTS.md                  → Índice de packages
 │   ├── logger/AGENTS.md
-│   ├── page-shell/AGENTS.md
-│   └── pageshell-*/AGENTS.md  → Design system (11 packages)
+│   └── domain-odonto-ai/AGENTS.md → Componentes de domínio odontológico
+├── supabase/
+│   └── functions/                 → Edge functions (backend)
 └── docs/
-    └── 00-Index/Home.md       → Hub de documentação
+    └── 00-Index/Home.md           → Hub de documentação
 ```
 
 | Agente | Caminho | Descrição |
 |--------|---------|-----------|
 | web | [[apps/web/AGENTS.md]] | App principal - decisão clínica odontológica com IA |
 | logger | [[packages/logger/AGENTS.md]] | Logger compartilhado |
-| page-shell | [[packages/page-shell/AGENTS.md]] | Barrel package - re-exporta todos @pageshell/* |
-| pageshell-core | [[packages/pageshell-core/AGENTS.md]] | Core hooks, utils e types |
-| pageshell-primitives | [[packages/pageshell-primitives/AGENTS.md]] | Radix UI primitives |
-| pageshell-layouts | [[packages/pageshell-layouts/AGENTS.md]] | Layout components |
-| pageshell-interactions | [[packages/pageshell-interactions/AGENTS.md]] | Interactive components |
-| pageshell-features | [[packages/pageshell-features/AGENTS.md]] | Feature components (Layer 4) |
-| pageshell-composites | [[packages/pageshell-composites/AGENTS.md]] | Page composites (ListPage, FormPage, etc.) |
-| pageshell-shell | [[packages/pageshell-shell/AGENTS.md]] | PageShell facade e query handling |
-| pageshell-theme | [[packages/pageshell-theme/AGENTS.md]] | Theme context e hooks |
-| pageshell-themes | [[packages/pageshell-themes/AGENTS.md]] | Theme presets (admin, creator, student) |
-| pageshell-domain | [[packages/pageshell-domain/AGENTS.md]] | Domain-specific UI components |
+| domain-odonto-ai | [[packages/domain-odonto-ai/AGENTS.md]] | Componentes de domínio odontológico para PageShell |
+
+> [!info] Packages Externos
+> PageShell (`@parisgroup-ai/pageshell`) e page-shell (barrel) são packages externos instalados via GitHub Packages. Não possuem AGENTS.md local. Ver [[packages/AGENTS.md]] para documentação de arquitetura.
 
 ## Instruções Globais
 
@@ -139,4 +133,4 @@ Filhos podem sobrescrever com `@override: razão`.
 - [[README]] — Setup e overview técnico
 
 ---
-*Atualizado: 2026-02-11*
+*Atualizado: 2026-02-23*

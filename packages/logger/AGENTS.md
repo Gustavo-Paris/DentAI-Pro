@@ -1,11 +1,11 @@
 ---
 title: "AGENTS.md (packages/logger)"
 created: 2026-02-04
-updated: 2026-02-04
-status: active
+updated: 2026-02-23
+status: published
 tags:
   - type/guide
-  - status/active
+  - status/published
   - package/logger
 related:
   - "[[../AGENTS.md]]"
@@ -40,4 +40,4 @@ related:
 - [[../AGENTS.md]] - Packages index
 
 ---
-*Atualizado: 2026-02-04*
+*Atualizado: 2026-02-23*

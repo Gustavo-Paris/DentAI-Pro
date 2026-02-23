@@ -18,4 +18,4 @@
 - [[../../AGENTS.md]] - Índice geral
 
 ---
-*Atualizado: 2026-02-04*
+*Atualizado: 2026-02-23*

@@ -1,7 +1,7 @@
 ---
 title: "AGENTS.md (packages)"
 created: 2026-02-04
-updated: 2026-02-04
+updated: 2026-02-23
 author: Team AURIA
 status: published
 tags:
@@ -31,17 +31,21 @@ related:
 
 ## Packages
 
-### Utilities
+### Local Packages
 
 | Package | Caminho | Descrição |
 |---------|---------|-----------|
 | @repo/logger | [[logger/AGENTS.md]] | Logger compartilhado |
+| @parisgroup-ai/domain-odonto-ai | [[domain-odonto-ai/AGENTS.md]] | Componentes de domínio odontológico para PageShell |
 
-### PageShell Design System
+### PageShell Design System (External)
 
-> [!info] Arquitetura em Camadas
-> PageShell segue arquitetura em camadas (L0 → L4).
-> Import via barrel: `@repo/page-shell`.
+> [!info] Package Externo
+> PageShell (`@parisgroup-ai/pageshell`) é um package externo instalado via GitHub Packages.
+> Os diretórios `page-shell/` e `pageshell-*/` contêm apenas `node_modules/` — não há código fonte local.
+> Import via: `@parisgroup-ai/pageshell`.
+
+Arquitetura em camadas (L0 → L4):
 
 ```
 L0  Core         → hooks, utils, types, formatters
@@ -52,19 +56,18 @@ L3  Features     → feature-level components
 L4  Composites   → full page patterns
 ```
 
-| Package | Caminho | Layer | Descrição |
-|---------|---------|-------|-----------|
-| @repo/page-shell | [[page-shell/AGENTS.md]] | Facade | Barrel - re-exporta todos @pageshell/* |
-| @pageshell/core | [[pageshell-core/AGENTS.md]] | L0 | Core hooks, utils e types |
-| @pageshell/primitives | [[pageshell-primitives/AGENTS.md]] | L1 | Radix UI primitives |
-| @pageshell/layouts | [[pageshell-layouts/AGENTS.md]] | L2 | Layout components |
-| @pageshell/interactions | [[pageshell-interactions/AGENTS.md]] | L2 | Interactive components |
-| @pageshell/features | [[pageshell-features/AGENTS.md]] | L3 | Feature components |
-| @pageshell/composites | [[pageshell-composites/AGENTS.md]] | L4 | Page composites |
-| @pageshell/shell | [[pageshell-shell/AGENTS.md]] | Facade | PageShell facade e query handling |
-| @pageshell/theme | [[pageshell-theme/AGENTS.md]] | Infra | Theme context e hooks |
-| @pageshell/themes | [[pageshell-themes/AGENTS.md]] | Infra | Theme presets |
-| @pageshell/domain | [[pageshell-domain/AGENTS.md]] | Domain | Domain-specific UI components |
+| Package | Layer | Descrição |
+|---------|-------|-----------|
+| @pageshell/core | L0 | Core hooks, utils e types |
+| @pageshell/primitives | L1 | Radix UI primitives |
+| @pageshell/layouts | L2 | Layout components |
+| @pageshell/interactions | L2 | Interactive components |
+| @pageshell/features | L3 | Feature components |
+| @pageshell/composites | L4 | Page composites |
+| @pageshell/shell | Facade | PageShell facade e query handling |
+| @pageshell/theme | Infra | Theme context e hooks |
+| @pageshell/themes | Infra | Theme presets |
+| @pageshell/domain | Domain | Domain-specific UI components |
 
 ### Composites Disponíveis
 
@@ -116,4 +119,4 @@ L4  Composites   → full page patterns
 - [[../docs/00-Index/Home]] — Hub de documentação
 
 ---
-*Atualizado: 2026-02-04*
+*Atualizado: 2026-02-23*

@@ -1,7 +1,7 @@
 ---
 title: "AGENTS.md (apps/web)"
 created: 2026-02-04
-updated: 2026-02-04
+updated: 2026-02-23
 author: Team AURIA
 status: published
 tags:
@@ -105,4 +105,4 @@ related:
 - [[../../docs/00-Index/Home]] — Hub de documentação
 
 ---
-*Atualizado: 2026-02-04*
+*Atualizado: 2026-02-23*

@@ -16,10 +16,12 @@
 
 ```
 dentai-pro/
-├── apps/web/          # App principal (Vite + React)
-├── packages/logger/   # Logger compartilhado
-├── packages/page-shell/        # Barrel package PageShell
-├── packages/pageshell-*/       # Design system PageShell (11 packages)
+├── apps/web/                       # App principal (Vite + React)
+├── packages/logger/                # Logger compartilhado
+├── packages/domain-odonto-ai/      # Componentes de domínio odontológico
+├── packages/page-shell/            # Barrel package PageShell (externo)
+├── packages/pageshell-*/           # Design system PageShell (externo, 11 packages)
+├── supabase/functions/             # Edge functions (backend Deno)
 ```
 
 ## Links
@@ -28,4 +30,4 @@ dentai-pro/
 - [[AGENTS.md]] - Índice geral de agentes
 
 ---
-*Atualizado: 2026-02-04*
+*Atualizado: 2026-02-23*

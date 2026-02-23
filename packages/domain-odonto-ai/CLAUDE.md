@@ -1,4 +1,4 @@
-# Logger
+# Domain Odonto AI
 
 > Entry point. Leia primeiro.
 
@@ -8,8 +8,8 @@
 
 ## Contexto
 
-- **O quê**: Logger compartilhado do monorepo
-- **Stack**: TypeScript
+- **O quê**: Componentes de domínio odontológico para PageShell — pacientes, agendamentos, tratamentos, billing, inventário, imagens, prescrições
+- **Stack**: TypeScript, React, PageShell composites
 - **Pai**: [[../../CLAUDE.md]]
 
 ## Links
