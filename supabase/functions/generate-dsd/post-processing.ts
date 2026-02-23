@@ -56,8 +56,11 @@ export function applyPostProcessingSafetyNets(
   // "alta" always has sufficient visibility. "média" CAN have 0mm exposure (lip tangent) —
   // only allow gengivoplasty for média if observations mention visible gingiva or asymmetry.
   const smileLine = (analysis.smile_line || '').toLowerCase();
+  const hasExplicitGingivoSuggestions = analysis.suggestions.some(s =>
+    (s.treatment_indication || '').toLowerCase() === 'gengivoplastia'
+  );
   const shouldStripGingivo = smileLine === 'baixa' || (
-    smileLine === 'média' && !analysis.observations?.some(obs => {
+    smileLine === 'média' && !hasExplicitGingivoSuggestions && !analysis.observations?.some(obs => {
       const lower = obs.toLowerCase();
       return lower.includes('assimetria gengival') ||
              lower.includes('coroa clínica curta') ||

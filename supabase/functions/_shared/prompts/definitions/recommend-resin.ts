@@ -245,15 +245,22 @@ function buildLayerCapSection(restorationSize: string, cavityClass: string, aest
   let scenario = ''
 
   if (isDiastema || (isAnteriorAesthetic && isAnteriorRegion)) {
-    // Anterior aesthetic procedures always require full stratification — never cap below 4
-    maxLayers = 4
     if (isDiastema) {
-      if (sizeNorm.includes('pequen') || sizeNorm.includes('médi') || sizeNorm.includes('medi')) {
-        scenario = 'Diastema Pequeno/Médio: Mín 4 camadas (Aumento Incisal + Cristas Proximais + Corpo + Esmalte)'
+      if (sizeNorm.includes('pequen')) {
+        // Small diastema (<1mm): simplified technique — enamel resins only
+        maxLayers = 2
+        scenario = 'Diastema Pequeno (<1mm): Técnica SIMPLIFICADA — 2 camadas (Corpo + Esmalte claro). Apenas resinas de esmalte mais claro (WE, W3, BL1). Sem necessidade de camada de dentina opaca.'
+      } else if (sizeNorm.includes('médi') || sizeNorm.includes('medi')) {
+        // Medium diastema (1-2mm): DENTINA/BODY + enamel
+        maxLayers = 3
+        scenario = 'Diastema Médio (1-2mm): 3 camadas — Dentina/Body + Cristas Proximais + Esmalte (WE ou W3 para dentes clareados). Se dentes clareados: usar DENTINA ou BODY + camada final WE ou W3.'
       } else {
-        scenario = 'Diastema Grande/Extenso: Mín 4 camadas + Efeitos Incisais recomendado (5 camadas)'
+        // Large diastema (>2mm): full stratification
+        maxLayers = 4
+        scenario = 'Diastema Grande/Extenso (>2mm): Mín 4 camadas + Efeitos Incisais recomendado (5 camadas). Se dentes clareados: DENTINA ou BODY + camada esmalte final WE ou W3.'
       }
     } else {
+      maxLayers = 4
       scenario = 'Recontorno/Faceta Anterior Estético: Mín 4 camadas (Aumento Incisal + Cristas Proximais + Corpo + Esmalte)'
     }
   } else {
@@ -272,6 +279,31 @@ function buildLayerCapSection(restorationSize: string, cavityClass: string, aest
   }
 
   if (maxLayers === null) return ''
+
+  // Simplified diastema protocols (small and medium)
+  if (isDiastema && maxLayers === 2) {
+    return `=== PROTOCOLO SIMPLIFICADO DIASTEMA PEQUENO ===
+Cenário detectado: ${scenario}
+MAXIMO DE CAMADAS: 2
+Diastema pequeno (<1mm) usa técnica SIMPLIFICADA:
+1. Corpo/Dentina (shade compatível com substrato)
+2. Esmalte vestibular claro (WE, W3, ou BL1 — 1 tom mais claro que corpo)
+Para dentes clareados: resinas de esmalte mais claro apenas.
+PROIBIDO gerar 4-5 camadas para diastema pequeno — é sobretratamento.
+`
+  }
+
+  if (isDiastema && maxLayers === 3) {
+    return `=== PROTOCOLO DIASTEMA MEDIO (TECNICA INTERMEDIARIA) ===
+Cenário detectado: ${scenario}
+CAMADAS OBRIGATORIAS: 3
+1. Dentina/Body (shade VITA compatível com substrato — DENTINA ou BODY shade)
+2. Cristas Proximais (esmalte 1 tom mais claro)
+3. Esmalte Vestibular Final (WE ou W3 para dentes clareados, BL1 caso contrário)
+Se dentes clareados: usar DENTINA ou BODY + camada final WE ou W3.
+PROIBIDO gerar menos de 3 ou mais de 4 camadas para diastema médio.
+`
+  }
 
   if (isAesthetic || forceAesthetic) {
     return `=== CAMADAS OBRIGATORIAS (PROCEDIMENTO ESTETICO ANTERIOR) ===
