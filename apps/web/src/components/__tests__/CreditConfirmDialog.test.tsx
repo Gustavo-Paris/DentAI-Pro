@@ -33,24 +33,20 @@ vi.mock('@/lib/analytics', () => ({
   trackEvent: vi.fn(),
 }));
 
-// Mock shadcn AlertDialog components
-vi.mock('@/components/ui/alert-dialog', () => ({
-  AlertDialog: ({ children, open }: { children: React.ReactNode; open: boolean }) =>
-    open ? <div data-testid="alert-dialog">{children}</div> : null,
-  AlertDialogContent: ({ children }: { children: React.ReactNode }) =>
-    <div data-testid="alert-dialog-content">{children}</div>,
-  AlertDialogHeader: ({ children }: { children: React.ReactNode }) =>
-    <div>{children}</div>,
-  AlertDialogTitle: ({ children }: { children: React.ReactNode; className?: string }) =>
-    <h2>{children}</h2>,
-  AlertDialogDescription: ({ children }: { children: React.ReactNode; asChild?: boolean }) =>
-    <div>{children}</div>,
-  AlertDialogFooter: ({ children }: { children: React.ReactNode }) =>
-    <div>{children}</div>,
-  AlertDialogCancel: ({ children, onClick }: { children: React.ReactNode; onClick: () => void }) =>
-    <button onClick={onClick}>{children}</button>,
-  AlertDialogAction: ({ children, onClick }: { children: React.ReactNode; onClick: () => void }) =>
-    <button onClick={onClick}>{children}</button>,
+// Mock PageConfirmDialog from pageshell (component migrated from AlertDialog)
+vi.mock('@parisgroup-ai/pageshell/interactions', () => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  PageConfirmDialog: ({ children, open, title, icon, confirmText, cancelText, onConfirm, onCancel }: any) =>
+    open ? (
+      <div data-testid="alert-dialog">
+        <div>{icon}<h2>{title}</h2></div>
+        {children}
+        <div>
+          <button onClick={onCancel}>{cancelText}</button>
+          <button onClick={onConfirm}>{confirmText}</button>
+        </div>
+      </div>
+    ) : null,
 }));
 
 // ---------------------------------------------------------------------------

@@ -39,6 +39,7 @@ function createBuilder(): Record<string, (...args: unknown[]) => unknown> {
   builder.select = chainMethod(mockSelect);
   builder.eq = chainMethod(mockEq);
   builder.in = chainMethod(mockIn);
+  builder.limit = chainMethod(vi.fn());
   builder.order = chainMethod(mockOrder);
   builder.range = (...args: unknown[]) => {
     mockRange(...args);
