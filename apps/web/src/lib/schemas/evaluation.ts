@@ -1,30 +1,31 @@
 import { z } from 'zod';
+import i18n from '@/lib/i18n';
 
 export const reviewFormSchema = z.object({
   patientName: z.string()
     .trim()
-    .max(100, 'Nome muito longo')
+    .max(100, i18n.t('validation.nameTooLong'))
     .optional()
     .or(z.literal('')),
   patientAge: z.string()
-    .min(1, 'Idade é obrigatória')
+    .min(1, i18n.t('validation.ageRequired'))
     .refine((val) => {
       const num = parseInt(val, 10);
       return !isNaN(num) && num >= 0 && num <= 120;
-    }, 'Idade inválida (0-120)'),
+    }, i18n.t('validation.ageInvalid')),
   tooth: z.string()
-    .min(1, 'Selecione um dente'),
+    .min(1, i18n.t('validation.selectTooth')),
   toothRegion: z.enum(['anterior', 'posterior']),
-  cavityClass: z.string().min(1, 'Tipo de procedimento é obrigatório')
+  cavityClass: z.string().min(1, i18n.t('validation.procedureTypeRequired'))
     .refine((val) => [
       // Restaurador tradicional
       'Classe I', 'Classe II', 'Classe III', 'Classe IV', 'Classe V', 'Classe VI',
       // Procedimentos estéticos
       'Faceta Direta', 'Recontorno Estético', 'Fechamento de Diastema', 'Reparo de Restauração', 'Lente de Contato'
-    ].includes(val), 'Tipo de procedimento inválido'),
+    ].includes(val), i18n.t('validation.procedureTypeInvalid')),
   restorationSize: z.enum(['Pequena', 'Média', 'Grande', 'Extensa']),
-  vitaShade: z.string().min(1, 'Cor é obrigatória'),
-  substrate: z.string().min(1, 'Substrato é obrigatório'),
+  vitaShade: z.string().min(1, i18n.t('validation.shadeRequired')),
+  substrate: z.string().min(1, i18n.t('validation.substrateRequired')),
   substrateCondition: z.string().optional(),
   enamelCondition: z.string().optional(),
   depth: z.enum(['Rasa', 'Média', 'Profunda']).optional(),
@@ -33,7 +34,7 @@ export const reviewFormSchema = z.object({
   budget: z.enum(['padrão', 'premium']),
   longevityExpectation: z.enum(['curto', 'médio', 'longo']).default('médio'),
   clinicalNotes: z.string()
-    .max(500, 'Notas muito longas')
+    .max(500, i18n.t('validation.notesTooLong'))
     .optional()
     .or(z.literal('')),
   treatmentType: z.enum([
@@ -49,7 +50,7 @@ export const reviewFormSchema = z.object({
 });
 
 export const patientPreferencesSchema = z.object({
-  aestheticGoals: z.string().max(500, 'Texto muito longo').optional().or(z.literal('')),
+  aestheticGoals: z.string().max(500, i18n.t('validation.textTooLong')).optional().or(z.literal('')),
 });
 
 export type ReviewFormData = z.infer<typeof reviewFormSchema>;

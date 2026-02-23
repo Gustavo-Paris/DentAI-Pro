@@ -1481,7 +1481,13 @@
         "body": "Body",
         "dentin": "Dentin",
         "aiConfidence": "AI Confidence",
-        "high": "High"
+        "high": "High",
+        "toothLabel": "Tooth #21"
+      },
+      "featurePreview": {
+        "enamel": "Enamel",
+        "body": "Body",
+        "dentin": "Dentin"
       }
     },
     "errorBoundary": {
@@ -1712,6 +1718,16 @@
     "gengivoplastia": { "label": "Aesthetic Gingivoplasty", "shortLabel": "Gingivoplasty" },
     "recobrimento_radicular": { "label": "Root Coverage", "shortLabel": "Root Cov." }
   },
+  "treatmentStyles": {
+    "resina": "Resin Restoration",
+    "porcelana": "Porcelain Veneer",
+    "coroa": "Prosthetic Crown",
+    "implante": "Implant Indication",
+    "endodontia": "Root Canal Treatment",
+    "encaminhamento": "Referral",
+    "gengivoplastia": "Aesthetic Gingivoplasty",
+    "recobrimento_radicular": "Root Coverage"
+  },
   "toothLabel": {
     "gingiva": "Gingiva",
     "tooth": "Tooth {{number}}"
@@ -1741,5 +1757,187 @@
     "checkbox": "I have read and accept the terms above",
     "accept": "Continue",
     "footer": "By accepting, you agree to our"
+  },
+  "validation": {
+    "nameTooLong": "Name too long",
+    "ageRequired": "Age is required",
+    "ageInvalid": "Invalid age (0-120)",
+    "selectTooth": "Select a tooth",
+    "procedureTypeRequired": "Procedure type is required",
+    "procedureTypeInvalid": "Invalid procedure type",
+    "shadeRequired": "Shade is required",
+    "substrateRequired": "Substrate is required",
+    "notesTooLong": "Notes too long",
+    "textTooLong": "Text too long"
+  },
+  "protocols": {
+    "implante": {
+      "summary": "Tooth {{tooth}} indicated for extraction and implant rehabilitation.",
+      "checklist": [
+        "Request cone beam computed tomography",
+        "Evaluate available bone quantity and quality",
+        "Verify adequate prosthetic space",
+        "Assess periodontal condition of adjacent teeth",
+        "Plan osseointegration timing",
+        "Discuss provisional prosthesis options",
+        "Refer to implant surgeon",
+        "Schedule follow-up appointment"
+      ],
+      "alerts": [
+        "Evaluate systemic contraindications for surgery",
+        "Check for bisphosphonate or anticoagulant use",
+        "Consider bone graft if necessary"
+      ],
+      "recommendations": [
+        "Maintain adequate oral hygiene",
+        "Avoid smoking during treatment",
+        "Follow pre and post-operative instructions"
+      ]
+    },
+    "coroa": {
+      "summary": "Tooth {{tooth}} indicated for full crown restoration.",
+      "checklist": [
+        "Perform crown preparation following biomechanical principles",
+        "Evaluate need for post and core",
+        "Select crown material (metal-ceramic, all-ceramic, zirconia)",
+        "Working impression",
+        "Fabricate adequate provisional",
+        "Infrastructure try-in",
+        "Shade selection with VITA scale",
+        "Definitive cementation",
+        "Occlusal adjustment",
+        "Hygiene instructions"
+      ],
+      "alerts": [
+        "Check pulp health before preparation",
+        "Evaluate crown-to-root ratio",
+        "Consider prior periodontal treatment if necessary"
+      ],
+      "recommendations": [
+        "Protect provisional during wait period",
+        "Avoid hard and sticky foods"
+      ]
+    },
+    "endodontia": {
+      "summary": "Tooth {{tooth}} requires endodontic treatment before definitive restoration.",
+      "checklist": [
+        "Confirm pulpal diagnosis",
+        "Request periapical radiograph",
+        "Evaluate root anatomy",
+        "Plan endodontic access",
+        "Canal instrumentation and irrigation",
+        "Intracanal medication if necessary",
+        "Root canal obturation",
+        "Post-obturation control radiograph",
+        "Schedule definitive restoration",
+        "Instruct to return if pain or swelling occurs"
+      ],
+      "alerts": [
+        "Evaluate need for retreatment",
+        "Check for periapical lesion",
+        "Consider referral to specialist in complex cases"
+      ],
+      "recommendations": [
+        "Avoid chewing on treated side until definitive restoration",
+        "Return immediately if severe pain or swelling occurs"
+      ]
+    },
+    "gengivoplastia": {
+      "summary": "Aesthetic gingivoplasty indicated by DSD for smile harmonization.",
+      "checklist": [
+        "Complete periodontal evaluation (probing, radiographs)",
+        "Surgical planning based on DSD analysis",
+        "Local infiltrative anesthesia",
+        "Mark gingival zeniths with millimeter probe",
+        "Incision with 15C blade following the planning",
+        "Remove excess gingival tissue",
+        "Osteotomy/osteoplasty if necessary (clinical crown lengthening)",
+        "Suture (if necessary) with 5-0 or 6-0 thread",
+        "Prescription: analgesic + anti-inflammatory + 0.12% chlorhexidine rinse",
+        "Suture removal in 7-10 days",
+        "Wait for complete healing (3-6 weeks) before definitive restorations",
+        "Re-evaluation and impression for restorations after healing"
+      ],
+      "alerts": [
+        "Contraindicate in patients with untreated active periodontitis",
+        "Evaluate gingival biotype (thin vs thick) for technique selection",
+        "Verify biologic width before planning resection",
+        "Consider bilateral gingivoplasty for symmetry"
+      ],
+      "recommendations": [
+        "Maintain rigorous oral hygiene during healing",
+        "Avoid hard and spicy foods for 7 days",
+        "Do not brush the operated area for 48h",
+        "Return immediately if excessive bleeding occurs"
+      ]
+    },
+    "encaminhamento": {
+      "summary": "Tooth {{tooth}} requires specialized evaluation.",
+      "summarySpecialty": " Suggested referral: **{{specialty}}**.",
+      "referTo": "Refer to {{specialty}} — reason: {{reason}}",
+      "identifySpecialty": "Identify appropriate specialty",
+      "alerts": [
+        "Referral urgency depends on diagnosis",
+        "Maintain communication with specialist"
+      ],
+      "defaultChecklist": [
+        "Document clinical findings",
+        "Take necessary radiographs",
+        "Prepare report for specialist",
+        "Guide patient on next steps",
+        "Schedule follow-up appointment"
+      ],
+      "defaultRecommendations": [
+        "Bring exams and report to specialist",
+        "Inform about medications in use"
+      ],
+      "ortodontia": {
+        "defaultReason": "positioning correction",
+        "checklist": [
+          "Document clinical findings and intra/extraoral photographs",
+          "Request panoramic radiograph and lateral cephalometry",
+          "Request study models or digital scanning",
+          "Inform orthodontist about ongoing aesthetic restorative plan",
+          "Coordinate timing: orthodontic alignment before finalizing anterior restorations",
+          "Guide patient on estimated duration and treatment stages",
+          "Schedule follow-up for monitoring and restorative plan re-evaluation"
+        ],
+        "recommendations": [
+          "Bring radiographic exams and clinical report to orthodontist",
+          "Long-term occlusal stability depends on prior alignment",
+          "Inform about medications in use and aesthetic expectations"
+        ]
+      },
+      "endodontiaRef": {
+        "defaultReason": "pulpal compromise",
+        "checklist": [
+          "Document clinical findings and pulp vitality test",
+          "Request periapical radiograph of the tooth",
+          "Inform endodontist about post-treatment restorative plan",
+          "Guide patient on next steps",
+          "Schedule return for definitive restoration after endodontic treatment"
+        ],
+        "recommendations": [
+          "Bring radiographs and report to endodontist",
+          "Return immediately if severe pain or swelling occurs",
+          "Avoid chewing on treated side until definitive restoration"
+        ]
+      },
+      "periodontia": {
+        "defaultReason": "periodontal compromise",
+        "checklist": [
+          "Document clinical findings and probing depths",
+          "Request periapical or panoramic radiograph",
+          "Inform periodontist about restorative plan",
+          "Guide patient on importance of periodontal control",
+          "Schedule return for re-evaluation after periodontal treatment"
+        ],
+        "recommendations": [
+          "Bring exams and report to periodontist",
+          "Maintain rigorous oral hygiene during treatment",
+          "Return for quarterly periodontal control"
+        ]
+      }
+    }
   }
 }

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { evaluations, wizard } from '@/data';
+import { getFullRegion, getGenericProtocol } from './wizard/helpers';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -129,119 +130,6 @@ export interface EvaluationDetailActions {
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
-
-// Helper to determine full region format
-const getFullRegion = (tooth: string): string => {
-  const toothNum = parseInt(tooth);
-  const isUpper = toothNum >= 10 && toothNum <= 28;
-  const anteriorTeeth = ['11', '12', '13', '21', '22', '23', '31', '32', '33', '41', '42', '43'];
-  const isAnterior = anteriorTeeth.includes(tooth);
-
-  if (isAnterior) {
-    return isUpper ? 'anterior-superior' : 'anterior-inferior';
-  }
-  return isUpper ? 'posterior-superior' : 'posterior-inferior';
-};
-
-// Generate generic protocol for non-restorative treatments
-const getGenericProtocol = (treatmentType: TreatmentType, tooth: string, toothData: PendingTooth) => {
-  const protocols: Record<string, { summary: string; checklist: string[]; alerts: string[]; recommendations: string[] }> = {
-    implante: {
-      summary: `Dente ${tooth} indicado para extração e reabilitação com implante.`,
-      checklist: [
-        'Solicitar tomografia computadorizada cone beam',
-        'Avaliar quantidade e qualidade óssea disponível',
-        'Verificar espaço protético adequado',
-        'Avaliar condição periodontal dos dentes adjacentes',
-        'Planejar tempo de osseointegração',
-        'Discutir opções de prótese provisória',
-        'Encaminhar para cirurgião implantodontista',
-        'Agendar retorno para acompanhamento',
-      ],
-      alerts: [
-        'Avaliar contraindicações sistêmicas para cirurgia',
-        'Verificar uso de bifosfonatos ou anticoagulantes',
-      ],
-      recommendations: [
-        'Manter higiene oral adequada',
-        'Evitar fumar durante o tratamento',
-      ],
-    },
-    coroa: {
-      summary: `Dente ${tooth} indicado para restauração com coroa total.`,
-      checklist: [
-        'Realizar preparo coronário seguindo princípios biomecânicos',
-        'Avaliar necessidade de núcleo/pino intrarradicular',
-        'Selecionar material da coroa',
-        'Moldagem de trabalho',
-        'Confecção de provisório adequado',
-        'Prova da infraestrutura',
-        'Seleção de cor com escala VITA',
-        'Cimentação definitiva',
-        'Ajuste oclusal',
-        'Orientações de higiene',
-      ],
-      alerts: [
-        'Verificar saúde pulpar antes do preparo',
-        'Avaliar relação coroa-raiz',
-      ],
-      recommendations: [
-        'Proteger o provisório durante a espera',
-        'Evitar alimentos duros e pegajosos',
-      ],
-    },
-    endodontia: {
-      summary: `Dente ${tooth} necessita de tratamento endodôntico antes de restauração definitiva.`,
-      checklist: [
-        'Confirmar diagnóstico pulpar',
-        'Solicitar radiografia periapical',
-        'Avaliar anatomia radicular',
-        'Planejamento do acesso endodôntico',
-        'Instrumentação e irrigação dos canais',
-        'Medicação intracanal se necessário',
-        'Obturação dos canais radiculares',
-        'Radiografia de controle pós-obturação',
-        'Agendar restauração definitiva',
-      ],
-      alerts: [
-        'Avaliar necessidade de retratamento',
-        'Verificar presença de lesão periapical',
-      ],
-      recommendations: [
-        'Evitar mastigar do lado tratado até restauração definitiva',
-        'Retornar imediatamente se houver dor intensa ou inchaço',
-      ],
-    },
-    encaminhamento: {
-      summary: `Dente ${tooth} requer avaliação especializada.`,
-      checklist: [
-        'Documentar achados clínicos',
-        'Realizar radiografias necessárias',
-        'Preparar relatório para o especialista',
-        'Identificar especialidade adequada',
-        'Orientar paciente sobre próximos passos',
-        'Agendar retorno para acompanhamento',
-      ],
-      alerts: [
-        'Urgência do encaminhamento depende do diagnóstico',
-        'Manter comunicação com especialista',
-      ],
-      recommendations: [
-        'Levar exames e relatório ao especialista',
-        'Informar sobre medicamentos em uso',
-      ],
-    },
-  };
-
-  const protocol = protocols[treatmentType] || protocols.encaminhamento;
-
-  return {
-    treatment_type: treatmentType,
-    tooth: tooth,
-    ai_reason: toothData?.indication_reason || null,
-    ...protocol,
-  };
-};
 
 const TREATMENT_LABEL_KEYS: Record<TreatmentType, string> = {
   resina: 'components.wizard.review.treatmentResina',
@@ -757,7 +645,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
           const genericProtocol = getGenericProtocol(
             treatmentType as TreatmentType,
             evaluation.tooth,
-            { indication_reason: evaluation.ai_indication_reason } as PendingTooth,
+            { indication_reason: evaluation.ai_indication_reason },
           );
           await evaluations.updateEvaluation(evaluationId, {
             generic_protocol: genericProtocol,

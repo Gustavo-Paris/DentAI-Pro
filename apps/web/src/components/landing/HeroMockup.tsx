@@ -46,7 +46,7 @@ export function HeroMockup() {
               </svg>
               <div className="flex-1 space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium">Dente #21</span>
+                  <span className="text-xs font-medium">{t('components.landing.heroMockup.toothLabel')}</span>
                   <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">{t('components.landing.heroMockup.resin')}</span>
                 </div>
                 <div className="text-[10px] text-muted-foreground">{t('components.landing.heroMockup.vitaColor')}</div>

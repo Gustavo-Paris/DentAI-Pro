@@ -1543,7 +1543,13 @@
         "body": "Corpo",
         "dentin": "Dentina",
         "aiConfidence": "Confiança da IA",
-        "high": "Alta"
+        "high": "Alta",
+        "toothLabel": "Dente #21"
+      },
+      "featurePreview": {
+        "enamel": "Esmalte",
+        "body": "Corpo",
+        "dentin": "Dentina"
       }
     },
     "errorBoundary": {
@@ -1775,6 +1781,16 @@
     "gengivoplastia": { "label": "Gengivoplastia Estética", "shortLabel": "Gengivoplastia" },
     "recobrimento_radicular": { "label": "Recobrimento Radicular", "shortLabel": "Recobr." }
   },
+  "treatmentStyles": {
+    "resina": "Restauração em Resina",
+    "porcelana": "Faceta de Porcelana",
+    "coroa": "Coroa Protética",
+    "implante": "Indicação de Implante",
+    "endodontia": "Tratamento de Canal",
+    "encaminhamento": "Encaminhamento",
+    "gengivoplastia": "Gengivoplastia Estética",
+    "recobrimento_radicular": "Recobrimento Radicular"
+  },
   "toothLabel": {
     "gingiva": "Gengiva",
     "tooth": "Dente {{number}}"
@@ -1804,5 +1820,187 @@
     "checkbox": "Li e aceito os termos acima",
     "accept": "Continuar",
     "footer": "Ao aceitar, você concorda com nossa"
+  },
+  "validation": {
+    "nameTooLong": "Nome muito longo",
+    "ageRequired": "Idade é obrigatória",
+    "ageInvalid": "Idade inválida (0-120)",
+    "selectTooth": "Selecione um dente",
+    "procedureTypeRequired": "Tipo de procedimento é obrigatório",
+    "procedureTypeInvalid": "Tipo de procedimento inválido",
+    "shadeRequired": "Cor é obrigatória",
+    "substrateRequired": "Substrato é obrigatório",
+    "notesTooLong": "Notas muito longas",
+    "textTooLong": "Texto muito longo"
+  },
+  "protocols": {
+    "implante": {
+      "summary": "Dente {{tooth}} indicado para extração e reabilitação com implante.",
+      "checklist": [
+        "Solicitar tomografia computadorizada cone beam",
+        "Avaliar quantidade e qualidade óssea disponível",
+        "Verificar espaço protético adequado",
+        "Avaliar condição periodontal dos dentes adjacentes",
+        "Planejar tempo de osseointegração",
+        "Discutir opções de prótese provisória",
+        "Encaminhar para cirurgião implantodontista",
+        "Agendar retorno para acompanhamento"
+      ],
+      "alerts": [
+        "Avaliar contraindicações sistêmicas para cirurgia",
+        "Verificar uso de bifosfonatos ou anticoagulantes",
+        "Considerar enxerto ósseo se necessário"
+      ],
+      "recommendations": [
+        "Manter higiene oral adequada",
+        "Evitar fumar durante o tratamento",
+        "Seguir orientações pré e pós-operatórias"
+      ]
+    },
+    "coroa": {
+      "summary": "Dente {{tooth}} indicado para restauração com coroa total.",
+      "checklist": [
+        "Realizar preparo coronário seguindo princípios biomecânicos",
+        "Avaliar necessidade de núcleo/pino intrarradicular",
+        "Selecionar material da coroa (metal-cerâmica, cerâmica pura, zircônia)",
+        "Moldagem de trabalho",
+        "Confecção de provisório adequado",
+        "Prova da infraestrutura",
+        "Seleção de cor com escala VITA",
+        "Cimentação definitiva",
+        "Ajuste oclusal",
+        "Orientações de higiene"
+      ],
+      "alerts": [
+        "Verificar saúde pulpar antes do preparo",
+        "Avaliar relação coroa-raiz",
+        "Considerar tratamento periodontal prévio se necessário"
+      ],
+      "recommendations": [
+        "Proteger o provisório durante a espera",
+        "Evitar alimentos duros e pegajosos"
+      ]
+    },
+    "endodontia": {
+      "summary": "Dente {{tooth}} necessita de tratamento endodôntico antes de restauração definitiva.",
+      "checklist": [
+        "Confirmar diagnóstico pulpar",
+        "Solicitar radiografia periapical",
+        "Avaliar anatomia radicular",
+        "Planejamento do acesso endodôntico",
+        "Instrumentação e irrigação dos canais",
+        "Medicação intracanal se necessário",
+        "Obturação dos canais radiculares",
+        "Radiografia de controle pós-obturação",
+        "Agendar restauração definitiva",
+        "Orientar retorno se houver dor ou inchaço"
+      ],
+      "alerts": [
+        "Avaliar necessidade de retratamento",
+        "Verificar presença de lesão periapical",
+        "Considerar encaminhamento para especialista em casos complexos"
+      ],
+      "recommendations": [
+        "Evitar mastigar do lado tratado até restauração definitiva",
+        "Retornar imediatamente se houver dor intensa ou inchaço"
+      ]
+    },
+    "gengivoplastia": {
+      "summary": "Gengivoplastia estética indicada pelo DSD para harmonização do sorriso.",
+      "checklist": [
+        "Avaliação periodontal completa (sondagem, radiografias)",
+        "Planejamento cirúrgico baseado na análise DSD",
+        "Anestesia local infiltrativa",
+        "Marcação dos zênites gengivais com sonda milimetrada",
+        "Incisão com bisturi lâmina 15C seguindo o planejamento",
+        "Remoção de tecido gengival excedente",
+        "Osteotomia/osteoplastia se necessário (aumento de coroa clínica)",
+        "Sutura (se necessário) com fio 5-0 ou 6-0",
+        "Prescrição: analgésico + anti-inflamatório + bochecho clorexidina 0,12%",
+        "Remoção de sutura em 7-10 dias",
+        "Aguardar cicatrização completa (3-6 semanas) antes de restaurações definitivas",
+        "Reavaliação e moldagem para restaurações após cicatrização"
+      ],
+      "alerts": [
+        "Contraindicar em pacientes com periodontite ativa não tratada",
+        "Avaliar biotipo gengival (fino vs espesso) para escolha de técnica",
+        "Verificar distância biológica antes de planejar ressecção",
+        "Considerar gengivoplastia bilateral para simetria"
+      ],
+      "recommendations": [
+        "Manter higiene oral rigorosa durante cicatrização",
+        "Evitar alimentos duros e picantes por 7 dias",
+        "Não escovar a região operada por 48h",
+        "Retornar imediatamente se houver sangramento excessivo"
+      ]
+    },
+    "encaminhamento": {
+      "summary": "Dente {{tooth}} requer avaliação especializada.",
+      "summarySpecialty": " Sugestão de encaminhamento: **{{specialty}}**.",
+      "referTo": "Encaminhar para {{specialty}} — motivo: {{reason}}",
+      "identifySpecialty": "Identificar especialidade adequada",
+      "alerts": [
+        "Urgência do encaminhamento depende do diagnóstico",
+        "Manter comunicação com especialista"
+      ],
+      "defaultChecklist": [
+        "Documentar achados clínicos",
+        "Realizar radiografias necessárias",
+        "Preparar relatório para o especialista",
+        "Orientar paciente sobre próximos passos",
+        "Agendar retorno para acompanhamento"
+      ],
+      "defaultRecommendations": [
+        "Levar exames e relatório ao especialista",
+        "Informar sobre medicamentos em uso"
+      ],
+      "ortodontia": {
+        "defaultReason": "correção de posicionamento",
+        "checklist": [
+          "Documentar achados clínicos e fotografias intra/extraorais",
+          "Solicitar radiografia panorâmica e cefalometria lateral",
+          "Solicitar modelos de estudo ou escaneamento digital",
+          "Informar ao ortodontista sobre o plano restaurador estético em andamento",
+          "Coordenar timing: alinhamento ortodôntico antes de finalizar restaurações anteriores",
+          "Orientar paciente sobre duração estimada e etapas do tratamento ortodôntico",
+          "Agendar retorno para acompanhamento e reavaliação do plano restaurador"
+        ],
+        "recommendations": [
+          "Levar exames radiográficos e relatório clínico ao ortodontista",
+          "Estabilidade oclusal a longo prazo depende do alinhamento prévio",
+          "Informar sobre medicamentos em uso e expectativas estéticas"
+        ]
+      },
+      "endodontiaRef": {
+        "defaultReason": "comprometimento pulpar",
+        "checklist": [
+          "Documentar achados clínicos e teste de vitalidade pulpar",
+          "Solicitar radiografia periapical do dente",
+          "Informar ao endodontista sobre plano restaurador pós-tratamento",
+          "Orientar paciente sobre próximos passos",
+          "Agendar retorno para restauração definitiva após tratamento endodôntico"
+        ],
+        "recommendations": [
+          "Levar radiografias e relatório ao endodontista",
+          "Retornar imediatamente se houver dor intensa ou inchaço",
+          "Evitar mastigar do lado tratado até restauração definitiva"
+        ]
+      },
+      "periodontia": {
+        "defaultReason": "comprometimento periodontal",
+        "checklist": [
+          "Documentar achados clínicos e profundidade de sondagem",
+          "Solicitar radiografia periapical ou panorâmica",
+          "Informar ao periodontista sobre plano restaurador",
+          "Orientar paciente sobre importância do controle periodontal",
+          "Agendar retorno para reavaliação após tratamento periodontal"
+        ],
+        "recommendations": [
+          "Levar exames e relatório ao periodontista",
+          "Manter higiene bucal rigorosa durante o tratamento",
+          "Retornar para controle periodontal trimestral"
+        ]
+      }
+    }
   }
 }

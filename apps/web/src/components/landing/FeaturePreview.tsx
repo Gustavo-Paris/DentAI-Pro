@@ -1,3 +1,5 @@
+import i18n from '@/lib/i18n';
+
 type PreviewType = 'analysis' | 'dsd' | 'protocol' | 'pdf';
 
 const previews: Record<PreviewType, () => React.JSX.Element> = {
@@ -46,11 +48,11 @@ const previews: Record<PreviewType, () => React.JSX.Element> = {
     <svg viewBox="0 0 120 60" className="w-full h-auto" aria-hidden="true">
       {/* Layered bars — stratification */}
       <rect x="20" y="8" width="80" height="10" rx="3" fill="currentColor" className="text-sky-400/30 dark:text-sky-400/20" />
-      <text x="25" y="16" className="fill-sky-600/60 dark:fill-sky-400/50" fontSize="6" fontWeight="500">Esmalte</text>
+      <text x="25" y="16" className="fill-sky-600/60 dark:fill-sky-400/50" fontSize="6" fontWeight="500">{i18n.t('components.landing.featurePreview.enamel')}</text>
       <rect x="20" y="22" width="80" height="10" rx="3" fill="currentColor" className="text-primary/30" />
-      <text x="25" y="30" className="fill-primary/60" fontSize="6" fontWeight="500">Corpo</text>
+      <text x="25" y="30" className="fill-primary/60" fontSize="6" fontWeight="500">{i18n.t('components.landing.featurePreview.body')}</text>
       <rect x="20" y="36" width="80" height="10" rx="3" fill="currentColor" className="text-amber-400/30 dark:text-amber-400/20" />
-      <text x="25" y="44" className="fill-amber-600/60 dark:fill-amber-400/50" fontSize="6" fontWeight="500">Dentina</text>
+      <text x="25" y="44" className="fill-amber-600/60 dark:fill-amber-400/50" fontSize="6" fontWeight="500">{i18n.t('components.landing.featurePreview.dentin')}</text>
       {/* Arrow */}
       <path d="M106 15 L112 29 L106 43" fill="none" stroke="currentColor" className="text-primary/30" strokeWidth="1" />
       <circle cx="112" cy="29" r="2" className="fill-primary/40" />

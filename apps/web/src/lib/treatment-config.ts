@@ -23,6 +23,8 @@ export interface TreatmentTypeConfig {
 /** Visual styling fields used by Result and GroupResult pages. */
 export interface TreatmentStyle {
   label: string;
+  /** i18n key for label — use t(labelKey) when available */
+  labelKey: string;
   icon: ComponentType<{ className?: string }>;
   bgClass: string;
   borderClass: string;
@@ -49,6 +51,7 @@ export const treatmentConfig: Record<TreatmentType, TreatmentTypeConfig> = {
 export const treatmentStyles: Record<TreatmentType, TreatmentStyle> = {
   resina: {
     label: 'Restauração em Resina',
+    labelKey: 'treatmentStyles.resina',
     icon: Layers,
     bgClass: 'bg-primary/5 dark:bg-primary/10',
     borderClass: 'border-primary/20 dark:border-primary/30',
@@ -61,6 +64,7 @@ export const treatmentStyles: Record<TreatmentType, TreatmentStyle> = {
   },
   porcelana: {
     label: 'Faceta de Porcelana',
+    labelKey: 'treatmentStyles.porcelana',
     icon: Crown,
     bgClass: 'bg-amber-50 dark:bg-amber-950/20',
     borderClass: 'border-amber-200 dark:border-amber-800',
@@ -73,6 +77,7 @@ export const treatmentStyles: Record<TreatmentType, TreatmentStyle> = {
   },
   coroa: {
     label: 'Coroa Protética',
+    labelKey: 'treatmentStyles.coroa',
     icon: Crown,
     bgClass: 'bg-purple-50 dark:bg-purple-950/20',
     borderClass: 'border-purple-200 dark:border-purple-800',
@@ -85,6 +90,7 @@ export const treatmentStyles: Record<TreatmentType, TreatmentStyle> = {
   },
   implante: {
     label: 'Indicação de Implante',
+    labelKey: 'treatmentStyles.implante',
     icon: CircleX,
     bgClass: 'bg-orange-50 dark:bg-orange-950/20',
     borderClass: 'border-orange-200 dark:border-orange-800',
@@ -97,6 +103,7 @@ export const treatmentStyles: Record<TreatmentType, TreatmentStyle> = {
   },
   endodontia: {
     label: 'Tratamento de Canal',
+    labelKey: 'treatmentStyles.endodontia',
     icon: Stethoscope,
     bgClass: 'bg-rose-50 dark:bg-rose-950/20',
     borderClass: 'border-rose-200 dark:border-rose-800',
@@ -109,6 +116,7 @@ export const treatmentStyles: Record<TreatmentType, TreatmentStyle> = {
   },
   encaminhamento: {
     label: 'Encaminhamento',
+    labelKey: 'treatmentStyles.encaminhamento',
     icon: ArrowUpRight,
     bgClass: 'bg-muted/50',
     borderClass: 'border-border',
@@ -121,6 +129,7 @@ export const treatmentStyles: Record<TreatmentType, TreatmentStyle> = {
   },
   gengivoplastia: {
     label: 'Gengivoplastia Estética',
+    labelKey: 'treatmentStyles.gengivoplastia',
     icon: Smile,
     bgClass: 'bg-emerald-50 dark:bg-emerald-950/20',
     borderClass: 'border-emerald-200 dark:border-emerald-800',
@@ -133,6 +142,7 @@ export const treatmentStyles: Record<TreatmentType, TreatmentStyle> = {
   },
   recobrimento_radicular: {
     label: 'Recobrimento Radicular',
+    labelKey: 'treatmentStyles.recobrimento_radicular',
     icon: HeartPulse,
     bgClass: 'bg-teal-50 dark:bg-teal-950/20',
     borderClass: 'border-teal-200 dark:border-teal-800',
