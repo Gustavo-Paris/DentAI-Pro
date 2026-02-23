@@ -257,41 +257,11 @@
   height: 8px !important;
 }
 
-/* User card — no border, subtle bg only */
+/* User card — remove border/shadow for cleaner look (layout handled by pageshell 2.16) */
 .ui-theme button[aria-label*="User menu"],
 .ui-theme button[aria-label*="user menu"] {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem;
-  width: 100%;
-  border-radius: 0.5rem;
-  background: var(--sidebar-user-card-bg);
-  border: none;
-  transition: background 200ms ease;
-}
-
-.ui-theme button[aria-label*="User menu"]:hover,
-.ui-theme button[aria-label*="user menu"]:hover {
-  background: var(--sidebar-user-card-border);
-}
-
-.ui-theme button[aria-label*="User menu"] img:first-of-type,
-.ui-theme button[aria-label*="user menu"] img:first-of-type {
-  width: 36px;
-  height: 36px;
-  min-width: 36px;
-  min-height: 36px;
-  flex-shrink: 0;
-  border-radius: 9999px;
-  object-fit: cover;
-}
-
-.ui-theme button[aria-label*="User menu"] p,
-.ui-theme button[aria-label*="user menu"] p {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 /* ─── Dropdown Menu Polish ─── */
