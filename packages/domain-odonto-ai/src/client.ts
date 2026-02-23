@@ -20,3 +20,5 @@ export * from './settings';
 export * from './inventory';
 export * from './imaging';
 export * from './prescriptions';
+export * from './evaluations';
+export * from './shared';

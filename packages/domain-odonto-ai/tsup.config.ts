@@ -13,6 +13,7 @@ export default defineConfig({
     imaging: './src/imaging/index.ts',
     prescriptions: './src/prescriptions/index.ts',
     evaluations: './src/evaluations/index.ts',
+    shared: './src/shared/index.ts',
   },
   format: ['esm'],
   target: 'es2022',
