@@ -51,7 +51,10 @@ export default function Dashboard() {
     const returnTo = sessionStorage.getItem('returnTo');
     if (returnTo) {
       sessionStorage.removeItem('returnTo');
-      navigate(returnTo, { replace: true });
+      // Validate: must be a relative path (starts with /, not //)
+      if (returnTo.startsWith('/') && !returnTo.startsWith('//')) {
+        navigate(returnTo, { replace: true });
+      }
     }
   }, [navigate]);
 

@@ -70,13 +70,13 @@ Deno.serve(withErrorBoundary(async (req: Request) => {
   let returnUrl: string;
   try {
     const body: RequestBody = await req.json();
-    const origin = req.headers.get("origin") || "https://dentai.pro";
+    const origin = req.headers.get("origin") || "https://tosmile.ai";
     if (!isAllowedRedirectUrl(body.returnUrl)) {
       return createErrorResponse("URL de redirecionamento não permitida", 400, corsHeaders);
     }
     returnUrl = body.returnUrl || `${origin}/profile`;
   } catch {
-    const origin = req.headers.get("origin") || "https://dentai.pro";
+    const origin = req.headers.get("origin") || "https://tosmile.ai";
     returnUrl = `${origin}/profile`;
   }
 

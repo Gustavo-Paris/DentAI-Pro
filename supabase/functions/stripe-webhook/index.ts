@@ -53,7 +53,7 @@ Deno.serve(async (req: Request) => {
       event = stripe.webhooks.constructEvent(body, signature, WEBHOOK_SECRET);
     } catch (err) {
       logger.error("Webhook signature verification failed:", err);
-      return new Response(`Webhook Error: ${err instanceof Error ? err.message : 'Unknown error'}`, { status: 400 });
+      return new Response("Invalid signature", { status: 400 });
     }
 
     // Initialize Supabase client

@@ -116,7 +116,7 @@ Deno.serve(withErrorBoundary(async (req: Request) => {
       });
   }
 
-  const origin = req.headers.get("origin") || "https://dentai.pro";
+  const origin = req.headers.get("origin") || "https://tosmile.ai";
 
   // =========================================================================
   // PATH 1: Credit pack purchase (one-time payment)

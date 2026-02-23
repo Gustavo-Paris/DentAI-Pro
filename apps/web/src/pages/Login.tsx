@@ -52,7 +52,8 @@ export default function Login() {
       }
     } else {
       toast.success(t('auth.welcomeBack'));
-      navigate(returnTo || '/dashboard');
+      const safeReturn = returnTo?.startsWith('/') && !returnTo.startsWith('//') ? returnTo : '/dashboard';
+      navigate(safeReturn);
     }
 
     setLoading(false);
