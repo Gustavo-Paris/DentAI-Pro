@@ -13,9 +13,8 @@ import { BruxismAlert } from '@/components/protocol/BruxismAlert';
 import { ProtocolSections } from '@/components/protocol/ProtocolSections';
 import { CollapsibleDSD } from '@/components/dsd/CollapsibleDSD';
 import { LoadingOverlay } from '@/components/LoadingOverlay';
-import { DetailPage } from '@parisgroup-ai/pageshell/composites';
+import { DetailPage, GenericErrorState } from '@parisgroup-ai/pageshell/composites';
 
-import { ErrorState } from '@/components/ui/error-state';
 import { useTranslation } from 'react-i18next';
 import { useResult } from '@/hooks/domain/useResult';
 import { BRAND_NAME } from '@/lib/branding';
@@ -33,15 +32,16 @@ export default function Result() {
 
   if ((!r.evaluation && !r.isLoading) || r.isError) {
     return (
-      <ErrorState
-        variant="fullscreen"
-        title={t('result.notFound')}
-        description={r.isError
-          ? t('errors.loadFailed', { defaultValue: 'Erro ao carregar dados. Tente novamente.' })
-          : t('result.notFoundDescription', { defaultValue: 'O resultado solicitado nao foi encontrado.' })
-        }
-        action={{ label: t('common.back', { defaultValue: 'Voltar' }), onClick: () => window.history.back() }}
-      />
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <GenericErrorState
+          title={t('result.notFound')}
+          description={r.isError
+            ? t('errors.loadFailed', { defaultValue: 'Erro ao carregar dados. Tente novamente.' })
+            : t('result.notFoundDescription', { defaultValue: 'O resultado solicitado nao foi encontrado.' })
+          }
+          action={{ label: t('common.back', { defaultValue: 'Voltar' }), onClick: () => window.history.back() }}
+        />
+      </div>
     );
   }
 

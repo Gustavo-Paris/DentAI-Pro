@@ -21,12 +21,11 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { DetailPage } from '@parisgroup-ai/pageshell/composites';
+import { DetailPage, GenericErrorState } from '@parisgroup-ai/pageshell/composites';
 import { PageTreatmentTimeline } from '@parisgroup-ai/domain-odonto-ai/treatments';
 import type { ProcedureInfo } from '@parisgroup-ai/domain-odonto-ai/treatments';
 
 import { usePatientProfile } from '@/hooks/domain/usePatientProfile';
-import { ErrorState } from '@/components/ui/error-state';
 import { PatientSessionList } from '@/components/patient/PatientSessionList';
 
 // =============================================================================
@@ -152,7 +151,7 @@ export default function PatientProfile() {
 
   if (!profile.patient && !profile.isLoading) {
     return (
-      <ErrorState
+      <GenericErrorState
         title={t('errors.patientNotFound', { defaultValue: 'Paciente não encontrado' })}
         action={{ label: t('common.back', { defaultValue: 'Voltar' }), href: '/patients' }}
       />

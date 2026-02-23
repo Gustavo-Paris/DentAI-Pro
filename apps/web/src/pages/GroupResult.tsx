@@ -2,11 +2,10 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, Badge } from '@parisgroup-ai/pageshell/primitives';
 import { CheckCircle, RefreshCw } from 'lucide-react';
 import { ProtocolUnavailableAlert } from '@/components/ProtocolUnavailableAlert';
-import { ErrorState } from '@/components/ui/error-state';
 
 import { ProtocolSections } from '@/components/protocol/ProtocolSections';
 import { CollapsibleDSD } from '@/components/dsd/CollapsibleDSD';
-import { DetailPage } from '@parisgroup-ai/pageshell/composites';
+import { DetailPage, GenericErrorState } from '@parisgroup-ai/pageshell/composites';
 
 import { useTranslation } from 'react-i18next';
 import { useGroupResult } from '@/hooks/domain/useGroupResult';
@@ -19,15 +18,16 @@ export default function GroupResult() {
 
   if ((!g.primaryEval && !g.isLoading) || g.isError) {
     return (
-      <ErrorState
-        variant="fullscreen"
-        title={t('result.notFound')}
-        description={g.isError
-          ? t('errors.loadFailed', { defaultValue: 'Erro ao carregar dados. Tente novamente.' })
-          : t('result.notFoundDescription', { defaultValue: 'O resultado solicitado nao foi encontrado.' })
-        }
-        action={{ label: t('common.back', { defaultValue: 'Voltar' }), onClick: () => window.history.back() }}
-      />
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <GenericErrorState
+          title={t('result.notFound')}
+          description={g.isError
+            ? t('errors.loadFailed', { defaultValue: 'Erro ao carregar dados. Tente novamente.' })
+            : t('result.notFoundDescription', { defaultValue: 'O resultado solicitado nao foi encontrado.' })
+          }
+          action={{ label: t('common.back', { defaultValue: 'Voltar' }), onClick: () => window.history.back() }}
+        />
+      </div>
     );
   }
 

@@ -2,14 +2,13 @@ import { useTranslation } from 'react-i18next';
 import { PageConfirmDialog } from '@parisgroup-ai/pageshell/interactions';
 import { memo, useCallback, useMemo } from 'react';
 import { Lightbulb, Plus, X } from 'lucide-react';
-import { ListPage } from '@parisgroup-ai/pageshell/composites';
+import { ListPage, GenericErrorState } from '@parisgroup-ai/pageshell/composites';
 import { Button } from '@parisgroup-ai/pageshell/primitives';
 import { TipBanner } from '@/components/TipBanner';
 import { useInventoryManagement } from '@/hooks/domain/useInventoryManagement';
 import type { FlatInventoryItem } from '@/hooks/domain/useInventoryManagement';
 import { ResinBadge } from '@/components/ResinBadge';
 import { ResinTypeLegend } from '@/components/ResinTypeLegend';
-import { ErrorState } from '@/components/ui/error-state';
 import { AddResinsDialog } from '@/components/inventory/AddResinsDialog';
 import { CSVImportDialog } from '@/components/inventory/CSVImportDialog';
 
@@ -155,7 +154,7 @@ export default function Inventory() {
 
   if (inv.isError) {
     return (
-      <ErrorState
+      <GenericErrorState
         title={t('inventory.loadError', { defaultValue: 'Erro ao carregar inventário' })}
         description={t('errors.tryReloadPage')}
       />

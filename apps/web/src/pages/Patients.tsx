@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ListPage } from '@parisgroup-ai/pageshell/composites';
+import { ListPage, GenericErrorState } from '@parisgroup-ai/pageshell/composites';
 import {
   Button,
   Input,
@@ -19,7 +19,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { patients } from '@/data';
 import { usePatientList } from '@/hooks/domain/usePatientList';
 import type { PatientWithStats } from '@/hooks/domain/usePatientList';
-import { ErrorState } from '@/components/ui/error-state';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -194,7 +193,7 @@ export default function Patients() {
 
   if (isError) {
     return (
-      <ErrorState
+      <GenericErrorState
         title={t('patients.loadError')}
         description={t('errors.tryReloadPage')}
       />

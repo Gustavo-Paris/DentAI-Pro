@@ -1,14 +1,13 @@
 import { useCallback, useEffect, memo, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ListPage } from '@parisgroup-ai/pageshell/composites';
+import { ListPage, GenericErrorState } from '@parisgroup-ai/pageshell/composites';
 import { useEvaluationSessions } from '@/hooks/domain/useEvaluationSessions';
 import type { EvaluationSession } from '@/hooks/domain/useEvaluationSessions';
 import { Card } from '@parisgroup-ai/pageshell/primitives';
 import { StatusBadge, defineStatusConfig } from '@parisgroup-ai/pageshell/primitives';
 import { Badge } from '@parisgroup-ai/pageshell/primitives';
 import { CheckCircle, ChevronRight, Calendar } from 'lucide-react';
-import { ErrorState } from '@/components/ui/error-state';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatToothLabel } from '@/lib/treatment-config';
@@ -196,7 +195,7 @@ export default function Evaluations() {
 
   if (isError) {
     return (
-      <ErrorState
+      <GenericErrorState
         title={t('evaluation.loadError')}
         description={t('errors.tryReloadPage')}
       />

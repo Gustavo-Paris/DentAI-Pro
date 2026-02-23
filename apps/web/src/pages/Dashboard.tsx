@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { DashboardPage } from '@parisgroup-ai/pageshell/composites';
+import { DashboardPage, GenericErrorState } from '@parisgroup-ai/pageshell/composites';
 import type { ModuleConfig, DashboardTab } from '@parisgroup-ai/pageshell/composites';
 import { useDashboard } from '@/hooks/domain/useDashboard';
 import { TooltipProvider, Skeleton } from '@parisgroup-ai/pageshell/primitives';
@@ -21,7 +21,6 @@ import { PageClinicAlerts } from '@parisgroup-ai/domain-odonto-ai/dashboard';
 import type { ClinicAlert } from '@parisgroup-ai/domain-odonto-ai/dashboard';
 import { OnboardingProgress } from '@/components/onboarding/OnboardingProgress';
 import { WelcomeModal } from '@/components/onboarding/WelcomeModal';
-import { ErrorState } from '@/components/ui/error-state';
 
 function StatsGridFallback() {
   return (
@@ -203,7 +202,7 @@ export default function Dashboard() {
 
   if (dashboard.isError) {
     return (
-      <ErrorState
+      <GenericErrorState
         title={t('dashboard.loadError', { defaultValue: 'Erro ao carregar dashboard' })}
         description={t('errors.tryReloadPage')}
       />

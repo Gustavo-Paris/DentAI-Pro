@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
-import { Button, Input } from '@parisgroup-ai/pageshell/primitives';
+import { Button, Input, PasswordInput } from '@parisgroup-ai/pageshell/primitives';
 import { toast } from 'sonner';
 import { loginSchema, type LoginFormData } from '@/lib/schemas/auth';
 import { GoogleIcon } from '@/components/GoogleIcon';
@@ -16,7 +16,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
+} from '@parisgroup-ai/pageshell/interactions';
 
 export default function Login() {
   const { t } = useTranslation();
@@ -131,8 +131,7 @@ export default function Login() {
                 <FormItem>
                   <FormLabel>{t('auth.password')}</FormLabel>
                   <FormControl>
-                    <Input
-                      type="password"
+                    <PasswordInput
                       placeholder="••••••••"
                       autoComplete="current-password"
                       aria-required="true"

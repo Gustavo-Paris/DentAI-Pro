@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
-import { Button, Input, Checkbox } from '@parisgroup-ai/pageshell/primitives';
+import { Button, Input, Checkbox, PasswordInput } from '@parisgroup-ai/pageshell/primitives';
 import { toast } from 'sonner';
 import { registerSchema, type RegisterFormData } from '@/lib/schemas/auth';
 import { PasswordRequirements } from '@/components/PasswordRequirements';
@@ -19,7 +19,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
+} from '@parisgroup-ai/pageshell/interactions';
 
 export default function Register() {
   const { t } = useTranslation();
@@ -180,8 +180,7 @@ export default function Register() {
                 <FormItem>
                   <FormLabel>{t('auth.password')}</FormLabel>
                   <FormControl>
-                    <Input
-                      type="password"
+                    <PasswordInput
                       placeholder="••••••••••••"
                       autoComplete="new-password"
                       aria-required="true"
@@ -201,8 +200,7 @@ export default function Register() {
                 <FormItem>
                   <FormLabel>{t('auth.confirmPassword')}</FormLabel>
                   <FormControl>
-                    <Input
-                      type="password"
+                    <PasswordInput
                       placeholder="••••••••••••"
                       autoComplete="new-password"
                       aria-required="true"

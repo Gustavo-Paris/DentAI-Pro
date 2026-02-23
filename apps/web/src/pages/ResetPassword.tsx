@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { getSession, onAuthStateChange, updateUserPassword } from '@/data/auth';
-import { Button, Input } from '@parisgroup-ai/pageshell/primitives';
+import { Button, PasswordInput } from '@parisgroup-ai/pageshell/primitives';
 import { toast } from 'sonner';
 import { CheckCircle } from 'lucide-react';
 import { resetPasswordSchema, type ResetPasswordFormData } from '@/lib/schemas/auth';
@@ -18,7 +18,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
+} from '@parisgroup-ai/pageshell/interactions';
 
 export default function ResetPassword() {
   const { t } = useTranslation();
@@ -122,8 +122,7 @@ export default function ResetPassword() {
                   <FormItem>
                     <FormLabel>{t('auth.newPassword')}</FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
+                      <PasswordInput
                         placeholder="••••••••••••"
                         autoComplete="new-password"
                         {...field}
@@ -142,8 +141,7 @@ export default function ResetPassword() {
                   <FormItem>
                     <FormLabel>{t('auth.confirmNewPassword')}</FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
+                      <PasswordInput
                         placeholder="••••••••••••"
                         autoComplete="new-password"
                         {...field}
