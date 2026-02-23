@@ -20,8 +20,10 @@ export const BONUS_CREDITS = 5;
 
 /** setTimeout / retry delay presets (in milliseconds). */
 export const TIMING = {
-  /** Supabase fetch abort timeout. */
+  /** Supabase fetch abort timeout (auth, db, storage). */
   API_TIMEOUT: 55_000,
+  /** Longer timeout for edge function invocations (AI calls). */
+  FUNCTION_TIMEOUT: 150_000,
   /** Brief UI delay after wizard submit. */
   WIZARD_SUBMIT_DELAY: 800,
   /** Retry delay for DSD photo processing. */

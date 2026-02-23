@@ -15,7 +15,9 @@ export const supabase = createClient<Database>(env.VITE_SUPABASE_URL, env.VITE_S
   global: {
     fetch: (url, options) => {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), TIMING.API_TIMEOUT);
+      const isFunctionCall = typeof url === 'string' && url.includes('/functions/v1/');
+      const timeoutMs = isFunctionCall ? TIMING.FUNCTION_TIMEOUT : TIMING.API_TIMEOUT;
+      const timeout = setTimeout(() => controller.abort(), timeoutMs);
       return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timeout));
     },
   },
