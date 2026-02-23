@@ -336,6 +336,7 @@ Se o problema clínico é microdontia/conoide → sua sugestão deve ser "Aument
           maxTokens: 4000,
           forceFunctionName: "analyze_dsd",
           timeoutMs: 50_000,
+          thinkingLevel: "low",
         }
       );
       if (response.tokens) {
