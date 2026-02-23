@@ -35,6 +35,7 @@ AGENTS.md (este arquivo)
 │   ├── logger/AGENTS.md
 │   └── domain-odonto-ai/AGENTS.md → Componentes de domínio odontológico
 ├── supabase/
+│   ├── AGENTS.md                  → Instruções backend
 │   └── functions/                 → Edge functions (backend)
 └── docs/
     └── 00-Index/Home.md           → Hub de documentação
@@ -43,6 +44,7 @@ AGENTS.md (este arquivo)
 | Agente | Caminho | Descrição |
 |--------|---------|-----------|
 | web | [[apps/web/AGENTS.md]] | App principal - decisão clínica odontológica com IA |
+| supabase | [[supabase/AGENTS.md]] | Edge functions backend (Deno) - IA, billing, LGPD |
 | logger | [[packages/logger/AGENTS.md]] | Logger compartilhado |
 | domain-odonto-ai | [[packages/domain-odonto-ai/AGENTS.md]] | Componentes de domínio odontológico para PageShell |
 
