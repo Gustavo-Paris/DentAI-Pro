@@ -126,7 +126,7 @@ export const ToothSelectionCard = memo(function ToothSelectionCard({
                 'w-1.5 h-1.5 rounded-full',
                 tooth.priority === 'alta' && 'bg-destructive',
                 tooth.priority === 'média' && 'bg-warning',
-                tooth.priority === 'baixa' && 'bg-slate-400',
+                tooth.priority === 'baixa' && 'bg-muted-foreground',
               )} />
               {tooth.priority}
             </Badge>

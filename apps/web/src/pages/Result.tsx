@@ -32,7 +32,7 @@ export default function Result() {
 
   if ((!r.evaluation && !r.isLoading) || r.isError) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="flex items-center justify-center py-20 bg-background">
         <GenericErrorState
           title={t('result.notFound')}
           description={r.isError
@@ -359,10 +359,10 @@ export default function Result() {
             )}
 
             {/* Disclaimer */}
-            <div className="mt-8 p-4 rounded-xl shadow-sm border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30">
+            <div className="mt-8 p-4 rounded-xl shadow-sm border border-warning/20 bg-warning/5">
               <div className="flex items-start gap-3">
-                <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-                <p className="text-sm text-amber-800 dark:text-amber-200">
+                <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
+                <p className="text-sm text-warning-foreground dark:text-warning">
                   {t('result.disclaimer')}
                 </p>
               </div>

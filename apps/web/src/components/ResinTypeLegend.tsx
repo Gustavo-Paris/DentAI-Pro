@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 const typeColors: Record<string, { bg: string; text: string; i18nKey: string }> = {
   Esmalte: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-300', i18nKey: 'components.resinLegend.types.Esmalte' },
   Dentina: { bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-300', i18nKey: 'components.resinLegend.types.Dentina' },
-  Body: { bg: 'bg-slate-100 dark:bg-slate-800/50', text: 'text-slate-700 dark:text-slate-300', i18nKey: 'components.resinLegend.types.Body' },
+  Body: { bg: 'bg-muted', text: 'text-muted-foreground', i18nKey: 'components.resinLegend.types.Body' },
   Opaco: { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-700 dark:text-orange-300', i18nKey: 'components.resinLegend.types.Opaco' },
   Translúcido: { bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-700 dark:text-teal-300', i18nKey: 'components.resinLegend.types.Translúcido' },
   Universal: { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-700 dark:text-purple-300', i18nKey: 'components.resinLegend.types.Universal' },

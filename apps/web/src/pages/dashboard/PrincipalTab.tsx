@@ -120,7 +120,7 @@ function PendingActions({
               <div className="flex items-center justify-between">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
-                    <FileWarning className="w-4 h-4 text-amber-500" aria-hidden="true" />
+                    <FileWarning className="w-4 h-4 text-warning" aria-hidden="true" />
                     <p className="text-sm font-semibold">
                       {t('dashboard.pending.openEvaluations', { count: pendingSessions })}
                     </p>
@@ -297,7 +297,7 @@ export function PrincipalTab({
               <Card className={`group relative overflow-hidden p-4 sm:p-5 rounded-xl transition-all duration-300 cursor-pointer h-full hover:shadow-md hover:-translate-y-0.5 ${isPrimary ? 'bg-primary text-primary-foreground shadow-md' : 'border border-border/50 hover:border-border shadow-sm'}`}>
                 {!isPrimary && <div className="absolute inset-0 bg-gradient-to-br from-muted/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />}
                 <div className="relative flex items-center gap-3">
-                  <div className={`flex h-10 w-10 items-center justify-center rounded-xl shrink-0 transition-transform duration-200 group-hover:scale-110 ${isPrimary ? 'bg-white/20' : 'bg-primary/10 dark:bg-primary/15'}`}>
+                  <div className={`flex h-10 w-10 items-center justify-center rounded-xl shrink-0 transition-transform duration-200 group-hover:scale-110 ${isPrimary ? 'bg-primary-foreground/20' : 'bg-primary/10 dark:bg-primary/15'}`}>
                     {Icon && <Icon className={`w-5 h-5 ${isPrimary ? '' : 'text-primary'}`} />}
                   </div>
                   <div className="flex-1 min-w-0">

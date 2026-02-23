@@ -18,7 +18,7 @@ export default function GroupResult() {
 
   if ((!g.primaryEval && !g.isLoading) || g.isError) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="flex items-center justify-center py-20 bg-background">
         <GenericErrorState
           title={t('result.notFound')}
           description={g.isError
@@ -108,7 +108,7 @@ export default function GroupResult() {
               {/* Resin recommendation */}
               {g.resin && (
                 <section className="mb-8">
-                  <Card className="shadow-sm rounded-xl">
+                  <Card className="shadow-sm rounded-xl hover:shadow-md transition-shadow duration-300">
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div>
