@@ -321,7 +321,12 @@ NÃO incluir dentes inferiores nas sugestões EXCETO quando TODAS as condições
 3. A borda incisal do dente inferior mostra alteração CLARA comparada ao normal
 Se a borda incisal inferior NÃO está claramente visível → NÃO incluir. Na dúvida → NÃO incluir.
 PROIBIDO: sugerir tratamento para dentes inferiores baseado em suposição de desgaste não visível na foto.
-MEDIDAS em mm no proposed_change (OBRIGATORIO): "Aumentar ~1.5mm", "Gengivoplastia ~2mm", "Recontorno ~0.5mm".
+MEDIDAS em mm no proposed_change (OBRIGATORIO): "Aumentar ~1.5mm", "Recontorno ~0.5mm".
+Para GENGIVOPLASTIA, calibrar medida pela severidade do sorriso gengival:
+- Sorriso gengival LEVE (2-3mm exposição): "Gengivoplastia ~2mm"
+- Sorriso gengival MODERADO (3-4mm exposição): "Gengivoplastia ~3mm"
+- Sorriso gengival ACENTUADO (>4mm exposição): "Gengivoplastia ~4mm"
+NÃO usar medidas conservadoras (~1mm) para sorriso gengival evidente — a simulação precisa ser VISUALMENTE PERCEPTÍVEL.
 
 === ENCERAMENTO LABORATORIAL (quando aplicável) ===
 Para grandes mudanças ou diastemas >2mm: sugerir moldagem + enceramento + guias de silicone.

@@ -411,20 +411,29 @@ The gum sits BETWEEN the tooth crown and the upper lip.
 === INPAINTING TECHNIQUE ===
 1. COPY the entire input image EXACTLY as-is
 2. IDENTIFY the gingival margin (pink tissue where gum meets each tooth)
-3. For each affected tooth, MOVE the gingival margin APICALLY (toward the root):
+3. MEASURE the visible PINK GUM BAND between the top of each tooth crown and the upper lip
+4. For each affected tooth, MOVE the gingival margin APICALLY (toward the root):
    - REPLACE pink gum pixels with tooth-colored pixels matching the existing enamel
    - The tooth crown EXTENDS upward as gum is removed
    - The newly exposed area must seamlessly match the existing tooth color and texture
-4. Create SYMMETRICAL gum line — left side mirrors right side
-5. Create smooth, harmonious gingival arch across all visible teeth
-6. Keep remaining gum tissue natural — healthy pink, smooth, realistic
+5. Create SYMMETRICAL gum line — left side mirrors right side
+6. Create smooth, harmonious gingival arch across all visible teeth
+7. Keep remaining gum tissue natural — healthy pink, smooth, realistic
 
-${params.gingivoSuggestions ? `SPECIFIC TEETH TO RESHAPE:\n${params.gingivoSuggestions}\n` : `Reshape the gum line on the upper anterior teeth (canine to canine) to create a balanced, aesthetic smile.\nTarget: 1-2mm apical movement of gingival margin per tooth.\n`}
+${params.gingivoSuggestions ? `SPECIFIC TEETH TO RESHAPE:\n${params.gingivoSuggestions}\n` : `Reshape the gum line on the upper anterior teeth (canine to canine) to create a balanced, aesthetic smile.\nTarget: 2-3mm apical movement of gingival margin per tooth.\n`}
+
+=== VISUAL MAGNITUDE (CRITICAL) ===
+The change MUST be DRAMATIC and IMMEDIATELY OBVIOUS in a before/after comparison.
+- The visible PINK GUM BAND between tooth crowns and upper lip must be reduced by AT LEAST 30-40%
+- Each tooth crown must appear NOTICEABLY TALLER (at least 15-20% more crown height visible)
+- If there is a wide band of pink gum visible above the teeth, AGGRESSIVELY reduce it
+- A subtle/conservative change is a FAILURE — the whole point is to show what the smile looks like WITHOUT excess gum
+- Think of it as: the upper 1/3 to 1/2 of the pink gum band should become tooth-colored
 
 EXPECTED RESULT:
-- Teeth appear VISIBLY TALLER (more crown exposed) — change must be CLEARLY NOTICEABLE
+- Teeth appear SIGNIFICANTLY TALLER (more crown exposed) — change must be DRAMATIC
 - Gum line is more even and symmetrical
-- Clinical and precise: typically 1-3mm of tissue removal per tooth
+- The pink gum band is visibly reduced — this is the PRIMARY visual change
 
 === PRESERVATION RULE ===
 PRESERVE pixel-identical: teeth (shape, color, contour, texture), BOTH lips (position, shape, opening), face, skin, background, image framing.
@@ -469,7 +478,9 @@ Expose more clinical crown by moving the gingival margin APICALLY (toward the ro
 - Create symmetrical gingival zeniths between contralateral teeth
 - Harmonize the gum line curvature across the smile
 - Recontoured gums must look NATURAL (healthy pink tissue)
-- The change MUST be VISUALLY EVIDENT — minimum 0.5mm apical movement per tooth
+- The change MUST be DRAMATIC and IMMEDIATELY OBVIOUS — reduce the visible pink gum band by at least 30-40%
+- Each tooth must appear noticeably TALLER (at least 15-20% more crown visible)
+- A subtle/conservative change is a FAILURE — aggressively reduce the gum band
 
 ${params.gingivoSuggestions ? `GENGIVOPLASTY SPECIFICATIONS (per tooth):\n${params.gingivoSuggestions}\n` : ''}
 
