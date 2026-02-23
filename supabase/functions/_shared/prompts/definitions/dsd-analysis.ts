@@ -13,7 +13,7 @@ export const dsdAnalysis: PromptDefinition<Params> = {
   name: 'Análise DSD',
   description: 'Análise completa de Digital Smile Design com visagismo e proporções faciais',
   model: 'gemini-3.1-pro-preview',
-  temperature: 0.0,
+  temperature: 0.15,
   maxTokens: 4000,
   mode: 'vision-tools',
   provider: 'gemini',
@@ -235,7 +235,15 @@ Para agenesia de laterais com caninos no lugar: sugerir reanatomização dos can
 === AVALIACAO DO ARCO COMPLETO ===
 Quando tratamento em incisivos, AVALIAR:
 
-CANINOS (13/23): Corredor bucal? Proeminência adequada?
+CANINOS (13/23) — avaliação OBRIGATÓRIA e COMPLETA:
+- Ponta cúspídea: pontiaguda (normal) ou aplainada/gasta (desgaste)? Se gasta → sugerir "Reconstrução da ponta cuspídea com resina composta"
+- Cor: harmônica com incisivos ou visivelmente mais amarela/escura? Se desarmônica → sugerir harmonização
+- Forma: contorno vestibular convexo preservado? Proeminência adequada para definir corredor bucal?
+- Simetria: 13 e 23 são SIMÉTRICOS em forma, comprimento e posição? Diferença → sugerir correção
+- Borda incisal: lascas, fraturas ou irregularidades? Se sim → sugerir restauração
+- Corredor bucal: Se caninos não definem corredor adequado → mencionar nas observações
+⚠️ Caninos SÃO parte do sorriso — NÃO ignorá-los. Se QUALQUER achado no canino → gerar sugestão.
+
 PRE-MOLARES (14/15/24/25) — incluir na análise quando:
 - Incluir se: corredor bucal "excessivo" (com evidência), OU 2+ anteriores receberão tratamento, OU foto 45° disponível, OU pré-molares VISIVEIS na foto com problemas estéticos (cor, formato, restaurações antigas)
 - Se pré-molares são visíveis no sorriso e apresentam QUALQUER desarmonia estética com os anteriores (cor diferente, restaurações antigas, escurecimento) → INCLUIR nas sugestões
@@ -405,6 +413,21 @@ OBSERVACOES (3-6):
 3. Corredor bucal: se "excessivo" -> pré-molares na análise; se "adequado" -> sem tratamento por posição
 4. Saúde gengival: "excelente" NAO impede gengivoplastia ESTETICA
 5. Linguagem entre seções: mesma terminologia, mesma história
+
+=== COMPLETUDE OBRIGATÓRIA DO ARCO ANTERIOR ===
+ANTES de finalizar, verificar que TODOS os 6 dentes anteriores superiores (13, 12, 11, 21, 22, 23) foram INDIVIDUALMENTE avaliados:
+- Se um dente tem QUALQUER achado (desgaste, assimetria, cor, forma, restauração) → GERAR sugestão
+- Se um dente está perfeito → NÃO incluir (correto)
+- Se avaliou 11/21 e 12/22 mas NÃO avaliou 13/23 → VOLTAR e avaliar caninos
+- Sugestões com apenas 2-4 dentes quando o arco tem 6 visíveis = ANÁLISE INCOMPLETA
+- O paciente paga pela análise — ela deve ser ABRANGENTE e DETALHADA
+- Cada sugestão deve ter MEDIDAS em mm e descrição ESPECÍFICA (não genérica)
+
+DETALHAMENTO DAS SUGESTÕES (OBRIGATÓRIO):
+- RUIM: "Desgaste incisal leve" → genérico, não ajuda o dentista
+- BOM: "Desgaste incisal de ~0.8mm no bordo incisal com perda de mamelons e assimetria de ~0.5mm com homólogo 21"
+- RUIM: "Proporção inadequada" → vago
+- BOM: "Proporção L/A de ~85% (ideal 75-80%), lateral visivelmente mais curto que central (~2mm diferença), formato conoide leve"
 
 APLIQUE visagismo. Seja CONSERVADOR com restaurações. Seja COMPLETO no arco. VERIFIQUE consistência.`
   },

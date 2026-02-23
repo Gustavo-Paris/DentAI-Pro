@@ -239,40 +239,23 @@ export function useResult() {
   }, [checklistMutation]);
 
   // ---- Computed values ----
-  const treatmentType = evaluation?.treatment_type || 'resina';
-  const isPorcelain = treatmentType === 'porcelana';
-  const isSpecialTreatment = isSpecialTreatmentType(treatmentType);
-  const cementationProtocol = evaluation?.cementation_protocol as CementationProtocol | null;
-  const genericProtocol = evaluation?.generic_protocol ?? null;
-  const protocol = evaluation?.stratification_protocol ?? null;
+  const pc = useMemo(() => computeProtocol(evaluation), [evaluation]);
+  const {
+    treatmentType, isPorcelain, isSpecialTreatment,
+    cementationProtocol, genericProtocol, layers,
+    checklist, alerts, warnings, confidence,
+    protocolAlternative, resin, hasProtocol,
+  } = pc;
+  const protocol = pc.protocol;
 
-  const layers = protocol?.layers || evaluation?.protocol_layers || [];
-  const checklist = useMemo(() => isPorcelain
-    ? (cementationProtocol?.checklist || [])
-    : isSpecialTreatment && genericProtocol
-      ? genericProtocol.checklist
-      : (protocol?.checklist || []),
-    [isPorcelain, cementationProtocol?.checklist, isSpecialTreatment, genericProtocol, protocol?.checklist]);
-  const alerts = isPorcelain
-    ? (cementationProtocol?.alerts || [])
-    : isSpecialTreatment && genericProtocol
-      ? genericProtocol.alerts
-      : (evaluation?.alerts || []);
-  const warnings = isPorcelain ? (cementationProtocol?.warnings || []) : (evaluation?.warnings || []);
-  const confidence = isPorcelain ? (cementationProtocol?.confidence || 'média') : (protocol?.confidence || 'média');
-  const protocolAlternative = protocol?.alternative;
-
-  const resin = evaluation?.resins ?? null;
   const idealResin = evaluation?.ideal_resin ?? null;
   const alternatives = evaluation?.alternatives as Alternative[] | null;
   const showIdealResin = !!(idealResin && resin && idealResin.id !== resin.id);
-  const hasProtocol = isPorcelain ? !!cementationProtocol : isSpecialTreatment ? !!genericProtocol : layers.length > 0;
   const hasPhotos = !!(photoUrls.frontal || photoUrls.angle45 || photoUrls.face);
 
-  const baseTreatmentStyle = getTreatmentStyle(treatmentType);
   const currentTreatmentStyle = {
-    ...baseTreatmentStyle,
-    label: t(`treatments.${treatmentType}.label`, baseTreatmentStyle.label),
+    ...pc.currentTreatmentStyle,
+    label: t(`treatments.${treatmentType}.label`, pc.currentTreatmentStyle.label),
   };
 
   // ---- PDF export ----
