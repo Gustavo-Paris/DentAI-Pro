@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { Smile } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { ProgressRing } from '@/components/ProgressRing';
 import { CompactStepIndicator } from '@/components/CompactStepIndicator';
@@ -24,8 +25,11 @@ export function DSDLoadingState({ imageBase64, currentStep, analysisSteps }: DSD
   return (
     <div className="space-y-6" role="status" aria-live="polite" aria-label={t('components.wizard.dsd.loadingState.title')}>
       <div className="text-center">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+          <Smile className="w-8 h-8 text-primary" />
+        </div>
         <h2 className="text-xl font-semibold font-display mb-2 text-primary">{t('components.wizard.dsd.loadingState.title')}</h2>
-        <p className="text-muted-foreground">{currentLabel}</p>
+        <p className="text-sm text-muted-foreground">{currentLabel}</p>
       </div>
 
       {/* Inline photo with scan-line */}

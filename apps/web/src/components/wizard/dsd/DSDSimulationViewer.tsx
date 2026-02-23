@@ -113,7 +113,7 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${
                 activeLayerIndex === idx
                   ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-secondary/50 text-muted-foreground border-border hover:border-primary/50'
+                  : 'bg-secondary/50 text-muted-foreground border-border hover:border-primary/50 hover:text-foreground'
               }`}
             >
               {layer.label}

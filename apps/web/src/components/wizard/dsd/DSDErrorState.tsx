@@ -17,11 +17,11 @@ export function DSDErrorState({ error, onRetry, onSkip }: DSDErrorStateProps) {
   return (
     <div className="space-y-6" role="alert">
       <div className="text-center">
-        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-amber-100 dark:bg-amber-950/30 flex items-center justify-center">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-warning/10 flex items-center justify-center">
           {isCreditError ? (
-            <Zap className="w-8 h-8 text-amber-600 dark:text-amber-400" />
+            <Zap className="w-8 h-8 text-warning" />
           ) : (
-            <AlertCircle className="w-8 h-8 text-amber-600 dark:text-amber-400" />
+            <AlertCircle className="w-8 h-8 text-warning" />
           )}
         </div>
         <h2 className="text-xl font-semibold font-display mb-2">
@@ -32,10 +32,10 @@ export function DSDErrorState({ error, onRetry, onSkip }: DSDErrorStateProps) {
 
       {/* Contextual hint */}
       {!isCreditError && (
-        <div className="border-l-4 border-amber-500 bg-amber-50/50 dark:bg-amber-950/20 rounded-r-lg p-4">
+        <div className="border-l-4 border-warning bg-warning/5 rounded-r-lg p-4">
           <div className="flex items-start gap-3">
-            <Lightbulb className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
-            <p className="text-sm text-amber-700 dark:text-amber-300">
+            <Lightbulb className="w-4 h-4 text-warning mt-0.5 shrink-0" />
+            <p className="text-sm text-warning-foreground dark:text-warning">
               {t('components.wizard.dsd.errorState.hintText')}
             </p>
           </div>

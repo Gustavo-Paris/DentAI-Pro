@@ -127,7 +127,7 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
               analysis.confidence === 'alta'
                 ? 'bg-primary text-primary-foreground'
                 : analysis.confidence === 'baixa'
-                  ? 'border-amber-500 text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30'
+                  ? 'border-warning text-warning-foreground dark:text-warning bg-warning/5'
                   : ''
             }
           >
@@ -138,10 +138,10 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
 
       {/* Alert for low confidence or limitations */}
       {hasLimitations && (
-        <Alert variant="default" className="border-amber-500 bg-amber-50 dark:bg-amber-950/30">
-          <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-          <AlertTitle className="text-amber-800 dark:text-amber-200">{t('components.wizard.dsd.analysisView.limitationsTitle')}</AlertTitle>
-          <AlertDescription className="text-amber-700 dark:text-amber-300">
+        <Alert variant="default" className="border-warning bg-warning/5">
+          <AlertCircle className="h-4 w-4 text-warning" />
+          <AlertTitle className="text-warning-foreground dark:text-warning">{t('components.wizard.dsd.analysisView.limitationsTitle')}</AlertTitle>
+          <AlertDescription className="text-warning-foreground dark:text-warning">
             {result.simulation_note ||
               t('components.wizard.dsd.analysisView.limitationsDefault')}
           </AlertDescription>
@@ -150,9 +150,9 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
 
       {/* Attention observations from AI */}
       {attentionObservations.length > 0 && (
-        <Card className="border-amber-400 bg-amber-50/50 dark:bg-amber-950/20">
+        <Card className="border-warning/60 bg-warning/5">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2 text-amber-800 dark:text-amber-200">
+            <CardTitle className="text-base flex items-center gap-2 text-warning-foreground dark:text-warning">
               <AlertCircle className="w-4 h-4" />
               {t('components.wizard.dsd.analysisView.attentionPoints')}
             </CardTitle>
@@ -160,8 +160,8 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
           <CardContent>
             <ul className="space-y-2">
               {attentionObservations.map((obs, index) => (
-                <li key={index} className="text-sm text-amber-700 dark:text-amber-300 flex items-start gap-2">
-                  <span className="text-amber-600 dark:text-amber-400 mt-0.5">•</span>
+                <li key={index} className="text-sm text-warning-foreground dark:text-warning flex items-start gap-2">
+                  <span className="text-warning mt-0.5">•</span>
                   {obs.replace(/^ATENÇÃO:\s*/i, '')}
                 </li>
               ))}
@@ -184,16 +184,16 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
       {/* Gengivoplasty approval — conditional on smile_line and AI detection */}
       {gingivoplastyApproved === null && (hasGingivoSuggestion || analysis.smile_line !== 'baixa') && (
         <Card className={hasGingivoSuggestion
-          ? "border-amber-400 bg-amber-50/50 dark:bg-amber-950/20"
+          ? "border-warning/60 bg-warning/5"
           : "border-border bg-secondary/30"
         }>
           <CardContent className="py-4">
             <div className="flex flex-col gap-3">
               <div className="flex items-start gap-3">
-                <AlertCircle className={`w-5 h-5 mt-0.5 shrink-0 ${hasGingivoSuggestion ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'}`} />
+                <AlertCircle className={`w-5 h-5 mt-0.5 shrink-0 ${hasGingivoSuggestion ? 'text-warning' : 'text-muted-foreground'}`} />
                 <div>
                   <div className="flex items-center gap-2">
-                    <p className={`text-sm font-medium ${hasGingivoSuggestion ? 'text-amber-800 dark:text-amber-200' : 'text-foreground'}`}>
+                    <p className={`text-sm font-medium ${hasGingivoSuggestion ? 'text-warning-foreground dark:text-warning' : 'text-foreground'}`}>
                       {hasGingivoSuggestion
                         ? t('components.wizard.dsd.analysisView.gingivoplastyDetected', { defaultValue: 'Gengivoplastia detectada na análise' })
                         : t('components.wizard.dsd.analysisView.gingivoplastyOption', { defaultValue: 'Incluir gengivoplastia?' })
@@ -202,7 +202,7 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
                     <Badge
                       variant={hasGingivoSuggestion ? 'default' : 'secondary'}
                       className={hasGingivoSuggestion
-                        ? 'bg-amber-500 hover:bg-amber-500 text-white text-[10px] px-1.5 py-0'
+                        ? 'bg-warning text-warning-foreground text-[10px] px-1.5 py-0'
                         : 'text-[10px] px-1.5 py-0'
                       }
                     >
@@ -212,7 +212,7 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
                       }
                     </Badge>
                   </div>
-                  <p className={`text-xs mt-1 ${hasGingivoSuggestion ? 'text-amber-700 dark:text-amber-300' : 'text-muted-foreground'}`}>
+                  <p className={`text-xs mt-1 ${hasGingivoSuggestion ? 'text-warning-foreground dark:text-warning' : 'text-muted-foreground'}`}>
                     {hasGingivoSuggestion
                       ? t('components.wizard.dsd.analysisView.gingivoplastyDesc', { defaultValue: 'A análise identificou necessidade de harmonização gengival. Deseja incluir a simulação de gengivoplastia?' })
                       : t('components.wizard.dsd.analysisView.gingivoplastyOptionalDesc', { defaultValue: 'Deseja adicionar uma camada de simulação com harmonização gengival (gengivoplastia)?' })
@@ -250,7 +250,7 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
         <div className={`flex items-center gap-2 text-sm rounded-lg px-3 py-2 ${
           retryingLayer === 'complete-treatment'
             ? 'text-primary bg-primary/5 border border-primary/30'
-            : 'text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800'
+            : 'text-success bg-success/5 border border-success/30'
         }`}>
           {retryingLayer === 'complete-treatment' ? (
             <>
@@ -325,12 +325,12 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
 
       {/* Background simulation error card */}
       {simulationError && !simulationImageUrl && !isSimulationGenerating && (
-        <Card className="border-amber-400 bg-amber-50/50 dark:bg-amber-950/20">
+        <Card className="border-warning/60 bg-warning/5">
           <CardContent className="py-4">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                <span className="text-sm text-amber-700 dark:text-amber-300">
+                <AlertCircle className="w-5 h-5 text-warning" />
+                <span className="text-sm text-warning-foreground dark:text-warning">
                   {t('components.wizard.dsd.analysisView.simulationAutoError')}
                 </span>
               </div>

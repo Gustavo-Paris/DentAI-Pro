@@ -89,8 +89,8 @@ export function PatientPreferencesStep({
                   aria-label={t(option.labelKey)}
                   onClick={() => handleSelect(option.value)}
                   className={cn(
-                    'relative flex flex-col items-center rounded-xl border-2 transition-all duration-200 overflow-hidden btn-press',
-                    'hover:border-primary/50 hover:bg-primary/5',
+                    'relative flex flex-col items-center rounded-xl border-2 transition-all duration-200 overflow-hidden btn-press cursor-pointer',
+                    'hover:border-primary/50 hover:bg-primary/5 hover:shadow-sm',
                     'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                     isSelected
                       ? 'border-primary card-elevated shadow-md ring-2 ring-primary/20'

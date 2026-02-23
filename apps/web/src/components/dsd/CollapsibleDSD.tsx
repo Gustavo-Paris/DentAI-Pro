@@ -62,7 +62,7 @@ export function CollapsibleDSD({
       {/* Collapsed Preview Header */}
       <Card className="border-primary/20 ai-glow">
         <CollapsibleTrigger asChild>
-          <CardContent className="py-4 cursor-pointer hover:bg-secondary/30 transition-colors">
+          <CardContent className="py-4 cursor-pointer hover:bg-secondary/30 transition-colors duration-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-primary/10 rounded-lg">
@@ -129,7 +129,7 @@ export function CollapsibleDSD({
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${
                   activeLayerIndex === idx
                     ? 'bg-primary text-primary-foreground border-primary'
-                    : 'bg-secondary/50 text-muted-foreground border-border hover:border-primary/50'
+                    : 'bg-secondary/50 text-muted-foreground border-border hover:border-primary/50 hover:text-foreground'
                 }`}
               >
                 {layer.label}
@@ -147,16 +147,16 @@ export function CollapsibleDSD({
         {activeLayer?.includes_gengivoplasty && (
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+              <ShieldCheck className="w-3.5 h-3.5 text-success" />
               <span className="text-xs font-medium text-muted-foreground">{t('components.dsd.collapsible.areas')}</span>
             </div>
-            <Badge variant="outline" className="text-[10px] border-emerald-300 text-emerald-700 dark:border-emerald-700 dark:text-emerald-400">
+            <Badge variant="outline" className="text-[10px] border-success/40 text-success">
               {t('components.dsd.collapsible.lipPreserved')}
             </Badge>
-            <Badge variant="outline" className="text-[10px] border-rose-300 text-rose-700 dark:border-rose-700 dark:text-rose-400">
+            <Badge variant="outline" className="text-[10px] border-destructive/40 text-destructive">
               {t('components.dsd.collapsible.gingivaAltered')}
             </Badge>
-            <Badge variant="outline" className="text-[10px] border-blue-300 text-blue-700 dark:border-blue-700 dark:text-blue-400">
+            <Badge variant="outline" className="text-[10px] border-primary/40 text-primary">
               {t('components.dsd.collapsible.teethAltered')}
             </Badge>
           </div>
@@ -173,18 +173,18 @@ export function CollapsibleDSD({
 
         {/* Gingival changes section */}
         {hasGingival && (
-          <Card className="border-rose-200 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-950/20">
+          <Card className="border-destructive/30 bg-destructive/5">
             <CardContent className="py-3 space-y-2">
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-medium flex items-center gap-1.5">
-                  <Scissors className="w-4 h-4 text-rose-500" />
+                  <Scissors className="w-4 h-4 text-destructive" />
                   {t('components.dsd.collapsible.gingivalChanges')}
                 </h4>
                 {gingivalLayerIndex >= 0 && activeLayerIndex !== gingivalLayerIndex && (
                   <Button
                     variant="outline"
                     size="sm"
-                    className="text-xs border-rose-200 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-rose-900"
+                    className="text-xs border-destructive/30 hover:bg-destructive/10"
                     onClick={() => setActiveLayerIndex(gingivalLayerIndex)}
                   >
                     {t('components.dsd.collapsible.viewWithGingiva')}
@@ -195,7 +195,7 @@ export function CollapsibleDSD({
                 <div className="grid gap-1.5">
                   {gingivalSuggestions.map((s: DSDSuggestion) => (
                     <div key={s.tooth} className="flex items-start gap-2 text-xs">
-                      <span className="flex items-center gap-1 font-mono font-medium text-rose-600 dark:text-rose-400 min-w-[2.5rem]">
+                      <span className="flex items-center gap-1 font-mono font-medium text-destructive min-w-[2.5rem]">
                         {s.treatment_indication === 'gengivoplastia' ? (
                           <ArrowUp className="w-3 h-3" />
                         ) : (

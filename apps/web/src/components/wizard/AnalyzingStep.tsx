@@ -106,8 +106,8 @@ export function AnalyzingStep({
     return (
       <div className="space-y-6" role="alert">
         <div className="text-center">
-          <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-950/30 flex items-center justify-center mx-auto mb-4">
-            <AlertCircle className="w-8 h-8 text-amber-600 dark:text-amber-400" />
+          <div className="w-16 h-16 rounded-full bg-warning/10 flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-8 h-8 text-warning" />
           </div>
           <h2 className="text-2xl font-semibold font-display mb-2">{t('components.wizard.analyzing.errorTitle')}</h2>
           <p className="text-muted-foreground max-w-md mx-auto">
@@ -125,11 +125,11 @@ export function AnalyzingStep({
           </div>
         )}
 
-        {/* Contextual hint card with amber border */}
-        <div className="border-l-4 border-amber-500 bg-amber-50/50 dark:bg-amber-950/20 rounded-r-lg p-4">
+        {/* Contextual hint card */}
+        <div className="border-l-4 border-warning bg-warning/5 rounded-r-lg p-4">
           <div className="flex items-start gap-3">
-            <Lightbulb className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
-            <p className="text-sm text-amber-700 dark:text-amber-300">
+            <Lightbulb className="w-4 h-4 text-warning mt-0.5 shrink-0" />
+            <p className="text-sm text-warning-foreground dark:text-warning">
               {t('components.wizard.analyzing.hintText')}
             </p>
           </div>

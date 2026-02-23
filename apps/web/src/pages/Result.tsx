@@ -294,7 +294,7 @@ export default function Result() {
                 <h3 className="font-semibold font-display mb-3">{t('result.otherAlternatives')}</h3>
                 <div className="space-y-3">
                   {r.alternatives.map((alt, index) => (
-                    <Card key={index} className="p-4">
+                    <Card key={index} className="p-4 hover:shadow-md transition-shadow duration-200">
                       <div className="flex items-center justify-between mb-1">
                         <span className="font-medium">{alt.name}</span>
                         <span className="text-sm text-muted-foreground">{alt.manufacturer}</span>
