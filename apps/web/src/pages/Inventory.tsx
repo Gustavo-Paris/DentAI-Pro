@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { PageConfirmDialog } from '@parisgroup-ai/pageshell/interactions';
-import { memo, useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { Lightbulb, Plus, X } from 'lucide-react';
 import { ListPage } from '@parisgroup-ai/pageshell/composites';
 import { Button } from '@parisgroup-ai/pageshell/primitives';
@@ -146,6 +146,13 @@ export default function Inventory() {
     [t],
   );
 
+  const renderCard = useCallback(
+    (item: FlatInventoryItem) => (
+      <InventoryResinCard item={item} onRemove={inv.setDeletingItemId} />
+    ),
+    [inv.setDeletingItemId],
+  );
+
   if (inv.isError) {
     return (
       <ErrorState
@@ -164,9 +171,7 @@ export default function Inventory() {
         items={inv.flatItems}
         isLoading={inv.isLoading}
         itemKey="id"
-        renderCard={(item) => (
-          <InventoryResinCard item={item} onRemove={inv.setDeletingItemId} />
-        )}
+        renderCard={renderCard}
         gridClassName="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2"
         searchConfig={searchConfig}
         filters={filtersConfig}

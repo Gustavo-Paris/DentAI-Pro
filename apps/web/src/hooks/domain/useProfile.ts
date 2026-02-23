@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -20,6 +20,7 @@ export interface ProfileState {
   profile: ProfileFull;
   isLoading: boolean;
   isSaving: boolean;
+  isDirty: boolean;
   avatarPreview: string | null;
   logoPreview: string | null;
   isUploading: boolean;
@@ -81,6 +82,7 @@ export function useProfile(): ProfileState & ProfileActions {
     avatar_url: null,
     clinic_logo_url: null,
   });
+  const initialProfileRef = useRef<ProfileFull | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -111,6 +113,7 @@ export function useProfile(): ProfileState & ProfileActions {
   useEffect(() => {
     if (profileData) {
       setProfileForm(profileData);
+      initialProfileRef.current = profileData;
       if (profileData.avatar_url) {
         setAvatarPreview(profiles.getAvatarPublicUrl(profileData.avatar_url));
       }
@@ -119,6 +122,20 @@ export function useProfile(): ProfileState & ProfileActions {
       }
     }
   }, [profileData]);
+
+  // Derive dirty state by comparing current form vs initial snapshot
+  const isDirty = useMemo(() => {
+    const initial = initialProfileRef.current;
+    if (!initial) return false;
+    return (
+      (profileForm.full_name ?? '') !== (initial.full_name ?? '') ||
+      (profileForm.cro ?? '') !== (initial.cro ?? '') ||
+      (profileForm.clinic_name ?? '') !== (initial.clinic_name ?? '') ||
+      (profileForm.phone ?? '') !== (initial.phone ?? '') ||
+      profileForm.avatar_url !== initial.avatar_url ||
+      profileForm.clinic_logo_url !== initial.clinic_logo_url
+    );
+  }, [profileForm]);
 
   // ---- Handle Stripe redirect ----
   const hasRunStripeRedirectRef = useRef(false);
@@ -165,6 +182,7 @@ export function useProfile(): ProfileState & ProfileActions {
       });
     },
     onSuccess: () => {
+      initialProfileRef.current = { ...profileForm };
       queryClient.invalidateQueries({ queryKey: profileKeys.detail(user?.id || '') });
       toast.success(t('toasts.profile.profileUpdated'));
       navigate('/dashboard');
@@ -260,6 +278,7 @@ export function useProfile(): ProfileState & ProfileActions {
     profile: profileForm,
     isLoading: loadingProfile,
     isSaving: saveMutation.isPending,
+    isDirty,
     avatarPreview,
     logoPreview,
     isUploading,

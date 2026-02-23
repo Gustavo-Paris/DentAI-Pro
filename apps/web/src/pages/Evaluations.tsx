@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useState, memo, useMemo } from 'react';
+import { useCallback, useEffect, memo, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ListPage } from '@parisgroup-ai/pageshell/composites';
 import { useEvaluationSessions } from '@/hooks/domain/useEvaluationSessions';
 import type { EvaluationSession } from '@/hooks/domain/useEvaluationSessions';
-import { Button, Card } from '@parisgroup-ai/pageshell/primitives';
+import { Card } from '@parisgroup-ai/pageshell/primitives';
 import { StatusBadge, defineStatusConfig } from '@parisgroup-ai/pageshell/primitives';
 import { Badge } from '@parisgroup-ai/pageshell/primitives';
 import { CheckCircle, ChevronRight, Calendar } from 'lucide-react';
@@ -16,6 +16,12 @@ import { formatToothLabel } from '@/lib/treatment-config';
 // =============================================================================
 // Static configs (no hook dependencies)
 // =============================================================================
+
+const SESSION_STATUS_CONFIG = defineStatusConfig({
+  completed: { label: '', variant: 'success', icon: 'CheckCircle' },
+  partial: { label: '', variant: 'warning', icon: 'CheckCircle' },
+  pending: { label: '', variant: 'muted' },
+});
 
 const SEARCH_FIELDS: ('patient_name')[] = ['patient_name'];
 const PAGINATION_CONFIG = { defaultPageSize: 20 } as const;
@@ -49,8 +55,15 @@ const SessionCard = memo(function SessionCard({
   const borderClass = isNew
     ? 'border-l-[3px] border-l-primary ring-1 ring-primary/20'
     : isCompleted
-    ? 'border-l-[3px] border-l-emerald-500'
+    ? 'border-l-[3px] border-l-success'
     : 'border-l-[3px] border-l-primary';
+
+  const sessionStatus = isCompleted ? 'completed' : session.completedCount > 0 ? 'partial' : 'pending';
+  const statusLabel = isCompleted
+    ? t('evaluation.completed')
+    : session.completedCount > 0
+      ? `${t('evaluation.resultsReady')} (${session.completedCount}/${session.evaluationCount})`
+      : t('evaluation.statusPending');
 
   return (
     <Link to={`/evaluation/${session.session_id}`} aria-label={t('evaluation.viewEvaluationOf', { name: session.patient_name || t('evaluation.patientNoName') })}>
@@ -90,24 +103,7 @@ const SessionCard = memo(function SessionCard({
             </div>
           </div>
           <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4">
-            {isCompleted ? (
-              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">
-                <CheckCircle className="w-3 h-3" aria-hidden="true" />
-                <span className="hidden sm:inline">{t('evaluation.completed')}</span>
-              </span>
-            ) : session.completedCount > 0 ? (
-              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">
-                <CheckCircle className="w-3 h-3" aria-hidden="true" />
-                <span className="hidden sm:inline">{t('evaluation.resultsReady')}</span>
-                <span className="text-muted-foreground">
-                  ({session.completedCount}/{session.evaluationCount})
-                </span>
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                <span className="hidden sm:inline">{t('evaluation.statusPending')}</span>
-              </span>
-            )}
+            <StatusBadge label={statusLabel} variant={SESSION_STATUS_CONFIG[sessionStatus].variant} size="sm" />
             <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
               <Calendar className="w-3 h-3 sm:w-4 sm:h-4" aria-hidden="true" />
               <span className="hidden sm:inline">
@@ -133,13 +129,6 @@ export default function Evaluations() {
   const { t } = useTranslation();
   const { sessions, isLoading, isError, newSessionId, newTeethCount } =
     useEvaluationSessions();
-  const [treatmentFilter, setTreatmentFilter] = useState<string>('all');
-
-  const filteredSessions = useMemo(() => {
-    if (treatmentFilter === 'all') return sessions;
-    return sessions.filter((s) => s.treatmentTypes.includes(treatmentFilter));
-  }, [sessions, treatmentFilter]);
-
   // Clear navigation state after viewing
   useEffect(() => {
     if (newSessionId) {
@@ -161,6 +150,14 @@ export default function Evaluations() {
           { value: 'pending', label: t('evaluation.statusPending') },
           { value: 'completed', label: t('evaluation.statusCompleted') },
         ],
+        default: 'all',
+      },
+      treatmentTypes: {
+        label: t('evaluation.treatmentFilter'),
+        options: TREATMENT_TYPE_OPTIONS.map(({ value, labelKey }) => ({
+          value,
+          label: t(labelKey),
+        })),
         default: 'all',
       },
     }),
@@ -223,29 +220,10 @@ export default function Evaluations() {
         </div>
       )}
 
-      {/* Treatment type filter pills */}
-      {!isLoading && sessions.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-4" role="group" aria-label={t('evaluation.treatmentFilter')}>
-          {TREATMENT_TYPE_OPTIONS.map(({ value, labelKey }) => (
-            <button
-              key={value}
-              onClick={() => setTreatmentFilter(value)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                treatmentFilter === value
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-              }`}
-            >
-              {t(labelKey)}
-            </button>
-          ))}
-        </div>
-      )}
-
       <ListPage<EvaluationSession>
           title={t('evaluation.title')}
           viewMode="cards"
-          items={filteredSessions}
+          items={sessions}
           isLoading={isLoading}
           itemKey="session_id"
           renderCard={renderCard}

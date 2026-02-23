@@ -22,7 +22,7 @@ import { SessionCard } from './SessionCard';
 const DRAFT_ACCENT_GRADIENT = 'bg-gradient-to-b from-primary to-primary/70';
 
 /** Left-accent bar for pending evaluations (amber → orange warning) */
-const PENDING_ACCENT_GRADIENT = 'bg-gradient-to-b from-amber-400 to-orange-500';
+const PENDING_ACCENT_GRADIENT = 'bg-gradient-to-b from-warning to-warning/70';
 
 // ---------------------------------------------------------------------------
 // DraftCard (pending action)
@@ -286,7 +286,7 @@ export function PrincipalTab({
   const modulesRef = useScrollRevealChildren();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Module cards */}
       <div ref={modulesRef} className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {modules.map((mod, i) => {
@@ -320,7 +320,7 @@ export function PrincipalTab({
       />
 
       {/* 2-column layout on desktop */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6">
         <div className="lg:col-span-3">
           <RecentSessions sessions={sessions} loading={loading} />
         </div>

@@ -265,7 +265,7 @@ export default function Pricing() {
   );
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       <PricingPage
         title={t('pricing.title')}
         description={t('components.pricing.section.subtitle')}

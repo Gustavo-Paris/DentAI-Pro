@@ -13,9 +13,9 @@ import { ptBR } from 'date-fns/locale';
 
 const STATUS_STYLES = {
   completed: {
-    accent: 'bg-gradient-to-b from-emerald-400 to-teal-500',
-    bar: 'bg-emerald-500',
-    badge: 'border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30',
+    accent: 'bg-gradient-to-b from-success to-success/70',
+    bar: 'bg-success',
+    badge: 'border-success/30 text-success bg-success/5 dark:bg-success/10',
   },
   inProgress: {
     accent: 'bg-gradient-to-b from-primary to-primary/70',
@@ -24,7 +24,7 @@ const STATUS_STYLES = {
   },
 } as const;
 
-const DSD_BADGE_CLASS = 'border-violet-500/30 text-violet-600 dark:text-violet-400';
+const DSD_BADGE_CLASS = 'border-accent/30 text-accent';
 
 export function SessionCard({ session }: { session: DashboardSession }) {
   const { t } = useTranslation();
