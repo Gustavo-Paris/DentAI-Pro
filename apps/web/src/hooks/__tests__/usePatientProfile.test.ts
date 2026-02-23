@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { getInitials } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
 // Test the pure computation logic from usePatientProfile
@@ -47,15 +48,6 @@ interface PatientRow {
 // ---------------------------------------------------------------------------
 // Pure functions mirrored from the hook
 // ---------------------------------------------------------------------------
-
-function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
-}
 
 function groupSessions(data: Evaluation[]): PatientSession[] {
   const sessionMap = new Map<string, { teeth: string[]; statuses: string[]; created_at: string }>();
@@ -115,8 +107,8 @@ describe('getInitials', () => {
     expect(getInitials('Ana Clara Oliveira')).toBe('AC');
   });
 
-  it('should return empty string for empty input', () => {
-    expect(getInitials('')).toBe('');
+  it('should return fallback for empty input', () => {
+    expect(getInitials('')).toBe('U');
   });
 
   it('should uppercase lowercase names', () => {

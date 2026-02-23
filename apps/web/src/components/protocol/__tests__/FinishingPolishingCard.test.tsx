@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import FinishingPolishingCard from '../FinishingPolishingCard';
-import type { FinishingProtocol } from '../FinishingPolishingCard';
+import type { FinishingProtocol } from '@/types/protocol';
 
 // Mock react-i18next
 vi.mock('react-i18next', () => ({

@@ -26,6 +26,7 @@ import { PageTreatmentTimeline } from '@parisgroup-ai/domain-odonto-ai/treatment
 import type { ProcedureInfo } from '@parisgroup-ai/domain-odonto-ai/treatments';
 
 import { usePatientProfile } from '@/hooks/domain/usePatientProfile';
+import { getInitials } from '@/lib/utils';
 import { PatientSessionList } from '@/components/patient/PatientSessionList';
 
 // =============================================================================
@@ -179,7 +180,7 @@ export default function PatientProfile() {
           beforeContent: patient && (
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
-                {profile.getInitials(patient.name)}
+                {getInitials(patient.name)}
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">{t('patients.profileTitle')}</p>

@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { SPECIAL_TREATMENT_TYPES } from '@/lib/treatment-config';
 import { getProtocolFingerprint } from '@/lib/protocol-fingerprint';
 
 // ---------------------------------------------------------------------------
@@ -92,7 +93,7 @@ function computeGroupTeeth(groupEvaluations: GroupEvaluation[]): string[] {
 }
 
 // Mirror the computed protocol values
-const SPECIAL_TREATMENTS = ['implante', 'coroa', 'endodontia', 'encaminhamento', 'gengivoplastia', 'recobrimento_radicular'];
+const SPECIAL_TREATMENTS = [...SPECIAL_TREATMENT_TYPES];
 
 function computeGroupProtocol(primaryEval: GroupEvaluation | null) {
   const treatmentType = primaryEval?.treatment_type || 'resina';
@@ -266,7 +267,7 @@ describe('getProtocolFingerprint', () => {
   });
 
   it('should return treatment type as fingerprint for generic treatments', () => {
-    for (const type of ['gengivoplastia', 'implante', 'coroa', 'endodontia', 'encaminhamento', 'recobrimento_radicular']) {
+    for (const type of SPECIAL_TREATMENT_TYPES) {
       const eval1: GroupEvaluation = {
         ...baseGroupEval,
         treatment_type: type,

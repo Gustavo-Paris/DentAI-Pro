@@ -4,33 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Crown, Droplets, Sparkles, CheckCircle, AlertTriangle, ClipboardCheck } from 'lucide-react';
-
-interface CementationStep {
-  order: number;
-  step: string;
-  material: string;
-  technique?: string;
-  time?: string;
-}
-
-interface CementationProtocol {
-  preparation_steps?: CementationStep[];
-  ceramic_treatment: CementationStep[];
-  tooth_treatment: CementationStep[];
-  cementation: {
-    cement_type: string;
-    cement_brand: string;
-    shade: string;
-    light_curing_time: string;
-    technique: string;
-  };
-  finishing: CementationStep[];
-  post_operative: string[];
-  checklist: string[];
-  alerts: string[];
-  warnings: string[];
-  confidence: "alta" | "média" | "baixa";
-}
+import type { CementationProtocol, CementationStep } from '@/types/protocol';
 
 interface CementationProtocolCardProps {
   protocol: CementationProtocol;

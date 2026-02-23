@@ -193,6 +193,15 @@ export function normalizeTreatmentType(raw: string): TreatmentType {
   return TREATMENT_NORMALIZE[raw.toLowerCase()] || (raw.toLowerCase() as TreatmentType);
 }
 
+/** Treatment types that use generic protocols instead of resin stratification. */
+export const SPECIAL_TREATMENT_TYPES: readonly TreatmentType[] = [
+  'implante', 'coroa', 'endodontia', 'encaminhamento', 'gengivoplastia', 'recobrimento_radicular',
+] as const;
+
+export function isSpecialTreatmentType(type: string): boolean {
+  return SPECIAL_TREATMENT_TYPES.includes(type as TreatmentType);
+}
+
 export function formatToothLabel(tooth: string, t?: (key: string, opts?: Record<string, unknown>) => string): string {
   if (tooth === 'GENGIVO') return t ? t('toothLabel.gingiva') : 'Gengiva';
   return t ? t('toothLabel.tooth', { number: tooth }) : `Dente ${tooth}`;

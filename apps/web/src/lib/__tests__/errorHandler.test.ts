@@ -44,7 +44,7 @@ describe('handleError', () => {
   it('should map database error code 23503 to reference error message', () => {
     const result = handleError({ code: '23503' });
     
-    expect(result).toBe('Erro de referência. Dados relacionados não encontrados.');
+    expect(result).toBe('Não foi possível completar a ação. Verifique se todos os dados estão corretos.');
   });
 
   it('should map auth error invalid_credentials', () => {

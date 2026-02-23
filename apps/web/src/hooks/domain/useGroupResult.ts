@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { logger } from '@/lib/logger';
 import { SIGNED_URL_EXPIRY_SECONDS, QUERY_STALE_TIMES } from '@/lib/constants';
-import { getTreatmentStyle } from '@/lib/treatment-config';
+import { getTreatmentStyle, isSpecialTreatmentType } from '@/lib/treatment-config';
 import { getProtocolFingerprint } from '@/lib/protocol-fingerprint';
 
 // ---------------------------------------------------------------------------
@@ -100,7 +100,7 @@ export function useGroupResult() {
   // Protocol data (from first evaluation — they're identical in the group)
   const treatmentType = primaryEval?.treatment_type || 'resina';
   const isPorcelain = treatmentType === 'porcelana';
-  const isSpecialTreatment = ['implante', 'coroa', 'endodontia', 'encaminhamento', 'gengivoplastia', 'recobrimento_radicular'].includes(treatmentType);
+  const isSpecialTreatment = isSpecialTreatmentType(treatmentType);
   const cementationProtocol = primaryEval?.cementation_protocol as CementationProtocol | null;
   const genericProtocol = primaryEval?.generic_protocol ?? null;
   const protocol = primaryEval?.stratification_protocol ?? null;

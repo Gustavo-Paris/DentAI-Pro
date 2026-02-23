@@ -74,7 +74,6 @@ export interface PatientProfileActions {
   updateEditField: <K extends keyof EditForm>(field: K, value: EditForm[K]) => void;
   handleSave: () => Promise<void>;
   loadMoreSessions: () => void;
-  getInitials: (name: string) => string;
 }
 
 // ---------------------------------------------------------------------------
@@ -236,15 +235,6 @@ export function usePatientProfile(): PatientProfileState & PatientProfileActions
     setSessionsPage((prev) => prev + 1);
   }, []);
 
-  const getInitials = useCallback((name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  }, []);
-
   return {
     // State
     patientId,
@@ -272,6 +262,5 @@ export function usePatientProfile(): PatientProfileState & PatientProfileActions
     updateEditField,
     handleSave,
     loadMoreSessions,
-    getInitials,
   };
 }

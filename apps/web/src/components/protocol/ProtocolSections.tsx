@@ -10,32 +10,15 @@ import AlternativeBox from '@/components/protocol/AlternativeBox';
 import { CementationProtocolCard } from '@/components/protocol/CementationProtocolCard';
 import { VeneerPreparationCard } from '@/components/protocol/VeneerPreparationCard';
 import { FinishingPolishingCard } from '@/components/protocol/FinishingPolishingCard';
+import type { ProtocolLayer, ProtocolAlternative, CementationProtocol, FinishingProtocol } from '@/types/protocol';
 
 // =============================================================================
 // Types
 // =============================================================================
 
-interface ProtocolLayer {
-  resin_brand: string;
-  shade: string;
-  [key: string]: unknown;
-}
-
 interface GenericProtocol {
   summary?: string;
   checklist: string[];
-  [key: string]: unknown;
-}
-
-interface ProtocolAlternative {
-  [key: string]: unknown;
-}
-
-interface CementationProtocol {
-  [key: string]: unknown;
-}
-
-interface FinishingProtocol {
   [key: string]: unknown;
 }
 

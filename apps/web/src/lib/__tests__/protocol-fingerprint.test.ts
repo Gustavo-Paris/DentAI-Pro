@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { SPECIAL_TREATMENT_TYPES } from '@/lib/treatment-config';
 import { getProtocolFingerprint } from '../protocol-fingerprint';
 import type { FingerprintableEvaluation } from '../protocol-fingerprint';
 
@@ -180,7 +181,7 @@ describe('getProtocolFingerprint', () => {
   // ---------------------------------------------------------------------------
 
   it('should return treatment type as fingerprint for generic treatments', () => {
-    for (const type of ['gengivoplastia', 'implante', 'coroa', 'endodontia', 'encaminhamento', 'recobrimento_radicular']) {
+    for (const type of SPECIAL_TREATMENT_TYPES) {
       const result = getProtocolFingerprint({ treatment_type: type });
       expect(result).toBe(type);
     }

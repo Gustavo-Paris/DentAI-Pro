@@ -1,6 +1,5 @@
 import { Suspense, lazy, useCallback, Component, type ReactNode, type ErrorInfo } from 'react';
 import { AlertCircle } from 'lucide-react';
-import { Toaster } from "@/components/ui/toaster";
 import { GlobalSearch } from "@/components/GlobalSearch";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -152,7 +151,6 @@ const App = () => (
     <PageShellI18nProvider locale="pt-BR" bundle={{ locale: 'pt-BR', messages: PT_BR_MESSAGES, currency: 'BRL' }}>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
         <Sonner />
         <OfflineBanner />
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>

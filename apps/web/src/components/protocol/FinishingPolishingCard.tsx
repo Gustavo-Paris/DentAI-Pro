@@ -2,22 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles } from 'lucide-react';
-
-interface PolishingStep {
-  order: number;
-  tool: string;
-  grit?: string;
-  speed: string;
-  time: string;
-  tip: string;
-}
-
-export interface FinishingProtocol {
-  contouring: PolishingStep[];
-  polishing: PolishingStep[];
-  final_glaze?: string;
-  maintenance_advice: string;
-}
+import type { FinishingProtocol, PolishingStep } from '@/types/protocol';
 
 interface FinishingPolishingCardProps {
   protocol: FinishingProtocol;

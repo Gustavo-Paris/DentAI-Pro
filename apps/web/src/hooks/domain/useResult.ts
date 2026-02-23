@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { logger } from '@/lib/logger';
 import { SIGNED_URL_EXPIRY_SECONDS, QUERY_STALE_TIMES } from '@/lib/constants';
-import { getTreatmentStyle } from '@/lib/treatment-config';
+import { getTreatmentStyle, isSpecialTreatmentType } from '@/lib/treatment-config';
 import type { TreatmentStyle } from '@/lib/treatment-config';
 
 // ---------------------------------------------------------------------------
@@ -240,7 +240,7 @@ export function useResult() {
   // ---- Computed values ----
   const treatmentType = evaluation?.treatment_type || 'resina';
   const isPorcelain = treatmentType === 'porcelana';
-  const isSpecialTreatment = ['implante', 'coroa', 'endodontia', 'encaminhamento', 'gengivoplastia', 'recobrimento_radicular'].includes(treatmentType);
+  const isSpecialTreatment = isSpecialTreatmentType(treatmentType);
   const cementationProtocol = evaluation?.cementation_protocol as CementationProtocol | null;
   const genericProtocol = evaluation?.generic_protocol ?? null;
   const protocol = evaluation?.stratification_protocol ?? null;

@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { SPECIAL_TREATMENT_TYPES } from '@/lib/treatment-config';
 
 // ---------------------------------------------------------------------------
 // Test the pure computation logic from useResult
@@ -69,7 +70,7 @@ interface Evaluation {
 
 // Mirror helper functions from useResult
 
-const SPECIAL_TREATMENTS = ['implante', 'coroa', 'endodontia', 'encaminhamento', 'gengivoplastia', 'recobrimento_radicular'];
+const SPECIAL_TREATMENTS = [...SPECIAL_TREATMENT_TYPES];
 
 function computeTreatmentFlags(evaluation: Evaluation | null) {
   const treatmentType = evaluation?.treatment_type || 'resina';
@@ -757,8 +758,7 @@ describe('treatment style mapping', () => {
   });
 
   it('should classify all special treatments correctly', () => {
-    const specialTypes = ['implante', 'coroa', 'endodontia', 'encaminhamento', 'gengivoplastia', 'recobrimento_radicular'];
-    for (const type of specialTypes) {
+    for (const type of SPECIAL_TREATMENT_TYPES) {
       const flags = computeTreatmentFlags({ ...baseEval, treatment_type: type as Evaluation['treatment_type'] });
       expect(flags.isPorcelain).toBe(false);
       expect(flags.isSpecialTreatment).toBe(true);
