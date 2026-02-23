@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useSearchParams, useNavigate, useBlocker } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   Button,
@@ -23,7 +23,6 @@ import { CreditPackSection } from '@/components/pricing/CreditPackSection';
 import { PaymentHistorySection } from '@/components/pricing/PaymentHistorySection';
 import { useSubscription } from '@/hooks/useSubscription';
 import { DetailPage } from '@parisgroup-ai/pageshell/composites';
-import { PageConfirmDialog } from '@parisgroup-ai/pageshell/interactions';
 import { logger } from '@/lib/logger';
 
 import { useProfile } from '@/hooks/domain/useProfile';
@@ -41,7 +40,13 @@ export default function Profile() {
   const [searchParams] = useSearchParams();
   const p = useProfile();
   const { refreshSubscription, isFree, isActive } = useSubscription();
-  const blocker = useBlocker(p.isDirty);
+  // Warn on tab close when there are unsaved changes
+  useEffect(() => {
+    if (!p.isDirty) return;
+    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [p.isDirty]);
 
   // Handle redirect from Stripe after credit pack purchase
   useEffect(() => {
@@ -262,17 +267,6 @@ export default function Profile() {
       defaultTab={searchParams.get('tab') || 'perfil'}
     />
 
-    <PageConfirmDialog
-      open={blocker.state === 'blocked'}
-      onOpenChange={(open) => { if (!open) blocker.reset?.(); }}
-      title={t('profile.unsavedChangesTitle', { defaultValue: 'Alterações não salvas' })}
-      description={t('profile.unsavedChangesDescription', { defaultValue: 'Você tem alterações não salvas. Deseja sair sem salvar?' })}
-      onConfirm={() => blocker.proceed?.()}
-      onCancel={() => blocker.reset?.()}
-      confirmText={t('profile.discardChanges', { defaultValue: 'Sair sem salvar' })}
-      cancelText={t('common.cancel', { defaultValue: 'Cancelar' })}
-      variant="warning"
-    />
     </div>
   );
 }
