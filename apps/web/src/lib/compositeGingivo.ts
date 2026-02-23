@@ -9,11 +9,7 @@
  */
 
 import { logger } from './logger';
-
-/** Yield to the main thread to prevent blocking the UI during heavy computation. */
-function yieldToMain(): Promise<void> {
-  return new Promise(resolve => requestAnimationFrame(() => resolve()));
-}
+import { yieldToMain } from './canvasUtils';
 
 /** Load an image URL into an HTMLImageElement */
 function loadImage(url: string): Promise<HTMLImageElement> {

@@ -1,9 +1,7 @@
 import { subDays, startOfWeek } from 'date-fns';
 import { supabase } from './client';
-import type { Database } from './client';
+import type { EvaluationInsert } from './client';
 import { withQuery, withMutation, countByUser } from './utils';
-
-type EvaluationInsert = Database['public']['Tables']['evaluations']['Insert'];
 
 // ---------------------------------------------------------------------------
 // Types

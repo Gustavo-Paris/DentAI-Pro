@@ -10,8 +10,9 @@ import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { logger } from '@/lib/logger';
 import { SIGNED_URL_EXPIRY_SECONDS, QUERY_STALE_TIMES } from '@/lib/constants';
-import { getTreatmentStyle, isSpecialTreatmentType } from '@/lib/treatment-config';
 import type { TreatmentStyle } from '@/lib/treatment-config';
+import { fetchImageAsBase64 } from '@/lib/imageUtils';
+import { computeProtocol } from './protocolComputed';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -275,21 +276,6 @@ export function useResult() {
   };
 
   // ---- PDF export ----
-  const fetchImageAsBase64 = async (url: string): Promise<string | null> => {
-    try {
-      const response = await fetch(url);
-      const blob = await response.blob();
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.onerror = () => resolve(null);
-        reader.readAsDataURL(blob);
-      });
-    } catch {
-      return null;
-    }
-  };
-
   const getChecklistCompletionStatus = useCallback(() => {
     if (!evaluation) return { complete: true, total: 0, progress: 0 };
     const progressIndices = evaluation.checklist_progress || [];

@@ -1,9 +1,5 @@
 import type { ToothBoundsPct } from '@/types/dsd';
-
-/** Yield to the main thread to prevent blocking the UI during heavy computation. */
-function yieldToMain(): Promise<void> {
-  return new Promise(resolve => requestAnimationFrame(() => resolve()));
-}
+import { yieldToMain } from './canvasUtils';
 
 // --- Image loading helpers ---
 

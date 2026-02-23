@@ -1,9 +1,7 @@
 import { supabase } from './client';
-import type { Database } from './client';
+import type { EvaluationInsert } from './client';
 import { withQuery, withMutation } from './utils';
 import { logger } from '@/lib/logger';
-
-type EvaluationInsert = Database['public']['Tables']['evaluations']['Insert'];
 
 // ---------------------------------------------------------------------------
 // Storage

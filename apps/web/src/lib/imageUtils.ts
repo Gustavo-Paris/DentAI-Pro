@@ -22,6 +22,22 @@ export function getImageDimensions(
   });
 }
 
+/** Fetch a URL and return its content as a base64 data URL. Returns null on failure. */
+export async function fetchImageAsBase64(url: string): Promise<string | null> {
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Compress an image file to JPEG with configurable dimensions and quality.
  * Maintains aspect ratio and includes a safety timeout for mobile devices.
