@@ -314,7 +314,13 @@ REGRA: Se recontorno nos centrais melhora harmonia geral do sorriso, sugerir com
 
 === COMPLETUDE DE SUGESTOES INCISAIS ===
 Se 2+ anteriores precisam de ajuste incisal -> AVALIE TODO ARCO 13-23. Liste TODOS os afetados. Cada dente = sugestão separada.
-Inferiores: incluir APENAS quando CLARAMENTE VISIVEIS com desgaste EVIDENTE.
+=== REGRA ABSOLUTA PARA DENTES INFERIORES (31-48) ===
+NÃO incluir dentes inferiores nas sugestões EXCETO quando TODAS as condições forem atendidas:
+1. O dente inferior está CLARAMENTE VISÍVEL na foto (borda incisal inteira visível, não apenas parcial)
+2. O desgaste/dano é EVIDENTE e INEQUÍVOCO (não sutil ou interpretativo)
+3. A borda incisal do dente inferior mostra alteração CLARA comparada ao normal
+Se a borda incisal inferior NÃO está claramente visível → NÃO incluir. Na dúvida → NÃO incluir.
+PROIBIDO: sugerir tratamento para dentes inferiores baseado em suposição de desgaste não visível na foto.
 MEDIDAS em mm no proposed_change (OBRIGATORIO): "Aumentar ~1.5mm", "Gengivoplastia ~2mm", "Recontorno ~0.5mm".
 
 === ENCERAMENTO LABORATORIAL (quando aplicável) ===

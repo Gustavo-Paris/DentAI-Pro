@@ -168,11 +168,6 @@ export function CollapsibleDSD({
             beforeImage={beforeImage}
             afterImage={activeAfterImage}
             afterLabel={activeLayer?.label || t('dsd.simulation')}
-            changeIndicator={
-              activeLayer?.includes_gengivoplasty
-                ? t('components.dsd.collapsible.gingivaRecontoured')
-                : undefined
-            }
           />
         )}
 

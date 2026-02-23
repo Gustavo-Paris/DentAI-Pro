@@ -32,6 +32,26 @@ export function applyPostProcessingSafetyNets(
     }
   }
 
+  // Safety net #1.5: Strip lower teeth suggestions when photo predominantly shows upper arch.
+  // The DSD prompt says "Inferiores: incluir APENAS quando CLARAMENTE VISIVEIS com desgaste EVIDENTE"
+  // but the AI frequently ignores this rule. This is a deterministic backend guardrail.
+  const upperSuggestions = analysis.suggestions.filter(s => {
+    const num = parseInt(s.tooth);
+    return num >= 11 && num <= 28;
+  });
+  const lowerSuggestions = analysis.suggestions.filter(s => {
+    const num = parseInt(s.tooth);
+    return num >= 31 && num <= 48;
+  });
+
+  if (upperSuggestions.length > 0 && lowerSuggestions.length > 0 && upperSuggestions.length >= lowerSuggestions.length) {
+    const removedNumbers = lowerSuggestions.map(s => s.tooth);
+    logger.log(`DSD post-processing: removing lower teeth suggestions ${removedNumbers.join(', ')} — photo predominantly shows upper arch (${upperSuggestions.length} upper vs ${lowerSuggestions.length} lower)`);
+    analysis.suggestions = upperSuggestions;
+    analysis.observations = analysis.observations || [];
+    analysis.observations.push(`Dentes inferiores (${removedNumbers.join(', ')}) removidos da análise DSD — foto mostra predominantemente a arcada superior.`);
+  }
+
   // Safety net #2: Strip gengivoplastia for low smile line AND for média without gingival evidence.
   // "alta" always has sufficient visibility. "média" CAN have 0mm exposure (lip tangent) —
   // only allow gengivoplasty for média if observations mention visible gingiva or asymmetry.
