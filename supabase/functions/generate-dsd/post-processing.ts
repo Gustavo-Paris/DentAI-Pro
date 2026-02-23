@@ -52,21 +52,12 @@ export function applyPostProcessingSafetyNets(
     analysis.observations.push(`Dentes inferiores (${removedNumbers.join(', ')}) removidos da análise DSD — foto mostra predominantemente a arcada superior.`);
   }
 
-  // Safety net #2: Strip gengivoplastia for low smile line AND for média without gingival evidence.
-  // "alta" always has sufficient visibility. "média" CAN have 0mm exposure (lip tangent) —
-  // only allow gengivoplasty for média if observations mention visible gingiva or asymmetry.
+  // Safety net #2: Strip gengivoplastia ONLY for low smile line.
+  // "alta" always has sufficient visibility. "média" is borderline but the AI analysis
+  // already accounts for visibility — if it recommends gengivoplasty for média, trust it.
+  // Only strip for "baixa" where gingiva is genuinely not visible.
   const smileLine = (analysis.smile_line || '').toLowerCase();
-  const hasExplicitGingivoSuggestions = analysis.suggestions.some(s =>
-    (s.treatment_indication || '').toLowerCase() === 'gengivoplastia'
-  );
-  const shouldStripGingivo = smileLine === 'baixa' || (
-    smileLine === 'média' && !hasExplicitGingivoSuggestions && !analysis.observations?.some(obs => {
-      const lower = obs.toLowerCase();
-      return lower.includes('assimetria gengival') ||
-             lower.includes('coroa clínica curta') ||
-             (lower.includes('gengiva') && lower.includes('visível'));
-    })
-  );
+  const shouldStripGingivo = smileLine === 'baixa';
   if (shouldStripGingivo) {
     const before = analysis.suggestions.length;
     analysis.suggestions = analysis.suggestions.filter(s => {

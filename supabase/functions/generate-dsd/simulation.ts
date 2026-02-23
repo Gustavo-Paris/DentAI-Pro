@@ -170,7 +170,7 @@ export async function generateSimulation(
   // P2-56: Sanitize AI text before interpolation into Gemini prompt
   const allowedChangesFromAnalysis = filteredSuggestions.length > 0
     ? `\nSPECIFIC CORRECTIONS FROM ANALYSIS (apply these changes):\n${filteredSuggestions.map(s =>
-        `- Tooth ${s.tooth}: ${sanitizeAnalysisText(s.proposed_change, 200)}`
+        `- Tooth ${s.tooth}: ${sanitizeAnalysisText(s.proposed_change, 400)}`
       ).join('\n')}`
     : '';
 

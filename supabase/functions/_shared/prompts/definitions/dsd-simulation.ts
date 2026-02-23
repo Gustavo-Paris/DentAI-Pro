@@ -39,10 +39,10 @@ function buildTextureInstruction(): string {
 - Manter/criar PERIQUIMÁCIES (linhas horizontais sutis no esmalte)
 - Preservar REFLEXOS DE LUZ naturais nos pontos de brilho
 - Criar GRADIENTE DE TRANSLUCIDEZ: opaco cervical → translúcido incisal
-- Manter variações sutis de cor entre dentes adjacentes (100% idênticos = artificial)
-- Preservar CARACTERIZAÇÕES naturais visíveis (manchas brancas sutis, craze lines)
+- WHITENING UNIFORMIDADE: Todos os dentes visíveis devem atingir o MESMO nível de claridade/brilho após clareamento. Dentes mais escuros/manchados devem receber MAIS clareamento para igualar aos adjacentes. O resultado final deve ter brilho UNIFORME.
+- Permitir variações SUTIS de textura entre dentes (craze lines, periquimácies) mas a COR/BRILHO deve ser uniforme
 - NÃO criar aparência de "porcelana perfeita" ou "dentes de comercial de TV"
-- CADA DENTE deve ter variação INDIVIDUAL de cor e textura — nunca aplicar a mesma textura/cor uniforme em todos os dentes`
+- Preservar micro-textura individual mas equalizar a luminosidade geral`
 }
 
 function buildAbsolutePreservation(): string {
@@ -113,10 +113,14 @@ Os lábios (superior E inferior) definem a MOLDURA DO SORRISO.
 Alterar QUALQUER lábio = destruir o diagnóstico e a comparação antes/depois.
 O contorno, posição, formato e abertura dos lábios são IMUTÁVEIS em TODAS as camadas.
 ⚠️ LÁBIOS SÃO A REFERÊNCIA DIAGNÓSTICA — MOVER LÁBIOS = DESTRUIR O CASO
-=== POSIÇÃO E ALINHAMENTO DOS DENTES (CRÍTICO) ===
-NÃO mover, rotacionar ou reposicionar os dentes. APENAS modificar superfície/cor/textura na posição EXATA onde estão.
-Os dentes devem permanecer nas MESMAS coordenadas da imagem original — qualquer deslocamento invalida o resultado.
-A simulação deve parecer uma EDIÇÃO SUTIL da foto original, NÃO uma sobreposição de dentes genéricos de banco de imagens.
+=== POSIÇÃO E ALINHAMENTO DOS DENTES ===
+NÃO mover ou rotacionar os dentes lateralmente. Manter a posição horizontal e o alinhamento geral.
+EXCEÇÃO PERMITIDA: Alongar ou encurtar BORDAS INCISAIS (até 1-2mm visual) para:
+- Harmonizar o arco do sorriso (curva incisal acompanhando o lábio inferior)
+- Corrigir assimetria de comprimento entre dentes homólogos (ex: 12 vs 22)
+- Equalizar a linha incisal dos anteriores
+Estas mudanças de borda incisal são PARTE da simulação de restauração e devem ser VISÍVEIS na comparação.
+A simulação deve parecer uma melhoria natural, NÃO uma sobreposição de dentes genéricos.
 
 ⚠️ ERRO FREQUENTE DO MODELO: Levantar o lábio superior e abaixar o inferior para "mostrar mais resultado" — PROIBIDO`
 }
@@ -143,8 +147,8 @@ ${params.toothShapeRecommendation === 'oval' ? '- Manter/criar contornos arredon
 ${params.toothShapeRecommendation === 'triangular' ? '- Manter proporção mais larga incisal, convergindo para cervical' : ''}
 ${params.toothShapeRecommendation === 'retangular' ? '- Manter proporção mais alongada, bordos paralelos' : ''}
 ${params.toothShapeRecommendation === 'natural' ? '- PRESERVAR o formato atual dos dentes do paciente' : ''}
-${params.smileArc === 'plano' ? '- Considerar suavizar a curva incisal para acompanhar lábio inferior' : ''}
-${params.smileArc === 'reverso' ? '- ATENÇÃO: Arco reverso precisa de tratamento clínico real' : ''}
+${params.smileArc === 'plano' ? '- ARCO DO SORRISO PLANO DETECTADO: OBRIGATÓRIO suavizar a curva incisal. Alongar bordas incisais dos laterais (12/22) em ~1mm e centralizar para criar arco convexo suave acompanhando o lábio inferior. A correção deve ser VISÍVEL na comparação.' : ''}
+${params.smileArc === 'reverso' ? '- ARCO REVERSO DETECTADO: Simular correção do arco invertido. Alongar bordas incisais dos centrais (11/21) e/ou encurtar caninos para inverter a curvatura. A mudança deve ser PERCEPTÍVEL na comparação.' : ''}
 `
 }
 
@@ -175,7 +179,12 @@ function buildBaseCorrections(): string {
 4. PRESERVAR mamelons se visíveis (projeções naturais da borda incisal)
 5. MANTER micro-textura natural do esmalte - NÃO deixar dentes "lisos demais"
 6. PRESERVAR translucidez incisal natural - NÃO tornar dentes opacos uniformemente
-7. CORRIGIR ARESTAS INCISAIS DE CANINOS (13/23): Se caninos apresentam bordos incisais fraturados, lascados ou irregulares, RESTAURAR o contorno pontudo natural do canino. Caninos devem ter ponta incisal definida — não plana ou arredondada por fratura.
+7. CORRIGIR CANINOS (13/23) — avaliação COMPLETA:
+   a) Bordos incisais: Se fraturados, lascados ou irregulares, RESTAURAR o contorno pontudo natural
+   b) Cor: Se visivelmente mais amarelos/escuros que os incisivos, HARMONIZAR a cor com os adjacentes
+   c) Forma: Se achatados ou sem a proeminência natural, RESTAURAR o contorno convexo vestibular
+   d) Simetria: Caninos 13 e 23 devem ser SIMÉTRICOS em forma, comprimento e posição da ponta
+   e) Caninos são essenciais para o corredor bucal — NÃO ignorá-los na simulação
 8. CORRIGIR BORDOS INCISAIS de TODOS os dentes anteriores (13-23): lascas, irregularidades, assimetrias de comprimento entre homólogos devem ser corrigidas para harmonia do arco
 9. Corrigir formato de incisivos laterais conoides (12/22) - aumentar largura e comprimento para proporção adequada
 10. Aplicar contorno recomendado pelo visagismo quando o formato atual for inadequado
@@ -189,6 +198,12 @@ SHAPE CORRECTIONS (quando análise sugere):
 - Modificar contornos dos dentes para harmonizar com recommended_tooth_shape
 - Para laterais conoides: adicionar volume para proporção adequada (lateral = ~62% da largura do central)
 - Para dentes com formato inadequado ao visagismo: ajustar contornos suavemente
+
+SIMETRIA CONTRALATERAL (OBRIGATÓRIO):
+- Dentes homólogos (11↔21, 12↔22, 13↔23) devem ter MESMO comprimento, largura e forma
+- Se um lateral (12) é mais curto/estreito que o contralateral (22): IGUALAR ao maior
+- Se um canino (13) tem ponta mais gasta que o (23): IGUALAR ao mais íntegro
+- A referência é sempre o dente em MELHOR condição — espelhar para o homólogo
 
 === EXTENSAO ATE PRE-MOLARES ===
 Se pré-molares (14/15/24/25) são VISIVEIS na foto:
@@ -207,7 +222,8 @@ const PROPORTION_RULES = `PROPORTION RULES:
 - Maintain natural width-to-height ratio EXCEPT when shape correction is prescribed
 - NEVER make teeth appear thinner or narrower than original
 - NUNCA alterar proporção largura/altura de dentes que NÃO estão sendo tratados
-- Mudanças de formato devem ser SUTIS (máx 5-10% de volume) exceto para laterais conoides (15-20%)
+- Mudanças de formato prescritas pela análise devem ser VISÍVEIS (15-20% de volume) para que o paciente perceba a diferença na comparação antes/depois
+- Para laterais conoides ou com microdontia: aumento de 20-25% de largura/comprimento
 - COMPARAR antes/depois: dentes não tratados devem ter EXATAMENTE o mesmo formato`
 
 // --- Variant builders ---
@@ -383,9 +399,10 @@ ${params.whiteningLevel === 'hollywood' ? '⚠️ HOLLYWOOD = MAXIMUM BRIGHTNESS
 
 WHAT TO CHANGE (ONLY):
 - Tooth COLOR: make teeth whiter/brighter according to the whitening level above
-- Apply whitening UNIFORMLY across all visible teeth
+- Apply whitening UNIFORMLY across ALL visible teeth — every tooth must reach the SAME brightness level
+- Teeth that are currently darker or more stained must receive MORE whitening to match the lighter teeth
+- The final result must show EVEN, UNIFORM brightness across the entire visible smile
 - Maintain natural translucency gradients (more translucent at incisal edges)
-- Keep subtle color variation between teeth (don't make them perfectly uniform)
 
 WHAT TO PRESERVE (DO NOT CHANGE — PIXEL-IDENTICAL):
 - ALL structural corrections: tooth shape, contour, alignment, closed gaps, filled chips
@@ -554,7 +571,7 @@ export const dsdSimulation: PromptDefinition<Params> = {
   name: 'Simulação DSD',
   description: 'Prompt de edição de imagem para simulação DSD com 4 variantes (reconstruction, restoration, intraoral, standard)',
   model: 'gemini-3-pro-image-preview',
-  temperature: 0.0,
+  temperature: 0.25,
   maxTokens: 4000,
   mode: 'image-edit',
   provider: 'gemini',

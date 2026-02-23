@@ -29,9 +29,9 @@ import { LAYER_LABELS } from '@/types/dsd';
 const TOOTH_SHAPE = 'natural' as const;
 
 /**
- * Fetch an image URL and convert to a high-quality JPEG data URL (base64).
- * Re-encodes as JPEG to keep payload size manageable for inter-layer chaining
- * (Gemini returns PNG which can be 5-10MB in base64 at 2048px — JPEG 0.95 is ~1-2MB).
+ * Fetch an image URL and convert to a PNG data URL (base64).
+ * Uses PNG (lossless) to prevent compression artifacts between layers.
+ * Each JPEG re-encode accumulates blocking artifacts at tooth-gum boundaries.
  */
 async function urlToBase64(url: string): Promise<string> {
   const resp = await fetch(url);
@@ -46,7 +46,7 @@ async function urlToBase64(url: string): Promise<string> {
         const ctx = canvas.getContext('2d');
         if (!ctx) { reject(new Error('No canvas context')); return; }
         ctx.drawImage(img, 0, 0);
-        resolve(canvas.toDataURL('image/jpeg', 0.95));
+        resolve(canvas.toDataURL('image/png'));
       } catch (err) {
         reject(err);
       }
