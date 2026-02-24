@@ -8,6 +8,7 @@ import { sendEmail } from '@/data/email';
 import { WELCOME_STORAGE_KEY } from '@/lib/branding';
 import { QUERY_STALE_TIMES } from '@/lib/constants';
 import { normalizeTreatmentType } from '@/lib/treatment-config';
+import { EVALUATION_STATUS } from '@/lib/evaluation-status';
 import i18n from '@/lib/i18n';
 import { format, startOfWeek, endOfWeek, subDays, startOfMonth, subMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -319,7 +320,7 @@ export function useDashboard(): DashboardState {
           created_at: evals[0].created_at,
           teeth: evals.map(e => e.tooth),
           evaluationCount: evals.length,
-          completedCount: evals.filter(e => e.status === 'completed').length,
+          completedCount: evals.filter(e => e.status === EVALUATION_STATUS.COMPLETED).length,
           treatmentTypes: [...new Set(evals.map(e => e.treatment_type).filter(Boolean))] as string[],
           patientAge: evals[0].patient_age ?? null,
           hasDSD: evals.some(e => !!e.dsd_simulation_url),

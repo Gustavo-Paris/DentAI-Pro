@@ -2,6 +2,8 @@ import { subDays, startOfWeek } from 'date-fns';
 import { supabase } from './client';
 import type { EvaluationInsert } from './client';
 import { withQuery, withMutation, countByUser } from './utils';
+import { EVALUATION_STATUS } from '@/lib/evaluation-status';
+import type { EvaluationStatus } from '@/lib/evaluation-status';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -94,7 +96,7 @@ export async function listBySession(sessionId: string, userId: string) {
   return data || [];
 }
 
-export async function updateStatus(id: string, status: string) {
+export async function updateStatus(id: string, status: EvaluationStatus) {
   await withMutation(() =>
     supabase
       .from('evaluations')
@@ -128,7 +130,7 @@ export async function getDashboardMetrics({ userId }: DashboardMetricsParams) {
       .from('evaluations')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId)
-      .neq('status', 'completed'),
+      .neq('status', EVALUATION_STATUS.COMPLETED),
   ]);
 
   const allEvalsResult = allEvalsSettled.status === 'fulfilled' ? allEvalsSettled.value : { data: [] };
@@ -142,7 +144,7 @@ export async function getDashboardMetrics({ userId }: DashboardMetricsParams) {
     if (!sessionMap.has(sid)) sessionMap.set(sid, { total: 0, completed: 0 });
     const entry = sessionMap.get(sid)!;
     entry.total++;
-    if (row.status === 'completed') entry.completed++;
+    if (row.status === EVALUATION_STATUS.COMPLETED) entry.completed++;
   }
 
   let completedSessions = 0;
@@ -218,7 +220,7 @@ export async function searchRecent(userId: string, limit = 100) {
 // Bulk status update
 // ---------------------------------------------------------------------------
 
-export async function updateStatusBulk(ids: string[], status: string) {
+export async function updateStatusBulk(ids: string[], status: EvaluationStatus) {
   await withMutation(() =>
     supabase
       .from('evaluations')

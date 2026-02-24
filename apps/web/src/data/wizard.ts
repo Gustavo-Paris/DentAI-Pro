@@ -2,6 +2,7 @@ import { supabase } from './client';
 import type { EvaluationInsert } from './client';
 import { withQuery, withMutation } from './utils';
 import { logger } from '@/lib/logger';
+import type { EvaluationStatus } from '@/lib/evaluation-status';
 
 // ---------------------------------------------------------------------------
 // Storage
@@ -118,7 +119,7 @@ export async function updateEvaluationProtocol(
 
 export async function updateEvaluationStatus(
   evalId: string,
-  status: string,
+  status: EvaluationStatus,
 ) {
   const { error } = await supabase
     .from('evaluations')

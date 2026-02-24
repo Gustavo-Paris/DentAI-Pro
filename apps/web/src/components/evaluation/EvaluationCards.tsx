@@ -12,6 +12,7 @@ import { FileDown, CheckCircle, MoreHorizontal, Eye, RefreshCw, Loader2 } from '
 import { Checkbox } from '@/components/ui/checkbox';
 
 import type { EvaluationItem, ChecklistProgress } from '@/hooks/domain/useEvaluationDetail';
+import { EVALUATION_STATUS } from '@/lib/evaluation-status';
 import { getTreatmentConfig, formatToothLabel } from '@/lib/treatment-config';
 import {
   getProtocolFingerprint,
@@ -124,7 +125,7 @@ export function EvaluationCards({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      {evaluation.status === 'error' && handleRetryEvaluation && (
+                      {evaluation.status === EVALUATION_STATUS.ERROR && handleRetryEvaluation && (
                         <DropdownMenuItem
                           onClick={() => handleRetryEvaluation(evaluation.id)}
                           disabled={retryingEvaluationId === evaluation.id}
@@ -139,7 +140,7 @@ export function EvaluationCards({
                         <FileDown className="w-4 h-4 mr-2" />
                         {t('common.exportPDF')}
                       </DropdownMenuItem>
-                      {evaluation.status !== 'completed' && (
+                      {evaluation.status !== EVALUATION_STATUS.COMPLETED && (
                         <DropdownMenuItem onClick={() => handleCompleteClick(evaluation.id)}>
                           <CheckCircle className="w-4 h-4 mr-2" />
                           {t('common.markAsCompleted')}

@@ -7,6 +7,7 @@ import type { PatientRow } from '@/data/patients';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { QUERY_STALE_TIMES } from '@/lib/constants';
+import { EVALUATION_STATUS } from '@/lib/evaluation-status';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -121,14 +122,14 @@ export function usePatientProfile(): PatientProfileState & PatientProfileActions
         }
         const session = sessionMap.get(sessionId)!;
         session.teeth.push(evaluation.tooth);
-        session.statuses.push(evaluation.status || 'draft');
+        session.statuses.push(evaluation.status || EVALUATION_STATUS.DRAFT);
       });
 
       const sessions: PatientSession[] = Array.from(sessionMap.entries()).map(([sessionId, sessionData]) => ({
         session_id: sessionId,
         teeth: sessionData.teeth,
         evaluationCount: sessionData.teeth.length,
-        completedCount: sessionData.statuses.filter((s) => s === 'completed').length,
+        completedCount: sessionData.statuses.filter((s) => s === EVALUATION_STATUS.COMPLETED).length,
         created_at: sessionData.created_at,
       }));
 

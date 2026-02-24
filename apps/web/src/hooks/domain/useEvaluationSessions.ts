@@ -1,9 +1,17 @@
-import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation } from 'react-router-dom';
 import { evaluations } from '@/data';
 import { evaluationKeys } from '@/hooks/domain/useEvaluationDetail';
 import { QUERY_STALE_TIMES } from '@/lib/constants';
+import { EVALUATION_STATUS } from '@/lib/evaluation-status';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const PAGE_SIZE = 20;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -48,7 +56,7 @@ function groupBySession(data: RawEvaluation[]): EvaluationSession[] {
   });
 
   return Array.from(sessionMap.entries()).map(([sessionId, evals]) => {
-    const completedCount = evals.filter((e) => e.status === 'completed').length;
+    const completedCount = evals.filter((e) => e.status === EVALUATION_STATUS.COMPLETED).length;
     const evaluationCount = evals.length;
     return {
       session_id: sessionId,
@@ -58,7 +66,7 @@ function groupBySession(data: RawEvaluation[]): EvaluationSession[] {
       evaluationCount,
       completedCount,
       treatmentTypes: [...new Set(evals.map((e) => e.treatment_type).filter(Boolean))] as string[],
-      status: completedCount >= evaluationCount ? 'completed' : 'pending',
+      status: completedCount >= evaluationCount ? 'completed' as const : 'pending' as const,
     };
   });
 }
@@ -76,16 +84,16 @@ export function useEvaluationSessions() {
     teethCount?: number;
   } | null;
 
+  const [page, setPage] = useState(0);
+
   const query = useQuery({
-    queryKey: [...evaluationKeys.sessions(), user?.id],
+    queryKey: [...evaluationKeys.sessions(), user?.id, page],
     queryFn: async () => {
       if (!user) throw new Error('User not authenticated');
-      // TODO: Hard limit of 100 rows — users with large histories may not see all sessions.
-      // Consider implementing cursor-based pagination or incremental loading.
       const { rows, count } = await evaluations.list({
         userId: user.id,
-        page: 0,
-        pageSize: 100,
+        page,
+        pageSize: PAGE_SIZE,
       });
       return {
         sessions: groupBySession(rows as RawEvaluation[]),
@@ -94,11 +102,18 @@ export function useEvaluationSessions() {
     },
     enabled: !!user,
     staleTime: QUERY_STALE_TIMES.SHORT,
+    placeholderData: keepPreviousData,
   });
+
+  const total = query.data?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return {
     sessions: query.data?.sessions ?? [],
-    total: query.data?.total ?? 0,
+    total,
+    page,
+    setPage,
+    totalPages,
     isLoading: query.isLoading,
     isError: query.isError,
     newSessionId: locationState?.newSessionId ?? null,

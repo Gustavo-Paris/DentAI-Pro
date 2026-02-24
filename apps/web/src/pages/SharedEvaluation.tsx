@@ -13,6 +13,7 @@ import { SharedDetailPage } from '@parisgroup-ai/domain-odonto-ai/shared';
 import { PageEvaluationToothCard } from '@parisgroup-ai/domain-odonto-ai/evaluations';
 import { PageImageCompare } from '@parisgroup-ai/domain-odonto-ai/imaging';
 import { BRAND_NAME } from '@/lib/branding';
+import { EVALUATION_STATUS } from '@/lib/evaluation-status';
 import { getTreatmentConfig } from '@/lib/treatment-config';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -33,7 +34,7 @@ export default function SharedEvaluation() {
   const isNotFound = errorReason === 'not_found';
 
   const completedCount = !loading && !expired
-    ? evaluations.filter((e) => e.status === 'completed').length
+    ? evaluations.filter((e) => e.status === EVALUATION_STATUS.COMPLETED).length
     : 0;
   const evalDate = !loading && !expired && evaluations[0]?.created_at
     ? format(new Date(evaluations[0].created_at), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })

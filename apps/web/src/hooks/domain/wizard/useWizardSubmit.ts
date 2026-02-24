@@ -14,6 +14,7 @@ import { logger } from '@/lib/logger';
 import { trackEvent } from '@/lib/analytics';
 import { withRetry } from '@/lib/retry';
 import { TIMING } from '@/lib/constants';
+import { EVALUATION_STATUS } from '@/lib/evaluation-status';
 import { wizard as wizardData } from '@/data';
 import { normalizeTreatmentType } from '@/lib/treatment-config';
 import { inferCavityClass, getFullRegion, getGenericProtocol } from './helpers';
@@ -265,7 +266,7 @@ export function useWizardSubmit({
             budget: formData.budget || 'moderado',
             longevity_expectation: formData.longevityExpectation || 'longo',
             photo_frontal: uploadedPhotoPath,
-            status: 'analyzing',
+            status: EVALUATION_STATUS.ANALYZING,
             treatment_type: normalizedTreatment,
             desired_tooth_shape: 'natural',
             ai_treatment_indication:
@@ -397,7 +398,7 @@ export function useWizardSubmit({
             );
           }
 
-          await wizardData.updateEvaluationStatus(evaluation.id, 'draft');
+          await wizardData.updateEvaluationStatus(evaluation.id, EVALUATION_STATUS.DRAFT);
 
           // Update progress counter
           resolvedCount.value++;
@@ -410,9 +411,9 @@ export function useWizardSubmit({
           logger.error(`Failed to process tooth ${tooth}:`, err);
           failedTeeth.push({ tooth, error: err });
 
-          // Mark the evaluation as 'error' so the user can identify it
+          // Mark the evaluation as error so the user can identify it
           if (evaluationId) {
-            await wizardData.updateEvaluationStatus(evaluationId, 'error');
+            await wizardData.updateEvaluationStatus(evaluationId, EVALUATION_STATUS.ERROR);
           }
         }
       }

@@ -11,6 +11,7 @@ import { ptBR } from 'date-fns/locale';
 import { logger } from '@/lib/logger';
 import { trackEvent } from '@/lib/analytics';
 import { QUERY_STALE_TIMES } from '@/lib/constants';
+import { EVALUATION_STATUS } from '@/lib/evaluation-status';
 
 import type { StratificationProtocol, CementationProtocol } from '@/types/protocol';
 import type { PendingTooth, TreatmentType, SubmitTeethPayload } from '@/components/AddTeethModal';
@@ -218,7 +219,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
 
   const bulkCompleteMutation = useMutation({
     mutationFn: async (ids: string[]) => {
-      await evaluations.updateStatusBulk(ids, 'completed');
+      await evaluations.updateStatusBulk(ids, EVALUATION_STATUS.COMPLETED);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: evaluationKeys.sessions() });
@@ -242,7 +243,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
   const evaluationDateShort = evals[0]?.created_at
     ? format(new Date(evals[0].created_at), 'dd/MM/yyyy', { locale: ptBR })
     : '';
-  const completedCount = evals.filter((e) => e.status === 'completed').length;
+  const completedCount = evals.filter((e) => e.status === EVALUATION_STATUS.COMPLETED).length;
 
   const patientDataForModal = useMemo<PatientDataForModal | null>(() => {
     if (evals.length === 0) return null;
@@ -301,7 +302,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
 
   const canMarkAsCompleted = useCallback(
     (evaluation: EvaluationItem): boolean => {
-      return evaluation.status !== 'completed';
+      return evaluation.status !== EVALUATION_STATUS.COMPLETED;
     },
     [],
   );
@@ -335,7 +336,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
       }
 
       updateStatusMutation.mutate(
-        { id, status: 'completed' },
+        { id, status: EVALUATION_STATUS.COMPLETED },
         {
           onSuccess: () => {
             toast.success(t('toasts.evaluationDetail.caseCompleted'));
@@ -350,7 +351,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
   );
 
   const handleMarkAllAsCompleted = useCallback(() => {
-    const pending = evals.filter((e) => e.status !== 'completed');
+    const pending = evals.filter((e) => e.status !== EVALUATION_STATUS.COMPLETED);
 
     if (pending.length === 0) {
       toast.info(t('toasts.evaluationDetail.allCompleted'));
@@ -445,7 +446,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
   const handleBulkComplete = useCallback((ids: string[]) => {
     const pending = ids.filter((id) => {
       const e = evals.find((ev) => ev.id === id);
-      return e && e.status !== 'completed';
+      return e && e.status !== EVALUATION_STATUS.COMPLETED;
     });
 
     if (pending.length === 0) {
@@ -514,7 +515,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
           budget: patientDataForModal.budget,
           longevity_expectation: patientDataForModal.longevityExpectation,
           photo_frontal: patientDataForModal.photoPath,
-          status: 'analyzing',
+          status: EVALUATION_STATUS.ANALYZING,
           treatment_type: treatmentType,
           desired_tooth_shape: 'natural',
           ai_treatment_indication: toothData.treatment_indication,
@@ -592,7 +593,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
         }
 
         // Update status to draft
-        await evaluations.updateStatus(evaluation.id, 'draft');
+        await evaluations.updateStatus(evaluation.id, EVALUATION_STATUS.DRAFT);
 
         treatmentCounts[treatmentType] = (treatmentCounts[treatmentType] || 0) + 1;
         results.push({ tooth: toothNumber, success: true });
@@ -604,8 +605,8 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
         for (const eid of newEvalIds) {
           try {
             const evalData = await evaluations.getById(eid);
-            if (evalData?.tooth === toothNumber && evalData?.status === 'analyzing') {
-              await evaluations.updateStatus(eid, 'error');
+            if (evalData?.tooth === toothNumber && evalData?.status === EVALUATION_STATUS.ANALYZING) {
+              await evaluations.updateStatus(eid, EVALUATION_STATUS.ERROR);
             }
           } catch (statusError) {
             logger.error(`Failed to mark evaluation for tooth ${toothNumber} as error:`, statusError);
@@ -675,7 +676,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
 
     setRetryingEvaluationId(evaluationId);
     try {
-      await evaluations.updateStatus(evaluationId, 'analyzing');
+      await evaluations.updateStatus(evaluationId, EVALUATION_STATUS.ANALYZING);
       queryClient.invalidateQueries({ queryKey: evaluationKeys.session(sessionId) });
 
       const treatmentType = evaluation.treatment_type || 'resina';
@@ -722,7 +723,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
         }
       }
 
-      await evaluations.updateStatus(evaluationId, 'draft');
+      await evaluations.updateStatus(evaluationId, EVALUATION_STATUS.DRAFT);
 
       // Sync protocols so the retried tooth joins the group
       const allEvalIds = evals.map(e => e.id);
@@ -739,7 +740,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
       toast.success(t('toasts.evaluationDetail.retrySuccess', { defaultValue: 'Protocolo regenerado com sucesso' }));
     } catch (error) {
       logger.error('Error retrying evaluation:', error);
-      await evaluations.updateStatus(evaluationId, 'error').catch(() => {});
+      await evaluations.updateStatus(evaluationId, EVALUATION_STATUS.ERROR).catch(() => {});
       toast.error(t('toasts.evaluationDetail.retryError', { defaultValue: 'Erro ao reprocessar. Tente novamente.' }));
     } finally {
       setRetryingEvaluationId(null);
@@ -769,7 +770,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
       let successCount = 0;
       for (const evaluation of aiEvals) {
         try {
-          await evaluations.updateStatus(evaluation.id, 'analyzing');
+          await evaluations.updateStatus(evaluation.id, EVALUATION_STATUS.ANALYZING);
 
           switch (evaluation.treatment_type) {
             case 'resina':
@@ -804,11 +805,11 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
               break;
           }
 
-          await evaluations.updateStatus(evaluation.id, 'draft');
+          await evaluations.updateStatus(evaluation.id, EVALUATION_STATUS.DRAFT);
           successCount++;
         } catch (err) {
           logger.error(`Regenerate failed for ${evaluation.tooth}:`, err);
-          await evaluations.updateStatus(evaluation.id, 'error').catch(() => {});
+          await evaluations.updateStatus(evaluation.id, EVALUATION_STATUS.ERROR).catch(() => {});
         }
       }
 

@@ -2,6 +2,7 @@ import { Badge } from '@parisgroup-ai/pageshell/primitives';
 import { CheckCircle } from 'lucide-react';
 import { getTreatmentConfig } from '@/lib/treatment-config';
 import { getProtocolFingerprint } from '@/lib/protocol-fingerprint';
+import { EVALUATION_STATUS } from '@/lib/evaluation-status';
 import type { EvaluationItem } from '@/hooks/domain/useEvaluationDetail';
 
 // Re-export for convenience so the page doesn't need a separate import
@@ -40,7 +41,7 @@ export function getStatusBadge(
   getChecklistProgress: (e: EvaluationItem) => { current: number; total: number },
   t: (key: string) => string,
 ) {
-  if (evaluation.status === 'completed') {
+  if (evaluation.status === EVALUATION_STATUS.COMPLETED) {
     return (
       <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
         <CheckCircle className="w-3 h-3" />

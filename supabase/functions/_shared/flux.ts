@@ -3,6 +3,7 @@
 
 import { logger } from "./logger.ts";
 import { sleep } from "./http-utils.ts";
+import { createCircuitBreaker } from "./circuit-breaker.ts";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -27,6 +28,10 @@ export class FluxError extends Error {
     this.name = "FluxError";
   }
 }
+
+// Circuit breaker (shared implementation)
+const { check: circuitBreakerCheck, onSuccess: circuitBreakerOnSuccess, onFailure: circuitBreakerOnFailure } =
+  createCircuitBreaker(FluxError, "FLUX");
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -95,6 +100,9 @@ export async function callFluxImageEdit(
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const startTime = Date.now();
 
+  // Check circuit breaker before making any requests
+  circuitBreakerCheck();
+
   // -------------------------------------------------------------------------
   // Step 1: Submit the task
   // -------------------------------------------------------------------------
@@ -123,6 +131,7 @@ export async function callFluxImageEdit(
     logger.error(`FLUX submit error: ${submitResponse.status}`, errorBody);
 
     if (submitResponse.status === 429) {
+      circuitBreakerOnFailure();
       throw new FluxError(
         "Taxa de requisições FLUX excedida. Tente novamente.",
         429,
@@ -130,6 +139,7 @@ export async function callFluxImageEdit(
       );
     }
     if (submitResponse.status === 422) {
+      // Validation errors are client-side — don't trip the circuit breaker
       throw new FluxError(
         `FLUX validation error: ${errorBody.substring(0, 300)}`,
         422,
@@ -137,6 +147,7 @@ export async function callFluxImageEdit(
       );
     }
 
+    circuitBreakerOnFailure();
     throw new FluxError(
       `Erro ao submeter tarefa FLUX: ${submitResponse.status}`,
       submitResponse.status,
@@ -158,6 +169,7 @@ export async function callFluxImageEdit(
     const elapsed = Date.now() - startTime;
     if (elapsed >= timeoutMs) {
       logger.warn(`FLUX polling timed out after ${elapsed}ms`);
+      circuitBreakerOnFailure();
       throw new FluxError("Timeout na geração de imagem FLUX", 408, true);
     }
 
@@ -189,6 +201,7 @@ export async function callFluxImageEdit(
       const imageResponse = await fetch(pollData.result.sample);
       if (!imageResponse.ok) {
         logger.error(`FLUX image download failed: ${imageResponse.status}`);
+        circuitBreakerOnFailure();
         throw new FluxError(
           "Erro ao baixar imagem gerada pelo FLUX",
           imageResponse.status,
@@ -209,15 +222,18 @@ export async function callFluxImageEdit(
       const totalMs = Date.now() - startTime;
       logger.log(`FLUX image edit completed in ${totalMs}ms`);
 
+      circuitBreakerOnSuccess();
       return { imageUrl: dataUrl, text: null };
     }
 
     // Terminal error statuses
     if (pollData.status === "Error") {
+      circuitBreakerOnFailure();
       throw new FluxError("Erro na geração de imagem FLUX", 500, true);
     }
 
     if (pollData.status === "Request Moderated" || pollData.status === "Content Moderated") {
+      // Moderation is content-specific — don't trip the circuit breaker
       throw new FluxError(
         "Imagem rejeitada pela moderação de conteúdo FLUX",
         400,
@@ -226,6 +242,7 @@ export async function callFluxImageEdit(
     }
 
     if (pollData.status === "Task not found") {
+      circuitBreakerOnFailure();
       throw new FluxError("Tarefa FLUX não encontrada", 404, false);
     }
 
@@ -234,6 +251,7 @@ export async function callFluxImageEdit(
   }
 
   // Exhausted all poll attempts
+  circuitBreakerOnFailure();
   throw new FluxError(
     "FLUX polling exauriu tentativas sem resposta",
     408,

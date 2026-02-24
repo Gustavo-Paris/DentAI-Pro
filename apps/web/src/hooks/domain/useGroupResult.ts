@@ -8,6 +8,7 @@ import type { SimulationLayer } from '@/types/dsd';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { logger } from '@/lib/logger';
+import { EVALUATION_STATUS } from '@/lib/evaluation-status';
 import { SIGNED_URL_EXPIRY_SECONDS, QUERY_STALE_TIMES } from '@/lib/constants';
 import { getProtocolFingerprint } from '@/lib/protocol-fingerprint';
 import { computeProtocol } from './protocolComputed';
@@ -198,7 +199,7 @@ export function useGroupResult() {
     if (!user) return;
     try {
       const ids = groupEvaluations.map(ev => ev.id);
-      await evaluations.updateStatusBulk(ids, 'completed');
+      await evaluations.updateStatusBulk(ids, EVALUATION_STATUS.COMPLETED);
       queryClient.invalidateQueries({ queryKey: ['group-result', sessionId] });
       toast.success(t('toasts.result.markedComplete', { count: groupEvaluations.length }));
     } catch {

@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { patients } from '@/data';
 import { QUERY_STALE_TIMES } from '@/lib/constants';
+import { EVALUATION_STATUS } from '@/lib/evaluation-status';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -51,7 +52,7 @@ export function usePatientList() {
           evaluationsData?.filter((e) => e.patient_id === patient.id) || [];
         const uniqueSessions = new Set(patientEvals.map((e) => e.session_id));
         const completedCount = patientEvals.filter(
-          (e) => e.status === 'completed',
+          (e) => e.status === EVALUATION_STATUS.COMPLETED,
         ).length;
         const lastEval = patientEvals.sort(
           (a, b) =>

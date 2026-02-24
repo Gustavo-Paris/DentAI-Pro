@@ -4,10 +4,10 @@ import { useTranslation } from 'react-i18next';
 import { ListPage, GenericErrorState } from '@parisgroup-ai/pageshell/composites';
 import { useEvaluationSessions } from '@/hooks/domain/useEvaluationSessions';
 import type { EvaluationSession } from '@/hooks/domain/useEvaluationSessions';
-import { Card } from '@parisgroup-ai/pageshell/primitives';
+import { Button, Card } from '@parisgroup-ai/pageshell/primitives';
 import { StatusBadge, defineStatusConfig } from '@parisgroup-ai/pageshell/primitives';
 import { Badge } from '@parisgroup-ai/pageshell/primitives';
-import { CheckCircle, ChevronRight, Calendar, Info } from 'lucide-react';
+import { CheckCircle, ChevronRight, ChevronLeft, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatToothLabel } from '@/lib/treatment-config';
@@ -135,9 +135,8 @@ const VALID_TREATMENT_VALUES = new Set(TREATMENT_TYPE_OPTIONS.map(o => o.value))
 
 export default function Evaluations() {
   const { t } = useTranslation();
-  const { sessions, total, isLoading, isError, newSessionId, newTeethCount } =
+  const { sessions, total, page, setPage, totalPages, isLoading, isError, newSessionId, newTeethCount } =
     useEvaluationSessions();
-  const isTruncated = total > sessions.length;
   const [searchParams, setSearchParams] = useSearchParams();
 
   // ---------------------------------------------------------------------------
@@ -324,17 +323,34 @@ export default function Evaluations() {
           labels={labels}
         />
 
-      {/* Truncation notice */}
-      {isTruncated && (
-        <div role="status" className="mt-4 p-3 bg-muted/50 border border-border rounded-lg flex items-center gap-2 text-sm text-muted-foreground">
-          <Info className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
-          <span>
-            {t('evaluation.truncationNotice', {
-              shown: sessions.length,
-              total,
-              defaultValue: `Mostrando ${sessions.length} de ${total} avaliações`,
+      {/* Pagination controls */}
+      {totalPages > 1 && (
+        <div className="mt-4 flex items-center justify-center gap-4">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page === 0}
+            onClick={() => setPage(page - 1)}
+          >
+            <ChevronLeft className="w-4 h-4 mr-1" aria-hidden="true" />
+            {t('common.previous', { defaultValue: 'Anterior' })}
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            {t('common.pageOf', {
+              page: page + 1,
+              total: totalPages,
+              defaultValue: `Pagina ${page + 1} de ${totalPages}`,
             })}
           </span>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page >= totalPages - 1}
+            onClick={() => setPage(page + 1)}
+          >
+            {t('common.next', { defaultValue: 'Proximo' })}
+            <ChevronRight className="w-4 h-4 ml-1" aria-hidden="true" />
+          </Button>
         </div>
       )}
     </div>
