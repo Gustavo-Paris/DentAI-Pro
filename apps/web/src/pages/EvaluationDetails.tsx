@@ -105,14 +105,6 @@ export default function EvaluationDetails() {
             variant: 'default',
           },
           {
-            label: t('evaluation.share'),
-            icon: detail.isSharing ? ShareLoader : Share2,
-            onClick: detail.handleShareCase,
-            disabled: detail.isSharing,
-            variant: 'outline',
-            iconOnly: true,
-          },
-          {
             label: detail.isRegenerating
               ? t('evaluation.regenerating', { defaultValue: 'Regenerando...' })
               : targetLabel,
@@ -121,44 +113,62 @@ export default function EvaluationDetails() {
             disabled: detail.isRegenerating,
             variant: 'outline' as const,
           },
-          ...(detail.pendingTeeth.length > 0
-            ? [{
-                label: t('evaluation.addMoreTeeth', { count: detail.pendingTeeth.length }),
-                icon: Plus,
-                onClick: () => detail.setShowAddTeethModal(true),
-                variant: 'outline' as const,
-                iconOnly: true as const,
-              }]
-            : []),
-          {
-            label: t('evaluation.markAllCompleted'),
-            icon: CheckCircle,
-            onClick: () => setShowMarkAllConfirm(true),
-            show: detail.completedCount < detail.evaluations.length,
-            variant: 'outline',
-            iconOnly: true,
-          },
-          {
-            label: t('evaluation.deleteSession'),
-            icon: Trash2,
-            onClick: () => setShowDeleteDialog(true),
-            variant: 'ghost',
-            iconOnly: true,
-          },
         ]}
         slots={{
           beforeContent: (
-            <SessionHeaderCard
-              photoPath={firstEval?.photo_frontal}
-              patientName={detail.patientName}
-              evaluationDate={detail.evaluationDate}
-              evaluationDateShort={detail.evaluationDateShort}
-              teeth={detail.evaluations}
-              completedCount={detail.completedCount}
-              evaluationCount={detail.evaluations.length}
-              hasDSD={hasDSD}
-              onPhotoClick={() => setShowDSD(true)}
-            />
+            <>
+              <SessionHeaderCard
+                photoPath={firstEval?.photo_frontal}
+                patientName={detail.patientName}
+                evaluationDate={detail.evaluationDate}
+                evaluationDateShort={detail.evaluationDateShort}
+                teeth={detail.evaluations}
+                completedCount={detail.completedCount}
+                evaluationCount={detail.evaluations.length}
+                hasDSD={hasDSD}
+                onPhotoClick={() => setShowDSD(true)}
+              />
+              <div className="flex flex-wrap items-center gap-2 mb-4 sm:mb-6">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={detail.handleShareCase}
+                  disabled={detail.isSharing}
+                >
+                  {detail.isSharing ? <ShareLoader className="w-4 h-4 mr-1.5 animate-spin" /> : <Share2 className="w-4 h-4 mr-1.5" />}
+                  {t('evaluation.share')}
+                </Button>
+                {detail.pendingTeeth.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => detail.setShowAddTeethModal(true)}
+                  >
+                    <Plus className="w-4 h-4 mr-1.5" />
+                    {t('evaluation.addMoreTeeth', { count: detail.pendingTeeth.length })}
+                  </Button>
+                )}
+                {detail.completedCount < detail.evaluations.length && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowMarkAllConfirm(true)}
+                  >
+                    <CheckCircle className="w-4 h-4 mr-1.5" />
+                    {t('evaluation.markAllCompleted')}
+                  </Button>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-destructive hover:text-destructive"
+                  onClick={() => setShowDeleteDialog(true)}
+                >
+                  <Trash2 className="w-4 h-4 mr-1.5" />
+                  {t('evaluation.deleteSession')}
+                </Button>
+              </div>
+            </>
           ),
         }}
       >
