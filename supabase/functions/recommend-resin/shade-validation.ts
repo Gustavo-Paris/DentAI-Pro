@@ -282,7 +282,7 @@ export async function validateAndFixProtocolLayers({
           layer.shade = isEnamelLayer ? 'A1E' : 'A1';
           shadeReplacements[originalShade] = layer.shade;
           validationAlerts.push(
-            `Cor ${originalShade} NÃO EXISTE na linha Filtek Z350 XT. Substituída por ${layer.shade} (catálogo indisponível).`
+            `Cor ${originalShade} não disponível na linha Filtek Z350 XT. Substituída automaticamente por ${layer.shade}.`
           );
           logger.warn(`Z350 BL enforcement fallback: ${originalShade} → ${layer.shade} (no catalog rows)`);
         } else {
@@ -296,7 +296,7 @@ export async function validateAndFixProtocolLayers({
             layer.shade = replacement.shade;
             shadeReplacements[originalShade] = replacement.shade;
             validationAlerts.push(
-              `Cor ${originalShade} NÃO EXISTE na linha Filtek Z350 XT. Substituída por ${replacement.shade}.`
+              `Cor ${originalShade} não disponível na linha Filtek Z350 XT. Substituída automaticamente por ${replacement.shade}.`
             );
             logger.warn(`Z350 BL enforcement: ${originalShade} → ${replacement.shade}`);
           }

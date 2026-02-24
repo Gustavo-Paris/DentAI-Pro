@@ -136,9 +136,9 @@ RESINAS RECOMENDADAS POR CAMADA:
 | Camada             | Resinas OBRIGATORIAS                                       |
 |--------------------|------------------------------------------------------------|
 | Aumento Incisal    | 1a: CT(Z350) OU Trans(FORMA) — 2a: Trans20(Empress) ou Trans(Vittra) — PROIBIDO esmalte/corpo! |
-| Cristas Proximais  | 1a: XLE(Harmonize) — 2a: BL-L/BL-XL(Empress) — 3a: WE(Palfique LX5) — PROIBIDO: Z350 BL1, JE, CT, FORMA, Vittra para cristas! |
-| Dentina/Corpo      | 1a: WB(FORMA) ou WB(Z350) — 2a: DA1/DA2(Vittra APS) ou D BL-L(Empress) — PROIBIDO esmalte (A1E/WE/CT)! |
-| Efeitos Incisais   | EMPRESS DIRECT COLOR White/Blue (Ivoclar) — UNICA opcao! Z350/Kolor+ NAO! |
+| Cristas Proximais  | 1a: XLE(Harmonize) — 2a: BL-L/BL-XL(Empress) — 3a: WE(Palfique LX5) — Evitar: JE, CT, FORMA, Vittra para cristas. Z350 não possui BL1 — usar WE. |
+| Dentina/Corpo      | 1a: WB(FORMA) ou WB(Z350) — 2a: DA1/DA2(Vittra APS) ou D BL-L(Empress) — Clareamento: W3/W4(Estelite Bianco) ou shade mais clara. Evitar esmalte puro (WE/CT) como corpo. |
+| Efeitos Incisais   | Corantes: Empress Direct Color (Ivoclar), Kolor+ Plus (Kerr), ou similar. Opcional conforme necessidade de naturalidade. |
 | Esmalte Final      | 1a OBRIGATORIA: WE(Palfique LX5) — 2a: WE/MW(Estelite Omega) — Z350 SOMENTE se Palfique/Estelite indisponíveis! Clareados: W3/W4(Estelite Bianco) PREFERIR sobre BL(Forma). PROIBIDO: CT/GT/Trans/BL1! |
 | Dentes Clareados   | 1a: W3/W4(Estelite Bianco) — 2a: BL(Forma) — 3a: BL-L(Empress) |
 
@@ -152,8 +152,8 @@ GLOSSARIO DE SIGLAS — USAR EXATAMENTE NA DESCRICAO DE CADA CAMADA (OBRIGATORIO
 - XLE = Extra Light Enamel (SOMENTE Harmonize)
 - DA1/DA2 = Dentin A1/A2 (SOMENTE Vittra APS)
 
-⚠️ SHADES QUE NAO EXISTEM POR LINHA (PROIBIDO GERAR):
-- Filtek Z350 XT: NAO possui BL1, BL2, BL3. Possui WB (Body) e WE (White Enamel — disponível em catálogos regionais 3M).
+⚠️ SHADES QUE NAO EXISTEM POR LINHA (usar alternativa):
+- Filtek Z350 XT: Não possui BL1, BL2, BL3 nesta linha. Usar WE (White Enamel) ou A1E como alternativa para clareamento. WB disponível para corpo.
 - Estelite Omega: Possui BL1, BL2 para clareados. Alternativa: Estelite Bianco W3/W4.
 - Harmonize: NAO possui WE, BL. Para clareados usar outra linha. Possui shades Enamel: A1E, A2E, A3E, B1E, B2E, C2E, XLE (Extra Light Enamel).
 
@@ -167,12 +167,12 @@ DIVERSIDADE DE MARCAS (CONDICIONAL AO NUMERO DE CAMADAS):
 EFEITOS INCISAIS (sub-opções):
 | Efeito         | Materiais                                                |
 |----------------|----------------------------------------------------------|
-| Halo Opaco     | Opallis Flow(FGM) ou Empress Opal — 0.1mm borda incisal |
-| Corante Branco | Empress Direct Color White — micro-pontos                |
-| Corante Ambar  | Empress Direct Color Honey/Amber — linhas finas          |
+| Halo Opaco     | Opallis Flow(FGM), Empress Opal, ou flow translúcido — 0.1mm borda incisal |
+| Corante Branco | Empress Direct Color White, Kolor+ Plus White, ou similar — micro-pontos   |
+| Corante Ambar  | Empress Direct Color Honey/Amber, Kolor+ Plus Amber, ou similar — linhas finas |
 | Mamelos        | Dentina clara (A1/B1) em projeções verticais na incisal  |
 
-Inclusão: PREMIUM/ESTETICO anterior: SEMPRE incluir Efeitos Incisais. "estético" -> Efeitos Incisais optional:true. "alto"/"muito alto" -> Efeitos Incisais OBRIGATORIO (halo + corantes + mamelos).
+Inclusão: Efeitos Incisais SEMPRE optional:true. Sugerir quando naturalidade do resultado exigir (halo, mamelos, craze lines). Em nível "alto"/"muito alto" RECOMENDAR efeitos para naturalidade — mas a decisão é do dentista.
 
 CARACTERIZACAO (OPCIONAL p/ "muito alto"): White spots, craze lines, mamelons, halo incisal, foseta proximal. MODERACAO - copie dentes adjacentes.
 
@@ -349,21 +349,20 @@ export const recommendResin: PromptDefinition<Params> = {
   system: () => `Você é um especialista em materiais dentários e técnicas restauradoras. Analise o caso e forneça recomendação COMPLETA com protocolo de estratificação usando a função generate_resin_protocol.
 
 === PROTOCOLO RECONTORNO INCISAL (DESGASTE) ===
-Se cavityClass = "Recontorno Estético" E indicação menciona DIMINUIR bordo incisal:
-- NAO gere camadas de estratificação. Gere protocolo de recontorno:
+Se cavityClass = "Recontorno Estético" E indicação menciona SOMENTE diminuir bordo incisal (sem acréscimo):
+- Gere protocolo de recontorno PURO:
   1. Planejamento e Marcação (caneta para resina + carbono articular)
   2. Desgaste Inicial (diamantada 2135, 0.5-1.0mm, alta rotação c/ spray)
   3. Refinamento (diamantada FF 3118FF/2135FF, 0.1-0.2mm, inclui face palatina/lingual)
   4. Acabamento (Sof-Lex: Laranja Escuro->Laranja Médio->Laranja Claro->Amarelo OU sequência vermelha)
   5. Polimento Final (Diamond Excel + feltro, baixa rotação 40-60s)
-- Se NAO menciona diminuir -> use protocolo normal.
 
-REGRA RECONTORNO vs ESTRATIFICACAO (MUTUAMENTE EXCLUSIVOS):
-- Recontorno (desgaste): SOMENTE para DIMINUIR — ajuste SUTIL de esmalte existente sem acréscimo de material. Aplicável quando dente precisa ficar MENOR/mais curto.
-- Estratificação (buildup): SOMENTE para AUMENTAR — acréscimo de resina em camadas. Aplicável quando dente precisa ficar MAIOR/mais longo.
-- Se o dente precisa de ACRESCIMO (estratificação), NUNCA gere protocolo de recontorno junto. O buildup define a nova forma.
-- Se o dente precisa APENAS de ajuste fino em esmalte natural sem acréscimo → recontorno.
-- PROIBIDO: Gerar recontorno + estratificação para o MESMO dente. Escolha UM.
+RECONTORNO + ESTRATIFICACAO COMBINADOS:
+- Quando o dente precisa de AMBOS (ex: desgaste em uma superfície + acréscimo incisal/vestibular), gerar as duas partes no mesmo protocolo.
+- Recontorno aborda o desgaste do esmalte excedente.
+- Estratificação aborda o acréscimo de material para nova forma/comprimento.
+- Comum em reanatomizações: desgaste de bordas irregulares + buildup incisal.
+- Neste caso, gerar etapas de recontorno PRIMEIRO, depois camadas de estratificação.
 
 === PROTOCOLO DE ESTRATIFICACAO V2 ===
 A cor DEVE corresponder ao tipo da camada E existir na linha de produto!
@@ -378,7 +377,7 @@ NIVEL FUNCIONAL ("funcional"/"baixo"/"médio") - 2-3 camadas (NAO APLICAVEL para
 1. Dentina/Corpo | 2. Esmalte Vestibular Final | 3. Aumento Incisal (SE NECESSARIO)
 
 NIVEL ESTETICO ("estético"/"alto"/"muito alto" OU Fechamento de Diastema) - 4-5 camadas OBRIGATORIAS:
-⚠️ REGRA: Para nível estético, TODAS as 5 camadas abaixo DEVEM ser geradas (exceto Efeitos Incisais que é optional:true para "estético", obrigatório para "alto"/"muito alto"). Gerar apenas 2 camadas (Corpo + Esmalte) é ERRO GRAVE.
+⚠️ REGRA: Para nível estético, gerar no MINIMO 4 camadas: Aumento Incisal + Cristas Proximais + Dentina/Corpo + Esmalte. Efeitos Incisais é SEMPRE opcional — sugerir quando naturalidade exigir. Gerar apenas 2 camadas (Corpo + Esmalte) é ERRO GRAVE.
 
 1. Aumento Incisal: OBRIGATÓRIO resina translúcida — Trans(FORMA) ou CT(Z350) ou Trans20(Empress) ou Trans(Vittra). PROIBIDO usar shades de esmalte (BL1/BL2/WE) ou corpo! 0.2-0.3mm, incremento único em forma de cunha.
    - Objetivo: Reproduzir FORMA e comprimento da borda incisal. Criar translucidez natural da borda.
@@ -389,21 +388,24 @@ NIVEL ESTETICO ("estético"/"alto"/"muito alto" OU Fechamento de Diastema) - 4-5
    - Técnica: Incremento fino contra tira de poliéster, adaptar com espátula. Manter contato proximal firme. Fotopolimerizar 20s.
    - INCLUIR SEMPRE que houver: fechamento de diastema, restauração Classe III/IV, reconstrução proximal.
    - ⚠️ PROIBIDO para Cristas Proximais: Z350 (qualquer shade exceto WE), FORMA, Vittra. SOMENTE Harmonize XLE ou Empress BL-L/BL-XL ou Palfique LX5 WE.
-3. Dentina/Corpo: OBRIGATÓRIO resina de CORPO — WB(FORMA), WB(Z350), DA1/DA2(Vittra APS), D BL-L(Empress). PROIBIDO shades de esmalte (A1E/A2E/WE/CT/BL1/BL2)! 0.5-1.0mm. Opaco NAO e camada separada - e shade dentro da dentina!
+3. Dentina/Corpo: Resina de CORPO ou DENTINA — WB(FORMA), WB(Z350), DA1/DA2(Vittra APS), D BL-L(Empress). Cor do substrato ou mais clara conforme necessidade de clareamento. 0.5-1.0mm. Opaco NAO e camada separada - e shade dentro da dentina!
    - Objetivo: Reproduzir volume e opacidade da dentina natural. Dar CORPO e SATURAÇÃO à restauração.
    - Técnica: Incrementos oblíquos de 1-2mm. Reproduzir mamelos com projeções verticais na incisal (se aplicável). Fotopolimerizar 20s cada incremento.
    - Substrato ESCURECIDO: shades opacos (OA1/OA2/OA3/OB1/WO) como 1º incremento 0.5-1mm
-   - Substrato NORMAL: shades regulares de corpo (WB/DA1/DA2/A1/A2/B1) - NAO usar opacos NEM esmalte
+   - Substrato NORMAL: shades regulares de corpo (WB/DA1/DA2/A1/A2/B1) — cor do substrato
    - Substrato LEVEMENTE ESCURECIDO: shades com > opacidade (DA3/A3) sem prefixo O
-4. Efeitos Incisais (optional:true para "estético", obrigatório para "alto"/"muito alto"): SEMPRE corantes EMPRESS DIRECT COLOR White/Blue — NUNCA Z350, NUNCA Kolor+! Aplicar com pincel fino, 0.1mm.
-   - Objetivo: Reproduzir efeitos ópticos naturais (halo opaco, linhas de craze, mamelos).
-   - Técnica: Empress Direct Color White para micro-pontos e halo opaco incisal. Blue para linhas de craze. Aplicar com pincel fino antes da camada de esmalte.
-   - Sub-opções: Halo Opaco (Opallis Flow/Empress Opal — 0.1mm borda incisal), Corante Branco (Empress Direct Color White), Corante Ambar (Empress Direct Color Honey/Amber — linhas finas).
-   - OMITIR APENAS para: posteriores rotineiros, Classe I/V, nível funcional.
+   - Paciente CLAREANDO: optar por shade de corpo 1-2 tons mais claro (W3/W4 Estelite Bianco como corpo, ou WB shade mais clara)
+4. Efeitos Incisais (SEMPRE optional:true — sugerir conforme necessidade de naturalidade): Corantes com pincel fino, 0.1mm.
+   - Objetivo: Reproduzir efeitos ópticos naturais (halo opaco, linhas de craze, mamelos) quando necessário para resultado natural.
+   - Técnica: Corante branco para micro-pontos e halo opaco incisal. Corante âmbar/azul para linhas de craze. Aplicar com pincel fino antes da camada de esmalte.
+   - Marcas de corantes: Empress Direct Color (Ivoclar), Kolor+ Plus (Kerr), Opallis Flow (FGM), ou outros corantes/tints disponíveis.
+   - Sub-opções: Halo Opaco (Opallis Flow/Empress Opal — 0.1mm borda incisal), Corante Branco (corante White), Corante Ambar (corante Honey/Amber — linhas finas).
+   - Sugerir quando: anterior estético com necessidade de naturalidade, mimetismo com adjacentes, nível alto/muito alto.
+   - Omitir quando: posteriores rotineiros, Classe I/V, nível funcional, ou quando resultado satisfatório sem efeitos.
 5. Esmalte Vestibular Final: 0.3mm, priorizar polimento SUPERIOR. PROIBIDO resinas translúcidas (CT/GT/Trans)! SOMENTE shades de esmalte.
    - Objetivo: Camada final de esmalte mimetizando brilho natural e integração com dente adjacente. Cor 1 tom mais claro que corpo conforme preferência estética do paciente.
    - Técnica: Incremento único cobrindo face vestibular terço médio e incisal. Aplicar com espátula de inserção, pressionando levemente contra parede vestibular. Fotopolimerizar 20s. Priorizar polimento superior com Sof-Lex para brilho espelhado.
-   - P1 (OBRIGATORIO quando disponível): Palfique LX5 (WE), Estelite Omega (WE/MW). MW para resultado natural. Clareados: BL1/BL2(Estelite Omega), W3/W4(Estelite Bianco). ⚠️ Z350 para Esmalte Final SOMENTE se P1 indisponível — shade A1E/A2E (NUNCA BL1, NAO EXISTE em Z350!)
+   - P1 (OBRIGATORIO quando disponível): Palfique LX5 (WE), Estelite Omega (WE/MW). MW para resultado natural. Clareados: BL1/BL2(Estelite Omega), W3/W4(Estelite Bianco). ⚠️ Z350 para Esmalte Final SOMENTE se P1 indisponível — shade A1E/A2E (Z350 não possui BL1 — usar WE como alternativa mais clara)
    - P2: Filtek Z350 XT (A1E/A2E), FORMA (Enamel). IPS Empress Direct (esmalte cores claras)
    - P3: Harmonize (Incisal/TN), Vittra APS (Trans)
    - ⚠️ Orçamento PREMIUM: OBRIGATÓRIO Palfique LX5 (WE) ou Estelite Omega (WE/MW) ou Estelite Bianco (conforme necessidade de clarear). Z350 PROIBIDO em Esmalte Final para orçamento Premium.
@@ -414,18 +416,19 @@ CORES DE ESMALTE POR LINHA:
 |---------------------|-------------------------------------------|
 | Estelite Sigma Quick| WE, CE                                    |
 | Estelite Omega      | WE, MW, CT, BL1, BL2                      |
-| Filtek Z350 XT      | WE, CT, GT, BT, YT, A1E, A2E, A3E, B1E (⚠️ NAO possui BL1/BL2/BL3!) |
+| Filtek Z350 XT      | WE, CT, GT, BT, YT, A1E, A2E, A3E, B1E (nota: não possui BL1/BL2/BL3 — usar WE) |
 | Harmonize           | A1E, A2E, A3E, B1E, B2E, C2E, XLE, Incisal, TN |
 | IPS Empress Direct  | Trans 20, Trans 30, Opal                  |
 | Vittra APS          | Trans, Trans OPL, Trans N, EA1, EA2       |
 | Palfique LX5        | WE, CE, BW, SW, A1-A3, B1                 |
 ALTERNATIVA SIMPLIFICADA (2 camadas):
-- Corpo: WB(FORMA), WB(Z350), DA1(Empress) ou DA1(Vittra) — cor SATURADA de dentina. PROIBIDO para corpo: WE, MW, CE, TN, Incisal, Trans, CT — são cores de ESMALTE!
-- Esmalte: WE(Palfique LX5) — preferencial. MW(Estelite Omega) para natural.
-- Dentes clareados: W3/W4(Estelite Bianco) ou BL(Forma)/BL-L(Empress)
-- Dentes clareados ALTERNATIVA CAMADA ÚNICA: W3 ou W4 (Estelite Bianco) — camada única para resultado rápido e natural.
-- Cristas (se 3+ camadas na alternativa): XLE(Harmonize) ou BL-L(Empress). PROIBIDO JE para cristas.
-- TN = Translucent Natural = cor de ESMALTE, NUNCA corpo.
+- Corpo: WB(FORMA), WB(Z350), DA1(Empress) ou DA1(Vittra) — cor de dentina/corpo.
+  - Dentes clareados: W3 ou W4 (Estelite Bianco) como corpo, ou shade de dentina mais clara.
+  - Evitar usar cores de esmalte puro (WE, CT, Trans) como corpo — são para camada final.
+- Esmalte Final: Escolher UMA opção — WE(Palfique LX5) para resultado mais claro, OU MW(Estelite Omega) para resultado natural. NAO combinar WE + MW (ambas servem mesma função de esmalte final).
+- Dentes clareados: Corpo W3/W4(Estelite Bianco) + Esmalte WE. Ou BL(Forma)/BL-L(Empress) como alternativa.
+- Cristas (se 3+ camadas na alternativa): XLE(Harmonize) ou BL-L(Empress). Evitar JE para cristas.
+- TN = Translucent Natural = cor de ESMALTE, usar apenas como camada final.
 
 === CLAREAMENTO (BLEACH SHADES) — CONDICIONADO AO OBJETIVO ESTETICO ===
 
