@@ -494,7 +494,8 @@ Deno.serve(async (req) => {
         alerts: protocol?.alerts || [],
         warnings: protocol?.warnings || [],
       })
-      .eq("id", data.evaluationId);
+      .eq("id", data.evaluationId)
+      .eq("user_id", userId);
 
     if (updateError) {
       logger.error("Database error saving result:", updateError);

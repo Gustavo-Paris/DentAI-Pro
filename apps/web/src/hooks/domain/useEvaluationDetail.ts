@@ -395,9 +395,9 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
     } catch (error) {
       logger.error('Error sharing case:', error);
       toast.error(t('toasts.evaluationDetail.shareError'));
+    } finally {
+      setIsSharing(false);
     }
-
-    setIsSharing(false);
   }, [user, sessionId]);
 
   const handleDeleteSession = useCallback(async () => {

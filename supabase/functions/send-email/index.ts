@@ -12,13 +12,10 @@ import {
   welcomeEmail,
   creditWarningEmail,
   weeklyDigestEmail,
-  accountDeletedEmail,
-  paymentReceivedEmail,
-  paymentFailedEmail,
 } from "../_shared/email.ts";
 
 /**
- * Generic email-sending edge function.
+ * Generic email-sending edge function (user-facing).
  *
  * Body: { template: string; data?: Record<string, unknown> }
  *
@@ -26,21 +23,24 @@ import {
  *   - welcome
  *   - credit-warning   (data: { remaining, total })
  *   - weekly-digest    (data: { casesThisWeek, totalCases, pendingTeeth })
- *   - account-deleted
+ *
+ * Internal-only templates (payment-received, payment-failed, account-deleted)
+ * are sent directly by stripe-webhook and delete-account edge functions.
  *
  * Auth: Bearer token validated via supabase.auth.getUser().
  */
 
-type TemplateName = "welcome" | "credit-warning" | "weekly-digest" | "account-deleted" | "payment-received" | "payment-failed";
+type TemplateName = "welcome" | "credit-warning" | "weekly-digest";
 
+/** Templates callable by authenticated users via this endpoint. */
 const VALID_TEMPLATES: TemplateName[] = [
   "welcome",
   "credit-warning",
   "weekly-digest",
-  "account-deleted",
-  "payment-received",
-  "payment-failed",
 ];
+
+// payment-received, payment-failed, and account-deleted are sent directly
+// by stripe-webhook and delete-account edge functions — not exposed here.
 
 Deno.serve(withErrorBoundary(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -122,23 +122,6 @@ Deno.serve(withErrorBoundary(async (req) => {
         pendingTeeth: Number(body.data?.pendingTeeth ?? 0),
       };
       emailContent = weeklyDigestEmail(userName, stats);
-      break;
-    }
-
-    case "account-deleted":
-      emailContent = accountDeletedEmail(userName);
-      break;
-
-    case "payment-received": {
-      const amount = String(body.data?.amount ?? "");
-      const invoiceUrl = body.data?.invoiceUrl as string | null ?? null;
-      emailContent = paymentReceivedEmail(userName, amount, invoiceUrl);
-      break;
-    }
-
-    case "payment-failed": {
-      const amount = String(body.data?.amount ?? "");
-      emailContent = paymentFailedEmail(userName, amount);
       break;
     }
 

@@ -12,7 +12,7 @@ export default function Terms() {
   return (
     <LegalPageLayout title={t('pages.termsTitle')}>
       <p className="text-muted-foreground">
-        {t('pages.lastUpdated')} {new Date().toLocaleDateString('pt-BR')}
+        {t('pages.lastUpdated')} 24/02/2026
       </p>
 
       <section>

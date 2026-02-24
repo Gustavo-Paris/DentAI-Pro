@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -102,13 +102,15 @@ export default function PhotoUploader({
   };
 
   // Load existing image if value is set
-  useState(() => {
+  useEffect(() => {
     if (value && !preview) {
+      let cancelled = false;
       getSignedUrl(value).then((url) => {
-        if (url) setPreview(url);
+        if (!cancelled && url) setPreview(url);
       });
+      return () => { cancelled = true; };
     }
-  });
+  }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Card className="overflow-hidden">

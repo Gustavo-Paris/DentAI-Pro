@@ -2,6 +2,7 @@ import Stripe from "npm:stripe@14.14.0";
 import { getCorsHeaders, createErrorResponse } from "../_shared/cors.ts";
 import { logger } from "../_shared/logger.ts";
 import { getSupabaseClient, authenticateRequest, isAuthError, withErrorBoundary } from "../_shared/middleware.ts";
+import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
   apiVersion: "2023-10-16",
@@ -19,6 +20,13 @@ Deno.serve(withErrorBoundary(async (req: Request) => {
   const authResult = await authenticateRequest(req, supabase, corsHeaders);
   if (isAuthError(authResult)) return authResult;
   const { user } = authResult;
+
+  // Rate limit: standard API limits
+  const rateLimitResult = await checkRateLimit(supabase, user.id, "sync-credit-purchase", RATE_LIMITS.STANDARD);
+  if (!rateLimitResult.allowed) {
+    logger.warn(`Rate limit exceeded for user ${user.id} on sync-credit-purchase`);
+    return createRateLimitResponse(rateLimitResult, corsHeaders);
+  }
 
   // Get Stripe customer ID
   const { data: existingSub } = await supabase

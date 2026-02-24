@@ -1,4 +1,5 @@
 import { Suspense, lazy, useCallback, Component, type ReactNode, type ErrorInfo } from 'react';
+import * as Sentry from '@sentry/react';
 import { AlertCircle } from 'lucide-react';
 import { GlobalSearch } from "@/components/GlobalSearch";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -125,6 +126,9 @@ class RouteErrorBoundary extends Component<{ children: ReactNode }, { hasError: 
   }
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('RouteErrorBoundary caught:', error, errorInfo);
+    Sentry.captureException(error, {
+      extra: { componentStack: errorInfo.componentStack },
+    });
   }
   render() {
     if (this.state.hasError) return <RouteErrorFallback />;

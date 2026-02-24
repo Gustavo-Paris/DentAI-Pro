@@ -75,14 +75,16 @@ export async function checkAndUseCredits(
 
   // Record the transaction with operationId for idempotency tracking
   if (operationId) {
-    await supabase.from("credit_transactions").insert({
+    const { error: txError } = await supabase.from("credit_transactions").insert({
       user_id: userId,
       operation_id: operationId,
       operation,
       type: "consume",
-    }).then(({ error }) => {
-      if (error) logger.warn(`Failed to record credit transaction: ${error.message}`);
     });
+    if (txError) {
+      logger.error("Failed to record credit transaction — idempotency guard compromised", { operationId, error: txError });
+      // Don't throw here as credits were already consumed — but log as error for monitoring
+    }
   }
 
   // Get remaining for logging

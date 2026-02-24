@@ -166,9 +166,9 @@ export function useWizardSubmit({
     // entries whose treatment is gengivoplastia (they'd all map to GENGIVO anyway)
     const hasGengivo = rawTeeth.includes('GENGIVO');
     const teethToProcess = hasGengivo
-      ? rawTeeth.filter(t => {
-          if (t === 'GENGIVO') return true; // keep the virtual entry
-          const tt = getToothTreatment(t, toothTreatments, analysisResult, formData);
+      ? rawTeeth.filter(tooth => {
+          if (tooth === 'GENGIVO') return true; // keep the virtual entry
+          const tt = getToothTreatment(tooth, toothTreatments, analysisResult, formData);
           return normalizeTreatment(tt) !== 'gengivoplastia';
         })
       : rawTeeth;
@@ -228,17 +228,16 @@ export function useWizardSubmit({
       }
 
       // Process ALL teeth sequentially — only primary teeth call the AI edge function
-      const results = await Promise.allSettled(
-        teethToProcess.map((tooth) => (async () => {
-          const toothData = getToothData(analysisResult, tooth);
-          const treatmentType = getToothTreatment(tooth, toothTreatments, analysisResult, formData);
-          // Normalize treatment type: Gemini sometimes returns English values
-          const normalizedTreatment = normalizeTreatment(treatmentType);
+      const successfulEvalIds: string[] = [];
+      for (const tooth of teethToProcess) {
+        const toothData = getToothData(analysisResult, tooth);
+        const treatmentType = getToothTreatment(tooth, toothTreatments, analysisResult, formData);
+        // Normalize treatment type: Gemini sometimes returns English values
+        const normalizedTreatment = normalizeTreatment(treatmentType);
 
-          let evaluationId: string | null = null;
+        let evaluationId: string | null = null;
 
-          try {
-
+        try {
           // Gengivoplasty is a tissue procedure, not per-tooth — use sensible defaults
           const isGengivoplasty = tooth === 'GENGIVO' || normalizedTreatment === 'gengivoplastia';
 
@@ -400,38 +399,20 @@ export function useWizardSubmit({
 
           await wizardData.updateEvaluationStatus(evaluation.id, 'draft');
 
-          // Update progress counter as promises resolve
+          // Update progress counter
           resolvedCount.value++;
           setCurrentToothIndex(resolvedCount.value - 1);
 
-          return { tooth, evaluationId, normalizedTreatment };
-          } catch (err) {
-            // Attach evaluationId to the error so the caller can mark it as 'error'
-            const wrappedError = err instanceof Error ? err : new Error(String(err));
-            (wrappedError as Error & { evaluationId?: string | null }).evaluationId = evaluationId;
-            throw wrappedError;
-          }
-        })()),
-      );
-
-      // Process results
-      const successfulEvalIds: string[] = [];
-      for (const [index, result] of results.entries()) {
-        if (result.status === 'fulfilled') {
           successCount++;
-          const { normalizedTreatment, evaluationId } = result.value;
           treatmentCounts[normalizedTreatment] = (treatmentCounts[normalizedTreatment] || 0) + 1;
           if (evaluationId) successfulEvalIds.push(evaluationId);
-        } else {
-          const tooth = teethToProcess[index];
-          logger.error(`Error processing tooth ${tooth}:`, result.reason);
-          failedTeeth.push({ tooth, error: result.reason });
+        } catch (err) {
+          logger.error(`Failed to process tooth ${tooth}:`, err);
+          failedTeeth.push({ tooth, error: err });
 
           // Mark the evaluation as 'error' so the user can identify it
-          // The evaluationId is attached to the rejection reason by the inner try/catch
-          const evalId = (result.reason as { evaluationId?: string | null })?.evaluationId;
-          if (evalId) {
-            await wizardData.updateEvaluationStatus(evalId, 'error');
+          if (evaluationId) {
+            await wizardData.updateEvaluationStatus(evaluationId, 'error');
           }
         }
       }
