@@ -84,7 +84,7 @@ export const ProcessingOverlay = memo(function ProcessingOverlay({
   const overlay = (
     <div
       ref={overlayRef}
-      className="fixed inset-0 bg-background z-50 flex items-center justify-center p-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
+      className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
       role="dialog"
       aria-modal="true"
       aria-label={displayMessage}

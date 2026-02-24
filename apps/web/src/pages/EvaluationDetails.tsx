@@ -110,6 +110,7 @@ export default function EvaluationDetails() {
             onClick: detail.handleShareCase,
             disabled: detail.isSharing,
             variant: 'outline',
+            iconOnly: true,
           },
           {
             label: detail.isRegenerating
@@ -126,6 +127,7 @@ export default function EvaluationDetails() {
                 icon: Plus,
                 onClick: () => detail.setShowAddTeethModal(true),
                 variant: 'outline' as const,
+                iconOnly: true as const,
               }]
             : []),
           {
@@ -134,12 +136,14 @@ export default function EvaluationDetails() {
             onClick: () => setShowMarkAllConfirm(true),
             show: detail.completedCount < detail.evaluations.length,
             variant: 'outline',
+            iconOnly: true,
           },
           {
             label: t('evaluation.deleteSession'),
             icon: Trash2,
             onClick: () => setShowDeleteDialog(true),
             variant: 'ghost',
+            iconOnly: true,
           },
         ]}
         slots={{
