@@ -13,10 +13,15 @@
   --color-background-rgb: 250 249 247;
   --color-foreground-rgb: 15 23 42;
   --color-card-rgb: 255 255 255;
+  --color-card-foreground: #0f172a;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #0f172a;
   --color-muted-rgb: 243 242 239;
   --color-muted-foreground-rgb: 71 85 105;
   --color-secondary-rgb: 241 245 249;
+  --color-secondary-foreground: #0f172a;
   --color-border-rgb: 226 232 240;
+  --color-input: #e2e8f0;
   --color-destructive-rgb: 220 38 38;
   --color-warning-rgb: 217 119 6;
   --color-success-rgb: 22 163 74;
@@ -30,14 +35,24 @@
   --color-success-foreground: #ffffff;
 }
 
+/* WORKAROUND: Teal surface fallbacks for Radix portals outside .ui-theme.
+   portal-base.css defines neutral violet (#08080c etc.) for all themes.
+   odonto-ai.css only overrides portalled components, not root.
+   These RGB fallbacks ensure Tailwind utilities resolve to teal in portals.
+   See: parisgroup-ai/pageshell#28 */
 .dark {
-  --color-background-rgb: 8 8 12;
-  --color-foreground-rgb: 228 228 235;
-  --color-card-rgb: 20 20 28;
-  --color-muted-rgb: 26 26 36;
-  --color-muted-foreground-rgb: 113 113 122;
-  --color-secondary-rgb: 26 26 36;
-  --color-border-rgb: 42 42 58;
+  --color-background-rgb: 12 19 23;          /* #0c1317 — teal dark background */
+  --color-foreground-rgb: 246 249 251;        /* #f6f9fb — teal light text */
+  --color-card-rgb: 21 33 39;                /* #152127 — teal card surface */
+  --color-card-foreground: #f6f9fb;
+  --color-popover: #152127;                   /* teal — same as card */
+  --color-popover-foreground: #f6f9fb;
+  --color-muted-rgb: 23 33 39;               /* #172127 — teal muted surface */
+  --color-muted-foreground-rgb: 123 139 146;  /* #7b8b92 — teal muted text */
+  --color-secondary-rgb: 23 33 39;            /* #172127 — teal secondary surface */
+  --color-secondary-foreground: #f6f9fb;
+  --color-border-rgb: 40 52 58;              /* #28343a — teal border */
+  --color-input: #28343a;
   --color-destructive-rgb: 239 68 68;
   --color-warning-rgb: 245 158 11;
   --color-success-rgb: 16 185 129;
@@ -49,6 +64,26 @@
   --color-destructive-foreground: #ffffff;
   --color-warning-foreground: #fef3c7;
   --color-success-foreground: #ffffff;
+}
+
+/* Portal semantic tokens — <html> level for Radix portals outside .ui-theme.
+   semantic.css defines --surface-elevated etc. on .ui-theme only.
+   Portals render at <body> outside .ui-theme, so they need these on <html>.
+   WORKAROUND: See parisgroup-ai/pageshell#28 */
+[data-pageshell-theme="odonto-ai"] {
+  --surface-elevated: #ffffff;
+  --surface-default: #f1f5f9;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --border-subtle: #e2e8f0;
+}
+
+.dark[data-pageshell-theme="odonto-ai"] {
+  --surface-elevated: #152127;
+  --surface-default: #172127;
+  --text-primary: #f6f9fb;
+  --text-secondary: #7b8b92;
+  --border-subtle: #28343a;
 }
 
 /* ═══ Tokens suplementares — odonto-ai theme enforcement ═══ */
@@ -110,45 +145,68 @@
 }
 
 /* Dark mode — specificity 0,2,0 to beat portal-base .dark .ui-theme */
+/* WORKAROUND: portal-base.css defines neutral violet surfaces (#08080c, #14141c,
+   #1a1a24, #2a2a3a) for ALL themes. odonto-ai.css only overrides portalled
+   components (themed-dialog, themed-dropdown), NOT the main layout surfaces.
+   We override hex surfaces + RGB companions here to enforce the teal palette.
+   See: parisgroup-ai/pageshell#28 */
 .dark .ui-theme,
 .dark .ui-theme-odonto-ai,
 .ui-theme.dark,
 .ui-theme-odonto-ai.dark {
-  /* Primary — cyan (beats portal-base .dark .ui-theme violet) */
+  /* ── Teal surface overrides (hex) ── */
+  --color-background: #0c1317;
+  --color-foreground: #f6f9fb;
+  --color-card: #152127;
+  --color-card-foreground: #f6f9fb;
+  --color-popover: #152127;
+  --color-popover-foreground: #f6f9fb;
+  --color-muted: #172127;
+  --color-muted-foreground: #7b8b92;
+  --color-secondary: #172127;
+  --color-secondary-foreground: #f6f9fb;
+  --color-border: #28343a;
+  --color-input: #28343a;
+
+  /* ── RGB companions (must match hex above) ── */
+  --color-background-rgb: 12 19 23;          /* #0c1317 */
+  --color-foreground-rgb: 246 249 251;        /* #f6f9fb */
+  --color-card-rgb: 21 33 39;               /* #152127 */
+  --color-muted-rgb: 23 33 39;              /* #172127 */
+  --color-muted-foreground-rgb: 123 139 146; /* #7b8b92 */
+  --color-secondary-rgb: 23 33 39;           /* #172127 */
+  --color-border-rgb: 40 52 58;             /* #28343a */
+
+  /* ── Primary — cyan ── */
   --color-primary: var(--color-cyan-500);
   --color-primary-rgb: 6 182 212;            /* --color-cyan-500 decomposed */
   --color-primary-hover-rgb: 34 211 238;     /* --color-cyan-400 decomposed */
   --color-primary-foreground: #000000;
 
-  /* Accent — sky */
+  /* ── Accent — sky ── */
   --color-accent: var(--color-sky-500);
   --color-accent-rgb: 14 165 233;            /* --color-sky-500 decomposed */
   --color-accent-hover-rgb: 56 189 248;      /* --color-sky-400 decomposed */
   --color-accent-foreground: #000000;
 
-  /* Ring */
+  /* ── Ring ── */
   --color-ring: var(--color-cyan-500);
 
-  /* RGB companions (dark) — derivados do portal-base dark values */
-  --color-background-rgb: 8 8 12;            /* portal-base dark --color-background */
-  --color-foreground-rgb: 228 228 235;       /* portal-base dark --color-foreground */
-  --color-card-rgb: 20 20 28;               /* portal-base dark --color-card */
-  --color-muted-rgb: 26 26 36;              /* portal-base dark --color-muted */
-  --color-muted-foreground-rgb: 113 113 122; /* portal-base dark --color-muted-foreground */
-  --color-secondary-rgb: 26 26 36;           /* portal-base dark --color-secondary */
-  --color-border-rgb: 42 42 58;             /* portal-base dark --color-border */
-  --color-destructive-rgb: 239 68 68;        /* portal-base dark --color-destructive */
-  --color-warning-rgb: 245 158 11;           /* portal-base dark --color-warning */
-  --color-success-rgb: 16 185 129;           /* portal-base dark --color-success */
+  /* ── Status colors ── */
+  --color-destructive-rgb: 239 68 68;
+  --color-warning-rgb: 245 158 11;
+  --color-success-rgb: 16 185 129;
   --color-info: 96 165 250;                  /* blue-400 — semantic info token (dark) */
 
   --color-destructive-foreground: #ffffff;
   --color-warning-foreground: #fef3c7;
   --color-success-foreground: #ffffff;
 
-  --sidebar-user-card-bg: #242729;
-  --sidebar-user-card-border: #2b2f31;
+  /* ── Sidebar user card (dark) ── */
+  --sidebar-user-card-bg: #152127;
+  --sidebar-user-card-border: #28343a;
 
+  /* ── Brand ── */
   --brand-accent: #ec8e75;
   --brand-accent-light: #f0a48f;
 }
