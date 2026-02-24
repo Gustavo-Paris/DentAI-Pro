@@ -117,7 +117,9 @@ export interface EvaluationDetailActions {
   handleAddTeethSuccess: () => void;
   handleSubmitTeeth: (payload: SubmitTeethPayload) => Promise<void>;
   handleRetryEvaluation: (evaluationId: string) => Promise<void>;
+  handleRegenerateWithBudget: (newBudget: 'padrão' | 'premium') => Promise<void>;
   retryingEvaluationId: string | null;
+  isRegenerating: boolean;
   toggleSelection: (id: string) => void;
   toggleSelectAll: () => void;
   clearSelection: () => void;
@@ -228,6 +230,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
   const [isSharing, setIsSharing] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [retryingEvaluationId, setRetryingEvaluationId] = useState<string | null>(null);
+  const [isRegenerating, setIsRegenerating] = useState(false);
   const [failedTeeth, setFailedTeeth] = useState<string[]>([]);
 
   // ---- Computed ----
@@ -742,6 +745,104 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
     }
   }, [user, evals, sessionId, queryClient, t]);
 
+  // ---- Regenerate all protocols with different budget tier ----
+  const handleRegenerateWithBudget = useCallback(async (newBudget: 'padrão' | 'premium') => {
+    if (!user || evals.length === 0) return;
+
+    setIsRegenerating(true);
+    const newAestheticLevel = newBudget === 'premium' ? 'estético' : 'funcional';
+
+    try {
+      // 1. Update all evaluations with new budget
+      const allIds = evals.map(e => e.id);
+      await evaluations.updateEvaluationsBulk(allIds, {
+        budget: newBudget,
+        aesthetic_level: newAestheticLevel,
+      });
+
+      // 2. Retry each resina/porcelana evaluation sequentially
+      const aiEvals = evals.filter(e =>
+        e.treatment_type === 'resina' || e.treatment_type === 'porcelana'
+      );
+
+      let successCount = 0;
+      for (const evaluation of aiEvals) {
+        try {
+          await evaluations.updateStatus(evaluation.id, 'analyzing');
+
+          switch (evaluation.treatment_type) {
+            case 'resina':
+              await evaluations.invokeEdgeFunction('recommend-resin', {
+                evaluationId: evaluation.id,
+                userId: user.id,
+                patientAge: String(evaluation.patient_age),
+                tooth: evaluation.tooth,
+                region: evaluation.region || getFullRegion(evaluation.tooth),
+                cavityClass: evaluation.cavity_class || 'Classe I',
+                restorationSize: evaluation.restoration_size || 'Média',
+                substrate: evaluation.substrate || 'Esmalte e Dentina',
+                bruxism: evaluation.bruxism,
+                aestheticLevel: newAestheticLevel,
+                toothColor: evaluation.tooth_color,
+                stratificationNeeded: true,
+                budget: newBudget,
+                longevityExpectation: evaluation.longevity_expectation,
+                aestheticGoals: evaluation.patient_aesthetic_goals || undefined,
+              });
+              break;
+            case 'porcelana':
+              await evaluations.invokeEdgeFunction('recommend-cementation', {
+                evaluationId: evaluation.id,
+                teeth: [evaluation.tooth],
+                shade: evaluation.tooth_color,
+                ceramicType: 'Dissilicato de lítio',
+                substrate: evaluation.substrate || 'Esmalte e Dentina',
+                substrateCondition: 'Saudável',
+                aestheticGoals: evaluation.patient_aesthetic_goals || undefined,
+              });
+              break;
+          }
+
+          await evaluations.updateStatus(evaluation.id, 'draft');
+          successCount++;
+        } catch (err) {
+          logger.error(`Regenerate failed for ${evaluation.tooth}:`, err);
+          await evaluations.updateStatus(evaluation.id, 'error').catch(() => {});
+        }
+      }
+
+      // 3. Sync protocols across group
+      if (successCount >= 2) {
+        try {
+          await wizard.syncGroupProtocols(sessionId, allIds);
+        } catch (syncError) {
+          logger.warn('Post-regenerate sync failed:', syncError);
+        }
+      }
+
+      // 4. Refresh and notify
+      queryClient.invalidateQueries({ queryKey: evaluationKeys.sessions() });
+      queryClient.invalidateQueries({ queryKey: evaluationKeys.lists() });
+
+      const budgetLabel = newBudget === 'premium' ? 'Premium' : 'Padrão';
+      toast.success(
+        t('toasts.evaluationDetail.regenerateSuccess', {
+          defaultValue: `${successCount} protocolo(s) regenerado(s) como ${budgetLabel}`,
+        }),
+      );
+    } catch (error) {
+      logger.error('Regeneration failed:', error);
+      toast.error(
+        t('toasts.evaluationDetail.regenerateError', {
+          defaultValue: 'Erro ao regenerar protocolos. Tente novamente.',
+        }),
+      );
+    } finally {
+      setIsRegenerating(false);
+      queryClient.invalidateQueries({ queryKey: evaluationKeys.session(sessionId) });
+    }
+  }, [user, evals, sessionId, queryClient, t]);
+
   return {
     // State
     sessionId,
@@ -769,7 +870,9 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
     handleAddTeethSuccess,
     handleSubmitTeeth,
     handleRetryEvaluation,
+    handleRegenerateWithBudget,
     retryingEvaluationId,
+    isRegenerating,
     toggleSelection,
     toggleSelectAll,
     clearSelection,

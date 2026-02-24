@@ -228,6 +228,21 @@ export async function updateStatusBulk(ids: string[], status: string) {
 }
 
 // ---------------------------------------------------------------------------
+// Bulk field update
+// ---------------------------------------------------------------------------
+
+export async function updateEvaluationsBulk(
+  ids: string[],
+  updates: Record<string, unknown>,
+) {
+  const { error } = await supabase
+    .from('evaluations')
+    .update(updates)
+    .in('id', ids);
+  if (error) throw error;
+}
+
+// ---------------------------------------------------------------------------
 // Bulk checklist update
 // ---------------------------------------------------------------------------
 
