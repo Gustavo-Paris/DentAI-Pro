@@ -269,6 +269,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
       case 'implante':
       case 'endodontia':
       case 'encaminhamento':
+      case 'gengivoplastia':
         return evaluation.generic_protocol?.checklist || [];
       default:
         return evaluation.stratification_protocol?.checklist || [];
@@ -568,6 +569,15 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
           case 'endodontia':
           case 'encaminhamento': {
             // Generic treatments don't call edge functions — always execute
+            const genericProtocol = getGenericProtocol(treatmentType, toothNumber, toothData);
+            await evaluations.updateEvaluation(evaluation.id, {
+              generic_protocol: genericProtocol,
+              recommendation_text: genericProtocol.summary,
+            });
+            break;
+          }
+
+          case 'gengivoplastia': {
             const genericProtocol = getGenericProtocol(treatmentType, toothNumber, toothData);
             await evaluations.updateEvaluation(evaluation.id, {
               generic_protocol: genericProtocol,
