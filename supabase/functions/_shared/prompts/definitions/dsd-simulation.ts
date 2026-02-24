@@ -452,22 +452,23 @@ The gum sits BETWEEN the tooth crown and the upper lip.
 
 ${params.gingivoSuggestions ? `SPECIFIC TEETH TO RESHAPE:\n${params.gingivoSuggestions}\n` : `Reshape the gum line on the upper anterior teeth (canine to canine) to create a balanced, aesthetic smile.\nTarget: 2-3mm apical movement of gingival margin per tooth.\n`}
 
-=== VISUAL MAGNITUDE ===
-The change must be CLEARLY VISIBLE in a before/after comparison but PHOTOREALISTIC.
-- Reduce the visible PINK GUM BAND between tooth crowns and upper lip by 20-30%
-- Each tooth crown should appear visibly TALLER (10-15% more crown height visible)
-- Target: 1.5-2.5mm of additional crown exposure per tooth
-- The remaining gum tissue must be SMOOTH, even-textured, and healthy pink
-- Transitions between gum and tooth must be SEAMLESS — no jagged edges, no abrupt color changes, no pixelation
-- The result must look like a REAL clinical photo of a healed gengivoplasty, NOT a digital edit
+=== VISUAL MAGNITUDE (CRITICAL) ===
+The change MUST be DRAMATIC and IMMEDIATELY OBVIOUS in a before/after comparison.
+- The visible PINK GUM BAND between tooth crowns and upper lip must be reduced by AT LEAST 30-40%
+- Each tooth crown must appear NOTICEABLY TALLER (at least 15-20% more crown height visible)
+- If there is a wide band of pink gum visible above the teeth, AGGRESSIVELY reduce it
+- A subtle/conservative change is a FAILURE — the whole point is to show what the smile looks like WITHOUT excess gum
+- Think of it as: the upper 1/3 to 1/2 of the pink gum band should become tooth-colored
 
-⚠️ QUALITY OVER QUANTITY: A natural-looking moderate change is BETTER than an aggressive change with artifacts.
-If you cannot achieve a large change while keeping the result PHOTOREALISTIC, choose realism over magnitude.
+⚠️ QUALITY REQUIREMENT: The gum recontouring must look PHOTOREALISTIC. Gum margins must be SMOOTH and even.
+Transitions between gum tissue and tooth surface must be SEAMLESS — no jagged edges, no pixelation, no patchy artifacts.
+The remaining gum tissue must have natural healthy pink color and uniform texture.
 
 EXPECTED RESULT:
-- Teeth appear taller with more clinical crown visible
-- Gum line is more even, symmetrical, and harmonious
-- Result looks like a REAL clinical photograph — smooth gums, natural texture, no digital artifacts
+- Teeth appear SIGNIFICANTLY TALLER (more crown exposed) — change must be DRAMATIC
+- Gum line is more even and symmetrical
+- The pink gum band is visibly reduced — this is the PRIMARY visual change
+- Result looks like a REAL clinical photo, not a digital manipulation
 
 === PRESERVATION RULE ===
 PRESERVE pixel-identical: teeth (shape, color, contour, texture), BOTH lips (position, shape, opening), face, skin, background, image framing.
@@ -512,10 +513,10 @@ Expose more clinical crown by moving the gingival margin APICALLY (toward the ro
 - Create symmetrical gingival zeniths between contralateral teeth
 - Harmonize the gum line curvature across the smile
 - Recontoured gums must look NATURAL (healthy pink tissue, smooth texture)
-- The change must be CLEARLY VISIBLE — reduce the visible pink gum band by 20-30%
-- Each tooth must appear visibly TALLER (10-15% more crown visible)
-- Transitions gum→tooth must be SEAMLESS — no pixelation, no jagged edges, no artifacts
-- Result must look like a REAL healed gengivoplasty, not a digital manipulation
+- The change MUST be DRAMATIC and IMMEDIATELY OBVIOUS — reduce the visible pink gum band by at least 30-40%
+- Each tooth must appear noticeably TALLER (at least 15-20% more crown visible)
+- A subtle/conservative change is a FAILURE — aggressively reduce the gum band
+- Gum margins must be SMOOTH — no jagged edges, no pixelation, no patchy artifacts
 
 ${params.gingivoSuggestions ? `GENGIVOPLASTY SPECIFICATIONS (per tooth):\n${params.gingivoSuggestions}\n` : ''}
 
