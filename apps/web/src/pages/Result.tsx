@@ -161,7 +161,7 @@ export default function Result() {
             )}
 
             {/* Protocol unavailable fallback */}
-            {!r.resin && !r.isSpecialTreatment && r.treatmentType === 'resina' && (
+            {!r.hasProtocol && !r.isSpecialTreatment && r.treatmentType === 'resina' && (
               <ProtocolUnavailableAlert
                 onReprocess={() => r.evaluation?.session_id && navigate(`/evaluation/${r.evaluation.session_id}`)}
               />

@@ -265,7 +265,7 @@ export async function syncGroupProtocols(
 
   if (error || !evaluations || evaluations.length < 2) return;
 
-  // Group by treatment_type + cavity_class
+  // Group by treatment_type
   const groups: Record<string, typeof evaluations> = {};
   for (const ev of evaluations) {
     const tt = ev.treatment_type || 'unknown';
@@ -278,7 +278,7 @@ export async function syncGroupProtocols(
   for (const [treatmentType, group] of Object.entries(groups)) {
     if (group.length < 2) continue;
 
-    if (treatmentType.startsWith('resina::')) {
+    if (treatmentType === 'resina' || treatmentType.startsWith('resina::')) {
       const source = group.find((ev) => ev.stratification_protocol != null);
       if (!source) continue;
 
@@ -293,7 +293,7 @@ export async function syncGroupProtocols(
           supabase.from('evaluations').update(syncData).in('id', targetIds),
         );
       }
-    } else if (treatmentType.startsWith('porcelana::')) {
+    } else if (treatmentType === 'porcelana' || treatmentType.startsWith('porcelana::')) {
       const source = group.find((ev) => ev.cementation_protocol != null);
       if (!source) continue;
 

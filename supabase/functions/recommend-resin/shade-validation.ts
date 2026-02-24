@@ -250,7 +250,7 @@ export async function validateAndFixProtocolLayers({
       // Enforce: dentina/corpo layers must NOT use enamel shades
       const isDentinaCorpoLayer = layerType.includes('dentina') || layerType.includes('corpo') || layerType.includes('body');
       if (isDentinaCorpoLayer && layer.shade) {
-        const enamelShadesList = ['WE', 'A1E', 'A2E', 'A3E', 'B1E', 'B2E', 'CT', 'GT', 'BT', 'YT', 'MW', 'CE', 'JE', 'TN', 'INC'];
+        const enamelShadesList = ['WE', 'A1E', 'A2E', 'A3E', 'B1E', 'B2E', 'CT', 'GT', 'BT', 'YT', 'MW', 'CE', 'JE', 'TN', 'INC', 'BL1', 'BL2', 'BL3', 'BL-L'];
         const isEnamelShadeForBody = enamelShadesList.some(es => layer.shade.toUpperCase() === es.toUpperCase());
         if (isEnamelShadeForBody) {
           const originalShade = layer.shade;
