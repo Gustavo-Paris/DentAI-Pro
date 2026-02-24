@@ -285,7 +285,10 @@ Deno.serve(async (req) => {
     const { error: authDeleteErr } = await supabaseService.auth.admin.deleteUser(userId);
     if (authDeleteErr) {
       deletionErrors.push(`auth_user: ${authDeleteErr.message}`);
-      logger.error(`[${reqId}] Failed to delete auth user: ${authDeleteErr.message}`);
+      logger.error("CRITICAL: Auth user deletion failed after data deletion — orphaned auth account", {
+        userId,
+        error: authDeleteErr.message,
+      });
     } else {
       deletionLog.push(`auth_user: deleted`);
     }

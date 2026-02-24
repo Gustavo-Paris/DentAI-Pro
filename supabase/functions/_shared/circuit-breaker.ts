@@ -1,3 +1,10 @@
+/**
+ * Circuit breaker with per-isolate state.
+ * WARNING: State resets on each Supabase Edge Function cold start.
+ * This only protects within a single isolate lifetime (typically one request).
+ * For cross-request protection, move state to a database table or Redis.
+ */
+
 // Shared circuit breaker factory for AI API clients (Claude, Gemini, etc.)
 //
 // Usage:
@@ -6,16 +13,6 @@
 import { logger } from "./logger.ts";
 
 /**
- * Circuit breaker for Supabase Edge Functions AI API calls.
- *
- * State is per-isolate (module scope) — each Deno cold start resets the
- * breaker to "closed". This is acceptable for soft-launch scale where
- * isolate lifetimes are short and traffic is low.
- *
- * For production scale, consider externalising state to Redis or a
- * Supabase row so the breaker survives isolate restarts and is shared
- * across all instances.
- *
  * Thresholds are configurable via environment variables:
  *   CB_FAILURE_THRESHOLD  – failures before opening (default 3)
  *   CB_RESET_TIMEOUT_MS   – ms before half-open probe  (default 30 000)

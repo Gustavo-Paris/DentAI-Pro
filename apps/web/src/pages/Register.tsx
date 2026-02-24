@@ -144,7 +144,7 @@ export default function Register() {
                   <FormLabel>{t('auth.croLabel')}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="CRO-SP 12345"
+                      placeholder={t('auth.croPlaceholder')}
                       {...field}
                     />
                   </FormControl>
@@ -162,7 +162,7 @@ export default function Register() {
                   <FormControl>
                     <Input
                       type="email"
-                      placeholder="seu@email.com"
+                      placeholder={t('auth.emailPlaceholder')}
                       autoComplete="email"
                       aria-required="true"
                       {...field}
@@ -184,6 +184,7 @@ export default function Register() {
                       placeholder="••••••••••••"
                       autoComplete="new-password"
                       aria-required="true"
+                      aria-describedby="password-requirements"
                       {...field}
                     />
                   </FormControl>

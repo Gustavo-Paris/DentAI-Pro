@@ -20,6 +20,12 @@ export function validateRequest(data: unknown): { success: boolean; error?: stri
     return { success: false, error: ERROR_MESSAGES.IMAGE_FORMAT_UNSUPPORTED };
   }
 
+  // Validate image size (max 10MB binary ≈ 13.3MB base64)
+  const MAX_BASE64_SIZE = Math.ceil(10 * 1024 * 1024 * 4 / 3);
+  if (req.imageBase64.length > MAX_BASE64_SIZE) {
+    return { success: false, error: "Image exceeds maximum size of 10MB" };
+  }
+
   const validShapes = ['natural', 'quadrado', 'triangular', 'oval', 'retangular'];
   const toothShape = validShapes.includes(req.toothShape as string) ? req.toothShape as string : 'natural';
 

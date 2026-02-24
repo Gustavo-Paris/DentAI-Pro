@@ -12,18 +12,19 @@ export function PasswordRequirements({ password, className = '' }: PasswordRequi
   const requirements = getPasswordRequirements();
 
   return (
-    <div className={`space-y-1 text-xs ${className}`}>
+    <div id="password-requirements" role="list" className={`space-y-1 text-xs ${className}`}>
       {requirements.map((req, index) => {
         const passed = req.test(password);
         return (
-          <div 
-            key={index} 
+          <div
+            key={index}
+            role="listitem"
             className={`flex items-center gap-1.5 ${passed ? 'text-primary' : 'text-muted-foreground'}`}
           >
             {passed ? (
-              <Check className="h-3 w-3" />
+              <Check className="h-3 w-3" aria-hidden="true" />
             ) : (
-              <X className="h-3 w-3" />
+              <X className="h-3 w-3" aria-hidden="true" />
             )}
             <span>{req.label}</span>
           </div>

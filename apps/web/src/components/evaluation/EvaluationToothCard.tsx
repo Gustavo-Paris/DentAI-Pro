@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 
@@ -22,9 +23,12 @@ export function EvaluationToothCard({
   evaluation,
   onSelect,
   className,
-  completedLabel = 'Completed',
-  plannedLabel = 'Planned',
+  completedLabel,
+  plannedLabel,
 }: EvaluationToothCardProps) {
+  const { t } = useTranslation();
+  const resolvedCompletedLabel = completedLabel ?? t('evaluation.completed', { defaultValue: 'Concluído' });
+  const resolvedPlannedLabel = plannedLabel ?? t('evaluation.planned', { defaultValue: 'Planejado' });
   const { tooth, treatmentLabel, treatmentIcon: TreatmentIcon, status, aiIndication } = evaluation;
   const isCompleted = status === 'completed';
 
@@ -65,7 +69,7 @@ export function EvaluationToothCard({
           </div>
         </div>
         <Badge variant={isCompleted ? 'default' : 'outline'}>
-          {isCompleted ? completedLabel : plannedLabel}
+          {isCompleted ? resolvedCompletedLabel : resolvedPlannedLabel}
         </Badge>
       </div>
     </div>

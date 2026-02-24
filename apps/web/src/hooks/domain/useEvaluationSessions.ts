@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation } from 'react-router-dom';
 import { evaluations } from '@/data';
+import { evaluationKeys } from '@/hooks/domain/useEvaluationDetail';
 import { QUERY_STALE_TIMES } from '@/lib/constants';
 
 // ---------------------------------------------------------------------------
@@ -76,7 +77,7 @@ export function useEvaluationSessions() {
   } | null;
 
   const query = useQuery({
-    queryKey: ['evaluations', 'all-sessions', user?.id],
+    queryKey: [...evaluationKeys.sessions(), user?.id],
     queryFn: async () => {
       if (!user) throw new Error('User not authenticated');
       // TODO: Hard limit of 100 rows — users with large histories may not see all sessions.

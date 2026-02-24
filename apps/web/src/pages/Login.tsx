@@ -114,7 +114,7 @@ export default function Login() {
                   <FormControl>
                     <Input
                       type="email"
-                      placeholder="seu@email.com"
+                      placeholder={t('auth.emailPlaceholder')}
                       autoComplete="email"
                       aria-required="true"
                       {...field}

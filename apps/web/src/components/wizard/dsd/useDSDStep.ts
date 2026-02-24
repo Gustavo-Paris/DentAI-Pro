@@ -56,12 +56,7 @@ async function urlToBase64(url: string): Promise<string> {
   });
 }
 
-const analysisSteps = [
-  { label: 'Detectando landmarks faciais...', duration: 2000 },
-  { label: 'Analisando proporções dentárias...', duration: 3000 },
-  { label: 'Calculando proporção dourada...', duration: 2000 },
-  { label: 'Avaliando simetria...', duration: 2000 },
-];
+// analysisSteps moved inside the hook to support i18n — see useMemo below
 
 export interface DSDStepProps {
   imageBase64: string | null;
@@ -139,6 +134,13 @@ export function useDSDStep({
   const { user } = useAuth();
   const { t } = useTranslation();
   const { canUseCredits, refreshSubscription, getCreditCost } = useSubscription();
+
+  const analysisSteps = useMemo(() => [
+    { label: t('dsd.detectingLandmarks', { defaultValue: 'Detectando landmarks faciais...' }), duration: 2000 },
+    { label: t('dsd.analyzingProportions', { defaultValue: 'Analisando proporções dentárias...' }), duration: 3000 },
+    { label: t('dsd.calculatingGolden', { defaultValue: 'Calculando proporção dourada...' }), duration: 2000 },
+    { label: t('dsd.evaluatingSymmetry', { defaultValue: 'Avaliando simetria...' }), duration: 2000 },
+  ], [t]);
 
   const lastCompositeSourcePathRef = useRef<string | null>(null);
 

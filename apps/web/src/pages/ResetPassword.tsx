@@ -125,6 +125,7 @@ export default function ResetPassword() {
                       <PasswordInput
                         placeholder="••••••••••••"
                         autoComplete="new-password"
+                        aria-describedby="password-requirements"
                         {...field}
                       />
                     </FormControl>

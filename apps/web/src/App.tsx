@@ -20,6 +20,7 @@ import AppLayout from "@/components/AppLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { evaluations } from "@/data";
 import { QUERY_STALE_TIMES } from "@/lib/constants";
+import i18n from '@/lib/i18n';
 
 // Retry lazy imports on chunk loading failure (stale deploy).
 // After a new Vercel deploy, old chunk hashes become 404.
@@ -169,7 +170,7 @@ const App = () => (
           href="#main-content"
           className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:bg-background focus:px-4 focus:py-2 focus:rounded-md focus:ring-2 focus:ring-primary"
         >
-          Pular para o conteúdo
+          {i18n.t('components.layout.skipToContent', { defaultValue: 'Pular para o conteúdo principal' })}
         </a>
         <Sonner />
         <OfflineBanner />

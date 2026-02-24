@@ -304,7 +304,11 @@
     "estimatedTime": "~30 segundos por camada",
     "layerLabelRestorations": "Gerando correções restauradoras...",
     "layerLabelWhitening": "Aplicando simulação de clareamento...",
-    "layerLabelGingivoplasty": "Simulando gengivoplastia..."
+    "layerLabelGingivoplasty": "Simulando gengivoplastia...",
+    "detectingLandmarks": "Detectando landmarks faciais...",
+    "analyzingProportions": "Analisando proporções dentárias...",
+    "calculatingGolden": "Calculando proporção dourada...",
+    "evaluatingSymmetry": "Avaliando simetria..."
   },
   "evaluation": {
     "tooth": "Dente",

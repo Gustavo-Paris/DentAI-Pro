@@ -95,7 +95,7 @@ Deno.serve(withErrorBoundary(async (req) => {
     const { data: profile } = await supabase
       .from("profiles")
       .select("full_name")
-      .eq("id", user.id)
+      .eq("user_id", user.id)
       .single();
     userName = profile?.full_name ?? userEmail.split("@")[0];
   }

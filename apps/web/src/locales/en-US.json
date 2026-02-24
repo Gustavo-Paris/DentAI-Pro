@@ -47,7 +47,8 @@
     "moreOptions": "More options",
     "showingOf": "Showing",
     "of": "of",
-    "discard": "Discard"
+    "discard": "Discard",
+    "siteNavigation": "Site navigation"
   },
   "auth": {
     "login": "Log in",
@@ -284,7 +285,11 @@
     "retryAnalysis": "Redo Analysis",
     "skipDSD": "Skip DSD",
     "viewDSD": "View DSD",
-    "simulation": "DSD Simulation"
+    "simulation": "DSD Simulation",
+    "detectingLandmarks": "Detecting facial landmarks...",
+    "analyzingProportions": "Analyzing dental proportions...",
+    "calculatingGolden": "Calculating golden ratio...",
+    "evaluatingSymmetry": "Evaluating symmetry..."
   },
   "evaluation": {
     "tooth": "Tooth",

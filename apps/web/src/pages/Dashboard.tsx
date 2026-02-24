@@ -159,6 +159,7 @@ export default function Dashboard() {
           </h1>
         </div>
         <p className="text-sm text-muted-foreground ml-8">
+          {/* Portuguese date format — 'de' connector is language-specific */}
           {format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR }).replace(/^\w/, (c) => c.toUpperCase())}
         </p>
       </div>
