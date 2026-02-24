@@ -14,7 +14,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from '@parisgroup-ai/pageshell/primitives';
-import { Camera, Loader2, Save, Building2, ImageIcon } from 'lucide-react';
+import { Camera, Loader2, Save, Building2, ImageIcon, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { getInitials } from '@/lib/utils';
 import { SubscriptionStatus } from '@/components/pricing/SubscriptionStatus';
@@ -81,7 +81,7 @@ export default function Profile() {
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
     <DetailPage
       title={t('profile.title')}
-      query={{ data: p.profile, isLoading: p.isLoading }}
+      query={{ data: p.isLoading ? undefined : p.profile, isLoading: p.isLoading }}
       tabs={[
         {
           id: 'perfil',
@@ -261,7 +261,29 @@ export default function Profile() {
         {
           id: 'privacidade',
           label: t('profile.privacyTab'),
-          children: () => <PrivacySection exportData={p.exportData} deleteAccount={p.deleteAccount} />,
+          children: () => (
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg font-display">{t('profile.weeklyDigest', { defaultValue: 'Resumo Semanal' })}</CardTitle>
+                  <CardDescription>{t('profile.weeklyDigestDescription', { defaultValue: 'Receba um resumo das suas avaliações da semana por e-mail' })}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={p.sendWeeklyDigest}
+                    disabled={p.sendingDigest}
+                    className="gap-1.5"
+                  >
+                    {p.sendingDigest ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+                    {t('profile.sendDigest', { defaultValue: 'Enviar Resumo' })}
+                  </Button>
+                </CardContent>
+              </Card>
+              <PrivacySection exportData={p.exportData} deleteAccount={p.deleteAccount} />
+            </div>
+          ),
         },
       ]}
       defaultTab={searchParams.get('tab') || 'perfil'}

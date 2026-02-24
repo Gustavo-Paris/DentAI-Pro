@@ -54,7 +54,7 @@ export function ReferralCard() {
           <div className="flex-1 bg-background border border-border rounded-lg px-4 py-3 font-mono text-lg tracking-wider text-center select-all">
             {code}
           </div>
-          <Button variant="outline" size="icon" onClick={copyToClipboard} title={t('referral.copyCode')}>
+          <Button variant="outline" size="icon" onClick={copyToClipboard} title={t('referral.copyCode')} aria-label={t('referral.copyCode')}>
             <Copy className="h-4 w-4" />
           </Button>
         </div>

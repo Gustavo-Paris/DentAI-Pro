@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
     }
 
     logger.important(
-      `[${reqId}] Account deletion confirmed for user ${userId} (${user.email})`,
+      `[${reqId}] Account deletion confirmed for user ${userId}`,
     );
 
     // Send deletion confirmation email BEFORE removing the account
@@ -85,7 +85,7 @@ Deno.serve(async (req) => {
       const { subject, html } = accountDeletedEmail(userName);
       try {
         await sendEmail({ to: user.email, subject, html });
-        logger.log(`[${reqId}] Account-deleted email sent to ${user.email}`);
+        logger.log(`[${reqId}] Account-deleted email sent to user ${userId}`);
       } catch (emailErr) {
         // Non-blocking: log but don't abort deletion
         logger.error(`[${reqId}] Failed to send deletion email:`, emailErr);
@@ -219,15 +219,69 @@ Deno.serve(async (req) => {
       deletionErrors.push(`storage/avatars: ${String(storageError)}`);
     }
 
-    // 12. Delete profile
+    // 12. Delete credit_transactions
+    const { error: creditTxErr } = await supabaseService
+      .from("credit_transactions")
+      .delete()
+      .eq("user_id", userId);
+    if (creditTxErr) deletionErrors.push(`credit_transactions: ${creditTxErr.message}`);
+    else deletionLog.push("credit_transactions: cleared");
+
+    // 13. Delete credit_pack_purchases
+    const { error: packPurchErr } = await supabaseService
+      .from("credit_pack_purchases")
+      .delete()
+      .eq("user_id", userId);
+    if (packPurchErr) deletionErrors.push(`credit_pack_purchases: ${packPurchErr.message}`);
+    else deletionLog.push("credit_pack_purchases: cleared");
+
+    // 14. Delete referral_conversions (as referrer or referred)
+    const { error: refConvErr } = await supabaseService
+      .from("referral_conversions")
+      .delete()
+      .or(`referrer_id.eq.${userId},referred_id.eq.${userId}`);
+    if (refConvErr) deletionErrors.push(`referral_conversions: ${refConvErr.message}`);
+    else deletionLog.push("referral_conversions: cleared");
+
+    // 15. Delete referral_codes
+    const { error: refCodeErr } = await supabaseService
+      .from("referral_codes")
+      .delete()
+      .eq("user_id", userId);
+    if (refCodeErr) deletionErrors.push(`referral_codes: ${refCodeErr.message}`);
+    else deletionLog.push("referral_codes: cleared");
+
+    // 16. Delete rate_limits
+    const { error: rateLimitErr } = await supabaseService
+      .from("rate_limits")
+      .delete()
+      .eq("user_id", userId);
+    if (rateLimitErr) deletionErrors.push(`rate_limits: ${rateLimitErr.message}`);
+    else deletionLog.push("rate_limits: cleared");
+
+    // 17. Delete dsd-simulations storage
+    try {
+      const { data: dsdFiles } = await supabaseService.storage
+        .from("dsd-simulations")
+        .list(userId);
+      if (dsdFiles?.length) {
+        const dsdPaths = dsdFiles.map((f) => `${userId}/${f.name}`);
+        await supabaseService.storage.from("dsd-simulations").remove(dsdPaths);
+        deletionLog.push(`dsd-simulations: ${dsdPaths.length} files removed`);
+      }
+    } catch (e) {
+      deletionErrors.push(`dsd-simulations: ${(e as Error).message}`);
+    }
+
+    // 18. Delete profile
     const { error: profileErr } = await supabaseService
       .from("profiles")
       .delete()
-      .eq("id", userId);
+      .eq("user_id", userId);
     if (profileErr) deletionErrors.push(`profile: ${profileErr.message}`);
     else deletionLog.push(`profile: cleared`);
 
-    // 13. Delete auth user (must be last)
+    // 19. Delete auth user (must be last)
     const { error: authDeleteErr } = await supabaseService.auth.admin.deleteUser(userId);
     if (authDeleteErr) {
       deletionErrors.push(`auth_user: ${authDeleteErr.message}`);
@@ -257,14 +311,16 @@ Deno.serve(async (req) => {
       logger.error(`[${reqId}] Detailed deletion errors: ${deletionErrors.join(", ")}`);
     }
 
+    // Log full deletion details server-side (never expose table names to client)
+    logger.important(`[${reqId}] Deletion complete: ${deletionLog.join(', ')}`);
+
     return new Response(
       JSON.stringify({
         success: deletionErrors.length === 0,
         message:
           deletionErrors.length === 0
             ? "Conta e todos os dados foram excluídos permanentemente."
-            : "Conta excluída com alguns erros parciais. Entre em contato com o suporte se necessário.",
-        deleted: deletionLog,
+            : "Conta parcialmente excluída. Entre em contato com o suporte.",
       }),
       {
         status: 200,

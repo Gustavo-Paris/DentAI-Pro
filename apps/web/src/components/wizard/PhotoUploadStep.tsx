@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Camera, Upload, X, Loader2, User, Smile, Sparkles, Lightbulb, Zap } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Camera, Upload, X, Loader2, User, Smile, Sparkles, Lightbulb, Zap, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { compressImage, getImageDimensions } from '@/lib/imageUtils';
 import { trackEvent } from '@/lib/analytics';
@@ -83,6 +84,7 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
   const [dragActiveFace, setDragActiveFace] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [isCompressing, setIsCompressing] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [processingOptional, setProcessingOptional] = useState<'smile45' | 'face' | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -106,14 +108,21 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
   const showCameraButton = isMobileDevice || isSmallScreen;
 
   const handleFile = useCallback(async (file: File) => {
+    // Clear any previous error when user tries again
+    setUploadError(null);
+
     // Validação de tipo - aceitar imagens E arquivos sem tipo (HEIC no Safari)
     if (!file.type.startsWith('image/') && file.type !== '' && file.type !== 'application/octet-stream') {
-      toast.error(t('components.wizard.photoUpload.onlyImages'));
+      const errorMsg = t('components.wizard.photoUpload.onlyImages');
+      setUploadError(errorMsg);
+      toast.error(errorMsg);
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      toast.error(t('components.wizard.photoUpload.maxSize'));
+      const errorMsg = t('components.wizard.photoUpload.maxSize');
+      setUploadError(errorMsg);
+      toast.error(errorMsg);
       return;
     }
 
@@ -171,9 +180,13 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
           return;
         }
 
-        toast.error(t('components.wizard.photoUpload.processError'));
+        const errorMsg = t('components.wizard.photoUpload.processError');
+        setUploadError(errorMsg);
+        toast.error(errorMsg);
       } catch {
-        toast.error(t('components.wizard.photoUpload.processErrorFallback'));
+        const errorMsg = t('components.wizard.photoUpload.processErrorFallback');
+        setUploadError(errorMsg);
+        toast.error(errorMsg);
       }
     } finally {
       setIsCompressing(false);
@@ -421,6 +434,14 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Persistent upload error banner */}
+      {uploadError && (
+        <Alert variant="destructive" className="mt-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{uploadError}</AlertDescription>
+        </Alert>
       )}
 
       {/* Input para galeria - sem capture */}

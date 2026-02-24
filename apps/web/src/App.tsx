@@ -79,8 +79,18 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
-      retry: 1,
+      retry: (failureCount, error) => {
+        // Don't retry 4xx errors (client errors)
+        if (error instanceof Error && 'status' in error && (error as { status: number }).status < 500) {
+          return false;
+        }
+        return failureCount < 2; // 2 retries for server/network errors
+      },
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
       staleTime: QUERY_STALE_TIMES.SHORT,
+    },
+    mutations: {
+      retry: 0, // Never auto-retry mutations (payments, AI calls, etc.)
     },
   },
 });
@@ -151,6 +161,12 @@ const App = () => (
     <PageShellI18nProvider locale="pt-BR" bundle={{ locale: 'pt-BR', messages: PT_BR_MESSAGES, currency: 'BRL' }}>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:bg-background focus:px-4 focus:py-2 focus:rounded-md focus:ring-2 focus:ring-primary"
+        >
+          Pular para o conteúdo
+        </a>
         <Sonner />
         <OfflineBanner />
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>

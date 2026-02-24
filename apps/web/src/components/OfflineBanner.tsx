@@ -28,7 +28,7 @@ export function OfflineBanner() {
       <div
         role="status"
         aria-live="polite"
-        className="fixed top-0 inset-x-0 z-[60] bg-emerald-600 text-white text-center text-sm py-2 px-4 flex items-center justify-center gap-2"
+        className="fixed top-0 inset-x-0 z-[70] bg-emerald-600 text-white text-center text-sm py-2 px-4 flex items-center justify-center gap-2"
       >
         <Wifi className="w-4 h-4 shrink-0" />
         <span>{t('components.offlineBanner.backOnline', { defaultValue: 'Conexão restabelecida' })}</span>
@@ -39,7 +39,7 @@ export function OfflineBanner() {
   return (
     <div
       role="alert"
-      className="fixed top-0 inset-x-0 z-[60] bg-destructive text-destructive-foreground text-center text-sm py-2 px-4 flex items-center justify-center gap-2"
+      className="fixed top-0 inset-x-0 z-[70] bg-destructive text-destructive-foreground text-center text-sm py-2 px-4 flex items-center justify-center gap-2"
     >
       <WifiOff className="w-4 h-4 shrink-0" />
       <span>{t('components.offlineBanner.message')}</span>

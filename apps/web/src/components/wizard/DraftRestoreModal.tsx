@@ -57,13 +57,15 @@ export function DraftRestoreModal({
               <p>
                 {t('components.wizard.draftRestore.description')}
               </p>
+              <p>
+                {t('components.wizard.draftRestore.explanation', {
+                  defaultValue: 'Você tem um caso em andamento que não foi concluído. Deseja continuar de onde parou ou iniciar um novo caso?',
+                })}
+              </p>
               <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
                 <Clock className="w-4 h-4" />
                 <span>{t('components.wizard.draftRestore.lastSaved', { time: timeAgo })}</span>
               </div>
-              <p>
-                {t('components.wizard.draftRestore.continueOrNew')}
-              </p>
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>

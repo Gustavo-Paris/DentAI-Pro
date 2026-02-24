@@ -100,6 +100,8 @@ export function useDSDStep({
   // Initialize with draft result if available
   const [result, setResult] = useState<DSDResult | null>(initialResult || null);
   const [error, setError] = useState<string | null>(null);
+  // DSD confirmation: user must explicitly confirm before auto-start analysis
+  const [dsdConfirmed, setDsdConfirmed] = useState(!!initialResult);
   const [simulationImageUrl, setSimulationImageUrl] = useState<string | null>(null);
   const [isRegeneratingSimulation, setIsRegeneratingSimulation] = useState(false);
   const [isCompositing, setIsCompositing] = useState(false);
@@ -808,13 +810,13 @@ export function useDSDStep({
     }
   }, [imageBase64, canUseCredits, invokeFunction, refreshSubscription, getCreditCost, generateAllLayers, additionalPhotos, patientPreferences, clinicalObservations, clinicalTeethFindings]);
 
-  // Auto-start analysis when component mounts with image - use ref to prevent loops
+  // Auto-start analysis when component mounts with image AND user has confirmed
   useEffect(() => {
-    if (imageBase64 && !analysisStartedRef.current) {
+    if (imageBase64 && !analysisStartedRef.current && dsdConfirmed) {
       analysisStartedRef.current = true;
       analyzeDSD();
     }
-  }, [imageBase64, analyzeDSD]);
+  }, [imageBase64, dsdConfirmed, analyzeDSD]);
 
   const handleRetry = () => {
     setResult(null);
@@ -948,6 +950,11 @@ export function useDSDStep({
     setGingivoplastyApproved(false);
   }, []);
 
+  // Confirm DSD: called from DSDInitialState to allow auto-start
+  const confirmDSD = useCallback(() => {
+    setDsdConfirmed(true);
+  }, []);
+
   return {
     // State
     isAnalyzing,
@@ -970,6 +977,7 @@ export function useDSDStep({
     isComparingWhitening,
     showWhiteningComparison,
     gingivoplastyApproved,
+    dsdConfirmed,
     showAnnotations,
     annotationContainerRef,
     annotationDimensions,
@@ -993,6 +1001,7 @@ export function useDSDStep({
     handleSelectLayer,
     handleApproveGingivoplasty,
     handleDiscardGingivoplasty,
+    confirmDSD,
 
     // Props pass-through needed by sub-components
     imageBase64,

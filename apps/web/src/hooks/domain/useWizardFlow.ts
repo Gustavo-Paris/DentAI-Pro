@@ -267,6 +267,19 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     nav.handleBack();
   }, [nav.step, nav.handleBack, submit.resetSubmission]);
 
+  // Credits-guarded submit — check credits before delegating to actual submit
+  const handleSubmitWithCreditsCheck = useCallback(async () => {
+    if (!canUseCredits) {
+      toast.error(t('toasts.wizard.noCredits'), {
+        description: t('toasts.wizard.noCreditsDescription'),
+        action: { label: t('common.viewPlans'), onClick: () => navigate('/pricing') },
+        duration: 8000,
+      });
+      return;
+    }
+    await submit.handleSubmit();
+  }, [canUseCredits, submit.handleSubmit, navigate, t]);
+
   // -------------------------------------------------------------------------
   // Side Effects
   // -------------------------------------------------------------------------
@@ -353,9 +366,10 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     user,
   ]);
 
-  // Beforeunload warning during wizard steps 2-5
+  // Beforeunload warning — only fire after meaningful input (photo uploaded)
   useEffect(() => {
-    if (nav.step < 2 || nav.step > 5) return;
+    const hasInput = nav.step >= 2 && nav.step <= 5 && imageBase64 !== null;
+    if (!hasInput) return;
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
@@ -364,7 +378,43 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [nav.step]);
+  }, [nav.step, imageBase64]);
+
+  // Auto-save draft on visibilitychange (mobile tab switch, app switch)
+  // Complements beforeunload which is unreliable on iOS Safari / Android WebView
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden' && nav.step >= 2 && imageBase64 !== null && user) {
+        saveDraft({
+          step: nav.step,
+          formData,
+          selectedTeeth,
+          toothTreatments,
+          analysisResult,
+          dsdResult,
+          uploadedPhotoPath: photo.uploadedPhotoPath,
+          additionalPhotos,
+          patientPreferences,
+          vitaShadeManuallySet: photo.vitaShadeManuallySetRef.current,
+        });
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [
+    nav.step,
+    imageBase64,
+    formData,
+    selectedTeeth,
+    toothTreatments,
+    analysisResult,
+    dsdResult,
+    photo.uploadedPhotoPath,
+    additionalPhotos,
+    patientPreferences,
+    saveDraft,
+    user,
+  ]);
 
   // Auto-select detected teeth and initialize per-tooth treatments
   useEffect(() => {
@@ -475,7 +525,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     handlePatientSelect: review.handlePatientSelect,
     handlePatientBirthDateChange: review.handlePatientBirthDateChange,
     setDobValidationError,
-    handleSubmit: submit.handleSubmit,
+    handleSubmit: handleSubmitWithCreditsCheck,
     handleCreditConfirm,
     handleRestoreDraft: draftRestore.handleRestoreDraft,
     handleDiscardDraft: draftRestore.handleDiscardDraft,

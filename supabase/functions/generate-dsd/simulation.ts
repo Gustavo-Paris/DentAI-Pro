@@ -309,7 +309,10 @@ export async function generateSimulation(
   );
   const dsdSimulationPromptDef = getPrompt('dsd-simulation');
 
-  // Lip validation for gingival layers: checks if EITHER lip moved
+  // Lip validation for ALL layers: checks if EITHER lip moved.
+  // Previously only gingival layers were validated, but Gemini frequently
+  // lifts lips in ALL modes to "show more result" (known model behavior).
+  const shouldValidateLips = true; // All layers now validated
   const isGingivalLayer = layerType === 'complete-treatment' || layerType === 'root-coverage';
 
   // Use Haiku for lip validation — binary SIM/NÃO task doesn't need Sonnet
@@ -393,15 +396,15 @@ Responda APENAS 'SIM' ou 'NÃO'.`,
       throw new Error(`Gemini returned no image. Text: ${(result.text || 'none').substring(0, 200)}`);
     }
 
-    // For gingival layers, validate lips and return flag (client handles retry).
-    // Previously skipped for inputAlreadyProcessed, but re-enabled now that:
-    // 1. Temperature is 0.0 (deterministic output)
-    // 2. Gengivoplasty-only prompt includes full absolutePreservation block
-    // 3. The validator should no longer confuse gum recontouring with lip movement
+    // Validate lips for ALL layers and return flag (client handles retry).
+    // Gemini lifts lips in all modes (not just gingival) to "show more result".
     let lipsMoved = false;
-    if (isGingivalLayer) {
+    if (shouldValidateLips) {
       const lipsValid = await validateLips(result.imageUrl);
       lipsMoved = !lipsValid;
+      if (lipsMoved) {
+        logger.warn(`Lip validation FAILED for ${layerType || 'standard'} layer — lips_moved flag set`);
+      }
     }
 
     // Upload generated image
@@ -447,11 +450,14 @@ Responda APENAS 'SIM' ou 'NÃO'.`,
 
       logger.log("FLUX fallback simulation succeeded");
 
-      // Lip validation for gingival layers (same as primary path)
+      // Lip validation for ALL layers (same as primary path)
       let lipsMoved = false;
-      if (isGingivalLayer) {
+      if (shouldValidateLips) {
         const lipsValid = await validateLips(fluxResult.imageUrl);
         lipsMoved = !lipsValid;
+        if (lipsMoved) {
+          logger.warn(`Lip validation FAILED for ${layerType || 'standard'} layer — lips_moved flag set (FLUX fallback)`);
+        }
       }
 
       // Upload FLUX image (same pattern as primary path)

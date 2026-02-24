@@ -5,6 +5,8 @@ const envSchema = z.object({
   VITE_SUPABASE_PUBLISHABLE_KEY: z.string().min(1, 'VITE_SUPABASE_PUBLISHABLE_KEY é obrigatória'),
   VITE_SENTRY_DSN: z.string().default(''),
   VITE_STRIPE_PUBLISHABLE_KEY: z.string().default(''),
+  VITE_POSTHOG_KEY: z.string().default(''),
+  VITE_POSTHOG_HOST: z.string().default('https://us.i.posthog.com'),
 });
 
 function parseEnv() {
@@ -13,6 +15,8 @@ function parseEnv() {
     VITE_SUPABASE_PUBLISHABLE_KEY: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
     VITE_SENTRY_DSN: import.meta.env.VITE_SENTRY_DSN,
     VITE_STRIPE_PUBLISHABLE_KEY: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY,
+    VITE_POSTHOG_KEY: import.meta.env.VITE_POSTHOG_KEY,
+    VITE_POSTHOG_HOST: import.meta.env.VITE_POSTHOG_HOST,
   });
 
   if (!result.success) {

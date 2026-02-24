@@ -136,6 +136,26 @@ export async function listForAutocomplete(userId: string) {
   }>;
 }
 
+export async function deletePatient(patientId: string, userId: string): Promise<void> {
+  await withMutation(() =>
+    supabase
+      .from('patients')
+      .delete()
+      .eq('id', patientId)
+      .eq('user_id', userId),
+  );
+}
+
 export async function countByUserId(userId: string) {
   return countByUser('patients', userId);
+}
+
+export async function countByUserIdSince(userId: string, since: Date): Promise<number> {
+  const { count, error } = await supabase
+    .from('patients')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .gte('created_at', since.toISOString());
+  if (error) throw error;
+  return count ?? 0;
 }

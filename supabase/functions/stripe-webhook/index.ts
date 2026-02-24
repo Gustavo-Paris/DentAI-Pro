@@ -2,6 +2,7 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 import type { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import Stripe from "npm:stripe@14.14.0";
 import { logger } from "../_shared/logger.ts";
+import { sendEmail, paymentReceivedEmail, paymentFailedEmail } from "../_shared/email.ts";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
   apiVersion: "2023-10-16",
@@ -152,23 +153,39 @@ async function handleCheckoutCompleted(supabase: SupabaseClient, session: Stripe
   const planId = await resolveInternalPlanId(supabase, stripePriceId);
   logger.important(`Resolved plan: ${stripePriceId} -> ${planId}`);
 
-  // Update subscription in database
-  const { error } = await supabase
+  // Check if subscription row already exists
+  const { data: existingSub } = await supabase
     .from("subscriptions")
-    .upsert({
-      user_id: userId,
-      stripe_customer_id: customerId,
-      stripe_subscription_id: subscriptionId,
-      plan_id: planId,
-      status: subscription.status,
-      current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-      current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-      cancel_at_period_end: subscription.cancel_at_period_end,
-      trial_start: subscription.trial_start ? new Date(subscription.trial_start * 1000).toISOString() : null,
-      trial_end: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null,
-    }, {
-      onConflict: "user_id",
-    });
+    .select("id")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  const subscriptionData = {
+    stripe_customer_id: customerId,
+    stripe_subscription_id: subscriptionId,
+    plan_id: planId,
+    status: subscription.status,
+    current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+    current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+    cancel_at_period_end: subscription.cancel_at_period_end,
+    trial_start: subscription.trial_start ? new Date(subscription.trial_start * 1000).toISOString() : null,
+    trial_end: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null,
+    updated_at: new Date().toISOString(),
+  };
+
+  let error;
+  if (existingSub) {
+    // Update only plan-related fields — preserve credits_used, rollover, bonus
+    ({ error } = await supabase
+      .from("subscriptions")
+      .update(subscriptionData)
+      .eq("user_id", userId));
+  } else {
+    // New subscription — full insert
+    ({ error } = await supabase
+      .from("subscriptions")
+      .insert({ ...subscriptionData, user_id: userId }));
+  }
 
   if (error) {
     logger.error("Error updating subscription:", error);
@@ -279,12 +296,33 @@ async function handleInvoicePaid(supabase: SupabaseClient, invoice: Stripe.Invoi
   } else {
     logger.important(`Payment recorded for invoice ${invoice.id}`);
   }
+
+  // Fire-and-forget: send payment confirmation email
+  try {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", sub.user_id)
+      .single();
+    const { data: authData } = await supabase.auth.admin.getUserById(sub.user_id);
+    const email = authData?.user?.email;
+    const name = profile?.full_name || email?.split("@")[0] || "Usuario";
+    if (email) {
+      const amount = new Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: invoice.currency,
+      }).format(invoice.amount_paid / 100);
+      const { subject, html } = paymentReceivedEmail(name, amount, invoice.hosted_invoice_url || null);
+      await sendEmail({ to: email, subject, html });
+    }
+  } catch (err) {
+    logger.warn(`Payment email failed (non-blocking): ${(err as Error).message}`);
+  }
 }
 
 async function handleInvoiceFailed(supabase: SupabaseClient, invoice: Stripe.Invoice) {
   const customerId = invoice.customer as string;
 
-  // Find user by customer ID
   const { data: sub } = await supabase
     .from("subscriptions")
     .select("user_id, id")
@@ -296,10 +334,10 @@ async function handleInvoiceFailed(supabase: SupabaseClient, invoice: Stripe.Inv
     return;
   }
 
-  // Record failed payment
-  await supabase
+  // Record failed payment (upsert for idempotency on webhook retry)
+  const { error: historyError } = await supabase
     .from("payment_history")
-    .insert({
+    .upsert({
       user_id: sub.user_id,
       subscription_id: sub.id,
       stripe_invoice_id: invoice.id,
@@ -307,21 +345,64 @@ async function handleInvoiceFailed(supabase: SupabaseClient, invoice: Stripe.Inv
       currency: invoice.currency,
       status: "failed",
       description: `Pagamento falhou - ${invoice.lines.data[0]?.description || 'Assinatura'}`,
+    }, {
+      onConflict: "stripe_invoice_id",
     });
 
-  // Update subscription status
-  await supabase
+  if (historyError) {
+    logger.error(`Failed to record payment failure: ${historyError.message}`);
+  }
+
+  // Always update subscription status (independent of history insert)
+  const { error: statusError } = await supabase
     .from("subscriptions")
-    .update({ status: "past_due" })
+    .update({ status: "past_due", updated_at: new Date().toISOString() })
     .eq("stripe_customer_id", customerId);
 
+  if (statusError) {
+    logger.error(`Failed to update subscription status: ${statusError.message}`);
+  }
+
   logger.warn(`Payment failed for invoice ${invoice.id}`);
+
+  // Fire-and-forget: send payment failure email
+  try {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", sub.user_id)
+      .single();
+    const { data: authData } = await supabase.auth.admin.getUserById(sub.user_id);
+    const email = authData?.user?.email;
+    const name = profile?.full_name || email?.split("@")[0] || "Usuario";
+    if (email) {
+      const amount = new Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: invoice.currency,
+      }).format(invoice.amount_due / 100);
+      const { subject, html } = paymentFailedEmail(name, amount);
+      await sendEmail({ to: email, subject, html });
+    }
+  } catch (err) {
+    logger.warn(`Payment failure email failed (non-blocking): ${(err as Error).message}`);
+  }
 }
 
 async function handleCreditPackPurchase(supabase: SupabaseClient, session: Stripe.Checkout.Session) {
-  const userId = session.metadata!.supabase_user_id;
-  const packId = session.metadata!.pack_id;
-  const credits = parseInt(session.metadata!.credits, 10);
+  const userId = session.metadata?.supabase_user_id;
+  const packId = session.metadata?.pack_id;
+  const creditsStr = session.metadata?.credits;
+
+  if (!userId || !packId || !creditsStr) {
+    logger.error(`Missing metadata on credit pack checkout session ${session.id}. metadata=${JSON.stringify(session.metadata)}`);
+    return;
+  }
+
+  const credits = parseInt(creditsStr, 10);
+  if (isNaN(credits) || credits <= 0) {
+    logger.error(`Invalid credits value in metadata: ${creditsStr}`);
+    return;
+  }
 
   const paymentMethod = session.metadata?.payment_method || "card";
   logger.important(`Credit pack purchase: pack=${packId}, credits=${credits}, user=${userId}, payment_method=${paymentMethod}`);

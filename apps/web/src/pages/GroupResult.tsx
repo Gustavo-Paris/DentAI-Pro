@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, Badge } from '@parisgroup-ai/pageshell/primitives';
+import { PageConfirmDialog } from '@parisgroup-ai/pageshell/interactions';
 import { CheckCircle, RefreshCw } from 'lucide-react';
 import { ProtocolUnavailableAlert } from '@/components/ProtocolUnavailableAlert';
 
@@ -15,6 +17,7 @@ export default function GroupResult() {
   const { t } = useTranslation();
   const g = useGroupResult();
   const navigate = useNavigate();
+  const [showMarkAllConfirm, setShowMarkAllConfirm] = useState(false);
 
   if ((!g.primaryEval && !g.isLoading) || g.isError) {
     return (
@@ -36,6 +39,7 @@ export default function GroupResult() {
   const teethLabel = g.groupTeeth.join(', ');
 
   return (
+    <>
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       <DetailPage
         title={`${g.currentTreatmentStyle.label} — ${t('components.groupResult.unifiedProtocol')}`}
@@ -50,7 +54,7 @@ export default function GroupResult() {
           {
             label: t('evaluation.markAllCompleted'),
             icon: CheckCircle,
-            onClick: g.handleMarkAllCompleted,
+            onClick: () => setShowMarkAllConfirm(true),
             variant: 'outline',
           },
         ]}
@@ -169,5 +173,21 @@ export default function GroupResult() {
         }}
       </DetailPage>
     </div>
+
+    {/* Confirm mark all as completed */}
+    <PageConfirmDialog
+      open={showMarkAllConfirm}
+      onOpenChange={setShowMarkAllConfirm}
+      title={t('evaluation.markAllCompletedTitle', { defaultValue: 'Marcar todas como concluídas?' })}
+      description={t('evaluation.markAllCompletedDescription', { defaultValue: 'Esta ação marcará todas as avaliações pendentes como concluídas.' })}
+      confirmText={t('common.confirm', { defaultValue: 'Confirmar' })}
+      cancelText={t('common.cancel')}
+      onConfirm={() => {
+        setShowMarkAllConfirm(false);
+        g.handleMarkAllCompleted();
+      }}
+      variant="warning"
+    />
+    </>
   );
 }

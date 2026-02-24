@@ -41,6 +41,7 @@ export default function EvaluationDetails() {
     total: number;
   }>({ open: false, evaluationId: '', current: 0, total: 0 });
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showMarkAllConfirm, setShowMarkAllConfirm] = useState(false);
   const [showDSD, setShowDSD] = useState(false);
 
   const firstEval = detail.evaluations[0];
@@ -64,6 +65,18 @@ export default function EvaluationDetails() {
     detail.handleMarkAsCompleted(confirmDialog.evaluationId, true);
     setConfirmDialog({ open: false, evaluationId: '', current: 0, total: 0 });
   };
+
+  // Empty state guard — hook already redirects to /dashboard, but show fallback while that happens
+  if (!detail.isLoading && detail.evaluations.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 space-y-4">
+        <p className="text-muted-foreground">{t('evaluation.noEvaluationsFound', { defaultValue: 'Nenhuma avaliação encontrada' })}</p>
+        <Button variant="outline" onClick={() => navigate('/evaluations')}>
+          {t('common.back', { defaultValue: 'Voltar' })}
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -100,7 +113,7 @@ export default function EvaluationDetails() {
           {
             label: t('evaluation.markAllCompleted'),
             icon: CheckCircle,
-            onClick: detail.handleMarkAllAsCompleted,
+            onClick: () => setShowMarkAllConfirm(true),
             show: detail.completedCount < detail.evaluations.length,
             variant: 'outline',
           },
@@ -253,6 +266,21 @@ export default function EvaluationDetails() {
         confirmText={t('evaluation.finishAnyway')}
         cancelText={t('common.cancel')}
         onConfirm={handleConfirmComplete}
+        variant="warning"
+      />
+
+      {/* Confirm mark all as completed */}
+      <PageConfirmDialog
+        open={showMarkAllConfirm}
+        onOpenChange={setShowMarkAllConfirm}
+        title={t('evaluation.markAllCompletedTitle', { defaultValue: 'Marcar todas como concluídas?' })}
+        description={t('evaluation.markAllCompletedDescription', { defaultValue: 'Esta ação marcará todas as avaliações pendentes como concluídas.' })}
+        confirmText={t('common.confirm', { defaultValue: 'Confirmar' })}
+        cancelText={t('common.cancel')}
+        onConfirm={() => {
+          setShowMarkAllConfirm(false);
+          detail.handleMarkAllAsCompleted();
+        }}
         variant="warning"
       />
 

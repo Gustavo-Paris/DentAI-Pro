@@ -90,6 +90,39 @@ export default function Patients() {
   // ---- Create patient dialog ----
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [createForm, setCreateForm] = useState({ name: '', phone: '', email: '', notes: '' });
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
+  const isFormDirty = !!(createForm.name || createForm.phone || createForm.email || createForm.notes);
+
+  const handleCloseDialog = useCallback(() => {
+    if (isFormDirty && !window.confirm(t('patients.unsavedChanges', { defaultValue: 'Descartar alterações não salvas?' }))) {
+      return;
+    }
+    setShowCreateDialog(false);
+    setCreateForm({ name: '', phone: '', email: '', notes: '' });
+    setValidationErrors({});
+  }, [isFormDirty, t]);
+
+  const validateField = useCallback((field: string, value: string) => {
+    setValidationErrors((prev) => {
+      const next = { ...prev };
+      if (field === 'email') {
+        if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          next.email = t('validation.invalidEmail', { defaultValue: 'Email inválido' });
+        } else {
+          delete next.email;
+        }
+      }
+      if (field === 'phone') {
+        if (value && !/^[\d\s\(\)\-\+]{8,}$/.test(value)) {
+          next.phone = t('validation.invalidPhone', { defaultValue: 'Telefone inválido' });
+        } else {
+          delete next.phone;
+        }
+      }
+      return next;
+    });
+  }, [t]);
 
   const createMutation = useMutation({
     mutationFn: async (data: { name: string; phone?: string; email?: string; notes?: string }) => {
@@ -101,6 +134,7 @@ export default function Patients() {
       toast.success(t('toasts.patient.created', { defaultValue: 'Paciente criado com sucesso' }));
       setShowCreateDialog(false);
       setCreateForm({ name: '', phone: '', email: '', notes: '' });
+      setValidationErrors({});
       navigate(`/patient/${newPatient.id}`);
     },
     onError: () => {
@@ -221,7 +255,7 @@ export default function Patients() {
       />
 
       {/* Create Patient Dialog */}
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+      <Dialog open={showCreateDialog} onOpenChange={(open) => { if (!open) handleCloseDialog(); }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t('patients.createPatient', { defaultValue: 'Novo Paciente' })}</DialogTitle>
@@ -243,8 +277,12 @@ export default function Patients() {
                 id="create-phone"
                 value={createForm.phone}
                 onChange={(e) => setCreateForm((prev) => ({ ...prev, phone: e.target.value }))}
+                onBlur={(e) => validateField('phone', e.target.value)}
                 placeholder={t('patients.phonePlaceholder')}
               />
+              {validationErrors.phone && (
+                <p className="text-sm text-destructive">{validationErrors.phone}</p>
+              )}
             </div>
             <div>
               <Label htmlFor="create-email">{t('auth.email')}</Label>
@@ -253,8 +291,12 @@ export default function Patients() {
                 type="email"
                 value={createForm.email}
                 onChange={(e) => setCreateForm((prev) => ({ ...prev, email: e.target.value }))}
+                onBlur={(e) => validateField('email', e.target.value)}
                 placeholder={t('patients.emailPlaceholder')}
               />
+              {validationErrors.email && (
+                <p className="text-sm text-destructive">{validationErrors.email}</p>
+              )}
             </div>
             <div>
               <Label htmlFor="create-notes">{t('patients.clinicalNotes')}</Label>
@@ -267,12 +309,12 @@ export default function Patients() {
               />
             </div>
             <div className="flex justify-end gap-3 pt-2">
-              <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+              <Button variant="outline" onClick={handleCloseDialog}>
                 {t('common.cancel')}
               </Button>
               <Button
                 onClick={handleCreatePatient}
-                disabled={createMutation.isPending || !createForm.name.trim()}
+                disabled={createMutation.isPending || !createForm.name.trim() || Object.keys(validationErrors).length > 0}
               >
                 {createMutation.isPending ? t('common.saving') : t('common.save')}
               </Button>

@@ -216,7 +216,7 @@ function sendCreditWarningIfNeeded(
     const name = user.user_metadata?.full_name || user.email;
     const template = creditWarningEmail(name, remaining, total);
     await sendEmail({ to: user.email, ...template });
-    logger.log(`Credit warning email sent to ${user.email} (${remaining}/${total})`);
+    logger.log(`Credit warning email sent to user ${userId} (${remaining}/${total})`);
   })().catch((err) => {
     logger.warn(`Credit warning email failed for user ${userId}: ${err?.message ?? err}`);
   });

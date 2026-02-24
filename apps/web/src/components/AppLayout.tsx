@@ -66,7 +66,9 @@ export default function AppLayout() {
       headerRight={headerRightSlot}
     >
       <HelpButton />
-      <Outlet />
+      <div id="main-content">
+        <Outlet />
+      </div>
     </ReactRouterAppShell>
   );
 }

@@ -127,6 +127,8 @@ export default function Dashboard() {
                 clinicalInsights={dashboard.clinicalInsights}
                 weeklyTrends={dashboard.weeklyTrends}
                 loading={dashboard.loading}
+                patientsThisMonth={dashboard.patientsThisMonth}
+                patientGrowth={dashboard.patientGrowth}
               />
             </Suspense>
           ),

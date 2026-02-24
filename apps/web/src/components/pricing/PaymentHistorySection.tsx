@@ -1,9 +1,10 @@
+import { useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { FileText, ArrowRight } from 'lucide-react';
+import { FileText, ArrowRight, Download } from 'lucide-react';
 import { useSubscription, formatPrice } from '@/hooks/useSubscription';
 
 // =============================================================================
@@ -15,8 +16,10 @@ export interface PaymentRecord {
   amount: number;
   currency: string;
   status: string;
-  created_at: string;
+  description: string | null;
+  invoice_url: string | null;
   invoice_pdf: string | null;
+  created_at: string;
 }
 
 export interface PaymentHistorySectionProps {
@@ -48,6 +51,30 @@ export function PaymentHistorySection({
     pending: 'bg-warning/10 text-warning dark:bg-warning/20 dark:text-warning',
     refunded: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
   };
+
+  const handleExportCSV = useCallback(() => {
+    if (!paymentRecords?.length) return;
+
+    const header = 'Data,Valor,Moeda,Status,Descricao\n';
+    const rows = paymentRecords
+      .map((p) => {
+        const date = new Date(p.created_at).toLocaleDateString('pt-BR');
+        const amount = (p.amount / 100).toFixed(2);
+        const desc = (p.description || '').replace(/,/g, ';');
+        return `${date},${amount},${p.currency.toUpperCase()},${p.status},${desc}`;
+      })
+      .join('\n');
+
+    const blob = new Blob(['\uFEFF' + header + rows], {
+      type: 'text/csv;charset=utf-8;',
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `tosmile-faturas-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [paymentRecords]);
 
   if (isLoading) {
     return (
@@ -85,9 +112,20 @@ export function PaymentHistorySection({
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="text-lg font-display">{t('profile.paymentHistory')}</CardTitle>
-        <CardDescription>{t('profile.paymentCount', { count: paymentRecords.length })}</CardDescription>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0">
+        <div>
+          <CardTitle className="text-lg font-display">{t('profile.paymentHistory')}</CardTitle>
+          <CardDescription>{t('profile.paymentCount', { count: paymentRecords.length })}</CardDescription>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleExportCSV}
+          className="gap-1.5 h-8"
+        >
+          <Download className="h-3.5 w-3.5" />
+          CSV
+        </Button>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
@@ -101,6 +139,11 @@ export function PaymentHistorySection({
                 <p className="text-sm font-medium">
                   {formatPrice(payment.amount, payment.currency)}
                 </p>
+                {payment.description && (
+                  <p className="text-xs text-muted-foreground truncate max-w-[200px]">
+                    {payment.description}
+                  </p>
+                )}
                 <p className="text-xs text-muted-foreground">
                   {new Date(payment.created_at).toLocaleDateString('pt-BR', {
                     day: '2-digit',
@@ -117,7 +160,7 @@ export function PaymentHistorySection({
                 >
                   {statusLabel[payment.status] || payment.status}
                 </span>
-                {payment.invoice_pdf && (
+                {payment.invoice_pdf ? (
                   <a
                     href={payment.invoice_pdf}
                     target="_blank"
@@ -126,7 +169,16 @@ export function PaymentHistorySection({
                   >
                     PDF
                   </a>
-                )}
+                ) : payment.invoice_url ? (
+                  <a
+                    href={payment.invoice_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-primary hover:underline underline-offset-4"
+                  >
+                    {t('profile.viewInvoice', { defaultValue: 'Ver fatura' })}
+                  </a>
+                ) : null}
               </div>
             </div>
           ))}

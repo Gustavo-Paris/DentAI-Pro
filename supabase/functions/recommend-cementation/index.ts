@@ -54,8 +54,8 @@ interface RequestData {
   dsdContext?: DSDContext;
 }
 
-// FDI tooth notation regex: 2 digits, first digit 1-8
-const FDI_TOOTH_REGEX = /^[1-8][1-8]$/;
+// FDI tooth notation regex: 2 digits, first digit 1-4 (permanent teeth only)
+const FDI_TOOTH_REGEX = /^[1-4][1-8]$/;
 
 // Valid ceramic types — closed enum to prevent wrong HF acid protocol
 const VALID_CERAMIC_TYPES = [
@@ -210,6 +210,43 @@ function validateRequest(data: unknown): { success: boolean; error?: string; dat
   };
 }
 
+/**
+ * Post-processing safety net: Validate HF acid concentration for lithium disilicate.
+ * Lithium disilicate (e.max) MUST use 5% HF for 20s — 10% causes irreversible surface damage.
+ */
+function validateHFConcentration(
+  protocol: Record<string, unknown>,
+  ceramicType: string,
+): Record<string, unknown> {
+  const isLithiumDisilicate = /e\.?max|dissilicato|lithium/i.test(ceramicType);
+  if (!isLithiumDisilicate) return protocol;
+
+  const ceramicTreatment = protocol.ceramic_treatment;
+  if (!Array.isArray(ceramicTreatment)) return protocol;
+
+  let corrected = false;
+  protocol.ceramic_treatment = ceramicTreatment.map((step: Record<string, string>) => {
+    const stepText = `${step.step || ''} ${step.material || ''}`;
+    if (/10\s*%/i.test(stepText) && /(?:HF|fluorídr|fluor)/i.test(stepText)) {
+      corrected = true;
+      return {
+        ...step,
+        step: (step.step || '').replace(/10\s*%/g, '5%'),
+        material: (step.material || '').replace(/10\s*%/g, '5%'),
+      };
+    }
+    return step;
+  });
+
+  if (corrected) {
+    const warnings = Array.isArray(protocol.warnings) ? [...protocol.warnings] : [];
+    warnings.push('HF validado: 5% por 20s para dissilicato de lítio (e.max). NUNCA usar 10% — causa dano superficial irreversível.');
+    protocol.warnings = warnings;
+  }
+
+  return protocol;
+}
+
 Deno.serve(async (req: Request) => {
   // Handle CORS preflight
   const corsResponse = handleCorsPreFlight(req);
@@ -249,20 +286,35 @@ Deno.serve(async (req: Request) => {
     }
 
     // Parse and validate request body
-    const body = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return createErrorResponse("Invalid request body", 400, corsHeaders);
+    }
     const validation = validateRequest(body);
 
     if (!validation.success || !validation.data) {
       return createErrorResponse(validation.error || ERROR_MESSAGES.INVALID_REQUEST, 400, corsHeaders);
     }
 
-    const { evaluationId, teeth, dsdContext } = validation.data;
+    const { evaluationId, teeth } = validation.data;
     // Sanitize all free-text fields before passing to AI prompt
     const shade = sanitizeForPrompt(validation.data.shade);
     const ceramicType = sanitizeForPrompt(validation.data.ceramicType);
     const substrate = sanitizeForPrompt(validation.data.substrate);
     const substrateCondition = validation.data.substrateCondition ? sanitizeForPrompt(validation.data.substrateCondition) : validation.data.substrateCondition;
     const aestheticGoals = validation.data.aestheticGoals ? sanitizeForPrompt(validation.data.aestheticGoals) : validation.data.aestheticGoals;
+
+    // Sanitize dsdContext free-text fields to prevent prompt injection
+    const dsdContext = validation.data.dsdContext ? {
+      ...validation.data.dsdContext,
+      currentIssue: sanitizeForPrompt(String(validation.data.dsdContext.currentIssue || '')),
+      proposedChange: sanitizeForPrompt(String(validation.data.dsdContext.proposedChange || '')),
+      observations: Array.isArray(validation.data.dsdContext.observations)
+        ? validation.data.dsdContext.observations.map((o: unknown) => sanitizeForPrompt(String(o)))
+        : [],
+    } : undefined;
 
     // Verify evaluation ownership
     const { data: evalData, error: evalError } = await supabase
@@ -462,6 +514,9 @@ Deno.serve(async (req: Request) => {
       }
       return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     }
+
+    // HF acid safety net: ensure lithium disilicate never gets 10% HF
+    validateHFConcentration(protocol as unknown as Record<string, unknown>, ceramicType);
 
     // Derive treatment_type from the ceramic type in the request.
     // "porcelana" is the most common but not the only option — e.g., "coroa"

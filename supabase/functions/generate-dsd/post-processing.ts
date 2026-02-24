@@ -6,6 +6,14 @@ export function applyPostProcessingSafetyNets(
   analysis: DSDAnalysis,
   additionalPhotos?: AdditionalPhotos,
 ): void {
+  // Safety net: Filter out invalid FDI tooth numbers
+  const FDI_TOOTH_REGEX = /^[1-4][1-8]$/;
+  const invalidTeeth = analysis.suggestions.filter((s: { tooth: string }) => !FDI_TOOTH_REGEX.test(s.tooth));
+  if (invalidTeeth.length > 0) {
+    logger.log(`DSD post-processing: removing ${invalidTeeth.length} suggestions with invalid FDI numbers: ${invalidTeeth.map((s: { tooth: string }) => s.tooth).join(', ')}`);
+    analysis.suggestions = analysis.suggestions.filter((s: { tooth: string }) => FDI_TOOTH_REGEX.test(s.tooth));
+  }
+
   // Safety net #1: Strip visagismo if no face photo was provided
   // The AI prompt already instructs to skip visagismo without full face,
   // but this ensures it deterministically even if the model ignores the instruction.
@@ -143,4 +151,28 @@ export function applyPostProcessingSafetyNets(
 
   // Safety net #5 (replaced by dual-pass classifier): observability log
   logger.log(`Post-processing: smile_line="${analysis.smile_line}" (dual-pass applied in analyzeProportions)`);
+
+  // Safety net #6: Flag when DSD suggests gengivoplasty but it may not be in the photo analysis treatment plan.
+  // The DSD and photo analysis are independent AI calls — the DSD may detect gingival issues
+  // that the photo analysis missed. Surface this to the dentist via an observation.
+  const dsdHasGingivo = analysis.suggestions.some(s => {
+    const treatment = (s.treatment_indication || '').toLowerCase();
+    const proposed = (s.proposed_change || '').toLowerCase();
+    return treatment === 'gengivoplastia' || treatment === 'recobrimento_radicular' ||
+      proposed.includes('gengivoplastia') || proposed.includes('recobrimento');
+  });
+  const smileLineForGingivo = (analysis.smile_line || '').toLowerCase();
+  if (dsdHasGingivo && smileLineForGingivo !== 'baixa') {
+    const hasGingivoObservation = analysis.observations?.some(o =>
+      o.toLowerCase().includes('gengivoplastia') && o.toLowerCase().includes('sugerida')
+    );
+    if (!hasGingivoObservation) {
+      analysis.observations = analysis.observations || [];
+      analysis.observations.push(
+        'A análise DSD sugere gengivoplastia/recobrimento radicular para este caso. ' +
+        'Considere adicionar esta indicação ao plano de tratamento se não incluída na análise fotográfica.'
+      );
+      logger.log('Post-processing: added gengivoplasty observation — DSD suggests gingival treatment');
+    }
+  }
 }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button, Badge } from '@parisgroup-ai/pageshell/primitives';
@@ -51,6 +51,8 @@ export default function NewCase() {
   const disclaimer = useAiDisclaimer();
   const navigate = useNavigate();
 
+  const stepContentRef = useRef<HTMLDivElement>(null);
+
   // Track wizard_started on mount
   useEffect(() => {
     trackEvent('wizard_started');
@@ -62,6 +64,55 @@ export default function NewCase() {
     : wizard.step - 1;
 
   const totalSteps = wizard.isQuickCase ? 4 : 6;
+
+  // Focus step content after step transition (a11y)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      stepContentRef.current?.focus();
+    }, 300); // Wait for animation to complete
+    return () => clearTimeout(timer);
+  }, [displayStep]);
+
+  // Arrow key navigation between completed wizard steps (a11y)
+  const { step: internalStep, isQuickCase: isQuick, goToStep } = wizard;
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+
+      // Don't capture arrows when user is typing in form inputs
+      const active = document.activeElement;
+      const isFormInput = ['INPUT', 'TEXTAREA', 'SELECT'].includes(
+        (active?.tagName ?? '')
+      ) || active?.getAttribute('contenteditable') === 'true';
+      if (isFormInput) return;
+
+      // Don't navigate during auto-processing step (step 3 internal)
+      if (internalStep === 3) return;
+
+      e.preventDefault();
+
+      if (e.key === 'ArrowLeft' && displayStep > 0) {
+        // Go to previous display step
+        if (isQuick) {
+          const internalSteps = [1, 3, 5, 6];
+          goToStep(internalSteps[displayStep - 1]);
+        } else {
+          goToStep(displayStep); // displayStep is 0-indexed, goToStep is 1-indexed
+        }
+      } else if (e.key === 'ArrowRight' && displayStep < totalSteps - 1) {
+        // Go to next display step (goToStep only allows visited steps)
+        if (isQuick) {
+          const internalSteps = [1, 3, 5, 6];
+          goToStep(internalSteps[displayStep + 1]);
+        } else {
+          goToStep(displayStep + 2); // display 0-indexed + 2 = next internal step
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [displayStep, totalSteps, internalStep, isQuick, goToStep]);
 
   // Build steps array conditionally
   const quickLabels = useMemo(() => QUICK_LABEL_KEYS.map(k => t(k)), [t]);
@@ -240,7 +291,15 @@ export default function NewCase() {
                 <p className="text-sm text-muted-foreground">{t('common.processing')}</p>
               </div>
             </div>
-          ) : null}
+          ) : (
+            <div className="flex flex-col items-center justify-center py-16 space-y-4">
+              <p className="text-muted-foreground">{t('wizard.preparingCase')}</p>
+              <Button variant="outline" onClick={handleBack} className="btn-press">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                {t('common.back')}
+              </Button>
+            </div>
+          )}
         </div>
       ),
     };
@@ -287,7 +346,7 @@ export default function NewCase() {
       steps={wizard.submissionSteps}
       progress={wizard.submissionSteps.filter(s => s.completed).length / Math.max(wizard.submissionSteps.length, 1) * 100}
     />
-    <div>
+    <div ref={stepContentRef} tabIndex={-1} aria-live="polite" className="outline-none">
       <PageShellWizard
         theme="odonto-ai"
         title={t('wizard.newCase')}
@@ -337,7 +396,7 @@ export default function NewCase() {
           footer: wizard.canGoBack ? (
             <div className="wizard-nav-sticky">
               <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 pt-4 pb-2 sm:pt-4 sm:pb-0">
-                <Button variant="outline" onClick={wizard.handleBack} className="w-full sm:w-auto btn-press">
+                <Button variant="outline" onClick={wizard.handleBack} disabled={wizard.isSubmitting} className="w-full sm:w-auto btn-press">
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   {t('common.back')}
                 </Button>
@@ -382,7 +441,9 @@ export default function NewCase() {
       {/* Draft Restore Modal */}
       <DraftRestoreModal
         open={wizard.showRestoreModal}
-        onOpenChange={() => {/* no-op: user must explicitly choose Restore or Discard */}}
+        onOpenChange={(open) => {
+          if (!open) wizard.handleDiscardDraft();
+        }}
         lastSavedAt={wizard.pendingDraft?.lastSavedAt || null}
         onRestore={wizard.handleRestoreDraft}
         onDiscard={wizard.handleDiscardDraft}

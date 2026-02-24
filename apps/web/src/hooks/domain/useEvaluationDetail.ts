@@ -97,6 +97,7 @@ export interface EvaluationDetailState {
   completedCount: number;
   patientDataForModal: PatientDataForModal | null;
   selectedIds: Set<string>;
+  failedTeeth: string[];
 }
 
 export interface PendingChecklistResult {
@@ -227,6 +228,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
   const [isSharing, setIsSharing] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [retryingEvaluationId, setRetryingEvaluationId] = useState<string | null>(null);
+  const [failedTeeth, setFailedTeeth] = useState<string[]>([]);
 
   // ---- Computed ----
   const patientName = evals[0]?.patient_name || t('evaluation.patientNoName', { defaultValue: 'Paciente sem nome' });
@@ -464,15 +466,28 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
 
     const treatmentCounts: Record<string, number> = {};
     const newEvalIds: string[] = [];
+    const results: Array<{ tooth: string; success: boolean; error?: string }> = [];
 
-    try {
-      for (const toothNumber of payload.selectedTeeth) {
-        const toothData = payload.pendingTeeth.find(t => t.tooth === toothNumber);
-        if (!toothData) continue;
+    // Clear previous failures
+    setFailedTeeth([]);
 
-        const treatmentType = (payload.toothTreatments[toothNumber] || toothData.treatment_indication || 'resina') as TreatmentType;
-        treatmentCounts[treatmentType] = (treatmentCounts[treatmentType] || 0) + 1;
+    // Primary-tooth optimization: only ONE tooth per treatment group calls the AI edge function.
+    // This avoids concurrent edge-function calls that hit the Supabase 60s timeout.
+    // syncGroupProtocols (after the loop) copies the protocol from the primary tooth to siblings.
+    const primaryPerGroup: Record<string, string> = {};
+    for (const toothNumber of payload.selectedTeeth) {
+      const toothData = payload.pendingTeeth.find(t => t.tooth === toothNumber);
+      const treatmentType = (payload.toothTreatments[toothNumber] || toothData?.treatment_indication || 'resina') as TreatmentType;
+      if (!primaryPerGroup[treatmentType]) primaryPerGroup[treatmentType] = toothNumber;
+    }
 
+    for (const toothNumber of payload.selectedTeeth) {
+      const toothData = payload.pendingTeeth.find(t => t.tooth === toothNumber);
+      if (!toothData) continue;
+
+      const treatmentType = (payload.toothTreatments[toothNumber] || toothData.treatment_indication || 'resina') as TreatmentType;
+
+      try {
         // Create evaluation record
         const insertData = {
           user_id: user.id,
@@ -506,43 +521,53 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
         const evaluation = await evaluations.insertEvaluation(insertData);
         newEvalIds.push(evaluation.id);
 
+        // Only the primary tooth per treatment group calls the AI edge function.
+        // Non-primary resina/porcelana teeth skip the call — syncGroupProtocols
+        // copies the protocol from the primary tooth after the loop.
+        const isPrimary = primaryPerGroup[treatmentType] === toothNumber;
+
         // Call appropriate edge function based on treatment type
         switch (treatmentType) {
           case 'porcelana':
-            await evaluations.invokeEdgeFunction('recommend-cementation', {
-              evaluationId: evaluation.id,
-              teeth: [toothNumber],
-              shade: patientDataForModal.vitaShade,
-              ceramicType: 'Dissilicato de lítio',
-              substrate: toothData.substrate || 'Esmalte e Dentina',
-              substrateCondition: toothData.substrate_condition || 'Saudável',
-              aestheticGoals: patientDataForModal.aestheticGoals || undefined,
-            });
+            if (isPrimary) {
+              await evaluations.invokeEdgeFunction('recommend-cementation', {
+                evaluationId: evaluation.id,
+                teeth: [toothNumber],
+                shade: patientDataForModal.vitaShade,
+                ceramicType: 'Dissilicato de lítio',
+                substrate: toothData.substrate || 'Esmalte e Dentina',
+                substrateCondition: toothData.substrate_condition || 'Saudável',
+                aestheticGoals: patientDataForModal.aestheticGoals || undefined,
+              });
+            }
             break;
 
           case 'resina':
-            await evaluations.invokeEdgeFunction('recommend-resin', {
-              evaluationId: evaluation.id,
-              userId: user.id,
-              patientAge: String(patientDataForModal.age),
-              tooth: toothNumber,
-              region: getFullRegion(toothNumber),
-              cavityClass: toothData.cavity_class || 'Classe I',
-              restorationSize: toothData.restoration_size || 'Média',
-              substrate: toothData.substrate || 'Esmalte e Dentina',
-              bruxism: patientDataForModal.bruxism,
-              aestheticLevel: patientDataForModal.aestheticLevel,
-              toothColor: patientDataForModal.vitaShade,
-              stratificationNeeded: true,
-              budget: patientDataForModal.budget,
-              longevityExpectation: patientDataForModal.longevityExpectation,
-            });
+            if (isPrimary) {
+              await evaluations.invokeEdgeFunction('recommend-resin', {
+                evaluationId: evaluation.id,
+                userId: user.id,
+                patientAge: String(patientDataForModal.age),
+                tooth: toothNumber,
+                region: getFullRegion(toothNumber),
+                cavityClass: toothData.cavity_class || 'Classe I',
+                restorationSize: toothData.restoration_size || 'Média',
+                substrate: toothData.substrate || 'Esmalte e Dentina',
+                bruxism: patientDataForModal.bruxism,
+                aestheticLevel: patientDataForModal.aestheticLevel,
+                toothColor: patientDataForModal.vitaShade,
+                stratificationNeeded: true,
+                budget: patientDataForModal.budget,
+                longevityExpectation: patientDataForModal.longevityExpectation,
+              });
+            }
             break;
 
           case 'implante':
           case 'coroa':
           case 'endodontia':
           case 'encaminhamento': {
+            // Generic treatments don't call edge functions — always execute
             const genericProtocol = getGenericProtocol(treatmentType, toothNumber, toothData);
             await evaluations.updateEvaluation(evaluation.id, {
               generic_protocol: genericProtocol,
@@ -554,10 +579,57 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
 
         // Update status to draft
         await evaluations.updateStatus(evaluation.id, 'draft');
-      }
 
-      // Re-sync protocols across ALL evaluations in this session (P1-34)
-      // Combines existing + newly added IDs so late additions get same protocol.
+        treatmentCounts[treatmentType] = (treatmentCounts[treatmentType] || 0) + 1;
+        results.push({ tooth: toothNumber, success: true });
+      } catch (err) {
+        logger.error(`Error processing tooth ${toothNumber}:`, err);
+        results.push({ tooth: toothNumber, success: false, error: (err as Error).message });
+
+        // Mark any evaluation still in 'analyzing' for this tooth as error
+        for (const eid of newEvalIds) {
+          try {
+            const evalData = await evaluations.getById(eid);
+            if (evalData?.tooth === toothNumber && evalData?.status === 'analyzing') {
+              await evaluations.updateStatus(eid, 'error');
+            }
+          } catch (statusError) {
+            logger.error(`Failed to mark evaluation for tooth ${toothNumber} as error:`, statusError);
+          }
+        }
+      }
+    }
+
+    // Determine outcome
+    const failed = results.filter(r => !r.success);
+    const succeeded = results.filter(r => r.success);
+
+    // Update failedTeeth state for UI retry
+    setFailedTeeth(failed.map(f => f.tooth));
+
+    if (failed.length === results.length) {
+      // Total failure — all teeth failed
+      toast.error(t('toasts.evaluationDetail.addTeethError', 'Erro ao adicionar dentes. Tente novamente.'));
+    } else if (failed.length > 0) {
+      // Partial success — some teeth succeeded, some failed
+      toast.warning(
+        `${succeeded.length} de ${results.length} dentes processados. ${failed.length} falharam — tente novamente.`,
+        { duration: 10000 },
+      );
+      handleAddTeethSuccess();
+    } else {
+      // Full success — all teeth processed
+      const treatmentMessages = Object.entries(treatmentCounts)
+        .map(([type, count]) => `${count} ${TREATMENT_LABEL_KEYS[type as TreatmentType] ? t(TREATMENT_LABEL_KEYS[type as TreatmentType]) : type}`)
+        .join(', ');
+
+      toast.success(t('components.addTeeth.casesAdded', { details: treatmentMessages }));
+      handleAddTeethSuccess();
+    }
+
+    // Re-sync protocols across ALL evaluations in this session (P1-34)
+    // Combines existing + newly added IDs so late additions get same protocol.
+    if (succeeded.length > 0) {
       try {
         const existingEvalIds = (evals || []).map(e => e.id);
         const allEvalIds = [...new Set([...existingEvalIds, ...newEvalIds])];
@@ -567,36 +639,17 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
       } catch (syncError) {
         logger.warn('Post-add protocol sync failed (non-critical):', syncError);
       }
+    }
 
-      // Build success message
-      const treatmentMessages = Object.entries(treatmentCounts)
-        .map(([type, count]) => `${count} ${TREATMENT_LABEL_KEYS[type as TreatmentType] ? t(TREATMENT_LABEL_KEYS[type as TreatmentType]) : type}`)
-        .join(', ');
-
-      toast.success(t('components.addTeeth.casesAdded', { details: treatmentMessages }));
-      handleAddTeethSuccess();
-    } catch (error) {
-      logger.error('Error in handleSubmitTeeth:', error);
-      // Only mark evaluations still in 'analyzing' status as error
-      // Evaluations already set to 'draft' completed successfully and should not be rolled back
-      for (const evalId of newEvalIds) {
-        try {
-          const evalData = await evaluations.getById(evalId);
-          if (evalData?.status === 'analyzing') {
-            await evaluations.updateStatus(evalId, 'error');
-          }
-        } catch (statusError) {
-          logger.error(`Failed to mark evaluation ${evalId} as error:`, statusError);
-        }
+    // Always clean up pending teeth that were successfully processed
+    // Keep failed teeth in pending so they can be retried
+    try {
+      const succeededTeeth = succeeded.map(r => r.tooth);
+      if (succeededTeeth.length > 0) {
+        await evaluations.deletePendingTeeth(sessionId, succeededTeeth);
       }
-      toast.error(t('toasts.evaluationDetail.addTeethError', 'Erro ao adicionar dentes. Tente novamente.'));
-    } finally {
-      // Always clean up pending teeth that were processed
-      try {
-        await evaluations.deletePendingTeeth(sessionId, payload.selectedTeeth);
-      } catch (deleteError) {
-        logger.error('Error deleting pending teeth:', deleteError);
-      }
+    } catch (deleteError) {
+      logger.error('Error deleting pending teeth:', deleteError);
     }
   }, [user, sessionId, patientDataForModal, evals, handleAddTeethSuccess, t]);
 
@@ -693,6 +746,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
     completedCount,
     patientDataForModal,
     selectedIds,
+    failedTeeth,
 
     // Actions
     handleMarkAsCompleted,

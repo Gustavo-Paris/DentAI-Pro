@@ -287,6 +287,7 @@ export function ComparisonSlider({
             className="w-7 h-7 bg-background/80 backdrop-blur-sm hover:bg-background"
             onClick={(e) => { e.stopPropagation(); handleZoomOut(); }}
             disabled={zoom <= MIN_ZOOM}
+            aria-label={t('components.comparisonSlider.zoomOut', { defaultValue: 'Diminuir zoom' })}
           >
             <ZoomOut className="w-3.5 h-3.5" />
           </Button>
@@ -295,6 +296,7 @@ export function ComparisonSlider({
             size="icon"
             className="w-7 h-7 bg-background/80 backdrop-blur-sm hover:bg-background text-[10px] font-mono"
             onClick={(e) => { e.stopPropagation(); handleZoomReset(); }}
+            aria-label={t('components.comparisonSlider.zoomReset', { defaultValue: 'Resetar zoom' })}
           >
             {zoom > 1 ? <Maximize className="w-3.5 h-3.5" /> : '1:1'}
           </Button>
@@ -304,6 +306,7 @@ export function ComparisonSlider({
             className="w-7 h-7 bg-background/80 backdrop-blur-sm hover:bg-background"
             onClick={(e) => { e.stopPropagation(); handleZoomIn(); }}
             disabled={zoom >= MAX_ZOOM}
+            aria-label={t('components.comparisonSlider.zoomIn', { defaultValue: 'Aumentar zoom' })}
           >
             <ZoomIn className="w-3.5 h-3.5" />
           </Button>

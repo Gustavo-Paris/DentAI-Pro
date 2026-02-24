@@ -182,8 +182,10 @@ interface PaymentRecord {
   amount: number;
   currency: string;
   status: string;
-  created_at: string;
+  description: string | null;
+  invoice_url: string | null;
   invoice_pdf: string | null;
+  created_at: string;
 }
 
 describe('PaymentRecord shape', () => {
@@ -193,6 +195,8 @@ describe('PaymentRecord shape', () => {
       amount: 2990,
       currency: 'brl',
       status: 'succeeded',
+      description: 'Assinatura ToSmile Pro',
+      invoice_url: 'https://example.com/invoice',
       created_at: '2025-01-01T10:00:00Z',
       invoice_pdf: 'https://example.com/invoice.pdf',
     };
@@ -201,6 +205,8 @@ describe('PaymentRecord shape', () => {
     expect(record.amount).toBe(2990);
     expect(record.currency).toBe('brl');
     expect(record.status).toBe('succeeded');
+    expect(record.description).toBe('Assinatura ToSmile Pro');
+    expect(record.invoice_url).toBe('https://example.com/invoice');
     expect(record.invoice_pdf).toBe('https://example.com/invoice.pdf');
   });
 
@@ -210,11 +216,15 @@ describe('PaymentRecord shape', () => {
       amount: 4990,
       currency: 'brl',
       status: 'succeeded',
+      description: null,
+      invoice_url: null,
       created_at: '2025-02-01T10:00:00Z',
       invoice_pdf: null,
     };
 
     expect(record.invoice_pdf).toBeNull();
+    expect(record.description).toBeNull();
+    expect(record.invoice_url).toBeNull();
   });
 });
 

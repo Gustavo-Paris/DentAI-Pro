@@ -37,7 +37,7 @@ const InventoryResinCard = memo(function InventoryResinCard({
       <p className="text-[10px] text-muted-foreground truncate">{item.product_line}</p>
       <button
         onClick={() => onRemove(item.id)}
-        className="absolute -top-1 -right-1 p-1.5 rounded-full bg-destructive/10 hover:bg-destructive/20 transition-colors sm:opacity-0 sm:group-hover:opacity-100"
+        className="absolute -top-2 -right-2 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-destructive/10 hover:bg-destructive/20 transition-colors sm:opacity-0 sm:group-hover:opacity-100"
         title={t('common.remove')}
         aria-label={t('inventory.removeResin')}
       >

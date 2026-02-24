@@ -236,7 +236,7 @@ async function makeGeminiRequest(
   timeoutMs: number = DEFAULT_TIMEOUT_MS
 ): Promise<GeminiResponse> {
   const apiKey = getApiKey();
-  const url = `${GEMINI_API_BASE}/${model}:generateContent?key=${apiKey}`;
+  const url = `${GEMINI_API_BASE}/${model}:generateContent`;
 
   let lastError: Error | null = null;
   let retryCount = 0;
@@ -255,6 +255,7 @@ async function makeGeminiRequest(
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "x-goog-api-key": apiKey,
         },
         body: JSON.stringify(request),
         signal: controller.signal,
@@ -693,7 +694,7 @@ export async function callGeminiImageEdit(
   // Gemini 3 Pro only — no fallback models (alternatives produce inferior quality).
   // When unavailable (503), fail gracefully so client can show retry UI.
   const MODEL = "gemini-3-pro-image-preview";
-  const url = `${GEMINI_API_BASE}/${MODEL}:generateContent?key=${apiKey}`;
+  const url = `${GEMINI_API_BASE}/${MODEL}:generateContent`;
 
   const request = {
     contents: [
@@ -732,7 +733,7 @@ export async function callGeminiImageEdit(
 
       const response = await fetch(url, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
         body: JSON.stringify(request),
         signal: controller.signal,
       });

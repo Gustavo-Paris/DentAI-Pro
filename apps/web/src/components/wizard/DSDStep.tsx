@@ -134,6 +134,12 @@ export function DSDStep(props: DSDStepProps) {
     );
   }
 
-  // Initial state
-  return <DSDInitialState onSkip={state.onSkip} />;
+  // Initial state — show confirmation button when image is available
+  return (
+    <DSDInitialState
+      onSkip={state.onSkip}
+      hasImage={!!state.imageBase64}
+      onConfirmDSD={state.confirmDSD}
+    />
+  );
 }

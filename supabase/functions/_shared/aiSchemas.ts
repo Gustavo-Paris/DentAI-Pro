@@ -67,10 +67,10 @@ const TreatmentIndicationSchema = z.string().optional();
 
 const ToothBoundsSchema = z
   .object({
-    x: z.number(),
-    y: z.number(),
-    width: z.number(),
-    height: z.number(),
+    x: z.number().min(0).max(100),
+    y: z.number().min(0).max(100),
+    width: z.number().min(0).max(100),
+    height: z.number().min(0).max(100),
   })
   .passthrough();
 
@@ -135,7 +135,15 @@ export const DSDAnalysisSchema = z
     symmetry_score: z.number().min(0).max(100),
     suggestions: z.array(DSDSuggestionSchema).default([]),
     observations: z.array(z.string()).default([]),
-    confidence: z.string(),
+    confidence: z.string().transform(val => {
+      const lower = val.toLowerCase();
+      const mapping: Record<string, string> = {
+        high: 'alta', alta: 'alta',
+        medium: 'media', media: 'media', 'média': 'media', moderate: 'media', moderada: 'media',
+        low: 'baixa', baixa: 'baixa',
+      };
+      return mapping[lower] || 'media';
+    }),
     simulation_limitation: z.string().optional(),
     // Lip analysis
     lip_thickness: z.string().optional(),
@@ -168,6 +176,7 @@ const ENUM_MAPPINGS: Record<string, Record<string, string>> = {
   face_shape: { oval: "oval", square: "quadrado", triangular: "triangular", rectangular: "retangular", round: "redondo" },
   perceived_temperament: { choleric: "colérico", sanguine: "sanguíneo", melancholic: "melancólico", phlegmatic: "fleumático" },
   smile_arc: { consonant: "consonante", flat: "plano", reverse: "reverso" },
+  recommended_tooth_shape: { oval: "oval", square: "quadrado", triangular: "triangular", rectangular: "retangular", round: "arredondado" },
 };
 
 /**
@@ -185,6 +194,25 @@ export function normalizeAnalysisEnums<T extends Record<string, unknown>>(analys
       }
     }
   }
+  // VITA shade validation
+  const VALID_VITA_SHADES = new Set([
+    'A1', 'A2', 'A3', 'A3.5', 'A4',
+    'B1', 'B2', 'B3', 'B4',
+    'C1', 'C2', 'C3', 'C4',
+    'D2', 'D3', 'D4',
+    'BL1', 'BL2', 'BL3', 'BL4',
+    'OM1', 'OM2', 'OM3',
+  ]);
+
+  if ('vita_shade' in analysis && typeof analysis.vita_shade === 'string') {
+    const shade = analysis.vita_shade.toUpperCase().trim();
+    if (!VALID_VITA_SHADES.has(shade)) {
+      (analysis as Record<string, unknown>).vita_shade = null;
+    } else {
+      (analysis as Record<string, unknown>).vita_shade = shade;
+    }
+  }
+
   return analysis;
 }
 
@@ -296,3 +324,13 @@ export const RecommendResinResponseSchema = z
   .passthrough();
 
 export type RecommendResinResponseParsed = z.infer<typeof RecommendResinResponseSchema>;
+
+// ---------------------------------------------------------------------------
+// 5. ResinCatalogRow (resin_catalog table validation)
+// ---------------------------------------------------------------------------
+
+export const ResinCatalogRowSchema = z.object({
+  shade: z.string().min(1),
+  type: z.string().min(1),
+  product_line: z.string().min(1),
+});

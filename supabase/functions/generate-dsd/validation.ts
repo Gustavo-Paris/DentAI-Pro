@@ -1,4 +1,5 @@
 import { ERROR_MESSAGES } from "../_shared/cors.ts";
+import { DSDAnalysisSchema } from "../_shared/aiSchemas.ts";
 import type { AdditionalPhotos, ClinicalToothFinding, DSDAnalysis, PatientPreferences, RequestData } from "./types.ts";
 
 // Validate request
@@ -77,7 +78,12 @@ export function validateRequest(data: unknown): { success: boolean; error?: stri
       imageBase64: req.imageBase64,
       evaluationId: typeof req.evaluationId === "string" ? req.evaluationId : undefined,
       regenerateSimulationOnly: req.regenerateSimulationOnly === true,
-      existingAnalysis: req.existingAnalysis as DSDAnalysis | undefined,
+      existingAnalysis: req.existingAnalysis
+        ? (() => {
+            const parsed = DSDAnalysisSchema.safeParse(req.existingAnalysis);
+            return parsed.success ? (parsed.data as DSDAnalysis) : undefined;
+          })()
+        : undefined,
       toothShape: toothShape as RequestData['toothShape'],
       additionalPhotos,
       patientPreferences,

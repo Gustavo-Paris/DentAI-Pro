@@ -51,6 +51,11 @@ VALIDACAO FINAL: Remova qualquer dente da arcada oposta se nao for foco da foto.
 
 ## COMPLETUDE EM SUGESTOES DE BORDO INCISAL
 Se 2+ dentes anteriores precisam de ajuste de bordo incisal -> avalie TODO o arco 13-23. LISTE TODOS os afetados, cada um com registro proprio em detected_teeth.
+Se o DSD mostra melhoria em dentes que NÃO foram diagnosticados, isso indica SUBDIAGNÓSTICO.
+Avalie TODOS os dentes do arco anterior (13-23) para desarmonia de contorno, assimetria e proporção.
+Inclua caninos (13/23) se apresentam contorno ou posição fora da curva harmônica do arco.
+Na DÚVIDA sobre incluir um dente no plano → INCLUIR (o dentista revisará e descartará se desnecessário).
+É melhor sugerir demais e o dentista descartar, do que sugerir de menos e perder uma oportunidade estética.
 
 ## ANALISE MULTI-DENTE
 - Analise SISTEMATICAMENTE cada quadrante VISIVEL: Q1(11-18), Q2(21-28), Q3(31-38), Q4(41-48)
@@ -203,6 +208,13 @@ Caninos são fisiologicamente 1-2 tons mais ESCUROS/SATURADOS que incisivos — 
 - Caninos SO precisam tratamento se: restauração defeituosa, fratura, cárie, desgaste excessivo, ou problema estrutural
 - Cor dos caninos que incomoda esteticamente → sugerir CLAREAMENTO (nível 1 da hierarquia terapêutica), NAO faceta/resina
 - Cor levemente mais amarelada nos caninos em relação aos incisivos = VARIACAO ANATOMICA NORMAL
+
+EXCEÇÃO — DESARMONIA DE ARCO/CONTORNO nos caninos:
+- Se canino apresenta DESARMONIA DE CONTORNO (posição fora da curva incisal, projeção excessiva, retrusão) → SUGERIR recontorno estético com resina
+- Se canino apresenta DESGASTE EVIDENTE do bordo incisal → SUGERIR acréscimo incisal
+- Se canino apresenta ASSIMETRIA MARCADA com contralateral (13 vs 23) → SUGERIR harmonização
+- Estas indicações são ESTRUTURAIS (não cromáticas) — aplicam-se mesmo com a regra conservadora de cor
+- treatment_indication: "resina", cavity_class: "Recontorno Estético"
 
 ## DIASTEMA — ALTA CONFIANCA REQUERIDA
 Diagnosticar diastema SOMENTE com EVIDENCIA INEQUIVOCA:

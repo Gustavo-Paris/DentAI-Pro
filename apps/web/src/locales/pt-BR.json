@@ -237,6 +237,9 @@
       "inventoryUsage": "Uso do inventário",
       "totalCases": "Total de casos",
       "weeklyAverage": "Média por semana",
+      "avgCompletionTime": "Tempo medio",
+      "patientGrowth": "Pacientes",
+      "thisMonth": "este mes",
       "noData": "Sem dados suficientes",
       "noDataDescription": "Os insights aparecerão aqui após suas primeiras avaliações."
     }
@@ -258,6 +261,7 @@
     "newCase": "Novo Caso",
     "sampleCase": "Caso Exemplo",
     "generatingCase": "Gerando Caso Clínico",
+    "preparingCase": "Preparando caso...",
     "caseCreated": "Caso criado com sucesso!",
     "createMyOwnCase": "Criar Meu Próprio Caso",
     "generateCase": "Gerar Caso",
@@ -634,8 +638,10 @@
     "privacyTitle": "Política de Privacidade",
     "lastUpdated": "Última atualização:",
     "sharedView": "Visualização compartilhada",
-    "sharedExpiredTitle": "Link expirado ou inválido",
-    "sharedExpiredDescription": "Este link de compartilhamento não está mais disponível.",
+    "sharedExpiredTitle": "Link expirado",
+    "sharedExpiredDescription": "Este link de compartilhamento expirou. Solicite um novo link ao seu dentista.",
+    "sharedNotFoundTitle": "Avaliação não encontrada",
+    "sharedNotFoundDescription": "Este link de compartilhamento não existe ou foi removido.",
     "goTo": "Ir para {{name}}",
     "generatedBy": "Gerado por",
     "clinicalDecisionSupport": "Ferramenta de apoio à decisão clínica",
@@ -1196,7 +1202,9 @@
           "description": "O Digital Smile Design analisa as proporções faciais e dentárias do paciente, gerando uma simulação visual do resultado final antes de iniciar o tratamento.",
           "credits": "2 créditos",
           "duration": "~30 segundos",
-          "skipDSD": "Pular DSD"
+          "skipDSD": "Pular DSD",
+          "startAnalysis": "Iniciar An\u00e1lise DSD",
+          "confirmHint": "A an\u00e1lise DSD vai processar a foto e gerar sugest\u00f5es de design do sorriso."
         },
         "loadingState": {
           "title": "Planejamento Digital do Sorriso",

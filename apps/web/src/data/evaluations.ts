@@ -110,7 +110,7 @@ export async function updateStatus(id: string, status: string) {
 export async function getDashboardMetrics({ userId }: DashboardMetricsParams) {
   const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 }).toISOString();
 
-  const [allEvalsResult, weeklyEvalsResult, pendingTeethResult] = await Promise.all([
+  const [allEvalsSettled, weeklyEvalsSettled, pendingTeethSettled] = await Promise.allSettled([
     // All evaluations: session_id + status (for session-level metrics)
     supabase
       .from('evaluations')
@@ -130,6 +130,10 @@ export async function getDashboardMetrics({ userId }: DashboardMetricsParams) {
       .eq('user_id', userId)
       .neq('status', 'completed'),
   ]);
+
+  const allEvalsResult = allEvalsSettled.status === 'fulfilled' ? allEvalsSettled.value : { data: [] };
+  const weeklyEvalsResult = weeklyEvalsSettled.status === 'fulfilled' ? weeklyEvalsSettled.value : { data: [] };
+  const pendingTeethResult = pendingTeethSettled.status === 'fulfilled' ? pendingTeethSettled.value : { count: 0 };
 
   // Group by session to compute session-level stats
   const sessionMap = new Map<string, { total: number; completed: number }>();
@@ -287,6 +291,14 @@ export interface SharedDSDData {
   photo_frontal: string | null;
 }
 
+export type SharedLinkStatus = 'valid' | 'expired' | 'not_found';
+
+export async function checkSharedLinkStatus(token: string): Promise<SharedLinkStatus> {
+  const { data, error } = await supabase.rpc('check_shared_link_status', { p_token: token });
+  if (error) return 'not_found'; // gracefully degrade if RPC not deployed yet
+  return (data as SharedLinkStatus) || 'not_found';
+}
+
 export async function getSharedDSD(token: string): Promise<SharedDSDData | null> {
   const { data, error } = await supabase.rpc('get_shared_dsd', { p_token: token });
   if (error) return null; // gracefully degrade if RPC not deployed yet
@@ -373,9 +385,43 @@ export async function deletePendingTeeth(sessionId: string, teeth: string[]) {
 }
 
 export async function deleteSession(sessionId: string, userId: string) {
+  // 1. Fetch photo paths before deletion
+  const { data: evaluations } = await supabase
+    .from('evaluations')
+    .select('id, photo_frontal')
+    .eq('session_id', sessionId)
+    .eq('user_id', userId);
+
+  // 2. Delete evaluations (existing logic)
   await withMutation(() =>
     supabase.from('evaluations').delete().eq('session_id', sessionId).eq('user_id', userId),
   );
+
+  // 3. Clean up storage (best-effort, don't block on failure)
+  if (evaluations?.length) {
+    const photoPaths = evaluations
+      .map(e => e.photo_frontal)
+      .filter((p): p is string => !!p);
+
+    if (photoPaths.length > 0) {
+      await supabase.storage.from('clinical-photos').remove(photoPaths).catch(() => {});
+    }
+
+    // Also clean DSD simulations
+    for (const ev of evaluations) {
+      const prefix = `${userId}/${ev.id}`;
+      const { data: files } = await supabase.storage
+        .from('dsd-simulations')
+        .list(prefix)
+        .catch(() => ({ data: null }));
+      if (files?.length) {
+        await supabase.storage
+          .from('dsd-simulations')
+          .remove(files.map(f => `${prefix}/${f.name}`))
+          .catch(() => {});
+      }
+    }
+  }
 }
 
 export async function invokeEdgeFunction(name: string, body: Record<string, unknown>) {

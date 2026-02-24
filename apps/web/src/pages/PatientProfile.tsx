@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -12,12 +12,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@parisgroup-ai/pageshell/primitives';
+import { PageConfirmDialog } from '@parisgroup-ai/pageshell/interactions';
 import {
   Phone,
   Mail,
   FileText,
   Pencil,
   Sparkles,
+  Trash2,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -26,7 +28,11 @@ import { PageTreatmentTimeline } from '@parisgroup-ai/domain-odonto-ai/treatment
 import type { ProcedureInfo } from '@parisgroup-ai/domain-odonto-ai/treatments';
 
 import { usePatientProfile } from '@/hooks/domain/usePatientProfile';
+import { useAuth } from '@/contexts/AuthContext';
+import { patients } from '@/data';
 import { getInitials } from '@/lib/utils';
+import { toast } from 'sonner';
+import { trackEvent } from '@/lib/analytics';
 import { PatientSessionList } from '@/components/patient/PatientSessionList';
 
 // =============================================================================
@@ -36,9 +42,28 @@ import { PatientSessionList } from '@/components/patient/PatientSessionList';
 export default function PatientProfile() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const profile = usePatientProfile();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const { patient, sessions, metrics, editForm, patientId } = profile;
+
+  const handleDeletePatient = async () => {
+    if (!patientId || !user) return;
+    setIsDeleting(true);
+    try {
+      await patients.deletePatient(patientId, user.id);
+      trackEvent('patient_deleted', { patient_id: patientId });
+      toast.success(t('toasts.patient.deleted', { defaultValue: 'Paciente excluído com sucesso' }));
+      navigate('/patients');
+    } catch {
+      toast.error(t('toasts.patient.deleteError', { defaultValue: 'Erro ao excluir paciente' }));
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+    }
+  };
   const sessionsList = sessions?.sessions || [];
   const hasMoreSessions = sessions?.hasMore || false;
 
@@ -175,6 +200,7 @@ export default function PatientProfile() {
         headerActions={[
           { label: t('patients.newEvaluation', { defaultValue: 'Nova Avaliação' }), icon: Sparkles, onClick: () => navigate(`/new-case?patientId=${patientId}`), variant: 'default' },
           { label: t('common.edit'), icon: Pencil, onClick: profile.openEditDialog, variant: 'outline' },
+          { label: t('common.delete'), icon: Trash2, onClick: () => setShowDeleteDialog(true), variant: 'ghost' },
         ]}
         slots={{
           beforeContent: patient && (
@@ -250,6 +276,20 @@ export default function PatientProfile() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Confirm patient deletion */}
+      <PageConfirmDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        title={t('patients.deletePatientTitle', { defaultValue: 'Excluir paciente?' })}
+        description={t('patients.deletePatientDescription', {
+          defaultValue: 'O paciente será excluído permanentemente. As avaliações existentes serão mantidas, mas não estarão mais vinculadas a este paciente.',
+        })}
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
+        onConfirm={handleDeletePatient}
+        variant="destructive"
+      />
     </>
   );
 }

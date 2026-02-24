@@ -1,5 +1,5 @@
-import { useCallback, useEffect, memo, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { useCallback, useEffect, memo, useMemo, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ListPage, GenericErrorState } from '@parisgroup-ai/pageshell/composites';
 import { useEvaluationSessions } from '@/hooks/domain/useEvaluationSessions';
@@ -7,7 +7,7 @@ import type { EvaluationSession } from '@/hooks/domain/useEvaluationSessions';
 import { Card } from '@parisgroup-ai/pageshell/primitives';
 import { StatusBadge, defineStatusConfig } from '@parisgroup-ai/pageshell/primitives';
 import { Badge } from '@parisgroup-ai/pageshell/primitives';
-import { CheckCircle, ChevronRight, Calendar } from 'lucide-react';
+import { CheckCircle, ChevronRight, Calendar, Info } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatToothLabel } from '@/lib/treatment-config';
@@ -64,8 +64,13 @@ const SessionCard = memo(function SessionCard({
       ? `${t('evaluation.resultsReady')} (${session.completedCount}/${session.evaluationCount})`
       : t('evaluation.statusPending');
 
+  const handleClick = useCallback(() => {
+    sessionStorage.removeItem('newSessionId');
+    sessionStorage.removeItem('newSessionTimestamp');
+  }, []);
+
   return (
-    <Link to={`/evaluation/${session.session_id}`} aria-label={t('evaluation.viewEvaluationOf', { name: session.patient_name || t('evaluation.patientNoName') })}>
+    <Link to={`/evaluation/${session.session_id}`} onClick={handleClick} aria-label={t('evaluation.viewEvaluationOf', { name: session.patient_name || t('evaluation.patientNoName') })}>
       <Card
         className={`p-3 sm:p-4 shadow-sm hover:shadow-md rounded-xl transition-all duration-300 cursor-pointer animate-[fade-in-up_0.6s_ease-out_both] ${borderClass}`}
         style={{ animationDelay: `${index * 0.05}s` }}
@@ -124,16 +129,97 @@ const SessionCard = memo(function SessionCard({
 // Page Adapter
 // =============================================================================
 
+// Valid filter values for URL param validation
+const VALID_STATUS_VALUES = new Set(['all', 'pending', 'completed']);
+const VALID_TREATMENT_VALUES = new Set(TREATMENT_TYPE_OPTIONS.map(o => o.value));
+
 export default function Evaluations() {
   const { t } = useTranslation();
-  const { sessions, isLoading, isError, newSessionId, newTeethCount } =
+  const { sessions, total, isLoading, isError, newSessionId, newTeethCount } =
     useEvaluationSessions();
-  // Clear navigation state after viewing
+  const isTruncated = total > sessions.length;
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // ---------------------------------------------------------------------------
+  // Persist "New" badge across page reloads via sessionStorage
+  // ---------------------------------------------------------------------------
+  const [storedNewId] = useState<string | null>(() => {
+    const id = sessionStorage.getItem('newSessionId');
+    const ts = sessionStorage.getItem('newSessionTimestamp');
+    const isRecent = ts && Date.now() - Number(ts) < 3_600_000; // 1 hour
+    return isRecent ? id : null;
+  });
+
+  const effectiveNewId = newSessionId ?? storedNewId;
+
+  // When newSessionId arrives from location.state, persist and clear nav state
   useEffect(() => {
     if (newSessionId) {
+      sessionStorage.setItem('newSessionId', newSessionId);
+      sessionStorage.setItem('newSessionTimestamp', Date.now().toString());
       window.history.replaceState({}, document.title);
     }
   }, [newSessionId]);
+
+  // Read initial filter state from URL params (validated)
+  const urlStatus = searchParams.get('status');
+  const urlTreatment = searchParams.get('treatment');
+  const urlSearch = searchParams.get('q') ?? '';
+
+  const initialFilters = useMemo(() => {
+    const filters: Record<string, string> = {};
+    if (urlStatus && VALID_STATUS_VALUES.has(urlStatus)) {
+      filters.status = urlStatus;
+    }
+    if (urlTreatment && VALID_TREATMENT_VALUES.has(urlTreatment)) {
+      filters.treatmentTypes = urlTreatment;
+    }
+    return filters;
+    // Only compute once on mount — URL is the source of truth for initial state
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Sync filter/search changes back to URL
+  const handleFiltersChange = useCallback((filters: Record<string, string>) => {
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      // Status filter
+      if (filters.status && filters.status !== 'all') {
+        next.set('status', filters.status);
+      } else {
+        next.delete('status');
+      }
+      // Treatment type filter
+      if (filters.treatmentTypes && filters.treatmentTypes !== 'all') {
+        next.set('treatment', filters.treatmentTypes);
+      } else {
+        next.delete('treatment');
+      }
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  const handleSearchChange = useCallback((query: string) => {
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      if (query) {
+        next.set('q', query);
+      } else {
+        next.delete('q');
+      }
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  // Controlled state — initial values from URL
+  const controlledState = useMemo(() => ({
+    page: 1,
+    pageSize: PAGINATION_CONFIG.defaultPageSize,
+    sortKey: null,
+    sortDirection: 'desc' as const,
+    filters: initialFilters,
+    search: urlSearch,
+  }), [initialFilters, urlSearch]);
 
   const searchConfig = useMemo(
     () => ({ fields: SEARCH_FIELDS, placeholder: t('evaluation.searchByPatient') }),
@@ -188,10 +274,10 @@ export default function Evaluations() {
   const renderCard = useCallback((session: EvaluationSession, index?: number) => (
     <SessionCard
       session={session}
-      isNew={newSessionId === session.session_id}
+      isNew={effectiveNewId === session.session_id}
       index={index ?? 0}
     />
-  ), [newSessionId]);
+  ), [effectiveNewId]);
 
   if (isError) {
     return (
@@ -204,7 +290,7 @@ export default function Evaluations() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-      {/* Success Banner for New Session */}
+      {/* Success Banner — only when freshly navigated (not from sessionStorage) */}
       {newSessionId && (
         <div role="status" aria-live="polite" className="mb-4 sm:mb-6 p-3 sm:p-4 bg-primary/10 border border-primary/20 rounded-xl shadow-sm flex items-center gap-3 animate-[fade-in-up_0.6s_ease-out_both]">
           <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" aria-hidden="true" />
@@ -229,11 +315,28 @@ export default function Evaluations() {
           gridClassName="grid grid-cols-1 gap-3"
           searchConfig={searchConfig}
           filters={filtersConfig}
+          state={controlledState}
+          onFiltersChange={handleFiltersChange}
+          onSearchChange={handleSearchChange}
           pagination={PAGINATION_CONFIG}
           createAction={createAction}
           emptyState={emptyState}
           labels={labels}
         />
+
+      {/* Truncation notice */}
+      {isTruncated && (
+        <div role="status" className="mt-4 p-3 bg-muted/50 border border-border rounded-lg flex items-center gap-2 text-sm text-muted-foreground">
+          <Info className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
+          <span>
+            {t('evaluation.truncationNotice', {
+              shown: sessions.length,
+              total,
+              defaultValue: `Mostrando ${sessions.length} de ${total} avaliações`,
+            })}
+          </span>
+        </div>
+      )}
     </div>
   );
 }

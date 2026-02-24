@@ -5,6 +5,17 @@ import { logger } from '@/lib/logger';
 
 const SESSION_REFRESH_THRESHOLD_MS = 60 * 1000; // Refresh if session expires in < 60s
 
+// Deduplicates concurrent token refreshes — all callers share a single in-flight promise
+let refreshPromise: Promise<void> | null = null;
+
+async function refreshTokenOnce(): Promise<void> {
+  if (refreshPromise) return refreshPromise;
+  refreshPromise = supabase.auth.refreshSession().then(() => {}).finally(() => {
+    refreshPromise = null;
+  });
+  return refreshPromise;
+}
+
 interface InvokeOptions {
   body?: Record<string, unknown>;
   headers?: Record<string, string>;
@@ -40,19 +51,18 @@ export function useAuthenticatedFetch() {
       // Proactively refresh if session is close to expiring
       if (timeUntilExpiry < SESSION_REFRESH_THRESHOLD_MS) {
         logger.debug('Session expiring soon, refreshing token...');
-        const { error: refreshError } = await supabase.auth.refreshSession();
-
-        if (refreshError) {
+        try {
+          await refreshTokenOnce();
+          logger.debug('Token refreshed successfully');
+        } catch (refreshError) {
+          const msg = refreshError instanceof Error ? refreshError.message : '';
           logger.error('Token refresh failed:', refreshError);
-          // If refresh token is gone, redirect to login
-          if (refreshError.message?.includes('Refresh Token Not Found') || refreshError.message?.includes('Invalid Refresh Token')) {
+          if (msg.includes('Refresh Token Not Found') || msg.includes('Invalid Refresh Token')) {
             await supabase.auth.signOut();
             window.location.href = '/login';
-            return { data: null, error: refreshError };
+            return { data: null, error: refreshError instanceof Error ? refreshError : new Error(String(refreshError)) };
           }
           // Continue anyway - the call might still work
-        } else {
-          logger.debug('Token refreshed successfully');
         }
       }
 
@@ -87,10 +97,12 @@ export function useAuthenticatedFetch() {
               // Check if it's a 401 and try to refresh + retry once
               if (status === 401) {
                 logger.debug('Got 401, attempting token refresh and retry...');
-                const { error: refreshError } = await supabase.auth.refreshSession();
-                if (refreshError) {
+                try {
+                  await refreshTokenOnce();
+                } catch (refreshError) {
+                  const msg = refreshError instanceof Error ? refreshError.message : '';
                   logger.error('Token refresh after 401 failed:', refreshError);
-                  if (refreshError.message?.includes('Refresh Token Not Found') || refreshError.message?.includes('Invalid Refresh Token')) {
+                  if (msg.includes('Refresh Token Not Found') || msg.includes('Invalid Refresh Token')) {
                     await supabase.auth.signOut();
                     window.location.href = '/login';
                   }
@@ -115,10 +127,12 @@ export function useAuthenticatedFetch() {
         if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
           logger.debug('Got 401, attempting token refresh and retry...');
 
-          const { error: refreshError } = await supabase.auth.refreshSession();
-          if (refreshError) {
+          try {
+            await refreshTokenOnce();
+          } catch (refreshError) {
+            const msg = refreshError instanceof Error ? refreshError.message : '';
             logger.error('Token refresh after 401 failed:', refreshError);
-            if (refreshError.message?.includes('Refresh Token Not Found') || refreshError.message?.includes('Invalid Refresh Token')) {
+            if (msg.includes('Refresh Token Not Found') || msg.includes('Invalid Refresh Token')) {
               await supabase.auth.signOut();
               window.location.href = '/login';
             }

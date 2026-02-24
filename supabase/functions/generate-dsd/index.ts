@@ -19,15 +19,16 @@ Deno.serve(async (req: Request) => {
   const corsHeaders = getCorsHeaders(req);
   // Always generate reqId server-side for billing idempotency — never trust client value
   const reqId = generateRequestId();
-  // Accept client-provided tracking ID for response correlation only
+  // Parse body once upfront — avoids double parsing (clone + original)
   let clientReqId: string | undefined;
+  let body: Record<string, unknown>;
   try {
-    const clonedBody = await req.clone().json();
-    if (typeof clonedBody.reqId === 'string' && clonedBody.reqId.length > 0 && clonedBody.reqId.length <= 64) {
-      clientReqId = clonedBody.reqId;
+    body = await req.json();
+    if (typeof body.reqId === 'string' && body.reqId.length > 0 && body.reqId.length <= 64) {
+      clientReqId = body.reqId;
     }
   } catch {
-    // ignore parse errors
+    return createErrorResponse(ERROR_MESSAGES.INVALID_REQUEST, 400, corsHeaders);
   }
   logger.log(`[${reqId}] generate-dsd: start${clientReqId ? ` (clientReqId=${clientReqId})` : ''}`);
 
@@ -60,8 +61,7 @@ Deno.serve(async (req: Request) => {
       return createRateLimitResponse(rateLimitResult, corsHeaders);
     }
 
-    // Parse and validate request body (need to parse before credit check)
-    const body = await req.json();
+    // Validate request body (already parsed above)
     const validation = validateRequest(body);
 
     if (!validation.success || !validation.data) {
@@ -125,7 +125,7 @@ Deno.serve(async (req: Request) => {
     const imageDataMatch = imageBase64.match(/^data:[^;]+;base64,(.+)$/);
     const rawBase64ForHash = imageDataMatch ? imageDataMatch[1] : imageBase64;
     const hashEncoder = new TextEncoder();
-    const hashSource = `${PROMPT_VERSION}:${rawBase64ForHash.substring(0, 50000)}`;
+    const hashSource = `${PROMPT_VERSION}:${rawBase64ForHash}`;
     const imageHashBuffer = await crypto.subtle.digest('SHA-256', hashEncoder.encode(hashSource));
     const imageHashArr = Array.from(new Uint8Array(imageHashBuffer));
     const dsdImageHash = imageHashArr.map(b => b.toString(16).padStart(2, '0')).join('');

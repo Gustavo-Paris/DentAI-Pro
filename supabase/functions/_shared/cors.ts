@@ -22,7 +22,7 @@ const PRODUCTION_ORIGINS = [
 ];
 
 // Check environment - only allow localhost origins in development
-const isDevelopment = Deno.env.get("ENVIRONMENT") !== "production";
+const isDevelopment = Deno.env.get("ENVIRONMENT") === "development";
 
 function isLocalhostOrigin(origin: string): boolean {
   try {
@@ -50,6 +50,7 @@ export function getCorsHeaders(req: Request): Record<string, string> {
     "Access-Control-Allow-Origin": isAllowed ? origin : PRODUCTION_ORIGINS[0],
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Max-Age": "86400",
     "Vary": "Origin",
   };
 }

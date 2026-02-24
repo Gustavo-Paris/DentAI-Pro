@@ -41,7 +41,12 @@ Deno.serve(withErrorBoundary(async (req: Request) => {
   }
 
   // Parse request
-  const body: RequestBody = await req.json();
+  let body: RequestBody;
+  try {
+    body = await req.json();
+  } catch {
+    return createErrorResponse("Invalid request body", 400, corsHeaders);
+  }
   const { priceId, packId, billingCycle, payment_method, successUrl, cancelUrl } = body;
 
   // Validate redirect URLs against allowed origins to prevent open redirect

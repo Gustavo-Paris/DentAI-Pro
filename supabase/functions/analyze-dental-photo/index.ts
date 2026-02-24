@@ -215,10 +215,7 @@ Deno.serve(async (req) => {
         }
         const fbMsg = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
         logger.error(`Both Gemini and Claude failed. Gemini: ${errMsg}. Claude: ${fbMsg}`);
-        return new Response(
-          JSON.stringify({ error: ERROR_MESSAGES.AI_ERROR }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
       }
     }
 
@@ -239,6 +236,16 @@ Deno.serve(async (req) => {
     // Post-process AI result: normalize, deduplicate, filter, sort, add warnings
     const result = processAnalysisResult(analysisResult);
 
+    // Ensure mandatory clinical safety disclaimer
+    const DISCLAIMER = 'Esta análise é assistida por IA e tem caráter de apoio à decisão clínica. Todos os achados devem ser confirmados por exame clínico e radiográfico complementar.';
+    if (result.observations) {
+      if (!result.observations.some((o: string) => o.includes('apoio à decisão'))) {
+        result.observations.unshift(DISCLAIMER);
+      }
+    } else {
+      result.observations = [DISCLAIMER];
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -256,9 +263,6 @@ Deno.serve(async (req) => {
       await refundCredits(supabaseForRefund, userIdForRefund, "case_analysis", reqId);
       logger.log(`[${reqId}] Refunded analysis credits for user ${userIdForRefund} due to error`);
     }
-    return new Response(
-      JSON.stringify({ error: ERROR_MESSAGES.PROCESSING_ERROR }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders, undefined, reqId);
   }
 });

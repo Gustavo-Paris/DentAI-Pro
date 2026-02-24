@@ -271,3 +271,71 @@ export function accountDeletedEmail(name: string): { subject: string; html: stri
     `),
   };
 }
+
+// ---------------------------------------------------------------------------
+// Template: Payment Received
+// ---------------------------------------------------------------------------
+
+export function paymentReceivedEmail(
+  name: string,
+  amount: string,
+  invoiceUrl: string | null,
+): { subject: string; html: string } {
+  const firstName = name.split(" ")[0];
+  return {
+    subject: "Pagamento confirmado — ToSmile.ai",
+    html: layout(`
+      <h2 style="margin:0 0 16px;font-size:22px;color:${DARK};">Ola, ${firstName}</h2>
+      <p style="margin:0 0 16px;font-size:15px;color:${GRAY_TEXT};line-height:1.6;">
+        Seu pagamento de <strong style="color:${TEAL};">${amount}</strong> foi
+        processado com sucesso no <strong>ToSmile.ai</strong>.
+      </p>
+      ${invoiceUrl ? `
+      <table role="presentation" cellspacing="0" cellpadding="0" style="margin:0 auto;">
+        <tr>
+          <td style="background-color:${TEAL};border-radius:6px;">
+            <a href="${invoiceUrl}" style="display:inline-block;padding:12px 32px;font-size:15px;font-weight:600;color:${DARK};text-decoration:none;">
+              Ver fatura
+            </a>
+          </td>
+        </tr>
+      </table>` : ''}
+      <p style="margin:24px 0 0;font-size:13px;color:#999;line-height:1.5;">
+        Obrigado por confiar no ToSmile.ai para suas avaliacoes clinicas.
+      </p>
+    `),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Template: Payment Failed
+// ---------------------------------------------------------------------------
+
+export function paymentFailedEmail(
+  name: string,
+  amount: string,
+): { subject: string; html: string } {
+  const firstName = name.split(" ")[0];
+  return {
+    subject: "Falha no pagamento — ToSmile.ai",
+    html: layout(`
+      <h2 style="margin:0 0 16px;font-size:22px;color:${DARK};">Ola, ${firstName}</h2>
+      <p style="margin:0 0 16px;font-size:15px;color:${GRAY_TEXT};line-height:1.6;">
+        Houve uma falha ao processar o pagamento de <strong style="color:#e74c3c;">${amount}</strong>.
+        Sua assinatura pode ser afetada caso o pagamento nao seja regularizado.
+      </p>
+      <p style="margin:0 0 24px;font-size:15px;color:${GRAY_TEXT};line-height:1.6;">
+        Verifique os dados do seu cartao ou entre em contato com o suporte do seu banco.
+      </p>
+      <table role="presentation" cellspacing="0" cellpadding="0" style="margin:0 auto;">
+        <tr>
+          <td style="background-color:${TEAL};border-radius:6px;">
+            <a href="https://tosmile.ai/settings" style="display:inline-block;padding:12px 32px;font-size:15px;font-weight:600;color:${DARK};text-decoration:none;">
+              Atualizar pagamento
+            </a>
+          </td>
+        </tr>
+      </table>
+    `),
+  };
+}

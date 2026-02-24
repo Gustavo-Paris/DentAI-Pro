@@ -122,7 +122,15 @@ EXCEÇÃO PERMITIDA: Alongar ou encurtar BORDAS INCISAIS (até 1-2mm visual) par
 Estas mudanças de borda incisal são PARTE da simulação de restauração e devem ser VISÍVEIS na comparação.
 A simulação deve parecer uma melhoria natural, NÃO uma sobreposição de dentes genéricos.
 
-⚠️ ERRO FREQUENTE DO MODELO: Levantar o lábio superior e abaixar o inferior para "mostrar mais resultado" — PROIBIDO`
+⚠️ ERRO FREQUENTE DO MODELO: Levantar o lábio superior e abaixar o inferior para "mostrar mais resultado" — PROIBIDO
+
+=== LIP DISTANCE RULE (ALL LAYERS) ===
+A DISTÂNCIA entre o lábio superior e o lábio inferior é FIXA e IMUTÁVEL.
+Meça a distância vertical entre os lábios na entrada — a saída DEVE ter a MESMA distância exata.
+- NÃO levantar o lábio superior (nem 1 pixel)
+- NÃO abaixar o lábio inferior (nem 1 pixel)
+- A abertura labial na saída = CÓPIA EXATA da abertura labial na entrada
+Se você precisa mostrar mais resultado dental, faça isso DENTRO do espaço existente entre os lábios — NUNCA expanda a abertura.`
 }
 
 function buildWhiteningPrioritySection(params: Params): string {
@@ -331,6 +339,8 @@ function buildStandardPrompt(params: Params): string {
 ${absolutePreservation}
 
 TASK: Edit ONLY the teeth. Everything else must be IDENTICAL to input.
+
+⚠️ LIP RULE: Do NOT move the upper or lower lip. The lip opening distance is FIXED.
 ${whiteningPrioritySection}DENTAL CORRECTIONS:
 ${baseCorrections}
 ${textureInstruction}
@@ -369,6 +379,8 @@ TASK: Apply ONLY structural corrections to the teeth. Keep the NATURAL tooth col
 - Whiten or brighten the teeth — keep the ORIGINAL natural color
 - Make teeth lighter than they currently are
 - The tooth color in the output must be IDENTICAL to the input color
+
+⚠️ LIP RULE: Do NOT move the upper or lower lip. The lip opening distance is FIXED. Restoration corrections happen WITHIN the existing smile frame.
 
 DENTAL CORRECTIONS:
 ${baseCorrections}
@@ -409,6 +421,7 @@ WHAT TO PRESERVE (DO NOT CHANGE — PIXEL-IDENTICAL):
 - Tooth proportions and positions — EXACTLY as input
 - Surface texture patterns (periquimacies, micro-texture)
 - Lips, gums, skin, background — EVERYTHING outside teeth
+- Lip opening distance — the vertical gap between lips is FIXED (do NOT lift upper lip or lower the lower lip)
 - Image framing, crop, dimensions — IDENTICAL to input
 
 Output: Same photo with teeth whitened to ${params.whiteningIntensity} level. All corrections preserved. Only color changed.`

@@ -26,10 +26,11 @@ import { Calendar } from 'lucide-react';
 export default function SharedEvaluation() {
   const { t } = useTranslation();
   const { token } = useParams<{ token: string }>();
-  const { loading, expired, evaluations, dsdData, beforeImageUrl, simulationUrl, layerUrls } = useSharedEvaluation(token);
+  const { loading, expired, errorReason, evaluations, dsdData, beforeImageUrl, simulationUrl, layerUrls } = useSharedEvaluation(token);
   const [activeLayerIndex, setActiveLayerIndex] = useState(0);
 
   const pageState = loading ? 'loading' : expired ? 'expired' : 'data';
+  const isNotFound = errorReason === 'not_found';
 
   const completedCount = !loading && !expired
     ? evaluations.filter((e) => e.status === 'completed').length
@@ -44,8 +45,8 @@ export default function SharedEvaluation() {
       badgeText={t('pages.sharedView')}
       state={pageState}
       expiredConfig={{
-        title: t('pages.sharedExpiredTitle'),
-        description: t('pages.sharedExpiredDescription'),
+        title: isNotFound ? t('pages.sharedNotFoundTitle') : t('pages.sharedExpiredTitle'),
+        description: isNotFound ? t('pages.sharedNotFoundDescription') : t('pages.sharedExpiredDescription'),
         cta: { label: t('pages.goTo', { name: BRAND_NAME }), href: '/' },
       }}
       footer={{

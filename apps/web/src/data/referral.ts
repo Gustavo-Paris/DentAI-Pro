@@ -132,9 +132,9 @@ export async function applyReferralCode(
   if (conversionError) throw conversionError;
 
   // Grant bonus credits to referrer
-  const { error: referrerError } = await supabase.rpc('increment_credits_bonus', {
-    target_user_id: referralCode.user_id,
-    amount: BONUS_CREDITS,
+  const { error: referrerError } = await supabase.rpc('add_bonus_credits', {
+    p_user_id: referralCode.user_id,
+    p_credits: BONUS_CREDITS,
   });
 
   if (referrerError) {
@@ -143,9 +143,9 @@ export async function applyReferralCode(
   }
 
   // Grant bonus credits to referred user
-  const { error: referredError } = await supabase.rpc('increment_credits_bonus', {
-    target_user_id: newUserId,
-    amount: BONUS_CREDITS,
+  const { error: referredError } = await supabase.rpc('add_bonus_credits', {
+    p_user_id: newUserId,
+    p_credits: BONUS_CREDITS,
   });
 
   if (referredError) {

@@ -57,20 +57,20 @@ function buildFeatureValues(
   // Build all features with descriptive string values for included features,
   // and boolean false for excluded ones (composite renders ✓/— accordingly).
   return [
-    { featureId: 'creditsMonth', value: `${plan.credits_per_month} créditos/mês` },
+    { featureId: 'creditsMonth', value: t('pricing.creditsPerMonth', { defaultValue: `${plan.credits_per_month} créditos/mês`, count: plan.credits_per_month }) },
     {
       featureId: 'caseAnalyses',
       value:
         plan.cases_per_month === -1
-          ? `${unlimited} análises de caso`
-          : `~${plan.cases_per_month} análises de caso`,
+          ? t('pricing.unlimitedCaseAnalyses', { defaultValue: `${unlimited} análises de caso` })
+          : t('pricing.caseAnalyses', { defaultValue: `~${plan.cases_per_month} análises de caso`, count: plan.cases_per_month }),
     },
     {
       featureId: 'dsdSimulations',
       value:
         plan.dsd_simulations_per_month === -1
-          ? `${unlimited} simulações DSD`
-          : `~${plan.dsd_simulations_per_month} simulações DSD`,
+          ? t('pricing.unlimitedDsdSimulations', { defaultValue: `${unlimited} simulações DSD` })
+          : t('pricing.dsdSimulations', { defaultValue: `~${plan.dsd_simulations_per_month} simulações DSD`, count: plan.dsd_simulations_per_month }),
     },
     {
       featureId: 'creditRollover',
@@ -84,7 +84,7 @@ function buildFeatureValues(
           ? `${label('maxRollover')}: ${unlimited}`
           : false,
     },
-    { featureId: 'users', value: `${plan.max_users} ${plan.max_users === 1 ? 'usuário' : 'usuários'}` },
+    { featureId: 'users', value: t('pricing.users', { defaultValue: `${plan.max_users} ${plan.max_users === 1 ? 'usuário' : 'usuários'}`, count: plan.max_users }) },
     {
       featureId: 'prioritySupport',
       value: plan.priority_support ? label('prioritySupport') : false,
@@ -263,6 +263,20 @@ export default function Pricing() {
     },
     [plans, subscription?.plan_id, checkout],
   );
+
+  // Error state — plans failed to load
+  if (!isLoading && plans.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 space-y-4">
+        <p className="text-muted-foreground">
+          {t('pricing.loadError', { defaultValue: 'Não foi possível carregar os planos. Tente novamente.' })}
+        </p>
+        <Button variant="outline" onClick={() => window.location.reload()}>
+          {t('common.tryAgain', { defaultValue: 'Tentar novamente' })}
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">

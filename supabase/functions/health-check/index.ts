@@ -41,12 +41,12 @@ Deno.serve(async (req: Request) => {
       geminiResult = { error: "GOOGLE_AI_API_KEY not set" };
     } else {
       try {
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent`;
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 30000);
         const response = await fetch(geminiUrl, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
           body: JSON.stringify({
             contents: [{ role: "user", parts: [{ text: "Reply with just: OK" }] }],
             generationConfig: { temperature: 0.1, maxOutputTokens: 10, thinkingConfig: { thinkingLevel: "minimal" } },
@@ -68,12 +68,12 @@ Deno.serve(async (req: Request) => {
       geminiResult = { error: "GOOGLE_AI_API_KEY not set" };
     } else {
       try {
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent`;
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 30000);
         const response = await fetch(geminiUrl, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
           body: JSON.stringify({
             contents: [{ role: "user", parts: [{ text: "The answer is 42. Return it." }] }],
             generationConfig: { temperature: 0.1, maxOutputTokens: 100, thinkingConfig: { thinkingLevel: "low" } },
@@ -111,13 +111,13 @@ Deno.serve(async (req: Request) => {
           geminiResult = { error: "POST body must include imageBase64" };
         } else {
           const imageSizeKB = Math.round(imageData.length / 1024);
-          const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+          const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent`;
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 55000);
 
           const response = await fetch(geminiUrl, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
             body: JSON.stringify({
               contents: [{ role: "user", parts: [
                 { text: "Describe this dental photo briefly (1 sentence)." },
@@ -165,7 +165,7 @@ Deno.serve(async (req: Request) => {
           geminiResult = { error: "POST body must include imageBase64" };
         } else {
           const imageSizeKB = Math.round(imageData.length / 1024);
-          const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+          const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent`;
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 55000);
 
@@ -181,7 +181,7 @@ Deno.serve(async (req: Request) => {
 
           const response = await fetch(geminiUrl, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
             body: JSON.stringify({
               contents: [{ role: "user", parts: [
                 { text: "Analyze this dental photo. Use the tool to return structured results." },
@@ -216,7 +216,9 @@ Deno.serve(async (req: Request) => {
     db: dbOk,
     latency_ms: latencyMs,
     timestamp: new Date().toISOString(),
-    ...(Object.keys(geminiResult).length > 0 && { gemini: geminiResult }),
+    ...(Object.keys(geminiResult).length > 0 && {
+      gemini: { ok: !Object.values(geminiResult).some((v: any) => v?.error) },
+    }),
   };
 
   return new Response(JSON.stringify(responseBody, null, 2), {

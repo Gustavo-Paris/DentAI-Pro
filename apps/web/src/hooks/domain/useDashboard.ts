@@ -4,11 +4,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { evaluations, patients, profiles } from '@/data';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useWizardDraft, WizardDraft } from '@/hooks/useWizardDraft';
+import { sendEmail } from '@/data/email';
 import { WELCOME_STORAGE_KEY } from '@/lib/branding';
 import { QUERY_STALE_TIMES } from '@/lib/constants';
 import { normalizeTreatmentType } from '@/lib/treatment-config';
 import i18n from '@/lib/i18n';
-import { format, startOfWeek, endOfWeek, subDays } from 'date-fns';
+import { format, startOfWeek, endOfWeek, subDays, startOfMonth, subMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 // ---------------------------------------------------------------------------
@@ -21,6 +22,7 @@ export interface ClinicalInsights {
   topResins: Array<{ name: string; count: number }>;
   inventoryRate: number;
   totalEvaluated: number;
+  avgCompletionHours: number | null;
 }
 
 export interface WeeklyTrendPoint {
@@ -83,6 +85,10 @@ export interface DashboardState {
   // Insights
   clinicalInsights: ClinicalInsights | null;
   weeklyTrends: WeeklyTrendPoint[];
+
+  // Patient growth
+  patientsThisMonth: number;
+  patientGrowth: number | null;
 
   // Welcome modal
   showWelcome: boolean;
@@ -214,6 +220,22 @@ function computeInsights(
     value: weekMap.get(key) || 0,
   }));
 
+  // 5. Average time between creation and "now" for completed evaluations
+  // (approximation since we don't have completed_at)
+  const completionTimes: number[] = [];
+  for (const row of rows) {
+    if (row.created_at) {
+      const created = new Date(row.created_at).getTime();
+      const diffHours = (Date.now() - created) / (1000 * 60 * 60);
+      if (diffHours > 0 && diffHours < 720) { // Only count < 30 days
+        completionTimes.push(diffHours);
+      }
+    }
+  }
+  const avgCompletionHours = completionTimes.length > 0
+    ? Math.round(completionTimes.reduce((a, b) => a + b, 0) / completionTimes.length)
+    : null;
+
   return {
     clinicalInsights: {
       treatmentDistribution,
@@ -221,6 +243,7 @@ function computeInsights(
       topResins,
       inventoryRate,
       totalEvaluated: rows.length,
+      avgCompletionHours,
     },
     weeklyTrends,
   };
@@ -311,11 +334,17 @@ export function useDashboard(): DashboardState {
     queryKey: dashboardQueryKeys.counts(user?.id),
     queryFn: async () => {
       if (!user) throw new Error('User not authenticated');
-      const [totalCases, totalPatients] = await Promise.all([
+      const thisMonthStart = startOfMonth(new Date());
+      const lastMonthStart = startOfMonth(subMonths(new Date(), 1));
+      const [totalCases, totalPatients, patientsThisMonth, patientsSinceLastMonth] = await Promise.all([
         evaluations.countByUserId(user.id),
         patients.countByUserId(user.id),
+        patients.countByUserIdSince(user.id, thisMonthStart),
+        patients.countByUserIdSince(user.id, lastMonthStart),
       ]);
-      return { totalCases, totalPatients };
+      // "last month only" = patients since lastMonthStart minus patients since thisMonthStart
+      const patientsLastMonth = patientsSinceLastMonth - patientsThisMonth;
+      return { totalCases, totalPatients, patientsThisMonth, patientsLastMonth };
     },
     enabled: !!user,
     staleTime: QUERY_STALE_TIMES.MEDIUM,
@@ -325,8 +354,8 @@ export function useDashboard(): DashboardState {
     queryKey: dashboardQueryKeys.insights(user?.id),
     queryFn: async () => {
       if (!user) throw new Error('User not authenticated');
-      const raw = await evaluations.getDashboardInsights({ userId: user.id, weeksBack: 8 });
-      return computeInsights(raw as RawInsightRow[], 8);
+      const raw = await evaluations.getDashboardInsights({ userId: user.id, weeksBack: 26 });
+      return computeInsights(raw as RawInsightRow[], 26);
     },
     enabled: !!user,
     staleTime: QUERY_STALE_TIMES.MEDIUM,
@@ -405,6 +434,25 @@ export function useDashboard(): DashboardState {
     !isFree &&
     creditsRemaining <= 5;
 
+  // --- Low-credit warning email (fire-and-forget, once per session) ---
+  useEffect(() => {
+    if (
+      !loadingCredits &&
+      isActive &&
+      !isFree &&
+      creditsRemaining > 0 &&
+      creditsRemaining <= 5 &&
+      creditsPerMonth > 0 &&
+      !sessionStorage.getItem('credit-warning-sent')
+    ) {
+      sessionStorage.setItem('credit-warning-sent', 'true');
+      sendEmail('credit-warning', {
+        remaining: creditsRemaining,
+        total: creditsPerMonth,
+      }).catch(() => {}); // Fire-and-forget
+    }
+  }, [loadingCredits, isActive, isFree, creditsRemaining, creditsPerMonth]);
+
   // --- Actions ---
   const dismissWelcome = useCallback(() => {
     setWelcomeDismissed(true);
@@ -430,6 +478,13 @@ export function useDashboard(): DashboardState {
     setShowDiscardConfirm(false);
   }, []);
 
+  // --- Patient growth ---
+  const patientsThisMonth = countsData?.patientsThisMonth ?? 0;
+  const patientsLastMonth = countsData?.patientsLastMonth ?? 0;
+  const patientGrowth = patientsLastMonth > 0
+    ? Math.round(((patientsThisMonth - patientsLastMonth) / patientsLastMonth) * 100)
+    : null;
+
   return {
     firstName,
     avatarUrl,
@@ -453,6 +508,8 @@ export function useDashboard(): DashboardState {
     showDiscardConfirm,
     clinicalInsights: insightsData?.clinicalInsights ?? null,
     weeklyTrends: insightsData?.weeklyTrends ?? [],
+    patientsThisMonth,
+    patientGrowth,
     creditsPerMonth,
     isActive,
     isFree,

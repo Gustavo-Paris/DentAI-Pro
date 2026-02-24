@@ -50,7 +50,10 @@ export async function getSignedPhotoUrl(
   const { data, error } = await supabase.storage
     .from('clinical-photos')
     .createSignedUrl(path, expiresIn);
-  if (error) return null;
+  if (error) {
+    console.warn(`[storage] Failed to get signed URL for ${path}:`, error.message);
+    return null;
+  }
   return data?.signedUrl || null;
 }
 
@@ -65,7 +68,10 @@ export async function getSignedDSDUrl(
   const { data, error } = await supabase.storage
     .from('dsd-simulations')
     .createSignedUrl(path, expiresIn);
-  if (error) return null;
+  if (error) {
+    console.warn(`[storage] Failed to get signed URL for ${path}:`, error.message);
+    return null;
+  }
   return data?.signedUrl || null;
 }
 
@@ -76,9 +82,13 @@ export async function getSignedDSDLayerUrls(
   const urls: Record<string, string> = {};
   await Promise.all(
     paths.map(async (path) => {
-      const { data } = await supabase.storage
+      const { data, error } = await supabase.storage
         .from('dsd-simulations')
         .createSignedUrl(path, expiresIn);
+      if (error) {
+        console.warn(`[storage] Failed to get signed URL for ${path}:`, error.message);
+        return;
+      }
       if (data?.signedUrl) {
         urls[path] = data.signedUrl;
       }

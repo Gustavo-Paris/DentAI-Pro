@@ -146,7 +146,9 @@ Deno.serve(async (req) => {
           .eq('session_id', currentEval.session_id)
           .eq('tooth', contralateralTooth)
           .eq('user_id', data.userId)
-          .not('stratification_protocol', 'is', null);
+          .not('stratification_protocol', 'is', null)
+          .eq('treatment_type', 'resina')
+          .eq('cavity_class', data.cavityClass);
 
         if (currentEval.patient_id) {
           contraQuery = contraQuery.eq('patient_id', currentEval.patient_id);
@@ -510,6 +512,7 @@ Deno.serve(async (req) => {
           idealResin: idealResin,
           idealReason: recommendation.ideal_reason,
           protocol: protocol || null,
+          protocol_incomplete: !recommendation.protocol,
         },
       }),
       {

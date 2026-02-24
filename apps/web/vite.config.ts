@@ -1,6 +1,8 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
+import { VitePWA } from "vite-plugin-pwa";
 import { visualizer } from "rollup-plugin-visualizer";
+import { sentryVitePlugin } from '@sentry/vite-plugin';
 import path from "path";
 
 // https://vitejs.dev/config/
@@ -14,9 +16,35 @@ export default defineConfig(() => ({
   },
   plugins: [
     react(),
+    VitePWA({
+      registerType: 'prompt',
+      includeAssets: ['favicon.svg', 'icon-192.png', 'icon-512.png'],
+      manifest: false,
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        globIgnores: ['**/vendor-heic-*.js'],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/fonts\.googleapis\.com/,
+            handler: 'StaleWhileRevalidate',
+            options: { cacheName: 'google-fonts-stylesheets' },
+          },
+        ],
+      },
+    }),
     ...(process.env.ANALYZE === "true"
       ? [visualizer({ filename: "dist/stats.html", open: true })]
       : []),
+    ...(process.env.SENTRY_AUTH_TOKEN ? [
+      sentryVitePlugin({
+        org: process.env.SENTRY_ORG,
+        project: process.env.SENTRY_PROJECT,
+        authToken: process.env.SENTRY_AUTH_TOKEN,
+        sourcemaps: {
+          filesToDeleteAfterUpload: ['**/*.map'],
+        },
+      }),
+    ] : []),
   ],
   resolve: {
     alias: {
@@ -27,6 +55,7 @@ export default defineConfig(() => ({
     exclude: ['@parisgroup-ai/domain-odonto-ai'],
   },
   build: {
+    sourcemap: 'hidden', // Generate for Sentry upload, don't serve publicly
     rollupOptions: {
       output: {
         manualChunks: {
@@ -76,6 +105,6 @@ export default defineConfig(() => ({
       },
     },
     // Suppress warnings for intentionally large chunks (PDF/HEIC are lazy loaded)
-    chunkSizeWarningLimit: 600,
+    chunkSizeWarningLimit: 500,
   },
 }));

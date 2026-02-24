@@ -284,12 +284,16 @@ export function useResult() {
         clinicLogoBase64 = await fetchImageAsBase64(logoPublicUrl);
       }
 
-      const [photoFrontalBase64, photo45Base64, photoFaceBase64, dsdSimBase64] = await Promise.all([
+      const imageResults = await Promise.allSettled([
         photoUrls.frontal ? fetchImageAsBase64(photoUrls.frontal) : Promise.resolve(null),
         photoUrls.angle45 ? fetchImageAsBase64(photoUrls.angle45) : Promise.resolve(null),
         photoUrls.face ? fetchImageAsBase64(photoUrls.face) : Promise.resolve(null),
         dsdSimulationUrl ? fetchImageAsBase64(dsdSimulationUrl) : Promise.resolve(null),
       ]);
+
+      const [photoFrontalBase64, photo45Base64, photoFaceBase64, dsdSimBase64] = imageResults.map(
+        (r) => (r.status === 'fulfilled' ? r.value : null),
+      );
 
       const { generateProtocolPDF } = await import('@/lib/generatePDF');
 

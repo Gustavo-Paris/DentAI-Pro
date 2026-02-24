@@ -13,6 +13,8 @@ import {
   creditWarningEmail,
   weeklyDigestEmail,
   accountDeletedEmail,
+  paymentReceivedEmail,
+  paymentFailedEmail,
 } from "../_shared/email.ts";
 
 /**
@@ -29,13 +31,15 @@ import {
  * Auth: Bearer token validated via supabase.auth.getUser().
  */
 
-type TemplateName = "welcome" | "credit-warning" | "weekly-digest" | "account-deleted";
+type TemplateName = "welcome" | "credit-warning" | "weekly-digest" | "account-deleted" | "payment-received" | "payment-failed";
 
 const VALID_TEMPLATES: TemplateName[] = [
   "welcome",
   "credit-warning",
   "weekly-digest",
   "account-deleted",
+  "payment-received",
+  "payment-failed",
 ];
 
 Deno.serve(withErrorBoundary(async (req) => {
@@ -125,19 +129,37 @@ Deno.serve(withErrorBoundary(async (req) => {
       emailContent = accountDeletedEmail(userName);
       break;
 
+    case "payment-received": {
+      const amount = String(body.data?.amount ?? "");
+      const invoiceUrl = body.data?.invoiceUrl as string | null ?? null;
+      emailContent = paymentReceivedEmail(userName, amount, invoiceUrl);
+      break;
+    }
+
+    case "payment-failed": {
+      const amount = String(body.data?.amount ?? "");
+      emailContent = paymentFailedEmail(userName, amount);
+      break;
+    }
+
     default:
       return createErrorResponse("Template desconhecido", 400, corsHeaders);
   }
 
   // Send
-  await sendEmail({
-    to: userEmail,
-    subject: emailContent.subject,
-    html: emailContent.html,
-  });
+  try {
+    await sendEmail({
+      to: userEmail,
+      subject: emailContent.subject,
+      html: emailContent.html,
+    });
+  } catch (err) {
+    logger.error(`[${reqId}] sendEmail failed: template="${template}" error="${(err as Error).message}"`);
+    return createErrorResponse('Falha ao enviar email. Tente novamente mais tarde.', 502, corsHeaders, undefined, reqId);
+  }
 
   logger.important(
-    `[${reqId}] Email sent: template="${template}" to="${userEmail}"`,
+    `[${reqId}] Email sent: template="${template}" to=user ${user.id}`,
   );
 
   return new Response(

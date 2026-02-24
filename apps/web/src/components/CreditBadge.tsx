@@ -30,19 +30,19 @@ export const CreditBadge = memo(function CreditBadge({ variant = 'compact', clas
   const colorClass = isCritical
     ? 'text-destructive'
     : isLow
-      ? 'text-warning'
+      ? 'text-amber-700 dark:text-amber-400'
       : 'text-muted-foreground';
 
   const bgClass = isCritical
     ? 'bg-destructive/10 dark:bg-destructive/10'
     : isLow
-      ? 'bg-warning/10 dark:bg-warning/10'
+      ? 'bg-amber-50 dark:bg-amber-900/20'
       : 'bg-secondary/50';
 
   const barColor = isCritical
     ? 'bg-destructive'
     : isLow
-      ? 'bg-warning'
+      ? 'bg-amber-500'
       : 'bg-primary';
 
   if (variant === 'compact') {

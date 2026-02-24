@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/data';
-import { profiles, payments, subscriptions, privacy, storage } from '@/data';
+import { profiles, payments, subscriptions, privacy, storage, evaluations, email } from '@/data';
 import type { ProfileFull } from '@/data/profiles';
 import type { DataExport, DeleteAccountResult } from '@/data/privacy';
 import { toast } from 'sonner';
@@ -27,6 +27,7 @@ export interface ProfileState {
   isUploadingLogo: boolean;
   paymentRecords: PaymentRecord[] | undefined;
   isLoadingPayments: boolean;
+  sendingDigest: boolean;
 }
 
 export interface PaymentRecord {
@@ -34,8 +35,10 @@ export interface PaymentRecord {
   amount: number;
   currency: string;
   status: string;
-  created_at: string;
+  description: string | null;
+  invoice_url: string | null;
   invoice_pdf: string | null;
+  created_at: string;
 }
 
 export interface ProfileActions {
@@ -48,6 +51,7 @@ export interface ProfileActions {
   syncCreditPurchase: () => Promise<{ synced: boolean; credits_added: number; sessions_processed: number }>;
   exportData: () => Promise<DataExport>;
   deleteAccount: (confirmation: string) => Promise<DeleteAccountResult>;
+  sendWeeklyDigest: () => Promise<void>;
 }
 
 // ---------------------------------------------------------------------------
@@ -87,6 +91,7 @@ export function useProfile(): ProfileState & ProfileActions {
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [sendingDigest, setSendingDigest] = useState(false);
 
   // ---- Queries ----
   const { data: profileData, isLoading: loadingProfile } = useQuery({
@@ -157,6 +162,7 @@ export function useProfile(): ProfileState & ProfileActions {
           }
           if (i < attempts - 1) await new Promise(r => setTimeout(r, delay));
         }
+        logger.warn('Stripe subscription sync failed after all retries');
         refreshSubscription();
       };
       syncWithRetry();
@@ -274,6 +280,27 @@ export function useProfile(): ProfileState & ProfileActions {
     }
   }, [user, profileForm.clinic_logo_url, t]);
 
+  const sendWeeklyDigest = useCallback(async () => {
+    if (!user) return;
+    setSendingDigest(true);
+    try {
+      const [metrics, totalCases] = await Promise.all([
+        evaluations.getDashboardMetrics({ userId: user.id }),
+        evaluations.countByUserId(user.id),
+      ]);
+      await email.sendEmail('weekly-digest', {
+        casesThisWeek: metrics.weeklySessionCount,
+        totalCases,
+        pendingTeeth: metrics.pendingTeethCount,
+      });
+      toast.success(t('profile.digestSent', { defaultValue: 'Resumo semanal enviado!' }));
+    } catch {
+      toast.error(t('profile.digestError', { defaultValue: 'Erro ao enviar resumo' }));
+    } finally {
+      setSendingDigest(false);
+    }
+  }, [user, t]);
+
   return {
     profile: profileForm,
     isLoading: loadingProfile,
@@ -294,5 +321,7 @@ export function useProfile(): ProfileState & ProfileActions {
     syncCreditPurchase,
     exportData,
     deleteAccount,
+    sendWeeklyDigest,
+    sendingDigest,
   };
 }

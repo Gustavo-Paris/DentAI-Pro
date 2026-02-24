@@ -27,6 +27,7 @@ function safeNormalizeTreatment(
  * - Normalizes tooth fields with defaults
  * - Uses global treatment_indication as fallback for individual teeth
  * - Deduplicates teeth by tooth number
+ * - Strips suspected false-positive diastema diagnoses
  * - Filters out lower teeth when photo predominantly shows upper arch
  * - Removes Black classification for aesthetic cases
  * - Sorts by priority
@@ -69,6 +70,58 @@ export function processAnalysisResult(analysisResult: PhotoAnalysisResult): Phot
     seenToothNumbers.add(t.tooth);
     return true;
   });
+
+  // Safety net: Strip suspected false-positive diastema diagnoses.
+  // The AI sometimes hallucinates diastemas from interproximal shadows or lighting artifacts.
+  // Apply stricter validation since diastema requires high-confidence visual evidence.
+  const diastemaTeetIdx: number[] = [];
+  for (let i = 0; i < detectedTeeth.length; i++) {
+    const t = detectedTeeth[i];
+    const reason = (t.indication_reason || '').toLowerCase();
+    const notes = (t.notes || '').toLowerCase();
+    const cavClass = (t.cavity_class || '').toLowerCase();
+    if (reason.includes('diastema') || notes.includes('diastema') || cavClass.includes('diastema')) {
+      diastemaTeetIdx.push(i);
+    }
+  }
+
+  let filteredDiastemaWarning: string | null = null;
+
+  if (diastemaTeetIdx.length > 0) {
+    const analysisConfidence = analysisResult.confidence ?? 0;
+    const removedDiastemaTeeth: string[] = [];
+
+    // Rule 1: Low confidence — strip all diastema diagnoses.
+    // Diastema requires unequivocal visual evidence (high confidence).
+    if (analysisConfidence < 80) {
+      for (const idx of diastemaTeetIdx.reverse()) {
+        const tooth = detectedTeeth[idx];
+        logger.warn(`Post-processing: removing diastema diagnosis for tooth ${tooth.tooth} — overall confidence ${analysisConfidence}% < 80% threshold`);
+        removedDiastemaTeeth.push(tooth.tooth);
+        detectedTeeth.splice(idx, 1);
+      }
+    } else {
+      // Rule 2: Central incisors (11/21) — require BOTH to mention diastema.
+      // A diastema between 11 and 21 MUST be detected on BOTH teeth.
+      // If only one mentions it, it's likely a shadow/artifact.
+      const centralDiastema = diastemaTeetIdx.filter(i => {
+        const num = detectedTeeth[i]?.tooth;
+        return num === '11' || num === '21';
+      });
+
+      if (centralDiastema.length === 1) {
+        const idx = centralDiastema[0];
+        const tooth = detectedTeeth[idx];
+        logger.warn(`Post-processing: removing suspected false diastema for tooth ${tooth.tooth} — contralateral central incisor not diagnosed with diastema`);
+        removedDiastemaTeeth.push(tooth.tooth);
+        detectedTeeth.splice(idx, 1);
+      }
+    }
+
+    if (removedDiastemaTeeth.length > 0) {
+      filteredDiastemaWarning = `Diastema em dente(s) ${removedDiastemaTeeth.join(', ')} removido da análise — confiança insuficiente para diagnóstico. Verifique manualmente.`;
+    }
+  }
 
   // Filter out lower teeth when photo predominantly shows upper arch
   // This is a backend guardrail because the AI sometimes ignores prompt rules
@@ -159,6 +212,11 @@ export function processAnalysisResult(analysisResult: PhotoAnalysisResult): Phot
   // Add warning about filtered lower teeth
   if (filteredLowerWarning) {
     result.warnings.push(filteredLowerWarning);
+  }
+
+  // Add warning about stripped diastema false positives
+  if (filteredDiastemaWarning) {
+    result.warnings.push(filteredDiastemaWarning);
   }
 
   // Add warning if multiple teeth detected

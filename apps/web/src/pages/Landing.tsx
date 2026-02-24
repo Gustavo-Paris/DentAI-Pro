@@ -412,50 +412,73 @@ export default function Landing() {
   );
 }
 
-// Static fallback plans for when Supabase query fails (anonymous landing page)
+// Static fallback plans for when Supabase query fails (anonymous landing page).
+// Description and feature i18n keys are resolved at render time via t().
 const LANDING_FALLBACK_PLANS = [
   {
     id: 'free',
     name: 'Free',
-    description: 'Para experimentar',
+    descriptionKey: 'pricing.fallback.freeDesc',
+    descriptionDefault: 'Para experimentar',
     price_monthly: 0,
     credits_per_month: 5,
     max_users: 1,
     allows_rollover: false,
-    features: ['5 créditos/mês', 'Recomendação de resina', 'Análise com IA'],
+    featureKeys: [
+      { key: 'pricing.fallback.freeFeature1', defaultValue: '5 créditos/mês' },
+      { key: 'pricing.fallback.freeFeature2', defaultValue: 'Recomendação de resina' },
+      { key: 'pricing.fallback.freeFeature3', defaultValue: 'Análise com IA' },
+    ],
     isPopular: false,
   },
   {
     id: 'starter',
     name: 'Starter',
-    description: 'Para dentistas individuais',
+    descriptionKey: 'pricing.fallback.starterDesc',
+    descriptionDefault: 'Para dentistas individuais',
     price_monthly: 5900,
     credits_per_month: 30,
     max_users: 1,
     allows_rollover: false,
-    features: ['30 créditos/mês', 'Protocolos completos', 'Export PDF'],
+    featureKeys: [
+      { key: 'pricing.fallback.starterFeature1', defaultValue: '30 créditos/mês' },
+      { key: 'pricing.fallback.starterFeature2', defaultValue: 'Protocolos completos' },
+      { key: 'pricing.fallback.starterFeature3', defaultValue: 'Export PDF' },
+    ],
     isPopular: false,
   },
   {
     id: 'pro',
     name: 'Pro',
-    description: 'Para consultórios',
+    descriptionKey: 'pricing.fallback.proDesc',
+    descriptionDefault: 'Para consultórios',
     price_monthly: 11900,
     credits_per_month: 80,
     max_users: 3,
     allows_rollover: true,
-    features: ['80 créditos/mês', 'Rollover de créditos', 'DSD Simulações', 'Até 3 usuários'],
+    featureKeys: [
+      { key: 'pricing.fallback.proFeature1', defaultValue: '80 créditos/mês' },
+      { key: 'pricing.fallback.proFeature2', defaultValue: 'Rollover de créditos' },
+      { key: 'pricing.fallback.proFeature3', defaultValue: 'DSD Simulações' },
+      { key: 'pricing.fallback.proFeature4', defaultValue: 'Até 3 usuários' },
+    ],
     isPopular: true,
   },
   {
     id: 'elite',
     name: 'Elite',
-    description: 'Para clínicas',
+    descriptionKey: 'pricing.fallback.eliteDesc',
+    descriptionDefault: 'Para clínicas',
     price_monthly: 24900,
     credits_per_month: 200,
     max_users: 10,
     allows_rollover: true,
-    features: ['200 créditos/mês', 'Rollover ilimitado', 'Suporte prioritário', 'Até 10 usuários'],
+    featureKeys: [
+      { key: 'pricing.fallback.eliteFeature1', defaultValue: '200 créditos/mês' },
+      { key: 'pricing.fallback.eliteFeature2', defaultValue: 'Rollover ilimitado' },
+      { key: 'pricing.fallback.eliteFeature3', defaultValue: 'Suporte prioritário' },
+      { key: 'pricing.fallback.eliteFeature4', defaultValue: 'Até 10 usuários' },
+    ],
     isPopular: false,
   },
 ] as const;
@@ -592,7 +615,7 @@ function LandingPricing() {
                   )}
                   <CardHeader className="text-center pb-2">
                     <CardTitle className="text-xl">{plan.name}</CardTitle>
-                    <CardDescription>{plan.description}</CardDescription>
+                    <CardDescription>{t(plan.descriptionKey, { defaultValue: plan.descriptionDefault })}</CardDescription>
                   </CardHeader>
                   <CardContent className="flex-1">
                     <div className="text-center mb-4">
@@ -610,10 +633,10 @@ function LandingPricing() {
                       </div>
                     </div>
                     <ul className="space-y-2">
-                      {plan.features.map((feature, index) => (
+                      {plan.featureKeys.map((feature, index) => (
                         <li key={index} className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                          <span className="text-sm">{feature}</span>
+                          <span className="text-sm">{t(feature.key, { defaultValue: feature.defaultValue })}</span>
                         </li>
                       ))}
                     </ul>

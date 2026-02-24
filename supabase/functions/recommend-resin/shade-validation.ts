@@ -1,4 +1,5 @@
 import { logger } from "../_shared/logger.ts";
+import { ResinCatalogRowSchema } from "../_shared/aiSchemas.ts";
 
 interface ShadeValidationParams {
   // deno-lint-ignore no-explicit-any
@@ -132,7 +133,16 @@ export async function validateAndFixProtocolLayers({
       .from("resin_catalog")
       .select("shade, type, product_line")
       .or(orFilter);
-    if (rows) catalogRows.push(...rows);
+    if (rows) {
+      for (const row of rows) {
+        const parsed = ResinCatalogRowSchema.safeParse(row);
+        if (parsed.success) {
+          catalogRows.push(parsed.data);
+        } else {
+          logger.warn(`Invalid resin catalog row skipped: ${JSON.stringify(row)}`);
+        }
+      }
+    }
   }
 
   // Build in-memory indexes for O(1) lookups

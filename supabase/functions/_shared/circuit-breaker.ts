@@ -5,6 +5,27 @@
 
 import { logger } from "./logger.ts";
 
+/**
+ * Circuit breaker for Supabase Edge Functions AI API calls.
+ *
+ * State is per-isolate (module scope) — each Deno cold start resets the
+ * breaker to "closed". This is acceptable for soft-launch scale where
+ * isolate lifetimes are short and traffic is low.
+ *
+ * For production scale, consider externalising state to Redis or a
+ * Supabase row so the breaker survives isolate restarts and is shared
+ * across all instances.
+ *
+ * Thresholds are configurable via environment variables:
+ *   CB_FAILURE_THRESHOLD  – failures before opening (default 3)
+ *   CB_RESET_TIMEOUT_MS   – ms before half-open probe  (default 30 000)
+ *   CB_FAILURE_WINDOW_MS  – sliding window for failures (default 60 000)
+ */
+
+const FAILURE_THRESHOLD = parseInt(Deno.env.get('CB_FAILURE_THRESHOLD') || '3', 10);
+const RESET_TIMEOUT_MS = parseInt(Deno.env.get('CB_RESET_TIMEOUT_MS') || '30000', 10);
+const FAILURE_WINDOW_MS = parseInt(Deno.env.get('CB_FAILURE_WINDOW_MS') || '60000', 10);
+
 interface CircuitBreakerState {
   consecutiveFailures: number;
   state: "closed" | "open" | "half-open";
@@ -27,9 +48,9 @@ export function createCircuitBreaker(
     consecutiveFailures: 0,
     state: "closed",
     openedAt: 0,
-    failureThreshold: 3,
-    resetTimeoutMs: 30_000,
-    failureWindowMs: 60_000,
+    failureThreshold: FAILURE_THRESHOLD,
+    resetTimeoutMs: RESET_TIMEOUT_MS,
+    failureWindowMs: FAILURE_WINDOW_MS,
     firstFailureAt: 0,
   };
 

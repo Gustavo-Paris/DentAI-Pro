@@ -254,7 +254,7 @@ export async function syncGroupProtocols(
   const { data: evaluations, error } = await supabase
     .from('evaluations')
     .select(
-      'id, treatment_type, stratification_protocol, cementation_protocol, ' +
+      'id, treatment_type, cavity_class, stratification_protocol, cementation_protocol, ' +
       'recommended_resin_id, recommendation_text, alternatives, ' +
       'is_from_inventory, ideal_resin_id, ideal_reason, ' +
       'has_inventory_at_creation, protocol_layers, alerts, warnings',
@@ -264,10 +264,10 @@ export async function syncGroupProtocols(
 
   if (error || !evaluations || evaluations.length < 2) return;
 
-  // Group by treatment_type
+  // Group by treatment_type + cavity_class
   const groups: Record<string, typeof evaluations> = {};
   for (const ev of evaluations) {
-    const tt = ev.treatment_type as string;
+    const tt = `${ev.treatment_type}::${(ev as Record<string, unknown>).cavity_class || 'unknown'}`;
     if (!groups[tt]) groups[tt] = [];
     groups[tt].push(ev);
   }
@@ -277,7 +277,7 @@ export async function syncGroupProtocols(
   for (const [treatmentType, group] of Object.entries(groups)) {
     if (group.length < 2) continue;
 
-    if (treatmentType === 'resina') {
+    if (treatmentType.startsWith('resina::')) {
       const source = group.find((ev) => ev.stratification_protocol != null);
       if (!source) continue;
 
@@ -292,7 +292,7 @@ export async function syncGroupProtocols(
           supabase.from('evaluations').update(syncData).in('id', targetIds),
         );
       }
-    } else if (treatmentType === 'porcelana') {
+    } else if (treatmentType.startsWith('porcelana::')) {
       const source = group.find((ev) => ev.cementation_protocol != null);
       if (!source) continue;
 

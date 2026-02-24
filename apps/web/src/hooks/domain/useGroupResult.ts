@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -73,8 +73,6 @@ export function useGroupResult() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { t } = useTranslation();
-
-  const [generatingPDF, setGeneratingPDF] = useState(false);
 
   // Load all evaluations for the session
   const { data: allEvaluations, isLoading, isError, error } = useQuery({
@@ -244,6 +242,5 @@ export function useGroupResult() {
     // Actions
     handleChecklistChange,
     handleMarkAllCompleted,
-    generatingPDF,
   };
 }

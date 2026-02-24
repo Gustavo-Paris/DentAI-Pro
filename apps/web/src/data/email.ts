@@ -9,7 +9,9 @@ export type EmailTemplate =
   | 'welcome'
   | 'credit-warning'
   | 'weekly-digest'
-  | 'account-deleted';
+  | 'account-deleted'
+  | 'payment-received'
+  | 'payment-failed';
 
 export interface SendEmailResult {
   success: boolean;

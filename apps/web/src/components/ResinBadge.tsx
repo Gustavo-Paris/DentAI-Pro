@@ -62,7 +62,7 @@ function ResinBadgeInner({
         />
       )}
       <span>{shade}</span>
-      <span className="text-[10px] opacity-70">({type})</span>
+      <span className="text-[10px] opacity-80">({type})</span>
     </button>
   );
 }

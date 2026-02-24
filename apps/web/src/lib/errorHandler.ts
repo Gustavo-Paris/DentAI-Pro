@@ -39,7 +39,8 @@ const ERROR_CODE_KEYS: Record<string, string> = {
 };
 
 /** Check if an error message contains internal/sensitive details that shouldn't be shown to users */
-function containsSensitiveInfo(lowerMsg: string): boolean {
+function containsSensitiveInfo(msg: string): boolean {
+  const lower = msg.toLowerCase();
   const sensitivePatterns = [
     'sql', 'select ', 'insert ', 'update ', 'delete from',
     'relation ', 'column ', 'constraint', 'violates',
@@ -48,7 +49,7 @@ function containsSensitiveInfo(lowerMsg: string): boolean {
     'supabase', 'postgres', 'deno', 'edge function',
     'secret', 'key', 'password', 'credential',
   ];
-  return sensitivePatterns.some(p => lowerMsg.includes(p));
+  return sensitivePatterns.some(p => lower.includes(p));
 }
 
 /**
@@ -122,7 +123,7 @@ export function handleSupabaseError(
   let safeMessage: string | null = null;
   if (key) {
     safeMessage = i18n.t(key);
-  } else if (error.message && !containsSensitiveInfo(error.message.toLowerCase()) && error.message.length <= 120) {
+  } else if (error.message && !containsSensitiveInfo(error.message) && error.message.length <= 120) {
     safeMessage = error.message;
   }
   const message = safeMessage || i18n.t('errors.errorContext', { context });

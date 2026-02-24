@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getSharedEvaluation, getSharedDSD, type SharedEvaluationRow, type SharedDSDData } from '@/data/evaluations';
+import { getSharedEvaluation, getSharedDSD, checkSharedLinkStatus, type SharedEvaluationRow, type SharedDSDData } from '@/data/evaluations';
 import { getSignedPhotoUrl, getSignedDSDUrl } from '@/data/storage';
 import { logger } from '@/lib/logger';
 
@@ -7,9 +7,13 @@ import { logger } from '@/lib/logger';
 // Types
 // ---------------------------------------------------------------------------
 
+export type SharedErrorReason = 'expired' | 'not_found' | null;
+
 export interface SharedEvaluationState {
   loading: boolean;
   expired: boolean;
+  /** Distinguishes "link expired" from "link not found" when expired=true */
+  errorReason: SharedErrorReason;
   evaluations: SharedEvaluationRow[];
   dsdData: SharedDSDData | null;
   beforeImageUrl: string | null;
@@ -24,6 +28,7 @@ export interface SharedEvaluationState {
 export function useSharedEvaluation(token: string | undefined): SharedEvaluationState {
   const [loading, setLoading] = useState(true);
   const [expired, setExpired] = useState(false);
+  const [errorReason, setErrorReason] = useState<SharedErrorReason>(null);
   const [evaluations, setEvaluations] = useState<SharedEvaluationRow[]>([]);
   const [dsdData, setDsdData] = useState<SharedDSDData | null>(null);
   const [beforeImageUrl, setBeforeImageUrl] = useState<string | null>(null);
@@ -41,7 +46,10 @@ export function useSharedEvaluation(token: string | undefined): SharedEvaluation
           getSharedDSD(token),
         ]);
         if (rows.length === 0) {
+          // Distinguish expired from not found
+          const status = await checkSharedLinkStatus(token);
           setExpired(true);
+          setErrorReason(status === 'expired' ? 'expired' : 'not_found');
         } else {
           setEvaluations(rows);
           if (dsd) setDsdData(dsd);
@@ -50,6 +58,7 @@ export function useSharedEvaluation(token: string | undefined): SharedEvaluation
         console.error('Error fetching shared evaluation:', error);
         logger.error('Error fetching shared evaluation:', error);
         setExpired(true);
+        setErrorReason('not_found');
       } finally {
         setLoading(false);
       }
@@ -93,6 +102,7 @@ export function useSharedEvaluation(token: string | undefined): SharedEvaluation
   return {
     loading,
     expired,
+    errorReason,
     evaluations,
     dsdData,
     beforeImageUrl,

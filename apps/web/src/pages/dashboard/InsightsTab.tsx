@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ClinicalInsights, WeeklyTrendPoint } from '@/hooks/domain/useDashboard';
 import { Card, Badge, Progress, Skeleton } from '@parisgroup-ai/pageshell/primitives';
@@ -14,6 +15,7 @@ import {
 } from 'recharts';
 import { BarChart3 } from 'lucide-react';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
+import { cn } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
 // Weekly Trends — AreaChart
@@ -234,6 +236,57 @@ function ClinicalStatsCard({
           <span className="text-xs text-muted-foreground">{t('dashboard.insights.weeklyAverage')}</span>
           <span className="text-xs font-medium tabular-nums">{avgPerWeek}</span>
         </div>
+
+        {insights.avgCompletionHours !== null && (
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">
+              {t('dashboard.insights.avgCompletionTime', { defaultValue: 'Tempo medio' })}
+            </span>
+            <span className="text-xs font-medium tabular-nums">
+              {insights.avgCompletionHours < 24
+                ? `${insights.avgCompletionHours}h`
+                : `${Math.round(insights.avgCompletionHours / 24)}d`}
+            </span>
+          </div>
+        )}
+      </Card>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Patient Growth Card
+// ---------------------------------------------------------------------------
+
+function PatientGrowthCard({
+  patientsThisMonth,
+  patientGrowth,
+}: {
+  patientsThisMonth: number;
+  patientGrowth: number | null;
+}) {
+  const { t } = useTranslation();
+  const containerRef = useScrollReveal();
+
+  return (
+    <div ref={containerRef} className="scroll-reveal">
+      <Card className="p-4 shadow-sm rounded-xl">
+        <h3 className="text-sm font-semibold font-display text-muted-foreground mb-3">
+          {t('dashboard.insights.patientGrowth', { defaultValue: 'Pacientes' })}
+        </h3>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-2xl font-semibold tabular-nums">{patientsThisMonth}</p>
+            <p className="text-xs text-muted-foreground">
+              {t('dashboard.insights.thisMonth', { defaultValue: 'este mes' })}
+            </p>
+          </div>
+          {patientGrowth !== null && (
+            <Badge variant={patientGrowth >= 0 ? 'secondary' : 'destructive'} className="text-xs">
+              {patientGrowth >= 0 ? '+' : ''}{patientGrowth}%
+            </Badge>
+          )}
+        </div>
       </Card>
     </div>
   );
@@ -247,12 +300,17 @@ export function InsightsTab({
   clinicalInsights,
   weeklyTrends,
   loading,
+  patientsThisMonth,
+  patientGrowth,
 }: {
   clinicalInsights: ClinicalInsights | null;
   weeklyTrends: WeeklyTrendPoint[];
   loading: boolean;
+  patientsThisMonth: number;
+  patientGrowth: number | null;
 }) {
   const { t } = useTranslation();
+  const [period, setPeriod] = useState<number>(8);
 
   if (!loading && !clinicalInsights && weeklyTrends.length === 0) {
     return (
@@ -266,9 +324,28 @@ export function InsightsTab({
     );
   }
 
+  const filteredTrends = weeklyTrends.slice(-period);
+
   return (
     <div className="space-y-4">
-      <WeeklyTrendsChart data={weeklyTrends} loading={loading} />
+      <div className="flex items-center gap-1 mb-3">
+        {[8, 12, 26].map((w) => (
+          <button
+            key={w}
+            onClick={() => setPeriod(w)}
+            className={cn(
+              'px-3 py-1 rounded-md text-xs font-medium transition-colors',
+              period === w
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+            )}
+          >
+            {w === 26 ? '6 meses' : `${w} sem`}
+          </button>
+        ))}
+      </div>
+
+      <WeeklyTrendsChart data={filteredTrends} loading={loading} />
 
       {clinicalInsights && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -278,8 +355,13 @@ export function InsightsTab({
       )}
 
       {clinicalInsights && (
-        <ClinicalStatsCard insights={clinicalInsights} weeklyTrends={weeklyTrends} />
+        <ClinicalStatsCard insights={clinicalInsights} weeklyTrends={filteredTrends} />
       )}
+
+      <PatientGrowthCard
+        patientsThisMonth={patientsThisMonth}
+        patientGrowth={patientGrowth}
+      />
     </div>
   );
 }
