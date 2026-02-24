@@ -84,13 +84,13 @@ export const ProcessingOverlay = memo(function ProcessingOverlay({
   const overlay = (
     <div
       ref={overlayRef}
-      className="fixed inset-0 bg-background z-50 flex items-center justify-center p-4 pb-[max(1rem,env(safe-area-inset-bottom))] grain-overlay"
+      className="fixed inset-0 bg-background z-50 flex items-center justify-center p-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
       role="dialog"
       aria-modal="true"
       aria-label={displayMessage}
       tabIndex={-1}
     >
-      <Card className="w-full max-w-md rounded-2xl card-elevated animate-[scale-in_0.3s_ease-out]">
+      <Card className="w-full max-w-md rounded-2xl card-elevated grain-overlay animate-[scale-in_0.3s_ease-out]">
         <CardContent className="p-6 flex flex-col items-center text-center">
           <ProgressRing progress={progress} size={100} />
 

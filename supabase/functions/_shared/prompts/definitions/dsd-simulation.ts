@@ -39,10 +39,12 @@ function buildTextureInstruction(): string {
 - Manter/criar PERIQUIMÁCIES (linhas horizontais sutis no esmalte)
 - Preservar REFLEXOS DE LUZ naturais nos pontos de brilho
 - Criar GRADIENTE DE TRANSLUCIDEZ: opaco cervical → translúcido incisal
-- WHITENING UNIFORMIDADE: Todos os dentes visíveis devem atingir o MESMO nível de claridade/brilho após clareamento. Dentes mais escuros/manchados devem receber MAIS clareamento para igualar aos adjacentes. O resultado final deve ter brilho UNIFORME.
-- Permitir variações SUTIS de textura entre dentes (craze lines, periquimácies) mas a COR/BRILHO deve ser uniforme
-- NÃO criar aparência de "porcelana perfeita" ou "dentes de comercial de TV"
-- Preservar micro-textura individual mas equalizar a luminosidade geral`
+- WHITENING COERÊNCIA: Todos os dentes visíveis devem atingir nível SIMILAR de claridade. Dentes mais escuros/manchados recebem mais clareamento para harmonizar com adjacentes.
+- PRESERVAR variação NATURAL entre dentes: pequenas diferenças de tom entre centrais, laterais e caninos são NORMAIS e desejáveis
+- Caninos (13/23) são naturalmente 1-2 tons mais saturados/amarelados que incisivos — MANTER essa diferença relativa
+- NÃO criar aparência de "porcelana perfeita", "dentes de comercial de TV", ou cor UNIFORMEMENTE branca
+- Preservar micro-textura individual (craze lines, periquimácies, variações de translucidez)
+- O resultado deve parecer CLAREAMENTO DENTAL REAL, não facetas de porcelana`
 }
 
 function buildAbsolutePreservation(): string {
@@ -134,10 +136,16 @@ Se você precisa mostrar mais resultado dental, faça isso DENTRO do espaço exi
 }
 
 function buildWhiteningPrioritySection(params: Params): string {
+  const naturalityNote = params.whiteningLevel !== 'hollywood'
+    ? `⚠️ REALISMO OBRIGATÓRIO: O resultado deve parecer CLAREAMENTO DENTAL PROFISSIONAL — NÃO facetas de porcelana.
+- Manter undertones QUENTES (marfim/creme) — dentes NÃO devem ficar azul-brancos ou cinza-brancos
+- Caninos (13/23) ficam naturalmente 1-2 tons mais saturados que incisivos — PRESERVAR essa diferença
+- Bordas incisais devem ter TRANSLUCIDEZ (levemente acinzentadas/translúcidas) — NÃO opacas`
+    : '⚠️ HOLLYWOOD = MAXIMUM BRIGHTNESS. Teeth must be DRAMATICALLY WHITE like porcelain veneers.'
   return `
 #1 TASK - WHITENING (${params.whiteningIntensity}):
 ${params.colorInstruction}
-${params.whiteningLevel === 'hollywood' ? '⚠️ HOLLYWOOD = MAXIMUM BRIGHTNESS. Teeth must be DRAMATICALLY WHITE like porcelain veneers.' : ''}
+${naturalityNote}
 
 `
 }
@@ -176,7 +184,7 @@ VALIDAÇÃO DE QUALIDADE:
 - Os dentes devem parecer NATURAIS, não artificiais ou "de plástico"
 - A textura do esmalte deve ter micro-variações naturais
 - O gradiente de cor cervical→incisal deve ser suave e realista
-- Os dentes devem ser VISIVELMENTE MAIS BRANCOS que a entrada, mas ainda naturais`
+- Os dentes devem ser mais claros que a entrada, mas parecer CLAREAMENTO DENTAL REAL (não facetas de porcelana)`
 }
 
 function buildBaseCorrections(): string {
@@ -411,10 +419,13 @@ ${params.whiteningLevel === 'hollywood' ? '⚠️ HOLLYWOOD = MAXIMUM BRIGHTNESS
 
 WHAT TO CHANGE (ONLY):
 - Tooth COLOR: make teeth whiter/brighter according to the whitening level above
-- Apply whitening UNIFORMLY across ALL visible teeth — every tooth must reach the SAME brightness level
-- Teeth that are currently darker or more stained must receive MORE whitening to match the lighter teeth
-- The final result must show EVEN, UNIFORM brightness across the entire visible smile
-- Maintain natural translucency gradients (more translucent at incisal edges)
+- Apply whitening HARMONIOUSLY across ALL visible teeth — darker/stained teeth receive more whitening to match lighter ones
+- The final result must show COHERENT brightness across the smile, but ALLOW natural variation:
+  • Canines (13/23) are NATURALLY 1-2 shades more saturated/yellowish than incisors — KEEP this relative difference
+  • Incisal edges are more translucent than cervical third — PRESERVE this gradient
+  • Small differences between individual teeth are NORMAL and make the result look REAL
+- The result should look like PROFESSIONAL IN-OFFICE WHITENING — not porcelain veneers or digital painting
+- Maintain natural translucency gradients (more translucent at incisal edges, more opaque at cervical)
 
 WHAT TO PRESERVE (DO NOT CHANGE — PIXEL-IDENTICAL):
 - ALL structural corrections: tooth shape, contour, alignment, closed gaps, filled chips

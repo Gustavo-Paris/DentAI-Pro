@@ -61,7 +61,7 @@ export const WHITENING_INSTRUCTIONS: Record<string, { instruction: string; inten
     intensity: "NATURAL"
   },
   white: {
-    instruction: "Make ALL visible teeth clearly whiter (BL1/BL2). Noticeable whitening but not extreme.",
+    instruction: "Make ALL visible teeth noticeably whiter — target shade B1/A1 range. The result should look like professional in-office whitening: clearly brighter than before but still NATURAL-LOOKING. Maintain warm undertones — teeth should NOT look blue-white, chalky, or opaque. Preserve translucency at incisal edges.",
     intensity: "NOTICEABLE"
   },
   hollywood: {

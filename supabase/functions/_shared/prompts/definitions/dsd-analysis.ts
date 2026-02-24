@@ -202,7 +202,12 @@ REGRAS ABSOLUTAS GENGIVOPLASTIA:
 
 NAO gerar gengivoplastia se: smile_line BAIXA (gengiva nao visivel) E zênites simétricos E proporção 75-80%.
 NAO gerar gengivoplastia se gengiva NAO visivel na foto.
-Smile line MEDIA: AVALIAR — exposicao pode ser suficiente para detectar assimetrias.
+Smile line MEDIA: VIES FORTEMENTE CONSERVADOR — gengivoplastia SOMENTE se:
+  a) Assimetria gengival EVIDENTE entre homólogos (>1.5mm diferença visual), OU
+  b) Coroa clínica curta INEQUÍVOCA por excesso de tecido gengival (NOT por desgaste incisal), OU
+  c) Hiperplasia gengival localizada visualmente ÓBVIA (ex: inchaço, contorno anormal)
+  Se nenhuma dessas condições está CLARAMENTE presente: NÃO indicar gengivoplastia para smile_line "média".
+  Um sorriso com gengiva levemente visível NÃO é indicação de gengivoplastia — é anatomia NORMAL.
 IMPORTANTE: Se papilas estao totalmente visiveis ou contorno gengival dos centrais e visivel → reclassificar para "alta", nao "media".
 
 IDENTIFICACAO DE DENTES PARA GENGIVOPLASTIA (quando indicada):
