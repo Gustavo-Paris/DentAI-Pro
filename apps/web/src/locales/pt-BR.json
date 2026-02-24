@@ -119,7 +119,23 @@
       "uppercase": "Uma letra maiúscula",
       "lowercase": "Uma letra minúscula",
       "number": "Um número",
-      "special": "Um caractere especial (!@#$%^&*)"
+      "special": "Um caractere especial (!@#$%^&*)",
+      "emailRequired": "Email é obrigatório",
+      "emailInvalid": "Email inválido",
+      "emailTooLong": "Email muito longo",
+      "passwordRequired": "Senha é obrigatória",
+      "passwordTooLong": "Senha muito longa",
+      "passwordMinChars": "Senha deve ter pelo menos 12 caracteres",
+      "passwordUppercase": "Senha deve conter pelo menos uma letra maiúscula",
+      "passwordLowercase": "Senha deve conter pelo menos uma letra minúscula",
+      "passwordNumber": "Senha deve conter pelo menos um número",
+      "passwordSpecial": "Senha deve conter pelo menos um caractere especial (!@#$%^&*)",
+      "confirmPasswordRequired": "Confirmação de senha é obrigatória",
+      "passwordsMismatch": "As senhas não coincidem",
+      "nameMinChars": "Nome deve ter pelo menos 2 caracteres",
+      "nameTooLong": "Nome muito longo",
+      "croTooLong": "CRO muito longo",
+      "acceptTerms": "Você precisa aceitar os Termos de Uso"
     }
   },
   "nav": {
@@ -845,7 +861,10 @@
     "rateLimitExceeded": "Limite de requisições excedido. Aguarde alguns minutos.",
     "connectionError": "Erro de conexão. Verifique sua internet e tente novamente.",
     "dsdGenerationFailed": "Não foi possível gerar a análise DSD. Você pode pular esta etapa.",
-    "loadFailed": "Erro ao carregar dados. Tente novamente."
+    "loadFailed": "Erro ao carregar dados. Tente novamente.",
+    "somethingWentWrong": "Algo deu errado",
+    "unexpectedPageError": "Ocorreu um erro inesperado nesta página.",
+    "backToDashboard": "Voltar ao Dashboard"
   },
   "toasts": {
     "subscription": {

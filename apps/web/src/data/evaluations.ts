@@ -4,6 +4,7 @@ import type { EvaluationInsert } from './client';
 import { withQuery, withMutation, countByUser } from './utils';
 import { EVALUATION_STATUS } from '@/lib/evaluation-status';
 import type { EvaluationStatus } from '@/lib/evaluation-status';
+import type { StratificationProtocol, CementationProtocol } from '@/types/protocol';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -18,6 +19,71 @@ export interface EvaluationListRow {
   status: string | null;
   session_id: string | null;
   treatment_type: string | null;
+}
+
+/** Row shape returned by `listBySession` with JSON fields narrowed to their runtime types. */
+export interface SessionEvaluationRow {
+  id: string;
+  created_at: string;
+  patient_name: string | null;
+  patient_id: string | null;
+  patient_age: number;
+  tooth: string;
+  cavity_class: string;
+  restoration_size: string;
+  status: string | null;
+  photo_frontal: string | null;
+  checklist_progress: number[] | null;
+  stratification_protocol: StratificationProtocol | null;
+  treatment_type: string | null;
+  ai_treatment_indication: string | null;
+  ai_indication_reason: string | null;
+  cementation_protocol: CementationProtocol | null;
+  generic_protocol: { checklist?: string[] } | null;
+  tooth_color: string;
+  bruxism: boolean;
+  aesthetic_level: string;
+  budget: string;
+  longevity_expectation: string;
+  patient_aesthetic_goals: string | null;
+  region: string | null;
+  substrate: string | null;
+  stratification_needed: boolean;
+  recommendation_text: string | null;
+  alternatives: Record<string, unknown> | null;
+  protocol_layers: Record<string, unknown> | null;
+  alerts: string[] | null;
+  warnings: string[] | null;
+  session_id: string | null;
+  dsd_analysis: Record<string, unknown> | null;
+  dsd_simulation_url: string | null;
+  dsd_simulation_layers: Array<{
+    type: string;
+    simulation_url: string | null;
+    includes_gengivoplasty?: boolean;
+  }> | null;
+  resins: { name: string; manufacturer: string } | null;
+  ideal_resin: { name: string; manufacturer: string } | null;
+}
+
+/** Row shape returned by `listPendingTeeth` with JSON fields narrowed. */
+export interface PendingToothRow {
+  id: string;
+  session_id: string;
+  user_id: string;
+  tooth: string;
+  priority: string | null;
+  treatment_indication: string | null;
+  indication_reason: string | null;
+  cavity_class: string | null;
+  restoration_size: string | null;
+  substrate: string | null;
+  substrate_condition: string | null;
+  enamel_condition: string | null;
+  depth: string | null;
+  tooth_region: string | null;
+  tooth_bounds: unknown;
+  created_at: string;
 }
 
 export interface EvaluationListParams {
@@ -73,7 +139,7 @@ export async function getById(evaluationId: string) {
   );
 }
 
-export async function listBySession(sessionId: string, userId: string) {
+export async function listBySession(sessionId: string, userId: string): Promise<SessionEvaluationRow[]> {
   const data = await withQuery(() =>
     supabase
       .from('evaluations')
@@ -93,7 +159,9 @@ export async function listBySession(sessionId: string, userId: string) {
       .eq('user_id', userId)
       .order('tooth', { ascending: true }),
   );
-  return data || [];
+  // Supabase types use `Json` for JSONB columns; the runtime values match
+  // SessionEvaluationRow which narrows those fields to their actual shapes.
+  return (data as SessionEvaluationRow[]) || [];
 }
 
 export async function updateStatus(id: string, status: EvaluationStatus) {
@@ -262,7 +330,7 @@ export async function updateChecklistBulk(ids: string[], userId: string, indices
 // Session pending teeth
 // ---------------------------------------------------------------------------
 
-export async function listPendingTeeth(sessionId: string, userId: string) {
+export async function listPendingTeeth(sessionId: string, userId: string): Promise<PendingToothRow[]> {
   const data = await withQuery(() =>
     supabase
       .from('session_detected_teeth')
@@ -271,7 +339,8 @@ export async function listPendingTeeth(sessionId: string, userId: string) {
       .eq('user_id', userId)
       .order('tooth', { ascending: true }),
   );
-  return data || [];
+  // Supabase types use `Json` for tooth_bounds; PendingToothRow narrows it to `unknown`.
+  return (data as PendingToothRow[]) || [];
 }
 
 // ---------------------------------------------------------------------------

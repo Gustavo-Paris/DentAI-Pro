@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button, Input, PasswordInput } from '@parisgroup-ai/pageshell/primitives';
 import { toast } from 'sonner';
-import { loginSchema, type LoginFormData } from '@/lib/schemas/auth';
+import { getLoginSchema, type LoginFormData } from '@/lib/schemas/auth';
 import { GoogleIcon } from '@/components/GoogleIcon';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import {
@@ -28,7 +28,7 @@ export default function Login() {
   const returnTo = (location.state as { returnTo?: string })?.returnTo;
 
   const form = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(getLoginSchema()),
     defaultValues: {
       email: '',
       password: '',

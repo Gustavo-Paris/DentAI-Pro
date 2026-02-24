@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { evaluations, wizard } from '@/data';
+import type { SessionEvaluationRow } from '@/data/evaluations';
 import { getFullRegion, getGenericProtocol } from './wizard/helpers';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -33,39 +34,7 @@ export const evaluationKeys = {
 // Types
 // ---------------------------------------------------------------------------
 
-export interface EvaluationItem {
-  id: string;
-  created_at: string;
-  patient_name: string | null;
-  patient_id: string | null;
-  patient_age: number;
-  tooth: string;
-  cavity_class: string;
-  restoration_size: string;
-  status: string | null;
-  photo_frontal: string | null;
-  checklist_progress: number[] | null;
-  stratification_protocol: StratificationProtocol | null;
-  treatment_type: string | null;
-  ai_treatment_indication: string | null;
-  cementation_protocol: CementationProtocol | null;
-  generic_protocol: { checklist?: string[] } | null;
-  tooth_color: string;
-  bruxism: boolean;
-  aesthetic_level: string;
-  budget: string;
-  longevity_expectation: string;
-  region?: string | null;
-  substrate?: string | null;
-  patient_aesthetic_goals?: string | null;
-  dsd_analysis?: Record<string, unknown> | null;
-  dsd_simulation_url?: string | null;
-  dsd_simulation_layers?: Array<{ type: string; simulation_url: string | null; includes_gengivoplasty?: boolean }> | null;
-  resins?: {
-    name: string;
-    manufacturer: string;
-  } | null;
-}
+export type EvaluationItem = SessionEvaluationRow;
 
 export interface ChecklistProgress {
   current: number;
@@ -178,7 +147,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
   });
 
   const evals = useMemo(
-    () => (rawEvaluations as unknown as EvaluationItem[]) || [],
+    () => rawEvaluations || [],
     [rawEvaluations],
   );
 
@@ -850,7 +819,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
     sessionId,
     evaluations: evals,
     isLoading,
-    pendingTeeth: pendingTeeth as PendingTooth[],
+    pendingTeeth,
     showAddTeethModal,
     isSharing,
     patientName,

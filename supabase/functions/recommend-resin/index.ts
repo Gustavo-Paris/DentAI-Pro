@@ -9,7 +9,7 @@ import { getPrompt } from "../_shared/prompts/registry.ts";
 import { withMetrics } from "../_shared/prompts/index.ts";
 import type { Params as RecommendResinParams } from "../_shared/prompts/definitions/recommend-resin.ts";
 import { createSupabaseMetrics, PROMPT_VERSION } from "../_shared/metrics-adapter.ts";
-import { parseAIResponse, RecommendResinResponseSchema } from "../_shared/aiSchemas.ts";
+import { parseAIResponse, RecommendResinResponseSchema, type RecommendResinResponseParsed } from "../_shared/aiSchemas.ts";
 
 import { getContralateral } from "./tooth-utils.ts";
 import type { StratificationProtocol } from "./types.ts";
@@ -371,8 +371,7 @@ Deno.serve(async (req) => {
       { role: "user" as const, content: prompt },
     ];
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let recommendation: any;
+    let recommendation: RecommendResinResponseParsed;
     try {
       const claudeResult = await withMetrics<{ text: string | null; functionCall: { name: string; args: Record<string, unknown> } | null; finishReason: string }>(metrics, promptDef.id, PROMPT_VERSION, promptDef.model)(async () => {
         const response = await callClaudeWithTools(

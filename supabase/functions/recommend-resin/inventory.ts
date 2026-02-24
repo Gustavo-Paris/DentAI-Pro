@@ -1,4 +1,5 @@
 import { logger } from "../_shared/logger.ts";
+import type { RecommendResinResponseParsed } from "../_shared/aiSchemas.ts";
 
 /**
  * Resin type as stored in the `resins` table.
@@ -129,9 +130,8 @@ function findBestInventoryFallback(
  *
  * @param region - Tooth region ("anterior" | "posterior") for clinical fallback matching
  */
-// deno-lint-ignore no-explicit-any
 export function validateInventoryRecommendation(
-  recommendation: any,
+  recommendation: RecommendResinResponseParsed,
   hasInventory: boolean,
   inventoryResins: ResinRecord[],
   budgetAppropriateInventory: ResinRecord[],

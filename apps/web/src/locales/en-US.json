@@ -118,7 +118,23 @@
       "uppercase": "One uppercase letter",
       "lowercase": "One lowercase letter",
       "number": "One number",
-      "special": "One special character (!@#$%^&*)"
+      "special": "One special character (!@#$%^&*)",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Invalid email",
+      "emailTooLong": "Email too long",
+      "passwordRequired": "Password is required",
+      "passwordTooLong": "Password too long",
+      "passwordMinChars": "Password must be at least 12 characters",
+      "passwordUppercase": "Password must contain at least one uppercase letter",
+      "passwordLowercase": "Password must contain at least one lowercase letter",
+      "passwordNumber": "Password must contain at least one number",
+      "passwordSpecial": "Password must contain at least one special character (!@#$%^&*)",
+      "confirmPasswordRequired": "Password confirmation is required",
+      "passwordsMismatch": "Passwords do not match",
+      "nameMinChars": "Name must be at least 2 characters",
+      "nameTooLong": "Name too long",
+      "croTooLong": "CRO too long",
+      "acceptTerms": "You must accept the Terms of Use"
     }
   },
   "nav": {
@@ -803,7 +819,11 @@
     "noAnalysisData": "Analysis data not returned",
     "rateLimitExceeded": "Request limit exceeded. Wait a few minutes.",
     "connectionError": "Connection error. Check your internet and try again.",
-    "dsdGenerationFailed": "Could not generate DSD analysis. You can skip this step."
+    "dsdGenerationFailed": "Could not generate DSD analysis. You can skip this step.",
+    "loadFailed": "Error loading data. Please try again.",
+    "somethingWentWrong": "Something went wrong",
+    "unexpectedPageError": "An unexpected error occurred on this page.",
+    "backToDashboard": "Back to Dashboard"
   },
   "toasts": {
     "subscription": {

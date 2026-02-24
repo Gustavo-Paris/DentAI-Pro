@@ -320,6 +320,15 @@ export const RecommendResinResponseSchema = z
       .passthrough()
       .optional(),
     justification: z.string().optional(),
+    // Fields from the tool-calling response (validated loosely — AI may omit)
+    recommended_resin_name: z.string().optional(),
+    is_from_inventory: z.boolean().optional(),
+    ideal_resin_name: z.string().optional(),
+    ideal_reason: z.string().optional(),
+    price_range: z.string().optional(),
+    budget_compliance: z.boolean().optional(),
+    inventory_alternatives: z.array(z.object({ name: z.string(), reason: z.string() }).passthrough()).optional(),
+    external_alternatives: z.array(z.object({ name: z.string(), reason: z.string() }).passthrough()).optional(),
   })
   .passthrough();
 

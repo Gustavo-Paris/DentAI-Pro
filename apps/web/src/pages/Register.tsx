@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button, Input, Checkbox, PasswordInput } from '@parisgroup-ai/pageshell/primitives';
 import { toast } from 'sonner';
-import { registerSchema, type RegisterFormData } from '@/lib/schemas/auth';
+import { getRegisterSchema, type RegisterFormData } from '@/lib/schemas/auth';
 import { PasswordRequirements } from '@/components/PasswordRequirements';
 import { GoogleIcon } from '@/components/GoogleIcon';
 import { Mail } from 'lucide-react';
@@ -29,7 +29,7 @@ export default function Register() {
   const { signUp, signInWithGoogle } = useAuth();
 
   const form = useForm<RegisterFormData>({
-    resolver: zodResolver(registerSchema),
+    resolver: zodResolver(getRegisterSchema()),
     defaultValues: {
       fullName: '',
       cro: '',

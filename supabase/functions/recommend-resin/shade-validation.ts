@@ -1,9 +1,8 @@
 import { logger } from "../_shared/logger.ts";
-import { ResinCatalogRowSchema } from "../_shared/aiSchemas.ts";
+import { ResinCatalogRowSchema, type RecommendResinResponseParsed } from "../_shared/aiSchemas.ts";
 
 interface ShadeValidationParams {
-  // deno-lint-ignore no-explicit-any
-  recommendation: any;
+  recommendation: RecommendResinResponseParsed;
   aestheticGoals: string | undefined;
   // deno-lint-ignore no-explicit-any
   supabase: any;
@@ -47,8 +46,7 @@ const AESTHETIC_CLASSES = [
  *
  * Does NOT block the protocol — only adds a warning to alerts if the count is too low.
  */
-// deno-lint-ignore no-explicit-any
-export function validateMinimumLayerCount(layers: any[], context: LayerCountContext): string | null {
+export function validateMinimumLayerCount(layers: unknown[], context: LayerCountContext): string | null {
   if (!layers || !Array.isArray(layers)) return null;
 
   const layerCount = layers.length;

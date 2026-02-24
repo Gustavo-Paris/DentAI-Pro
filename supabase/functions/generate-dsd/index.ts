@@ -275,7 +275,8 @@ Deno.serve(async (req: Request) => {
         await supabase
           .from("evaluations")
           .update(updateData)
-          .eq("id", evaluationId);
+          .eq("id", evaluationId)
+          .eq("user_id", user.id);
       }
     }
 

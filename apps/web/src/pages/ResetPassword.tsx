@@ -7,7 +7,7 @@ import { getSession, onAuthStateChange, updateUserPassword } from '@/data/auth';
 import { Button, PasswordInput } from '@parisgroup-ai/pageshell/primitives';
 import { toast } from 'sonner';
 import { CheckCircle } from 'lucide-react';
-import { resetPasswordSchema, type ResetPasswordFormData } from '@/lib/schemas/auth';
+import { getResetPasswordSchema, type ResetPasswordFormData } from '@/lib/schemas/auth';
 import { PasswordRequirements } from '@/components/PasswordRequirements';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { IconCircle } from '@/components/shared/IconCircle';
@@ -28,7 +28,7 @@ export default function ResetPassword() {
   const navigate = useNavigate();
 
   const form = useForm<ResetPasswordFormData>({
-    resolver: zodResolver(resetPasswordSchema),
+    resolver: zodResolver(getResetPasswordSchema()),
     defaultValues: {
       password: '',
       confirmPassword: '',

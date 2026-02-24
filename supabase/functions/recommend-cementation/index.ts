@@ -530,7 +530,8 @@ Deno.serve(async (req: Request) => {
         cementation_protocol: protocol,
         treatment_type: treatmentType,
       })
-      .eq("id", evaluationId);
+      .eq("id", evaluationId)
+      .eq("user_id", user.id);
 
     if (updateError) {
       logger.error("Update error:", updateError);

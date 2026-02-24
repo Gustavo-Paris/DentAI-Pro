@@ -1,82 +1,90 @@
 import { z } from 'zod';
 import i18n from '@/lib/i18n';
 
-// Reusable password schema with complexity requirements
-const passwordSchema = z.string()
-  .min(12, 'Senha deve ter pelo menos 12 caracteres')
-  .max(100, 'Senha muito longa')
-  .refine(
-    (val) => /[A-Z]/.test(val),
-    'Senha deve conter pelo menos uma letra maiúscula'
-  )
-  .refine(
-    (val) => /[a-z]/.test(val),
-    'Senha deve conter pelo menos uma letra minúscula'
-  )
-  .refine(
-    (val) => /[0-9]/.test(val),
-    'Senha deve conter pelo menos um número'
-  )
-  .refine(
-    (val) => /[^A-Za-z0-9]/.test(val),
-    'Senha deve conter pelo menos um caractere especial (!@#$%^&*)'
-  );
+// Reusable password schema with complexity requirements — getter so i18n.t() evaluates at validation time
+function getPasswordSchema() {
+  return z.string()
+    .min(12, i18n.t('auth.validation.passwordMinChars'))
+    .max(100, i18n.t('auth.validation.passwordTooLong'))
+    .refine(
+      (val) => /[A-Z]/.test(val),
+      i18n.t('auth.validation.passwordUppercase'),
+    )
+    .refine(
+      (val) => /[a-z]/.test(val),
+      i18n.t('auth.validation.passwordLowercase'),
+    )
+    .refine(
+      (val) => /[0-9]/.test(val),
+      i18n.t('auth.validation.passwordNumber'),
+    )
+    .refine(
+      (val) => /[^A-Za-z0-9]/.test(val),
+      i18n.t('auth.validation.passwordSpecial'),
+    );
+}
 
 // Simpler password schema for login (don't validate complexity on login)
-const loginPasswordSchema = z.string()
-  .min(1, 'Senha é obrigatória')
-  .max(100, 'Senha muito longa');
+function getLoginPasswordSchema() {
+  return z.string()
+    .min(1, i18n.t('auth.validation.passwordRequired'))
+    .max(100, i18n.t('auth.validation.passwordTooLong'));
+}
 
-export const loginSchema = z.object({
-  email: z.string()
+function getEmailSchema() {
+  return z.string()
     .trim()
-    .min(1, 'Email é obrigatório')
-    .email('Email inválido')
-    .max(255, 'Email muito longo'),
-  password: loginPasswordSchema,
-});
+    .min(1, i18n.t('auth.validation.emailRequired'))
+    .email(i18n.t('auth.validation.emailInvalid'))
+    .max(255, i18n.t('auth.validation.emailTooLong'));
+}
 
-export const registerSchema = z.object({
-  email: z.string()
-    .trim()
-    .min(1, 'Email é obrigatório')
-    .email('Email inválido')
-    .max(255, 'Email muito longo'),
-  password: passwordSchema,
-  confirmPassword: z.string()
-    .min(1, 'Confirmação de senha é obrigatória'),
-  fullName: z.string()
-    .trim()
-    .min(2, 'Nome deve ter pelo menos 2 caracteres')
-    .max(100, 'Nome muito longo'),
-  cro: z.string()
-    .trim()
-    .max(20, 'CRO muito longo')
-    .optional()
-    .or(z.literal('')),
-  acceptedTerms: z.boolean()
-    .refine(val => val === true, 'Você precisa aceitar os Termos de Uso'),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'As senhas não coincidem',
-  path: ['confirmPassword'],
-});
+export function getLoginSchema() {
+  return z.object({
+    email: getEmailSchema(),
+    password: getLoginPasswordSchema(),
+  });
+}
 
-export const forgotPasswordSchema = z.object({
-  email: z.string()
-    .trim()
-    .min(1, 'Email é obrigatório')
-    .email('Email inválido')
-    .max(255, 'Email muito longo'),
-});
+export function getRegisterSchema() {
+  return z.object({
+    email: getEmailSchema(),
+    password: getPasswordSchema(),
+    confirmPassword: z.string()
+      .min(1, i18n.t('auth.validation.confirmPasswordRequired')),
+    fullName: z.string()
+      .trim()
+      .min(2, i18n.t('auth.validation.nameMinChars'))
+      .max(100, i18n.t('auth.validation.nameTooLong')),
+    cro: z.string()
+      .trim()
+      .max(20, i18n.t('auth.validation.croTooLong'))
+      .optional()
+      .or(z.literal('')),
+    acceptedTerms: z.boolean()
+      .refine(val => val === true, i18n.t('auth.validation.acceptTerms')),
+  }).refine((data) => data.password === data.confirmPassword, {
+    message: i18n.t('auth.validation.passwordsMismatch'),
+    path: ['confirmPassword'],
+  });
+}
 
-export const resetPasswordSchema = z.object({
-  password: passwordSchema,
-  confirmPassword: z.string()
-    .min(1, 'Confirmação de senha é obrigatória'),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'As senhas não coincidem',
-  path: ['confirmPassword'],
-});
+export function getForgotPasswordSchema() {
+  return z.object({
+    email: getEmailSchema(),
+  });
+}
+
+export function getResetPasswordSchema() {
+  return z.object({
+    password: getPasswordSchema(),
+    confirmPassword: z.string()
+      .min(1, i18n.t('auth.validation.confirmPasswordRequired')),
+  }).refine((data) => data.password === data.confirmPassword, {
+    message: i18n.t('auth.validation.passwordsMismatch'),
+    path: ['confirmPassword'],
+  });
+}
 
 // Password requirements for UI display — getter function so i18n.t() evaluates at call time
 export function getPasswordRequirements(): Array<{ label: string; test: (val: string) => boolean }> {
@@ -89,7 +97,7 @@ export function getPasswordRequirements(): Array<{ label: string; test: (val: st
   ];
 }
 
-export type LoginFormData = z.infer<typeof loginSchema>;
-export type RegisterFormData = z.infer<typeof registerSchema>;
-export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
-export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
+export type LoginFormData = z.infer<ReturnType<typeof getLoginSchema>>;
+export type RegisterFormData = z.infer<ReturnType<typeof getRegisterSchema>>;
+export type ForgotPasswordFormData = z.infer<ReturnType<typeof getForgotPasswordSchema>>;
+export type ResetPasswordFormData = z.infer<ReturnType<typeof getResetPasswordSchema>>;
