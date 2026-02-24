@@ -114,66 +114,61 @@ export default function EvaluationDetails() {
             variant: 'outline' as const,
           },
         ]}
-        slots={{
-          beforeContent: (
-            <>
-              <SessionHeaderCard
-                photoPath={firstEval?.photo_frontal}
-                patientName={detail.patientName}
-                evaluationDate={detail.evaluationDate}
-                evaluationDateShort={detail.evaluationDateShort}
-                teeth={detail.evaluations}
-                completedCount={detail.completedCount}
-                evaluationCount={detail.evaluations.length}
-                hasDSD={hasDSD}
-                onPhotoClick={() => setShowDSD(true)}
-              />
-              <div className="flex flex-wrap items-center gap-2 mb-4 sm:mb-6">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={detail.handleShareCase}
-                  disabled={detail.isSharing}
-                >
-                  {detail.isSharing ? <ShareLoader className="w-4 h-4 mr-1.5 animate-spin" /> : <Share2 className="w-4 h-4 mr-1.5" />}
-                  {t('evaluation.share')}
-                </Button>
-                {detail.pendingTeeth.length > 0 && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => detail.setShowAddTeethModal(true)}
-                  >
-                    <Plus className="w-4 h-4 mr-1.5" />
-                    {t('evaluation.addMoreTeeth', { count: detail.pendingTeeth.length })}
-                  </Button>
-                )}
-                {detail.completedCount < detail.evaluations.length && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowMarkAllConfirm(true)}
-                  >
-                    <CheckCircle className="w-4 h-4 mr-1.5" />
-                    {t('evaluation.markAllCompleted')}
-                  </Button>
-                )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-destructive hover:text-destructive"
-                  onClick={() => setShowDeleteDialog(true)}
-                >
-                  <Trash2 className="w-4 h-4 mr-1.5" />
-                  {t('evaluation.deleteSession')}
-                </Button>
-              </div>
-            </>
-          ),
-        }}
       >
         {() => (
           <>
+            <SessionHeaderCard
+              photoPath={firstEval?.photo_frontal}
+              patientName={detail.patientName}
+              evaluationDate={detail.evaluationDate}
+              evaluationDateShort={detail.evaluationDateShort}
+              teeth={detail.evaluations}
+              completedCount={detail.completedCount}
+              evaluationCount={detail.evaluations.length}
+              hasDSD={hasDSD}
+              onPhotoClick={() => setShowDSD(true)}
+            />
+            <div className="flex flex-wrap items-center gap-2 mb-4 sm:mb-6">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={detail.handleShareCase}
+                disabled={detail.isSharing}
+              >
+                {detail.isSharing ? <ShareLoader className="w-4 h-4 mr-1.5 animate-spin" /> : <Share2 className="w-4 h-4 mr-1.5" />}
+                {t('evaluation.share')}
+              </Button>
+              {detail.pendingTeeth.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => detail.setShowAddTeethModal(true)}
+                >
+                  <Plus className="w-4 h-4 mr-1.5" />
+                  {t('evaluation.addMoreTeeth', { count: detail.pendingTeeth.length })}
+                </Button>
+              )}
+              {detail.completedCount < detail.evaluations.length && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowMarkAllConfirm(true)}
+                >
+                  <CheckCircle className="w-4 h-4 mr-1.5" />
+                  {t('evaluation.markAllCompleted')}
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-destructive hover:text-destructive"
+                onClick={() => setShowDeleteDialog(true)}
+              >
+                <Trash2 className="w-4 h-4 mr-1.5" />
+                {t('evaluation.deleteSession')}
+              </Button>
+            </div>
+
             {/* Floating selection bar */}
             {detail.selectedIds.size > 0 && (
               <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-background border shadow-lg rounded-full px-4 py-2 flex items-center gap-3 animate-in slide-in-from-bottom-4">
