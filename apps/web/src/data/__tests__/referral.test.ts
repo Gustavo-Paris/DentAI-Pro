@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { applyReferralCode, getReferralStats, getReferralCode } from '../referral';
+import { getReferralStats, getReferralCode } from '../referral';
 
 // ---------------------------------------------------------------------------
 // Mock supabase client
@@ -13,7 +13,6 @@ const mockMaybeSingle = vi.fn();
 const mockSingle = vi.fn();
 const mockInsert = vi.fn();
 const mockUpdate = vi.fn();
-const mockRpc = vi.fn();
 
 function createBuilder(): Record<string, (...args: unknown[]) => unknown> {
   const builder: Record<string, (...args: unknown[]) => unknown> = {};
@@ -50,10 +49,6 @@ function createBuilder(): Record<string, (...args: unknown[]) => unknown> {
 vi.mock('../client', () => ({
   supabase: {
     from: () => createBuilder(),
-    rpc: (...args: unknown[]) => {
-      mockRpc(...args);
-      return Promise.resolve(terminalResult);
-    },
     auth: {
       getUser: () =>
         Promise.resolve({
@@ -68,14 +63,6 @@ vi.mock('../client', () => ({
   },
 }));
 
-vi.mock('@/lib/logger', () => ({
-  logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
-}));
-
-vi.mock('@/lib/constants', () => ({
-  BONUS_CREDITS: 5,
-}));
-
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -83,41 +70,6 @@ vi.mock('@/lib/constants', () => ({
 beforeEach(() => {
   vi.clearAllMocks();
   terminalResult = { data: null, error: null };
-});
-
-describe('applyReferralCode', () => {
-  it('should silently return when referral code not found', async () => {
-    // withQuery returns null (cast as T), then the null check returns early
-    terminalResult = { data: null, error: null };
-
-    await expect(applyReferralCode('INVALID-CODE', 'new-user-1')).resolves.toBeUndefined();
-  });
-
-  it('should silently return on self-referral', async () => {
-    // The code belongs to the same user
-    terminalResult = {
-      data: { id: 'ref-1', user_id: 'user-1', code: 'JOAO-AB12', is_active: true },
-      error: null,
-    };
-
-    await expect(applyReferralCode('JOAO-AB12', 'user-1')).resolves.toBeUndefined();
-    // Should not have attempted to create a conversion via insert
-    // (The first withQuery succeeds, but self-referral check returns early)
-    // Note: insert is not called because self-referral returns before reaching insert
-  });
-
-  it('should silently return on duplicate conversion', async () => {
-    // First query (find referral code) returns a valid code
-    // Second call to supabase (duplicate check) also returns data via the shared terminal.
-    // Since both calls resolve to the same terminalResult,
-    // the duplicate check finds an existing conversion and returns early.
-    terminalResult = {
-      data: { id: 'ref-1', user_id: 'referrer-1', code: 'JOAO-AB12', is_active: true },
-      error: null,
-    };
-
-    await expect(applyReferralCode('JOAO-AB12', 'new-user-1')).resolves.toBeUndefined();
-  });
 });
 
 describe('getReferralStats', () => {

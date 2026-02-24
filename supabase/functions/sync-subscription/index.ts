@@ -2,6 +2,7 @@ import Stripe from "npm:stripe@14.14.0";
 import { getCorsHeaders, createErrorResponse } from "../_shared/cors.ts";
 import { logger } from "../_shared/logger.ts";
 import { getSupabaseClient, authenticateRequest, isAuthError, withErrorBoundary } from "../_shared/middleware.ts";
+import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
   apiVersion: "2023-10-16",
@@ -19,6 +20,11 @@ Deno.serve(withErrorBoundary(async (req: Request) => {
   const authResult = await authenticateRequest(req, supabase, corsHeaders);
   if (isAuthError(authResult)) return authResult;
   const { user } = authResult;
+
+  const rateLimitResult = await checkRateLimit(supabase, user.id, "sync-subscription", RATE_LIMITS.STANDARD);
+  if (!rateLimitResult.allowed) {
+    return createRateLimitResponse(rateLimitResult, corsHeaders);
+  }
 
   // Get user's subscription record to find Stripe customer ID
   const { data: existingSub } = await supabase

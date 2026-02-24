@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button, Input, PasswordInput } from '@parisgroup-ai/pageshell/primitives';
 import { toast } from 'sonner';
@@ -20,6 +21,7 @@ import {
 
 export default function Login() {
   const { t } = useTranslation();
+  useDocumentTitle(t('pageTitle.login', { defaultValue: 'Entrar' }));
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const { signIn, signInWithGoogle } = useAuth();

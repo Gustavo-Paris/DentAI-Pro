@@ -1,6 +1,5 @@
-import { createClient } from "jsr:@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsPreFlight } from "../_shared/cors.ts";
-import { authenticateRequest, isAuthError } from "../_shared/middleware.ts";
+import { getSupabaseClient, authenticateRequest, isAuthError } from "../_shared/middleware.ts";
 
 Deno.serve(async (req: Request) => {
   const corsHeaders = { ...getCorsHeaders(req), "Content-Type": "application/json" };
@@ -13,10 +12,7 @@ Deno.serve(async (req: Request) => {
   let dbOk = false;
   let geminiResult: Record<string, unknown> = {};
 
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-  );
+  const supabase = getSupabaseClient();
 
   try {
     const { error } = await supabase.from("profiles").select("id").limit(1);

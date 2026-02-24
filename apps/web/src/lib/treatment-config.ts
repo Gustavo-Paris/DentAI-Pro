@@ -122,9 +122,9 @@ export const treatmentStyles: Record<TreatmentType, TreatmentStyle> = {
     borderClass: 'border-border',
     iconClass: 'text-muted-foreground',
     badgeVariant: 'outline',
-    ringClass: 'ring-gray-400',
-    solidBgClass: 'bg-gray-600',
-    glowClass: 'bg-gray-400',
+    ringClass: 'ring-muted-foreground/50',
+    solidBgClass: 'bg-muted-foreground',
+    glowClass: 'bg-muted-foreground/60',
     overlayColor: 'rgba(107, 114, 128, 0.45)',
   },
   gengivoplastia: {

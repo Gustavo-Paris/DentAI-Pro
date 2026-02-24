@@ -43,6 +43,55 @@ export interface UsePhotoAnalysisParams {
 }
 
 // ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+interface PrimaryToothData {
+  tooth?: string;
+  tooth_region?: string;
+  cavity_class?: string;
+  restoration_size?: string;
+  substrate?: string;
+  substrate_condition?: string;
+  enamel_condition?: string;
+  depth?: string;
+}
+
+/**
+ * Maps AI-detected primary tooth data into ReviewFormData fields.
+ * Shared between initial analysis and re-analysis flows.
+ */
+function mapAnalysisToFormData(
+  primaryToothData: PrimaryToothData,
+  vitaShade: string | undefined,
+  vitaShadeManuallySet: boolean,
+  patientWhiteningLevel: string | undefined,
+  prev: ReviewFormData,
+): Partial<ReviewFormData> {
+  const shouldPreserveShade =
+    vitaShadeManuallySet ||
+    (patientWhiteningLevel !== undefined && patientWhiteningLevel !== 'natural');
+
+  return {
+    tooth: primaryToothData.tooth || prev.tooth,
+    toothRegion:
+      primaryToothData.tooth_region ||
+      (primaryToothData.tooth
+        ? isAnterior(primaryToothData.tooth)
+          ? 'anterior'
+          : 'posterior'
+        : prev.toothRegion),
+    cavityClass: primaryToothData.cavity_class || prev.cavityClass,
+    restorationSize: primaryToothData.restoration_size || prev.restorationSize,
+    vitaShade: shouldPreserveShade ? prev.vitaShade : (vitaShade || prev.vitaShade),
+    substrate: primaryToothData.substrate || prev.substrate,
+    substrateCondition: primaryToothData.substrate_condition || prev.substrateCondition,
+    enamelCondition: primaryToothData.enamel_condition || prev.enamelCondition,
+    depth: primaryToothData.depth || prev.depth,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Hook
 // ---------------------------------------------------------------------------
 
@@ -184,31 +233,19 @@ export function usePhotoAnalysis({
         setAnalysisResult(analysis);
 
         const primaryToothData =
-          analysis.detected_teeth?.find((t) => t.tooth === analysis.primary_tooth) ||
+          analysis.detected_teeth?.find((dt) => dt.tooth === analysis.primary_tooth) ||
           analysis.detected_teeth?.[0];
 
         if (primaryToothData) {
           setFormData((prev) => ({
             ...prev,
-            tooth: primaryToothData.tooth || prev.tooth,
-            toothRegion:
-              primaryToothData.tooth_region ||
-              (primaryToothData.tooth
-                ? isAnterior(primaryToothData.tooth)
-                  ? 'anterior'
-                  : 'posterior'
-                : prev.toothRegion),
-            cavityClass: primaryToothData.cavity_class || prev.cavityClass,
-            restorationSize: primaryToothData.restoration_size || prev.restorationSize,
-            // Only update vitaShade from AI if user hasn't manually overridden it
-            // and whitening preference is 'natural' (non-natural implies specific shade target)
-            vitaShade: (vitaShadeManuallySetRef.current || (patientWhiteningLevel && patientWhiteningLevel !== 'natural'))
-              ? prev.vitaShade
-              : (analysis.vita_shade || prev.vitaShade),
-            substrate: primaryToothData.substrate || prev.substrate,
-            substrateCondition: primaryToothData.substrate_condition || prev.substrateCondition,
-            enamelCondition: primaryToothData.enamel_condition || prev.enamelCondition,
-            depth: primaryToothData.depth || prev.depth,
+            ...mapAnalysisToFormData(
+              primaryToothData,
+              analysis.vita_shade,
+              vitaShadeManuallySetRef.current,
+              patientWhiteningLevel,
+              prev,
+            ),
           }));
         } else if (analysis.vita_shade && !vitaShadeManuallySetRef.current && (!patientWhiteningLevel || patientWhiteningLevel === 'natural')) {
           setFormData((prev) => ({ ...prev, vitaShade: analysis.vita_shade || prev.vitaShade }));
@@ -329,31 +366,19 @@ export function usePhotoAnalysis({
         setAnalysisResult(analysis);
 
         const primaryToothData =
-          analysis.detected_teeth?.find((t) => t.tooth === analysis.primary_tooth) ||
+          analysis.detected_teeth?.find((dt) => dt.tooth === analysis.primary_tooth) ||
           analysis.detected_teeth?.[0];
 
         if (primaryToothData) {
           setFormData((prev) => ({
             ...prev,
-            tooth: primaryToothData.tooth || prev.tooth,
-            toothRegion:
-              primaryToothData.tooth_region ||
-              (primaryToothData.tooth
-                ? isAnterior(primaryToothData.tooth)
-                  ? 'anterior'
-                  : 'posterior'
-                : prev.toothRegion),
-            cavityClass: primaryToothData.cavity_class || prev.cavityClass,
-            restorationSize: primaryToothData.restoration_size || prev.restorationSize,
-            // Only update vitaShade from AI if user hasn't manually overridden it
-            // and whitening preference is 'natural' (non-natural implies specific shade target)
-            vitaShade: (vitaShadeManuallySetRef.current || (patientWhiteningLevel && patientWhiteningLevel !== 'natural'))
-              ? prev.vitaShade
-              : (analysis.vita_shade || prev.vitaShade),
-            substrate: primaryToothData.substrate || prev.substrate,
-            substrateCondition: primaryToothData.substrate_condition || prev.substrateCondition,
-            enamelCondition: primaryToothData.enamel_condition || prev.enamelCondition,
-            depth: primaryToothData.depth || prev.depth,
+            ...mapAnalysisToFormData(
+              primaryToothData,
+              analysis.vita_shade,
+              vitaShadeManuallySetRef.current,
+              patientWhiteningLevel,
+              prev,
+            ),
           }));
         }
 

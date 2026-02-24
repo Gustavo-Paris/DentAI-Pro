@@ -1,6 +1,7 @@
 import { useEffect, useState, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { Button } from '@parisgroup-ai/pageshell/primitives';
 import { PageConfirmDialog } from '@parisgroup-ai/pageshell/interactions';
 import {
@@ -33,6 +34,7 @@ import { SessionHeaderCard } from '@/components/evaluation/SessionHeaderCard';
 
 export default function EvaluationDetails() {
   const { t } = useTranslation();
+  useDocumentTitle(t('pageTitle.evaluationDetails', { defaultValue: 'Detalhes da Avaliação' }));
   const detail = useEvaluationDetail();
   const navigate = useNavigate();
   const [confirmDialog, setConfirmDialog] = useState<{

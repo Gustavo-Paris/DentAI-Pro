@@ -22,6 +22,18 @@ function getResend(): Resend {
 }
 
 // ---------------------------------------------------------------------------
+// Security
+// ---------------------------------------------------------------------------
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+// ---------------------------------------------------------------------------
 // Core send function
 // ---------------------------------------------------------------------------
 
@@ -118,7 +130,7 @@ function layout(body: string): string {
 // ---------------------------------------------------------------------------
 
 export function welcomeEmail(name: string): { subject: string; html: string } {
-  const firstName = name.split(" ")[0];
+  const firstName = escapeHtml(name.split(" ")[0]);
   return {
     subject: "Bem-vindo(a) ao ToSmile.ai!",
     html: layout(`
@@ -156,7 +168,7 @@ export function creditWarningEmail(
   remaining: number,
   total: number,
 ): { subject: string; html: string } {
-  const firstName = name.split(" ")[0];
+  const firstName = escapeHtml(name.split(" ")[0]);
   const pct = total > 0 ? Math.round((remaining / total) * 100) : 0;
   return {
     subject: `Alerta: ${remaining} credito(s) restante(s) no ToSmile.ai`,
@@ -197,7 +209,7 @@ export function weeklyDigestEmail(
   name: string,
   stats: WeeklyStats,
 ): { subject: string; html: string } {
-  const firstName = name.split(" ")[0];
+  const firstName = escapeHtml(name.split(" ")[0]);
   return {
     subject: "Seu resumo semanal ToSmile.ai",
     html: layout(`
@@ -248,7 +260,7 @@ export function weeklyDigestEmail(
 // ---------------------------------------------------------------------------
 
 export function accountDeletedEmail(name: string): { subject: string; html: string } {
-  const firstName = name.split(" ")[0];
+  const firstName = escapeHtml(name.split(" ")[0]);
   return {
     subject: "Sua conta ToSmile.ai foi excluida",
     html: layout(`
@@ -281,20 +293,20 @@ export function paymentReceivedEmail(
   amount: string,
   invoiceUrl: string | null,
 ): { subject: string; html: string } {
-  const firstName = name.split(" ")[0];
+  const firstName = escapeHtml(name.split(" ")[0]);
   return {
     subject: "Pagamento confirmado — ToSmile.ai",
     html: layout(`
       <h2 style="margin:0 0 16px;font-size:22px;color:${DARK};">Ola, ${firstName}</h2>
       <p style="margin:0 0 16px;font-size:15px;color:${GRAY_TEXT};line-height:1.6;">
-        Seu pagamento de <strong style="color:${TEAL};">${amount}</strong> foi
+        Seu pagamento de <strong style="color:${TEAL};">${escapeHtml(amount)}</strong> foi
         processado com sucesso no <strong>ToSmile.ai</strong>.
       </p>
       ${invoiceUrl ? `
       <table role="presentation" cellspacing="0" cellpadding="0" style="margin:0 auto;">
         <tr>
           <td style="background-color:${TEAL};border-radius:6px;">
-            <a href="${invoiceUrl}" style="display:inline-block;padding:12px 32px;font-size:15px;font-weight:600;color:${DARK};text-decoration:none;">
+            <a href="${escapeHtml(invoiceUrl)}" style="display:inline-block;padding:12px 32px;font-size:15px;font-weight:600;color:${DARK};text-decoration:none;">
               Ver fatura
             </a>
           </td>
@@ -315,13 +327,13 @@ export function paymentFailedEmail(
   name: string,
   amount: string,
 ): { subject: string; html: string } {
-  const firstName = name.split(" ")[0];
+  const firstName = escapeHtml(name.split(" ")[0]);
   return {
     subject: "Falha no pagamento — ToSmile.ai",
     html: layout(`
       <h2 style="margin:0 0 16px;font-size:22px;color:${DARK};">Ola, ${firstName}</h2>
       <p style="margin:0 0 16px;font-size:15px;color:${GRAY_TEXT};line-height:1.6;">
-        Houve uma falha ao processar o pagamento de <strong style="color:#e74c3c;">${amount}</strong>.
+        Houve uma falha ao processar o pagamento de <strong style="color:#e74c3c;">${escapeHtml(amount)}</strong>.
         Sua assinatura pode ser afetada caso o pagamento nao seja regularizado.
       </p>
       <p style="margin:0 0 24px;font-size:15px;color:${GRAY_TEXT};line-height:1.6;">

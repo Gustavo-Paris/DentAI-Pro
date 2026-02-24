@@ -7,7 +7,7 @@ export function HeroMockup() {
       {/* Float animation wrapper */}
       <div className="animate-[hero-float_6s_ease-in-out_infinite]">
         {/* Device frame */}
-        <div className="relative rounded-[2rem] border-[6px] border-foreground/10 dark:border-foreground/15 bg-background shadow-2xl shadow-primary/10 overflow-hidden">
+        <div className="relative rounded-[2rem] border-[6px] border-foreground/10 dark:border-foreground/15 bg-background shadow-xl overflow-hidden">
           {/* Status bar */}
           <div className="flex items-center justify-between px-5 py-2 bg-secondary/50">
             <span className="text-[10px] text-muted-foreground font-medium">9:41</span>

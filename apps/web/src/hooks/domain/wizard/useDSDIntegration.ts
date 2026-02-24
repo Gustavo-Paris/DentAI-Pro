@@ -41,7 +41,7 @@ export function useDSDIntegration({
 
       if (result?.analysis?.suggestions?.length && analysisResult) {
         const clinicalTeeth = analysisResult.detected_teeth || [];
-        const existingNumbers = new Set(clinicalTeeth.map((t) => String(t.tooth)));
+        const existingNumbers = new Set(clinicalTeeth.map((dt) => String(dt.tooth)));
 
         const dsdAdditions: DetectedTooth[] = [];
         for (const s of result.analysis.suggestions) {

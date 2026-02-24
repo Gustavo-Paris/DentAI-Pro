@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import {
   Button,
   Badge,
@@ -10,7 +11,6 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-  Skeleton,
   Accordion,
   AccordionContent,
   AccordionItem,
@@ -30,6 +30,7 @@ import { useScrollReveal, useScrollRevealChildren } from '@/hooks/useScrollRevea
 
 export default function Landing() {
   const { t } = useTranslation();
+  useDocumentTitle('');
   const [searchParams] = useSearchParams();
 
   // Capture referral code from URL and store in localStorage
@@ -64,6 +65,7 @@ export default function Landing() {
         </nav>
       </header>
 
+      <main id="main-content">
       {/* Hero */}
       <section className="py-20 sm:py-28 md:py-36 relative overflow-hidden grain-overlay">
         {/* Gradient mesh background */}
@@ -263,7 +265,7 @@ export default function Landing() {
       </section>
 
       {/* How it works — Timeline */}
-      <section className="py-16 sm:py-24 bg-background">
+      <section className="py-12 sm:py-20 bg-background">
         <div className="container mx-auto px-4 sm:px-6 max-w-3xl">
           <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-10 sm:mb-16 font-display">
             {t('landing.howItWorksTitle')}
@@ -306,7 +308,7 @@ export default function Landing() {
       </section>
 
       {/* FAQ */}
-      <section className="py-16 sm:py-24 bg-secondary/20">
+      <section className="py-12 sm:py-20 bg-secondary/20">
         <div className="container mx-auto px-4 sm:px-6 max-w-2xl">
           <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-8 sm:mb-12 font-display">
             {t('landing.faqTitle')}
@@ -362,7 +364,7 @@ export default function Landing() {
       <LandingPricing />
 
       {/* CTA */}
-      <section className="py-16 sm:py-24 relative overflow-hidden grain-overlay">
+      <section className="py-12 sm:py-20 relative overflow-hidden grain-overlay">
         {/* Gradient mesh — inverted from hero (origin bottom) */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_120%,hsl(var(--primary)/0.08),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_120%,hsl(var(--primary)/0.10),transparent)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_20%_40%,hsl(var(--primary)/0.05),transparent)] dark:bg-[radial-gradient(ellipse_60%_40%_at_20%_40%,hsl(var(--primary)/0.05),transparent)]" />
@@ -387,6 +389,7 @@ export default function Landing() {
           </Link>
         </div>
       </section>
+      </main>
 
       {/* Footer */}
       <footer className="border-t border-border/50 py-6 sm:py-8 bg-background">
@@ -485,7 +488,7 @@ const LANDING_FALLBACK_PLANS = [
 
 function LandingPricing() {
   const { t } = useTranslation();
-  const { data: plans, isLoading, isError } = useQuery({
+  const { data: plans } = useQuery({
     queryKey: ['subscription-plans'],
     queryFn: () => subscriptions.getPlans(),
     staleTime: QUERY_STALE_TIMES.VERY_LONG,
@@ -507,13 +510,7 @@ function LandingPricing() {
           </p>
         </div>
 
-        {isLoading && !isError ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 max-w-6xl mx-auto">
-            {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-[400px] rounded-xl" />
-            ))}
-          </div>
-        ) : displayPlans ? (
+        {displayPlans ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 max-w-6xl mx-auto">
             {displayPlans.map((plan) => {
               const isFree = plan.price_monthly === 0;

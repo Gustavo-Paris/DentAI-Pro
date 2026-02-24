@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button, Input, Checkbox, PasswordInput } from '@parisgroup-ai/pageshell/primitives';
 import { toast } from 'sonner';
@@ -23,6 +24,7 @@ import {
 
 export default function Register() {
   const { t } = useTranslation();
+  useDocumentTitle(t('pageTitle.register', { defaultValue: 'Criar Conta' }));
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);

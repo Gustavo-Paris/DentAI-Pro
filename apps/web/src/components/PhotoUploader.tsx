@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -36,6 +36,13 @@ export default function PhotoUploader({
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const getSignedUrlRef = useRef(getSignedUrl);
+  getSignedUrlRef.current = getSignedUrl;
+
+  const stableGetSignedUrl = useCallback(
+    (path: string) => getSignedUrlRef.current(path),
+    [],
+  );
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -105,12 +112,12 @@ export default function PhotoUploader({
   useEffect(() => {
     if (value && !preview) {
       let cancelled = false;
-      getSignedUrl(value).then((url) => {
+      stableGetSignedUrl(value).then((url) => {
         if (!cancelled && url) setPreview(url);
       });
       return () => { cancelled = true; };
     }
-  }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [value, preview, stableGetSignedUrl]);
 
   return (
     <Card className="overflow-hidden">

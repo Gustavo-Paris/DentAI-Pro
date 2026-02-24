@@ -109,8 +109,24 @@ Deno.serve(withErrorBoundary(async (req) => {
       break;
 
     case "credit-warning": {
-      const remaining = Number(body.data?.remaining ?? 0);
-      const total = Number(body.data?.total ?? 0);
+      // Fetch actual credit data server-side instead of trusting client values
+      let remaining = Number(body.data?.remaining ?? 0);
+      let total = Number(body.data?.total ?? 0);
+
+      const { data: sub } = await supabase
+        .from("subscriptions")
+        .select("credits_used_this_month, credits_rollover, credits_bonus, plan:subscription_plans(credits_per_month)")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (sub) {
+        const plan = sub.plan as { credits_per_month: number } | null;
+        const serverTotal = (plan?.credits_per_month || 0) + (sub.credits_rollover || 0) + (sub.credits_bonus || 0);
+        const serverRemaining = Math.max(0, serverTotal - (sub.credits_used_this_month || 0));
+        remaining = serverRemaining;
+        total = serverTotal;
+      }
+
       emailContent = creditWarningEmail(userName, remaining, total);
       break;
     }

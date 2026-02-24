@@ -31,7 +31,7 @@ const InventoryResinCard = memo(function InventoryResinCard({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="group relative p-2 rounded-xl border bg-card hover:bg-accent/50 transition-colors">
+    <div className="group relative p-2 rounded-xl border bg-card hover:bg-accent/50 hover:shadow-md transition-all duration-normal">
       <ResinBadge shade={item.shade} type={item.type} size="md" showColorSwatch />
       <p className="text-[10px] text-muted-foreground mt-1 truncate">{item.brand}</p>
       <p className="text-[10px] text-muted-foreground truncate">{item.product_line}</p>
@@ -171,7 +171,7 @@ export default function Inventory() {
         isLoading={inv.isLoading}
         itemKey="id"
         renderCard={renderCard}
-        gridClassName="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2"
+        gridClassName="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4"
         searchConfig={searchConfig}
         filters={filtersConfig}
         sort={sortConfig}

@@ -1,4 +1,13 @@
 {
+  "pageTitle": {
+    "dashboard": "Dashboard",
+    "evaluations": "Avaliações",
+    "evaluationDetails": "Detalhes da Avaliação",
+    "profile": "Perfil",
+    "login": "Entrar",
+    "register": "Criar Conta",
+    "settings": "Configurações"
+  },
   "referral": {
     "title": "Programa de Indicação",
     "description": "Indique colegas e ganhe créditos bônus",

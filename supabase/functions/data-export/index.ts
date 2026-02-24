@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
       // Profile
       supabaseService
         .from("profiles")
-        .select("*")
+        .select("id, user_id, full_name, cro, clinic_name, phone, created_at, updated_at")
         .eq("user_id", userId)
         .maybeSingle(),
       // Evaluations (explicit columns — excludes internal cache fields)
@@ -80,19 +80,19 @@ Deno.serve(async (req) => {
       // Patients
       supabaseService
         .from("patients")
-        .select("*")
+        .select("id, user_id, name, phone, email, notes, birth_date, created_at, updated_at")
         .eq("user_id", userId)
         .order("created_at", { ascending: false }),
       // Drafts
       supabaseService
         .from("evaluation_drafts")
-        .select("*")
+        .select("id, user_id, draft_data, created_at, updated_at")
         .eq("user_id", userId)
         .order("updated_at", { ascending: false }),
       // Credit usage
       supabaseService
         .from("credit_usage")
-        .select("*")
+        .select("id, user_id, credits_used, operation, reference_id, created_at")
         .eq("user_id", userId)
         .order("created_at", { ascending: false }),
       // Subscription — exclude internal Stripe IDs
@@ -104,7 +104,7 @@ Deno.serve(async (req) => {
       // Inventory
       supabaseService
         .from("user_inventory")
-        .select("*, resin:resins(*)")
+        .select("id, user_id, resin_id, created_at, resin:resin_catalog(id, brand, product_line, shade, opacity, type)")
         .eq("user_id", userId),
       // Payment history — exclude internal Stripe IDs
       supabaseService

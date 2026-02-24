@@ -334,7 +334,7 @@ export function InsightsTab({
             key={w}
             onClick={() => setPeriod(w)}
             className={cn(
-              'px-3 py-1 rounded-md text-xs font-medium transition-colors',
+              'px-3 py-1 rounded-full text-xs font-medium transition-colors',
               period === w
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-muted text-muted-foreground hover:bg-muted/80'

@@ -1,7 +1,5 @@
 import { supabase } from './client';
 import { withQuery } from './utils';
-import { logger } from '@/lib/logger';
-import { BONUS_CREDITS } from '@/lib/constants';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -85,71 +83,3 @@ export async function getReferralStats(userId: string): Promise<ReferralStats> {
   };
 }
 
-// ---------------------------------------------------------------------------
-// Mutations
-// ---------------------------------------------------------------------------
-
-export async function applyReferralCode(
-  code: string,
-  newUserId: string,
-): Promise<void> {
-  // Find the referral code
-  const referralCode = await withQuery(() =>
-    supabase
-      .from('referral_codes')
-      .select('*')
-      .eq('code', code)
-      .eq('is_active', true)
-      .maybeSingle(),
-  ) as ReferralCode | null;
-
-  if (!referralCode) return;
-
-  // Don't allow self-referral
-  if (referralCode.user_id === newUserId) return;
-
-  // Check for duplicate conversion
-  const { data: existingConversion } = await supabase
-    .from('referral_conversions')
-    .select('id')
-    .eq('referred_id', newUserId)
-    .maybeSingle();
-
-  if (existingConversion) return;
-
-  // Create conversion record
-  const { error: conversionError } = await supabase
-    .from('referral_conversions')
-    .insert({
-      referrer_id: referralCode.user_id,
-      referred_id: newUserId,
-      referral_code_id: referralCode.id,
-      reward_granted: true,
-      reward_type: 'credits',
-      reward_amount: BONUS_CREDITS,
-    });
-
-  if (conversionError) throw conversionError;
-
-  // Grant bonus credits to referrer
-  const { error: referrerError } = await supabase.rpc('add_bonus_credits', {
-    p_user_id: referralCode.user_id,
-    p_credits: BONUS_CREDITS,
-  });
-
-  if (referrerError) {
-    logger.error('Failed to increment referrer bonus credits via RPC:', referrerError);
-    throw referrerError;
-  }
-
-  // Grant bonus credits to referred user
-  const { error: referredError } = await supabase.rpc('add_bonus_credits', {
-    p_user_id: newUserId,
-    p_credits: BONUS_CREDITS,
-  });
-
-  if (referredError) {
-    logger.error('Failed to increment referred user bonus credits via RPC:', referredError);
-    throw referredError;
-  }
-}

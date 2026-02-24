@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo } from 'react';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { DashboardPage, GenericErrorState } from '@parisgroup-ai/pageshell/composites';
@@ -42,6 +43,7 @@ function StatsGridFallback() {
 
 export default function Dashboard() {
   const { t } = useTranslation();
+  useDocumentTitle(t('pageTitle.dashboard', { defaultValue: 'Dashboard' }));
   const dashboard = useDashboard();
   const navigate = useNavigate();
   const isTabbed = !dashboard.isNewUser;
@@ -152,7 +154,7 @@ export default function Dashboard() {
           <h1 className="text-2xl sm:text-3xl font-semibold font-display tracking-tight">
             {dashboard.greeting},{' '}
             {dashboard.loading ? (
-              <Skeleton className="inline-block h-7 w-32 align-middle rounded-md" />
+              <Skeleton className="inline-block h-7 w-32 align-middle rounded-lg" />
             ) : (
               <span className="text-primary">{dashboard.firstName}</span>
             )}
@@ -217,7 +219,7 @@ export default function Dashboard() {
 
   return (
     <TooltipProvider>
-      <div id="main-content" className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <DashboardPage
           title={" "}
           containerVariant="shell"

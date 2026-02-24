@@ -1,5 +1,6 @@
 import { createRoot } from "react-dom/client";
 import * as Sentry from "@sentry/react";
+import { registerSW } from "virtual:pwa-register";
 import App from "./App.tsx";
 import "./index.css";
 import "./lib/i18n"; // i18n initialization (must be before App)
@@ -42,3 +43,15 @@ window.addEventListener("error", (event) => {
 initWebVitals();
 
 createRoot(document.getElementById("root")!).render(<App />);
+
+// Register service worker for PWA support
+if ("serviceWorker" in navigator) {
+  registerSW({
+    onNeedRefresh() {
+      // Could show a toast/banner here; for now just auto-update
+    },
+    onOfflineReady() {
+      console.log("App ready to work offline");
+    },
+  });
+}

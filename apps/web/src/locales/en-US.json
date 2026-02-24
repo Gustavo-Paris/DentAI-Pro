@@ -1,4 +1,13 @@
 {
+  "pageTitle": {
+    "dashboard": "Dashboard",
+    "evaluations": "Evaluations",
+    "evaluationDetails": "Evaluation Details",
+    "profile": "Profile",
+    "login": "Sign In",
+    "register": "Create Account",
+    "settings": "Settings"
+  },
   "referral": {
     "title": "Referral Program",
     "description": "Refer colleagues and earn bonus credits",
@@ -48,6 +57,7 @@
     "showingOf": "Showing",
     "of": "of",
     "discard": "Discard",
+    "clearSelection": "Clear selection",
     "siteNavigation": "Site navigation"
   },
   "auth": {
@@ -158,6 +168,16 @@
     "myInventory": "My Inventory",
     "availableResins": "Available resins",
     "principal": "Main",
+    "loadError": "Error loading dashboard data",
+    "alerts": {
+      "lowCreditsTitle": "Low credits",
+      "lowCreditsDescription": "You have {{count}} credits remaining.",
+      "upgrade": "Upgrade"
+    },
+    "activityFeed": {
+      "title": "Recent Activity",
+      "empty": "No recent activity"
+    },
     "discardDraftTitle": "Discard draft?",
     "discardDraftDescription": "The draft will be permanently deleted. This action cannot be undone.",
     "greetingMorning": "Good morning",
@@ -301,6 +321,14 @@
     "retryAnalysis": "Redo Analysis",
     "skipDSD": "Skip DSD",
     "viewDSD": "View DSD",
+    "original": "Original",
+    "viewSimulation": "View Simulation",
+    "generatingLayer": "Generating layer {{current}} of {{total}}",
+    "processing": "Processing...",
+    "estimatedTime": "~30 seconds per layer",
+    "layerLabelRestorations": "Generating restorative corrections...",
+    "layerLabelWhitening": "Applying whitening simulation...",
+    "layerLabelGingivoplasty": "Simulating gingivoplasty...",
     "simulation": "DSD Simulation",
     "detectingLandmarks": "Detecting facial landmarks...",
     "analyzingProportions": "Analyzing dental proportions...",
@@ -366,7 +394,16 @@
     "completed_other": "{{count}} completed",
     "deleteSession": "Delete session",
     "deleteSessionTitle": "Delete evaluation session",
-    "deleteSessionDescription": "This will permanently delete this session and all {{count}} associated case(s). This action cannot be undone."
+    "deleteSessionDescription": "This will permanently delete this session and all {{count}} associated case(s). This action cannot be undone.",
+    "cancelled": "Cancelled",
+    "treatmentFilter": "Treatment type",
+    "treatmentAll": "All",
+    "treatmentResina": "Resin",
+    "treatmentPorcelana": "Porcelain",
+    "treatmentEndodontia": "Endodontics",
+    "treatmentImplante": "Implant",
+    "treatmentCoroa": "Crown",
+    "treatmentEncaminhamento": "Referral"
   },
   "patients": {
     "title": "My Patients",
@@ -409,7 +446,11 @@
     "clinicalNotes": "Clinical notes",
     "clinicalNotesPlaceholder": "Allergies, preferences, observations...",
     "inProgressStatus": "In progress",
-    "completedStatus": "Completed"
+    "completedStatus": "Completed",
+    "newEvaluation": "New Evaluation",
+    "createPatient": "New Patient",
+    "treatmentTimeline": "Timeline",
+    "noTreatmentHistory": "No treatment history"
   },
   "inventory": {
     "title": "My Inventory",
@@ -466,6 +507,7 @@
     "saveChanges": "Save Changes",
     "changeAvatar": "Change profile photo",
     "changeClinicLogo": "Change clinic logo",
+    "uploadClinicLogo": "Upload clinic logo",
     "creditsAdded": "{{count}} credits added successfully!",
     "creditsAddedGeneric": "Credits added successfully!",
     "paymentHistory": "Payment history",
@@ -542,7 +584,9 @@
     "startFree": "Start Free",
     "start": "Start",
     "mostPopular": "Most Popular",
-    "guarantee": "All plans include a 7-day guarantee. Cancel anytime."
+    "guarantee": "All plans include a 7-day guarantee. Cancel anytime.",
+    "creditRollover": "Credit rollover",
+    "maxRollover": "Max rollover"
   },
   "landing": {
     "heroTagline": "Clinical Aesthetic Intelligence",
@@ -620,9 +664,12 @@
     "testimonial4Clinic": "Juliana Santos Dentistry",
     "footer": "Clinical decision support tool.",
     "termsOfUse": "Terms of Use",
-    "privacy": "Privacy"
+    "privacy": "Privacy",
+    "starRating": "{{rating}} out of 5 stars",
+    "illustrativeTestimonial": "Illustrative testimonial"
   },
   "pages": {
+    "dsdComparison": "DSD Comparison",
     "termsTitle": "Terms of Use",
     "privacyTitle": "Privacy Policy",
     "lastUpdated": "Last updated:",
@@ -773,7 +820,10 @@
     "referralGuidelines": "Referral Guidelines",
     "gingivoplastyProtocol": "Gingivoplasty Protocol",
     "rootCoverageProtocol": "Root Coverage Protocol",
-    "odontogram": "Odontogram"
+    "odontogram": "Odontogram",
+    "notFoundDescription": "The requested result was not found.",
+    "protocolUnavailable": "Protocol unavailable",
+    "protocolUnavailableDesc": "The resin protocol generation was not completed. Try reprocessing this case."
   },
   "odontogram": {
     "healthy": "Healthy",
@@ -834,7 +884,9 @@
     },
     "patient": {
       "updated": "Patient data updated",
-      "saveError": "Error saving changes"
+      "saveError": "Error saving changes",
+      "created": "Patient created successfully",
+      "createError": "Error creating patient"
     },
     "draft": {
       "restored": "Draft restored successfully"
@@ -922,7 +974,9 @@
       "shareError": "Error generating sharing link",
       "allSelectedCompleted": "All selected cases are already completed",
       "statusCompleted": "Completed",
-      "statusPlanned": "Planned"
+      "statusPlanned": "Planned",
+      "sessionDeleted": "Session deleted successfully",
+      "deleteError": "Error deleting session"
     },
     "profile": {
       "subscriptionActivated": "Subscription activated successfully!",
@@ -980,7 +1034,8 @@
         "tipsTitle": "Tips for better analysis",
         "tip1": "Well-lit photo focused on the cavity",
         "tip2": "Clean and dry teeth for better visualization",
-        "tip3": "VITA shade tab near the tooth, if available"
+        "tip3": "VITA shade tab near the tooth, if available",
+        "dropZoneLabel": "Drag an intraoral photo or click to select"
       },
       "analyzing": {
         "step1": "Processing image...",
@@ -1167,7 +1222,11 @@
           "currentLabel": "Current:",
           "proposalLabel": "Proposed:",
           "toothSection": "Tooth:",
-          "gingivaSection": "Gingiva:"
+          "gingivaSection": "Gingiva:",
+          "gingivoplastyOption": "Gingivoplasty option",
+          "aiRecommended": "Recommended by AI",
+          "optional": "Optional",
+          "gingivoplastyOptionalDesc": "Gingivoplasty is optional. You can proceed without it."
         },
         "errorState": {
           "insufficientCredits": "Insufficient Credits",
@@ -1193,6 +1252,7 @@
           "estimatedTime": "~15-25 seconds"
         },
         "simulationViewer": {
+          "layerTabs": "Simulation layers",
           "beforeAfter": "Before/After Comparison",
           "before": "Before",
           "annotations": "Annotations",
@@ -1211,6 +1271,9 @@
           "close": "Close",
           "selected": "Selected",
           "clickToSelect": "Click to select"
+        },
+        "comparisonSlider": {
+          "ariaLabel": "Before and after comparison"
         }
       }
     },
@@ -1359,7 +1422,8 @@
         "statusCanceled": "Canceled",
         "statusInactive": "Inactive",
         "statusUnpaid": "Unpaid",
-        "freeLabel": "Free"
+        "freeLabel": "Free",
+        "creditUsageLabel": "Credit usage"
       },
       "creditUsage": {
         "title": "Usage History",
@@ -1469,7 +1533,8 @@
       "acceptAll": "Accept all"
     },
     "offlineBanner": {
-      "message": "No internet connection"
+      "message": "No internet connection",
+      "backOnline": "Connection restored"
     },
     "helpButton": {
       "ariaLabel": "Help",
@@ -1511,7 +1576,8 @@
       },
       "progress": {
         "firstSteps": "First steps",
-        "completedOf": "{{completed}} of {{total}} complete"
+        "completedOf": "{{completed}} of {{total}} complete",
+        "completed": "completed"
       }
     },
     "landing": {
@@ -1648,7 +1714,8 @@
       "willCost": "will cost",
       "credit_one": "{{count}} credit",
       "credit_other": "{{count}} credits",
-      "credits": "credits"
+      "credits": "credits",
+      "lowBalanceWarning": "Warning: low balance after this operation"
     },
     "cookieConsent": {
       "ariaLabel": "Cookie consent",

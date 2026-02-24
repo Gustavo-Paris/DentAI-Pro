@@ -108,7 +108,7 @@ function RouteErrorFallback() {
       <p className="text-sm text-muted-foreground mb-4">{i18n.t('errors.unexpectedPageError')}</p>
       <a
         href="/dashboard"
-        className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+        className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
       >
         {i18n.t('errors.backToDashboard')}
       </a>

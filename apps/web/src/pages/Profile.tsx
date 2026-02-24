@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import {
   Button,
   Input,
@@ -36,6 +37,7 @@ import { UpgradeCTA } from '@/components/profile/UpgradeCTA';
 
 export default function Profile() {
   const { t } = useTranslation();
+  useDocumentTitle(t('pageTitle.profile', { defaultValue: 'Perfil' }));
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const p = useProfile();

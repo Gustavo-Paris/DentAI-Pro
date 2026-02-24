@@ -82,16 +82,16 @@ export function TreatmentBanners({
 
       {/* Inventory Warning Banner */}
       {!hasInventory && (
-        <Card className="border-blue-500/50 bg-blue-50 dark:bg-blue-950/20">
+        <Card className="border-sky-500/50 bg-sky-50 dark:bg-sky-950/20">
           <CardContent className="py-3 flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
-              <Package className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              <span className="text-sm text-blue-700 dark:text-blue-300">
+              <Package className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+              <span className="text-sm text-sky-700 dark:text-sky-300">
                 {t('components.wizard.review.noResins')}
               </span>
             </div>
             <Link to="/inventory">
-              <Button variant="outline" size="sm" className="text-xs border-blue-300 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 btn-press">
+              <Button variant="outline" size="sm" className="text-xs btn-press">
                 {t('components.wizard.review.registerResins')}
               </Button>
             </Link>

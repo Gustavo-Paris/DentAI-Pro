@@ -74,9 +74,12 @@ export default {
   			},
   		},
   		borderRadius: {
+  			'2xl': 'var(--radius-2xl)',
+  			xl: 'var(--radius-xl)',
   			lg: 'var(--radius-lg)',
   			md: 'var(--radius-md)',
   			sm: 'var(--radius-sm)',
+  			full: 'var(--radius-full)',
   		},
   		keyframes: {
   			'accordion-down': {
@@ -119,13 +122,21 @@ export default {
   			'float': 'float 3s ease-in-out infinite',
   		},
   		boxShadow: {
-  			'2xs': 'var(--shadow-2xs)',
-  			xs: 'var(--shadow-xs)',
   			sm: 'var(--shadow-sm)',
   			md: 'var(--shadow-md)',
   			lg: 'var(--shadow-lg)',
   			xl: 'var(--shadow-xl)',
-  			'2xl': 'var(--shadow-2xl)'
+  		},
+  		transitionDuration: {
+  			fast: 'var(--duration-fast)',
+  			normal: 'var(--duration-normal)',
+  			slow: 'var(--duration-slow)',
+  			slower: 'var(--duration-slower)',
+  		},
+  		transitionTimingFunction: {
+  			'ease-out': 'var(--ease-out)',
+  			'ease-in-out': 'var(--ease-in-out)',
+  			bounce: 'var(--ease-bounce)',
   		},
   		fontFamily: {
   			sans: [

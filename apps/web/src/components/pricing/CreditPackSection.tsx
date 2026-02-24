@@ -36,7 +36,7 @@ export function CreditPackSection() {
               type="button"
               onClick={() => setPaymentMethod('card')}
               className={cn(
-                'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+                'flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
                 paymentMethod === 'card'
                   ? 'bg-background text-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
@@ -49,13 +49,13 @@ export function CreditPackSection() {
               type="button"
               onClick={() => setPaymentMethod('pix')}
               className={cn(
-                'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+                'flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
                 paymentMethod === 'pix'
                   ? 'bg-background text-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
-              <span className="inline-flex items-center justify-center w-4 h-4 rounded bg-emerald-500 text-white text-[10px] font-bold leading-none">P</span>
+              <span className="inline-flex items-center justify-center w-4 h-4 rounded bg-success text-success-foreground text-[10px] font-bold leading-none">P</span>
               {t('components.pricing.pix.label')}
             </button>
           </div>

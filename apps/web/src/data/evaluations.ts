@@ -186,7 +186,9 @@ export async function getDashboardMetrics({ userId }: DashboardMetricsParams) {
       .from('evaluations')
       .select('session_id, status')
       .eq('user_id', userId)
-      .limit(1000),
+      // Practical upper bound for client-side session grouping.
+      // A proper fix would require an RPC function for server-side aggregation.
+      .limit(5000),
     // This week's evaluations: session_id (for weekly session count)
     supabase
       .from('evaluations')
@@ -303,7 +305,7 @@ export async function updateStatusBulk(ids: string[], status: EvaluationStatus) 
 
 export async function updateEvaluationsBulk(
   ids: string[],
-  updates: Record<string, unknown>,
+  updates: Partial<EvaluationInsert>,
 ) {
   const { error } = await supabase
     .from('evaluations')
@@ -451,7 +453,7 @@ export async function insertEvaluation(data: EvaluationInsert) {
   );
 }
 
-export async function updateEvaluation(id: string, updates: Record<string, unknown>) {
+export async function updateEvaluation(id: string, updates: Partial<EvaluationInsert>) {
   await withMutation(() =>
     supabase
       .from('evaluations')

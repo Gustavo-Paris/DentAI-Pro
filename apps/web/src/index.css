@@ -135,6 +135,20 @@
   --chart-4: rgb(var(--color-info));
   --chart-5: var(--color-destructive);
 
+  /* Semantic muted colors — for subtle backgrounds on badges, alerts */
+  --color-success-muted: rgba(22, 163, 74, 0.1);
+  --color-destructive-muted: rgba(220, 38, 38, 0.1);
+  --color-warning-muted: rgba(217, 119, 6, 0.1);
+  --color-info-muted: rgba(37, 99, 235, 0.1);
+
+  /* Glass effects — frosted glass panels, overlays */
+  --glass-bg: rgba(0, 0, 0, 0.02);
+  --glass-border: rgba(0, 0, 0, 0.06);
+  --glass-highlight: rgba(0, 0, 0, 0.02);
+
+  /* Skeleton shimmer peak */
+  --skeleton-shimmer-peak: rgba(0, 0, 0, 0.03);
+
   /* Sidebar user card */
   --sidebar-user-card-bg: #eff2f1;
   --sidebar-user-card-border: #e0e4e3;
@@ -202,6 +216,20 @@
   --color-warning-foreground: #fef3c7;
   --color-success-foreground: #ffffff;
 
+  /* ── Semantic muted colors (dark) ── */
+  --color-success-muted: rgba(16, 185, 129, 0.15);
+  --color-destructive-muted: rgba(239, 68, 68, 0.15);
+  --color-warning-muted: rgba(245, 158, 11, 0.15);
+  --color-info-muted: rgba(59, 130, 246, 0.15);
+
+  /* ── Glass effects (dark) ── */
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-highlight: rgba(255, 255, 255, 0.05);
+
+  /* ── Skeleton shimmer peak (dark) ── */
+  --skeleton-shimmer-peak: rgba(255, 255, 255, 0.04);
+
   /* ── Sidebar user card (dark) ── */
   --sidebar-user-card-bg: #152127;
   --sidebar-user-card-border: #28343a;
@@ -268,7 +296,7 @@
 }
 
 .skeleton-shimmer {
-  background: linear-gradient(90deg, var(--color-muted) 25%, rgb(var(--color-muted-foreground-rgb) / 0.06) 50%, var(--color-muted) 75%);
+  background: linear-gradient(90deg, var(--color-muted) 25%, var(--skeleton-shimmer-peak, rgba(0, 0, 0, 0.03)) 50%, var(--color-muted) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
 }
@@ -280,8 +308,8 @@
 
 /* ─── Card elevation padrão ─── */
 
-.card-elevated { @apply shadow-sm transition-shadow duration-300; }
-.card-elevated:hover { @apply shadow-md; }
+.card-elevated { box-shadow: var(--shadow-sm); transition: box-shadow var(--duration-normal, 200ms) var(--ease-out, ease-out); }
+.card-elevated:hover { box-shadow: var(--shadow-md); }
 
 /* ─── Sidebar Polish ─── */
 /* Remove internal section dividers — cleaner, less "wireframey" look */

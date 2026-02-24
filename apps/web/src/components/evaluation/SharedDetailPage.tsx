@@ -54,9 +54,9 @@ function SharedHeader({ brandName, badgeText }: { brandName: string; badgeText?:
 function DefaultSkeleton() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
-      <div className="h-8 w-48 mb-8 rounded-md bg-muted animate-pulse" />
-      <div className="h-32 w-full mb-4 rounded-md bg-muted animate-pulse" />
-      <div className="h-32 w-full rounded-md bg-muted animate-pulse" />
+      <div className="h-8 w-48 mb-8 rounded-lg bg-muted animate-pulse" />
+      <div className="h-32 w-full mb-4 rounded-xl bg-muted animate-pulse" />
+      <div className="h-32 w-full rounded-xl bg-muted animate-pulse" />
     </div>
   );
 }
@@ -85,7 +85,7 @@ function ExpiredState({ config }: { config?: SharedDetailPageProps['expiredConfi
         {config?.cta && (
           <a
             href={config.cta.href}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 transition-colors"
+            className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 transition-colors"
           >
             {config.cta.label}
           </a>

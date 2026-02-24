@@ -1,6 +1,7 @@
 import { useCallback, useEffect, memo, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { ListPage, GenericErrorState } from '@parisgroup-ai/pageshell/composites';
 import { useEvaluationSessions } from '@/hooks/domain/useEvaluationSessions';
 import type { EvaluationSession } from '@/hooks/domain/useEvaluationSessions';
@@ -135,6 +136,7 @@ const VALID_TREATMENT_VALUES = new Set(TREATMENT_TYPE_OPTIONS.map(o => o.value))
 
 export default function Evaluations() {
   const { t } = useTranslation();
+  useDocumentTitle(t('pageTitle.evaluations', { defaultValue: 'Avaliações' }));
   const { sessions, total, page, setPage, totalPages, isLoading, isError, newSessionId, newTeethCount } =
     useEvaluationSessions();
   const [searchParams, setSearchParams] = useSearchParams();
