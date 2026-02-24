@@ -1,18 +1,20 @@
 import { describe, it, expect } from 'vitest';
-import { BRAND_NAME, BRAND_TAGLINE, BRAND_DESCRIPTION } from '../branding';
+import { BRAND_NAME, getBrandTagline, getBrandDescription } from '../branding';
 
 describe('branding constants', () => {
   it('should export BRAND_NAME', () => {
     expect(BRAND_NAME).toBe('ToSmile.ai');
   });
 
-  it('should export BRAND_TAGLINE as a non-empty string', () => {
-    expect(typeof BRAND_TAGLINE).toBe('string');
-    expect(BRAND_TAGLINE.length).toBeGreaterThan(0);
+  it('should return brand tagline as a non-empty string', () => {
+    const tagline = getBrandTagline();
+    expect(typeof tagline).toBe('string');
+    expect(tagline.length).toBeGreaterThan(0);
   });
 
-  it('should export BRAND_DESCRIPTION as a non-empty string', () => {
-    expect(typeof BRAND_DESCRIPTION).toBe('string');
-    expect(BRAND_DESCRIPTION.length).toBeGreaterThan(0);
+  it('should return brand description as a non-empty string', () => {
+    const description = getBrandDescription();
+    expect(typeof description).toBe('string');
+    expect(description.length).toBeGreaterThan(0);
   });
 });

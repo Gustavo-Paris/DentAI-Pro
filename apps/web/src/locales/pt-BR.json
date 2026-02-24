@@ -333,7 +333,12 @@
     "detectingLandmarks": "Detectando landmarks faciais...",
     "analyzingProportions": "Analisando proporções dentárias...",
     "calculatingGolden": "Calculando proporção dourada...",
-    "evaluatingSymmetry": "Avaliando simetria..."
+    "evaluatingSymmetry": "Avaliando simetria...",
+    "layers": {
+      "restorationsOnly": "Apenas Restaurações",
+      "whiteningRestorations": "Restaurações + Clareamento",
+      "completeTreatment": "Tratamento Completo"
+    }
   },
   "evaluation": {
     "tooth": "Dente",
@@ -976,7 +981,10 @@
       "statusCompleted": "Finalizado",
       "statusPlanned": "Planejado",
       "sessionDeleted": "Sessão excluída com sucesso",
-      "deleteError": "Erro ao excluir sessão"
+      "deleteError": "Erro ao excluir sessão",
+      "regenerateSuccess": "{{count}} protocolo(s) regenerado(s) como {{budget}}",
+      "budgetPremium": "Premium",
+      "budgetStandard": "Padrão"
     },
     "profile": {
       "subscriptionActivated": "Assinatura ativada com sucesso!",
@@ -2049,5 +2057,12 @@
         ]
       }
     }
+  },
+  "brand": {
+    "tagline": "Odontologia Digital Inteligente",
+    "description": "IA que analisa, planeja e gera protocolos com precisão para odontologia estética."
+  },
+  "meta": {
+    "defaultTitle": "ToSmile.ai — Odontologia Digital Inteligente"
   }
 }

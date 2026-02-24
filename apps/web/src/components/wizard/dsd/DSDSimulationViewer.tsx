@@ -13,7 +13,7 @@ import type {
   SimulationLayerType,
   ToothBoundsPct,
 } from '@/types/dsd';
-import { LAYER_LABELS } from '@/types/dsd';
+import { getLayerLabel } from '@/types/dsd';
 
 interface DSDSimulationViewerProps {
   imageBase64: string;
@@ -132,7 +132,7 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-primary/30 bg-primary/5 text-primary animate-pulse"
             >
               <Loader2 className="w-3 h-3 animate-spin" />
-              {LAYER_LABELS['complete-treatment']}
+              {getLayerLabel('complete-treatment', t)}
               <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4">
                 {t('components.wizard.dsd.simulationViewer.gingiva')}
               </Badge>
@@ -150,7 +150,7 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
               ) : (
                 <RefreshCw className="w-3 h-3" />
               )}
-              {LAYER_LABELS[layerType]}
+              {getLayerLabel(layerType, t)}
             </button>
           ))}
         </div>

@@ -19,8 +19,8 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
 import { ProportionsCard } from '@/components/dsd/ProportionsCard';
-import type { DSDAnalysis, SimulationLayer } from '@/types/dsd';
-import { LAYER_LABELS } from '@/types/dsd';
+import type { DSDAnalysis, SimulationLayer, SimulationLayerType } from '@/types/dsd';
+import { getLayerLabel } from '@/types/dsd';
 import { useSharedEvaluation } from '@/hooks/domain/useSharedEvaluation';
 import { Calendar } from 'lucide-react';
 
@@ -99,7 +99,7 @@ export default function SharedEvaluation() {
                       className="text-xs"
                       onClick={() => setActiveLayerIndex(idx)}
                     >
-                      {LAYER_LABELS[layer.type as keyof typeof LAYER_LABELS] || layer.label}
+                      {getLayerLabel(layer.type as SimulationLayerType, t)}
                       {layer.includes_gengivoplasty && (
                         <Badge variant="secondary" className="ml-1 text-[10px] px-1">{t('components.evaluationDetail.gingiva')}</Badge>
                       )}

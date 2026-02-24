@@ -115,7 +115,8 @@ function PendingActions({
         )}
         {pendingSessions > 0 && (
           <Link to="/evaluations">
-            <Card className="group relative overflow-hidden p-3 sm:p-4 shadow-sm hover:shadow-md rounded-xl transition-all duration-300 cursor-pointer">
+            <Card className="group relative overflow-hidden p-3 sm:p-4 shadow-sm hover:shadow-md rounded-xl transition-all duration-300 cursor-pointer dark:bg-gradient-to-br dark:from-card dark:to-card/80">
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent dark:block hidden pointer-events-none" />
               <div className={`absolute left-0 top-0 bottom-0 w-[3px] ${PENDING_ACCENT_GRADIENT}`} />
               <div className="flex items-center justify-between">
                 <div className="flex-1 min-w-0">
@@ -294,7 +295,7 @@ export function PrincipalTab({
           const isPrimary = mod.variant === 'primary';
           return (
             <Link key={mod.id} to={mod.href!} className={`scroll-reveal scroll-reveal-delay-${i + 1}`}>
-              <Card className={`group relative overflow-hidden p-4 sm:p-5 rounded-xl transition-all duration-300 cursor-pointer h-full hover:shadow-md hover:-translate-y-0.5 ${isPrimary ? 'bg-primary text-primary-foreground shadow-md' : 'border border-border/50 hover:border-border shadow-sm'}`}>
+              <Card className={`group relative overflow-hidden p-4 sm:p-5 rounded-xl transition-all duration-300 cursor-pointer h-full hover:shadow-md hover:-translate-y-0.5 ${isPrimary ? 'bg-primary text-primary-foreground shadow-md btn-glow' : 'border border-border/50 hover:border-border shadow-sm dark:bg-gradient-to-br dark:from-card dark:to-card/80'}`}>
                 {!isPrimary && <div className="absolute inset-0 bg-gradient-to-br from-muted/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />}
                 <div className="relative flex items-center gap-3">
                   <div className={`flex h-10 w-10 items-center justify-center rounded-xl shrink-0 transition-transform duration-200 group-hover:scale-110 ${isPrimary ? 'bg-primary-foreground/20' : 'bg-primary/10 dark:bg-primary/15'}`}>

@@ -78,12 +78,28 @@ export interface SimulationLayer {
   includes_gengivoplasty: boolean;
 }
 
-/** Layer labels (PT-BR) */
-export const LAYER_LABELS: Record<SimulationLayerType, string> = {
+/** i18n key map for layer labels */
+const LAYER_LABEL_KEYS: Record<SimulationLayerType, string> = {
+  'restorations-only': 'dsd.layers.restorationsOnly',
+  'whitening-restorations': 'dsd.layers.whiteningRestorations',
+  'complete-treatment': 'dsd.layers.completeTreatment',
+};
+
+/** Fallback labels (PT-BR) — used when t() is not available */
+const LAYER_LABEL_DEFAULTS: Record<SimulationLayerType, string> = {
   'restorations-only': 'Apenas Restaurações',
   'whitening-restorations': 'Restaurações + Clareamento',
   'complete-treatment': 'Tratamento Completo',
 };
+
+/** Get translated layer label. Pass t from useTranslation(). */
+export function getLayerLabel(
+  type: SimulationLayerType,
+  t?: (key: string, opts?: Record<string, unknown>) => string,
+): string {
+  if (t) return t(LAYER_LABEL_KEYS[type], { defaultValue: LAYER_LABEL_DEFAULTS[type] });
+  return LAYER_LABEL_DEFAULTS[type];
+}
 
 // ---------------------------------------------------------------------------
 // Supporting Types (used by DSDStep and related components)

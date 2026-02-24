@@ -73,7 +73,7 @@ const SessionCard = memo(function SessionCard({
   return (
     <Link to={`/evaluation/${session.session_id}`} onClick={handleClick} aria-label={t('evaluation.viewEvaluationOf', { name: session.patient_name || t('evaluation.patientNoName') })}>
       <Card
-        className={`p-3 sm:p-4 shadow-sm hover:shadow-md rounded-xl transition-all duration-300 cursor-pointer animate-[fade-in-up_0.6s_ease-out_both] ${borderClass}`}
+        className={`p-3 sm:p-4 shadow-sm hover:shadow-md rounded-xl transition-all duration-300 cursor-pointer animate-[fade-in-up_0.6s_ease-out_both] dark:bg-gradient-to-br dark:from-card dark:to-card/80 ${borderClass}`}
         style={{ animationDelay: `${index * 0.05}s` }}
       >
         <div className="space-y-2 sm:space-y-0 sm:flex sm:items-center sm:justify-between">

@@ -23,7 +23,7 @@ import type {
   DetectedToothForMask,
   ClinicalToothFinding,
 } from '@/types/dsd';
-import { LAYER_LABELS } from '@/types/dsd';
+import { getLayerLabel } from '@/types/dsd';
 
 // Tooth shape is now fixed as 'natural' - removed manual selection per market research
 const TOOTH_SHAPE = 'natural' as const;
@@ -354,7 +354,7 @@ export function useDSDStep({
 
       return {
         type: layerType,
-        label: LAYER_LABELS[layerType],
+        label: getLayerLabel(layerType, t),
         simulation_url: bestResult.simulation_url,
         whitening_level: patientPreferences?.whiteningLevel || 'natural',
         includes_gengivoplasty: layerType === 'complete-treatment',
@@ -565,7 +565,7 @@ export function useDSDStep({
 
       const layer = await generateSingleLayer(analysis, layerType, baseImageOverride);
       if (!layer) {
-        toast.error(t('toasts.dsd.layerError', { layer: LAYER_LABELS[layerType] }));
+        toast.error(t('toasts.dsd.layerError', { layer: getLayerLabel(layerType, t) }));
         return;
       }
 
@@ -580,10 +580,10 @@ export function useDSDStep({
         ...prev,
         layers: [...(prev.layers || []), processed],
       } : prev);
-      toast.success(t('toasts.dsd.layerReady', { layer: LAYER_LABELS[layerType] }));
+      toast.success(t('toasts.dsd.layerReady', { layer: getLayerLabel(layerType, t) }));
     } catch (err) {
       logger.error(`Retry layer ${layerType} error:`, err);
-      toast.error(t('toasts.dsd.layerError', { layer: LAYER_LABELS[layerType] }));
+      toast.error(t('toasts.dsd.layerError', { layer: getLayerLabel(layerType, t) }));
     } finally {
       setRetryingLayer(null);
     }
@@ -924,8 +924,9 @@ export function useDSDStep({
 
       const l2SignedUrl = layerUrls['whitening-restorations'];
       const layer = await generateSingleLayer(analysis, 'complete-treatment', l2Base64, l2SignedUrl);
+      const gingivoLabel = t('treatments.gengivoplastia.shortLabel', { defaultValue: 'Gengivoplastia' });
       if (!layer) {
-        toast.error(t('toasts.dsd.layerError', { layer: 'Gengivoplastia' }));
+        toast.error(t('toasts.dsd.layerError', { layer: gingivoLabel }));
         return;
       }
       const { layer: processed, url } = await resolveLayerUrl(layer);
@@ -937,11 +938,11 @@ export function useDSDStep({
       });
       if (url) setLayerUrls(prev => ({ ...prev, [processed.type]: url }));
       setResult(prev => prev ? { ...prev, layers: [...(prev.layers || []), processed] } : prev);
-      toast.success(t('toasts.dsd.layerReady', { layer: 'Gengivoplastia' }));
+      toast.success(t('toasts.dsd.layerReady', { layer: gingivoLabel }));
     } catch (err) {
       logger.error('Gengivoplasty layer error:', err);
       setFailedLayers(prev => [...prev, 'complete-treatment']);
-      toast.error(t('toasts.dsd.layerError', { layer: 'Gengivoplastia' }));
+      toast.error(t('toasts.dsd.layerError', { layer: gingivoLabel }));
     } finally {
       setRetryingLayer(null);
     }

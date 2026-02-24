@@ -183,8 +183,10 @@ export function StatsGrid({
           <Tooltip key={stat.key}>
             <TooltipTrigger asChild>
               <Card
-                className={`scroll-reveal scroll-reveal-delay-${i + 1} group relative overflow-hidden p-3 sm:p-4 cursor-default shadow-sm hover:shadow-md rounded-xl border border-border/50 hover:border-border transition-all duration-300`}
+                className={`scroll-reveal scroll-reveal-delay-${i + 1} group relative overflow-hidden p-3 sm:p-4 cursor-default shadow-sm hover:shadow-md rounded-xl border border-border/50 hover:border-border transition-all duration-300 dark:bg-gradient-to-br dark:from-card dark:to-card/80`}
               >
+                {/* Glass top-edge highlight — subtle depth cue in dark mode */}
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent dark:block hidden pointer-events-none" />
                 <div className="flex items-center gap-2.5 mb-2.5">
                   <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${stat.iconBg} transition-transform duration-200 group-hover:scale-110`}>
                     <Icon className="w-4 h-4" aria-hidden="true" />

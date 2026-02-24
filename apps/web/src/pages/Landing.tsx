@@ -69,10 +69,10 @@ export default function Landing() {
       {/* Hero */}
       <section className="py-20 sm:py-28 md:py-36 relative overflow-hidden grain-overlay">
         {/* Gradient mesh background */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,hsl(var(--primary)/0.08),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,hsl(var(--primary)/0.10),transparent)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_80%_60%,hsl(var(--primary)/0.05),transparent)] dark:bg-[radial-gradient(ellipse_60%_40%_at_80%_60%,hsl(var(--primary)/0.05),transparent)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_50%_at_20%_80%,hsl(var(--primary)/0.03),transparent)] dark:bg-[radial-gradient(ellipse_50%_50%_at_20%_80%,hsl(var(--primary)/0.03),transparent)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_1px_at_20px_20px,hsl(var(--primary)/0.05)_1px,transparent_0)] dark:bg-[radial-gradient(circle_1px_at_20px_20px,hsl(var(--primary)/0.03)_1px,transparent_0)] bg-[length:40px_40px]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgb(var(--color-primary-rgb)/0.08),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgb(var(--color-primary-rgb)/0.10),transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_80%_60%,rgb(var(--color-primary-rgb)/0.05),transparent)] dark:bg-[radial-gradient(ellipse_60%_40%_at_80%_60%,rgb(var(--color-primary-rgb)/0.05),transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_50%_at_20%_80%,rgb(var(--color-primary-rgb)/0.03),transparent)] dark:bg-[radial-gradient(ellipse_50%_50%_at_20%_80%,rgb(var(--color-primary-rgb)/0.03),transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_1px_at_20px_20px,rgb(var(--color-primary-rgb)/0.05)_1px,transparent_0)] dark:bg-[radial-gradient(circle_1px_at_20px_20px,rgb(var(--color-primary-rgb)/0.03)_1px,transparent_0)] bg-[length:40px_40px]" />
 
         <div className="container mx-auto px-4 sm:px-6 relative">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center max-w-6xl mx-auto">
@@ -167,7 +167,7 @@ export default function Landing() {
             ]).map((feature, index) => (
               <div
                 key={index}
-                className={`scroll-reveal scroll-reveal-delay-${index + 1} text-left border border-border rounded-xl p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md group`}
+                className={`scroll-reveal scroll-reveal-delay-${index + 1} text-left border border-border rounded-xl p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md group dark:bg-gradient-to-br dark:from-card dark:to-card/80`}
               >
                 <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110">
                   <feature.icon className="w-6 h-6 sm:w-7 sm:h-7 text-primary" />
@@ -366,8 +366,8 @@ export default function Landing() {
       {/* CTA */}
       <section className="py-12 sm:py-20 relative overflow-hidden grain-overlay">
         {/* Gradient mesh — inverted from hero (origin bottom) */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_120%,hsl(var(--primary)/0.08),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_120%,hsl(var(--primary)/0.10),transparent)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_20%_40%,hsl(var(--primary)/0.05),transparent)] dark:bg-[radial-gradient(ellipse_60%_40%_at_20%_40%,hsl(var(--primary)/0.05),transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_120%,rgb(var(--color-primary-rgb)/0.08),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_120%,rgb(var(--color-primary-rgb)/0.10),transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_20%_40%,rgb(var(--color-primary-rgb)/0.05),transparent)] dark:bg-[radial-gradient(ellipse_60%_40%_at_20%_40%,rgb(var(--color-primary-rgb)/0.05),transparent)]" />
 
         <div ref={ctaRef} className="scroll-reveal container mx-auto px-4 sm:px-6 text-center relative max-w-2xl">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold mb-3 sm:mb-4 font-display">

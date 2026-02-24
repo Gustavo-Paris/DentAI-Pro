@@ -795,10 +795,14 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
       queryClient.invalidateQueries({ queryKey: evaluationKeys.sessions() });
       queryClient.invalidateQueries({ queryKey: evaluationKeys.lists() });
 
-      const budgetLabel = newBudget === 'premium' ? 'Premium' : 'Padrão';
+      const budgetLabel = newBudget === 'premium'
+        ? t('toasts.evaluationDetail.budgetPremium', { defaultValue: 'Premium' })
+        : t('toasts.evaluationDetail.budgetStandard', { defaultValue: 'Padrão' });
       toast.success(
         t('toasts.evaluationDetail.regenerateSuccess', {
-          defaultValue: `${successCount} protocolo(s) regenerado(s) como ${budgetLabel}`,
+          count: successCount,
+          budget: budgetLabel,
+          defaultValue: '{{count}} protocolo(s) regenerado(s) como {{budget}}',
         }),
       );
     } catch (error) {
