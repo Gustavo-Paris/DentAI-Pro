@@ -111,7 +111,8 @@ export async function updateEvaluationProtocol(
     })
     .eq('id', evalId);
   if (error) {
-    logger.warn('Failed to update evaluation protocol:', error);
+    logger.error('Failed to update evaluation protocol:', error);
+    throw error;
   }
 }
 
@@ -267,7 +268,7 @@ export async function syncGroupProtocols(
   // Group by treatment_type + cavity_class
   const groups: Record<string, typeof evaluations> = {};
   for (const ev of evaluations) {
-    const tt = `${ev.treatment_type}::${(ev as Record<string, unknown>).cavity_class || 'unknown'}`;
+    const tt = ev.treatment_type || 'unknown';
     if (!groups[tt]) groups[tt] = [];
     groups[tt].push(ev);
   }
