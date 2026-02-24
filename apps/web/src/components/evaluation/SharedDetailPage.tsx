@@ -24,7 +24,7 @@ function SharedHeader({ brandName, badgeText }: { brandName: string; badgeText?:
   return (
     <header className="border-b border-border">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-        <span className="text-lg font-semibold tracking-[0.2em] font-display text-primary">
+        <span className="text-lg font-semibold tracking-[0.2em] font-display text-gradient-brand">
           {brandName}
         </span>
         {badgeText && (

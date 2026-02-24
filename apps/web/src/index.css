@@ -527,6 +527,14 @@
   background-clip: text;
 }
 
+/* PageShell sidebar brand title — apply gradient to match rest of app */
+h2.text-sidebar-foreground {
+  background: linear-gradient(135deg, var(--color-primary), var(--brand-accent), var(--color-primary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 /* Primary glow — for all functional buttons (.btn-glow-gold is a legacy alias) */
 .btn-glow,
 .btn-glow-gold {

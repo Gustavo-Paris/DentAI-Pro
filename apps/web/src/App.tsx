@@ -141,7 +141,7 @@ class RouteErrorBoundary extends Component<{ children: ReactNode }, { hasError: 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
     <div className="flex flex-col items-center gap-4">
-      <span className="text-xl font-semibold tracking-[0.2em] font-display text-gradient-gold animate-pulse">
+      <span className="text-xl font-semibold tracking-[0.2em] font-display text-gradient-brand animate-pulse">
         ToSmile.ai
       </span>
       <div className="w-48">

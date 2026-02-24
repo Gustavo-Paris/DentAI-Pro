@@ -19,7 +19,7 @@ export function HeroMockup() {
 
           {/* App header */}
           <div className="px-4 py-3 border-b border-border/50">
-            <div className="text-xs font-semibold tracking-[0.15em] text-primary">ToSmile.ai</div>
+            <div className="text-xs font-semibold tracking-[0.15em] text-gradient-brand">ToSmile.ai</div>
             <div className="text-[10px] text-muted-foreground mt-0.5">{t('components.landing.heroMockup.analysisResult')}</div>
           </div>
 

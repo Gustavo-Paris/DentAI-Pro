@@ -15,7 +15,7 @@ export function LegalPageLayout({ title, children }: LegalPageLayoutProps) {
     <div className="min-h-screen bg-background">
       <header className="border-b border-border" aria-label={t('common.siteNavigation', { defaultValue: 'Navegação do site' })}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <Link to="/" className="text-xl font-display font-semibold text-primary">
+          <Link to="/" className="text-xl font-display font-semibold text-gradient-brand">
             {BRAND_NAME}
           </Link>
           <Link to="/">
