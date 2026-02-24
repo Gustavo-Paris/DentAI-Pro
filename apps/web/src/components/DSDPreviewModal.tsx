@@ -108,12 +108,14 @@ export function DSDPreviewModal({
           <div className="space-y-3">
             {/* Layer tabs */}
             {hasLayers && layers.length > 1 && (
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2" role="tablist">
                 {layers.map((layer, idx) => (
                   <button
                     key={layer.type}
+                    role="tab"
+                    aria-selected={activeLayerIndex === idx}
                     onClick={() => setActiveLayerIndex(idx)}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 min-h-[44px] rounded-full text-xs font-medium transition-colors border ${
                       activeLayerIndex === idx
                         ? 'bg-primary text-primary-foreground border-primary'
                         : 'bg-secondary/50 text-muted-foreground border-border hover:border-primary/50'

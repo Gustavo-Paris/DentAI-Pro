@@ -47,7 +47,9 @@ export function validateRequest(data: unknown): { success: boolean; error?: stri
     patientPreferences = {
       whiteningLevel,
       aestheticGoals: typeof prefs.aestheticGoals === 'string' ? prefs.aestheticGoals : undefined,
-      desiredChanges: Array.isArray(prefs.desiredChanges) ? prefs.desiredChanges : undefined,
+      desiredChanges: Array.isArray(prefs.desiredChanges)
+        ? prefs.desiredChanges.slice(0, 20).map(c => typeof c === 'string' ? c.slice(0, 500) : '')
+        : undefined,
     };
     if (!patientPreferences.whiteningLevel && !patientPreferences.aestheticGoals && !patientPreferences.desiredChanges?.length) {
       patientPreferences = undefined;
@@ -63,7 +65,11 @@ export function validateRequest(data: unknown): { success: boolean; error?: stri
   const clinicalTeethFindings = Array.isArray(req.clinicalTeethFindings)
     ? (req.clinicalTeethFindings as ClinicalToothFinding[]).filter(
         (f): f is ClinicalToothFinding => typeof f === 'object' && f !== null && typeof f.tooth === 'string'
-      )
+      ).slice(0, 48).map(f => ({
+        ...f,
+        indication_reason: typeof f.indication_reason === 'string' ? f.indication_reason.slice(0, 500) : f.indication_reason,
+        treatment_indication: typeof f.treatment_indication === 'string' ? f.treatment_indication.slice(0, 500) : f.treatment_indication,
+      }))
     : undefined;
 
   // Validate layerType if provided

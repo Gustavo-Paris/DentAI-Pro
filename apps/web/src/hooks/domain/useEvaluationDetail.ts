@@ -210,6 +210,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: evaluationKeys.detail(variables.id) });
+      queryClient.invalidateQueries({ queryKey: evaluationKeys.session(sessionId) });
       queryClient.invalidateQueries({ queryKey: evaluationKeys.lists() });
       queryClient.invalidateQueries({ queryKey: evaluationKeys.sessions() });
     },

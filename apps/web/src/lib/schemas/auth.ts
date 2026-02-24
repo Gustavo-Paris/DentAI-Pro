@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import i18n from '@/lib/i18n';
 
 // Reusable password schema with complexity requirements
 const passwordSchema = z.string()
@@ -77,14 +78,16 @@ export const resetPasswordSchema = z.object({
   path: ['confirmPassword'],
 });
 
-// Password requirements for UI display
-export const PASSWORD_REQUIREMENTS = [
-  { label: 'Mínimo 12 caracteres', test: (val: string) => val.length >= 12 },
-  { label: 'Uma letra maiúscula', test: (val: string) => /[A-Z]/.test(val) },
-  { label: 'Uma letra minúscula', test: (val: string) => /[a-z]/.test(val) },
-  { label: 'Um número', test: (val: string) => /[0-9]/.test(val) },
-  { label: 'Um caractere especial (!@#$%^&*)', test: (val: string) => /[^A-Za-z0-9]/.test(val) },
-];
+// Password requirements for UI display — getter function so i18n.t() evaluates at call time
+export function getPasswordRequirements(): Array<{ label: string; test: (val: string) => boolean }> {
+  return [
+    { label: i18n.t('auth.validation.minChars', { defaultValue: 'Mínimo 12 caracteres' }), test: (val: string) => val.length >= 12 },
+    { label: i18n.t('auth.validation.uppercase', { defaultValue: 'Uma letra maiúscula' }), test: (val: string) => /[A-Z]/.test(val) },
+    { label: i18n.t('auth.validation.lowercase', { defaultValue: 'Uma letra minúscula' }), test: (val: string) => /[a-z]/.test(val) },
+    { label: i18n.t('auth.validation.number', { defaultValue: 'Um número' }), test: (val: string) => /[0-9]/.test(val) },
+    { label: i18n.t('auth.validation.special', { defaultValue: 'Um caractere especial (!@#$%^&*)' }), test: (val: string) => /[^A-Za-z0-9]/.test(val) },
+  ];
+}
 
 export type LoginFormData = z.infer<typeof loginSchema>;
 export type RegisterFormData = z.infer<typeof registerSchema>;

@@ -113,7 +113,14 @@
     "redirectingToDashboard": "Redirecionando para o dashboard...",
     "invalidLink": "Link inválido ou expirado",
     "invalidLinkDescription": "O link de recuperação pode ter expirado. Solicite um novo link.",
-    "requestNewLink": "Solicitar novo link"
+    "requestNewLink": "Solicitar novo link",
+    "validation": {
+      "minChars": "Mínimo 12 caracteres",
+      "uppercase": "Uma letra maiúscula",
+      "lowercase": "Uma letra minúscula",
+      "number": "Um número",
+      "special": "Um caractere especial (!@#$%^&*)"
+    }
   },
   "nav": {
     "dashboard": "Dashboard",

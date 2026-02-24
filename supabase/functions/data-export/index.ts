@@ -71,10 +71,10 @@ Deno.serve(async (req) => {
         .select("*")
         .eq("user_id", userId)
         .maybeSingle(),
-      // Evaluations (with full data)
+      // Evaluations (explicit columns — excludes internal cache fields)
       supabaseService
         .from("evaluations")
-        .select("*")
+        .select("id, user_id, session_id, patient_id, patient_name, patient_age, tooth, region, cavity_class, restoration_size, substrate, substrate_condition, enamel_condition, depth, aesthetic_level, tooth_color, stratification_needed, bruxism, longevity_expectation, budget, priority, status, treatment_type, desired_tooth_shape, recommended_resin_id, recommendation_text, alternatives, ideal_resin_id, ideal_reason, is_from_inventory, has_inventory_at_creation, ai_treatment_indication, ai_indication_reason, stratification_protocol, protocol_layers, cementation_protocol, generic_protocol, checklist_progress, alerts, warnings, photo_frontal, photo_45, photo_face, additional_photos, patient_aesthetic_goals, patient_desired_changes, created_at, updated_at")
         .eq("user_id", userId)
         .order("created_at", { ascending: false }),
       // Patients

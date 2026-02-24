@@ -1,3 +1,4 @@
+import type { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { logger } from "../_shared/logger.ts";
 import {
   callGeminiImageEdit,
@@ -36,8 +37,7 @@ export async function generateSimulation(
   imageBase64: string,
   analysis: DSDAnalysis,
   userId: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  supabase: any,
+  supabase: SupabaseClient,
   toothShape: string = 'natural',
   patientPreferences?: PatientPreferences,
   layerType?: 'restorations-only' | 'whitening-restorations' | 'complete-treatment' | 'root-coverage',

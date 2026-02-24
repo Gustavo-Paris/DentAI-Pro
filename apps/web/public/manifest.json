@@ -1,6 +1,11 @@
 {
+  "id": "/",
   "name": "ToSmile.ai — Odontologia Digital Inteligente",
   "short_name": "ToSmile.ai",
+  "description": "IA que analisa, planeja e gera protocolos odontológicos personalizados com precisão.",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "categories": ["medical", "productivity"],
   "icons": [
     {
       "src": "/icon-192.png",

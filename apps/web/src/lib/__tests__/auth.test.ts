@@ -4,7 +4,7 @@ import {
   registerSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
-  PASSWORD_REQUIREMENTS,
+  getPasswordRequirements,
 } from '../schemas/auth';
 
 describe('loginSchema', () => {
@@ -231,38 +231,38 @@ describe('resetPasswordSchema', () => {
   });
 });
 
-describe('PASSWORD_REQUIREMENTS', () => {
+describe('getPasswordRequirements', () => {
   it('should have 5 requirements', () => {
-    expect(PASSWORD_REQUIREMENTS).toHaveLength(5);
+    expect(getPasswordRequirements()).toHaveLength(5);
   });
 
   it('should correctly test minimum length', () => {
-    const lengthReq = PASSWORD_REQUIREMENTS[0];
+    const lengthReq = getPasswordRequirements()[0];
     expect(lengthReq.test('short')).toBe(false);
     expect(lengthReq.test('exactly12char')).toBe(true);
     expect(lengthReq.test('longerthan12chars')).toBe(true);
   });
 
   it('should correctly test uppercase requirement', () => {
-    const uppercaseReq = PASSWORD_REQUIREMENTS[1];
+    const uppercaseReq = getPasswordRequirements()[1];
     expect(uppercaseReq.test('lowercase')).toBe(false);
     expect(uppercaseReq.test('Uppercase')).toBe(true);
   });
 
   it('should correctly test lowercase requirement', () => {
-    const lowercaseReq = PASSWORD_REQUIREMENTS[2];
+    const lowercaseReq = getPasswordRequirements()[2];
     expect(lowercaseReq.test('UPPERCASE')).toBe(false);
     expect(lowercaseReq.test('lowercase')).toBe(true);
   });
 
   it('should correctly test number requirement', () => {
-    const numberReq = PASSWORD_REQUIREMENTS[3];
+    const numberReq = getPasswordRequirements()[3];
     expect(numberReq.test('noNumbers')).toBe(false);
     expect(numberReq.test('has1number')).toBe(true);
   });
 
   it('should correctly test special character requirement', () => {
-    const specialReq = PASSWORD_REQUIREMENTS[4];
+    const specialReq = getPasswordRequirements()[4];
     expect(specialReq.test('NoSpecial123')).toBe(false);
     expect(specialReq.test('Has@Special')).toBe(true);
     expect(specialReq.test('Has!Special')).toBe(true);

@@ -126,7 +126,7 @@ export class GeminiError extends Error {
 const { check: circuitBreakerCheck, onSuccess: circuitBreakerOnSuccess, onFailure: circuitBreakerOnFailure } =
   createCircuitBreaker(GeminiError, "Gemini");
 
-const DEFAULT_TIMEOUT_MS = 30_000;
+const DEFAULT_TIMEOUT_MS = 55_000;
 
 // Get API key from environment
 function getApiKey(): string {
@@ -292,7 +292,7 @@ async function makeGeminiRequest(
 
         logger.warn(`Server error (${response.status}). Retrying once...`);
 
-        if (retryCount < 1) {
+        if (retryCount < maxRetries) {
           await sleep(2000);
           retryCount++;
           continue;

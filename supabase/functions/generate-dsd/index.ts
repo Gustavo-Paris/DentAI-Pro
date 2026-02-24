@@ -131,7 +131,10 @@ Deno.serve(async (req: Request) => {
     const dsdImageHash = imageHashArr.map(b => b.toString(16).padStart(2, '0')).join('');
 
     // If regenerating simulation only, use existing analysis
-    if (regenerateSimulationOnly && existingAnalysis) {
+    // Prefer server-stored analysis over client-provided when available
+    if (regenerateSimulationOnly && existingDbAnalysis) {
+      analysis = existingDbAnalysis;
+    } else if (regenerateSimulationOnly && existingAnalysis) {
       analysis = existingAnalysis;
     } else if (existingDbAnalysis && evaluationHasDsdAnalysis) {
       // Reuse analysis already stored in this evaluation (e.g., layer calls)

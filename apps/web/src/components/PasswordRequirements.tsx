@@ -1,5 +1,5 @@
 import { Check, X } from 'lucide-react';
-import { PASSWORD_REQUIREMENTS } from '@/lib/schemas/auth';
+import { getPasswordRequirements } from '@/lib/schemas/auth';
 
 interface PasswordRequirementsProps {
   password: string;
@@ -9,9 +9,11 @@ interface PasswordRequirementsProps {
 export function PasswordRequirements({ password, className = '' }: PasswordRequirementsProps) {
   if (!password) return null;
 
+  const requirements = getPasswordRequirements();
+
   return (
     <div className={`space-y-1 text-xs ${className}`}>
-      {PASSWORD_REQUIREMENTS.map((req, index) => {
+      {requirements.map((req, index) => {
         const passed = req.test(password);
         return (
           <div 

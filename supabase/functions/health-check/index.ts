@@ -211,12 +211,13 @@ Deno.serve(async (req: Request) => {
   }
 
   const latencyMs = Date.now() - start;
+  const isAuthenticated = Object.keys(geminiResult).length > 0;
   const responseBody = {
     status: dbOk ? "ok" : "degraded",
-    db: dbOk,
+    ...(isAuthenticated && { db: dbOk }),
     latency_ms: latencyMs,
     timestamp: new Date().toISOString(),
-    ...(Object.keys(geminiResult).length > 0 && {
+    ...(isAuthenticated && {
       gemini: { ok: !Object.values(geminiResult).some((v: any) => v?.error) },
     }),
   };

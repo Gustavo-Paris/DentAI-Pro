@@ -249,7 +249,7 @@ async function handleSubscriptionDeleted(supabase: SupabaseClient, subscription:
       status: "canceled",
       canceled_at: new Date().toISOString(),
     })
-    .eq("stripe_customer_id", customerId);
+    .eq("stripe_subscription_id", subscription.id);
 
   if (error) {
     logger.error("Error canceling subscription:", error);

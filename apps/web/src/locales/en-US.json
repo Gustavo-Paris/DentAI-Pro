@@ -111,7 +111,14 @@
     "redirectingToDashboard": "Redirecting to dashboard...",
     "invalidLink": "Invalid or expired link",
     "invalidLinkDescription": "The recovery link may have expired. Request a new link.",
-    "requestNewLink": "Request new link"
+    "requestNewLink": "Request new link",
+    "validation": {
+      "minChars": "At least 12 characters",
+      "uppercase": "One uppercase letter",
+      "lowercase": "One lowercase letter",
+      "number": "One number",
+      "special": "One special character (!@#$%^&*)"
+    }
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -335,7 +342,10 @@
     "teethEvaluated_one": "{{count}} tooth evaluated",
     "teethEvaluated_other": "{{count}} teeth evaluated",
     "completed_one": "{{count}} completed",
-    "completed_other": "{{count}} completed"
+    "completed_other": "{{count}} completed",
+    "deleteSession": "Delete session",
+    "deleteSessionTitle": "Delete evaluation session",
+    "deleteSessionDescription": "This will permanently delete this session and all {{count}} associated case(s). This action cannot be undone."
   },
   "patients": {
     "title": "My Patients",
