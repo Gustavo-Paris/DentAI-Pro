@@ -12,6 +12,7 @@ import {
   Sparkles,
   Trash2,
   Lightbulb,
+  RefreshCw,
 } from 'lucide-react';
 import { TipBanner } from '@/components/TipBanner';
 
@@ -43,9 +44,17 @@ export default function EvaluationDetails() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showMarkAllConfirm, setShowMarkAllConfirm] = useState(false);
   const [showDSD, setShowDSD] = useState(false);
+  const [showRegenerateDialog, setShowRegenerateDialog] = useState(false);
 
   const firstEval = detail.evaluations[0];
   const hasDSD = !!(firstEval?.dsd_simulation_url || firstEval?.dsd_simulation_layers?.length);
+
+  // Budget regeneration — show button to switch to opposite tier
+  const currentBudget = firstEval?.budget || 'padrão';
+  const targetBudget = currentBudget === 'premium' ? 'padrão' : 'premium';
+  const targetLabel = targetBudget === 'premium'
+    ? t('evaluation.regenerateAsPremium', { defaultValue: 'Regenerar como Premium' })
+    : t('evaluation.regenerateAsPadrao', { defaultValue: 'Regenerar como Padrão' });
 
   // Track evaluation_viewed when session loads
   useEffect(() => {
@@ -101,6 +110,15 @@ export default function EvaluationDetails() {
             onClick: detail.handleShareCase,
             disabled: detail.isSharing,
             variant: 'outline',
+          },
+          {
+            label: detail.isRegenerating
+              ? t('evaluation.regenerating', { defaultValue: 'Regenerando...' })
+              : targetLabel,
+            icon: RefreshCw,
+            onClick: () => setShowRegenerateDialog(true),
+            disabled: detail.isRegenerating,
+            variant: 'outline' as const,
           },
           ...(detail.pendingTeeth.length > 0
             ? [{
@@ -297,6 +315,23 @@ export default function EvaluationDetails() {
           detail.handleDeleteSession();
         }}
         variant="destructive"
+      />
+
+      {/* Confirm protocol regeneration */}
+      <PageConfirmDialog
+        open={showRegenerateDialog}
+        onOpenChange={setShowRegenerateDialog}
+        title={t('evaluation.regenerateTitle', { defaultValue: 'Regenerar protocolos?' })}
+        description={t('evaluation.regenerateDescription', {
+          defaultValue: `Os protocolos de resina e porcelana serão regenerados como "${targetBudget}". Isso substituirá os protocolos atuais.`,
+        })}
+        confirmText={t('evaluation.regenerateConfirm', { defaultValue: 'Regenerar' })}
+        cancelText={t('common.cancel')}
+        onConfirm={() => {
+          setShowRegenerateDialog(false);
+          detail.handleRegenerateWithBudget(targetBudget as 'padrão' | 'premium');
+        }}
+        variant="warning"
       />
     </>
   );
