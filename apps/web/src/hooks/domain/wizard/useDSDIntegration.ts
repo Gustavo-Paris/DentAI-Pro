@@ -103,9 +103,12 @@ export function useDSDIntegration({
         });
       }
 
-      // Auto-add gengivoplasty ONLY if user explicitly approved in DSD step.
-      // If gingivoplastyApproved is explicitly false, the user discarded it — respect that.
-      const hasGengivoplasty = result?.gingivoplastyApproved === true;
+      // Auto-include gengivoplasty if DSD suggests it, UNLESS user explicitly discarded
+      const dsdSuggestsGingivo = result?.analysis?.suggestions?.some(s => {
+        const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
+        return text.includes('gengiv') || text.includes('zênite') || text.includes('zenite');
+      });
+      const hasGengivoplasty = dsdSuggestsGingivo && result?.gingivoplastyApproved !== false;
       if (hasGengivoplasty) {
         // Add a virtual "GENGIVO" tooth entry for gengivoplasty
         setSelectedTeeth((prev) =>
