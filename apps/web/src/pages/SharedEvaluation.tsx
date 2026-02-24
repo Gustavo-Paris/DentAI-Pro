@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import {
   Button,
   Card,
@@ -9,8 +10,8 @@ import {
   CardTitle,
   Badge,
 } from '@parisgroup-ai/pageshell/primitives';
-import { SharedDetailPage } from '@parisgroup-ai/domain-odonto-ai/shared';
-import { PageEvaluationToothCard } from '@parisgroup-ai/domain-odonto-ai/evaluations';
+import { SharedDetailPage } from '@/components/evaluation/SharedDetailPage';
+import { EvaluationToothCard as PageEvaluationToothCard } from '@/components/evaluation/EvaluationToothCard';
 import { PageImageCompare } from '@parisgroup-ai/domain-odonto-ai/imaging';
 import { BRAND_NAME } from '@/lib/branding';
 import { EVALUATION_STATUS } from '@/lib/evaluation-status';
