@@ -37,7 +37,7 @@ export function CreditsBanner({
         </Link>
         <button
           onClick={onDismiss}
-          className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors shrink-0"
+          className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors shrink-0 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2"
           aria-label={t('dashboard.credits.dismissLabel')}
         >
           <X className="w-4 h-4" />

@@ -284,31 +284,31 @@ export function ComparisonSlider({
           <Button
             variant="secondary"
             size="icon"
-            className="w-7 h-7 bg-background/80 backdrop-blur-sm hover:bg-background"
+            className="w-9 h-9 bg-background/80 backdrop-blur-sm hover:bg-background"
             onClick={(e) => { e.stopPropagation(); handleZoomOut(); }}
             disabled={zoom <= MIN_ZOOM}
             aria-label={t('components.comparisonSlider.zoomOut', { defaultValue: 'Diminuir zoom' })}
           >
-            <ZoomOut className="w-3.5 h-3.5" />
+            <ZoomOut className="w-4 h-4" />
           </Button>
           <Button
             variant="secondary"
             size="icon"
-            className="w-7 h-7 bg-background/80 backdrop-blur-sm hover:bg-background text-[10px] font-mono"
+            className="w-9 h-9 bg-background/80 backdrop-blur-sm hover:bg-background text-[10px] font-mono"
             onClick={(e) => { e.stopPropagation(); handleZoomReset(); }}
             aria-label={t('components.comparisonSlider.zoomReset', { defaultValue: 'Resetar zoom' })}
           >
-            {zoom > 1 ? <Maximize className="w-3.5 h-3.5" /> : '1:1'}
+            {zoom > 1 ? <Maximize className="w-4 h-4" /> : '1:1'}
           </Button>
           <Button
             variant="secondary"
             size="icon"
-            className="w-7 h-7 bg-background/80 backdrop-blur-sm hover:bg-background"
+            className="w-9 h-9 bg-background/80 backdrop-blur-sm hover:bg-background"
             onClick={(e) => { e.stopPropagation(); handleZoomIn(); }}
             disabled={zoom >= MAX_ZOOM}
             aria-label={t('components.comparisonSlider.zoomIn', { defaultValue: 'Aumentar zoom' })}
           >
-            <ZoomIn className="w-3.5 h-3.5" />
+            <ZoomIn className="w-4 h-4" />
           </Button>
         </div>
 
@@ -329,7 +329,7 @@ export function ComparisonSlider({
 
         {/* Change indicator */}
         {changeIndicator && (
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 px-2 py-1 bg-rose-500/90 text-white rounded-full text-[10px] font-medium z-10 pointer-events-none whitespace-nowrap">
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 px-2 py-1 bg-destructive/90 text-destructive-foreground rounded-full text-[10px] font-medium z-10 pointer-events-none whitespace-nowrap">
             {changeIndicator}
           </div>
         )}

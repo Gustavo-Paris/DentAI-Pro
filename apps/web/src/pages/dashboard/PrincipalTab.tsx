@@ -40,7 +40,7 @@ function DraftCard({
 
   return (
     <Card className="relative overflow-hidden p-3 sm:p-4 animate-scale-in">
-      <div className={`absolute left-0 top-0 bottom-0 w-[3px] ${DRAFT_ACCENT_GRADIENT}`} />
+      <div className={`absolute left-0 top-0 bottom-0 w-0.5 ${DRAFT_ACCENT_GRADIENT}`} />
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
@@ -109,15 +109,15 @@ function PendingActions({
       <h2 className="text-sm font-semibold font-display uppercase tracking-wider text-muted-foreground mb-3">
         {t('dashboard.pending.title')}
       </h2>
-      <div className="space-y-2">
+      <div className="space-y-3">
         {pendingDraft && (
           <DraftCard draft={pendingDraft} onDiscard={onDiscardDraft} />
         )}
         {pendingSessions > 0 && (
           <Link to="/evaluations">
-            <Card className="group relative overflow-hidden p-3 sm:p-4 shadow-sm hover:shadow-md rounded-xl transition-all duration-300 cursor-pointer dark:bg-gradient-to-br dark:from-card dark:to-card/80">
-              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent dark:block hidden pointer-events-none" />
-              <div className={`absolute left-0 top-0 bottom-0 w-[3px] ${PENDING_ACCENT_GRADIENT}`} />
+            <Card className="group relative overflow-hidden p-3 sm:p-4 shadow-sm hover:shadow-md rounded-xl transition-all duration-300 cursor-pointer dark:bg-gradient-to-br dark:from-card dark:to-card/80 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2">
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-foreground/[0.06] to-transparent dark:block hidden pointer-events-none" />
+              <div className={`absolute left-0 top-0 bottom-0 w-0.5 ${PENDING_ACCENT_GRADIENT}`} />
               <div className="flex items-center justify-between">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
@@ -194,7 +194,7 @@ function RecentSessions({
           </div>
         </Card>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {sessions.map((session) => (
             <SessionCard key={session.session_id} session={session} />
           ))}
@@ -289,13 +289,13 @@ export function PrincipalTab({
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Module cards */}
-      <div ref={modulesRef} className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div ref={modulesRef} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {modules.map((mod, i) => {
           const Icon = mod.icon;
           const isPrimary = mod.variant === 'primary';
           return (
             <Link key={mod.id} to={mod.href!} className={`scroll-reveal scroll-reveal-delay-${i + 1}`}>
-              <Card className={`group relative overflow-hidden p-4 sm:p-5 rounded-xl transition-all duration-300 cursor-pointer h-full hover:shadow-md hover:-translate-y-0.5 ${isPrimary ? 'bg-primary text-primary-foreground shadow-md btn-glow' : 'border border-border/50 hover:border-border shadow-sm dark:bg-gradient-to-br dark:from-card dark:to-card/80'}`}>
+              <Card className={`group relative overflow-hidden p-4 sm:p-5 rounded-xl transition-all duration-300 cursor-pointer h-full hover:shadow-md hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 ${isPrimary ? 'bg-primary text-primary-foreground shadow-md btn-glow' : 'border border-border/50 hover:border-border shadow-sm dark:bg-gradient-to-br dark:from-card dark:to-card/80'}`}>
                 {!isPrimary && <div className="absolute inset-0 bg-gradient-to-br from-muted/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />}
                 <div className="relative flex items-center gap-3">
                   <div className={`flex h-10 w-10 items-center justify-center rounded-xl shrink-0 transition-transform duration-200 group-hover:scale-110 ${isPrimary ? 'bg-primary-foreground/20' : 'bg-primary/10 dark:bg-primary/15'}`}>

@@ -53,10 +53,10 @@ const SessionCard = memo(function SessionCard({
   const isCompleted = session.status === 'completed';
 
   const borderClass = isNew
-    ? 'border-l-[3px] border-l-primary ring-1 ring-primary/20'
+    ? 'border-l-2 border-l-primary ring-1 ring-primary/20'
     : isCompleted
-    ? 'border-l-[3px] border-l-success'
-    : 'border-l-[3px] border-l-primary';
+    ? 'border-l-2 border-l-success'
+    : 'border-l-2 border-l-primary';
 
   const sessionStatus = isCompleted ? 'completed' : session.completedCount > 0 ? 'partial' : 'pending';
   const statusLabel = isCompleted
@@ -71,7 +71,7 @@ const SessionCard = memo(function SessionCard({
   }, []);
 
   return (
-    <Link to={`/evaluation/${session.session_id}`} onClick={handleClick} aria-label={t('evaluation.viewEvaluationOf', { name: session.patient_name || t('evaluation.patientNoName') })}>
+    <Link to={`/evaluation/${session.session_id}`} onClick={handleClick} className="block rounded-xl focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2" aria-label={t('evaluation.viewEvaluationOf', { name: session.patient_name || t('evaluation.patientNoName') })}>
       <Card
         className={`p-3 sm:p-4 shadow-sm hover:shadow-md rounded-xl transition-all duration-300 cursor-pointer animate-[fade-in-up_0.6s_ease-out_both] dark:bg-gradient-to-br dark:from-card dark:to-card/80 ${borderClass}`}
         style={{ animationDelay: `${index * 0.05}s` }}
@@ -93,7 +93,7 @@ const SessionCard = memo(function SessionCard({
                 {t('evaluation.case', { count: session.evaluationCount })}
               </p>
               <span className="text-muted-foreground hidden sm:inline flex-shrink-0">•</span>
-              <div className="flex gap-1 flex-wrap items-center min-w-0">
+              <div className="flex gap-1.5 flex-wrap items-center min-w-0">
                 {session.teeth.slice(0, 3).map((tooth) => (
                   <Badge key={tooth} variant="outline" className="text-xs whitespace-nowrap">
                     {formatToothLabel(tooth)}
@@ -313,7 +313,7 @@ export default function Evaluations() {
           isLoading={isLoading}
           itemKey="session_id"
           renderCard={renderCard}
-          gridClassName="grid grid-cols-1 gap-3"
+          gridClassName="grid grid-cols-1 gap-4"
           searchConfig={searchConfig}
           filters={filtersConfig}
           state={controlledState}
@@ -331,6 +331,7 @@ export default function Evaluations() {
           <Button
             variant="outline"
             size="sm"
+            className="min-h-11"
             disabled={page === 0}
             onClick={() => setPage(page - 1)}
           >
@@ -347,6 +348,7 @@ export default function Evaluations() {
           <Button
             variant="outline"
             size="sm"
+            className="min-h-11"
             disabled={page >= totalPages - 1}
             onClick={() => setPage(page + 1)}
           >

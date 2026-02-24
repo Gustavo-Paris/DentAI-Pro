@@ -49,7 +49,7 @@ export function PaymentHistorySection({
     succeeded: 'bg-success/10 text-success dark:bg-success/20 dark:text-success',
     failed: 'bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive',
     pending: 'bg-warning/10 text-warning dark:bg-warning/20 dark:text-warning',
-    refunded: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+    refunded: 'bg-primary/10 text-primary',
   };
 
   const handleExportCSV = useCallback(() => {

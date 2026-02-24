@@ -60,7 +60,7 @@ export function CreditPackSection() {
             </button>
           </div>
           {paymentMethod === 'pix' && (
-            <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+            <span className="inline-flex items-center rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-medium text-success">
               {t('components.pricing.pix.badge')}
             </span>
           )}

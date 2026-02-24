@@ -192,7 +192,7 @@ export function CollapsibleDSD({
                 )}
               </div>
               {gingivalSuggestions.length > 0 ? (
-                <div className="grid gap-1.5">
+                <div className="grid gap-2">
                   {gingivalSuggestions.map((s: DSDSuggestion) => (
                     <div key={s.tooth} className="flex items-start gap-2 text-xs">
                       <span className="flex items-center gap-1 font-mono font-medium text-destructive min-w-[2.5rem]">

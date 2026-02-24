@@ -16,6 +16,7 @@ import { LoadingOverlay } from '@/components/LoadingOverlay';
 import { DetailPage, GenericErrorState } from '@parisgroup-ai/pageshell/composites';
 
 import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useResult } from '@/hooks/domain/useResult';
 import { BRAND_NAME } from '@/lib/branding';
 import { formatToothLabel } from '@/lib/treatment-config';
@@ -27,6 +28,7 @@ import { formatToothLabel } from '@/lib/treatment-config';
 
 export default function Result() {
   const { t } = useTranslation();
+  useDocumentTitle(t('pageTitle.result', { defaultValue: 'Resultado' }));
   const r = useResult();
   const navigate = useNavigate();
 
@@ -292,9 +294,9 @@ export default function Result() {
             {r.alternatives && r.alternatives.length > 0 && (
               <section className="mb-8">
                 <h3 className="font-semibold font-display mb-3">{t('result.otherAlternatives')}</h3>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {r.alternatives.map((alt, index) => (
-                    <Card key={index} className="p-4 hover:shadow-md transition-shadow duration-200">
+                    <Card key={index} className="p-4 rounded-xl hover:shadow-md transition-shadow duration-200">
                       <div className="flex items-center justify-between mb-1">
                         <span className="font-medium">{alt.name}</span>
                         <span className="text-sm text-muted-foreground">{alt.manufacturer}</span>

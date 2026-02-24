@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button, Input, PasswordInput } from '@parisgroup-ai/pageshell/primitives';
 import { toast } from 'sonner';
 import { getLoginSchema, type LoginFormData } from '@/lib/schemas/auth';
+import { Loader2 } from 'lucide-react';
 import { GoogleIcon } from '@/components/GoogleIcon';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import {
@@ -90,7 +91,11 @@ export default function Login() {
           disabled={googleLoading}
           type="button"
         >
-          <GoogleIcon className="w-4 h-4 mr-2" />
+          {googleLoading ? (
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          ) : (
+            <GoogleIcon className="w-4 h-4 mr-2" />
+          )}
           {googleLoading ? t('auth.connecting') : t('auth.continueWithGoogle')}
         </Button>
       </div>
@@ -156,7 +161,14 @@ export default function Login() {
             </div>
 
             <Button type="submit" className="w-full btn-glow-gold" disabled={loading}>
-              {loading ? t('auth.loggingIn') : t('auth.login')}
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  {t('auth.loggingIn')}
+                </>
+              ) : (
+                t('auth.login')
+              )}
             </Button>
           </form>
         </Form>

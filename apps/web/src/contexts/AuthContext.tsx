@@ -2,6 +2,7 @@
 import { createContext, useContext, useEffect, useState, useRef, useCallback, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Session, AuthError } from '@supabase/supabase-js';
+import * as Sentry from '@sentry/react';
 import { supabase } from '@/data';
 import { logger } from '@/lib/logger';
 
@@ -30,6 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
+      Sentry.setUser(session?.user ? { id: session.user.id, email: session.user.email } : null);
       setLoading(false);
 
       // When Supabase fires PASSWORD_RECOVERY (user clicked reset link in email),
@@ -46,11 +48,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      Sentry.setUser(session?.user ? { id: session.user.id, email: session.user.email } : null);
       setLoading(false);
     }).catch((error) => {
       logger.error('Failed to get auth session:', error);
       setSession(null);
       setUser(null);
+      Sentry.setUser(null);
       setLoading(false);
     });
 
@@ -102,16 +106,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }).catch((err) => logger.error('Welcome email failed (non-blocking):', err));
 
       // Fire-and-forget: apply referral code if one was stored from landing page
-      const referralCode = localStorage.getItem('referral_code');
-      if (referralCode) {
-        // Wait for auth state to propagate before invoking the edge function
-        setTimeout(() => {
-          supabase.functions.invoke('apply-referral', {
-            body: { referralCode },
-          })
-            .then(() => localStorage.removeItem('referral_code'))
-            .catch((err) => logger.error('Referral code application failed (non-blocking):', err));
-        }, 2000);
+      const stored = localStorage.getItem('referral_code');
+      if (stored) {
+        try {
+          // Support both new JSON format and legacy plain string
+          const parsed = stored.startsWith('{') ? JSON.parse(stored) : { code: stored, ts: 0 };
+          const REFERRAL_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+          if (parsed.ts === 0 || Date.now() - parsed.ts < REFERRAL_TTL_MS) {
+            // Wait for auth state to propagate before invoking the edge function
+            setTimeout(() => {
+              supabase.functions.invoke('apply-referral', {
+                body: { referralCode: parsed.code },
+              })
+                .then(() => localStorage.removeItem('referral_code'))
+                .catch((err) => logger.error('Referral code application failed (non-blocking):', err));
+            }, 2000);
+          } else {
+            localStorage.removeItem('referral_code');
+          }
+        } catch {
+          localStorage.removeItem('referral_code');
+        }
       }
     }
 

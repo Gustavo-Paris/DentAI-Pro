@@ -65,6 +65,18 @@ export default function EvaluationDetails() {
     }
   }, [detail.sessionId, detail.evaluations.length]);
 
+  // Escape key dismisses floating selection bar
+  useEffect(() => {
+    if (detail.selectedIds.size === 0) return;
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        detail.clearSelection();
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [detail.selectedIds.size, detail.clearSelection]);
+
   const handleCompleteClick = (id: string) => {
     const result = detail.handleMarkAsCompleted(id);
     if (result?.pending) {
@@ -171,9 +183,9 @@ export default function EvaluationDetails() {
               </Button>
             </div>
 
-            {/* Floating selection bar */}
+            {/* floating selection bar — below modal z-50 */}
             {detail.selectedIds.size > 0 && (
-              <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-background border shadow-lg rounded-full px-4 py-2 flex items-center gap-3 animate-in slide-in-from-bottom-4">
+              <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-background border shadow-lg rounded-full px-4 py-2 flex items-center gap-3 animate-in slide-in-from-bottom-4">
                 <span className="text-sm font-medium">{t('common.selected', { count: detail.selectedIds.size })}</span>
                 <Button
                   size="sm"

@@ -42,7 +42,7 @@ export function WelcomeModal({ open, onClose, onTrySample, onCreateCase }: Welco
           {[
             { icon: Camera, label: t('components.onboarding.welcome.photoStep'), color: 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400' },
             { icon: Sparkles, label: t('components.onboarding.welcome.aiStep'), color: 'bg-primary/10 text-primary' },
-            { icon: FileText, label: t('components.onboarding.welcome.protocolStep'), color: 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400' },
+            { icon: FileText, label: t('components.onboarding.welcome.protocolStep'), color: 'bg-success/10 text-success' },
           ].map((step, i) => (
             <div key={step.label} className="flex items-center gap-3">
               <div className="flex flex-col items-center gap-1.5">

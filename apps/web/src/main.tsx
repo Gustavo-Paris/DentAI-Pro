@@ -6,6 +6,7 @@ import "./index.css";
 import "./lib/i18n"; // i18n initialization (must be before App)
 import { initWebVitals } from "./lib/webVitals";
 import { env } from "./lib/env";
+import { logger } from "./lib/logger";
 
 // Initialize Sentry for error monitoring (only in production)
 Sentry.init({
@@ -51,7 +52,7 @@ if ("serviceWorker" in navigator) {
       // Could show a toast/banner here; for now just auto-update
     },
     onOfflineReady() {
-      console.log("App ready to work offline");
+      logger.log("App ready to work offline");
     },
   });
 }

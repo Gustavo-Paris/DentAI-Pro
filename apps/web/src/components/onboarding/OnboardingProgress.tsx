@@ -32,7 +32,7 @@ export function OnboardingProgress() {
       </div>
 
       {/* Steps */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {steps.map((step) => {
           const isNext = !step.completed && steps.findIndex(s => !s.completed) === steps.indexOf(step);
           return (

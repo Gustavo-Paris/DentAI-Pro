@@ -22,7 +22,7 @@ export default defineConfig(() => ({
       manifest: false,
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
-        globIgnores: ['**/vendor-heic-*.js'],
+        globIgnores: ['**/vendor-heic-*.js', '**/vendor-pdf-*.js', '**/vendor-recharts-*.js'],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com/,

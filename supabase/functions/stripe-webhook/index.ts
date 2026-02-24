@@ -299,12 +299,14 @@ async function handleInvoicePaid(supabase: SupabaseClient, invoice: Stripe.Invoi
 
   // Fire-and-forget: send payment confirmation email
   try {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("full_name")
-      .eq("id", sub.user_id)
-      .single();
-    const { data: authData } = await supabase.auth.admin.getUserById(sub.user_id);
+    const [{ data: profile }, { data: authData }] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", sub.user_id)
+        .single(),
+      supabase.auth.admin.getUserById(sub.user_id),
+    ]);
     const email = authData?.user?.email;
     const name = profile?.full_name || email?.split("@")[0] || "Usuario";
     if (email) {
@@ -367,12 +369,14 @@ async function handleInvoiceFailed(supabase: SupabaseClient, invoice: Stripe.Inv
 
   // Fire-and-forget: send payment failure email
   try {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("full_name")
-      .eq("id", sub.user_id)
-      .single();
-    const { data: authData } = await supabase.auth.admin.getUserById(sub.user_id);
+    const [{ data: profile }, { data: authData }] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", sub.user_id)
+        .single(),
+      supabase.auth.admin.getUserById(sub.user_id),
+    ]);
     const email = authData?.user?.email;
     const name = profile?.full_name || email?.split("@")[0] || "Usuario";
     if (email) {

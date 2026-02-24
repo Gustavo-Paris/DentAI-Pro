@@ -55,6 +55,7 @@ function sendToSentry(metric: Metric) {
 
   // Log poor metrics as warnings for debugging
   if (rating === "poor" && import.meta.env.DEV) {
+    // eslint-disable-next-line no-console
     console.warn(`[Web Vital] Poor ${metric.name}: ${metric.value.toFixed(2)}`);
   }
 }

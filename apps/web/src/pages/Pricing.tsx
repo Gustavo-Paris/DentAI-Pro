@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { CheckCircle2 } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
 import { syncSubscription } from '@/data/subscriptions';
@@ -9,6 +10,7 @@ import { logger } from '@/lib/logger';
 import { trackEvent } from '@/lib/analytics';
 import {
   PricingPage,
+  GenericErrorState,
   type PricingPlan,
   type PricingFeature,
   type BillingCycle,
@@ -169,6 +171,7 @@ function mapToPricingPlan(
 
 export default function Pricing() {
   const { t } = useTranslation();
+  useDocumentTitle(t('pageTitle.pricing', { defaultValue: 'Planos' }));
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const {
@@ -267,14 +270,11 @@ export default function Pricing() {
   // Error state — plans failed to load
   if (!isLoading && plans.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 space-y-4">
-        <p className="text-muted-foreground">
-          {t('pricing.loadError', { defaultValue: 'Não foi possível carregar os planos. Tente novamente.' })}
-        </p>
-        <Button variant="outline" onClick={() => window.location.reload()}>
-          {t('common.tryAgain', { defaultValue: 'Tentar novamente' })}
-        </Button>
-      </div>
+      <GenericErrorState
+        title={t('pricing.loadError', { defaultValue: 'Não foi possível carregar os planos. Tente novamente.' })}
+        description={t('errors.tryReloadPage')}
+        action={{ label: t('common.tryAgain', { defaultValue: 'Tentar novamente' }), onClick: () => window.location.reload() }}
+      />
     );
   }
 
@@ -293,12 +293,12 @@ export default function Pricing() {
       />
 
       <Dialog open={showSuccess} onOpenChange={setShowSuccess}>
-        <DialogContent className="sm:max-w-md text-center">
+        <DialogContent className="sm:max-w-md text-center" aria-labelledby="pricing-success-title">
           <DialogHeader className="items-center">
             <div className="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-success/10 dark:bg-success/20">
-              <CheckCircle2 className="h-10 w-10 text-success" />
+              <CheckCircle2 className="h-10 w-10 text-success" aria-hidden="true" />
             </div>
-            <DialogTitle className="text-xl font-display">
+            <DialogTitle id="pricing-success-title" className="text-xl font-display">
               {t('pricing.subscriptionActivated')}
             </DialogTitle>
             <DialogDescription>

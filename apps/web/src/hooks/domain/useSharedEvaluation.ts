@@ -55,7 +55,6 @@ export function useSharedEvaluation(token: string | undefined): SharedEvaluation
           if (dsd) setDsdData(dsd);
         }
       } catch (error) {
-        console.error('Error fetching shared evaluation:', error);
         logger.error('Error fetching shared evaluation:', error);
         setExpired(true);
         setErrorReason('not_found');

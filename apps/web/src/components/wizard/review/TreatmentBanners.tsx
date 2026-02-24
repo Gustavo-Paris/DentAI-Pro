@@ -82,11 +82,11 @@ export function TreatmentBanners({
 
       {/* Inventory Warning Banner */}
       {!hasInventory && (
-        <Card className="border-sky-500/50 bg-sky-50 dark:bg-sky-950/20">
+        <Card className="border-primary/30 bg-primary/5 dark:bg-primary/10">
           <CardContent className="py-3 flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
-              <Package className="w-5 h-5 text-sky-600 dark:text-sky-400" />
-              <span className="text-sm text-sky-700 dark:text-sky-300">
+              <Package className="w-5 h-5 text-primary" />
+              <span className="text-sm text-primary/80">
                 {t('components.wizard.review.noResins')}
               </span>
             </div>
@@ -101,15 +101,15 @@ export function TreatmentBanners({
 
       {/* Treatment Type Indication Banner */}
       {analysisResult?.treatment_indication === 'porcelana' && (
-        <Card className="border-amber-500/50 bg-amber-50 dark:bg-amber-950/20">
+        <Card className="border-warning/30 bg-warning/10">
           <CardContent className="py-4">
             <div className="flex items-start gap-3">
-              <Crown className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5" />
+              <Crown className="w-5 h-5 text-warning mt-0.5" />
               <div className="flex-1">
-                <h4 className="font-medium text-amber-800 dark:text-amber-200">
+                <h4 className="font-medium text-warning">
                   {t('components.wizard.review.porcelainTitle')}
                 </h4>
-                <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+                <p className="text-sm text-warning/80 mt-1">
                   {analysisResult.indication_reason || t('components.wizard.review.porcelainDefault')}
                 </p>
               </div>

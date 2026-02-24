@@ -17,6 +17,8 @@ import { BarChart3 } from 'lucide-react';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { cn } from '@/lib/utils';
 
+const BAR_SIZE = 20;
+
 // ---------------------------------------------------------------------------
 // Weekly Trends — AreaChart
 // ---------------------------------------------------------------------------
@@ -30,7 +32,7 @@ function WeeklyTrendsChart({ data, loading }: { data: WeeklyTrendPoint[]; loadin
 
   const totalPeriod = data.reduce((sum, d) => sum + d.value, 0);
 
-  if (loading) return <Skeleton className="h-[200px] w-full rounded-xl" />;
+  if (loading) return <Skeleton className="h-52 w-full rounded-xl" />;
 
   return (
     <div ref={containerRef} className="scroll-reveal">
@@ -43,7 +45,7 @@ function WeeklyTrendsChart({ data, loading }: { data: WeeklyTrendPoint[]; loadin
         </Badge>
       </div>
       <Card className="p-4 shadow-sm rounded-xl">
-        <ChartContainer config={chartConfig} className="aspect-auto h-[200px] w-full">
+        <ChartContainer config={chartConfig} className="aspect-auto h-52 w-full">
           <AreaChart data={data}>
             <defs>
               <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
@@ -89,8 +91,8 @@ function TreatmentDonut({ items }: { items: Array<{ label: string; value: number
           {t('dashboard.insights.treatmentDistribution')}
         </h3>
         <div className="flex flex-col items-center">
-          <div className="relative w-[180px] h-[180px]">
-            <PieChart width={180} height={180}>
+          <div className="relative w-44 h-44">
+            <PieChart width={176} height={176}>
               <RechartsTooltip
                 content={({ active, payload }) => {
                   if (!active || !payload?.length) return null;
@@ -166,7 +168,7 @@ function TopResinsChart({ resins }: { resins: Array<{ name: string; count: numbe
         <h3 className="text-sm font-semibold font-display text-muted-foreground mb-3">
           {t('dashboard.insights.topResins')}
         </h3>
-        <ChartContainer config={chartConfig} className="aspect-auto h-[180px] w-full">
+        <ChartContainer config={chartConfig} className="aspect-auto h-44 w-full">
           <BarChart layout="vertical" data={resins} margin={{ left: 0, right: 16 }}>
             <YAxis
               type="category"
@@ -182,7 +184,7 @@ function TopResinsChart({ resins }: { resins: Array<{ name: string; count: numbe
               dataKey="count"
               fill="var(--color-count)"
               radius={[0, 4, 4, 0]}
-              barSize={20}
+              barSize={BAR_SIZE}
             />
           </BarChart>
         </ChartContainer>

@@ -167,6 +167,10 @@ function validateRequest(data: unknown): { success: boolean; error?: string; dat
     return { success: false, error: "Dentes não especificados" };
   }
 
+  if (req.teeth.length > 32) {
+    return { success: false, error: "Número máximo de dentes excedido (32)" };
+  }
+
   // Validate each tooth matches FDI notation (2 digits, first digit 1-8)
   for (const tooth of req.teeth) {
     if (typeof tooth !== "string" || !FDI_TOOTH_REGEX.test(tooth)) {

@@ -21,6 +21,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { evaluations } from "@/data";
 import { QUERY_STALE_TIMES } from "@/lib/constants";
 import i18n from '@/lib/i18n';
+import { logger } from '@/lib/logger';
 
 // Retry lazy imports on chunk loading failure (stale deploy).
 // After a new Vercel deploy, old chunk hashes become 404.
@@ -126,7 +127,7 @@ class RouteErrorBoundary extends Component<{ children: ReactNode }, { hasError: 
     return { hasError: true };
   }
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('RouteErrorBoundary caught:', error, errorInfo);
+    logger.error('RouteErrorBoundary caught:', error, errorInfo);
     Sentry.captureException(error, {
       extra: { componentStack: errorInfo.componentStack },
     });

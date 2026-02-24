@@ -213,6 +213,11 @@ export function validateEvaluationData(data: unknown): ValidationResult<Evaluati
     return { success: false, error: "Idade do paciente inválida" };
   }
 
+  const patientAgeNum = parseInt(obj.patientAge as string, 10);
+  if (isNaN(patientAgeNum) || patientAgeNum < 1 || patientAgeNum > 120) {
+    return { success: false, error: "Idade do paciente fora do intervalo permitido (1-120)" };
+  }
+
   if (!isValidTooth(obj.tooth)) {
     return { success: false, error: "Número do dente inválido" };
   }

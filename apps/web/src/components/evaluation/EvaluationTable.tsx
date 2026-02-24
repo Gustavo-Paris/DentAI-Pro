@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -56,7 +57,7 @@ export interface EvaluationTableProps {
 // Component
 // =============================================================================
 
-export function EvaluationTable({
+export const EvaluationTable = memo(function EvaluationTable({
   evaluations,
   sessionId,
   selectedIds,
@@ -85,6 +86,7 @@ export function EvaluationTable({
                 <Checkbox
                   checked={selectedIds.size === evaluations.length && evaluations.length > 0}
                   onCheckedChange={() => toggleSelectAll()}
+                  aria-label={t('evaluation.selectAll', { defaultValue: 'Selecionar todas' })}
                 />
               </TableHead>
               <TableHead>{t('evaluation.tooth')}</TableHead>
@@ -112,6 +114,7 @@ export function EvaluationTable({
                             }
                           }
                         }}
+                        aria-label={t('evaluation.selectEvaluation', { defaultValue: 'Selecionar avaliação' })}
                       />
                     </TableCell>
                     <TableCell colSpan={3} className="py-2">
@@ -155,6 +158,7 @@ export function EvaluationTable({
                       <Checkbox
                         checked={selectedIds.has(evaluation.id)}
                         onCheckedChange={() => toggleSelection(evaluation.id)}
+                        aria-label={t('evaluation.selectEvaluation', { defaultValue: 'Selecionar avaliação' })}
                       />
                     </TableCell>
                     <TableCell className="font-medium">{evaluation.tooth === 'GENGIVO' ? t('components.evaluationDetail.gingiva') : evaluation.tooth}</TableCell>
@@ -214,4 +218,4 @@ export function EvaluationTable({
       </CardContent>
     </Card>
   );
-}
+});

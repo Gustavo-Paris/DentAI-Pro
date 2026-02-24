@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { getRegisterSchema, type RegisterFormData } from '@/lib/schemas/auth';
 import { PasswordRequirements } from '@/components/PasswordRequirements';
 import { GoogleIcon } from '@/components/GoogleIcon';
-import { Mail } from 'lucide-react';
+import { Loader2, Mail } from 'lucide-react';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { IconCircle } from '@/components/shared/IconCircle';
 import {
@@ -79,7 +79,7 @@ export default function Register() {
       >
         <div className="animate-[scale-in_0.6s_ease-out_both]">
           <IconCircle>
-            <Mail className="w-8 h-8 text-primary" />
+            <Mail className="w-8 h-8 text-primary" aria-hidden="true" />
           </IconCircle>
           <Link to="/login">
             <Button className="w-full btn-glow-gold">{t('common.goToLogin')}</Button>
@@ -102,7 +102,11 @@ export default function Register() {
           disabled={googleLoading}
           type="button"
         >
-          <GoogleIcon className="w-4 h-4 mr-2" />
+          {googleLoading ? (
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          ) : (
+            <GoogleIcon className="w-4 h-4 mr-2" />
+          )}
           {googleLoading ? t('auth.connecting') : t('auth.continueWithGoogle')}
         </Button>
       </div>
@@ -244,7 +248,14 @@ export default function Register() {
             />
 
             <Button type="submit" className="w-full btn-glow-gold" disabled={loading}>
-              {loading ? t('auth.creatingAccount') : t('auth.signUp')}
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  {t('auth.creatingAccount')}
+                </>
+              ) : (
+                t('auth.signUp')
+              )}
             </Button>
           </form>
         </Form>

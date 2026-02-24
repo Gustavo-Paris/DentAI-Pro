@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import {
   Card,
   Button,
@@ -41,6 +42,7 @@ import { PatientSessionList } from '@/components/patient/PatientSessionList';
 
 export default function PatientProfile() {
   const { t } = useTranslation();
+  useDocumentTitle(t('pageTitle.patientProfile', { defaultValue: 'Perfil do Paciente' }));
   const navigate = useNavigate();
   const { user } = useAuth();
   const profile = usePatientProfile();
@@ -72,7 +74,7 @@ export default function PatientProfile() {
             id: 'contact',
             title: t('patients.contactInfo'),
             children: () => (
-              <Card className="p-4">
+              <Card className="p-4 rounded-xl">
                 <div className="flex flex-wrap gap-4 text-sm">
                   {patient?.phone && (
                     <div className="flex items-center gap-2 text-muted-foreground">
@@ -95,7 +97,7 @@ export default function PatientProfile() {
                   {!patient?.phone && !patient?.email && !patient?.notes && (
                     <p className="text-muted-foreground">
                       {t('patients.noAdditionalInfo')}{' '}
-                      <button className="text-primary hover:underline" onClick={profile.openEditDialog}>
+                      <button className="text-primary hover:underline transition-colors duration-200" onClick={profile.openEditDialog}>
                         {t('patients.addData')}
                       </button>
                     </p>
@@ -108,7 +110,7 @@ export default function PatientProfile() {
             id: 'metrics',
             title: t('patients.metrics'),
             children: () => (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {[
                   { value: metrics.totalSessions, label: t('patients.evaluationsLabel') },
                   { value: metrics.totalCases, label: t('patients.casesLabel') },

@@ -1,6 +1,7 @@
 import { useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
 import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { logger } from "@/lib/logger";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@parisgroup-ai/pageshell/primitives";
@@ -9,6 +10,7 @@ import { Button } from "@parisgroup-ai/pageshell/primitives";
 // intentionally simple layout with route logging side-effects.
 const NotFound = () => {
   const { t } = useTranslation();
+  useDocumentTitle(t('pageTitle.notFound', { defaultValue: 'Página não encontrada' }));
   const location = useLocation();
 
   useEffect(() => {
@@ -25,7 +27,7 @@ const NotFound = () => {
         </p>
         <Button asChild>
           <Link to="/">
-            <ArrowLeft className="w-4 h-4 mr-2" />
+            <ArrowLeft className="w-4 h-4 mr-2" aria-hidden="true" />
             {t('common.backToHome')}
           </Link>
         </Button>

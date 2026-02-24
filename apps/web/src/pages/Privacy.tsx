@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { BRAND_NAME } from '@/lib/branding';
 import { LegalPageLayout } from '@/components/shared/LegalPageLayout';
 
@@ -8,6 +9,7 @@ const sectionHeadingClass = "text-xl font-semibold font-display mb-3";
 // is designed for data-fetched entity views, not static content with custom navigation.
 export default function Privacy() {
   const { t } = useTranslation();
+  useDocumentTitle(t('pageTitle.privacy', { defaultValue: 'Privacidade' }));
   const b = { brandName: BRAND_NAME };
   return (
     <LegalPageLayout title={t('pages.privacyTitle')}>
@@ -77,7 +79,7 @@ export default function Privacy() {
           <li><strong>{t('pages.privacy.s6Item6Label')}</strong> {t('pages.privacy.s6Item6Text')}</li>
         </ul>
         <p className="text-muted-foreground mt-2">
-          {t('pages.privacy.s6Contact')} <a href="mailto:privacidade@tosmile.ai" className="text-primary hover:underline">privacidade@tosmile.ai</a>
+          {t('pages.privacy.s6Contact')} <a href="mailto:privacidade@tosmile.ai" className="text-primary hover:underline focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 rounded">privacidade@tosmile.ai</a>
         </p>
       </section>
 
@@ -105,8 +107,8 @@ export default function Privacy() {
         <h2 className={sectionHeadingClass}>{t('pages.privacy.s11Title')}</h2>
         <p className="text-muted-foreground">{t('pages.privacy.s11Text')}</p>
         <ul className="list-none text-muted-foreground mt-2 space-y-1">
-          <li><strong>{t('pages.privacy.s11EmailLabel')}</strong> <a href="mailto:privacidade@tosmile.ai" className="text-primary hover:underline">privacidade@tosmile.ai</a></li>
-          <li><strong>{t('pages.privacy.s11DpoLabel')}</strong> <a href="mailto:dpo@tosmile.ai" className="text-primary hover:underline">dpo@tosmile.ai</a></li>
+          <li><strong>{t('pages.privacy.s11EmailLabel')}</strong> <a href="mailto:privacidade@tosmile.ai" className="text-primary hover:underline focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 rounded">privacidade@tosmile.ai</a></li>
+          <li><strong>{t('pages.privacy.s11DpoLabel')}</strong> <a href="mailto:dpo@tosmile.ai" className="text-primary hover:underline focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 rounded">dpo@tosmile.ai</a></li>
         </ul>
       </section>
     </LegalPageLayout>

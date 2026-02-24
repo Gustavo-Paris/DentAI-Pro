@@ -27,9 +27,11 @@ import { Calendar } from 'lucide-react';
 
 export default function SharedEvaluation() {
   const { t } = useTranslation();
+  useDocumentTitle(t('pageTitle.sharedEvaluation', { defaultValue: 'Avaliação Compartilhada' }));
   const { token } = useParams<{ token: string }>();
   const { loading, expired, errorReason, evaluations, dsdData, beforeImageUrl, simulationUrl, layerUrls } = useSharedEvaluation(token);
   const [activeLayerIndex, setActiveLayerIndex] = useState(0);
+  const [dsdImageError, setDsdImageError] = useState(false);
 
   const pageState = loading ? 'loading' : expired ? 'expired' : 'data';
   const isNotFound = errorReason === 'not_found';
@@ -84,6 +86,21 @@ export default function SharedEvaluation() {
           ? layerUrls[activeLayer.type]
           : simulationUrl;
 
+        if (dsdImageError) {
+          return (
+            <Card className="mb-6 shadow-sm rounded-xl overflow-hidden animate-[fade-in-up_0.6s_ease-out_0.1s_both]">
+              <CardHeader>
+                <CardTitle className="text-lg font-display">{t('pages.dsdSimulation')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  {t('pages.dsdImageLoadError', { defaultValue: 'Nao foi possivel carregar as imagens da simulacao DSD.' })}
+                </p>
+              </CardContent>
+            </Card>
+          );
+        }
+
         return (
           <Card className="mb-6 shadow-sm rounded-xl overflow-hidden animate-[fade-in-up_0.6s_ease-out_0.1s_both]">
             <CardHeader>
@@ -98,6 +115,7 @@ export default function SharedEvaluation() {
                       variant={idx === activeLayerIndex ? 'default' : 'outline'}
                       size="sm"
                       className="text-xs"
+                      aria-pressed={idx === activeLayerIndex}
                       onClick={() => setActiveLayerIndex(idx)}
                     >
                       {getLayerLabel(layer.type as SimulationLayerType, t)}
@@ -108,7 +126,10 @@ export default function SharedEvaluation() {
                   ))}
                 </div>
               )}
-              <div className="print:hidden">
+              <div className="print:hidden" aria-live="polite">
+                {/* Hidden probes to detect image load failures */}
+                <img src={beforeImageUrl} alt="" className="hidden" onError={() => setDsdImageError(true)} />
+                <img src={activeAfterImage} alt="" className="hidden" onError={() => setDsdImageError(true)} />
                 <ComparisonSlider
                   beforeImage={beforeImageUrl}
                   afterImage={activeAfterImage}
@@ -150,7 +171,7 @@ export default function SharedEvaluation() {
       })()}
 
       {/* Tooth Cards */}
-      <div className="space-y-3 animate-[fade-in-up_0.6s_ease-out_0.2s_both]">
+      <div className="space-y-4 animate-[fade-in-up_0.6s_ease-out_0.2s_both]">
         {evaluations.map((evaluation, index) => {
           const treatmentType = evaluation.treatment_type || 'resina';
           const config = getTreatmentConfig(treatmentType);

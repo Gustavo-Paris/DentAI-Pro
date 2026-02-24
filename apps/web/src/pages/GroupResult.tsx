@@ -10,11 +10,13 @@ import { CollapsibleDSD } from '@/components/dsd/CollapsibleDSD';
 import { DetailPage, GenericErrorState } from '@parisgroup-ai/pageshell/composites';
 
 import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useGroupResult } from '@/hooks/domain/useGroupResult';
 import { formatToothLabel } from '@/lib/treatment-config';
 
 export default function GroupResult() {
   const { t } = useTranslation();
+  useDocumentTitle(t('pageTitle.groupResult', { defaultValue: 'Resultado do Grupo' }));
   const g = useGroupResult();
   const navigate = useNavigate();
   const [showMarkAllConfirm, setShowMarkAllConfirm] = useState(false);

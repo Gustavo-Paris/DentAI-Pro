@@ -1,15 +1,17 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { resetPasswordForEmail } from '@/data/auth';
 import { Button, Input, Label } from '@parisgroup-ai/pageshell/primitives';
 import { toast } from 'sonner';
-import { ArrowLeft, Mail } from 'lucide-react';
+import { ArrowLeft, Loader2, Mail } from 'lucide-react';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { IconCircle } from '@/components/shared/IconCircle';
 
 export default function ForgotPassword() {
   const { t } = useTranslation();
+  useDocumentTitle(t('pageTitle.forgotPassword', { defaultValue: 'Esqueci a Senha' }));
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -46,7 +48,7 @@ export default function ForgotPassword() {
         <div className="space-y-6 animate-[scale-in_0.6s_ease-out_both]">
           <div className="flex items-center justify-center">
             <IconCircle>
-              <Mail className="w-8 h-8 text-primary" />
+              <Mail className="w-8 h-8 text-primary" aria-hidden="true" />
             </IconCircle>
           </div>
           <p className="text-center text-sm text-muted-foreground">
@@ -79,7 +81,14 @@ export default function ForgotPassword() {
             </div>
 
             <Button type="submit" className="w-full btn-glow-gold" disabled={loading}>
-              {loading ? t('auth.sending') : t('auth.sendRecoveryLink')}
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  {t('auth.sending')}
+                </>
+              ) : (
+                t('auth.sendRecoveryLink')
+              )}
             </Button>
           </form>
         </div>
@@ -87,9 +96,9 @@ export default function ForgotPassword() {
 
       <Link
         to="/login"
-        className="flex items-center justify-center gap-2 text-sm text-muted-foreground mt-6 hover:text-foreground"
+        className="flex items-center justify-center gap-2 text-sm text-muted-foreground mt-6 hover:text-foreground transition-colors duration-200"
       >
-        <ArrowLeft className="w-4 h-4" />
+        <ArrowLeft className="w-4 h-4" aria-hidden="true" />
         {t('common.backToLogin')}
       </Link>
     </AuthLayout>

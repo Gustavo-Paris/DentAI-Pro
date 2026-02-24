@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { Button, Badge } from '@parisgroup-ai/pageshell/primitives';
 import {
   ArrowLeft,
@@ -47,6 +48,7 @@ const QUICK_ICONS = [Camera, Brain, ClipboardCheck, FileText];
 
 export default function NewCase() {
   const { t } = useTranslation();
+  useDocumentTitle(t('pageTitle.newCase', { defaultValue: 'Novo Caso' }));
   const wizard = useWizardFlow();
   const disclaimer = useAiDisclaimer();
   const navigate = useNavigate();

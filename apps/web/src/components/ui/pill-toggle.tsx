@@ -14,7 +14,7 @@ export function PillToggle({
   columns = 3,
 }: PillToggleProps) {
   return (
-    <div className={cn('grid gap-2', columns === 4 ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-3')} role="radiogroup">
+    <div className={cn('grid gap-3', columns === 4 ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-3')} role="radiogroup">
       {options.map((opt) => {
         const isSelected = value === opt.value;
         return (

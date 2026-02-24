@@ -217,9 +217,9 @@ export function ProportionsCard({ analysis }: ProportionsCardProps) {
             if (!descKey) return null;
             const desc = t(descKey);
             return (
-              <div key={`desc-${item.label}`} className="flex items-start gap-2 py-1.5 px-3 rounded-md bg-amber-50/50 dark:bg-amber-950/10">
-                <AlertCircle className="w-3.5 h-3.5 text-amber-500 mt-0.5 shrink-0" />
-                <p className="text-xs text-amber-700 dark:text-amber-300">
+              <div key={`desc-${item.label}`} className="flex items-start gap-2 py-1.5 px-3 rounded-md bg-warning/10">
+                <AlertCircle className="w-3.5 h-3.5 text-warning mt-0.5 shrink-0" />
+                <p className="text-xs text-warning/80">
                   <span className="font-medium">{item.label}:</span> {desc}
                 </p>
               </div>
@@ -228,9 +228,9 @@ export function ProportionsCard({ analysis }: ProportionsCardProps) {
 
           {/* Buccal corridor orthodontic note */}
           {analysis.buccal_corridor === 'excessivo' && (
-            <div className="flex items-start gap-2 py-2 px-3 rounded-md bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
-              <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-              <p className="text-xs text-amber-700 dark:text-amber-300">
+            <div className="flex items-start gap-2 py-2 px-3 rounded-md bg-warning/10 border border-warning/30">
+              <AlertCircle className="w-4 h-4 text-warning mt-0.5 shrink-0" />
+              <p className="text-xs text-warning/80">
                 {t('components.dsd.proportions.buccalCorridorOrthoNote')}
               </p>
             </div>

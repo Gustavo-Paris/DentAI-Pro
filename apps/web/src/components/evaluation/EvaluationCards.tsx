@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -41,7 +42,7 @@ export interface EvaluationCardsProps {
 // Component
 // =============================================================================
 
-export function EvaluationCards({
+export const EvaluationCards = memo(function EvaluationCards({
   evaluations,
   sessionId,
   selectedIds,
@@ -102,6 +103,7 @@ export function EvaluationCards({
                       <Checkbox
                         checked={selectedIds.has(evaluation.id)}
                         onCheckedChange={() => toggleSelection(evaluation.id)}
+                        aria-label={t('evaluation.selectEvaluation', { defaultValue: 'Selecionar avaliação' })}
                       />
                     </div>
                     {!isGrouped && getTreatmentBadge(evaluation, t)}
@@ -157,4 +159,4 @@ export function EvaluationCards({
       })}
     </div>
   );
-}
+});

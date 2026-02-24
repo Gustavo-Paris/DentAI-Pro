@@ -3,10 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { getSession, onAuthStateChange, updateUserPassword } from '@/data/auth';
 import { Button, PasswordInput } from '@parisgroup-ai/pageshell/primitives';
 import { toast } from 'sonner';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Loader2 } from 'lucide-react';
 import { getResetPasswordSchema, type ResetPasswordFormData } from '@/lib/schemas/auth';
 import { PasswordRequirements } from '@/components/PasswordRequirements';
 import { AuthLayout } from '@/components/auth/AuthLayout';
@@ -20,8 +21,11 @@ import {
   FormMessage,
 } from '@parisgroup-ai/pageshell/interactions';
 
+const REDIRECT_DELAY_MS = 2_000;
+
 export default function ResetPassword() {
   const { t } = useTranslation();
+  useDocumentTitle(t('pageTitle.resetPassword', { defaultValue: 'Redefinir Senha' }));
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [sessionReady, setSessionReady] = useState(false);
@@ -60,7 +64,7 @@ export default function ResetPassword() {
 
   useEffect(() => {
     if (!success) return;
-    const timer = setTimeout(() => navigate('/dashboard'), 2000);
+    const timer = setTimeout(() => navigate('/dashboard'), REDIRECT_DELAY_MS);
     return () => clearTimeout(timer);
   }, [success, navigate]);
 
@@ -105,7 +109,7 @@ export default function ResetPassword() {
       {success ? (
         <div className="flex flex-col items-center gap-4 animate-[scale-in_0.6s_ease-out_both]" role="status" aria-live="polite">
           <IconCircle>
-            <CheckCircle className="w-8 h-8 text-primary" />
+            <CheckCircle className="w-8 h-8 text-primary" aria-hidden="true" />
           </IconCircle>
           <p className="text-sm text-muted-foreground text-center">
             {t('auth.redirectingToDashboard')}
@@ -145,6 +149,7 @@ export default function ResetPassword() {
                       <PasswordInput
                         placeholder="••••••••••••"
                         autoComplete="new-password"
+                        aria-required="true"
                         {...field}
                       />
                     </FormControl>
@@ -154,7 +159,14 @@ export default function ResetPassword() {
               />
 
               <Button type="submit" className="w-full btn-glow-gold" disabled={loading}>
-                {loading ? t('auth.updating') : t('auth.updatePassword')}
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    {t('auth.updating')}
+                  </>
+                ) : (
+                  t('auth.updatePassword')
+                )}
               </Button>
             </form>
           </Form>

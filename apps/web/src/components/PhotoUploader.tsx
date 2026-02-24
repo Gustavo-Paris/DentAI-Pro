@@ -134,7 +134,7 @@ export default function PhotoUploader({
                 />
                 <button
                   onClick={handleRemove}
-                  className="absolute -top-2 -right-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center hover:bg-destructive/90"
+                  className="absolute -top-2 -right-2 w-8 h-8 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center hover:bg-destructive/90 transition-colors"
                   aria-label={t('components.photoUploader.removePhoto')}
                 >
                   <X className="w-4 h-4" />

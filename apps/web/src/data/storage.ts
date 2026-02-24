@@ -1,5 +1,6 @@
 import { supabase } from './client';
 import { SIGNED_URL_EXPIRY_SECONDS } from '../lib/constants';
+import { logger } from '@/lib/logger';
 
 // ---------------------------------------------------------------------------
 // Bucket: avatars
@@ -51,7 +52,7 @@ export async function getSignedPhotoUrl(
     .from('clinical-photos')
     .createSignedUrl(path, expiresIn);
   if (error) {
-    console.warn(`[storage] Failed to get signed URL for ${path}:`, error.message);
+    logger.warn(`[storage] Failed to get signed URL for ${path}:`, error.message);
     return null;
   }
   return data?.signedUrl || null;
@@ -69,7 +70,7 @@ export async function getSignedDSDUrl(
     .from('dsd-simulations')
     .createSignedUrl(path, expiresIn);
   if (error) {
-    console.warn(`[storage] Failed to get signed URL for ${path}:`, error.message);
+    logger.warn(`[storage] Failed to get signed URL for ${path}:`, error.message);
     return null;
   }
   return data?.signedUrl || null;
@@ -86,7 +87,7 @@ export async function getSignedDSDLayerUrls(
         .from('dsd-simulations')
         .createSignedUrl(path, expiresIn);
       if (error) {
-        console.warn(`[storage] Failed to get signed URL for ${path}:`, error.message);
+        logger.warn(`[storage] Failed to get signed URL for ${path}:`, error.message);
         return;
       }
       if (data?.signedUrl) {

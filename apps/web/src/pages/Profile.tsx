@@ -90,7 +90,7 @@ export default function Profile() {
           label: t('profile.tab'),
           children: () => (
             <div className="space-y-6">
-              <Card>
+              <Card className="rounded-xl">
                 <CardHeader className="text-center pb-2">
                   <div className="flex justify-center items-start gap-8 mb-4">
                     {/* Avatar Section */}
@@ -129,18 +129,11 @@ export default function Profile() {
                     {/* Clinic Logo Section */}
                     <div className="flex flex-col items-center">
                       <div className="relative">
-                        <div
+                        <button
+                          type="button"
                           className="w-20 h-20 rounded-lg border-2 border-dashed border-border bg-muted/50 flex items-center justify-center cursor-pointer hover:border-primary/50 transition-colors overflow-hidden"
-                          role="button"
-                          tabIndex={0}
                           aria-label={t('profile.uploadClinicLogo', { defaultValue: 'Enviar logo da clinica' })}
                           onClick={() => p.logoInputRef.current?.click()}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault();
-                              p.logoInputRef.current?.click();
-                            }
-                          }}
                         >
                           {p.isUploadingLogo ? (
                             <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
@@ -149,7 +142,7 @@ export default function Profile() {
                           ) : (
                             <Building2 className="w-8 h-8 text-muted-foreground" />
                           )}
-                        </div>
+                        </button>
                         <button
                           type="button"
                           onClick={() => p.logoInputRef.current?.click()}

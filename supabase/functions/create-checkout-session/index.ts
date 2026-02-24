@@ -3,6 +3,7 @@ import { getCorsHeaders, createErrorResponse } from "../_shared/cors.ts";
 import { getSupabaseClient, authenticateRequest, isAuthError, withErrorBoundary } from "../_shared/middleware.ts";
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 import { logger } from "../_shared/logger.ts";
+import { ALLOWED_ORIGINS } from "../_shared/allowed-origins.ts";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
   apiVersion: "2023-10-16",
@@ -50,16 +51,6 @@ Deno.serve(withErrorBoundary(async (req: Request) => {
   const { priceId, packId, billingCycle, payment_method, successUrl, cancelUrl } = body;
 
   // Validate redirect URLs against allowed origins to prevent open redirect
-  const ALLOWED_ORIGINS = [
-    "https://tosmile-ai.vercel.app",
-    "https://tosmile.ai",
-    "https://www.tosmile.ai",
-    "https://dentai.pro",
-    "https://www.dentai.pro",
-    "https://auria-ai.vercel.app",
-    "https://dentai-pro.vercel.app",
-  ];
-
   function isAllowedRedirectUrl(url: string | undefined): boolean {
     if (!url) return true; // fallback to origin-based URL
     try {

@@ -37,7 +37,7 @@ export default function Landing() {
   useEffect(() => {
     const ref = searchParams.get('ref');
     if (ref && /^[A-Z0-9-]{4,20}$/i.test(ref)) {
-      localStorage.setItem('referral_code', ref);
+      localStorage.setItem('referral_code', JSON.stringify({ code: ref, ts: Date.now() }));
     }
   }, [searchParams]);
 
@@ -401,10 +401,10 @@ export default function Landing() {
               </span>
             </div>
             <div className="flex items-center gap-4 text-xs sm:text-sm text-muted-foreground">
-              <Link to="/terms" className="hover:text-foreground hover:underline underline-offset-4">
+              <Link to="/terms" className="hover:text-foreground hover:underline underline-offset-4 transition-colors duration-200">
                 {t('landing.termsOfUse')}
               </Link>
-              <Link to="/privacy" className="hover:text-foreground hover:underline underline-offset-4">
+              <Link to="/privacy" className="hover:text-foreground hover:underline underline-offset-4 transition-colors duration-200">
                 {t('landing.privacy')}
               </Link>
             </div>

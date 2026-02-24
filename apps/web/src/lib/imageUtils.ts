@@ -38,6 +38,8 @@ export async function fetchImageAsBase64(url: string): Promise<string | null> {
   }
 }
 
+const IMAGE_LOAD_TIMEOUT_MS = 15_000;
+
 /**
  * Compress an image file to JPEG with configurable dimensions and quality.
  * Maintains aspect ratio and includes a safety timeout for mobile devices.
@@ -54,7 +56,7 @@ export async function compressImage(
     const timeout = setTimeout(() => {
       URL.revokeObjectURL(img.src);
       reject(new Error('Timeout loading image'));
-    }, 15000);
+    }, IMAGE_LOAD_TIMEOUT_MS);
 
     img.onload = () => {
       clearTimeout(timeout);

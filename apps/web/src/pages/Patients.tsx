@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ListPage, GenericErrorState } from '@parisgroup-ai/pageshell/composites';
 import {
@@ -64,7 +65,7 @@ const PatientCardAdapter = memo(function PatientCardAdapter({ patient, index }: 
       />
       {patient.caseCount > 0 && (
         <div className="absolute top-3 right-3 flex items-center gap-1.5">
-          <span className="text-[10px] text-muted-foreground bg-muted/80 px-2 py-0.5 rounded-full font-medium">
+          <span className="text-xs text-muted-foreground bg-muted/80 px-2 py-0.5 rounded-full font-medium">
             {t('patients.casesSummary', {
               defaultValue: '{{count}} avaliações',
               count: patient.caseCount,
@@ -82,6 +83,7 @@ const PatientCardAdapter = memo(function PatientCardAdapter({ patient, index }: 
 
 export default function Patients() {
   const { t } = useTranslation();
+  useDocumentTitle(t('pageTitle.patients', { defaultValue: 'Pacientes' }));
   const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -245,7 +247,7 @@ export default function Patients() {
         isLoading={isLoading}
         itemKey="id"
         renderCard={renderCard}
-        gridClassName="grid grid-cols-1 gap-3"
+        gridClassName="grid grid-cols-1 gap-4"
         searchConfig={searchConfig}
         sort={sortConfig}
         pagination={PAGINATION_CONFIG}

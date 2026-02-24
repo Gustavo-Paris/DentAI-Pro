@@ -169,21 +169,20 @@ async function getCreditInfo(
   userId: string,
   operation: string,
 ): Promise<{ available: number; total: number; cost: number; isFreeUser: boolean }> {
-  // Get credit cost
-  const { data: costData } = await supabase
-    .from("credit_costs")
-    .select("credits")
-    .eq("operation", operation)
-    .maybeSingle();
+  const [{ data: costData }, { data: sub }] = await Promise.all([
+    supabase
+      .from("credit_costs")
+      .select("credits")
+      .eq("operation", operation)
+      .maybeSingle(),
+    supabase
+      .from("subscriptions")
+      .select("credits_used_this_month, credits_rollover, credits_bonus, plan_id, status, plan:subscription_plans(credits_per_month)")
+      .eq("user_id", userId)
+      .maybeSingle(),
+  ]);
 
   const cost = costData?.credits || 1;
-
-  // Get subscription
-  const { data: sub } = await supabase
-    .from("subscriptions")
-    .select("credits_used_this_month, credits_rollover, credits_bonus, plan_id, status, plan:subscription_plans(credits_per_month)")
-    .eq("user_id", userId)
-    .maybeSingle();
 
   if (!sub || !["active", "trialing"].includes(sub.status)) {
     return { available: 0, total: 0, cost, isFreeUser: true };

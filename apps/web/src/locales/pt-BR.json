@@ -6,7 +6,20 @@
     "profile": "Perfil",
     "login": "Entrar",
     "register": "Criar Conta",
-    "settings": "Configurações"
+    "settings": "Configurações",
+    "notFound": "Página não encontrada",
+    "groupResult": "Resultado do Grupo",
+    "patientProfile": "Perfil do Paciente",
+    "pricing": "Planos",
+    "patients": "Pacientes",
+    "newCase": "Novo Caso",
+    "result": "Resultado",
+    "privacy": "Privacidade",
+    "terms": "Termos de Uso",
+    "resetPassword": "Redefinir Senha",
+    "forgotPassword": "Esqueci a Senha",
+    "sharedEvaluation": "Avaliação Compartilhada",
+    "inventory": "Inventário"
   },
   "referral": {
     "title": "Programa de Indicação",
@@ -408,7 +421,9 @@
     "treatmentEndodontia": "Endodontia",
     "treatmentImplante": "Implante",
     "treatmentCoroa": "Coroa",
-    "treatmentEncaminhamento": "Encaminhamento"
+    "treatmentEncaminhamento": "Encaminhamento",
+    "selectAll": "Selecionar todas",
+    "selectEvaluation": "Selecionar avaliação"
   },
   "patients": {
     "title": "Meus Pacientes",

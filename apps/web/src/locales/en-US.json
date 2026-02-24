@@ -6,7 +6,20 @@
     "profile": "Profile",
     "login": "Sign In",
     "register": "Create Account",
-    "settings": "Settings"
+    "settings": "Settings",
+    "notFound": "Page Not Found",
+    "groupResult": "Group Result",
+    "patientProfile": "Patient Profile",
+    "pricing": "Pricing",
+    "patients": "Patients",
+    "newCase": "New Case",
+    "result": "Result",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Use",
+    "resetPassword": "Reset Password",
+    "forgotPassword": "Forgot Password",
+    "sharedEvaluation": "Shared Evaluation",
+    "inventory": "Inventory"
   },
   "referral": {
     "title": "Referral Program",
@@ -408,7 +421,9 @@
     "treatmentEndodontia": "Endodontics",
     "treatmentImplante": "Implant",
     "treatmentCoroa": "Crown",
-    "treatmentEncaminhamento": "Referral"
+    "treatmentEncaminhamento": "Referral",
+    "selectAll": "Select all",
+    "selectEvaluation": "Select evaluation"
   },
   "patients": {
     "title": "My Patients",

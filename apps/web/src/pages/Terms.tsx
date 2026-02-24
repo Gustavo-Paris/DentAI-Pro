@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { BRAND_NAME } from '@/lib/branding';
 import { LegalPageLayout } from '@/components/shared/LegalPageLayout';
 
@@ -8,6 +9,7 @@ const sectionHeadingClass = "text-xl font-semibold font-display mb-3";
 // is designed for data-fetched entity views, not static content with custom navigation.
 export default function Terms() {
   const { t } = useTranslation();
+  useDocumentTitle(t('pageTitle.terms', { defaultValue: 'Termos de Uso' }));
   const b = { brandName: BRAND_NAME };
   return (
     <LegalPageLayout title={t('pages.termsTitle')}>
@@ -74,7 +76,7 @@ export default function Terms() {
         <h2 className={sectionHeadingClass}>{t('pages.terms.s10Title')}</h2>
         <p className="text-muted-foreground">
           {t('pages.terms.s10Text')}{' '}
-          <a href="mailto:contato@tosmile.ai" className="text-primary hover:underline">contato@tosmile.ai</a>
+          <a href="mailto:contato@tosmile.ai" className="text-primary hover:underline focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 rounded">contato@tosmile.ai</a>
         </p>
       </section>
     </LegalPageLayout>
