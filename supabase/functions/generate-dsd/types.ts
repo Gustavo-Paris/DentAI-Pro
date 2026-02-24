@@ -61,8 +61,8 @@ export const WHITENING_INSTRUCTIONS: Record<string, { instruction: string; inten
     intensity: "NATURAL"
   },
   white: {
-    instruction: "Make ALL visible teeth noticeably whiter — target shade B1/A1 range. The result should look like professional in-office whitening: clearly brighter than before but still NATURAL-LOOKING. Maintain warm undertones — teeth should NOT look blue-white, chalky, or opaque. Preserve translucency at incisal edges.",
-    intensity: "NOTICEABLE"
+    instruction: "Make ALL visible teeth CLEARLY WHITER — target shade A1 or brighter. The whitening MUST be OBVIOUS and IMMEDIATELY VISIBLE in a before/after comparison. This simulates professional in-office whitening. Every visible tooth must be DRAMATICALLY brighter than the input photo. If the before/after looks similar, you have FAILED.",
+    intensity: "VISIBLE"
   },
   hollywood: {
     instruction: "Make ALL visible teeth EXTREMELY WHITE (BL1). Pure bright white like porcelain veneers. The teeth should appear DRAMATICALLY lighter - almost glowing white. This is the MAXIMUM possible whitening.",

@@ -34,17 +34,23 @@ export interface Params {
 
 // --- Shared prompt blocks ---
 
-function buildTextureInstruction(): string {
+function buildTextureInstruction(whiteningLevel?: string): string {
+  // For "white"/"hollywood": remove anti-artificial warnings that cause Gemini to barely change tooth color
+  // For "natural" or no-whitening layers: keep full warnings
+  const antiArtificialLines = (whiteningLevel === 'white' || whiteningLevel === 'hollywood')
+    ? ''
+    : `
+- NÃO criar aparência de "porcelana perfeita", "dentes de comercial de TV", ou cor UNIFORMEMENTE branca
+- O resultado deve parecer CLAREAMENTO DENTAL REAL, não facetas de porcelana`;
+
   return `TEXTURA NATURAL DO ESMALTE (CRÍTICO para realismo):
 - Manter/criar PERIQUIMÁCIES (linhas horizontais sutis no esmalte)
 - Preservar REFLEXOS DE LUZ naturais nos pontos de brilho
 - Criar GRADIENTE DE TRANSLUCIDEZ: opaco cervical → translúcido incisal
 - WHITENING COERÊNCIA: Todos os dentes visíveis devem atingir nível SIMILAR de claridade. Dentes mais escuros/manchados recebem mais clareamento para harmonizar com adjacentes.
 - PRESERVAR variação NATURAL entre dentes: pequenas diferenças de tom entre centrais, laterais e caninos são NORMAIS e desejáveis
-- Caninos (13/23) são naturalmente 1-2 tons mais saturados/amarelados que incisivos — MANTER essa diferença relativa
-- NÃO criar aparência de "porcelana perfeita", "dentes de comercial de TV", ou cor UNIFORMEMENTE branca
-- Preservar micro-textura individual (craze lines, periquimácies, variações de translucidez)
-- O resultado deve parecer CLAREAMENTO DENTAL REAL, não facetas de porcelana`
+- Caninos (13/23) são naturalmente 1-2 tons mais saturados/amarelados que incisivos — MANTER essa diferença relativa${antiArtificialLines}
+- Preservar micro-textura individual (craze lines, periquimácies, variações de translucidez)`
 }
 
 function buildAbsolutePreservation(): string {
@@ -136,12 +142,19 @@ Se você precisa mostrar mais resultado dental, faça isso DENTRO do espaço exi
 }
 
 function buildWhiteningPrioritySection(params: Params): string {
-  const naturalityNote = params.whiteningLevel !== 'hollywood'
-    ? `⚠️ REALISMO OBRIGATÓRIO: O resultado deve parecer CLAREAMENTO DENTAL PROFISSIONAL — NÃO facetas de porcelana.
+  let naturalityNote: string;
+  if (params.whiteningLevel === 'hollywood') {
+    naturalityNote = '⚠️ HOLLYWOOD = MAXIMUM BRIGHTNESS. Teeth must be DRAMATICALLY WHITE like porcelain veneers.';
+  } else if (params.whiteningLevel === 'white') {
+    naturalityNote = `⚠️ MUDANÇA VISÍVEL OBRIGATÓRIA: O clareamento DEVE ser ÓBVIO na comparação antes/depois. Se antes/depois parecerem similares, a simulação FALHOU.
+- Caninos (13/23) podem ser 1-2 tons mais saturados que incisivos — diferença RELATIVA aceitável
+- Bordas incisais devem ter alguma translucidez — NÃO completamente opacas`;
+  } else {
+    naturalityNote = `⚠️ REALISMO OBRIGATÓRIO: O resultado deve parecer CLAREAMENTO DENTAL PROFISSIONAL — NÃO facetas de porcelana.
 - Manter undertones QUENTES (marfim/creme) — dentes NÃO devem ficar azul-brancos ou cinza-brancos
 - Caninos (13/23) ficam naturalmente 1-2 tons mais saturados que incisivos — PRESERVAR essa diferença
-- Bordas incisais devem ter TRANSLUCIDEZ (levemente acinzentadas/translúcidas) — NÃO opacas`
-    : '⚠️ HOLLYWOOD = MAXIMUM BRIGHTNESS. Teeth must be DRAMATICALLY WHITE like porcelain veneers.'
+- Bordas incisais devem ter TRANSLUCIDEZ (levemente acinzentadas/translúcidas) — NÃO opacas`;
+  }
   return `
 #1 TASK - WHITENING (${params.whiteningIntensity}):
 ${params.colorInstruction}
@@ -184,63 +197,67 @@ VALIDAÇÃO DE QUALIDADE:
 - Os dentes devem parecer NATURAIS, não artificiais ou "de plástico"
 - A textura do esmalte deve ter micro-variações naturais
 - O gradiente de cor cervical→incisal deve ser suave e realista
-- Os dentes devem ser mais claros que a entrada, mas parecer CLAREAMENTO DENTAL REAL (não facetas de porcelana)`
+- Os dentes devem ser VISIVELMENTE mais claros que a entrada — a mudança de cor deve ser ÓBVIA na comparação antes/depois`
 }
 
 function buildBaseCorrections(): string {
-  return `CORREÇÕES DENTÁRIAS (manter aparência NATURAL):
-1. Preencher buracos, lascas ou defeitos visíveis nas bordas dos dentes
-2. Remover manchas escuras pontuais (mas manter variação natural de cor)
-3. Fechar pequenos espaços adicionando material nos pontos de contato (exceção: conoides e shape corrections devem ser aplicados com volume visível)
+  return `CORREÇÕES DENTÁRIAS:
+
+⚠️ REGRA PRINCIPAL — PRESERVAÇÃO DA ESTRUTURA DENTAL:
+A FORMA, TAMANHO e POSIÇÃO de cada dente devem ser RECONHECÍVEIS da foto original.
+- Dentes que NÃO estão listados em "SPECIFIC CORRECTIONS FROM ANALYSIS" mantêm forma ORIGINAL EXATA
+- NÃO redesenhar, uniformizar ou "melhorar" dentes sem diagnóstico específico
+- A estrutura dental do paciente é parte da IDENTIDADE — preservar irregularidades naturais
+- Se um dente é levemente girado, maior ou menor que o contralateral: isso é NORMAL, MANTER
+- O antes/depois deve mostrar os MESMOS DENTES com melhorias pontuais, NÃO dentes novos
+
+CORREÇÕES PERMITIDAS (aplicar SOMENTE quando necessário):
+1. Preencher lascas ou defeitos ÓBVIOS nas bordas dos dentes
+2. Remover manchas escuras pontuais (manter variação natural de cor)
+3. Fechar espaços SOMENTE se indicado em "SPECIFIC CORRECTIONS FROM ANALYSIS"
 4. PRESERVAR mamelons se visíveis (projeções naturais da borda incisal)
-5. MANTER micro-textura natural do esmalte - NÃO deixar dentes "lisos demais"
-6. PRESERVAR translucidez incisal natural - NÃO tornar dentes opacos uniformemente
-7. CORRIGIR CANINOS (13/23) — avaliação COMPLETA:
-   a) Bordos incisais: Se fraturados, lascados ou irregulares, RESTAURAR o contorno pontudo natural
-   b) Cor: Se visivelmente mais amarelos/escuros que os incisivos, HARMONIZAR a cor com os adjacentes
-   c) Forma: Se achatados ou sem a proeminência natural, RESTAURAR o contorno convexo vestibular
-   d) Simetria: Caninos 13 e 23 devem ser SIMÉTRICOS em forma, comprimento e posição da ponta
-   e) Caninos são essenciais para o corredor bucal — NÃO ignorá-los na simulação
-8. CORRIGIR BORDOS INCISAIS de TODOS os dentes anteriores (13-23): lascas, irregularidades, assimetrias de comprimento entre homólogos devem ser corrigidas para harmonia do arco
-9. Corrigir formato de incisivos laterais conoides (12/22) - aumentar largura e comprimento para proporção adequada
-10. Aplicar contorno recomendado pelo visagismo quando o formato atual for inadequado
+5. MANTER micro-textura natural do esmalte — NÃO deixar dentes "lisos demais"
+6. PRESERVAR translucidez incisal natural — NÃO tornar dentes opacos
+7. Caninos (13/23) — corrigir SOMENTE SE diagnosticados com problema na análise:
+   a) Se fraturados ou lascados → restaurar ponta. Se ÍNTEGROS → NÃO ALTERAR FORMA
+   b) Cor: harmonizar apenas se VISIVELMENTE destoantes dos adjacentes
+8. Bordos incisais — corrigir SOMENTE SE com lascas, fraturas ou irregularidades ÓBVIAS
+   NÃO uniformizar todos os bordos para criar "linha incisal perfeita"
+9. Laterais conoides — SOMENTE se diagnosticado como conoide na análise
+10. Visagismo — aplicar SOMENTE para dentes com prescrição específica na análise
 
 ILUMINAÇÃO E BLENDING (CRÍTICO para naturalidade):
-- As correções devem ter EXATAMENTE a mesma iluminação, sombras e temperatura de cor da foto original
-- Interfaces entre áreas modificadas e não-modificadas devem ser INVISÍVEIS — sem bordas nítidas, transição gradual
-- Se um dente tem formato natural levemente irregular, PRESERVAR essa irregularidade. Não uniformizar todos os dentes
+- Correções devem ter EXATAMENTE a mesma iluminação, sombras e temperatura de cor da foto original
+- Interfaces entre áreas modificadas e não-modificadas devem ser INVISÍVEIS
+- Se um dente tem formato natural levemente irregular, PRESERVAR essa irregularidade
 
-SHAPE CORRECTIONS (quando análise sugere):
-- Modificar contornos dos dentes para harmonizar com recommended_tooth_shape
-- Para laterais conoides: adicionar volume para proporção adequada (lateral = ~62% da largura do central)
-- Para dentes com formato inadequado ao visagismo: ajustar contornos suavemente
+SHAPE CORRECTIONS (SOMENTE para dentes listados em "SPECIFIC CORRECTIONS FROM ANALYSIS"):
+- Aplicar mudanças de contorno APENAS nos dentes especificamente indicados
+- Para laterais conoides diagnosticados: adicionar volume (lateral = ~62% da largura do central)
+- Dentes NÃO listados na análise: MANTER forma e contorno ORIGINAIS EXATOS
 
-SIMETRIA CONTRALATERAL (OBRIGATÓRIO):
-- Dentes homólogos (11↔21, 12↔22, 13↔23) devem ter MESMO comprimento, largura e forma
-- Se um lateral (12) é mais curto/estreito que o contralateral (22): IGUALAR ao maior
-- Se um canino (13) tem ponta mais gasta que o (23): IGUALAR ao mais íntegro
-- A referência é sempre o dente em MELHOR condição — espelhar para o homólogo
+SIMETRIA CONTRALATERAL (aplicar com MODERAÇÃO):
+- Corrigir SOMENTE assimetrias SIGNIFICATIVAS (diferença >15% em comprimento ou largura)
+- Pequenas diferenças naturais entre 11↔21, 12↔22, 13↔23 são NORMAIS — MANTER
+- NÃO forçar simetria perfeita — simetria natural NUNCA é exata
+- Aplicar apenas para dentes que TÊM diagnóstico de assimetria na análise
 
 === EXTENSAO ATE PRE-MOLARES ===
 Se pré-molares (14/15/24/25) são VISIVEIS na foto:
-- INCLUIR na simulação: aplicar whitening, harmonização de cor, correção de restaurações
-- Manter proporções naturais: pré-molares são naturalmente menores que caninos
-- Se pré-molares têm restaurações antigas, escurecimento ou desarmonia visível → corrigir
-- ZONA DE SIMULACAO: Toda a arcada visível no sorriso (NÃO limitar a canino-a-canino)
+- INCLUIR na simulação: aplicar whitening e harmonização de cor
+- Manter proporções e FORMATO naturais originais
+- Se pré-molares têm restaurações antigas ou desarmonia visível → corrigir cor
 - Pré-molares devem receber o MESMO nível de whitening dos anteriores`
 }
 
 const PROPORTION_RULES = `PROPORTION RULES:
-- Keep original tooth width proportions for teeth that DON'T need correction
-- For teeth identified in allowedChangesFromAnalysis or with conoid/microdontia diagnosis: APPLY VISIBLE volume increase (at least 15-20% width change for conoid laterals)
-- For dark/old crowns or restorations: REPLACE the color completely to match target whitening level
-- Only add material to fill defects on HEALTHY teeth - reshape contours when clinically indicated by analysis
-- Maintain natural width-to-height ratio EXCEPT when shape correction is prescribed
+⚠️ REGRA #1: Dentes NÃO listados em "SPECIFIC CORRECTIONS" mantêm forma, tamanho e proporção ORIGINAIS — ZERO alteração
+- For teeth identified in SPECIFIC CORRECTIONS with conoid/microdontia: apply volume increase
+- For dark/old crowns or restorations listed in SPECIFIC CORRECTIONS: REPLACE color to match whitening level
+- Only reshape contours when SPECIFICALLY indicated by analysis for that tooth
 - NEVER make teeth appear thinner or narrower than original
-- NUNCA alterar proporção largura/altura de dentes que NÃO estão sendo tratados
-- Mudanças de formato prescritas pela análise devem ser VISÍVEIS (15-20% de volume) para que o paciente perceba a diferença na comparação antes/depois
-- Para laterais conoides ou com microdontia: aumento de 20-25% de largura/comprimento
-- COMPARAR antes/depois: dentes não tratados devem ter EXATAMENTE o mesmo formato`
+- NUNCA alterar forma ou proporção de dentes que NÃO estão em "SPECIFIC CORRECTIONS"
+- COMPARAR antes/depois: dentes não tratados devem ter EXATAMENTE o mesmo formato, tamanho e posição`
 
 // --- Variant builders ---
 
@@ -248,7 +265,7 @@ function buildReconstructionPrompt(params: Params): string {
   const absolutePreservation = buildAbsolutePreservation()
   const whiteningPrioritySection = buildWhiteningPrioritySection(params)
   const baseCorrections = buildBaseCorrections()
-  const textureInstruction = buildTextureInstruction()
+  const textureInstruction = buildTextureInstruction(params.whiteningLevel)
   const qualityRequirements = buildQualityRequirements(params)
   const allowedChangesFromAnalysis = params.allowedChangesFromAnalysis || ''
 
@@ -276,7 +293,7 @@ function buildRestorationPrompt(params: Params): string {
   const absolutePreservation = buildAbsolutePreservation()
   const whiteningPrioritySection = buildWhiteningPrioritySection(params)
   const baseCorrections = buildBaseCorrections()
-  const textureInstruction = buildTextureInstruction()
+  const textureInstruction = buildTextureInstruction(params.whiteningLevel)
   const qualityRequirements = buildQualityRequirements(params)
   const allowedChangesFromAnalysis = params.allowedChangesFromAnalysis || ''
 
@@ -306,7 +323,7 @@ Output: Same photo with ONLY teeth corrected.`
 function buildIntraoralPrompt(params: Params): string {
   const whiteningPrioritySection = buildWhiteningPrioritySection(params)
   const baseCorrections = buildBaseCorrections()
-  const textureInstruction = buildTextureInstruction()
+  const textureInstruction = buildTextureInstruction(params.whiteningLevel)
   const qualityRequirements = buildQualityRequirements(params)
   const allowedChangesFromAnalysis = params.allowedChangesFromAnalysis || ''
 
@@ -338,7 +355,7 @@ function buildStandardPrompt(params: Params): string {
   const absolutePreservation = buildAbsolutePreservation()
   const whiteningPrioritySection = buildWhiteningPrioritySection(params)
   const baseCorrections = buildBaseCorrections()
-  const textureInstruction = buildTextureInstruction()
+  const textureInstruction = buildTextureInstruction(params.whiteningLevel)
   const qualityRequirements = buildQualityRequirements(params)
   const allowedChangesFromAnalysis = params.allowedChangesFromAnalysis || ''
 
@@ -366,7 +383,7 @@ Output: Same photo with ONLY teeth corrected.`
 function buildRestorationsOnlyPrompt(params: Params): string {
   const absolutePreservation = buildAbsolutePreservation()
   const baseCorrections = buildBaseCorrections()
-  const textureInstruction = buildTextureInstruction()
+  const textureInstruction = buildTextureInstruction(params.whiteningLevel)
   const qualityRequirements = buildQualityRequirements(params)
   const allowedChangesFromAnalysis = params.allowedChangesFromAnalysis || ''
 
@@ -415,16 +432,16 @@ Keep ALL structural corrections EXACTLY as they are. Keep EVERYTHING else pixel-
 
 #1 TASK - WHITENING (${params.whiteningIntensity}):
 ${params.colorInstruction}
-${params.whiteningLevel === 'hollywood' ? '⚠️ HOLLYWOOD = MAXIMUM BRIGHTNESS. Teeth must be DRAMATICALLY WHITE like porcelain veneers.' : ''}
+${params.whiteningLevel === 'hollywood' ? '⚠️ HOLLYWOOD = MAXIMUM BRIGHTNESS. Teeth must be DRAMATICALLY WHITE like porcelain veneers.' : params.whiteningLevel === 'white' ? '⚠️ MUDANÇA VISÍVEL OBRIGATÓRIA: O clareamento DEVE ser ÓBVIO na comparação. Se parecerem similares, FALHOU.' : ''}
 
 WHAT TO CHANGE (ONLY):
 - Tooth COLOR: make teeth whiter/brighter according to the whitening level above
+- The whitening MUST be CLEARLY VISIBLE in a before/after comparison — this is the PRIMARY transformation
 - Apply whitening HARMONIOUSLY across ALL visible teeth — darker/stained teeth receive more whitening to match lighter ones
 - The final result must show COHERENT brightness across the smile, but ALLOW natural variation:
   • Canines (13/23) are NATURALLY 1-2 shades more saturated/yellowish than incisors — KEEP this relative difference
   • Incisal edges are more translucent than cervical third — PRESERVE this gradient
   • Small differences between individual teeth are NORMAL and make the result look REAL
-- The result should look like PROFESSIONAL IN-OFFICE WHITENING — not porcelain veneers or digital painting
 - Maintain natural translucency gradients (more translucent at incisal edges, more opaque at cervical)
 
 WHAT TO PRESERVE (DO NOT CHANGE — PIXEL-IDENTICAL):
@@ -471,9 +488,14 @@ The change MUST be DRAMATIC and IMMEDIATELY OBVIOUS in a before/after comparison
 - A subtle/conservative change is a FAILURE — the whole point is to show what the smile looks like WITHOUT excess gum
 - Think of it as: the upper 1/3 to 1/2 of the pink gum band should become tooth-colored
 
-⚠️ QUALITY REQUIREMENT: The gum recontouring must look PHOTOREALISTIC. Gum margins must be SMOOTH and even.
-Transitions between gum tissue and tooth surface must be SEAMLESS — no jagged edges, no pixelation, no patchy artifacts.
-The remaining gum tissue must have natural healthy pink color and uniform texture.
+⚠️ QUALITY REQUIREMENT — PHOTOREALISTIC GUM-TOOTH INTERFACE:
+- Gum margins must be SMOOTH, even, crisp lines — no jagged or fuzzy edges
+- Transitions between remaining gum tissue and newly exposed tooth surface must be SEAMLESS
+- Newly exposed tooth surface (where gum was removed) must MATCH existing enamel color and texture EXACTLY
+- ⚠️ NO dark spots, shadows, bruise-like patches, or discoloration at gum-tooth margins — this is the #1 artifact to avoid
+- NO pixelation, banding, or patchy color at the gum-tooth interface
+- Remaining gum tissue must be uniform healthy PINK — no dark patches, no unnatural color variations
+- If you cannot make a clean, artifact-free transition for a tooth, preserve that tooth's original gum margin
 
 EXPECTED RESULT:
 - Teeth appear SIGNIFICANTLY TALLER (more crown exposed) — change must be DRAMATIC
@@ -497,7 +519,7 @@ function buildWithGengivoplastyPrompt(params: Params): string {
   const absolutePreservation = buildAbsolutePreservation()
   const whiteningPrioritySection = buildWhiteningPrioritySection(params)
   const baseCorrections = buildBaseCorrections()
-  const textureInstruction = buildTextureInstruction()
+  const textureInstruction = buildTextureInstruction(params.whiteningLevel)
   const qualityRequirements = buildQualityRequirements(params)
   const allowedChangesFromAnalysis = params.allowedChangesFromAnalysis || ''
 
@@ -527,7 +549,10 @@ Expose more clinical crown by moving the gingival margin APICALLY (toward the ro
 - The change MUST be DRAMATIC and IMMEDIATELY OBVIOUS — reduce the visible pink gum band by at least 30-40%
 - Each tooth must appear noticeably TALLER (at least 15-20% more crown visible)
 - A subtle/conservative change is a FAILURE — aggressively reduce the gum band
-- Gum margins must be SMOOTH — no jagged edges, no pixelation, no patchy artifacts
+- Gum margins must be SMOOTH, crisp lines — no jagged edges, no pixelation, no patchy artifacts
+- ⚠️ NO dark spots, shadows, or bruise-like patches at gum-tooth margins — this is the #1 artifact to avoid
+- Newly exposed tooth surface must MATCH existing enamel color and texture SEAMLESSLY
+- Remaining gum tissue must be uniform healthy PINK — no dark patches or discoloration
 
 ${params.gingivoSuggestions ? `GENGIVOPLASTY SPECIFICATIONS (per tooth):\n${params.gingivoSuggestions}\n` : ''}
 
@@ -547,7 +572,7 @@ function buildRootCoveragePrompt(params: Params): string {
   const absolutePreservation = buildAbsolutePreservation()
   const whiteningPrioritySection = buildWhiteningPrioritySection(params)
   const baseCorrections = buildBaseCorrections()
-  const textureInstruction = buildTextureInstruction()
+  const textureInstruction = buildTextureInstruction(params.whiteningLevel)
   const qualityRequirements = buildQualityRequirements(params)
   const allowedChangesFromAnalysis = params.allowedChangesFromAnalysis || ''
 
