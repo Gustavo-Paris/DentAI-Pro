@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useState, useRef, useCallback, ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/data';
 import { logger } from '@/lib/logger';
@@ -23,13 +24,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Set up auth state listener BEFORE checking session
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+
+      // When Supabase fires PASSWORD_RECOVERY (user clicked reset link in email),
+      // redirect to /reset-password if not already there. This handles the case
+      // where Supabase redirects to site_url (/) instead of the redirectTo URL.
+      if (event === 'PASSWORD_RECOVERY' && session) {
+        if (window.location.pathname !== '/reset-password') {
+          navigate('/reset-password');
+        }
+      }
     });
 
     // Check for existing session
