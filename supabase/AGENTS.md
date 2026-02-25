@@ -34,7 +34,7 @@ Backend do AURIA: 14 edge functions em Deno que proveem análise dental com IA, 
 
 | Diretório | Conteúdo |
 |-----------|----------|
-| `functions/` | 13 edge functions |
+| `functions/` | 14 edge functions |
 | `functions/_shared/` | Middleware, AI clients, credits, rate limiting, prompts |
 | `functions/_shared/prompts/definitions/` | Definições de prompts IA (6 prompts) |
 | `migrations/` | 20+ migrações SQL (schema, RLS, indexes) |
