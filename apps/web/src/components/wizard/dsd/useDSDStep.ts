@@ -864,8 +864,10 @@ export function useDSDStep({
 
   const handleContinue = () => {
     // Include gingivoplastyApproved in the result so downstream (review step, submit) can use it
+    // IMPORTANT: preserve null → undefined so downstream `!== false` check treats "unanswered" as inclusion
+    // Only explicit `false` (user clicked dismiss) should block gengivoplasty
     const resultWithGingivo = result
-      ? { ...result, gingivoplastyApproved: gingivoplastyApproved === true }
+      ? { ...result, gingivoplastyApproved: gingivoplastyApproved ?? undefined }
       : result;
     onComplete(resultWithGingivo);
   };

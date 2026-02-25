@@ -91,12 +91,19 @@ export function processAnalysisResult(analysisResult: PhotoAnalysisResult): Phot
     const analysisConfidence = analysisResult.confidence ?? 0;
     const removedDiastemaTeeth: string[] = [];
 
-    // Rule 1: Low confidence — strip all diastema diagnoses.
-    // Diastema requires unequivocal visual evidence (high confidence).
-    if (analysisConfidence < 80) {
+    // Rule 0: Multiple diastema diagnoses (≥3 teeth) = overwhelming evidence.
+    // When the AI detects gaps across multiple teeth, it's almost certainly real
+    // (e.g., generalized spacing between centrals, laterals, and canines).
+    // Skip ALL stripping rules — trust the diagnosis.
+    if (diastemaTeetIdx.length >= 3) {
+      logger.log(`Post-processing: ${diastemaTeetIdx.length} teeth with diastema — overwhelming evidence, skipping safety net`);
+    } else if (analysisConfidence < 65) {
+      // Rule 1: Very low confidence — strip diastema diagnoses.
+      // Threshold lowered from 80 to 65: the case-level confidence is often
+      // dragged down by other findings, not by the diastema detection itself.
       for (const idx of diastemaTeetIdx.reverse()) {
         const tooth = detectedTeeth[idx];
-        logger.warn(`Post-processing: removing diastema diagnosis for tooth ${tooth.tooth} — overall confidence ${analysisConfidence}% < 80% threshold`);
+        logger.warn(`Post-processing: removing diastema diagnosis for tooth ${tooth.tooth} — overall confidence ${analysisConfidence}% < 65% threshold`);
         removedDiastemaTeeth.push(tooth.tooth);
         detectedTeeth.splice(idx, 1);
       }

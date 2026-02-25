@@ -250,6 +250,7 @@ Deno.serve(async (req) => {
                         thickness: { type: "string" },
                         purpose: { type: "string" },
                         technique: { type: "string" },
+                        optional: { type: "boolean", description: "true se a camada é opcional (ex: Efeitos Incisais). O dentista decide se aplica." },
                       },
                       required: ["order", "name", "resin_brand", "shade", "thickness", "purpose", "technique"],
                     },

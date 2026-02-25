@@ -447,6 +447,50 @@ export async function validateAndFixProtocolLayers({
   // Update layers with validated versions
   recommendation.protocol.layers = validatedLayers;
 
+  // Enforce: anterior aesthetic protocols MUST include Efeitos Incisais layer
+  if (tooth && cavityClass) {
+    const anterior = isAnteriorTooth(tooth);
+    const classLower = cavityClass.toLowerCase();
+    const isAestheticCase = AESTHETIC_CLASSES.some(c => classLower.includes(c));
+    if (anterior && isAestheticCase && recommendation.protocol.layers.length >= 4) {
+      const hasEfeitos = recommendation.protocol.layers.some(
+        (l: { name?: string }) => {
+          const n = (l.name || '').toLowerCase();
+          return n.includes('efeito') || n.includes('corante') || n.includes('caracteriza');
+        }
+      );
+      if (!hasEfeitos) {
+        // Find where Esmalte Vestibular Final is and insert Efeitos before it
+        const esmalteIdx = recommendation.protocol.layers.findIndex(
+          (l: { name?: string }) => {
+            const n = (l.name || '').toLowerCase();
+            return (n.includes('esmalte') && (n.includes('vestibular') || n.includes('final')));
+          }
+        );
+        const insertIdx = esmalteIdx >= 0 ? esmalteIdx : recommendation.protocol.layers.length;
+        const efeitosLayer = {
+          order: insertIdx + 1,
+          name: 'Efeitos Incisais',
+          resin_brand: 'Ivoclar - Empress Direct Color',
+          shade: 'White/Amber',
+          thickness: '0.1mm',
+          purpose: 'Reproduzir efeitos ópticos naturais: halo opaco incisal, linhas de craze, micro-pontos de caracterização',
+          technique: 'Aplicar corante branco para halo opaco na borda incisal. Corante âmbar para linhas de craze. Pincel fino antes da camada de esmalte.',
+          optional: true,
+        };
+        recommendation.protocol.layers.splice(insertIdx, 0, efeitosLayer);
+        // Re-number all layers
+        for (let i = 0; i < recommendation.protocol.layers.length; i++) {
+          recommendation.protocol.layers[i].order = i + 1;
+        }
+        validationAlerts.push(
+          'Efeitos Incisais adicionados ao protocolo — obrigatório para estético anterior. Camada marcada como opcional (decisão do dentista).'
+        );
+        logger.warn('Efeitos Incisais layer injected: anterior aesthetic protocol was missing corantes');
+      }
+    }
+  }
+
   // Apply ALL shade replacements to checklist text so steps match validated layers
   if (recommendation.protocol.checklist && Object.keys(shadeReplacements).length > 0) {
     logger.log(`Applying ${Object.keys(shadeReplacements).length} shade replacements to checklist: ${JSON.stringify(shadeReplacements)}`);

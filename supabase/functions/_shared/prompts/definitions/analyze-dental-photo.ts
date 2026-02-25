@@ -216,25 +216,24 @@ EXCEÇÃO — DESARMONIA DE ARCO/CONTORNO nos caninos:
 - Estas indicações são ESTRUTURAIS (não cromáticas) — aplicam-se mesmo com a regra conservadora de cor
 - treatment_indication: "resina", cavity_class: "Recontorno Estético"
 
-## DIASTEMA — ALTA CONFIANCA REQUERIDA
-Diagnosticar diastema SOMENTE com EVIDENCIA INEQUIVOCA:
-- Gap REAL e MENSURAVEL entre superfícies de esmalte NATURAL (sem material restaurador nas faces adjacentes)
-- Espaço CLARAMENTE visível na foto (não sombra, não artefato de iluminação, não interface de restauração)
-- Ambas as faces proximais do gap devem ser de esmalte natural (sem restauração)
+## DIASTEMA
+Diagnosticar diastema quando houver espaço VISÍVEL entre dentes:
+- Gap REAL entre superfícies de esmalte NATURAL (sem material restaurador nas faces adjacentes)
+- Espaço claramente visível na foto (não sombra interproximal normal)
+
+DIASTEMA GENERALIZADO: Quando MÚLTIPLOS espaços são visíveis entre dentes anteriores (centrais, laterais, caninos), diagnosticar TODOS os dentes afetados. Espaçamento generalizado é forte evidência clínica — não aplicar filtros conservadores.
 
 FALSOS POSITIVOS COMUNS (NAO diagnosticar como diastema):
-- Sombra interproximal entre dentes com contato proximal intacto
-- Reflexo de luz na embrasura incisal criando aparência de espaço
+- Sombra interproximal entre dentes com contato proximal INTACTO (sem espaço real)
 - Interface de restauração proximal com gap marginal → é "Restauração insatisfatória com falha marginal", NAO diastema
-- Triângulo negro (black triangle) por papila retraída → é deficiência papilar, NAO diastema
+- Triângulo negro (black triangle) isolado por papila retraída sem espaço entre coroas
 
 REGRAS:
-- Na DUVIDA entre diastema real e artefato visual → NAO diagnosticar diastema (conservadorismo)
-- Diastema <0.5mm com contato proximal aparentemente intacto → NAO reportar como diastema
-- Antes de diagnosticar diastema, VERIFICAR: as faces proximais dos dentes adjacentes são de esmalte natural?
-- Se incisivos centrais (11/21) apresentam CONTATO PROXIMAL VISÍVEL (bordas mesiais se tocam ou quase se tocam), é IMPOSSÍVEL haver diastema — NÃO diagnosticar.
-- Diastema requer espaço VAZIO E CONTÍNUO entre as faces mesiais. Sombra interproximal normal NÃO é diastema.
-- Diastema somente se gap ≥1mm E claramente visível E ambas faces são esmalte natural
+- Se GAP é visível E faces proximais são esmalte natural → diagnosticar diastema
+- Diastema <0.5mm com contato proximal aparentemente intacto → NAO reportar
+- Se incisivos centrais (11/21) apresentam CONTATO PROXIMAL VISÍVEL, NÃO diagnosticar diastema entre eles
+- Quando diastema central (11/21) confirmado: AVALIAR laterais (12/22) e caninos (13/23) para espaçamento associado. Sugerir enceramento diagnóstico prévio quando diastemas ≥2mm ou múltiplos
+- cavity_class: "Fechamento de Diastema", treatment_indication: "resina"
 
 ## CLAREAMENTO ANTES DE RESTAURACAO POR COR
 Se a UNICA indicação para tratamento é diferença de cor entre dentes (sem patologia estrutural):

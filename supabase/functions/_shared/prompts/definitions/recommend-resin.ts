@@ -172,17 +172,17 @@ EFEITOS INCISAIS (sub-opções):
 | Corante Ambar  | Empress Direct Color Honey/Amber, Kolor+ Plus Amber, ou similar — linhas finas |
 | Mamelos        | Dentina clara (A1/B1) em projeções verticais na incisal  |
 
-Inclusão: Efeitos Incisais SEMPRE optional:true — mas:
-- Nível "estético"/"alto"/"muito alto" OU budget "premium" em dentes ANTERIORES: OBRIGATÓRIO incluir Efeitos Incisais como camada (optional:true). Sugerir halo opaco + corante para naturalidade.
+Inclusão Efeitos Incisais:
+- Nível "estético"/"alto"/"muito alto" OU budget "premium" em dentes ANTERIORES: OBRIGATÓRIO incluir Efeitos Incisais como camada (optional: true). Sugerir halo opaco + corante para naturalidade. Protocolo SEM esta camada é INCOMPLETO.
 - Demais níveis: sugerir quando naturalidade do resultado exigir (halo, mamelos, craze lines).
-A decisão final é do dentista, mas protocolo premium/estético anterior SEM corantes incisais é INCOMPLETO.
+- A decisão final é do dentista (optional: true), mas o protocolo DEVE listar a camada.
 
 CARACTERIZACAO (OPCIONAL — sugerir quando dente apresentar white spots, manchas ou heterogeneidades):
 - White spots/manchas brancas: REQUEREM corante para mascarar a transição (Empress Direct Color White/Honey, Kolor+ Plus, ou similar). Sem corante a lesão fica visível sob a resina.
 - Craze lines, mamelons, halo incisal, foseta proximal: reproduzir conforme dentes adjacentes. MODERACAO - copie dentes vizinhos.
 - Dente com restauração existente + mancha: estratificação deve incluir camada de mascaramento ou corante para uniformizar substrato.
 
-⚠️ REGRA: Nível "estético"/"alto"/"muito alto" DEVE gerar no MINIMO 4 camadas: Aumento Incisal + Cristas Proximais + Dentina/Corpo + Esmalte. Gerar apenas Corpo + Esmalte (2 camadas) para nível estético é ERRO — insuficiente para resultado estético.
+⚠️ REGRA: Nível "estético"/"alto"/"muito alto" DEVE gerar no MINIMO 5 camadas: Aumento Incisal + Cristas Proximais + Dentina/Corpo + Efeitos Incisais (optional: true) + Esmalte Vestibular Final. Gerar apenas Corpo + Esmalte (2 camadas) para nível estético é ERRO — insuficiente para resultado estético.
 
 COMBINACAO:
 1. Priorize inventário do usuário
@@ -261,24 +261,24 @@ function buildLayerCapSection(restorationSize: string, cavityClass: string, aest
         maxLayers = 3
         scenario = 'Diastema Médio (1-2mm): 3 camadas — Dentina/Body + Cristas Proximais + Esmalte (WE ou W3 para dentes clareados). Se dentes clareados: usar DENTINA ou BODY + camada final WE ou W3.'
       } else {
-        // Large diastema (>2mm): full stratification
-        maxLayers = 4
-        scenario = 'Diastema Grande/Extenso (>2mm): Mín 4 camadas + Efeitos Incisais recomendado (5 camadas). Se dentes clareados: DENTINA ou BODY + camada esmalte final WE ou W3.'
+        // Large diastema (>2mm): full stratification including Efeitos Incisais
+        maxLayers = 5
+        scenario = 'Diastema Grande/Extenso (>2mm): Mín 5 camadas (Aumento Incisal + Cristas Proximais + Corpo + Efeitos Incisais + Esmalte). Se dentes clareados: DENTINA ou BODY + camada esmalte final WE ou W3.'
       }
     } else {
-      maxLayers = 4
-      scenario = 'Recontorno/Faceta Anterior Estético: Mín 4 camadas (Aumento Incisal + Cristas Proximais + Corpo + Esmalte)'
+      maxLayers = 5
+      scenario = 'Recontorno/Faceta Anterior Estético: Mín 5 camadas (Aumento Incisal + Cristas Proximais + Corpo + Efeitos Incisais + Esmalte)'
     }
   } else {
     if (sizeNorm.includes('pequen')) {
-      maxLayers = isAesthetic ? 4 : 2
+      maxLayers = isAesthetic ? 5 : 2
       scenario = isAesthetic
-        ? 'Restauração Pequena + Nível Estético: Mín 4 camadas'
+        ? 'Restauração Pequena + Nível Estético: Mín 5 camadas (incl. Efeitos Incisais)'
         : 'Restauração Pequena Funcional: Máx 2 camadas'
     } else if (sizeNorm.includes('médi') || sizeNorm.includes('medi')) {
-      maxLayers = isAesthetic ? 4 : 3
+      maxLayers = isAesthetic ? 5 : 3
       scenario = isAesthetic
-        ? 'Restauração Média + Nível Estético: Mín 4 camadas'
+        ? 'Restauração Média + Nível Estético: Mín 5 camadas (incl. Efeitos Incisais)'
         : 'Restauração Média Funcional: Máx 3 camadas'
     }
     // Grande/Extensa: no cap (follows aesthetic level)
@@ -321,7 +321,9 @@ Camadas OBRIGATORIAS (gerar EXATAMENTE nesta ordem):
 1. Aumento Incisal (resina translúcida)
 2. Cristas Proximais (esmalte 1 tom mais claro que corpo)
 3. Dentina/Corpo (resina de corpo, shade VITA)
-4. Esmalte Vestibular Final (esmalte, polimento superior)
+4. Efeitos Incisais (corantes — Empress Direct Color, Kolor+ Plus, ou similar. optional: true. 0.1mm)
+5. Esmalte Vestibular Final (esmalte, polimento superior)
+⚠️ Efeitos Incisais é OBRIGATÓRIO como camada no protocolo premium/estético anterior. Marcar optional: true para que o dentista decida, mas o protocolo DEVE incluir a camada.
 PROIBIDO gerar menos de ${maxLayers} camadas. 2-3 camadas em anterior estético = ERRO GRAVE.
 `
   }
@@ -382,8 +384,8 @@ Procedimentos estéticos anteriores EXIGEM estratificação completa: Aumento In
 NIVEL FUNCIONAL ("funcional"/"baixo"/"médio") - 2-3 camadas (NAO APLICAVEL para anterior estético!):
 1. Dentina/Corpo | 2. Esmalte Vestibular Final | 3. Aumento Incisal (SE NECESSARIO)
 
-NIVEL ESTETICO ("estético"/"alto"/"muito alto" OU Fechamento de Diastema) - 4-5 camadas OBRIGATORIAS:
-⚠️ REGRA: Para nível estético, gerar no MINIMO 4 camadas: Aumento Incisal + Cristas Proximais + Dentina/Corpo + Esmalte. Efeitos Incisais é SEMPRE opcional — sugerir quando naturalidade exigir. Gerar apenas 2 camadas (Corpo + Esmalte) é ERRO GRAVE.
+NIVEL ESTETICO ("estético"/"alto"/"muito alto" OU Fechamento de Diastema) - 5 camadas OBRIGATORIAS:
+⚠️ REGRA: Para nível estético, gerar no MINIMO 5 camadas: Aumento Incisal + Cristas Proximais + Dentina/Corpo + Efeitos Incisais (optional: true) + Esmalte Vestibular Final. A camada Efeitos Incisais DEVE estar presente no protocolo (marcada optional: true) — o dentista decide se aplica, mas protocolo sem ela é INCOMPLETO. Gerar apenas 2-3 camadas (Corpo + Esmalte) é ERRO GRAVE.
 
 1. Aumento Incisal: OBRIGATÓRIO resina translúcida — Trans(FORMA) ou CT(Z350) ou Trans20(Empress) ou Trans(Vittra). PROIBIDO usar shades de esmalte (BL1/BL2/WE) ou corpo! 0.2-0.3mm, incremento único em forma de cunha.
    - Objetivo: Reproduzir FORMA e comprimento da borda incisal. Criar translucidez natural da borda.
@@ -401,7 +403,7 @@ NIVEL ESTETICO ("estético"/"alto"/"muito alto" OU Fechamento de Diastema) - 4-5
    - Substrato NORMAL: shades regulares de corpo (WB/DA1/DA2/A1/A2/B1) — cor do substrato
    - Substrato LEVEMENTE ESCURECIDO: shades com > opacidade (DA3/A3) sem prefixo O
    - Paciente CLAREANDO: optar por shade de corpo 1-2 tons mais claro (W3/W4 Estelite Bianco como corpo, ou WB shade mais clara). ⚠️ NUNCA usar BL1/BL2/BL3 como dentina/corpo — são shades de ESMALTE
-4. Efeitos Incisais (SEMPRE optional:true — sugerir conforme necessidade de naturalidade): Corantes com pincel fino, 0.1mm.
+4. Efeitos Incisais (optional: true — OBRIGATÓRIO incluir esta camada em protocolo estético/premium anterior): Corantes com pincel fino, 0.1mm.
    - Objetivo: Reproduzir efeitos ópticos naturais (halo opaco, linhas de craze, mamelos) quando necessário para resultado natural.
    - Técnica: Corante branco para micro-pontos e halo opaco incisal. Corante âmbar/azul para linhas de craze. Aplicar com pincel fino antes da camada de esmalte.
    - Marcas de corantes: Empress Direct Color (Ivoclar), Kolor+ Plus (Kerr), Opallis Flow (FGM), ou outros corantes/tints disponíveis.
