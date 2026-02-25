@@ -35,7 +35,7 @@ export function SessionCard({ session }: { session: DashboardSession }) {
 
   return (
     <Link to={`/evaluation/${session.session_id}`} aria-label={`${session.patient_name || t('dashboard.session.unnamedCase', { defaultValue: 'Caso {{date}} — {{count}} dentes', date: format(new Date(session.created_at), 'dd/MM', { locale: ptBR }), count: session.teeth.length })} — ${t('evaluation.case', { count: session.evaluationCount })}`}>
-      <Card className="group relative overflow-hidden p-3 sm:p-4 shadow-sm hover:shadow-md rounded-xl transition-all duration-300 cursor-pointer dark:bg-gradient-to-br dark:from-card dark:to-card/80">
+      <Card className="group relative overflow-hidden p-3 sm:p-4 shadow-sm hover:shadow-md rounded-xl transition-all duration-300 cursor-pointer dark:bg-gradient-to-br dark:from-card dark:to-card/80 card-interactive">
         <div
           className={`absolute left-0 top-0 bottom-0 w-[3px] ${
             isCompleted

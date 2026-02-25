@@ -262,7 +262,7 @@ export default function NewCase() {
         <div key="step-result" className={`wizard-step-${stepDirection}`}>
           {submissionComplete ? (
             <div className="flex flex-col items-center justify-center py-16 sm:py-24 space-y-4">
-              <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center animate-scale-in">
+              <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center animate-scale-in success-pulse">
                 <Check className="w-8 h-8 text-primary-foreground" />
               </div>
               <p className="text-lg font-semibold text-foreground animate-fade-in-up">

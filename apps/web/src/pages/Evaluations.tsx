@@ -313,7 +313,7 @@ export default function Evaluations() {
           isLoading={isLoading}
           itemKey="session_id"
           renderCard={renderCard}
-          gridClassName="grid grid-cols-1 gap-4"
+          gridClassName="grid grid-cols-1 gap-4 stagger-enter"
           searchConfig={searchConfig}
           filters={filtersConfig}
           state={controlledState}

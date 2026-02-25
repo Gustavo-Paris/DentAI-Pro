@@ -173,7 +173,7 @@ export default function Inventory() {
         isLoading={inv.isLoading}
         itemKey="id"
         renderCard={renderCard}
-        gridClassName="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
+        gridClassName="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 stagger-enter"
         searchConfig={searchConfig}
         filters={filtersConfig}
         sort={sortConfig}

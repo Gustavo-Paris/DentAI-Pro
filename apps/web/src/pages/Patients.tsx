@@ -257,7 +257,7 @@ export default function Patients() {
         isLoading={isLoading}
         itemKey="id"
         renderCard={renderCard}
-        gridClassName="grid grid-cols-1 gap-4"
+        gridClassName="grid grid-cols-1 gap-4 stagger-enter"
         searchConfig={searchConfig}
         sort={sortConfig}
         pagination={PAGINATION_CONFIG}
