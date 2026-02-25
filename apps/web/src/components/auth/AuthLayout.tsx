@@ -28,6 +28,11 @@ export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_rgb(var(--color-primary-rgb)/0.05),_transparent_50%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgb(var(--color-primary-rgb)/0.03),_transparent_40%)]" />
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle, var(--color-foreground) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+        <div className="absolute inset-0 ai-grid-pattern opacity-30 dark:opacity-50" style={{ maskImage: 'radial-gradient(ellipse 60% 50% at 40% 50%, black 20%, transparent 70%)', WebkitMaskImage: 'radial-gradient(ellipse 60% 50% at 40% 50%, black 20%, transparent 70%)' }} />
+
+        {/* Floating glow orbs */}
+        <div className="glow-orb w-64 h-64 bg-primary/15 dark:bg-primary/25 top-[10%] left-[-10%]" />
+        <div className="glow-orb glow-orb-slow glow-orb-reverse w-48 h-48 bg-accent/10 dark:bg-accent/15 bottom-[20%] right-[5%]" />
 
         {/* Decorative tooth watermark */}
         <svg
@@ -60,14 +65,14 @@ export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
           {/* Brand & headline */}
           <div className="flex flex-col justify-center flex-1">
             <span className="font-display tracking-[0.2em] text-gradient-brand text-2xl font-semibold mb-6 animate-[fade-in-up_0.6s_ease-out_0.2s_both]">{BRAND_NAME}</span>
-            <h2 className="text-3xl xl:text-4xl font-display font-semibold tracking-tight mb-3 animate-[fade-in-up_0.6s_ease-out_0.3s_both]">{t('landing.brandSlogan')}</h2>
+            <h2 className="text-3xl xl:text-4xl font-display font-semibold tracking-tight mb-3 animate-[fade-in-up_0.6s_ease-out_0.3s_both] neon-text">{t('landing.brandSlogan')}</h2>
             <p className="text-muted-foreground text-lg mb-10 animate-[fade-in-up_0.6s_ease-out_0.4s_both]">{t('landing.brandDescription')}</p>
 
             {/* Feature highlights */}
             <ul className="space-y-4 animate-[fade-in-up_0.6s_ease-out_0.5s_both]">
               {FEATURES.map(({ icon: Icon, key, fallback }) => (
                 <li key={key} className="flex items-center gap-3 text-sm text-muted-foreground">
-                  <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary shrink-0">
+                  <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary shrink-0 glow-icon">
                     <Icon className="w-4 h-4" />
                   </span>
                   {t(key, { defaultValue: fallback })}
@@ -84,13 +89,13 @@ export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
       </div>
 
       {/* Form panel */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-8">
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-8 dark:bg-gradient-to-b dark:from-card/50 dark:to-background">
         <div className="w-full max-w-sm">
           <div className="text-center mb-6 sm:mb-8">
             <Link to="/" className="font-display tracking-[0.2em] text-gradient-brand text-lg sm:text-xl font-semibold lg:hidden animate-[fade-in-up_0.6s_ease-out_0.2s_both]">
               {BRAND_NAME}
             </Link>
-            <h1 className="text-xl sm:text-2xl font-semibold font-display mt-6 sm:mt-8 lg:mt-0 mb-2 animate-[fade-in-up_0.6s_ease-out_0.3s_both]">
+            <h1 className="text-xl sm:text-2xl font-semibold font-display mt-6 sm:mt-8 lg:mt-0 mb-2 animate-[fade-in-up_0.6s_ease-out_0.3s_both] neon-text">
               {title}
             </h1>
             <p className="text-sm text-muted-foreground animate-[fade-in-up_0.6s_ease-out_0.3s_both]">

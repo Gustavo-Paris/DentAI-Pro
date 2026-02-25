@@ -170,6 +170,11 @@
   --accent-violet-rgb: 139 92 246;
   --accent-emerald-rgb: 16 185 129;
   --accent-amber-rgb: 245 158 11;
+
+  /* Glow tokens — ambient light effects (AI/tech aesthetic) */
+  --glow-sm: 0 0 15px rgb(var(--color-primary-rgb) / 0.08);
+  --glow-md: 0 0 30px rgb(var(--color-primary-rgb) / 0.08), 0 0 60px rgb(var(--color-primary-rgb) / 0.03);
+  --glow-lg: 0 0 40px rgb(var(--color-primary-rgb) / 0.1), 0 0 80px rgb(var(--color-primary-rgb) / 0.04);
 }
 
 /* Dark mode — specificity 0,2,0 to beat portal-base .dark .ui-theme */
@@ -265,6 +270,11 @@
   --accent-violet-rgb: 139 92 246;
   --accent-emerald-rgb: 16 185 129;
   --accent-amber-rgb: 245 158 11;
+
+  /* Glow tokens — stronger in dark mode for AI/tech aesthetic */
+  --glow-sm: 0 0 20px rgb(var(--color-primary-rgb) / 0.18);
+  --glow-md: 0 0 30px rgb(var(--color-primary-rgb) / 0.25), 0 0 60px rgb(var(--color-primary-rgb) / 0.08);
+  --glow-lg: 0 0 48px rgb(var(--color-primary-rgb) / 0.3), 0 0 96px rgb(var(--color-primary-rgb) / 0.12);
 }
 
 @layer base {
@@ -283,15 +293,20 @@
 }
 
 /* ═══ Ambient glow — signature PageShell dark mode effect ═══ */
-/* Radial gradient of primary color at the top of the page.
-   Creates depth and "atmosphere" that distinguishes premium dark UIs. */
+/* Multi-color radial gradient creates depth and "AI atmosphere".
+   Primary cyan at top-center + subtle accent at top-right corner. */
 .dark .ui-theme,
 .dark .ui-theme-odonto-ai {
   background-image:
     radial-gradient(
       ellipse 100% 60% at 50% -20%,
-      rgb(var(--color-primary-rgb) / 0.14) 0%,
+      rgb(var(--color-primary-rgb) / 0.18) 0%,
       transparent 70%
+    ),
+    radial-gradient(
+      ellipse 50% 40% at 100% 0%,
+      rgb(var(--color-accent-rgb) / 0.06) 0%,
+      transparent 60%
     );
 }
 
@@ -372,7 +387,176 @@
 }
 
 .dark .glass-card {
-  box-shadow: inset 0 1px 0 var(--glass-highlight), var(--shadow-sm);
+  box-shadow: inset 0 1px 0 var(--glass-highlight), var(--glow-sm);
+}
+
+/* ═══ AI/Tech Aesthetic Utilities ═══ */
+
+/* Glass panel — stronger frosted glass with glow edge */
+.glass-panel {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.dark .glass-panel {
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glow-sm);
+}
+
+/* Glow card — ambient primary glow on hover */
+.glow-card {
+  transition: box-shadow var(--duration-normal, 200ms) var(--ease-out, ease-out),
+              border-color var(--duration-normal, 200ms) var(--ease-out, ease-out);
+}
+
+.glow-card:hover {
+  box-shadow: var(--glow-sm);
+}
+
+.dark .glow-card:hover {
+  box-shadow: var(--glow-md);
+  border-color: rgb(var(--color-primary-rgb) / 0.2);
+}
+
+/* Glow icon — soft radial glow behind icon containers on hover */
+.glow-icon {
+  position: relative;
+  z-index: 1;
+}
+
+.glow-icon::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle,
+    rgb(var(--color-primary-rgb) / 0.2) 0%,
+    transparent 70%
+  );
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.group:hover .glow-icon::before,
+.glow-icon:hover::before {
+  opacity: 1;
+}
+
+.dark .glow-icon::before {
+  background: radial-gradient(
+    circle,
+    rgb(var(--color-primary-rgb) / 0.35) 0%,
+    transparent 70%
+  );
+}
+
+/* Floating glow orb — decorative background element */
+@keyframes orb-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.5; }
+  33% { transform: translate(20px, -25px) scale(1.1); opacity: 0.7; }
+  66% { transform: translate(-15px, 15px) scale(0.9); opacity: 0.4; }
+}
+
+.glow-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  animation: orb-drift 12s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.glow-orb-slow {
+  animation-duration: 18s;
+}
+
+.glow-orb-reverse {
+  animation-direction: reverse;
+}
+
+/* AI grid pattern — subtle dot grid for tech feel */
+.ai-grid-pattern {
+  background-image: radial-gradient(
+    circle 1px,
+    rgb(var(--color-primary-rgb) / 0.06) 1px,
+    transparent 0
+  );
+  background-size: 32px 32px;
+}
+
+.dark .ai-grid-pattern {
+  background-image: radial-gradient(
+    circle 1px,
+    rgb(var(--color-primary-rgb) / 0.12) 1px,
+    transparent 0
+  );
+}
+
+/* Glow badge — subtle pulsing glow for AI-related badges */
+.glow-badge {
+  box-shadow: 0 0 8px rgb(var(--color-primary-rgb) / 0.15);
+}
+
+.dark .glow-badge {
+  box-shadow: 0 0 12px rgb(var(--color-primary-rgb) / 0.25);
+}
+
+/* Neon text — glowing text effect for headings */
+.neon-text {
+  text-shadow: 0 0 20px rgb(var(--color-primary-rgb) / 0.2);
+}
+
+.dark .neon-text {
+  text-shadow:
+    0 0 10px rgb(var(--color-primary-rgb) / 0.3),
+    0 0 30px rgb(var(--color-primary-rgb) / 0.15);
+}
+
+/* Enhanced timeline-line glow in dark mode */
+.dark .timeline-line::before {
+  background: linear-gradient(to bottom, rgb(var(--color-primary-rgb) / 0.5), rgb(var(--color-primary-rgb) / 0.1));
+  box-shadow: 0 0 8px rgb(var(--color-primary-rgb) / 0.2);
+}
+
+/* Glass nav — bottom glow for navigation bar */
+.glass-nav {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dark .glass-nav {
+  border-bottom-color: rgb(var(--color-primary-rgb) / 0.1);
+  box-shadow: 0 1px 12px rgb(var(--color-primary-rgb) / 0.05);
+}
+
+/* Section glow background — subtle tech radial gradients */
+.section-glow-bg {
+  position: relative;
+}
+
+.dark .section-glow-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgb(var(--color-primary-rgb) / 0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 0% 100%, rgb(var(--color-accent-rgb) / 0.03) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* Glow stat — enhanced neon text for large stat values */
+.glow-stat {
+  text-shadow: 0 0 20px rgb(var(--color-primary-rgb) / 0.15);
+}
+
+.dark .glow-stat {
+  text-shadow:
+    0 0 15px rgb(var(--color-primary-rgb) / 0.4),
+    0 0 40px rgb(var(--color-primary-rgb) / 0.15);
 }
 
 /* ─── Section divider glow — primary accent line for visual separation ─── */
@@ -966,4 +1150,7 @@ button:not(:disabled):active,
   button:not(:disabled):active, [role="button"]:not(:disabled):active { transform: none; }
   .success-pulse { animation: none; }
   .animate-count-up { animation: none; opacity: 1; transform: none; }
+  .glow-orb { animation: none; }
+  .neon-text { text-shadow: none; }
+  .glow-stat { text-shadow: none; }
 }

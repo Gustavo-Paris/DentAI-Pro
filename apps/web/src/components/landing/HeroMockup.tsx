@@ -7,7 +7,7 @@ export function HeroMockup() {
       {/* Float animation wrapper */}
       <div className="animate-[hero-float_6s_ease-in-out_infinite]">
         {/* Device frame */}
-        <div className="relative rounded-[2rem] border-[6px] border-foreground/10 dark:border-foreground/15 bg-background shadow-xl overflow-hidden">
+        <div className="relative rounded-[2rem] border-[6px] border-foreground/10 dark:border-foreground/15 bg-background shadow-xl overflow-hidden ai-shimmer-border">
           {/* Status bar */}
           <div className="flex items-center justify-between px-5 py-2 bg-secondary/50">
             <span className="text-[10px] text-muted-foreground font-medium">9:41</span>
@@ -90,7 +90,7 @@ export function HeroMockup() {
       </div>
 
       {/* Glow effect behind device */}
-      <div className="absolute inset-0 -z-10 blur-3xl opacity-20 bg-gradient-to-br from-primary/40 to-transparent rounded-full scale-110" />
+      <div className="absolute inset-0 -z-10 blur-3xl opacity-30 dark:opacity-40 bg-gradient-to-br from-primary/40 via-accent/20 to-transparent rounded-full scale-125" />
     </div>
   );
 }

@@ -120,6 +120,7 @@ export default {
   			'progress-indeterminate': 'progress-indeterminate 1.5s ease-in-out infinite',
   			'badge-pulse-ring': 'badge-pulse-ring 3s ease-in-out infinite',
   			'float': 'float 3s ease-in-out infinite',
+			'orb-drift': 'orb-drift 12s ease-in-out infinite',
   		},
   		boxShadow: {
   			sm: 'var(--shadow-sm)',

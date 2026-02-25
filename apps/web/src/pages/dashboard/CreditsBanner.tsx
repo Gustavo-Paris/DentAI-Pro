@@ -13,7 +13,7 @@ export function CreditsBanner({
   const { t } = useTranslation();
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-primary/20 dark:border-primary/15 shadow-sm">
+    <div className="relative overflow-hidden rounded-xl border border-primary/20 dark:border-primary/15 shadow-sm dark:shadow-[0_0_20px_rgb(var(--color-primary-rgb)/0.12)]">
       <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/3 to-primary/5 dark:from-primary/8 dark:via-primary/4 dark:to-primary/8" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgb(var(--color-primary-rgb)/0.06),_transparent_60%)]" />
 

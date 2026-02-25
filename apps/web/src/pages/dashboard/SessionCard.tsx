@@ -35,7 +35,7 @@ export function SessionCard({ session }: { session: DashboardSession }) {
 
   return (
     <Link to={`/evaluation/${session.session_id}`} aria-label={`${session.patient_name || t('dashboard.session.unnamedCase', { defaultValue: 'Caso {{date}} — {{count}} dentes', date: format(new Date(session.created_at), 'dd/MM', { locale: ptBR }), count: session.teeth.length })} — ${t('evaluation.case', { count: session.evaluationCount })}`}>
-      <Card className="group relative overflow-hidden p-3 sm:p-4 shadow-sm hover:shadow-md rounded-xl transition-all duration-300 cursor-pointer dark:bg-gradient-to-br dark:from-card dark:to-card/80 card-interactive">
+      <Card className="group relative overflow-hidden p-3 sm:p-4 shadow-sm hover:shadow-md rounded-xl transition-all duration-300 cursor-pointer dark:bg-gradient-to-br dark:from-card dark:to-card/80 card-interactive glow-card">
         <div
           className={`absolute left-0 top-0 bottom-0 w-[3px] ${
             isCompleted
@@ -109,7 +109,7 @@ export function SessionCard({ session }: { session: DashboardSession }) {
         <div className="mt-2 h-1 rounded-full bg-secondary overflow-hidden" role="progressbar" aria-valuenow={Math.round(progressPercent)} aria-valuemin={0} aria-valuemax={100} aria-label={t('evaluation.progress', { defaultValue: 'Progresso da avaliação' })}>
           <div
             className={`h-full rounded-full transition-all duration-500 ${isCompleted ? STATUS_STYLES.completed.bar : STATUS_STYLES.inProgress.bar}`}
-            style={{ width: `${progressPercent}%` }}
+            style={{ width: `${progressPercent}%`, boxShadow: `0 0 8px rgb(var(${isCompleted ? '--color-success-rgb' : '--color-primary-rgb'}) / 0.4)` }}
           />
         </div>
       </Card>

@@ -50,7 +50,7 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border/50">
+      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border/50 glass-nav">
         <nav className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between" aria-label="Main">
           <span className="text-lg sm:text-xl font-semibold tracking-[0.2em] font-display text-gradient-brand">{BRAND_NAME}</span>
           <div className="flex items-center gap-2 sm:gap-4">
@@ -73,6 +73,11 @@ export default function Landing() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_80%_60%,rgb(var(--color-primary-rgb)/0.05),transparent)] dark:bg-[radial-gradient(ellipse_60%_40%_at_80%_60%,rgb(var(--color-primary-rgb)/0.05),transparent)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_50%_at_20%_80%,rgb(var(--color-primary-rgb)/0.03),transparent)] dark:bg-[radial-gradient(ellipse_50%_50%_at_20%_80%,rgb(var(--color-primary-rgb)/0.03),transparent)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_1px_at_20px_20px,rgb(var(--color-primary-rgb)/0.05)_1px,transparent_0)] dark:bg-[radial-gradient(circle_1px_at_20px_20px,rgb(var(--color-primary-rgb)/0.03)_1px,transparent_0)] bg-[length:40px_40px]" />
+        {/* AI tech grid */}
+        <div className="absolute inset-0 ai-grid-pattern opacity-40 dark:opacity-60" style={{ maskImage: 'radial-gradient(ellipse 70% 50% at 50% 40%, black 20%, transparent 70%)', WebkitMaskImage: 'radial-gradient(ellipse 70% 50% at 50% 40%, black 20%, transparent 70%)' }} />
+        {/* Floating glow orbs */}
+        <div className="glow-orb w-72 h-72 bg-primary/20 dark:bg-primary/30 top-[-10%] left-[15%]" />
+        <div className="glow-orb glow-orb-slow glow-orb-reverse w-96 h-96 bg-accent/15 dark:bg-accent/20 top-[20%] right-[-5%]" />
 
         <div className="container mx-auto px-4 sm:px-6 relative">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center max-w-6xl mx-auto">
@@ -80,13 +85,13 @@ export default function Landing() {
             <div className="text-center lg:text-left">
               <Badge
                 variant="secondary"
-                className="mb-6"
+                className="mb-6 glow-badge"
                 style={{ animation: 'badge-pulse-ring 3s ease-in-out infinite, fade-in-up 0.6s ease-out 0.2s both' }}
               >
                 <Sparkles className="w-3 h-3 mr-1" aria-hidden="true" />
                 {t('landing.heroTagline')}
               </Badge>
-              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-tight mb-4 sm:mb-6 font-display animate-[fade-in-up_0.6s_ease-out_0.4s_both]">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-tight mb-4 sm:mb-6 font-display animate-[fade-in-up_0.6s_ease-out_0.4s_both] neon-text">
                 {t('landing.heroTitlePre')} <span className="text-gradient-brand">{t('landing.heroTitleHighlight')}</span> {t('landing.heroTitlePost')}
               </h1>
               <p className="text-base sm:text-lg text-muted-foreground mb-8 sm:mb-10 max-w-xl mx-auto lg:mx-0 animate-[fade-in-up_0.6s_ease-out_0.6s_both]">
@@ -111,7 +116,8 @@ export default function Landing() {
       </section>
 
       {/* Stats */}
-      <section aria-label={t('landing.statsSection', { defaultValue: 'Estatisticas' })} className="py-10 sm:py-14 bg-gradient-to-b from-secondary/40 to-secondary/10">
+      <section aria-label={t('landing.statsSection', { defaultValue: 'Estatisticas' })} className="py-10 sm:py-14 bg-gradient-to-b from-secondary/40 to-secondary/10 relative overflow-hidden">
+        <div className="absolute inset-0 ai-grid-pattern opacity-20" />
         <div className="container mx-auto px-4 sm:px-6">
           <div ref={statsRef} className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
             {[
@@ -124,7 +130,7 @@ export default function Landing() {
                 key={i}
                 className={`scroll-reveal scroll-reveal-delay-${i + 1} ${i > 0 ? 'sm:border-l sm:border-primary/20' : ''}`}
               >
-                <p className="text-4xl sm:text-5xl md:text-6xl font-semibold font-display text-primary">{stat.value}</p>
+                <p className="text-4xl sm:text-5xl md:text-6xl font-semibold font-display text-primary glow-stat">{stat.value}</p>
                 <p className="text-xs sm:text-sm text-muted-foreground mt-1">{stat.label}</p>
               </div>
             ))}
@@ -135,7 +141,7 @@ export default function Landing() {
       {/* Features */}
       <section aria-label={t('landing.featuresTitle')} className="py-16 sm:py-24 bg-background">
         <div className="container mx-auto px-4 sm:px-6">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-center mb-10 sm:mb-16 font-display">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-center mb-10 sm:mb-16 font-display neon-text">
             {t('landing.featuresTitle')}
           </h2>
           <div ref={featuresRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -167,9 +173,9 @@ export default function Landing() {
             ]).map((feature, index) => (
               <div
                 key={index}
-                className={`scroll-reveal scroll-reveal-delay-${index + 1} text-left border border-border rounded-xl p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md group dark:bg-gradient-to-br dark:from-card dark:to-card/80`}
+                className={`scroll-reveal scroll-reveal-delay-${index + 1} text-left border border-border rounded-xl p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md group dark:bg-gradient-to-br dark:from-card dark:to-card/80 glow-card`}
               >
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110 glow-icon">
                   <feature.icon className="w-6 h-6 sm:w-7 sm:h-7 text-primary" aria-hidden="true" />
                 </div>
                 <h3 className="font-medium text-sm sm:text-base mb-1 sm:mb-2">{feature.title}</h3>
@@ -182,9 +188,11 @@ export default function Landing() {
       </section>
 
       {/* Testimonials */}
-      <section aria-label={t('landing.testimonialsTitle')} className="py-16 sm:py-24 bg-secondary/20">
+      <section aria-label={t('landing.testimonialsTitle')} className="py-16 sm:py-24 bg-secondary/20 relative overflow-hidden section-glow-bg">
+        <div className="glow-orb glow-orb-slow w-56 h-56 bg-primary/10 dark:bg-primary/15 top-[-15%] right-[-5%]" />
+        <div className="glow-orb glow-orb-reverse w-40 h-40 bg-accent/8 dark:bg-accent/10 bottom-[10%] left-[-8%]" />
         <div className="container mx-auto px-4 sm:px-6 max-w-4xl">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-10 sm:mb-16 font-display">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-10 sm:mb-16 font-display neon-text">
             {t('landing.testimonialsTitle')}
           </h2>
           <div ref={testimonialsRef} className="grid md:grid-cols-2 gap-6">
@@ -229,7 +237,7 @@ export default function Landing() {
             ].map((testimonial, i) => (
               <div
                 key={i}
-                className={`scroll-reveal scroll-reveal-delay-${i + 1} relative bg-background rounded-xl p-6 border border-border/50 border-l-4 border-l-primary/40`}
+                className={`scroll-reveal scroll-reveal-delay-${i + 1} relative bg-background rounded-xl p-6 border border-border/50 border-l-4 border-l-primary/40 glow-card`}
               >
                 <span className="absolute top-2 right-4 text-7xl leading-none font-serif text-primary/[0.05] select-none" aria-hidden="true">&ldquo;</span>
                 {testimonial.highlight && (
@@ -265,9 +273,9 @@ export default function Landing() {
       </section>
 
       {/* How it works — Timeline */}
-      <section aria-label={t('landing.howItWorksTitle')} className="py-12 sm:py-20 bg-background">
+      <section aria-label={t('landing.howItWorksTitle')} className="py-12 sm:py-20 bg-background relative overflow-hidden section-glow-bg">
         <div className="container mx-auto px-4 sm:px-6 max-w-3xl">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-10 sm:mb-16 font-display">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-10 sm:mb-16 font-display neon-text">
             {t('landing.howItWorksTitle')}
           </h2>
           <div ref={howItWorksRef} className="space-y-8 sm:space-y-12 timeline-line">
@@ -294,7 +302,7 @@ export default function Landing() {
               },
             ].map((item, index) => (
               <div key={index} className={`scroll-reveal scroll-reveal-delay-${index + 1} flex items-start gap-4 pl-12 sm:pl-16 relative`}>
-                <div className="absolute left-[12px] sm:left-[16px] top-0 w-[18px] h-[18px] sm:w-[18px] sm:h-[18px] rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold shrink-0">
+                <div className="absolute left-[12px] sm:left-[16px] top-0 w-[18px] h-[18px] sm:w-[18px] sm:h-[18px] rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold shrink-0 glow-icon">
                   {index + 1}
                 </div>
                 <div>
@@ -308,12 +316,12 @@ export default function Landing() {
       </section>
 
       {/* FAQ */}
-      <section aria-label={t('landing.faqTitle')} className="py-12 sm:py-20 bg-secondary/20">
+      <section aria-label={t('landing.faqTitle')} className="py-12 sm:py-20 bg-secondary/20 relative overflow-hidden section-glow-bg">
         <div className="container mx-auto px-4 sm:px-6 max-w-2xl">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-8 sm:mb-12 font-display">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-8 sm:mb-12 font-display neon-text">
             {t('landing.faqTitle')}
           </h2>
-          <Accordion type="single" collapsible className="w-full">
+          <Accordion type="single" collapsible className="w-full glass-panel rounded-xl p-1">
             <AccordionItem value="item-1">
               <AccordionTrigger>{t('landing.faq1Q')}</AccordionTrigger>
               <AccordionContent>
@@ -368,9 +376,11 @@ export default function Landing() {
         {/* Gradient mesh — inverted from hero (origin bottom) */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_120%,rgb(var(--color-primary-rgb)/0.08),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_120%,rgb(var(--color-primary-rgb)/0.10),transparent)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_20%_40%,rgb(var(--color-primary-rgb)/0.05),transparent)] dark:bg-[radial-gradient(ellipse_60%_40%_at_20%_40%,rgb(var(--color-primary-rgb)/0.05),transparent)]" />
+        <div className="glow-orb glow-orb-reverse w-64 h-64 bg-primary/20 dark:bg-primary/25 bottom-[-20%] left-[10%]" />
+        <div className="glow-orb glow-orb-slow w-48 h-48 bg-accent/15 dark:bg-accent/20 top-[10%] right-[20%]" />
 
         <div ref={ctaRef} className="scroll-reveal container mx-auto px-4 sm:px-6 text-center relative max-w-2xl">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold mb-3 sm:mb-4 font-display">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold mb-3 sm:mb-4 font-display neon-text">
             {t('landing.ctaTitle')}
           </h2>
           <p className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-8 max-w-lg mx-auto">
@@ -392,7 +402,8 @@ export default function Landing() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border/50 py-6 sm:py-8 bg-background">
+      <footer className="py-6 sm:py-8 bg-background">
+        <div className="glow-divider mb-6 sm:mb-8" />
         <div className="container mx-auto px-4 sm:px-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-center sm:text-left">
@@ -499,10 +510,11 @@ function LandingPricing() {
   const displayPlans = plans && plans.length > 0 ? plans : null;
 
   return (
-    <section id="pricing" className="py-12 sm:py-20 border-t border-border bg-secondary/30">
+    <section id="pricing" className="py-12 sm:py-20 bg-secondary/30 relative overflow-hidden section-glow-bg">
+      <div className="glow-divider" />
       <div className="container mx-auto px-4 sm:px-6">
         <div className="text-center mb-8 sm:mb-12">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold font-display">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold font-display neon-text">
             {t('pricing.plansAndPricing')}
           </h2>
           <p className="text-sm sm:text-base text-muted-foreground mt-2">
@@ -522,7 +534,7 @@ function LandingPricing() {
               return (
                 <Card
                   key={plan.id}
-                  className={`relative flex flex-col ${isPopular ? 'border-primary shadow-lg scale-105' : ''}`}
+                  className={`relative flex flex-col ${isPopular ? 'border-primary shadow-lg scale-105 ai-shimmer-border' : ''}`}
                 >
                   {isPopular && (
                     <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary">
@@ -603,7 +615,7 @@ function LandingPricing() {
               return (
                 <Card
                   key={plan.id}
-                  className={`relative flex flex-col ${plan.isPopular ? 'border-primary shadow-lg scale-105' : ''}`}
+                  className={`relative flex flex-col ${plan.isPopular ? 'border-primary shadow-lg scale-105 ai-shimmer-border' : ''}`}
                 >
                   {plan.isPopular && (
                     <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary">
