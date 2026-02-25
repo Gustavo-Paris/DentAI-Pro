@@ -279,8 +279,9 @@ export default function Pricing() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+    <>
       <PricingPage
+        className="max-w-6xl mx-auto py-6 sm:py-8"
         title={t('pricing.title')}
         description={t('components.pricing.section.subtitle')}
         plans={pricingPlans}
@@ -317,6 +318,6 @@ export default function Pricing() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }

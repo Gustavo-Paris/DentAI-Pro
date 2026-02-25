@@ -80,7 +80,7 @@ export function SessionCard({ session }: { session: DashboardSession }) {
               {session.treatmentTypes.length > 0 && (
                 <>
                   <span className="text-muted-foreground/40">·</span>
-                  <div className="flex gap-1 flex-wrap">
+                  <div className="flex gap-1.5 flex-wrap">
                     {session.treatmentTypes.map(type => {
                       const config = getTreatmentConfig(type);
                       return (

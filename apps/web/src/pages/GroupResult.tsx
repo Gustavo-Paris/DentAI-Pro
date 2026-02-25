@@ -42,8 +42,8 @@ export default function GroupResult() {
 
   return (
     <>
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       <DetailPage
+        className="max-w-5xl mx-auto py-6 sm:py-8"
         title={`${g.currentTreatmentStyle.label} — ${t('components.groupResult.unifiedProtocol')}`}
         breadcrumbs={[
           { label: t('result.home'), href: '/dashboard' },
@@ -174,7 +174,6 @@ export default function GroupResult() {
           );
         }}
       </DetailPage>
-    </div>
 
     {/* Confirm mark all as completed */}
     <PageConfirmDialog

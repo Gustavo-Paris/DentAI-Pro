@@ -54,8 +54,8 @@ export default function Result() {
     <>
       <LoadingOverlay isLoading={r.generatingPDF} message={t('result.generatingPDF')} />
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       <DetailPage
+        className="max-w-5xl mx-auto py-6 sm:py-8"
         title={r.currentTreatmentStyle.label}
         breadcrumbs={[
           { label: t('result.home'), href: '/dashboard' },
@@ -177,7 +177,7 @@ export default function Result() {
                     <div className="flex items-start justify-between">
                       <div>
                         <CardTitle className="text-xl font-display flex items-center gap-2">
-                          <CheckCircle className="w-5 h-5 text-foreground" />
+                          <CheckCircle className="w-5 h-5 text-success" />
                           {r.resin.name}
                         </CardTitle>
                         <p className="text-muted-foreground mt-1">{r.resin.manufacturer}</p>
@@ -194,7 +194,7 @@ export default function Result() {
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                       <div className="bg-secondary/30 rounded-xl p-3">
                         <span className="text-muted-foreground">{t('result.opacity')}</span>
                         <p className="font-medium">{r.resin.opacity}</p>
@@ -373,7 +373,6 @@ export default function Result() {
           );
         }}
       </DetailPage>
-      </div>
 
       {/* PDF Confirmation Dialog */}
       <PageConfirmDialog

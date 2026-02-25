@@ -144,7 +144,7 @@ export default function EvaluationDetails() {
               hasDSD={hasDSD}
               onPhotoClick={() => setShowDSD(true)}
             />
-            <div className="flex flex-wrap items-center gap-2 mb-4 sm:mb-6">
+            <div className="flex flex-wrap items-center gap-3 mb-4 sm:mb-6">
               <Button
                 variant="outline"
                 size="sm"

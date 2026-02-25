@@ -81,7 +81,7 @@ export function DSDWhiteningComparison({
               {t('components.wizard.dsd.whiteningComparison.close')}
             </Button>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {(['natural', 'hollywood'] as const).map(level => {
               const url = whiteningComparison[level];
               if (!url) return (

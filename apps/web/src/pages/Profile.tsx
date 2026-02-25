@@ -80,8 +80,8 @@ export default function Profile() {
   }, [searchParams, navigate, refreshSubscription, p.syncCreditPurchase, t]);
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
     <DetailPage
+      className="max-w-5xl mx-auto py-6 sm:py-8"
       title={t('profile.title')}
       query={{ data: p.isLoading ? undefined : p.profile, isLoading: p.isLoading }}
       tabs={[
@@ -283,8 +283,6 @@ export default function Profile() {
       ]}
       defaultTab={searchParams.get('tab') || 'perfil'}
     />
-
-    </div>
   );
 }
 

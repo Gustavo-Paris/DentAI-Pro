@@ -265,7 +265,7 @@ export default function NewCase() {
               <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center animate-scale-in">
                 <Check className="w-8 h-8 text-primary-foreground" />
               </div>
-              <p className="text-lg font-semibold text-primary animate-fade-in-up">
+              <p className="text-lg font-semibold text-foreground animate-fade-in-up">
                 {t('wizard.caseCreated')}
               </p>
               <div className="flex flex-col sm:flex-row gap-3 animate-fade-in-up">
