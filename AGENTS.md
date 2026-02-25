@@ -1,7 +1,7 @@
 ---
 title: Agentes do Projeto - AURIA
 created: 2026-02-04
-updated: 2026-02-23
+updated: 2026-02-25
 author: Team AURIA
 status: published
 tags:
@@ -32,8 +32,7 @@ AGENTS.md (este arquivo)
 │   └── web/AGENTS.md              → App principal
 ├── packages/
 │   ├── AGENTS.md                  → Índice de packages
-│   ├── logger/AGENTS.md
-│   └── domain-odonto-ai/AGENTS.md → Componentes de domínio odontológico
+│   └── logger/AGENTS.md
 ├── supabase/
 │   ├── AGENTS.md                  → Instruções backend
 │   └── functions/                 → Edge functions (backend)
@@ -46,10 +45,9 @@ AGENTS.md (este arquivo)
 | web | [[apps/web/AGENTS.md]] | App principal - decisão clínica odontológica com IA |
 | supabase | [[supabase/AGENTS.md]] | Edge functions backend (Deno) - IA, billing, LGPD |
 | logger | [[packages/logger/AGENTS.md]] | Logger compartilhado |
-| domain-odonto-ai | [[packages/domain-odonto-ai/AGENTS.md]] | Componentes de domínio odontológico para PageShell |
 
 > [!info] Packages Externos
-> PageShell (`@parisgroup-ai/pageshell`) e page-shell (barrel) são packages externos instalados via GitHub Packages. Não possuem AGENTS.md local. Ver [[packages/AGENTS.md]] para documentação de arquitetura.
+> PageShell (`@parisgroup-ai/pageshell`), page-shell (barrel) e domain-odonto-ai (`@parisgroup-ai/domain-odonto-ai`) são packages externos instalados via GitHub Packages. Não possuem AGENTS.md local. Ver [[packages/AGENTS.md]] para documentação de arquitetura.
 
 ## Instruções Globais
 
@@ -76,7 +74,6 @@ AGENTS.md (este arquivo)
 | **Hub** | [[docs/00-Index/Home]] | Ponto de entrada da documentação |
 | **Architecture Plans** | `docs/plans/` | Design documents e implementation plans |
 | **Templates** | `docs/Templates/` | Templates para ADRs, PRs, Runbooks |
-| **Assets** | `docs/Assets/` | Diagramas e imagens |
 
 ### Convenções de Documentação
 
@@ -112,16 +109,17 @@ REQ-042 ←→ ADR-007 ←→ PR #123 ←→ TEST-101
 
 | ADR | Decisão |
 |-----|---------|
-| [[06-ADRs/ADR-001-3-layer-frontend-architecture\|ADR-001]] | 3-Layer Frontend Architecture |
-| [[06-ADRs/ADR-002-pageshell-design-system-adoption\|ADR-002]] | PageShell Design System Adoption |
-| [[06-ADRs/ADR-003-centralized-prompt-management\|ADR-003]] | Centralized Prompt Management |
-| [[06-ADRs/ADR-004-credit-model-and-monetization\|ADR-004]] | Credit Model & Monetization |
-| [[06-ADRs/ADR-005-authentication-and-authorization\|ADR-005]] | Authentication & Authorization |
-| [[06-ADRs/ADR-006-ai-integration-strategy\|ADR-006]] | AI Integration Strategy |
-| [[06-ADRs/ADR-007-clinical-photo-storage\|ADR-007]] | Clinical Photo Storage |
-| [[06-ADRs/ADR-008-wizard-architecture-post-refactor\|ADR-008]] | Wizard Architecture (Post-Refactor) |
+| [[docs/06-ADRs/ADR-001-3-layer-frontend-architecture\|ADR-001]] | 3-Layer Frontend Architecture |
+| [[docs/06-ADRs/ADR-002-pageshell-design-system-adoption\|ADR-002]] | PageShell Design System Adoption |
+| [[docs/06-ADRs/ADR-003-centralized-prompt-management\|ADR-003]] | Centralized Prompt Management |
+| [[docs/06-ADRs/ADR-004-credit-model-and-monetization\|ADR-004]] | Credit Model & Monetization |
+| [[docs/06-ADRs/ADR-005-authentication-and-authorization\|ADR-005]] | Authentication & Authorization |
+| [[docs/06-ADRs/ADR-006-ai-integration-strategy\|ADR-006]] | AI Integration Strategy |
+| [[docs/06-ADRs/ADR-007-clinical-photo-storage\|ADR-007]] | Clinical Photo Storage |
+| [[docs/06-ADRs/ADR-008-wizard-architecture-post-refactor\|ADR-008]] | Wizard Architecture (Post-Refactor) |
+| [[docs/06-ADRs/ADR-009-Design-System-Coexistence\|ADR-009]] | Design System Coexistence (PageShell + shadcn/ui) |
 
-→ [[06-ADRs/ADR-Index]] — Índice completo + template
+→ [[docs/06-ADRs/ADR-Index]] — Índice completo + template
 
 ## Herança
 
@@ -135,4 +133,4 @@ Filhos podem sobrescrever com `@override: razão`.
 - [[README]] — Setup e overview técnico
 
 ---
-*Atualizado: 2026-02-23*
+*Atualizado: 2026-02-25*

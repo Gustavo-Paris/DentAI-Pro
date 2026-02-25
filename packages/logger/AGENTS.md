@@ -1,7 +1,8 @@
 ---
 title: "AGENTS.md (packages/logger)"
 created: 2026-02-04
-updated: 2026-02-23
+updated: 2026-02-25
+author: Team AURIA
 status: published
 tags:
   - type/guide
@@ -40,4 +41,4 @@ related:
 - [[../AGENTS.md]] - Packages index
 
 ---
-*Atualizado: 2026-02-23*
+*Atualizado: 2026-02-25*

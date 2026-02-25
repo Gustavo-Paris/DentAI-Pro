@@ -1,7 +1,7 @@
 ---
 title: "AGENTS.md (supabase)"
 created: 2026-02-23
-updated: 2026-02-23
+updated: 2026-02-25
 author: Team AURIA
 status: published
 tags:
@@ -28,7 +28,7 @@ related:
 
 ## Project Context
 
-Backend do AURIA: 13 edge functions em Deno que proveem análise dental com IA, recomendações clínicas, billing (Stripe), e conformidade LGPD. Toda lógica compartilhada vive em `functions/_shared/`.
+Backend do AURIA: 14 edge functions em Deno que proveem análise dental com IA, recomendações clínicas, billing (Stripe), e conformidade LGPD. Toda lógica compartilhada vive em `functions/_shared/`.
 
 ## Key Locations
 
@@ -57,6 +57,7 @@ Backend do AURIA: 13 edge functions em Deno que proveem análise dental com IA, 
 | `health-check` | API | — | Monitoramento de conectividade |
 | `data-export` | API | — | LGPD: portabilidade de dados |
 | `delete-account` | API | — | LGPD: exclusão de conta |
+| `apply-referral` | API | — | Aplica código de referral e concede créditos bônus |
 
 ## Regras Críticas
 
@@ -147,4 +148,4 @@ Backend do AURIA: 13 edge functions em Deno que proveem análise dental com IA, 
 - [[../AGENTS.md]] — Índice geral
 
 ---
-*Atualizado: 2026-02-23*
+*Atualizado: 2026-02-25*

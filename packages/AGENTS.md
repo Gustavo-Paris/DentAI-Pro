@@ -1,7 +1,7 @@
 ---
 title: "AGENTS.md (packages)"
 created: 2026-02-04
-updated: 2026-02-23
+updated: 2026-02-25
 author: Team AURIA
 status: published
 tags:
@@ -36,14 +36,13 @@ related:
 | Package | Caminho | Descrição |
 |---------|---------|-----------|
 | @repo/logger | [[logger/AGENTS.md]] | Logger compartilhado |
-| @parisgroup-ai/domain-odonto-ai | [[domain-odonto-ai/AGENTS.md]] | Componentes de domínio odontológico para PageShell |
 
-### PageShell Design System (External)
+### External Packages
 
-> [!info] Package Externo
-> PageShell (`@parisgroup-ai/pageshell`) é um package externo instalado via GitHub Packages.
+> [!info] Packages Externos
+> PageShell (`@parisgroup-ai/pageshell`) e domain-odonto-ai (`@parisgroup-ai/domain-odonto-ai`) são packages externos instalados via GitHub Packages.
 > Os diretórios `page-shell/` e `pageshell-*/` contêm apenas `node_modules/` — não há código fonte local.
-> Import via: `@parisgroup-ai/pageshell`.
+> Import via: `@parisgroup-ai/pageshell` e `@parisgroup-ai/domain-odonto-ai`.
 
 Arquitetura em camadas (L0 → L4):
 
@@ -110,7 +109,6 @@ L4  Composites   → full page patterns
 |-----------|-----------|
 | [[../docs/00-Index/Home]] | Hub de documentação |
 | [[../docs/00-Index/Home#Packages]] | Seção de packages no hub |
-| [[pageshell-composites/README]] | Guia completo de composites |
 
 ## Links
 
@@ -119,4 +117,4 @@ L4  Composites   → full page patterns
 - [[../docs/00-Index/Home]] — Hub de documentação
 
 ---
-*Atualizado: 2026-02-23*
+*Atualizado: 2026-02-25*
