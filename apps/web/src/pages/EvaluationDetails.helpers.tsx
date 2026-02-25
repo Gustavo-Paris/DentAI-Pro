@@ -75,6 +75,23 @@ export function groupByTreatment(evaluations: EvaluationItem[]): EvalGroup[] {
     if (!map.has(key)) map.set(key, []);
     map.get(key)!.push(ev);
   }
+
+  // Merge unsynced resina groups (no protocol) into the first resina group that has a protocol.
+  // This prevents visual splitting when syncGroupProtocols hasn't propagated yet.
+  const resinKeys = [...map.keys()].filter(k => k.startsWith('resina'));
+  if (resinKeys.length > 1) {
+    const withProtocol = resinKeys.find(k => k !== 'resina::no-resin' && k.includes('::'));
+    const noProtocol = resinKeys.filter(k => k === 'resina::no-resin' || k === 'resina');
+    if (withProtocol && noProtocol.length > 0) {
+      const targetGroup = map.get(withProtocol)!;
+      for (const orphanKey of noProtocol) {
+        const orphans = map.get(orphanKey) || [];
+        targetGroup.push(...orphans);
+        map.delete(orphanKey);
+      }
+    }
+  }
+
   return Array.from(map.entries()).map(([key, items]) => {
     const treatmentType = key.split('::')[0];
     const resinName = treatmentType === 'resina' && items[0]?.resins?.name

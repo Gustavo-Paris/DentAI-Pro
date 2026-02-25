@@ -172,7 +172,10 @@ EFEITOS INCISAIS (sub-opções):
 | Corante Ambar  | Empress Direct Color Honey/Amber, Kolor+ Plus Amber, ou similar — linhas finas |
 | Mamelos        | Dentina clara (A1/B1) em projeções verticais na incisal  |
 
-Inclusão: Efeitos Incisais SEMPRE optional:true. Sugerir quando naturalidade do resultado exigir (halo, mamelos, craze lines). Em nível "alto"/"muito alto" RECOMENDAR efeitos para naturalidade — mas a decisão é do dentista.
+Inclusão: Efeitos Incisais SEMPRE optional:true — mas:
+- Nível "estético"/"alto"/"muito alto" OU budget "premium" em dentes ANTERIORES: OBRIGATÓRIO incluir Efeitos Incisais como camada (optional:true). Sugerir halo opaco + corante para naturalidade.
+- Demais níveis: sugerir quando naturalidade do resultado exigir (halo, mamelos, craze lines).
+A decisão final é do dentista, mas protocolo premium/estético anterior SEM corantes incisais é INCOMPLETO.
 
 CARACTERIZACAO (OPCIONAL — sugerir quando dente apresentar white spots, manchas ou heterogeneidades):
 - White spots/manchas brancas: REQUEREM corante para mascarar a transição (Empress Direct Color White/Honey, Kolor+ Plus, ou similar). Sem corante a lesão fica visível sob a resina.
@@ -428,7 +431,7 @@ ALTERNATIVA SIMPLIFICADA (2 camadas):
 - Corpo: WB(FORMA), WB(Z350), DA1(Empress) ou DA1(Vittra) — cor de dentina/corpo.
   - Dentes clareados: W3 ou W4 (Estelite Bianco) como corpo, ou shade de dentina mais clara.
   - Evitar usar cores de esmalte puro (WE, CT, Trans) como corpo — são para camada final.
-- Esmalte Final: Escolher UMA opção — WE(Palfique LX5) para resultado mais claro, OU MW(Estelite Omega) para resultado natural. NAO combinar WE + MW (ambas servem mesma função de esmalte final).
+- Esmalte Final: Escolher UMA ÚNICA resina — WE(Palfique LX5) para resultado mais claro, OU MW(Estelite Omega) para resultado natural. ⚠️ PROIBIDO usar MW + WE juntas na alternativa (ambas são esmalte final, uma substitui a outra). Dentes clareados: usar W3/W4(Estelite Bianco) como opção ÚNICA de esmalte.
 - Dentes clareados: Corpo W3/W4(Estelite Bianco) + Esmalte WE. Ou BL(Forma)/BL-L(Empress) como alternativa.
 - Cristas (se 3+ camadas na alternativa): XLE(Harmonize) ou BL-L(Empress). Evitar JE para cristas.
 - TN = Translucent Natural = cor de ESMALTE, usar apenas como camada final.

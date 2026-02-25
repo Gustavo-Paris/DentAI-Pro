@@ -146,6 +146,11 @@ ANTES de diagnosticar "diastema", verificar:
 - Diastema requer espaço VAZIO E CONTÍNUO entre as faces mesiais. Sombra interproximal normal NÃO é diastema.
 - Diastema somente se gap ≥1mm E claramente visível E ambas faces são esmalte natural
 
+=== DIASTEMA: AVALIACAO OBRIGATORIA DE DENTES ADJACENTES ===
+Quando diagnosticar diastema entre centrais (11/21):
+- INCISIVOS LATERAIS (12/22): Avaliar se devem participar do fechamento para DISTRIBUICAO HARMONICA do espaço. Diastema ≥2mm frequentemente requer acréscimo em laterais também (0.5-1mm por lateral mesialmente) para evitar centrais excessivamente largos. Sugerir como prioridade "média".
+- CANINOS (13/23): Avaliar ponta cuspídea — se aplainada/gasta (desgaste incisal), sugerir "Reconstrução da ponta cuspídea com resina composta para restabelecimento da guia canina". Diastema é frequentemente associado a perda de guia canina por desgaste parafuncional. Mesmo se caninos não tratados no plano restaurador, REGISTRAR observação sobre guia canina.
+
 === DETECCAO ATIVA DE RESTAURACOES CLASSE III (PROXIMAIS) ===
 Restaurações Classe III (proximais) são FREQUENTEMENTE SUTIS na vista frontal.
 BUSCAR ATIVAMENTE em TODOS os dentes anteriores (13-23):

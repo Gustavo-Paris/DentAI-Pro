@@ -151,8 +151,9 @@ function buildWhiteningPrioritySection(params: Params): string {
 - Bordas incisais devem ter alguma translucidez — NÃO completamente opacas`;
   } else {
     naturalityNote = `⚠️ REALISMO OBRIGATÓRIO: O resultado deve parecer CLAREAMENTO DENTAL PROFISSIONAL — NÃO facetas de porcelana.
-- Manter undertones QUENTES (marfim/creme) — dentes NÃO devem ficar azul-brancos ou cinza-brancos
-- Caninos (13/23) ficam naturalmente 1-2 tons mais saturados que incisivos — PRESERVAR essa diferença
+- Dentes devem ficar VISIVELMENTE MAIS CLAROS que o original — a diferença deve ser ÓBVIA no antes/depois
+- Evitar extremos: NÃO azul-branco/cinza-branco, mas também NÃO amarelado/marfim — o alvo é branco NEUTRO limpo
+- Caninos (13/23) ficam naturalmente 1-2 tons mais saturados que incisivos — PRESERVAR essa diferença relativa
 - Bordas incisais devem ter TRANSLUCIDEZ (levemente acinzentadas/translúcidas) — NÃO opacas`;
   }
   return `
