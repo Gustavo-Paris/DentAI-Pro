@@ -137,7 +137,7 @@ RESINAS RECOMENDADAS POR CAMADA:
 |--------------------|------------------------------------------------------------|
 | Aumento Incisal    | 1a: CT(Z350) OU Trans(FORMA) — 2a: Trans20(Empress) ou Trans(Vittra) — PROIBIDO esmalte/corpo! |
 | Cristas Proximais  | 1a: XLE(Harmonize) — 2a: BL-L/BL-XL(Empress) — 3a: WE(Palfique LX5) — Evitar: JE, CT, FORMA, Vittra para cristas. Z350 não possui BL1 — usar WE. |
-| Dentina/Corpo      | 1a: WB(FORMA) ou WB(Z350) — 2a: DA1/DA2(Vittra APS) ou D BL-L(Empress) — Clareamento: W3/W4(Estelite Bianco) ou shade mais clara. Evitar esmalte puro (WE/CT) como corpo. |
+| Dentina/Corpo      | 1a: WB(FORMA) ou WB(Z350) — 2a: DA1/DA2(Vittra APS) ou D BL-L(Empress) — Clareamento: W3/W4(Estelite Bianco) como corpo clareado. ⚠️ PROIBIDO BL1/BL2/BL3 como dentina/corpo — usar WB ou W3/W4. Evitar esmalte puro (WE/CT) como corpo. |
 | Efeitos Incisais   | Corantes: Empress Direct Color (Ivoclar), Kolor+ Plus (Kerr), ou similar. Opcional conforme necessidade de naturalidade. |
 | Esmalte Final      | 1a OBRIGATORIA: WE(Palfique LX5) — 2a: WE/MW(Estelite Omega) — Z350 SOMENTE se Palfique/Estelite indisponíveis! Clareados: W3/W4(Estelite Bianco) PREFERIR sobre BL(Forma). PROIBIDO: CT/GT/Trans/BL1! |
 | Dentes Clareados   | 1a: W3/W4(Estelite Bianco) — 2a: BL(Forma) — 3a: BL-L(Empress) |
@@ -174,7 +174,10 @@ EFEITOS INCISAIS (sub-opções):
 
 Inclusão: Efeitos Incisais SEMPRE optional:true. Sugerir quando naturalidade do resultado exigir (halo, mamelos, craze lines). Em nível "alto"/"muito alto" RECOMENDAR efeitos para naturalidade — mas a decisão é do dentista.
 
-CARACTERIZACAO (OPCIONAL p/ "muito alto"): White spots, craze lines, mamelons, halo incisal, foseta proximal. MODERACAO - copie dentes adjacentes.
+CARACTERIZACAO (OPCIONAL — sugerir quando dente apresentar white spots, manchas ou heterogeneidades):
+- White spots/manchas brancas: REQUEREM corante para mascarar a transição (Empress Direct Color White/Honey, Kolor+ Plus, ou similar). Sem corante a lesão fica visível sob a resina.
+- Craze lines, mamelons, halo incisal, foseta proximal: reproduzir conforme dentes adjacentes. MODERACAO - copie dentes vizinhos.
+- Dente com restauração existente + mancha: estratificação deve incluir camada de mascaramento ou corante para uniformizar substrato.
 
 ⚠️ REGRA: Nível "estético"/"alto"/"muito alto" DEVE gerar no MINIMO 4 camadas: Aumento Incisal + Cristas Proximais + Dentina/Corpo + Esmalte. Gerar apenas Corpo + Esmalte (2 camadas) para nível estético é ERRO — insuficiente para resultado estético.
 
@@ -394,7 +397,7 @@ NIVEL ESTETICO ("estético"/"alto"/"muito alto" OU Fechamento de Diastema) - 4-5
    - Substrato ESCURECIDO: shades opacos (OA1/OA2/OA3/OB1/WO) como 1º incremento 0.5-1mm
    - Substrato NORMAL: shades regulares de corpo (WB/DA1/DA2/A1/A2/B1) — cor do substrato
    - Substrato LEVEMENTE ESCURECIDO: shades com > opacidade (DA3/A3) sem prefixo O
-   - Paciente CLAREANDO: optar por shade de corpo 1-2 tons mais claro (W3/W4 Estelite Bianco como corpo, ou WB shade mais clara)
+   - Paciente CLAREANDO: optar por shade de corpo 1-2 tons mais claro (W3/W4 Estelite Bianco como corpo, ou WB shade mais clara). ⚠️ NUNCA usar BL1/BL2/BL3 como dentina/corpo — são shades de ESMALTE
 4. Efeitos Incisais (SEMPRE optional:true — sugerir conforme necessidade de naturalidade): Corantes com pincel fino, 0.1mm.
    - Objetivo: Reproduzir efeitos ópticos naturais (halo opaco, linhas de craze, mamelos) quando necessário para resultado natural.
    - Técnica: Corante branco para micro-pontos e halo opaco incisal. Corante âmbar/azul para linhas de craze. Aplicar com pincel fino antes da camada de esmalte.
@@ -435,7 +438,8 @@ ALTERNATIVA SIMPLIFICADA (2 camadas):
 REGRA: Verificar objetivo estetico do paciente (seção PREFERENCIAS ESTETICAS no caso clínico) ANTES de escolher shades.
 
 SE objetivo inclui "hollywood", "clareamento", "branco", "white", "BL" ou paciente deseja dentes MUITO claros:
-  Shades BL/W PERMITIDOS.
+  Shades BL/W PERMITIDOS — MAS SOMENTE nas camadas ESMALTE, CRISTAS e AUMENTO INCISAL.
+  ⚠️ DENTINA/CORPO: PROIBIDO BL1/BL2/BL3 mesmo para hollywood. Usar W3/W4(Estelite Bianco) ou WB como corpo clareado.
   COM BL: Palfique LX5 (BW/SW), Estelite Omega (BL1/BL2), Forma (BL), Estelite Bianco (W1-W4), Empress (BL-L). ⚠️ Z350 NAO possui shades BL — usar WE/A1E como aproximação.
   SEM BL na linha: usar cor mais clara disponivel (B1/A1).
   Dentes clareados: PRIORIDADE Estelite Bianco W1-W4, ALTERNATIVA BL(Forma)/BL-L(Empress).

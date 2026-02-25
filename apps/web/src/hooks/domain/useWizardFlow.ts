@@ -269,7 +269,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
 
   // Credits-guarded submit — check credits before delegating to actual submit
   const handleSubmitWithCreditsCheck = useCallback(async () => {
-    if (!canUseCredits) {
+    if (!canUseCredits('case_analysis')) {
       toast.error(t('toasts.wizard.noCredits'), {
         description: t('toasts.wizard.noCreditsDescription'),
         action: { label: t('common.viewPlans'), onClick: () => navigate('/pricing') },

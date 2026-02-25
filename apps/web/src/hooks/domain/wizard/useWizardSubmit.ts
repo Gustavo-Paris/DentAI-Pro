@@ -295,7 +295,8 @@ export function useWizardSubmit({
             normalizedTreatment === 'coroa' ||
             normalizedTreatment === 'endodontia' ||
             normalizedTreatment === 'encaminhamento' ||
-            normalizedTreatment === 'gengivoplastia';
+            normalizedTreatment === 'gengivoplastia' ||
+            normalizedTreatment === 'recobrimento_radicular';
 
           if (needsAICall) {
             // Generate protocol WITH retry (2 retries, 2s exponential backoff)
@@ -371,7 +372,8 @@ export function useWizardSubmit({
                   case 'coroa':
                   case 'endodontia':
                   case 'encaminhamento':
-                  case 'gengivoplastia': {
+                  case 'gengivoplastia':
+                  case 'recobrimento_radicular': {
                     const genericProtocol = getGenericProtocol(normalizedTreatment, tooth, toothData);
                     // Enrich gengivoplasty summary with DSD details if available
                     if (normalizedTreatment === 'gengivoplastia' && dsdResult?.analysis?.suggestions) {

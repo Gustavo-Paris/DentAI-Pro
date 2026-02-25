@@ -265,6 +265,14 @@ export async function validateAndFixProtocolLayers({
               `Dentina/Corpo: shade ${originalShade} é shade de ESMALTE, inválido para camada de corpo. Substituído por ${replacement.shade}.`
             );
             logger.warn(`Dentina/corpo enforcement: ${originalShade} → ${replacement.shade}`);
+          } else {
+            // Hard fallback: catalog empty or product line not found — force safe body shade
+            layer.shade = 'WB';
+            shadeReplacements[originalShade] = 'WB';
+            validationAlerts.push(
+              `Dentina/Corpo: shade ${originalShade} é shade de ESMALTE, inválido para camada de corpo. Catálogo não encontrado — substituído por WB (fallback seguro).`
+            );
+            logger.warn(`Dentina/corpo enforcement (hard fallback): ${originalShade} → WB`);
           }
         }
       }
