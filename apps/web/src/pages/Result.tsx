@@ -97,7 +97,7 @@ export default function Result() {
               </div>
 
               {/* Treatment Type Header */}
-              <Card className={`mb-6 grain-overlay shadow-md rounded-xl ${r.currentTreatmentStyle.bgClass} ${r.currentTreatmentStyle.borderClass}`}>
+              <Card className={`mb-6 shadow-md rounded-xl ${r.currentTreatmentStyle.bgClass} ${r.currentTreatmentStyle.borderClass}`}>
                 <CardContent className="py-4">
                   <div className="relative flex items-center gap-3">
                     <div className={`p-3 rounded-lg ${r.currentTreatmentStyle.bgClass}`}>

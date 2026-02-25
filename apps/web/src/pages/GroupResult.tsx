@@ -114,7 +114,7 @@ export default function GroupResult() {
               {/* Resin recommendation */}
               {g.resin && (
                 <section className="mb-8">
-                  <Card className="shadow-sm rounded-xl hover:shadow-md transition-shadow duration-300">
+                  <Card className="shadow-sm rounded-xl hover:shadow-md transition-shadow duration-300 ai-glow">
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div>

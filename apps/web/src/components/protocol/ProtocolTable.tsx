@@ -24,25 +24,25 @@ interface ProtocolTableProps {
 const getLayerStyles = (layerName: string): string => {
   const name = layerName.toLowerCase();
   if (name.includes("aumento incisal") || name.includes("incisal edge")) {
-    return "bg-teal-500/20 dark:bg-teal-500/10 border-l-4 border-l-teal-500";
+    return "bg-[rgb(var(--layer-incisal-rgb)/0.2)] dark:bg-[rgb(var(--layer-incisal-rgb)/0.1)] border-l-4 border-l-[rgb(var(--layer-incisal-rgb))]";
   }
   if (name.includes("opaco") || name.includes("mascaramento")) {
-    return "bg-amber-500/20 dark:bg-amber-500/10 border-l-4 border-l-amber-500";
+    return "bg-[rgb(var(--layer-opaco-rgb)/0.2)] dark:bg-[rgb(var(--layer-opaco-rgb)/0.1)] border-l-4 border-l-[rgb(var(--layer-opaco-rgb))]";
   }
   if (name.includes("dentina") || name.includes("body") || name.includes("corpo")) {
-    return "bg-orange-500/20 dark:bg-orange-500/10 border-l-4 border-l-orange-500";
+    return "bg-[rgb(var(--layer-dentina-rgb)/0.2)] dark:bg-[rgb(var(--layer-dentina-rgb)/0.1)] border-l-4 border-l-[rgb(var(--layer-dentina-rgb))]";
   }
   if (name.includes("efeito") || name.includes("effect") || name.includes("corante") || name.includes("opalescente")) {
-    return "bg-violet-500/20 dark:bg-violet-500/10 border-l-4 border-l-violet-500";
+    return "bg-[rgb(var(--layer-effect-rgb)/0.2)] dark:bg-[rgb(var(--layer-effect-rgb)/0.1)] border-l-4 border-l-[rgb(var(--layer-effect-rgb))]";
   }
   if (name.includes("crista") || name.includes("proxima")) {
-    return "bg-emerald-500/20 dark:bg-emerald-500/10 border-l-4 border-l-emerald-500";
+    return "bg-[rgb(var(--layer-esmalte-rgb)/0.2)] dark:bg-[rgb(var(--layer-esmalte-rgb)/0.1)] border-l-4 border-l-[rgb(var(--layer-esmalte-rgb))]";
   }
   if (name.includes("esmalte") || name.includes("enamel")) {
-    return "bg-blue-400/20 dark:bg-blue-400/10 border-l-4 border-l-blue-400";
+    return "bg-[rgb(var(--layer-translucido-rgb)/0.2)] dark:bg-[rgb(var(--layer-translucido-rgb)/0.1)] border-l-4 border-l-[rgb(var(--layer-translucido-rgb))]";
   }
   if (name.includes("bulk")) {
-    return "bg-purple-500/20 dark:bg-purple-500/10 border-l-4 border-l-purple-500";
+    return "bg-[rgb(var(--layer-default-rgb)/0.2)] dark:bg-[rgb(var(--layer-default-rgb)/0.1)] border-l-4 border-l-[rgb(var(--layer-default-rgb))]";
   }
   return "bg-muted/50";
 };

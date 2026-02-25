@@ -156,6 +156,20 @@
   /* Brand accent — coral para ToSmile wordmark */
   --brand-accent: #e07a5f;
   --brand-accent-light: #e89880;
+
+  /* Layer color tokens — resin stratification */
+  --layer-incisal-rgb: 20 184 166;    /* teal-500 */
+  --layer-dentina-rgb: 245 158 11;    /* amber-500 */
+  --layer-opaco-rgb: 249 115 22;      /* orange-500 */
+  --layer-effect-rgb: 139 92 246;     /* violet-500 */
+  --layer-esmalte-rgb: 16 185 129;    /* emerald-500 */
+  --layer-translucido-rgb: 96 165 250; /* blue-400 */
+  --layer-default-rgb: 168 85 247;    /* purple-500 */
+
+  /* Decorative accent tokens — testimonials, landing page variety */
+  --accent-violet-rgb: 139 92 246;
+  --accent-emerald-rgb: 16 185 129;
+  --accent-amber-rgb: 245 158 11;
 }
 
 /* Dark mode — specificity 0,2,0 to beat portal-base .dark .ui-theme */
@@ -237,6 +251,20 @@
   /* ── Brand ── */
   --brand-accent: #ec8e75;
   --brand-accent-light: #f0a48f;
+
+  /* Layer color tokens — same values in dark (accent colors, not surfaces) */
+  --layer-incisal-rgb: 20 184 166;
+  --layer-dentina-rgb: 245 158 11;
+  --layer-opaco-rgb: 249 115 22;
+  --layer-effect-rgb: 139 92 246;
+  --layer-esmalte-rgb: 16 185 129;
+  --layer-translucido-rgb: 96 165 250;
+  --layer-default-rgb: 168 85 247;
+
+  /* Decorative accent tokens — same values in dark */
+  --accent-violet-rgb: 139 92 246;
+  --accent-emerald-rgb: 16 185 129;
+  --accent-amber-rgb: 245 158 11;
 }
 
 @layer base {

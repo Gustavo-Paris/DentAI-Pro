@@ -160,7 +160,7 @@ export function PatientPreferencesStep({
               </span>
             </div>
             {!hasEnoughCredits && (
-              <div className="flex items-center gap-2 mt-2 text-sm text-amber-600 dark:text-amber-400">
+              <div className="flex items-center gap-2 mt-2 text-sm text-warning">
                 <AlertTriangle className="w-4 h-4 shrink-0" />
                 <span>{t('components.wizard.preferences.insufficientCredits', { count: creditsRemaining, plural: creditsRemaining !== 1 ? 's' : '' })}</span>
               </div>

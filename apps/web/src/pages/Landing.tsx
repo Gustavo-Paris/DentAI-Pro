@@ -80,7 +80,7 @@ export default function Landing() {
             <div className="text-center lg:text-left">
               <Badge
                 variant="secondary"
-                className="mb-6 animate-[fade-in-up_0.6s_ease-out_0.2s_both]"
+                className="mb-6"
                 style={{ animation: 'badge-pulse-ring 3s ease-in-out infinite, fade-in-up 0.6s ease-out 0.2s both' }}
               >
                 <Sparkles className="w-3 h-3 mr-1" aria-hidden="true" />
@@ -205,7 +205,7 @@ export default function Landing() {
                 role: t('landing.testimonial2Role'),
                 clinic: t('landing.testimonial2Clinic'),
                 rating: 5,
-                gradient: 'from-violet-500/20 to-violet-500/5',
+                gradient: 'from-[rgb(var(--accent-violet-rgb)/0.2)] to-[rgb(var(--accent-violet-rgb)/0.05)]',
                 highlight: null,
               },
               {
@@ -214,7 +214,7 @@ export default function Landing() {
                 role: t('landing.testimonial3Role'),
                 clinic: t('landing.testimonial3Clinic'),
                 rating: 4,
-                gradient: 'from-emerald-500/20 to-emerald-500/5',
+                gradient: 'from-[rgb(var(--accent-emerald-rgb)/0.2)] to-[rgb(var(--accent-emerald-rgb)/0.05)]',
                 highlight: null,
               },
               {
@@ -223,13 +223,13 @@ export default function Landing() {
                 role: t('landing.testimonial4Role'),
                 clinic: t('landing.testimonial4Clinic'),
                 rating: 5,
-                gradient: 'from-amber-500/20 to-amber-500/5',
+                gradient: 'from-[rgb(var(--accent-amber-rgb)/0.2)] to-[rgb(var(--accent-amber-rgb)/0.05)]',
                 highlight: null,
               }
             ].map((testimonial, i) => (
               <div
                 key={i}
-                className={`scroll-reveal scroll-reveal-delay-${i + 1} relative bg-background rounded-xl p-6 border-l-4 border-l-primary/40`}
+                className={`scroll-reveal scroll-reveal-delay-${i + 1} relative bg-background rounded-xl p-6 border border-border/50 border-l-4 border-l-primary/40`}
               >
                 <span className="absolute top-2 right-4 text-7xl leading-none font-serif text-primary/[0.05] select-none" aria-hidden="true">&ldquo;</span>
                 {testimonial.highlight && (

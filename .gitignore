@@ -45,6 +45,7 @@ supabase/.temp/
 
 # QA screenshots & test artifacts
 *.png
+!apps/web/public/og-image.png
 *.jpeg
 test-photo*
 wizard-audit/

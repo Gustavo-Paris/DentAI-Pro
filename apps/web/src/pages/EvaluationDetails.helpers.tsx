@@ -43,10 +43,10 @@ export function getStatusBadge(
 ) {
   if (evaluation.status === EVALUATION_STATUS.COMPLETED) {
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
+      <Badge variant="outline" className="gap-1 border-primary/30 text-primary bg-primary/5">
         <CheckCircle className="w-3 h-3" />
         <span className="hidden sm:inline">{t('toasts.evaluationDetail.statusCompleted')}</span>
-      </span>
+      </Badge>
     );
   }
 
@@ -54,12 +54,12 @@ export function getStatusBadge(
   const hasChecklist = total > 0;
 
   return (
-    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
+    <Badge variant="secondary" className="gap-1">
       <span className="hidden sm:inline">{t('toasts.evaluationDetail.statusPlanned')}</span>
       {hasChecklist && (
         <span className="text-muted-foreground">({current}/{total})</span>
       )}
-    </span>
+    </Badge>
   );
 }
 

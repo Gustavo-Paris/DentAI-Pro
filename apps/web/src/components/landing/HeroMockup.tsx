@@ -63,9 +63,9 @@ export function HeroMockup() {
             <div className="space-y-1.5">
               <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">{t('components.landing.heroMockup.protocol')}</div>
               {[
-                { label: t('components.landing.heroMockup.enamel'), color: 'bg-sky-400/70 dark:bg-sky-400/50' },
+                { label: t('components.landing.heroMockup.enamel'), color: 'bg-[rgb(var(--layer-esmalte-rgb)/0.7)] dark:bg-[rgb(var(--layer-esmalte-rgb)/0.5)]' },
                 { label: t('components.landing.heroMockup.body'), color: 'bg-primary/60' },
-                { label: t('components.landing.heroMockup.dentin'), color: 'bg-amber-400/70 dark:bg-amber-400/50' },
+                { label: t('components.landing.heroMockup.dentin'), color: 'bg-[rgb(var(--layer-dentina-rgb)/0.7)] dark:bg-[rgb(var(--layer-dentina-rgb)/0.5)]' },
               ].map((layer) => (
                 <div key={layer.label} className="flex items-center gap-2">
                   <div className={`w-full h-3 rounded ${layer.color}`} />
@@ -78,8 +78,8 @@ export function HeroMockup() {
             <div className="flex items-center justify-between bg-secondary/60 rounded-lg px-3 py-2">
               <span className="text-[10px] text-muted-foreground">{t('components.landing.heroMockup.aiConfidence')}</span>
               <div className="flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">{t('components.landing.heroMockup.high')}</span>
+                <div className="w-2 h-2 rounded-full bg-success" />
+                <span className="text-xs font-semibold text-success">{t('components.landing.heroMockup.high')}</span>
               </div>
             </div>
           </div>

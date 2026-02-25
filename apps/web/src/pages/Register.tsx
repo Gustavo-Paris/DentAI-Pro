@@ -77,11 +77,11 @@ export default function Register() {
         title={t('auth.verifyEmail')}
         subtitle={t('auth.verifyEmailSent') + ' ' + form.getValues('email') + '. ' + t('auth.verifyEmailClickLink')}
       >
-        <div className="animate-[scale-in_0.6s_ease-out_both]">
+        <div className="flex flex-col items-center gap-6 animate-[scale-in_0.6s_ease-out_both]">
           <IconCircle>
             <Mail className="w-8 h-8 text-primary" aria-hidden="true" />
           </IconCircle>
-          <Link to="/login">
+          <Link to="/login" className="w-full">
             <Button className="w-full btn-glow-gold">{t('common.goToLogin')}</Button>
           </Link>
         </div>

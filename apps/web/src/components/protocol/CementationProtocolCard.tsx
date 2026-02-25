@@ -84,10 +84,10 @@ export const CementationProtocolCard = memo(function CementationProtocolCard({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <Card className="border-amber-400/30 bg-amber-50 dark:bg-amber-950/20">
+      <Card className="border-warning/30 bg-warning/10">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Crown className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+            <Crown className="w-5 h-5 text-warning" />
             {t('components.protocol.cementation.title')}
             <Badge 
               variant={protocol.confidence === 'alta' ? 'default' : 'secondary'}
@@ -114,7 +114,7 @@ export const CementationProtocolCard = memo(function CementationProtocolCard({
         title={t('components.protocol.cementation.ceramicTreatment')} 
         icon={Crown} 
         steps={protocol.ceramic_treatment}
-        iconColor="text-amber-500" 
+        iconColor="text-warning"
       />
 
       {/* Tooth Treatment */}

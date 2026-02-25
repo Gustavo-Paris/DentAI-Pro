@@ -39,7 +39,7 @@ function AlternativeBox({ alternative }: AlternativeBoxProps) {
         </div>
         <div className="pt-2 border-t border-border">
           <span className="text-sm text-muted-foreground">{t('components.protocol.alternative.tradeoff')}</span>
-          <span className="text-sm text-amber-600 dark:text-amber-400">{alternative.tradeoff}</span>
+          <span className="text-sm text-warning">{alternative.tradeoff}</span>
         </div>
       </CardContent>
     </Card>

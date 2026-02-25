@@ -8,7 +8,7 @@ import {
   CheckCircle,
   Plus,
   Share2,
-  Loader2 as ShareLoader,
+  Loader2,
   X,
   Sparkles,
   Trash2,
@@ -47,6 +47,8 @@ export default function EvaluationDetails() {
   const [showMarkAllConfirm, setShowMarkAllConfirm] = useState(false);
   const [showDSD, setShowDSD] = useState(false);
   const [showRegenerateDialog, setShowRegenerateDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isMarkingAll, setIsMarkingAll] = useState(false);
 
   const firstEval = detail.evaluations[0];
   const hasDSD = !!(firstEval?.dsd_simulation_url || firstEval?.dsd_simulation_layers?.length);
@@ -122,7 +124,7 @@ export default function EvaluationDetails() {
             label: detail.isRegenerating
               ? t('evaluation.regenerating', { defaultValue: 'Regenerando...' })
               : targetLabel,
-            icon: RefreshCw,
+            icon: detail.isRegenerating ? Loader2 : RefreshCw,
             onClick: () => setShowRegenerateDialog(true),
             disabled: detail.isRegenerating,
             variant: 'outline' as const,
@@ -149,7 +151,7 @@ export default function EvaluationDetails() {
                 onClick={detail.handleShareCase}
                 disabled={detail.isSharing}
               >
-                {detail.isSharing ? <ShareLoader className="w-4 h-4 mr-1.5 animate-spin" /> : <Share2 className="w-4 h-4 mr-1.5" />}
+                {detail.isSharing ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Share2 className="w-4 h-4 mr-1.5" />}
                 {t('evaluation.share')}
               </Button>
               {detail.pendingTeeth.length > 0 && (
@@ -167,8 +169,9 @@ export default function EvaluationDetails() {
                   variant="outline"
                   size="sm"
                   onClick={() => setShowMarkAllConfirm(true)}
+                  disabled={isMarkingAll}
                 >
-                  <CheckCircle className="w-4 h-4 mr-1.5" />
+                  {isMarkingAll ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-1.5" />}
                   {t('evaluation.markAllCompleted')}
                 </Button>
               )}
@@ -177,8 +180,9 @@ export default function EvaluationDetails() {
                 size="sm"
                 className="text-destructive hover:text-destructive"
                 onClick={() => setShowDeleteDialog(true)}
+                disabled={isDeleting}
               >
-                <Trash2 className="w-4 h-4 mr-1.5" />
+                {isDeleting ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Trash2 className="w-4 h-4 mr-1.5" />}
                 {t('evaluation.deleteSession')}
               </Button>
             </div>
@@ -318,9 +322,10 @@ export default function EvaluationDetails() {
         description={t('evaluation.markAllCompletedDescription', { defaultValue: 'Esta ação marcará todas as avaliações pendentes como concluídas.' })}
         confirmText={t('common.confirm', { defaultValue: 'Confirmar' })}
         cancelText={t('common.cancel')}
-        onConfirm={() => {
+        onConfirm={async () => {
           setShowMarkAllConfirm(false);
-          detail.handleMarkAllAsCompleted();
+          setIsMarkingAll(true);
+          try { await detail.handleMarkAllAsCompleted(); } finally { setIsMarkingAll(false); }
         }}
         variant="warning"
       />
@@ -333,9 +338,10 @@ export default function EvaluationDetails() {
         description={t('evaluation.deleteSessionDescription', { count: detail.evaluations.length })}
         confirmText={t('common.delete')}
         cancelText={t('common.cancel')}
-        onConfirm={() => {
+        onConfirm={async () => {
           setShowDeleteDialog(false);
-          detail.handleDeleteSession();
+          setIsDeleting(true);
+          try { await detail.handleDeleteSession(); } finally { setIsDeleting(false); }
         }}
         variant="destructive"
       />

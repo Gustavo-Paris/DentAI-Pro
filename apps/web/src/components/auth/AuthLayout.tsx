@@ -38,8 +38,8 @@ export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
         >
           <defs>
             <linearGradient id="tooth-wm" x1="16" y1="10" x2="48" y2="54" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stopColor="#5EDECE" />
-              <stop offset="100%" stopColor="#2A9D8F" />
+              <stop offset="0%" stopColor="rgb(var(--color-primary-rgb))" />
+              <stop offset="100%" stopColor="rgb(var(--color-primary-rgb))" stopOpacity="0.7" />
             </linearGradient>
           </defs>
           <path
@@ -48,7 +48,7 @@ export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
           />
           <path
             d="M20 26C24 30 28 31.5 32 31.5C36 31.5 40 30 44 26"
-            stroke="#2A9D8F"
+            stroke="rgb(var(--color-primary-rgb))"
             strokeWidth="2"
             strokeLinecap="round"
             fill="none"
@@ -90,7 +90,7 @@ export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
             <Link to="/" className="font-display tracking-[0.2em] text-gradient-brand text-lg sm:text-xl font-semibold lg:hidden animate-[fade-in-up_0.6s_ease-out_0.2s_both]">
               {BRAND_NAME}
             </Link>
-            <h1 className="text-xl sm:text-2xl font-semibold font-display mt-6 sm:mt-8 mb-2 animate-[fade-in-up_0.6s_ease-out_0.3s_both]">
+            <h1 className="text-xl sm:text-2xl font-semibold font-display mt-6 sm:mt-8 lg:mt-0 mb-2 animate-[fade-in-up_0.6s_ease-out_0.3s_both]">
               {title}
             </h1>
             <p className="text-sm text-muted-foreground animate-[fade-in-up_0.6s_ease-out_0.3s_both]">

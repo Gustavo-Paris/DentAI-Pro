@@ -114,7 +114,7 @@ export default function SharedEvaluation() {
                       key={layer.type}
                       variant={idx === activeLayerIndex ? 'default' : 'outline'}
                       size="sm"
-                      className="text-xs"
+                      className="text-xs transition-all duration-150"
                       aria-pressed={idx === activeLayerIndex}
                       onClick={() => setActiveLayerIndex(idx)}
                     >
@@ -178,7 +178,7 @@ export default function SharedEvaluation() {
 
           return (
             <PageEvaluationToothCard
-              key={index}
+              key={evaluation.tooth ?? index}
               evaluation={{
                 tooth: evaluation.tooth,
                 treatmentType,

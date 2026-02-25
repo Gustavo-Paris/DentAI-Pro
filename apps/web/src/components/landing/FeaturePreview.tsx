@@ -1,9 +1,9 @@
-import i18n from '@/lib/i18n';
+import { useTranslation } from 'react-i18next';
 
 type PreviewType = 'analysis' | 'dsd' | 'protocol' | 'pdf';
 
-const previews: Record<PreviewType, () => React.JSX.Element> = {
-  analysis: () => (
+function AnalysisPreview(): React.JSX.Element {
+  return (
     <svg viewBox="0 0 120 60" className="w-full h-auto" aria-hidden="true">
       {/* Camera viewfinder with scan line */}
       <rect x="10" y="5" width="100" height="50" rx="6" fill="none" stroke="currentColor" className="text-primary/20" strokeWidth="1.5" />
@@ -24,9 +24,11 @@ const previews: Record<PreviewType, () => React.JSX.Element> = {
         <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" />
       </circle>
     </svg>
-  ),
+  );
+}
 
-  dsd: () => (
+function DsdPreview(): React.JSX.Element {
+  return (
     <svg viewBox="0 0 120 60" className="w-full h-auto" aria-hidden="true">
       {/* Face oval */}
       <ellipse cx="60" cy="32" rx="22" ry="26" fill="none" stroke="currentColor" className="text-primary/15" strokeWidth="1" />
@@ -40,26 +42,31 @@ const previews: Record<PreviewType, () => React.JSX.Element> = {
       <line x1="60" y1="6" x2="60" y2="58" stroke="currentColor" className="text-primary/20" strokeWidth="0.5" strokeDasharray="2 2" />
       <line x1="38" y1="32" x2="82" y2="32" stroke="currentColor" className="text-primary/20" strokeWidth="0.5" strokeDasharray="2 2" />
       {/* Golden ratio arc */}
-      <path d="M45 20 Q60 10 75 20" fill="none" stroke="currentColor" className="text-amber-500/30" strokeWidth="1" strokeDasharray="2 2" />
+      <path d="M45 20 Q60 10 75 20" fill="none" stroke="currentColor" className="text-[rgb(var(--layer-dentina-rgb)/0.3)]" strokeWidth="1" strokeDasharray="2 2" />
     </svg>
-  ),
+  );
+}
 
-  protocol: () => (
+function ProtocolPreview(): React.JSX.Element {
+  const { t } = useTranslation();
+  return (
     <svg viewBox="0 0 120 60" className="w-full h-auto" aria-hidden="true">
       {/* Layered bars — stratification */}
-      <rect x="20" y="8" width="80" height="10" rx="3" fill="currentColor" className="text-sky-400/30 dark:text-sky-400/20" />
-      <text x="25" y="16" className="fill-sky-600/60 dark:fill-sky-400/50" fontSize="6" fontWeight="500">{i18n.t('components.landing.featurePreview.enamel')}</text>
+      <rect x="20" y="8" width="80" height="10" rx="3" fill="currentColor" className="text-[rgb(var(--layer-esmalte-rgb)/0.3)] dark:text-[rgb(var(--layer-esmalte-rgb)/0.2)]" />
+      <text x="25" y="16" className="fill-[rgb(var(--layer-esmalte-rgb)/0.6)]" fontSize="6" fontWeight="500">{t('components.landing.featurePreview.enamel')}</text>
       <rect x="20" y="22" width="80" height="10" rx="3" fill="currentColor" className="text-primary/30" />
-      <text x="25" y="30" className="fill-primary/60" fontSize="6" fontWeight="500">{i18n.t('components.landing.featurePreview.body')}</text>
-      <rect x="20" y="36" width="80" height="10" rx="3" fill="currentColor" className="text-amber-400/30 dark:text-amber-400/20" />
-      <text x="25" y="44" className="fill-amber-600/60 dark:fill-amber-400/50" fontSize="6" fontWeight="500">{i18n.t('components.landing.featurePreview.dentin')}</text>
+      <text x="25" y="30" className="fill-primary/60" fontSize="6" fontWeight="500">{t('components.landing.featurePreview.body')}</text>
+      <rect x="20" y="36" width="80" height="10" rx="3" fill="currentColor" className="text-[rgb(var(--layer-dentina-rgb)/0.3)] dark:text-[rgb(var(--layer-dentina-rgb)/0.2)]" />
+      <text x="25" y="44" className="fill-[rgb(var(--layer-dentina-rgb)/0.6)]" fontSize="6" fontWeight="500">{t('components.landing.featurePreview.dentin')}</text>
       {/* Arrow */}
       <path d="M106 15 L112 29 L106 43" fill="none" stroke="currentColor" className="text-primary/30" strokeWidth="1" />
       <circle cx="112" cy="29" r="2" className="fill-primary/40" />
     </svg>
-  ),
+  );
+}
 
-  pdf: () => (
+function PdfPreview(): React.JSX.Element {
+  return (
     <svg viewBox="0 0 120 60" className="w-full h-auto" aria-hidden="true">
       {/* Document */}
       <rect x="30" y="4" width="60" height="52" rx="4" fill="none" stroke="currentColor" className="text-primary/20" strokeWidth="1.5" />
@@ -76,7 +83,14 @@ const previews: Record<PreviewType, () => React.JSX.Element> = {
       {/* Signature line */}
       <line x1="38" y1="48" x2="68" y2="48" stroke="currentColor" className="text-primary/20" strokeWidth="0.75" />
     </svg>
-  ),
+  );
+}
+
+const previews: Record<PreviewType, () => React.JSX.Element> = {
+  analysis: AnalysisPreview,
+  dsd: DsdPreview,
+  protocol: ProtocolPreview,
+  pdf: PdfPreview,
 };
 
 interface FeaturePreviewProps {

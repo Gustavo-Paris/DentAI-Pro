@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { ClinicalInsights, WeeklyTrendPoint } from '@/hooks/domain/useDashboard';
-import { Card, Badge, Progress, Skeleton } from '@parisgroup-ai/pageshell/primitives';
+import { Card, Badge, Button, Progress, Skeleton } from '@parisgroup-ai/pageshell/primitives';
 import {
   ChartContainer,
   ChartTooltip,
@@ -13,7 +14,7 @@ import {
   PieChart, Pie, Cell, Tooltip as RechartsTooltip,
   BarChart, Bar,
 } from 'recharts';
-import { BarChart3 } from 'lucide-react';
+import { BarChart3, Plus } from 'lucide-react';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { cn } from '@/lib/utils';
 
@@ -322,6 +323,12 @@ export function InsightsTab({
         <p className="text-xs text-muted-foreground">
           {t('dashboard.insights.noDataDescription')}
         </p>
+        <Link to="/new-case">
+          <Button size="sm" variant="outline" className="mt-4">
+            <Plus className="w-3.5 h-3.5 mr-1.5" />
+            {t('dashboard.insights.createFirstCase', { defaultValue: 'Criar primeiro caso' })}
+          </Button>
+        </Link>
       </Card>
     );
   }
@@ -330,11 +337,12 @@ export function InsightsTab({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-1 mb-3">
+      <div className="flex items-center gap-1 mb-3" role="group" aria-label={t('dashboard.insights.periodFilter', { defaultValue: 'Filtro de periodo' })}>
         {[8, 12, 26].map((w) => (
           <button
             key={w}
             onClick={() => setPeriod(w)}
+            aria-pressed={period === w}
             className={cn(
               'px-3 py-1 rounded-full text-xs font-medium transition-colors',
               period === w

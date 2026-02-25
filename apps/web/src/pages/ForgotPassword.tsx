@@ -52,7 +52,7 @@ export default function ForgotPassword() {
             </IconCircle>
           </div>
           <p className="text-center text-sm text-muted-foreground">
-            {t('auth.verifyEmailSent')} <strong>{email}</strong>.
+            {t('auth.verifyEmailSent')} <strong>{email}</strong>.{' '}
             {t('auth.verifyEmailClickLink')}
           </p>
           <Button

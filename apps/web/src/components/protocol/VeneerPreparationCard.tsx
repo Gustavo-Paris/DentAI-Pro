@@ -45,10 +45,10 @@ export function VeneerPreparationCard() {
 
   return (
     <div className="space-y-4">
-      <Card className="border-amber-400/30 bg-amber-50 dark:bg-amber-950/20">
+      <Card className="border-warning/30 bg-warning/10">
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
-            <ClipboardList className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+            <ClipboardList className="w-5 h-5 text-warning" />
             {t('components.protocol.veneerPrep.title')}
           </CardTitle>
           <p className="text-xs text-muted-foreground">

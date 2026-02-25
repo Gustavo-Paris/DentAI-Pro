@@ -29,6 +29,7 @@ export default function ResetPassword() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [sessionReady, setSessionReady] = useState(false);
+  const [sessionLoading, setSessionLoading] = useState(true);
   const navigate = useNavigate();
 
   const form = useForm<ResetPasswordFormData>({
@@ -48,12 +49,14 @@ export default function ResetPassword() {
       if (session) {
         setSessionReady(true);
       }
+      setSessionLoading(false);
     };
 
     // Listen for auth state changes (recovery link click)
     const { data: { subscription } } = onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY' && session) {
         setSessionReady(true);
+        setSessionLoading(false);
       }
     });
 
@@ -84,6 +87,16 @@ export default function ResetPassword() {
 
     setLoading(false);
   };
+
+  if (sessionLoading) {
+    return (
+      <AuthLayout title={t('auth.resetPasswordTitle')} subtitle="">
+        <div className="flex justify-center py-8">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </div>
+      </AuthLayout>
+    );
+  }
 
   if (!sessionReady) {
     return (

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ListPage, GenericErrorState } from '@parisgroup-ai/pageshell/composites';
+import { PageConfirmDialog } from '@parisgroup-ai/pageshell/interactions';
 import {
   Button,
   Input,
@@ -91,19 +92,28 @@ export default function Patients() {
 
   // ---- Create patient dialog ----
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
   const [createForm, setCreateForm] = useState({ name: '', phone: '', email: '', notes: '' });
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   const isFormDirty = !!(createForm.name || createForm.phone || createForm.email || createForm.notes);
 
+  const confirmDiscard = useCallback(() => {
+    setShowDiscardConfirm(false);
+    setShowCreateDialog(false);
+    setCreateForm({ name: '', phone: '', email: '', notes: '' });
+    setValidationErrors({});
+  }, []);
+
   const handleCloseDialog = useCallback(() => {
-    if (isFormDirty && !window.confirm(t('patients.unsavedChanges', { defaultValue: 'Descartar alterações não salvas?' }))) {
+    if (isFormDirty) {
+      setShowDiscardConfirm(true);
       return;
     }
     setShowCreateDialog(false);
     setCreateForm({ name: '', phone: '', email: '', notes: '' });
     setValidationErrors({});
-  }, [isFormDirty, t]);
+  }, [isFormDirty]);
 
   const validateField = useCallback((field: string, value: string) => {
     setValidationErrors((prev) => {
@@ -324,6 +334,18 @@ export default function Patients() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Discard unsaved changes confirm */}
+      <PageConfirmDialog
+        open={showDiscardConfirm}
+        onOpenChange={setShowDiscardConfirm}
+        title={t('patients.unsavedChanges', { defaultValue: 'Alterações não salvas' })}
+        description={t('patients.unsavedChangesDescription', { defaultValue: 'Você tem alterações não salvas. Deseja descartar?' })}
+        confirmText={t('common.discard', { defaultValue: 'Descartar' })}
+        cancelText={t('common.cancel')}
+        onConfirm={confirmDiscard}
+        variant="warning"
+      />
     </>
   );
 }

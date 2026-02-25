@@ -176,7 +176,7 @@ export default function Login() {
 
       <p className="text-center text-sm text-muted-foreground mt-6">
         {t('auth.noAccount')}{' '}
-        <Link to="/register" className="text-foreground underline underline-offset-4">
+        <Link to="/register" className="text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors duration-200">
           {t('auth.signUp')}
         </Link>
       </p>
