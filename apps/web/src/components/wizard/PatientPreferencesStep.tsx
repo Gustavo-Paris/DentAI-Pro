@@ -41,8 +41,8 @@ const WHITENING_OPTIONS: {
     descKey: 'components.wizard.preferences.hollywoodDesc',
     shade: 'BL1 / BL2 / BL3',
     icon: Star,
-    swatchGradient: 'bg-gradient-to-r from-white to-blue-50',
-    swatchGradientSelected: 'bg-gradient-to-r from-white via-blue-50 to-blue-100',
+    swatchGradient: 'bg-gradient-to-r from-background to-primary/10',
+    swatchGradientSelected: 'bg-gradient-to-r from-background via-primary/10 to-primary/20',
   },
 ];
 

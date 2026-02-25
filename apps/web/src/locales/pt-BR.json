@@ -433,7 +433,7 @@
     "evaluation_one": "{{count}} avaliação",
     "evaluation_other": "{{count}} avaliações",
     "percentCompleted": "{{percent}}% concluído",
-    "lastVisit": "Última visita:",
+    "lastVisit": "Última visita",
     "loadError": "Erro ao carregar pacientes",
     "loadErrorDescription": "Tente recarregar a página. Se o problema persistir, entre em contato com o suporte.",
     "searchPlaceholder": "Buscar por nome, telefone ou email...",
@@ -2002,6 +2002,35 @@
         "Evitar alimentos duros e picantes por 7 dias",
         "Não escovar a região operada por 48h",
         "Retornar imediatamente se houver sangramento excessivo"
+      ]
+    },
+    "recobrimento_radicular": {
+      "summary": "Dente {{tooth}} indicado para recobrimento radicular (enxerto de tecido conjuntivo ou técnica de túnel).",
+      "checklist": [
+        "Avaliação periodontal completa (sondagem, classificação de Miller)",
+        "Radiografia periapical para avaliar suporte ósseo",
+        "Avaliar etiologia da retração (escovação traumática, inserção de freio, ortodontia)",
+        "Classificar retração gengival (Miller I-IV)",
+        "Definir técnica cirúrgica (retalho de avanço coronário, túnel, enxerto conjuntivo)",
+        "Avaliar sítio doador (palato ou tuberosidade)",
+        "Anestesia local infiltrativa",
+        "Procedimento cirúrgico de recobrimento",
+        "Sutura com fio 5-0 ou 6-0",
+        "Prescrição: analgésico + anti-inflamatório + bochecho clorexidina 0,12%",
+        "Remoção de sutura em 10-14 dias",
+        "Reavaliação em 3 e 6 meses"
+      ],
+      "alerts": [
+        "Miller III/IV: recobrimento total improvável — informar paciente sobre expectativas",
+        "Contraindicar em pacientes com periodontite ativa não tratada",
+        "Avaliar biotipo gengival e espessura do tecido",
+        "Verificar hábitos de escovação antes e orientar técnica atraumática"
+      ],
+      "recommendations": [
+        "Escovação com escova ultra-macia por 4 semanas pós-operatório",
+        "Evitar alimentos duros e condimentados por 7 dias",
+        "Não usar fio dental na região operada por 2 semanas",
+        "Retornar imediatamente se houver sangramento excessivo ou deiscência"
       ]
     },
     "encaminhamento": {

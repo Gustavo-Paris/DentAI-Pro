@@ -176,7 +176,7 @@ function RecentSessions({
           ))}
         </div>
       ) : sessions.length === 0 ? (
-        <Card className="grain-overlay p-8 sm:p-10 text-center">
+        <Card className="p-8 sm:p-10 text-center">
           <div className="relative flex flex-col items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
               <FileText className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
@@ -232,6 +232,7 @@ function ActivityFeedSection({ sessions, loading }: { sessions: DashboardSession
 
   const items: ActivityFeedItem[] = sessions.flatMap((session) => {
     const feedItems: ActivityFeedItem[] = [];
+    const relativeTime = formatDistanceToNow(new Date(session.created_at), { addSuffix: true, locale: ptBR });
     feedItems.push({
       id: session.session_id,
       type: 'treatment' as const,
@@ -241,7 +242,7 @@ function ActivityFeedSection({ sessions, loading }: { sessions: DashboardSession
         count: session.teeth.length,
       }),
       description: `${session.teeth.length} ${session.teeth.length === 1 ? 'caso' : 'casos'} \u2022 ${session.treatmentTypes.join(', ')}`,
-      timestamp: session.created_at,
+      timestamp: relativeTime,
     });
     if (session.hasDSD) {
       feedItems.push({
@@ -249,7 +250,7 @@ function ActivityFeedSection({ sessions, loading }: { sessions: DashboardSession
         type: 'patient' as const,
         title: t('dsd.simulation', { defaultValue: 'Simulação DSD' }),
         description: session.patient_name || t('dashboard.activityFeed.dsdCompleted', { defaultValue: 'Simulação concluída' }),
-        timestamp: session.created_at,
+        timestamp: relativeTime,
       });
     }
     return feedItems;

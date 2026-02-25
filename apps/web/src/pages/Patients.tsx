@@ -67,10 +67,7 @@ const PatientCardAdapter = memo(function PatientCardAdapter({ patient, index }: 
       {patient.caseCount > 0 && (
         <div className="absolute top-3 right-3 flex items-center gap-1.5">
           <span className="text-xs text-muted-foreground bg-muted/80 px-2 py-0.5 rounded-full font-medium">
-            {t('patients.casesSummary', {
-              defaultValue: '{{count}} avaliações',
-              count: patient.caseCount,
-            })}
+            {t('patients.evaluation', { count: patient.caseCount })}
           </span>
         </div>
       )}

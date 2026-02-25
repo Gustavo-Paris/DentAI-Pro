@@ -433,7 +433,7 @@
     "evaluation_one": "{{count}} evaluation",
     "evaluation_other": "{{count}} evaluations",
     "percentCompleted": "{{percent}}% completed",
-    "lastVisit": "Last visit:",
+    "lastVisit": "Last visit",
     "loadError": "Error loading patients",
     "loadErrorDescription": "Try reloading the page. If the problem persists, contact support.",
     "searchPlaceholder": "Search by name, phone or email...",
@@ -2002,6 +2002,35 @@
         "Avoid hard and spicy foods for 7 days",
         "Do not brush the operated area for 48h",
         "Return immediately if excessive bleeding occurs"
+      ]
+    },
+    "recobrimento_radicular": {
+      "summary": "Tooth {{tooth}} indicated for root coverage (connective tissue graft or tunnel technique).",
+      "checklist": [
+        "Complete periodontal evaluation (probing, Miller classification)",
+        "Periapical radiograph to evaluate bone support",
+        "Evaluate recession etiology (traumatic brushing, frenum insertion, orthodontics)",
+        "Classify gingival recession (Miller I-IV)",
+        "Define surgical technique (coronally advanced flap, tunnel, connective tissue graft)",
+        "Evaluate donor site (palate or tuberosity)",
+        "Local infiltrative anesthesia",
+        "Root coverage surgical procedure",
+        "Suture with 5-0 or 6-0 thread",
+        "Prescription: analgesic + anti-inflammatory + 0.12% chlorhexidine rinse",
+        "Suture removal in 10-14 days",
+        "Re-evaluation at 3 and 6 months"
+      ],
+      "alerts": [
+        "Miller III/IV: full coverage unlikely — inform patient about expectations",
+        "Contraindicate in patients with untreated active periodontitis",
+        "Evaluate gingival biotype and tissue thickness",
+        "Check brushing habits and instruct atraumatic technique"
+      ],
+      "recommendations": [
+        "Use ultra-soft toothbrush for 4 weeks post-op",
+        "Avoid hard and spicy foods for 7 days",
+        "No dental floss in operated area for 2 weeks",
+        "Return immediately if excessive bleeding or dehiscence occurs"
       ]
     },
     "encaminhamento": {
