@@ -188,10 +188,10 @@ async function handleCheckoutCompleted(supabase: SupabaseClient, session: Stripe
   }
 
   if (error) {
-    logger.error("Error updating subscription:", error);
-  } else {
-    logger.important(`Subscription ${subscriptionId} saved for user ${userId}`);
+    throw new Error(`DB error updating subscription ${subscriptionId} for user ${userId}: ${error.message}`);
   }
+
+  logger.important(`Subscription ${subscriptionId} saved for user ${userId}`);
 }
 
 async function handleSubscriptionUpdate(supabase: SupabaseClient, subscription: Stripe.Subscription) {
@@ -234,10 +234,10 @@ async function handleSubscriptionUpdate(supabase: SupabaseClient, subscription: 
     });
 
   if (error) {
-    logger.error("Error updating subscription:", error);
-  } else {
-    logger.important(`Subscription ${subscription.id} updated to status ${subscription.status}`);
+    throw new Error(`DB error updating subscription ${subscription.id}: ${error.message}`);
   }
+
+  logger.important(`Subscription ${subscription.id} updated to status ${subscription.status}`);
 }
 
 async function handleSubscriptionDeleted(supabase: SupabaseClient, subscription: Stripe.Subscription) {
@@ -252,10 +252,10 @@ async function handleSubscriptionDeleted(supabase: SupabaseClient, subscription:
     .eq("stripe_subscription_id", subscription.id);
 
   if (error) {
-    logger.error("Error canceling subscription:", error);
-  } else {
-    logger.important(`Subscription ${subscription.id} marked as canceled`);
+    throw new Error(`DB error canceling subscription ${subscription.id}: ${error.message}`);
   }
+
+  logger.important(`Subscription ${subscription.id} marked as canceled`);
 }
 
 async function handleInvoicePaid(supabase: SupabaseClient, invoice: Stripe.Invoice) {
@@ -292,10 +292,10 @@ async function handleInvoicePaid(supabase: SupabaseClient, invoice: Stripe.Invoi
     });
 
   if (error) {
-    logger.error("Error recording payment:", error);
-  } else {
-    logger.important(`Payment recorded for invoice ${invoice.id}`);
+    throw new Error(`DB error recording payment for invoice ${invoice.id}: ${error.message}`);
   }
+
+  logger.important(`Payment recorded for invoice ${invoice.id}`);
 
   // Fire-and-forget: send payment confirmation email
   try {
@@ -352,7 +352,7 @@ async function handleInvoiceFailed(supabase: SupabaseClient, invoice: Stripe.Inv
     });
 
   if (historyError) {
-    logger.error(`Failed to record payment failure: ${historyError.message}`);
+    throw new Error(`DB error recording payment failure for invoice ${invoice.id}: ${historyError.message}`);
   }
 
   // Always update subscription status (independent of history insert)
@@ -362,7 +362,7 @@ async function handleInvoiceFailed(supabase: SupabaseClient, invoice: Stripe.Inv
     .eq("stripe_customer_id", customerId);
 
   if (statusError) {
-    logger.error(`Failed to update subscription status: ${statusError.message}`);
+    throw new Error(`DB error updating subscription status to past_due for customer ${customerId}: ${statusError.message}`);
   }
 
   logger.warn(`Payment failed for invoice ${invoice.id}`);
