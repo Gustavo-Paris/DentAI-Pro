@@ -19,7 +19,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version-file: '.nvmrc'
           cache: 'pnpm'
 
       - name: Install dependencies
@@ -43,7 +43,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version-file: '.nvmrc'
           cache: 'pnpm'
 
       - name: Install dependencies
@@ -66,7 +66,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version-file: '.nvmrc'
           cache: 'pnpm'
 
       - name: Install dependencies
@@ -116,7 +116,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version-file: '.nvmrc'
           cache: 'pnpm'
 
       - name: Install dependencies
@@ -168,10 +168,14 @@ jobs:
         env:
           HAS_EMAIL: ${{ secrets.E2E_USER_EMAIL != '' }}
           HAS_PASSWORD: ${{ secrets.E2E_USER_PASSWORD != '' }}
+          IS_MAIN_PUSH: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         run: |
           if [ "$HAS_EMAIL" != "true" ] || [ "$HAS_PASSWORD" != "true" ]; then
-            echo "::warning::E2E tests skipped — E2E_USER_EMAIL and E2E_USER_PASSWORD secrets not configured."
-            echo "To enable E2E: add E2E_USER_EMAIL, E2E_USER_PASSWORD, E2E_SUPABASE_URL, and E2E_SUPABASE_KEY as repository secrets."
+            if [ "$IS_MAIN_PUSH" = "true" ]; then
+              echo "::error::E2E secrets missing on main — E2E_USER_EMAIL and E2E_USER_PASSWORD must be configured."
+              exit 1
+            fi
+            echo "::warning::E2E tests skipped — secrets not configured (OK for forks/PRs)."
             echo "e2e_skip=true" >> "$GITHUB_ENV"
           fi
 
@@ -184,7 +188,7 @@ jobs:
       - uses: actions/setup-node@v4
         if: env.e2e_skip != 'true'
         with:
-          node-version: '20'
+          node-version-file: '.nvmrc'
           cache: 'pnpm'
 
       - name: Install dependencies
