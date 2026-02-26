@@ -73,3 +73,12 @@ COMMENT ON COLUMN rate_limits.function_name IS 'Name of the edge function being 
 COMMENT ON COLUMN rate_limits.minute_count IS 'Number of requests in the current minute window';
 COMMENT ON COLUMN rate_limits.hour_count IS 'Number of requests in the current hour window';
 COMMENT ON COLUMN rate_limits.day_count IS 'Number of requests in the current day window';
+
+-- TODO: Schedule periodic cleanup of stale rate_limit rows.
+-- The cleanup_old_rate_limits() function above deletes rows not updated in 7 days,
+-- but it needs to be called on a schedule. Options:
+--   1. pg_cron (preferred): SELECT cron.schedule('cleanup-rate-limits', '0 3 * * *', $$SELECT cleanup_old_rate_limits()$$);
+--      Requires pg_cron extension: CREATE EXTENSION IF NOT EXISTS pg_cron;
+--   2. Supabase cron job via Dashboard > Database > Cron Jobs
+--   3. External scheduler (e.g., GitHub Actions) calling supabase.rpc('cleanup_old_rate_limits')
+-- Without scheduled cleanup, the rate_limits table will grow unbounded with stale rows.

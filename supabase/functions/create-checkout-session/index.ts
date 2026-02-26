@@ -174,17 +174,23 @@ Deno.serve(withErrorBoundary(async (req: Request) => {
   // PATH 2: Subscription (upgrade/downgrade or new)
   // =========================================================================
 
-  // Resolve Stripe Price ID from our internal plan ID, respecting billing cycle
+  // Resolve Stripe Price ID from our internal plan ID, respecting billing cycle.
+  // SECURITY: priceId MUST exist in subscription_plans — never pass raw client input to Stripe.
   const { data: planData } = await supabase
     .from("subscription_plans")
     .select("stripe_price_id, stripe_price_id_yearly")
     .eq("id", priceId)
     .maybeSingle();
 
+  if (!planData || !planData.stripe_price_id) {
+    logger.warn(`Invalid priceId rejected: ${priceId} (not found in subscription_plans)`);
+    return createErrorResponse("Plano não encontrado", 404, corsHeaders);
+  }
+
   const stripePriceId =
-    (billingCycle === "annual" && planData?.stripe_price_id_yearly)
+    (billingCycle === "annual" && planData.stripe_price_id_yearly)
       ? planData.stripe_price_id_yearly
-      : planData?.stripe_price_id || priceId;
+      : planData.stripe_price_id;
 
   // Check if user already has an ACTIVE Stripe subscription → inline upgrade/downgrade
   if (

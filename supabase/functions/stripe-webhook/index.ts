@@ -14,6 +14,9 @@ const WEBHOOK_SECRET = Deno.env.get("STRIPE_WEBHOOK_SECRET") || "";
 /**
  * Resolve our internal plan ID from a Stripe price ID.
  * Falls back to the Stripe price ID if no mapping found.
+ * NOTE: This is safe because the price ID comes from Stripe (trusted source),
+ * not from user input. The fallback ensures webhook processing isn't blocked
+ * by a missing plan mapping, but the warning log helps detect misconfigurations.
  */
 async function resolveInternalPlanId(supabase: SupabaseClient, stripePriceId: string): Promise<string> {
   const { data } = await supabase
@@ -21,6 +24,10 @@ async function resolveInternalPlanId(supabase: SupabaseClient, stripePriceId: st
     .select("id")
     .eq("stripe_price_id", stripePriceId)
     .maybeSingle();
+
+  if (!data?.id) {
+    logger.warn(`No subscription_plans mapping found for Stripe price_id: ${stripePriceId}. Using raw price ID as plan_id.`);
+  }
 
   return data?.id || stripePriceId;
 }
