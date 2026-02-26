@@ -38,21 +38,24 @@ async function urlToBase64(url: string): Promise<string> {
   const blob = await resp.blob();
   return new Promise<string>((resolve, reject) => {
     const img = new Image();
+    const blobUrl = URL.createObjectURL(blob);
     img.onload = () => {
       try {
         const canvas = document.createElement('canvas');
         canvas.width = img.naturalWidth;
         canvas.height = img.naturalHeight;
         const ctx = canvas.getContext('2d');
-        if (!ctx) { reject(new Error('No canvas context')); return; }
+        if (!ctx) { URL.revokeObjectURL(blobUrl); reject(new Error('No canvas context')); return; }
         ctx.drawImage(img, 0, 0);
+        URL.revokeObjectURL(blobUrl);
         resolve(canvas.toDataURL('image/png'));
       } catch (err) {
+        URL.revokeObjectURL(blobUrl);
         reject(err);
       }
     };
-    img.onerror = () => reject(new Error('Failed to load image for base64 conversion'));
-    img.src = URL.createObjectURL(blob);
+    img.onerror = () => { URL.revokeObjectURL(blobUrl); reject(new Error('Failed to load image for base64 conversion')); };
+    img.src = blobUrl;
   });
 }
 

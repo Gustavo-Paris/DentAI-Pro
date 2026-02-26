@@ -202,7 +202,8 @@ export function useGroupResult() {
       await evaluations.updateStatusBulk(ids, EVALUATION_STATUS.COMPLETED);
       queryClient.invalidateQueries({ queryKey: ['group-result', sessionId] });
       toast.success(t('toasts.result.markedComplete', { count: groupEvaluations.length }));
-    } catch {
+    } catch (error) {
+      logger.error('Failed to mark evaluations as completed:', error);
       toast.error(t('toasts.result.saveError'));
     }
   }, [user, groupEvaluations, queryClient, sessionId]);

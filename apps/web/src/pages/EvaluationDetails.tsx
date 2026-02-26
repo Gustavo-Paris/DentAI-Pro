@@ -148,6 +148,7 @@ export default function EvaluationDetails() {
               <Button
                 variant="outline"
                 size="sm"
+                className="min-h-11"
                 onClick={detail.handleShareCase}
                 disabled={detail.isSharing}
               >
@@ -158,6 +159,7 @@ export default function EvaluationDetails() {
                 <Button
                   variant="outline"
                   size="sm"
+                  className="min-h-11"
                   onClick={() => detail.setShowAddTeethModal(true)}
                 >
                   <Plus className="w-4 h-4 mr-1.5" />
@@ -168,6 +170,7 @@ export default function EvaluationDetails() {
                 <Button
                   variant="outline"
                   size="sm"
+                  className="min-h-11"
                   onClick={() => setShowMarkAllConfirm(true)}
                   disabled={isMarkingAll}
                 >
@@ -178,7 +181,7 @@ export default function EvaluationDetails() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-destructive hover:text-destructive"
+                className="min-h-11 text-destructive hover:text-destructive"
                 onClick={() => setShowDeleteDialog(true)}
                 disabled={isDeleting}
               >
@@ -189,7 +192,7 @@ export default function EvaluationDetails() {
 
             {/* floating selection bar — below modal z-50 */}
             {detail.selectedIds.size > 0 && (
-              <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-background border shadow-lg rounded-full px-4 py-2 flex items-center gap-3 animate-in slide-in-from-bottom-4">
+              <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-background border shadow-lg rounded-full px-4 py-2 pb-[env(safe-area-inset-bottom)] flex items-center gap-3 animate-in slide-in-from-bottom-4">
                 <span className="text-sm font-medium">{t('common.selected', { count: detail.selectedIds.size })}</span>
                 <Button
                   size="sm"

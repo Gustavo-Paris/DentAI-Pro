@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { QUERY_STALE_TIMES } from '@/lib/constants';
 import { EVALUATION_STATUS } from '@/lib/evaluation-status';
+import { logger } from '@/lib/logger';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -227,7 +228,8 @@ export function usePatientProfile(): PatientProfileState & PatientProfileActions
 
       toast.success(t('toasts.patient.updated'));
       setEditDialogOpen(false);
-    } catch {
+    } catch (error) {
+      logger.error('Failed to update patient profile:', error);
       toast.error(t('toasts.patient.saveError'));
     }
   }, [patient, patientId, editForm, updatePatientMutation]);

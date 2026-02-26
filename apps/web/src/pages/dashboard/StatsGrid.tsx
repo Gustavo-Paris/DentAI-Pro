@@ -215,7 +215,7 @@ export function StatsGrid({
                         <ProgressRing percent={value} />
                       )}
                     </div>
-                    <p className="text-[10px] text-muted-foreground/60 mt-0.5 leading-tight">
+                    <p className="text-xs text-muted-foreground mt-0.5 leading-tight">
                       {t(stat.unitKey)}
                     </p>
                   </>

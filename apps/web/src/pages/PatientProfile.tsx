@@ -34,6 +34,7 @@ import { patients } from '@/data';
 import { getInitials } from '@/lib/utils';
 import { toast } from 'sonner';
 import { trackEvent } from '@/lib/analytics';
+import { logger } from '@/lib/logger';
 import { PatientSessionList } from '@/components/patient/PatientSessionList';
 
 // =============================================================================
@@ -59,7 +60,8 @@ export default function PatientProfile() {
       trackEvent('patient_deleted', { patient_id: patientId });
       toast.success(t('toasts.patient.deleted', { defaultValue: 'Paciente excluído com sucesso' }));
       navigate('/patients');
-    } catch {
+    } catch (error) {
+      logger.error('Failed to delete patient:', error);
       toast.error(t('toasts.patient.deleteError', { defaultValue: 'Erro ao excluir paciente' }));
     } finally {
       setIsDeleting(false);

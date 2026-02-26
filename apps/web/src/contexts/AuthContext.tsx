@@ -124,7 +124,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           } else {
             localStorage.removeItem('referral_code');
           }
-        } catch {
+        } catch (error) {
+          logger.error('Failed to parse referral code from localStorage:', error);
           localStorage.removeItem('referral_code');
         }
       }

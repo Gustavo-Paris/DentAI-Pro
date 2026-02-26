@@ -397,15 +397,40 @@ async function handleCreditPackPurchase(supabase: SupabaseClient, session: Strip
   const packId = session.metadata?.pack_id;
   const creditsStr = session.metadata?.credits;
 
-  if (!userId || !packId || !creditsStr) {
+  if (!userId || !packId) {
     logger.error(`Missing metadata on credit pack checkout session ${session.id}. metadata=${JSON.stringify(session.metadata)}`);
     return;
   }
 
-  const credits = parseInt(creditsStr, 10);
-  if (isNaN(credits) || credits <= 0) {
-    logger.error(`Invalid credits value in metadata: ${creditsStr}`);
-    return;
+  // Re-validate credit count from DB instead of trusting session metadata.
+  // The credit_packs table is the authoritative source for how many credits a pack grants.
+  let credits: number;
+  const { data: pack, error: packError } = await supabase
+    .from("credit_packs")
+    .select("credits")
+    .eq("id", packId)
+    .single();
+
+  if (pack?.credits && pack.credits > 0) {
+    credits = pack.credits;
+    // Log if metadata disagrees with DB (indicates potential tampering or stale data)
+    const metadataCredits = parseInt(creditsStr || "", 10);
+    if (!isNaN(metadataCredits) && metadataCredits !== credits) {
+      logger.warn(
+        `Credit mismatch: metadata says ${metadataCredits}, DB says ${credits} for pack ${packId}. Using DB value.`
+      );
+    }
+  } else {
+    // Fallback to metadata if DB query fails (webhook must be resilient)
+    logger.warn(
+      `Could not fetch pack ${packId} from credit_packs (error: ${packError?.message || "not found"}). Falling back to metadata.`
+    );
+    const fallback = parseInt(creditsStr || "", 10);
+    if (isNaN(fallback) || fallback <= 0) {
+      logger.error(`Invalid credits: DB query failed and metadata value is invalid (${creditsStr})`);
+      return;
+    }
+    credits = fallback;
   }
 
   const paymentMethod = session.metadata?.payment_method || "card";

@@ -260,18 +260,31 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
   // When a draft is restored with step=3 but analysisResult=null (analysis was
   // in-flight when session expired), we need to re-call the edge function.
   // Without this, AnalyzingStep renders with isAnalyzing=false and stays at 0%.
-  const draftRestoredToAnalysisStep =
-    nav.step === 3 && !analysisResult && !photo.isAnalyzing && !photo.analysisError && !!imageBase64;
+  //
+  // Uses a ref flag set ONLY by handleRestoreDraft (below) to avoid false
+  // positives during retry-after-error flows where the same conditions hold
+  // briefly while the credit confirmation dialog is open.
+  const needsReanalysisRef = useRef(false);
 
   useEffect(() => {
-    if (draftRestoredToAnalysisStep) {
+    if (needsReanalysisRef.current && nav.step === 3 && !!imageBase64 && !photo.isAnalyzing) {
+      needsReanalysisRef.current = false;
       console.info('[WizardFlow] Draft restored at analysis step — re-triggering analyzePhoto()');
       // Credits were already confirmed in the original session — skip the dialog.
       // The edge function still validates credits server-side.
       nav.fullFlowCreditsConfirmedRef.current = true;
       photo.analyzePhoto();
     }
-  }, [draftRestoredToAnalysisStep]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [nav.step, imageBase64, photo.isAnalyzing]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Wrap handleRestoreDraft to flag step-3 restores that need re-analysis
+  const handleRestoreDraft = useCallback(async () => {
+    const draft = draftRestore.pendingDraft;
+    if (draft?.step === 3 && !draft.analysisResult) {
+      needsReanalysisRef.current = true;
+    }
+    return draftRestore.handleRestoreDraft();
+  }, [draftRestore]);
 
   // -------------------------------------------------------------------------
   // Derived (depends on sub-hooks)
@@ -546,7 +559,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     setDobValidationError,
     handleSubmit: handleSubmitWithCreditsCheck,
     handleCreditConfirm,
-    handleRestoreDraft: draftRestore.handleRestoreDraft,
+    handleRestoreDraft,
     handleDiscardDraft: draftRestore.handleDiscardDraft,
   };
 }

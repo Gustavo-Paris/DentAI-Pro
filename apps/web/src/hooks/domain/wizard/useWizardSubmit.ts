@@ -17,7 +17,13 @@ import { TIMING } from '@/lib/constants';
 import { EVALUATION_STATUS } from '@/lib/evaluation-status';
 import { wizard as wizardData } from '@/data';
 import { normalizeTreatmentType } from '@/lib/treatment-config';
-import { inferCavityClass, getFullRegion, getGenericProtocol } from './helpers';
+import { inferCavityClass, getFullRegion } from './helpers';
+import {
+  dispatchTreatmentProtocol,
+  DEFAULT_CERAMIC_TYPE,
+  type ProtocolDispatchClients,
+  type GenericProtocolResult,
+} from '@/lib/protocol-dispatch';
 
 // ---------------------------------------------------------------------------
 // Params

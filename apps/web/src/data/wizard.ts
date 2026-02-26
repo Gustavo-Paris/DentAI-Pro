@@ -75,6 +75,7 @@ export async function updatePatientBirthDate(
     .eq('id', patientId);
   if (error) {
     logger.warn('Failed to update patient birth date:', error);
+    throw error;
   }
 }
 

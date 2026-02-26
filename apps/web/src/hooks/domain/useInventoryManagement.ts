@@ -6,6 +6,7 @@ import type { CatalogResin } from '@/data/inventory';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { QUERY_STALE_TIMES } from '@/lib/constants';
+import { logger } from '@/lib/logger';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -201,7 +202,8 @@ export function useInventoryManagement() {
       toast.success(t('toasts.inventory.resinsAdded', { count: selectedResins.size }));
       setSelectedResins(new Set());
       setDialogOpen(false);
-    } catch {
+    } catch (error) {
+      logger.error('Failed to add resins to inventory:', error);
       toast.error(t('toasts.inventory.addError'));
     }
   }, [selectedResins, addMutation]);
@@ -212,7 +214,8 @@ export function useInventoryManagement() {
       try {
         await removeMutation.mutateAsync(inventoryItemId);
         toast.success(t('toasts.inventory.resinRemoved'));
-      } catch {
+      } catch (error) {
+        logger.error('Failed to remove resin from inventory:', error);
         toast.error(t('toasts.inventory.removeError'));
       } finally {
         setRemovingResin(null);
@@ -318,7 +321,8 @@ export function useInventoryManagement() {
       toast.success(t('toasts.inventory.resinsImported', { count: csvPreview.matched.length }));
       setCsvPreview(null);
       setImportDialogOpen(false);
-    } catch {
+    } catch (error) {
+      logger.error('Failed to import resins from CSV:', error);
       toast.error(t('toasts.inventory.importError'));
     }
     setImporting(false);

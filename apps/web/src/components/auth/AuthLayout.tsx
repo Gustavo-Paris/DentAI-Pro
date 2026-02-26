@@ -82,7 +82,7 @@ export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
           </div>
 
           {/* Social proof */}
-          <p className="text-xs text-muted-foreground/60 mt-auto pb-2 animate-[fade-in-up_0.6s_ease-out_0.7s_both]">
+          <p className="text-xs text-muted-foreground mt-auto pb-2 animate-[fade-in-up_0.6s_ease-out_0.7s_both]">
             {t('auth.socialProof', { defaultValue: 'Utilizado por dentistas em todo o Brasil' })}
           </p>
         </div>
