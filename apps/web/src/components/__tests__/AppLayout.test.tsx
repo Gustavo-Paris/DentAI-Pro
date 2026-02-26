@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AppLayout from '../AppLayout';
 
 // Capture props passed to ReactRouterAppShell
@@ -60,6 +61,26 @@ vi.mock('@/components/HelpButton', () => ({
   HelpButton: () => <button data-testid="help-button">Help</button>,
 }));
 
+vi.mock('@/data/profiles', () => ({
+  getByUserId: vi.fn().mockResolvedValue(null),
+  getAvatarPublicUrl: vi.fn().mockReturnValue(''),
+}));
+
+vi.mock('@/lib/constants', () => ({
+  QUERY_STALE_TIMES: { SHORT: 30_000, MEDIUM: 300_000, LONG: 600_000 },
+}));
+
+function renderWithProviders(ui: React.ReactElement) {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  return render(
+    <QueryClientProvider client={queryClient}>
+      {ui}
+    </QueryClientProvider>,
+  );
+}
+
 describe('AppLayout', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -67,33 +88,33 @@ describe('AppLayout', () => {
   });
 
   it('should render ReactRouterAppShell with odonto-ai theme', () => {
-    render(<AppLayout />);
+    renderWithProviders(<AppLayout />);
     expect(screen.getByTestId('app-shell')).toHaveAttribute('data-theme', 'odonto-ai');
   });
 
   it('should pass brand config with BRAND_NAME', () => {
-    render(<AppLayout />);
+    renderWithProviders(<AppLayout />);
     expect(capturedProps.brand).toEqual(
-      expect.objectContaining({ title: 'ToSmile.ai', href: '/dashboard' })
+      expect.objectContaining({ href: '/dashboard', logoSrc: '/logo.svg' })
     );
   });
 
   it('should pass 5 navigation items', () => {
-    render(<AppLayout />);
+    renderWithProviders(<AppLayout />);
     const sections = capturedProps.navigation as Array<{ items: unknown[] }>;
     expect(sections).toHaveLength(1);
     expect(sections[0].items).toHaveLength(5);
   });
 
   it('should pass navigation items with correct hrefs', () => {
-    render(<AppLayout />);
+    renderWithProviders(<AppLayout />);
     const items = (capturedProps.navigation as Array<{ items: Array<{ href: string }> }>)[0].items;
     const hrefs = items.map((i) => i.href);
     expect(hrefs).toEqual(['/dashboard', '/evaluations', '/patients', '/inventory', '/profile']);
   });
 
   it('should pass user profile from auth context', () => {
-    render(<AppLayout />);
+    renderWithProviders(<AppLayout />);
     expect(capturedProps.user).toEqual({
       name: 'Dr. Test',
       email: 'test@test.com',
@@ -102,28 +123,28 @@ describe('AppLayout', () => {
   });
 
   it('should pass signOut callback', () => {
-    render(<AppLayout />);
+    renderWithProviders(<AppLayout />);
     expect(capturedProps.onSignOut).toBe(mockSignOut);
   });
 
   it('should render Outlet as children', () => {
-    render(<AppLayout />);
+    renderWithProviders(<AppLayout />);
     expect(screen.getByTestId('outlet')).toBeInTheDocument();
   });
 
   it('should render CreditBadge in footer and headerRight', () => {
-    render(<AppLayout />);
+    renderWithProviders(<AppLayout />);
     const badges = screen.getAllByTestId('credit-badge');
     expect(badges.length).toBe(2);
   });
 
   it('should render ThemeToggle', () => {
-    render(<AppLayout />);
+    renderWithProviders(<AppLayout />);
     expect(screen.getByTestId('theme-toggle')).toBeInTheDocument();
   });
 
   it('should render HelpButton', () => {
-    render(<AppLayout />);
+    renderWithProviders(<AppLayout />);
     expect(screen.getByTestId('help-button')).toBeInTheDocument();
   });
 });

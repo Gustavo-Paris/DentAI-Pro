@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, act, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 import { AuthProvider, useAuth } from '../AuthContext';
 
 // --- Mock supabase client ---
@@ -121,9 +122,11 @@ describe('AuthContext', () => {
 
       await act(async () => {
         render(
-          <AuthProvider>
-            <AuthConsumer onRender={(auth) => renders.push({ loading: auth.loading, user: auth.user })} />
-          </AuthProvider>,
+          <MemoryRouter>
+            <AuthProvider>
+              <AuthConsumer onRender={(auth) => renders.push({ loading: auth.loading, user: auth.user })} />
+            </AuthProvider>
+          </MemoryRouter>,
         );
       });
 
@@ -139,9 +142,11 @@ describe('AuthContext', () => {
 
       await act(async () => {
         render(
-          <AuthProvider>
-            <AuthConsumer onRender={() => {}} />
-          </AuthProvider>,
+          <MemoryRouter>
+            <AuthProvider>
+              <AuthConsumer onRender={() => {}} />
+            </AuthProvider>
+          </MemoryRouter>,
         );
       });
 
@@ -157,9 +162,11 @@ describe('AuthContext', () => {
 
       await act(async () => {
         render(
-          <AuthProvider>
-            <AuthConsumer onRender={() => {}} />
-          </AuthProvider>,
+          <MemoryRouter>
+            <AuthProvider>
+              <AuthConsumer onRender={() => {}} />
+            </AuthProvider>
+          </MemoryRouter>,
         );
       });
 
@@ -183,9 +190,11 @@ describe('AuthContext', () => {
 
       await act(async () => {
         render(
-          <AuthProvider>
-            <AuthConsumer onRender={(auth) => { authRef = auth; }} />
-          </AuthProvider>,
+          <MemoryRouter>
+            <AuthProvider>
+              <AuthConsumer onRender={(auth) => { authRef = auth; }} />
+            </AuthProvider>
+          </MemoryRouter>,
         );
       });
 
@@ -211,9 +220,11 @@ describe('AuthContext', () => {
 
       await act(async () => {
         render(
-          <AuthProvider>
-            <AuthConsumer onRender={(auth) => { authRef = auth; }} />
-          </AuthProvider>,
+          <MemoryRouter>
+            <AuthProvider>
+              <AuthConsumer onRender={(auth) => { authRef = auth; }} />
+            </AuthProvider>
+          </MemoryRouter>,
         );
       });
 
@@ -240,9 +251,11 @@ describe('AuthContext', () => {
 
       await act(async () => {
         render(
-          <AuthProvider>
-            <AuthConsumer onRender={(auth) => { authRef = auth; }} />
-          </AuthProvider>,
+          <MemoryRouter>
+            <AuthProvider>
+              <AuthConsumer onRender={(auth) => { authRef = auth; }} />
+            </AuthProvider>
+          </MemoryRouter>,
         );
       });
 
@@ -270,9 +283,11 @@ describe('AuthContext', () => {
 
       await act(async () => {
         render(
-          <AuthProvider>
-            <AuthConsumer onRender={(auth) => { authRef = auth; }} />
-          </AuthProvider>,
+          <MemoryRouter>
+            <AuthProvider>
+              <AuthConsumer onRender={(auth) => { authRef = auth; }} />
+            </AuthProvider>
+          </MemoryRouter>,
         );
       });
 
@@ -299,9 +314,11 @@ describe('AuthContext', () => {
 
       await act(async () => {
         render(
-          <AuthProvider>
-            <AuthConsumer onRender={(auth) => { authRef = auth; }} />
-          </AuthProvider>,
+          <MemoryRouter>
+            <AuthProvider>
+              <AuthConsumer onRender={(auth) => { authRef = auth; }} />
+            </AuthProvider>
+          </MemoryRouter>,
         );
       });
 
@@ -335,9 +352,11 @@ describe('AuthContext', () => {
 
       await act(async () => {
         render(
-          <AuthProvider>
-            <AuthConsumer onRender={(auth) => { authRef = auth; }} />
-          </AuthProvider>,
+          <MemoryRouter>
+            <AuthProvider>
+              <AuthConsumer onRender={(auth) => { authRef = auth; }} />
+            </AuthProvider>
+          </MemoryRouter>,
         );
       });
 
@@ -364,9 +383,11 @@ describe('AuthContext', () => {
 
       await act(async () => {
         render(
-          <AuthProvider>
-            <AuthConsumer onRender={(auth) => { authRef = auth; }} />
-          </AuthProvider>,
+          <MemoryRouter>
+            <AuthProvider>
+              <AuthConsumer onRender={(auth) => { authRef = auth; }} />
+            </AuthProvider>
+          </MemoryRouter>,
         );
       });
 
@@ -394,9 +415,11 @@ describe('AuthContext', () => {
 
       await act(async () => {
         render(
-          <AuthProvider>
-            <AuthConsumer onRender={(auth) => { authRef = auth; }} />
-          </AuthProvider>,
+          <MemoryRouter>
+            <AuthProvider>
+              <AuthConsumer onRender={(auth) => { authRef = auth; }} />
+            </AuthProvider>
+          </MemoryRouter>,
         );
       });
 
@@ -418,9 +441,11 @@ describe('AuthContext', () => {
     it('should subscribe on mount and unsubscribe on unmount', async () => {
       const { unmount } = await act(async () =>
         render(
-          <AuthProvider>
-            <AuthConsumer onRender={() => {}} />
-          </AuthProvider>,
+          <MemoryRouter>
+            <AuthProvider>
+              <AuthConsumer onRender={() => {}} />
+            </AuthProvider>
+          </MemoryRouter>,
         ),
       );
 
@@ -434,9 +459,11 @@ describe('AuthContext', () => {
     it('should update user/session on SIGNED_IN event', async () => {
       await act(async () => {
         render(
-          <AuthProvider>
-            <AuthConsumer onRender={() => {}} />
-          </AuthProvider>,
+          <MemoryRouter>
+            <AuthProvider>
+              <AuthConsumer onRender={() => {}} />
+            </AuthProvider>
+          </MemoryRouter>,
         );
       });
 
@@ -458,9 +485,11 @@ describe('AuthContext', () => {
 
       await act(async () => {
         render(
-          <AuthProvider>
-            <AuthConsumer onRender={() => {}} />
-          </AuthProvider>,
+          <MemoryRouter>
+            <AuthProvider>
+              <AuthConsumer onRender={() => {}} />
+            </AuthProvider>
+          </MemoryRouter>,
         );
       });
 
@@ -482,9 +511,11 @@ describe('AuthContext', () => {
 
       await act(async () => {
         render(
-          <AuthProvider>
-            <AuthConsumer onRender={() => {}} />
-          </AuthProvider>,
+          <MemoryRouter>
+            <AuthProvider>
+              <AuthConsumer onRender={() => {}} />
+            </AuthProvider>
+          </MemoryRouter>,
         );
       });
 
@@ -516,9 +547,11 @@ describe('AuthContext', () => {
 
       await act(async () => {
         render(
-          <AuthProvider>
-            <AuthConsumer onRender={() => {}} />
-          </AuthProvider>,
+          <MemoryRouter>
+            <AuthProvider>
+              <AuthConsumer onRender={() => {}} />
+            </AuthProvider>
+          </MemoryRouter>,
         );
       });
 
@@ -539,9 +572,11 @@ describe('AuthContext', () => {
 
       await act(async () => {
         render(
-          <AuthProvider>
-            <AuthConsumer onRender={() => {}} />
-          </AuthProvider>,
+          <MemoryRouter>
+            <AuthProvider>
+              <AuthConsumer onRender={() => {}} />
+            </AuthProvider>
+          </MemoryRouter>,
         );
       });
 
@@ -580,9 +615,11 @@ describe('AuthContext', () => {
 
       await act(async () => {
         render(
-          <AuthProvider>
-            <AuthConsumer onRender={() => {}} />
-          </AuthProvider>,
+          <MemoryRouter>
+            <AuthProvider>
+              <AuthConsumer onRender={() => {}} />
+            </AuthProvider>
+          </MemoryRouter>,
         );
       });
 
@@ -605,9 +642,11 @@ describe('AuthContext', () => {
 
       const { unmount } = await act(async () =>
         render(
-          <AuthProvider>
-            <AuthConsumer onRender={() => {}} />
-          </AuthProvider>,
+          <MemoryRouter>
+            <AuthProvider>
+              <AuthConsumer onRender={() => {}} />
+            </AuthProvider>
+          </MemoryRouter>,
         ),
       );
 

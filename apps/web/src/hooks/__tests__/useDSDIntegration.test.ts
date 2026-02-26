@@ -254,7 +254,7 @@ describe('useDSDIntegration', () => {
       expect(updated['11']).toBe('porcelana');
     });
 
-    it('should auto-add gengivoplasty from DSD layers', async () => {
+    it('should auto-add gengivoplasty when DSD suggestions contain gengivo keywords', async () => {
       const { toast } = await import('sonner');
       const setSelectedTeeth = vi.fn();
       const setToothTreatments = vi.fn();
@@ -267,6 +267,17 @@ describe('useDSDIntegration', () => {
 
       const dsdResult = makeDSDResult({
         gingivoplastyApproved: true,
+        analysis: {
+          ...makeDSDResult().analysis,
+          suggestions: [
+            {
+              tooth: '11',
+              current_issue: 'Excesso gengival',
+              proposed_change: 'Gengivoplastia para harmonização',
+              treatment_indication: 'gengivoplastia',
+            },
+          ],
+        },
         layers: [
           {
             type: 'complete-treatment',
@@ -288,8 +299,9 @@ describe('useDSDIntegration', () => {
 
       // Should set gengivoplasty treatment
       expect(setToothTreatments).toHaveBeenCalled();
-      const treatmentSetterFn = setToothTreatments.mock.calls[0][0];
-      const updatedTreatments = treatmentSetterFn({});
+      // Find the call that sets GENGIVO (there may be multiple calls to setToothTreatments)
+      const lastCall = setToothTreatments.mock.calls[setToothTreatments.mock.calls.length - 1][0];
+      const updatedTreatments = typeof lastCall === 'function' ? lastCall({}) : lastCall;
       expect(updatedTreatments['GENGIVO']).toBe('gengivoplastia');
 
       expect(toast.info).toHaveBeenCalledWith(
@@ -338,19 +350,22 @@ describe('useDSDIntegration', () => {
 
       const dsdResult = makeDSDResult({
         gingivoplastyApproved: true,
-        layers: [
-          {
-            type: 'complete-treatment',
-            label: 'Completo',
-            simulation_url: null,
-            whitening_level: 'natural',
-            includes_gengivoplasty: true,
-          },
-        ],
+        analysis: {
+          ...makeDSDResult().analysis,
+          suggestions: [
+            {
+              tooth: '11',
+              current_issue: 'Excesso gengival',
+              proposed_change: 'Gengivoplastia bilateral',
+              treatment_indication: 'gengivoplastia',
+            },
+          ],
+        },
       });
 
       act(() => result.current.handleDSDComplete(dsdResult));
 
+      expect(setSelectedTeeth).toHaveBeenCalled();
       const teethSetterFn = setSelectedTeeth.mock.calls[0][0];
       const updatedTeeth = teethSetterFn(['11', 'GENGIVO']);
       // Should not add duplicate

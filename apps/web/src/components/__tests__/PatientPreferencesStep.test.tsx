@@ -137,8 +137,11 @@ describe('PatientPreferencesStep', () => {
 
   it('should render the sparkles icon section', () => {
     render(<PatientPreferencesStep {...defaultProps} />);
-    // The component wraps content in a card with a sparkles icon
-    expect(screen.getByTestId('card')).toBeInTheDocument();
+    // The component renders a sparkles icon in a glow-icon container
+    const heading = screen.getByText('components.wizard.preferences.title');
+    expect(heading).toBeInTheDocument();
+    // The sparkles icon and the whitening options are rendered in the same container
+    expect(screen.getByRole('radiogroup')).toBeInTheDocument();
   });
 
   it('should call getCreditCost for case_analysis and dsd_simulation', () => {
