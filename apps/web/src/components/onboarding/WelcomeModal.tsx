@@ -111,7 +111,7 @@ export function WelcomeModal({ open, onClose, onTrySample, onCreateCase }: Welco
           {/* CTA buttons on last slide */}
           {isLast && (
             <div className="flex flex-col gap-2.5 pt-2">
-              <Button onClick={handleTrySample} className="w-full btn-glow-gold btn-press font-semibold">
+              <Button onClick={handleTrySample} className="w-full btn-glow btn-press font-semibold">
                 {t('components.onboarding.welcome.trySample')}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>

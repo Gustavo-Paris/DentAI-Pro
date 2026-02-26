@@ -35,24 +35,24 @@
   --color-success-foreground: #ffffff;
 }
 
-/* WORKAROUND: Teal surface fallbacks for Radix portals outside .ui-theme.
+/* WORKAROUND: Slate-blue surface fallbacks for Radix portals outside .ui-theme.
    portal-base.css defines neutral violet (#08080c etc.) for all themes.
    odonto-ai.css only overrides portalled components, not root.
-   These RGB fallbacks ensure Tailwind utilities resolve to teal in portals.
+   These RGB fallbacks ensure Tailwind utilities resolve to slate-blue in portals.
    See: parisgroup-ai/pageshell#28 */
 .dark {
-  --color-background-rgb: 12 19 23;          /* #0c1317 — teal dark background */
-  --color-foreground-rgb: 246 249 251;        /* #f6f9fb — teal light text */
-  --color-card-rgb: 21 33 39;                /* #152127 — teal card surface */
+  --color-background-rgb: 12 17 27;          /* #0c111b — slate-blue dark background */
+  --color-foreground-rgb: 246 249 251;        /* #f6f9fb — cool white text */
+  --color-card-rgb: 20 26 38;               /* #141a26 — slate-blue card surface */
   --color-card-foreground: #f6f9fb;
-  --color-popover: #152127;                   /* teal — same as card */
+  --color-popover: #141a26;                   /* slate-blue — same as card */
   --color-popover-foreground: #f6f9fb;
-  --color-muted-rgb: 23 33 39;               /* #172127 — teal muted surface */
-  --color-muted-foreground-rgb: 123 139 146;  /* #7b8b92 — teal muted text */
-  --color-secondary-rgb: 23 33 39;            /* #172127 — teal secondary surface */
+  --color-muted-rgb: 22 28 40;              /* #161c28 — slate-blue muted surface */
+  --color-muted-foreground-rgb: 120 135 154;  /* #78879a — slate-blue muted text */
+  --color-secondary-rgb: 22 28 40;           /* #161c28 — slate-blue secondary surface */
   --color-secondary-foreground: #f6f9fb;
-  --color-border-rgb: 40 52 58;              /* #28343a — teal border */
-  --color-input: #28343a;
+  --color-border-rgb: 37 47 62;             /* #252f3e — slate-blue border */
+  --color-input: #252f3e;
   --color-destructive-rgb: 239 68 68;
   --color-warning-rgb: 245 158 11;
   --color-success-rgb: 16 185 129;
@@ -79,11 +79,11 @@
 }
 
 .dark[data-pageshell-theme="odonto-ai"] {
-  --surface-elevated: #152127;
-  --surface-default: #172127;
+  --surface-elevated: #141a26;            /* slate-blue card */
+  --surface-default: #161c28;             /* slate-blue muted */
   --text-primary: #f6f9fb;
-  --text-secondary: #7b8b92;
-  --border-subtle: #28343a;
+  --text-secondary: #78879a;              /* slate-blue muted text */
+  --border-subtle: #252f3e;               /* slate-blue border */
 }
 
 /* ═══ Tokens suplementares — odonto-ai theme enforcement ═══ */
@@ -153,9 +153,9 @@
   --sidebar-user-card-bg: #eff2f1;
   --sidebar-user-card-border: #e0e4e3;
 
-  /* Brand accent — coral para ToSmile wordmark */
-  --brand-accent: #e07a5f;
-  --brand-accent-light: #e89880;
+  /* Brand accent — violet for ToSmile wordmark */
+  --brand-accent: #8b5cf6;
+  --brand-accent-light: #a78bfa;
 
   /* Layer color tokens — resin stratification */
   --layer-incisal-rgb: 20 184 166;    /* teal-500 */
@@ -169,7 +169,7 @@
   /* Decorative accent tokens — testimonials, landing page variety */
   --accent-violet-rgb: 139 92 246;
   --accent-emerald-rgb: 16 185 129;
-  --accent-amber-rgb: 245 158 11;
+  --accent-rose-rgb: 251 113 133;
 
   /* Glow tokens — ambient light effects (AI/tech aesthetic) */
   --glow-sm: 0 0 15px rgb(var(--color-primary-rgb) / 0.08);
@@ -177,38 +177,39 @@
   --glow-lg: 0 0 40px rgb(var(--color-primary-rgb) / 0.1), 0 0 80px rgb(var(--color-primary-rgb) / 0.04);
 }
 
-/* Dark mode — specificity 0,2,0 to beat portal-base .dark .ui-theme */
-/* WORKAROUND: portal-base.css defines neutral violet surfaces (#08080c, #14141c,
-   #1a1a24, #2a2a3a) for ALL themes. odonto-ai.css only overrides portalled
-   components (themed-dialog, themed-dropdown), NOT the main layout surfaces.
-   We override hex surfaces + RGB companions here to enforce the teal palette.
+/* Dark mode — specificity 0,3,0 to beat PageShell .dark .ui-theme[data-theme="odonto-ai"]
+   WORKAROUND: portal-base.css defines neutral violet surfaces (#08080c, #14141c,
+   #1a1a24, #2a2a3a) for ALL themes. odonto-ai.css sidebar uses color-mix(cyan 15%, neutral-900)
+   creating a green tint. We override hex surfaces + RGB companions + sidebar tokens here
+   to enforce the slate-blue palette.
+   Selectors use [data-theme] attribute to match PageShell specificity (0,3,0).
    See: parisgroup-ai/pageshell#28 */
-.dark .ui-theme,
+.dark .ui-theme[data-theme],
 .dark .ui-theme-odonto-ai,
-.ui-theme.dark,
+.ui-theme[data-theme].dark,
 .ui-theme-odonto-ai.dark {
-  /* ── Teal surface overrides (hex) ── */
-  --color-background: #0c1317;
+  /* ── Slate-blue surface overrides (hex) ── */
+  --color-background: #0c111b;
   --color-foreground: #f6f9fb;
-  --color-card: #152127;
+  --color-card: #141a26;
   --color-card-foreground: #f6f9fb;
-  --color-popover: #152127;
+  --color-popover: #141a26;
   --color-popover-foreground: #f6f9fb;
-  --color-muted: #172127;
-  --color-muted-foreground: #7b8b92;
-  --color-secondary: #172127;
+  --color-muted: #161c28;
+  --color-muted-foreground: #78879a;
+  --color-secondary: #161c28;
   --color-secondary-foreground: #f6f9fb;
-  --color-border: #28343a;
-  --color-input: #28343a;
+  --color-border: #252f3e;
+  --color-input: #252f3e;
 
   /* ── RGB companions (must match hex above) ── */
-  --color-background-rgb: 12 19 23;          /* #0c1317 */
+  --color-background-rgb: 12 17 27;          /* #0c111b */
   --color-foreground-rgb: 246 249 251;        /* #f6f9fb */
-  --color-card-rgb: 21 33 39;               /* #152127 */
-  --color-muted-rgb: 23 33 39;              /* #172127 */
-  --color-muted-foreground-rgb: 123 139 146; /* #7b8b92 */
-  --color-secondary-rgb: 23 33 39;           /* #172127 */
-  --color-border-rgb: 40 52 58;             /* #28343a */
+  --color-card-rgb: 20 26 38;               /* #141a26 */
+  --color-muted-rgb: 22 28 40;              /* #161c28 */
+  --color-muted-foreground-rgb: 120 135 154; /* #78879a */
+  --color-secondary-rgb: 22 28 40;           /* #161c28 */
+  --color-border-rgb: 37 47 62;             /* #252f3e */
 
   /* ── Primary — cyan ── */
   --color-primary: var(--color-cyan-500);
@@ -250,12 +251,28 @@
   --skeleton-shimmer-peak: rgba(255, 255, 255, 0.04);
 
   /* ── Sidebar user card (dark) ── */
-  --sidebar-user-card-bg: #152127;
-  --sidebar-user-card-border: #28343a;
+  --sidebar-user-card-bg: #141a26;            /* slate-blue card */
+  --sidebar-user-card-border: #252f3e;        /* slate-blue border */
+
+  /* ── Sidebar — slate-blue overrides (beats PageShell cyan-mix tokens) ── */
+  --sidebar: #0f1520;
+  --sidebar-foreground: #f6f9fb;
+  --sidebar-border: #1a2235;
+  --sidebar-accent: #161c28;
+  --sidebar-accent-foreground: #f6f9fb;
+  --sidebar-primary: var(--color-cyan-500);
+  --sidebar-primary-foreground: #000000;
+  --color-sidebar: #0f1520;
+  --color-sidebar-foreground: #f6f9fb;
+  --color-sidebar-primary: var(--color-cyan-500);
+  --color-sidebar-primary-foreground: #000000;
+  --color-sidebar-accent: #161c28;
+  --color-sidebar-accent-foreground: #f6f9fb;
+  --color-sidebar-border: #1a2235;
 
   /* ── Brand ── */
-  --brand-accent: #ec8e75;
-  --brand-accent-light: #f0a48f;
+  --brand-accent: #a78bfa;
+  --brand-accent-light: #c4b5fd;
 
   /* Layer color tokens — same values in dark (accent colors, not surfaces) */
   --layer-incisal-rgb: 20 184 166;
@@ -269,12 +286,50 @@
   /* Decorative accent tokens — same values in dark */
   --accent-violet-rgb: 139 92 246;
   --accent-emerald-rgb: 16 185 129;
-  --accent-amber-rgb: 245 158 11;
+  --accent-rose-rgb: 251 113 133;
 
   /* Glow tokens — stronger in dark mode for AI/tech aesthetic */
   --glow-sm: 0 0 20px rgb(var(--color-primary-rgb) / 0.18);
   --glow-md: 0 0 30px rgb(var(--color-primary-rgb) / 0.25), 0 0 60px rgb(var(--color-primary-rgb) / 0.08);
   --glow-lg: 0 0 48px rgb(var(--color-primary-rgb) / 0.3), 0 0 96px rgb(var(--color-primary-rgb) / 0.12);
+}
+
+/* ── Portal-fix: slate-blue overrides for portalled components (dropdowns, dialogs) ──
+   PageShell odonto-ai.css defines teal hex (#152127, #1b4c57, #153f48) for these.
+   We override with our slate-blue palette for consistency.
+   See: parisgroup-ai/pageshell#28 */
+.dark[data-pageshell-theme="odonto-ai"] .sidebar-dropdown {
+  --color-accent: #1a2235;
+  --color-muted: #161c28;
+}
+
+.dark[data-pageshell-theme="odonto-ai"] .themed-dropdown,
+.dark[data-pageshell-theme="odonto-ai"] .themed-popover,
+.dark[data-pageshell-theme="odonto-ai"] .themed-select {
+  --color-popover: #141a26;
+  --color-popover-foreground: #f6f9fb;
+  --color-accent: #1e2a3a;
+  --color-accent-foreground: #f6f9fb;
+  --color-muted: #1a2233;
+  --color-muted-foreground: #c0cfe0;
+  --color-border: #252f3e;
+  background-color: #141a26 !important;
+  color: #f6f9fb !important;
+  border-color: #252f3e !important;
+}
+
+.dark[data-pageshell-theme="odonto-ai"] .themed-dialog,
+.dark[data-pageshell-theme="odonto-ai"] .themed-sheet {
+  --color-background: #0f1520;
+  --color-foreground: #f6f9fb;
+  --color-border: #252f3e;
+  --color-muted: #161c28;
+  --color-muted-foreground: #78879a;
+  --color-primary: #06b6d4;
+  --color-primary-foreground: #000000;
+  background-color: #0f1520 !important;
+  color: #f6f9fb !important;
+  border-color: #252f3e !important;
 }
 
 @layer base {
@@ -824,12 +879,18 @@
 
 .btn-glow:hover,
 .btn-glow-gold:hover {
-  box-shadow: 0 0 20px rgb(var(--color-primary-rgb) / 0.30), 0 0 40px rgb(var(--color-primary-rgb) / 0.10);
+  box-shadow:
+    0 0 20px rgb(var(--color-primary-rgb) / 0.30),
+    0 0 40px rgb(var(--color-primary-rgb) / 0.10),
+    0 0 60px rgb(var(--accent-violet-rgb) / 0.06);
 }
 
 .dark .btn-glow:hover,
 .dark .btn-glow-gold:hover {
-  box-shadow: 0 0 24px rgb(var(--color-primary-rgb) / 0.25), 0 0 48px rgb(var(--color-primary-rgb) / 0.08);
+  box-shadow:
+    0 0 24px rgb(var(--color-primary-rgb) / 0.25),
+    0 0 48px rgb(var(--color-primary-rgb) / 0.08),
+    0 0 72px rgb(var(--accent-violet-rgb) / 0.08);
 }
 
 .btn-glow:active,

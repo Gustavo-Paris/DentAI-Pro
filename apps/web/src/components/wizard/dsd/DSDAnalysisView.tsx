@@ -443,7 +443,7 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
             <Zap className="w-3 h-3" />2
           </span>
         </Button>
-        <Button onClick={onContinue} className="sm:flex-1 btn-glow-gold btn-press font-semibold group">
+        <Button onClick={onContinue} className="sm:flex-1 btn-glow btn-press font-semibold group">
           {t('components.wizard.dsd.analysisView.continueToReview')}
           <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
         </Button>

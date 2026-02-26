@@ -75,7 +75,7 @@ export default function Landing() {
         <div className="absolute inset-0 ai-grid-pattern opacity-40 dark:opacity-60" style={{ maskImage: 'radial-gradient(ellipse 70% 50% at 50% 40%, black 20%, transparent 70%)', WebkitMaskImage: 'radial-gradient(ellipse 70% 50% at 50% 40%, black 20%, transparent 70%)' }} />
         {/* Floating glow orbs */}
         <div className="glow-orb w-72 h-72 bg-primary/20 dark:bg-primary/30 top-[-10%] left-[15%]" />
-        <div className="glow-orb glow-orb-slow glow-orb-reverse w-96 h-96 bg-accent/15 dark:bg-accent/20 top-[20%] right-[-5%]" />
+        <div className="glow-orb glow-orb-slow glow-orb-reverse w-96 h-96 bg-[rgb(var(--accent-violet-rgb)/0.12)] dark:bg-[rgb(var(--accent-violet-rgb)/0.15)] top-[20%] right-[-5%]" />
 
         <div className="container mx-auto px-4 sm:px-6 relative">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center max-w-6xl mx-auto">
@@ -97,7 +97,7 @@ export default function Landing() {
               </p>
               <div className="animate-[fade-in-up_0.6s_ease-out_0.8s_both] flex flex-col items-center lg:items-start gap-2">
                 <Link to="/register">
-                  <Button size="lg" className="px-6 sm:px-8 h-12 text-base btn-glow-gold">
+                  <Button size="lg" className="px-6 sm:px-8 h-12 text-base btn-glow">
                     {t('landing.heroCTA')}
                   </Button>
                 </Link>
@@ -173,7 +173,7 @@ export default function Landing() {
                 key={index}
                 className={`scroll-reveal scroll-reveal-delay-${index + 1} text-left border border-border rounded-xl p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md group dark:bg-gradient-to-br dark:from-card dark:to-card/80 glow-card`}
               >
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110 glow-icon">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-primary/15 via-primary/8 to-[rgb(var(--accent-violet-rgb)/0.06)] flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110 glow-icon">
                   <feature.icon className="w-6 h-6 sm:w-7 sm:h-7 text-primary" aria-hidden="true" />
                 </div>
                 <h3 className="font-display font-medium text-sm sm:text-base mb-1 sm:mb-2">{feature.title}</h3>
@@ -231,7 +231,7 @@ export default function Landing() {
       {/* Testimonials */}
       <section aria-label={t('landing.testimonialsTitle')} className="py-16 sm:py-24 bg-background relative overflow-hidden section-glow-bg">
         <div className="glow-orb glow-orb-slow w-56 h-56 bg-primary/10 dark:bg-primary/15 top-[-15%] right-[-5%]" />
-        <div className="glow-orb glow-orb-reverse w-40 h-40 bg-accent/8 dark:bg-accent/10 bottom-[10%] left-[-8%]" />
+        <div className="glow-orb glow-orb-reverse w-40 h-40 bg-[rgb(var(--accent-violet-rgb)/0.08)] dark:bg-[rgb(var(--accent-violet-rgb)/0.10)] bottom-[10%] left-[-8%]" />
         <div className="container mx-auto px-4 sm:px-6 max-w-4xl">
           <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-10 sm:mb-16 font-display neon-text">
             {t('landing.testimonialsTitle')}
@@ -272,7 +272,7 @@ export default function Landing() {
                 role: t('landing.testimonial4Role'),
                 clinic: t('landing.testimonial4Clinic'),
                 rating: 5,
-                gradient: 'from-[rgb(var(--accent-amber-rgb)/0.2)] to-[rgb(var(--accent-amber-rgb)/0.05)]',
+                gradient: 'from-[rgb(var(--accent-rose-rgb)/0.2)] to-[rgb(var(--accent-rose-rgb)/0.05)]',
                 highlight: null,
               }
             ].map((testimonial, i) => (
@@ -375,7 +375,7 @@ export default function Landing() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_120%,rgb(var(--color-primary-rgb)/0.08),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_120%,rgb(var(--color-primary-rgb)/0.10),transparent)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_20%_40%,rgb(var(--color-primary-rgb)/0.05),transparent)] dark:bg-[radial-gradient(ellipse_60%_40%_at_20%_40%,rgb(var(--color-primary-rgb)/0.05),transparent)]" />
         <div className="glow-orb glow-orb-reverse w-64 h-64 bg-primary/20 dark:bg-primary/25 bottom-[-20%] left-[10%]" />
-        <div className="glow-orb glow-orb-slow w-48 h-48 bg-accent/15 dark:bg-accent/20 top-[10%] right-[20%]" />
+        <div className="glow-orb glow-orb-slow w-48 h-48 bg-[rgb(var(--accent-violet-rgb)/0.12)] dark:bg-[rgb(var(--accent-violet-rgb)/0.15)] top-[10%] right-[20%]" />
 
         <div ref={ctaRef} className="scroll-reveal container mx-auto px-4 sm:px-6 text-center relative max-w-2xl">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold mb-3 sm:mb-4 font-display neon-text">
@@ -390,7 +390,7 @@ export default function Landing() {
             <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" aria-hidden="true" />{t('landing.ctaFeature3')}</li>
           </ul>
           <Link to="/register">
-            <Button size="lg" className="px-6 sm:px-8 h-12 text-base btn-glow-gold">
+            <Button size="lg" className="px-6 sm:px-8 h-12 text-base btn-glow">
               <Sparkles className="w-4 h-4 mr-2" aria-hidden="true" />
               {t('landing.ctaCTA')}
             </Button>
@@ -526,7 +526,7 @@ function LandingPricing() {
               return (
                 <Card
                   key={plan.id}
-                  className={`relative flex flex-col ${isPopular ? 'border-primary shadow-lg scale-105 ai-shimmer-border' : ''}`}
+                  className={`relative flex flex-col glow-card ${isPopular ? 'border-primary shadow-lg scale-105 ai-shimmer-border' : ''}`}
                 >
                   {isPopular && (
                     <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary">
@@ -607,7 +607,7 @@ function LandingPricing() {
               return (
                 <Card
                   key={plan.id}
-                  className={`relative flex flex-col ${plan.isPopular ? 'border-primary shadow-lg scale-105 ai-shimmer-border' : ''}`}
+                  className={`relative flex flex-col glow-card ${plan.isPopular ? 'border-primary shadow-lg scale-105 ai-shimmer-border' : ''}`}
                 >
                   {plan.isPopular && (
                     <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary">

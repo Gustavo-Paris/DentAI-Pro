@@ -160,7 +160,7 @@ export default function Login() {
               </Link>
             </div>
 
-            <Button type="submit" className="w-full btn-glow-gold" disabled={loading}>
+            <Button type="submit" className="w-full btn-glow" disabled={loading}>
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />

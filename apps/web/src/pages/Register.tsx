@@ -82,7 +82,7 @@ export default function Register() {
             <Mail className="w-8 h-8 text-primary" aria-hidden="true" />
           </IconCircle>
           <Link to="/login" className="w-full">
-            <Button className="w-full btn-glow-gold">{t('common.goToLogin')}</Button>
+            <Button className="w-full btn-glow">{t('common.goToLogin')}</Button>
           </Link>
         </div>
       </AuthLayout>
@@ -247,7 +247,7 @@ export default function Register() {
               )}
             />
 
-            <Button type="submit" className="w-full btn-glow-gold" disabled={loading}>
+            <Button type="submit" className="w-full btn-glow" disabled={loading}>
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />

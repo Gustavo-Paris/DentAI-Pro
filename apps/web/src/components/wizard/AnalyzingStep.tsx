@@ -136,7 +136,7 @@ export function AnalyzingStep({
               {t('common.back')}
             </Button>
           )}
-          <Button onClick={onRetry} className="gap-2 btn-glow-gold btn-press font-semibold">
+          <Button onClick={onRetry} className="gap-2 btn-glow btn-press font-semibold">
             <RefreshCw className="w-4 h-4" />
             {t('components.wizard.analyzing.retry')}
           </Button>

@@ -359,7 +359,7 @@ export default function NewCase() {
                       wizard.isSampleCase ? (
                         <Button
                           onClick={() => navigate('/new-case')}
-                          className="w-full sm:w-auto btn-glow-gold btn-press font-semibold"
+                          className="w-full sm:w-auto btn-glow btn-press font-semibold"
                         >
                           <Sparkles className="w-4 h-4 mr-2" />
                           {t('wizard.createMyOwnCase')}
@@ -369,7 +369,7 @@ export default function NewCase() {
                         <Button
                           onClick={wizard.handleSubmit}
                           disabled={wizard.isSubmitting}
-                          className="w-full sm:w-auto btn-glow-gold btn-press font-semibold"
+                          className="w-full sm:w-auto btn-glow btn-press font-semibold"
                         >
                           {wizard.isSubmitting ? (
                             <>

@@ -44,12 +44,12 @@ export function DSDErrorState({ error, onRetry, onSkip }: DSDErrorStateProps) {
 
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
         {isCreditError ? (
-          <Button onClick={() => navigate('/pricing')} className="btn-glow-gold btn-press font-semibold">
+          <Button onClick={() => navigate('/pricing')} className="btn-glow btn-press font-semibold">
             <Zap className="w-4 h-4 mr-2" />
             {t('components.wizard.dsd.errorState.viewPlans')}
           </Button>
         ) : (
-          <Button onClick={onRetry} className="gap-2 btn-glow-gold btn-press font-semibold">
+          <Button onClick={onRetry} className="gap-2 btn-glow btn-press font-semibold">
             <RefreshCw className="w-4 h-4" />
             {t('components.wizard.dsd.errorState.retry')}
             <span className="inline-flex items-center gap-0.5 text-xs opacity-60 ml-1">

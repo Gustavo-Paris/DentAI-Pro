@@ -30,7 +30,7 @@ export function CreditsBanner({
           </p>
         </div>
         <Link to="/pricing">
-          <Button size="sm" className="btn-glow-gold shrink-0">
+          <Button size="sm" className="btn-glow shrink-0">
             {t('common.viewPlans')}
             <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
           </Button>

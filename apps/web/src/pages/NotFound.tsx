@@ -35,7 +35,7 @@ export default function NotFound() {
           <p className="text-sm text-muted-foreground mb-6">
             {t('errors.pageNotFoundDescription')}
           </p>
-          <Button asChild className="btn-glow-gold">
+          <Button asChild className="btn-glow">
             <Link to="/">
               <ArrowLeft className="w-4 h-4 mr-2" aria-hidden="true" />
               {t('common.backToHome')}

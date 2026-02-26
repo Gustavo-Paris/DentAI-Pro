@@ -625,7 +625,7 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
               size="lg"
               onClick={onAnalyze}
               disabled={isUploading}
-              className="btn-glow-gold btn-press font-semibold text-base min-w-[260px]"
+              className="btn-glow btn-press font-semibold text-base min-w-[260px]"
             >
               {isUploading ? (
                 <>

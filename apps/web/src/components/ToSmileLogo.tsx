@@ -19,9 +19,9 @@ export function ToSmileLogo({ className }: ToSmileLogoProps) {
           y2="54"
           gradientUnits="userSpaceOnUse"
         >
-          <stop offset="0%" stopColor="#5EDECE" />
-          <stop offset="50%" stopColor="#2A9D8F" />
-          <stop offset="100%" stopColor="#228B7E" />
+          <stop offset="0%" stopColor="#22d3ee" />
+          <stop offset="50%" stopColor="#06b6d4" />
+          <stop offset="100%" stopColor="#0891b2" />
         </linearGradient>
       </defs>
       {/* Stylized tooth — bold geometric silhouette */}
@@ -32,7 +32,7 @@ export function ToSmileLogo({ className }: ToSmileLogoProps) {
       {/* Smile arc highlight — subtle curve across the crown */}
       <path
         d="M20 26C24 30 28 31.5 32 31.5C36 31.5 40 30 44 26"
-        stroke="#12202C"
+        stroke="#0c111b"
         strokeWidth="2"
         strokeLinecap="round"
         fill="none"

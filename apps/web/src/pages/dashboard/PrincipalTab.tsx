@@ -76,7 +76,7 @@ function DraftCard({
             {t('common.discard')}
           </Button>
           <Link to="/new-case">
-            <Button size="sm" className="btn-glow-gold text-xs shadow-sm" aria-label={t('dashboard.draft.continueLabel')}>
+            <Button size="sm" className="btn-glow text-xs shadow-sm" aria-label={t('dashboard.draft.continueLabel')}>
               {t('dashboard.draft.continue')}
               <ArrowRight className="w-3.5 h-3.5 ml-1" />
             </Button>

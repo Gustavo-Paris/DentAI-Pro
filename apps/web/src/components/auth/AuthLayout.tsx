@@ -32,7 +32,7 @@ export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
 
         {/* Floating glow orbs */}
         <div className="glow-orb w-64 h-64 bg-primary/15 dark:bg-primary/25 top-[10%] left-[-10%]" />
-        <div className="glow-orb glow-orb-slow glow-orb-reverse w-48 h-48 bg-accent/10 dark:bg-accent/15 bottom-[20%] right-[5%]" />
+        <div className="glow-orb glow-orb-slow glow-orb-reverse w-48 h-48 bg-[rgb(var(--accent-violet-rgb)/0.10)] dark:bg-[rgb(var(--accent-violet-rgb)/0.12)] bottom-[20%] right-[5%]" />
 
         {/* Decorative tooth watermark */}
         <svg

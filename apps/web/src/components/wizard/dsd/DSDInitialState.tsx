@@ -43,7 +43,7 @@ export function DSDInitialState({ onSkip, hasImage, onConfirmDSD }: DSDInitialSt
 
       <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
         {hasImage && onConfirmDSD && (
-          <Button onClick={onConfirmDSD} className="btn-glow-gold btn-press font-semibold">
+          <Button onClick={onConfirmDSD} className="btn-glow btn-press font-semibold">
             <Play className="w-4 h-4 mr-2" />
             {t('components.wizard.dsd.initialState.startAnalysis')}
           </Button>

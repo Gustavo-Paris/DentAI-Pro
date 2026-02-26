@@ -137,7 +137,7 @@ export function StepIndicator({
           {(() => {
             const CurrentIcon = steps[currentStep]?.icon || FileText;
             return (
-              <span className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center btn-glow-gold shadow-md glow-icon">
+              <span className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center btn-glow shadow-md glow-icon">
                 <CurrentIcon className="w-6 h-6" />
               </span>
             );

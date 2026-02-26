@@ -105,7 +105,7 @@ export default function ResetPassword() {
         subtitle={t('auth.invalidLinkDescription')}
       >
         <Link to="/forgot-password">
-          <Button className="w-full btn-glow-gold">{t('auth.requestNewLink')}</Button>
+          <Button className="w-full btn-glow">{t('auth.requestNewLink')}</Button>
         </Link>
       </AuthLayout>
     );
@@ -171,7 +171,7 @@ export default function ResetPassword() {
                 )}
               />
 
-              <Button type="submit" className="w-full btn-glow-gold" disabled={loading}>
+              <Button type="submit" className="w-full btn-glow" disabled={loading}>
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
