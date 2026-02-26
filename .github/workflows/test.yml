@@ -125,7 +125,8 @@ jobs:
       - uses: denoland/setup-deno@v2
 
       - name: Run Deno tests
-        run: deno test --allow-read --allow-env --allow-net supabase/functions/
+        working-directory: supabase/functions
+        run: deno test --allow-read --allow-env --allow-net .
 
   build:
     name: Build
