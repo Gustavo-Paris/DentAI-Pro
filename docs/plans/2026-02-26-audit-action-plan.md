@@ -19,6 +19,7 @@ related:
 > Each phase targets a score milestone. Phases are sequential — later phases depend on earlier ones.
 >
 > **Status: Phases 1-5 executed on 2026-02-26. 14 commits, ~100 files, all deployed.**
+> **Post-audit round (7.6 validation): +2 commits, 27 files, migration 044 applied.**
 
 ---
 
@@ -264,27 +265,32 @@ related:
 | **Phase 4** | i18n and design polish | ✅ Complete | `2f7f441`, `d9b5188` |
 | **Phase 5** | Final polish (perf, PWA, security) | ✅ Mostly complete | `4a03a4b`, `f0132f4`, `60bbb12`, `39ba607` |
 
-**Total: 14 commits, ~100 files changed, 388 new tests, 4 edge functions deployed.**
+**Total: 16 commits, ~130 files changed, 388 new tests, 4 edge functions deployed, 1 migration applied.**
 
 ### Remaining items (low priority / user decision)
 
-| Item | Category | Effort |
-|------|----------|--------|
-| CSP `unsafe-inline` removal (Vercel Edge Middleware) | Security | 4-6h |
-| Remove 6 unused Radix packages + `@tanstack/react-virtual` | Cleanup | 15min |
-| Migrate wizard `@/components/ui/` to PageShell primitives | Design | 2-3h |
-| Maskable icon with 40% safe zone | PWA/Design | 1h |
-| `<link rel="modulepreload">` for vendor chunks | Performance | 30min |
-| Stripe SDK v17 upgrade | Security | 2h |
-| `deno audit` CI step | Security | 1h |
-| PHI field encryption (vault key) | Security/LGPD | 4-6h |
-| DSD signed URLs in data export | LGPD | 2h |
-| Login CAPTCHA (hCaptcha/Turnstile) | Security | 2-3h |
-| `generatePDF.test.ts` with mock jsPDF | Testing | 2h |
-| E2E tests (`dsd.spec.ts`) | Testing | 3-4h |
-| Codecov integration | Testing | 1h |
-| Memoize `useWizardFlow` return object | Performance | 30min |
-| `simulation.ts:generateSimulation` decomposition | Architecture | 3h |
+| Item | Category | Effort | Status |
+|------|----------|--------|--------|
+| CSP `unsafe-inline` removal (Vercel Edge Middleware) | Security | 4-6h | |
+| ~~Remove 6 unused Radix packages + `@tanstack/react-virtual`~~ | Cleanup | 15min | ✅ `a79ab2c` |
+| ~~Migrate wizard `@/components/ui/` to PageShell primitives~~ | Design | 2-3h | ✅ `adcac49` |
+| Maskable icon with 40% safe zone | PWA/Design | 1h | |
+| `<link rel="modulepreload">` for vendor chunks | Performance | 30min | |
+| ~~Stripe SDK v17 upgrade~~ | Security | 2h | ✅ `53fb89c` |
+| `deno audit` CI step | Security | 1h | |
+| PHI field encryption (vault key) | Security/LGPD | 4-6h | |
+| DSD signed URLs in data export | LGPD | 2h | |
+| Login CAPTCHA (hCaptcha/Turnstile) | Security | 2-3h | |
+| ~~`generatePDF.test.ts` with mock jsPDF~~ | Testing | 2h | ✅ `69c1051` |
+| E2E tests (`dsd.spec.ts`) | Testing | 3-4h | |
+| Codecov integration | Testing | 1h | |
+| ~~Memoize `useWizardFlow` return object~~ | Performance | 30min | ✅ `f458126` |
+| `simulation.ts:generateSimulation` decomposition | Architecture | 3h | |
+| ~~Fix `shared_links` RLS policy (P1)~~ | Security | 15min | ✅ `c868185` + mig 044 |
+| ~~Fix i18n hardcoded strings (42 instances)~~ | i18n | 1h | ✅ `c868185` |
+| ~~Extract wizard step wrappers (allSteps perf)~~ | Performance | 2h | ✅ `c868185` |
+| ~~Fix ToothSelectionCard double interactive role~~ | A11Y | 30min | ✅ `c868185` |
+| ~~Add Profile form validation schema~~ | UX | 1h | ✅ `c868185` |
 
 ---
 
