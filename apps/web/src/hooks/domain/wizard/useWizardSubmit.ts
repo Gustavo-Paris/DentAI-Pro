@@ -305,44 +305,27 @@ export function useWizardSubmit({
             normalizedTreatment === 'recobrimento_radicular';
 
           if (needsAICall) {
+            // Build DSD context for this tooth if available
+            const dsdSuggestion = dsdResult?.analysis?.suggestions?.find(
+              s => s.tooth === tooth,
+            );
+
+            // Data-client adapters for wizard context
+            const wizardClients: ProtocolDispatchClients = {
+              invokeResin: (p) => wizardData.invokeRecommendResin(p),
+              invokeCementation: (p) => wizardData.invokeRecommendCementation(p),
+              saveGenericProtocol: (id, protocol) => wizardData.updateEvaluationProtocol(id, protocol),
+            };
+
             // Generate protocol WITH retry (2 retries, 2s exponential backoff)
             await withRetry(
               async () => {
-                switch (normalizedTreatment) {
-                  case 'porcelana': {
-                    // Build DSD context for this tooth if available
-                    const cementDsdSuggestion = dsdResult?.analysis?.suggestions?.find(
-                      s => s.tooth === tooth,
-                    );
-                    await wizardData.invokeRecommendCementation({
-                      evaluationId: evaluation.id,
-                      teeth: [tooth],
-                      shade: formData.vitaShade,
-                      ceramicType: 'Dissilicato de lítio',
-                      substrate: toothData?.substrate || formData.substrate,
-                      substrateCondition:
-                        toothData?.substrate_condition || formData.substrateCondition,
-                      aestheticGoals:
-                        patientPreferences.whiteningLevel === 'hollywood'
-                          ? 'Paciente deseja clareamento INTENSO - nível Hollywood (BL1). A cor ALVO da faceta e do cimento deve ser BL1 ou compatível.'
-                          : 'Paciente prefere aparência NATURAL (A1/A2).',
-                      dsdContext: cementDsdSuggestion
-                        ? {
-                            currentIssue: cementDsdSuggestion.current_issue,
-                            proposedChange: cementDsdSuggestion.proposed_change,
-                            observations: dsdResult?.analysis?.observations || [],
-                          }
-                        : undefined,
-                    });
-                    break;
-                  }
-                  case 'resina': {
-                    // Build DSD context for this tooth if available
-                    const resinDsdSuggestion = dsdResult?.analysis?.suggestions?.find(
-                      s => s.tooth === tooth,
-                    );
-                    await wizardData.invokeRecommendResin({
-                      evaluationId: evaluation.id,
+                await dispatchTreatmentProtocol(
+                  {
+                    treatmentType: normalizedTreatment,
+                    evaluationId: evaluation.id,
+                    tooth,
+                    resinParams: normalizedTreatment === 'resina' ? {
                       userId: user.id,
                       patientAge: formData.patientAge || '30',
                       tooth,
@@ -360,10 +343,10 @@ export function useWizardSubmit({
                         patientPreferences.whiteningLevel === 'hollywood'
                           ? 'Paciente deseja clareamento INTENSO - nível Hollywood (BL1). Ajustar todas as camadas 2-3 tons mais claras que a cor detectada.'
                           : 'Paciente prefere aparência NATURAL (A1/A2). Manter tons naturais.',
-                      dsdContext: resinDsdSuggestion
+                      dsdContext: dsdSuggestion
                         ? {
-                            currentIssue: resinDsdSuggestion.current_issue,
-                            proposedChange: resinDsdSuggestion.proposed_change,
+                            currentIssue: dsdSuggestion.current_issue,
+                            proposedChange: dsdSuggestion.proposed_change,
                             observations: dsdResult?.analysis?.observations || [],
                             smileLine: dsdResult?.analysis?.smile_line,
                             faceShape: dsdResult?.analysis?.face_shape,
@@ -371,30 +354,41 @@ export function useWizardSubmit({
                             smileArc: dsdResult?.analysis?.smile_arc,
                           }
                         : undefined,
-                    });
-                    break;
-                  }
-                  case 'implante':
-                  case 'coroa':
-                  case 'endodontia':
-                  case 'encaminhamento':
-                  case 'gengivoplastia':
-                  case 'recobrimento_radicular': {
-                    const genericProtocol = getGenericProtocol(normalizedTreatment, tooth, toothData);
-                    // Enrich gengivoplasty summary with DSD details if available
-                    if (normalizedTreatment === 'gengivoplastia' && dsdResult?.analysis?.suggestions) {
-                      const gingivoSuggestions = dsdResult.analysis.suggestions.filter(s => {
-                        const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
-                        return text.includes('gengiv') || text.includes('zênite') || text.includes('zenite');
-                      });
-                      if (gingivoSuggestions.length > 0) {
-                        genericProtocol.summary += ` Dentes envolvidos: ${gingivoSuggestions.map(s => s.tooth).join(', ')}. Observações DSD: ${gingivoSuggestions.map(s => s.proposed_change).join('; ')}.`;
-                      }
-                    }
-                    await wizardData.updateEvaluationProtocol(evaluation.id, genericProtocol);
-                    break;
-                  }
-                }
+                    } : undefined,
+                    cementationParams: normalizedTreatment === 'porcelana' ? {
+                      teeth: [tooth],
+                      shade: formData.vitaShade,
+                      ceramicType: DEFAULT_CERAMIC_TYPE,
+                      substrate: toothData?.substrate || formData.substrate,
+                      substrateCondition:
+                        toothData?.substrate_condition || formData.substrateCondition,
+                      aestheticGoals:
+                        patientPreferences.whiteningLevel === 'hollywood'
+                          ? 'Paciente deseja clareamento INTENSO - nível Hollywood (BL1). A cor ALVO da faceta e do cimento deve ser BL1 ou compatível.'
+                          : 'Paciente prefere aparência NATURAL (A1/A2).',
+                      dsdContext: dsdSuggestion
+                        ? {
+                            currentIssue: dsdSuggestion.current_issue,
+                            proposedChange: dsdSuggestion.proposed_change,
+                            observations: dsdResult?.analysis?.observations || [],
+                          }
+                        : undefined,
+                    } : undefined,
+                    genericToothData: toothData,
+                    enrichGenericProtocol: normalizedTreatment === 'gengivoplastia' && dsdResult?.analysis?.suggestions
+                      ? (protocol: GenericProtocolResult) => {
+                          const gingivoSuggestions = dsdResult.analysis.suggestions.filter(s => {
+                            const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
+                            return text.includes('gengiv') || text.includes('zênite') || text.includes('zenite');
+                          });
+                          if (gingivoSuggestions.length > 0) {
+                            protocol.summary += ` Dentes envolvidos: ${gingivoSuggestions.map(s => s.tooth).join(', ')}. Observações DSD: ${gingivoSuggestions.map(s => s.proposed_change).join('; ')}.`;
+                          }
+                        }
+                      : undefined,
+                  },
+                  wizardClients,
+                );
               },
               {
                 maxRetries: 2,

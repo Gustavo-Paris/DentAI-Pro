@@ -4,8 +4,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { evaluations, wizard } from '@/data';
 import type { SessionEvaluationRow } from '@/data/evaluations';
-import { getFullRegion, getGenericProtocol } from './wizard/helpers';
+import { getFullRegion } from './wizard/helpers';
 import { useTranslation } from 'react-i18next';
+import {
+  dispatchTreatmentProtocol,
+  DEFAULT_CERAMIC_TYPE,
+  type ProtocolDispatchClients,
+} from '@/lib/protocol-dispatch';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -233,6 +238,18 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
   }, [evals]);
 
   const isLoading = loadingEvaluations || loadingPendingTeeth;
+
+  // ---- Data-client adapters for protocol dispatch ----
+  const evalClients: ProtocolDispatchClients = useMemo(() => ({
+    invokeResin: (p) => evaluations.invokeEdgeFunction('recommend-resin', p as unknown as Record<string, unknown>),
+    invokeCementation: (p) => evaluations.invokeEdgeFunction('recommend-cementation', p as unknown as Record<string, unknown>),
+    saveGenericProtocol: async (id, protocol) => {
+      await evaluations.updateEvaluation(id, {
+        generic_protocol: protocol,
+        recommendation_text: protocol.summary,
+      });
+    },
+  }), []);
 
   // ---- Helpers ----
   const getChecklist = useCallback((evaluation: EvaluationItem): string[] => {
@@ -503,26 +520,17 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
         // copies the protocol from the primary tooth after the loop.
         const isPrimary = primaryPerGroup[treatmentType] === toothNumber;
 
-        // Call appropriate edge function based on treatment type
-        switch (treatmentType) {
-          case 'porcelana':
-            if (isPrimary) {
-              await evaluations.invokeEdgeFunction('recommend-cementation', {
-                evaluationId: evaluation.id,
-                teeth: [toothNumber],
-                shade: patientDataForModal.vitaShade,
-                ceramicType: 'Dissilicato de lítio',
-                substrate: toothData.substrate || 'Esmalte e Dentina',
-                substrateCondition: toothData.substrate_condition || 'Saudável',
-                aestheticGoals: patientDataForModal.aestheticGoals || undefined,
-              });
-            }
-            break;
+        // Generic treatments always execute; resina/porcelana only for primary tooth
+        const shouldDispatch = isPrimary ||
+          (treatmentType !== 'resina' && treatmentType !== 'porcelana');
 
-          case 'resina':
-            if (isPrimary) {
-              await evaluations.invokeEdgeFunction('recommend-resin', {
-                evaluationId: evaluation.id,
+        if (shouldDispatch) {
+          await dispatchTreatmentProtocol(
+            {
+              treatmentType,
+              evaluationId: evaluation.id,
+              tooth: toothNumber,
+              resinParams: treatmentType === 'resina' ? {
                 userId: user.id,
                 patientAge: String(patientDataForModal.age),
                 tooth: toothNumber,
@@ -536,40 +544,19 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
                 stratificationNeeded: true,
                 budget: patientDataForModal.budget,
                 longevityExpectation: patientDataForModal.longevityExpectation,
-              });
-            }
-            break;
-
-          case 'implante':
-          case 'coroa':
-          case 'endodontia':
-          case 'encaminhamento': {
-            // Generic treatments don't call edge functions — always execute
-            const genericProtocol = getGenericProtocol(treatmentType, toothNumber, toothData);
-            await evaluations.updateEvaluation(evaluation.id, {
-              generic_protocol: genericProtocol,
-              recommendation_text: genericProtocol.summary,
-            });
-            break;
-          }
-
-          case 'gengivoplastia': {
-            const genericProtocol = getGenericProtocol(treatmentType, toothNumber, toothData);
-            await evaluations.updateEvaluation(evaluation.id, {
-              generic_protocol: genericProtocol,
-              recommendation_text: genericProtocol.summary,
-            });
-            break;
-          }
-
-          case 'recobrimento_radicular': {
-            const genericProtocol = getGenericProtocol(treatmentType, toothNumber, toothData);
-            await evaluations.updateEvaluation(evaluation.id, {
-              generic_protocol: genericProtocol,
-              recommendation_text: genericProtocol.summary,
-            });
-            break;
-          }
+              } : undefined,
+              cementationParams: treatmentType === 'porcelana' ? {
+                teeth: [toothNumber],
+                shade: patientDataForModal.vitaShade,
+                ceramicType: DEFAULT_CERAMIC_TYPE,
+                substrate: toothData.substrate || 'Esmalte e Dentina',
+                substrateCondition: toothData.substrate_condition || 'Saudável',
+                aestheticGoals: patientDataForModal.aestheticGoals || undefined,
+              } : undefined,
+              genericToothData: toothData,
+            },
+            evalClients,
+          );
         }
 
         // Update status to draft
@@ -646,7 +633,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
     } catch (deleteError) {
       logger.error('Error deleting pending teeth:', deleteError);
     }
-  }, [user, sessionId, patientDataForModal, evals, handleAddTeethSuccess, t]);
+  }, [user, sessionId, patientDataForModal, evals, handleAddTeethSuccess, evalClients, t]);
 
   // ---- Retry failed evaluation ----
   const handleRetryEvaluation = useCallback(async (evaluationId: string) => {
@@ -659,11 +646,13 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
       await evaluations.updateStatus(evaluationId, EVALUATION_STATUS.ANALYZING);
       queryClient.invalidateQueries({ queryKey: evaluationKeys.session(sessionId) });
 
-      const treatmentType = evaluation.treatment_type || 'resina';
-      switch (treatmentType) {
-        case 'resina':
-          await evaluations.invokeEdgeFunction('recommend-resin', {
-            evaluationId,
+      const treatmentType = (evaluation.treatment_type || 'resina') as TreatmentType;
+      await dispatchTreatmentProtocol(
+        {
+          treatmentType,
+          evaluationId,
+          tooth: evaluation.tooth,
+          resinParams: treatmentType === 'resina' ? {
             userId: user.id,
             patientAge: String(evaluation.patient_age),
             tooth: evaluation.tooth,
@@ -677,31 +666,18 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
             stratificationNeeded: true,
             budget: evaluation.budget,
             longevityExpectation: evaluation.longevity_expectation,
-          });
-          break;
-        case 'porcelana':
-          await evaluations.invokeEdgeFunction('recommend-cementation', {
-            evaluationId,
+          } : undefined,
+          cementationParams: treatmentType === 'porcelana' ? {
             teeth: [evaluation.tooth],
             shade: evaluation.tooth_color,
-            ceramicType: 'Dissilicato de lítio',
+            ceramicType: DEFAULT_CERAMIC_TYPE,
             substrate: evaluation.substrate || 'Esmalte e Dentina',
             substrateCondition: 'Saudável',
-          });
-          break;
-        default: {
-          const genericProtocol = getGenericProtocol(
-            treatmentType as TreatmentType,
-            evaluation.tooth,
-            { indication_reason: evaluation.ai_indication_reason },
-          );
-          await evaluations.updateEvaluation(evaluationId, {
-            generic_protocol: genericProtocol,
-            recommendation_text: genericProtocol.summary,
-          });
-          break;
-        }
-      }
+          } : undefined,
+          genericToothData: { indication_reason: evaluation.ai_indication_reason },
+        },
+        evalClients,
+      );
 
       await evaluations.updateStatus(evaluationId, EVALUATION_STATUS.DRAFT);
 
@@ -725,7 +701,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
     } finally {
       setRetryingEvaluationId(null);
     }
-  }, [user, evals, sessionId, queryClient, t]);
+  }, [user, evals, sessionId, queryClient, evalClients, t]);
 
   // ---- Regenerate all protocols with different budget tier ----
   const handleRegenerateWithBudget = useCallback(async (newBudget: 'padrão' | 'premium') => {
@@ -752,10 +728,13 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
         try {
           await evaluations.updateStatus(evaluation.id, EVALUATION_STATUS.ANALYZING);
 
-          switch (evaluation.treatment_type) {
-            case 'resina':
-              await evaluations.invokeEdgeFunction('recommend-resin', {
-                evaluationId: evaluation.id,
+          const regenTreatment = (evaluation.treatment_type || 'resina') as TreatmentType;
+          await dispatchTreatmentProtocol(
+            {
+              treatmentType: regenTreatment,
+              evaluationId: evaluation.id,
+              tooth: evaluation.tooth,
+              resinParams: regenTreatment === 'resina' ? {
                 userId: user.id,
                 patientAge: String(evaluation.patient_age),
                 tooth: evaluation.tooth,
@@ -770,20 +749,18 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
                 budget: newBudget,
                 longevityExpectation: evaluation.longevity_expectation,
                 aestheticGoals: evaluation.patient_aesthetic_goals || undefined,
-              });
-              break;
-            case 'porcelana':
-              await evaluations.invokeEdgeFunction('recommend-cementation', {
-                evaluationId: evaluation.id,
+              } : undefined,
+              cementationParams: regenTreatment === 'porcelana' ? {
                 teeth: [evaluation.tooth],
                 shade: evaluation.tooth_color,
-                ceramicType: 'Dissilicato de lítio',
+                ceramicType: DEFAULT_CERAMIC_TYPE,
                 substrate: evaluation.substrate || 'Esmalte e Dentina',
                 substrateCondition: 'Saudável',
                 aestheticGoals: evaluation.patient_aesthetic_goals || undefined,
-              });
-              break;
-          }
+              } : undefined,
+            },
+            evalClients,
+          );
 
           await evaluations.updateStatus(evaluation.id, EVALUATION_STATUS.DRAFT);
           successCount++;
@@ -827,7 +804,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
       setIsRegenerating(false);
       queryClient.invalidateQueries({ queryKey: evaluationKeys.session(sessionId) });
     }
-  }, [user, evals, sessionId, queryClient, t]);
+  }, [user, evals, sessionId, queryClient, evalClients, t]);
 
   return {
     // State
