@@ -22,7 +22,7 @@ import {
 import { Loader2, Plus, Wrench, Wand2 } from 'lucide-react';
 import { logger } from '@/lib/logger';
 
-export type TreatmentType = 'resina' | 'porcelana' | 'coroa' | 'implante' | 'endodontia' | 'encaminhamento' | 'gengivoplastia';
+export type TreatmentType = 'resina' | 'porcelana' | 'coroa' | 'implante' | 'endodontia' | 'encaminhamento' | 'gengivoplastia' | 'recobrimento_radicular';
 
 // Interface for pending teeth from database - allows Json type for tooth_bounds
 export interface PendingTooth {
@@ -65,6 +65,7 @@ const TREATMENT_LABEL_KEYS: Record<TreatmentType, string> = {
   endodontia: 'components.wizard.review.treatmentEndodontia',
   encaminhamento: 'components.wizard.review.treatmentEncaminhamento',
   gengivoplastia: 'components.wizard.review.treatmentGengivoplastia',
+  recobrimento_radicular: 'components.wizard.review.treatmentRecobrimentoRadicular',
 };
 
 
@@ -202,7 +203,7 @@ export function AddTeethModal({
                           <Badge
                             className={`text-xs ${priorityStyles[tooth.priority || 'média']}`}
                           >
-                            {tooth.priority || 'média'}
+                            {t(`common.priority${(tooth.priority || 'média').charAt(0).toUpperCase() + (tooth.priority || 'média').slice(1)}`)}
                           </Badge>
                         </div>
                         <div className="text-xs text-muted-foreground mb-2">
@@ -227,6 +228,8 @@ export function AddTeethModal({
                               <SelectItem value="implante">{t('components.addTeeth.treatmentImplante')}</SelectItem>
                               <SelectItem value="endodontia">{t('components.addTeeth.treatmentEndodontia')}</SelectItem>
                               <SelectItem value="encaminhamento">{t('components.addTeeth.treatmentEncaminhamento')}</SelectItem>
+                              <SelectItem value="gengivoplastia">{t('components.addTeeth.treatmentGengivoplastia')}</SelectItem>
+                              <SelectItem value="recobrimento_radicular">{t('components.addTeeth.treatmentRecobrimentoRadicular')}</SelectItem>
                             </SelectContent>
                           </Select>
                         )}

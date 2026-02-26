@@ -112,6 +112,7 @@ const TREATMENT_LABEL_KEYS: Record<TreatmentType, string> = {
   endodontia: 'components.wizard.review.treatmentEndodontia',
   encaminhamento: 'components.wizard.review.treatmentEncaminhamento',
   gengivoplastia: 'components.wizard.review.treatmentGengivoplastia',
+  recobrimento_radicular: 'components.wizard.review.treatmentRecobrimentoRadicular',
 };
 
 const AESTHETIC_PROCEDURES = [
@@ -244,6 +245,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
       case 'endodontia':
       case 'encaminhamento':
       case 'gengivoplastia':
+      case 'recobrimento_radicular':
         return evaluation.generic_protocol?.checklist || [];
       default:
         return evaluation.stratification_protocol?.checklist || [];
@@ -490,7 +492,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
           ai_treatment_indication: toothData.treatment_indication,
           ai_indication_reason: toothData.indication_reason,
           tooth_bounds: toothData.tooth_bounds,
-          stratification_needed: treatmentType !== 'gengivoplastia',
+          stratification_needed: treatmentType !== 'gengivoplastia' && treatmentType !== 'recobrimento_radicular',
         };
 
         const evaluation = await evaluations.insertEvaluation(insertData);
@@ -552,6 +554,15 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
           }
 
           case 'gengivoplastia': {
+            const genericProtocol = getGenericProtocol(treatmentType, toothNumber, toothData);
+            await evaluations.updateEvaluation(evaluation.id, {
+              generic_protocol: genericProtocol,
+              recommendation_text: genericProtocol.summary,
+            });
+            break;
+          }
+
+          case 'recobrimento_radicular': {
             const genericProtocol = getGenericProtocol(treatmentType, toothNumber, toothData);
             await evaluations.updateEvaluation(evaluation.id, {
               generic_protocol: genericProtocol,

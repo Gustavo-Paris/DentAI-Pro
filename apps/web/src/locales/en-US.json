@@ -71,7 +71,12 @@
     "of": "of",
     "discard": "Discard",
     "clearSelection": "Clear selection",
-    "siteNavigation": "Site navigation"
+    "siteNavigation": "Site navigation",
+    "priorityAlta": "High",
+    "priorityMedia": "Medium",
+    "priorityBaixa": "Low",
+    "previous": "Previous",
+    "pageOf": "Page {{page}} of {{total}}"
   },
   "auth": {
     "login": "Log in",
@@ -1543,7 +1548,9 @@
       "treatmentCoroa": "💎 Full Crown",
       "treatmentImplante": "🦷 Implant",
       "treatmentEndodontia": "🔬 Root Canal",
-      "treatmentEncaminhamento": "➡️ Referral"
+      "treatmentEncaminhamento": "➡️ Referral",
+      "treatmentGengivoplastia": "Gingivoplasty",
+      "treatmentRecobrimentoRadicular": "Root Coverage"
     },
     "processingOverlay": {
       "defaultMessage": "Processing...",
