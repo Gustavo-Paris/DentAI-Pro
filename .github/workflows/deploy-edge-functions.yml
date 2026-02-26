@@ -1,0 +1,68 @@
+name: Deploy Edge Functions
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/functions/**'
+  workflow_dispatch:
+    inputs:
+      functions:
+        description: 'Comma-separated function names (empty = all)'
+        required: false
+        default: ''
+
+jobs:
+  deploy:
+    name: Deploy Edge Functions
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+    steps:
+      - name: Check prerequisites
+        run: |
+          if [ -z "$SUPABASE_ACCESS_TOKEN" ] || [ -z "$SUPABASE_PROJECT_ID" ]; then
+            echo "::error::Missing SUPABASE_ACCESS_TOKEN or SUPABASE_PROJECT_ID secrets"
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link project
+        run: supabase link --project-ref "$SUPABASE_PROJECT_ID"
+
+      - name: Deploy functions sequentially
+        env:
+          INPUT_FUNCTIONS: ${{ inputs.functions }}
+        run: |
+          ALL_FUNCTIONS="analyze-dental-photo apply-referral create-checkout-session create-portal-session data-export delete-account generate-dsd health-check recommend-cementation recommend-resin send-email stripe-webhook sync-credit-purchase sync-subscription"
+
+          if [ -n "$INPUT_FUNCTIONS" ]; then
+            FUNCTIONS=$(echo "$INPUT_FUNCTIONS" | tr ',' ' ')
+          else
+            FUNCTIONS="$ALL_FUNCTIONS"
+          fi
+
+          FAILED=""
+          for fn in $FUNCTIONS; do
+            echo "::group::Deploying $fn"
+            if supabase functions deploy "$fn" --no-verify-jwt; then
+              echo "✓ $fn deployed"
+            else
+              echo "::error::Failed to deploy $fn"
+              FAILED="$FAILED $fn"
+            fi
+            echo "::endgroup::"
+          done
+
+          if [ -n "$FAILED" ]; then
+            echo "::error::Failed to deploy:$FAILED"
+            exit 1
+          fi
+
+          echo "All functions deployed successfully"
