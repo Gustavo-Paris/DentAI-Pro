@@ -52,7 +52,7 @@ function ProtocolTable({ layers }: ProtocolTableProps) {
   if (!layers || layers.length === 0) return null;
 
   return (
-    <div className="rounded-lg border overflow-hidden">
+    <div className="rounded-xl border overflow-hidden">
       {/* Desktop Table */}
       <div className="hidden sm:block overflow-x-auto">
         <Table>

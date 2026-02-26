@@ -55,7 +55,7 @@ export function EvaluationToothCard({
     >
       <div className="flex items-center justify-between p-4">
         <div className="flex items-center gap-3">
-          <span className="inline-flex items-center justify-center rounded-md border border-border px-2 py-0.5 text-sm font-mono text-foreground">
+          <span className="inline-flex items-center justify-center rounded-lg border border-border px-2 py-0.5 text-sm font-mono text-foreground">
             {tooth}
           </span>
           <div>

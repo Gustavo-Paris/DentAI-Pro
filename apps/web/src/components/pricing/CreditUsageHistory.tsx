@@ -6,8 +6,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useSubscription, type CreditUsageRecord } from '@/hooks/useSubscription';
 
 const operationConfig: Record<string, { labelKey: string; icon: typeof Camera; color: string }> = {
-  case_analysis: { labelKey: 'components.pricing.creditUsage.caseAnalysis', icon: Camera, color: 'text-blue-500' },
-  dsd_simulation: { labelKey: 'components.pricing.creditUsage.dsdSimulation', icon: Sparkles, color: 'text-purple-500' },
+  case_analysis: { labelKey: 'components.pricing.creditUsage.caseAnalysis', icon: Camera, color: 'text-primary' },
+  dsd_simulation: { labelKey: 'components.pricing.creditUsage.dsdSimulation', icon: Sparkles, color: 'text-[rgb(var(--accent-violet-rgb))]' },
 };
 
 function formatRelativeDate(dateStr: string, t: (key: string, opts?: Record<string, unknown>) => string): string {

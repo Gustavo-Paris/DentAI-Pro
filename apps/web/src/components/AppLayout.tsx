@@ -1,12 +1,15 @@
 import { useMemo } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
 import { ReactRouterAppShell } from '@parisgroup-ai/pageshell/layouts/adapters/react-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { BRAND_NAME } from '@/lib/branding';
 import { CreditBadge } from '@/components/CreditBadge';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { HelpButton } from '@/components/HelpButton';
+import * as profiles from '@/data/profiles';
+import { QUERY_STALE_TIMES } from '@/lib/constants';
 import {
   LayoutDashboard,
   FileText,
@@ -50,11 +53,27 @@ export default function AppLayout() {
     },
   ], [t]);
 
-  const userInfo = useMemo(() => ({
-    name: user?.user_metadata?.full_name ?? user?.email,
-    email: user?.email,
-    image: user?.user_metadata?.avatar_url,
-  }), [user?.user_metadata?.full_name, user?.email, user?.user_metadata?.avatar_url]);
+  // Fetch avatar from profiles table (Supabase Storage) — same source as Profile page.
+  // Falls back to Google OAuth avatar_url from user_metadata.
+  const { data: profile } = useQuery({
+    queryKey: ['profile', user?.id],
+    queryFn: () => profiles.getByUserId(user!.id),
+    enabled: !!user?.id,
+    staleTime: QUERY_STALE_TIMES.MEDIUM,
+  });
+
+  const userInfo = useMemo(() => {
+    const storageAvatar = profile?.avatar_url
+      ? profiles.getAvatarPublicUrl(profile.avatar_url)
+      : undefined;
+    const oauthAvatar = user?.user_metadata?.avatar_url as string | undefined;
+
+    return {
+      name: profile?.full_name ?? user?.user_metadata?.full_name ?? user?.email,
+      email: user?.email,
+      image: storageAvatar || oauthAvatar,
+    };
+  }, [profile, user?.user_metadata?.full_name, user?.user_metadata?.avatar_url, user?.email]);
 
   const userMenuItems = useMemo(() => [
     { label: t('components.layout.subscription'), href: '/profile?tab=assinatura', icon: CreditCard },
