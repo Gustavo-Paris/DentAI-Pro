@@ -150,6 +150,34 @@ Se foto DISTANTE (face inteira em vez de close-up):
 - Ser MAIS CONSERVADOR em diagnósticos
 - Ainda TENTAR identificar fraturas, restaurações antigas e problemas evidentes
 
+## DSD SIMULATION SUITABILITY (OBRIGATÓRIO — AVALIAÇÃO RIGOROSA)
+Avalie o campo dsd_simulation_suitability (0-100) — indica se esta foto é adequada para EDIÇÃO DE IMAGEM por IA (simulação visual do tratamento).
+
+IMPORTANTE: Este score NÃO é sobre "consigo ver os dentes para diagnosticar". É sobre "a IA consegue EDITAR cada dente individualmente com qualidade". Para edição de imagem, a IA precisa ver a COROA COMPLETA de cada dente (da gengiva até o bordo incisal), com bordas claras e sem obstrução.
+
+FATOR DOMINANTE — VISIBILIDADE DA COROA COMPLETA (60% do score):
+- Avalie CADA dente anterior (13-23): a coroa completa está visível? (gengival → incisal, mesial → distal)
+- Se lábio superior cobre a região CERVICAL/GENGIVAL dos dentes → score MAX 50 (IA não tem referência de onde começa o dente)
+- Se lábio inferior cobre a BORDA INCISAL de qualquer dente anterior → score MAX 45
+- Se caninos (13/23) ou laterais (12/22) estão PARCIALMENTE escondidos pelos lábios → score MAX 50
+- Se 4+ dentes anteriores têm coroa COMPLETA visível (gengiva até incisal) sem obstrução → +60
+
+FATOR SECUNDÁRIO — QUALIDADE TÉCNICA (40% do score):
+- Foco/nitidez na região dental: +15 (nítido) ou -15 (desfocado)
+- Iluminação uniforme nos dentes: +10 (boa) ou -10 (sombras fortes)
+- Afastador/retrator presente: +15 (expõe coroas completas)
+- Foto muito distante (dentes pequenos na imagem): -10
+
+EXEMPLOS CALIBRADOS:
+- Foto com afastador, boa iluminação, TODAS as coroas completamente expostas = 85-100
+- Sorriso bem aberto, gengiva visível nos centrais, lábios NÃO cobrem nada = 65-80
+- Sorriso aberto MAS lábio superior cobre região cervical dos dentes = 40-55
+- Sorriso com lábios parcialmente cobrindo laterais/caninos = 30-45
+- Sorriso fechado, apenas bordas incisais visíveis = 15-30
+- Foto escura, desfocada, dentes parcialmente cobertos = 10-25
+
+REGRA: Na DÚVIDA entre score mais alto ou mais baixo → escolha o MAIS BAIXO (é melhor pedir foto melhor do que gerar simulação ruim)
+
 ## DETECCAO DE RESTAURACOES EXISTENTES
 
 SINAIS VISUAIS: Linhas de interface, diferença de cor/textura localizada, manchamento marginal, opacidade localizada.

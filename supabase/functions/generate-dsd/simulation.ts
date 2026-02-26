@@ -32,6 +32,48 @@ function sanitizeAnalysisText(text: string, maxLength: number = 500): string {
     .trim();
 }
 
+// Transform verbose clinical descriptions into SHORT visual editing instructions.
+// Clinical language like "Reanatomização em resina composta para aumentar volume
+// e comprimento (~1.5mm)" is too directive for image editing — Gemini treats mm
+// values as literal targets. Shorter, softer descriptions = more natural results.
+function simplifyForImageEdit(proposedChange: string): string {
+  let text = proposedChange;
+
+  // Strip mm measurements (meaningless in pixel space, makes Gemini over-modify)
+  text = text.replace(/\(?\s*~?\d+([.,]\d+)?\s*mm\s*\)?/gi, '');
+
+  // Strip material mentions (irrelevant for image editing)
+  text = text.replace(/\bem resina\s*(composta)?\b/gi, '');
+  text = text.replace(/\bresina\s*(composta)?\b/gi, '');
+
+  // Soften aggressive clinical verbs
+  text = text.replace(/\brecontorno estético\/suaviza[çc][ãa]o\b/gi, 'leve suavização');
+  text = text.replace(/\breanatomiza[çc][ãa]o\b/gi, 'leve ajuste de contorno');
+  text = text.replace(/\breconstru[çc][ãa]o\b/gi, 'leve correção');
+  text = text.replace(/\brecontorno estético\b/gi, 'leve suavização');
+
+  // Soften magnitude language
+  text = text.replace(/\baumentar volume e comprimento\b/gi, 'leve aumento incisal');
+  text = text.replace(/\baumentar volume\b/gi, 'leve aumento de volume');
+  text = text.replace(/\baumentar comprimento\b/gi, 'leve extensão incisal');
+  text = text.replace(/\brestabelecer comprimento e contorno\b/gi, 'leve melhoria do contorno incisal');
+
+  // Clean up artifacts (double spaces, orphaned commas/parentheses, trailing space before comma)
+  text = text.replace(/\(\s*\)/g, '');
+  text = text.replace(/\s+,/g, ',');
+  text = text.replace(/\s{2,}/g, ' ');
+  text = text.replace(/\s*,\s*,/g, ',');
+  text = text.replace(/^\s*[,]\s*/, '');
+  text = text.trim();
+
+  // Cap length — shorter descriptions = less Gemini overinterpretation
+  if (text.length > 120) {
+    text = text.substring(0, 117) + '...';
+  }
+
+  return text;
+}
+
 // SIMPLIFIED: Generate simulation image - single attempt, no blend, no verification
 export async function generateSimulation(
   imageBase64: string,
@@ -167,12 +209,32 @@ export async function generateSimulation(
     return true;
   }) || [];
 
-  // P2-56: Sanitize AI text before interpolation into Gemini prompt
-  const allowedChangesFromAnalysis = filteredSuggestions.length > 0
-    ? `\nSPECIFIC CORRECTIONS FROM ANALYSIS (apply these changes):\n${filteredSuggestions.map(s =>
-        `- Tooth ${s.tooth}: ${sanitizeAnalysisText(s.proposed_change, 400)}`
-      ).join('\n')}`
-    : '';
+  // P2-56: Build SPECIFIC CORRECTIONS section.
+  // When 5+ teeth are listed for structural correction, Gemini tends to "redesign" the
+  // entire smile instead of making subtle changes. Solution: for many teeth, condense
+  // into ONE high-level instruction instead of per-tooth descriptions.
+  // For fewer teeth (1-4), keep individual descriptions (simplified to remove mm/clinical jargon).
+  let allowedChangesFromAnalysis = '';
+  if (filteredSuggestions.length >= 5) {
+    // CONDENSED MODE: one cohesive instruction instead of 6+ individual tooth descriptions.
+    // Listing each tooth separately gives Gemini "permission" to redesign each one.
+    const teethList = filteredSuggestions.map(s => s.tooth).join(', ');
+    allowedChangesFromAnalysis = `
+SPECIFIC CORRECTIONS (teeth ${teethList}):
+Apply SUBTLE improvements to harmonize the smile. The patient's teeth are largely NORMAL —
+corrections are MINOR refinements, NOT redesign. For each tooth:
+- Incisal edges: SLIGHT harmonization only (smooth chips, equalize minor wear)
+- Contours: GENTLE refinement of angles/tips — do NOT reshape the tooth
+- Proportions: MINIMAL adjustment — if a lateral is smaller than central, that may be NORMAL anatomy
+- Each tooth in the output MUST be clearly the SAME tooth from the input, just slightly refined
+- If in doubt between changing more vs less: ALWAYS choose LESS
+- The overall impression should be "same smile, slightly polished" — NOT "new teeth"`;
+  } else if (filteredSuggestions.length > 0) {
+    // INDIVIDUAL MODE: per-tooth descriptions with simplified clinical language.
+    allowedChangesFromAnalysis = `\nSPECIFIC CORRECTIONS (subtle visual edits ONLY — each tooth must remain recognizable):\n${filteredSuggestions.map(s =>
+        `- Tooth ${s.tooth}: ${simplifyForImageEdit(sanitizeAnalysisText(s.proposed_change, 400))}`
+      ).join('\n')}`;
+  }
 
   // Determine case type for prompt variant selection
   const promptType = needsReconstruction ? 'reconstruction' :

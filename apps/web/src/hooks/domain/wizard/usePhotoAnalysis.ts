@@ -267,6 +267,12 @@ export function usePhotoAnalysis({
         const cost = getCreditCost('case_analysis');
         toast.success(t('toasts.analysis.completed'), { description: t('toasts.analysis.creditUsed', { count: cost }) });
         refreshSubscription();
+
+        // Warn if photo quality is insufficient for DSD simulation
+        if (typeof analysis.dsd_simulation_suitability === 'number' && analysis.dsd_simulation_suitability < 55) {
+          toast.warning(t('toasts.analysis.photoQualityWarning'), { duration: 8000 });
+        }
+
         setStep(isQuickCaseRef.current ? 5 : 4);
       } else {
         throw new Error('Análise não retornou dados');

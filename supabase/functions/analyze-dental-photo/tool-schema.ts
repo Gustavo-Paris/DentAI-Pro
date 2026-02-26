@@ -125,6 +125,10 @@ export const ANALYZE_PHOTO_TOOL: OpenAITool[] = [
             items: { type: "string" },
             description: "Alertas ou pontos de atenção para o operador"
           },
+          dsd_simulation_suitability: {
+            type: "number",
+            description: "Score 0-100: foto adequada para EDIÇÃO DE IMAGEM por IA? Fator dominante (60%): coroa COMPLETA de cada dente anterior visível (gengiva até incisal) sem obstrução labial. Se lábio cobre cervical/gengival dos dentes → MAX 50. Se laterais/caninos parcialmente escondidos → MAX 50. Afastador + coroas expostas = 85-100. Sorriso aberto, gengiva visível, nada coberto = 65-80. Lábio cobre cervical = 40-55. Lábios cobrem laterais = 30-45. Na dúvida → score MAIS BAIXO."
+          },
           treatment_indication: {
             type: "string",
             enum: ["resina", "porcelana", "coroa", "implante", "endodontia", "encaminhamento", "gengivoplastia", "recobrimento_radicular"],
@@ -135,7 +139,7 @@ export const ANALYZE_PHOTO_TOOL: OpenAITool[] = [
             description: "Razão detalhada da indicação de tratamento predominante"
           }
         },
-        required: ["detected", "confidence", "detected_teeth", "observations", "warnings"],
+        required: ["detected", "confidence", "detected_teeth", "observations", "warnings", "dsd_simulation_suitability"],
         additionalProperties: false
       }
     }

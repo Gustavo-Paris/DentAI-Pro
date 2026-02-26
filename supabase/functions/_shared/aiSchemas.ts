@@ -104,6 +104,7 @@ export const PhotoAnalysisResultSchema = z
     warnings: z.array(z.string()).default([]),
     treatment_indication: TreatmentIndicationSchema,
     indication_reason: z.string().optional(),
+    dsd_simulation_suitability: z.number().min(0).max(100).default(50),
   })
   .passthrough();
 

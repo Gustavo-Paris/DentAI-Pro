@@ -35,6 +35,8 @@ export interface PhotoAnalysisResult {
   warnings: string[];
   treatment_indication?: TreatmentType;
   indication_reason?: string;
+  /** 0-100 score: how suitable is this photo for DSD image editing (simulation) */
+  dsd_simulation_suitability?: number;
 }
 
 export interface ReviewFormData {

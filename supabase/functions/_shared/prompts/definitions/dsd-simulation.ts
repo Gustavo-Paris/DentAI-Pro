@@ -35,13 +35,25 @@ export interface Params {
 // --- Shared prompt blocks ---
 
 function buildTextureInstruction(whiteningLevel?: string): string {
-  // For "white"/"hollywood": remove anti-artificial warnings that cause Gemini to barely change tooth color
-  // For "natural" or no-whitening layers: keep full warnings
-  const antiArtificialLines = (whiteningLevel === 'white' || whiteningLevel === 'hollywood')
-    ? ''
-    : `
+  // Anti-artificial guardrails adapted per whitening level:
+  // - natural: full warnings (conservative)
+  // - white: allow visible whitening but warn against porcelain/uniform appearance
+  // - hollywood: allow dramatic whitening but still require texture and variation
+  let antiArtificialLines: string;
+  if (whiteningLevel === 'hollywood') {
+    antiArtificialLines = `
+- Dentes podem ser DRAMATICAMENTE brancos, mas DEVEM manter TEXTURA REAL de esmalte (não superfícies lisas/plásticas)
+- Mesmo em hollywood: cada dente deve ter MICRO-VARIAÇÕES individuais — NÃO uniformizar todos com a mesma cor/textura flat`;
+  } else if (whiteningLevel === 'white') {
+    antiArtificialLines = `
+- O clareamento deve ser VISÍVEL e ÓBVIO, mas o esmalte deve parecer REAL — não porcelana lisa
+- NÃO criar aparência de "facetas de porcelana" ou dentes de plástico — o resultado é CLAREAMENTO, não laminados
+- Cada dente deve manter suas MICRO-VARIAÇÕES individuais de textura e translucidez`;
+  } else {
+    antiArtificialLines = `
 - NÃO criar aparência de "porcelana perfeita", "dentes de comercial de TV", ou cor UNIFORMEMENTE branca
 - O resultado deve parecer CLAREAMENTO DENTAL REAL, não facetas de porcelana`;
+  }
 
   return `TEXTURA NATURAL DO ESMALTE (CRÍTICO para realismo):
 - Manter/criar PERIQUIMÁCIES (linhas horizontais sutis no esmalte)
@@ -112,6 +124,14 @@ Se a imagem de entrada mostra o ROSTO COMPLETO do paciente (olhos, testa, queixo
   • Características faciais únicas (formato labial, corredor bucal)
 - O resultado deve parecer uma MELHORIA NATURAL deste paciente específico
 - NÃO deve parecer que os dentes foram "copiados" de outra pessoa
+
+⚠️ PROIBIÇÃO DE REDESENHO TOTAL:
+Isto é EDIÇÃO DENTAL (inpainting de dentes existentes), NÃO criação de sorriso novo.
+- PROIBIDO substituir os dentes do paciente por "dentes ideais genéricos"
+- PROIBIDO criar dentes uniformes/idênticos — cada dente tem anatomia INDIVIDUAL
+- O paciente que olhar o resultado DEVE reconhecer seus próprios dentes, apenas melhorados
+- Se o resultado parece "laminados de porcelana colados por cima" → a simulação FALHOU
+- PRIORIDADE: Parecer REAL e ALCANÇÁVEL com restaurações diretas em resina composta
 
 REFERÊNCIA ANATÔMICA FIXA:
 Os lábios (superior E inferior) definem a MOLDURA DO SORRISO.
@@ -212,6 +232,17 @@ A FORMA, TAMANHO e POSIÇÃO de cada dente devem ser RECONHECÍVEIS da foto orig
 - Se um dente é levemente girado, maior ou menor que o contralateral: isso é NORMAL, MANTER
 - O antes/depois deve mostrar os MESMOS DENTES com melhorias pontuais, NÃO dentes novos
 
+⚠️ LIMITE DE MAGNITUDE (MESMO para dentes em "SPECIFIC CORRECTIONS"):
+Isto é INPAINTING (edição sutil), NÃO geração de dentes novos. Mesmo para dentes listados:
+- A SILHUETA ORIGINAL do dente deve ser RECONHECÍVEL no resultado — NÃO substituir por dente genérico
+- LARGURA de cada dente: variação máxima de ~10% em relação ao original
+- ALTURA de cada dente: variação máxima de ~10-15% (exceto se borda incisal fraturada)
+- CONTORNO: ajustes sutis são permitidos, redesenho total é PROIBIDO
+- COR pode mudar dramaticamente (whitening), mas FORMA deve permanecer SUTIL
+- Se a análise lista 6+ dentes para correção: REDUZIR a magnitude de cada correção individual
+  → Muitas mudanças pequenas parecem naturais. Poucas mudanças grandes parecem artificiais.
+- TESTE MENTAL: Se alguém cobrir a metade da foto, consegue identificar que é o MESMO paciente? Se não → exagerou.
+
 CORREÇÕES PERMITIDAS (aplicar SOMENTE quando necessário):
 1. Preencher lascas ou defeitos ÓBVIOS nas bordas dos dentes
 2. Remover manchas escuras pontuais (manter variação natural de cor)
@@ -258,7 +289,15 @@ const PROPORTION_RULES = `PROPORTION RULES:
 - Only reshape contours when SPECIFICALLY indicated by analysis for that tooth
 - NEVER make teeth appear thinner or narrower than original
 - NUNCA alterar forma ou proporção de dentes que NÃO estão em "SPECIFIC CORRECTIONS"
-- COMPARAR antes/depois: dentes não tratados devem ter EXATAMENTE o mesmo formato, tamanho e posição`
+- COMPARAR antes/depois: dentes não tratados devem ter EXATAMENTE o mesmo formato, tamanho e posição
+
+⚠️ REGRA #2 — ANTI-REDESIGN (CRÍTICO):
+Esta simulação NÃO é projeto de facetas ou laminados. É uma PREVISÃO de restaurações diretas em resina.
+- NÃO criar "dentes novos" — modificar os EXISTENTES com ajustes pontuais
+- A PROPORÇÃO RELATIVA entre dentes adjacentes deve ser PRESERVADA (se 12 é menor que 11 no original, continua menor)
+- NÃO uniformizar o tamanho/formato de todos os dentes — variação natural é IDENTIDADE do paciente
+- Cada dente no resultado deve ser CLARAMENTE o mesmo dente do original, apenas com melhorias sutis
+- Se o resultado parece "sorriso de catálogo" com dentes idênticos/simétricos perfeitos → FALHOU`
 
 // --- Variant builders ---
 

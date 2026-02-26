@@ -74,6 +74,8 @@ export interface DSDStepProps {
   clinicalObservations?: string[];
   /** Per-tooth clinical findings to prevent DSD from inventing restorations */
   clinicalTeethFindings?: ClinicalToothFinding[];
+  /** 0-100 score from photo analysis: how suitable the photo is for DSD image editing */
+  photoQualityScore?: number;
   /** Called whenever the DSD result changes (analysis complete, simulation ready, etc.) so the parent can persist it in drafts */
   onResultChange?: (result: DSDResult | null) => void;
   /** Called when user changes whitening level in E4 comparison */
@@ -90,6 +92,7 @@ export function useDSDStep({
   initialResult,
   clinicalObservations,
   clinicalTeethFindings,
+  photoQualityScore,
   onResultChange,
   onPreferencesChange,
 }: DSDStepProps) {
@@ -692,6 +695,14 @@ export function useDSDStep({
       return;
     }
 
+    // Photo quality gate: block DSD simulation if photo is unsuitable for image editing
+    // Score evaluates crown visibility (lip coverage), focus, lighting — not just "can I see teeth"
+    if (typeof photoQualityScore === 'number' && photoQualityScore < 55) {
+      setError(t('errors.photoQualityInsufficient'));
+      trackEvent('dsd_blocked_photo_quality', { score: photoQualityScore });
+      return;
+    }
+
     setIsAnalyzing(true);
     setError(null);
     setCurrentStep(0);
@@ -813,7 +824,7 @@ export function useDSDStep({
         setIsAnalyzing(false);
       }
     }
-  }, [imageBase64, canUseCredits, invokeFunction, refreshSubscription, getCreditCost, generateAllLayers, additionalPhotos, patientPreferences, clinicalObservations, clinicalTeethFindings]);
+  }, [imageBase64, canUseCredits, invokeFunction, refreshSubscription, getCreditCost, generateAllLayers, additionalPhotos, patientPreferences, clinicalObservations, clinicalTeethFindings, photoQualityScore]);
 
   // Auto-start analysis when component mounts with image AND user has confirmed
   useEffect(() => {

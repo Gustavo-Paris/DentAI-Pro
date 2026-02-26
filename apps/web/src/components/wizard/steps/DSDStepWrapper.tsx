@@ -47,6 +47,7 @@ export const DSDStepWrapper = memo(function DSDStepWrapper({
             indication_reason: t.indication_reason,
             treatment_indication: t.treatment_indication,
           }))}
+          photoQualityScore={analysisResult?.dsd_simulation_suitability}
           onResultChange={handleDSDResultChange}
           onPreferencesChange={setPatientPreferences}
         />

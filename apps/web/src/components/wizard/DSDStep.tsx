@@ -33,6 +33,8 @@ interface DSDStepProps {
   clinicalObservations?: string[];
   /** Per-tooth clinical findings to prevent DSD from inventing restorations */
   clinicalTeethFindings?: ClinicalToothFinding[];
+  /** 0-100 score from photo analysis: how suitable the photo is for DSD image editing */
+  photoQualityScore?: number;
   /** Called whenever the DSD result changes (analysis complete, simulation ready, etc.) so the parent can persist it in drafts */
   onResultChange?: (result: DSDResult | null) => void;
   /** Called when user changes whitening level in E4 comparison */
