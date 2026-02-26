@@ -1,7 +1,6 @@
 import { RefObject, memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Button, Badge } from '@parisgroup-ai/pageshell/primitives';
 import { Loader2, RefreshCw, Eye, EyeOff } from 'lucide-react';
 import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
 import { AnnotationOverlay } from '@/components/dsd/AnnotationOverlay';

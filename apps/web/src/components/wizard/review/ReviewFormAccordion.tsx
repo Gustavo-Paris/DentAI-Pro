@@ -1,13 +1,8 @@
 import { useTranslation } from 'react-i18next';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
+  Label, Textarea, Button,
+  Accordion, AccordionContent, AccordionItem, AccordionTrigger,
+} from '@parisgroup-ai/pageshell/primitives';
 import { Sparkles, Mic, MicOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PillToggle } from '@/components/ui/pill-toggle';

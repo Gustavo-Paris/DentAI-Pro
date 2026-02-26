@@ -1,8 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Alert, AlertDescription, AlertTitle } from '@parisgroup-ai/pageshell/primitives';
 import { Smile, Loader2, RefreshCw, Lightbulb, AlertCircle, Zap, ArrowRight, CheckCircle, XCircle } from 'lucide-react';
 import { memo, lazy, Suspense } from 'react';
 import type { RefObject } from 'react';

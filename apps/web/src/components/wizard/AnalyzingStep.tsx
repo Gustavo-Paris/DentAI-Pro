@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
+import { Button } from '@parisgroup-ai/pageshell/primitives';
 import { Sparkles, RefreshCw, ArrowRight, ArrowLeft, Lightbulb, AlertCircle, X } from 'lucide-react';
 import { ProgressRing } from '@/components/ProgressRing';
 import { CompactStepIndicator } from '@/components/CompactStepIndicator';

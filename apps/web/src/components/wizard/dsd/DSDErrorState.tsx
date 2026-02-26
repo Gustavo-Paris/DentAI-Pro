@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
+import { Button } from '@parisgroup-ai/pageshell/primitives';
 import { ChevronRight, Lightbulb, AlertCircle, Zap, RefreshCw } from 'lucide-react';
 
 interface DSDErrorStateProps {

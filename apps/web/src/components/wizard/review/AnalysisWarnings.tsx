@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@parisgroup-ai/pageshell/primitives';
 import { AlertTriangle } from 'lucide-react';
 import type { PhotoAnalysisResult } from '../ReviewAnalysisStep';
 

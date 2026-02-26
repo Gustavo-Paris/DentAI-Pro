@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button';
+import { Button } from '@parisgroup-ai/pageshell/primitives';
 import { Sparkles, ArrowRight, Sun, Zap, Star, Check, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';

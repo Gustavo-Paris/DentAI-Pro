@@ -1,9 +1,6 @@
 import { useState, useRef, useCallback, useEffect, memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Card, CardContent, Button, Badge, Alert, AlertDescription } from '@parisgroup-ai/pageshell/primitives';
 import { Camera, Upload, X, Loader2, User, Smile, Sparkles, Lightbulb, Zap, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { compressImage, getImageDimensions } from '@/lib/imageUtils';

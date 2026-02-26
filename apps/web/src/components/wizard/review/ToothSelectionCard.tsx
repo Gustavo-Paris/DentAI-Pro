@@ -1,17 +1,11 @@
 import { useState, memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+  Card, CardContent, CardHeader, CardTitle,
+  Badge, Button, Checkbox,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
+} from '@parisgroup-ai/pageshell/primitives';
 import { Check, CircleDot, Plus, Wrench, Wand2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { trackEvent } from '@/lib/analytics';

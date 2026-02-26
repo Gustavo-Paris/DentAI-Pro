@@ -1,6 +1,6 @@
 import { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@parisgroup-ai/pageshell/primitives';
 import { Sparkles, ShieldCheck, ShieldAlert, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { calculateAge } from '@/lib/date-utils';

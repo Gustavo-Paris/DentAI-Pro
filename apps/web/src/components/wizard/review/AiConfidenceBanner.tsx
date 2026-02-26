@@ -1,8 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Card, CardContent, Badge, Button, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@parisgroup-ai/pageshell/primitives';
 import { Sparkles, RefreshCw, Loader2, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { trackEvent } from '@/lib/analytics';

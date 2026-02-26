@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Smile } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@parisgroup-ai/pageshell/primitives';
 import { ProgressRing } from '@/components/ProgressRing';
 import { CompactStepIndicator } from '@/components/CompactStepIndicator';
 

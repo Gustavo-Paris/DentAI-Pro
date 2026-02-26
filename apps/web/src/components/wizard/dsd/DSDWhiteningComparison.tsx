@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
+import { Button } from '@parisgroup-ai/pageshell/primitives';
 import { Loader2, Palette } from 'lucide-react';
 import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
 import type { PatientPreferences } from '@/types/dsd';

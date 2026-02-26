@@ -1,8 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, Badge, Button } from '@parisgroup-ai/pageshell/primitives';
 import { Sparkles, Crown, Package } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { PhotoAnalysisResult } from '../ReviewAnalysisStep';
