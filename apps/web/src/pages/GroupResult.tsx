@@ -65,7 +65,7 @@ export default function GroupResult() {
         ]}
         footerActions={[
           {
-            label: t('wizard.recalculate'),
+            label: t('result.recalculate'),
             icon: RefreshCw,
             onClick: () => { navigate('/new-case'); },
             variant: 'outline',

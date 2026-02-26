@@ -299,6 +299,7 @@
   },
   "wizard": {
     "step": "Step {{current}} of {{total}}",
+    "stepAnnounce": "Step {{current}} of {{total}}: {{label}}",
     "photo": "Photo",
     "preferences": "Preferences",
     "analysis": "Analysis",
@@ -951,6 +952,7 @@
     "rateLimitExceeded": "Request limit exceeded. Wait a few minutes.",
     "connectionError": "Connection error. Check your internet and try again.",
     "dsdGenerationFailed": "Could not generate DSD analysis. You can skip this step.",
+    "photoQualityInsufficient": "The photo does not have sufficient tooth visibility to generate a quality simulation. Tips: use a lip retractor/spacer, good direct lighting, and ensure all teeth are fully visible without lip obstruction.",
     "loadFailed": "Error loading data. Please try again.",
     "somethingWentWrong": "Something went wrong",
     "unexpectedPageError": "An unexpected error occurred on this page.",
@@ -1003,7 +1005,8 @@
       "genericError": "Could not analyze the photo. Check if the image is clear and try again.",
       "insufficientCreditsError": "Insufficient credits. Upgrade your plan to continue.",
       "teethDetected_one": "{{count}} tooth detected. 1 credit used.",
-      "teethDetected_other": "{{count}} teeth detected. 1 credit used."
+      "teethDetected_other": "{{count}} teeth detected. 1 credit used.",
+      "photoQualityWarning": "The photo may not be ideal for DSD simulation. For better results, use a lip retractor, good lighting, and ensure teeth are fully visible."
     },
     "result": {
       "saveError": "Error saving progress",
@@ -1261,7 +1264,8 @@
         "continueOrNew": "Do you want to continue where you left off or start a new evaluation?",
         "recently": "recently",
         "startOver": "Start from scratch",
-        "continue": "Continue"
+        "continue": "Continue",
+        "explanation": "You can continue the previous case or start a new evaluation from scratch."
       },
       "stepIndicator": {
         "stepOf": "Step {{current}} of {{total}}",

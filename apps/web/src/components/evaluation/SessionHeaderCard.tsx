@@ -101,7 +101,7 @@ export function SessionHeaderCard({
                 </div>
                 <div className="flex items-center gap-1">
                   <User className="w-3 h-3 sm:w-4 sm:h-4" />
-                  {evaluationCount} {t('evaluation.teeth')}
+                  {t('evaluation.teeth', { count: evaluationCount })}
                 </div>
               </div>
 

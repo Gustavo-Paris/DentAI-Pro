@@ -69,7 +69,7 @@ export default function Result() {
         query={{ data: evaluation, isLoading: r.isLoading }}
         footerActions={[
           {
-            label: t('wizard.recalculate'),
+            label: t('result.recalculate'),
             icon: RefreshCw,
             onClick: () => { navigate('/new-case'); },
             variant: 'outline',

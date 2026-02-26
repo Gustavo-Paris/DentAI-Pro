@@ -299,6 +299,7 @@
   },
   "wizard": {
     "step": "Etapa {{current}} de {{total}}",
+    "stepAnnounce": "Etapa {{current}} de {{total}}: {{label}}",
     "photo": "Foto",
     "preferences": "Preferências",
     "analysis": "Análise",
@@ -951,6 +952,7 @@
     "rateLimitExceeded": "Limite de requisições excedido. Aguarde alguns minutos.",
     "connectionError": "Erro de conexão. Verifique sua internet e tente novamente.",
     "dsdGenerationFailed": "Não foi possível gerar a análise DSD. Você pode pular esta etapa.",
+    "photoQualityInsufficient": "A foto não tem visibilidade suficiente dos dentes para gerar uma simulação de qualidade. Dicas: use afastador/espaçador labial, boa iluminação direta e garanta que todos os dentes estejam totalmente visíveis sem obstrução dos lábios.",
     "loadFailed": "Erro ao carregar dados. Tente novamente.",
     "somethingWentWrong": "Algo deu errado",
     "unexpectedPageError": "Ocorreu um erro inesperado nesta página.",
@@ -1003,7 +1005,8 @@
       "genericError": "Não foi possível analisar a foto. Verifique se a imagem está nítida e tente novamente.",
       "insufficientCreditsError": "Créditos insuficientes. Faça upgrade do seu plano para continuar.",
       "teethDetected_one": "{{count}} dente detectado. 1 crédito utilizado.",
-      "teethDetected_other": "{{count}} dentes detectados. 1 crédito utilizado."
+      "teethDetected_other": "{{count}} dentes detectados. 1 crédito utilizado.",
+      "photoQualityWarning": "A foto pode não ser ideal para simulação DSD. Para melhores resultados, use afastador labial, boa iluminação e garanta que os dentes estejam totalmente visíveis."
     },
     "result": {
       "saveError": "Erro ao salvar progresso",
@@ -1261,7 +1264,8 @@
         "continueOrNew": "Deseja continuar de onde parou ou começar uma nova avaliação?",
         "recently": "recentemente",
         "startOver": "Começar do zero",
-        "continue": "Continuar"
+        "continue": "Continuar",
+        "explanation": "Você pode continuar o caso anterior ou começar uma nova avaliação do zero."
       },
       "stepIndicator": {
         "stepOf": "Etapa {{current}} de {{total}}",
