@@ -551,6 +551,14 @@
     "clinicName": "Clinic Name",
     "clinicNamePlaceholder": "Smile Dental Clinic",
     "phonePlaceholder": "(11) 99999-9999",
+    "validation": {
+      "nameMinChars": "Name must be at least 2 characters",
+      "nameTooLong": "Name is too long (max 100 characters)",
+      "croFormat": "CRO must contain only letters, numbers, - or /",
+      "croTooLong": "CRO is too long (max 10 characters)",
+      "clinicNameTooLong": "Clinic name is too long (max 100 characters)",
+      "phoneMinChars": "Phone must be at least 8 characters"
+    },
     "saveChanges": "Save Changes",
     "changeAvatar": "Change profile photo",
     "changeClinicLogo": "Change clinic logo",
@@ -1153,7 +1161,8 @@
         "hollywoodDesc": "Intense and bright whitening, maximum luminosity",
         "creditCostText": "The next steps will consume",
         "creditCostSuffix": "(analysis + DSD)",
-        "insufficientCredits": "You only have {{count}} credit{{plural}}. Insufficient credits for the full flow.",
+        "insufficientCredits_one": "You only have {{count}} credit. Insufficient credits for the full flow.",
+        "insufficientCredits_other": "You only have {{count}} credits. Insufficient credits for the full flow.",
         "continueSimulation": "Continue with simulation"
       },
       "review": {
@@ -1960,6 +1969,16 @@
     "low": {
       "label": "Low Confidence",
       "description": "Insufficient data, review before applying"
+    }
+  },
+  "credits": {
+    "format": {
+      "analysis_one": "{{count}} analysis",
+      "analysis_other": "{{count}} analyses",
+      "simulation_one": "{{count}} DSD simulation",
+      "simulation_other": "{{count}} DSD simulations",
+      "credit_one": "{{count}} credit",
+      "credit_other": "{{count}} credits"
     }
   },
   "consent": {

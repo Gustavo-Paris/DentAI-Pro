@@ -121,7 +121,7 @@ export default function PatientProfile() {
                 ].map((stat, i) => (
                   <Card
                     key={stat.label}
-                    className="p-3 sm:p-4 text-center shadow-sm rounded-xl animate-[fade-in-up_0.6s_ease-out_both]"
+                    className="p-3 sm:p-4 text-center rounded-xl animate-[fade-in-up_0.6s_ease-out_both] glass-card glow-card"
                     style={{ animationDelay: `${i * 0.05}s` }}
                   >
                     <p className={`text-2xl font-semibold${stat.highlight ? ' text-primary' : ''}`}>{stat.value}</p>
@@ -190,8 +190,11 @@ export default function PatientProfile() {
 
   return (
     <>
+      <div className="relative section-glow-bg overflow-hidden">
+        {/* Ambient AI grid overlay */}
+        <div className="ai-grid-pattern absolute inset-0 opacity-30 dark:opacity-50 [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,black_70%,transparent_100%)] pointer-events-none" aria-hidden="true" />
       <DetailPage
-        className="max-w-5xl mx-auto"
+        className="relative z-10 max-w-5xl mx-auto"
         title={(data) => data?.name ?? '...'}
         description={t('patients.profileTitle')}
         backHref="/patients"
@@ -220,6 +223,7 @@ export default function PatientProfile() {
         }}
         sections={sections}
       />
+      </div>{/* /section-glow-bg */}
 
       {/* Edit Dialog — rendered outside DetailPage */}
       <Dialog open={profile.editDialogOpen} onOpenChange={profile.setEditDialogOpen}>

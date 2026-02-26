@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import i18n from '@/lib/i18n';
 import { logger } from '@/lib/logger';
 import { subscriptions, creditUsage } from '@/data';
 import { QUERY_STALE_TIMES } from '@/lib/constants';
@@ -270,10 +271,11 @@ export function formatPrice(cents: number, currency = 'BRL'): string {
  */
 export function formatCredits(credits: number, operation?: string): string {
   if (operation === 'case_analysis') {
-    return `${credits} análise${credits !== 1 ? 's' : ''}`;
+    return i18n.t('credits.format.analysis', { count: credits });
   }
   if (operation === 'dsd_simulation') {
-    return `${Math.floor(credits / 2)} simulaç${Math.floor(credits / 2) !== 1 ? 'ões' : 'ão'} DSD`;
+    const simCount = Math.floor(credits / 2);
+    return i18n.t('credits.format.simulation', { count: simCount });
   }
-  return `${credits} crédito${credits !== 1 ? 's' : ''}`;
+  return i18n.t('credits.format.credit', { count: credits });
 }

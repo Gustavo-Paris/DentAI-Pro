@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { evaluations, patients, inventory } from '@/data';
 import { QUERY_STALE_TIMES } from '@/lib/constants';
@@ -22,6 +23,7 @@ export interface OnboardingProgress {
 
 export function useOnboardingProgress(): OnboardingProgress {
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   const { data, isLoading } = useQuery({
     queryKey: ['onboarding-progress', user?.id],
@@ -41,26 +43,26 @@ export function useOnboardingProgress(): OnboardingProgress {
   const steps = useMemo<OnboardingStep[]>(() => [
     {
       id: 'first-case',
-      label: 'Primeira avaliação',
-      description: 'Crie sua primeira avaliação com IA',
+      label: t('dashboard.onboarding.step2Title'),
+      description: t('dashboard.onboarding.step2Desc'),
       href: '/new-case',
       completed: (data?.caseCount ?? 0) > 0,
     },
     {
       id: 'inventory',
-      label: 'Cadastrar inventário',
-      description: 'Adicione resinas para recomendações personalizadas',
+      label: t('dashboard.onboarding.step1Title'),
+      description: t('dashboard.onboarding.step1Desc'),
       href: '/inventory',
       completed: (data?.inventoryCount ?? 0) > 0,
     },
     {
       id: 'patient',
-      label: 'Cadastrar paciente',
-      description: 'Organize seus pacientes e históricos',
+      label: t('dashboard.onboarding.step3Title'),
+      description: t('dashboard.onboarding.step3Desc'),
       href: '/patients',
       completed: (data?.patientCount ?? 0) > 0,
     },
-  ], [data]);
+  ], [data, t]);
 
   const completedCount = steps.filter(s => s.completed).length;
   const completionPercentage = Math.round((completedCount / steps.length) * 100);

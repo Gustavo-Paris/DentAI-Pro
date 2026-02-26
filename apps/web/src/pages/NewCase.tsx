@@ -22,25 +22,156 @@ import {
 import { PageShellWizard } from '@parisgroup-ai/pageshell/interactions';
 import { trackEvent } from '@/lib/analytics';
 import { useWizardFlow } from '@/hooks/domain/useWizardFlow';
-import { PhotoUploadStep } from '@/components/wizard/PhotoUploadStep';
-import { PatientPreferencesStep } from '@/components/wizard/PatientPreferencesStep';
-import { AnalyzingStep } from '@/components/wizard/AnalyzingStep';
-import { DSDStep } from '@/components/wizard/DSDStep';
-import { ReviewAnalysisStep } from '@/components/wizard/ReviewAnalysisStep';
 import { DraftRestoreModal } from '@/components/wizard/DraftRestoreModal';
 import { CreditConfirmDialog } from '@/components/CreditConfirmDialog';
 import { useAiDisclaimer, AiDisclaimerModal } from '@/components/AiDisclaimerModal';
 import { LoadingOverlay } from '@/components/LoadingOverlay';
 import { StepIndicator } from '@/components/wizard/StepIndicator';
+import {
+  FotoStepWrapper,
+  PrefsStepWrapper,
+  AnalysisStepWrapper,
+  DSDStepWrapper,
+  ReviewStepWrapper,
+  ResultStepWrapper,
+} from '@/components/wizard/steps';
 
 // Step definitions for full flow: [1:foto, 2:prefs, 3:analysis, 4:dsd, 5:review, 6:result]
 // Step definitions for quick case: [1:foto, 3:analysis, 5:review, 6:result]
 
 // Maps internal wizard.step (1-6) to display index for quick case
 const QUICK_STEP_MAP: Record<number, number> = { 1: 0, 3: 1, 5: 2, 6: 3 };
-// Resolved at render time via t() — see allSteps useMemo
+// Resolved at render time via t() — see stepsMeta useMemo
 const QUICK_LABEL_KEYS = ['wizard.stepPhoto', 'wizard.stepAnalysis', 'wizard.stepReview', 'wizard.stepResult'] as const;
 const QUICK_ICONS = [Camera, Brain, ClipboardCheck, FileText];
+
+// Full flow step metadata (id, key, label key, icon) — no children, no deps beyond t()
+const FULL_STEP_META = [
+  { id: 1, key: 'foto',         labelKey: 'wizard.stepPhoto',       icon: Camera },
+  { id: 2, key: 'preferencias', labelKey: 'wizard.stepPreferences', icon: Heart },
+  { id: 3, key: 'analise',      labelKey: 'wizard.stepAnalysis',    icon: Brain },
+  { id: 4, key: 'dsd',          labelKey: 'wizard.stepDSD',         icon: Smile },
+  { id: 5, key: 'revisao',      labelKey: 'wizard.stepReview',      icon: ClipboardCheck },
+  { id: 6, key: 'resultado',    labelKey: 'wizard.stepResult',      icon: FileText },
+] as const;
+
+const QUICK_STEP_META = [
+  { id: 1, key: 'foto',      labelKey: 'wizard.stepPhoto',    icon: Camera },
+  { id: 2, key: 'analise',   labelKey: 'wizard.stepAnalysis', icon: Brain },
+  { id: 3, key: 'revisao',   labelKey: 'wizard.stepReview',   icon: ClipboardCheck },
+  { id: 4, key: 'resultado', labelKey: 'wizard.stepResult',   icon: FileText },
+] as const;
+
+// =============================================================================
+// Active step content — renders only the current step via memoized wrappers
+// =============================================================================
+
+function ActiveStepContent({ wizard }: { wizard: ReturnType<typeof useWizardFlow> }) {
+  const {
+    step, stepDirection, imageBase64, setImageBase64, goToPreferences, goToQuickCase,
+    additionalPhotos, setAdditionalPhotos, patientPreferences, setPatientPreferences,
+    handlePreferencesContinue, isAnalyzing, analysisError, handleRetryAnalysis,
+    handleSkipToReview, handleBack, cancelAnalysis, handleDSDComplete, handleDSDSkip,
+    analysisResult, dsdResult, handleDSDResultChange, formData, updateFormData,
+    handleReanalyze, isReanalyzing, selectedTeeth, setSelectedTeeth, toothTreatments,
+    handleToothTreatmentChange, originalToothTreatments, handleRestoreAiSuggestion,
+    hasInventory, patients, selectedPatientId, patientBirthDate,
+    handlePatientBirthDateChange, dobValidationError, setDobValidationError,
+    handlePatientSelect, submissionComplete, completedSessionId, isSubmitting,
+  } = wizard;
+
+  switch (step) {
+    case 1:
+      return (
+        <FotoStepWrapper
+          stepDirection={stepDirection}
+          imageBase64={imageBase64}
+          setImageBase64={setImageBase64}
+          goToPreferences={goToPreferences}
+          goToQuickCase={goToQuickCase}
+          additionalPhotos={additionalPhotos}
+          setAdditionalPhotos={setAdditionalPhotos}
+        />
+      );
+    case 2:
+      return (
+        <PrefsStepWrapper
+          stepDirection={stepDirection}
+          patientPreferences={patientPreferences}
+          setPatientPreferences={setPatientPreferences}
+          handlePreferencesContinue={handlePreferencesContinue}
+        />
+      );
+    case 3:
+      return (
+        <AnalysisStepWrapper
+          stepDirection={stepDirection}
+          imageBase64={imageBase64}
+          isAnalyzing={isAnalyzing}
+          analysisError={analysisError}
+          handleRetryAnalysis={handleRetryAnalysis}
+          handleSkipToReview={handleSkipToReview}
+          handleBack={handleBack}
+          cancelAnalysis={cancelAnalysis}
+        />
+      );
+    case 4:
+      return (
+        <DSDStepWrapper
+          stepDirection={stepDirection}
+          imageBase64={imageBase64}
+          handleDSDComplete={handleDSDComplete}
+          handleDSDSkip={handleDSDSkip}
+          additionalPhotos={additionalPhotos}
+          patientPreferences={patientPreferences}
+          analysisResult={analysisResult}
+          dsdResult={dsdResult}
+          handleDSDResultChange={handleDSDResultChange}
+          setPatientPreferences={setPatientPreferences}
+        />
+      );
+    case 5:
+      return (
+        <ReviewStepWrapper
+          stepDirection={stepDirection}
+          analysisResult={analysisResult}
+          formData={formData}
+          updateFormData={updateFormData}
+          imageBase64={imageBase64}
+          handleReanalyze={handleReanalyze}
+          isReanalyzing={isReanalyzing}
+          selectedTeeth={selectedTeeth}
+          setSelectedTeeth={setSelectedTeeth}
+          toothTreatments={toothTreatments}
+          handleToothTreatmentChange={handleToothTreatmentChange}
+          originalToothTreatments={originalToothTreatments}
+          handleRestoreAiSuggestion={handleRestoreAiSuggestion}
+          hasInventory={hasInventory}
+          patients={patients}
+          dsdResult={dsdResult}
+          selectedPatientId={selectedPatientId}
+          patientBirthDate={patientBirthDate}
+          handlePatientBirthDateChange={handlePatientBirthDateChange}
+          dobValidationError={dobValidationError}
+          setDobValidationError={setDobValidationError}
+          patientPreferences={patientPreferences}
+          handlePatientSelect={handlePatientSelect}
+        />
+      );
+    case 6:
+      return (
+        <ResultStepWrapper
+          stepDirection={stepDirection}
+          submissionComplete={submissionComplete}
+          completedSessionId={completedSessionId}
+          isSubmitting={isSubmitting}
+          handleBack={handleBack}
+        />
+      );
+    default:
+      return null;
+  }
+}
 
 // =============================================================================
 // Page Adapter
@@ -116,232 +247,19 @@ export default function NewCase() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [displayStep, totalSteps, internalStep, isQuick, goToStep]);
 
-  // Build steps array conditionally
+  // Build steps metadata array — only id, key, label, icon (no children).
+  // Deps: only t() and isQuickCase. Step content is rendered via ActiveStepContent.
   const quickLabels = useMemo(() => QUICK_LABEL_KEYS.map(k => t(k)), [t]);
 
-  const {
-    stepDirection, imageBase64, setImageBase64, goToPreferences, goToQuickCase,
-    additionalPhotos, setAdditionalPhotos, patientPreferences, setPatientPreferences,
-    handlePreferencesContinue, isAnalyzing, analysisError, handleRetryAnalysis,
-    handleSkipToReview, handleBack, cancelAnalysis, handleDSDComplete, handleDSDSkip,
-    analysisResult, dsdResult, handleDSDResultChange, formData, updateFormData,
-    handleReanalyze, isReanalyzing, selectedTeeth, setSelectedTeeth, toothTreatments,
-    handleToothTreatmentChange, originalToothTreatments, handleRestoreAiSuggestion,
-    hasInventory, patients, selectedPatientId, patientBirthDate,
-    handlePatientBirthDateChange, dobValidationError, setDobValidationError,
-    handlePatientSelect, submissionComplete, completedSessionId, isSubmitting, isQuickCase,
-  } = wizard;
-
-  const allSteps = useMemo(() => {
-    const fotoStep = {
-      id: 1,
-      key: 'foto',
-      label: t('wizard.stepPhoto'),
-      icon: Camera,
-      children: (
-        <div key="step-foto" className={`wizard-step-${stepDirection}`}>
-          <div className="wizard-stage">
-          <PhotoUploadStep
-            imageBase64={imageBase64}
-            onImageChange={setImageBase64}
-            onAnalyze={goToPreferences}
-            onQuickCase={goToQuickCase}
-            isUploading={false}
-            additionalPhotos={additionalPhotos}
-            onAdditionalPhotosChange={setAdditionalPhotos}
-          />
-          </div>
-        </div>
-      ),
-    };
-
-    const prefsStep = {
-      id: 2,
-      key: 'preferencias',
-      label: t('wizard.stepPreferences'),
-      icon: Heart,
-      children: (
-        <div key="step-prefs" className={`wizard-step-${stepDirection}`}>
-          <div className="wizard-stage">
-          <PatientPreferencesStep
-            preferences={patientPreferences}
-            onPreferencesChange={setPatientPreferences}
-            onContinue={handlePreferencesContinue}
-          />
-          </div>
-        </div>
-      ),
-    };
-
-    const analysisStep = {
-      id: 3,
-      key: 'analise',
-      label: t('wizard.stepAnalysis'),
-      icon: Brain,
-      children: (
-        <div key="step-analysis" className={`wizard-step-${stepDirection}`}>
-          <div className={`wizard-stage${isAnalyzing ? ' ai-shimmer-border' : ''}`}>
-          <AnalyzingStep
-            imageBase64={imageBase64}
-            isAnalyzing={isAnalyzing}
-            analysisError={analysisError}
-            onRetry={handleRetryAnalysis}
-            onSkipToReview={handleSkipToReview}
-            onBack={handleBack}
-            onCancel={cancelAnalysis}
-          />
-          </div>
-        </div>
-      ),
-    };
-
-    const dsdStep = {
-      id: 4,
-      key: 'dsd',
-      label: t('wizard.stepDSD'),
-      icon: Smile,
-      children: (
-        <div key="step-dsd" className={`wizard-step-${stepDirection}`}>
-          <div className="wizard-stage">
-          <DSDStep
-            imageBase64={imageBase64}
-            onComplete={handleDSDComplete}
-            onSkip={handleDSDSkip}
-            additionalPhotos={additionalPhotos}
-            patientPreferences={patientPreferences}
-            detectedTeeth={analysisResult?.detected_teeth}
-            initialResult={dsdResult}
-            clinicalObservations={analysisResult?.observations}
-            clinicalTeethFindings={analysisResult?.detected_teeth?.map((t) => ({
-              tooth: t.tooth,
-              indication_reason: t.indication_reason,
-              treatment_indication: t.treatment_indication,
-            }))}
-            onResultChange={handleDSDResultChange}
-            onPreferencesChange={setPatientPreferences}
-          />
-          </div>
-        </div>
-      ),
-    };
-
-    const reviewStep = {
-      id: 5,
-      key: 'revisao',
-      label: t('wizard.stepReview'),
-      icon: ClipboardCheck,
-      children: (
-        <div key="step-review" className={`wizard-step-${stepDirection}`}>
-          <div className="wizard-stage">
-          <ReviewAnalysisStep
-            analysisResult={analysisResult}
-            formData={formData}
-            onFormChange={updateFormData}
-            imageBase64={imageBase64}
-            onReanalyze={handleReanalyze}
-            isReanalyzing={isReanalyzing}
-            selectedTeeth={selectedTeeth}
-            onSelectedTeethChange={setSelectedTeeth}
-            toothTreatments={toothTreatments}
-            onToothTreatmentChange={handleToothTreatmentChange}
-            originalToothTreatments={originalToothTreatments}
-            onRestoreAiSuggestion={handleRestoreAiSuggestion}
-            hasInventory={hasInventory}
-            patients={patients}
-            dsdObservations={dsdResult?.analysis?.observations}
-            dsdSuggestions={dsdResult?.analysis?.suggestions}
-            selectedPatientId={selectedPatientId}
-            patientBirthDate={patientBirthDate}
-            onPatientBirthDateChange={handlePatientBirthDateChange}
-            dobError={dobValidationError}
-            onDobErrorChange={setDobValidationError}
-            whiteningLevel={patientPreferences.whiteningLevel}
-            onPatientSelect={handlePatientSelect}
-          />
-          </div>
-        </div>
-      ),
-    };
-
-    const resultStep = {
-      id: 6,
-      key: 'resultado',
-      label: t('wizard.stepResult'),
-      icon: FileText,
-      children: (
-        <div key="step-result" className={`wizard-step-${stepDirection}`}>
-          <div className="wizard-stage">
-          {submissionComplete ? (
-            <div className="ai-shimmer-border rounded-xl p-8 relative overflow-hidden">
-              {/* Celebration glow orbs */}
-              <div className="glow-orb-slow absolute -top-10 -left-10 w-32 h-32 bg-primary/10 dark:bg-primary/20 rounded-full pointer-events-none" aria-hidden="true" />
-              <div className="glow-orb-reverse absolute -bottom-10 -right-10 w-28 h-28 bg-accent/8 dark:bg-accent/15 rounded-full pointer-events-none" aria-hidden="true" />
-
-              <div className="flex flex-col items-center justify-center py-8 sm:py-16 space-y-4 relative z-10">
-                <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center animate-scale-in success-pulse glow-icon dark:shadow-[0_0_30px_rgb(var(--color-primary-rgb)/0.4)]">
-                  <Check className="w-8 h-8 text-primary-foreground" />
-                </div>
-                <p className="text-lg font-semibold text-foreground animate-fade-in-up neon-text">
-                  {t('wizard.caseCreated')}
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3 animate-fade-in-up">
-                  <Button
-                    onClick={() => navigate(`/evaluation/${completedSessionId}`)}
-                    className="btn-press"
-                  >
-                    <Eye className="w-4 h-4 mr-2" />
-                    {t('result.viewCase')}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={handleBack}
-                    className="print:hidden btn-press"
-                  >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    {t('result.recalculate')}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ) : isSubmitting ? (
-            <div className="flex flex-col items-center justify-center py-12 sm:py-16 space-y-4 sm:space-y-6" role="status" aria-live="polite">
-              <div className="text-center flex items-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">{t('common.processing')}</p>
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-16 space-y-4">
-              <p className="text-muted-foreground">{t('wizard.preparingCase')}</p>
-              <Button variant="outline" onClick={handleBack} className="btn-press">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                {t('common.back')}
-              </Button>
-            </div>
-          )}
-          </div>
-        </div>
-      ),
-    };
-
-    if (isQuickCase) {
-      // Re-number IDs sequentially (1-4) for quick case
-      return [fotoStep, analysisStep, reviewStep, resultStep].map((step, i) => ({ ...step, id: i + 1 }));
-    }
-    return [fotoStep, prefsStep, analysisStep, dsdStep, reviewStep, resultStep];
-  }, [
-    stepDirection, imageBase64, setImageBase64, goToPreferences, goToQuickCase,
-    additionalPhotos, setAdditionalPhotos, patientPreferences, setPatientPreferences,
-    handlePreferencesContinue, isAnalyzing, analysisError, handleRetryAnalysis,
-    handleSkipToReview, handleBack, cancelAnalysis, handleDSDComplete, handleDSDSkip,
-    analysisResult, dsdResult, handleDSDResultChange, formData, updateFormData,
-    handleReanalyze, isReanalyzing, selectedTeeth, setSelectedTeeth, toothTreatments,
-    handleToothTreatmentChange, originalToothTreatments, handleRestoreAiSuggestion,
-    hasInventory, patients, selectedPatientId, patientBirthDate,
-    handlePatientBirthDateChange, dobValidationError, setDobValidationError,
-    handlePatientSelect, submissionComplete, completedSessionId, isSubmitting, isQuickCase,
-    navigate, t,
-  ]);
+  const stepsMeta = useMemo(() => {
+    const source = wizard.isQuickCase ? QUICK_STEP_META : FULL_STEP_META;
+    return source.map(s => ({
+      id: s.id,
+      key: s.key,
+      label: t(s.labelKey),
+      icon: s.icon,
+    }));
+  }, [t, wizard.isQuickCase]);
 
   // Map display index back to internal step for step indicator clicks
   const handleStepClick = (displayIndex: number) => {
@@ -372,7 +290,7 @@ export default function NewCase() {
         {t('wizard.stepAnnounce', {
           current: displayStep + 1,
           total: totalSteps,
-          label: allSteps[displayStep]?.label ?? '',
+          label: stepsMeta[displayStep]?.label ?? '',
           })}
       </div>
       <div className="relative section-glow-bg overflow-hidden">
@@ -393,7 +311,7 @@ export default function NewCase() {
             scrollToTop={true}
             containerVariant="narrow"
             hideNavigation={true}
-            steps={allSteps}
+            steps={stepsMeta}
             slots={{
               progress: (
                 <StepIndicator
@@ -472,7 +390,10 @@ export default function NewCase() {
                 </div>
               ) : <></>,
             }}
-          />
+          >
+            {/* Active step content — only the current step renders */}
+            <ActiveStepContent wizard={wizard} />
+          </PageShellWizard>
         </div>{/* /relative z-10 */}
       </div>{/* /section-glow-bg */}
 

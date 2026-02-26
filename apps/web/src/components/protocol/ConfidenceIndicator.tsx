@@ -31,7 +31,7 @@ function ConfidenceIndicator({ confidence }: ConfidenceIndicatorProps) {
             ))}
           </div>
           <span className="sr-only">
-            {current.bars === 3 ? 'Alta' : current.bars === 2 ? 'Média' : 'Baixa'} ({current.bars}/3)
+            {t(current.labelKey)} ({current.bars}/3)
           </span>
         </div>
         <p className="text-sm text-muted-foreground mt-1">{t(current.descriptionKey)}</p>

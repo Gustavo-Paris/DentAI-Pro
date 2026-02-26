@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import i18n from '@/lib/i18n';
 import { Camera, Sparkles, History, Zap } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -21,7 +22,7 @@ function formatRelativeDate(dateStr: string, t: (key: string, opts?: Record<stri
   if (diffMin < 60) return t('components.creditUsage.minutesAgo', { count: diffMin });
   if (diffHours < 24) return t('components.creditUsage.hoursAgo', { count: diffHours });
   if (diffDays < 7) return t('components.creditUsage.daysAgo', { count: diffDays });
-  return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+  return date.toLocaleDateString(i18n.language || 'pt-BR', { day: '2-digit', month: 'short' });
 }
 
 export function CreditUsageHistory() {

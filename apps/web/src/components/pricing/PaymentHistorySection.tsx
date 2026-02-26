@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import i18n from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -58,7 +59,7 @@ export function PaymentHistorySection({
     const header = 'Data,Valor,Moeda,Status,Descricao\n';
     const rows = paymentRecords
       .map((p) => {
-        const date = new Date(p.created_at).toLocaleDateString('pt-BR');
+        const date = new Date(p.created_at).toLocaleDateString(i18n.language || 'pt-BR');
         const amount = (p.amount / 100).toFixed(2);
         const desc = (p.description || '').replace(/,/g, ';');
         return `${date},${amount},${p.currency.toUpperCase()},${p.status},${desc}`;
@@ -145,7 +146,7 @@ export function PaymentHistorySection({
                   </p>
                 )}
                 <p className="text-xs text-muted-foreground">
-                  {new Date(payment.created_at).toLocaleDateString('pt-BR', {
+                  {new Date(payment.created_at).toLocaleDateString(i18n.language || 'pt-BR', {
                     day: '2-digit',
                     month: 'long',
                     year: 'numeric',

@@ -36,20 +36,24 @@ export function calculateAge(birthDate: string): number {
 }
 
 /**
- * Format a date string to Brazilian format (DD/MM/YYYY)
+ * Format a date string to localized short date (e.g. DD/MM/YYYY for pt-BR, MM/DD/YYYY for en-US)
  * Handles YYYY-MM-DD strings without timezone conversion issues
  */
 export function formatDateBR(dateString: string): string {
+  const locale = i18n.language || 'pt-BR';
+
   // For YYYY-MM-DD format, parse directly to avoid UTC conversion
   const isoDateMatch = dateString.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (isoDateMatch) {
     const [, year, month, day] = isoDateMatch;
-    return `${day}/${month}/${year}`;
+    // Build a local date to feed into toLocaleDateString
+    const localDate = new Date(Number(year), Number(month) - 1, Number(day));
+    return localDate.toLocaleDateString(locale);
   }
 
   // For other formats (with time), use standard parsing
   const date = new Date(dateString);
-  return date.toLocaleDateString('pt-BR');
+  return date.toLocaleDateString(locale);
 }
 
 /**

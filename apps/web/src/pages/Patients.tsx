@@ -231,8 +231,11 @@ export default function Patients() {
 
   return (
     <>
+      <div className="relative section-glow-bg overflow-hidden">
+        {/* Ambient AI grid overlay */}
+        <div className="ai-grid-pattern absolute inset-0 opacity-30 dark:opacity-50 [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,black_70%,transparent_100%)] pointer-events-none" aria-hidden="true" />
       <ListPage<PatientWithStats>
-        className="max-w-5xl mx-auto"
+        className="relative z-10 max-w-5xl mx-auto"
         title={t('patients.title')}
         description={t('patients.count', { count: total })}
         viewMode="cards"
@@ -248,6 +251,7 @@ export default function Patients() {
         emptyState={emptyState}
         labels={labels}
       />
+      </div>{/* /section-glow-bg */}
 
       {/* Create Patient Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={(open) => { if (!open) handleCloseDialog(); }}>

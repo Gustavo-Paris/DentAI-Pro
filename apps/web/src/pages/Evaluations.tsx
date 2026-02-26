@@ -314,7 +314,9 @@ export default function Evaluations() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+    <div className="relative section-glow-bg overflow-hidden max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      {/* Ambient AI grid overlay */}
+      <div className="ai-grid-pattern absolute inset-0 opacity-30 dark:opacity-50 [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,black_70%,transparent_100%)] pointer-events-none" aria-hidden="true" />
       {/* Success Banner — only when freshly navigated (not from sessionStorage) */}
       {newSessionId && (
         <div role="status" aria-live="polite" className="mb-4 sm:mb-6 p-3 sm:p-4 bg-primary/10 border border-primary/20 rounded-xl shadow-sm flex items-center gap-3 animate-[fade-in-up_0.6s_ease-out_both] glow-badge">

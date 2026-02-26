@@ -78,127 +78,117 @@ export const ToothSelectionCard = memo(function ToothSelectionCard({
     const isSelected = selectedTeeth.includes(tooth.tooth);
     const treatment = toothTreatments[tooth.tooth] || tooth.treatment_indication || 'resina';
     const borderColor = TREATMENT_BORDER_COLORS[treatment] || 'border-l-primary';
+    const checkboxId = `${prefix}-tooth-${tooth.tooth}-${index}`;
 
     return (
       <div
         key={`${prefix}-${tooth.tooth}-${index}`}
-        role="checkbox"
-        aria-checked={isSelected}
-        aria-label={t('components.wizard.review.toggleTooth', { number: tooth.tooth })}
-        tabIndex={0}
         className={cn(
-          'flex items-start gap-3 p-3 border rounded-lg cursor-pointer transition-all duration-200 border-l-4 text-left w-full',
+          'border rounded-lg transition-all duration-200 border-l-4 w-full',
           borderColor,
           isSelected ? 'card-elevated border-primary/50 bg-primary/5' : 'border-border hover:border-primary/30',
         )}
-        onClick={(e) => {
-          // Only toggle if the click wasn't on an interactive child (Select, Button, etc.)
-          const target = e.target as HTMLElement;
-          if (target.closest('button, [role="combobox"], [role="listbox"], [data-radix-collection-item]')) return;
-          handleToggleTooth(tooth.tooth, !isSelected);
-        }}
-        onKeyDown={(e) => {
-          if (e.key === ' ' || e.key === 'Enter') {
-            e.preventDefault();
-            handleToggleTooth(tooth.tooth, !isSelected);
-          }
-        }}
       >
-        <Checkbox
-          checked={isSelected}
-          onCheckedChange={(checked) => handleToggleTooth(tooth.tooth, !!checked)}
-          className="mt-1"
-        />
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between mb-1">
-            <span className="font-semibold text-sm">{t('components.wizard.review.tooth', { number: tooth.tooth })}</span>
-            <Badge
-              variant={tooth.priority === 'alta' ? 'destructive' : tooth.priority === 'média' ? 'secondary' : 'outline'}
-              className="text-[10px] gap-1"
-            >
-              <span className={cn(
-                'w-1.5 h-1.5 rounded-full',
-                tooth.priority === 'alta' && 'bg-destructive',
-                tooth.priority === 'média' && 'bg-warning',
-                tooth.priority === 'baixa' && 'bg-muted-foreground',
-              )} />
-              {t(`common.priority${tooth.priority.charAt(0).toUpperCase() + tooth.priority.slice(1)}`)}
-            </Badge>
-          </div>
-
-          {/* Treatment badge */}
-          <Badge variant="outline" className="text-[10px] mb-1.5">
-            {t(TREATMENT_LABEL_KEYS[treatment])}
-          </Badge>
-
-          {/* Per-tooth treatment selector */}
-          {isSelected && onToothTreatmentChange && (
-            <div className="flex items-center gap-1 mt-2">
-              <Select
-                value={toothTreatments[tooth.tooth] || tooth.treatment_indication || 'resina'}
-                onValueChange={(value) => {
-                  const fromType = toothTreatments[tooth.tooth] || tooth.treatment_indication || 'resina';
-                  trackEvent('treatment_changed', { tooth: tooth.tooth, from_type: fromType, to_type: value });
-                  onToothTreatmentChange(tooth.tooth, value as TreatmentType);
-                }}
+        {/* Label wraps the static content so clicking anywhere toggles the checkbox */}
+        <label
+          htmlFor={checkboxId}
+          className="flex items-start gap-3 p-3 cursor-pointer text-left w-full"
+        >
+          <Checkbox
+            id={checkboxId}
+            checked={isSelected}
+            onCheckedChange={(checked) => handleToggleTooth(tooth.tooth, !!checked)}
+            aria-label={t('components.wizard.review.toggleTooth', { number: tooth.tooth })}
+            className="mt-1"
+          />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between mb-1">
+              <span className="font-semibold text-sm">{t('components.wizard.review.tooth', { number: tooth.tooth })}</span>
+              <Badge
+                variant={tooth.priority === 'alta' ? 'destructive' : tooth.priority === 'média' ? 'secondary' : 'outline'}
+                className="text-[10px] gap-1"
               >
-                <SelectTrigger className="h-8 text-xs border-primary/20">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="resina">{t('treatments.resina.label')}</SelectItem>
-                  <SelectItem value="porcelana">{t('treatments.porcelana.label')}</SelectItem>
-                  <SelectItem value="coroa">{t('treatments.coroa.label')}</SelectItem>
-                  <SelectItem value="implante">{t('treatments.implante.label')}</SelectItem>
-                  <SelectItem value="endodontia">{t('treatments.endodontia.label')}</SelectItem>
-                  <SelectItem value="encaminhamento">{t('treatments.encaminhamento.label')}</SelectItem>
-                  <SelectItem value="gengivoplastia">{t('treatments.gengivoplastia.label')}</SelectItem>
-                  <SelectItem value="recobrimento_radicular">{t('treatments.recobrimento_radicular.label')}</SelectItem>
-                </SelectContent>
-              </Select>
-              {onRestoreAiSuggestion && originalToothTreatments[tooth.tooth] &&
-               toothTreatments[tooth.tooth] !== originalToothTreatments[tooth.tooth] && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 shrink-0"
-                        aria-label={t('components.wizard.review.restoreAI', { treatment: t(TREATMENT_LABEL_KEYS[originalToothTreatments[tooth.tooth]]) })}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onRestoreAiSuggestion(tooth.tooth);
-                        }}
-                      >
-                        <Wand2 className="w-4 h-4 text-primary" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{t('components.wizard.review.restoreAI', { treatment: t(TREATMENT_LABEL_KEYS[originalToothTreatments[tooth.tooth]]) })}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
+                <span className={cn(
+                  'w-1.5 h-1.5 rounded-full',
+                  tooth.priority === 'alta' && 'bg-destructive',
+                  tooth.priority === 'média' && 'bg-warning',
+                  tooth.priority === 'baixa' && 'bg-muted-foreground',
+                )} />
+                {t(`common.priority${tooth.priority.charAt(0).toUpperCase() + tooth.priority.slice(1)}`)}
+              </Badge>
             </div>
-          )}
 
-          {/* AI notes in tooltip (compact) */}
-          {tooth.indication_reason && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <p className="text-[10px] text-muted-foreground mt-1 italic truncate cursor-help">
-                    {t('components.wizard.review.aiNote', { note: tooth.indication_reason })}
-                  </p>
-                </TooltipTrigger>
-                <TooltipContent className="max-w-xs">
-                  <p className="text-sm">{tooth.indication_reason}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
-        </div>
+            {/* Treatment badge */}
+            <Badge variant="outline" className="text-[10px] mb-1.5">
+              {t(TREATMENT_LABEL_KEYS[treatment])}
+            </Badge>
+
+            {/* AI notes in tooltip (compact) */}
+            {tooth.indication_reason && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <p className="text-[10px] text-muted-foreground mt-1 italic truncate cursor-help">
+                      {t('components.wizard.review.aiNote', { note: tooth.indication_reason })}
+                    </p>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p className="text-sm">{tooth.indication_reason}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
+        </label>
+
+        {/* Per-tooth treatment selector — outside label to avoid toggle on interact */}
+        {isSelected && onToothTreatmentChange && (
+          <div className="flex items-center gap-1 px-3 pb-3 pl-[2.75rem]">
+            <Select
+              value={toothTreatments[tooth.tooth] || tooth.treatment_indication || 'resina'}
+              onValueChange={(value) => {
+                const fromType = toothTreatments[tooth.tooth] || tooth.treatment_indication || 'resina';
+                trackEvent('treatment_changed', { tooth: tooth.tooth, from_type: fromType, to_type: value });
+                onToothTreatmentChange(tooth.tooth, value as TreatmentType);
+              }}
+            >
+              <SelectTrigger className="h-8 text-xs border-primary/20">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="resina">{t('treatments.resina.label')}</SelectItem>
+                <SelectItem value="porcelana">{t('treatments.porcelana.label')}</SelectItem>
+                <SelectItem value="coroa">{t('treatments.coroa.label')}</SelectItem>
+                <SelectItem value="implante">{t('treatments.implante.label')}</SelectItem>
+                <SelectItem value="endodontia">{t('treatments.endodontia.label')}</SelectItem>
+                <SelectItem value="encaminhamento">{t('treatments.encaminhamento.label')}</SelectItem>
+                <SelectItem value="gengivoplastia">{t('treatments.gengivoplastia.label')}</SelectItem>
+                <SelectItem value="recobrimento_radicular">{t('treatments.recobrimento_radicular.label')}</SelectItem>
+              </SelectContent>
+            </Select>
+            {onRestoreAiSuggestion && originalToothTreatments[tooth.tooth] &&
+             toothTreatments[tooth.tooth] !== originalToothTreatments[tooth.tooth] && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 shrink-0"
+                      aria-label={t('components.wizard.review.restoreAI', { treatment: t(TREATMENT_LABEL_KEYS[originalToothTreatments[tooth.tooth]]) })}
+                      onClick={() => onRestoreAiSuggestion(tooth.tooth)}
+                    >
+                      <Wand2 className="w-4 h-4 text-primary" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{t('components.wizard.review.restoreAI', { treatment: t(TREATMENT_LABEL_KEYS[originalToothTreatments[tooth.tooth]]) })}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
+        )}
       </div>
     );
   };

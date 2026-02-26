@@ -1,11 +1,12 @@
 import { useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import {
   Button,
   Input,
-  Label,
   Card,
   CardContent,
   CardHeader,
@@ -15,6 +16,14 @@ import {
   AvatarFallback,
   AvatarImage,
 } from '@parisgroup-ai/pageshell/primitives';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@parisgroup-ai/pageshell/interactions';
 import { Camera, Loader2, Save, Building2, ImageIcon, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { getInitials } from '@/lib/utils';
@@ -25,6 +34,7 @@ import { PaymentHistorySection } from '@/components/pricing/PaymentHistorySectio
 import { useSubscription } from '@/hooks/useSubscription';
 import { DetailPage } from '@parisgroup-ai/pageshell/composites';
 import { logger } from '@/lib/logger';
+import { getProfileSchema, type ProfileFormData } from '@/lib/schemas/profile';
 
 import { useProfile } from '@/hooks/domain/useProfile';
 import { ReferralCard } from '@/components/referral/ReferralCard';
@@ -42,6 +52,40 @@ export default function Profile() {
   const [searchParams] = useSearchParams();
   const p = useProfile();
   const { refreshSubscription, isFree, isActive } = useSubscription();
+
+  // Profile form with Zod validation
+  const form = useForm<ProfileFormData>({
+    resolver: zodResolver(getProfileSchema()),
+    defaultValues: {
+      full_name: '',
+      cro: '',
+      clinic_name: '',
+      phone: '',
+    },
+    mode: 'onBlur',
+  });
+
+  // Sync profile data from server into react-hook-form when loaded
+  useEffect(() => {
+    if (p.isLoading) return;
+    form.reset({
+      full_name: p.profile.full_name || '',
+      cro: p.profile.cro || '',
+      clinic_name: p.profile.clinic_name || '',
+      phone: p.profile.phone || '',
+    });
+  }, [p.isLoading, p.profile.full_name, p.profile.cro, p.profile.clinic_name, p.profile.phone]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Bridge form changes back to useProfile's state so isDirty/handleSave work
+  const handleFieldChange = (field: keyof ProfileFormData, value: string) => {
+    p.updateField(field, value);
+  };
+
+  // Validate with Zod, then delegate to useProfile's save
+  const onSubmit = async () => {
+    await p.handleSave();
+  };
+
   // Warn on tab close when there are unsaved changes
   useEffect(() => {
     if (!p.isDirty) return;
@@ -80,8 +124,11 @@ export default function Profile() {
   }, [searchParams, navigate, refreshSubscription, p.syncCreditPurchase, t]);
 
   return (
+    <div className="relative section-glow-bg overflow-hidden">
+      {/* Ambient AI grid overlay */}
+      <div className="ai-grid-pattern absolute inset-0 opacity-30 dark:opacity-50 [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,black_70%,transparent_100%)] pointer-events-none" aria-hidden="true" />
     <DetailPage
-      className="max-w-5xl mx-auto py-6 sm:py-8"
+      className="relative z-10 max-w-5xl mx-auto py-6 sm:py-8"
       title={t('profile.title')}
       query={{ data: p.isLoading ? undefined : p.profile, isLoading: p.isLoading }}
       tabs={[
@@ -168,63 +215,112 @@ export default function Profile() {
                   <CardDescription>{t('profile.editProfileDescription')}</CardDescription>
                 </CardHeader>
 
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="full_name">{t('profile.fullName')}</Label>
-                    <Input
-                      id="full_name"
-                      value={p.profile.full_name || ''}
-                      onChange={(e) => p.updateField('full_name', e.target.value)}
-                      placeholder={t('auth.fullNamePlaceholder')}
-                    />
-                  </div>
+                <CardContent>
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="full_name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t('profile.fullName')}</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder={t('auth.fullNamePlaceholder')}
+                                aria-required="true"
+                                {...field}
+                                onChange={(e) => {
+                                  field.onChange(e);
+                                  handleFieldChange('full_name', e.target.value);
+                                }}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                  <div className="space-y-2">
-                    <Label htmlFor="cro">{t('profile.cro')}</Label>
-                    <Input
-                      id="cro"
-                      value={p.profile.cro || ''}
-                      onChange={(e) => p.updateField('cro', e.target.value)}
-                      placeholder={t('auth.croPlaceholder')}
-                    />
-                  </div>
+                      <FormField
+                        control={form.control}
+                        name="cro"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t('profile.cro')}</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder={t('auth.croPlaceholder')}
+                                {...field}
+                                onChange={(e) => {
+                                  field.onChange(e);
+                                  handleFieldChange('cro', e.target.value);
+                                }}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                  <div className="space-y-2">
-                    <Label htmlFor="clinic_name">{t('profile.clinicName')}</Label>
-                    <Input
-                      id="clinic_name"
-                      value={p.profile.clinic_name || ''}
-                      onChange={(e) => p.updateField('clinic_name', e.target.value)}
-                      placeholder={t('profile.clinicNamePlaceholder')}
-                    />
-                  </div>
+                      <FormField
+                        control={form.control}
+                        name="clinic_name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t('profile.clinicName')}</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder={t('profile.clinicNamePlaceholder')}
+                                {...field}
+                                onChange={(e) => {
+                                  field.onChange(e);
+                                  handleFieldChange('clinic_name', e.target.value);
+                                }}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">{t('patients.phone')}</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      value={p.profile.phone || ''}
-                      onChange={(e) => p.updateField('phone', e.target.value)}
-                      placeholder={t('profile.phonePlaceholder')}
-                    />
-                  </div>
+                      <FormField
+                        control={form.control}
+                        name="phone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t('patients.phone')}</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="tel"
+                                placeholder={t('profile.phonePlaceholder')}
+                                {...field}
+                                onChange={(e) => {
+                                  field.onChange(e);
+                                  handleFieldChange('phone', e.target.value);
+                                }}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                  <div className="pt-4">
-                    <Button onClick={p.handleSave} disabled={!p.isDirty || p.isSaving} className="w-full">
-                      {p.isSaving ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          {t('common.saving')}
-                        </>
-                      ) : (
-                        <>
-                          <Save className="w-4 h-4 mr-2" />
-                          {t('profile.saveChanges')}
-                        </>
-                      )}
-                    </Button>
-                  </div>
+                      <div className="pt-4">
+                        <Button type="submit" disabled={!p.isDirty || p.isSaving} className="w-full">
+                          {p.isSaving ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              {t('common.saving')}
+                            </>
+                          ) : (
+                            <>
+                              <Save className="w-4 h-4 mr-2" />
+                              {t('profile.saveChanges')}
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </form>
+                  </Form>
                 </CardContent>
               </Card>
               <ReferralCard />
@@ -283,6 +379,7 @@ export default function Profile() {
       ]}
       defaultTab={searchParams.get('tab') || 'perfil'}
     />
+    </div>
   );
 }
 
