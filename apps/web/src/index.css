@@ -791,13 +791,8 @@
   background-clip: text;
 }
 
-/* PageShell sidebar brand title — apply gradient to match rest of app */
-h2.text-sidebar-foreground {
-  background: linear-gradient(135deg, var(--color-primary), var(--brand-accent), var(--color-primary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
+/* PageShell brand title gradient is applied via .text-gradient-brand class
+   on the React element in AppLayout.tsx (more reliable than CSS :has() selectors). */
 
 /* Primary glow — for all functional buttons (.btn-glow-gold is a legacy alias) */
 .btn-glow,

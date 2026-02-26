@@ -17,7 +17,7 @@ import {
   HelpCircle,
 } from 'lucide-react';
 
-// Custom brand icon — renders the tooth SVG with gradient (matches /logo.svg).
+// Custom brand icon — renders the tooth SVG with teal gradient (matches /logo.svg).
 // PageShell mobile header ignores logoSrc and renders icon inside a bg-primary badge.
 // This component + CSS override (.brand-tooth-icon) shows the actual logo instead.
 const BrandToothIcon = () => (
@@ -71,7 +71,9 @@ export default function AppLayout() {
       brand={{
         logoSrc: '/logo.svg',
         icon: BrandToothIcon,
-        title: BRAND_NAME,
+        // PageShell types say string, but it renders as React children — JSX works at runtime.
+        // This is more reliable than CSS :has() selectors for applying the brand gradient.
+        title: (<span className="text-gradient-brand">{BRAND_NAME}</span>) as unknown as string,
         href: '/dashboard',
       }}
       headerThemeToggle={themeToggleSlot}

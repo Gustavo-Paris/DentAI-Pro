@@ -255,6 +255,25 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
   });
 
   // -------------------------------------------------------------------------
+  // Re-trigger analysis after draft restore at step 3
+  // -------------------------------------------------------------------------
+  // When a draft is restored with step=3 but analysisResult=null (analysis was
+  // in-flight when session expired), we need to re-call the edge function.
+  // Without this, AnalyzingStep renders with isAnalyzing=false and stays at 0%.
+  const draftRestoredToAnalysisStep =
+    nav.step === 3 && !analysisResult && !photo.isAnalyzing && !photo.analysisError && !!imageBase64;
+
+  useEffect(() => {
+    if (draftRestoredToAnalysisStep) {
+      console.info('[WizardFlow] Draft restored at analysis step — re-triggering analyzePhoto()');
+      // Credits were already confirmed in the original session — skip the dialog.
+      // The edge function still validates credits server-side.
+      nav.fullFlowCreditsConfirmedRef.current = true;
+      photo.analyzePhoto();
+    }
+  }, [draftRestoredToAnalysisStep]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // -------------------------------------------------------------------------
   // Derived (depends on sub-hooks)
   // -------------------------------------------------------------------------
 
