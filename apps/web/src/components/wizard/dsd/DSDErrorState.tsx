@@ -24,7 +24,7 @@ export function DSDErrorState({ error, onRetry, onSkip }: DSDErrorStateProps) {
             <AlertCircle className="w-8 h-8 text-warning" />
           )}
         </div>
-        <h2 className="text-xl font-semibold font-display mb-2 neon-text">
+        <h2 className="text-2xl font-semibold font-display mb-2 neon-text">
           {isCreditError ? t('components.wizard.dsd.errorState.insufficientCredits') : t('components.wizard.dsd.errorState.analysisError')}
         </h2>
         <p className="text-muted-foreground">{error}</p>

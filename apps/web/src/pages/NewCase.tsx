@@ -140,6 +140,7 @@ export default function NewCase() {
       icon: Camera,
       children: (
         <div key="step-foto" className={`wizard-step-${stepDirection}`}>
+          <div className="wizard-stage">
           <PhotoUploadStep
             imageBase64={imageBase64}
             onImageChange={setImageBase64}
@@ -149,6 +150,7 @@ export default function NewCase() {
             additionalPhotos={additionalPhotos}
             onAdditionalPhotosChange={setAdditionalPhotos}
           />
+          </div>
         </div>
       ),
     };
@@ -160,11 +162,13 @@ export default function NewCase() {
       icon: Heart,
       children: (
         <div key="step-prefs" className={`wizard-step-${stepDirection}`}>
+          <div className="wizard-stage">
           <PatientPreferencesStep
             preferences={patientPreferences}
             onPreferencesChange={setPatientPreferences}
             onContinue={handlePreferencesContinue}
           />
+          </div>
         </div>
       ),
     };
@@ -176,6 +180,7 @@ export default function NewCase() {
       icon: Brain,
       children: (
         <div key="step-analysis" className={`wizard-step-${stepDirection}`}>
+          <div className={`wizard-stage${isAnalyzing ? ' ai-shimmer-border' : ''}`}>
           <AnalyzingStep
             imageBase64={imageBase64}
             isAnalyzing={isAnalyzing}
@@ -185,6 +190,7 @@ export default function NewCase() {
             onBack={handleBack}
             onCancel={cancelAnalysis}
           />
+          </div>
         </div>
       ),
     };
@@ -196,6 +202,7 @@ export default function NewCase() {
       icon: Smile,
       children: (
         <div key="step-dsd" className={`wizard-step-${stepDirection}`}>
+          <div className="wizard-stage">
           <DSDStep
             imageBase64={imageBase64}
             onComplete={handleDSDComplete}
@@ -213,6 +220,7 @@ export default function NewCase() {
             onResultChange={handleDSDResultChange}
             onPreferencesChange={setPatientPreferences}
           />
+          </div>
         </div>
       ),
     };
@@ -224,6 +232,7 @@ export default function NewCase() {
       icon: ClipboardCheck,
       children: (
         <div key="step-review" className={`wizard-step-${stepDirection}`}>
+          <div className="wizard-stage">
           <ReviewAnalysisStep
             analysisResult={analysisResult}
             formData={formData}
@@ -249,6 +258,7 @@ export default function NewCase() {
             whiteningLevel={patientPreferences.whiteningLevel}
             onPatientSelect={handlePatientSelect}
           />
+          </div>
         </div>
       ),
     };
@@ -260,6 +270,7 @@ export default function NewCase() {
       icon: FileText,
       children: (
         <div key="step-result" className={`wizard-step-${stepDirection}`}>
+          <div className="wizard-stage">
           {submissionComplete ? (
             <div className="ai-shimmer-border rounded-xl p-8 relative overflow-hidden">
               {/* Celebration glow orbs */}
@@ -308,6 +319,7 @@ export default function NewCase() {
               </Button>
             </div>
           )}
+          </div>
         </div>
       ),
     };

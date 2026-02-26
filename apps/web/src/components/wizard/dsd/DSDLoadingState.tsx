@@ -23,13 +23,12 @@ export function DSDLoadingState({ imageBase64, currentStep, analysisSteps }: DSD
   const dsdProgress = Math.min((currentStep / analysisSteps.length) * 100, 95);
 
   return (
-    <div className="ai-shimmer-border rounded-xl p-6">
-      <div className="space-y-6" role="status" aria-live="polite" aria-label={t('components.wizard.dsd.loadingState.title')}>
+    <div className="space-y-6" role="status" aria-live="polite" aria-label={t('components.wizard.dsd.loadingState.title')}>
         <div className="text-center">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center glow-icon">
             <Smile className="w-8 h-8 text-primary" />
           </div>
-          <h2 className="text-xl font-semibold font-display mb-2 text-primary neon-text">{t('components.wizard.dsd.loadingState.title')}</h2>
+          <h2 className="text-2xl font-semibold font-display mb-2 text-primary neon-text">{t('components.wizard.dsd.loadingState.title')}</h2>
           <p className="text-sm text-muted-foreground">{currentLabel}</p>
         </div>
 
@@ -61,7 +60,6 @@ export function DSDLoadingState({ imageBase64, currentStep, analysisSteps }: DSD
             variant="horizontal"
           />
         </div>
-      </div>
     </div>
   );
 }

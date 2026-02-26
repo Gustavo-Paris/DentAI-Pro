@@ -20,7 +20,7 @@ export function DSDInitialState({ onSkip, hasImage, onConfirmDSD }: DSDInitialSt
         <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center glow-icon">
           <Smile className="w-8 h-8 text-primary" />
         </div>
-        <h2 className="text-xl font-semibold font-display mb-2 text-primary neon-text">{t('components.wizard.dsd.initialState.title')}</h2>
+        <h2 className="text-2xl font-semibold font-display mb-2 text-primary neon-text">{t('components.wizard.dsd.initialState.title')}</h2>
         <p className="text-muted-foreground max-w-md mx-auto">
           {t('components.wizard.dsd.initialState.description')}
         </p>

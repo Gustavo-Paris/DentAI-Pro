@@ -406,6 +406,32 @@
     var(--glow-sm);
 }
 
+/* Wizard stage — unified glass container for all wizard steps */
+.wizard-stage {
+  position: relative;
+  background: rgb(var(--color-card-rgb) / 0.5);
+  border: 1px solid rgb(var(--color-primary-rgb) / 0.06);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.dark .wizard-stage {
+  background: rgb(var(--color-card-rgb) / 0.3);
+  border-color: rgb(var(--color-primary-rgb) / 0.12);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    0 0 80px rgb(var(--color-primary-rgb) / 0.04),
+    0 0 1px rgb(var(--color-primary-rgb) / 0.15);
+}
+
+@media (min-width: 640px) {
+  .wizard-stage {
+    padding: 2rem 2.5rem;
+  }
+}
+
 /* Glow card — ambient primary glow on hover */
 .glow-card {
   transition: box-shadow var(--duration-normal, 200ms) var(--ease-out, ease-out),

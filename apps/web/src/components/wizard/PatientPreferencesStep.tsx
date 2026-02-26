@@ -1,4 +1,3 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Sparkles, ArrowRight, Sun, Zap, Star, Check, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -61,21 +60,19 @@ export function PatientPreferencesStep({
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
-      <Card className="card-elevated glow-card border-primary/20">
-        <CardHeader className="text-center pb-4">
-          <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3 glow-icon">
-            <Sparkles className="w-6 h-6 text-primary" />
-          </div>
-          <CardTitle className="text-xl neon-text">{t('components.wizard.preferences.title')}</CardTitle>
-          <CardDescription className="text-base">
-            {t('components.wizard.preferences.subtitle')}
-          </CardDescription>
-        </CardHeader>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="text-center">
+        <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3 glow-icon">
+          <Sparkles className="w-6 h-6 text-primary" />
+        </div>
+        <h2 className="text-2xl font-semibold font-display mb-2 neon-text">{t('components.wizard.preferences.title')}</h2>
+        <p className="text-muted-foreground text-base">
+          {t('components.wizard.preferences.subtitle')}
+        </p>
+      </div>
 
-        <CardContent className="space-y-4 sm:space-y-6">
-          {/* Whitening Level Cards with Color Swatches */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" role="radiogroup" aria-label={t('components.wizard.preferences.title')}>
+      {/* Whitening Level Cards with Color Swatches */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" role="radiogroup" aria-label={t('components.wizard.preferences.title')}>
             {WHITENING_OPTIONS.map((option) => {
               const Icon = option.icon;
               const isSelected = preferences.whiteningLevel === option.value;
@@ -182,8 +179,6 @@ export function PatientPreferencesStep({
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

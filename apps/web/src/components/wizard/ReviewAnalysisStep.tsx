@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Info } from 'lucide-react';
+import { Info, ClipboardCheck } from 'lucide-react';
 import type { Patient } from '@/components/PatientAutocomplete';
 import { useSpeechToText } from '@/hooks/useSpeechToText';
 import { ComponentSkeleton } from '@/components/ui/skeleton-wrapper';
@@ -155,6 +155,9 @@ export function ReviewAnalysisStep({
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="text-center">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center glow-icon">
+          <ClipboardCheck className="w-8 h-8 text-primary" />
+        </div>
         <h2 className="text-2xl font-semibold font-display mb-2 neon-text">{t('components.wizard.review.title')}</h2>
         <p className="text-muted-foreground">
           {hasMultipleTeeth
