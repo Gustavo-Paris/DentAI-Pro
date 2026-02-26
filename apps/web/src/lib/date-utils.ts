@@ -36,11 +36,14 @@ export function calculateAge(birthDate: string): number {
 }
 
 /**
- * Format a date string to localized short date (e.g. DD/MM/YYYY for pt-BR, MM/DD/YYYY for en-US)
- * Handles YYYY-MM-DD strings without timezone conversion issues
+ * Format a date string to locale-aware short date.
+ * Falls back to pt-BR (the app's primary locale).
+ * Handles YYYY-MM-DD strings without timezone conversion issues.
  */
 export function formatDateBR(dateString: string): string {
-  const locale = i18n.language || 'pt-BR';
+  const lang = i18n.language;
+  // Default to pt-BR — the app's primary locale and function's historical purpose
+  const locale = lang && lang !== 'cimode' ? lang : 'pt-BR';
 
   // For YYYY-MM-DD format, parse directly to avoid UTC conversion
   const isoDateMatch = dateString.match(/^(\d{4})-(\d{2})-(\d{2})$/);

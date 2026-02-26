@@ -125,6 +125,8 @@ describe('calculateAge', () => {
 // formatDateBR
 // =============================================================================
 describe('formatDateBR', () => {
+  beforeEach(() => { mockLanguage = 'pt-BR'; });
+
   it('should format YYYY-MM-DD directly without timezone issues', () => {
     expect(formatDateBR('2025-01-27')).toBe('27/01/2025');
   });
