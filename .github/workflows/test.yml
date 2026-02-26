@@ -89,8 +89,8 @@ jobs:
 
       - name: Run tests
         env:
-          NODE_OPTIONS: '--max-old-space-size=7168'
-        run: cd apps/web && npx vitest run --pool=forks
+          NODE_OPTIONS: '--max-old-space-size=4096'
+        run: cd apps/web && npx vitest run --pool=forks --poolOptions.forks.maxForks=1 --reporter=basic
 
   deno-test:
     name: Deno Tests (Edge Functions)
