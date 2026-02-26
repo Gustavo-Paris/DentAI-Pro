@@ -124,6 +124,15 @@ DESGASTE INCISAL vs CLASSE IV:
 - Na DUVIDA entre "desgaste leve" e "variação anatômica normal" -> NORMAL
 - PROIBIDO diagnosticar "desgaste incisal leve" apenas porque bordos nao sao perfeitamente retos
 
+IRREGULARIDADE DE BORDO INCISAL (≠ desgaste):
+- Se 2+ dentes anteriores (13-23) apresentam BORDAS INCISAIS VISIVELMENTE DESNIVELADAS entre si:
+  → SUGERIR recontorno estético em resina para alinhar bordas e harmonizar o arco do sorriso
+  → cavity_class: "Recontorno Estético", treatment_indication: "resina"
+  → Listar CADA dente que participaria do alinhamento (incluir todos do arco 13-23 que estejam irregulares)
+- Isto NÃO é desgaste incisal — é oportunidade de HARMONIZAÇÃO ESTÉTICA
+- Bordas visivelmente irregulares/desniveladas que comprometem a estética do sorriso = INCLUIR
+- Exemplo: centrais com alturas diferentes, laterais com bordas assimétricas, caninos com pontas irregulares
+
 5. Substrato visível (Esmalte, Dentina, Esmalte e Dentina, Dentina profunda)
 6. Condição do substrato (Saudável, Esclerótico, Manchado, Cariado, Desidratado)
 7. Condição do esmalte (Íntegro, Fraturado, Hipoplásico, Fluorose, Erosão)
@@ -235,6 +244,13 @@ REGRAS:
 - Quando diastema central (11/21) confirmado: AVALIAR laterais (12/22) e caninos (13/23) para espaçamento associado. Sugerir enceramento diagnóstico prévio quando diastemas ≥2mm ou múltiplos
 - cavity_class: "Fechamento de Diastema", treatment_indication: "resina"
 
+DIASTEMA ENTRE DENTES ADJACENTES NÃO-CENTRAIS (12-13, 22-23, etc.):
+- Espaço visível entre lateral e canino (12-13 ou 22-23) é TÔNICO COMUM → diagnosticar se gap claramente visível
+- Espaço entre central e lateral (11-12 ou 21-22) → diagnosticar se gap claramente visível
+- NÃO exigir diagnóstico de diastema central (11-21) para reportar gaps em outros pares de dentes
+- Cada par de dentes adjacentes com gap visível deve ser avaliado INDEPENDENTEMENTE
+- Registrar AMBOS os dentes envolvidos no gap como entries separadas em detected_teeth
+
 ## CLAREAMENTO ANTES DE RESTAURACAO POR COR
 Se a UNICA indicação para tratamento é diferença de cor entre dentes (sem patologia estrutural):
 - Sugerir CLAREAMENTO como tratamento de PRIMEIRA LINHA (nível 1 da hierarquia terapêutica)
@@ -250,6 +266,7 @@ Se a UNICA indicação para tratamento é diferença de cor entre dentes (sem pa
 | Gengiva curta/excesso       | gengivoplastia ou encaminhamento                |
 | Corredor bucal excessivo    | encaminhamento (ortodontia) +/- facetas         |
 | Desgaste incisal            | resina (acréscimo incisal)                      |
+| Bordas incisais irregulares | resina (recontorno estético)                    |
 | Diastema                    | resina (fechamento)                             |
 | Microdontia/conoide         | resina (recontorno estético)                    |
 | Restauração com falha       | resina (substituição)                           |

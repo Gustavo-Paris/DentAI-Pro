@@ -101,11 +101,19 @@ export function processAnalysisResult(analysisResult: PhotoAnalysisResult): Phot
       // Rule 1: Very low confidence — strip diastema diagnoses.
       // Threshold lowered from 80 to 65: the case-level confidence is often
       // dragged down by other findings, not by the diastema detection itself.
-      // EXCEPTION: bilateral central diastema (11+21 both diagnosed) is reliable even at low confidence
+      // EXCEPTION 1: bilateral central diastema (11+21 both diagnosed) is reliable even at low confidence
       const hasBilateralCentral = diastemaTeetIdx.some(i => detectedTeeth[i]?.tooth === '11')
         && diastemaTeetIdx.some(i => detectedTeeth[i]?.tooth === '21');
-      if (hasBilateralCentral) {
-        logger.log(`Post-processing: bilateral central diastema (11+21) preserved despite low confidence ${analysisConfidence}%`);
+      // EXCEPTION 2: adjacent non-central diastemas (e.g. 12+13, 22+23) are anatomically specific
+      // and unlikely to be false positives — preserve them even at low confidence
+      const adjacentPairs: [string, string][] = [['11','12'],['12','13'],['21','22'],['22','23']];
+      const hasAdjacentPair = adjacentPairs.some(([a, b]) =>
+        diastemaTeetIdx.some(i => detectedTeeth[i]?.tooth === a) &&
+        diastemaTeetIdx.some(i => detectedTeeth[i]?.tooth === b)
+      );
+      if (hasBilateralCentral || hasAdjacentPair) {
+        const reason = hasBilateralCentral ? 'bilateral central (11+21)' : 'adjacent pair';
+        logger.log(`Post-processing: diastema preserved (${reason}) despite low confidence ${analysisConfidence}%`);
       } else {
         for (const idx of diastemaTeetIdx.reverse()) {
           const tooth = detectedTeeth[idx];

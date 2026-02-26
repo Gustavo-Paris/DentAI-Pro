@@ -509,6 +509,13 @@ ONLY gum margin pixels may change — replaced by enamel-colored extension that 
 Do NOT lift upper lip or lower the lower lip to "show more teeth."
 Do NOT widen, narrow, lengthen, or reshape any tooth crown. The tooth anatomy is FIXED.
 
+=== MIDLINE & PROPORTIONS (ABSOLUTE) ===
+- The DENTAL MIDLINE (vertical line between central incisors 11/21) must NOT shift laterally — keep it in the EXACT same horizontal position as the input
+- The WIDTH of each central incisor (11, 21) must be IDENTICAL to the input — do NOT make one wider/narrower
+- The WIDTH RATIO between lateral incisors (12/22) and central incisors must be PRESERVED
+- ⚠️ COMMON ERROR: Model widens one central incisor to "fill space" after gum reduction — PROHIBITED
+- If you cannot reduce gum without altering tooth width or midline, produce a SMALLER gum reduction instead
+
 Output: Same photo with ONLY the gum line reshaped — teeth are anatomically identical to input.`
 }
 
@@ -541,6 +548,12 @@ BOTH lips (upper AND lower) are FIXED ANATOMICAL REFERENCES — do NOT change th
 Gengivoplasty modifies ONLY the gingival margin (pink tissue BETWEEN teeth and upper lip).
 The lip opening distance is FIXED. Do NOT lift the upper lip or lower the lower lip.
 If lips change, the clinical comparison is DESTROYED.
+
+=== MIDLINE & TOOTH PROPORTIONS (SACRED RULE) ===
+- The DENTAL MIDLINE (vertical line between 11/21) must stay in the EXACT same horizontal position
+- The WIDTH of each individual tooth must be IDENTICAL to the input — gum reduction does NOT change tooth width
+- Do NOT make central incisors wider/narrower to "fill space" after gum recontouring
+- If the model cannot reduce gum without altering tooth width or midline, produce a SMALLER gum reduction
 
 === GINGIVAL RECONTOURING ===
 Expose more clinical crown by moving the gingival margin APICALLY (toward the root):
