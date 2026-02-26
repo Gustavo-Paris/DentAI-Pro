@@ -225,11 +225,12 @@ export function processAnalysisResult(analysisResult: PhotoAnalysisResult): Phot
     warnings: analysisResult.warnings ?? [],
     treatment_indication: safeNormalizeTreatment(analysisResult.treatment_indication),
     indication_reason: analysisResult.indication_reason ?? undefined,
+    dsd_simulation_suitability: analysisResult.dsd_simulation_suitability,
   };
 
   // Log detection results for debugging
   logger.log(`Multi-tooth detection complete: ${detectedTeeth.length} teeth found`);
-  logger.log(`Primary tooth: ${result.primary_tooth}, Confidence: ${result.confidence}%`);
+  logger.log(`Primary tooth: ${result.primary_tooth}, Confidence: ${result.confidence}%, DSD suitability: ${result.dsd_simulation_suitability ?? 'N/A'}`);
 
   // Add warning about filtered lower teeth
   if (filteredLowerWarning) {

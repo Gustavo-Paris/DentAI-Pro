@@ -16,6 +16,8 @@ interface DSDStepWrapperProps {
   dsdResult: DSDResult | null;
   handleDSDResultChange: (result: DSDResult | null) => void;
   setPatientPreferences: (prefs: PatientPreferences) => void;
+  /** Early quality score from photo upload step (fallback when full analysis score is unavailable) */
+  earlyPhotoQualityScore?: number | null;
 }
 
 export const DSDStepWrapper = memo(function DSDStepWrapper({
@@ -29,7 +31,11 @@ export const DSDStepWrapper = memo(function DSDStepWrapper({
   dsdResult,
   handleDSDResultChange,
   setPatientPreferences,
+  earlyPhotoQualityScore,
 }: DSDStepWrapperProps) {
+  // Use full analysis score when available, fall back to early quality check score
+  const effectiveQualityScore = analysisResult?.dsd_simulation_suitability ?? earlyPhotoQualityScore ?? undefined;
+
   return (
     <div className={`wizard-step-${stepDirection}`}>
       <div className="wizard-stage">
@@ -47,7 +53,7 @@ export const DSDStepWrapper = memo(function DSDStepWrapper({
             indication_reason: t.indication_reason,
             treatment_indication: t.treatment_indication,
           }))}
-          photoQualityScore={analysisResult?.dsd_simulation_suitability}
+          photoQualityScore={effectiveQualityScore}
           onResultChange={handleDSDResultChange}
           onPreferencesChange={setPatientPreferences}
         />

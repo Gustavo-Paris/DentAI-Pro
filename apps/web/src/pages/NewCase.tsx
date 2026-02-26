@@ -78,6 +78,7 @@ function ActiveStepContent({ wizard }: { wizard: ReturnType<typeof useWizardFlow
     hasInventory, patients, selectedPatientId, patientBirthDate,
     handlePatientBirthDateChange, dobValidationError, setDobValidationError,
     handlePatientSelect, submissionComplete, completedSessionId, isSubmitting,
+    earlyPhotoQualityScore, setEarlyPhotoQualityScore,
   } = wizard;
 
   switch (step) {
@@ -91,6 +92,7 @@ function ActiveStepContent({ wizard }: { wizard: ReturnType<typeof useWizardFlow
           goToQuickCase={goToQuickCase}
           additionalPhotos={additionalPhotos}
           setAdditionalPhotos={setAdditionalPhotos}
+          onPhotoQualityScore={setEarlyPhotoQualityScore}
         />
       );
     case 2:
@@ -128,6 +130,7 @@ function ActiveStepContent({ wizard }: { wizard: ReturnType<typeof useWizardFlow
           dsdResult={dsdResult}
           handleDSDResultChange={handleDSDResultChange}
           setPatientPreferences={setPatientPreferences}
+          earlyPhotoQualityScore={earlyPhotoQualityScore}
         />
       );
     case 5:

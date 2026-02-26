@@ -1136,7 +1136,12 @@
         "tip1": "Well-lit photo focused on the cavity",
         "tip2": "Clean and dry teeth for better visualization",
         "tip3": "VITA shade tab near the tooth, if available",
-        "dropZoneLabel": "Drag an intraoral photo or click to select"
+        "dropZoneLabel": "Drag an intraoral photo or click to select",
+        "checkingQuality": "Checking photo quality...",
+        "qualityGood": "Photo suitable for DSD simulation",
+        "qualityWarning": "Photo may not be ideal for DSD simulation. Use a lip retractor for better results.",
+        "qualityLow": "Low tooth visibility. DSD simulation may be compromised.",
+        "qualityCheckFailed": "Could not verify photo quality"
       },
       "analyzing": {
         "step1": "Processing image...",
@@ -1324,6 +1329,17 @@
           "hintText": "Frontal photos with good lighting and an open smile produce better results in proportions analysis.",
           "viewPlans": "View Plans",
           "retry": "Try again",
+          "skipDSD": "Skip DSD"
+        },
+        "qualityGate": {
+          "title": "Limited Photo Visibility",
+          "description": "The current photo may not generate an ideal smile simulation, as the teeth are not fully visible for image editing.",
+          "tipsTitle": "For better results:",
+          "tip1": "Use a lip retractor/spacer to expose all teeth",
+          "tip2": "Ensure good direct lighting on the dental area",
+          "tip3": "Make sure all anterior teeth are visible from gum line to edge",
+          "note": "The clinical analysis is already complete and won't be affected. Only the visual simulation quality may be reduced. Use the Back button to change the photo.",
+          "generateAnyway": "Generate anyway",
           "skipDSD": "Skip DSD"
         },
         "initialState": {
@@ -1597,6 +1613,9 @@
       "creditsLabel": "Credits",
       "remaining": "{{remaining}} of {{total}} credits remaining",
       "costInfo": "Analysis = {{analysis}} cr | DSD = {{dsd}} cr"
+    },
+    "sidebar": {
+      "creditsHint": "≈ {{analyses}} analyses | {{dsd}} DSD"
     },
     "addTeeth": {
       "title": "Add More Teeth",

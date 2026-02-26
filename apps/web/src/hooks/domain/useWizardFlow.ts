@@ -95,6 +95,8 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
   const [originalToothTreatments, setOriginalToothTreatments] = useState<
     Record<string, TreatmentType>
   >({});
+  /** Early photo quality score from check-photo-quality edge function (set at photo upload step) */
+  const [earlyPhotoQualityScore, setEarlyPhotoQualityScore] = useState<number | null>(null);
 
   // -------------------------------------------------------------------------
   // Refs
@@ -388,6 +390,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
       isSampleCase,
       canGoBack,
       creditConfirmData: credits.creditConfirmData,
+      earlyPhotoQualityScore,
 
       // Actions
       setImageBase64,
@@ -416,6 +419,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
       handleCreditConfirm: credits.handleCreditConfirm,
       handleRestoreDraft,
       handleDiscardDraft: draftRestore.handleDiscardDraft,
+      setEarlyPhotoQualityScore,
     }),
     [
       // State deps
@@ -455,6 +459,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
       isSampleCase,
       canGoBack,
       credits.creditConfirmData,
+      earlyPhotoQualityScore,
 
       // Action deps
       setImageBase64,

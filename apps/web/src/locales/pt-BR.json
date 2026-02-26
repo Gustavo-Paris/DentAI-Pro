@@ -1136,7 +1136,12 @@
         "tip1": "Foto bem iluminada e focada na cavidade",
         "tip2": "Dentes limpos e secos para melhor visualização",
         "tip3": "Escala VITA próxima ao dente, se disponível",
-        "dropZoneLabel": "Arraste uma foto intraoral ou clique para selecionar"
+        "dropZoneLabel": "Arraste uma foto intraoral ou clique para selecionar",
+        "checkingQuality": "Verificando qualidade da foto...",
+        "qualityGood": "Foto adequada para simulação DSD",
+        "qualityWarning": "Foto pode não ser ideal para a simulação DSD. Use afastador labial para melhor resultado.",
+        "qualityLow": "Foto com baixa visibilidade dos dentes. A simulação DSD pode ficar comprometida.",
+        "qualityCheckFailed": "Não foi possível verificar a qualidade da foto"
       },
       "analyzing": {
         "step1": "Processando imagem...",
@@ -1324,6 +1329,17 @@
           "hintText": "Fotos frontais com boa iluminação e sorriso aberto geram melhores resultados na análise de proporções.",
           "viewPlans": "Ver Planos",
           "retry": "Tentar novamente",
+          "skipDSD": "Pular DSD"
+        },
+        "qualityGate": {
+          "title": "Foto com Visibilidade Limitada",
+          "description": "A foto atual pode não gerar uma simulação de sorriso com qualidade ideal, pois os dentes não estão totalmente visíveis para edição.",
+          "tipsTitle": "Para melhores resultados:",
+          "tip1": "Use afastador/espaçador labial para expor todos os dentes",
+          "tip2": "Garanta boa iluminação direta na região dos dentes",
+          "tip3": "Certifique-se que todos os dentes anteriores estejam visíveis da gengiva até a borda",
+          "note": "A análise clínica já foi concluída e não será afetada. Apenas a simulação visual pode ter qualidade reduzida. Use o botão Voltar para trocar a foto.",
+          "generateAnyway": "Gerar mesmo assim",
           "skipDSD": "Pular DSD"
         },
         "initialState": {
@@ -1597,6 +1613,9 @@
       "creditsLabel": "Créditos",
       "remaining": "{{remaining}} de {{total}} créditos restantes",
       "costInfo": "Análise = {{analysis}} cr | DSD = {{dsd}} cr"
+    },
+    "sidebar": {
+      "creditsHint": "≈ {{analyses}} análises | {{dsd}} DSD"
     },
     "addTeeth": {
       "title": "Adicionar Mais Dentes",

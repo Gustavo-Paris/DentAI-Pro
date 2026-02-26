@@ -1,10 +1,12 @@
 import { useState, useRef, useCallback, useEffect, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, Button, Badge, Alert, AlertDescription } from '@parisgroup-ai/pageshell/primitives';
-import { Camera, Upload, X, Loader2, User, Smile, Sparkles, Lightbulb, Zap, AlertCircle } from 'lucide-react';
+import { Camera, Upload, X, Loader2, User, Smile, Sparkles, Lightbulb, Zap, AlertCircle, CheckCircle2, AlertTriangle, ShieldAlert } from 'lucide-react';
 import { toast } from 'sonner';
 import { compressImage, getImageDimensions } from '@/lib/imageUtils';
+import { compressBase64ForAnalysis } from '@/lib/imageUtils';
 import { trackEvent } from '@/lib/analytics';
+import { supabase } from '@/data';
 // heic-to is dynamically imported to reduce initial bundle size (20MB library)
 
 export interface AdditionalPhotos {
@@ -20,7 +22,11 @@ interface PhotoUploadStepProps {
   isUploading: boolean;
   additionalPhotos?: AdditionalPhotos;
   onAdditionalPhotosChange?: (photos: AdditionalPhotos) => void;
+  /** Called when the background quality check completes with a 0-100 score */
+  onPhotoQualityScore?: (score: number | null) => void;
 }
+
+type QualityStatus = 'idle' | 'checking' | 'good' | 'warning' | 'low' | 'error';
 
 // Detecção robusta de HEIC usando a biblioteca heic-to + fallback
 // Dynamic import to reduce initial bundle size
@@ -74,6 +80,7 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
   isUploading,
   additionalPhotos = { smile45: null, face: null },
   onAdditionalPhotosChange,
+  onPhotoQualityScore,
 }: PhotoUploadStepProps) {
   const { t } = useTranslation();
   const [dragActive, setDragActive] = useState(false);
@@ -83,6 +90,9 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
   const [isCompressing, setIsCompressing] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [processingOptional, setProcessingOptional] = useState<'smile45' | 'face' | null>(null);
+  const [qualityStatus, setQualityStatus] = useState<QualityStatus>('idle');
+  const [qualityScore, setQualityScore] = useState<number | null>(null);
+  const qualityAbortRef = useRef<AbortController | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const smile45InputRef = useRef<HTMLInputElement>(null);
@@ -104,9 +114,76 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
   // Mostra botão câmera se for mobile real OU tela pequena (para preview)
   const showCameraButton = isMobileDevice || isSmallScreen;
 
+  // Background quality check — runs after photo is set
+  useEffect(() => {
+    if (!imageBase64) {
+      setQualityStatus('idle');
+      setQualityScore(null);
+      onPhotoQualityScore?.(null);
+      return;
+    }
+
+    // Don't re-check if we already have a score for this image
+    if (qualityStatus !== 'idle') return;
+
+    const abortCtrl = new AbortController();
+    qualityAbortRef.current = abortCtrl;
+
+    const checkQuality = async () => {
+      setQualityStatus('checking');
+      try {
+        // Compress to a smaller size for the quality check (saves bandwidth)
+        const compressed = await compressBase64ForAnalysis(imageBase64);
+
+        if (abortCtrl.signal.aborted) return;
+
+        const { data, error } = await supabase.functions.invoke<{ score: number }>('check-photo-quality', {
+          body: { imageBase64: compressed },
+        });
+
+        if (abortCtrl.signal.aborted) return;
+
+        if (error || !data) {
+          setQualityStatus('error');
+          onPhotoQualityScore?.(null);
+          return;
+        }
+
+        const score = data.score;
+        setQualityScore(score);
+        onPhotoQualityScore?.(score);
+
+        if (score >= 60) {
+          setQualityStatus('good');
+        } else if (score >= 40) {
+          setQualityStatus('warning');
+        } else {
+          setQualityStatus('low');
+          trackEvent('photo_quality_low', { score });
+        }
+      } catch {
+        if (!abortCtrl.signal.aborted) {
+          setQualityStatus('error');
+          onPhotoQualityScore?.(null);
+        }
+      }
+    };
+
+    checkQuality();
+
+    return () => {
+      abortCtrl.abort();
+      qualityAbortRef.current = null;
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [imageBase64]);
+
   const handleFile = useCallback(async (file: File) => {
-    // Clear any previous error when user tries again
+    // Clear any previous error and quality state when user tries again
     setUploadError(null);
+    setQualityStatus('idle');
+    setQualityScore(null);
+    qualityAbortRef.current?.abort();
 
     // Validação de tipo - aceitar imagens E arquivos sem tipo (HEIC no Safari)
     if (!file.type.startsWith('image/') && file.type !== '' && file.type !== 'application/octet-stream') {
@@ -432,6 +509,48 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Quality check indicator */}
+      {imageBase64 && qualityStatus !== 'idle' && (
+        <div className={`flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm transition-all ${
+          qualityStatus === 'checking' ? 'bg-muted/50 text-muted-foreground' :
+          qualityStatus === 'good' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
+          qualityStatus === 'warning' ? 'bg-warning/10 text-warning-foreground dark:text-warning' :
+          qualityStatus === 'low' ? 'bg-destructive/10 text-destructive' :
+          'bg-muted/30 text-muted-foreground'
+        }`}>
+          {qualityStatus === 'checking' && (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+              <span>{t('components.wizard.photoUpload.checkingQuality')}</span>
+            </>
+          )}
+          {qualityStatus === 'good' && (
+            <>
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+              <span>{t('components.wizard.photoUpload.qualityGood')}</span>
+            </>
+          )}
+          {qualityStatus === 'warning' && (
+            <>
+              <AlertTriangle className="w-4 h-4 shrink-0" />
+              <span>{t('components.wizard.photoUpload.qualityWarning')}</span>
+            </>
+          )}
+          {qualityStatus === 'low' && (
+            <>
+              <ShieldAlert className="w-4 h-4 shrink-0" />
+              <span>{t('components.wizard.photoUpload.qualityLow')}</span>
+            </>
+          )}
+          {qualityStatus === 'error' && (
+            <>
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{t('components.wizard.photoUpload.qualityCheckFailed')}</span>
+            </>
+          )}
+        </div>
       )}
 
       {/* Persistent upload error banner */}

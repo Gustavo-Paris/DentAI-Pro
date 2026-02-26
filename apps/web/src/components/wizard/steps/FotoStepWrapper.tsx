@@ -10,6 +10,7 @@ interface FotoStepWrapperProps {
   goToQuickCase: () => void;
   additionalPhotos: AdditionalPhotos;
   setAdditionalPhotos: (photos: AdditionalPhotos) => void;
+  onPhotoQualityScore?: (score: number | null) => void;
 }
 
 export const FotoStepWrapper = memo(function FotoStepWrapper({
@@ -20,6 +21,7 @@ export const FotoStepWrapper = memo(function FotoStepWrapper({
   goToQuickCase,
   additionalPhotos,
   setAdditionalPhotos,
+  onPhotoQualityScore,
 }: FotoStepWrapperProps) {
   return (
     <div className={`wizard-step-${stepDirection}`}>
@@ -32,6 +34,7 @@ export const FotoStepWrapper = memo(function FotoStepWrapper({
           isUploading={false}
           additionalPhotos={additionalPhotos}
           onAdditionalPhotosChange={setAdditionalPhotos}
+          onPhotoQualityScore={onPhotoQualityScore}
         />
       </div>
     </div>

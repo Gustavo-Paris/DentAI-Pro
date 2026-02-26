@@ -56,3 +56,6 @@ verify_jwt = false
 
 [functions.apply-referral]
 verify_jwt = false
+
+[functions.check-photo-quality]
+verify_jwt = false

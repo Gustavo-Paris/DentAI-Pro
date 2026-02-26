@@ -85,6 +85,9 @@ export interface WizardFlowState {
 
   // Navigation
   canGoBack: boolean;
+
+  // Early photo quality score (from check-photo-quality, before full analysis)
+  earlyPhotoQualityScore: number | null;
 }
 
 export interface WizardFlowActions {
@@ -129,4 +132,7 @@ export interface WizardFlowActions {
   // Draft
   handleRestoreDraft: () => Promise<void>;
   handleDiscardDraft: () => void;
+
+  // Photo quality
+  setEarlyPhotoQualityScore: (score: number | null) => void;
 }

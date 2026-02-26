@@ -8,11 +8,12 @@ import type {
   DetectedToothForMask,
   ClinicalToothFinding,
 } from '@/types/dsd';
-import { useEffect, useRef, useCallback, lazy, Suspense } from 'react';
+import { useEffect, useRef, useCallback, useState, lazy, Suspense } from 'react';
 import { trackEvent } from '@/lib/analytics';
 import { useDSDStep } from './dsd/useDSDStep';
 import { DSDLoadingState } from './dsd/DSDLoadingState';
 import { DSDErrorState } from './dsd/DSDErrorState';
+import { DSDPhotoQualityGate } from './dsd/DSDPhotoQualityGate';
 const DSDAnalysisView = lazy(() => import('./dsd/DSDAnalysisView'));
 import { DSDInitialState } from './dsd/DSDInitialState';
 import { ComponentSkeleton } from '@/components/ui/skeleton-wrapper';
@@ -41,9 +42,14 @@ interface DSDStepProps {
   onPreferencesChange?: (prefs: PatientPreferences) => void;
 }
 
+const PHOTO_QUALITY_THRESHOLD = 55;
+
 export function DSDStep(props: DSDStepProps) {
   const state = useDSDStep(props);
   const hasFiredStartRef = useRef(false);
+  const [qualityBypassed, setQualityBypassed] = useState(false);
+
+  const isLowQuality = typeof props.photoQualityScore === 'number' && props.photoQualityScore < PHOTO_QUALITY_THRESHOLD;
 
   const handleToggleAnnotations = useCallback(
     () => state.setShowAnnotations(prev => !prev),
@@ -133,6 +139,19 @@ export function DSDStep(props: DSDStepProps) {
         onDiscardGingivoplasty={state.handleDiscardGingivoplasty}
       />
       </Suspense>
+    );
+  }
+
+  // Photo quality gate — show BEFORE initial state when photo is unsuitable for simulation
+  if (isLowQuality && !qualityBypassed && !state.result) {
+    return (
+      <DSDPhotoQualityGate
+        onGenerateAnyway={() => {
+          setQualityBypassed(true);
+          trackEvent('dsd_quality_gate_bypassed', { score: props.photoQualityScore });
+        }}
+        onSkip={state.onSkip}
+      />
     );
   }
 

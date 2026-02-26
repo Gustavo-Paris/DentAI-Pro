@@ -142,7 +142,7 @@
   --color-info-muted: rgba(37, 99, 235, 0.1);
 
   /* Glass effects — frosted glass panels, overlays */
-  --glass-bg: rgba(0, 0, 0, 0.02);
+  --glass-bg: rgba(255, 255, 255, 0.75);
   --glass-border: rgba(0, 0, 0, 0.06);
   --glass-highlight: rgba(0, 0, 0, 0.02);
 
@@ -355,14 +355,16 @@
 .ui-theme-odonto-ai {
   background-image:
     radial-gradient(
-      ellipse 100% 60% at 50% -20%,
-      rgb(var(--color-primary-rgb) / 0.04) 0%,
-      transparent 70%
+      ellipse 140% 85% at 50% 0%,
+      rgb(var(--color-primary-rgb) / 0.22) 0%,
+      rgb(var(--color-primary-rgb) / 0.10) 30%,
+      rgb(var(--color-primary-rgb) / 0.03) 55%,
+      transparent 75%
     ),
     radial-gradient(
-      ellipse 50% 40% at 100% 0%,
-      rgb(var(--color-accent-rgb) / 0.02) 0%,
-      transparent 60%
+      ellipse 80% 60% at 100% 0%,
+      rgb(var(--color-accent-rgb) / 0.10) 0%,
+      transparent 50%
     );
 }
 
@@ -723,6 +725,17 @@
   padding-bottom: 0.5rem;
 }
 
+/* "CONTA" section label — tint with primary color.
+   PageShell renders labels as <span class="... uppercase tracking-wider text-sidebar-foreground/60"> */
+.ui-theme aside .uppercase.tracking-wider {
+  color: rgb(var(--color-primary-rgb) / 0.5) !important;
+}
+
+/* Subtle separator above sidebar credits footer */
+.ui-theme aside > div:last-child {
+  border-top: 1px solid rgb(var(--color-border-rgb) / 0.15) !important;
+}
+
 /* Kill brand logo breathing glow animation */
 .ui-theme aside [class*="animate-[sidebar-brand-breathe"] {
   animation: none !important;
@@ -743,6 +756,8 @@
   border: none !important;
   box-shadow: none !important;
 }
+
+
 
 /* ─── Dropdown Menu Polish ─── */
 /* Rendered in portal at body level, NOT inside .ui-theme */

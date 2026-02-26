@@ -31,13 +31,13 @@ export const CreditBadge = memo(function CreditBadge({ variant = 'compact', clas
     ? 'text-destructive'
     : isLow
       ? 'text-warning'
-      : 'text-muted-foreground';
+      : 'text-primary';
 
   const bgClass = isCritical
     ? 'bg-destructive/10 dark:bg-destructive/10'
     : isLow
       ? 'bg-warning/10'
-      : 'bg-secondary/50';
+      : 'bg-primary/10 dark:bg-primary/15';
 
   const barColor = isCritical
     ? 'bg-destructive'

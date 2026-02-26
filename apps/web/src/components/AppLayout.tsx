@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
@@ -6,6 +6,7 @@ import { ReactRouterAppShell } from '@parisgroup-ai/pageshell/layouts/adapters/r
 import { useAuth } from '@/contexts/AuthContext';
 import { BRAND_NAME } from '@/lib/branding';
 import { CreditBadge } from '@/components/CreditBadge';
+import { SidebarCredits } from '@/components/SidebarCredits';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { HelpButton } from '@/components/HelpButton';
 import * as profiles from '@/data/profiles';
@@ -37,6 +38,41 @@ const BrandToothIcon = () => (
   </svg>
 );
 
+/**
+ * Avatar with fallback chain: tries each URL in order, shows initials if all fail.
+ * Uses `key` reset via urlsKey to avoid stale state when props change.
+ */
+function AvatarWithFallback({ urls, alt, width, height, className }: {
+  urls: string[]; alt: string; width: number; height: number; className: string;
+}) {
+  const [index, setIndex] = useState(0);
+
+  const currentUrl = urls[index];
+
+  if (!currentUrl) {
+    const initials = (alt || '?').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+    return (
+      <div
+        className={`flex items-center justify-center rounded-full bg-sidebar-accent text-sidebar-accent-foreground font-medium text-xs ${className}`}
+        style={{ width, height }}
+      >
+        {initials}
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={currentUrl}
+      alt={alt}
+      width={width}
+      height={height}
+      className={className}
+      onError={() => setIndex(i => i + 1)}
+    />
+  );
+}
+
 export default function AppLayout() {
   const { t } = useTranslation();
   const { user, signOut } = useAuth();
@@ -48,7 +84,14 @@ export default function AppLayout() {
         { title: t('components.layout.evaluations'), href: '/evaluations', icon: FileText },
         { title: t('components.layout.patients'), href: '/patients', icon: Users },
         { title: t('components.layout.inventory'), href: '/inventory', icon: Package },
-        { title: t('components.layout.profile'), href: '/profile', icon: User },
+      ],
+    },
+    {
+      label: t('components.layout.account'),
+      items: [
+        { title: t('components.layout.profile'), href: '/profile', icon: User, exact: true },
+        { title: t('components.layout.subscription'), href: '/profile?tab=assinatura', icon: CreditCard },
+        { title: t('components.layout.support'), href: 'mailto:suporte@tosmile.ai', icon: HelpCircle, external: true },
       ],
     },
   ], [t]);
@@ -62,26 +105,36 @@ export default function AppLayout() {
     staleTime: QUERY_STALE_TIMES.MEDIUM,
   });
 
-  const userInfo = useMemo(() => {
-    const storageAvatar = profile?.avatar_url
-      ? profiles.getAvatarPublicUrl(profile.avatar_url)
-      : undefined;
-    const oauthAvatar = user?.user_metadata?.avatar_url as string | undefined;
+  const oauthAvatar = user?.user_metadata?.avatar_url as string | undefined;
+  const storageAvatar = profile?.avatar_url
+    ? profiles.getAvatarPublicUrl(profile.avatar_url)
+    : undefined;
 
-    return {
-      name: profile?.full_name ?? user?.user_metadata?.full_name ?? user?.email,
-      email: user?.email,
-      image: storageAvatar || oauthAvatar,
-    };
-  }, [profile, user?.user_metadata?.full_name, user?.user_metadata?.avatar_url, user?.email]);
+  // Ordered fallback chain: Storage → OAuth (filtered to only truthy values)
+  const avatarUrls = useMemo(
+    () => [storageAvatar, oauthAvatar].filter((u): u is string => !!u),
+    [storageAvatar, oauthAvatar],
+  );
 
-  const userMenuItems = useMemo(() => [
-    { label: t('components.layout.subscription'), href: '/profile?tab=assinatura', icon: CreditCard },
-    { label: t('components.layout.support'), href: 'mailto:suporte@tosmile.ai', icon: HelpCircle },
-  ], [t]);
+  const userInfo = useMemo(() => ({
+    name: profile?.full_name ?? user?.user_metadata?.full_name ?? user?.email,
+    email: user?.email,
+    image: avatarUrls[0],
+  }), [profile?.full_name, user?.user_metadata?.full_name, user?.email, avatarUrls]);
+
+  // Custom renderAvatar — fallback chain: Storage URL → OAuth URL → initials
+  // key={urls.join} resets component state when the URL list changes
+  const renderAvatar = useCallback(
+    (props: { src: string; alt: string; width: number; height: number; className: string }) =>
+      <AvatarWithFallback key={avatarUrls.join(',')} urls={avatarUrls} alt={props.alt} width={props.width} height={props.height} className={props.className} />,
+    [avatarUrls],
+  );
+
+  // User menu — only theme toggle and sign out remain (Perfil/Assinatura/Suporte moved to nav)
+  const userMenuItems = useMemo(() => [] as Array<{ label: string; href: string; icon?: typeof CreditCard }>, []);
 
   const themeToggleSlot = useMemo(() => <ThemeToggle />, []);
-  const footerSlot = useMemo(() => <CreditBadge variant="compact" className="w-full justify-center" />, []);
+  const footerSlot = useMemo(() => <SidebarCredits />, []);
   const headerRightSlot = useMemo(() => <CreditBadge variant="compact" />, []);
 
   return (
@@ -91,10 +144,10 @@ export default function AppLayout() {
         logoSrc: '/logo.svg',
         icon: BrandToothIcon,
         // PageShell types say string, but it renders as React children — JSX works at runtime.
-        // This is more reliable than CSS :has() selectors for applying the brand gradient.
-        title: (<span className="text-gradient-brand">{BRAND_NAME}</span>) as unknown as string,
+        title: (<span className="text-base font-bold tracking-wide text-sidebar-foreground">{BRAND_NAME}</span>) as unknown as string,
         href: '/dashboard',
       }}
+      renderAvatar={renderAvatar}
       headerThemeToggle={themeToggleSlot}
       navigation={navigation}
       user={userInfo}

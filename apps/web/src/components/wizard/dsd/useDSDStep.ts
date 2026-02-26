@@ -695,14 +695,6 @@ export function useDSDStep({
       return;
     }
 
-    // Photo quality gate: block DSD simulation if photo is unsuitable for image editing
-    // Score evaluates crown visibility (lip coverage), focus, lighting — not just "can I see teeth"
-    if (typeof photoQualityScore === 'number' && photoQualityScore < 55) {
-      setError(t('errors.photoQualityInsufficient'));
-      trackEvent('dsd_blocked_photo_quality', { score: photoQualityScore });
-      return;
-    }
-
     setIsAnalyzing(true);
     setError(null);
     setCurrentStep(0);
