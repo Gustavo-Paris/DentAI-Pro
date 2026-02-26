@@ -64,3 +64,7 @@ deno.lock
 
 # QA artifacts
 qa-network-requests.txt
+
+# E2E credentials — must be in CI secrets, not in repo
+apps/web/.env.e2e
+apps/web/e2e/.auth/
