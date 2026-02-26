@@ -102,6 +102,7 @@ Deno.serve(async (req) => {
 
     if (inventoryError) {
       logger.error("Error fetching inventory:", inventoryError);
+      return createErrorResponse("Erro ao buscar inventário do usuário", 500, corsHeaders);
     }
 
     const inventoryResinIds = userInventory?.map((i: { resin_id: string }) => i.resin_id) || [];

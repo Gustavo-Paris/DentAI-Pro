@@ -514,7 +514,25 @@ export async function deleteSession(sessionId: string, userId: string) {
 
 export async function invokeEdgeFunction(name: string, body: Record<string, unknown>) {
   const { error } = await supabase.functions.invoke(name, { body });
-  if (error) throw error;
+  if (error) {
+    // Extract structured error body from FunctionsHttpError (same pattern as useAuthenticatedFetch)
+    const context = (error as { context?: Response }).context;
+    if (context && typeof context.json === 'function') {
+      try {
+        const errorBody = await context.json();
+        const serverMessage = errorBody?.error || errorBody?.message;
+        if (serverMessage) {
+          const enriched = new Error(serverMessage);
+          (enriched as { code?: string }).code = errorBody?.code;
+          (enriched as { status?: number }).status = context.status || 0;
+          throw enriched;
+        }
+      } catch (parseError) {
+        if (parseError instanceof Error && (parseError as { code?: string }).code) throw parseError;
+      }
+    }
+    throw error;
+  }
 }
 
 // ---------------------------------------------------------------------------

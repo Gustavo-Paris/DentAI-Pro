@@ -272,11 +272,15 @@ Deno.serve(async (req: Request) => {
           updateData.dsd_simulation_layers = existingLayers;
         }
 
-        await supabase
+        const { error: dbError } = await supabase
           .from("evaluations")
           .update(updateData)
           .eq("id", evaluationId)
           .eq("user_id", user.id);
+
+        if (dbError) {
+          logger.error("Failed to save DSD simulation result to DB:", dbError);
+        }
       }
     }
 
