@@ -652,9 +652,10 @@ describe('toggleResinInSet', () => {
 
 describe('useInventoryManagement default state', () => {
   it('should have correct defaults when query data is undefined', () => {
-    const allItems = undefined ?? [];
-    const total = undefined ?? 0;
-    const catalog = undefined ?? [];
+    const undef = undefined as unknown;
+    const allItems = undef ?? [];
+    const total = undef ?? 0;
+    const catalog = undef ?? [];
 
     expect(allItems).toEqual([]);
     expect(total).toBe(0);

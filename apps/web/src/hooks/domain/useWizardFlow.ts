@@ -283,7 +283,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
   useEffect(() => {
     if (needsReanalysisRef.current && nav.step === 3 && !!imageBase64 && !photo.isAnalyzing) {
       needsReanalysisRef.current = false;
-      console.info('[WizardFlow] Draft restored at analysis step — re-triggering analyzePhoto()');
+      console.warn('[WizardFlow] Draft restored at analysis step — re-triggering analyzePhoto()');
       // Credits were already confirmed in the original session — skip the dialog.
       // The edge function still validates credits server-side.
       nav.fullFlowCreditsConfirmedRef.current = true;

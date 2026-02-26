@@ -119,7 +119,7 @@ export default function Patients() {
         }
       }
       if (field === 'phone') {
-        if (value && !/^[\d\s\(\)\-\+]{8,}$/.test(value)) {
+        if (value && !/^[\d\s()\-+]{8,}$/.test(value)) {
           next.phone = t('validation.invalidPhone');
         } else {
           delete next.phone;
