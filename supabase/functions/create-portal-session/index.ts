@@ -1,4 +1,4 @@
-import Stripe from "npm:stripe@14.14.0";
+import Stripe from "npm:stripe@17";
 import { getCorsHeaders, createErrorResponse } from "../_shared/cors.ts";
 import { getSupabaseClient, authenticateRequest, isAuthError, withErrorBoundary } from "../_shared/middleware.ts";
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
@@ -6,7 +6,7 @@ import { logger } from "../_shared/logger.ts";
 import { ALLOWED_ORIGINS } from "../_shared/allowed-origins.ts";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-  apiVersion: "2023-10-16",
+  apiVersion: "2024-09-30.acacia",
   httpClient: Stripe.createFetchHttpClient(),
 });
 

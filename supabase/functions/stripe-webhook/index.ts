@@ -1,11 +1,11 @@
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import type { SupabaseClient } from "jsr:@supabase/supabase-js@2";
-import Stripe from "npm:stripe@14.14.0";
+import Stripe from "npm:stripe@17";
 import { logger } from "../_shared/logger.ts";
 import { sendEmail, paymentReceivedEmail, paymentFailedEmail } from "../_shared/email.ts";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-  apiVersion: "2023-10-16",
+  apiVersion: "2024-09-30.acacia",
   httpClient: Stripe.createFetchHttpClient(),
 });
 
