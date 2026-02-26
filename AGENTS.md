@@ -44,6 +44,7 @@ AGENTS.md (este arquivo)
 |--------|---------|-----------|
 | web | [[apps/web/AGENTS.md]] | App principal - decisão clínica odontológica com IA |
 | supabase | [[supabase/AGENTS.md]] | Edge functions backend (Deno) - IA, billing, LGPD |
+| packages | [[packages/AGENTS.md]] | Índice de packages (logger local + PageShell externo) |
 | logger | [[packages/logger/AGENTS.md]] | Logger compartilhado |
 
 > [!info] Packages Externos
@@ -133,4 +134,4 @@ Filhos podem sobrescrever com `@override: razão`.
 - [[README]] — Setup e overview técnico
 
 ---
-*Atualizado: 2026-02-25*
+*Atualizado: 2026-02-26*

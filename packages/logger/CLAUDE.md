@@ -10,7 +10,7 @@
 
 - **O quê**: Logger compartilhado do monorepo
 - **Stack**: TypeScript
-- **Pai**: [[../../CLAUDE.md]]
+- **Pai**: [[../CLAUDE.md]]
 
 ## Links
 
@@ -18,4 +18,4 @@
 - [[../../AGENTS.md]] - Índice geral
 
 ---
-*Atualizado: 2026-02-23*
+*Atualizado: 2026-02-26*

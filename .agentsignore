@@ -12,3 +12,16 @@ coverage/
 # Cache e temporários
 .cache/
 *.tsbuildinfo
+
+# External packages (only node_modules/, no local source)
+packages/page-shell/
+packages/pageshell-composites/
+packages/pageshell-core/
+packages/pageshell-domain/
+packages/pageshell-features/
+packages/pageshell-interactions/
+packages/pageshell-layouts/
+packages/pageshell-primitives/
+packages/pageshell-shell/
+packages/pageshell-theme/
+packages/pageshell-themes/
