@@ -2,7 +2,7 @@ import { getCorsHeaders, handleCorsPreFlight, createErrorResponse, ERROR_MESSAGE
 import { getSupabaseClient, authenticateRequest, isAuthError } from "../_shared/middleware.ts";
 import { logger } from "../_shared/logger.ts";
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
-import { checkAndUseCredits, createInsufficientCreditsResponse, refundCredits } from "../_shared/credits.ts";
+import { withCreditProtection, isInsufficientCreditsResponse } from "../_shared/withCreditProtection.ts";
 import type { DSDAnalysis, DSDResult } from "./types.ts";
 import { validateRequest } from "./validation.ts";
 import { hasSevereDestruction } from "./analysis-helpers.ts";
@@ -32,21 +32,14 @@ Deno.serve(async (req: Request) => {
   }
   logger.log(`[${reqId}] generate-dsd: start${clientReqId ? ` (clientReqId=${clientReqId})` : ''}`);
 
-  // Track credit state for refund on error (must be outside try for catch access)
-  let creditsConsumed = false;
-  let supabaseForRefund: ReturnType<typeof getSupabaseClient> | null = null;
-  let userIdForRefund: string | null = null;
-
   try {
     // Create service role client
     const supabase = getSupabaseClient();
-    supabaseForRefund = supabase;
 
     // Validate authentication (includes deleted/banned checks)
     const authResult = await authenticateRequest(req, supabase, corsHeaders);
     if (isAuthError(authResult)) return authResult;
     const { user } = authResult;
-    userIdForRefund = user.id;
 
     // Check rate limit (AI_HEAVY: 10/min, 50/hour, 200/day)
     const rateLimitResult = await checkRateLimit(
@@ -175,148 +168,145 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    // Credits: only charge after analysis succeeds (skip for follow-up calls)
-    if (!isFollowUpCall) {
-      const creditResult = await checkAndUseCredits(supabase, user.id, "dsd_simulation", reqId);
-      if (!creditResult.allowed) {
-        logger.warn(`Insufficient credits for user ${user.id} on dsd_simulation`);
-        return createInsufficientCreditsResponse(creditResult, corsHeaders);
-      }
-      creditsConsumed = true;
-    }
+    // Credits + simulation + response wrapped in credit protection (auto-refund on error)
+    return await withCreditProtection(
+      { supabase, userId: user.id, operation: "dsd_simulation", operationId: reqId, corsHeaders },
+      async (credits) => {
+        // Credits: only charge after analysis succeeds (skip for follow-up calls)
+        if (!isFollowUpCall) {
+          const creditResult = await credits.consume();
+          if (isInsufficientCreditsResponse(creditResult)) return creditResult;
+        }
 
-    // === POST-PROCESSING SAFETY NETS ===
-    applyPostProcessingSafetyNets(analysis, additionalPhotos);
+        // === POST-PROCESSING SAFETY NETS ===
+        applyPostProcessingSafetyNets(analysis, additionalPhotos);
 
-    // NEW: If analysisOnly, return immediately without generating simulation
-    if (analysisOnly) {
-      const destructionCheck = hasSevereDestruction(analysis);
-      const result: DSDResult = {
-        analysis,
-        simulation_url: null,
-        simulation_note: destructionCheck.isLimited
-          ? destructionCheck.reason || undefined
-          : "Simulação será gerada em segundo plano",
-      };
-
-      logger.log("Returning analysis only (simulation will be generated in background)");
-
-      return new Response(JSON.stringify(result), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Check for severe destruction that limits simulation value
-    const destructionCheck = hasSevereDestruction(analysis);
-    let simulationNote: string | undefined;
-
-    if (destructionCheck.isLimited) {
-      logger.log("Severe destruction detected:", destructionCheck.reason);
-      simulationNote = destructionCheck.reason || undefined;
-    }
-
-    // Generate simulation image
-    let simulationUrl: string | null = null;
-    let simulationDebug: string | undefined;
-    let lipsMoved = false;
-    try {
-      const simResult = await generateSimulation(imageBase64, analysis, user.id, supabase, toothShape || 'natural', patientPreferences, layerType, inputAlreadyProcessed);
-      simulationUrl = simResult.url;
-      lipsMoved = simResult.lips_moved || false;
-    } catch (simError) {
-      const simMsg = simError instanceof Error ? simError.message : String(simError);
-      logger.error("Simulation error:", simMsg);
-      simulationDebug = simMsg;
-      // Continue without simulation - analysis is still valid
-    }
-
-    // Update evaluation if provided (ownership already verified above)
-    if (evaluationId) {
-      const { data: evalData, error: evalError } = await supabase
-        .from("evaluations")
-        .select("dsd_simulation_layers")
-        .eq("id", evaluationId)
-        .single();
-
-      if (!evalError && evalData) {
-        const updateData: Record<string, unknown> = {
-          dsd_analysis: analysis,
-          dsd_simulation_url: simulationUrl,
-          dsd_image_hash: dsdImageHash,
-        };
-
-        // When layerType is present, update the layers array
-        if (layerType && simulationUrl) {
-          const existingLayers = (evalData.dsd_simulation_layers as Array<Record<string, unknown>>) || [];
-          const newLayer = {
-            type: layerType,
-            label: layerType === 'restorations-only' ? 'Apenas Restaurações'
-              : layerType === 'complete-treatment' ? 'Tratamento Completo'
-              : layerType === 'root-coverage' ? 'Recobrimento Radicular'
-              : 'Restaurações + Clareamento',
-            simulation_url: simulationUrl,
-            whitening_level: patientPreferences?.whiteningLevel || 'natural',
-            includes_gengivoplasty: (layerType === 'complete-treatment' || layerType === 'root-coverage') &&
-              analysis.suggestions.some(s => {
-                const t = (s.treatment_indication || '').toLowerCase();
-                return t === 'gengivoplastia' || t === 'recobrimento_radicular';
-              }),
+        // If analysisOnly, return immediately without generating simulation
+        if (analysisOnly) {
+          const destructionCheck = hasSevereDestruction(analysis);
+          const result: DSDResult = {
+            analysis,
+            simulation_url: null,
+            simulation_note: destructionCheck.isLimited
+              ? destructionCheck.reason || undefined
+              : "Simulação será gerada em segundo plano",
           };
-          // Replace existing layer of same type or append
-          const idx = existingLayers.findIndex((l) => l.type === layerType);
-          if (idx >= 0) {
-            existingLayers[idx] = newLayer;
-          } else {
-            existingLayers.push(newLayer);
+
+          logger.log("Returning analysis only (simulation will be generated in background)");
+
+          return new Response(JSON.stringify(result), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        // Check for severe destruction that limits simulation value
+        const destructionCheck = hasSevereDestruction(analysis);
+        let simulationNote: string | undefined;
+
+        if (destructionCheck.isLimited) {
+          logger.log("Severe destruction detected:", destructionCheck.reason);
+          simulationNote = destructionCheck.reason || undefined;
+        }
+
+        // Generate simulation image
+        let simulationUrl: string | null = null;
+        let simulationDebug: string | undefined;
+        let lipsMoved = false;
+        try {
+          const simResult = await generateSimulation(imageBase64, analysis, user.id, supabase, toothShape || 'natural', patientPreferences, layerType, inputAlreadyProcessed);
+          simulationUrl = simResult.url;
+          lipsMoved = simResult.lips_moved || false;
+        } catch (simError) {
+          const simMsg = simError instanceof Error ? simError.message : String(simError);
+          logger.error("Simulation error:", simMsg);
+          simulationDebug = simMsg;
+          // Continue without simulation - analysis is still valid
+        }
+
+        // Update evaluation if provided (ownership already verified above)
+        if (evaluationId) {
+          const { data: evalData, error: evalError } = await supabase
+            .from("evaluations")
+            .select("dsd_simulation_layers")
+            .eq("id", evaluationId)
+            .single();
+
+          if (!evalError && evalData) {
+            const updateData: Record<string, unknown> = {
+              dsd_analysis: analysis,
+              dsd_simulation_url: simulationUrl,
+              dsd_image_hash: dsdImageHash,
+            };
+
+            // When layerType is present, update the layers array
+            if (layerType && simulationUrl) {
+              const existingLayers = (evalData.dsd_simulation_layers as Array<Record<string, unknown>>) || [];
+              const newLayer = {
+                type: layerType,
+                label: layerType === 'restorations-only' ? 'Apenas Restaurações'
+                  : layerType === 'complete-treatment' ? 'Tratamento Completo'
+                  : layerType === 'root-coverage' ? 'Recobrimento Radicular'
+                  : 'Restaurações + Clareamento',
+                simulation_url: simulationUrl,
+                whitening_level: patientPreferences?.whiteningLevel || 'natural',
+                includes_gengivoplasty: (layerType === 'complete-treatment' || layerType === 'root-coverage') &&
+                  analysis.suggestions.some(s => {
+                    const t = (s.treatment_indication || '').toLowerCase();
+                    return t === 'gengivoplastia' || t === 'recobrimento_radicular';
+                  }),
+              };
+              // Replace existing layer of same type or append
+              const idx = existingLayers.findIndex((l) => l.type === layerType);
+              if (idx >= 0) {
+                existingLayers[idx] = newLayer;
+              } else {
+                existingLayers.push(newLayer);
+              }
+              updateData.dsd_simulation_layers = existingLayers;
+            }
+
+            const { error: dbError } = await supabase
+              .from("evaluations")
+              .update(updateData)
+              .eq("id", evaluationId)
+              .eq("user_id", user.id);
+
+            if (dbError) {
+              logger.error("Failed to save DSD simulation result to DB:", dbError);
+            }
           }
-          updateData.dsd_simulation_layers = existingLayers;
         }
 
-        const { error: dbError } = await supabase
-          .from("evaluations")
-          .update(updateData)
-          .eq("id", evaluationId)
-          .eq("user_id", user.id);
-
-        if (dbError) {
-          logger.error("Failed to save DSD simulation result to DB:", dbError);
+        // Log simulation debug info server-side
+        if (simulationDebug && !simulationUrl) {
+          logger.warn(`[${reqId}] Simulation failed (debug): ${simulationDebug}`);
         }
-      }
-    }
 
-    // Log simulation debug info server-side
-    if (simulationDebug && !simulationUrl) {
-      logger.warn(`[${reqId}] Simulation failed (debug): ${simulationDebug}`);
-    }
+        // Return result with note if applicable
+        const result: DSDResult & { layer_type?: string; lips_moved?: boolean; simulation_debug?: string } = {
+          analysis,
+          simulation_url: simulationUrl,
+          simulation_note: simulationNote,
+        };
+        // Include debug info for layer generation calls (helps client-side error logging)
+        if (simulationDebug && !simulationUrl && regenerateSimulationOnly) {
+          result.simulation_debug = simulationDebug.substring(0, 300);
+        }
+        if (layerType) {
+          result.layer_type = layerType;
+        }
+        if (lipsMoved) {
+          result.lips_moved = true;
+        }
 
-    // Return result with note if applicable
-    const result: DSDResult & { layer_type?: string; lips_moved?: boolean; simulation_debug?: string } = {
-      analysis,
-      simulation_url: simulationUrl,
-      simulation_note: simulationNote,
-    };
-    // Include debug info for layer generation calls (helps client-side error logging)
-    if (simulationDebug && !simulationUrl && regenerateSimulationOnly) {
-      result.simulation_debug = simulationDebug.substring(0, 300);
-    }
-    if (layerType) {
-      result.layer_type = layerType;
-    }
-    if (lipsMoved) {
-      result.lips_moved = true;
-    }
-
-    return new Response(JSON.stringify(result), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+        return new Response(JSON.stringify(result), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      },
+    );
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     logger.error(`[${reqId}] DSD generation error:`, msg);
-    // Refund credits on unexpected errors — user paid but got nothing
-    if (creditsConsumed && supabaseForRefund && userIdForRefund) {
-      await refundCredits(supabaseForRefund, userIdForRefund, "dsd_simulation", reqId);
-      logger.log(`[${reqId}] Refunded DSD credits for user ${userIdForRefund} due to error`);
-    }
     return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders, undefined, reqId);
   }
 });

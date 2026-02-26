@@ -4,7 +4,7 @@ import { logger } from "../_shared/logger.ts";
 import { callGeminiVisionWithTools, GeminiError } from "../_shared/gemini.ts";
 import { callClaudeVisionWithTools, ClaudeError } from "../_shared/claude.ts";
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
-import { checkAndUseCredits, createInsufficientCreditsResponse, refundCredits } from "../_shared/credits.ts";
+import { withCreditProtection, isInsufficientCreditsResponse } from "../_shared/withCreditProtection.ts";
 import { getPrompt } from "../_shared/prompts/registry.ts";
 import { withMetrics } from "../_shared/prompts/index.ts";
 import type { PromptDefinition } from "../_shared/prompts/types.ts";
@@ -32,15 +32,9 @@ Deno.serve(async (req) => {
   const step = (label: string) => logger.log(`[${reqId}] ${label} (+${Date.now() - t0}ms)`);
   step("analyze-dental-photo: start");
 
-  // Track credit state for refund on error (must be outside try for catch access)
-  let creditsConsumed = false;
-  let supabaseForRefund: ReturnType<typeof getSupabaseClient> | null = null;
-  let userIdForRefund: string | null = null;
-
   try {
     // Create service role client for all operations
     const supabaseService = getSupabaseClient();
-    supabaseForRefund = supabaseService;
 
     // Validate authentication (includes deleted/banned checks)
     step("auth: authenticateRequest start");
@@ -49,7 +43,6 @@ Deno.serve(async (req) => {
     const { user } = authResult;
     step("auth: authenticateRequest done");
     const userId = user.id;
-    userIdForRefund = userId;
 
     step("rateLimit: check start");
     const rateLimitResult = await checkRateLimit(supabaseService, userId, "analyze-dental-photo", RATE_LIMITS.AI_HEAVY);
@@ -223,46 +216,42 @@ Deno.serve(async (req) => {
       return createErrorResponse(ERROR_MESSAGES.ANALYSIS_FAILED, 500, corsHeaders);
     }
 
-    // Credits: only charge after AI analysis succeeds
-    step("credits: check start");
-    const creditResult = await checkAndUseCredits(supabaseService, userId, "case_analysis", reqId);
-    if (!creditResult.allowed) {
-      logger.warn(`Insufficient credits for user ${userId} on case_analysis`);
-      return createInsufficientCreditsResponse(creditResult, corsHeaders);
-    }
-    creditsConsumed = true;
-    step("credits: consumed");
+    // Credits + post-processing wrapped in credit protection (auto-refund on error)
+    return await withCreditProtection(
+      { supabase: supabaseService, userId, operation: "case_analysis", operationId: reqId, corsHeaders },
+      async (credits) => {
+        step("credits: check start");
+        const creditResult = await credits.consume();
+        if (isInsufficientCreditsResponse(creditResult)) return creditResult;
+        step("credits: consumed");
 
-    // Post-process AI result: normalize, deduplicate, filter, sort, add warnings
-    const result = processAnalysisResult(analysisResult);
+        // Post-process AI result: normalize, deduplicate, filter, sort, add warnings
+        const result = processAnalysisResult(analysisResult);
 
-    // Ensure mandatory clinical safety disclaimer
-    const DISCLAIMER = 'Esta análise é assistida por IA e tem caráter de apoio à decisão clínica. Todos os achados devem ser confirmados por exame clínico e radiográfico complementar.';
-    if (result.observations) {
-      if (!result.observations.some((o: string) => o.includes('apoio à decisão'))) {
-        result.observations.unshift(DISCLAIMER);
-      }
-    } else {
-      result.observations = [DISCLAIMER];
-    }
+        // Ensure mandatory clinical safety disclaimer
+        const DISCLAIMER = 'Esta análise é assistida por IA e tem caráter de apoio à decisão clínica. Todos os achados devem ser confirmados por exame clínico e radiográfico complementar.';
+        if (result.observations) {
+          if (!result.observations.some((o: string) => o.includes('apoio à decisão'))) {
+            result.observations.unshift(DISCLAIMER);
+          }
+        } else {
+          result.observations = [DISCLAIMER];
+        }
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        analysis: result,
-      }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+        return new Response(
+          JSON.stringify({
+            success: true,
+            analysis: result,
+          }),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      },
     );
   } catch (error: unknown) {
     step(`CRASH: ${error instanceof Error ? error.message : String(error)}`);
     logger.error(`[${reqId}] Error analyzing photo:`, error);
-    // Refund credits on unexpected errors — user paid but got nothing
-    if (creditsConsumed && supabaseForRefund && userIdForRefund) {
-      await refundCredits(supabaseForRefund, userIdForRefund, "case_analysis", reqId);
-      logger.log(`[${reqId}] Refunded analysis credits for user ${userIdForRefund} due to error`);
-    }
     return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders, undefined, reqId);
   }
 });
