@@ -19,7 +19,6 @@ import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 
 import { INITIAL_FORM_DATA } from './wizard/constants';
-import { SAMPLE_CASE } from '@/data/sample-case';
 
 // Sub-hooks
 import { usePhotoAnalysis } from './wizard/usePhotoAnalysis';
@@ -28,6 +27,10 @@ import { useWizardSubmit } from './wizard/useWizardSubmit';
 import { useWizardNavigation } from './wizard/useWizardNavigation';
 import { useWizardReview } from './wizard/useWizardReview';
 import { useWizardDraftRestore } from './wizard/useWizardDraftRestore';
+import { useWizardCredits } from './wizard/useWizardCredits';
+import { useWizardAutoSave } from './wizard/useWizardAutoSave';
+import { useWizardSampleCase } from './wizard/useWizardSampleCase';
+import { useAnalysisResultSync } from './wizard/useAnalysisResultSync';
 
 // Types re-exported from wizard/types.ts
 export type { SubmissionStep, WizardFlowState, WizardFlowActions } from './wizard/types';
@@ -89,26 +92,15 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     whiteningLevel: 'natural',
   });
   const [dobValidationError, setDobValidationError] = useState(false);
-  const [isSampleCase, setIsSampleCase] = useState(false);
   const [originalToothTreatments, setOriginalToothTreatments] = useState<
     Record<string, TreatmentType>
   >({});
-
-  const [creditConfirmData, setCreditConfirmData] = useState<{
-    operation: string;
-    operationLabel: string;
-    cost: number;
-    remaining: number;
-  } | null>(null);
 
   // -------------------------------------------------------------------------
   // Refs
   // -------------------------------------------------------------------------
 
   const hasCheckedDraftRef = useRef(false);
-  const hasCheckedSampleRef = useRef(false);
-  const hasShownCreditWarningRef = useRef(false);
-  const creditConfirmResolveRef = useRef<((confirmed: boolean) => void) | null>(null);
 
   // Shared ref owned by orchestrator — used by both photo analysis and navigation
   const analysisAbortedRef = useRef(false);
@@ -133,29 +125,15 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
   const hasInventory = (inventoryData?.items?.length ?? 0) > 0;
 
   // -------------------------------------------------------------------------
-  // Credit confirmation
-  // -------------------------------------------------------------------------
-
-  const confirmCreditUse = useCallback(
-    (operation: string, operationLabel: string, costOverride?: number): Promise<boolean> => {
-      const cost = costOverride ?? getCreditCost(operation);
-      return new Promise((resolve) => {
-        creditConfirmResolveRef.current = resolve;
-        setCreditConfirmData({ operation, operationLabel, cost, remaining: creditsRemaining });
-      });
-    },
-    [getCreditCost, creditsRemaining],
-  );
-
-  const handleCreditConfirm = useCallback((confirmed: boolean) => {
-    creditConfirmResolveRef.current?.(confirmed);
-    creditConfirmResolveRef.current = null;
-    setCreditConfirmData(null);
-  }, []);
-
-  // -------------------------------------------------------------------------
   // Sub-hooks
   // -------------------------------------------------------------------------
+
+  // Credits
+  const credits = useWizardCredits({
+    getCreditCost,
+    creditsRemaining,
+    navigate,
+  });
 
   // Navigation (uses forward refs to break circular dependency with photo analysis)
   const nav = useWizardNavigation({
@@ -167,7 +145,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     getCreditCost,
     creditsRemaining,
     navigate,
-    confirmCreditUse,
+    confirmCreditUse: credits.confirmCreditUse,
     setPatientPreferences,
   });
 
@@ -180,7 +158,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     setStep: nav.setStep,
     isQuickCaseRef: nav.isQuickCaseRef,
     canUseCredits,
-    confirmCreditUse,
+    confirmCreditUse: credits.confirmCreditUse,
     fullFlowCreditsConfirmedRef: nav.fullFlowCreditsConfirmedRef,
     analysisAbortedRef,
     invokeFunction,
@@ -254,6 +232,42 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     vitaShadeManuallySetRef: photo.vitaShadeManuallySetRef,
   });
 
+  // Sample case detection
+  const { isSampleCase } = useWizardSampleCase({
+    searchParams,
+    setAnalysisResult,
+    setFormData,
+    setSelectedTeeth,
+    setToothTreatments,
+    setStep: nav.setStep,
+  });
+
+  // Analysis result → teeth sync
+  useAnalysisResultSync({
+    analysisResult,
+    setSelectedTeeth,
+    setToothTreatments,
+    setOriginalToothTreatments,
+    setFormData,
+  });
+
+  // Auto-save (state changes, visibility change, beforeunload)
+  useWizardAutoSave({
+    step: nav.step,
+    imageBase64,
+    formData,
+    selectedTeeth,
+    toothTreatments,
+    analysisResult,
+    dsdResult,
+    uploadedPhotoPath: photo.uploadedPhotoPath,
+    additionalPhotos,
+    patientPreferences,
+    vitaShadeManuallySet: photo.vitaShadeManuallySetRef.current,
+    saveDraft,
+    userId: user?.id,
+  });
+
   // -------------------------------------------------------------------------
   // Re-trigger analysis after draft restore at step 3
   // -------------------------------------------------------------------------
@@ -316,27 +330,6 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
   // Side Effects
   // -------------------------------------------------------------------------
 
-  // Low-credit warning on mount
-  useEffect(() => {
-    if (hasShownCreditWarningRef.current) return;
-
-    const fullWorkflowCost = getCreditCost('case_analysis') + getCreditCost('dsd_simulation');
-    if (creditsRemaining < fullWorkflowCost && creditsRemaining > 0) {
-      hasShownCreditWarningRef.current = true;
-      toast.warning(
-        t('toasts.wizard.lowCreditsWarning', { remaining: creditsRemaining, required: fullWorkflowCost }),
-        { duration: 6000, description: t('toasts.wizard.lowCreditsDescription') },
-      );
-    } else if (creditsRemaining === 0) {
-      hasShownCreditWarningRef.current = true;
-      toast.error(t('toasts.wizard.noCredits'), {
-        description: t('toasts.wizard.noCreditsDescription'),
-        action: { label: t('common.viewPlans'), onClick: () => navigate('/pricing') },
-        duration: 8000,
-      });
-    }
-  }, [creditsRemaining, getCreditCost, navigate, t]);
-
   // Check for pending draft on mount
   useEffect(() => {
     if (hasCheckedDraftRef.current) return;
@@ -351,145 +344,6 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     };
     checkDraft();
   }, [loadDraft, draftRestore]);
-
-  // Sample case: pre-fill state and jump to review step
-  useEffect(() => {
-    if (hasCheckedSampleRef.current) return;
-    hasCheckedSampleRef.current = true;
-
-    if (searchParams.get('sample') === 'true') {
-      setIsSampleCase(true);
-      setAnalysisResult(SAMPLE_CASE.analysisResult);
-      setFormData(SAMPLE_CASE.formData);
-      setSelectedTeeth([...SAMPLE_CASE.selectedTeeth]);
-      setToothTreatments({ ...SAMPLE_CASE.toothTreatments });
-      nav.setStep(5);
-    }
-  }, [searchParams, nav]);
-
-  // Auto-save when state changes (from step 1 with image)
-  useEffect(() => {
-    if (nav.step >= 1 && nav.step < 6 && imageBase64 !== null && user) {
-      saveDraft({
-        step: nav.step,
-        formData,
-        selectedTeeth,
-        toothTreatments,
-        analysisResult,
-        dsdResult,
-        uploadedPhotoPath: photo.uploadedPhotoPath,
-        additionalPhotos,
-        patientPreferences,
-        vitaShadeManuallySet: photo.vitaShadeManuallySetRef.current,
-      });
-    }
-  }, [
-    nav.step,
-    imageBase64,
-    formData,
-    selectedTeeth,
-    toothTreatments,
-    analysisResult,
-    dsdResult,
-    photo.uploadedPhotoPath,
-    additionalPhotos,
-    patientPreferences,
-    saveDraft,
-    user,
-  ]);
-
-  // Beforeunload warning — only fire after meaningful input (photo uploaded)
-  useEffect(() => {
-    const hasInput = nav.step >= 2 && nav.step <= 5 && imageBase64 !== null;
-    if (!hasInput) return;
-
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      e.returnValue = '';
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [nav.step, imageBase64]);
-
-  // Auto-save draft on visibilitychange (mobile tab switch, app switch)
-  // Complements beforeunload which is unreliable on iOS Safari / Android WebView
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden' && nav.step >= 2 && imageBase64 !== null && user) {
-        saveDraft({
-          step: nav.step,
-          formData,
-          selectedTeeth,
-          toothTreatments,
-          analysisResult,
-          dsdResult,
-          uploadedPhotoPath: photo.uploadedPhotoPath,
-          additionalPhotos,
-          patientPreferences,
-          vitaShadeManuallySet: photo.vitaShadeManuallySetRef.current,
-        });
-      }
-    };
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [
-    nav.step,
-    imageBase64,
-    formData,
-    selectedTeeth,
-    toothTreatments,
-    analysisResult,
-    dsdResult,
-    photo.uploadedPhotoPath,
-    additionalPhotos,
-    patientPreferences,
-    saveDraft,
-    user,
-  ]);
-
-  // Auto-select detected teeth and initialize per-tooth treatments
-  useEffect(() => {
-    if (analysisResult?.detected_teeth && analysisResult.detected_teeth.length > 0) {
-      const allTeeth = analysisResult.detected_teeth.map((dt) => dt.tooth);
-      // Preserve virtual entries (e.g. GENGIVO for gengivoplasty) that are not
-      // part of detected_teeth but were added by DSD integration.
-      setSelectedTeeth((prev) => {
-        const virtual = prev.filter((tooth) => !tooth.match(/^\d+$/));
-        return [...allTeeth, ...virtual];
-      });
-
-      setToothTreatments((prev) => {
-        const merged: Record<string, TreatmentType> = {};
-        analysisResult.detected_teeth.forEach((dt) => {
-          merged[dt.tooth] = prev[dt.tooth] || dt.treatment_indication || 'resina';
-        });
-        // Preserve virtual entries (e.g. GENGIVO)
-        for (const [key, val] of Object.entries(prev)) {
-          if (!key.match(/^\d+$/)) merged[key] = val;
-        }
-        return merged;
-      });
-
-      setOriginalToothTreatments((prev) => {
-        if (Object.keys(prev).length === 0) {
-          const original: Record<string, TreatmentType> = {};
-          analysisResult.detected_teeth.forEach((dt) => {
-            original[dt.tooth] = dt.treatment_indication || 'resina';
-          });
-          return original;
-        }
-        return prev;
-      });
-    }
-
-    if (analysisResult?.treatment_indication) {
-      setFormData((prev) => ({
-        ...prev,
-        treatmentType: analysisResult.treatment_indication as TreatmentType,
-      }));
-    }
-  }, [analysisResult]);
 
   // -------------------------------------------------------------------------
   // Return (memoized to stabilize object reference across renders)
@@ -533,7 +387,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
       isQuickCase: nav.isQuickCase,
       isSampleCase,
       canGoBack,
-      creditConfirmData,
+      creditConfirmData: credits.creditConfirmData,
 
       // Actions
       setImageBase64,
@@ -559,7 +413,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
       handlePatientBirthDateChange: review.handlePatientBirthDateChange,
       setDobValidationError,
       handleSubmit: handleSubmitWithCreditsCheck,
-      handleCreditConfirm,
+      handleCreditConfirm: credits.handleCreditConfirm,
       handleRestoreDraft,
       handleDiscardDraft: draftRestore.handleDiscardDraft,
     }),
@@ -600,7 +454,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
       nav.isQuickCase,
       isSampleCase,
       canGoBack,
-      creditConfirmData,
+      credits.creditConfirmData,
 
       // Action deps
       setImageBase64,
@@ -626,7 +480,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
       review.handlePatientBirthDateChange,
       setDobValidationError,
       handleSubmitWithCreditsCheck,
-      handleCreditConfirm,
+      credits.handleCreditConfirm,
       handleRestoreDraft,
       draftRestore.handleDiscardDraft,
     ],

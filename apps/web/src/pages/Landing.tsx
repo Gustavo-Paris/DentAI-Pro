@@ -49,7 +49,7 @@ export default function Landing() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border/50 glass-nav">
-        <nav className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between" aria-label="Main">
+        <nav className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between" aria-label={t('landing.navAriaLabel')}>
           <span className="text-lg sm:text-xl font-semibold tracking-[0.2em] font-display text-gradient-brand">{BRAND_NAME}</span>
           <div className="flex items-center gap-2 sm:gap-4">
             <ThemeToggle />

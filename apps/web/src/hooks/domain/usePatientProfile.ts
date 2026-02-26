@@ -10,7 +10,7 @@ import { QUERY_STALE_TIMES } from '@/lib/constants';
 import { EVALUATION_STATUS } from '@/lib/evaluation-status';
 import { logger } from '@/lib/logger';
 import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { getDateLocale } from '@/lib/date-utils';
 
 // ---------------------------------------------------------------------------
 // Query key factory
@@ -168,7 +168,7 @@ export function usePatientProfile(): PatientProfileState & PatientProfileActions
   const completedCases = sessions.reduce((sum, s) => sum + s.completedCount, 0);
   const firstVisit = sessions.length > 0 ? sessions[sessions.length - 1].created_at : null;
   const firstVisitFormatted = firstVisit
-    ? format(new Date(firstVisit), 'd/MMM', { locale: ptBR })
+    ? format(new Date(firstVisit), 'd/MMM', { locale: getDateLocale() })
     : '-';
 
   // ---- Loading ----

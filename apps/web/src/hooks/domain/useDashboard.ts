@@ -11,7 +11,7 @@ import { normalizeTreatmentType } from '@/lib/treatment-config';
 import { EVALUATION_STATUS } from '@/lib/evaluation-status';
 import i18n from '@/lib/i18n';
 import { format, startOfWeek, endOfWeek, subDays, startOfMonth, subMonths } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { getDateLocale, getDateFormat } from '@/lib/date-utils';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -217,7 +217,7 @@ function computeInsights(
   }
 
   const weeklyTrends: WeeklyTrendPoint[] = weekLabels.map(key => ({
-    label: format(new Date(key), 'd MMM', { locale: ptBR }),
+    label: format(new Date(key), getDateFormat('short'), { locale: getDateLocale() }),
     value: weekMap.get(key) || 0,
   }));
 
@@ -419,8 +419,8 @@ export function useDashboard(): DashboardState {
     const start = startOfWeek(now, { weekStartsOn: 1 });
     const end = endOfWeek(now, { weekStartsOn: 1 });
     return {
-      start: format(start, "d 'de' MMM", { locale: ptBR }),
-      end: format(end, "d 'de' MMM, yyyy", { locale: ptBR }),
+      start: format(start, getDateFormat('short'), { locale: getDateLocale() }),
+      end: format(end, getDateFormat('medium'), { locale: getDateLocale() }),
     };
   }, []);
 

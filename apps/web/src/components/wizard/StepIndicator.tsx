@@ -56,7 +56,7 @@ export function StepIndicator({
   );
 
   return (
-    <nav aria-label="Wizard progress" className="mb-4 sm:mb-8">
+    <nav aria-label={t('components.stepIndicator.ariaLabel')} className="mb-4 sm:mb-8">
       {/* Desktop Stepper */}
       <ol className="hidden sm:flex items-center justify-between" role="list">
         {steps.map((step, index) => {

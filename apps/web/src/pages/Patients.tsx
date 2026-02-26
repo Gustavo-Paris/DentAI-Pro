@@ -20,7 +20,8 @@ import { usePatientList } from '@/hooks/domain/usePatientList';
 import type { PatientWithStats } from '@/hooks/domain/usePatientList';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { getDateLocale, getDateFormat } from '@/lib/date-utils';
+import i18n from '@/lib/i18n';
 
 // =============================================================================
 // Static configs (no hook dependencies)
@@ -45,7 +46,7 @@ const PatientCardAdapter = memo(function PatientCardAdapter({ patient, index }: 
     phone: patient.phone,
     email: patient.email,
     lastVisit: patient.lastVisit
-      ? format(new Date(patient.lastVisit), "d 'de' MMM, yyyy", { locale: ptBR })
+      ? format(new Date(patient.lastVisit), getDateFormat('medium'), { locale: getDateLocale() })
       : undefined,
     createdAt: '',
     updatedAt: '',
@@ -170,14 +171,14 @@ export default function Patients() {
           label: t('patients.sortNameAsc'),
           direction: 'asc' as const,
           compare: (a: PatientWithStats, b: PatientWithStats) =>
-            a.name.localeCompare(b.name, 'pt-BR'),
+            a.name.localeCompare(b.name, i18n.language || 'pt-BR'),
         },
         {
           value: 'name-desc' as const,
           label: t('patients.sortNameDesc'),
           direction: 'desc' as const,
           compare: (a: PatientWithStats, b: PatientWithStats) =>
-            b.name.localeCompare(a.name, 'pt-BR'),
+            b.name.localeCompare(a.name, i18n.language || 'pt-BR'),
         },
         {
           value: 'cases' as const,

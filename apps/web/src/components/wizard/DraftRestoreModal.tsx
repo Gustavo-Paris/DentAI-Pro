@@ -1,6 +1,6 @@
 import { useMemo, useState, useCallback } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { getDateLocale } from '@/lib/date-utils';
 import { useTranslation } from 'react-i18next';
 import { Clock, Trash2, RotateCcw, Loader2 } from 'lucide-react';
 import {
@@ -32,8 +32,8 @@ export function DraftRestoreModal({
   const { t } = useTranslation();
   const [isRestoring, setIsRestoring] = useState(false);
   const timeAgo = useMemo(() => lastSavedAt
-    ? formatDistanceToNow(new Date(lastSavedAt), { addSuffix: true, locale: ptBR })
-    : 'recentemente', [lastSavedAt]);
+    ? formatDistanceToNow(new Date(lastSavedAt), { addSuffix: true, locale: getDateLocale() })
+    : t('components.wizard.draftRestore.recently'), [lastSavedAt, t]);
 
   const handleRestore = useCallback(async () => {
     setIsRestoring(true);

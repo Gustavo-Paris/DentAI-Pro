@@ -4,7 +4,7 @@ import { registerSW } from "virtual:pwa-register";
 import { toast } from "sonner";
 import App from "./App.tsx";
 import "./index.css";
-import "./lib/i18n"; // i18n initialization (must be before App)
+import i18n from "./lib/i18n"; // i18n initialization (must be before App)
 import { initWebVitals } from "./lib/webVitals";
 import { env } from "./lib/env";
 import { logger } from "./lib/logger";
@@ -50,11 +50,11 @@ createRoot(document.getElementById("root")!).render(<App />);
 if ("serviceWorker" in navigator) {
   const updateSW = registerSW({
     onNeedRefresh() {
-      toast("Nova versão disponível", {
-        description: "Atualize para obter as últimas melhorias.",
+      toast(i18n.t('pwa.newVersionAvailable'), {
+        description: i18n.t('pwa.updateDescription'),
         duration: Infinity,
         action: {
-          label: "Atualizar",
+          label: i18n.t('pwa.update'),
           onClick: () => updateSW(true),
         },
       });

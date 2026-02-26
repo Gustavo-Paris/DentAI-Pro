@@ -4,7 +4,7 @@ import { PageConfirmDialog } from '@parisgroup-ai/pageshell/interactions';
 import { Download, Plus, CheckCircle, Package, Sparkles, Loader2, Heart, AlertTriangle, RefreshCw } from 'lucide-react';
 import { ProtocolUnavailableAlert } from '@/components/ProtocolUnavailableAlert';
 import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { getDateLocale, getDateFormat } from '@/lib/date-utils';
 
 // Protocol components
 import CaseSummaryBox from '@/components/protocol/CaseSummaryBox';
@@ -95,7 +95,7 @@ export default function Result() {
               <div className="hidden print:block mb-8">
                 <h1 className="text-2xl font-semibold">{BRAND_NAME}</h1>
                 <p className="text-sm text-muted-foreground">
-                  {t('result.reportTitle')} • {format(new Date(evaluation.created_at), "d 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                  {t('result.reportTitle')} • {format(new Date(evaluation.created_at), getDateFormat('long'), { locale: getDateLocale() })}
                 </p>
               </div>
 
@@ -112,7 +112,7 @@ export default function Result() {
                         {formatToothLabel(evaluation.tooth)} • {evaluation.region.replace('-', ' ')}
                       </p>
                       <p className="text-xs text-muted-foreground mt-0.5 print:hidden">
-                        {format(new Date(evaluation.created_at), "d 'de' MMMM 'de' yyyy, HH:mm", { locale: ptBR })}
+                        {format(new Date(evaluation.created_at), `${getDateFormat('long')}, HH:mm`, { locale: getDateLocale() })}
                       </p>
                     </div>
                     {['resina', 'porcelana', 'coroa'].includes(r.treatmentType) && (

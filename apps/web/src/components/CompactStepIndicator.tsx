@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Check } from 'lucide-react';
 
 interface CompactStepIndicatorProps {
@@ -12,9 +13,10 @@ export const CompactStepIndicator = memo(function CompactStepIndicator({
   currentIndex,
   variant = 'vertical-compact',
 }: CompactStepIndicatorProps) {
+  const { t } = useTranslation();
   if (variant === 'horizontal') {
     return (
-      <div className="flex flex-wrap gap-x-4 gap-y-2" role="list" aria-label="Progress steps">
+      <div className="flex flex-wrap gap-x-4 gap-y-2" role="list" aria-label={t('components.compactStepIndicator.ariaLabel')}>
         {steps.map((step, i) => {
           const isCompleted = step.completed;
           const isActive = i === currentIndex;
@@ -51,7 +53,7 @@ export const CompactStepIndicator = memo(function CompactStepIndicator({
 
   // vertical-compact
   return (
-    <div className="space-y-2" role="list" aria-label="Progress steps">
+    <div className="space-y-2" role="list" aria-label={t('components.compactStepIndicator.ariaLabel')}>
       {steps.map((step, i) => {
         const isCompleted = step.completed;
         const isActive = i === currentIndex;

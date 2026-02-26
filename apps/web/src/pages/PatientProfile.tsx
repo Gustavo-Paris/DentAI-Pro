@@ -23,7 +23,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { getDateLocale, getDateFormat } from '@/lib/date-utils';
 import { DetailPage, GenericErrorState } from '@parisgroup-ai/pageshell/composites';
 import { PageTreatmentTimeline } from '@parisgroup-ai/domain-odonto-ai/treatments';
 import type { ProcedureInfo } from '@parisgroup-ai/domain-odonto-ai/treatments';
@@ -142,7 +142,7 @@ export default function PatientProfile() {
                 tooth: session.teeth.length > 0 ? parseInt(session.teeth[0], 10) : undefined,
                 status: session.completedCount === session.evaluationCount ? 'completed' as const : 'in-progress' as const,
                 cost: { value: 0, currency: 'BRL' },
-                performedDate: format(new Date(session.created_at), "d 'de' MMM, yyyy", { locale: ptBR }),
+                performedDate: format(new Date(session.created_at), getDateFormat('medium'), { locale: getDateLocale() }),
                 createdAt: session.created_at,
                 updatedAt: session.created_at,
               }));

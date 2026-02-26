@@ -10,7 +10,7 @@ import {
   FileText, FileWarning, ChevronRight, ArrowRight, Plus,
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { getDateLocale } from '@/lib/date-utils';
 import { useScrollReveal, useScrollRevealChildren } from '@/hooks/useScrollReveal';
 import { SessionCard } from './SessionCard';
 
@@ -60,7 +60,7 @@ function DraftCard({
             <p className="text-xs text-muted-foreground">
               {t('dashboard.draft.savedAgo', { time: formatDistanceToNow(new Date(draft.lastSavedAt), {
                 addSuffix: true,
-                locale: ptBR,
+                locale: getDateLocale(),
               }) })}
             </p>
           </div>
@@ -232,15 +232,15 @@ function ActivityFeedSection({ sessions, loading }: { sessions: DashboardSession
 
   const items: ActivityFeedItem[] = sessions.flatMap((session) => {
     const feedItems: ActivityFeedItem[] = [];
-    const relativeTime = formatDistanceToNow(new Date(session.created_at), { addSuffix: true, locale: ptBR });
+    const relativeTime = formatDistanceToNow(new Date(session.created_at), { addSuffix: true, locale: getDateLocale() });
     feedItems.push({
       id: session.session_id,
       type: 'treatment' as const,
       title: session.patient_name || t('dashboard.session.unnamedCase', {
-        date: format(new Date(session.created_at), 'dd/MM', { locale: ptBR }),
+        date: format(new Date(session.created_at), 'dd/MM', { locale: getDateLocale() }),
         count: session.teeth.length,
       }),
-      description: `${session.teeth.length} ${session.teeth.length === 1 ? 'caso' : 'casos'} \u2022 ${session.treatmentTypes.join(', ')}`,
+      description: `${t('evaluation.case', { count: session.teeth.length })} \u2022 ${session.treatmentTypes.join(', ')}`,
       timestamp: relativeTime,
     });
     if (session.hasDSD) {

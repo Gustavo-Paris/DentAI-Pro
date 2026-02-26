@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/command';
 import { User, Calendar, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { getDateLocale, getDateFormat } from '@/lib/date-utils';
 import { logger } from '@/lib/logger';
 
 export interface SearchResult {
@@ -102,7 +102,7 @@ export function GlobalSearch({ fetchEvaluations }: GlobalSearchProps) {
       session_id: sessionId,
       type: 'patient' as const,
       title: evals[0].patient_name || t('components.globalSearch.noName'),
-      subtitle: format(new Date(evals[0].created_at), "d 'de' MMM yyyy", { locale: ptBR }),
+      subtitle: format(new Date(evals[0].created_at), getDateFormat('medium'), { locale: getDateLocale() }),
       teethCount: evals.length,
       teeth: evals.map((e) => e.tooth),
     }));
@@ -146,8 +146,8 @@ export function GlobalSearch({ fetchEvaluations }: GlobalSearchProps) {
           if (e.tooth.toLowerCase().includes(searchLower)) return true;
 
           // Search by date (Brazilian format)
-          const dateStr = format(new Date(e.created_at), "d 'de' MMMM yyyy", {
-            locale: ptBR,
+          const dateStr = format(new Date(e.created_at), getDateFormat('long'), {
+            locale: getDateLocale(),
           });
           if (dateStr.toLowerCase().includes(searchLower)) return true;
 

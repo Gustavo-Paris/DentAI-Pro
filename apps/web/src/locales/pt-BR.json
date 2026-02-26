@@ -731,6 +731,7 @@
     "ctaFeature3": "Resultado em minutos",
     "ctaCTA": "Criar Conta Gratuita",
     "login": "Entrar",
+    "navAriaLabel": "Principal",
     "start": "Começar",
     "testimonial1Quote": "Economizo horas de pesquisa em cada caso. A IA realmente entende as nuances do planejamento clínico e me dá confiança nas minhas escolhas.",
     "testimonial1Author": "Dr. Carlos Mendonça",
@@ -1258,6 +1259,7 @@
         "description": "Você tem uma avaliação não finalizada salva automaticamente.",
         "lastSaved": "Último salvamento: {{time}}",
         "continueOrNew": "Deseja continuar de onde parou ou começar uma nova avaliação?",
+        "recently": "recentemente",
         "startOver": "Começar do zero",
         "continue": "Continuar"
       },
@@ -1857,6 +1859,7 @@
       "unifiedProtocolBreadcrumb": "Protocolo Unificado ({{count}} dentes)"
     },
     "stepIndicator": {
+      "ariaLabel": "Progresso do wizard",
       "photo": "Foto",
       "preferences": "Preferências",
       "analysis": "Análise",
@@ -1887,6 +1890,9 @@
       "light": "Claro",
       "dark": "Escuro",
       "tooltip": "Alternar tema"
+    },
+    "compactStepIndicator": {
+      "ariaLabel": "Etapas de progresso"
     },
     "comparisonSlider": {
       "zoomOut": "Diminuir zoom",
@@ -2302,6 +2308,11 @@
       "generatedBy": "Gerado por ToSmile.ai",
       "page": "Pagina {{page}}"
     }
+  },
+  "pwa": {
+    "newVersionAvailable": "Nova versão disponível",
+    "update": "Atualizar",
+    "updateDescription": "Atualize para obter as últimas melhorias."
   },
   "specialties": {
     "ortodontia": "Ortodontia",

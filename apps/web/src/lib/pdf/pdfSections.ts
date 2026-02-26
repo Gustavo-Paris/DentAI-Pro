@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { getDateLocale } from '@/lib/date-utils';
 import type { PDFData } from '@/types/protocol';
 import { getConfidenceConfig } from '@/lib/confidence-config';
 import { logger } from '@/lib/logger';
@@ -39,7 +39,7 @@ export function renderHeader(ctx: PDFRenderContext, data: PDFData) {
   }
 
   // Date and professional info on right
-  const dateStr = format(new Date(data.createdAt), "dd/MM/yyyy", { locale: ptBR });
+  const dateStr = format(new Date(data.createdAt), "dd/MM/yyyy", { locale: getDateLocale() });
   pdf.setFontSize(9);
   pdf.setTextColor(255, 255, 255);
   pdf.text(dateStr, pageWidth - margin, 14, { align: 'right' });

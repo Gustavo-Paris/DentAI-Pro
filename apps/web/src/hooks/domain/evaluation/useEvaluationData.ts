@@ -7,7 +7,7 @@ import type { SessionEvaluationRow } from '@/data/evaluations';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { getDateLocale, getDateFormat } from '@/lib/date-utils';
 import { QUERY_STALE_TIMES } from '@/lib/constants';
 import { EVALUATION_STATUS } from '@/lib/evaluation-status';
 import type { PendingTooth } from '@/types/evaluation';
@@ -96,14 +96,14 @@ export function useEvaluationData(): UseEvaluationDataReturn {
 
   // ---- Computed ----
   const evaluationDate = evals[0]?.created_at
-    ? format(new Date(evals[0].created_at), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })
+    ? format(new Date(evals[0].created_at), getDateFormat('long'), { locale: getDateLocale() })
     : '';
   const evaluationDateShort = evals[0]?.created_at
-    ? format(new Date(evals[0].created_at), 'dd/MM/yyyy', { locale: ptBR })
+    ? format(new Date(evals[0].created_at), 'dd/MM/yyyy', { locale: getDateLocale() })
     : '';
   const patientName = evals[0]?.patient_name
     || (evals[0]?.created_at
-      ? `${t('evaluation.session')} — ${format(new Date(evals[0].created_at), "d 'de' MMM", { locale: ptBR })}`
+      ? `${t('evaluation.session')} — ${format(new Date(evals[0].created_at), getDateFormat('short'), { locale: getDateLocale() })}`
       : t('evaluation.patientNoName'));
   const completedCount = evals.filter((e) => e.status === EVALUATION_STATUS.COMPLETED).length;
 

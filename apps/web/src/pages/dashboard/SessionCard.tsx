@@ -5,7 +5,7 @@ import { Card, Badge } from '@parisgroup-ai/pageshell/primitives';
 import { ChevronRight, Smile } from 'lucide-react';
 import { getTreatmentConfig } from '@/lib/treatment-config';
 import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { getDateLocale, getDateFormat } from '@/lib/date-utils';
 
 // ---------------------------------------------------------------------------
 // Status-based style tokens (semantic colors for completed / in-progress)
@@ -34,7 +34,7 @@ export function SessionCard({ session }: { session: DashboardSession }) {
     : 0;
 
   return (
-    <Link to={`/evaluation/${session.session_id}`} aria-label={`${session.patient_name || t('dashboard.session.unnamedCase', { date: format(new Date(session.created_at), 'dd/MM', { locale: ptBR }), count: session.teeth.length })} — ${t('evaluation.case', { count: session.evaluationCount })}`}>
+    <Link to={`/evaluation/${session.session_id}`} aria-label={`${session.patient_name || t('dashboard.session.unnamedCase', { date: format(new Date(session.created_at), 'dd/MM', { locale: getDateLocale() }), count: session.teeth.length })} — ${t('evaluation.case', { count: session.evaluationCount })}`}>
       <Card className="group relative overflow-hidden p-3 sm:p-4 shadow-sm hover:shadow-md rounded-xl transition-all duration-300 cursor-pointer dark:bg-gradient-to-br dark:from-card dark:to-card/80 card-interactive glow-card">
         <div
           className={`absolute left-0 top-0 bottom-0 w-[3px] ${
@@ -48,7 +48,7 @@ export function SessionCard({ session }: { session: DashboardSession }) {
             <div className="flex items-center gap-2 mb-1">
               <p className="font-semibold text-sm sm:text-base truncate">
                 {session.patient_name || t('dashboard.session.unnamedCase', {
-                  date: format(new Date(session.created_at), 'dd/MM', { locale: ptBR }),
+                  date: format(new Date(session.created_at), 'dd/MM', { locale: getDateLocale() }),
                   count: session.teeth.length,
                 })}
               </p>
@@ -96,11 +96,11 @@ export function SessionCard({ session }: { session: DashboardSession }) {
           </div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground self-end sm:self-center">
             <span className="hidden sm:inline">
-              {format(new Date(session.created_at), "d 'de' MMM", { locale: ptBR })}
+              {format(new Date(session.created_at), getDateFormat('short'), { locale: getDateLocale() })}
               {session.patientAge && <span> · {t('dashboard.session.yearsOld', { age: session.patientAge })}</span>}
             </span>
             <span className="sm:hidden">
-              {format(new Date(session.created_at), 'dd/MM', { locale: ptBR })}
+              {format(new Date(session.created_at), 'dd/MM', { locale: getDateLocale() })}
             </span>
             <ChevronRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-muted-foreground group-hover:translate-x-0.5 transition-all" aria-hidden="true" />
           </div>

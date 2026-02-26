@@ -14,7 +14,7 @@ import { StatusBadge, defineStatusConfig } from '@parisgroup-ai/pageshell/primit
 import { Badge } from '@parisgroup-ai/pageshell/primitives';
 import { CheckCircle, ChevronRight, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { getDateLocale, getDateFormat } from '@/lib/date-utils';
 import { formatToothLabel } from '@/lib/treatment-config';
 import { QUERY_STALE_TIMES } from '@/lib/constants';
 
@@ -123,10 +123,10 @@ const SessionCard = memo(function SessionCard({
             <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
               <Calendar className="w-3 h-3 sm:w-4 sm:h-4" aria-hidden="true" />
               <span className="hidden sm:inline">
-                {format(new Date(session.created_at), "d 'de' MMM", { locale: ptBR })}
+                {format(new Date(session.created_at), getDateFormat('short'), { locale: getDateLocale() })}
               </span>
               <span className="sm:hidden">
-                {format(new Date(session.created_at), 'dd/MM', { locale: ptBR })}
+                {format(new Date(session.created_at), 'dd/MM', { locale: getDateLocale() })}
               </span>
               <ChevronRight className="w-4 h-4" aria-hidden="true" />
             </div>

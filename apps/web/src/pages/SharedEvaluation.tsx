@@ -17,7 +17,7 @@ import { BRAND_NAME } from '@/lib/branding';
 import { EVALUATION_STATUS } from '@/lib/evaluation-status';
 import { getTreatmentConfig } from '@/lib/treatment-config';
 import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { getDateLocale, getDateFormat } from '@/lib/date-utils';
 import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
 import { ProportionsCard } from '@/components/dsd/ProportionsCard';
 import type { DSDAnalysis, SimulationLayer, SimulationLayerType } from '@/types/dsd';
@@ -40,7 +40,7 @@ export default function SharedEvaluation() {
     ? evaluations.filter((e) => e.status === EVALUATION_STATUS.COMPLETED).length
     : 0;
   const evalDate = !loading && !expired && evaluations[0]?.created_at
-    ? format(new Date(evaluations[0].created_at), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })
+    ? format(new Date(evaluations[0].created_at), getDateFormat('long'), { locale: getDateLocale() })
     : '';
 
   return (

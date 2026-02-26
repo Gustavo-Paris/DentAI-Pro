@@ -260,7 +260,7 @@ export function useSubscription() {
  * Format price for display
  */
 export function formatPrice(cents: number, currency = 'BRL'): string {
-  return new Intl.NumberFormat('pt-BR', {
+  return new Intl.NumberFormat(i18n.language || 'pt-BR', {
     style: 'currency',
     currency,
   }).format(cents / 100);

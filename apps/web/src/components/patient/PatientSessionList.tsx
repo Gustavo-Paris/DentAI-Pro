@@ -15,7 +15,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { getDateLocale, getDateFormat } from '@/lib/date-utils';
 import { formatToothLabel } from '@/lib/treatment-config';
 import type { PatientSession } from '@/hooks/domain/usePatientProfile';
 
@@ -78,8 +78,8 @@ export function PatientSessionList({
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium">
-                        {format(new Date(session.created_at), "d 'de' MMMM, yyyy", {
-                          locale: ptBR,
+                        {format(new Date(session.created_at), getDateFormat('long'), {
+                          locale: getDateLocale(),
                         })}
                       </span>
                       <Badge
