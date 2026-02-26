@@ -175,7 +175,7 @@ export function StatsGrid({
   const containerRef = useScrollRevealChildren();
 
   return (
-    <div ref={containerRef} className="grid grid-cols-2 sm:grid-cols-4 gap-4 stagger-enter">
+    <div ref={containerRef} className="grid grid-cols-2 lg:grid-cols-4 gap-4 stagger-enter">
       {statConfigs.map((stat, i) => {
         const Icon = stat.icon;
         const value = metrics[stat.key];

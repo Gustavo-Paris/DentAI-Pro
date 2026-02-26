@@ -112,7 +112,7 @@ export default function PatientProfile() {
             id: 'metrics',
             title: t('patients.metrics'),
             children: () => (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
                   { value: metrics.totalSessions, label: t('patients.evaluationsLabel') },
                   { value: metrics.totalCases, label: t('patients.casesLabel') },

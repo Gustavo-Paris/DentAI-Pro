@@ -289,7 +289,7 @@ export function PrincipalTab({
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Module cards */}
-      <div ref={modulesRef} className="grid grid-cols-1 sm:grid-cols-3 gap-4 stagger-enter">
+      <div ref={modulesRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 stagger-enter">
         {modules.map((mod, i) => {
           const Icon = mod.icon;
           const isPrimary = mod.variant === 'primary';
