@@ -197,8 +197,9 @@ describe('AddTeethModal', () => {
 
     it('should display priority badges for restorative teeth', () => {
       render(<AddTeethModal {...defaultProps} />);
-      expect(screen.getByText('alta')).toBeInTheDocument();
-      expect(screen.getByText('média')).toBeInTheDocument();
+      // Component renders t(`common.priority${Priority}`) — mock returns key as-is
+      expect(screen.getByText('common.priorityAlta')).toBeInTheDocument();
+      expect(screen.getByText('common.priorityMédia')).toBeInTheDocument();
     });
 
     it('should display cavity/restoration info for restorative teeth', () => {
