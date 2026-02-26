@@ -12,7 +12,7 @@ import {
   LayoutDashboard, BarChart3,
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { getDateLocale, getDateFormat } from '@/lib/date-utils';
 
 const StatsGrid = lazy(() => import('./dashboard/StatsGrid').then(m => ({ default: m.StatsGrid })));
 import { PrincipalTab } from './dashboard/PrincipalTab';
@@ -162,7 +162,7 @@ export default function Dashboard() {
         </div>
         <p className="text-sm text-muted-foreground ml-8">
           {/* Portuguese date format — 'de' connector is language-specific */}
-          {format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR }).replace(/^\w/, (c) => c.toUpperCase())}
+          {format(new Date(), getDateFormat('greeting'), { locale: getDateLocale() }).replace(/^\w/, (c) => c.toUpperCase())}
         </p>
       </div>
     ),

@@ -96,6 +96,9 @@ export const EvaluationCards = memo(function EvaluationCards({
                 key={evaluation.id}
                 className={`shadow-sm rounded-xl border-l-[3px] ${borderColor} cursor-pointer hover:shadow-md transition-shadow mb-2 ${isGrouped ? 'ml-3 border-l-2 p-3' : 'p-4'}`}
                 onClick={() => navigate(`/result/${evaluation.id}`)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/result/${evaluation.id}`); } }}
+                role="button"
+                tabIndex={0}
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2">

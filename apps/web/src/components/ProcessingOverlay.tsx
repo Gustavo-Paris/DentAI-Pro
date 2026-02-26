@@ -94,7 +94,7 @@ export const ProcessingOverlay = memo(function ProcessingOverlay({
         <CardContent className="p-6 flex flex-col items-center text-center">
           <ProgressRing progress={progress} size={100} />
 
-          <p className="mt-4 font-semibold text-primary">{displayMessage}</p>
+          <p className="mt-4 font-semibold text-primary" aria-live="polite" aria-atomic="true">{displayMessage}</p>
 
           {steps && steps.length > 0 && (
             <div className="mt-4 w-full text-left">
@@ -112,7 +112,7 @@ export const ProcessingOverlay = memo(function ProcessingOverlay({
             </p>
           )}
 
-          <p className="text-xs text-muted-foreground mt-2 animate-pulse" aria-live="polite">
+          <p className="text-xs text-muted-foreground mt-2 animate-pulse">
             {t('components.processingOverlay.doNotClose')}
           </p>
         </CardContent>

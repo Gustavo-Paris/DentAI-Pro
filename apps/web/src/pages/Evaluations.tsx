@@ -336,14 +336,10 @@ export default function Evaluations() {
             onClick={() => setPage(page - 1)}
           >
             <ChevronLeft className="w-4 h-4 mr-1" aria-hidden="true" />
-            {t('common.previous', { defaultValue: 'Anterior' })}
+            {t('common.previous')}
           </Button>
           <span className="text-sm text-muted-foreground">
-            {t('common.pageOf', {
-              page: page + 1,
-              total: totalPages,
-              defaultValue: `Pagina ${page + 1} de ${totalPages}`,
-            })}
+            {t('common.pageOf', { page: page + 1, total: totalPages })}
           </span>
           <Button
             variant="outline"
@@ -352,7 +348,7 @@ export default function Evaluations() {
             disabled={page >= totalPages - 1}
             onClick={() => setPage(page + 1)}
           >
-            {t('common.next', { defaultValue: 'Proximo' })}
+            {t('common.next')}
             <ChevronRight className="w-4 h-4 ml-1" aria-hidden="true" />
           </Button>
         </div>
