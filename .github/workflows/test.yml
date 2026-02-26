@@ -11,7 +11,7 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
     steps:
       - uses: actions/checkout@v6
 
@@ -35,7 +35,7 @@ jobs:
     name: Type Check
     runs-on: ubuntu-latest
     env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
     steps:
       - uses: actions/checkout@v6
 
@@ -56,7 +56,7 @@ jobs:
     name: Tests
     runs-on: ubuntu-latest
     env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
       VITE_SUPABASE_URL: https://placeholder.supabase.co
       VITE_SUPABASE_PUBLISHABLE_KEY: placeholder-key-for-ci
     steps:
@@ -110,14 +110,14 @@ jobs:
       - uses: denoland/setup-deno@v2
 
       - name: Run Deno tests
-        run: deno test --allow-read supabase/functions/
+        run: deno test --allow-read --allow-env --allow-net supabase/functions/
 
   build:
     name: Build
     runs-on: ubuntu-latest
     needs: [lint, typecheck, test, deno-test]
     env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
       VITE_SUPABASE_URL: https://placeholder.supabase.co
       VITE_SUPABASE_PUBLISHABLE_KEY: placeholder-key-for-build
     steps:
@@ -171,7 +171,7 @@ jobs:
     needs: [build]
     timeout-minutes: 15
     env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
       E2E_USER_EMAIL: ${{ secrets.E2E_USER_EMAIL }}
       E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
     steps:
