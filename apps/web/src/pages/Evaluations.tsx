@@ -132,6 +132,22 @@ const SessionCard = memo(function SessionCard({
             </div>
           </div>
         </div>
+        {/* Mini progress bar */}
+        {session.evaluationCount > 1 && (
+          <div className="mt-2 pt-2 border-t border-border/50">
+            <div className="flex items-center gap-2">
+              <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${isCompleted ? 'bg-success' : 'bg-primary'}`}
+                  style={{ width: `${Math.round((session.completedCount / session.evaluationCount) * 100)}%` }}
+                />
+              </div>
+              <span className="text-[10px] text-muted-foreground tabular-nums shrink-0">
+                {session.completedCount}/{session.evaluationCount}
+              </span>
+            </div>
+          </div>
+        )}
       </Card>
     </Link>
   );

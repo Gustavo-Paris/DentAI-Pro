@@ -30,7 +30,7 @@ function AlternativeBox({ alternative }: AlternativeBoxProps) {
           </div>
           <div>
             <span className="text-sm text-muted-foreground">{t('components.protocol.alternative.color')}</span>
-            <p className="font-mono font-medium">{alternative.shade}</p>
+            <p className="font-medium">{alternative.shade}</p>
           </div>
         </div>
         <div>

@@ -388,6 +388,7 @@
     "viewEvaluationOf": "Ver avaliação de {{name}}",
     "paginationItems": "avaliações",
     "patientNoName": "Paciente sem nome",
+    "session": "Sessão",
     "new": "Nova",
     "case_one": "{{count}} caso",
     "case_other": "{{count}} casos",

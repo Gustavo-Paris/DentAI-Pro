@@ -65,7 +65,7 @@ export default function Landing() {
 
       <main id="main-content">
       {/* Hero */}
-      <section aria-label={t('landing.heroSection')} className="py-20 sm:py-28 md:py-36 relative overflow-hidden grain-overlay">
+      <section aria-label={t('landing.heroSection')} className="py-16 sm:py-24 md:py-28 relative overflow-hidden grain-overlay">
         {/* Gradient mesh background */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgb(var(--color-primary-rgb)/0.08),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgb(var(--color-primary-rgb)/0.10),transparent)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_80%_60%,rgb(var(--color-primary-rgb)/0.05),transparent)] dark:bg-[radial-gradient(ellipse_60%_40%_at_80%_60%,rgb(var(--color-primary-rgb)/0.05),transparent)]" />
@@ -176,7 +176,7 @@ export default function Landing() {
                 <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110 glow-icon">
                   <feature.icon className="w-6 h-6 sm:w-7 sm:h-7 text-primary" aria-hidden="true" />
                 </div>
-                <h3 className="font-medium text-sm sm:text-base mb-1 sm:mb-2">{feature.title}</h3>
+                <h3 className="font-display font-medium text-sm sm:text-base mb-1 sm:mb-2">{feature.title}</h3>
                 <p className="text-xs sm:text-sm text-muted-foreground">{feature.description}</p>
                 <FeaturePreview type={feature.preview} />
               </div>
@@ -185,8 +185,51 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* How it works — Timeline */}
+      <section aria-label={t('landing.howItWorksTitle')} className="py-12 sm:py-20 bg-secondary/20 relative overflow-hidden section-glow-bg">
+        <div className="container mx-auto px-4 sm:px-6 max-w-3xl">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-10 sm:mb-16 font-display neon-text">
+            {t('landing.howItWorksTitle')}
+          </h2>
+          <div ref={howItWorksRef} className="space-y-8 sm:space-y-12 timeline-line">
+            {[
+              {
+                step: '01',
+                title: t('landing.step1Title'),
+                description: t('landing.step1Desc'),
+              },
+              {
+                step: '02',
+                title: t('landing.step2Title'),
+                description: t('landing.step2Desc'),
+              },
+              {
+                step: '03',
+                title: t('landing.step3Title'),
+                description: t('landing.step3Desc'),
+              },
+              {
+                step: '04',
+                title: t('landing.step4Title'),
+                description: t('landing.step4Desc'),
+              },
+            ].map((item, index) => (
+              <div key={index} className={`scroll-reveal scroll-reveal-delay-${index + 1} flex items-start gap-4 pl-12 sm:pl-16 relative`}>
+                <div className="absolute left-[12px] sm:left-[16px] top-0 w-[18px] h-[18px] sm:w-[18px] sm:h-[18px] rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold shrink-0 glow-icon">
+                  {index + 1}
+                </div>
+                <div>
+                  <h3 className="font-display font-medium text-sm sm:text-base mb-1">{item.title}</h3>
+                  <p className="text-sm sm:text-base text-muted-foreground">{item.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Testimonials */}
-      <section aria-label={t('landing.testimonialsTitle')} className="py-16 sm:py-24 bg-secondary/20 relative overflow-hidden section-glow-bg">
+      <section aria-label={t('landing.testimonialsTitle')} className="py-16 sm:py-24 bg-background relative overflow-hidden section-glow-bg">
         <div className="glow-orb glow-orb-slow w-56 h-56 bg-primary/10 dark:bg-primary/15 top-[-15%] right-[-5%]" />
         <div className="glow-orb glow-orb-reverse w-40 h-40 bg-accent/8 dark:bg-accent/10 bottom-[10%] left-[-8%]" />
         <div className="container mx-auto px-4 sm:px-6 max-w-4xl">
@@ -263,49 +306,6 @@ export default function Landing() {
                     <p className="text-xs text-muted-foreground">{testimonial.role}</p>
                     <p className="text-xs text-muted-foreground/70">{testimonial.clinic}</p>
                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* How it works — Timeline */}
-      <section aria-label={t('landing.howItWorksTitle')} className="py-12 sm:py-20 bg-background relative overflow-hidden section-glow-bg">
-        <div className="container mx-auto px-4 sm:px-6 max-w-3xl">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-10 sm:mb-16 font-display neon-text">
-            {t('landing.howItWorksTitle')}
-          </h2>
-          <div ref={howItWorksRef} className="space-y-8 sm:space-y-12 timeline-line">
-            {[
-              {
-                step: '01',
-                title: t('landing.step1Title'),
-                description: t('landing.step1Desc'),
-              },
-              {
-                step: '02',
-                title: t('landing.step2Title'),
-                description: t('landing.step2Desc'),
-              },
-              {
-                step: '03',
-                title: t('landing.step3Title'),
-                description: t('landing.step3Desc'),
-              },
-              {
-                step: '04',
-                title: t('landing.step4Title'),
-                description: t('landing.step4Desc'),
-              },
-            ].map((item, index) => (
-              <div key={index} className={`scroll-reveal scroll-reveal-delay-${index + 1} flex items-start gap-4 pl-12 sm:pl-16 relative`}>
-                <div className="absolute left-[12px] sm:left-[16px] top-0 w-[18px] h-[18px] sm:w-[18px] sm:h-[18px] rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold shrink-0 glow-icon">
-                  {index + 1}
-                </div>
-                <div>
-                  <h3 className="font-medium text-sm sm:text-base mb-1">{item.title}</h3>
-                  <p className="text-sm sm:text-base text-muted-foreground">{item.description}</p>
                 </div>
               </div>
             ))}

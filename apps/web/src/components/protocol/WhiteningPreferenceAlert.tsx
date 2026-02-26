@@ -102,7 +102,7 @@ export default function WhiteningPreferenceAlert({
           <div className="flex items-center gap-3 mt-2">
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">{t('components.protocol.whiteningAlert.detectedColor')}</span>
-              <Badge variant="secondary" className="font-mono">
+              <Badge variant="secondary" className="font-medium">
                 {originalColor}
               </Badge>
             </div>
@@ -114,10 +114,10 @@ export default function WhiteningPreferenceAlert({
                   <span className="text-xs text-muted-foreground">{t('components.protocol.whiteningAlert.protocolUses')}</span>
                   <div className="flex gap-1 flex-wrap">
                     {usedShades.map((shade) => (
-                      <Badge 
-                        key={shade} 
-                        variant="default" 
-                        className="font-mono"
+                      <Badge
+                        key={shade}
+                        variant="default"
+                        className="font-medium"
                       >
                         {shade}
                       </Badge>

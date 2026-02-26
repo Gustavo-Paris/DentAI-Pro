@@ -95,13 +95,16 @@ export function useEvaluationData(): UseEvaluationDataReturn {
   });
 
   // ---- Computed ----
-  const patientName = evals[0]?.patient_name || t('evaluation.patientNoName');
   const evaluationDate = evals[0]?.created_at
     ? format(new Date(evals[0].created_at), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })
     : '';
   const evaluationDateShort = evals[0]?.created_at
     ? format(new Date(evals[0].created_at), 'dd/MM/yyyy', { locale: ptBR })
     : '';
+  const patientName = evals[0]?.patient_name
+    || (evals[0]?.created_at
+      ? `${t('evaluation.session')} — ${format(new Date(evals[0].created_at), "d 'de' MMM", { locale: ptBR })}`
+      : t('evaluation.patientNoName'));
   const completedCount = evals.filter((e) => e.status === EVALUATION_STATUS.COMPLETED).length;
 
   const patientDataForModal = useMemo<PatientDataForModal | null>(() => {

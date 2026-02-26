@@ -160,7 +160,7 @@ function CaseSummaryBox({
                     <Palette className="w-3 h-3" />
                     {showCavityInfo ? t('components.protocol.caseSummary.vitaColor') : t('components.protocol.caseSummary.targetColor')}
                   </div>
-                  <p className="font-mono font-medium text-sm sm:text-base">{shade}</p>
+                  <p className="font-medium text-sm sm:text-base">{shade}</p>
                   {isTarget && alreadyInRange && (
                     <p className="text-xs text-success">{t('components.protocol.caseSummary.colorInRange')}</p>
                   )}

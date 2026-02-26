@@ -75,7 +75,7 @@ function ProtocolTable({ layers }: ProtocolTableProps) {
                 </TableCell>
                 <TableCell>{layer.resin_brand}</TableCell>
                 <TableCell>
-                  <span className="inline-flex items-center px-2 py-1 rounded-md bg-background font-mono text-sm">
+                  <span className="inline-flex items-center px-2 py-1 rounded-md bg-background font-medium text-sm">
                     {layer.shade}
                   </span>
                 </TableCell>
@@ -126,7 +126,7 @@ function ProtocolTable({ layers }: ProtocolTableProps) {
                   <span className="ml-1 text-xs font-normal text-muted-foreground">{t('components.protocol.table.optional')}</span>
                 )}
               </span>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-background font-mono text-xs">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-background font-medium text-xs">
                 {layer.shade}
               </span>
             </div>
