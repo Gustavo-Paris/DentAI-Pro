@@ -335,19 +335,19 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
         <div
           role="region"
           aria-label={t('components.wizard.photoUpload.dropZoneLabel', { defaultValue: 'Zona de upload de foto' })}
-          className={`relative rounded-xl p-[2px] transition-all duration-300 ${
+          className={`relative rounded-xl overflow-hidden transition-all duration-300 ${
             dragActive
-              ? 'bg-gradient-to-br from-primary via-primary/60 to-primary/30 scale-[1.02]'
-              : 'bg-gradient-to-br from-primary/20 via-transparent to-primary/10'
+              ? 'border-2 border-primary bg-primary/5 scale-[1.02] shadow-[0_0_30px_rgb(var(--color-primary-rgb)/0.15)]'
+              : 'border-2 border-dashed border-primary/15 hover:border-primary/30'
           }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
           onDrop={handleDrop}
         >
-          <div className="bg-card rounded-[11px] grain-overlay glow-card relative overflow-hidden">
-            <div className="ai-grid-pattern absolute inset-0 opacity-20 dark:opacity-40 rounded-[11px] pointer-events-none" aria-hidden="true" />
-            <div className="py-10 px-4">
+          <div className="relative">
+            <div className="ai-grid-pattern absolute inset-0 opacity-15 dark:opacity-30 pointer-events-none" aria-hidden="true" />
+            <div className="py-10 px-4 relative">
               {isCompressing ? (
                 <div className="flex flex-col items-center justify-center text-center" role="status" aria-live="polite">
                   <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
@@ -667,7 +667,7 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
       )}
 
       {/* Tips — Discrete card with gold accent stripe */}
-      <div className="glass-panel rounded-xl px-4 py-3">
+      <div className="rounded-lg px-4 py-3 bg-muted/30">
         <div className="flex items-start gap-2">
           <Lightbulb className="w-3.5 h-3.5 text-primary/50 mt-0.5 shrink-0" />
           <div>

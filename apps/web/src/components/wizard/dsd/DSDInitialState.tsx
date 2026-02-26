@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Smile, Loader2, ChevronRight, Zap, Play } from 'lucide-react';
@@ -32,20 +31,16 @@ export function DSDInitialState({ onSkip, hasImage, onConfirmDSD }: DSDInitialSt
         </p>
       )}
 
-      <Card className="border-primary/20 glass-panel">
-        <CardContent className="py-5">
-          <div className="flex flex-wrap justify-center gap-3">
-            <Badge variant="secondary" className="gap-1.5">
-              <Zap className="w-3 h-3" />
-              {t('components.wizard.dsd.initialState.credits')}
-            </Badge>
-            <Badge variant="secondary" className="gap-1.5">
-              <Loader2 className="w-3 h-3" />
-              {t('components.wizard.dsd.initialState.duration')}
-            </Badge>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex flex-wrap justify-center gap-3 py-4">
+        <Badge variant="secondary" className="gap-1.5">
+          <Zap className="w-3 h-3" />
+          {t('components.wizard.dsd.initialState.credits')}
+        </Badge>
+        <Badge variant="secondary" className="gap-1.5">
+          <Loader2 className="w-3 h-3" />
+          {t('components.wizard.dsd.initialState.duration')}
+        </Badge>
+      </div>
 
       <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
         {hasImage && onConfirmDSD && (

@@ -147,7 +147,7 @@ export function PatientPreferencesStep({
           </div>
 
           {/* Credit cost disclosure — Premium */}
-          <div className="glass-panel border border-primary/20 rounded-xl p-3">
+          <div className="rounded-lg p-3 bg-muted/30">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Zap className="w-4 h-4 text-primary shrink-0" />
               <span>
