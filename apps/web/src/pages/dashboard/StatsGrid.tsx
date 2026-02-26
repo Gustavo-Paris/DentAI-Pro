@@ -22,7 +22,10 @@ function ProgressRing({ percent }: { percent: number }) {
   const target = circumference - (percent / 100) * circumference;
 
   return (
-    <svg width={size} height={size} className="shrink-0 -rotate-90">
+    <svg width={size} height={size} className="shrink-0 -rotate-90"
+      role="progressbar" aria-valuenow={Math.round(percent)} aria-valuemin={0} aria-valuemax={100}
+      aria-label={`${Math.round(percent)}%`}
+    >
       {/* Background track */}
       <circle
         cx={size / 2}
