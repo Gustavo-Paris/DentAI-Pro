@@ -5,7 +5,7 @@ import { GlobalSearch } from "@/components/GlobalSearch";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -142,6 +142,12 @@ function RouteErrorFallback() {
   );
 }
 
+// Wrapper that resets the error boundary when the route changes
+function RouteErrorBoundaryWrapper({ children }: { children: ReactNode }) {
+  const location = useLocation();
+  return <RouteErrorBoundary key={location.pathname}>{children}</RouteErrorBoundary>;
+}
+
 // Route-level error boundary — scoped to a single route, not the entire app
 class RouteErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
   constructor(props: { children: ReactNode }) {
@@ -221,15 +227,15 @@ const App = () => (
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
               <Route path="/dashboard" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><Dashboard /></Suspense></ErrorBoundary>} />
               <Route path="/evaluations" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><Evaluations /></Suspense></ErrorBoundary>} />
-              <Route path="/evaluation/:evaluationId" element={<RouteErrorBoundary><Suspense fallback={<PageLoader />}><EvaluationDetails /></Suspense></RouteErrorBoundary>} />
-              <Route path="/result/group/:sessionId/:fingerprint" element={<RouteErrorBoundary><Suspense fallback={<PageLoader />}><GroupResult /></Suspense></RouteErrorBoundary>} />
-              <Route path="/result/:id" element={<RouteErrorBoundary><Suspense fallback={<PageLoader />}><Result /></Suspense></RouteErrorBoundary>} />
+              <Route path="/evaluation/:evaluationId" element={<RouteErrorBoundaryWrapper><Suspense fallback={<PageLoader />}><EvaluationDetails /></Suspense></RouteErrorBoundaryWrapper>} />
+              <Route path="/result/group/:sessionId/:fingerprint" element={<RouteErrorBoundaryWrapper><Suspense fallback={<PageLoader />}><GroupResult /></Suspense></RouteErrorBoundaryWrapper>} />
+              <Route path="/result/:id" element={<RouteErrorBoundaryWrapper><Suspense fallback={<PageLoader />}><Result /></Suspense></RouteErrorBoundaryWrapper>} />
               <Route path="/inventory" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><Inventory /></Suspense></ErrorBoundary>} />
               <Route path="/patients" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><Patients /></Suspense></ErrorBoundary>} />
               <Route path="/patient/:patientId" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><PatientProfile /></Suspense></ErrorBoundary>} />
               <Route path="/profile" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><Profile /></Suspense></ErrorBoundary>} />
               <Route path="/pricing" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><Pricing /></Suspense></ErrorBoundary>} />
-              <Route path="/new-case" element={<RouteErrorBoundary><Suspense fallback={<PageLoader />}><NewCase /></Suspense></RouteErrorBoundary>} />
+              <Route path="/new-case" element={<RouteErrorBoundaryWrapper><Suspense fallback={<PageLoader />}><NewCase /></Suspense></RouteErrorBoundaryWrapper>} />
             </Route>
 
             <Route path="*" element={<Suspense fallback={<PageLoader />}><NotFound /></Suspense>} />
