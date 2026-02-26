@@ -63,8 +63,11 @@ jobs:
         run: pnpm turbo run type-check
 
   test:
-    name: Tests
+    name: Tests (${{ matrix.shard }})
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        shard: [1/2, 2/2]
     env:
       GITHUB_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
       VITE_SUPABASE_URL: https://placeholder.supabase.co
@@ -90,7 +93,7 @@ jobs:
       - name: Run tests
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
-        run: cd apps/web && npx vitest run --pool=forks --poolOptions.forks.maxForks=1 --reporter=basic
+        run: cd apps/web && npx vitest run --pool=forks --poolOptions.forks.maxForks=1 --shard=${{ matrix.shard }} --reporter=basic
 
   deno-test:
     name: Deno Tests (Edge Functions)
