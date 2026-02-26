@@ -292,9 +292,25 @@
   }
 }
 
-/* ═══ Ambient glow — signature PageShell dark mode effect ═══ */
+/* ═══ Ambient glow — signature AI atmosphere effect ═══ */
 /* Multi-color radial gradient creates depth and "AI atmosphere".
-   Primary cyan at top-center + subtle accent at top-right corner. */
+   Primary cyan at top-center + subtle accent at top-right corner.
+   Light mode: very subtle. Dark mode: stronger for tech feel. */
+.ui-theme,
+.ui-theme-odonto-ai {
+  background-image:
+    radial-gradient(
+      ellipse 100% 60% at 50% -20%,
+      rgb(var(--color-primary-rgb) / 0.04) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 50% 40% at 100% 0%,
+      rgb(var(--color-accent-rgb) / 0.02) 0%,
+      transparent 60%
+    );
+}
+
 .dark .ui-theme,
 .dark .ui-theme-odonto-ai {
   background-image:
@@ -590,14 +606,20 @@
   position: relative;
 }
 
-.dark .section-glow-bg::before {
+.section-glow-bg::before {
   content: "";
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 80% 60% at 50% 0%, rgb(var(--color-primary-rgb) / 0.04) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 0% 100%, rgb(var(--color-accent-rgb) / 0.03) 0%, transparent 50%);
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgb(var(--color-primary-rgb) / 0.03) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 0% 100%, rgb(var(--color-accent-rgb) / 0.02) 0%, transparent 50%);
   pointer-events: none;
+}
+
+.dark .section-glow-bg::before {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgb(var(--color-primary-rgb) / 0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 0% 100%, rgb(var(--color-accent-rgb) / 0.04) 0%, transparent 50%);
 }
 
 /* Glow stat — enhanced neon text for large stat values */
@@ -1144,13 +1166,6 @@ button:not(:disabled):active,
 .stagger-enter > *:nth-child(9) { animation-delay: 400ms; }
 .stagger-enter > *:nth-child(10) { animation-delay: 450ms; }
 .stagger-enter > *:nth-child(n+11) { animation-delay: 500ms; }
-
-/* Focus ring — consistent premium focus indicator */
-:focus-visible {
-  outline: 2px solid rgb(var(--color-primary-rgb) / 0.5);
-  outline-offset: 2px;
-  border-radius: inherit;
-}
 
 /* Smooth number counter — for animated stat values */
 @keyframes count-up {

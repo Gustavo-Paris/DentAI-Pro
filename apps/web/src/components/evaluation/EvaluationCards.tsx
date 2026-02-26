@@ -99,6 +99,7 @@ export const EvaluationCards = memo(function EvaluationCards({
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/result/${evaluation.id}`); } }}
                 role="button"
                 tabIndex={0}
+                aria-pressed={selectedIds.has(evaluation.id)}
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2">
@@ -106,7 +107,7 @@ export const EvaluationCards = memo(function EvaluationCards({
                       <Checkbox
                         checked={selectedIds.has(evaluation.id)}
                         onCheckedChange={() => toggleSelection(evaluation.id)}
-                        aria-label={t('evaluation.selectEvaluation', { defaultValue: 'Selecionar avaliação' })}
+                        aria-label={t('evaluation.selectEvaluation')}
                       />
                     </div>
                     {!isGrouped && getTreatmentBadge(evaluation, t)}
@@ -138,7 +139,7 @@ export const EvaluationCards = memo(function EvaluationCards({
                           {retryingEvaluationId === evaluation.id
                             ? <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                             : <RefreshCw className="w-4 h-4 mr-2" />}
-                          {t('evaluation.retryProtocol', { defaultValue: 'Reprocessar protocolo' })}
+                          {t('evaluation.retryProtocol')}
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuItem onClick={() => handleExportPDF(evaluation.id)}>

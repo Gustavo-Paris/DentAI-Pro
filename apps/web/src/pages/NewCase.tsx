@@ -48,7 +48,7 @@ const QUICK_ICONS = [Camera, Brain, ClipboardCheck, FileText];
 
 export default function NewCase() {
   const { t } = useTranslation();
-  useDocumentTitle(t('pageTitle.newCase', { defaultValue: 'Nova Avaliação' }));
+  useDocumentTitle(t('pageTitle.newCase'));
   const wizard = useWizardFlow();
   const disclaimer = useAiDisclaimer();
   const navigate = useNavigate();
@@ -366,7 +366,15 @@ export default function NewCase() {
       steps={wizard.submissionSteps}
       progress={wizard.submissionSteps.filter(s => s.completed).length / Math.max(wizard.submissionSteps.length, 1) * 100}
     />
-    <div ref={stepContentRef} tabIndex={-1} aria-live="polite" className="outline-none">
+    <div ref={stepContentRef} tabIndex={-1} className="outline-none">
+      {/* Targeted sr-only announcer for step changes — avoids aria-live on entire wizard tree */}
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        {t('wizard.stepAnnounce', {
+          current: displayStep + 1,
+          total: totalSteps,
+          label: allSteps[displayStep]?.label ?? '',
+          })}
+      </div>
       <div className="relative section-glow-bg overflow-hidden">
         {/* Ambient glow orbs */}
         <div className="glow-orb-slow absolute top-20 -left-40 w-72 h-72 bg-primary/10 dark:bg-primary/15 rounded-full pointer-events-none" aria-hidden="true" />

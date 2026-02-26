@@ -38,7 +38,7 @@ const InventoryResinCard = memo(function InventoryResinCard({
       <p className="text-xs text-muted-foreground truncate">{item.product_line}</p>
       <button
         onClick={() => onRemove(item.id)}
-        className="absolute -top-2 -right-2 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-destructive/10 hover:bg-destructive/20 transition-colors sm:opacity-0 sm:group-hover:opacity-100"
+        className="absolute -top-2 -right-2 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-destructive/10 hover:bg-destructive/20 transition-colors sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 focus-visible:opacity-100"
         title={t('common.remove')}
         aria-label={t('inventory.removeResin')}
       >
@@ -54,7 +54,7 @@ const InventoryResinCard = memo(function InventoryResinCard({
 
 export default function Inventory() {
   const { t } = useTranslation();
-  useDocumentTitle(t('pageTitle.inventory', { defaultValue: 'Inventário' }));
+  useDocumentTitle(t('pageTitle.inventory'));
   const inv = useInventoryManagement();
 
   const searchConfig = useMemo(
@@ -157,7 +157,7 @@ export default function Inventory() {
   if (inv.isError) {
     return (
       <GenericErrorState
-        title={t('inventory.loadError', { defaultValue: 'Erro ao carregar inventário' })}
+        title={t('inventory.loadError')}
         description={t('errors.tryReloadPage')}
       />
     );
@@ -190,8 +190,8 @@ export default function Inventory() {
         <TipBanner
           className="mt-4"
           icon={Lightbulb}
-          title={t('inventory.tipTitle', { defaultValue: 'Dica: Adicione mais resinas' })}
-          description={t('inventory.tipDescription', { defaultValue: 'Com mais cores no inventário, as recomendações de IA ficam mais precisas e personalizadas para o seu consultório.' })}
+          title={t('inventory.tipTitle')}
+          description={t('inventory.tipDescription')}
           action={{
             label: t('inventory.addResins'),
             icon: Plus,
