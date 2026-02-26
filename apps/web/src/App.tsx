@@ -117,6 +117,7 @@ const queryClient = new QueryClient({
       },
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
       staleTime: QUERY_STALE_TIMES.SHORT,
+      gcTime: 10 * 60 * 1000, // 10 minutes — keep unused query cache longer to reduce re-fetches
     },
     mutations: {
       retry: 0, // Never auto-retry mutations (payments, AI calls, etc.)

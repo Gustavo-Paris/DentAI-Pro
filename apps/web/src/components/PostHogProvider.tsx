@@ -30,16 +30,16 @@ export default function PostHogProvider({
 
   // --- 1. Initialise PostHog on mount ---
   useEffect(() => {
-    initAnalytics();
-
-    // Apply existing consent if the user already accepted/rejected previously
-    const consent = localStorage.getItem(COOKIE_CONSENT_KEY);
-    if (consent === 'accepted') {
-      optInCapturing();
-    } else if (consent === 'essential') {
-      optOutCapturing();
-    }
-    // If null (no choice yet), we stay opted out by default
+    void initAnalytics().then(() => {
+      // Apply existing consent if the user already accepted/rejected previously
+      const consent = localStorage.getItem(COOKIE_CONSENT_KEY);
+      if (consent === 'accepted') {
+        void optInCapturing();
+      } else if (consent === 'essential') {
+        void optOutCapturing();
+      }
+      // If null (no choice yet), we stay opted out by default
+    });
   }, []);
 
   // --- 2. Listen for consent changes via storage events + custom event ---
@@ -47,16 +47,16 @@ export default function PostHogProvider({
     // Handle cross-tab consent changes
     const handleStorage = (e: StorageEvent) => {
       if (e.key !== COOKIE_CONSENT_KEY) return;
-      if (e.newValue === 'accepted') optInCapturing();
-      else optOutCapturing();
+      if (e.newValue === 'accepted') void optInCapturing();
+      else void optOutCapturing();
     };
     window.addEventListener('storage', handleStorage);
 
     // Handle same-tab consent changes via CustomEvent dispatched by CookieConsent
     const handleConsentChange = (e: Event) => {
       const consent = (e as CustomEvent).detail?.consent;
-      if (consent === 'accepted') optInCapturing();
-      else if (consent === 'essential') optOutCapturing();
+      if (consent === 'accepted') void optInCapturing();
+      else if (consent === 'essential') void optOutCapturing();
     };
     window.addEventListener('cookie-consent-change', handleConsentChange);
 
@@ -69,12 +69,12 @@ export default function PostHogProvider({
   // --- 3. Auth-driven identification ---
   useEffect(() => {
     if (user && user.id !== prevUserId.current) {
-      identifyUser(user.id, { email: user.email });
+      void identifyUser(user.id, { email: user.email });
       prevUserId.current = user.id;
     }
 
     if (!user && prevUserId.current) {
-      resetAnalytics();
+      void resetAnalytics();
       prevUserId.current = null;
     }
   }, [user]);

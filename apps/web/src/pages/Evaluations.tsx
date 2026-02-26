@@ -1,10 +1,14 @@
 import { useCallback, useEffect, memo, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useQueryClient } from '@tanstack/react-query';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { ListPage, GenericErrorState } from '@parisgroup-ai/pageshell/composites';
 import { useEvaluationSessions } from '@/hooks/domain/useEvaluationSessions';
 import type { EvaluationSession } from '@/hooks/domain/useEvaluationSessions';
+import { evaluationKeys } from '@/hooks/domain/evaluation/useEvaluationData';
+import { evaluations } from '@/data';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card } from '@parisgroup-ai/pageshell/primitives';
 import { StatusBadge, defineStatusConfig } from '@parisgroup-ai/pageshell/primitives';
 import { Badge } from '@parisgroup-ai/pageshell/primitives';
@@ -12,6 +16,7 @@ import { CheckCircle, ChevronRight, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatToothLabel } from '@/lib/treatment-config';
+import { QUERY_STALE_TIMES } from '@/lib/constants';
 
 // =============================================================================
 // Static configs (no hook dependencies)
@@ -44,10 +49,12 @@ const SessionCard = memo(function SessionCard({
   session,
   isNew,
   index,
+  onHover,
 }: {
   session: EvaluationSession;
   isNew: boolean;
   index: number;
+  onHover?: (sessionId: string) => void;
 }) {
   const { t } = useTranslation();
   const isCompleted = session.status === 'completed';
@@ -70,8 +77,12 @@ const SessionCard = memo(function SessionCard({
     sessionStorage.removeItem('newSessionTimestamp');
   }, []);
 
+  const handleHover = useCallback(() => {
+    onHover?.(session.session_id);
+  }, [onHover, session.session_id]);
+
   return (
-    <Link to={`/evaluation/${session.session_id}`} onClick={handleClick} className="block rounded-xl focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2" aria-label={t('evaluation.viewEvaluationOf', { name: session.patient_name || t('evaluation.patientNoName') })}>
+    <Link to={`/evaluation/${session.session_id}`} onClick={handleClick} onMouseEnter={handleHover} className="block rounded-xl focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2" aria-label={t('evaluation.viewEvaluationOf', { name: session.patient_name || t('evaluation.patientNoName') })}>
       <Card
         className={`p-3 sm:p-4 shadow-sm hover:shadow-md rounded-xl transition-all duration-300 cursor-pointer animate-[fade-in-up_0.6s_ease-out_both] dark:bg-gradient-to-br dark:from-card dark:to-card/80 glow-card ${borderClass}`}
         style={{ animationDelay: `${index * 0.05}s` }}
@@ -140,6 +151,8 @@ export default function Evaluations() {
   const { sessions, total, isLoading, isError, newSessionId, newTeethCount } =
     useEvaluationSessions();
   const [searchParams, setSearchParams] = useSearchParams();
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   // ---------------------------------------------------------------------------
   // Persist "New" badge across page reloads via sessionStorage
@@ -272,13 +285,24 @@ export default function Evaluations() {
     [t],
   );
 
+  // Prefetch evaluation detail data on hover for instant navigation
+  const handleSessionHover = useCallback((sessionId: string) => {
+    if (!user) return;
+    void queryClient.prefetchQuery({
+      queryKey: evaluationKeys.session(sessionId),
+      queryFn: () => evaluations.listBySession(sessionId, user.id),
+      staleTime: QUERY_STALE_TIMES.SHORT,
+    });
+  }, [queryClient, user]);
+
   const renderCard = useCallback((session: EvaluationSession, index?: number) => (
     <SessionCard
       session={session}
       isNew={effectiveNewId === session.session_id}
       index={index ?? 0}
+      onHover={handleSessionHover}
     />
-  ), [effectiveNewId]);
+  ), [effectiveNewId, handleSessionHover]);
 
   if (isError) {
     return (

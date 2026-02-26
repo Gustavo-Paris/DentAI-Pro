@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/data';
 import { logger } from '@/lib/logger';
 import { SIGNED_URL_EXPIRY_SECONDS } from '@/lib/constants';
@@ -24,8 +24,29 @@ interface UseSignedUrlResult {
 }
 
 /**
- * Hook to generate signed URLs for Supabase Storage files
- * Supports thumbnail generation via Supabase image transformations
+ * Build a stable query key for signed URL caching.
+ * Includes thumbnail dimensions so different sizes get separate cache entries.
+ */
+function signedUrlKey(
+  bucket: string,
+  path: string,
+  thumbnail?: ThumbnailOptions,
+): readonly unknown[] {
+  return [
+    'signed-url',
+    bucket,
+    path,
+    thumbnail?.width ?? 0,
+    thumbnail?.height ?? 0,
+    thumbnail?.quality ?? 0,
+    thumbnail?.resize ?? '',
+  ] as const;
+}
+
+/**
+ * Hook to generate signed URLs for Supabase Storage files.
+ * Uses React Query to cache and deduplicate requests — multiple components
+ * requesting the same bucket+path+thumbnail combo share a single fetch.
  */
 export function useSignedUrl({
   bucket,
@@ -33,64 +54,42 @@ export function useSignedUrl({
   expiresIn = SIGNED_URL_EXPIRY_SECONDS,
   thumbnail,
 }: UseSignedUrlOptions): UseSignedUrlResult {
-  const [url, setUrl] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const query = useQuery({
+    queryKey: signedUrlKey(bucket, path ?? '', thumbnail),
+    queryFn: async () => {
+      const transformOptions = thumbnail
+        ? {
+            transform: {
+              width: thumbnail.width || 200,
+              height: thumbnail.height || 200,
+              resize: thumbnail.resize || 'cover',
+              quality: thumbnail.quality || 70,
+            },
+          }
+        : undefined;
 
-  useEffect(() => {
-    if (!path) {
-      setUrl(null);
-      return;
-    }
+      const { data, error: signError } = await supabase.storage
+        .from(bucket)
+        .createSignedUrl(path!, expiresIn, transformOptions);
 
-    let isMounted = true;
-    setIsLoading(true);
-    setError(null);
-
-    const fetchUrl = async () => {
-      try {
-        // Build transform options if thumbnail is requested
-        const transformOptions = thumbnail
-          ? {
-              transform: {
-                width: thumbnail.width || 200,
-                height: thumbnail.height || 200,
-                resize: thumbnail.resize || 'cover',
-                quality: thumbnail.quality || 70,
-              },
-            }
-          : undefined;
-
-        const { data, error: signError } = await supabase.storage
-          .from(bucket)
-          .createSignedUrl(path, expiresIn, transformOptions);
-
-        if (!isMounted) return;
-
-        if (signError) {
-          throw signError;
-        }
-
-        setUrl(data?.signedUrl || null);
-      } catch (err) {
-        if (!isMounted) return;
-        setError(err instanceof Error ? err : new Error('Failed to generate URL'));
-        setUrl(null);
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+      if (signError) {
+        throw signError;
       }
-    };
 
-    fetchUrl();
+      return data?.signedUrl || null;
+    },
+    enabled: !!path,
+    // Keep URL considered fresh for most of the signed URL lifetime (minus 60s safety margin)
+    staleTime: Math.max(0, (expiresIn - 60)) * 1000,
+    // Don't refetch on window focus — signed URLs don't change
+    refetchOnWindowFocus: false,
+  });
 
-    return () => {
-      isMounted = false;
-    };
-  }, [bucket, path, expiresIn, thumbnail]);
-
-  return { url, isLoading, error };
+  return {
+    url: query.data ?? null,
+    isLoading: query.isLoading,
+    error: query.error instanceof Error ? query.error : null,
+  };
 }
 
 /**
