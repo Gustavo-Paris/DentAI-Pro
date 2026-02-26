@@ -27,8 +27,25 @@
   "theme_color": "#2A9D8F",
   "background_color": "#F9FAFA",
   "display": "standalone",
+  "orientation": "portrait",
   "start_url": "/",
   "scope": "/",
+  "screenshots": [
+    {
+      "src": "/og-image.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "ToSmile.ai — Painel de avaliações"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "ToSmile.ai — Tela inicial"
+    }
+  ],
   "shortcuts": [
     {
       "name": "Dashboard",
