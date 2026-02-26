@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, ShieldCheck, ShieldAlert, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { calculateAge } from '@/lib/dateUtils';
+import { calculateAge } from '@/lib/date-utils';
 import { calculateComplexity } from '@/lib/complexity-score';
 import type { DetectedTooth, TreatmentType, ReviewFormData } from '../ReviewAnalysisStep';
 

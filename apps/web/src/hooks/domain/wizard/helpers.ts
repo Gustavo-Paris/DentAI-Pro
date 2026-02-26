@@ -1,4 +1,4 @@
-import type { DetectedTooth, TreatmentType } from '@/components/wizard/ReviewAnalysisStep';
+import type { DetectedTooth, TreatmentType } from '@/types/wizard';
 import i18n from '@/lib/i18n';
 import { ANTERIOR_TEETH } from './constants';
 

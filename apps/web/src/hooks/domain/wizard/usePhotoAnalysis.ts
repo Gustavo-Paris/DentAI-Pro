@@ -2,7 +2,7 @@ import { useState, useCallback, useRef } from 'react';
 import type {
   PhotoAnalysisResult,
   ReviewFormData,
-} from '@/components/wizard/ReviewAnalysisStep';
+} from '@/types/wizard';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { logger } from '@/lib/logger';

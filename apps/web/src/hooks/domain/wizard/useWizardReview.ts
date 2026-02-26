@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import type {
   ReviewFormData,
   TreatmentType,
-} from '@/components/wizard/ReviewAnalysisStep';
+} from '@/types/wizard';
 
 // ---------------------------------------------------------------------------
 // Params

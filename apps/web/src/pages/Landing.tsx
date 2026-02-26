@@ -18,12 +18,10 @@ import {
 } from '@parisgroup-ai/pageshell/primitives';
 import { Sparkles, Camera, Smile, Layers, FileText, Star, Check, Zap, Users, RefreshCw } from 'lucide-react';
 import { BRAND_NAME } from '@/lib/branding';
-import { QUERY_STALE_TIMES } from '@/lib/constants';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { HeroMockup } from '@/components/landing/HeroMockup';
 import { FeaturePreview } from '@/components/landing/FeaturePreview';
-import { useQuery } from '@tanstack/react-query';
-import { subscriptions } from '@/data';
+import { useLandingPlans } from '@/hooks/useLandingPlans';
 import { formatPrice } from '@/hooks/useSubscription';
 import { getInitials } from '@/lib/utils';
 import { useScrollReveal, useScrollRevealChildren } from '@/hooks/useScrollReveal';
@@ -499,13 +497,7 @@ const LANDING_FALLBACK_PLANS = [
 
 function LandingPricing() {
   const { t } = useTranslation();
-  const { data: plans } = useQuery({
-    queryKey: ['subscription-plans'],
-    queryFn: () => subscriptions.getPlans(),
-    staleTime: QUERY_STALE_TIMES.VERY_LONG,
-    retry: 1,
-    retryDelay: 1000,
-  });
+  const { plans } = useLandingPlans();
 
   const displayPlans = plans && plans.length > 0 ? plans : null;
 

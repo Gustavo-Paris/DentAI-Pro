@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { patients } from '@/data';
 import { QUERY_STALE_TIMES } from '@/lib/constants';
@@ -77,10 +77,24 @@ export function usePatientList() {
     staleTime: QUERY_STALE_TIMES.SHORT,
   });
 
+  // Create patient mutation
+  const queryClient = useQueryClient();
+  const createMutation = useMutation({
+    mutationFn: async (data: { name: string; phone?: string; email?: string; notes?: string }) => {
+      if (!user) throw new Error('User not authenticated');
+      return patients.create(user.id, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['patients'] });
+    },
+  });
+
   return {
     patients: query.data?.patients ?? [],
     total: query.data?.total ?? 0,
     isLoading: query.isLoading,
     isError: query.isError,
+    createPatient: createMutation.mutateAsync,
+    isCreating: createMutation.isPending,
   };
 }

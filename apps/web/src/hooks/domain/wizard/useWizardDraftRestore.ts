@@ -3,7 +3,7 @@ import type {
   PhotoAnalysisResult,
   ReviewFormData,
   TreatmentType,
-} from '@/components/wizard/ReviewAnalysisStep';
+} from '@/types/wizard';
 import type { DSDResult } from '@/types/dsd';
 import type { WizardDraft, AdditionalPhotos } from '@/hooks/useWizardDraft';
 import type { PatientPreferences } from '@/components/wizard/PatientPreferencesStep';

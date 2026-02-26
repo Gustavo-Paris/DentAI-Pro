@@ -4,8 +4,8 @@ import type {
   PhotoAnalysisResult,
   ReviewFormData,
   TreatmentType,
-} from '@/components/wizard/ReviewAnalysisStep';
-import type { Patient } from '@/components/PatientAutocomplete';
+} from '@/types/wizard';
+import type { Patient } from '@/types/patient';
 import type { DSDResult } from '@/types/dsd';
 import type { PatientPreferences } from '@/components/wizard/PatientPreferencesStep';
 

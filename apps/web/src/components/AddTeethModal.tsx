@@ -22,33 +22,9 @@ import {
 import { Loader2, Plus, Wrench, Wand2 } from 'lucide-react';
 import { logger } from '@/lib/logger';
 
-export type TreatmentType = 'resina' | 'porcelana' | 'coroa' | 'implante' | 'endodontia' | 'encaminhamento' | 'gengivoplastia' | 'recobrimento_radicular';
-
-// Interface for pending teeth from database - allows Json type for tooth_bounds
-export interface PendingTooth {
-  id: string;
-  session_id: string;
-  user_id: string;
-  tooth: string;
-  priority: string | null;
-  treatment_indication: string | null;
-  indication_reason: string | null;
-  cavity_class: string | null;
-  restoration_size: string | null;
-  substrate: string | null;
-  substrate_condition: string | null;
-  enamel_condition: string | null;
-  depth: string | null;
-  tooth_region: string | null;
-  tooth_bounds: unknown; // Json type from database
-  created_at?: string;
-}
-
-export interface SubmitTeethPayload {
-  selectedTeeth: string[];
-  toothTreatments: Record<string, TreatmentType>;
-  pendingTeeth: PendingTooth[];
-}
+// Types re-exported from canonical location for backward compatibility
+export type { TreatmentType, PendingTooth, SubmitTeethPayload } from '@/types/evaluation';
+import type { TreatmentType, PendingTooth, SubmitTeethPayload } from '@/types/evaluation';
 
 interface AddTeethModalProps {
   open: boolean;

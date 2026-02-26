@@ -4,7 +4,7 @@ import type {
   ReviewFormData,
   DetectedTooth,
   TreatmentType,
-} from '@/components/wizard/ReviewAnalysisStep';
+} from '@/types/wizard';
 import type { DSDResult } from '@/types/dsd';
 import type { PatientPreferences } from '@/components/wizard/PatientPreferencesStep';
 import type { SubmissionStep } from './types';
@@ -176,7 +176,7 @@ export function useWizardSubmit({
       ? rawTeeth.filter(tooth => {
           if (tooth === 'GENGIVO') return true; // keep the virtual entry
           const tt = getToothTreatment(tooth, toothTreatments, analysisResult, formData);
-          return normalizeTreatment(tt) !== 'gengivoplastia';
+          return normalizeTreatmentType(tt) !== 'gengivoplastia';
         })
       : rawTeeth;
 
@@ -228,7 +228,7 @@ export function useWizardSubmit({
       // Pre-compute treatment types and pick one "primary" tooth per group
       const primaryPerGroup: Record<string, string> = {}; // treatmentType → first tooth
       for (const tooth of teethToProcess) {
-        const tt = normalizeTreatment(
+        const tt = normalizeTreatmentType(
           getToothTreatment(tooth, toothTreatments, analysisResult, formData),
         );
         if (!primaryPerGroup[tt]) primaryPerGroup[tt] = tooth;
@@ -240,7 +240,7 @@ export function useWizardSubmit({
         const toothData = getToothData(analysisResult, tooth);
         const treatmentType = getToothTreatment(tooth, toothTreatments, analysisResult, formData);
         // Normalize treatment type: Gemini sometimes returns English values
-        const normalizedTreatment = normalizeTreatment(treatmentType);
+        const normalizedTreatment = normalizeTreatmentType(treatmentType);
 
         let evaluationId: string | null = null;
 

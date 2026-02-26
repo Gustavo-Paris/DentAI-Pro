@@ -2,6 +2,7 @@ import { subDays, startOfWeek } from 'date-fns';
 import { supabase } from './client';
 import type { EvaluationInsert } from './client';
 import { withQuery, withMutation, countByUser } from './utils';
+import { withRetry } from '@/lib/retry';
 import { EVALUATION_STATUS } from '@/lib/evaluation-status';
 import type { EvaluationStatus } from '@/lib/evaluation-status';
 import type { StratificationProtocol, CementationProtocol } from '@/types/protocol';
@@ -406,37 +407,30 @@ export async function getOrCreateShareLink(sessionId: string, userId: string) {
 
   if (existing?.token) return existing.token;
 
-  // Create new link with single retry for transient errors
-  try {
-    const created = await withQuery(() =>
-      supabase
+  // Create new link with retry (re-checks for existing token on each attempt to avoid double-insert)
+  return withRetry(
+    async () => {
+      // Re-check before insert — a concurrent request may have created it
+      const { data: recheck } = await supabase
         .from('shared_links')
-        .insert({ user_id: userId, session_id: sessionId })
         .select('token')
-        .single(),
-    );
-    return created.token as string;
-  } catch {
-    await new Promise(r => setTimeout(r, 2000));
-    // Re-check for existing token before retrying insert (avoid double-insert)
-    const { data: recheck } = await supabase
-      .from('shared_links')
-      .select('token')
-      .eq('session_id', sessionId)
-      .eq('user_id', userId)
-      .gt('expires_at', new Date().toISOString())
-      .maybeSingle();
-    if (recheck?.token) return recheck.token;
+        .eq('session_id', sessionId)
+        .eq('user_id', userId)
+        .gt('expires_at', new Date().toISOString())
+        .maybeSingle();
+      if (recheck?.token) return recheck.token as string;
 
-    const created = await withQuery(() =>
-      supabase
-        .from('shared_links')
-        .insert({ user_id: userId, session_id: sessionId })
-        .select('token')
-        .single(),
-    );
-    return created.token as string;
-  }
+      const created = await withQuery(() =>
+        supabase
+          .from('shared_links')
+          .insert({ user_id: userId, session_id: sessionId })
+          .select('token')
+          .single(),
+      );
+      return created.token as string;
+    },
+    { maxRetries: 1, baseDelay: 2000 },
+  );
 }
 
 // ---------------------------------------------------------------------------

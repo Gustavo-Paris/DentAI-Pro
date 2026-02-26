@@ -6,13 +6,9 @@ import { Badge } from '@/components/ui/badge';
 import { User, Plus, Check } from 'lucide-react';
 import { trackEvent } from '@/lib/analytics';
 
-export interface Patient {
-  id: string;
-  name: string;
-  phone: string | null;
-  email: string | null;
-  birth_date: string | null;
-}
+// Type re-exported from canonical location for backward compatibility
+export type { Patient } from '@/types/patient';
+import type { Patient } from '@/types/patient';
 
 interface PatientAutocompleteProps {
   value: string;

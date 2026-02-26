@@ -2,7 +2,6 @@ import { useNavigate } from 'react-router-dom';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ListPage, GenericErrorState } from '@parisgroup-ai/pageshell/composites';
 import { PageConfirmDialog } from '@parisgroup-ai/pageshell/interactions';
 import {
@@ -17,8 +16,6 @@ import {
 } from '@parisgroup-ai/pageshell/primitives';
 import { PagePatientCard } from '@parisgroup-ai/domain-odonto-ai/patients';
 import type { PatientInfo } from '@parisgroup-ai/domain-odonto-ai/patients';
-import { useAuth } from '@/contexts/AuthContext';
-import { patients } from '@/data';
 import { usePatientList } from '@/hooks/domain/usePatientList';
 import type { PatientWithStats } from '@/hooks/domain/usePatientList';
 import { toast } from 'sonner';
@@ -83,9 +80,7 @@ export default function Patients() {
   const { t } = useTranslation();
   useDocumentTitle(t('pageTitle.patients', { defaultValue: 'Pacientes' }));
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
-  const { patients: patientsList, total, isLoading, isError } = usePatientList();
+  const { patients: patientsList, total, isLoading, isError, createPatient, isCreating } = usePatientList();
 
   // ---- Create patient dialog ----
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -133,33 +128,24 @@ export default function Patients() {
     });
   }, [t]);
 
-  const createMutation = useMutation({
-    mutationFn: async (data: { name: string; phone?: string; email?: string; notes?: string }) => {
-      if (!user) throw new Error('User not authenticated');
-      return patients.create(user.id, data);
-    },
-    onSuccess: (newPatient) => {
-      queryClient.invalidateQueries({ queryKey: ['patients'] });
+  const handleCreatePatient = useCallback(async () => {
+    if (!createForm.name.trim()) return;
+    try {
+      const newPatient = await createPatient({
+        name: createForm.name.trim(),
+        phone: createForm.phone.trim() || undefined,
+        email: createForm.email.trim() || undefined,
+        notes: createForm.notes.trim() || undefined,
+      });
       toast.success(t('toasts.patient.created', { defaultValue: 'Paciente criado com sucesso' }));
       setShowCreateDialog(false);
       setCreateForm({ name: '', phone: '', email: '', notes: '' });
       setValidationErrors({});
       navigate(`/patient/${newPatient.id}`);
-    },
-    onError: () => {
+    } catch {
       toast.error(t('toasts.patient.createError', { defaultValue: 'Erro ao criar paciente' }));
-    },
-  });
-
-  const handleCreatePatient = useCallback(() => {
-    if (!createForm.name.trim()) return;
-    createMutation.mutate({
-      name: createForm.name.trim(),
-      phone: createForm.phone.trim() || undefined,
-      email: createForm.email.trim() || undefined,
-      notes: createForm.notes.trim() || undefined,
-    });
-  }, [createForm, createMutation]);
+    }
+  }, [createForm, createPatient, t, navigate]);
 
   const searchConfig = useMemo(
     () => ({ fields: SEARCH_FIELDS, placeholder: t('patients.searchPlaceholder') }),
@@ -323,9 +309,9 @@ export default function Patients() {
               </Button>
               <Button
                 onClick={handleCreatePatient}
-                disabled={createMutation.isPending || !createForm.name.trim() || Object.keys(validationErrors).length > 0}
+                disabled={isCreating || !createForm.name.trim() || Object.keys(validationErrors).length > 0}
               >
-                {createMutation.isPending ? t('common.saving') : t('common.save')}
+                {isCreating ? t('common.saving') : t('common.save')}
               </Button>
             </div>
           </div>

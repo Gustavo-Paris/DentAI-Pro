@@ -9,7 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { CalendarIcon, User } from 'lucide-react';
 import { PatientAutocomplete } from '@/components/PatientAutocomplete';
 import type { Patient } from '@/components/PatientAutocomplete';
-import { calculateAge } from '@/lib/dateUtils';
+import { calculateAge } from '@/lib/date-utils';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';

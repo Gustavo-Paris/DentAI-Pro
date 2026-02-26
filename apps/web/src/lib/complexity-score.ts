@@ -1,4 +1,4 @@
-import type { DetectedTooth } from '@/components/wizard/ReviewAnalysisStep';
+import type { DetectedTooth } from '@/types/wizard';
 
 export type ComplexityLevel = 'simples' | 'moderado' | 'complexo';
 

@@ -1,4 +1,4 @@
-import type { ReviewFormData } from '@/components/wizard/ReviewAnalysisStep';
+import type { ReviewFormData } from '@/types/wizard';
 
 export const INITIAL_FORM_DATA: ReviewFormData = {
   patientName: '',

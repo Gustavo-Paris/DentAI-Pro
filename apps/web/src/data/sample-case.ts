@@ -1,9 +1,8 @@
-// TODO: These types should be moved to src/types/ to avoid importing from component files.
 import type {
   PhotoAnalysisResult,
   ReviewFormData,
   TreatmentType,
-} from '@/components/wizard/ReviewAnalysisStep';
+} from '@/types/wizard';
 
 /**
  * Pre-computed sample case data for a Class IV resin restoration on tooth 21.

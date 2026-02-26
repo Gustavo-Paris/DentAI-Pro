@@ -3,7 +3,7 @@ import type {
   PhotoAnalysisResult,
   DetectedTooth,
   TreatmentType,
-} from '@/components/wizard/ReviewAnalysisStep';
+} from '@/types/wizard';
 import type { DSDResult } from '@/types/dsd';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
