@@ -78,7 +78,6 @@ export default defineConfig(() => ({
             '@radix-ui/react-slot',
             '@radix-ui/react-switch',
             '@radix-ui/react-tabs',
-            '@radix-ui/react-toggle',
             '@radix-ui/react-tooltip',
           ],
           // Data fetching
