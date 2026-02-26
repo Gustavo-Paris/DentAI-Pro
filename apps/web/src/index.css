@@ -406,13 +406,39 @@
     var(--glow-sm);
 }
 
+/* PageShell mobile header: show tooth SVG logo with gradient + glow instead of lucide icon in badge */
+.bg-primary:has(> .brand-tooth-icon) {
+  background: transparent !important;
+  width: auto !important;
+  height: auto !important;
+}
+.brand-tooth-icon {
+  width: 2rem !important;
+  height: 2rem !important;
+  filter: drop-shadow(0 0 6px rgb(var(--color-primary-rgb) / 0.4));
+}
+.dark .brand-tooth-icon {
+  filter: drop-shadow(0 0 8px rgb(var(--color-primary-rgb) / 0.5));
+}
+
+/* PageShell containers: add horizontal padding so content doesn't flush on reduced viewports.
+   PageShell only sets max-w-* mx-auto with no px-*, causing edge-to-edge on narrow screens. */
+[class*="ui-theme"] > [class*="min-h-screen"] > [class*="mx-auto"] {
+  padding-inline: 1rem;
+}
+@media (min-width: 640px) {
+  [class*="ui-theme"] > [class*="min-h-screen"] > [class*="mx-auto"] {
+    padding-inline: 1.5rem;
+  }
+}
+
 /* Wizard stage — unified glass container for all wizard steps */
 .wizard-stage {
   position: relative;
   background: rgb(var(--color-card-rgb) / 0.5);
   border: 1px solid rgb(var(--color-primary-rgb) / 0.06);
   border-radius: 1rem;
-  padding: 1.5rem;
+  padding: 1.25rem;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }

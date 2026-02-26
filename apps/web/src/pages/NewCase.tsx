@@ -48,7 +48,7 @@ const QUICK_ICONS = [Camera, Brain, ClipboardCheck, FileText];
 
 export default function NewCase() {
   const { t } = useTranslation();
-  useDocumentTitle(t('pageTitle.newCase', { defaultValue: 'Novo Caso' }));
+  useDocumentTitle(t('pageTitle.newCase', { defaultValue: 'Nova Avaliação' }));
   const wizard = useWizardFlow();
   const disclaimer = useAiDisclaimer();
   const navigate = useNavigate();

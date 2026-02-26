@@ -14,10 +14,11 @@ import { PageShellI18nProvider, PT_BR_MESSAGES } from '@parisgroup-ai/pageshell/
 
 // Domain-odonto-ai components use tPageShell() with domain.odonto.* keys
 // that don't exist in PageShell's built-in PT_BR_MESSAGES.
-// We extend the bundle here so labels render in Portuguese, not English fallbacks.
+// Deep-merge domain to preserve built-in keys (credits, chat, etc.) while adding odonto.
 const EXTENDED_PT_BR_MESSAGES = {
   ...PT_BR_MESSAGES,
   domain: {
+    ...((PT_BR_MESSAGES as Record<string, Record<string, unknown>>).domain ?? {}),
     odonto: {
       patients: {
         card: {
