@@ -32,7 +32,7 @@ function isAnteriorTooth(tooth: string): boolean {
 
 // Aesthetic cavity classes that require full stratification
 const AESTHETIC_CLASSES = [
-  'classe iii', 'classe iv', 'classe v',
+  'classe i', 'classe ii', 'classe iii', 'classe iv', 'classe v',
   'faceta direta', 'fechamento de diastema',
   'recontorno estético', 'lente de contato',
 ];
@@ -248,7 +248,7 @@ export async function validateAndFixProtocolLayers({
       // Enforce: dentina/corpo layers must NOT use enamel shades
       const isDentinaCorpoLayer = layerType.includes('dentina') || layerType.includes('corpo') || layerType.includes('body');
       if (isDentinaCorpoLayer && layer.shade) {
-        const enamelShadesList = ['WE', 'A1E', 'A2E', 'A3E', 'B1E', 'B2E', 'CT', 'GT', 'BT', 'YT', 'MW', 'CE', 'JE', 'TN', 'INC', 'BL1', 'BL2', 'BL3', 'BL-L'];
+        const enamelShadesList = ['WE', 'A1E', 'A2E', 'A3E', 'B1E', 'B2E', 'CT', 'GT', 'BT', 'YT', 'MW', 'CE', 'JE', 'TN', 'INC', 'BL1', 'BL2', 'BL3', 'BL-L', 'BL-XL', 'BL-T', 'XLE', 'Trans20', 'Trans30', 'Trans', 'Opal'];
         const isEnamelShadeForBody = enamelShadesList.some(es => layer.shade.toUpperCase() === es.toUpperCase());
         if (isEnamelShadeForBody) {
           const originalShade = layer.shade;
@@ -452,7 +452,7 @@ export async function validateAndFixProtocolLayers({
     const anterior = isAnteriorTooth(tooth);
     const classLower = cavityClass.toLowerCase();
     const isAestheticCase = AESTHETIC_CLASSES.some(c => classLower.includes(c));
-    if (anterior && isAestheticCase && recommendation.protocol.layers.length >= 4) {
+    if (anterior && isAestheticCase && recommendation.protocol.layers.length >= 3) {
       const hasEfeitos = recommendation.protocol.layers.some(
         (l: { name?: string }) => {
           const n = (l.name || '').toLowerCase();

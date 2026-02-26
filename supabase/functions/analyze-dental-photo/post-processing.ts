@@ -101,11 +101,18 @@ export function processAnalysisResult(analysisResult: PhotoAnalysisResult): Phot
       // Rule 1: Very low confidence — strip diastema diagnoses.
       // Threshold lowered from 80 to 65: the case-level confidence is often
       // dragged down by other findings, not by the diastema detection itself.
-      for (const idx of diastemaTeetIdx.reverse()) {
-        const tooth = detectedTeeth[idx];
-        logger.warn(`Post-processing: removing diastema diagnosis for tooth ${tooth.tooth} — overall confidence ${analysisConfidence}% < 65% threshold`);
-        removedDiastemaTeeth.push(tooth.tooth);
-        detectedTeeth.splice(idx, 1);
+      // EXCEPTION: bilateral central diastema (11+21 both diagnosed) is reliable even at low confidence
+      const hasBilateralCentral = diastemaTeetIdx.some(i => detectedTeeth[i]?.tooth === '11')
+        && diastemaTeetIdx.some(i => detectedTeeth[i]?.tooth === '21');
+      if (hasBilateralCentral) {
+        logger.log(`Post-processing: bilateral central diastema (11+21) preserved despite low confidence ${analysisConfidence}%`);
+      } else {
+        for (const idx of diastemaTeetIdx.reverse()) {
+          const tooth = detectedTeeth[idx];
+          logger.warn(`Post-processing: removing diastema diagnosis for tooth ${tooth.tooth} — overall confidence ${analysisConfidence}% < 65% threshold`);
+          removedDiastemaTeeth.push(tooth.tooth);
+          detectedTeeth.splice(idx, 1);
+        }
       }
     } else {
       // Rule 2: Central incisors (11/21) — require BOTH to mention diastema.
@@ -143,7 +150,7 @@ export function processAnalysisResult(analysisResult: PhotoAnalysisResult): Phot
 
   // If majority of detected teeth are upper arch, remove lower teeth
   let filteredLowerWarning: string | null = null;
-  if (upperTeeth.length > 0 && lowerTeeth.length > 0 && upperTeeth.length >= lowerTeeth.length) {
+  if (upperTeeth.length > 0 && lowerTeeth.length > 0 && upperTeeth.length > lowerTeeth.length) {
     const removedNumbers = lowerTeeth.map(t => t.tooth);
     logger.warn(`Removing lower teeth ${removedNumbers.join(', ')} — photo predominantly shows upper arch (${upperTeeth.length} upper vs ${lowerTeeth.length} lower)`);
     filteredLowerWarning = `Dentes inferiores (${removedNumbers.join(', ')}) removidos da análise — foto mostra predominantemente a arcada superior.`;
