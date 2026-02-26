@@ -106,10 +106,10 @@ export function AnalyzingStep({
     return (
       <div className="space-y-6" role="alert">
         <div className="text-center">
-          <div className="w-16 h-16 rounded-full bg-warning/10 flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 rounded-full bg-warning/10 flex items-center justify-center mx-auto mb-4 glow-icon">
             <AlertCircle className="w-8 h-8 text-warning" />
           </div>
-          <h2 className="text-2xl font-semibold font-display mb-2">{t('components.wizard.analyzing.errorTitle')}</h2>
+          <h2 className="text-2xl font-semibold font-display mb-2 neon-text">{t('components.wizard.analyzing.errorTitle')}</h2>
           <p className="text-muted-foreground max-w-md mx-auto">
             {analysisError}
           </p>

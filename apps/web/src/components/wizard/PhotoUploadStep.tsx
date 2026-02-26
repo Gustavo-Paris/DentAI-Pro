@@ -324,7 +324,7 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-semibold font-display mb-2">{t('components.wizard.photoUpload.title')}</h2>
+        <h2 className="text-2xl font-semibold font-display mb-2 neon-text">{t('components.wizard.photoUpload.title')}</h2>
         <p className="text-muted-foreground">
           {t('components.wizard.photoUpload.subtitle')}
         </p>
@@ -345,7 +345,8 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
           onDragOver={handleDrag}
           onDrop={handleDrop}
         >
-          <div className="bg-card rounded-[11px] grain-overlay">
+          <div className="bg-card rounded-[11px] grain-overlay glow-card relative overflow-hidden">
+            <div className="ai-grid-pattern absolute inset-0 opacity-20 dark:opacity-40 rounded-[11px] pointer-events-none" aria-hidden="true" />
             <div className="py-10 px-4">
               {isCompressing ? (
                 <div className="flex flex-col items-center justify-center text-center" role="status" aria-live="polite">
@@ -361,7 +362,7 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center text-center">
-                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 glow-icon">
                     <Camera className="w-8 h-8 text-primary animate-[float_3s_ease-in-out_infinite]" />
                   </div>
 
@@ -396,7 +397,7 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
                   {/* Format chips */}
                   <div className="flex items-center gap-2 mt-6">
                     {['JPG', 'PNG', 'HEIC', '10MB'].map((fmt) => (
-                      <Badge key={fmt} variant="outline" className="text-xs font-normal">
+                      <Badge key={fmt} variant="outline" className="text-xs font-normal glow-badge">
                         {fmt}
                       </Badge>
                     ))}
@@ -666,7 +667,7 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
       )}
 
       {/* Tips — Discrete card with gold accent stripe */}
-      <div className="border-l-2 border-primary/30 pl-4 py-2">
+      <div className="glass-panel rounded-xl px-4 py-3">
         <div className="flex items-start gap-2">
           <Lightbulb className="w-3.5 h-3.5 text-primary/50 mt-0.5 shrink-0" />
           <div>

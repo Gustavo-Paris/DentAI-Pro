@@ -155,7 +155,7 @@ export function ReviewAnalysisStep({
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-semibold font-display mb-2">{t('components.wizard.review.title')}</h2>
+        <h2 className="text-2xl font-semibold font-display mb-2 neon-text">{t('components.wizard.review.title')}</h2>
         <p className="text-muted-foreground">
           {hasMultipleTeeth
             ? t('components.wizard.review.multiTeethSubtitle', { count: detectedTeeth.length })
@@ -204,7 +204,7 @@ export function ReviewAnalysisStep({
 
       {/* 3. Observations */}
       {analysisResult?.observations && analysisResult.observations.length > 0 && (
-        <div className="border-l-2 border-primary/30 pl-4 py-2 rounded-r-lg bg-muted/30">
+        <div className="glass-panel rounded-xl p-4">
           <div className="flex items-start gap-2">
             <Info className="w-4 h-4 text-primary/50 mt-0.5 shrink-0" />
             <div>

@@ -261,29 +261,35 @@ export default function NewCase() {
       children: (
         <div key="step-result" className={`wizard-step-${stepDirection}`}>
           {submissionComplete ? (
-            <div className="flex flex-col items-center justify-center py-16 sm:py-24 space-y-4">
-              <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center animate-scale-in success-pulse">
-                <Check className="w-8 h-8 text-primary-foreground" />
-              </div>
-              <p className="text-lg font-semibold text-foreground animate-fade-in-up">
-                {t('wizard.caseCreated')}
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 animate-fade-in-up">
-                <Button
-                  onClick={() => navigate(`/evaluation/${completedSessionId}`)}
-                  className="btn-press"
-                >
-                  <Eye className="w-4 h-4 mr-2" />
-                  {t('result.viewCase')}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleBack}
-                  className="print:hidden btn-press"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  {t('result.recalculate')}
-                </Button>
+            <div className="ai-shimmer-border rounded-xl p-8 relative overflow-hidden">
+              {/* Celebration glow orbs */}
+              <div className="glow-orb-slow absolute -top-10 -left-10 w-32 h-32 bg-primary/10 dark:bg-primary/20 rounded-full pointer-events-none" aria-hidden="true" />
+              <div className="glow-orb-reverse absolute -bottom-10 -right-10 w-28 h-28 bg-accent/8 dark:bg-accent/15 rounded-full pointer-events-none" aria-hidden="true" />
+
+              <div className="flex flex-col items-center justify-center py-8 sm:py-16 space-y-4 relative z-10">
+                <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center animate-scale-in success-pulse glow-icon dark:shadow-[0_0_30px_rgb(var(--color-primary-rgb)/0.4)]">
+                  <Check className="w-8 h-8 text-primary-foreground" />
+                </div>
+                <p className="text-lg font-semibold text-foreground animate-fade-in-up neon-text">
+                  {t('wizard.caseCreated')}
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 animate-fade-in-up">
+                  <Button
+                    onClick={() => navigate(`/evaluation/${completedSessionId}`)}
+                    className="btn-press"
+                  >
+                    <Eye className="w-4 h-4 mr-2" />
+                    {t('result.viewCase')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={handleBack}
+                    className="print:hidden btn-press"
+                  >
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    {t('result.recalculate')}
+                  </Button>
+                </div>
               </div>
             </div>
           ) : isSubmitting ? (
@@ -349,96 +355,106 @@ export default function NewCase() {
       progress={wizard.submissionSteps.filter(s => s.completed).length / Math.max(wizard.submissionSteps.length, 1) * 100}
     />
     <div ref={stepContentRef} tabIndex={-1} aria-live="polite" className="outline-none">
-      <PageShellWizard
-        theme="odonto-ai"
-        title={t('wizard.newCase')}
-        currentStep={displayStep + 1}
-        totalSteps={totalSteps}
-        enableKeyboardNav={false} // Disabled: wizard steps contain form inputs that need arrow/tab keys
-        showProgress={true}
-        scrollToTop={true}
-        containerVariant="narrow"
-        hideNavigation={true}
-        steps={allSteps}
-        slots={{
-          progress: (
-            <StepIndicator
-              currentStep={displayStep}
-              totalSteps={totalSteps}
-              onStepClick={handleStepClick}
-              stepLabels={wizard.isQuickCase ? quickLabels : undefined}
-              stepIcons={wizard.isQuickCase ? QUICK_ICONS : undefined}
-            />
-          ),
-          beforeContent: (
-            <div className="flex items-center justify-between mb-2">
-              {wizard.isSampleCase ? (
-                <Badge variant="secondary" className="text-xs gap-1.5 bg-primary/10 text-primary border-primary/20">
-                  <Eye className="w-3 h-3" />
-                  {t('wizard.sampleCase')}
-                </Badge>
-              ) : <span />}
-              {wizard.step >= 4 && !wizard.isSampleCase ? (
-                <Badge variant="outline" className="text-xs gap-1.5">
-                  {wizard.isSaving ? (
-                    <>
-                      <Save className="w-3 h-3 animate-pulse" />
-                      <span className="hidden sm:inline">{t('common.saving')}</span>
-                    </>
-                  ) : wizard.lastSavedAt ? (
-                    <>
-                      <Check className="w-3 h-3 text-primary" />
-                      <span className="hidden sm:inline">{t('common.saved')}</span>
-                    </>
-                  ) : null}
-                </Badge>
-              ) : <span />}
-            </div>
-          ),
-          footer: wizard.canGoBack ? (
-            <div className="wizard-nav-sticky">
-              <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 pt-4 pb-2 sm:pt-4 sm:pb-0">
-                <Button variant="outline" onClick={wizard.handleBack} disabled={wizard.isSubmitting} className="w-full sm:w-auto btn-press">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  {t('common.back')}
-                </Button>
+      <div className="relative section-glow-bg overflow-hidden">
+        {/* Ambient glow orbs */}
+        <div className="glow-orb-slow absolute top-20 -left-40 w-72 h-72 bg-primary/10 dark:bg-primary/15 rounded-full pointer-events-none" aria-hidden="true" />
+        <div className="glow-orb-reverse absolute bottom-20 -right-40 w-60 h-60 bg-accent/8 dark:bg-accent/12 rounded-full pointer-events-none" aria-hidden="true" />
+        {/* Subtle AI dot grid overlay */}
+        <div className="ai-grid-pattern absolute inset-0 opacity-30 dark:opacity-50 [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,black_70%,transparent_100%)] pointer-events-none" aria-hidden="true" />
 
-                {wizard.step === 5 && (
-                  wizard.isSampleCase ? (
-                    <Button
-                      onClick={() => navigate('/new-case')}
-                      className="w-full sm:w-auto btn-glow-gold btn-press font-semibold"
-                    >
-                      <Sparkles className="w-4 h-4 mr-2" />
-                      {t('wizard.createMyOwnCase')}
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={wizard.handleSubmit}
-                      disabled={wizard.isSubmitting}
-                      className="w-full sm:w-auto btn-glow-gold btn-press font-semibold"
-                    >
-                      {wizard.isSubmitting ? (
+        <div className="relative z-10">
+          <PageShellWizard
+            theme="odonto-ai"
+            title={t('wizard.newCase')}
+            currentStep={displayStep + 1}
+            totalSteps={totalSteps}
+            enableKeyboardNav={false} // Disabled: wizard steps contain form inputs that need arrow/tab keys
+            showProgress={true}
+            scrollToTop={true}
+            containerVariant="narrow"
+            hideNavigation={true}
+            steps={allSteps}
+            slots={{
+              progress: (
+                <StepIndicator
+                  currentStep={displayStep}
+                  totalSteps={totalSteps}
+                  onStepClick={handleStepClick}
+                  stepLabels={wizard.isQuickCase ? quickLabels : undefined}
+                  stepIcons={wizard.isQuickCase ? QUICK_ICONS : undefined}
+                />
+              ),
+              beforeContent: (
+                <div className="flex items-center justify-between mb-2">
+                  {wizard.isSampleCase ? (
+                    <Badge variant="secondary" className="text-xs gap-1.5 bg-primary/10 text-primary border-primary/20">
+                      <Eye className="w-3 h-3" />
+                      {t('wizard.sampleCase')}
+                    </Badge>
+                  ) : <span />}
+                  {wizard.step >= 4 && !wizard.isSampleCase ? (
+                    <Badge variant="outline" className="text-xs gap-1.5">
+                      {wizard.isSaving ? (
                         <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          {t('common.processing')}
+                          <Save className="w-3 h-3 animate-pulse" />
+                          <span className="hidden sm:inline">{t('common.saving')}</span>
                         </>
-                      ) : (
+                      ) : wizard.lastSavedAt ? (
                         <>
+                          <Check className="w-3 h-3 text-primary" />
+                          <span className="hidden sm:inline">{t('common.saved')}</span>
+                        </>
+                      ) : null}
+                    </Badge>
+                  ) : <span />}
+                </div>
+              ),
+              footer: wizard.canGoBack ? (
+                <div className="wizard-nav-sticky">
+                  <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 pt-4 pb-2 sm:pt-4 sm:pb-0">
+                    <Button variant="outline" onClick={wizard.handleBack} disabled={wizard.isSubmitting} className="w-full sm:w-auto btn-press">
+                      <ArrowLeft className="w-4 h-4 mr-2" />
+                      {t('common.back')}
+                    </Button>
+
+                    {wizard.step === 5 && (
+                      wizard.isSampleCase ? (
+                        <Button
+                          onClick={() => navigate('/new-case')}
+                          className="w-full sm:w-auto btn-glow-gold btn-press font-semibold"
+                        >
                           <Sparkles className="w-4 h-4 mr-2" />
-                          {t('wizard.generateCase')}
+                          {t('wizard.createMyOwnCase')}
                           <ArrowRight className="w-4 h-4 ml-2" />
-                        </>
-                      )}
-                    </Button>
-                  )
-                )}
-              </div>
-            </div>
-          ) : <></>,
-        }}
-      />
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={wizard.handleSubmit}
+                          disabled={wizard.isSubmitting}
+                          className="w-full sm:w-auto btn-glow-gold btn-press font-semibold"
+                        >
+                          {wizard.isSubmitting ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              {t('common.processing')}
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="w-4 h-4 mr-2" />
+                              {t('wizard.generateCase')}
+                              <ArrowRight className="w-4 h-4 ml-2" />
+                            </>
+                          )}
+                        </Button>
+                      )
+                    )}
+                  </div>
+                </div>
+              ) : <></>,
+            }}
+          />
+        </div>{/* /relative z-10 */}
+      </div>{/* /section-glow-bg */}
 
       {/* Draft Restore Modal */}
       <DraftRestoreModal

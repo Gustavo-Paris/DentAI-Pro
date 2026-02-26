@@ -90,7 +90,7 @@ export const ProcessingOverlay = memo(function ProcessingOverlay({
       aria-label={displayMessage}
       tabIndex={-1}
     >
-      <Card className="w-full max-w-md rounded-2xl card-elevated grain-overlay animate-[scale-in_0.3s_ease-out]">
+      <Card className="w-full max-w-md card-elevated glow-card grain-overlay ai-shimmer-border animate-[scale-in_0.3s_ease-out]">
         <CardContent className="p-6 flex flex-col items-center text-center">
           <ProgressRing progress={progress} size={100} />
 

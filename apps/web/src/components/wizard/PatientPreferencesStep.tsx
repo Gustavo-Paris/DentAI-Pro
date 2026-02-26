@@ -62,12 +62,12 @@ export function PatientPreferencesStep({
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      <Card className="card-elevated border-primary/20">
+      <Card className="card-elevated glow-card border-primary/20">
         <CardHeader className="text-center pb-4">
-          <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
+          <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3 glow-icon">
             <Sparkles className="w-6 h-6 text-primary" />
           </div>
-          <CardTitle className="text-xl">{t('components.wizard.preferences.title')}</CardTitle>
+          <CardTitle className="text-xl neon-text">{t('components.wizard.preferences.title')}</CardTitle>
           <CardDescription className="text-base">
             {t('components.wizard.preferences.subtitle')}
           </CardDescription>
@@ -93,7 +93,7 @@ export function PatientPreferencesStep({
                     'hover:border-primary/50 hover:bg-primary/5 hover:shadow-sm',
                     'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                     isSelected
-                      ? 'border-primary card-elevated shadow-md ring-2 ring-primary/20'
+                      ? 'ai-shimmer-border shadow-md'
                       : 'border-border bg-card'
                   )}
                 >
@@ -116,7 +116,7 @@ export function PatientPreferencesStep({
                     {/* Icon */}
                     <div className={cn(
                       'w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-colors',
-                      isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                      isSelected ? 'bg-primary text-primary-foreground glow-icon' : 'bg-muted text-muted-foreground'
                     )}>
                       <Icon className="w-6 h-6" />
                     </div>
@@ -150,7 +150,7 @@ export function PatientPreferencesStep({
           </div>
 
           {/* Credit cost disclosure — Premium */}
-          <div className="bg-gradient-to-r from-primary/5 to-accent/5 border border-primary/20 rounded-xl p-3">
+          <div className="glass-panel border border-primary/20 rounded-xl p-3">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Zap className="w-4 h-4 text-primary shrink-0" />
               <span>

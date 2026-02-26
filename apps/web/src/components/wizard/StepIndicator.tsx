@@ -80,9 +80,9 @@ export function StepIndicator({
                   className={cn(
                     'w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300',
                     step.isCompleted &&
-                      'bg-primary text-primary-foreground shadow-sm',
+                      'bg-primary text-primary-foreground shadow-sm glow-icon',
                     step.isActive &&
-                      'bg-primary text-primary-foreground ring-2 ring-primary/20 ring-offset-2 ring-offset-background shadow-sm',
+                      'bg-primary text-primary-foreground ring-2 ring-primary/20 ring-offset-2 ring-offset-background shadow-sm glow-icon dark:shadow-[0_0_12px_rgb(var(--color-primary-rgb)/0.3)]',
                     step.isFuture && 'bg-muted text-muted-foreground',
                     isClickable && 'group-hover:shadow-md',
                   )}
@@ -122,7 +122,7 @@ export function StepIndicator({
                   aria-hidden="true"
                   className={cn(
                     'flex-1 mx-2 stepper-connector-gold',
-                    step.isCompleted && 'completed',
+                    step.isCompleted && 'completed dark:shadow-[0_0_6px_rgb(var(--color-primary-rgb)/0.2)]',
                   )}
                 />
               )}
@@ -137,7 +137,7 @@ export function StepIndicator({
           {(() => {
             const CurrentIcon = steps[currentStep]?.icon || FileText;
             return (
-              <span className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center btn-glow-gold shadow-md">
+              <span className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center btn-glow-gold shadow-md glow-icon">
                 <CurrentIcon className="w-6 h-6" />
               </span>
             );

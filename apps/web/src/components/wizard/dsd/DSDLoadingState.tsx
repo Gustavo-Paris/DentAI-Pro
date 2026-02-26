@@ -23,42 +23,44 @@ export function DSDLoadingState({ imageBase64, currentStep, analysisSteps }: DSD
   const dsdProgress = Math.min((currentStep / analysisSteps.length) * 100, 95);
 
   return (
-    <div className="space-y-6" role="status" aria-live="polite" aria-label={t('components.wizard.dsd.loadingState.title')}>
-      <div className="text-center">
-        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-          <Smile className="w-8 h-8 text-primary" />
+    <div className="ai-shimmer-border rounded-xl p-6">
+      <div className="space-y-6" role="status" aria-live="polite" aria-label={t('components.wizard.dsd.loadingState.title')}>
+        <div className="text-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center glow-icon">
+            <Smile className="w-8 h-8 text-primary" />
+          </div>
+          <h2 className="text-xl font-semibold font-display mb-2 text-primary neon-text">{t('components.wizard.dsd.loadingState.title')}</h2>
+          <p className="text-sm text-muted-foreground">{currentLabel}</p>
         </div>
-        <h2 className="text-xl font-semibold font-display mb-2 text-primary">{t('components.wizard.dsd.loadingState.title')}</h2>
-        <p className="text-sm text-muted-foreground">{currentLabel}</p>
-      </div>
 
-      {/* Inline photo with scan-line */}
-      {imageBase64 && (
-        <Card className="card-elevated border-primary/30 overflow-hidden">
-          <CardContent className="p-0">
-            <div className="relative scan-line-animation">
-              <img src={imageBase64} alt={t('components.wizard.dsd.loadingState.photoAnalyzing')} className="w-full max-h-[300px] object-contain" />
-            </div>
-          </CardContent>
-        </Card>
-      )}
+        {/* Inline photo with scan-line */}
+        {imageBase64 && (
+          <Card className="card-elevated glow-card border-primary/30 overflow-hidden">
+            <CardContent className="p-0">
+              <div className="relative scan-line-animation">
+                <img src={imageBase64} alt={t('components.wizard.dsd.loadingState.photoAnalyzing')} className="w-full max-h-[300px] object-contain" />
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-      {/* Progress ring + current step label */}
-      <div className="flex items-center justify-center gap-4">
-        <ProgressRing progress={dsdProgress} size={80} />
-        <div>
-          <p className="text-sm font-medium">{currentLabel}</p>
-          <p className="text-xs text-muted-foreground">{t('components.wizard.dsd.loadingState.estimatedTime')}</p>
+        {/* Progress ring + current step label */}
+        <div className="flex items-center justify-center gap-4">
+          <ProgressRing progress={dsdProgress} size={80} />
+          <div>
+            <p className="text-sm font-medium">{currentLabel}</p>
+            <p className="text-xs text-muted-foreground">{t('components.wizard.dsd.loadingState.estimatedTime')}</p>
+          </div>
         </div>
-      </div>
 
-      {/* Horizontal compact steps */}
-      <div className="flex justify-center">
-        <CompactStepIndicator
-          steps={compactSteps}
-          currentIndex={activeIndex}
-          variant="horizontal"
-        />
+        {/* Horizontal compact steps */}
+        <div className="flex justify-center">
+          <CompactStepIndicator
+            steps={compactSteps}
+            currentIndex={activeIndex}
+            variant="horizontal"
+          />
+        </div>
       </div>
     </div>
   );

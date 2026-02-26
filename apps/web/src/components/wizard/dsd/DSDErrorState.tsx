@@ -17,14 +17,14 @@ export function DSDErrorState({ error, onRetry, onSkip }: DSDErrorStateProps) {
   return (
     <div className="space-y-6" role="alert">
       <div className="text-center">
-        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-warning/10 flex items-center justify-center">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-warning/10 flex items-center justify-center glow-icon">
           {isCreditError ? (
             <Zap className="w-8 h-8 text-warning" />
           ) : (
             <AlertCircle className="w-8 h-8 text-warning" />
           )}
         </div>
-        <h2 className="text-xl font-semibold font-display mb-2">
+        <h2 className="text-xl font-semibold font-display mb-2 neon-text">
           {isCreditError ? t('components.wizard.dsd.errorState.insufficientCredits') : t('components.wizard.dsd.errorState.analysisError')}
         </h2>
         <p className="text-muted-foreground">{error}</p>

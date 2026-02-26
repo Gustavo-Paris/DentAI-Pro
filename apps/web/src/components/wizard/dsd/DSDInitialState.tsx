@@ -17,10 +17,10 @@ export function DSDInitialState({ onSkip, hasImage, onConfirmDSD }: DSDInitialSt
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center glow-icon">
           <Smile className="w-8 h-8 text-primary" />
         </div>
-        <h2 className="text-xl font-semibold font-display mb-2 text-primary">{t('components.wizard.dsd.initialState.title')}</h2>
+        <h2 className="text-xl font-semibold font-display mb-2 text-primary neon-text">{t('components.wizard.dsd.initialState.title')}</h2>
         <p className="text-muted-foreground max-w-md mx-auto">
           {t('components.wizard.dsd.initialState.description')}
         </p>
@@ -32,7 +32,7 @@ export function DSDInitialState({ onSkip, hasImage, onConfirmDSD }: DSDInitialSt
         </p>
       )}
 
-      <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
+      <Card className="border-primary/20 glass-panel">
         <CardContent className="py-5">
           <div className="flex flex-wrap justify-center gap-3">
             <Badge variant="secondary" className="gap-1.5">
@@ -49,7 +49,7 @@ export function DSDInitialState({ onSkip, hasImage, onConfirmDSD }: DSDInitialSt
 
       <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
         {hasImage && onConfirmDSD && (
-          <Button onClick={onConfirmDSD} className="btn-press">
+          <Button onClick={onConfirmDSD} className="btn-glow-gold btn-press font-semibold">
             <Play className="w-4 h-4 mr-2" />
             {t('components.wizard.dsd.initialState.startAnalysis', { defaultValue: 'Iniciar An\u00e1lise DSD' })}
           </Button>
