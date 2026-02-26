@@ -11,10 +11,10 @@ interface AuthLayoutProps {
 }
 
 const FEATURES = [
-  { icon: Sparkles, key: 'auth.feature1', fallback: 'IA que analisa e recomenda' },
-  { icon: Shield, key: 'auth.feature2', fallback: 'Dados protegidos e seguros' },
-  { icon: Zap, key: 'auth.feature3', fallback: 'Resultados em segundos' },
-  { icon: Palette, key: 'auth.feature4', fallback: 'Protocolos personalizados' },
+  { icon: Sparkles, key: 'auth.feature1' },
+  { icon: Shield, key: 'auth.feature2' },
+  { icon: Zap, key: 'auth.feature3' },
+  { icon: Palette, key: 'auth.feature4' },
 ] as const;
 
 export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
@@ -70,12 +70,12 @@ export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
 
             {/* Feature highlights */}
             <ul className="space-y-4 animate-[fade-in-up_0.6s_ease-out_0.5s_both]">
-              {FEATURES.map(({ icon: Icon, key, fallback }) => (
+              {FEATURES.map(({ icon: Icon, key }) => (
                 <li key={key} className="flex items-center gap-3 text-sm text-muted-foreground">
                   <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary shrink-0 glow-icon">
                     <Icon className="w-4 h-4" />
                   </span>
-                  {t(key, { defaultValue: fallback })}
+                  {t(key)}
                 </li>
               ))}
             </ul>
@@ -83,7 +83,7 @@ export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
 
           {/* Social proof */}
           <p className="text-xs text-muted-foreground mt-auto pb-2 animate-[fade-in-up_0.6s_ease-out_0.7s_both]">
-            {t('auth.socialProof', { defaultValue: 'Utilizado por dentistas em todo o Brasil' })}
+            {t('auth.socialProof')}
           </p>
         </div>
       </div>

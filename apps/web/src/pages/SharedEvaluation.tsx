@@ -27,7 +27,7 @@ import { Calendar } from 'lucide-react';
 
 export default function SharedEvaluation() {
   const { t } = useTranslation();
-  useDocumentTitle(t('pageTitle.sharedEvaluation', { defaultValue: 'Avaliação Compartilhada' }));
+  useDocumentTitle(t('pageTitle.sharedEvaluation'));
   const { token } = useParams<{ token: string }>();
   const { loading, expired, errorReason, evaluations, dsdData, beforeImageUrl, simulationUrl, layerUrls } = useSharedEvaluation(token);
   const [activeLayerIndex, setActiveLayerIndex] = useState(0);
@@ -94,7 +94,7 @@ export default function SharedEvaluation() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  {t('pages.dsdImageLoadError', { defaultValue: 'Nao foi possivel carregar as imagens da simulacao DSD.' })}
+                  {t('pages.dsdImageLoadError')}
                 </p>
               </CardContent>
             </Card>
@@ -159,10 +159,10 @@ export default function SharedEvaluation() {
                     createdAt: evaluations[0]?.created_at || '',
                     updatedAt: evaluations[0]?.created_at || '',
                   },
-                  label: t('pages.dsdComparison', { defaultValue: 'Comparação DSD' }),
+                  label: t('pages.dsdComparison'),
                 }}
-                beforeLabel={t('dsd.original', { defaultValue: 'Original' })}
-                afterLabel={t('dsd.simulation', { defaultValue: 'Simulação' })}
+                beforeLabel={t('dsd.original')}
+                afterLabel={t('dsd.simulation')}
                 className="mt-4 hidden print:block"
               />
             </CardContent>

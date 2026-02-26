@@ -167,7 +167,7 @@ export function SubscriptionStatus() {
             <Progress
               value={creditsPercentUsed}
               className={cn(creditsPercentUsed > 80 && '[&>div]:bg-warning')}
-              aria-label={t('components.pricing.subscription.creditUsageLabel', { defaultValue: 'Uso de créditos do mês' })}
+              aria-label={t('components.pricing.subscription.creditUsageLabel')}
             />
           </div>
 
@@ -181,7 +181,7 @@ export function SubscriptionStatus() {
               <div className="p-3 bg-muted/30 rounded-lg">
                 <div className="flex items-center gap-1 text-muted-foreground text-xs">
                   <RefreshCw className="h-3 w-3" />
-                  <span>{t('pricing.creditRollover', { defaultValue: 'Acúmulo de créditos' })}</span>
+                  <span>{t('pricing.creditRollover')}</span>
                 </div>
                 <div className="font-semibold text-success">+{creditsRollover}</div>
               </div>

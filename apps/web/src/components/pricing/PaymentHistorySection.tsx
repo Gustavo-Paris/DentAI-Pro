@@ -176,7 +176,7 @@ export function PaymentHistorySection({
                     rel="noopener noreferrer"
                     className="text-xs text-primary hover:underline underline-offset-4"
                   >
-                    {t('profile.viewInvoice', { defaultValue: 'Ver fatura' })}
+                    {t('profile.viewInvoice')}
                   </a>
                 ) : null}
               </div>

@@ -86,7 +86,7 @@ export const EvaluationTable = memo(function EvaluationTable({
                 <Checkbox
                   checked={selectedIds.size === evaluations.length && evaluations.length > 0}
                   onCheckedChange={() => toggleSelectAll()}
-                  aria-label={t('evaluation.selectAll', { defaultValue: 'Selecionar todas' })}
+                  aria-label={t('evaluation.selectAll')}
                 />
               </TableHead>
               <TableHead>{t('evaluation.tooth')}</TableHead>
@@ -114,7 +114,7 @@ export const EvaluationTable = memo(function EvaluationTable({
                             }
                           }
                         }}
-                        aria-label={t('evaluation.selectEvaluation', { defaultValue: 'Selecionar avaliação' })}
+                        aria-label={t('evaluation.selectEvaluation')}
                       />
                     </TableCell>
                     <TableCell colSpan={3} className="py-2">
@@ -158,7 +158,7 @@ export const EvaluationTable = memo(function EvaluationTable({
                       <Checkbox
                         checked={selectedIds.has(evaluation.id)}
                         onCheckedChange={() => toggleSelection(evaluation.id)}
-                        aria-label={t('evaluation.selectEvaluation', { defaultValue: 'Selecionar avaliação' })}
+                        aria-label={t('evaluation.selectEvaluation')}
                       />
                     </TableCell>
                     <TableCell className="font-medium">{evaluation.tooth === 'GENGIVO' ? t('components.evaluationDetail.gingiva') : evaluation.tooth}</TableCell>
@@ -182,7 +182,7 @@ export const EvaluationTable = memo(function EvaluationTable({
                               {retryingEvaluationId === evaluation.id
                                 ? <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                                 : <RefreshCw className="w-4 h-4 mr-2" />}
-                              {t('evaluation.retryProtocol', { defaultValue: 'Reprocessar protocolo' })}
+                              {t('evaluation.retryProtocol')}
                             </DropdownMenuItem>
                           )}
                           <DropdownMenuItem onClick={() => handleExportPDF(evaluation.id)}>

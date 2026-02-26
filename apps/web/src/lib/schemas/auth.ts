@@ -89,11 +89,11 @@ export function getResetPasswordSchema() {
 // Password requirements for UI display — getter function so i18n.t() evaluates at call time
 export function getPasswordRequirements(): Array<{ label: string; test: (val: string) => boolean }> {
   return [
-    { label: i18n.t('auth.validation.minChars', { defaultValue: 'Mínimo 12 caracteres' }), test: (val: string) => val.length >= 12 },
-    { label: i18n.t('auth.validation.uppercase', { defaultValue: 'Uma letra maiúscula' }), test: (val: string) => /[A-Z]/.test(val) },
-    { label: i18n.t('auth.validation.lowercase', { defaultValue: 'Uma letra minúscula' }), test: (val: string) => /[a-z]/.test(val) },
-    { label: i18n.t('auth.validation.number', { defaultValue: 'Um número' }), test: (val: string) => /[0-9]/.test(val) },
-    { label: i18n.t('auth.validation.special', { defaultValue: 'Um caractere especial (!@#$%^&*)' }), test: (val: string) => /[^A-Za-z0-9]/.test(val) },
+    { label: i18n.t('auth.validation.minChars'), test: (val: string) => val.length >= 12 },
+    { label: i18n.t('auth.validation.uppercase'), test: (val: string) => /[A-Z]/.test(val) },
+    { label: i18n.t('auth.validation.lowercase'), test: (val: string) => /[a-z]/.test(val) },
+    { label: i18n.t('auth.validation.number'), test: (val: string) => /[0-9]/.test(val) },
+    { label: i18n.t('auth.validation.special'), test: (val: string) => /[^A-Za-z0-9]/.test(val) },
   ];
 }
 

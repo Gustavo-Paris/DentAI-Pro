@@ -59,20 +59,20 @@ function buildFeatureValues(
   // Build all features with descriptive string values for included features,
   // and boolean false for excluded ones (composite renders ✓/— accordingly).
   return [
-    { featureId: 'creditsMonth', value: t('pricing.creditsPerMonth', { defaultValue: `${plan.credits_per_month} créditos/mês`, count: plan.credits_per_month }) },
+    { featureId: 'creditsMonth', value: t('pricing.creditsPerMonth', { count: plan.credits_per_month }) },
     {
       featureId: 'caseAnalyses',
       value:
         plan.cases_per_month === -1
-          ? t('pricing.unlimitedCaseAnalyses', { defaultValue: `${unlimited} análises de caso` })
-          : t('pricing.caseAnalyses', { defaultValue: `~${plan.cases_per_month} análises de caso`, count: plan.cases_per_month }),
+          ? t('pricing.unlimitedCaseAnalyses')
+          : t('pricing.caseAnalyses', { count: plan.cases_per_month }),
     },
     {
       featureId: 'dsdSimulations',
       value:
         plan.dsd_simulations_per_month === -1
-          ? t('pricing.unlimitedDsdSimulations', { defaultValue: `${unlimited} simulações DSD` })
-          : t('pricing.dsdSimulations', { defaultValue: `~${plan.dsd_simulations_per_month} simulações DSD`, count: plan.dsd_simulations_per_month }),
+          ? t('pricing.unlimitedDsdSimulations')
+          : t('pricing.dsdSimulations', { count: plan.dsd_simulations_per_month }),
     },
     {
       featureId: 'creditRollover',
@@ -86,7 +86,7 @@ function buildFeatureValues(
           ? `${label('maxRollover')}: ${unlimited}`
           : false,
     },
-    { featureId: 'users', value: t('pricing.users', { defaultValue: `${plan.max_users} ${plan.max_users === 1 ? 'usuário' : 'usuários'}`, count: plan.max_users }) },
+    { featureId: 'users', value: t('pricing.users', { count: plan.max_users }) },
     {
       featureId: 'prioritySupport',
       value: plan.priority_support ? label('prioritySupport') : false,
@@ -171,7 +171,7 @@ function mapToPricingPlan(
 
 export default function Pricing() {
   const { t } = useTranslation();
-  useDocumentTitle(t('pageTitle.pricing', { defaultValue: 'Planos' }));
+  useDocumentTitle(t('pageTitle.pricing'));
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const {
@@ -271,9 +271,9 @@ export default function Pricing() {
   if (!isLoading && plans.length === 0) {
     return (
       <GenericErrorState
-        title={t('pricing.loadError', { defaultValue: 'Não foi possível carregar os planos. Tente novamente.' })}
+        title={t('pricing.loadError')}
         description={t('errors.tryReloadPage')}
-        action={{ label: t('common.tryAgain', { defaultValue: 'Tentar novamente' }), onClick: () => window.location.reload() }}
+        action={{ label: t('common.tryAgain'), onClick: () => window.location.reload() }}
       />
     );
   }

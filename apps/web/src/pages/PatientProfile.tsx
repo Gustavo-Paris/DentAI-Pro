@@ -43,7 +43,7 @@ import { PatientSessionList } from '@/components/patient/PatientSessionList';
 
 export default function PatientProfile() {
   const { t } = useTranslation();
-  useDocumentTitle(t('pageTitle.patientProfile', { defaultValue: 'Perfil do Paciente' }));
+  useDocumentTitle(t('pageTitle.patientProfile'));
   const navigate = useNavigate();
   const { user } = useAuth();
   const profile = usePatientProfile();
@@ -58,11 +58,11 @@ export default function PatientProfile() {
     try {
       await patients.deletePatient(patientId, user.id);
       trackEvent('patient_deleted', { patient_id: patientId });
-      toast.success(t('toasts.patient.deleted', { defaultValue: 'Paciente excluído com sucesso' }));
+      toast.success(t('toasts.patient.deleted'));
       navigate('/patients');
     } catch (error) {
       logger.error('Failed to delete patient:', error);
-      toast.error(t('toasts.patient.deleteError', { defaultValue: 'Erro ao excluir paciente' }));
+      toast.error(t('toasts.patient.deleteError'));
     } finally {
       setIsDeleting(false);
       setShowDeleteDialog(false);
@@ -133,7 +133,7 @@ export default function PatientProfile() {
           },
           {
             id: 'timeline',
-            title: t('patients.treatmentTimeline', { defaultValue: 'Linha do Tempo' }),
+            title: t('patients.treatmentTimeline'),
             children: () => {
               const entries: ProcedureInfo[] = sessionsList.map((session) => ({
                 id: session.session_id,
@@ -152,13 +152,13 @@ export default function PatientProfile() {
               return (
                 <PageTreatmentTimeline
                   entries={entries}
-                  toothLabel={t('odontogram.tooth', { defaultValue: 'Dente' })}
-                  emptyText={t('patients.noTreatmentHistory', { defaultValue: 'Nenhum histórico de tratamento' })}
+                  toothLabel={t('odontogram.tooth')}
+                  emptyText={t('patients.noTreatmentHistory')}
                   statusLabels={{
-                    planned: t('evaluation.planned', { defaultValue: 'Planejado' }),
-                    'in-progress': t('evaluation.inProgress', { defaultValue: 'Em andamento' }),
-                    completed: t('evaluation.completed', { defaultValue: 'Concluído' }),
-                    cancelled: t('evaluation.cancelled', { defaultValue: 'Cancelado' }),
+                    planned: t('evaluation.planned'),
+                    'in-progress': t('evaluation.inProgress'),
+                    completed: t('evaluation.completed'),
+                    cancelled: t('evaluation.cancelled'),
                   }}
                 />
               );
@@ -182,8 +182,8 @@ export default function PatientProfile() {
   if (!profile.patient && !profile.isLoading) {
     return (
       <GenericErrorState
-        title={t('errors.patientNotFound', { defaultValue: 'Paciente não encontrado' })}
-        action={{ label: t('common.back', { defaultValue: 'Voltar' }), href: '/patients' }}
+        title={t('errors.patientNotFound')}
+        action={{ label: t('common.back'), href: '/patients' }}
       />
     );
   }
@@ -202,7 +202,7 @@ export default function PatientProfile() {
         ]}
         query={{ data: patient, isLoading: profile.isLoading }}
         headerActions={[
-          { label: t('patients.newEvaluation', { defaultValue: 'Nova Avaliação' }), icon: Sparkles, onClick: () => navigate(`/new-case?patientId=${patientId}`), variant: 'default' },
+          { label: t('patients.newEvaluation'), icon: Sparkles, onClick: () => navigate(`/new-case?patientId=${patientId}`), variant: 'default' },
           { label: t('common.edit'), icon: Pencil, onClick: profile.openEditDialog, variant: 'outline' },
           { label: t('common.delete'), icon: Trash2, onClick: () => setShowDeleteDialog(true), variant: 'ghost' },
         ]}
@@ -285,10 +285,9 @@ export default function PatientProfile() {
       <PageConfirmDialog
         open={showDeleteDialog}
         onOpenChange={setShowDeleteDialog}
-        title={t('patients.deletePatientTitle', { defaultValue: 'Excluir paciente?' })}
+        title={t('patients.deletePatientTitle')}
         description={t('patients.deletePatientDescription', {
-          defaultValue: 'O paciente será excluído permanentemente. As avaliações existentes serão mantidas, mas não estarão mais vinculadas a este paciente.',
-        })}
+          })}
         confirmText={t('common.delete')}
         cancelText={t('common.cancel')}
         onConfirm={handleDeletePatient}

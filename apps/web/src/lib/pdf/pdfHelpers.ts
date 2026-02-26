@@ -1,4 +1,5 @@
 import type jsPDF from 'jspdf';
+import type { TFunction } from 'i18next';
 
 // ============ CONTEXT INTERFACE ============
 export interface PDFRenderContext {
@@ -9,6 +10,7 @@ export interface PDFRenderContext {
   contentWidth: number;
   y: number;
   currentPage: number;
+  t: TFunction;
 }
 
 // ============ HELPER FUNCTIONS ============
@@ -71,7 +73,7 @@ export const addPageFooter = (ctx: PDFRenderContext) => {
   ctx.pdf.setFontSize(7);
   ctx.pdf.setTextColor(120, 120, 120);
   ctx.pdf.setFont('helvetica', 'italic');
-  ctx.pdf.text(`Pagina ${ctx.currentPage}`, ctx.pageWidth / 2, ctx.pageHeight - 8, { align: 'center' });
+  ctx.pdf.text(ctx.t('pdf.footer.page', { page: ctx.currentPage }), ctx.pageWidth / 2, ctx.pageHeight - 8, { align: 'center' });
 };
 
 export const checkPageBreak = (ctx: PDFRenderContext, requiredSpace: number) => {

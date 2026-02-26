@@ -18,10 +18,10 @@ export function ProtocolUnavailableAlert({ onReprocess, className }: ProtocolUna
             <AlertTriangle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="text-sm font-medium">
-                {t('result.protocolUnavailable', { defaultValue: 'Protocolo não disponível' })}
+                {t('result.protocolUnavailable')}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                {t('result.protocolUnavailableDesc', { defaultValue: 'A geração do protocolo de resina não foi concluída. Tente reprocessar este caso.' })}
+                {t('result.protocolUnavailableDesc')}
               </p>
               <Button
                 variant="outline"
@@ -30,7 +30,7 @@ export function ProtocolUnavailableAlert({ onReprocess, className }: ProtocolUna
                 onClick={onReprocess}
               >
                 <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
-                {t('result.reprocess', { defaultValue: 'Reprocessar caso' })}
+                {t('result.reprocess')}
               </Button>
             </div>
           </div>

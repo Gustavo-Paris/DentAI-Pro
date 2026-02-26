@@ -81,16 +81,8 @@ function getSpecialTreatmentTitle(treatmentType: string, t: ProtocolSectionsProp
   // In GroupResult, we use the treatment style label directly
   if (treatmentStyleLabel !== undefined) return treatmentStyleLabel;
 
-  // In Result, we use specific translation keys
-  const titleMap: Record<string, string> = {
-    coroa: t('result.crownPlanning'),
-    implante: t('result.implantPlanning'),
-    endodontia: t('result.endodonticProtocol'),
-    encaminhamento: t('result.referralGuidelines'),
-    gengivoplastia: t('result.gingivoplastyProtocol'),
-    recobrimento_radicular: t('result.rootCoverageProtocol'),
-  };
-  return titleMap[treatmentType] || treatmentType;
+  // In Result, use canonical treatments namespace for protocol titles
+  return t(`treatments.${treatmentType}.protocolTitle`, treatmentType);
 }
 
 // =============================================================================

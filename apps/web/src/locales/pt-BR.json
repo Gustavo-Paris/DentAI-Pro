@@ -62,7 +62,7 @@
     "backToHome": "Voltar ao início",
     "viewPlans": "Ver Planos",
     "selected_one": "{{count}} selecionado",
-    "selected_other": "{{count}} selecionado(s)",
+    "selected_other": "{{count}} selecionados",
     "finish": "Finalizar",
     "exportPDF": "Exportar PDF",
     "markAsCompleted": "Marcar como finalizado",
@@ -76,7 +76,8 @@
     "priorityMedia": "Média",
     "priorityBaixa": "Baixa",
     "previous": "Anterior",
-    "pageOf": "Página {{page}} de {{total}}"
+    "pageOf": "Página {{page}} de {{total}}",
+    "tryAgain": "Tentar novamente"
   },
   "auth": {
     "login": "Entrar",
@@ -163,7 +164,12 @@
       "nameTooLong": "Nome muito longo",
       "croTooLong": "CRO muito longo",
       "acceptTerms": "Você precisa aceitar os Termos de Uso"
-    }
+    },
+    "feature1": "IA que analisa e recomenda",
+    "feature2": "Dados protegidos e seguros",
+    "feature3": "Resultados em segundos",
+    "feature4": "Protocolos personalizados",
+    "socialProof": "Utilizado por dentistas em todo o Brasil"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -194,7 +200,8 @@
     },
     "activityFeed": {
       "title": "Atividade Recente",
-      "empty": "Nenhuma atividade recente"
+      "empty": "Nenhuma atividade recente",
+      "dsdCompleted": "Simulação concluída"
     },
     "discardDraftTitle": "Descartar rascunho?",
     "discardDraftDescription": "O rascunho será apagado permanentemente. Esta ação não pode ser desfeita.",
@@ -202,13 +209,6 @@
     "greetingAfternoon": "Boa tarde",
     "greetingEvening": "Boa noite",
     "userFallback": "Usuário",
-    "treatmentResina": "Resina",
-    "treatmentPorcelana": "Porcelana",
-    "treatmentCoroa": "Coroa",
-    "treatmentImplante": "Implante",
-    "treatmentEndodontia": "Endodontia",
-    "treatmentEncaminhamento": "Encaminhamento",
-    "treatmentGengivoplastia": "Gengivoplastia",
     "onboarding": {
       "firstSteps": "Primeiros passos",
       "step": "Passo {{step}}",
@@ -240,7 +240,8 @@
       "pendingCasesTooltip": "Total de casos aguardando conclusão"
     },
     "session": {
-      "yearsOld": "{{age}} anos"
+      "yearsOld": "{{age}} anos",
+      "unnamedCase": "Caso {{date}} — {{count}} dentes"
     },
     "draft": {
       "badge": "Rascunho",
@@ -291,7 +292,9 @@
       "patientGrowth": "Pacientes",
       "thisMonth": "este mes",
       "noData": "Sem dados suficientes",
-      "noDataDescription": "Os insights aparecerão aqui após suas primeiras avaliações."
+      "noDataDescription": "Os insights aparecerão aqui após suas primeiras avaliações.",
+      "createFirstCase": "Criar primeiro caso",
+      "periodFilter": "Filtro de período"
     }
   },
   "wizard": {
@@ -396,7 +399,6 @@
     "sameProtocol": "mesmo protocolo",
     "unifiedProtocol": "Protocolo Unificado",
     "viewProtocol": "Ver Protocolo",
-    "teeth": "dente(s)",
     "share": "Compartilhar",
     "recalculateCase": "Recalcular Caso",
     "addMoreTeeth": "Adicionar mais dentes ({{count}})",
@@ -418,17 +420,28 @@
     "cancelled": "Cancelado",
     "deleteSession": "Excluir sessão",
     "deleteSessionTitle": "Excluir sessão de avaliação",
-    "deleteSessionDescription": "Esta ação excluirá permanentemente esta sessão e todos os {{count}} caso(s) associados. Esta ação não pode ser desfeita.",
     "treatmentFilter": "Tipo de tratamento",
     "treatmentAll": "Todos",
-    "treatmentResina": "Resina",
-    "treatmentPorcelana": "Porcelana",
-    "treatmentEndodontia": "Endodontia",
-    "treatmentImplante": "Implante",
-    "treatmentCoroa": "Coroa",
-    "treatmentEncaminhamento": "Encaminhamento",
     "selectAll": "Selecionar todas",
-    "selectEvaluation": "Selecionar avaliação"
+    "selectEvaluation": "Selecionar avaliação",
+    "retryProtocol": "Reprocessar protocolo",
+    "noEvaluationsFound": "Nenhuma avaliação encontrada",
+    "regenerateAsPremium": "Regenerar como Premium",
+    "regenerateAsPadrao": "Regenerar como Padrão",
+    "regenerating": "Regenerando...",
+    "tipAddMoreTitle": "Avalie mais dentes neste caso",
+    "tipAddMoreDescription": "Ainda há {{count}} dentes pendentes que podem ser adicionados a esta sessão para uma avaliação mais completa.",
+    "tipNewCaseTitle": "Precisa avaliar mais dentes?",
+    "tipNewCaseDescription": "Inicie uma nova avaliação para analisar outros dentes deste paciente com recomendações de IA.",
+    "markAllCompletedTitle": "Marcar todas como concluídas?",
+    "markAllCompletedDescription": "Esta ação marcará todas as avaliações pendentes como concluídas.",
+    "regenerateTitle": "Regenerar protocolos?",
+    "regenerateDescription": "Os protocolos de resina e porcelana serão regenerados como \"{{targetBudget}}\". Isso substituirá os protocolos atuais.",
+    "regenerateConfirm": "Regenerar",
+    "teeth_one": "{{count}} dente",
+    "teeth_other": "{{count}} dentes",
+    "deleteSessionDescription_one": "Esta ação excluirá permanentemente esta sessão e o {{count}} caso associado. Esta ação não pode ser desfeita.",
+    "deleteSessionDescription_other": "Esta ação excluirá permanentemente esta sessão e todos os {{count}} casos associados. Esta ação não pode ser desfeita."
   },
   "patients": {
     "title": "Meus Pacientes",
@@ -475,7 +488,11 @@
     "newEvaluation": "Nova Avaliação",
     "createPatient": "Novo Paciente",
     "treatmentTimeline": "Linha do Tempo",
-    "noTreatmentHistory": "Nenhum histórico de tratamento"
+    "noTreatmentHistory": "Nenhum histórico de tratamento",
+    "deletePatientTitle": "Excluir paciente?",
+    "deletePatientDescription": "O paciente será excluído permanentemente. As avaliações existentes serão mantidas, mas não estarão mais vinculadas a este paciente.",
+    "unsavedChanges": "Alterações não salvas",
+    "unsavedChangesDescription": "Você tem alterações não salvas. Deseja descartar?"
   },
   "inventory": {
     "title": "Meu Inventário",
@@ -496,24 +513,29 @@
     "searchColorBrand": "Buscar cor, marca...",
     "noResinsFound": "Nenhuma resina encontrada",
     "allResinsInInventory": "Todas as resinas já estão no inventário",
-    "resinsSelected": "{{count}} resina(s) selecionada(s)",
     "addToInventory": "Adicionar ao Inventário",
     "confirmRemoveTitle": "Confirmar remoção",
     "confirmRemoveDescription": "Tem certeza que deseja remover esta resina do inventário? Esta ação não pode ser desfeita.",
     "importCSVTitle": "Importar Inventário via CSV",
     "resinsMatched_one": "{{count}} resina encontrada",
-    "resinsMatched_other": "{{count}} resina(s) encontrada(s)",
+    "resinsMatched_other": "{{count}} resinas encontradas",
     "resinsUnmatched_one": "{{count}} não encontrada no catálogo",
-    "resinsUnmatched_other": "{{count}} não encontrada(s) no catálogo",
+    "resinsUnmatched_other": "{{count}} não encontradas no catálogo",
     "noCSVMatch": "Nenhuma resina do CSV foi encontrada no catálogo.",
-    "addResinsCount": "Adicionar {{count}} resina(s)",
     "removeResin": "Remover resina",
     "goToInventory": "Ir para Inventário",
     "brand": "Marca",
     "line": "Linha",
     "shade": "Cor",
     "type": "Tipo",
-    "opacity": "Opacidade"
+    "opacity": "Opacidade",
+    "loadError": "Erro ao carregar inventário",
+    "tipTitle": "Dica: Adicione mais resinas",
+    "tipDescription": "Com mais cores no inventário, as recomendações de IA ficam mais precisas e personalizadas para o seu consultório.",
+    "resinsSelected_one": "{{count}} resina selecionada",
+    "resinsSelected_other": "{{count}} resinas selecionadas",
+    "addResinsCount_one": "Adicionar {{count}} resina",
+    "addResinsCount_other": "Adicionar {{count}} resinas"
   },
   "profile": {
     "title": "Meu Perfil",
@@ -537,7 +559,7 @@
     "creditsAddedGeneric": "Créditos adicionados com sucesso!",
     "paymentHistory": "Histórico de pagamentos",
     "paymentCount_one": "{{count}} pagamento",
-    "paymentCount_other": "{{count}} pagamento(s)",
+    "paymentCount_other": "{{count}} pagamentos",
     "noInvoices": "Nenhuma fatura encontrada",
     "noInvoicesFree": "Assine um plano para começar a receber faturas.",
     "noInvoicesPaid": "Suas faturas aparecerão aqui após o primeiro pagamento.",
@@ -591,7 +613,13 @@
     "deleteError": "Erro ao excluir conta. Entre em contato com o suporte.",
     "deleteRetryError": "Erro ao excluir conta. Tente novamente.",
     "deleteConfirmPhrase": "EXCLUIR MINHA CONTA",
-    "exportFilename": "tosmile-meus-dados"
+    "exportFilename": "tosmile-meus-dados",
+    "weeklyDigest": "Resumo Semanal",
+    "weeklyDigestDescription": "Receba um resumo das suas avaliações da semana por e-mail",
+    "sendDigest": "Enviar Resumo",
+    "digestSent": "Resumo semanal enviado!",
+    "digestError": "Erro ao enviar resumo",
+    "viewInvoice": "Ver fatura"
   },
   "pricing": {
     "title": "Planos e Preços",
@@ -611,7 +639,32 @@
     "startFree": "Começar Grátis",
     "start": "Começar",
     "mostPopular": "Mais Popular",
-    "guarantee": "Todos os planos incluem 7 dias de garantia. Cancele a qualquer momento."
+    "guarantee": "Todos os planos incluem 7 dias de garantia. Cancele a qualquer momento.",
+    "fallback": {
+      "freeDesc": "Para experimentar",
+      "freeFeature1": "5 créditos/mês",
+      "freeFeature2": "Recomendação de resina",
+      "freeFeature3": "Análise com IA",
+      "starterDesc": "Para dentistas individuais",
+      "starterFeature1": "30 créditos/mês",
+      "starterFeature2": "Protocolos completos",
+      "starterFeature3": "Export PDF",
+      "proDesc": "Para consultórios",
+      "proFeature1": "80 créditos/mês",
+      "proFeature2": "Rollover de créditos",
+      "proFeature3": "DSD Simulações",
+      "proFeature4": "Até 3 usuários",
+      "eliteDesc": "Para clínicas",
+      "eliteFeature1": "200 créditos/mês",
+      "eliteFeature2": "Rollover ilimitado",
+      "eliteFeature3": "Suporte prioritário",
+      "eliteFeature4": "Até 10 usuários"
+    },
+    "loadError": "Não foi possível carregar os planos. Tente novamente.",
+    "unlimitedCaseAnalyses": "{{count}} análises de caso",
+    "caseAnalyses": "~{{count}} análises de caso",
+    "unlimitedDsdSimulations": "{{count}} simulações DSD",
+    "dsdSimulations": "~{{count}} simulações DSD"
   },
   "landing": {
     "heroTagline": "Inteligência Clínica Estética",
@@ -691,7 +744,10 @@
     "termsOfUse": "Termos de Uso",
     "privacy": "Privacidade",
     "starRating": "{{rating}} de 5 estrelas",
-    "illustrativeTestimonial": "Depoimento ilustrativo"
+    "illustrativeTestimonial": "Depoimento ilustrativo",
+    "heroSection": "Hero",
+    "statsSection": "Estatísticas",
+    "ctaSection": "Comece agora"
   },
   "pages": {
     "dsdComparison": "Comparação DSD",
@@ -707,13 +763,6 @@
     "generatedBy": "Gerado por",
     "clinicalDecisionSupport": "Ferramenta de apoio à decisão clínica",
     "dsdSimulation": "Simulação DSD",
-    "treatmentResina": "Resina Composta",
-    "treatmentPorcelana": "Faceta de Porcelana",
-    "treatmentCoroa": "Coroa Total",
-    "treatmentImplante": "Implante",
-    "treatmentEndodontia": "Endodontia",
-    "treatmentEncaminhamento": "Encaminhamento",
-    "treatmentDefault": "Tratamento",
     "teethEvaluated_one": "{{count}} dente avaliado",
     "teethEvaluated_other": "{{count}} dentes avaliados",
     "completed_one": "{{count}} concluído",
@@ -806,7 +855,8 @@
       "s11Text": "Para dúvidas sobre esta Política de Privacidade ou sobre o tratamento dos seus dados, entre em contato:",
       "s11EmailLabel": "Email:",
       "s11DpoLabel": "Encarregado de Dados (DPO):"
-    }
+    },
+    "dsdImageLoadError": "Não foi possível carregar as imagens da simulação DSD."
   },
   "result": {
     "recalculate": "Recalcular Caso",
@@ -839,16 +889,11 @@
     "disclaimer": "Este planejamento foi gerado por Inteligência Artificial e serve como ferramenta de apoio à decisão clínica. Não substitui uma avaliação clínica criteriosa realizada por Cirurgião-Dentista.",
     "pdfChecklistIncomplete": "O checklist do protocolo ainda não está 100% concluído. Deseja gerar o PDF mesmo assim?",
     "generatePDF": "Gerar PDF",
-    "crownPlanning": "Planejamento Protético",
-    "implantPlanning": "Planejamento Cirúrgico",
-    "endodonticProtocol": "Protocolo Endodôntico",
-    "referralGuidelines": "Orientações de Encaminhamento",
-    "gingivoplastyProtocol": "Protocolo de Gengivoplastia",
-    "rootCoverageProtocol": "Protocolo de Recobrimento Radicular",
     "odontogram": "Odontograma",
     "notFoundDescription": "O resultado solicitado não foi encontrado.",
     "protocolUnavailable": "Protocolo não disponível",
-    "protocolUnavailableDesc": "A geração do protocolo de resina não foi concluída. Tente reprocessar este caso."
+    "protocolUnavailableDesc": "A geração do protocolo de resina não foi concluída. Tente reprocessar este caso.",
+    "reprocess": "Reprocessar caso"
   },
   "odontogram": {
     "healthy": "Saudável",
@@ -862,15 +907,16 @@
     "veneer": "Faceta",
     "fracture": "Fratura",
     "extractionIndicated": "Extração indicada",
-    "gingiva": "Gengiva"
+    "gingiva": "Gengiva",
+    "tooth": "Dente"
   },
   "errors": {
+    "23502": "Campo obrigatório não preenchido.",
+    "23503": "Não foi possível completar a ação. Verifique se todos os dados estão corretos.",
+    "23505": "Este registro já existe. Verifique os dados.",
     "pageNotFound": "Página não encontrada",
     "pageNotFoundDescription": "O endereço que você tentou acessar não existe ou foi removido.",
     "tryReloadPage": "Tente recarregar a página. Se o problema persistir, entre em contato com o suporte.",
-    "23505": "Este registro já existe. Verifique os dados.",
-    "23503": "Não foi possível completar a ação. Verifique se todos os dados estão corretos.",
-    "23502": "Campo obrigatório não preenchido.",
     "22P02": "Formato de dados inválido.",
     "PGRST116": "Nenhum registro encontrado.",
     "PGRST301": "Erro de conexão com o banco de dados.",
@@ -911,19 +957,23 @@
       "updated": "Dados do paciente atualizados",
       "saveError": "Erro ao salvar alterações",
       "created": "Paciente criado com sucesso",
-      "createError": "Erro ao criar paciente"
+      "createError": "Erro ao criar paciente",
+      "deleted": "Paciente excluído com sucesso",
+      "deleteError": "Erro ao excluir paciente"
     },
     "draft": {
       "restored": "Rascunho restaurado com sucesso"
     },
     "inventory": {
-      "resinsAdded": "{{count}} resina(s) adicionada(s) ao inventário",
       "addError": "Erro ao adicionar resinas",
       "resinRemoved": "Resina removida do inventário",
       "removeError": "Erro ao remover resina",
       "csvExported": "CSV exportado com sucesso",
-      "resinsImported": "{{count}} resina(s) importada(s)",
-      "importError": "Erro ao importar resinas"
+      "importError": "Erro ao importar resinas",
+      "resinsAdded_one": "{{count}} resina adicionada ao inventário",
+      "resinsAdded_other": "{{count}} resinas adicionadas ao inventário",
+      "resinsImported_one": "{{count}} resina importada",
+      "resinsImported_other": "{{count}} resinas importadas"
     },
     "analysis": {
       "insufficientCredits": "Créditos insuficientes. Faça upgrade do seu plano para continuar.",
@@ -934,7 +984,6 @@
       "rateLimitRetry": "Limite de requisições excedido. Aguarde 1-2 minutos antes de tentar novamente.",
       "insufficientReanalyze": "Créditos insuficientes. Faça upgrade do seu plano para reanalisar.",
       "reanalysisCompleted": "Reanálise concluída",
-      "teethDetected": "{{count}} dente(s) detectado(s). 1 crédito utilizado.",
       "insufficientReanalysis": "Créditos insuficientes para reanálise.",
       "reanalysisError": "Erro na reanálise. Tente novamente.",
       "noDataError": "A IA não conseguiu identificar estruturas dentárias. Dicas: use boa iluminação, foque na região intraoral e evite reflexos no espelho.",
@@ -942,7 +991,9 @@
       "resourceError": "Servidor temporariamente sobrecarregado. Seu crédito não foi consumido — tente novamente em alguns segundos.",
       "serverError": "Erro temporário no servidor. Seu crédito não foi consumido — tente novamente em instantes.",
       "genericError": "Não foi possível analisar a foto. Verifique se a imagem está nítida e tente novamente.",
-      "insufficientCreditsError": "Créditos insuficientes. Faça upgrade do seu plano para continuar."
+      "insufficientCreditsError": "Créditos insuficientes. Faça upgrade do seu plano para continuar.",
+      "teethDetected_one": "{{count}} dente detectado. 1 crédito utilizado.",
+      "teethDetected_other": "{{count}} dentes detectados. 1 crédito utilizado."
     },
     "result": {
       "saveError": "Erro ao salvar progresso",
@@ -958,22 +1009,22 @@
       "allFailed": "Erro ao criar caso. Nenhum protocolo foi gerado. Tente novamente ou entre em contato com o suporte.",
       "connectionErrorSubmit": "Erro de conexão com o servidor. Verifique sua internet e tente novamente.",
       "partialSuccess": "{{success}} de {{total}} protocolos gerados. Dentes {{failed}} falharam — tente novamente.",
-      "allSuccess": "{{count}} protocolo(s) gerado(s) com sucesso",
       "duplicatePatient": "Paciente já cadastrado com este nome. Selecione o paciente existente.",
       "referenceError": "Erro ao salvar os dados. Verifique as informações do paciente e tente novamente.",
       "networkErrorSubmit": "Erro de conexão. Verifique sua internet e tente novamente.",
       "tooManyRequests": "Muitas requisições. Aguarde alguns minutos.",
       "createCaseError": "Erro ao criar caso",
-      "lowCreditsWarning": "Você tem {{remaining}} crédito(s). O fluxo completo (análise + DSD) requer {{required}}.",
+      "lowCreditsWarning": "Você tem {{remaining}} créditos. O fluxo completo (análise + DSD) requer {{required}}.",
       "lowCreditsDescription": "Você pode pular o DSD para economizar créditos.",
       "noCredits": "Sem créditos disponíveis.",
       "noCreditsDescription": "Faça upgrade do seu plano para criar novos casos.",
-      "gingivoplastyAdded": "Gengivoplastia adicionada automaticamente pelo DSD"
+      "gingivoplastyAdded": "Gengivoplastia adicionada automaticamente pelo DSD",
+      "allSuccess_one": "{{count}} protocolo gerado com sucesso",
+      "allSuccess_other": "{{count}} protocolos gerados com sucesso"
     },
     "dsd": {
       "simulationRefined": "Simulação refinada (lábios preservados)",
       "layersFailed": "{{success}} de {{total}} camadas prontas",
-      "layersFailedDesc": "{{count}} camada(s) falharam — tente novamente",
       "layersReady": "{{count}} camadas de simulação prontas!",
       "layerError": "Falha ao gerar camada: {{layer}}",
       "layerReady": "Camada \"{{layer}}\" pronta!",
@@ -984,7 +1035,9 @@
       "reconnecting": "Reconectando... (tentativa {{count}})",
       "regenerated": "Novas simulações geradas!",
       "regenerateError": "Erro ao regenerar simulação. Tente novamente.",
-      "whiteningUpdated": "Nível de clareamento atualizado para {{level}}"
+      "whiteningUpdated": "Nível de clareamento atualizado para {{level}}",
+      "layersFailedDesc_one": "{{count}} camada falhou — tente novamente",
+      "layersFailedDesc_other": "{{count}} camadas falharam — tente novamente"
     },
     "evaluationDetail": {
       "loadError": "Erro ao carregar avaliação",
@@ -992,8 +1045,6 @@
       "caseCompleted": "Caso marcado como finalizado",
       "statusError": "Erro ao atualizar status",
       "allCompleted": "Todos os casos já estão finalizados",
-      "completedWithIncomplete": "{{count}} caso(s) finalizado(s). {{incomplete}} tinham checklist incompleto.",
-      "bulkCompleted": "{{count}} caso(s) marcado(s) como finalizado(s)",
       "openingPrint": "Abrindo página para impressão...",
       "linkCopied": "Link copiado!",
       "linkExpiry": "O link expira em 7 dias.",
@@ -1003,9 +1054,17 @@
       "statusPlanned": "Planejado",
       "sessionDeleted": "Sessão excluída com sucesso",
       "deleteError": "Erro ao excluir sessão",
-      "regenerateSuccess": "{{count}} protocolo(s) regenerado(s) como {{budget}}",
       "budgetPremium": "Premium",
-      "budgetStandard": "Padrão"
+      "budgetStandard": "Padrão",
+      "retrySuccess": "Protocolo regenerado com sucesso",
+      "retryError": "Erro ao reprocessar. Tente novamente.",
+      "regenerateError": "Erro ao regenerar protocolos. Tente novamente.",
+      "completedWithIncomplete_one": "{{count}} caso finalizado. {{incomplete}} tinha checklist incompleto.",
+      "completedWithIncomplete_other": "{{count}} casos finalizados. {{incomplete}} tinham checklist incompleto.",
+      "bulkCompleted_one": "{{count}} caso marcado como finalizado",
+      "bulkCompleted_other": "{{count}} casos marcados como finalizados",
+      "regenerateSuccess_one": "{{count}} protocolo regenerado como {{budget}}",
+      "regenerateSuccess_other": "{{count}} protocolos regenerados como {{budget}}"
     },
     "profile": {
       "subscriptionActivated": "Assinatura ativada com sucesso!",
@@ -1120,7 +1179,6 @@
         "porcelainDefault": "Este caso pode se beneficiar de facetas cerâmicas para melhor resultado estético e durabilidade.",
         "attentionPoints": "Pontos de atenção",
         "selectTeethTitle": "Selecione os Dentes para o Protocolo",
-        "selected": "{{count}} selecionado(s)",
         "selectTeethDesc": "Marque os dentes que deseja incluir no protocolo. Cada dente gerará um caso separado.",
         "onlyRequired": "Apenas Necessários ({{count}})",
         "selectAll": "Selecionar Todos ({{count}})",
@@ -1136,7 +1194,6 @@
         "alreadyAdded": "(já adicionado)",
         "upper": "Superior",
         "lower": "Inferior",
-        "teethSelectedCount": "{{count}} dente(s) selecionado(s) para gerar protocolo",
         "plusGingivoplasty": " + gengivoplastia",
         "tooth": "Dente {{number}}",
         "restoreAI": "Restaurar sugestão da IA ({{treatment}})",
@@ -1177,27 +1234,14 @@
         "moderate": "Moderado",
         "complex": "Complexo",
         "plusGengivo": " + gengiva",
-        "typeResina": "Resina",
-        "typeFaceta": "Faceta",
-        "typeCoroa": "Coroa",
-        "treatmentResina": "Resina Composta",
-        "treatmentPorcelana": "Faceta de Porcelana",
-        "treatmentCoroa": "Coroa Total",
-        "treatmentImplante": "Implante",
-        "treatmentEndodontia": "Endodontia",
-        "treatmentEncaminhamento": "Encaminhamento",
         "treatmentGengivoplastia": "Gengivoplastia Estética",
-        "treatmentRecobrimentoRadicular": "Recobrimento Radicular",
-        "descResina": "Protocolo de estratificação",
-        "descPorcelana": "Protocolo de cimentação",
-        "descCoroa": "Protocolo de preparo e cimentação",
-        "descImplante": "Checklist de avaliação para implante",
-        "descEndodontia": "Tratamento endodôntico necessário",
-        "descEncaminhamento": "Encaminhamento para especialista",
-        "descGengivoplastia": "Protocolo de gengivoplastia estética",
-        "descRecobrimentoRadicular": "Protocolo de recobrimento radicular",
         "cancel": "Cancelar",
-        "toggleTooth": "Alternar dente {{number}}"
+        "toggleTooth": "Alternar dente {{number}}",
+        "openCalendar": "Abrir calendário",
+        "selected_one": "{{count}} selecionado",
+        "selected_other": "{{count}} selecionados",
+        "teethSelectedCount_one": "{{count}} dente selecionado para gerar protocolo",
+        "teethSelectedCount_other": "{{count}} dentes selecionados para gerar protocolo"
       },
       "draftRestore": {
         "title": "Continuar avaliação anterior?",
@@ -1255,7 +1299,8 @@
           "gingivoplastyOption": "Opção de gengivoplastia",
           "aiRecommended": "Recomendado pela IA",
           "optional": "Opcional",
-          "gingivoplastyOptionalDesc": "A gengivoplastia é opcional. Você pode prosseguir sem ela."
+          "gingivoplastyOptionalDesc": "A gengivoplastia é opcional. Você pode prosseguir sem ela.",
+          "generateSimulation": "Gerar simulação"
         },
         "errorState": {
           "insufficientCredits": "Créditos Insuficientes",
@@ -1271,8 +1316,8 @@
           "credits": "2 créditos",
           "duration": "~30 segundos",
           "skipDSD": "Pular DSD",
-          "startAnalysis": "Iniciar An\u00e1lise DSD",
-          "confirmHint": "A an\u00e1lise DSD vai processar a foto e gerar sugest\u00f5es de design do sorriso."
+          "startAnalysis": "Iniciar Análise DSD",
+          "confirmHint": "A análise DSD vai processar a foto e gerar sugestões de design do sorriso."
         },
         "loadingState": {
           "title": "Planejamento Digital do Sorriso",
@@ -1507,7 +1552,9 @@
       "endSession": "Encerrar sessão",
       "searchLabel": "Buscar (⌘K)",
       "skipToContent": "Pular para o conteúdo principal",
-      "mainNavigation": "Navegação principal"
+      "mainNavigation": "Navegação principal",
+      "subscription": "Assinatura",
+      "support": "Suporte"
     },
     "globalSearch": {
       "placeholder": "Buscar paciente, dente ou data...",
@@ -1523,7 +1570,12 @@
     "creditConfirm": {
       "title": "Confirmar uso de créditos",
       "currentBalance": "Saldo atual",
-      "afterOperation": "Após operação"
+      "afterOperation": "Após operação",
+      "willCost": "custará",
+      "credit_one": "{{count}} crédito",
+      "credit_other": "{{count}} créditos",
+      "credits": "créditos",
+      "lowBalanceWarning": "Atenção: saldo baixo após esta operação"
     },
     "creditBadge": {
       "creditsLabel": "Créditos",
@@ -1540,18 +1592,11 @@
       "aestheticLabel": "estético",
       "tooth": "Dente {{number}}",
       "generating": "Gerando...",
-      "addCount": "Adicionar {{count}} dente(s)",
       "casesAdded": "Casos adicionados: {{details}}",
       "addError": "Erro ao adicionar casos",
       "cancel": "Cancelar",
-      "treatmentResina": "\uD83D\uDD27 Resina Composta",
-      "treatmentPorcelana": "\uD83D\uDC51 Faceta de Porcelana",
-      "treatmentCoroa": "\uD83D\uDC8E Coroa Total",
-      "treatmentImplante": "\uD83E\uDDB7 Implante",
-      "treatmentEndodontia": "\uD83D\uDD2C Tratamento de Canal",
-      "treatmentEncaminhamento": "➡️ Encaminhamento",
-      "treatmentGengivoplastia": "Gengivoplastia",
-      "treatmentRecobrimentoRadicular": "Recobrimento Radicular"
+      "addCount_one": "Adicionar {{count}} dente",
+      "addCount_other": "Adicionar {{count}} dentes"
     },
     "processingOverlay": {
       "defaultMessage": "Processando...",
@@ -1561,7 +1606,10 @@
     "cookieConsent": {
       "ariaLabel": "Consentimento de cookies",
       "essentialOnly": "Apenas essenciais",
-      "acceptAll": "Aceitar todos"
+      "acceptAll": "Aceitar todos",
+      "message": "Utilizamos cookies essenciais para o funcionamento do site e cookies opcionais para monitoramento de erros (Sentry). Ao clicar em \"Aceitar todos\", você consente com o uso de todos os cookies conforme a",
+      "privacyLink": "Política de Privacidade",
+      "lgpdSuffix": "e a LGPD (Lei 13.709/2018)."
     },
     "offlineBanner": {
       "message": "Sem conexão com a internet",
@@ -1738,24 +1786,6 @@
       "addPhoto": "Adicionar foto: {{label}}",
       "uploadButton": "Carregar foto"
     },
-    "creditConfirm": {
-      "title": "Confirmar uso de créditos",
-      "currentBalance": "Saldo atual",
-      "afterOperation": "Após operação",
-      "willCost": "custará",
-      "credit_one": "{{count}} crédito",
-      "credit_other": "{{count}} créditos",
-      "credits": "créditos",
-      "lowBalanceWarning": "Atenção: saldo baixo após esta operação"
-    },
-    "cookieConsent": {
-      "ariaLabel": "Consentimento de cookies",
-      "essentialOnly": "Apenas essenciais",
-      "acceptAll": "Aceitar todos",
-      "message": "Utilizamos cookies essenciais para o funcionamento do site e cookies opcionais para monitoramento de erros (Sentry). Ao clicar em \"Aceitar todos\", você consente com o uso de todos os cookies conforme a",
-      "privacyLink": "Política de Privacidade",
-      "lgpdSuffix": "e a LGPD (Lei 13.709/2018)."
-    },
     "stratification": {
       "colorAnalysis": "Análise de Cor",
       "baseShade": "Cor Base",
@@ -1847,17 +1877,62 @@
       "light": "Claro",
       "dark": "Escuro",
       "tooltip": "Alternar tema"
+    },
+    "comparisonSlider": {
+      "zoomOut": "Diminuir zoom",
+      "zoomIn": "Aumentar zoom",
+      "zoomReset": "Resetar zoom"
     }
   },
   "treatments": {
-    "resina": { "label": "Resina Composta", "shortLabel": "Resina" },
-    "porcelana": { "label": "Faceta de Porcelana", "shortLabel": "Faceta" },
-    "coroa": { "label": "Coroa Total", "shortLabel": "Coroa" },
-    "implante": { "label": "Implante", "shortLabel": "Implante" },
-    "endodontia": { "label": "Endodontia", "shortLabel": "Endo" },
-    "encaminhamento": { "label": "Encaminhamento", "shortLabel": "Encaminhar" },
-    "gengivoplastia": { "label": "Gengivoplastia Estética", "shortLabel": "Gengivoplastia" },
-    "recobrimento_radicular": { "label": "Recobrimento Radicular", "shortLabel": "Recobr." }
+    "resina": {
+      "label": "Resina Composta",
+      "shortLabel": "Resina",
+      "desc": "Protocolo de estratificação",
+      "protocolTitle": "Protocolo de Estratificação"
+    },
+    "porcelana": {
+      "label": "Faceta de Porcelana",
+      "shortLabel": "Faceta",
+      "desc": "Protocolo de cimentação",
+      "protocolTitle": "Protocolo de Cimentação"
+    },
+    "coroa": {
+      "label": "Coroa Total",
+      "shortLabel": "Coroa",
+      "desc": "Protocolo de preparo e cimentação",
+      "protocolTitle": "Planejamento Protético"
+    },
+    "implante": {
+      "label": "Implante",
+      "shortLabel": "Implante",
+      "desc": "Checklist de avaliação para implante",
+      "protocolTitle": "Planejamento Cirúrgico"
+    },
+    "endodontia": {
+      "label": "Endodontia",
+      "shortLabel": "Endo",
+      "desc": "Tratamento endodôntico necessário",
+      "protocolTitle": "Protocolo Endodôntico"
+    },
+    "encaminhamento": {
+      "label": "Encaminhamento",
+      "shortLabel": "Encaminhar",
+      "desc": "Encaminhamento para especialista",
+      "protocolTitle": "Orientações de Encaminhamento"
+    },
+    "gengivoplastia": {
+      "label": "Gengivoplastia Estética",
+      "shortLabel": "Gengivoplastia",
+      "desc": "Protocolo de gengivoplastia estética",
+      "protocolTitle": "Protocolo de Gengivoplastia"
+    },
+    "recobrimento_radicular": {
+      "label": "Recobrimento Radicular",
+      "shortLabel": "Recobr.",
+      "desc": "Protocolo de recobrimento radicular",
+      "protocolTitle": "Protocolo de Recobrimento Radicular"
+    }
   },
   "treatmentStyles": {
     "resina": "Restauração em Resina",
@@ -1909,7 +1984,9 @@
     "shadeRequired": "Cor é obrigatória",
     "substrateRequired": "Substrato é obrigatório",
     "notesTooLong": "Notas muito longas",
-    "textTooLong": "Texto muito longo"
+    "textTooLong": "Texto muito longo",
+    "invalidEmail": "Email inválido",
+    "invalidPhone": "Telefone inválido"
   },
   "protocols": {
     "implante": {
@@ -2116,5 +2193,101 @@
   },
   "meta": {
     "defaultTitle": "ToSmile.ai — Odontologia Digital Inteligente"
+  },
+  "pdf": {
+    "header": {
+      "subtitleWithClinic": "ToSmile.ai - Protocolo de Restauracao Estetica",
+      "title": "ToSmile.ai",
+      "subtitle": "Protocolo de Restauracao Estetica"
+    },
+    "patient": {
+      "label": "Paciente:"
+    },
+    "caseSummary": {
+      "title": "RESUMO DO CASO",
+      "age": "Idade",
+      "tooth": "Dente",
+      "region": "Regiao",
+      "class": "Classe",
+      "size": "Tamanho",
+      "color": "Cor",
+      "years": "{{age}} anos",
+      "bruxism": "Bruxismo",
+      "stratification": "Estratificacao",
+      "inStock": "No Estoque"
+    },
+    "resin": {
+      "title": "RESINA RECOMENDADA",
+      "type": "Tipo: {{value}}",
+      "opacity": "Opacidade: {{value}}",
+      "resistance": "Resistencia: {{value}}",
+      "polishing": "Polimento: {{value}}",
+      "aesthetics": "Estetica: {{value}}",
+      "aiJustification": "Justificativa da IA:"
+    },
+    "dsd": {
+      "title": "PLANEJAMENTO DIGITAL DO SORRISO (DSD)",
+      "goldenRatio": "Proporcao Dourada",
+      "symmetry": "Simetria",
+      "facialMidline": "Linha Media Facial",
+      "dentalMidline": "Linha Media Dental",
+      "smileLine": "Linha do Sorriso",
+      "buccalCorridor": "Corredor Bucal"
+    },
+    "protocol": {
+      "title": "PROTOCOLO DE CAMADAS",
+      "layer": "Camada",
+      "resin": "Resina",
+      "color": "Cor",
+      "thickness": "Espessura",
+      "technique": "Tecnica"
+    },
+    "alternative": {
+      "title": "ALTERNATIVA SIMPLIFICADA",
+      "technique": "Tecnica: {{value}}",
+      "tradeoff": "Trade-off: {{value}}"
+    },
+    "checklist": {
+      "title": "PASSO A PASSO"
+    },
+    "cementation": {
+      "title": "PROTOCOLO DE CIMENTACAO DE FACETAS",
+      "ceramicTreatment": "Tratamento da Ceramica",
+      "toothTreatment": "Tratamento do Dente",
+      "cementation": "Cimentacao",
+      "cement": "Cimento",
+      "color": "Cor",
+      "lightCuring": "Fotopolimerizacao",
+      "type": "Tipo",
+      "finishing": "Acabamento e Polimento",
+      "postOperative": "Orientacoes Pos-operatorias"
+    },
+    "alerts": {
+      "title": "ALERTAS",
+      "doNotTitle": "O QUE NAO FAZER"
+    },
+    "idealResin": {
+      "title": "OPCAO IDEAL (fora do estoque)"
+    },
+    "confidence": {
+      "label": "Confianca: {{level}}"
+    },
+    "signature": {
+      "title": "VALIDACAO PROFISSIONAL",
+      "professionalSignature": "Assinatura do Profissional",
+      "executionDate": "Data de Execucao"
+    },
+    "footer": {
+      "disclaimer": "Este planejamento foi gerado por Inteligencia Artificial e serve como ferramenta de apoio a decisao clinica. Nao substitui uma avaliacao clinica criteriosa realizada por Cirurgiao-Dentista.",
+      "generatedBy": "Gerado por ToSmile.ai",
+      "page": "Pagina {{page}}"
+    }
+  },
+  "specialties": {
+    "ortodontia": "Ortodontia",
+    "endodontia": "Endodontia",
+    "periodontia": "Periodontia",
+    "cirurgiaBucomaxilofacial": "Cirurgia Bucomaxilofacial",
+    "dtmDorOrofacial": "DTM/Dor Orofacial"
   }
 }

@@ -93,7 +93,7 @@ export function useGroupResult() {
 
   // Use first evaluation as the protocol source
   const primaryEval = groupEvaluations[0] || null;
-  const groupTeeth = groupEvaluations.map(ev => ev.tooth === 'GENGIVO' ? t('odontogram.gingiva', { defaultValue: 'Gengiva' }) : ev.tooth);
+  const groupTeeth = groupEvaluations.map(ev => ev.tooth === 'GENGIVO' ? t('odontogram.gingiva') : ev.tooth);
 
   // Protocol data (from first evaluation — they're identical in the group)
   const pc = useMemo(() => computeProtocol(primaryEval), [primaryEval]);

@@ -27,8 +27,8 @@ export function EvaluationToothCard({
   plannedLabel,
 }: EvaluationToothCardProps) {
   const { t } = useTranslation();
-  const resolvedCompletedLabel = completedLabel ?? t('evaluation.completed', { defaultValue: 'Concluído' });
-  const resolvedPlannedLabel = plannedLabel ?? t('evaluation.planned', { defaultValue: 'Planejado' });
+  const resolvedCompletedLabel = completedLabel ?? t('evaluation.completed');
+  const resolvedPlannedLabel = plannedLabel ?? t('evaluation.planned');
   const { tooth, treatmentLabel, treatmentIcon: TreatmentIcon, status, aiIndication } = evaluation;
   const isCompleted = status === 'completed';
 

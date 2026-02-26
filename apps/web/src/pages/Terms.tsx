@@ -9,7 +9,7 @@ const sectionHeadingClass = "text-xl font-semibold font-display mb-3";
 // is designed for data-fetched entity views, not static content with custom navigation.
 export default function Terms() {
   const { t } = useTranslation();
-  useDocumentTitle(t('pageTitle.terms', { defaultValue: 'Termos de Uso' }));
+  useDocumentTitle(t('pageTitle.terms'));
   const b = { brandName: BRAND_NAME };
   return (
     <LegalPageLayout title={t('pages.termsTitle')}>

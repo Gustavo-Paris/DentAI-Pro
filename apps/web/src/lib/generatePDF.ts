@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf';
 import { format } from 'date-fns';
+import type { TFunction } from 'i18next';
 import type { PDFData } from '@/types/protocol';
 import type { PDFRenderContext } from './pdf/pdfHelpers';
 import {
@@ -21,14 +22,14 @@ import {
 
 export type { PDFData };
 
-export async function generateProtocolPDF(data: PDFData): Promise<void> {
+export async function generateProtocolPDF(data: PDFData, t: TFunction): Promise<void> {
   const pdf = new jsPDF('p', 'mm', 'a4');
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
   const margin = 15;
   const contentWidth = pageWidth - margin * 2;
 
-  const ctx: PDFRenderContext = { pdf, pageWidth, pageHeight, margin, contentWidth, y: margin, currentPage: 1 };
+  const ctx: PDFRenderContext = { pdf, pageWidth, pageHeight, margin, contentWidth, y: margin, currentPage: 1, t };
 
   renderHeader(ctx, data);
   renderPatientId(ctx, data);

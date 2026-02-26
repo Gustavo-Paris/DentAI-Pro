@@ -13,7 +13,7 @@ export function LegalPageLayout({ title, children }: LegalPageLayoutProps) {
   const { t } = useTranslation();
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border" aria-label={t('common.siteNavigation', { defaultValue: 'Navegação do site' })}>
+      <header className="border-b border-border" aria-label={t('common.siteNavigation')}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <Link to="/" className="text-xl font-display font-semibold text-gradient-brand">
             {BRAND_NAME}

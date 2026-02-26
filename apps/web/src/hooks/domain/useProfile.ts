@@ -293,10 +293,10 @@ export function useProfile(): ProfileState & ProfileActions {
         totalCases,
         pendingTeeth: metrics.pendingTeethCount,
       });
-      toast.success(t('profile.digestSent', { defaultValue: 'Resumo semanal enviado!' }));
+      toast.success(t('profile.digestSent'));
     } catch (error) {
       logger.error('Failed to send weekly digest email:', error);
-      toast.error(t('profile.digestError', { defaultValue: 'Erro ao enviar resumo' }));
+      toast.error(t('profile.digestError'));
     } finally {
       setSendingDigest(false);
     }

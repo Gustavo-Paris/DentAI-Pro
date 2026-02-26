@@ -83,18 +83,18 @@ export function getGenericProtocol(
   let specialtyKey = '';
 
   if (reason.includes('apinhamento') || reason.includes('ortodon') || reason.includes('maloclusão') || reason.includes('alinhamento')) {
-    specialty = 'Ortodontia';
+    specialty = t('specialties.ortodontia');
     specialtyKey = 'ortodontia';
   } else if (reason.includes('canal') || reason.includes('pulp') || reason.includes('periapical') || reason.includes('endodon')) {
-    specialty = 'Endodontia';
+    specialty = t('specialties.endodontia');
     specialtyKey = 'endodontiaRef';
   } else if (reason.includes('perio') || reason.includes('gengiv') || reason.includes('bolsa') || reason.includes('retração')) {
-    specialty = 'Periodontia';
+    specialty = t('specialties.periodontia');
     specialtyKey = 'periodontia';
   } else if (reason.includes('implante') || reason.includes('cirurg') || reason.includes('extração') || reason.includes('terceiro molar')) {
-    specialty = 'Cirurgia Bucomaxilofacial';
+    specialty = t('specialties.cirurgiaBucomaxilofacial');
   } else if (reason.includes('dtm') || reason.includes('atm') || reason.includes('articulação')) {
-    specialty = 'DTM/Dor Orofacial';
+    specialty = t('specialties.dtmDorOrofacial');
   }
 
   let checklist: string[];

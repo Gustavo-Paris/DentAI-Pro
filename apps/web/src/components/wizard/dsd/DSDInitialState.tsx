@@ -27,7 +27,7 @@ export function DSDInitialState({ onSkip, hasImage, onConfirmDSD }: DSDInitialSt
 
       {hasImage && (
         <p className="text-sm text-center text-muted-foreground max-w-md mx-auto">
-          {t('components.wizard.dsd.initialState.confirmHint', { defaultValue: 'A an\u00e1lise DSD vai processar a foto e gerar sugest\u00f5es de design do sorriso.' })}
+          {t('components.wizard.dsd.initialState.confirmHint')}
         </p>
       )}
 
@@ -46,7 +46,7 @@ export function DSDInitialState({ onSkip, hasImage, onConfirmDSD }: DSDInitialSt
         {hasImage && onConfirmDSD && (
           <Button onClick={onConfirmDSD} className="btn-glow-gold btn-press font-semibold">
             <Play className="w-4 h-4 mr-2" />
-            {t('components.wizard.dsd.initialState.startAnalysis', { defaultValue: 'Iniciar An\u00e1lise DSD' })}
+            {t('components.wizard.dsd.initialState.startAnalysis')}
           </Button>
         )}
         <Button variant="outline" onClick={onSkip} className="btn-press">

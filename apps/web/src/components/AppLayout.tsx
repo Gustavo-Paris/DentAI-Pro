@@ -57,8 +57,8 @@ export default function AppLayout() {
   }), [user?.user_metadata?.full_name, user?.email, user?.user_metadata?.avatar_url]);
 
   const userMenuItems = useMemo(() => [
-    { label: t('components.layout.subscription', { defaultValue: 'Assinatura' }), href: '/profile?tab=assinatura', icon: CreditCard },
-    { label: t('components.layout.support', { defaultValue: 'Suporte' }), href: 'mailto:suporte@tosmile.ai', icon: HelpCircle },
+    { label: t('components.layout.subscription'), href: '/profile?tab=assinatura', icon: CreditCard },
+    { label: t('components.layout.support'), href: 'mailto:suporte@tosmile.ai', icon: HelpCircle },
   ], [t]);
 
   const themeToggleSlot = useMemo(() => <ThemeToggle />, []);

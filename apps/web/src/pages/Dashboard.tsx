@@ -43,7 +43,7 @@ function StatsGridFallback() {
 
 export default function Dashboard() {
   const { t } = useTranslation();
-  useDocumentTitle(t('pageTitle.dashboard', { defaultValue: 'Dashboard' }));
+  useDocumentTitle(t('pageTitle.dashboard'));
   const dashboard = useDashboard();
   const navigate = useNavigate();
   const isTabbed = !dashboard.isNewUser;
@@ -93,9 +93,9 @@ export default function Dashboard() {
       alerts.push({
         id: 'low-credits',
         type: dashboard.creditsRemaining <= 1 ? 'error' : 'warning',
-        title: t('dashboard.alerts.lowCreditsTitle', { defaultValue: 'Créditos baixos' }),
+        title: t('dashboard.alerts.lowCreditsTitle'),
         description: t('dashboard.alerts.lowCreditsDescription', { count: dashboard.creditsRemaining }),
-        action: { label: t('dashboard.alerts.upgrade', { defaultValue: 'Ver planos' }), href: '/pricing' },
+        action: { label: t('dashboard.alerts.upgrade'), href: '/pricing' },
       });
     }
 
@@ -151,14 +151,14 @@ export default function Dashboard() {
       <div className="mb-4">
         <div className="flex items-center gap-3 mb-1">
           {TimeIcon}
-          <h1 className="text-2xl sm:text-3xl font-semibold font-display tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-semibold font-display tracking-tight">
             {dashboard.greeting},{' '}
             {dashboard.loading ? (
               <Skeleton className="inline-block h-7 w-32 align-middle rounded-lg" />
             ) : (
               <span className="text-primary">{dashboard.firstName}</span>
             )}
-          </h1>
+          </h2>
         </div>
         <p className="text-sm text-muted-foreground ml-8">
           {/* Portuguese date format — 'de' connector is language-specific */}
@@ -211,7 +211,7 @@ export default function Dashboard() {
   if (dashboard.isError) {
     return (
       <GenericErrorState
-        title={t('dashboard.loadError', { defaultValue: 'Erro ao carregar dashboard' })}
+        title={t('dashboard.loadError')}
         description={t('errors.tryReloadPage')}
       />
     );
@@ -219,7 +219,10 @@ export default function Dashboard() {
 
   return (
     <TooltipProvider>
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <div className="relative section-glow-bg overflow-hidden">
+        {/* Ambient AI grid overlay */}
+        <div className="ai-grid-pattern absolute inset-0 opacity-30 dark:opacity-50 [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,black_70%,transparent_100%)] pointer-events-none" aria-hidden="true" />
+      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <DashboardPage
           title={" "}
           containerVariant="shell"
@@ -246,6 +249,7 @@ export default function Dashboard() {
           onCreateCase={() => navigate('/new-case')}
         />
       </div>
+      </div>{/* /section-glow-bg */}
     </TooltipProvider>
   );
 }

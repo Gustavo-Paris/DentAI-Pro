@@ -65,7 +65,7 @@ export default function Landing() {
 
       <main id="main-content">
       {/* Hero */}
-      <section aria-label={t('landing.heroSection', { defaultValue: 'Hero' })} className="py-20 sm:py-28 md:py-36 relative overflow-hidden grain-overlay">
+      <section aria-label={t('landing.heroSection')} className="py-20 sm:py-28 md:py-36 relative overflow-hidden grain-overlay">
         {/* Gradient mesh background */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgb(var(--color-primary-rgb)/0.08),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgb(var(--color-primary-rgb)/0.10),transparent)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_80%_60%,rgb(var(--color-primary-rgb)/0.05),transparent)] dark:bg-[radial-gradient(ellipse_60%_40%_at_80%_60%,rgb(var(--color-primary-rgb)/0.05),transparent)]" />
@@ -114,7 +114,7 @@ export default function Landing() {
       </section>
 
       {/* Stats */}
-      <section aria-label={t('landing.statsSection', { defaultValue: 'Estatisticas' })} className="py-10 sm:py-14 bg-gradient-to-b from-secondary/40 to-secondary/10 relative overflow-hidden">
+      <section aria-label={t('landing.statsSection')} className="py-10 sm:py-14 bg-gradient-to-b from-secondary/40 to-secondary/10 relative overflow-hidden">
         <div className="absolute inset-0 ai-grid-pattern opacity-20" />
         <div className="container mx-auto px-4 sm:px-6">
           <div ref={statsRef} className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
@@ -244,7 +244,7 @@ export default function Landing() {
                     {testimonial.highlight}
                   </Badge>
                 )}
-                <div className="flex gap-1 mb-3" aria-label={t('landing.starRating', { rating: testimonial.rating, defaultValue: `${testimonial.rating} de 5 estrelas` })}>
+                <div className="flex gap-1 mb-3" aria-label={t('landing.starRating', { rating: testimonial.rating})}>
                   {Array.from({ length: 5 }).map((_, j) => (
                     <Star
                       key={j}
@@ -370,7 +370,7 @@ export default function Landing() {
       <LandingPricing />
 
       {/* CTA */}
-      <section aria-label={t('landing.ctaSection', { defaultValue: 'Comece agora' })} className="py-12 sm:py-20 relative overflow-hidden grain-overlay">
+      <section aria-label={t('landing.ctaSection')} className="py-12 sm:py-20 relative overflow-hidden grain-overlay">
         {/* Gradient mesh — inverted from hero (origin bottom) */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_120%,rgb(var(--color-primary-rgb)/0.08),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_120%,rgb(var(--color-primary-rgb)/0.10),transparent)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_20%_40%,rgb(var(--color-primary-rgb)/0.05),transparent)] dark:bg-[radial-gradient(ellipse_60%_40%_at_20%_40%,rgb(var(--color-primary-rgb)/0.05),transparent)]" />
@@ -431,15 +431,15 @@ const LANDING_FALLBACK_PLANS = [
     id: 'free',
     name: 'Free',
     descriptionKey: 'pricing.fallback.freeDesc',
-    descriptionDefault: 'Para experimentar',
+
     price_monthly: 0,
     credits_per_month: 5,
     max_users: 1,
     allows_rollover: false,
     featureKeys: [
-      { key: 'pricing.fallback.freeFeature1', defaultValue: '5 créditos/mês' },
-      { key: 'pricing.fallback.freeFeature2', defaultValue: 'Recomendação de resina' },
-      { key: 'pricing.fallback.freeFeature3', defaultValue: 'Análise com IA' },
+      { key: 'pricing.fallback.freeFeature1'},
+      { key: 'pricing.fallback.freeFeature2'},
+      { key: 'pricing.fallback.freeFeature3'},
     ],
     isPopular: false,
   },
@@ -447,15 +447,15 @@ const LANDING_FALLBACK_PLANS = [
     id: 'starter',
     name: 'Starter',
     descriptionKey: 'pricing.fallback.starterDesc',
-    descriptionDefault: 'Para dentistas individuais',
+
     price_monthly: 5900,
     credits_per_month: 30,
     max_users: 1,
     allows_rollover: false,
     featureKeys: [
-      { key: 'pricing.fallback.starterFeature1', defaultValue: '30 créditos/mês' },
-      { key: 'pricing.fallback.starterFeature2', defaultValue: 'Protocolos completos' },
-      { key: 'pricing.fallback.starterFeature3', defaultValue: 'Export PDF' },
+      { key: 'pricing.fallback.starterFeature1'},
+      { key: 'pricing.fallback.starterFeature2'},
+      { key: 'pricing.fallback.starterFeature3'},
     ],
     isPopular: false,
   },
@@ -463,16 +463,16 @@ const LANDING_FALLBACK_PLANS = [
     id: 'pro',
     name: 'Pro',
     descriptionKey: 'pricing.fallback.proDesc',
-    descriptionDefault: 'Para consultórios',
+
     price_monthly: 11900,
     credits_per_month: 80,
     max_users: 3,
     allows_rollover: true,
     featureKeys: [
-      { key: 'pricing.fallback.proFeature1', defaultValue: '80 créditos/mês' },
-      { key: 'pricing.fallback.proFeature2', defaultValue: 'Rollover de créditos' },
-      { key: 'pricing.fallback.proFeature3', defaultValue: 'DSD Simulações' },
-      { key: 'pricing.fallback.proFeature4', defaultValue: 'Até 3 usuários' },
+      { key: 'pricing.fallback.proFeature1'},
+      { key: 'pricing.fallback.proFeature2'},
+      { key: 'pricing.fallback.proFeature3'},
+      { key: 'pricing.fallback.proFeature4'},
     ],
     isPopular: true,
   },
@@ -480,16 +480,16 @@ const LANDING_FALLBACK_PLANS = [
     id: 'elite',
     name: 'Elite',
     descriptionKey: 'pricing.fallback.eliteDesc',
-    descriptionDefault: 'Para clínicas',
+
     price_monthly: 24900,
     credits_per_month: 200,
     max_users: 10,
     allows_rollover: true,
     featureKeys: [
-      { key: 'pricing.fallback.eliteFeature1', defaultValue: '200 créditos/mês' },
-      { key: 'pricing.fallback.eliteFeature2', defaultValue: 'Rollover ilimitado' },
-      { key: 'pricing.fallback.eliteFeature3', defaultValue: 'Suporte prioritário' },
-      { key: 'pricing.fallback.eliteFeature4', defaultValue: 'Até 10 usuários' },
+      { key: 'pricing.fallback.eliteFeature1'},
+      { key: 'pricing.fallback.eliteFeature2'},
+      { key: 'pricing.fallback.eliteFeature3'},
+      { key: 'pricing.fallback.eliteFeature4'},
     ],
     isPopular: false,
   },
@@ -616,7 +616,7 @@ function LandingPricing() {
                   )}
                   <CardHeader className="text-center pb-2">
                     <CardTitle className="text-xl">{plan.name}</CardTitle>
-                    <CardDescription>{t(plan.descriptionKey, { defaultValue: plan.descriptionDefault })}</CardDescription>
+                    <CardDescription>{t(plan.descriptionKey)}</CardDescription>
                   </CardHeader>
                   <CardContent className="flex-1">
                     <div className="text-center mb-4">
@@ -637,7 +637,7 @@ function LandingPricing() {
                       {plan.featureKeys.map((feature, index) => (
                         <li key={index} className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" aria-hidden="true" />
-                          <span className="text-sm">{t(feature.key, { defaultValue: feature.defaultValue })}</span>
+                          <span className="text-sm">{t(feature.key)}</span>
                         </li>
                       ))}
                     </ul>

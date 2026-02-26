@@ -71,7 +71,7 @@ export function CreditConfirmDialog({ data, onConfirm }: CreditConfirmDialogProp
           <div className="flex items-center gap-2 rounded-lg bg-destructive/10 px-4 py-2.5 text-sm" role="alert">
             <AlertTriangle className="w-4 h-4 text-destructive shrink-0" />
             <span className="text-destructive font-medium">
-              {t('components.creditConfirm.lowBalanceWarning', { defaultValue: 'Saldo ficará baixo após esta operação.' })}
+              {t('components.creditConfirm.lowBalanceWarning')}
             </span>
           </div>
         )}

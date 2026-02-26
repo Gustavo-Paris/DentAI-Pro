@@ -195,8 +195,8 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
                   <div className="flex items-center gap-2">
                     <p className={`text-sm font-medium ${hasGingivoSuggestion ? 'text-warning-foreground dark:text-warning' : 'text-foreground'}`}>
                       {hasGingivoSuggestion
-                        ? t('components.wizard.dsd.analysisView.gingivoplastyDetected', { defaultValue: 'Gengivoplastia detectada na análise' })
-                        : t('components.wizard.dsd.analysisView.gingivoplastyOption', { defaultValue: 'Incluir gengivoplastia?' })
+                        ? t('components.wizard.dsd.analysisView.gingivoplastyDetected')
+                        : t('components.wizard.dsd.analysisView.gingivoplastyOption')
                       }
                     </p>
                     <Badge
@@ -207,15 +207,15 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
                       }
                     >
                       {hasGingivoSuggestion
-                        ? t('components.wizard.dsd.analysisView.aiRecommended', { defaultValue: 'Recomendado pela IA' })
-                        : t('components.wizard.dsd.analysisView.optional', { defaultValue: 'Opcional' })
+                        ? t('components.wizard.dsd.analysisView.aiRecommended')
+                        : t('components.wizard.dsd.analysisView.optional')
                       }
                     </Badge>
                   </div>
                   <p className={`text-xs mt-1 ${hasGingivoSuggestion ? 'text-warning-foreground dark:text-warning' : 'text-muted-foreground'}`}>
                     {hasGingivoSuggestion
-                      ? t('components.wizard.dsd.analysisView.gingivoplastyDesc', { defaultValue: 'A análise identificou necessidade de harmonização gengival. Deseja incluir a simulação de gengivoplastia?' })
-                      : t('components.wizard.dsd.analysisView.gingivoplastyOptionalDesc', { defaultValue: 'Deseja adicionar uma camada de simulação com harmonização gengival (gengivoplastia)?' })
+                      ? t('components.wizard.dsd.analysisView.gingivoplastyDesc')
+                      : t('components.wizard.dsd.analysisView.gingivoplastyOptionalDesc')
                     }
                   </p>
                 </div>
@@ -228,7 +228,7 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
                   className="gap-1"
                 >
                   <CheckCircle className="w-3 h-3" />
-                  {t('components.wizard.dsd.analysisView.approveGingivoplasty', { defaultValue: 'Prosseguir com gengivoplastia' })}
+                  {t('components.wizard.dsd.analysisView.approveGingivoplasty')}
                 </Button>
                 <Button
                   variant="outline"
@@ -237,7 +237,7 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
                   className="gap-1"
                 >
                   <XCircle className="w-3 h-3" />
-                  {t('components.wizard.dsd.analysisView.discardGingivoplasty', { defaultValue: 'Descartar gengivoplastia' })}
+                  {t('components.wizard.dsd.analysisView.discardGingivoplasty')}
                 </Button>
               </div>
             </div>
@@ -255,12 +255,12 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
           {retryingLayer === 'complete-treatment' ? (
             <>
               <Loader2 className="w-4 h-4 shrink-0 animate-spin" />
-              <span>{t('components.wizard.dsd.analysisView.gingivoplastyGenerating', { defaultValue: 'Gerando simulação com gengivoplastia...' })}</span>
+              <span>{t('components.wizard.dsd.analysisView.gingivoplastyGenerating')}</span>
             </>
           ) : (
             <>
               <CheckCircle className="w-4 h-4 shrink-0" />
-              <span>{t('components.wizard.dsd.analysisView.gingivoplastyApproved', { defaultValue: 'Gengivoplastia incluída na simulação' })}</span>
+              <span>{t('components.wizard.dsd.analysisView.gingivoplastyApproved')}</span>
             </>
           )}
         </div>
@@ -270,7 +270,7 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
       {gingivoplastyApproved === false && (
         <div className="flex items-center gap-2 text-sm text-muted-foreground bg-secondary/50 border border-border rounded-lg px-3 py-2">
           <XCircle className="w-4 h-4 shrink-0" />
-          <span>{t('components.wizard.dsd.analysisView.gingivoplastyDiscarded', { defaultValue: 'Gengivoplastia descartada' })}</span>
+          <span>{t('components.wizard.dsd.analysisView.gingivoplastyDiscarded')}</span>
         </div>
       )}
 
@@ -279,9 +279,9 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
         const totalLayers = determineLayersNeeded(analysis).length;
         const currentLayer = layerGenerationProgress; // 0-based: 0 = generating L1, 1 = generating L2, etc.
         const layerLabels: Record<number, string> = {
-          0: t('components.wizard.dsd.analysisView.layerLabelRestorations', { defaultValue: 'Gerando correções restauradoras...' }),
-          1: t('components.wizard.dsd.analysisView.layerLabelWhitening', { defaultValue: 'Aplicando simulação de clareamento...' }),
-          2: t('components.wizard.dsd.analysisView.layerLabelGingivoplasty', { defaultValue: 'Simulando gengivoplastia...' }),
+          0: t('components.wizard.dsd.analysisView.layerLabelRestorations'),
+          1: t('components.wizard.dsd.analysisView.layerLabelWhitening'),
+          2: t('components.wizard.dsd.analysisView.layerLabelGingivoplasty'),
         };
         const progressPercent = totalLayers > 0 ? (currentLayer / totalLayers) * 100 : 0;
 
@@ -297,11 +297,10 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
                     {t('components.wizard.dsd.analysisView.generatingLayerOf', {
                       current: currentLayer + 1,
                       total: totalLayers,
-                      defaultValue: `Gerando camada ${currentLayer + 1} de ${totalLayers}`,
-                    })}
+                      })}
                   </h4>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {layerLabels[currentLayer] || t('components.wizard.dsd.analysisView.processing', { defaultValue: 'Processando...' })}
+                    {layerLabels[currentLayer] || t('components.wizard.dsd.analysisView.processing')}
                   </p>
                 </div>
                 {/* Progress bar */}
@@ -312,7 +311,7 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
                   />
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {t('components.wizard.dsd.analysisView.estimatedTimePerLayer', { defaultValue: '~30 segundos por camada' })}
+                  {t('components.wizard.dsd.analysisView.estimatedTimePerLayer')}
                 </p>
                 <p className="text-xs text-muted-foreground -mt-2">
                   {t('components.wizard.dsd.analysisView.reviewWhileProcessing')}
@@ -404,7 +403,7 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
                 onClick={onGenerateAllLayers}
               >
                 <RefreshCw className="w-3 h-3 mr-1" />
-                {t('components.wizard.dsd.analysisView.generateSimulation', { defaultValue: 'Gerar simulação' })}
+                {t('components.wizard.dsd.analysisView.generateSimulation')}
               </Button>
             </div>
           </CardContent>

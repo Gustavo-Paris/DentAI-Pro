@@ -139,10 +139,10 @@ export function useDSDStep({
   const { canUseCredits, refreshSubscription, getCreditCost } = useSubscription();
 
   const analysisSteps = useMemo(() => [
-    { label: t('dsd.detectingLandmarks', { defaultValue: 'Detectando landmarks faciais...' }), duration: 2000 },
-    { label: t('dsd.analyzingProportions', { defaultValue: 'Analisando proporções dentárias...' }), duration: 3000 },
-    { label: t('dsd.calculatingGolden', { defaultValue: 'Calculando proporção dourada...' }), duration: 2000 },
-    { label: t('dsd.evaluatingSymmetry', { defaultValue: 'Avaliando simetria...' }), duration: 2000 },
+    { label: t('dsd.detectingLandmarks'), duration: 2000 },
+    { label: t('dsd.analyzingProportions'), duration: 3000 },
+    { label: t('dsd.calculatingGolden'), duration: 2000 },
+    { label: t('dsd.evaluatingSymmetry'), duration: 2000 },
   ], [t]);
 
   const lastCompositeSourcePathRef = useRef<string | null>(null);
@@ -682,13 +682,13 @@ export function useDSDStep({
     let hasError = false;
 
     if (!imageBase64) {
-      setError(t('errors.noImageAvailable', { defaultValue: 'Nenhuma imagem disponível para análise' }));
+      setError(t('errors.noImageAvailable'));
       return;
     }
 
     // Pre-check credits before starting DSD
     if (!canUseCredits('dsd_simulation')) {
-      setError(t('errors.insufficientCredits', { defaultValue: 'Créditos insuficientes para simulação DSD. Faça upgrade do seu plano.' }));
+      setError(t('errors.insufficientCredits'));
       return;
     }
 
@@ -766,7 +766,7 @@ export function useDSDStep({
         // Note: We pass analysis directly since state update is async
         generateAllLayers(data.analysis);
       } else {
-        throw new Error(t('errors.noAnalysisData', { defaultValue: 'Dados de análise não retornados' }));
+        throw new Error(t('errors.noAnalysisData'));
       }
     } catch (error: unknown) {
       clearInterval(stepInterval);
@@ -794,16 +794,16 @@ export function useDSDStep({
 
       hasError = true;
       if (err.status === 429 || err.message?.includes('429') || err.code === 'RATE_LIMITED') {
-        setError(t('errors.rateLimitExceeded', { defaultValue: 'Limite de requisições excedido. Aguarde alguns minutos.' }));
+        setError(t('errors.rateLimitExceeded'));
       } else if (err.status === 402 || err.message?.includes('402') || err.code === 'INSUFFICIENT_CREDITS' || err.code === 'PAYMENT_REQUIRED') {
-        setError(t('errors.insufficientCredits', { defaultValue: 'Créditos insuficientes para simulação DSD. Faça upgrade do seu plano.' }));
+        setError(t('errors.insufficientCredits'));
         refreshSubscription();
       } else if (isConnectionError) {
-        setError(t('errors.connectionError', { defaultValue: 'Erro de conexão. Verifique sua internet e tente novamente.' }));
+        setError(t('errors.connectionError'));
       } else {
         // Show actual server error when available, otherwise generic message
         const serverMsg = err.message && !err.message.includes('non-2xx') ? err.message : null;
-        setError(serverMsg || t('errors.dsdGenerationFailed', { defaultValue: 'Não foi possível gerar a análise DSD. Você pode pular esta etapa.' }));
+        setError(serverMsg || t('errors.dsdGenerationFailed'));
       }
       setIsAnalyzing(false);
     } finally {
@@ -929,7 +929,7 @@ export function useDSDStep({
 
       const l2SignedUrl = layerUrls['whitening-restorations'];
       const layer = await generateSingleLayer(analysis, 'complete-treatment', l2Base64, l2SignedUrl);
-      const gingivoLabel = t('treatments.gengivoplastia.shortLabel', { defaultValue: 'Gengivoplastia' });
+      const gingivoLabel = t('treatments.gengivoplastia.shortLabel');
       if (!layer) {
         toast.error(t('toasts.dsd.layerError', { layer: gingivoLabel }));
         return;

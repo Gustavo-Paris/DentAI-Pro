@@ -22,14 +22,14 @@ import type { User } from '@supabase/supabase-js';
 // ---------------------------------------------------------------------------
 
 const TREATMENT_LABEL_KEYS: Record<TreatmentType, string> = {
-  resina: 'components.wizard.review.treatmentResina',
-  porcelana: 'components.wizard.review.treatmentPorcelana',
-  coroa: 'components.wizard.review.treatmentCoroa',
-  implante: 'components.wizard.review.treatmentImplante',
-  endodontia: 'components.wizard.review.treatmentEndodontia',
-  encaminhamento: 'components.wizard.review.treatmentEncaminhamento',
-  gengivoplastia: 'components.wizard.review.treatmentGengivoplastia',
-  recobrimento_radicular: 'components.wizard.review.treatmentRecobrimentoRadicular',
+  resina: 'treatments.resina.label',
+  porcelana: 'treatments.porcelana.label',
+  coroa: 'treatments.coroa.label',
+  implante: 'treatments.implante.label',
+  endodontia: 'treatments.endodontia.label',
+  encaminhamento: 'treatments.encaminhamento.label',
+  gengivoplastia: 'treatments.gengivoplastia.label',
+  recobrimento_radicular: 'treatments.recobrimento_radicular.label',
 };
 
 // ---------------------------------------------------------------------------

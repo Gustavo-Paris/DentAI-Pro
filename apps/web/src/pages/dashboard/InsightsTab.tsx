@@ -243,7 +243,7 @@ function ClinicalStatsCard({
         {insights.avgCompletionHours !== null && (
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">
-              {t('dashboard.insights.avgCompletionTime', { defaultValue: 'Tempo medio' })}
+              {t('dashboard.insights.avgCompletionTime')}
             </span>
             <span className="text-xs font-medium tabular-nums">
               {insights.avgCompletionHours < 24
@@ -275,13 +275,13 @@ function PatientGrowthCard({
     <div ref={containerRef} className="scroll-reveal">
       <Card className="p-4 shadow-sm rounded-xl">
         <h3 className="text-sm font-semibold font-display text-muted-foreground mb-3">
-          {t('dashboard.insights.patientGrowth', { defaultValue: 'Pacientes' })}
+          {t('dashboard.insights.patientGrowth')}
         </h3>
         <div className="flex items-center justify-between">
           <div>
             <p className="text-2xl font-semibold tabular-nums">{patientsThisMonth}</p>
             <p className="text-xs text-muted-foreground">
-              {t('dashboard.insights.thisMonth', { defaultValue: 'este mes' })}
+              {t('dashboard.insights.thisMonth')}
             </p>
           </div>
           {patientGrowth !== null && (
@@ -326,7 +326,7 @@ export function InsightsTab({
         <Link to="/new-case">
           <Button size="sm" variant="outline" className="mt-4">
             <Plus className="w-3.5 h-3.5 mr-1.5" />
-            {t('dashboard.insights.createFirstCase', { defaultValue: 'Criar primeiro caso' })}
+            {t('dashboard.insights.createFirstCase')}
           </Button>
         </Link>
       </Card>
@@ -337,7 +337,7 @@ export function InsightsTab({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-1 mb-3" role="group" aria-label={t('dashboard.insights.periodFilter', { defaultValue: 'Filtro de periodo' })}>
+      <div className="flex items-center gap-1 mb-3" role="group" aria-label={t('dashboard.insights.periodFilter')}>
         {[8, 12, 26].map((w) => (
           <button
             key={w}

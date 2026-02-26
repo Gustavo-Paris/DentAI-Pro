@@ -58,7 +58,7 @@ export function SessionHeaderCard({
   };
 
   return (
-    <Card className="mb-4 sm:mb-6 shadow-sm rounded-xl overflow-hidden">
+    <Card className="mb-4 sm:mb-6 rounded-xl overflow-hidden glass-card">
       <div className="bg-gradient-to-br from-primary/5 to-transparent">
         <CardContent className="p-4 sm:p-6">
           <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
@@ -69,7 +69,7 @@ export function SessionHeaderCard({
                 onKeyDown={hasDSD ? handleKeyDown : undefined}
                 role={hasDSD ? 'button' : undefined}
                 tabIndex={hasDSD ? 0 : undefined}
-                aria-label={hasDSD ? t('dsd.viewSimulation', { defaultValue: 'Ver simulacao DSD' }) : undefined}
+                aria-label={hasDSD ? t('dsd.viewSimulation') : undefined}
               >
                 <ClinicalPhotoThumbnail
                   path={photoPath}

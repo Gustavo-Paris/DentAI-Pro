@@ -37,7 +37,7 @@ import { UpgradeCTA } from '@/components/profile/UpgradeCTA';
 
 export default function Profile() {
   const { t } = useTranslation();
-  useDocumentTitle(t('pageTitle.profile', { defaultValue: 'Perfil' }));
+  useDocumentTitle(t('pageTitle.profile'));
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const p = useProfile();
@@ -132,7 +132,7 @@ export default function Profile() {
                         <button
                           type="button"
                           className="w-20 h-20 rounded-lg border-2 border-dashed border-border bg-muted/50 flex items-center justify-center cursor-pointer hover:border-primary/50 transition-colors overflow-hidden"
-                          aria-label={t('profile.uploadClinicLogo', { defaultValue: 'Enviar logo da clinica' })}
+                          aria-label={t('profile.uploadClinicLogo')}
                           onClick={() => p.logoInputRef.current?.click()}
                         >
                           {p.isUploadingLogo ? (
@@ -260,8 +260,8 @@ export default function Profile() {
             <div className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg font-display">{t('profile.weeklyDigest', { defaultValue: 'Resumo Semanal' })}</CardTitle>
-                  <CardDescription>{t('profile.weeklyDigestDescription', { defaultValue: 'Receba um resumo das suas avaliações da semana por e-mail' })}</CardDescription>
+                  <CardTitle className="text-lg font-display">{t('profile.weeklyDigest')}</CardTitle>
+                  <CardDescription>{t('profile.weeklyDigestDescription')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Button
@@ -272,7 +272,7 @@ export default function Profile() {
                     className="gap-1.5"
                   >
                     {p.sendingDigest ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
-                    {t('profile.sendDigest', { defaultValue: 'Enviar Resumo' })}
+                    {t('profile.sendDigest')}
                   </Button>
                 </CardContent>
               </Card>

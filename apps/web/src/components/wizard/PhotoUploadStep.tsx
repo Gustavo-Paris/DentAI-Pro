@@ -334,7 +334,7 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
         /* Premium Drop Zone */
         <div
           role="region"
-          aria-label={t('components.wizard.photoUpload.dropZoneLabel', { defaultValue: 'Zona de upload de foto' })}
+          aria-label={t('components.wizard.photoUpload.dropZoneLabel')}
           className={`relative rounded-xl overflow-hidden transition-all duration-300 ${
             dragActive
               ? 'border-2 border-primary bg-primary/5 scale-[1.02] shadow-[0_0_30px_rgb(var(--color-primary-rgb)/0.15)]'

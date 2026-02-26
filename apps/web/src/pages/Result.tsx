@@ -28,7 +28,7 @@ import { formatToothLabel } from '@/lib/treatment-config';
 
 export default function Result() {
   const { t } = useTranslation();
-  useDocumentTitle(t('pageTitle.result', { defaultValue: 'Resultado' }));
+  useDocumentTitle(t('pageTitle.result'));
   const r = useResult();
   const navigate = useNavigate();
 
@@ -38,10 +38,10 @@ export default function Result() {
         <GenericErrorState
           title={t('result.notFound')}
           description={r.isError
-            ? t('errors.loadFailed', { defaultValue: 'Erro ao carregar dados. Tente novamente.' })
-            : t('result.notFoundDescription', { defaultValue: 'O resultado solicitado nao foi encontrado.' })
+            ? t('errors.loadFailed')
+            : t('result.notFoundDescription')
           }
-          action={{ label: t('common.back', { defaultValue: 'Voltar' }), onClick: () => window.history.back() }}
+          action={{ label: t('common.back'), onClick: () => window.history.back() }}
         />
       </div>
     );

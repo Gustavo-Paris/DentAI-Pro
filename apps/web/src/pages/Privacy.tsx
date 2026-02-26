@@ -9,7 +9,7 @@ const sectionHeadingClass = "text-xl font-semibold font-display mb-3";
 // is designed for data-fetched entity views, not static content with custom navigation.
 export default function Privacy() {
   const { t } = useTranslation();
-  useDocumentTitle(t('pageTitle.privacy', { defaultValue: 'Privacidade' }));
+  useDocumentTitle(t('pageTitle.privacy'));
   const b = { brandName: BRAND_NAME };
   return (
     <LegalPageLayout title={t('pages.privacyTitle')}>

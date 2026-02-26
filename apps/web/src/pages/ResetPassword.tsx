@@ -25,7 +25,7 @@ const REDIRECT_DELAY_MS = 2_000;
 
 export default function ResetPassword() {
   const { t } = useTranslation();
-  useDocumentTitle(t('pageTitle.resetPassword', { defaultValue: 'Redefinir Senha' }));
+  useDocumentTitle(t('pageTitle.resetPassword'));
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [sessionReady, setSessionReady] = useState(false);

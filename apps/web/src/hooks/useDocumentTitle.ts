@@ -6,7 +6,7 @@ export function useDocumentTitle(title: string): void {
     const prev = document.title;
     document.title = title
       ? `${title} | ToSmile.ai`
-      : i18n.t('meta.defaultTitle', { defaultValue: 'ToSmile.ai — Odontologia Digital Inteligente' });
+      : i18n.t('meta.defaultTitle');
     return () => {
       document.title = prev;
     };

@@ -283,11 +283,11 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
 
       queryClient.invalidateQueries({ queryKey: evaluationKeys.sessions() });
       queryClient.invalidateQueries({ queryKey: evaluationKeys.lists() });
-      toast.success(t('toasts.evaluationDetail.retrySuccess', { defaultValue: 'Protocolo regenerado com sucesso' }));
+      toast.success(t('toasts.evaluationDetail.retrySuccess'));
     } catch (error) {
       logger.error('Error retrying evaluation:', error);
       await evaluations.updateStatus(evaluationId, EVALUATION_STATUS.ERROR).catch(() => {});
-      toast.error(t('toasts.evaluationDetail.retryError', { defaultValue: 'Erro ao reprocessar. Tente novamente.' }));
+      toast.error(t('toasts.evaluationDetail.retryError'));
     } finally {
       setRetryingEvaluationId(null);
     }
@@ -374,21 +374,19 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
       queryClient.invalidateQueries({ queryKey: evaluationKeys.lists() });
 
       const budgetLabel = newBudget === 'premium'
-        ? t('toasts.evaluationDetail.budgetPremium', { defaultValue: 'Premium' })
-        : t('toasts.evaluationDetail.budgetStandard', { defaultValue: 'Padrão' });
+        ? t('toasts.evaluationDetail.budgetPremium')
+        : t('toasts.evaluationDetail.budgetStandard');
       toast.success(
         t('toasts.evaluationDetail.regenerateSuccess', {
           count: successCount,
           budget: budgetLabel,
-          defaultValue: '{{count}} protocolo(s) regenerado(s) como {{budget}}',
-        }),
+          }),
       );
     } catch (error) {
       logger.error('Regeneration failed:', error);
       toast.error(
         t('toasts.evaluationDetail.regenerateError', {
-          defaultValue: 'Erro ao regenerar protocolos. Tente novamente.',
-        }),
+          }),
       );
     } finally {
       setIsRegenerating(false);

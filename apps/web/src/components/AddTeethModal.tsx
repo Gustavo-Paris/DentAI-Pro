@@ -34,14 +34,14 @@ interface AddTeethModalProps {
 }
 
 const TREATMENT_LABEL_KEYS: Record<TreatmentType, string> = {
-  resina: 'components.wizard.review.treatmentResina',
-  porcelana: 'components.wizard.review.treatmentPorcelana',
-  coroa: 'components.wizard.review.treatmentCoroa',
-  implante: 'components.wizard.review.treatmentImplante',
-  endodontia: 'components.wizard.review.treatmentEndodontia',
-  encaminhamento: 'components.wizard.review.treatmentEncaminhamento',
-  gengivoplastia: 'components.wizard.review.treatmentGengivoplastia',
-  recobrimento_radicular: 'components.wizard.review.treatmentRecobrimentoRadicular',
+  resina: 'treatments.resina.label',
+  porcelana: 'treatments.porcelana.label',
+  coroa: 'treatments.coroa.label',
+  implante: 'treatments.implante.label',
+  endodontia: 'treatments.endodontia.label',
+  encaminhamento: 'treatments.encaminhamento.label',
+  gengivoplastia: 'treatments.gengivoplastia.label',
+  recobrimento_radicular: 'treatments.recobrimento_radicular.label',
 };
 
 
@@ -198,14 +198,14 @@ export function AddTeethModal({
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="resina">{t('components.addTeeth.treatmentResina')}</SelectItem>
-                              <SelectItem value="porcelana">{t('components.addTeeth.treatmentPorcelana')}</SelectItem>
-                              <SelectItem value="coroa">{t('components.addTeeth.treatmentCoroa')}</SelectItem>
-                              <SelectItem value="implante">{t('components.addTeeth.treatmentImplante')}</SelectItem>
-                              <SelectItem value="endodontia">{t('components.addTeeth.treatmentEndodontia')}</SelectItem>
-                              <SelectItem value="encaminhamento">{t('components.addTeeth.treatmentEncaminhamento')}</SelectItem>
-                              <SelectItem value="gengivoplastia">{t('components.addTeeth.treatmentGengivoplastia')}</SelectItem>
-                              <SelectItem value="recobrimento_radicular">{t('components.addTeeth.treatmentRecobrimentoRadicular')}</SelectItem>
+                              <SelectItem value="resina">{t('treatments.resina.label')}</SelectItem>
+                              <SelectItem value="porcelana">{t('treatments.porcelana.label')}</SelectItem>
+                              <SelectItem value="coroa">{t('treatments.coroa.label')}</SelectItem>
+                              <SelectItem value="implante">{t('treatments.implante.label')}</SelectItem>
+                              <SelectItem value="endodontia">{t('treatments.endodontia.label')}</SelectItem>
+                              <SelectItem value="encaminhamento">{t('treatments.encaminhamento.label')}</SelectItem>
+                              <SelectItem value="gengivoplastia">{t('treatments.gengivoplastia.label')}</SelectItem>
+                              <SelectItem value="recobrimento_radicular">{t('treatments.recobrimento_radicular.label')}</SelectItem>
                             </SelectContent>
                           </Select>
                         )}
@@ -262,9 +262,9 @@ export function AddTeethModal({
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="resina">{t('components.addTeeth.treatmentResina')}</SelectItem>
-                              <SelectItem value="porcelana">{t('components.addTeeth.treatmentPorcelana')}</SelectItem>
-                              <SelectItem value="coroa">{t('components.addTeeth.treatmentCoroa')}</SelectItem>
+                              <SelectItem value="resina">{t('treatments.resina.label')}</SelectItem>
+                              <SelectItem value="porcelana">{t('treatments.porcelana.label')}</SelectItem>
+                              <SelectItem value="coroa">{t('treatments.coroa.label')}</SelectItem>
                             </SelectContent>
                           </Select>
                         )}

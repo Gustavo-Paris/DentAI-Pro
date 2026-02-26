@@ -100,7 +100,7 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
 
       {/* Layer tabs */}
       {(layers.length > 0 || failedLayers.length > 0) && (
-        <div className="flex flex-wrap gap-2" role="tablist" aria-label={t('components.wizard.dsd.simulationViewer.layerTabs', { defaultValue: 'Camadas de simulação' })}>
+        <div className="flex flex-wrap gap-2" role="tablist" aria-label={t('components.wizard.dsd.simulationViewer.layerTabs')}>
           {layers.map((layer, idx) => (
             <button
               key={layer.type}

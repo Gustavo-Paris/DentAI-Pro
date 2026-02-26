@@ -6,25 +6,25 @@ export const TEETH = {
 };
 
 export const TREATMENT_LABEL_KEYS: Record<TreatmentType, string> = {
-  resina: 'components.wizard.review.treatmentResina',
-  porcelana: 'components.wizard.review.treatmentPorcelana',
-  coroa: 'components.wizard.review.treatmentCoroa',
-  implante: 'components.wizard.review.treatmentImplante',
-  endodontia: 'components.wizard.review.treatmentEndodontia',
-  encaminhamento: 'components.wizard.review.treatmentEncaminhamento',
-  gengivoplastia: 'components.wizard.review.treatmentGengivoplastia',
-  recobrimento_radicular: 'components.wizard.review.treatmentRecobrimentoRadicular',
+  resina: 'treatments.resina.label',
+  porcelana: 'treatments.porcelana.label',
+  coroa: 'treatments.coroa.label',
+  implante: 'treatments.implante.label',
+  endodontia: 'treatments.endodontia.label',
+  encaminhamento: 'treatments.encaminhamento.label',
+  gengivoplastia: 'treatments.gengivoplastia.label',
+  recobrimento_radicular: 'treatments.recobrimento_radicular.label',
 };
 
 export const TREATMENT_DESC_KEYS: Record<TreatmentType, string> = {
-  resina: 'components.wizard.review.descResina',
-  porcelana: 'components.wizard.review.descPorcelana',
-  coroa: 'components.wizard.review.descCoroa',
-  implante: 'components.wizard.review.descImplante',
-  endodontia: 'components.wizard.review.descEndodontia',
-  encaminhamento: 'components.wizard.review.descEncaminhamento',
-  gengivoplastia: 'components.wizard.review.descGengivoplastia',
-  recobrimento_radicular: 'components.wizard.review.descRecobrimentoRadicular',
+  resina: 'treatments.resina.desc',
+  porcelana: 'treatments.porcelana.desc',
+  coroa: 'treatments.coroa.desc',
+  implante: 'treatments.implante.desc',
+  endodontia: 'treatments.endodontia.desc',
+  encaminhamento: 'treatments.encaminhamento.desc',
+  gengivoplastia: 'treatments.gengivoplastia.desc',
+  recobrimento_radicular: 'treatments.recobrimento_radicular.desc',
 };
 
 export const TREATMENT_BORDER_COLORS: Record<TreatmentType, string> = {

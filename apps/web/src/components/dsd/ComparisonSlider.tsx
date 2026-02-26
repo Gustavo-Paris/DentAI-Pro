@@ -236,7 +236,7 @@ export function ComparisonSlider({
         aria-valuenow={Math.round(sliderPosition)}
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-label={t('components.wizard.dsd.comparisonSlider.ariaLabel', { defaultValue: 'Comparação antes e depois' })}
+        aria-label={t('components.wizard.dsd.comparisonSlider.ariaLabel')}
         tabIndex={0}
         onKeyDown={handleKeyDown}
       >
@@ -287,7 +287,7 @@ export function ComparisonSlider({
             className="w-9 h-9 bg-background/80 backdrop-blur-sm hover:bg-background"
             onClick={(e) => { e.stopPropagation(); handleZoomOut(); }}
             disabled={zoom <= MIN_ZOOM}
-            aria-label={t('components.comparisonSlider.zoomOut', { defaultValue: 'Diminuir zoom' })}
+            aria-label={t('components.comparisonSlider.zoomOut')}
           >
             <ZoomOut className="w-4 h-4" />
           </Button>
@@ -296,7 +296,7 @@ export function ComparisonSlider({
             size="icon"
             className="w-9 h-9 bg-background/80 backdrop-blur-sm hover:bg-background text-[10px] font-mono"
             onClick={(e) => { e.stopPropagation(); handleZoomReset(); }}
-            aria-label={t('components.comparisonSlider.zoomReset', { defaultValue: 'Resetar zoom' })}
+            aria-label={t('components.comparisonSlider.zoomReset')}
           >
             {zoom > 1 ? <Maximize className="w-4 h-4" /> : '1:1'}
           </Button>
@@ -306,7 +306,7 @@ export function ComparisonSlider({
             className="w-9 h-9 bg-background/80 backdrop-blur-sm hover:bg-background"
             onClick={(e) => { e.stopPropagation(); handleZoomIn(); }}
             disabled={zoom >= MAX_ZOOM}
-            aria-label={t('components.comparisonSlider.zoomIn', { defaultValue: 'Aumentar zoom' })}
+            aria-label={t('components.comparisonSlider.zoomIn')}
           >
             <ZoomIn className="w-4 h-4" />
           </Button>

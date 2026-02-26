@@ -138,13 +138,13 @@ const TREATMENT_COLORS: Record<string, string> = {
 
 function getTreatmentLabels(): Record<string, string> {
   return {
-    resina: i18n.t('dashboard.treatmentResina'),
-    porcelana: i18n.t('dashboard.treatmentPorcelana'),
-    coroa: i18n.t('dashboard.treatmentCoroa'),
-    implante: i18n.t('dashboard.treatmentImplante'),
-    endodontia: i18n.t('dashboard.treatmentEndodontia'),
-    encaminhamento: i18n.t('dashboard.treatmentEncaminhamento'),
-    gengivoplastia: i18n.t('dashboard.treatmentGengivoplastia', { defaultValue: 'Gengivoplastia' }),
+    resina: i18n.t('treatments.resina.shortLabel'),
+    porcelana: i18n.t('treatments.porcelana.shortLabel'),
+    coroa: i18n.t('treatments.coroa.shortLabel'),
+    implante: i18n.t('treatments.implante.shortLabel'),
+    endodontia: i18n.t('treatments.endodontia.shortLabel'),
+    encaminhamento: i18n.t('treatments.encaminhamento.shortLabel'),
+    gengivoplastia: i18n.t('treatments.gengivoplastia.shortLabel'),
   };
 }
 

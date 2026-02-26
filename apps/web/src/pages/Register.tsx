@@ -24,7 +24,7 @@ import {
 
 export default function Register() {
   const { t } = useTranslation();
-  useDocumentTitle(t('pageTitle.register', { defaultValue: 'Criar Conta' }));
+  useDocumentTitle(t('pageTitle.register'));
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);

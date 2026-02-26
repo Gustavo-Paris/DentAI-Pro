@@ -97,7 +97,7 @@ export function getLayerLabel(
   type: SimulationLayerType,
   t?: (key: string, opts?: Record<string, unknown>) => string,
 ): string {
-  if (t) return t(LAYER_LABEL_KEYS[type], { defaultValue: LAYER_LABEL_DEFAULTS[type] });
+  if (t) return t(LAYER_LABEL_KEYS[type]);
   return LAYER_LABEL_DEFAULTS[type];
 }
 

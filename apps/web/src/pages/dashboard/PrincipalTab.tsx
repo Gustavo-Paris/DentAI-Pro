@@ -237,7 +237,6 @@ function ActivityFeedSection({ sessions, loading }: { sessions: DashboardSession
       id: session.session_id,
       type: 'treatment' as const,
       title: session.patient_name || t('dashboard.session.unnamedCase', {
-        defaultValue: 'Caso {{date}} — {{count}} dentes',
         date: format(new Date(session.created_at), 'dd/MM', { locale: ptBR }),
         count: session.teeth.length,
       }),
@@ -248,8 +247,8 @@ function ActivityFeedSection({ sessions, loading }: { sessions: DashboardSession
       feedItems.push({
         id: `${session.session_id}-dsd`,
         type: 'patient' as const,
-        title: t('dsd.simulation', { defaultValue: 'Simulação DSD' }),
-        description: session.patient_name || t('dashboard.activityFeed.dsdCompleted', { defaultValue: 'Simulação concluída' }),
+        title: t('dsd.simulation'),
+        description: session.patient_name || t('dashboard.activityFeed.dsdCompleted'),
         timestamp: relativeTime,
       });
     }
@@ -260,8 +259,8 @@ function ActivityFeedSection({ sessions, loading }: { sessions: DashboardSession
     <PageClinicActivityFeed
       items={items}
       maxItems={8}
-      title={t('dashboard.activityFeed.title', { defaultValue: 'Atividade Recente' })}
-      emptyText={t('dashboard.activityFeed.empty', { defaultValue: 'Nenhuma atividade recente' })}
+      title={t('dashboard.activityFeed.title')}
+      emptyText={t('dashboard.activityFeed.empty')}
     />
   );
 }
@@ -313,6 +312,9 @@ export function PrincipalTab({
           );
         })}
       </div>
+
+      {/* Glow divider */}
+      <div className="glow-divider" aria-hidden="true" />
 
       {/* Pending actions */}
       <PendingActions

@@ -5,10 +5,10 @@ import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { ListPage, GenericErrorState } from '@parisgroup-ai/pageshell/composites';
 import { useEvaluationSessions } from '@/hooks/domain/useEvaluationSessions';
 import type { EvaluationSession } from '@/hooks/domain/useEvaluationSessions';
-import { Button, Card } from '@parisgroup-ai/pageshell/primitives';
+import { Card } from '@parisgroup-ai/pageshell/primitives';
 import { StatusBadge, defineStatusConfig } from '@parisgroup-ai/pageshell/primitives';
 import { Badge } from '@parisgroup-ai/pageshell/primitives';
-import { CheckCircle, ChevronRight, ChevronLeft, Calendar } from 'lucide-react';
+import { CheckCircle, ChevronRight, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatToothLabel } from '@/lib/treatment-config';
@@ -28,12 +28,12 @@ const PAGINATION_CONFIG = { defaultPageSize: 20 } as const;
 
 const TREATMENT_TYPE_OPTIONS = [
   { value: 'all', labelKey: 'evaluation.treatmentAll' },
-  { value: 'resina', labelKey: 'evaluation.treatmentResina' },
-  { value: 'porcelana', labelKey: 'evaluation.treatmentPorcelana' },
-  { value: 'endodontia', labelKey: 'evaluation.treatmentEndodontia' },
-  { value: 'implante', labelKey: 'evaluation.treatmentImplante' },
-  { value: 'coroa', labelKey: 'evaluation.treatmentCoroa' },
-  { value: 'encaminhamento', labelKey: 'evaluation.treatmentEncaminhamento' },
+  { value: 'resina', labelKey: 'treatments.resina.shortLabel' },
+  { value: 'porcelana', labelKey: 'treatments.porcelana.shortLabel' },
+  { value: 'endodontia', labelKey: 'treatments.endodontia.shortLabel' },
+  { value: 'implante', labelKey: 'treatments.implante.shortLabel' },
+  { value: 'coroa', labelKey: 'treatments.coroa.shortLabel' },
+  { value: 'encaminhamento', labelKey: 'treatments.encaminhamento.shortLabel' },
 ] as const;
 
 // =============================================================================
@@ -136,8 +136,8 @@ const VALID_TREATMENT_VALUES = new Set(TREATMENT_TYPE_OPTIONS.map(o => o.value))
 
 export default function Evaluations() {
   const { t } = useTranslation();
-  useDocumentTitle(t('pageTitle.evaluations', { defaultValue: 'Avaliações' }));
-  const { sessions, total, page, setPage, totalPages, isLoading, isError, newSessionId, newTeethCount } =
+  useDocumentTitle(t('pageTitle.evaluations'));
+  const { sessions, total, isLoading, isError, newSessionId, newTeethCount } =
     useEvaluationSessions();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -325,34 +325,6 @@ export default function Evaluations() {
           labels={labels}
         />
 
-      {/* Pagination controls */}
-      {totalPages > 1 && (
-        <div className="mt-4 flex items-center justify-center gap-4">
-          <Button
-            variant="outline"
-            size="sm"
-            className="min-h-11"
-            disabled={page === 0}
-            onClick={() => setPage(page - 1)}
-          >
-            <ChevronLeft className="w-4 h-4 mr-1" aria-hidden="true" />
-            {t('common.previous')}
-          </Button>
-          <span className="text-sm text-muted-foreground">
-            {t('common.pageOf', { page: page + 1, total: totalPages })}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            className="min-h-11"
-            disabled={page >= totalPages - 1}
-            onClick={() => setPage(page + 1)}
-          >
-            {t('common.next')}
-            <ChevronRight className="w-4 h-4 ml-1" aria-hidden="true" />
-          </Button>
-        </div>
-      )}
     </div>
   );
 }

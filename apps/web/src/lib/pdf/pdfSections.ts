@@ -8,7 +8,7 @@ import { addText, addLine, checkPageBreak, drawCheckbox, drawProgressBar, saniti
 
 // ============ PAGE 1: HEADER ============
 export function renderHeader(ctx: PDFRenderContext, data: PDFData) {
-  const { pdf, pageWidth, margin } = ctx;
+  const { pdf, pageWidth, margin, t } = ctx;
 
   // Gradient-like header background
   pdf.setFillColor(37, 99, 235); // Primary blue
@@ -32,10 +32,10 @@ export function renderHeader(ctx: PDFRenderContext, data: PDFData) {
   // Title and subtitle (adjusted for logo)
   if (data.clinicName) {
     addText(ctx, sanitizeText(data.clinicName), headerTextStartX, 12, { fontSize: 14, fontStyle: 'bold', color: [255, 255, 255] });
-    addText(ctx, 'ToSmile.ai - Protocolo de Restauracao Estetica', headerTextStartX, 20, { fontSize: 9, color: [42, 157, 143] });
+    addText(ctx, t('pdf.header.subtitleWithClinic'), headerTextStartX, 20, { fontSize: 9, color: [42, 157, 143] });
   } else {
-    addText(ctx, 'ToSmile.ai', headerTextStartX, 14, { fontSize: 20, fontStyle: 'bold', color: [255, 255, 255] });
-    addText(ctx, 'Protocolo de Restauracao Estetica', headerTextStartX, 22, { fontSize: 11, color: [191, 219, 254] });
+    addText(ctx, t('pdf.header.title'), headerTextStartX, 14, { fontSize: 20, fontStyle: 'bold', color: [255, 255, 255] });
+    addText(ctx, t('pdf.header.subtitle'), headerTextStartX, 22, { fontSize: 11, color: [191, 219, 254] });
   }
 
   // Date and professional info on right
@@ -61,20 +61,20 @@ export function renderHeader(ctx: PDFRenderContext, data: PDFData) {
 export function renderPatientId(ctx: PDFRenderContext, data: PDFData) {
   if (!data.patientName) return;
 
-  const { pdf, margin, contentWidth } = ctx;
+  const { pdf, margin, contentWidth, t } = ctx;
 
   pdf.setFillColor(248, 250, 252);
   pdf.roundedRect(margin, ctx.y, contentWidth, 12, 2, 2, 'F');
-  addText(ctx, 'Paciente:', margin + 4, ctx.y + 7, { fontSize: 9, color: [100, 100, 100] });
+  addText(ctx, t('pdf.patient.label'), margin + 4, ctx.y + 7, { fontSize: 9, color: [100, 100, 100] });
   addText(ctx, data.patientName, margin + 28, ctx.y + 7, { fontSize: 10, fontStyle: 'bold' });
   ctx.y += 18;
 }
 
 // ============ CASE SUMMARY GRID ============
 export function renderCaseSummary(ctx: PDFRenderContext, data: PDFData) {
-  const { pdf, margin, contentWidth } = ctx;
+  const { pdf, margin, contentWidth, t } = ctx;
 
-  addText(ctx, 'RESUMO DO CASO', margin, ctx.y, { fontSize: 11, fontStyle: 'bold', color: [37, 99, 235] });
+  addText(ctx, t('pdf.caseSummary.title'), margin, ctx.y, { fontSize: 11, fontStyle: 'bold', color: [37, 99, 235] });
   ctx.y += 6;
 
   pdf.setFillColor(248, 250, 252);
@@ -89,15 +89,15 @@ export function renderCaseSummary(ctx: PDFRenderContext, data: PDFData) {
   // Row 1
   pdf.setFontSize(8);
   pdf.setTextColor(100, 100, 100);
-  pdf.text('Idade', col1, ctx.y);
-  pdf.text('Dente', col2, ctx.y);
-  pdf.text('Regiao', col3, ctx.y);
+  pdf.text(t('pdf.caseSummary.age'), col1, ctx.y);
+  pdf.text(t('pdf.caseSummary.tooth'), col2, ctx.y);
+  pdf.text(t('pdf.caseSummary.region'), col3, ctx.y);
 
   ctx.y += 4;
   pdf.setFontSize(10);
   pdf.setTextColor(0, 0, 0);
   pdf.setFont('helvetica', 'bold');
-  pdf.text(`${data.patientAge} anos`, col1, ctx.y);
+  pdf.text(t('pdf.caseSummary.years', { age: data.patientAge }), col1, ctx.y);
   pdf.text(data.tooth, col2, ctx.y);
   pdf.text(data.region, col3, ctx.y);
 
@@ -107,9 +107,9 @@ export function renderCaseSummary(ctx: PDFRenderContext, data: PDFData) {
   pdf.setFontSize(8);
   pdf.setFont('helvetica', 'normal');
   pdf.setTextColor(100, 100, 100);
-  pdf.text('Classe', col1, ctx.y);
-  pdf.text('Tamanho', col2, ctx.y);
-  pdf.text('Cor', col3, ctx.y);
+  pdf.text(t('pdf.caseSummary.class'), col1, ctx.y);
+  pdf.text(t('pdf.caseSummary.size'), col2, ctx.y);
+  pdf.text(t('pdf.caseSummary.color'), col3, ctx.y);
 
   ctx.y += 4;
   pdf.setFontSize(10);
@@ -139,7 +139,7 @@ export function renderCaseSummary(ctx: PDFRenderContext, data: PDFData) {
     pdf.setFillColor(254, 226, 226);
     pdf.roundedRect(badgeX, ctx.y - 3, 18, 6, 1, 1, 'F');
     pdf.setTextColor(185, 28, 28);
-    pdf.text('Bruxismo', badgeX + 2, ctx.y);
+    pdf.text(t('pdf.caseSummary.bruxism'), badgeX + 2, ctx.y);
     badgeX += 22;
   }
 
@@ -148,7 +148,7 @@ export function renderCaseSummary(ctx: PDFRenderContext, data: PDFData) {
     pdf.setFillColor(220, 252, 231);
     pdf.roundedRect(badgeX, ctx.y - 3, 25, 6, 1, 1, 'F');
     pdf.setTextColor(22, 101, 52);
-    pdf.text('Estratificacao', badgeX + 2, ctx.y);
+    pdf.text(t('pdf.caseSummary.stratification'), badgeX + 2, ctx.y);
   }
 
   // From inventory badge
@@ -156,7 +156,7 @@ export function renderCaseSummary(ctx: PDFRenderContext, data: PDFData) {
     pdf.setFillColor(254, 249, 195);
     pdf.roundedRect(badgeX + 30, ctx.y - 3, 22, 6, 1, 1, 'F');
     pdf.setTextColor(133, 77, 14);
-    pdf.text('No Estoque', badgeX + 32, ctx.y);
+    pdf.text(t('pdf.caseSummary.inStock'), badgeX + 32, ctx.y);
   }
 
   ctx.y += 15;
@@ -166,11 +166,11 @@ export function renderCaseSummary(ctx: PDFRenderContext, data: PDFData) {
 export function renderResinRecommendation(ctx: PDFRenderContext, data: PDFData) {
   if (!data.resin) return;
 
-  const { pdf, margin, contentWidth, pageWidth } = ctx;
+  const { pdf, margin, contentWidth, pageWidth, t } = ctx;
 
   checkPageBreak(ctx, 45);
 
-  addText(ctx, 'RESINA RECOMENDADA', margin, ctx.y, { fontSize: 11, fontStyle: 'bold', color: [37, 99, 235] });
+  addText(ctx, t('pdf.resin.title'), margin, ctx.y, { fontSize: 11, fontStyle: 'bold', color: [37, 99, 235] });
   ctx.y += 6;
 
   // Main card with gradient effect
@@ -193,16 +193,16 @@ export function renderResinRecommendation(ctx: PDFRenderContext, data: PDFData) 
 
   // Technical specs inline
   const specs = [
-    `Tipo: ${data.resin.type}`,
-    `Opacidade: ${data.resin.opacity}`,
-    `Resistencia: ${data.resin.resistance}`,
+    t('pdf.resin.type', { value: data.resin.type }),
+    t('pdf.resin.opacity', { value: data.resin.opacity }),
+    t('pdf.resin.resistance', { value: data.resin.resistance }),
   ].join('  \u2022  ');
   addText(ctx, specs, margin + 8, ctx.y, { fontSize: 8, color: [187, 247, 208] });
 
   ctx.y += 5;
   const specs2 = [
-    `Polimento: ${data.resin.polishing}`,
-    `Estetica: ${data.resin.aesthetics}`,
+    t('pdf.resin.polishing', { value: data.resin.polishing }),
+    t('pdf.resin.aesthetics', { value: data.resin.aesthetics }),
   ].join('  \u2022  ');
   addText(ctx, specs2, margin + 8, ctx.y, { fontSize: 8, color: [187, 247, 208] });
 
@@ -216,7 +216,7 @@ export function renderResinRecommendation(ctx: PDFRenderContext, data: PDFData) 
     pdf.roundedRect(margin, ctx.y, contentWidth, justificationHeight, 2, 2, 'F');
 
     ctx.y += 5;
-    addText(ctx, 'Justificativa da IA:', margin + 5, ctx.y, { fontSize: 8, fontStyle: 'bold', color: [100, 100, 100] });
+    addText(ctx, t('pdf.resin.aiJustification'), margin + 5, ctx.y, { fontSize: 8, fontStyle: 'bold', color: [100, 100, 100] });
     ctx.y += 4;
     addText(ctx, data.recommendationText, margin + 5, ctx.y, { fontSize: 8, color: [60, 60, 60], maxWidth: contentWidth - 10 });
     ctx.y += justificationHeight - 5;
@@ -229,11 +229,11 @@ export function renderResinRecommendation(ctx: PDFRenderContext, data: PDFData) 
 export function renderDSDAnalysis(ctx: PDFRenderContext, data: PDFData) {
   if (!data.dsdAnalysis) return;
 
-  const { pdf, margin, contentWidth } = ctx;
+  const { pdf, margin, contentWidth, t } = ctx;
 
   checkPageBreak(ctx, 60);
 
-  addText(ctx, 'PLANEJAMENTO DIGITAL DO SORRISO (DSD)', margin, ctx.y, { fontSize: 11, fontStyle: 'bold', color: [37, 99, 235] });
+  addText(ctx, t('pdf.dsd.title'), margin, ctx.y, { fontSize: 11, fontStyle: 'bold', color: [37, 99, 235] });
   ctx.y += 7;
 
   // Scores section
@@ -247,7 +247,7 @@ export function renderDSDAnalysis(ctx: PDFRenderContext, data: PDFData) {
 
   // Golden Ratio
   if (data.dsdAnalysis.golden_ratio_compliance !== undefined) {
-    addText(ctx, 'Proporcao Dourada', scoreCol1, ctx.y, { fontSize: 8, color: [100, 100, 100] });
+    addText(ctx, t('pdf.dsd.goldenRatio'), scoreCol1, ctx.y, { fontSize: 8, color: [100, 100, 100] });
     const grScore = data.dsdAnalysis.golden_ratio_compliance;
     const grColor: [number, number, number] = grScore >= 80 ? [22, 163, 74] : grScore >= 60 ? [202, 138, 4] : [220, 38, 38];
     drawProgressBar(ctx, scoreCol1 + 40, ctx.y - 2, 40, grScore, grColor);
@@ -256,7 +256,7 @@ export function renderDSDAnalysis(ctx: PDFRenderContext, data: PDFData) {
 
   // Symmetry
   if (data.dsdAnalysis.symmetry_score !== undefined) {
-    addText(ctx, 'Simetria', scoreCol2, ctx.y, { fontSize: 8, color: [100, 100, 100] });
+    addText(ctx, t('pdf.dsd.symmetry'), scoreCol2, ctx.y, { fontSize: 8, color: [100, 100, 100] });
     const symScore = data.dsdAnalysis.symmetry_score;
     const symColor: [number, number, number] = symScore >= 80 ? [22, 163, 74] : symScore >= 60 ? [202, 138, 4] : [220, 38, 38];
     drawProgressBar(ctx, scoreCol2 + 25, ctx.y - 2, 40, symScore, symColor);
@@ -267,10 +267,10 @@ export function renderDSDAnalysis(ctx: PDFRenderContext, data: PDFData) {
 
   // DSD Parameters grid
   const dsdParams = [
-    { label: 'Linha Media Facial', value: data.dsdAnalysis.facial_midline },
-    { label: 'Linha Media Dental', value: data.dsdAnalysis.dental_midline },
-    { label: 'Linha do Sorriso', value: data.dsdAnalysis.smile_line },
-    { label: 'Corredor Bucal', value: data.dsdAnalysis.buccal_corridor },
+    { label: t('pdf.dsd.facialMidline'), value: data.dsdAnalysis.facial_midline },
+    { label: t('pdf.dsd.dentalMidline'), value: data.dsdAnalysis.dental_midline },
+    { label: t('pdf.dsd.smileLine'), value: data.dsdAnalysis.smile_line },
+    { label: t('pdf.dsd.buccalCorridor'), value: data.dsdAnalysis.buccal_corridor },
   ].filter(p => p.value);
 
   if (dsdParams.length > 0) {
@@ -294,11 +294,11 @@ export function renderDSDAnalysis(ctx: PDFRenderContext, data: PDFData) {
 export function renderProtocolTable(ctx: PDFRenderContext, data: PDFData) {
   if (data.layers.length === 0) return;
 
-  const { pdf, margin, contentWidth } = ctx;
+  const { pdf, margin, contentWidth, t } = ctx;
 
   checkPageBreak(ctx, 50);
 
-  addText(ctx, 'PROTOCOLO DE CAMADAS', margin, ctx.y, { fontSize: 11, fontStyle: 'bold', color: [37, 99, 235] });
+  addText(ctx, t('pdf.protocol.title'), margin, ctx.y, { fontSize: 11, fontStyle: 'bold', color: [37, 99, 235] });
   ctx.y += 6;
 
   // Table header
@@ -312,11 +312,11 @@ export function renderProtocolTable(ctx: PDFRenderContext, data: PDFData) {
   pdf.setTextColor(255, 255, 255);
   pdf.setFontSize(7);
   pdf.setFont('helvetica', 'bold');
-  pdf.text('Camada', cols[0], ctx.y);
-  pdf.text('Resina', cols[1], ctx.y);
-  pdf.text('Cor', cols[2], ctx.y);
-  pdf.text('Espessura', cols[3], ctx.y);
-  pdf.text('Tecnica', cols[4], ctx.y);
+  pdf.text(t('pdf.protocol.layer'), cols[0], ctx.y);
+  pdf.text(t('pdf.protocol.resin'), cols[1], ctx.y);
+  pdf.text(t('pdf.protocol.color'), cols[2], ctx.y);
+  pdf.text(t('pdf.protocol.thickness'), cols[3], ctx.y);
+  pdf.text(t('pdf.protocol.technique'), cols[4], ctx.y);
 
   ctx.y += 5;
 
@@ -366,11 +366,11 @@ export function renderProtocolTable(ctx: PDFRenderContext, data: PDFData) {
 export function renderAlternative(ctx: PDFRenderContext, data: PDFData) {
   if (!data.alternative) return;
 
-  const { pdf, margin, contentWidth } = ctx;
+  const { pdf, margin, contentWidth, t } = ctx;
 
   checkPageBreak(ctx, 28);
 
-  addText(ctx, 'ALTERNATIVA SIMPLIFICADA', margin, ctx.y, { fontSize: 11, fontStyle: 'bold', color: [37, 99, 235] });
+  addText(ctx, t('pdf.alternative.title'), margin, ctx.y, { fontSize: 11, fontStyle: 'bold', color: [37, 99, 235] });
   ctx.y += 6;
 
   pdf.setFillColor(254, 249, 195); // Amber light
@@ -383,9 +383,9 @@ export function renderAlternative(ctx: PDFRenderContext, data: PDFData) {
   ctx.y += 6;
   addText(ctx, `${data.alternative.resin} - ${data.alternative.shade}`, margin + 8, ctx.y, { fontSize: 10, fontStyle: 'bold', color: [146, 64, 14] });
   ctx.y += 5;
-  addText(ctx, `Tecnica: ${data.alternative.technique}`, margin + 8, ctx.y, { fontSize: 8, color: [133, 77, 14] });
+  addText(ctx, t('pdf.alternative.technique', { value: data.alternative.technique }), margin + 8, ctx.y, { fontSize: 8, color: [133, 77, 14] });
   ctx.y += 5;
-  addText(ctx, `Trade-off: ${data.alternative.tradeoff}`, margin + 8, ctx.y, { fontSize: 7, color: [120, 80, 40], maxWidth: contentWidth - 15 });
+  addText(ctx, t('pdf.alternative.tradeoff', { value: data.alternative.tradeoff }), margin + 8, ctx.y, { fontSize: 7, color: [120, 80, 40], maxWidth: contentWidth - 15 });
 
   ctx.y += 12;
 }
@@ -394,11 +394,11 @@ export function renderAlternative(ctx: PDFRenderContext, data: PDFData) {
 export function renderChecklist(ctx: PDFRenderContext, data: PDFData) {
   if (data.checklist.length === 0) return;
 
-  const { pdf, margin, contentWidth } = ctx;
+  const { pdf, margin, contentWidth, t } = ctx;
 
   checkPageBreak(ctx, 40);
 
-  addText(ctx, 'PASSO A PASSO', margin, ctx.y, { fontSize: 11, fontStyle: 'bold', color: [37, 99, 235] });
+  addText(ctx, t('pdf.checklist.title'), margin, ctx.y, { fontSize: 11, fontStyle: 'bold', color: [37, 99, 235] });
   ctx.y += 6;
 
   pdf.setFillColor(248, 250, 252);
@@ -422,17 +422,17 @@ export function renderChecklist(ctx: PDFRenderContext, data: PDFData) {
 export function renderCementationProtocol(ctx: PDFRenderContext, data: PDFData) {
   if (data.treatmentType !== 'porcelana' || !data.cementationProtocol) return;
 
-  const { pdf, margin, contentWidth } = ctx;
+  const { pdf, margin, contentWidth, t } = ctx;
   const cementProtocol = data.cementationProtocol;
 
   checkPageBreak(ctx, 30);
-  addText(ctx, 'PROTOCOLO DE CIMENTACAO DE FACETAS', margin, ctx.y, { fontSize: 11, fontStyle: 'bold', color: [202, 138, 4] });
+  addText(ctx, t('pdf.cementation.title'), margin, ctx.y, { fontSize: 11, fontStyle: 'bold', color: [202, 138, 4] });
   ctx.y += 7;
 
   // Ceramic Treatment
   if (cementProtocol.ceramic_treatment && cementProtocol.ceramic_treatment.length > 0) {
     checkPageBreak(ctx, 25);
-    addText(ctx, 'Tratamento da Ceramica', margin, ctx.y, { fontSize: 9, fontStyle: 'bold', color: [37, 99, 235] });
+    addText(ctx, t('pdf.cementation.ceramicTreatment'), margin, ctx.y, { fontSize: 9, fontStyle: 'bold', color: [37, 99, 235] });
     ctx.y += 5;
 
     pdf.setFillColor(254, 243, 199);
@@ -451,7 +451,7 @@ export function renderCementationProtocol(ctx: PDFRenderContext, data: PDFData) 
   // Tooth Treatment
   if (cementProtocol.tooth_treatment && cementProtocol.tooth_treatment.length > 0) {
     checkPageBreak(ctx, 25);
-    addText(ctx, 'Tratamento do Dente', margin, ctx.y, { fontSize: 9, fontStyle: 'bold', color: [37, 99, 235] });
+    addText(ctx, t('pdf.cementation.toothTreatment'), margin, ctx.y, { fontSize: 9, fontStyle: 'bold', color: [37, 99, 235] });
     ctx.y += 5;
 
     pdf.setFillColor(219, 234, 254);
@@ -469,7 +469,7 @@ export function renderCementationProtocol(ctx: PDFRenderContext, data: PDFData) 
 
   // Cementation details
   checkPageBreak(ctx, 30);
-  addText(ctx, 'Cimentacao', margin, ctx.y, { fontSize: 9, fontStyle: 'bold', color: [37, 99, 235] });
+  addText(ctx, t('pdf.cementation.cementation'), margin, ctx.y, { fontSize: 9, fontStyle: 'bold', color: [37, 99, 235] });
   ctx.y += 5;
 
   pdf.setFillColor(220, 252, 231);
@@ -481,8 +481,8 @@ export function renderCementationProtocol(ctx: PDFRenderContext, data: PDFData) 
 
   pdf.setFontSize(7);
   pdf.setTextColor(100, 100, 100);
-  pdf.text('Cimento', cementCol1, ctx.y);
-  pdf.text('Cor', cementCol2, ctx.y);
+  pdf.text(t('pdf.cementation.cement'), cementCol1, ctx.y);
+  pdf.text(t('pdf.cementation.color'), cementCol2, ctx.y);
   ctx.y += 4;
   pdf.setFontSize(9);
   pdf.setTextColor(0, 0, 0);
@@ -494,8 +494,8 @@ export function renderCementationProtocol(ctx: PDFRenderContext, data: PDFData) 
   pdf.setFontSize(7);
   pdf.setFont('helvetica', 'normal');
   pdf.setTextColor(100, 100, 100);
-  pdf.text('Fotopolimerizacao', cementCol1, ctx.y);
-  pdf.text('Tipo', cementCol2, ctx.y);
+  pdf.text(t('pdf.cementation.lightCuring'), cementCol1, ctx.y);
+  pdf.text(t('pdf.cementation.type'), cementCol2, ctx.y);
   ctx.y += 4;
   pdf.setFontSize(9);
   pdf.setTextColor(0, 0, 0);
@@ -508,7 +508,7 @@ export function renderCementationProtocol(ctx: PDFRenderContext, data: PDFData) 
   // Finishing
   if (cementProtocol.finishing && cementProtocol.finishing.length > 0) {
     checkPageBreak(ctx, 20);
-    addText(ctx, 'Acabamento e Polimento', margin, ctx.y, { fontSize: 9, fontStyle: 'bold', color: [37, 99, 235] });
+    addText(ctx, t('pdf.cementation.finishing'), margin, ctx.y, { fontSize: 9, fontStyle: 'bold', color: [37, 99, 235] });
     ctx.y += 5;
 
     cementProtocol.finishing.sort((a, b) => a.order - b.order).forEach((step) => {
@@ -521,7 +521,7 @@ export function renderCementationProtocol(ctx: PDFRenderContext, data: PDFData) 
   // Post-operative
   if (cementProtocol.post_operative && cementProtocol.post_operative.length > 0) {
     checkPageBreak(ctx, 20);
-    addText(ctx, 'Orientacoes Pos-operatorias', margin, ctx.y, { fontSize: 9, fontStyle: 'bold', color: [37, 99, 235] });
+    addText(ctx, t('pdf.cementation.postOperative'), margin, ctx.y, { fontSize: 9, fontStyle: 'bold', color: [37, 99, 235] });
     ctx.y += 5;
 
     cementProtocol.post_operative.forEach((item) => {
@@ -536,7 +536,7 @@ export function renderCementationProtocol(ctx: PDFRenderContext, data: PDFData) 
 export function renderAlertsWarnings(ctx: PDFRenderContext, data: PDFData) {
   if (data.alerts.length === 0 && data.warnings.length === 0) return;
 
-  const { pdf, margin, contentWidth } = ctx;
+  const { pdf, margin, contentWidth, t } = ctx;
 
   checkPageBreak(ctx, 35);
 
@@ -545,7 +545,7 @@ export function renderAlertsWarnings(ctx: PDFRenderContext, data: PDFData) {
 
   // Alerts (left side)
   if (data.alerts.length > 0) {
-    addText(ctx, 'ALERTAS', margin, ctx.y, { fontSize: 9, fontStyle: 'bold', color: [202, 138, 4] });
+    addText(ctx, t('pdf.alerts.title'), margin, ctx.y, { fontSize: 9, fontStyle: 'bold', color: [202, 138, 4] });
 
     let alertY = ctx.y + 5;
     pdf.setFillColor(254, 249, 195);
@@ -562,7 +562,7 @@ export function renderAlertsWarnings(ctx: PDFRenderContext, data: PDFData) {
 
   // Warnings (right side)
   if (data.warnings.length > 0) {
-    addText(ctx, 'O QUE NAO FAZER', margin + halfWidth + 6, startY, { fontSize: 9, fontStyle: 'bold', color: [220, 38, 38] });
+    addText(ctx, t('pdf.alerts.doNotTitle'), margin + halfWidth + 6, startY, { fontSize: 9, fontStyle: 'bold', color: [220, 38, 38] });
 
     let warningY = startY + 5;
     pdf.setFillColor(254, 226, 226);
@@ -584,11 +584,11 @@ export function renderAlertsWarnings(ctx: PDFRenderContext, data: PDFData) {
 export function renderIdealResin(ctx: PDFRenderContext, data: PDFData) {
   if (!data.idealResin || !data.resin || data.idealResin.name === data.resin.name) return;
 
-  const { pdf, margin, contentWidth, pageWidth } = ctx;
+  const { pdf, margin, contentWidth, pageWidth, t } = ctx;
 
   checkPageBreak(ctx, 25);
 
-  addText(ctx, 'OPCAO IDEAL (fora do estoque)', margin, ctx.y, { fontSize: 10, fontStyle: 'bold', color: [100, 100, 100] });
+  addText(ctx, t('pdf.idealResin.title'), margin, ctx.y, { fontSize: 10, fontStyle: 'bold', color: [100, 100, 100] });
   ctx.y += 5;
 
   pdf.setFillColor(241, 245, 249);
@@ -610,7 +610,7 @@ export function renderIdealResin(ctx: PDFRenderContext, data: PDFData) {
 export function renderConfidence(ctx: PDFRenderContext, data: PDFData) {
   if (!data.confidence) return;
 
-  const { pdf, margin } = ctx;
+  const { pdf, margin, t } = ctx;
 
   checkPageBreak(ctx, 15);
 
@@ -618,18 +618,18 @@ export function renderConfidence(ctx: PDFRenderContext, data: PDFData) {
 
   pdf.setFillColor(...conf.pdfBgColor);
   pdf.roundedRect(margin, ctx.y, 60, 10, 2, 2, 'F');
-  addText(ctx, `Confianca: ${conf.pdfLabel}`, margin + 5, ctx.y + 6, { fontSize: 9, fontStyle: 'bold', color: conf.pdfColor });
+  addText(ctx, t('pdf.confidence.label', { level: conf.pdfLabel }), margin + 5, ctx.y + 6, { fontSize: 9, fontStyle: 'bold', color: conf.pdfColor });
 
   ctx.y += 18;
 }
 
 // ============ SIGNATURE AREA ============
 export function renderSignature(ctx: PDFRenderContext, data: PDFData) {
-  const { pdf, margin, contentWidth } = ctx;
+  const { pdf, margin, contentWidth, t } = ctx;
 
   checkPageBreak(ctx, 40);
 
-  addText(ctx, 'VALIDACAO PROFISSIONAL', margin, ctx.y, { fontSize: 11, fontStyle: 'bold', color: [37, 99, 235] });
+  addText(ctx, t('pdf.signature.title'), margin, ctx.y, { fontSize: 11, fontStyle: 'bold', color: [37, 99, 235] });
   ctx.y += 8;
 
   pdf.setFillColor(248, 250, 252);
@@ -646,8 +646,8 @@ export function renderSignature(ctx: PDFRenderContext, data: PDFData) {
   pdf.line(sigCol2, ctx.y, sigCol2 + 60, ctx.y);
 
   ctx.y += 5;
-  addText(ctx, 'Assinatura do Profissional', sigCol1 + 10, ctx.y, { fontSize: 7, color: [120, 120, 120] });
-  addText(ctx, 'Data de Execucao', sigCol2 + 15, ctx.y, { fontSize: 7, color: [120, 120, 120] });
+  addText(ctx, t('pdf.signature.professionalSignature'), sigCol1 + 10, ctx.y, { fontSize: 7, color: [120, 120, 120] });
+  addText(ctx, t('pdf.signature.executionDate'), sigCol2 + 15, ctx.y, { fontSize: 7, color: [120, 120, 120] });
 
   if (data.dentistName) {
     ctx.y += 4;
@@ -659,7 +659,7 @@ export function renderSignature(ctx: PDFRenderContext, data: PDFData) {
 
 // ============ FOOTER ============
 export function renderFooter(ctx: PDFRenderContext, _data: PDFData) {
-  const { pdf, pageWidth, pageHeight, contentWidth } = ctx;
+  const { pdf, pageWidth, pageHeight, contentWidth, t } = ctx;
 
   const footerY = pageHeight - 18;
 
@@ -668,15 +668,15 @@ export function renderFooter(ctx: PDFRenderContext, _data: PDFData) {
   pdf.setFontSize(6);
   pdf.setTextColor(120, 120, 120);
   pdf.setFont('helvetica', 'italic');
-  const disclaimer = 'Este planejamento foi gerado por Inteligencia Artificial e serve como ferramenta de apoio a decisao clinica. Nao substitui uma avaliacao clinica criteriosa realizada por Cirurgiao-Dentista.';
+  const disclaimer = t('pdf.footer.disclaimer');
   const disclaimerLines = pdf.splitTextToSize(disclaimer, contentWidth);
   pdf.text(disclaimerLines, pageWidth / 2, footerY - 4, { align: 'center' });
 
   // Generated by
   pdf.setFontSize(7);
   pdf.setFont('helvetica', 'normal');
-  pdf.text('Gerado por ToSmile.ai', pageWidth / 2, footerY + 2, { align: 'center' });
+  pdf.text(t('pdf.footer.generatedBy'), pageWidth / 2, footerY + 2, { align: 'center' });
 
   // Page number
-  pdf.text(`Pagina ${ctx.currentPage}`, pageWidth / 2, footerY + 6, { align: 'center' });
+  pdf.text(t('pdf.footer.page', { page: ctx.currentPage }), pageWidth / 2, footerY + 6, { align: 'center' });
 }

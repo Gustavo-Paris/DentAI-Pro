@@ -16,7 +16,7 @@ import { formatToothLabel } from '@/lib/treatment-config';
 
 export default function GroupResult() {
   const { t } = useTranslation();
-  useDocumentTitle(t('pageTitle.groupResult', { defaultValue: 'Resultado do Grupo' }));
+  useDocumentTitle(t('pageTitle.groupResult'));
   const g = useGroupResult();
   const navigate = useNavigate();
   const [showMarkAllConfirm, setShowMarkAllConfirm] = useState(false);
@@ -27,10 +27,10 @@ export default function GroupResult() {
         <GenericErrorState
           title={t('result.notFound')}
           description={g.isError
-            ? t('errors.loadFailed', { defaultValue: 'Erro ao carregar dados. Tente novamente.' })
-            : t('result.notFoundDescription', { defaultValue: 'O resultado solicitado nao foi encontrado.' })
+            ? t('errors.loadFailed')
+            : t('result.notFoundDescription')
           }
-          action={{ label: t('common.back', { defaultValue: 'Voltar' }), onClick: () => window.history.back() }}
+          action={{ label: t('common.back'), onClick: () => window.history.back() }}
         />
       </div>
     );
@@ -179,9 +179,9 @@ export default function GroupResult() {
     <PageConfirmDialog
       open={showMarkAllConfirm}
       onOpenChange={setShowMarkAllConfirm}
-      title={t('evaluation.markAllCompletedTitle', { defaultValue: 'Marcar todas como concluídas?' })}
-      description={t('evaluation.markAllCompletedDescription', { defaultValue: 'Esta ação marcará todas as avaliações pendentes como concluídas.' })}
-      confirmText={t('common.confirm', { defaultValue: 'Confirmar' })}
+      title={t('evaluation.markAllCompletedTitle')}
+      description={t('evaluation.markAllCompletedDescription')}
+      confirmText={t('common.confirm')}
       cancelText={t('common.cancel')}
       onConfirm={() => {
         setShowMarkAllConfirm(false);

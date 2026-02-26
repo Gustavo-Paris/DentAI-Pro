@@ -34,7 +34,7 @@ import { SessionHeaderCard } from '@/components/evaluation/SessionHeaderCard';
 
 export default function EvaluationDetails() {
   const { t } = useTranslation();
-  useDocumentTitle(t('pageTitle.evaluationDetails', { defaultValue: 'Detalhes da Avaliação' }));
+  useDocumentTitle(t('pageTitle.evaluationDetails'));
   const detail = useEvaluationDetail();
   const navigate = useNavigate();
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -57,8 +57,8 @@ export default function EvaluationDetails() {
   const currentBudget = firstEval?.budget || 'padrão';
   const targetBudget = currentBudget === 'premium' ? 'padrão' : 'premium';
   const targetLabel = targetBudget === 'premium'
-    ? t('evaluation.regenerateAsPremium', { defaultValue: 'Regenerar como Premium' })
-    : t('evaluation.regenerateAsPadrao', { defaultValue: 'Regenerar como Padrão' });
+    ? t('evaluation.regenerateAsPremium')
+    : t('evaluation.regenerateAsPadrao');
 
   // Track evaluation_viewed when session loads
   useEffect(() => {
@@ -95,9 +95,9 @@ export default function EvaluationDetails() {
   if (!detail.isLoading && detail.evaluations.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 space-y-4">
-        <p className="text-muted-foreground">{t('evaluation.noEvaluationsFound', { defaultValue: 'Nenhuma avaliação encontrada' })}</p>
+        <p className="text-muted-foreground">{t('evaluation.noEvaluationsFound')}</p>
         <Button variant="outline" onClick={() => navigate('/evaluations')}>
-          {t('common.back', { defaultValue: 'Voltar' })}
+          {t('common.back')}
         </Button>
       </div>
     );
@@ -105,8 +105,11 @@ export default function EvaluationDetails() {
 
   return (
     <>
+      <div className="relative section-glow-bg overflow-hidden">
+        {/* Ambient AI grid overlay */}
+        <div className="ai-grid-pattern absolute inset-0 opacity-30 dark:opacity-50 [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,black_70%,transparent_100%)] pointer-events-none" aria-hidden="true" />
       <DetailPage
-        className="max-w-5xl mx-auto"
+        className="relative z-10 max-w-5xl mx-auto"
         title={detail.patientName}
         breadcrumbs={[
           { label: t('evaluation.title'), href: '/evaluations' },
@@ -119,15 +122,17 @@ export default function EvaluationDetails() {
             icon: Sparkles,
             onClick: () => navigate('/new-case'),
             variant: 'default',
+            className: 'btn-glow',
           },
           {
             label: detail.isRegenerating
-              ? t('evaluation.regenerating', { defaultValue: 'Regenerando...' })
+              ? t('evaluation.regenerating')
               : targetLabel,
             icon: detail.isRegenerating ? Loader2 : RefreshCw,
             onClick: () => setShowRegenerateDialog(true),
             disabled: detail.isRegenerating,
             variant: 'outline' as const,
+            className: 'btn-glow',
           },
         ]}
       >
@@ -206,7 +211,7 @@ export default function EvaluationDetails() {
                   size="icon"
                   className="w-7 h-7"
                   onClick={detail.clearSelection}
-                  aria-label={t('common.clearSelection', { defaultValue: 'Limpar selecao' })}
+                  aria-label={t('common.clearSelection')}
                 >
                   <X className="w-4 h-4" />
                 </Button>
@@ -246,11 +251,10 @@ export default function EvaluationDetails() {
               <TipBanner
                 className="mt-4"
                 icon={Lightbulb}
-                title={t('evaluation.tipAddMoreTitle', { defaultValue: 'Avalie mais dentes neste caso' })}
+                title={t('evaluation.tipAddMoreTitle')}
                 description={t('evaluation.tipAddMoreDescription', {
                   count: detail.pendingTeeth.length,
-                  defaultValue: `Ainda há ${detail.pendingTeeth.length} dentes pendentes que podem ser adicionados a esta sessão para uma avaliação mais completa.`,
-                })}
+                  })}
                 action={{
                   label: t('evaluation.addMoreTeeth', { count: detail.pendingTeeth.length }),
                   icon: Plus,
@@ -265,8 +269,8 @@ export default function EvaluationDetails() {
                 className="mt-4"
                 variant="muted"
                 icon={Sparkles}
-                title={t('evaluation.tipNewCaseTitle', { defaultValue: 'Precisa avaliar mais dentes?' })}
-                description={t('evaluation.tipNewCaseDescription', { defaultValue: 'Inicie uma nova avaliação para analisar outros dentes deste paciente com recomendações de IA.' })}
+                title={t('evaluation.tipNewCaseTitle')}
+                description={t('evaluation.tipNewCaseDescription')}
                 action={{
                   label: t('evaluation.newEvaluation'),
                   icon: Sparkles,
@@ -277,6 +281,7 @@ export default function EvaluationDetails() {
           </>
         )}
       </DetailPage>
+      </div>{/* /section-glow-bg */}
 
       {/* Add Teeth Modal */}
       {detail.evaluations.length > 0 && (
@@ -321,9 +326,9 @@ export default function EvaluationDetails() {
       <PageConfirmDialog
         open={showMarkAllConfirm}
         onOpenChange={setShowMarkAllConfirm}
-        title={t('evaluation.markAllCompletedTitle', { defaultValue: 'Marcar todas como concluídas?' })}
-        description={t('evaluation.markAllCompletedDescription', { defaultValue: 'Esta ação marcará todas as avaliações pendentes como concluídas.' })}
-        confirmText={t('common.confirm', { defaultValue: 'Confirmar' })}
+        title={t('evaluation.markAllCompletedTitle')}
+        description={t('evaluation.markAllCompletedDescription')}
+        confirmText={t('common.confirm')}
         cancelText={t('common.cancel')}
         onConfirm={async () => {
           setShowMarkAllConfirm(false);
@@ -353,11 +358,10 @@ export default function EvaluationDetails() {
       <PageConfirmDialog
         open={showRegenerateDialog}
         onOpenChange={setShowRegenerateDialog}
-        title={t('evaluation.regenerateTitle', { defaultValue: 'Regenerar protocolos?' })}
+        title={t('evaluation.regenerateTitle')}
         description={t('evaluation.regenerateDescription', {
-          defaultValue: `Os protocolos de resina e porcelana serão regenerados como "${targetBudget}". Isso substituirá os protocolos atuais.`,
-        })}
-        confirmText={t('evaluation.regenerateConfirm', { defaultValue: 'Regenerar' })}
+          })}
+        confirmText={t('evaluation.regenerateConfirm')}
         cancelText={t('common.cancel')}
         onConfirm={() => {
           setShowRegenerateDialog(false);

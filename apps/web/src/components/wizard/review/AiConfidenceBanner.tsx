@@ -42,7 +42,7 @@ export function AiConfidenceBanner({
             <Tooltip>
               <TooltipTrigger asChild>
                 <span className="inline-flex">
-                  <Badge variant="secondary" className={cn('gap-1.5 cursor-help', confidenceColor)}>
+                  <Badge variant="secondary" className={cn('gap-1.5 cursor-help glow-badge', confidenceColor)}>
                     <span className={cn(
                       'w-2 h-2 rounded-full',
                       confidence >= 80 ? 'bg-success' : confidence >= 60 ? 'bg-warning' : 'bg-destructive',
@@ -65,7 +65,7 @@ export function AiConfidenceBanner({
                 onReanalyze!();
               }}
               disabled={isReanalyzing}
-              className="h-7 px-2 btn-press"
+              className="h-7 px-2 btn-press btn-glow"
               aria-label={t('components.wizard.review.reanalyze')}
             >
               {isReanalyzing ? (

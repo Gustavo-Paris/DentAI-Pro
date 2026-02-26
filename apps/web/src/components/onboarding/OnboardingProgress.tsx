@@ -69,7 +69,7 @@ export function OnboardingProgress() {
                 )}>
                   {step.label}
                   {step.completed && (
-                    <span className="sr-only"> - {t('components.onboarding.progress.completed', { defaultValue: 'concluído' })}</span>
+                    <span className="sr-only"> - {t('components.onboarding.progress.completed')}</span>
                   )}
                 </p>
                 <p className="text-[11px] text-muted-foreground truncate">

@@ -11,7 +11,7 @@ import { IconCircle } from '@/components/shared/IconCircle';
 
 export default function ForgotPassword() {
   const { t } = useTranslation();
-  useDocumentTitle(t('pageTitle.forgotPassword', { defaultValue: 'Esqueci a Senha' }));
+  useDocumentTitle(t('pageTitle.forgotPassword'));
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);

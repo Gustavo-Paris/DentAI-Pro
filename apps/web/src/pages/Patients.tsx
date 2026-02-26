@@ -78,7 +78,7 @@ const PatientCardAdapter = memo(function PatientCardAdapter({ patient, index }: 
 
 export default function Patients() {
   const { t } = useTranslation();
-  useDocumentTitle(t('pageTitle.patients', { defaultValue: 'Pacientes' }));
+  useDocumentTitle(t('pageTitle.patients'));
   const navigate = useNavigate();
   const { patients: patientsList, total, isLoading, isError, createPatient, isCreating } = usePatientList();
 
@@ -112,14 +112,14 @@ export default function Patients() {
       const next = { ...prev };
       if (field === 'email') {
         if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-          next.email = t('validation.invalidEmail', { defaultValue: 'Email inválido' });
+          next.email = t('validation.invalidEmail');
         } else {
           delete next.email;
         }
       }
       if (field === 'phone') {
         if (value && !/^[\d\s\(\)\-\+]{8,}$/.test(value)) {
-          next.phone = t('validation.invalidPhone', { defaultValue: 'Telefone inválido' });
+          next.phone = t('validation.invalidPhone');
         } else {
           delete next.phone;
         }
@@ -137,13 +137,13 @@ export default function Patients() {
         email: createForm.email.trim() || undefined,
         notes: createForm.notes.trim() || undefined,
       });
-      toast.success(t('toasts.patient.created', { defaultValue: 'Paciente criado com sucesso' }));
+      toast.success(t('toasts.patient.created'));
       setShowCreateDialog(false);
       setCreateForm({ name: '', phone: '', email: '', notes: '' });
       setValidationErrors({});
       navigate(`/patient/${newPatient.id}`);
     } catch {
-      toast.error(t('toasts.patient.createError', { defaultValue: 'Erro ao criar paciente' }));
+      toast.error(t('toasts.patient.createError'));
     }
   }, [createForm, createPatient, t, navigate]);
 
@@ -192,7 +192,7 @@ export default function Patients() {
   );
 
   const createAction = useMemo(
-    () => ({ label: t('patients.createPatient', { defaultValue: 'Novo Paciente' }), onClick: () => setShowCreateDialog(true) }),
+    () => ({ label: t('patients.createPatient'), onClick: () => setShowCreateDialog(true) }),
     [t],
   );
 
@@ -253,7 +253,7 @@ export default function Patients() {
       <Dialog open={showCreateDialog} onOpenChange={(open) => { if (!open) handleCloseDialog(); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t('patients.createPatient', { defaultValue: 'Novo Paciente' })}</DialogTitle>
+            <DialogTitle>{t('patients.createPatient')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 mt-4">
             <div>
@@ -322,9 +322,9 @@ export default function Patients() {
       <PageConfirmDialog
         open={showDiscardConfirm}
         onOpenChange={setShowDiscardConfirm}
-        title={t('patients.unsavedChanges', { defaultValue: 'Alterações não salvas' })}
-        description={t('patients.unsavedChangesDescription', { defaultValue: 'Você tem alterações não salvas. Deseja descartar?' })}
-        confirmText={t('common.discard', { defaultValue: 'Descartar' })}
+        title={t('patients.unsavedChanges')}
+        description={t('patients.unsavedChangesDescription')}
+        confirmText={t('common.discard')}
         cancelText={t('common.cancel')}
         onConfirm={confirmDiscard}
         variant="warning"

@@ -152,14 +152,14 @@ export const ToothSelectionCard = memo(function ToothSelectionCard({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="resina">{t('components.wizard.review.treatmentResina')}</SelectItem>
-                  <SelectItem value="porcelana">{t('components.wizard.review.treatmentPorcelana')}</SelectItem>
-                  <SelectItem value="coroa">{t('components.wizard.review.treatmentCoroa')}</SelectItem>
-                  <SelectItem value="implante">{t('components.wizard.review.treatmentImplante')}</SelectItem>
-                  <SelectItem value="endodontia">{t('components.wizard.review.treatmentEndodontia')}</SelectItem>
-                  <SelectItem value="encaminhamento">{t('components.wizard.review.treatmentEncaminhamento')}</SelectItem>
-                  <SelectItem value="gengivoplastia">{t('components.wizard.review.treatmentGengivoplastia')}</SelectItem>
-                  <SelectItem value="recobrimento_radicular">{t('components.wizard.review.treatmentRecobrimentoRadicular')}</SelectItem>
+                  <SelectItem value="resina">{t('treatments.resina.label')}</SelectItem>
+                  <SelectItem value="porcelana">{t('treatments.porcelana.label')}</SelectItem>
+                  <SelectItem value="coroa">{t('treatments.coroa.label')}</SelectItem>
+                  <SelectItem value="implante">{t('treatments.implante.label')}</SelectItem>
+                  <SelectItem value="endodontia">{t('treatments.endodontia.label')}</SelectItem>
+                  <SelectItem value="encaminhamento">{t('treatments.encaminhamento.label')}</SelectItem>
+                  <SelectItem value="gengivoplastia">{t('treatments.gengivoplastia.label')}</SelectItem>
+                  <SelectItem value="recobrimento_radicular">{t('treatments.recobrimento_radicular.label')}</SelectItem>
                 </SelectContent>
               </Select>
               {onRestoreAiSuggestion && originalToothTreatments[tooth.tooth] &&
@@ -315,12 +315,12 @@ export const ToothSelectionCard = memo(function ToothSelectionCard({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="resina">{t('components.wizard.review.treatmentResina')}</SelectItem>
-                            <SelectItem value="porcelana">{t('components.wizard.review.treatmentPorcelana')}</SelectItem>
-                            <SelectItem value="coroa">{t('components.wizard.review.treatmentCoroa')}</SelectItem>
-                            <SelectItem value="implante">{t('components.wizard.review.treatmentImplante')}</SelectItem>
-                            <SelectItem value="endodontia">{t('components.wizard.review.treatmentEndodontia')}</SelectItem>
-                            <SelectItem value="encaminhamento">{t('components.wizard.review.treatmentEncaminhamento')}</SelectItem>
+                            <SelectItem value="resina">{t('treatments.resina.label')}</SelectItem>
+                            <SelectItem value="porcelana">{t('treatments.porcelana.label')}</SelectItem>
+                            <SelectItem value="coroa">{t('treatments.coroa.label')}</SelectItem>
+                            <SelectItem value="implante">{t('treatments.implante.label')}</SelectItem>
+                            <SelectItem value="endodontia">{t('treatments.endodontia.label')}</SelectItem>
+                            <SelectItem value="encaminhamento">{t('treatments.encaminhamento.label')}</SelectItem>
                           </SelectContent>
                         </Select>
                       )}

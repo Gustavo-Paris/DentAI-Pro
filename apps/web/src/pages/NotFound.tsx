@@ -11,7 +11,7 @@ import { BRAND_NAME } from '@/lib/branding';
 // intentionally simple layout with route logging side-effects.
 export default function NotFound() {
   const { t } = useTranslation();
-  useDocumentTitle(t('pageTitle.notFound', { defaultValue: 'Página não encontrada' }));
+  useDocumentTitle(t('pageTitle.notFound'));
   const location = useLocation();
 
   useEffect(() => {

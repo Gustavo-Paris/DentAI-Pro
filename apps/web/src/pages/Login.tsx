@@ -22,7 +22,7 @@ import {
 
 export default function Login() {
   const { t } = useTranslation();
-  useDocumentTitle(t('pageTitle.login', { defaultValue: 'Entrar' }));
+  useDocumentTitle(t('pageTitle.login'));
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const { signIn, signInWithGoogle } = useAuth();
