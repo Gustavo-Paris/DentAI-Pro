@@ -210,14 +210,14 @@ describe('PhotoUploadStep', () => {
   });
 
   it('should handle drag enter/leave on drop zone', () => {
-    const { container } = render(<PhotoUploadStep {...defaultProps} />);
-    const dropZone = container.querySelector('.rounded-xl.p-\\[2px\\]');
+    render(<PhotoUploadStep {...defaultProps} />);
+    const dropZone = screen.getByRole('region', { name: 'components.wizard.photoUpload.dropZoneLabel' });
     expect(dropZone).toBeInTheDocument();
 
     // Drag enter
-    fireEvent.dragEnter(dropZone!, { dataTransfer: { files: [] } });
+    fireEvent.dragEnter(dropZone, { dataTransfer: { files: [] } });
     // Drag leave
-    fireEvent.dragLeave(dropZone!, { dataTransfer: { files: [] } });
+    fireEvent.dragLeave(dropZone, { dataTransfer: { files: [] } });
   });
 
   it('should show cost labels for analysis buttons', () => {

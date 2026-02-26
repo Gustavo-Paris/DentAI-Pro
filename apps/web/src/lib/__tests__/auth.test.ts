@@ -1,11 +1,17 @@
 import { describe, it, expect } from 'vitest';
 import {
-  loginSchema,
-  registerSchema,
-  forgotPasswordSchema,
-  resetPasswordSchema,
+  getLoginSchema,
+  getRegisterSchema,
+  getForgotPasswordSchema,
+  getResetPasswordSchema,
   getPasswordRequirements,
 } from '../schemas/auth';
+
+// Create schema instances — getter functions so i18n.t() evaluates at validation time
+const loginSchema = getLoginSchema();
+const registerSchema = getRegisterSchema();
+const forgotPasswordSchema = getForgotPasswordSchema();
+const resetPasswordSchema = getResetPasswordSchema();
 
 describe('loginSchema', () => {
   it('should accept valid login credentials', () => {

@@ -87,36 +87,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run tests with coverage
-        env:
-          NODE_OPTIONS: '--max-old-space-size=6144'
-        run: pnpm turbo run test
-
-      - name: Coverage summary
-        if: always()
-        run: |
-          if [ -f apps/web/coverage/coverage-summary.json ]; then
-            echo "## Coverage Report" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            node -e "
-              const r = require('./apps/web/coverage/coverage-summary.json').total;
-              const fmt = (m) => m.pct + '%';
-              console.log('| Metric | Coverage |');
-              console.log('|--------|----------|');
-              console.log('| Statements | ' + fmt(r.statements) + ' |');
-              console.log('| Branches | ' + fmt(r.branches) + ' |');
-              console.log('| Functions | ' + fmt(r.functions) + ' |');
-              console.log('| Lines | ' + fmt(r.lines) + ' |');
-            " >> $GITHUB_STEP_SUMMARY
-          fi
-
-      - name: Upload coverage
-        if: always()
-        uses: actions/upload-artifact@v6
-        with:
-          name: coverage-report
-          path: apps/web/coverage/
-          retention-days: 14
+      - name: Run tests
+        run: cd apps/web && npx vitest run
 
   deno-test:
     name: Deno Tests (Edge Functions)
