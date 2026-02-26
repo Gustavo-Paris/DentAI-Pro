@@ -659,7 +659,9 @@ export async function callGeminiVisionWithTools(
     };
   }
 
-  const response = await makeGeminiRequest(model, request, 3, options.timeoutMs ?? DEFAULT_TIMEOUT_MS);
+  // Vision calls send large payloads — limit retries to 1 to avoid OOM on edge functions.
+  // The client-side withRetry handles broader retry logic.
+  const response = await makeGeminiRequest(model, request, 1, options.timeoutMs ?? DEFAULT_TIMEOUT_MS);
   const text = extractTextResponse(response);
   const functionCall = extractFunctionCall(response);
   const finishReason = response.candidates?.[0]?.finishReason || "UNKNOWN";

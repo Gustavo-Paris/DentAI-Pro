@@ -17,12 +17,12 @@ interface AnalyzingStepProps {
 }
 
 const analysisStepKeys = [
-  { id: 1, key: 'step1', duration: 1500 },
-  { id: 2, key: 'step2', duration: 2000 },
-  { id: 3, key: 'step3', duration: 2500 },
-  { id: 4, key: 'step4', duration: 2000 },
-  { id: 5, key: 'step5', duration: 1500 },
-  { id: 6, key: 'step6', duration: 1000 },
+  { id: 1, key: 'step1', delay: 0 },
+  { id: 2, key: 'step2', delay: 5000 },
+  { id: 3, key: 'step3', delay: 12000 },
+  { id: 4, key: 'step4', delay: 22000 },
+  { id: 5, key: 'step5', delay: 35000 },
+  { id: 6, key: 'step6', delay: 50000 },
 ];
 
 export function AnalyzingStep({
@@ -64,29 +64,23 @@ export function AnalyzingStep({
     setCurrentStep(0);
     setProgress(0);
 
-    let totalElapsed = 0;
-    const totalDuration = analysisStepKeys.reduce((sum, s) => sum + s.duration, 0);
+    const startTime = Date.now();
 
-    const intervals: ReturnType<typeof setTimeout>[] = [];
+    // Step transitions at realistic intervals matching actual analysis timing
+    const stepTimeouts = analysisStepKeys.map((step, index) =>
+      setTimeout(() => setCurrentStep(index + 1), step.delay),
+    );
 
-    analysisStepKeys.forEach((step, index) => {
-      const timeout = setTimeout(() => {
-        setCurrentStep(index + 1);
-      }, totalElapsed);
-      intervals.push(timeout);
-      totalElapsed += step.duration;
-    });
-
-    // Progress animation
+    // Asymptotic progress: approaches 95% naturally over ~90 seconds.
+    // Formula: 95 * (1 - e^(-t/25)) — fast start, gradual slowdown.
     const progressInterval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 95) return 95; // Cap at 95% until actual completion
-        return prev + 1;
-      });
-    }, totalDuration / 95);
+      const elapsed = (Date.now() - startTime) / 1000;
+      const newProgress = Math.min(95, Math.floor(95 * (1 - Math.exp(-elapsed / 25))));
+      setProgress(newProgress);
+    }, 500);
 
     return () => {
-      intervals.forEach(clearTimeout);
+      stepTimeouts.forEach(clearTimeout);
       clearInterval(progressInterval);
     };
   }, [isAnalyzing]);

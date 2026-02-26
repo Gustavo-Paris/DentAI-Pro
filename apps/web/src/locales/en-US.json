@@ -12,7 +12,7 @@
     "patientProfile": "Patient Profile",
     "pricing": "Pricing",
     "patients": "Patients",
-    "newCase": "New Case",
+    "newCase": "New Evaluation",
     "result": "Result",
     "privacy": "Privacy Policy",
     "terms": "Terms of Use",
@@ -171,7 +171,7 @@
     "inventory": "Inventory",
     "profile": "Profile",
     "settings": "Settings",
-    "newCase": "New Case"
+    "newCase": "New Evaluation"
   },
   "dashboard": {
     "totalCases": "Total Cases",
@@ -308,7 +308,7 @@
     "stepDSD": "DSD",
     "stepReview": "Review",
     "stepResult": "Result",
-    "newCase": "New Case",
+    "newCase": "New Evaluation",
     "sampleCase": "Sample Case",
     "generatingCase": "Generating Clinical Case",
     "preparingCase": "Preparing case...",
@@ -816,7 +816,7 @@
     "home": "Home",
     "evaluation": "Evaluation",
     "downloadPDF": "Download PDF",
-    "newCase": "New Case",
+    "newCase": "New Evaluation",
     "reportTitle": "Recommendation Report",
     "direct": "Direct",
     "indirect": "Indirect",
@@ -939,6 +939,7 @@
       "reanalysisError": "Reanalysis error. Please try again.",
       "noDataError": "AI could not identify dental structures. Tips: use good lighting, focus on the intraoral area and avoid mirror reflections.",
       "connectionError": "Server connection error. Check your internet and try again.",
+      "resourceError": "Server temporarily overloaded. Your credit was not consumed — please try again in a few seconds.",
       "serverError": "Temporary server error. Your credit was not consumed — try again shortly.",
       "genericError": "Could not analyze the photo. Check if the image is clear and try again.",
       "insufficientCreditsError": "Insufficient credits. Upgrade your plan to continue."
@@ -1079,8 +1080,8 @@
         "skipToManual": "Skip to Manual Review",
         "analyzingTitle": "Analyzing Photo",
         "photoAnalyzing": "Photo being analyzed",
-        "estimatedTime": "~8-15 seconds",
-        "poweredBy": "Powered by Gemini 3 Flash Preview",
+        "estimatedTime": "~30-60 seconds",
+        "poweredBy": "Powered by Gemini 3 Pro",
         "cancel": "Cancel",
         "defaultStep": "Detecting dental structures..."
       },
@@ -1638,7 +1639,7 @@
     "keyboard": {
       "title": "Keyboard shortcuts",
       "globalSearch": "Global search",
-      "newCase": "New case",
+      "newCase": "New evaluation",
       "keyboardShortcuts": "Keyboard shortcuts"
     },
     "dsd": {

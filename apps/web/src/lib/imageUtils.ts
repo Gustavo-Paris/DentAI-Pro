@@ -44,6 +44,45 @@ const IMAGE_LOAD_TIMEOUT_MS = 15_000;
  * Compress an image file to JPEG with configurable dimensions and quality.
  * Maintains aspect ratio and includes a safety timeout for mobile devices.
  */
+/**
+ * Re-compress a base64 data URL for AI analysis.
+ * Targets 1280px max dimension and 0.80 JPEG quality to keep edge function
+ * memory under Supabase limits. The DSD step uses the original higher-quality image.
+ */
+export function compressBase64ForAnalysis(dataUrl: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const timeout = setTimeout(() => {
+      reject(new Error('Timeout compressing for analysis'));
+    }, 10_000);
+
+    img.onload = () => {
+      clearTimeout(timeout);
+      try {
+        const canvas = document.createElement('canvas');
+        let { naturalWidth: w, naturalHeight: h } = img;
+        const MAX = 1280;
+        if (w > MAX || h > MAX) {
+          if (w >= h) { h = Math.round((h * MAX) / w); w = MAX; }
+          else        { w = Math.round((w * MAX) / h); h = MAX; }
+        }
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { reject(new Error('No canvas context')); return; }
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.80));
+      } catch (e) { reject(e); }
+    };
+
+    img.onerror = () => {
+      clearTimeout(timeout);
+      reject(new Error('Failed to load image for analysis compression'));
+    };
+    img.src = dataUrl;
+  });
+}
+
 export async function compressImage(
   file: File | Blob,
   maxWidth: number = 1280,

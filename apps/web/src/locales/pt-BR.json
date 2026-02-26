@@ -12,7 +12,7 @@
     "patientProfile": "Perfil do Paciente",
     "pricing": "Planos",
     "patients": "Pacientes",
-    "newCase": "Novo Caso",
+    "newCase": "Nova Avaliação",
     "result": "Resultado",
     "privacy": "Privacidade",
     "terms": "Termos de Uso",
@@ -171,7 +171,7 @@
     "inventory": "Inventário",
     "profile": "Perfil",
     "settings": "Configurações",
-    "newCase": "Novo Caso"
+    "newCase": "Nova Avaliação"
   },
   "dashboard": {
     "totalCases": "Total de Casos",
@@ -308,7 +308,7 @@
     "stepDSD": "DSD",
     "stepReview": "Revisão",
     "stepResult": "Resultado",
-    "newCase": "Novo Caso",
+    "newCase": "Nova Avaliação",
     "sampleCase": "Caso Exemplo",
     "generatingCase": "Gerando Caso Clínico",
     "preparingCase": "Preparando caso...",
@@ -816,7 +816,7 @@
     "home": "Início",
     "evaluation": "Avaliação",
     "downloadPDF": "Baixar PDF",
-    "newCase": "Novo Caso",
+    "newCase": "Nova Avaliação",
     "reportTitle": "Relatório de Recomendação",
     "direct": "Direta",
     "indirect": "Indireta",
@@ -939,6 +939,7 @@
       "reanalysisError": "Erro na reanálise. Tente novamente.",
       "noDataError": "A IA não conseguiu identificar estruturas dentárias. Dicas: use boa iluminação, foque na região intraoral e evite reflexos no espelho.",
       "connectionError": "Erro de conexão com o servidor. Verifique sua internet e tente novamente.",
+      "resourceError": "Servidor temporariamente sobrecarregado. Seu crédito não foi consumido — tente novamente em alguns segundos.",
       "serverError": "Erro temporário no servidor. Seu crédito não foi consumido — tente novamente em instantes.",
       "genericError": "Não foi possível analisar a foto. Verifique se a imagem está nítida e tente novamente.",
       "insufficientCreditsError": "Créditos insuficientes. Faça upgrade do seu plano para continuar."
@@ -1079,8 +1080,8 @@
         "skipToManual": "Pular para Revisão Manual",
         "analyzingTitle": "Analisando Foto",
         "photoAnalyzing": "Foto sendo analisada",
-        "estimatedTime": "~8-15 segundos",
-        "poweredBy": "Desenvolvido com Gemini 3 Flash Preview",
+        "estimatedTime": "~30-60 segundos",
+        "poweredBy": "Desenvolvido com Gemini 3 Pro",
         "cancel": "Cancelar",
         "defaultStep": "Detectando estruturas dentárias..."
       },
@@ -1638,7 +1639,7 @@
     "keyboard": {
       "title": "Atalhos de teclado",
       "globalSearch": "Busca global",
-      "newCase": "Novo caso",
+      "newCase": "Nova avaliação",
       "keyboardShortcuts": "Atalhos de teclado"
     },
     "dsd": {

@@ -9,6 +9,7 @@ import { logger } from '@/lib/logger';
 import { trackEvent } from '@/lib/analytics';
 import { withRetry } from '@/lib/retry';
 import { wizard as wizardData } from '@/data';
+import { compressBase64ForAnalysis } from '@/lib/imageUtils';
 import { isAnterior } from './helpers';
 
 // ---------------------------------------------------------------------------
@@ -182,6 +183,17 @@ export function usePhotoAnalysis({
       const photoPath = await uploadImageToStorage(imageBase64);
       if (photoPath) setUploadedPhotoPath(photoPath);
 
+      // Re-compress for analysis: 1280px/0.80 to keep edge function under memory limits.
+      // The original 2048px/0.92 image is preserved for DSD simulation.
+      let analysisImage: string;
+      try {
+        analysisImage = await compressBase64ForAnalysis(imageBase64);
+        logger.debug(`Analysis image compressed: ${Math.round(imageBase64.length / 1024)}KB → ${Math.round(analysisImage.length / 1024)}KB`);
+      } catch {
+        // Fallback to original if compression fails
+        analysisImage = imageBase64;
+      }
+
       const { data } = await withRetry(
         async () => {
           // Check if aborted before starting the request
@@ -193,7 +205,7 @@ export function usePhotoAnalysis({
           const result = await Promise.race([
             invokeFunction<{ analysis: PhotoAnalysisResult }>(
               'analyze-dental-photo',
-              { body: { imageBase64, imageType: 'intraoral' } },
+              { body: { imageBase64: analysisImage, imageType: 'intraoral' } },
             ),
             new Promise<never>((_, reject) => {
               if (controller.signal.aborted) {
@@ -289,6 +301,8 @@ export function usePhotoAnalysis({
         errorMessage = t('toasts.analysis.noDataError');
       } else if (isNetwork) {
         errorMessage = t('toasts.analysis.connectionError');
+      } else if (err.message?.includes('546') || err.message?.includes('compute resources')) {
+        errorMessage = t('toasts.analysis.resourceError');
       } else if (err.message?.includes('500') || err.message?.includes('edge function')) {
         errorMessage = t('toasts.analysis.serverError');
       } else {
@@ -342,11 +356,19 @@ export function usePhotoAnalysis({
 
     setIsReanalyzing(true);
     try {
+      // Re-compress for analysis (same as analyzePhoto)
+      let analysisImage: string;
+      try {
+        analysisImage = await compressBase64ForAnalysis(imageBase64);
+      } catch {
+        analysisImage = imageBase64;
+      }
+
       const { data } = await withRetry(
         async () => {
           const result = await invokeFunction<{ analysis: PhotoAnalysisResult }>(
             'analyze-dental-photo',
-            { body: { imageBase64, imageType: 'intraoral' } },
+            { body: { imageBase64: analysisImage, imageType: 'intraoral' } },
           );
           if (result.error) throw result.error;
           return result;
