@@ -49,11 +49,15 @@ vi.mock('date-fns/locale', () => ({
 }));
 
 // Mock lucide-react
-vi.mock('lucide-react', () => ({
-  User: ({ className }: { className?: string }) => <span data-testid="user-icon" className={className} />,
-  Calendar: ({ className }: { className?: string }) => <span data-testid="calendar-icon" className={className} />,
-  Loader2: ({ className }: { className?: string }) => <span data-testid="loader-icon" className={className} />,
-}));
+vi.mock('lucide-react', async (importOriginal) => {
+  const actual = await importOriginal<Record<string, any>>();
+  return {
+    ...actual,
+    User: ({ className }: { className?: string }) => <span data-testid="user-icon" className={className} />,
+    Calendar: ({ className }: { className?: string }) => <span data-testid="calendar-icon" className={className} />,
+    Loader2: ({ className }: { className?: string }) => <span data-testid="loader-icon" className={className} />,
+  };
+});
 
 // Mock command UI components
 vi.mock('@/components/ui/command', () => ({

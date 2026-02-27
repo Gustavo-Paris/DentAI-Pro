@@ -43,12 +43,16 @@ vi.mock('@/lib/imageUtils', () => ({
 }));
 
 // Mock lucide-react
-vi.mock('lucide-react', () => ({
-  Camera: ({ className }: any) => <span data-testid="camera-icon" className={className} />,
-  X: ({ className }: any) => <span data-testid="x-icon" className={className} />,
-  Loader2: ({ className }: any) => <span data-testid="loader-icon" className={className} />,
-  Upload: ({ className }: any) => <span data-testid="upload-icon" className={className} />,
-}));
+vi.mock('lucide-react', async (importOriginal) => {
+  const actual = await importOriginal<Record<string, any>>();
+  return {
+    ...actual,
+    Camera: ({ className }: any) => <span data-testid="camera-icon" className={className} />,
+    X: ({ className }: any) => <span data-testid="x-icon" className={className} />,
+    Loader2: ({ className }: any) => <span data-testid="loader-icon" className={className} />,
+    Upload: ({ className }: any) => <span data-testid="upload-icon" className={className} />,
+  };
+});
 
 // Mock UI components
 vi.mock('@/components/ui/button', () => ({

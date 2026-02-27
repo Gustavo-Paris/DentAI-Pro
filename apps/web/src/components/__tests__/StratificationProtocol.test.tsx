@@ -15,11 +15,15 @@ vi.mock('react-i18next', async (importOriginal) => {
 });
 
 // Mock lucide-react
-vi.mock('lucide-react', () => ({
-  Palette: ({ className }: { className?: string }) => <span data-testid="palette-icon" className={className} />,
-  Layers: ({ className }: { className?: string }) => <span data-testid="layers-icon" className={className} />,
-  Sparkles: ({ className }: { className?: string }) => <span data-testid="sparkles-icon" className={className} />,
-}));
+vi.mock('lucide-react', async (importOriginal) => {
+  const actual = await importOriginal<Record<string, any>>();
+  return {
+    ...actual,
+    Palette: ({ className }: { className?: string }) => <span data-testid="palette-icon" className={className} />,
+    Layers: ({ className }: { className?: string }) => <span data-testid="layers-icon" className={className} />,
+    Sparkles: ({ className }: { className?: string }) => <span data-testid="sparkles-icon" className={className} />,
+  };
+});
 
 // Mock shadcn Card components
 vi.mock('@/components/ui/card', () => ({

@@ -45,14 +45,18 @@ vi.mock('@/lib/utils', () => ({
 }));
 
 // Mock lucide-react icons
-vi.mock('lucide-react', () => ({
-  Crown: ({ className }: any) => <span data-testid="icon-crown" className={className} />,
-  Droplets: ({ className }: any) => <span data-testid="icon-droplets" className={className} />,
-  Sparkles: ({ className }: any) => <span data-testid="icon-sparkles" className={className} />,
-  CheckCircle: ({ className }: any) => <span data-testid="icon-check" className={className} />,
-  AlertTriangle: ({ className }: any) => <span data-testid="icon-alert" className={className} />,
-  ClipboardCheck: ({ className }: any) => <span data-testid="icon-clipboard" className={className} />,
-}));
+vi.mock('lucide-react', async (importOriginal) => {
+  const actual = await importOriginal<Record<string, any>>();
+  return {
+    ...actual,
+    Crown: ({ className }: any) => <span data-testid="icon-crown" className={className} />,
+    Droplets: ({ className }: any) => <span data-testid="icon-droplets" className={className} />,
+    Sparkles: ({ className }: any) => <span data-testid="icon-sparkles" className={className} />,
+    CheckCircle: ({ className }: any) => <span data-testid="icon-check" className={className} />,
+    AlertTriangle: ({ className }: any) => <span data-testid="icon-alert" className={className} />,
+    ClipboardCheck: ({ className }: any) => <span data-testid="icon-clipboard" className={className} />,
+  };
+});
 
 // -- Fixtures --
 

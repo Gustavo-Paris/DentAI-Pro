@@ -38,12 +38,16 @@ vi.mock('@/lib/logger', () => ({
 }));
 
 // Mock lucide-react
-vi.mock('lucide-react', () => ({
-  Loader2: ({ className }: any) => <span data-testid="loader-icon" className={className} />,
-  Plus: ({ className }: any) => <span data-testid="plus-icon" className={className} />,
-  Wrench: ({ className }: any) => <span data-testid="wrench-icon" className={className} />,
-  Wand2: ({ className }: any) => <span data-testid="wand-icon" className={className} />,
-}));
+vi.mock('lucide-react', async (importOriginal) => {
+  const actual = await importOriginal<Record<string, any>>();
+  return {
+    ...actual,
+    Loader2: ({ className }: any) => <span data-testid="loader-icon" className={className} />,
+    Plus: ({ className }: any) => <span data-testid="plus-icon" className={className} />,
+    Wrench: ({ className }: any) => <span data-testid="wrench-icon" className={className} />,
+    Wand2: ({ className }: any) => <span data-testid="wand-icon" className={className} />,
+  };
+});
 
 // Mock UI components
 vi.mock('@/components/ui/dialog', () => ({

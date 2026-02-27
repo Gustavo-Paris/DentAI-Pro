@@ -4,11 +4,15 @@ import { MemoryRouter } from 'react-router-dom';
 import ProtectedRoute from '../ProtectedRoute';
 
 // Mock lucide-react
-vi.mock('lucide-react', () => ({
-  Loader2: ({ className }: { className?: string }) => (
-    <div data-testid="loader" className={className} />
-  ),
-}));
+vi.mock('lucide-react', async (importOriginal) => {
+  const actual = await importOriginal<Record<string, any>>();
+  return {
+    ...actual,
+    Loader2: ({ className }: { className?: string }) => (
+      <div data-testid="loader" className={className} />
+    ),
+  };
+});
 
 // Create a mock for useAuth
 const mockUseAuth = vi.fn();

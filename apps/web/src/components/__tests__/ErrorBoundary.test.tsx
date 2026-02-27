@@ -19,11 +19,15 @@ vi.mock('@/components/ui/button', () => ({
   ),
 }));
 
-vi.mock('lucide-react', () => ({
-  AlertCircle: () => <span data-testid="alert-icon" />,
-  RefreshCw: () => <span data-testid="refresh-icon" />,
-  Home: () => <span data-testid="home-icon" />,
-}));
+vi.mock('lucide-react', async (importOriginal) => {
+  const actual = await importOriginal<Record<string, any>>();
+  return {
+    ...actual,
+    AlertCircle: () => <span data-testid="alert-icon" />,
+    RefreshCw: () => <span data-testid="refresh-icon" />,
+    Home: () => <span data-testid="home-icon" />,
+  };
+});
 
 // A component that throws an error
 function ThrowError({ shouldThrow }: { shouldThrow: boolean }) {

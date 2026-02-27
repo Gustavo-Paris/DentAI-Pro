@@ -8,11 +8,23 @@ vi.mock('@/lib/logger', () => ({
   logger: { info: vi.fn(), error: vi.fn(), warn: vi.fn() },
 }));
 
-vi.mock('lucide-react', () => ({
-  ArrowLeft: ({ className }: { className?: string }) => (
-    <span data-testid="arrow-left" className={className} />
-  ),
-}));
+vi.mock('lucide-react', async (importOriginal) => {
+  const actual = await importOriginal<Record<string, any>>();
+  return {
+    ...actual,
+    ArrowLeft: ({ className }: { className?: string }) => (
+      <span data-testid="arrow-left" className={className} />
+    ),
+  };
+});
+
+vi.mock('@parisgroup-ai/pageshell/primitives', async (importOriginal) => {
+  const actual = await importOriginal<Record<string, any>>();
+  return {
+    ...actual,
+    Button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
+  };
+});
 
 vi.mock('react-i18next', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react-i18next')>();

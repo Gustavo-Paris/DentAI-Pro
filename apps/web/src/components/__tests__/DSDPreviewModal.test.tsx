@@ -19,9 +19,13 @@ vi.mock('react-i18next', async (importOriginal) => {
 });
 
 // Mock lucide-react
-vi.mock('lucide-react', () => ({
-  Smile: ({ className }: any) => <span data-testid="smile-icon" className={className} />,
-}));
+vi.mock('lucide-react', async (importOriginal) => {
+  const actual = await importOriginal<Record<string, any>>();
+  return {
+    ...actual,
+    Smile: ({ className }: any) => <span data-testid="smile-icon" className={className} />,
+  };
+});
 
 // Mock useSignedUrl
 vi.mock('@/hooks/useSignedUrl', () => ({

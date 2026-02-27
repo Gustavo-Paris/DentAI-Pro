@@ -15,11 +15,15 @@ vi.mock('@/hooks/useSignedUrl', () => ({
 }));
 
 // Mock lucide-react
-vi.mock('lucide-react', () => ({
-  ImageOff: ({ className }: { className?: string }) => (
-    <span data-testid="image-off-icon" className={className} />
-  ),
-}));
+vi.mock('lucide-react', async (importOriginal) => {
+  const actual = await importOriginal<Record<string, any>>();
+  return {
+    ...actual,
+    ImageOff: ({ className }: { className?: string }) => (
+      <span data-testid="image-off-icon" className={className} />
+    ),
+  };
+});
 
 // Mock Skeleton
 vi.mock('@/components/ui/skeleton', () => ({

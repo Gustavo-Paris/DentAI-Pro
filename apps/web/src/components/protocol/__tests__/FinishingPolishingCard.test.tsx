@@ -27,9 +27,13 @@ vi.mock('@/components/ui/badge', () => ({
   Badge: ({ children, ...props }: any) => <span data-testid="badge" {...props}>{children}</span>,
 }));
 
-vi.mock('lucide-react', () => ({
-  Sparkles: ({ className }: any) => <span data-testid="icon-sparkles" className={className} />,
-}));
+vi.mock('lucide-react', async (importOriginal) => {
+  const actual = await importOriginal<Record<string, any>>();
+  return {
+    ...actual,
+    Sparkles: ({ className }: any) => <span data-testid="icon-sparkles" className={className} />,
+  };
+});
 
 // -- Fixtures --
 

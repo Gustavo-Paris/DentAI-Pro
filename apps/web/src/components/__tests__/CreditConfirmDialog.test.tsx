@@ -28,9 +28,13 @@ vi.mock('react-i18next', async (importOriginal) => {
 });
 
 // Mock lucide-react
-vi.mock('lucide-react', () => ({
-  Coins: ({ className }: { className?: string }) => <span data-testid="coins-icon" className={className} />,
-}));
+vi.mock('lucide-react', async (importOriginal) => {
+  const actual = await importOriginal<Record<string, any>>();
+  return {
+    ...actual,
+    Coins: ({ className }: { className?: string }) => <span data-testid="coins-icon" className={className} />,
+  };
+});
 
 // Mock analytics
 vi.mock('@/lib/analytics', () => ({
