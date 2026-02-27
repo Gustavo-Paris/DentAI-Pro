@@ -5,9 +5,7 @@ import type { ToothBoundsPct, DSDAnalysis } from '@/types/dsd';
 // Types
 // =============================================================================
 
-export type ProportionMidline = MidlineResult;
-
-export interface MidlineResult {
+export interface ProportionMidline {
   /** X position of the midline in % */
   x: number;
   /** Top of the midline in % (above the tallest tooth) */
@@ -41,8 +39,8 @@ export interface SmileArcPoint {
 }
 
 export interface ProportionLines {
-  midline: MidlineResult | null;
-  goldenRatioBrackets: GoldenRatioBracket[];
+  midline: ProportionMidline | null;
+  goldenRatio: GoldenRatioBracket[];
   smileArc: SmileArcPoint[];
 }
 
@@ -72,7 +70,7 @@ export function computeProportionLines(
 ): ProportionLines {
   const empty: ProportionLines = {
     midline: null,
-    goldenRatioBrackets: [],
+    goldenRatio: [],
     smileArc: [],
   };
 
@@ -85,13 +83,13 @@ export function computeProportionLines(
   const midline = computeMidline(sorted);
 
   // --- Golden ratio brackets ---
-  const goldenRatioBrackets =
+  const goldenRatio =
     sorted.length >= 4 ? computeGoldenRatioBrackets(sorted, midline) : [];
 
   // --- Smile arc ---
   const smileArc = computeSmileArc(sorted);
 
-  return { midline, goldenRatioBrackets, smileArc };
+  return { midline, goldenRatio, smileArc };
 }
 
 // =============================================================================
@@ -105,16 +103,30 @@ export function computeProportionLines(
  * The midline extends from above the tallest tooth to below the lowest tooth
  * with some padding.
  */
-function computeMidline(sorted: ToothBoundsPct[]): MidlineResult {
+function computeMidline(sorted: ToothBoundsPct[]): ProportionMidline {
   // Sort by width descending to find the two widest
   const byWidth = [...sorted].sort((a, b) => b.width - a.width);
+
+  const centroid = sorted.reduce((sum, t) => sum + t.x, 0) / sorted.length;
 
   let midX: number;
   if (byWidth.length === 1) {
     midX = byWidth[0].x;
   } else {
-    // Take the two widest teeth
-    midX = (byWidth[0].x + byWidth[1].x) / 2;
+    const [a, b] = [byWidth[0], byWidth[1]];
+    // Guard: if two widest teeth are clearly on the same side of the arch,
+    // they can't be the two centrals — fall back to centroid.
+    // Use tolerance so teeth near the center aren't misclassified.
+    const tol = 5; // % tolerance
+    const aIsLeft = a.x < centroid - tol;
+    const bIsLeft = b.x < centroid - tol;
+    const aIsRight = a.x > centroid + tol;
+    const bIsRight = b.x > centroid + tol;
+    if ((aIsLeft && bIsLeft) || (aIsRight && bIsRight)) {
+      midX = centroid;
+    } else {
+      midX = (a.x + b.x) / 2;
+    }
   }
 
   // Compute vertical extent from all teeth
@@ -147,7 +159,7 @@ function computeMidline(sorted: ToothBoundsPct[]): MidlineResult {
  */
 function computeGoldenRatioBrackets(
   sorted: ToothBoundsPct[],
-  midline: MidlineResult,
+  midline: ProportionMidline,
 ): GoldenRatioBracket[] {
   const midX = midline.x;
 

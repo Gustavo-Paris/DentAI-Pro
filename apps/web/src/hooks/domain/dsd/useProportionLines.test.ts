@@ -77,7 +77,7 @@ describe('computeProportionLines', () => {
   it('returns null midline and empty arrays for empty bounds', () => {
     const result = computeProportionLines([], makeAnalysis());
     expect(result.midline).toBeNull();
-    expect(result.goldenRatioBrackets).toEqual([]);
+    expect(result.goldenRatio).toEqual([]);
     expect(result.smileArc).toEqual([]);
   });
 
@@ -87,7 +87,7 @@ describe('computeProportionLines', () => {
       makeAnalysis(),
     );
     expect(result.midline).toBeNull();
-    expect(result.goldenRatioBrackets).toEqual([]);
+    expect(result.goldenRatio).toEqual([]);
     expect(result.smileArc).toEqual([]);
   });
 
@@ -97,7 +97,7 @@ describe('computeProportionLines', () => {
 
     expect(result.midline).not.toBeNull();
     expect(result.midline!.x).toBe(50);
-    expect(result.goldenRatioBrackets).toEqual([]);
+    expect(result.goldenRatio).toEqual([]);
     expect(result.smileArc).toHaveLength(1);
     expect(result.smileArc[0].x).toBe(50);
   });
@@ -138,6 +138,20 @@ describe('computeProportionLines', () => {
       expect(result.midline!.x).toBe(47.5);
     });
 
+    it('falls back to centroid when two widest teeth are on the same side', () => {
+      const bounds: ToothBoundsPct[] = [
+        { x: 20, y: 50, width: 5, height: 14 },   // left canine — narrow
+        { x: 40, y: 50, width: 6, height: 15 },   // left lateral — narrow
+        { x: 55, y: 50, width: 10, height: 16 },  // right central — wide
+        { x: 75, y: 50, width: 12, height: 16 },  // right premolar — WIDEST, same side
+      ];
+      const result = computeProportionLines(bounds, makeAnalysis());
+      // Centroid = (20+40+55+75)/4 = 47.5
+      // Two widest: w=12(x=75) and w=10(x=55) — both clearly right of centroid
+      // Guard triggers → falls back to centroid = 47.5
+      expect(result.midline!.x).toBe(47.5);
+    });
+
     it('midline with odd number of teeth still picks the two widest', () => {
       const bounds: ToothBoundsPct[] = [
         { x: 30, y: 50, width: 5, height: 14 },
@@ -163,7 +177,7 @@ describe('computeProportionLines', () => {
         { x: 60, y: 50, width: 6, height: 14 },
       ];
       const result = computeProportionLines(bounds, makeAnalysis());
-      expect(result.goldenRatioBrackets).toEqual([]);
+      expect(result.goldenRatio).toEqual([]);
     });
 
     it('produces brackets for 6 symmetric teeth', () => {
@@ -178,10 +192,10 @@ describe('computeProportionLines', () => {
       //   bracket 3: central vs lateral → ratio = 10/6.18 ≈ 1.618
       //   bracket 4: lateral vs canine → ratio = 6.18/5 = 1.236
 
-      expect(result.goldenRatioBrackets.length).toBe(4);
+      expect(result.goldenRatio.length).toBe(4);
 
       // Check first bracket (right side, central→lateral)
-      const b0 = result.goldenRatioBrackets[0];
+      const b0 = result.goldenRatio[0];
       expect(b0.w1).toBe(10);
       expect(b0.w2).toBe(6.18);
       expect(round(b0.ratio)).toBe(round(10 / 6.18));
@@ -192,7 +206,7 @@ describe('computeProportionLines', () => {
       const bounds = makeSixTeeth();
       const result = computeProportionLines(bounds, makeAnalysis());
 
-      for (const bracket of result.goldenRatioBrackets) {
+      for (const bracket of result.goldenRatio) {
         expect(typeof bracket.x1).toBe('number');
         expect(typeof bracket.x2).toBe('number');
         expect(typeof bracket.y).toBe('number');
