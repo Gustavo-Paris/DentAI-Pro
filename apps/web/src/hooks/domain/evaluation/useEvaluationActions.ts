@@ -35,6 +35,7 @@ export interface UseEvaluationActionsReturn {
   handleBulkComplete: (ids: string[]) => void;
   handleExportPDF: (id: string) => void;
   handleShareCase: () => void;
+  handleShareWhatsApp: () => void;
   handleDeleteSession: () => Promise<void>;
   handleAddTeethSuccess: () => void;
   handleRetryEvaluation: (evaluationId: string) => Promise<void>;
@@ -168,6 +169,25 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
       });
     } catch (error) {
       logger.error('Error sharing case:', error);
+      toast.error(t('toasts.evaluationDetail.shareError'));
+    } finally {
+      setIsSharing(false);
+    }
+  }, [user, sessionId]);
+
+  const handleShareWhatsApp = useCallback(async () => {
+    if (!user || !sessionId) return;
+    setIsSharing(true);
+
+    try {
+      const token = await evaluations.getOrCreateShareLink(sessionId, user.id);
+      const shareUrl = `${window.location.origin}/shared/${token}`;
+      const message = t('toasts.evaluationDetail.whatsappMessage', { url: shareUrl });
+      const waUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+      window.open(waUrl, '_blank', 'noopener,noreferrer');
+      trackEvent('evaluation_shared', { method: 'whatsapp' });
+    } catch (error) {
+      logger.error('Error sharing via WhatsApp:', error);
       toast.error(t('toasts.evaluationDetail.shareError'));
     } finally {
       setIsSharing(false);
@@ -397,6 +417,7 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
     handleBulkComplete,
     handleExportPDF,
     handleShareCase,
+    handleShareWhatsApp,
     handleDeleteSession,
     handleAddTeethSuccess,
     handleRetryEvaluation,

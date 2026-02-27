@@ -64,6 +64,7 @@ export interface EvaluationDetailActions {
   handleBulkComplete: (ids: string[]) => void;
   handleExportPDF: (id: string) => void;
   handleShareCase: () => void;
+  handleShareWhatsApp: () => void;
   handleDeleteSession: () => Promise<void>;
   setShowAddTeethModal: (show: boolean) => void;
   handleAddTeethSuccess: () => void;
@@ -142,6 +143,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
     handleBulkComplete: actions.handleBulkComplete,
     handleExportPDF: actions.handleExportPDF,
     handleShareCase: actions.handleShareCase,
+    handleShareWhatsApp: actions.handleShareWhatsApp,
     handleDeleteSession: actions.handleDeleteSession,
     setShowAddTeethModal: actions.setShowAddTeethModal,
     handleAddTeethSuccess: actions.handleAddTeethSuccess,

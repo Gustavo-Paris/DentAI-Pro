@@ -1078,7 +1078,8 @@
       "bulkCompleted_one": "{{count}} caso marcado como finalizado",
       "bulkCompleted_other": "{{count}} casos marcados como finalizados",
       "regenerateSuccess_one": "{{count}} protocolo regenerado como {{budget}}",
-      "regenerateSuccess_other": "{{count}} protocolos regenerados como {{budget}}"
+      "regenerateSuccess_other": "{{count}} protocolos regenerados como {{budget}}",
+      "whatsappMessage": "Confira a análise do seu sorriso: {{url}}"
     },
     "profile": {
       "subscriptionActivated": "Assinatura ativada com sucesso!",

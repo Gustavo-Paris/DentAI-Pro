@@ -1078,7 +1078,8 @@
       "bulkCompleted_one": "{{count}} case marked as completed",
       "bulkCompleted_other": "{{count}} cases marked as completed",
       "regenerateSuccess_one": "{{count}} protocol regenerated as {{budget}}",
-      "regenerateSuccess_other": "{{count}} protocols regenerated as {{budget}}"
+      "regenerateSuccess_other": "{{count}} protocols regenerated as {{budget}}",
+      "whatsappMessage": "Check out your smile analysis: {{url}}"
     },
     "profile": {
       "subscriptionActivated": "Subscription activated successfully!",
