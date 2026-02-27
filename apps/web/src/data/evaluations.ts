@@ -1,4 +1,4 @@
-import { subDays, startOfWeek } from 'date-fns';
+import { subDays } from 'date-fns';
 import { supabase } from './client';
 import type { EvaluationInsert } from './client';
 import { withQuery, withMutation, countByUser } from './utils';
@@ -179,62 +179,24 @@ export async function updateStatus(id: string, status: EvaluationStatus) {
 // ---------------------------------------------------------------------------
 
 export async function getDashboardMetrics({ userId }: DashboardMetricsParams) {
-  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 }).toISOString();
+  const { data, error } = await supabase.rpc('get_dashboard_metrics', {
+    p_user_id: userId,
+  });
+  if (error) throw error;
 
-  const [allEvalsSettled, weeklyEvalsSettled, pendingTeethSettled] = await Promise.allSettled([
-    // All evaluations: session_id + status (for session-level metrics)
-    supabase
-      .from('evaluations')
-      .select('session_id, status')
-      .eq('user_id', userId)
-      // Practical upper bound for client-side session grouping.
-      // A proper fix would require an RPC function for server-side aggregation.
-      .limit(5000),
-    // This week's evaluations: session_id (for weekly session count)
-    supabase
-      .from('evaluations')
-      .select('session_id')
-      .eq('user_id', userId)
-      .gte('created_at', weekStart),
-    // Count individual pending teeth
-    supabase
-      .from('evaluations')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .neq('status', EVALUATION_STATUS.COMPLETED),
-  ]);
-
-  const allEvalsResult = allEvalsSettled.status === 'fulfilled' ? allEvalsSettled.value : { data: [] };
-  const weeklyEvalsResult = weeklyEvalsSettled.status === 'fulfilled' ? weeklyEvalsSettled.value : { data: [] };
-  const pendingTeethResult = pendingTeethSettled.status === 'fulfilled' ? pendingTeethSettled.value : { count: 0 };
-
-  // Group by session to compute session-level stats
-  const sessionMap = new Map<string, { total: number; completed: number }>();
-  for (const row of allEvalsResult.data || []) {
-    const sid = row.session_id || row.id; // fallback: each legacy row becomes its own session
-    if (!sessionMap.has(sid)) sessionMap.set(sid, { total: 0, completed: 0 });
-    const entry = sessionMap.get(sid)!;
-    entry.total++;
-    if (row.status === EVALUATION_STATUS.COMPLETED) entry.completed++;
-  }
-
-  let completedSessions = 0;
-  let pendingSessions = 0;
-  for (const entry of sessionMap.values()) {
-    if (entry.completed === entry.total) completedSessions++;
-    else pendingSessions++;
-  }
-
-  const totalSessions = sessionMap.size;
-  const weeklySessions = new Set(
-    (weeklyEvalsResult.data || []).map(e => e.session_id)
-  ).size;
+  // RPC returns a JSON object; fallback to safe defaults
+  const result = data as {
+    pending_sessions: number;
+    weekly_sessions: number;
+    completion_rate: number;
+    pending_teeth: number;
+  } | null;
 
   return {
-    pendingSessionCount: pendingSessions,
-    weeklySessionCount: weeklySessions,
-    completionRate: totalSessions > 0 ? Math.round((completedSessions / totalSessions) * 100) : 0,
-    pendingTeethCount: pendingTeethResult.count || 0,
+    pendingSessionCount: result?.pending_sessions ?? 0,
+    weeklySessionCount: result?.weekly_sessions ?? 0,
+    completionRate: result?.completion_rate ?? 0,
+    pendingTeethCount: result?.pending_teeth ?? 0,
   };
 }
 
