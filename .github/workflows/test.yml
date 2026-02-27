@@ -96,8 +96,32 @@ jobs:
           NODE_OPTIONS: '--max-old-space-size=6144'
         run: cd apps/web && npx vitest run --no-file-parallelism --shard=${{ matrix.shard }} --exclude='**/useEvaluationDetail.test.ts' --reporter=basic
 
-      - name: Run heavy test (shard 4 only)
-        if: matrix.shard == '4/8'
+  test-heavy:
+    name: Tests (heavy)
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
+      VITE_SUPABASE_URL: https://placeholder.supabase.co
+      VITE_SUPABASE_PUBLISHABLE_KEY: placeholder-key-for-ci
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: Configure GitHub Packages registry
+        run: |
+          echo "@parisgroup-ai:registry=https://npm.pkg.github.com" >> .npmrc
+          echo "//npm.pkg.github.com/:_authToken=\${GITHUB_TOKEN}" >> .npmrc
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run heavy test in isolation
         env:
           NODE_OPTIONS: '--max-old-space-size=6144'
         run: cd apps/web && npx vitest run src/hooks/__tests__/useEvaluationDetail.test.ts --reporter=basic
@@ -117,7 +141,7 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    needs: [lint, typecheck, test, deno-test]
+    needs: [lint, typecheck, test, test-heavy, deno-test]
     env:
       GITHUB_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
       VITE_SUPABASE_URL: https://placeholder.supabase.co
