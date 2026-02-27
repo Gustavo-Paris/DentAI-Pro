@@ -94,7 +94,7 @@ jobs:
       - name: Run tests
         env:
           NODE_OPTIONS: '--max-old-space-size=6144'
-        run: cd apps/web && npx vitest run --pool=forks --poolOptions.forks.maxForks=1 --poolOptions.forks.memoryLimit=0.5 --shard=${{ matrix.shard }} --reporter=basic
+        run: cd apps/web && npx vitest run --no-file-parallelism --shard=${{ matrix.shard }} --reporter=basic
 
   deno-test:
     name: Deno Tests (Edge Functions)
