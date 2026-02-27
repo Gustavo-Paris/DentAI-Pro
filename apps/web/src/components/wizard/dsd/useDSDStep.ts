@@ -13,6 +13,7 @@ import { TIMING } from '@/lib/constants';
 // compositeTeeth.ts kept for potential future use but compositing disabled —
 // Gemini's prompt-based preservation of lips/gums produces better results
 import { compositeGengivoplastyLips } from '@/lib/compositeGingivo';
+import { useDSDFaceMockup } from './useDSDFaceMockup';
 import type {
   DSDAnalysis,
   DSDResult,
@@ -122,9 +123,8 @@ export function useDSDStep({
   const [failedLayers, setFailedLayers] = useState<SimulationLayerType[]>([]);
   const [retryingLayer, setRetryingLayer] = useState<SimulationLayerType | null>(null);
 
-  // Face mockup states
-  const [isFaceMockupGenerating, setIsFaceMockupGenerating] = useState(false);
-  const [faceMockupError, setFaceMockupError] = useState<string | null>(null);
+  // Face mockup — extracted to sub-hook for isolation
+  // (state setters passed after resolveLayerUrl is defined)
 
   // Gengivoplasty approval: null = not decided, true = approved, false = discarded
   // Derive initial state from draft layers — if complete-treatment layer exists, it was previously approved
@@ -391,6 +391,20 @@ export function useDSDStep({
     return { layer, url };
   }, []);
 
+  // Face mockup sub-hook (E6 layer) — isolated from main layer generation
+  const faceMockup = useDSDFaceMockup({
+    additionalPhotos,
+    analysis: result?.analysis ?? null,
+    patientPreferences,
+    invokeFunction,
+    resolveLayerUrl,
+    setLayers,
+    setLayerUrls,
+    setActiveLayerIndex,
+    setSimulationImageUrl,
+    setResult,
+  });
+
   // L1-first sequential chaining: L1 (corrections) → L2 (whitening) → L3 (gengivoplasty)
   // Each Gemini call does ONE thing, using the previous layer as input.
   const generateAllLayers = useCallback(async (analysisData?: DSDAnalysis) => {
@@ -553,86 +567,6 @@ export function useDSDStep({
       generateAllLayers(result.analysis);
     }
   }, [result?.analysis, layers.length, isSimulationGenerating, simulationError, layersGenerating, imageBase64, generateAllLayers, initialResult]);
-
-  // Generate face mockup layer on demand (requires face photo + existing analysis)
-  const generateFaceMockup = useCallback(async () => {
-    if (!additionalPhotos?.face || !result?.analysis) return;
-
-    setIsFaceMockupGenerating(true);
-    setFaceMockupError(null);
-
-    try {
-      const reqId = crypto.randomUUID();
-      const { data, error: fnError } = await withRetry(
-        async () => {
-          const resp = await invokeFunction<DSDResult & { simulation_debug?: string }>('generate-dsd', {
-            body: {
-              reqId,
-              imageBase64: additionalPhotos.face,
-              regenerateSimulationOnly: true,
-              existingAnalysis: result.analysis,
-              patientPreferences,
-              layerType: 'face-mockup' as const,
-              additionalPhotos: { face: additionalPhotos.face, smile45: null },
-            },
-          });
-          if (resp.error || !resp.data?.simulation_url) {
-            const debug = resp.data?.simulation_debug;
-            if (debug) logger.error('Face mockup server error:', debug);
-            throw resp.error || new Error(`Face mockup returned no URL${debug ? `: ${debug}` : ''}`);
-          }
-          return resp;
-        },
-        {
-          maxRetries: 2,
-          baseDelay: 3000,
-          onRetry: (attempt, err) => {
-            logger.warn(`Face mockup retry ${attempt}:`, err);
-          },
-        },
-      );
-
-      if (fnError) throw fnError;
-
-      if (data?.simulation_url) {
-        const { layer: processed, url } = await resolveLayerUrl({
-          type: 'face-mockup',
-          label: getLayerLabel('face-mockup', t),
-          simulation_url: data.simulation_url,
-          whitening_level: patientPreferences?.whiteningLevel || 'natural',
-          includes_gengivoplasty: false,
-        });
-
-        setLayers(prev => {
-          const filtered = prev.filter(l => l.type !== 'face-mockup');
-          const updated = [...filtered, processed];
-          // Auto-select the new face-mockup layer
-          setActiveLayerIndex(updated.length - 1);
-          return updated;
-        });
-        if (url) {
-          setLayerUrls(prev => ({ ...prev, 'face-mockup': url }));
-          setSimulationImageUrl(url);
-        }
-        setResult(prev => prev ? {
-          ...prev,
-          layers: [...(prev.layers || []).filter(l => l.type !== 'face-mockup'), processed],
-        } : prev);
-
-        toast.success(t('toasts.dsd.layerReady', { layer: getLayerLabel('face-mockup', t) }));
-        trackEvent('dsd_face_mockup_generated');
-      } else {
-        setFaceMockupError(data?.simulation_debug || 'Face mockup generation failed');
-      }
-    } catch (err) {
-      const message = (err as Error).message || 'Face mockup generation failed';
-      setFaceMockupError(message);
-      logger.error('Face mockup generation failed:', err);
-      toast.error(t('toasts.dsd.layerError', { layer: getLayerLabel('face-mockup', t) }));
-    } finally {
-      setIsFaceMockupGenerating(false);
-    }
-  }, [additionalPhotos?.face, result?.analysis, invokeFunction, patientPreferences, resolveLayerUrl, t]);
 
   // Retry a single failed layer (respects L2-first architecture)
   const retryFailedLayer = useCallback(async (layerType: SimulationLayerType) => {
@@ -1080,8 +1014,8 @@ export function useDSDStep({
     showWhiteningComparison,
     gingivoplastyApproved,
     dsdConfirmed,
-    isFaceMockupGenerating,
-    faceMockupError,
+    isFaceMockupGenerating: faceMockup.isFaceMockupGenerating,
+    faceMockupError: faceMockup.faceMockupError,
     showAnnotations,
     annotationContainerRef,
     annotationDimensions,
@@ -1091,7 +1025,7 @@ export function useDSDStep({
     analysisSteps,
     determineLayersNeeded,
     hasGingivoSuggestion,
-    hasFacePhoto: !!additionalPhotos?.face,
+    hasFacePhoto: faceMockup.hasFacePhoto,
 
     // Actions
     handleRetry,
@@ -1099,7 +1033,7 @@ export function useDSDStep({
     handleContinue,
     generateWhiteningComparison,
     generateAllLayers,
-    generateFaceMockup,
+    generateFaceMockup: faceMockup.generateFaceMockup,
     retryFailedLayer,
     setShowAnnotations,
     setShowWhiteningComparison,

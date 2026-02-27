@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,6 +11,7 @@ import { getLoginSchema, type LoginFormData } from '@/lib/schemas/auth';
 import { Loader2 } from 'lucide-react';
 import { GoogleIcon } from '@/components/GoogleIcon';
 import { AuthLayout } from '@/components/auth/AuthLayout';
+import { TurnstileWidget } from '@/components/auth/TurnstileWidget';
 import {
   Form,
   FormControl,
@@ -25,7 +26,10 @@ export default function Login() {
   useDocumentTitle(t('pageTitle.login'));
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | undefined>();
   const { signIn, signInWithGoogle } = useAuth();
+  const handleCaptchaVerify = useCallback((token: string) => setCaptchaToken(token), []);
+  const handleCaptchaExpire = useCallback(() => setCaptchaToken(undefined), []);
   const navigate = useNavigate();
   const location = useLocation();
   const returnTo = (location.state as { returnTo?: string })?.returnTo;
@@ -41,7 +45,7 @@ export default function Login() {
   const onSubmit = async (data: LoginFormData) => {
     setLoading(true);
 
-    const { error } = await signIn(data.email, data.password);
+    const { error } = await signIn(data.email, data.password, captchaToken);
 
     if (error) {
       if (error.message?.toLowerCase().includes('email not confirmed')) {
@@ -159,6 +163,12 @@ export default function Login() {
                 {t('auth.forgotPasswordLink')}
               </Link>
             </div>
+
+            <TurnstileWidget
+              onVerify={handleCaptchaVerify}
+              onExpire={handleCaptchaExpire}
+              className="flex justify-center"
+            />
 
             <Button type="submit" className="w-full btn-glow" disabled={loading}>
               {loading ? (

@@ -59,7 +59,7 @@ export const SidebarCredits = memo(function SidebarCredits() {
       </div>
 
       {/* Hint text */}
-      <p className="text-[10px] text-sidebar-foreground/50 mt-1.5 group-hover:text-sidebar-foreground/70 transition-colors">
+      <p className="text-xs text-sidebar-foreground/50 mt-1.5 group-hover:text-sidebar-foreground/70 transition-colors">
         {t('components.sidebar.creditsHint', {
           analyses: estimatedAnalyses,
           dsd: estimatedDsd,

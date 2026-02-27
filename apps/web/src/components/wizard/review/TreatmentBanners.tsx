@@ -56,7 +56,7 @@ export function TreatmentBanners({
                   <h4 className="font-medium text-pink-800 dark:text-pink-200">
                     {t('components.wizard.review.gingivoplastyTitle')}
                   </h4>
-                  <Badge variant="secondary" className="text-[10px] bg-pink-100 dark:bg-pink-900/50 text-pink-700 dark:text-pink-300">
+                  <Badge variant="secondary" className="text-xs bg-pink-100 dark:bg-pink-900/50 text-pink-700 dark:text-pink-300">
                     {t('components.wizard.review.recommendedByDSD')}
                   </Badge>
                 </div>

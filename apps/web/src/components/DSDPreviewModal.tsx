@@ -123,7 +123,7 @@ export function DSDPreviewModal({
                   >
                     {LAYER_LABELS[layer.type] || layer.type}
                     {layer.includes_gengivoplasty && (
-                      <span className="text-[10px] px-1 py-0 bg-secondary rounded">{t('components.dsdPreview.gingiva')}</span>
+                      <span className="text-xs px-1 py-0 bg-secondary rounded">{t('components.dsdPreview.gingiva')}</span>
                     )}
                   </button>
                 ))}

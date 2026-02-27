@@ -4,7 +4,7 @@ import { validateEvaluationData, sanitizeFieldsForPrompt, type EvaluationData } 
 import { logger } from "../_shared/logger.ts";
 import { callClaudeWithTools, ClaudeError, type OpenAIMessage, type OpenAITool } from "../_shared/claude.ts";
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
-import { checkAndUseCredits, createInsufficientCreditsResponse, refundCredits } from "../_shared/credits.ts";
+import { withCreditProtection, isInsufficientCreditsResponse } from "../_shared/withCreditProtection.ts";
 import { getPrompt } from "../_shared/prompts/registry.ts";
 import { withMetrics } from "../_shared/prompts/index.ts";
 import type { Params as RecommendResinParams } from "../_shared/prompts/definitions/recommend-resin.ts";
@@ -26,22 +26,15 @@ Deno.serve(async (req) => {
 
   logger.log(`[${reqId}] recommend-resin: start`);
 
-  // Track credit state for refund on error (must be outside try for catch access)
-  let creditsConsumed = false;
-  let supabaseForRefund: ReturnType<typeof getSupabaseClient> | null = null;
-  let userIdForRefund: string | null = null;
-
   try {
     // Create service role client
     const supabaseService = getSupabaseClient();
-    supabaseForRefund = supabaseService;
 
     // Validate authentication (includes deleted/banned checks)
     const authResult = await authenticateRequest(req, supabaseService, corsHeaders);
     if (isAuthError(authResult)) return authResult;
     const { user } = authResult;
     const userId = user.id;
-    userIdForRefund = userId;
 
     const rateLimitResult = await checkRateLimit(
       supabaseService,
@@ -419,115 +412,111 @@ Deno.serve(async (req) => {
       return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     }
 
-    // Credits: only charge after AI response is validated
-    const creditResult = await checkAndUseCredits(supabaseForRefund!, userIdForRefund!, "resin_recommendation", reqId);
-    if (!creditResult.allowed) {
-      logger.warn(`Insufficient credits for user ${userIdForRefund} on resin_recommendation`);
-      return createInsufficientCreditsResponse(creditResult, corsHeaders);
-    }
-    creditsConsumed = true;
+    // Credits + post-processing wrapped in credit protection (auto-refund on error)
+    return await withCreditProtection(
+      { supabase: supabaseService, userId, operation: "resin_recommendation", operationId: reqId, corsHeaders },
+      async (credits) => {
+        const creditResult = await credits.consume();
+        if (isInsufficientCreditsResponse(creditResult)) return creditResult;
 
-    // Validate and fix protocol layers against resin_catalog
-    await validateAndFixProtocolLayers({
-      recommendation,
-      aestheticGoals: data.aestheticGoals,
-      supabase,
-      tooth: data.tooth,
-      cavityClass: data.cavityClass,
-    });
+        // Validate and fix protocol layers against resin_catalog
+        await validateAndFixProtocolLayers({
+          recommendation,
+          aestheticGoals: data.aestheticGoals,
+          supabase,
+          tooth: data.tooth,
+          cavityClass: data.cavityClass,
+        });
 
-    // Post-AI inventory validation: ensure recommended resin is from inventory
-    // Pass region so fallback picks a clinically appropriate resin for the tooth
-    validateInventoryRecommendation(recommendation, hasInventory, inventoryResins, budgetAppropriateInventory, data.region);
+        // Post-AI inventory validation: ensure recommended resin is from inventory
+        // Pass region so fallback picks a clinically appropriate resin for the tooth
+        validateInventoryRecommendation(recommendation, hasInventory, inventoryResins, budgetAppropriateInventory, data.region);
 
-    // Log budget compliance for debugging
-    logger.log(`Budget: ${data.budget}, Recommended: ${recommendation.recommended_resin_name}, Price Range: ${recommendation.price_range}, Budget Compliant: ${recommendation.budget_compliance}`);
+        // Log budget compliance for debugging
+        logger.log(`Budget: ${data.budget}, Recommended: ${recommendation.recommended_resin_name}, Price Range: ${recommendation.price_range}, Budget Compliant: ${recommendation.budget_compliance}`);
 
-    // Find the recommended resin in database
-    const recommendedResin = resins.find(
-      (r: { name: string }) =>
-        r.name.toLowerCase() ===
-        recommendation.recommended_resin_name.toLowerCase()
-    );
+        // Find the recommended resin in database
+        const recommendedResin = resins.find(
+          (r: { name: string }) =>
+            r.name.toLowerCase() ===
+            recommendation.recommended_resin_name.toLowerCase()
+        );
 
-    // Find the ideal resin if different
-    let idealResin = null;
-    if (
-      recommendation.ideal_resin_name &&
-      recommendation.ideal_resin_name.toLowerCase() !==
-        recommendation.recommended_resin_name.toLowerCase()
-    ) {
-      idealResin = resins.find(
-        (r: { name: string }) =>
-          r.name.toLowerCase() === recommendation.ideal_resin_name.toLowerCase()
-      );
-    }
+        // Find the ideal resin if different
+        let idealResin = null;
+        if (
+          recommendation.ideal_resin_name &&
+          recommendation.ideal_resin_name.toLowerCase() !==
+            recommendation.recommended_resin_name.toLowerCase()
+        ) {
+          idealResin = resins.find(
+            (r: { name: string }) =>
+              r.name.toLowerCase() === recommendation.ideal_resin_name.toLowerCase()
+          );
+        }
 
-    // Combine alternatives (inventory first, then external)
-    const allAlternatives = [
-      ...(recommendation.inventory_alternatives || []),
-      ...(recommendation.external_alternatives || []),
-    ].slice(0, 4); // Limit to 4 alternatives
+        // Combine alternatives (inventory first, then external)
+        const allAlternatives = [
+          ...(recommendation.inventory_alternatives || []),
+          ...(recommendation.external_alternatives || []),
+        ].slice(0, 4); // Limit to 4 alternatives
 
-    // Extract protocol from recommendation
-    const protocol = recommendation.protocol as StratificationProtocol | undefined;
+        // Extract protocol from recommendation
+        const protocol = recommendation.protocol as StratificationProtocol | undefined;
 
-    // Update evaluation with recommendation and full protocol
-    const { error: updateError } = await supabase
-      .from("evaluations")
-      .update({
-        recommended_resin_id: recommendedResin?.id || null,
-        recommendation_text: recommendation.justification,
-        alternatives: allAlternatives,
-        is_from_inventory: recommendation.is_from_inventory || false,
-        ideal_resin_id: idealResin?.id || null,
-        ideal_reason: recommendation.ideal_reason || null,
-        has_inventory_at_creation: hasInventory,
-        // New protocol fields
-        stratification_protocol: protocol ? {
-          layers: protocol.layers,
-          alternative: protocol.alternative,
-          finishing: protocol.finishing,
-          checklist: protocol.checklist,
-          confidence: protocol.confidence,
-        } : null,
-        protocol_layers: protocol?.layers || null,
-        alerts: protocol?.alerts || [],
-        warnings: protocol?.warnings || [],
-      })
-      .eq("id", data.evaluationId)
-      .eq("user_id", userId);
+        // Update evaluation with recommendation and full protocol
+        const { error: updateError } = await supabase
+          .from("evaluations")
+          .update({
+            recommended_resin_id: recommendedResin?.id || null,
+            recommendation_text: recommendation.justification,
+            alternatives: allAlternatives,
+            is_from_inventory: recommendation.is_from_inventory || false,
+            ideal_resin_id: idealResin?.id || null,
+            ideal_reason: recommendation.ideal_reason || null,
+            has_inventory_at_creation: hasInventory,
+            // New protocol fields
+            stratification_protocol: protocol ? {
+              layers: protocol.layers,
+              alternative: protocol.alternative,
+              finishing: protocol.finishing,
+              checklist: protocol.checklist,
+              confidence: protocol.confidence,
+            } : null,
+            protocol_layers: protocol?.layers || null,
+            alerts: protocol?.alerts || [],
+            warnings: protocol?.warnings || [],
+          })
+          .eq("id", data.evaluationId)
+          .eq("user_id", userId);
 
-    if (updateError) {
-      logger.error("Database error saving result:", updateError);
-      return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
-    }
+        if (updateError) {
+          logger.error("Database error saving result:", updateError);
+          return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
+        }
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        recommendation: {
-          resin: recommendedResin,
-          justification: recommendation.justification,
-          alternatives: allAlternatives,
-          isFromInventory: recommendation.is_from_inventory,
-          idealResin: idealResin,
-          idealReason: recommendation.ideal_reason,
-          protocol: protocol || null,
-          protocol_incomplete: !recommendation.protocol,
-        },
-      }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+        return new Response(
+          JSON.stringify({
+            success: true,
+            recommendation: {
+              resin: recommendedResin,
+              justification: recommendation.justification,
+              alternatives: allAlternatives,
+              isFromInventory: recommendation.is_from_inventory,
+              idealResin: idealResin,
+              idealReason: recommendation.ideal_reason,
+              protocol: protocol || null,
+              protocol_incomplete: !recommendation.protocol,
+            },
+          }),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      },
     );
   } catch (error: unknown) {
     logger.error(`[${reqId}] recommend-resin error:`, error);
-    // Refund credits on unexpected errors
-    if (creditsConsumed && supabaseForRefund && userIdForRefund) {
-      await refundCredits(supabaseForRefund, userIdForRefund, "resin_recommendation", reqId);
-      logger.log(`[${reqId}] Refunded resin_recommendation credits for user ${userIdForRefund} due to error`);
-    }
     return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders, undefined, reqId);
   }
 });

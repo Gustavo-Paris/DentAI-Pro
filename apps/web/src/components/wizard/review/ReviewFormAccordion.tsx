@@ -116,7 +116,7 @@ export function ReviewFormAccordion({
                   variant={speech.isListening ? 'destructive' : 'ghost'}
                   size="icon"
                   className={cn(
-                    'absolute bottom-2 right-2 h-8 w-8',
+                    'absolute bottom-2 right-2 h-10 w-10',
                     speech.isListening && 'animate-pulse',
                   )}
                   onClick={speech.toggle}

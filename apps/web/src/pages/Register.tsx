@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -13,6 +13,7 @@ import { GoogleIcon } from '@/components/GoogleIcon';
 import { Loader2, Mail } from 'lucide-react';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { IconCircle } from '@/components/shared/IconCircle';
+import { TurnstileWidget } from '@/components/auth/TurnstileWidget';
 import {
   Form,
   FormControl,
@@ -28,7 +29,10 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | undefined>();
   const { signUp, signInWithGoogle } = useAuth();
+  const handleCaptchaVerify = useCallback((token: string) => setCaptchaToken(token), []);
+  const handleCaptchaExpire = useCallback(() => setCaptchaToken(undefined), []);
 
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(getRegisterSchema()),
@@ -47,7 +51,7 @@ export default function Register() {
   const onSubmit = async (data: RegisterFormData) => {
     setLoading(true);
 
-    const { error } = await signUp(data.email, data.password, data.fullName, data.cro || '');
+    const { error } = await signUp(data.email, data.password, data.fullName, data.cro || '', captchaToken);
 
     if (error) {
       toast.error(t('auth.createAccountError'), {
@@ -245,6 +249,12 @@ export default function Register() {
                   </div>
                 </FormItem>
               )}
+            />
+
+            <TurnstileWidget
+              onVerify={handleCaptchaVerify}
+              onExpire={handleCaptchaExpire}
+              className="flex justify-center"
             />
 
             <Button type="submit" className="w-full btn-glow" disabled={loading}>

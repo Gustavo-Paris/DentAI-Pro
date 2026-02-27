@@ -34,7 +34,7 @@ export const CompactStepIndicator = memo(function CompactStepIndicator({
                 {isCompleted ? (
                   <Check className="w-3 h-3 text-primary-foreground" />
                 ) : (
-                  <span className={`text-[10px] font-medium ${isActive ? 'text-primary' : 'text-muted-foreground'}`}>
+                  <span className={`text-xs font-medium ${isActive ? 'text-primary' : 'text-muted-foreground'}`}>
                     {i + 1}
                   </span>
                 )}
@@ -71,7 +71,7 @@ export const CompactStepIndicator = memo(function CompactStepIndicator({
               {isCompleted ? (
                 <Check className="w-3 h-3 text-primary-foreground" />
               ) : (
-                <span className={`text-[10px] font-medium ${isActive ? 'text-primary' : 'text-muted-foreground'}`}>
+                <span className={`text-xs font-medium ${isActive ? 'text-primary' : 'text-muted-foreground'}`}>
                   {i + 1}
                 </span>
               )}

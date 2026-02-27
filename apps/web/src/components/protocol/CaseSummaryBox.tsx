@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/tooltip";
 import { User, MapPin, Layers, Palette, Info } from "lucide-react";
 import { getTreatmentConfig } from "@/lib/treatment-config";
+import { tEnum } from "@/lib/clinical-enums";
 
 // Procedimentos gengivais/teciduais que não exibem cor
 const TISSUE_PROCEDURES = ['gengivoplastia', 'recobrimento_radicular'];
@@ -127,9 +128,9 @@ function CaseSummaryBox({
                 <Layers className="w-3 h-3" />
                 {AESTHETIC_PROCEDURES.includes(cavityClass) ? t('components.protocol.caseSummary.procedure') : t('components.protocol.caseSummary.classification')}
               </div>
-              <p className="font-medium text-sm sm:text-base">{cavityClass}</p>
+              <p className="font-medium text-sm sm:text-base">{tEnum(t, 'cavityClass', cavityClass)}</p>
               {!AESTHETIC_PROCEDURES.includes(cavityClass) && (
-                <p className="text-xs text-muted-foreground capitalize">{restorationSize}</p>
+                <p className="text-xs text-muted-foreground capitalize">{restorationSize ? tEnum(t, 'restorationSize', restorationSize) : restorationSize}</p>
               )}
             </div>
           )}

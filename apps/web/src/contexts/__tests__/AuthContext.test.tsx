@@ -208,6 +208,7 @@ describe('AuthContext', () => {
       expect(mockSignInWithPassword).toHaveBeenCalledWith({
         email: 'user@test.com',
         password: 'password123',
+        options: { captchaToken: undefined },
       });
       expect(result!.error).toBeNull();
     });

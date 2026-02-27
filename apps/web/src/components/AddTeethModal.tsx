@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { tEnum } from '@/lib/clinical-enums';
 import {
   Dialog,
   DialogContent,
@@ -183,9 +184,9 @@ export function AddTeethModal({
                           </Badge>
                         </div>
                         <div className="text-xs text-muted-foreground mb-2">
-                          {tooth.cavity_class && <span>{tooth.cavity_class}</span>}
-                          {tooth.restoration_size && <span> • {tooth.restoration_size}</span>}
-                          {tooth.depth && <span> • {tooth.depth}</span>}
+                          {tooth.cavity_class && <span>{tEnum(t, 'cavityClass', tooth.cavity_class)}</span>}
+                          {tooth.restoration_size && <span> • {tEnum(t, 'restorationSize', tooth.restoration_size)}</span>}
+                          {tooth.depth && <span> • {tEnum(t, 'depth', tooth.depth)}</span>}
                         </div>
 
                         {/* Per-tooth treatment selector */}

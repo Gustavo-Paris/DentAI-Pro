@@ -106,7 +106,7 @@ export const ToothSelectionCard = memo(function ToothSelectionCard({
               <span className="font-semibold text-sm">{t('components.wizard.review.tooth', { number: tooth.tooth })}</span>
               <Badge
                 variant={tooth.priority === 'alta' ? 'destructive' : tooth.priority === 'média' ? 'secondary' : 'outline'}
-                className="text-[10px] gap-1"
+                className="text-xs gap-1"
               >
                 <span className={cn(
                   'w-1.5 h-1.5 rounded-full',
@@ -119,7 +119,7 @@ export const ToothSelectionCard = memo(function ToothSelectionCard({
             </div>
 
             {/* Treatment badge */}
-            <Badge variant="outline" className="text-[10px] mb-1.5">
+            <Badge variant="outline" className="text-xs mb-1.5">
               {t(TREATMENT_LABEL_KEYS[treatment])}
             </Badge>
 
@@ -128,7 +128,7 @@ export const ToothSelectionCard = memo(function ToothSelectionCard({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <p className="text-[10px] text-muted-foreground mt-1 italic truncate cursor-help">
+                    <p className="text-xs text-muted-foreground mt-1 italic truncate cursor-help">
                       {t('components.wizard.review.aiNote', { note: tooth.indication_reason })}
                     </p>
                   </TooltipTrigger>

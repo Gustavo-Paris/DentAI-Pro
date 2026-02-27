@@ -120,7 +120,7 @@ export default function SharedEvaluation() {
                     >
                       {getLayerLabel(layer.type as SimulationLayerType, t)}
                       {layer.includes_gengivoplasty && (
-                        <Badge variant="secondary" className="ml-1 text-[10px] px-1">{t('components.evaluationDetail.gingiva')}</Badge>
+                        <Badge variant="secondary" className="ml-1 text-xs px-1">{t('components.evaluationDetail.gingiva')}</Badge>
                       )}
                     </Button>
                   ))}

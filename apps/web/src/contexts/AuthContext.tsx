@@ -12,8 +12,8 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, fullName: string, cro?: string) => Promise<{ error: AuthError | null }>;
-  signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
+  signUp: (email: string, password: string, fullName: string, cro?: string, captchaToken?: string) => Promise<{ error: AuthError | null }>;
+  signIn: (email: string, password: string, captchaToken?: string) => Promise<{ error: AuthError | null }>;
   signInWithGoogle: () => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<void>;
 }
@@ -86,12 +86,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [session, resetIdleTimer]);
 
-  const signUp = useCallback(async (email: string, password: string, fullName: string, cro?: string) => {
+  const signUp = useCallback(async (email: string, password: string, fullName: string, cro?: string, captchaToken?: string) => {
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: window.location.origin,
+        captchaToken,
         data: {
           full_name: fullName,
           cro: cro || null,
@@ -134,10 +135,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error };
   }, []);
 
-  const signIn = useCallback(async (email: string, password: string) => {
+  const signIn = useCallback(async (email: string, password: string, captchaToken?: string) => {
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
+      options: { captchaToken },
     });
     return { error };
   }, []);

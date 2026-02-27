@@ -2351,5 +2351,38 @@
     "periodontia": "Periodontics",
     "cirurgiaBucomaxilofacial": "Oral and Maxillofacial Surgery",
     "dtmDorOrofacial": "TMD/Orofacial Pain"
+  },
+  "enums": {
+    "cavityClass": {
+      "classe_i": "Class I",
+      "classe_ii": "Class II",
+      "classe_iii": "Class III",
+      "classe_iv": "Class IV",
+      "classe_v": "Class V",
+      "diastema": "Diastema",
+      "lente_de_contato": "Contact Lens Veneer",
+      "faceta_direta": "Direct Veneer",
+      "recontorno_estetico": "Aesthetic Recontouring"
+    },
+    "restorationSize": {
+      "pequena": "Small",
+      "media": "Medium",
+      "grande": "Large"
+    },
+    "depth": {
+      "superficial": "Superficial",
+      "moderado": "Moderate",
+      "profundo": "Deep"
+    },
+    "substrate": {
+      "esmalte": "Enamel",
+      "dentina": "Dentin",
+      "ambos": "Enamel and Dentin"
+    },
+    "substrateCondition": {
+      "integro": "Intact",
+      "deficiente": "Deficient",
+      "cariado": "Carious"
+    }
   }
 }

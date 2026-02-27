@@ -254,7 +254,7 @@ export function ProportionsCard({ analysis }: ProportionsCardProps) {
                   <div className="w-2 bg-pink-200 dark:bg-pink-700 rounded-t" style={{ height: '70%' }} />
                   <div className="w-3 bg-pink-300 dark:bg-pink-600 rounded-t" style={{ height: '100%' }} />
                 </div>
-                <p className="text-[10px] text-pink-600 dark:text-pink-400 mt-1 text-center">{t('components.dsd.proportions.zenithInvertedTriangleDesc')}</p>
+                <p className="text-xs text-pink-600 dark:text-pink-400 mt-1 text-center">{t('components.dsd.proportions.zenithInvertedTriangleDesc')}</p>
               </div>
               <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
                 <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-1">{t('components.dsd.proportions.zenithAligned')}</p>
@@ -263,7 +263,7 @@ export function ProportionsCard({ analysis }: ProportionsCardProps) {
                   <div className="w-2 bg-blue-200 dark:bg-blue-700 rounded-t" style={{ height: '100%' }} />
                   <div className="w-3 bg-blue-300 dark:bg-blue-600 rounded-t" style={{ height: '100%' }} />
                 </div>
-                <p className="text-[10px] text-blue-600 dark:text-blue-400 mt-1 text-center">{t('components.dsd.proportions.zenithAlignedDesc')}</p>
+                <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 text-center">{t('components.dsd.proportions.zenithAlignedDesc')}</p>
               </div>
             </div>
           </div>

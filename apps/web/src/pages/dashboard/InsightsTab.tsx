@@ -130,7 +130,7 @@ function TreatmentDonut({ items }: { items: Array<{ label: string; value: number
             {/* Center text */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
               <span className="text-2xl font-semibold tabular-nums">{total}</span>
-              <span className="text-[10px] text-muted-foreground">{t('dashboard.insights.total')}</span>
+              <span className="text-xs text-muted-foreground">{t('dashboard.insights.total')}</span>
             </div>
           </div>
           {/* Legend */}

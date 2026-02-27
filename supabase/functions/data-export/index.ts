@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
       // Evaluations (explicit columns — excludes internal cache fields)
       supabaseService
         .from("evaluations")
-        .select("id, user_id, session_id, patient_id, patient_name, patient_age, tooth, region, cavity_class, restoration_size, substrate, substrate_condition, enamel_condition, depth, aesthetic_level, tooth_color, stratification_needed, bruxism, longevity_expectation, budget, priority, status, treatment_type, desired_tooth_shape, recommended_resin_id, recommendation_text, alternatives, ideal_resin_id, ideal_reason, is_from_inventory, has_inventory_at_creation, ai_treatment_indication, ai_indication_reason, stratification_protocol, protocol_layers, cementation_protocol, generic_protocol, checklist_progress, alerts, warnings, photo_frontal, photo_45, photo_face, additional_photos, patient_aesthetic_goals, patient_desired_changes, created_at, updated_at")
+        .select("id, user_id, session_id, patient_id, patient_name, patient_age, tooth, region, cavity_class, restoration_size, substrate, substrate_condition, enamel_condition, depth, aesthetic_level, tooth_color, stratification_needed, bruxism, longevity_expectation, budget, priority, status, treatment_type, desired_tooth_shape, recommended_resin_id, recommendation_text, alternatives, ideal_resin_id, ideal_reason, is_from_inventory, has_inventory_at_creation, ai_treatment_indication, ai_indication_reason, stratification_protocol, protocol_layers, cementation_protocol, generic_protocol, checklist_progress, alerts, warnings, photo_frontal, photo_45, photo_face, additional_photos, dsd_simulation_url, dsd_simulation_layers, patient_aesthetic_goals, patient_desired_changes, created_at, updated_at")
         .eq("user_id", userId)
         .order("created_at", { ascending: false }),
       // Patients
@@ -140,16 +140,85 @@ Deno.serve(async (req) => {
       logger.warn(`[${reqId}] Partial export errors: ${detailedErrors.join(", ")}`);
     }
 
+    // Generate signed URLs for photos and DSD simulations (24h expiry)
+    const SIGNED_URL_EXPIRY = 86400;
+    const evaluations = evaluationsResult.data || [];
+
+    // Collect all storage paths for batch signing
+    const photoPaths: string[] = [];
+    const dsdPaths: string[] = [];
+
+    for (const ev of evaluations) {
+      if (ev.photo_frontal) photoPaths.push(ev.photo_frontal);
+      if (ev.photo_45) photoPaths.push(ev.photo_45);
+      if (ev.photo_face) photoPaths.push(ev.photo_face);
+      if (Array.isArray(ev.additional_photos)) {
+        for (const p of ev.additional_photos) {
+          if (typeof p === "string" && p) photoPaths.push(p);
+        }
+      }
+      if (ev.dsd_simulation_url) dsdPaths.push(ev.dsd_simulation_url);
+      if (Array.isArray(ev.dsd_simulation_layers)) {
+        for (const layer of ev.dsd_simulation_layers) {
+          if (layer?.simulation_url) dsdPaths.push(layer.simulation_url);
+        }
+      }
+    }
+
+    // Batch-sign all paths (returns Map<path, signedUrl>)
+    const signedMap = new Map<string, string>();
+
+    if (photoPaths.length > 0) {
+      const { data: photoSigned } = await supabaseService.storage
+        .from("clinical-photos")
+        .createSignedUrls(photoPaths, SIGNED_URL_EXPIRY);
+      if (photoSigned) {
+        for (const item of photoSigned) {
+          if (item.signedUrl && item.path) signedMap.set(item.path, item.signedUrl);
+        }
+      }
+    }
+
+    if (dsdPaths.length > 0) {
+      const { data: dsdSigned } = await supabaseService.storage
+        .from("dsd-simulations")
+        .createSignedUrls(dsdPaths, SIGNED_URL_EXPIRY);
+      if (dsdSigned) {
+        for (const item of dsdSigned) {
+          if (item.signedUrl && item.path) signedMap.set(item.path, item.signedUrl);
+        }
+      }
+    }
+
+    // Enrich evaluations with signed URLs
+    const enrichedEvaluations = evaluations.map((ev) => ({
+      ...ev,
+      photo_frontal_url: signedMap.get(ev.photo_frontal) || null,
+      photo_45_url: signedMap.get(ev.photo_45) || null,
+      photo_face_url: signedMap.get(ev.photo_face) || null,
+      additional_photos_urls: Array.isArray(ev.additional_photos)
+        ? ev.additional_photos.map((p: string) => signedMap.get(p) || null)
+        : [],
+      dsd_simulation_signed_url: signedMap.get(ev.dsd_simulation_url) || null,
+      dsd_simulation_layers_urls: Array.isArray(ev.dsd_simulation_layers)
+        ? ev.dsd_simulation_layers.map((layer: { simulation_url?: string }) => ({
+            ...layer,
+            signed_url: layer?.simulation_url ? signedMap.get(layer.simulation_url) || null : null,
+          }))
+        : [],
+    }));
+
     const exportData = {
       export_metadata: {
         exported_at: new Date().toISOString(),
         user_id: userId,
         user_email: user.email,
-        format_version: "1.0",
+        format_version: "1.1",
         lgpd_reference: "Lei 13.709/2018 - Art. 18, V (Portabilidade dos dados)",
+        signed_urls_expire_at: new Date(Date.now() + SIGNED_URL_EXPIRY * 1000).toISOString(),
       },
       profile: profileResult.data || null,
-      evaluations: evaluationsResult.data || [],
+      evaluations: enrichedEvaluations,
       patients: patientsResult.data || [],
       drafts: draftsResult.data || [],
       credit_usage: creditUsageResult.data || [],
@@ -160,9 +229,10 @@ Deno.serve(async (req) => {
     };
 
     logger.log(
-      `[${reqId}] Export complete: ${evaluationsResult.data?.length ?? 0} evaluations, ` +
+      `[${reqId}] Export complete: ${evaluations.length} evaluations, ` +
         `${patientsResult.data?.length ?? 0} patients, ` +
-        `${draftsResult.data?.length ?? 0} drafts`,
+        `${draftsResult.data?.length ?? 0} drafts, ` +
+        `${signedMap.size} signed URLs`,
     );
 
     return new Response(JSON.stringify(exportData, null, 2), {

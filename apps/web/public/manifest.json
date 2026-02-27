@@ -18,9 +18,9 @@
       "type": "image/png"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/icon-maskable.svg",
       "sizes": "512x512",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "maskable"
     }
   ],

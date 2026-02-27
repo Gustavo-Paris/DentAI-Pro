@@ -48,7 +48,7 @@ function DraftCard({
             <p className="font-semibold text-sm sm:text-base">
               {draft.formData?.patientName || t('evaluation.patientNoName')}
             </p>
-            <Badge variant="outline" className="text-[10px] border-primary/30 text-primary bg-primary/5 dark:bg-primary/10 font-semibold uppercase tracking-wider">
+            <Badge variant="outline" className="text-xs border-primary/30 text-primary bg-primary/5 dark:bg-primary/10 font-semibold uppercase tracking-wider">
               {t('dashboard.draft.badge')}
             </Badge>
           </div>
@@ -161,7 +161,7 @@ function RecentSessions({
           {t('dashboard.recent.title')}
         </h2>
         <Link to="/evaluations">
-          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground" aria-label={t('dashboard.recent.viewAllLabel')}>
+          <Button variant="ghost" size="sm" className="h-9 px-2 text-xs text-muted-foreground hover:text-foreground" aria-label={t('dashboard.recent.viewAllLabel')}>
             <span className="hidden sm:inline">{t('dashboard.recent.viewAll')}</span>
             <span className="sm:hidden">{t('dashboard.recent.all')}</span>
             <ChevronRight className="w-3.5 h-3.5 ml-0.5" aria-hidden="true" />

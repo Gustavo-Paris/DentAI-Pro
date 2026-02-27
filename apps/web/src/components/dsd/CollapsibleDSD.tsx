@@ -134,7 +134,7 @@ export function CollapsibleDSD({
               >
                 {layer.label}
                 {layer.includes_gengivoplasty && (
-                  <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4">
+                  <Badge variant="secondary" className="text-xs px-1 py-0 h-4">
                     {t('components.dsd.collapsible.gingivaLabel')}
                   </Badge>
                 )}
@@ -150,13 +150,13 @@ export function CollapsibleDSD({
               <ShieldCheck className="w-3.5 h-3.5 text-success" />
               <span className="text-xs font-medium text-muted-foreground">{t('components.dsd.collapsible.areas')}</span>
             </div>
-            <Badge variant="outline" className="text-[10px] border-success/40 text-success">
+            <Badge variant="outline" className="text-xs border-success/40 text-success">
               {t('components.dsd.collapsible.lipPreserved')}
             </Badge>
-            <Badge variant="outline" className="text-[10px] border-destructive/40 text-destructive">
+            <Badge variant="outline" className="text-xs border-destructive/40 text-destructive">
               {t('components.dsd.collapsible.gingivaAltered')}
             </Badge>
-            <Badge variant="outline" className="text-[10px] border-primary/40 text-primary">
+            <Badge variant="outline" className="text-xs border-primary/40 text-primary">
               {t('components.dsd.collapsible.teethAltered')}
             </Badge>
           </div>

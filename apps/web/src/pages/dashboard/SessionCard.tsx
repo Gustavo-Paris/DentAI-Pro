@@ -54,7 +54,7 @@ export function SessionCard({ session }: { session: DashboardSession }) {
               </p>
               <Badge
                 variant="outline"
-                className={`text-[10px] font-semibold uppercase tracking-wider shrink-0 ${
+                className={`text-xs font-semibold uppercase tracking-wider shrink-0 ${
                   isCompleted
                     ? STATUS_STYLES.completed.badge
                     : STATUS_STYLES.inProgress.badge
@@ -70,7 +70,7 @@ export function SessionCard({ session }: { session: DashboardSession }) {
               {session.hasDSD && (
                 <>
                   <span className="text-muted-foreground/40">·</span>
-                  <Badge variant="outline" className={`text-[10px] px-1.5 gap-1 ${DSD_BADGE_CLASS}`}>
+                  <Badge variant="outline" className={`text-xs px-1.5 gap-1 ${DSD_BADGE_CLASS}`}>
                     <Smile className="w-2.5 h-2.5" aria-hidden="true" />
                     DSD
                   </Badge>
@@ -83,7 +83,7 @@ export function SessionCard({ session }: { session: DashboardSession }) {
                     {session.treatmentTypes.map(type => {
                       const config = getTreatmentConfig(type);
                       return (
-                        <Badge key={type} variant="outline" className="text-[10px] px-1.5 gap-1">
+                        <Badge key={type} variant="outline" className="text-xs px-1.5 gap-1">
                           <config.icon className="w-2.5 h-2.5" />
                           {t(config.shortLabelKey)}
                         </Badge>

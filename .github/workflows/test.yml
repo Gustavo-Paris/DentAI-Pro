@@ -138,6 +138,48 @@ jobs:
         working-directory: supabase/functions
         run: deno test --allow-read --allow-env --allow-net .
 
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-latest
+    needs: [test, test-heavy]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    env:
+      GITHUB_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
+      VITE_SUPABASE_URL: https://placeholder.supabase.co
+      VITE_SUPABASE_PUBLISHABLE_KEY: placeholder-key-for-ci
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: Configure GitHub Packages registry
+        run: |
+          echo "@parisgroup-ai:registry=https://npm.pkg.github.com" >> .npmrc
+          echo "//npm.pkg.github.com/:_authToken=\${GITHUB_TOKEN}" >> .npmrc
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests with coverage
+        env:
+          NODE_OPTIONS: '--max-old-space-size=6144'
+        run: cd apps/web && npx vitest run --coverage --reporter=basic
+
+      - name: Upload coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v5
+        with:
+          files: apps/web/coverage/lcov.info
+          flags: frontend
+          fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
   build:
     name: Build
     runs-on: ubuntu-latest
@@ -201,64 +243,54 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build]
     continue-on-error: true
-    timeout-minutes: 15
+    timeout-minutes: 20
     env:
       GITHUB_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
-      E2E_USER_EMAIL: ${{ secrets.E2E_USER_EMAIL }}
-      E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
     steps:
-      - name: Check E2E prerequisites
-        env:
-          HAS_EMAIL: ${{ secrets.E2E_USER_EMAIL != '' }}
-          HAS_PASSWORD: ${{ secrets.E2E_USER_PASSWORD != '' }}
-          IS_MAIN_PUSH: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        run: |
-          if [ "$HAS_EMAIL" != "true" ] || [ "$HAS_PASSWORD" != "true" ]; then
-            if [ "$IS_MAIN_PUSH" = "true" ]; then
-              echo "::error::E2E secrets missing on main — E2E_USER_EMAIL and E2E_USER_PASSWORD must be configured."
-              exit 1
-            fi
-            echo "::warning::E2E tests skipped — secrets not configured (OK for forks/PRs)."
-            echo "e2e_skip=true" >> "$GITHUB_ENV"
-          fi
-
       - uses: actions/checkout@v6
-        if: env.e2e_skip != 'true'
 
       - uses: pnpm/action-setup@v4
-        if: env.e2e_skip != 'true'
 
       - uses: actions/setup-node@v6
-        if: env.e2e_skip != 'true'
         with:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
 
       - name: Configure GitHub Packages registry
-        if: env.e2e_skip != 'true'
         run: |
           echo "@parisgroup-ai:registry=https://npm.pkg.github.com" >> .npmrc
           echo "//npm.pkg.github.com/:_authToken=\${GITHUB_TOKEN}" >> .npmrc
 
       - name: Install dependencies
-        if: env.e2e_skip != 'true'
         run: pnpm install --frozen-lockfile
 
       - name: Install Playwright (Chromium only)
-        if: env.e2e_skip != 'true'
         run: npx playwright install --with-deps chromium
 
+      - uses: supabase/setup-cli@v1
+
+      - name: Start local Supabase
+        run: |
+          supabase start -x imgproxy,inbucket,logflare,vector,edge-runtime
+          echo "SUPABASE_URL=$(supabase status -o env | grep API_URL | cut -d= -f2)" >> "$GITHUB_ENV"
+          echo "SUPABASE_ANON_KEY=$(supabase status -o env | grep ANON_KEY | cut -d= -f2)" >> "$GITHUB_ENV"
+
       - name: Run E2E tests
-        if: env.e2e_skip != 'true'
         env:
-          VITE_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL || 'http://localhost:54321' }}
-          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.E2E_SUPABASE_KEY || 'placeholder' }}
+          VITE_SUPABASE_URL: ${{ env.SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ env.SUPABASE_ANON_KEY }}
+          E2E_USER_EMAIL: e2e@test.local
+          E2E_USER_PASSWORD: Test123456!
         run: cd apps/web && npx playwright test --project=chromium
 
       - name: Upload Playwright report
-        if: always() && env.e2e_skip != 'true'
+        if: always()
         uses: actions/upload-artifact@v6
         with:
           name: playwright-report
           path: apps/web/playwright-report/
           retention-days: 14
+
+      - name: Stop Supabase
+        if: always()
+        run: supabase stop --no-backup

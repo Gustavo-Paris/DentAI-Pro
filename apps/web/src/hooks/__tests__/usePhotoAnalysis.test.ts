@@ -36,6 +36,15 @@ vi.mock('@/lib/logger', () => ({
   logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
 }));
 
+vi.mock('@/lib/imageUtils', () => ({
+  compressBase64ForAnalysis: vi.fn((dataUrl: string) => Promise.resolve(dataUrl)),
+}));
+
+vi.mock('@/lib/edge-function-errors', () => ({
+  classifyEdgeFunctionError: vi.fn(() => 'unknown'),
+  isRetryableErrorType: vi.fn(() => false),
+}));
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------

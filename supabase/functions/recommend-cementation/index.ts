@@ -4,7 +4,7 @@ import { sanitizeForPrompt } from "../_shared/validation.ts";
 import { logger } from "../_shared/logger.ts";
 import { callClaudeWithTools, ClaudeError, type OpenAIMessage, type OpenAITool } from "../_shared/claude.ts";
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
-import { checkAndUseCredits, createInsufficientCreditsResponse, refundCredits } from "../_shared/credits.ts";
+import { withCreditProtection, isInsufficientCreditsResponse } from "../_shared/withCreditProtection.ts";
 import { getPrompt, withMetrics } from "../_shared/prompts/index.ts";
 import { createSupabaseMetrics, PROMPT_VERSION } from "../_shared/metrics-adapter.ts";
 import { parseAIResponse, CementationProtocolSchema } from "../_shared/aiSchemas.ts";
@@ -260,21 +260,14 @@ Deno.serve(async (req: Request) => {
   const reqId = generateRequestId();
   logger.log(`[${reqId}] recommend-cementation: start`);
 
-  // Track credit state for refund on error (must be outside try for catch access)
-  let creditsConsumed = false;
-  let supabaseForRefund: ReturnType<typeof getSupabaseClient> | null = null;
-  let userIdForRefund: string | null = null;
-
   try {
     // Create service role client
     const supabase = getSupabaseClient();
-    supabaseForRefund = supabase;
 
     // Validate authentication (includes deleted/banned checks)
     const authResult = await authenticateRequest(req, supabase, corsHeaders);
     if (isAuthError(authResult)) return authResult;
     const { user } = authResult;
-    userIdForRefund = user.id;
 
     // Check rate limit (AI_LIGHT: 20/min, 100/hour, 500/day)
     const rateLimitResult = await checkRateLimit(
@@ -500,13 +493,6 @@ Deno.serve(async (req: Request) => {
       }
 
       protocol = parseAIResponse(CementationProtocolSchema, claudeResult.functionCall.args, 'recommend-cementation') as CementationProtocol;
-
-      // Credits: only charge after AI response is validated
-      const creditResult = await checkAndUseCredits(supabase, user.id, "cementation_recommendation", reqId);
-      if (!creditResult.allowed) {
-        return createInsufficientCreditsResponse(creditResult, corsHeaders);
-      }
-      creditsConsumed = true;
     } catch (error) {
       if (error instanceof ClaudeError) {
         if (error.statusCode === 429) {
@@ -519,50 +505,49 @@ Deno.serve(async (req: Request) => {
       return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     }
 
-    // HF acid safety net: ensure lithium disilicate never gets 10% HF
-    validateHFConcentration(protocol as unknown as Record<string, unknown>, ceramicType);
+    // Credits + post-processing wrapped in credit protection (auto-refund on error)
+    return await withCreditProtection(
+      { supabase, userId: user.id, operation: "cementation_recommendation", operationId: reqId, corsHeaders },
+      async (credits) => {
+        const creditResult = await credits.consume();
+        if (isInsufficientCreditsResponse(creditResult)) return creditResult;
 
-    // Derive treatment_type from the ceramic type in the request.
-    // "porcelana" is the most common but not the only option — e.g., "coroa"
-    // for full crowns, or other ceramic-based restorations.
-    const treatmentType = deriveTreatmentType(ceramicType);
+        // HF acid safety net: ensure lithium disilicate never gets 10% HF
+        validateHFConcentration(protocol as unknown as Record<string, unknown>, ceramicType);
 
-    // Update evaluation with cementation protocol
-    const { error: updateError } = await supabase
-      .from("evaluations")
-      .update({
-        cementation_protocol: protocol,
-        treatment_type: treatmentType,
-      })
-      .eq("id", evaluationId)
-      .eq("user_id", user.id);
+        // Derive treatment_type from the ceramic type in the request.
+        // "porcelana" is the most common but not the only option — e.g., "coroa"
+        // for full crowns, or other ceramic-based restorations.
+        const treatmentType = deriveTreatmentType(ceramicType);
 
-    if (updateError) {
-      logger.error("Update error:", updateError);
-      // Refund credits since protocol won't be persisted
-      if (creditsConsumed && supabaseForRefund && userIdForRefund) {
-        await refundCredits(supabaseForRefund, userIdForRefund, "cementation_recommendation", reqId);
-        logger.log(`[${reqId}] Refunded cementation_recommendation credits due to DB write failure`);
-      }
-      return createErrorResponse("Protocolo gerado mas falhou ao salvar. Tente novamente.", 500, corsHeaders);
-    }
+        // Update evaluation with cementation protocol
+        const { error: updateError } = await supabase
+          .from("evaluations")
+          .update({
+            cementation_protocol: protocol,
+            treatment_type: treatmentType,
+          })
+          .eq("id", evaluationId)
+          .eq("user_id", user.id);
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        protocol,
-      }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+        if (updateError) {
+          logger.error("Update error:", updateError);
+          return createErrorResponse("Protocolo gerado mas falhou ao salvar. Tente novamente.", 500, corsHeaders);
+        }
+
+        return new Response(
+          JSON.stringify({
+            success: true,
+            protocol,
+          }),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      },
     );
   } catch (error) {
     logger.error(`[${reqId}] recommend-cementation error:`, error);
-    // Refund credits on unexpected errors
-    if (creditsConsumed && supabaseForRefund && userIdForRefund) {
-      await refundCredits(supabaseForRefund, userIdForRefund, "cementation_recommendation", reqId);
-      logger.log(`[${reqId}] Refunded cementation_recommendation credits for user ${userIdForRefund} due to error`);
-    }
     return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders, undefined, reqId);
   }
 });

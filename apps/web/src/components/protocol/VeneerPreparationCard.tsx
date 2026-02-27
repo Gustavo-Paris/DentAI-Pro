@@ -141,7 +141,7 @@ export function VeneerPreparationCard() {
               </div>
               {prepNotes.map((note, i) => (
                 <p key={i} className="text-xs text-muted-foreground flex items-start gap-2">
-                  <Badge variant="outline" className="text-[10px] px-1 py-0 flex-shrink-0 mt-0.5">
+                  <Badge variant="outline" className="text-xs px-1 py-0 flex-shrink-0 mt-0.5">
                     {i + 1}
                   </Badge>
                   {note}

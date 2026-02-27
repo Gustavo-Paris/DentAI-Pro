@@ -132,7 +132,7 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
             >
               {layer.label}
               {layer.includes_gengivoplasty && (
-                <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4">
+                <Badge variant="secondary" className="text-xs px-1 py-0 h-4">
                   {t('components.wizard.dsd.simulationViewer.gingiva')}
                 </Badge>
               )}
@@ -147,7 +147,7 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
             >
               <Loader2 className="w-3 h-3 animate-spin" />
               {getLayerLabel('complete-treatment', t)}
-              <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4">
+              <Badge variant="secondary" className="text-xs px-1 py-0 h-4">
                 {t('components.wizard.dsd.simulationViewer.gingiva')}
               </Badge>
             </span>

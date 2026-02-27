@@ -58,7 +58,7 @@ export const CaseSummaryCard = memo(function CaseSummaryCard({
           <p className="text-muted-foreground text-xs">{t('components.wizard.review.typesLabel')}</p>
           <div className="flex flex-wrap gap-1 mt-0.5">
             {treatmentBreakdown.map(([type, count]) => (
-              <Badge key={type} variant="outline" className="text-[10px] font-normal">
+              <Badge key={type} variant="outline" className="text-xs font-normal">
                 {count} {t(`treatments.${type}.shortLabel`, type)}
               </Badge>
             ))}

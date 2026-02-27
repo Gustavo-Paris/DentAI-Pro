@@ -55,7 +55,7 @@ export function CreditPackSection() {
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
-              <span className="inline-flex items-center justify-center w-4 h-4 rounded bg-success text-success-foreground text-[10px] font-bold leading-none">P</span>
+              <span className="inline-flex items-center justify-center w-4 h-4 rounded bg-success text-success-foreground text-xs font-bold leading-none">P</span>
               {t('components.pricing.pix.label')}
             </button>
           </div>

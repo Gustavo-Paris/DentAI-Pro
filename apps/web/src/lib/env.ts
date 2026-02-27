@@ -7,6 +7,7 @@ const envSchema = z.object({
   VITE_STRIPE_PUBLISHABLE_KEY: z.string().default(''),
   VITE_POSTHOG_KEY: z.string().default(''),
   VITE_POSTHOG_HOST: z.string().default('https://us.i.posthog.com'),
+  VITE_TURNSTILE_SITE_KEY: z.string().default(''),
 });
 
 function parseEnv() {
@@ -17,6 +18,7 @@ function parseEnv() {
     VITE_STRIPE_PUBLISHABLE_KEY: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY,
     VITE_POSTHOG_KEY: import.meta.env.VITE_POSTHOG_KEY,
     VITE_POSTHOG_HOST: import.meta.env.VITE_POSTHOG_HOST,
+    VITE_TURNSTILE_SITE_KEY: import.meta.env.VITE_TURNSTILE_SITE_KEY,
   });
 
   if (!result.success) {

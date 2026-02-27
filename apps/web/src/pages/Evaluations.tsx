@@ -142,7 +142,7 @@ const SessionCard = memo(function SessionCard({
                   style={{ width: `${Math.round((session.completedCount / session.evaluationCount) * 100)}%` }}
                 />
               </div>
-              <span className="text-[10px] text-muted-foreground tabular-nums shrink-0">
+              <span className="text-xs text-muted-foreground tabular-nums shrink-0">
                 {session.completedCount}/{session.evaluationCount}
               </span>
             </div>

@@ -284,7 +284,7 @@ export function ComparisonSlider({
           <Button
             variant="secondary"
             size="icon"
-            className="w-9 h-9 bg-background/80 backdrop-blur-sm hover:bg-background"
+            className="w-10 h-10 bg-background/80 backdrop-blur-sm hover:bg-background"
             onClick={(e) => { e.stopPropagation(); handleZoomOut(); }}
             disabled={zoom <= MIN_ZOOM}
             aria-label={t('components.comparisonSlider.zoomOut')}
@@ -294,7 +294,7 @@ export function ComparisonSlider({
           <Button
             variant="secondary"
             size="icon"
-            className="w-9 h-9 bg-background/80 backdrop-blur-sm hover:bg-background text-[10px] font-mono"
+            className="w-10 h-10 bg-background/80 backdrop-blur-sm hover:bg-background text-xs font-mono"
             onClick={(e) => { e.stopPropagation(); handleZoomReset(); }}
             aria-label={t('components.comparisonSlider.zoomReset')}
           >
@@ -303,7 +303,7 @@ export function ComparisonSlider({
           <Button
             variant="secondary"
             size="icon"
-            className="w-9 h-9 bg-background/80 backdrop-blur-sm hover:bg-background"
+            className="w-10 h-10 bg-background/80 backdrop-blur-sm hover:bg-background"
             onClick={(e) => { e.stopPropagation(); handleZoomIn(); }}
             disabled={zoom >= MAX_ZOOM}
             aria-label={t('components.comparisonSlider.zoomIn')}
@@ -314,7 +314,7 @@ export function ComparisonSlider({
 
         {/* Zoom indicator */}
         {zoom > 1 && (
-          <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-background/80 backdrop-blur-sm rounded text-[10px] font-mono text-muted-foreground z-20">
+          <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-background/80 backdrop-blur-sm rounded text-xs font-mono text-muted-foreground z-20">
             {zoom.toFixed(1)}x
           </div>
         )}
@@ -329,7 +329,7 @@ export function ComparisonSlider({
 
         {/* Change indicator */}
         {changeIndicator && (
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 px-2 py-1 bg-destructive/90 text-destructive-foreground rounded-full text-[10px] font-medium z-10 pointer-events-none whitespace-nowrap">
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 px-2 py-1 bg-destructive/90 text-destructive-foreground rounded-full text-xs font-medium z-10 pointer-events-none whitespace-nowrap">
             {changeIndicator}
           </div>
         )}

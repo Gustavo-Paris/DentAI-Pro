@@ -209,8 +209,8 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
                     <Badge
                       variant={hasGingivoSuggestion ? 'default' : 'secondary'}
                       className={hasGingivoSuggestion
-                        ? 'bg-warning text-warning-foreground text-[10px] px-1.5 py-0'
-                        : 'text-[10px] px-1.5 py-0'
+                        ? 'bg-warning text-warning-foreground text-xs px-1.5 py-0'
+                        : 'text-xs px-1.5 py-0'
                       }
                     >
                       {hasGingivoSuggestion

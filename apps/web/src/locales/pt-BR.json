@@ -2351,5 +2351,38 @@
     "periodontia": "Periodontia",
     "cirurgiaBucomaxilofacial": "Cirurgia Bucomaxilofacial",
     "dtmDorOrofacial": "DTM/Dor Orofacial"
+  },
+  "enums": {
+    "cavityClass": {
+      "classe_i": "Classe I",
+      "classe_ii": "Classe II",
+      "classe_iii": "Classe III",
+      "classe_iv": "Classe IV",
+      "classe_v": "Classe V",
+      "diastema": "Diastema",
+      "lente_de_contato": "Lente de Contato",
+      "faceta_direta": "Faceta Direta",
+      "recontorno_estetico": "Recontorno Estético"
+    },
+    "restorationSize": {
+      "pequena": "Pequena",
+      "media": "Média",
+      "grande": "Grande"
+    },
+    "depth": {
+      "superficial": "Superficial",
+      "moderado": "Moderado",
+      "profundo": "Profundo"
+    },
+    "substrate": {
+      "esmalte": "Esmalte",
+      "dentina": "Dentina",
+      "ambos": "Esmalte e Dentina"
+    },
+    "substrateCondition": {
+      "integro": "Íntegro",
+      "deficiente": "Deficiente",
+      "cariado": "Cariado"
+    }
   }
 }
