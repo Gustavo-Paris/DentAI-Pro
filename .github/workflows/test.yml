@@ -94,7 +94,13 @@ jobs:
       - name: Run tests
         env:
           NODE_OPTIONS: '--max-old-space-size=6144'
-        run: cd apps/web && npx vitest run --pool=forks --poolOptions.forks.maxForks=1 --shard=${{ matrix.shard }} --reporter=basic
+        run: cd apps/web && npx vitest run --pool=forks --poolOptions.forks.maxForks=1 --shard=${{ matrix.shard }} --reporter=basic --exclude='**/useEvaluationDetail.test.ts'
+
+      - name: Run heavy test (isolated)
+        if: matrix.shard == '1/4'
+        env:
+          NODE_OPTIONS: '--max-old-space-size=6144'
+        run: cd apps/web && npx vitest run src/hooks/__tests__/useEvaluationDetail.test.ts --pool=forks --poolOptions.forks.maxForks=1 --reporter=basic
 
   deno-test:
     name: Deno Tests (Edge Functions)
