@@ -16,6 +16,10 @@ import {
   createRateLimitResponse,
   RATE_LIMITS,
 } from "../_shared/rateLimit.ts";
+import {
+  BONUS_CREDITS,
+  isValidReferralCode,
+} from "./referral-validation.ts";
 
 /**
  * Apply a referral code for a newly signed-up user.
@@ -27,9 +31,6 @@ import {
  *
  * Auth: Bearer token validated via supabase.auth.getUser().
  */
-
-const BONUS_CREDITS = 5;
-const REFERRAL_CODE_PATTERN = /^[A-Za-z0-9\-]{4,20}$/;
 
 Deno.serve(
   withErrorBoundary(async (req) => {
@@ -79,7 +80,7 @@ Deno.serve(
 
     const referralCode = body.referralCode?.trim();
 
-    if (!referralCode || !REFERRAL_CODE_PATTERN.test(referralCode)) {
+    if (!isValidReferralCode(referralCode)) {
       return createErrorResponse(
         "Codigo de indicacao invalido",
         400,

@@ -356,7 +356,7 @@ export default function Result() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-sm text-muted-foreground italic">
-                      "{evaluation.patient_aesthetic_goals}"
+                      "{t(`aestheticGoals.${evaluation.patient_aesthetic_goals}`, { defaultValue: evaluation.patient_aesthetic_goals })}"
                     </p>
                   </CardContent>
                 </Card>

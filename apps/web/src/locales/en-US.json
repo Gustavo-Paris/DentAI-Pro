@@ -1382,6 +1382,12 @@
         "comparisonSlider": {
           "ariaLabel": "Before and after comparison"
         },
+        "proportionOverlay": {
+          "ariaLabel": "DSD proportion lines",
+          "midline": "Midline",
+          "goldenRatio": "Golden Ratio",
+          "smileArc": "Smile Arc"
+        },
         "simulateOnFace": "Simulate on face",
         "generatingFaceMockup": "Generating face simulation...",
         "faceMockupError": "Error generating face simulation",
@@ -2384,5 +2390,12 @@
       "deficiente": "Deficient",
       "cariado": "Carious"
     }
+  },
+  "aestheticGoals": {
+    "whitening_hollywood": "Intense whitening - Hollywood level (BL1)",
+    "whitening_natural": "Natural and subtle appearance (A1/A2)"
+  },
+  "indicationReasons": {
+    "dsd_gingival_harmonization": "Gingival harmonization identified by DSD analysis"
   }
 }

@@ -1,7 +1,7 @@
 ---
 title: ADR Index
 created: 2026-02-05
-updated: 2026-02-12
+updated: 2026-02-27
 author: Team AURIA
 status: published
 tags:
@@ -29,6 +29,7 @@ related:
 | [[ADR-007-clinical-photo-storage\|ADR-007]] | Clinical Photo Storage | Accepted | 2026-02-10 | Backend / Storage |
 | [[ADR-008-wizard-architecture-post-refactor\|ADR-008]] | Wizard Architecture (Post-Refactor) | Accepted | 2026-02-10 | Frontend |
 | [[ADR-009-Design-System-Coexistence\|ADR-009]] | Design System Coexistence (PageShell + shadcn/ui) | Accepted | 2026-02-12 | Frontend / Design System |
+| [[ADR-010-accepted-risks\|ADR-010]] | Accepted Risks (CSP unsafe-inline, PageShell bundle) | Accepted | 2026-02-27 | Security / Performance |
 
 ## Status Legend
 
@@ -58,4 +59,4 @@ related:
 - [[Templates/ADR Template]] — Blank ADR template
 
 ---
-*Updated: 2026-02-12*
+*Updated: 2026-02-27*

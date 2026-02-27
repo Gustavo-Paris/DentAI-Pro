@@ -52,11 +52,21 @@ interface CaseSummaryBoxProps {
   secondaryPhotos?: { angle45?: string | null; face?: string | null };
 }
 
-// Map whitening preference text to target shade (2 levels: natural / hollywood)
+// Map whitening preference to target shade (supports enum codes + legacy text)
 function getTargetShade(whiteningGoal: string | null | undefined, originalColor: string): { shade: string; isTarget: boolean; alreadyInRange: boolean } {
   if (!whiteningGoal) return { shade: originalColor, isTarget: false, alreadyInRange: false };
   const lower = whiteningGoal.toLowerCase();
   const upper = originalColor.toUpperCase().trim();
+  // Enum codes (new format)
+  if (lower === 'whitening_hollywood') {
+    const alreadyInRange = ['BL1', 'BL2', 'BL3'].some(s => upper === s);
+    return { shade: 'BL1/BL2/BL3', isTarget: true, alreadyInRange };
+  }
+  if (lower === 'whitening_natural') {
+    const alreadyInRange = ['A1', 'A2', 'B1'].some(s => upper === s);
+    return { shade: 'A1/A2/B1', isTarget: true, alreadyInRange };
+  }
+  // Legacy keyword-based detection
   if (lower.includes('hollywood') || lower.includes('intenso') || lower.includes('bl1') || lower.includes('bl2') || lower.includes('bl3')) {
     const alreadyInRange = ['BL1', 'BL2', 'BL3'].some(s => upper === s);
     return { shade: 'BL1/BL2/BL3', isTarget: true, alreadyInRange };
@@ -65,7 +75,6 @@ function getTargetShade(whiteningGoal: string | null | undefined, originalColor:
     const alreadyInRange = ['A1', 'A2', 'B1'].some(s => upper === s);
     return { shade: 'A1/A2/B1', isTarget: true, alreadyInRange };
   }
-  // Legacy fallback for old 3-level 'white'/'notável' values
   if (lower.includes('notável') || lower.includes('branco') || lower.includes('white')) {
     const alreadyInRange = ['BL1', 'BL2', 'BL3'].some(s => upper === s);
     return { shade: 'BL1/BL2/BL3', isTarget: true, alreadyInRange };
@@ -144,7 +153,9 @@ function CaseSummaryBox({
               </div>
               <p className="font-medium text-sm sm:text-base">{t(config.labelKey)}</p>
               {indicationReason && (
-                <p className="text-xs text-muted-foreground line-clamp-2">{indicationReason}</p>
+                <p className="text-xs text-muted-foreground line-clamp-2">
+                  {t(`indicationReasons.${indicationReason}`, { defaultValue: indicationReason })}
+                </p>
               )}
             </div>
           )}

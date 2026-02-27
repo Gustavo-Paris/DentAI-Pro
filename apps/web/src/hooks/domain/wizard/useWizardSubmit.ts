@@ -260,15 +260,15 @@ export function useWizardSubmit({
         ai_treatment_indication:
           isGengivoplasty ? 'gengivoplastia' : (toothData?.treatment_indication || analysisResult?.treatment_indication || null),
         ai_indication_reason:
-          isGengivoplasty ? 'Harmonização gengival identificada pela análise DSD' : (toothData?.indication_reason || analysisResult?.indication_reason || null),
+          isGengivoplasty ? 'dsd_gingival_harmonization' : (toothData?.indication_reason || analysisResult?.indication_reason || null),
         dsd_analysis: dsdResult?.analysis || null,
         dsd_simulation_url: dsdResult?.simulation_url || null,
         dsd_simulation_layers: dsdResult?.layers || null,
         tooth_bounds: toothData?.tooth_bounds || null,
         patient_aesthetic_goals:
           patientPreferences.whiteningLevel === 'hollywood'
-            ? 'Clareamento intenso - nível Hollywood (BL1)'
-            : 'Aparência natural e sutil (A1/A2)',
+            ? 'whitening_hollywood'
+            : 'whitening_natural',
         patient_desired_changes: null,
         stratification_needed: !isGengivoplasty,
       };
