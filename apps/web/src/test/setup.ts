@@ -8,8 +8,10 @@ vi.mock("react-i18next", async (importOriginal) => {
   return {
     ...actual,
     useTranslation: () => ({
-      t: (key: string, params?: Record<string, unknown>) => {
-        if (params) return `${key}:${JSON.stringify(params)}`;
+      t: (key: string, paramsOrDefault?: Record<string, unknown> | string) => {
+        if (typeof paramsOrDefault === 'object' && paramsOrDefault !== null) {
+          return `${key}:${JSON.stringify(paramsOrDefault)}`;
+        }
         return key;
       },
       i18n: { language: "pt-BR", changeLanguage: vi.fn() },

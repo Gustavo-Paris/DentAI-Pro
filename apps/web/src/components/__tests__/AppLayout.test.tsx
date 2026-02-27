@@ -57,6 +57,10 @@ vi.mock('@/components/CreditBadge', () => ({
   CreditBadge: (props: any) => <span data-testid="credit-badge">Credits</span>,
 }));
 
+vi.mock('@/components/SidebarCredits', () => ({
+  SidebarCredits: () => <span data-testid="sidebar-credits">Sidebar Credits</span>,
+}));
+
 vi.mock('@/components/ThemeToggle', () => ({
   ThemeToggle: () => <button data-testid="theme-toggle">Theme</button>,
 }));
@@ -103,18 +107,19 @@ describe('AppLayout', () => {
     );
   });
 
-  it('should pass 5 navigation items', () => {
+  it('should pass navigation items across 2 sections', () => {
     renderWithProviders(<AppLayout />);
     const sections = capturedProps.navigation as Array<{ items: unknown[] }>;
-    expect(sections).toHaveLength(1);
-    expect(sections[0].items).toHaveLength(5);
+    expect(sections).toHaveLength(2);
+    expect(sections[0].items).toHaveLength(4);
+    expect(sections[1].items).toHaveLength(3);
   });
 
   it('should pass navigation items with correct hrefs', () => {
     renderWithProviders(<AppLayout />);
-    const items = (capturedProps.navigation as Array<{ items: Array<{ href: string }> }>)[0].items;
-    const hrefs = items.map((i) => i.href);
-    expect(hrefs).toEqual(['/dashboard', '/evaluations', '/patients', '/inventory', '/profile']);
+    const sections = capturedProps.navigation as Array<{ items: Array<{ href: string }> }>;
+    const allHrefs = sections.flatMap((s) => s.items.map((i) => i.href));
+    expect(allHrefs).toEqual(['/dashboard', '/evaluations', '/patients', '/inventory', '/profile', '/profile?tab=assinatura', 'mailto:suporte@tosmile.ai']);
   });
 
   it('should pass user profile from auth context', () => {
@@ -136,10 +141,10 @@ describe('AppLayout', () => {
     expect(screen.getByTestId('outlet')).toBeInTheDocument();
   });
 
-  it('should render CreditBadge in footer and headerRight', () => {
+  it('should render CreditBadge in headerRight and SidebarCredits in footer', () => {
     renderWithProviders(<AppLayout />);
-    const badges = screen.getAllByTestId('credit-badge');
-    expect(badges.length).toBe(2);
+    expect(screen.getByTestId('credit-badge')).toBeInTheDocument();
+    expect(screen.getByTestId('sidebar-credits')).toBeInTheDocument();
   });
 
   it('should render ThemeToggle', () => {

@@ -94,7 +94,13 @@ jobs:
       - name: Run tests
         env:
           NODE_OPTIONS: '--max-old-space-size=6144'
-        run: cd apps/web && npx vitest run --no-file-parallelism --shard=${{ matrix.shard }} --reporter=basic
+        run: cd apps/web && npx vitest run --no-file-parallelism --shard=${{ matrix.shard }} --exclude='**/useEvaluationDetail.test.ts' --reporter=basic
+
+      - name: Run heavy test (shard 4 only)
+        if: matrix.shard == '4/8'
+        env:
+          NODE_OPTIONS: '--max-old-space-size=6144'
+        run: cd apps/web && npx vitest run src/hooks/__tests__/useEvaluationDetail.test.ts --reporter=basic
 
   deno-test:
     name: Deno Tests (Edge Functions)

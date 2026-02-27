@@ -74,6 +74,8 @@ describe('ThemeToggle', () => {
   it('should have accessible aria-label', () => {
     mockColorMode = 'dark';
     render(<ThemeToggle />);
-    expect(screen.getByLabelText('Tema: Escuro')).toBeInTheDocument();
+    // Global i18n mock returns keys; t('components.themeToggle.label', 'Tema') returns key
+    // and t('components.themeToggle.dark', 'Escuro') returns key
+    expect(screen.getByLabelText('components.themeToggle.label: components.themeToggle.dark')).toBeInTheDocument();
   });
 });
