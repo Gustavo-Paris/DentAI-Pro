@@ -21,7 +21,15 @@ export const dsdAnalysis: PromptDefinition<Params> = {
   system: ({ additionalContext = '', preferencesContext = '', clinicalContext = '', additionalPhotos }: Params) => {
     const hasFacePhoto = !!additionalPhotos?.face
     const visagismGuard = hasFacePhoto
-      ? ''
+      ? `\n=== VISAGISMO COM FOTO FACIAL DISPONÍVEL ===
+IMPORTANTE: Uma foto da FACE COMPLETA foi fornecida como imagem adicional junto com a foto intraoral.
+Use a foto da face completa para realizar análise de VISAGISMO COMPLETA:
+- DETERMINE o formato facial (oval, quadrado, triangular, retangular, redondo) a partir da FOTO DE ROSTO
+- DETERMINE o temperamento percebido (colérico, sanguíneo, melancólico, fleumático)
+- RECOMENDE formato de dente baseado na correlação face-dente
+- DOCUMENTE a análise em visagism_notes com justificativa
+- Adicione observações sobre formato facial e temperamento nas observations
+A foto de rosto é a SEGUNDA imagem enviada. A PRIMEIRA é a foto intraoral.\n`
       : `\n=== VISAGISMO SEM FOTO FACIAL ===
 Foto da face completa NAO foi fornecida. OBRIGATORIO:
 - Retorne face_shape: "indeterminado"

@@ -41,11 +41,13 @@ Uma foto do sorriso em ângulo de 45 graus foi fornecida. Use-a para:
   }
   if (additionalPhotos?.face) {
     additionalContext += `
-FOTO ADICIONAL - FACE COMPLETA:
-Uma foto da face completa foi fornecida. Use-a para:
+FOTO ADICIONAL - FACE COMPLETA (SEGUNDA IMAGEM):
+Uma foto da face completa foi fornecida como SEGUNDA IMAGEM. Use-a OBRIGATORIAMENTE para:
+- VISAGISMO: determinar formato facial e temperamento percebido
 - Aplicar a regra dos terços faciais com mais precisão
 - Avaliar a linha média facial em relação a landmarks como nariz e queixo
 - Considerar proporções faciais globais no planejamento
+- Recomendar formato de dente baseado na correlação face-dente (visagismo)
 `;
   }
 
