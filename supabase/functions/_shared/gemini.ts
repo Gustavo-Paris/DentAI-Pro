@@ -601,6 +601,8 @@ export async function callGeminiVisionWithTools(
     forceFunctionName?: string;
     timeoutMs?: number;
     thinkingLevel?: "minimal" | "low" | "medium" | "high";
+    /** Additional images to include after the first image */
+    additionalImages?: Array<{ data: string; mimeType: string }>;
   } = {}
 ): Promise<{
   text: string | null;
@@ -617,6 +619,13 @@ export async function callGeminiVisionWithTools(
       },
     },
   ];
+
+  // Append additional images if provided
+  if (options.additionalImages) {
+    for (const img of options.additionalImages) {
+      parts.push({ inlineData: { mimeType: img.mimeType, data: img.data } });
+    }
+  }
 
   const geminiTools = convertToGeminiTools(tools);
 

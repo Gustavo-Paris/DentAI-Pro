@@ -7,7 +7,6 @@ import {
   GeminiError,
 } from "../_shared/gemini.ts";
 import {
-  callClaudeVision,
   callClaudeVisionWithTools,
   ClaudeError,
 } from "../_shared/claude.ts";
@@ -251,6 +250,23 @@ Se o problema clínico é microdontia/conoide → sua sugestão deve ser "Aument
   }
   const [, mimeType, base64Data] = dataUrlMatch;
 
+  // Extract additional photos as inline images for Gemini multi-image analysis
+  const additionalImagesForGemini: Array<{ data: string; mimeType: string }> = [];
+  if (additionalPhotos?.face) {
+    const faceMatch = additionalPhotos.face.match(/^data:([^;]+);base64,(.+)$/);
+    if (faceMatch) {
+      additionalImagesForGemini.push({ data: faceMatch[2], mimeType: faceMatch[1] });
+      logger.log('DSD analysis: including face photo as additional image for Gemini');
+    }
+  }
+  if (additionalPhotos?.smile45) {
+    const smile45Match = additionalPhotos.smile45.match(/^data:([^;]+);base64,(.+)$/);
+    if (smile45Match) {
+      additionalImagesForGemini.push({ data: smile45Match[2], mimeType: smile45Match[1] });
+      logger.log('DSD analysis: including smile45 photo as additional image for Gemini');
+    }
+  }
+
   // Metrics for DSD analysis
   const metrics = createSupabaseMetrics(
     Deno.env.get('SUPABASE_URL')!,
@@ -258,7 +274,7 @@ Se o problema clínico é microdontia/conoide → sua sugestão deve ser "Aument
   );
   const dsdAnalysisPromptDef = getPrompt('dsd-analysis');
 
-  // Dual-pass: start smile line classifier in PARALLEL (Haiku 4.5, ~2-3s)
+  // Dual-pass: start smile line classifier in PARALLEL (Gemini Flash, ~1-2s)
   // Non-blocking: if it fails, main analysis is unaffected
   const classifierPromptDef = getPrompt('smile-line-classifier');
   const classifierPromise: Promise<SmileLineClassifierResult | null> = (async () => {
@@ -266,7 +282,7 @@ Se o problema clínico é microdontia/conoide → sua sugestão deve ser "Aument
       const classifierResponse = await withMetrics<{ text: string | null }>(
         metrics, classifierPromptDef.id, PROMPT_VERSION, classifierPromptDef.model
       )(async () => {
-        const resp = await callClaudeVision(
+        const resp = await callGeminiVision(
           classifierPromptDef.model,
           classifierPromptDef.user({}),
           base64Data,
@@ -278,7 +294,7 @@ Se o problema clínico é microdontia/conoide → sua sugestão deve ser "Aument
           }
         );
         if (resp.tokens) {
-          logger.info('claude_tokens', { operation: 'generate-dsd:smile-line-classifier', ...resp.tokens });
+          logger.info('gemini_tokens', { operation: 'generate-dsd:smile-line-classifier', ...resp.tokens });
         }
         return {
           result: { text: resp.text },
@@ -337,6 +353,7 @@ Se o problema clínico é microdontia/conoide → sua sugestão deve ser "Aument
           forceFunctionName: "analyze_dsd",
           timeoutMs: 50_000,
           thinkingLevel: "low",
+          additionalImages: additionalImagesForGemini.length > 0 ? additionalImagesForGemini : undefined,
         }
       );
       if (response.tokens) {
@@ -370,6 +387,7 @@ Use SOMENTE valores em português conforme os enums do schema.`,
         systemPrompt: analysisPrompt,
         temperature: 0.0,
         maxTokens: 4000,
+        additionalImages: additionalImagesForGemini.length > 0 ? additionalImagesForGemini : undefined,
       }
     );
     if (plainResponse.tokens) {

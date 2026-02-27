@@ -1051,11 +1051,7 @@
       "regenerateError": "Erro ao regenerar simulação. Tente novamente.",
       "whiteningUpdated": "Nível de clareamento atualizado para {{level}}",
       "layersFailedDesc_one": "{{count}} camada falhou — tente novamente",
-      "layersFailedDesc_other": "{{count}} camadas falharam — tente novamente",
-      "simulateOnFace": "Simular no rosto",
-      "generatingFaceMockup": "Gerando simulação no rosto...",
-      "faceMockupError": "Erro ao gerar simulação no rosto",
-      "facePhotoRequired": "Envie uma foto de rosto para usar esta funcionalidade"
+      "layersFailedDesc_other": "{{count}} camadas falharam — tente novamente"
     },
     "evaluationDetail": {
       "loadError": "Erro ao carregar avaliação",
@@ -1385,7 +1381,11 @@
         },
         "comparisonSlider": {
           "ariaLabel": "Comparação antes e depois"
-        }
+        },
+        "simulateOnFace": "Simular no rosto",
+        "generatingFaceMockup": "Gerando simulação no rosto...",
+        "faceMockupError": "Erro ao gerar simulação no rosto",
+        "facePhotoRequired": "Envie uma foto de rosto para usar esta funcionalidade"
       }
     },
     "protocol": {
@@ -1995,14 +1995,17 @@
   "confidence": {
     "high": {
       "label": "Alta Confiança",
+      "level": "ALTA",
       "description": "Caso bem documentado, protocolo recomendado com segurança"
     },
     "medium": {
       "label": "Confiança Média",
+      "level": "MÉDIA",
       "description": "Considere validar detalhes clínicos adicionais"
     },
     "low": {
       "label": "Baixa Confiança",
+      "level": "BAIXA",
       "description": "Dados insuficientes, revise antes de aplicar"
     }
   },
