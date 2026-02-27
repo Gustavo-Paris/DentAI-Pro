@@ -256,7 +256,6 @@ function computeInsights(
 
 const dashboardQueryKeys = {
   all: (userId?: string) => ['dashboard', userId] as const,
-  profile: (userId?: string) => [...dashboardQueryKeys.all(userId), 'profile'] as const,
   metrics: (userId?: string) => [...dashboardQueryKeys.all(userId), 'metrics'] as const,
   counts: (userId?: string) => [...dashboardQueryKeys.all(userId), 'counts'] as const,
   insights: (userId?: string) => [...dashboardQueryKeys.all(userId), 'insights'] as const,
@@ -270,20 +269,23 @@ export function useDashboard(): DashboardState {
   const { user } = useAuth();
 
   // --- Data fetching (inline React Query) ---
-  const { data: profileData, isLoading: loadingProfile, isError: profileError } = useQuery({
-    queryKey: dashboardQueryKeys.profile(user?.id),
-    queryFn: async () => {
+  const { data: rawProfile, isLoading: loadingProfile, isError: profileError } = useQuery({
+    queryKey: ['profile', user?.id],
+    queryFn: () => {
       if (!user) throw new Error('User not authenticated');
-      const profile = await profiles.getByUserId(user.id);
-      let avatarUrl: string | null = null;
-      if (profile?.avatar_url) {
-        avatarUrl = profiles.getAvatarPublicUrl(profile.avatar_url);
-      }
-      return { profile, avatarUrl };
+      return profiles.getByUserId(user.id);
     },
     enabled: !!user,
     staleTime: QUERY_STALE_TIMES.LONG,
   });
+
+  const profileData = useMemo(() => {
+    if (!rawProfile) return undefined;
+    const avatarUrl = rawProfile.avatar_url
+      ? profiles.getAvatarPublicUrl(rawProfile.avatar_url)
+      : null;
+    return { profile: rawProfile, avatarUrl };
+  }, [rawProfile]);
 
   const { data: dashboardData, isLoading: loadingDashboard, isError: dashboardError } = useQuery({
     queryKey: dashboardQueryKeys.metrics(user?.id),
