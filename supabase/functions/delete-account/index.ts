@@ -9,6 +9,7 @@ import { logger } from "../_shared/logger.ts";
 import { getSupabaseClient, authenticateRequest, isAuthError } from "../_shared/middleware.ts";
 import { sendEmail, accountDeletedEmail } from "../_shared/email.ts";
 import { checkRateLimit, createRateLimitResponse } from "../_shared/rateLimit.ts";
+import { CONFIRMATION_PHRASE } from "./delete-validation.ts";
 
 /**
  * LGPD Account Deletion Edge Function
@@ -18,8 +19,6 @@ import { checkRateLimit, createRateLimitResponse } from "../_shared/rateLimit.ts
  *
  * Safety: requires body.confirmation === "EXCLUIR MINHA CONTA"
  */
-
-const CONFIRMATION_PHRASE = "EXCLUIR MINHA CONTA";
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);

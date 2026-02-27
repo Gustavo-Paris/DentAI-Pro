@@ -2384,5 +2384,12 @@
       "deficiente": "Deficiente",
       "cariado": "Cariado"
     }
+  },
+  "aestheticGoals": {
+    "whitening_hollywood": "Clareamento intenso - nível Hollywood (BL1)",
+    "whitening_natural": "Aparência natural e sutil (A1/A2)"
+  },
+  "indicationReasons": {
+    "dsd_gingival_harmonization": "Harmonização gengival identificada pela análise DSD"
   }
 }

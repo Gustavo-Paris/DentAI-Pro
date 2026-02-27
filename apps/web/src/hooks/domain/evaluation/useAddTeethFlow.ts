@@ -13,6 +13,7 @@ import { logger } from '@/lib/logger';
 import { EVALUATION_STATUS } from '@/lib/evaluation-status';
 
 import { evaluationKeys } from './useEvaluationData';
+import { resolveAestheticGoalsForAI } from '@/lib/aesthetic-goals';
 import type { EvaluationItem, PatientDataForModal } from '../useEvaluationDetail';
 import type { TreatmentType, SubmitTeethPayload } from '@/components/AddTeethModal';
 import type { User } from '@supabase/supabase-js';
@@ -164,7 +165,7 @@ export function useAddTeethFlow(deps: UseAddTeethFlowDeps): UseAddTeethFlowRetur
                 ceramicType: DEFAULT_CERAMIC_TYPE,
                 substrate: toothData.substrate || 'Esmalte e Dentina',
                 substrateCondition: toothData.substrate_condition || 'Saudável',
-                aestheticGoals: patientDataForModal.aestheticGoals || undefined,
+                aestheticGoals: resolveAestheticGoalsForAI(patientDataForModal.aestheticGoals),
               } : undefined,
               genericToothData: toothData,
             },

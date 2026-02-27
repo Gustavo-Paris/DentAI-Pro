@@ -3,7 +3,7 @@ import { getCorsHeaders, createErrorResponse } from "../_shared/cors.ts";
 import { getSupabaseClient, authenticateRequest, isAuthError, withErrorBoundary } from "../_shared/middleware.ts";
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 import { logger } from "../_shared/logger.ts";
-import { ALLOWED_ORIGINS } from "../_shared/allowed-origins.ts";
+import { isAllowedRedirectUrl } from "../_shared/url-validation.ts";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
   apiVersion: "2024-09-30.acacia",
@@ -51,16 +51,6 @@ Deno.serve(withErrorBoundary(async (req: Request) => {
   const { priceId, packId, billingCycle, payment_method, successUrl, cancelUrl } = body;
 
   // Validate redirect URLs against allowed origins to prevent open redirect
-  function isAllowedRedirectUrl(url: string | undefined): boolean {
-    if (!url) return true; // fallback to origin-based URL
-    try {
-      const parsed = new URL(url);
-      return ALLOWED_ORIGINS.some(o => parsed.origin === new URL(o).origin);
-    } catch {
-      return false;
-    }
-  }
-
   if (!isAllowedRedirectUrl(successUrl) || !isAllowedRedirectUrl(cancelUrl)) {
     return createErrorResponse("URL de redirecionamento não permitida", 400, corsHeaders);
   }

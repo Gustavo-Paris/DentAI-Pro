@@ -21,9 +21,12 @@ const WHITENING_KEYWORDS = [
   'bl1', 'bl2', 'bl3', 'bl4',
 ];
 
-// Detect whitening level from text (supports both enum and descriptive text)
+// Detect whitening level from text (supports enum codes + legacy descriptive text)
 function detectWhiteningLevel(text: string): 'natural' | 'white' | 'hollywood' | null {
   const lower = text.toLowerCase();
+  // Enum codes (new format)
+  if (lower === 'whitening_hollywood') return 'hollywood';
+  if (lower === 'whitening_natural') return 'natural';
   // Hollywood level (BL1 is Hollywood-exclusive)
   if (lower.includes('hollywood') || lower.includes('intenso') || lower.includes('bl1')) return 'hollywood';
   // White level (BL2/BL3 range)

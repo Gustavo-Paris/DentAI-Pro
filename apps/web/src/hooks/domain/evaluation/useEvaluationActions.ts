@@ -15,6 +15,7 @@ import { EVALUATION_STATUS } from '@/lib/evaluation-status';
 import { getFullRegion } from '../wizard/helpers';
 
 import { evaluationKeys } from './useEvaluationData';
+import { resolveAestheticGoalsForAI } from '@/lib/aesthetic-goals';
 import type { EvaluationItem, PendingChecklistResult } from '../useEvaluationDetail';
 import type { TreatmentType } from '@/components/AddTeethModal';
 import type { User } from '@supabase/supabase-js';
@@ -329,7 +330,7 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
                 stratificationNeeded: true,
                 budget: newBudget,
                 longevityExpectation: evaluation.longevity_expectation,
-                aestheticGoals: evaluation.patient_aesthetic_goals || undefined,
+                aestheticGoals: resolveAestheticGoalsForAI(evaluation.patient_aesthetic_goals),
               } : undefined,
               cementationParams: regenTreatment === 'porcelana' ? {
                 teeth: [evaluation.tooth],
@@ -337,7 +338,7 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
                 ceramicType: DEFAULT_CERAMIC_TYPE,
                 substrate: evaluation.substrate || 'Esmalte e Dentina',
                 substrateCondition: 'Saudável',
-                aestheticGoals: evaluation.patient_aesthetic_goals || undefined,
+                aestheticGoals: resolveAestheticGoalsForAI(evaluation.patient_aesthetic_goals),
               } : undefined,
             },
             evalClients,
