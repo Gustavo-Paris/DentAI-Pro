@@ -1,7 +1,7 @@
 import { RefObject, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Badge } from '@parisgroup-ai/pageshell/primitives';
-import { Loader2, RefreshCw, Eye, EyeOff } from 'lucide-react';
+import { Loader2, RefreshCw, Eye, EyeOff, User } from 'lucide-react';
 import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
 import { AnnotationOverlay } from '@/components/dsd/AnnotationOverlay';
 import { trackEvent } from '@/lib/analytics';
@@ -30,6 +30,11 @@ interface DSDSimulationViewerProps {
   annotationContainerRef: RefObject<HTMLDivElement | null>;
   annotationDimensions: { width: number; height: number };
   gingivoplastyApproved?: boolean | null;
+  hasFacePhoto?: boolean;
+  isFaceMockupGenerating?: boolean;
+  faceMockupError?: string | null;
+  onGenerateFaceMockup?: () => void;
+  facePhotoBase64?: string | null;
   onSelectLayer: (idx: number, layerType: string) => void;
   onRetryFailedLayer: (layerType: SimulationLayerType) => void;
   onRegenerateSimulation: () => void;
@@ -52,12 +57,22 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
   annotationContainerRef,
   annotationDimensions,
   gingivoplastyApproved,
+  hasFacePhoto,
+  isFaceMockupGenerating,
+  faceMockupError,
+  onGenerateFaceMockup,
+  facePhotoBase64,
   onSelectLayer,
   onRetryFailedLayer,
   onRegenerateSimulation,
   onToggleAnnotations,
 }: DSDSimulationViewerProps) {
   const { t } = useTranslation();
+
+  const hasFaceMockupLayer = layers.some(l => l.type === 'face-mockup');
+  const isActiveFaceMockup = layers[activeLayerIndex]?.type === 'face-mockup';
+  const beforeImage = isActiveFaceMockup && facePhotoBase64 ? facePhotoBase64 : imageBase64;
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -152,15 +167,35 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
               {getLayerLabel(layerType, t)}
             </button>
           ))}
+          {/* "Simular no rosto" button — shown when face photo exists but face-mockup layer not yet generated */}
+          {hasFacePhoto && !hasFaceMockupLayer && onGenerateFaceMockup && (
+            <button
+              onClick={onGenerateFaceMockup}
+              disabled={isFaceMockupGenerating || layersGenerating}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border border-primary/40 bg-primary/5 text-primary hover:bg-primary/10 disabled:opacity-50"
+            >
+              {isFaceMockupGenerating ? (
+                <>
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  {t('components.wizard.dsd.generatingFaceMockup')}
+                </>
+              ) : (
+                <>
+                  <User className="w-3 h-3" />
+                  {t('components.wizard.dsd.simulateOnFace')}
+                </>
+              )}
+            </button>
+          )}
         </div>
       )}
 
       <div ref={annotationContainerRef} className="relative">
         <ComparisonSlider
-          beforeImage={imageBase64}
+          beforeImage={beforeImage}
           afterImage={simulationImageUrl || ''}
           afterLabel={layers.length > 0 ? layers[activeLayerIndex]?.label || t('components.wizard.dsd.simulationViewer.defaultLabel') : t('components.wizard.dsd.simulationViewer.defaultLabel')}
-          annotationOverlay={showAnnotations ? (
+          annotationOverlay={!isActiveFaceMockup && showAnnotations ? (
             <AnnotationOverlay
               suggestions={suggestions || []}
               toothBounds={toothBounds}

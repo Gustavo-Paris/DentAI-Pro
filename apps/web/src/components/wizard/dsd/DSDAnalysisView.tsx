@@ -54,6 +54,11 @@ interface DSDAnalysisViewProps {
   hasGingivoSuggestion: boolean;
   onApproveGingivoplasty: () => void;
   onDiscardGingivoplasty: () => void;
+  hasFacePhoto?: boolean;
+  isFaceMockupGenerating?: boolean;
+  faceMockupError?: string | null;
+  onGenerateFaceMockup?: () => void;
+  facePhotoBase64?: string | null;
 }
 
 export const DSDAnalysisView = memo(function DSDAnalysisView({
@@ -93,6 +98,11 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
   hasGingivoSuggestion,
   onApproveGingivoplasty,
   onDiscardGingivoplasty,
+  hasFacePhoto,
+  isFaceMockupGenerating,
+  faceMockupError,
+  onGenerateFaceMockup,
+  facePhotoBase64,
 }: DSDAnalysisViewProps) {
   const { t } = useTranslation();
   const { analysis } = result;
@@ -363,6 +373,11 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
             annotationContainerRef={annotationContainerRef}
             annotationDimensions={annotationDimensions}
             gingivoplastyApproved={gingivoplastyApproved}
+            hasFacePhoto={hasFacePhoto}
+            isFaceMockupGenerating={isFaceMockupGenerating}
+            faceMockupError={faceMockupError}
+            onGenerateFaceMockup={onGenerateFaceMockup}
+            facePhotoBase64={facePhotoBase64}
             onSelectLayer={onSelectLayer}
             onRetryFailedLayer={onRetryFailedLayer}
             onRegenerateSimulation={onRegenerateSimulation}

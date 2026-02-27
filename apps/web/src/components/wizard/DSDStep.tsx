@@ -137,6 +137,11 @@ export function DSDStep(props: DSDStepProps) {
         hasGingivoSuggestion={state.result?.analysis ? state.hasGingivoSuggestion(state.result.analysis) : false}
         onApproveGingivoplasty={state.handleApproveGingivoplasty}
         onDiscardGingivoplasty={state.handleDiscardGingivoplasty}
+        hasFacePhoto={state.hasFacePhoto}
+        isFaceMockupGenerating={state.isFaceMockupGenerating}
+        faceMockupError={state.faceMockupError}
+        onGenerateFaceMockup={state.generateFaceMockup}
+        facePhotoBase64={props.additionalPhotos?.face || null}
       />
       </Suspense>
     );
