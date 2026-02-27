@@ -114,17 +114,24 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
   const { t } = useTranslation();
   const { analysis } = result;
 
-  // Check for attention observations
-  const attentionObservations = analysis.observations?.filter(obs =>
-    obs.toUpperCase().includes('ATENÇÃO') || obs.toUpperCase().includes('ATENCAO')
-  ) || [];
+  // Check for attention observations — exclude overbite-related ones when overbite alert is shown
+  const hasOverbiteAlert = analysis.overbite_suspicion === 'sim';
+  const attentionObservations = (analysis.observations?.filter(obs => {
+    const upper = obs.toUpperCase();
+    if (!(upper.includes('ATENÇÃO') || upper.includes('ATENCAO'))) return false;
+    // Skip overbite-related observations when the dedicated overbite alert is shown
+    if (hasOverbiteAlert && (upper.includes('SOBREMORDIDA') || upper.includes('OVERBITE'))) return false;
+    return true;
+  }) || []);
 
   // Only consider clinical limitation notes, not informational background processing messages
   const hasClinicalLimitationNote = result.simulation_note &&
     !result.simulation_note.includes('segundo plano') &&
     !result.simulation_note.includes('background');
 
-  const hasLimitations = analysis.confidence === 'baixa' || attentionObservations.length > 0 || hasClinicalLimitationNote;
+  // Limitations alert: only for low confidence or clinical notes — NOT for attention observations
+  // (attention observations have their own dedicated card below)
+  const hasLimitations = analysis.confidence === 'baixa' || hasClinicalLimitationNote;
 
   return (
     <div className="space-y-6">

@@ -92,9 +92,9 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
+      <div className="space-y-2">
         <h3 className="font-medium text-sm text-muted-foreground">{t('components.wizard.dsd.simulationViewer.beforeAfter')}</h3>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Annotation toggle (E5) */}
           {toothBounds.length > 0 && suggestions?.length > 0 && (
             <Button

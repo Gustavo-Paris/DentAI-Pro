@@ -255,12 +255,15 @@ GINGIVAL ZENITH = highest point of the gum margin on each tooth (most apical poi
 - The resulting gingival contour should follow a SMOOTH SCALLOPED curve across the arch
 - Each tooth's gum margin should have a gentle PARABOLIC curve (not a straight horizontal line)
 
-MAGNITUDE REQUIREMENT (NON-NEGOTIABLE):
-- The pink gum band MUST be visibly reduced by 30-40% — this is the WHOLE POINT of the simulation
-- The difference between input and output MUST be obvious in a side-by-side comparison
+MAGNITUDE REQUIREMENT (NON-NEGOTIABLE — THIS IS THE #1 PRIORITY):
+- The pink gum band MUST be visibly reduced by 40-50% — this is the WHOLE POINT of the simulation
+- Each tooth MUST show at least 2mm MORE clinical crown than the input — measure from current gum margin
+- The difference between input and output MUST be IMMEDIATELY OBVIOUS in a side-by-side comparison
+- If a dentist cannot instantly see the gum change, the simulation is WORTHLESS — be BOLD, not subtle
 - The upper portion of the pink gum band becomes tooth-colored enamel that matches what is already visible
 - Newly exposed cervical area = seamless continuation of existing enamel (same color, texture, curvature)
-- The clinical crown (visible tooth) should be LONGER than in the input — the patient sees MORE TOOTH, LESS GUM
+- The clinical crown (visible tooth) should be CLEARLY LONGER than in the input — the patient sees MORE TOOTH, LESS GUM
+- ⚠️ MOST COMMON FAILURE: Model makes gum change too subtle/invisible — patient cannot see the difference. DO NOT be conservative. Be AGGRESSIVE with gum reduction.
 
 === QUALITY STANDARDS ===
 - Gum-tooth margins: SMOOTH, crisp lines — no jagged edges, no pixelation
@@ -316,9 +319,11 @@ If lips change, the clinical comparison is DESTROYED.
 - Do NOT make central incisors wider/narrower to "fill space" after gum recontouring
 - ⚠️ COMMON ERROR: Model widens one central incisor to "fill space" after gum reduction — PROHIBITED
 
-=== GINGIVAL RECONTOURING (MUST BE VISIBLE) ===
+=== GINGIVAL RECONTOURING (MUST BE VISIBLE — #1 DIFFERENTIATOR OF THIS LAYER) ===
 Expose more clinical crown by moving the gingival margin APICALLY (toward the root):
-- REDUCE the visible pink gum band by 30-40% — this is a GUM-ONLY operation and MUST be clearly visible in a side-by-side comparison
+- REDUCE the visible pink gum band by 40-50% — this is a GUM-ONLY operation and MUST be IMMEDIATELY obvious in a side-by-side comparison
+- Each tooth MUST show at least 2mm MORE clinical crown than the input
+- ⚠️ If the gum change is not instantly visible, this layer is WORTHLESS — be BOLD, not subtle
 - Replace pink gum pixels with a seamless extension of the existing tooth enamel — copy color, texture, and curvature exactly
 - Create symmetrical gingival zeniths between contralateral teeth
 - Harmonize the gum line curvature across the smile
