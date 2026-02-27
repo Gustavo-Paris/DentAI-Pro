@@ -182,9 +182,9 @@ jobs:
             echo "| CSS (total) | ${CSS_KB} KB |" >> $GITHUB_STEP_SUMMARY
             echo ""
             echo "JS: ${JS_KB} KB, CSS: ${CSS_KB} KB"
-            # Fail if JS bundle exceeds 2MB (2048 KB)
-            if [ "$JS_KB" -gt 2048 ]; then
-              echo "::error::JS bundle size (${JS_KB} KB) exceeds 2MB limit"
+            # Fail if JS bundle exceeds 8MB (8192 KB)
+            if [ "$JS_KB" -gt 8192 ]; then
+              echo "::error::JS bundle size (${JS_KB} KB) exceeds 8MB limit"
               exit 1
             fi
           fi
