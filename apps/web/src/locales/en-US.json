@@ -359,7 +359,8 @@
     "layers": {
       "restorationsOnly": "Restorations Only",
       "whiteningRestorations": "Restorations + Whitening",
-      "completeTreatment": "Complete Treatment"
+      "completeTreatment": "Complete Treatment",
+      "faceMockup": "Face Simulation"
     }
   },
   "evaluation": {
@@ -1050,7 +1051,11 @@
       "regenerateError": "Error regenerating simulation. Please try again.",
       "whiteningUpdated": "Whitening level updated to {{level}}",
       "layersFailedDesc_one": "{{count}} layer failed — try again",
-      "layersFailedDesc_other": "{{count}} layers failed — try again"
+      "layersFailedDesc_other": "{{count}} layers failed — try again",
+      "simulateOnFace": "Simulate on face",
+      "generatingFaceMockup": "Generating face simulation...",
+      "faceMockupError": "Error generating face simulation",
+      "facePhotoRequired": "Upload a face photo to use this feature"
     },
     "evaluationDetail": {
       "loadError": "Error loading evaluation",

@@ -359,7 +359,8 @@
     "layers": {
       "restorationsOnly": "Apenas Restaurações",
       "whiteningRestorations": "Restaurações + Clareamento",
-      "completeTreatment": "Tratamento Completo"
+      "completeTreatment": "Tratamento Completo",
+      "faceMockup": "Simulação no Rosto"
     }
   },
   "evaluation": {
@@ -1050,7 +1051,11 @@
       "regenerateError": "Erro ao regenerar simulação. Tente novamente.",
       "whiteningUpdated": "Nível de clareamento atualizado para {{level}}",
       "layersFailedDesc_one": "{{count}} camada falhou — tente novamente",
-      "layersFailedDesc_other": "{{count}} camadas falharam — tente novamente"
+      "layersFailedDesc_other": "{{count}} camadas falharam — tente novamente",
+      "simulateOnFace": "Simular no rosto",
+      "generatingFaceMockup": "Gerando simulação no rosto...",
+      "faceMockupError": "Erro ao gerar simulação no rosto",
+      "facePhotoRequired": "Envie uma foto de rosto para usar esta funcionalidade"
     },
     "evaluationDetail": {
       "loadError": "Erro ao carregar avaliação",

@@ -63,7 +63,8 @@ export interface DSDResult {
 export type SimulationLayerType =
   | 'restorations-only'
   | 'whitening-restorations'
-  | 'complete-treatment';
+  | 'complete-treatment'
+  | 'face-mockup';
 
 export interface SimulationLayer {
   /** Layer type identifier */
@@ -83,6 +84,7 @@ const LAYER_LABEL_KEYS: Record<SimulationLayerType, string> = {
   'restorations-only': 'dsd.layers.restorationsOnly',
   'whitening-restorations': 'dsd.layers.whiteningRestorations',
   'complete-treatment': 'dsd.layers.completeTreatment',
+  'face-mockup': 'dsd.layers.faceMockup',
 };
 
 /** Fallback labels (PT-BR) — used when t() is not available */
@@ -90,6 +92,7 @@ const LAYER_LABEL_DEFAULTS: Record<SimulationLayerType, string> = {
   'restorations-only': 'Apenas Restaurações',
   'whitening-restorations': 'Restaurações + Clareamento',
   'complete-treatment': 'Tratamento Completo',
+  'face-mockup': 'Simulação no Rosto',
 };
 
 /** Get translated layer label. Pass t from useTranslation(). */
