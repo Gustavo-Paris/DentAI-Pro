@@ -112,7 +112,7 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
                 aria-pressed={visibleProportionLayers.has('midline')}
               >
                 <Ruler className="w-3 h-3 mr-1" />
-                {t('components.dsd.proportionOverlay.midline')}
+                {t('components.wizard.dsd.proportionOverlay.midline')}
               </Button>
               <Button
                 variant={visibleProportionLayers.has('goldenRatio') ? 'default' : 'outline'}
@@ -122,7 +122,7 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
                 aria-pressed={visibleProportionLayers.has('goldenRatio')}
               >
                 <Ratio className="w-3 h-3 mr-1" />
-                {t('components.dsd.proportionOverlay.goldenRatio')}
+                {t('components.wizard.dsd.proportionOverlay.goldenRatio')}
               </Button>
               <Button
                 variant={visibleProportionLayers.has('smileArc') ? 'default' : 'outline'}
@@ -132,7 +132,7 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
                 aria-pressed={visibleProportionLayers.has('smileArc')}
               >
                 <SmilePlus className="w-3 h-3 mr-1" />
-                {t('components.dsd.proportionOverlay.smileArc')}
+                {t('components.wizard.dsd.proportionOverlay.smileArc')}
               </Button>
             </>
           )}

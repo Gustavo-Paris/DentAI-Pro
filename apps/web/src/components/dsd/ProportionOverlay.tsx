@@ -102,7 +102,7 @@ export function ProportionOverlay({
 
   return (
     <svg
-      aria-label={t('components.dsd.proportionOverlay.ariaLabel')}
+      aria-label={t('components.wizard.dsd.proportionOverlay.ariaLabel')}
       className="absolute inset-0 pointer-events-none"
       width={containerWidth}
       height={containerHeight}
@@ -130,7 +130,7 @@ export function ProportionOverlay({
             fontSize={10}
             fontWeight={600}
           >
-            {t('components.dsd.proportionOverlay.midline')}
+            {t('components.wizard.dsd.proportionOverlay.midline')}
           </text>
         </g>
       )}
@@ -258,7 +258,7 @@ export function ProportionOverlay({
             fontSize={10}
             fontWeight={600}
           >
-            {t('components.dsd.proportionOverlay.smileArc')}
+            {t('components.wizard.dsd.proportionOverlay.smileArc')}
           </text>
         </g>
       )}
