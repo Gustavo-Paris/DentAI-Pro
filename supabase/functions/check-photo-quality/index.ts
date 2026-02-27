@@ -4,6 +4,7 @@
 
 import { getCorsHeaders, handleCorsPreFlight, createErrorResponse, ERROR_MESSAGES } from "../_shared/cors.ts";
 import { getSupabaseClient, authenticateRequest, isAuthError } from "../_shared/middleware.ts";
+import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 import { logger } from "../_shared/logger.ts";
 
 const GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
@@ -27,6 +28,18 @@ Deno.serve(async (req: Request) => {
     const supabase = getSupabaseClient();
     const authResult = await authenticateRequest(req, supabase, corsHeaders);
     if (isAuthError(authResult)) return authResult;
+
+    // Rate limit — AI_LIGHT tier (20/min, 100/hour, 500/day)
+    const rateLimitResult = await checkRateLimit(
+      supabase,
+      authResult.user.id,
+      "check-photo-quality",
+      RATE_LIMITS.AI_LIGHT,
+    );
+    if (!rateLimitResult.allowed) {
+      logger.warn(`Rate limit exceeded for user ${authResult.user.id} on check-photo-quality`);
+      return createRateLimitResponse(rateLimitResult, corsHeaders);
+    }
 
     const start = Date.now();
 

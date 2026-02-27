@@ -59,6 +59,7 @@ describe('confidenceConfig', () => {
     for (const level of ALL_LEVELS) {
       const cfg = confidenceConfig[level];
       expect(cfg.labelKey.length).toBeGreaterThan(0);
+      expect(cfg.levelKey.length).toBeGreaterThan(0);
       expect(cfg.descriptionKey.length).toBeGreaterThan(0);
     }
   });

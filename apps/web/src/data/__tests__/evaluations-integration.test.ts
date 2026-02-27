@@ -127,40 +127,35 @@ beforeEach(() => {
 // ---------------------------------------------------------------------------
 
 describe('getDashboardMetrics', () => {
-  it('should compute session metrics from evaluation data', async () => {
-    // Simulate 3 evaluations across 2 sessions:
-    //   session "s1" with 2 evaluations (one completed, one not) => pending
-    //   session "s2" with 1 evaluation (completed) => completed
-    //
-    // Since all three Promise.allSettled calls return terminalResult,
-    // we must set a result that works for all three.
+  // getDashboardMetrics now uses supabase.rpc('get_dashboard_metrics') which
+  // returns a single JSON object, not evaluation rows.
+
+  it('should return metrics from RPC response', async () => {
     terminalResult = {
-      data: [
-        { session_id: 's1', status: 'completed' },
-        { session_id: 's1', status: 'draft' },
-        { session_id: 's2', status: 'completed' },
-      ],
+      data: {
+        total_evaluations: 10,
+        total_patients: 3,
+        pending_sessions: 2,
+        weekly_sessions: 5,
+        completion_rate: 75,
+        pending_teeth: 4,
+      },
       error: null,
-      count: 1,
     };
 
     const result = await getDashboardMetrics({ userId: 'user-1' });
 
-    // The function computes:
-    // - pendingSessionCount: sessions where not all evals are completed
-    // - weeklySessionCount: unique session_ids in weekly data
-    // - completionRate: (completed sessions / total sessions) * 100
-    // - pendingTeethCount: from the count query
-    expect(result).toHaveProperty('pendingSessionCount');
-    expect(result).toHaveProperty('weeklySessionCount');
-    expect(result).toHaveProperty('completionRate');
-    expect(result).toHaveProperty('pendingTeethCount');
-    expect(typeof result.pendingSessionCount).toBe('number');
-    expect(typeof result.completionRate).toBe('number');
+    expect(mockRpc).toHaveBeenCalledWith('get_dashboard_metrics', { p_user_id: 'user-1' });
+    expect(result.totalEvaluations).toBe(10);
+    expect(result.totalPatients).toBe(3);
+    expect(result.pendingSessionCount).toBe(2);
+    expect(result.weeklySessionCount).toBe(5);
+    expect(result.completionRate).toBe(75);
+    expect(result.pendingTeethCount).toBe(4);
   });
 
-  it('should return zeros when no evaluations exist', async () => {
-    terminalResult = { data: [], error: null, count: 0 };
+  it('should return zeros when RPC returns null', async () => {
+    terminalResult = { data: null, error: null };
 
     const result = await getDashboardMetrics({ userId: 'user-empty' });
 
@@ -168,27 +163,27 @@ describe('getDashboardMetrics', () => {
     expect(result.weeklySessionCount).toBe(0);
     expect(result.completionRate).toBe(0);
     expect(result.pendingTeethCount).toBe(0);
+    expect(result.totalEvaluations).toBe(0);
+    expect(result.totalPatients).toBe(0);
   });
 
-  it('should handle failed queries gracefully via Promise.allSettled', async () => {
-    // When all queries reject, the function uses fallback values
-    terminalResult = { data: null, error: new Error('DB error'), count: null };
+  it('should throw when RPC returns an error', async () => {
+    terminalResult = { data: null, error: new Error('DB error') };
 
-    const result = await getDashboardMetrics({ userId: 'user-1' });
-
-    // Should not throw — uses Promise.allSettled
-    expect(result).toHaveProperty('pendingSessionCount');
-    expect(result).toHaveProperty('completionRate');
+    await expect(getDashboardMetrics({ userId: 'user-1' })).rejects.toThrow('DB error');
   });
 
-  it('should compute 100% completion when all sessions are complete', async () => {
+  it('should compute 100% completion from RPC data', async () => {
     terminalResult = {
-      data: [
-        { session_id: 's1', status: 'completed' },
-        { session_id: 's2', status: 'completed' },
-      ],
+      data: {
+        total_evaluations: 5,
+        total_patients: 2,
+        pending_sessions: 0,
+        weekly_sessions: 3,
+        completion_rate: 100,
+        pending_teeth: 0,
+      },
       error: null,
-      count: 0,
     };
 
     const result = await getDashboardMetrics({ userId: 'user-1' });
@@ -197,22 +192,24 @@ describe('getDashboardMetrics', () => {
     expect(result.pendingSessionCount).toBe(0);
   });
 
-  it('should use evaluation id as session fallback for legacy rows', async () => {
+  it('should handle partial completion from RPC data', async () => {
     terminalResult = {
-      data: [
-        { id: 'legacy-1', session_id: null, status: 'completed' },
-        { id: 'legacy-2', session_id: null, status: 'draft' },
-      ],
+      data: {
+        total_evaluations: 4,
+        total_patients: 2,
+        pending_sessions: 1,
+        weekly_sessions: 2,
+        completion_rate: 50,
+        pending_teeth: 3,
+      },
       error: null,
-      count: 1,
     };
 
     const result = await getDashboardMetrics({ userId: 'user-1' });
 
-    // Each row with null session_id becomes its own session
-    // 2 total sessions: legacy-1 (completed), legacy-2 (pending)
     expect(result.completionRate).toBe(50);
     expect(result.pendingSessionCount).toBe(1);
+    expect(result.pendingTeethCount).toBe(3);
   });
 });
 

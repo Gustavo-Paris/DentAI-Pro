@@ -24,17 +24,6 @@ vi.mock('sonner', () => ({
   },
 }));
 
-vi.mock('react-i18next', () => ({
-  initReactI18next: { type: '3rdParty', init: () => {} },
-  useTranslation: () => ({
-    t: (key: string) => key,
-    i18n: { language: 'pt-BR' },
-  }),
-  Trans: ({ children }: { children: unknown }) => children,
-  I18nextProvider: ({ children }: { children: unknown }) => children,
-  withTranslation: () => (Component: any) => Component,
-}));
-
 vi.mock('@/lib/analytics', () => ({
   trackEvent: vi.fn(),
 }));
@@ -118,8 +107,7 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-// TODO: Fix hook rendering — result.current is null due to incomplete provider wrapper
-describe.skip('usePhotoAnalysis', () => {
+describe('usePhotoAnalysis', () => {
   // -------------------------------------------------------------------------
   // Initial state
   // -------------------------------------------------------------------------

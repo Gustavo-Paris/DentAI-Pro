@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import type { ReviewFormData, PhotoAnalysisResult, TreatmentType } from '@/types/wizard';
 import type { DSDResult } from '@/types/dsd';
 import type { AdditionalPhotos, WizardDraft } from '@/hooks/useWizardDraft';
-import type { PatientPreferences } from '@/components/wizard/PatientPreferencesStep';
+import type { PatientPreferences } from '@/types/dsd';
 
 // ---------------------------------------------------------------------------
 // Params

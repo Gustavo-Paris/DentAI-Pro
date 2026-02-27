@@ -14,7 +14,7 @@ import type {
   TreatmentType,
 } from '@/types/wizard';
 import type { DSDResult } from '@/types/dsd';
-import type { PatientPreferences } from '@/components/wizard/PatientPreferencesStep';
+import type { PatientPreferences } from '@/types/dsd';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 

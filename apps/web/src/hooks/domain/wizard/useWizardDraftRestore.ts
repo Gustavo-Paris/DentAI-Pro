@@ -6,7 +6,7 @@ import type {
 } from '@/types/wizard';
 import type { DSDResult } from '@/types/dsd';
 import type { WizardDraft, AdditionalPhotos } from '@/hooks/useWizardDraft';
-import type { PatientPreferences } from '@/components/wizard/PatientPreferencesStep';
+import type { PatientPreferences } from '@/types/dsd';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { logger } from '@/lib/logger';

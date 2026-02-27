@@ -12,7 +12,9 @@
  */
 
 import type { TreatmentType } from '@/lib/treatment-config';
-import { getGenericProtocol } from '@/hooks/domain/wizard/helpers';
+import { getGenericProtocol } from '@/lib/generic-protocol';
+import { logger } from '@/lib/logger';
+import { evaluations } from '@/data';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -174,5 +176,33 @@ export async function dispatchTreatmentProtocol(
       await clients.saveGenericProtocol(evaluationId, genericProtocol);
       break;
     }
+
+    default: {
+      // Unrecognized treatment type — generate a generic protocol with a warning
+      // rather than silently producing no protocol at all.
+      logger.warn(`[dispatchTreatmentProtocol] Unrecognized treatment type "${treatmentType}" for tooth ${tooth} — falling back to generic protocol`);
+      const fallbackProtocol = getGenericProtocol(treatmentType, tooth, params.genericToothData);
+      if (params.enrichGenericProtocol) {
+        params.enrichGenericProtocol(fallbackProtocol);
+      }
+      await clients.saveGenericProtocol(evaluationId, fallbackProtocol);
+      break;
+    }
   }
 }
+
+/**
+ * Pre-built ProtocolDispatchClients backed by the evaluations data module.
+ * Use in evaluation-context hooks (useEvaluationActions, useAddTeethFlow)
+ * to avoid duplicating the adapter boilerplate.
+ */
+export const evaluationClients: ProtocolDispatchClients = {
+  invokeResin: (p) => evaluations.invokeEdgeFunction('recommend-resin', p as unknown as Record<string, unknown>),
+  invokeCementation: (p) => evaluations.invokeEdgeFunction('recommend-cementation', p as unknown as Record<string, unknown>),
+  saveGenericProtocol: async (id, protocol) => {
+    await evaluations.updateEvaluation(id, {
+      generic_protocol: protocol,
+      recommendation_text: protocol.summary,
+    });
+  },
+};

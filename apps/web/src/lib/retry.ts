@@ -3,6 +3,8 @@
  * Only retries on network/timeout errors — not on 4xx client errors.
  */
 
+import { classifyEdgeFunctionError, isRetryableErrorType } from './edge-function-errors';
+
 export interface RetryOptions {
   maxRetries?: number;
   baseDelay?: number;
@@ -10,37 +12,7 @@ export interface RetryOptions {
 }
 
 function isRetryableError(error: unknown): boolean {
-  if (error instanceof TypeError && error.message?.includes('fetch')) return true;
-
-  const err = error as { message?: string; code?: string; status?: number };
-
-  // Don't retry client errors (4xx)
-  if (err.status && err.status >= 400 && err.status < 500) return false;
-  if (err.code === 'INSUFFICIENT_CREDITS' || err.code === 'PAYMENT_REQUIRED') return false;
-
-  const msg = (err.message || '').toLowerCase();
-  if (
-    msg.includes('failed to fetch') ||
-    msg.includes('failed to send a request') ||
-    msg.includes('networkerror') ||
-    msg.includes('network') ||
-    msg.includes('timeout') ||
-    msg.includes('econnrefused') ||
-    msg.includes('econnreset') ||
-    msg.includes('aborted') ||
-    msg.includes('edge function') ||
-    msg.includes('500') ||
-    msg.includes('502') ||
-    msg.includes('503') ||
-    msg.includes('504')
-  ) {
-    return true;
-  }
-
-  // 429 rate limit — retryable (might succeed after backoff)
-  if (msg.includes('429') || err.code === 'RATE_LIMITED') return true;
-
-  return false;
+  return isRetryableErrorType(classifyEdgeFunctionError(error));
 }
 
 export async function withRetry<T>(

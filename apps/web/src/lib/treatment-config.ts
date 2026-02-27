@@ -178,6 +178,9 @@ const TREATMENT_NORMALIZE: Record<string, TreatmentType> = {
   referral: 'encaminhamento',
   gingivoplasty: 'gengivoplastia',
   'root_coverage': 'recobrimento_radicular',
+  // DSD analysis prompt aliases → canonical types
+  faceta_resina: 'resina',
+  coroa_parcial: 'porcelana',
   // Portuguese identity (lowercase)
   porcelana: 'porcelana',
   resina: 'resina',

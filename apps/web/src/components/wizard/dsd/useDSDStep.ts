@@ -8,6 +8,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { logger } from '@/lib/logger';
 import { trackEvent } from '@/lib/analytics';
 import { withRetry } from '@/lib/retry';
+import { classifyEdgeFunctionError } from '@/lib/edge-function-errors';
 import { TIMING } from '@/lib/constants';
 // compositeTeeth.ts kept for potential future use but compositing disabled —
 // Gemini's prompt-based preservation of lips/gums produces better results
@@ -101,6 +102,7 @@ export function useDSDStep({
   // Initialize with draft result if available
   const [result, setResult] = useState<DSDResult | null>(initialResult || null);
   const [error, setError] = useState<string | null>(null);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
   // DSD confirmation: user must explicitly confirm before auto-start analysis
   const [dsdConfirmed, setDsdConfirmed] = useState(!!initialResult);
   const [simulationImageUrl, setSimulationImageUrl] = useState<string | null>(null);
@@ -776,11 +778,13 @@ export function useDSDStep({
     // Pre-check credits before starting DSD
     if (!canUseCredits('dsd_simulation')) {
       setError(t('errors.insufficientCredits'));
+      setErrorCode('INSUFFICIENT_CREDITS');
       return;
     }
 
     setIsAnalyzing(true);
     setError(null);
+    setErrorCode(null);
     setCurrentStep(0);
 
     // Simulate progress steps (only for analysis phase now)
@@ -860,16 +864,12 @@ export function useDSDStep({
       logger.error('DSD error:', error);
 
       const err = error as { name?: string; message?: string; code?: string; status?: number };
+      const errorType = classifyEdgeFunctionError(error);
 
-      // Check if it's a connection/timeout error that can be retried
-      const isConnectionError =
+      // Connection/timeout errors can be retried
+      const isConnectionError = errorType === 'connection' ||
         err.name === 'AbortError' ||
-        err.name === 'FunctionsFetchError' ||
-        err.message?.includes('Failed to fetch') ||
-        err.message?.includes('Failed to send a request') ||
-        err.message?.includes('fetch') ||
-        err.message?.includes('timeout') ||
-        err.message?.includes('network');
+        err.name === 'FunctionsFetchError';
 
       if (isConnectionError && retryCount < MAX_RETRIES) {
         logger.debug(`DSD retry ${retryCount + 1}/${MAX_RETRIES}...`);
@@ -880,17 +880,23 @@ export function useDSDStep({
       }
 
       hasError = true;
-      if (err.status === 429 || err.message?.includes('429') || err.code === 'RATE_LIMITED') {
-        setError(t('errors.rateLimitExceeded'));
-      } else if (err.status === 402 || err.message?.includes('402') || err.code === 'INSUFFICIENT_CREDITS' || err.code === 'PAYMENT_REQUIRED') {
-        setError(t('errors.insufficientCredits'));
-        refreshSubscription();
-      } else if (isConnectionError) {
-        setError(t('errors.connectionError'));
-      } else {
-        // Show actual server error when available, otherwise generic message
-        const serverMsg = err.message && !err.message.includes('non-2xx') ? err.message : null;
-        setError(serverMsg || t('errors.dsdGenerationFailed'));
+      switch (errorType) {
+        case 'rate_limited':
+          setError(t('errors.rateLimitExceeded'));
+          setErrorCode('RATE_LIMITED');
+          break;
+        case 'insufficient_credits':
+          setError(t('errors.insufficientCredits'));
+          setErrorCode('INSUFFICIENT_CREDITS');
+          refreshSubscription();
+          break;
+        case 'connection':
+          setError(t('errors.connectionError'));
+          break;
+        default: {
+          const serverMsg = err.message && !err.message.includes('non-2xx') ? err.message : null;
+          setError(serverMsg || t('errors.dsdGenerationFailed'));
+        }
       }
       setIsAnalyzing(false);
     } finally {
@@ -1056,6 +1062,7 @@ export function useDSDStep({
     currentStep,
     result,
     error,
+    errorCode,
     simulationImageUrl,
     isRegeneratingSimulation,
     isCompositing,

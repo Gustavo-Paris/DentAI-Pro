@@ -255,7 +255,7 @@ function buildLayerCapSection(restorationSize: string, cavityClass: string, aest
       if (sizeNorm.includes('pequen')) {
         // Small diastema (<1mm): simplified technique — enamel resins only
         maxLayers = 2
-        scenario = 'Diastema Pequeno (<1mm): Técnica SIMPLIFICADA — 2 camadas (Corpo + Esmalte claro). Apenas resinas de esmalte mais claro (WE, W3, BL1). Sem necessidade de camada de dentina opaca.'
+        scenario = 'Diastema Pequeno (<1mm): Técnica SIMPLIFICADA — 2 camadas (Corpo + Esmalte claro). Apenas resinas de esmalte mais claro (WE ou W3). Sem necessidade de camada de dentina opaca.'
       } else if (sizeNorm.includes('médi') || sizeNorm.includes('medi')) {
         // Medium diastema (1-2mm): DENTINA/BODY + enamel
         maxLayers = 3
@@ -293,7 +293,7 @@ Cenário detectado: ${scenario}
 MAXIMO DE CAMADAS: 2
 Diastema pequeno (<1mm) usa técnica SIMPLIFICADA:
 1. Corpo/Dentina (shade compatível com substrato)
-2. Esmalte vestibular claro (WE, W3, ou BL1 — 1 tom mais claro que corpo)
+2. Esmalte vestibular claro (WE ou W3 — 1 tom mais claro que corpo)
 Para dentes clareados: resinas de esmalte mais claro apenas.
 PROIBIDO gerar 4-5 camadas para diastema pequeno — é sobretratamento.
 `
@@ -305,7 +305,7 @@ Cenário detectado: ${scenario}
 CAMADAS OBRIGATORIAS: 3
 1. Dentina/Body (shade VITA compatível com substrato — DENTINA ou BODY shade)
 2. Cristas Proximais (esmalte 1 tom mais claro)
-3. Esmalte Vestibular Final (WE ou W3 para dentes clareados, BL1 caso contrário)
+3. Esmalte Vestibular Final (WE ou W3 — para dentes clareados W3 preferido, natural WE preferido)
 Se dentes clareados: usar DENTINA ou BODY + camada final WE ou W3.
 PROIBIDO gerar menos de 3 ou mais de 4 camadas para diastema médio.
 `
@@ -348,7 +348,7 @@ export const recommendResin: PromptDefinition<Params> = {
   id: 'recommend-resin',
   name: 'Recomendação de Resina',
   description: 'Gera recomendação completa de resina com protocolo de estratificação',
-  model: 'claude-haiku-4-5-20251001',
+  model: 'claude-sonnet-4-6',
   temperature: 0.0,
   maxTokens: 8192,
   mode: 'text',

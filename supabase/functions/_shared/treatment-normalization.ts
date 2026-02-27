@@ -36,6 +36,9 @@ const TREATMENT_INDICATION_MAP: Record<string, TreatmentIndication> = {
   gum_recontouring: "gengivoplastia",
   root_coverage: "recobrimento_radicular",
   gingival_graft: "recobrimento_radicular",
+  // DSD analysis prompt aliases → canonical types
+  faceta_resina: "resina",
+  coroa_parcial: "porcelana",
   // Specialist referral treatments — these require specialist care,
   // not resin/porcelain protocols. Map to "encaminhamento".
   clareamento: "encaminhamento",

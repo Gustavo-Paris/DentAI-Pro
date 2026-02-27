@@ -6,13 +6,14 @@ import type {
   TreatmentType,
 } from '@/types/wizard';
 import type { DSDResult } from '@/types/dsd';
-import type { PatientPreferences } from '@/components/wizard/PatientPreferencesStep';
+import type { PatientPreferences } from '@/types/dsd';
 import type { SubmissionStep } from './types';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { logger } from '@/lib/logger';
 import { trackEvent } from '@/lib/analytics';
 import { withRetry } from '@/lib/retry';
+import { classifyEdgeFunctionError } from '@/lib/edge-function-errors';
 import { TIMING } from '@/lib/constants';
 import { EVALUATION_STATUS } from '@/lib/evaluation-status';
 import { wizard as wizardData } from '@/data';
@@ -560,17 +561,16 @@ export function useWizardSubmit({
         errorMessage = t('toasts.wizard.duplicatePatient');
       } else if (err.code === '23503') {
         errorMessage = t('toasts.wizard.referenceError');
-      } else if (
-        err.message?.includes('network') ||
-        err.message?.includes('fetch') ||
-        err.message?.includes('Failed to fetch')
-      ) {
-        errorMessage = t('toasts.wizard.networkErrorSubmit');
-      } else if (err.message?.includes('429') || err.code === 'RATE_LIMITED') {
-        errorMessage = t('toasts.wizard.tooManyRequests');
-        shouldGoBack = false;
-      } else if (err.message && err.message.length < 100) {
-        errorMessage = `Erro: ${err.message}`;
+      } else {
+        const errorType = classifyEdgeFunctionError(error);
+        if (errorType === 'connection') {
+          errorMessage = t('toasts.wizard.networkErrorSubmit');
+        } else if (errorType === 'rate_limited') {
+          errorMessage = t('toasts.wizard.tooManyRequests');
+          shouldGoBack = false;
+        } else if (err.message && err.message.length < 100) {
+          errorMessage = `Erro: ${err.message}`;
+        }
       }
 
       toast.error(errorMessage, { duration: 5000 });

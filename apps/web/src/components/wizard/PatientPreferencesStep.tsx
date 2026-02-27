@@ -3,12 +3,10 @@ import { Sparkles, ArrowRight, Sun, Zap, Star, Check, AlertTriangle } from 'luci
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { useSubscription } from '@/hooks/useSubscription';
+import type { WhiteningLevel, PatientPreferences } from '@/types/dsd';
 
-export type WhiteningLevel = 'natural' | 'hollywood';
-
-export interface PatientPreferences {
-  whiteningLevel: WhiteningLevel;
-}
+// Re-export for backward compatibility
+export type { WhiteningLevel, PatientPreferences };
 
 interface PatientPreferencesStepProps {
   preferences: PatientPreferences;

@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { logger } from '@/lib/logger';
 import { trackEvent } from '@/lib/analytics';
 import { withRetry } from '@/lib/retry';
+import { classifyEdgeFunctionError } from '@/lib/edge-function-errors';
 import { wizard as wizardData } from '@/data';
 import { compressBase64ForAnalysis } from '@/lib/imageUtils';
 import { isAnterior } from './helpers';
@@ -288,31 +289,31 @@ export function usePhotoAnalysis({
 
       logger.error('Analysis error:', error);
 
+      const errorType = classifyEdgeFunctionError(error);
       let errorMessage: string;
-      const isNetwork =
-        err.message?.includes('Failed to fetch') ||
-        err.message?.includes('network') ||
-        err.message?.includes('timeout');
 
-      if (err.message?.includes('429') || err.code === 'RATE_LIMITED') {
-        errorMessage = t('toasts.analysis.rateLimitRetry');
-      } else if (
-        err.message?.includes('402') ||
-        err.code === 'INSUFFICIENT_CREDITS' ||
-        err.code === 'PAYMENT_REQUIRED'
-      ) {
-        errorMessage = t('toasts.analysis.insufficientCreditsError');
-        refreshSubscription();
-      } else if (err.message?.includes('não retornou dados')) {
-        errorMessage = t('toasts.analysis.noDataError');
-      } else if (isNetwork) {
-        errorMessage = t('toasts.analysis.connectionError');
-      } else if (err.message?.includes('546') || err.message?.includes('compute resources')) {
-        errorMessage = t('toasts.analysis.resourceError');
-      } else if (err.message?.includes('500') || err.message?.includes('edge function')) {
-        errorMessage = t('toasts.analysis.serverError');
-      } else {
-        errorMessage = t('toasts.analysis.genericError');
+      switch (errorType) {
+        case 'rate_limited':
+          errorMessage = t('toasts.analysis.rateLimitRetry');
+          break;
+        case 'insufficient_credits':
+          errorMessage = t('toasts.analysis.insufficientCreditsError');
+          refreshSubscription();
+          break;
+        case 'no_data':
+          errorMessage = t('toasts.analysis.noDataError');
+          break;
+        case 'connection':
+          errorMessage = t('toasts.analysis.connectionError');
+          break;
+        case 'resource_limit':
+          errorMessage = t('toasts.analysis.resourceError');
+          break;
+        case 'server':
+          errorMessage = t('toasts.analysis.serverError');
+          break;
+        default:
+          errorMessage = t('toasts.analysis.genericError');
       }
 
       setAnalysisError(errorMessage);
@@ -416,15 +417,11 @@ export function usePhotoAnalysis({
         });
       }
     } catch (error: unknown) {
-      const err = error as { message?: string; code?: string };
       logger.error('Reanalysis error:', error);
-      if (err.message?.includes('429') || err.code === 'RATE_LIMITED') {
+      const errorType = classifyEdgeFunctionError(error);
+      if (errorType === 'rate_limited') {
         toast.error(t('toasts.analysis.rateLimit'));
-      } else if (
-        err.message?.includes('402') ||
-        err.code === 'INSUFFICIENT_CREDITS' ||
-        err.code === 'PAYMENT_REQUIRED'
-      ) {
+      } else if (errorType === 'insufficient_credits') {
         toast.error(t('toasts.analysis.insufficientReanalysis'), {
           action: { label: t('common.viewPlans'), onClick: () => navigate('/pricing') },
         });

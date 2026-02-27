@@ -5,14 +5,15 @@ import { ChevronRight, Lightbulb, AlertCircle, Zap, RefreshCw } from 'lucide-rea
 
 interface DSDErrorStateProps {
   error: string;
+  errorCode?: string;
   onRetry: () => void;
   onSkip: () => void;
 }
 
-export function DSDErrorState({ error, onRetry, onSkip }: DSDErrorStateProps) {
+export function DSDErrorState({ error, errorCode, onRetry, onSkip }: DSDErrorStateProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const isCreditError = error.includes('Créditos insuficientes');
+  const isCreditError = errorCode === 'INSUFFICIENT_CREDITS' || errorCode === 'PAYMENT_REQUIRED';
 
   return (
     <div className="space-y-6" role="alert">

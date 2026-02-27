@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import type { PatientPreferences } from '@/components/wizard/PatientPreferencesStep';
+import type { PatientPreferences } from '@/types/dsd';
 import { PatientPreferencesStep } from '@/components/wizard/PatientPreferencesStep';
 
 interface PrefsStepWrapperProps {

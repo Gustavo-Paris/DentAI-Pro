@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { evaluations, wizard } from '@/data';
@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import {
   dispatchTreatmentProtocol,
   DEFAULT_CERAMIC_TYPE,
-  type ProtocolDispatchClients,
+  evaluationClients,
 } from '@/lib/protocol-dispatch';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
@@ -92,17 +92,8 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
   const [retryingEvaluationId, setRetryingEvaluationId] = useState<string | null>(null);
   const [isRegenerating, setIsRegenerating] = useState(false);
 
-  // ---- Data-client adapters for protocol dispatch ----
-  const evalClients: ProtocolDispatchClients = useMemo(() => ({
-    invokeResin: (p) => evaluations.invokeEdgeFunction('recommend-resin', p as unknown as Record<string, unknown>),
-    invokeCementation: (p) => evaluations.invokeEdgeFunction('recommend-cementation', p as unknown as Record<string, unknown>),
-    saveGenericProtocol: async (id, protocol) => {
-      await evaluations.updateEvaluation(id, {
-        generic_protocol: protocol,
-        recommendation_text: protocol.summary,
-      });
-    },
-  }), []);
+  // Use shared evaluation clients from protocol-dispatch
+  const evalClients = evaluationClients;
 
   // ---- Actions ----
   const handleMarkAsCompleted = useCallback(

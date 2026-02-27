@@ -134,6 +134,8 @@ export interface AdditionalPhotos {
   face: string | null;
 }
 
+export type WhiteningLevel = 'natural' | 'hollywood';
+
 export interface PatientPreferences {
-  whiteningLevel: 'natural' | 'hollywood';
+  whiteningLevel: WhiteningLevel;
 }

@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import type { AdditionalPhotos } from '@/hooks/useWizardDraft';
-import type { PatientPreferences } from '@/components/wizard/PatientPreferencesStep';
+import type { PatientPreferences } from '@/types/dsd';
 import type { PhotoAnalysisResult } from '@/types/wizard';
 import type { DSDResult } from '@/types/dsd';
 import { DSDStep } from '@/components/wizard/DSDStep';

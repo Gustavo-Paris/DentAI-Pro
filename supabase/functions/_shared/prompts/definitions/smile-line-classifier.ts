@@ -7,12 +7,12 @@ export interface Params {
 export const smileLineClassifier: PromptDefinition<Params> = {
   id: 'smile-line-classifier',
   name: 'Classificador de Linha do Sorriso',
-  description: 'Classificação focada da linha do sorriso via dual-pass (Haiku 4.5, paralelo com DSD principal)',
-  model: 'claude-haiku-4-5-20251001',
+  description: 'Classificação focada da linha do sorriso via dual-pass (Gemini Flash, paralelo com DSD principal)',
+  model: 'gemini-2.0-flash',
   temperature: 0.0,
   maxTokens: 200,
   mode: 'vision',
-  provider: 'claude',
+  provider: 'gemini',
 
   system: () =>
     `Voce e um classificador de linha do sorriso. Sua UNICA tarefa: classificar a exposicao gengival.

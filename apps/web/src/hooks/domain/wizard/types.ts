@@ -7,7 +7,7 @@ import type {
 } from '@/types/wizard';
 import type { Patient } from '@/types/patient';
 import type { DSDResult } from '@/types/dsd';
-import type { PatientPreferences } from '@/components/wizard/PatientPreferencesStep';
+import type { PatientPreferences } from '@/types/dsd';
 
 export interface SubmissionStep {
   label: string;

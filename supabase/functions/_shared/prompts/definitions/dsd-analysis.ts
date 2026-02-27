@@ -13,7 +13,7 @@ export const dsdAnalysis: PromptDefinition<Params> = {
   name: 'Análise DSD',
   description: 'Análise completa de Digital Smile Design com visagismo e proporções faciais',
   model: 'gemini-3.1-pro-preview',
-  temperature: 0.15,
+  temperature: 0.0,
   maxTokens: 4000,
   mode: 'vision-tools',
   provider: 'gemini',

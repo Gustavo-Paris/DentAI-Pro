@@ -2,7 +2,7 @@ import { memo } from 'react';
 import type { PhotoAnalysisResult, ReviewFormData, TreatmentType } from '@/types/wizard';
 import type { DSDResult } from '@/types/dsd';
 import type { Patient } from '@/types/patient';
-import type { PatientPreferences } from '@/components/wizard/PatientPreferencesStep';
+import type { PatientPreferences } from '@/types/dsd';
 import { ReviewAnalysisStep } from '@/components/wizard/ReviewAnalysisStep';
 
 interface ReviewStepWrapperProps {

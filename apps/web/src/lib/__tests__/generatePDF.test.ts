@@ -225,8 +225,9 @@ describe('generateProtocolPDF', () => {
 
     await generateProtocolPDF(data, mockT);
 
-    // Confidence section renders the label
-    expect(mockT).toHaveBeenCalledWith('pdf.confidence.label', expect.objectContaining({ level: 'ALTA' }));
+    // Confidence section renders the i18n-resolved level (mockT returns the key itself)
+    expect(mockT).toHaveBeenCalledWith('confidence.high.level');
+    expect(mockT).toHaveBeenCalledWith('pdf.confidence.label', expect.objectContaining({ level: 'confidence.high.level' }));
   });
 
   it('should render alternative section when alternative is provided', async () => {

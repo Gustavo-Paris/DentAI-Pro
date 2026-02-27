@@ -16,14 +16,20 @@ Sentry.init({
   enabled: import.meta.env.PROD && !!env.VITE_SENTRY_DSN,
   integrations: [
     Sentry.browserTracingIntegration(),
-    Sentry.replayIntegration(),
   ],
   // Performance monitoring
   tracesSampleRate: 0.1,
-  // Session replay
+  // Session replay (configured after lazy-load below)
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1.0,
 });
+
+// Lazy-load Sentry Replay integration (~30KB gzip savings)
+if (import.meta.env.PROD && env.VITE_SENTRY_DSN) {
+  Sentry.lazyLoadIntegration('replayIntegration').then(replay => {
+    Sentry.addIntegration(replay());
+  });
+}
 
 // Capture unhandled errors outside the React tree
 window.addEventListener("unhandledrejection", (event) => {

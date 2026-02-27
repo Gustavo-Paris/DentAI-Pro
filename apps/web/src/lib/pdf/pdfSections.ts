@@ -618,7 +618,7 @@ export function renderConfidence(ctx: PDFRenderContext, data: PDFData) {
 
   pdf.setFillColor(...conf.pdfBgColor);
   pdf.roundedRect(margin, ctx.y, 60, 10, 2, 2, 'F');
-  addText(ctx, t('pdf.confidence.label', { level: conf.pdfLabel }), margin + 5, ctx.y + 6, { fontSize: 9, fontStyle: 'bold', color: conf.pdfColor });
+  addText(ctx, t('pdf.confidence.label', { level: t(conf.levelKey) }), margin + 5, ctx.y + 6, { fontSize: 9, fontStyle: 'bold', color: conf.pdfColor });
 
   ctx.y += 18;
 }

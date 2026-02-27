@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { evaluations, wizard } from '@/data';
 import { getFullRegion } from '../wizard/helpers';
@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import {
   dispatchTreatmentProtocol,
   DEFAULT_CERAMIC_TYPE,
-  type ProtocolDispatchClients,
+  evaluationClients,
 } from '@/lib/protocol-dispatch';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
@@ -64,17 +64,8 @@ export function useAddTeethFlow(deps: UseAddTeethFlowDeps): UseAddTeethFlowRetur
 
   const [failedTeeth, setFailedTeeth] = useState<string[]>([]);
 
-  // ---- Data-client adapters for protocol dispatch ----
-  const evalClients: ProtocolDispatchClients = useMemo(() => ({
-    invokeResin: (p) => evaluations.invokeEdgeFunction('recommend-resin', p as unknown as Record<string, unknown>),
-    invokeCementation: (p) => evaluations.invokeEdgeFunction('recommend-cementation', p as unknown as Record<string, unknown>),
-    saveGenericProtocol: async (id, protocol) => {
-      await evaluations.updateEvaluation(id, {
-        generic_protocol: protocol,
-        recommendation_text: protocol.summary,
-      });
-    },
-  }), []);
+  // Use shared evaluation clients from protocol-dispatch
+  const evalClients = evaluationClients;
 
   // ---- Submit Teeth (AddTeethModal) ----
   const handleSubmitTeeth = useCallback(async (payload: SubmitTeethPayload) => {

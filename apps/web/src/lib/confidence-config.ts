@@ -12,11 +12,13 @@ export interface ConfidenceConfig {
   icon: ComponentType<{ className?: string }>;
   /** i18n key for UI label — use t(labelKey) when rendering */
   labelKey: string;
-  /** Hardcoded PT-BR label for PDF generation (no i18n available) */
+  /** i18n key for the level word (e.g. "ALTA"/"HIGH") — use t(levelKey) in PDF */
+  levelKey: string;
+  /** @deprecated Use t(levelKey) instead — hardcoded PT-BR */
   pdfLabel: string;
   /** i18n key for UI description — use t(descriptionKey) when rendering */
   descriptionKey: string;
-  /** Hardcoded PT-BR description for PDF generation (no i18n available) */
+  /** @deprecated Use t(descriptionKey) instead — hardcoded PT-BR */
   pdfDescription: string;
   color: string;
   bg: string;
@@ -30,6 +32,7 @@ export const confidenceConfig: Record<ConfidenceLevel, ConfidenceConfig> = {
   alta: {
     icon: ShieldCheck,
     labelKey: 'confidence.high.label',
+    levelKey: 'confidence.high.level',
     pdfLabel: 'ALTA',
     descriptionKey: 'confidence.high.description',
     pdfDescription: 'Caso bem documentado, protocolo recomendado com segurança',
@@ -43,6 +46,7 @@ export const confidenceConfig: Record<ConfidenceLevel, ConfidenceConfig> = {
   media: {
     icon: Shield,
     labelKey: 'confidence.medium.label',
+    levelKey: 'confidence.medium.level',
     pdfLabel: 'MEDIA',
     descriptionKey: 'confidence.medium.description',
     pdfDescription: 'Considere validar detalhes clínicos adicionais',
@@ -56,6 +60,7 @@ export const confidenceConfig: Record<ConfidenceLevel, ConfidenceConfig> = {
   baixa: {
     icon: ShieldAlert,
     labelKey: 'confidence.low.label',
+    levelKey: 'confidence.low.level',
     pdfLabel: 'BAIXA',
     descriptionKey: 'confidence.low.description',
     pdfDescription: 'Dados insuficientes, revise antes de aplicar',

@@ -94,6 +94,11 @@ const mockDispatchTreatmentProtocol = vi.fn().mockResolvedValue(undefined);
 vi.mock('@/lib/protocol-dispatch', () => ({
   dispatchTreatmentProtocol: (...args: unknown[]) => mockDispatchTreatmentProtocol(...args),
   DEFAULT_CERAMIC_TYPE: 'Dissilicato de lítio',
+  evaluationClients: {
+    invokeResin: vi.fn().mockResolvedValue(undefined),
+    invokeCementation: vi.fn().mockResolvedValue(undefined),
+    saveGenericProtocol: vi.fn().mockResolvedValue(undefined),
+  },
 }));
 
 vi.mock('@/lib/analytics', () => ({

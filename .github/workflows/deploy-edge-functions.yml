@@ -40,7 +40,7 @@ jobs:
         env:
           INPUT_FUNCTIONS: ${{ inputs.functions }}
         run: |
-          ALL_FUNCTIONS="analyze-dental-photo apply-referral create-checkout-session create-portal-session data-export delete-account generate-dsd health-check recommend-cementation recommend-resin send-email stripe-webhook sync-credit-purchase sync-subscription"
+          ALL_FUNCTIONS="analyze-dental-photo apply-referral check-photo-quality create-checkout-session create-portal-session data-export delete-account generate-dsd health-check recommend-cementation recommend-resin send-email stripe-webhook sync-credit-purchase sync-subscription"
 
           if [ -n "$INPUT_FUNCTIONS" ]; then
             FUNCTIONS=$(echo "$INPUT_FUNCTIONS" | tr ',' ' ')

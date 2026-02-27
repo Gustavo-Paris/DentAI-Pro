@@ -90,6 +90,7 @@ export function DSDStep(props: DSDStepProps) {
     return (
       <DSDErrorState
         error={state.error}
+        errorCode={state.errorCode ?? undefined}
         onRetry={state.handleRetry}
         onSkip={state.onSkip}
       />
