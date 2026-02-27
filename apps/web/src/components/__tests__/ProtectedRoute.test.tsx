@@ -22,7 +22,7 @@ vi.mock('@/contexts/AuthContext', () => ({
   useAuth: () => mockUseAuth(),
 }));
 
-// eslint-disable-next-line vitest/no-disabled-tests -- hangs in CI worker, trivial component
+// Skipped: hangs in CI test worker (module loading issue with @/lib/i18n chain)
 describe.skip('ProtectedRoute', () => {
   it('should show loader when auth is loading', () => {
     mockUseAuth.mockReturnValue({ user: null, loading: true });
