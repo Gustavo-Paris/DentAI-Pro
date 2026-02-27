@@ -301,7 +301,9 @@ export function useDashboard(): DashboardState {
         evaluations.getRecent({ userId: user.id, limit: 50 }),
       ]);
 
-      const dashboardMetrics: Omit<DashboardMetrics, 'totalCases' | 'totalPatients'> = {
+      const dashboardMetrics: DashboardMetrics = {
+        totalCases: metrics.totalEvaluations,
+        totalPatients: metrics.totalPatients,
         pendingSessions: metrics.pendingSessionCount,
         weeklySessions: metrics.weeklySessionCount,
         completionRate: metrics.completionRate,
@@ -343,15 +345,13 @@ export function useDashboard(): DashboardState {
       if (!user) throw new Error('User not authenticated');
       const thisMonthStart = startOfMonth(new Date());
       const lastMonthStart = startOfMonth(subMonths(new Date(), 1));
-      const [totalCases, totalPatients, patientsThisMonth, patientsSinceLastMonth] = await Promise.all([
-        evaluations.countByUserId(user.id),
-        patients.countByUserId(user.id),
+      const [patientsThisMonth, patientsSinceLastMonth] = await Promise.all([
         patients.countByUserIdSince(user.id, thisMonthStart),
         patients.countByUserIdSince(user.id, lastMonthStart),
       ]);
       // "last month only" = patients since lastMonthStart minus patients since thisMonthStart
       const patientsLastMonth = patientsSinceLastMonth - patientsThisMonth;
-      return { totalCases, totalPatients, patientsThisMonth, patientsLastMonth };
+      return { patientsThisMonth, patientsLastMonth };
     },
     enabled: !!user,
     staleTime: QUERY_STALE_TIMES.MEDIUM,
@@ -408,15 +408,13 @@ export function useDashboard(): DashboardState {
   const firstName = extractFirstName(profile?.full_name);
   const greeting = getTimeGreeting();
 
-  const metrics: DashboardMetrics = {
-    totalCases: countsData?.totalCases ?? 0,
-    totalPatients: countsData?.totalPatients ?? 0,
-    ...(dashboardData?.metrics ?? {
-      pendingSessions: 0,
-      weeklySessions: 0,
-      completionRate: 0,
-      pendingTeeth: 0,
-    }),
+  const metrics: DashboardMetrics = dashboardData?.metrics ?? {
+    totalCases: 0,
+    totalPatients: 0,
+    pendingSessions: 0,
+    weeklySessions: 0,
+    completionRate: 0,
+    pendingTeeth: 0,
   };
   const sessions: DashboardSession[] = dashboardData?.sessions ?? [];
 

@@ -186,6 +186,8 @@ export async function getDashboardMetrics({ userId }: DashboardMetricsParams) {
 
   // RPC returns a JSON object; fallback to safe defaults
   const result = data as {
+    total_evaluations: number;
+    total_patients: number;
     pending_sessions: number;
     weekly_sessions: number;
     completion_rate: number;
@@ -193,6 +195,8 @@ export async function getDashboardMetrics({ userId }: DashboardMetricsParams) {
   } | null;
 
   return {
+    totalEvaluations: result?.total_evaluations ?? 0,
+    totalPatients: result?.total_patients ?? 0,
     pendingSessionCount: result?.pending_sessions ?? 0,
     weeklySessionCount: result?.weekly_sessions ?? 0,
     completionRate: result?.completion_rate ?? 0,

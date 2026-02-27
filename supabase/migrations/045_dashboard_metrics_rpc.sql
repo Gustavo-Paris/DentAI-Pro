@@ -39,8 +39,15 @@ BEGIN
       FROM evaluations_raw
       WHERE user_id = p_user_id
         AND status != 'completed'
+    ),
+    total_patients AS (
+      SELECT COUNT(*) AS cnt
+      FROM patients
+      WHERE user_id = p_user_id
     )
     SELECT json_build_object(
+      'total_evaluations', (SELECT COALESCE(SUM(total), 0) FROM session_stats),
+      'total_patients', (SELECT cnt FROM total_patients),
       'pending_sessions', (SELECT COUNT(*) FROM session_stats WHERE completed < total),
       'weekly_sessions', (SELECT cnt FROM weekly),
       'completion_rate', (
