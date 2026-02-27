@@ -4,24 +4,28 @@ import { CreditConfirmDialog } from '../CreditConfirmDialog';
 import type { CreditConfirmData } from '@/hooks/domain/wizard/types';
 
 // Mock react-i18next
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string, opts?: Record<string, unknown>) => {
-      const map: Record<string, string> = {
-        'components.creditConfirm.title': 'Confirmar uso de créditos',
-        'components.creditConfirm.willCost': 'custará',
-        'components.creditConfirm.credit': `${opts?.count ?? 1} crédito(s)`,
-        'components.creditConfirm.currentBalance': 'Saldo atual',
-        'components.creditConfirm.credits': 'créditos',
-        'components.creditConfirm.afterOperation': 'Após operação',
-        'common.cancel': 'Cancelar',
-        'common.confirm': 'Confirmar',
-      };
-      return map[key] ?? key;
-    },
-    i18n: { language: 'pt-BR' },
-  }),
-}));
+vi.mock('react-i18next', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('react-i18next')>();
+  return {
+    ...actual,
+    useTranslation: () => ({
+      t: (key: string, opts?: Record<string, unknown>) => {
+        const map: Record<string, string> = {
+          'components.creditConfirm.title': 'Confirmar uso de créditos',
+          'components.creditConfirm.willCost': 'custará',
+          'components.creditConfirm.credit': `${opts?.count ?? 1} crédito(s)`,
+          'components.creditConfirm.currentBalance': 'Saldo atual',
+          'components.creditConfirm.credits': 'créditos',
+          'components.creditConfirm.afterOperation': 'Após operação',
+          'common.cancel': 'Cancelar',
+          'common.confirm': 'Confirmar',
+        };
+        return map[key] ?? key;
+      },
+      i18n: { language: 'pt-BR' },
+    }),
+  };
+});
 
 // Mock lucide-react
 vi.mock('lucide-react', () => ({

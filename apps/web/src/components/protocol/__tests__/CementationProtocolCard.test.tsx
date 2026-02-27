@@ -3,15 +3,19 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { CementationProtocolCard } from '../CementationProtocolCard';
 
 // Mock react-i18next
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string, params?: Record<string, unknown>) => {
-      if (params) return `${key}(${JSON.stringify(params)})`;
-      return key;
-    },
-    i18n: { language: 'pt-BR', changeLanguage: vi.fn() },
-  }),
-}));
+vi.mock('react-i18next', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('react-i18next')>();
+  return {
+    ...actual,
+    useTranslation: () => ({
+      t: (key: string, params?: Record<string, unknown>) => {
+        if (params) return `${key}(${JSON.stringify(params)})`;
+        return key;
+      },
+      i18n: { language: 'pt-BR', changeLanguage: vi.fn() },
+    }),
+  };
+});
 
 // Mock UI components
 vi.mock('@/components/ui/card', () => ({

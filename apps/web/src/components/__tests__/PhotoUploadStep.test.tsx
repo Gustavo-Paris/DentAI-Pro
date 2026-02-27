@@ -3,13 +3,17 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { PhotoUploadStep } from '../wizard/PhotoUploadStep';
 
 // Mock react-i18next
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string) => key,
-    i18n: { language: 'pt-BR', changeLanguage: vi.fn() },
-  }),
-  Trans: ({ children }: any) => children,
-}));
+vi.mock('react-i18next', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('react-i18next')>();
+  return {
+    ...actual,
+    useTranslation: () => ({
+      t: (key: string) => key,
+      i18n: { language: 'pt-BR', changeLanguage: vi.fn() },
+    }),
+    Trans: ({ children }: any) => children,
+  };
+});
 
 // Mock sonner
 vi.mock('sonner', () => ({

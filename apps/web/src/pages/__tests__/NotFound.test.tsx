@@ -14,19 +14,23 @@ vi.mock('lucide-react', () => ({
   ),
 }));
 
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string) => {
-      const parts = key.split('.');
-      let value: unknown = translations;
-      for (const part of parts) {
-        value = (value as Record<string, unknown>)?.[part];
-      }
-      return (value as string) ?? key;
-    },
-    i18n: { language: 'pt-BR' },
-  }),
-}));
+vi.mock('react-i18next', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('react-i18next')>();
+  return {
+    ...actual,
+    useTranslation: () => ({
+      t: (key: string) => {
+        const parts = key.split('.');
+        let value: unknown = translations;
+        for (const part of parts) {
+          value = (value as Record<string, unknown>)?.[part];
+        }
+        return (value as string) ?? key;
+      },
+      i18n: { language: 'pt-BR' },
+    }),
+  };
+});
 
 describe('NotFound', () => {
   it('should render text in Portuguese', () => {

@@ -6,18 +6,21 @@ import { toast } from 'sonner';
 // Mocks — must be declared BEFORE importing the hooks under test
 // ---------------------------------------------------------------------------
 
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string, fallbackOrParams?: string | Record<string, unknown>) => {
-      if (typeof fallbackOrParams === 'string') return fallbackOrParams;
-      if (fallbackOrParams && 'defaultValue' in fallbackOrParams)
-        return fallbackOrParams.defaultValue as string;
-      return key;
-    },
-  }),
-  initReactI18next: { type: '3rdParty', init: vi.fn() },
-  Trans: ({ children }: { children: unknown }) => children,
-}));
+vi.mock('react-i18next', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('react-i18next')>();
+  return {
+    ...actual,
+    useTranslation: () => ({
+      t: (key: string, fallbackOrParams?: string | Record<string, unknown>) => {
+        if (typeof fallbackOrParams === 'string') return fallbackOrParams;
+        if (fallbackOrParams && 'defaultValue' in fallbackOrParams)
+          return fallbackOrParams.defaultValue as string;
+        return key;
+      },
+    }),
+    Trans: ({ children }: { children: unknown }) => children,
+  };
+});
 
 vi.mock('sonner', () => ({
   toast: {
