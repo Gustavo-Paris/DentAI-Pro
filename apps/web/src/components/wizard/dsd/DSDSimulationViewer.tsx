@@ -1,9 +1,11 @@
 import { RefObject, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Badge } from '@parisgroup-ai/pageshell/primitives';
-import { Loader2, RefreshCw, Eye, EyeOff, User } from 'lucide-react';
+import { Loader2, RefreshCw, Eye, EyeOff, User, Ruler, Ratio, SmilePlus } from 'lucide-react';
 import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
 import { AnnotationOverlay } from '@/components/dsd/AnnotationOverlay';
+import { ProportionOverlay, type ProportionLayerType } from '@/components/dsd/ProportionOverlay';
+import { useProportionLines } from '@/hooks/domain/dsd/useProportionLines';
 import { trackEvent } from '@/lib/analytics';
 import type {
   DSDAnalysis,
@@ -29,6 +31,9 @@ interface DSDSimulationViewerProps {
   suggestions: DSDSuggestion[];
   annotationContainerRef: RefObject<HTMLDivElement | null>;
   annotationDimensions: { width: number; height: number };
+  analysis?: DSDAnalysis;
+  visibleProportionLayers: Set<ProportionLayerType>;
+  onToggleProportionLayer: (layer: ProportionLayerType) => void;
   gingivoplastyApproved?: boolean | null;
   hasFacePhoto?: boolean;
   isFaceMockupGenerating?: boolean;
@@ -56,6 +61,9 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
   suggestions,
   annotationContainerRef,
   annotationDimensions,
+  analysis,
+  visibleProportionLayers,
+  onToggleProportionLayer,
   gingivoplastyApproved,
   hasFacePhoto,
   isFaceMockupGenerating,
@@ -73,6 +81,9 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
   const isActiveFaceMockup = layers[activeLayerIndex]?.type === 'face-mockup';
   const beforeImage = isActiveFaceMockup && facePhotoBase64 ? facePhotoBase64 : imageBase64;
 
+  // Proportion overlay lines — computed from tooth bounds and analysis
+  const proportionLines = useProportionLines(toothBounds, analysis as DSDAnalysis);
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -89,6 +100,41 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
               {showAnnotations ? <EyeOff className="w-3 h-3 mr-1" /> : <Eye className="w-3 h-3 mr-1" />}
               {t('components.wizard.dsd.simulationViewer.annotations')}
             </Button>
+          )}
+          {/* Proportion overlay toggles */}
+          {toothBounds.length >= 2 && (
+            <>
+              <Button
+                variant={visibleProportionLayers.has('midline') ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => onToggleProportionLayer('midline')}
+                className="text-xs"
+                aria-pressed={visibleProportionLayers.has('midline')}
+              >
+                <Ruler className="w-3 h-3 mr-1" />
+                {t('components.dsd.proportionOverlay.midline')}
+              </Button>
+              <Button
+                variant={visibleProportionLayers.has('goldenRatio') ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => onToggleProportionLayer('goldenRatio')}
+                className="text-xs"
+                aria-pressed={visibleProportionLayers.has('goldenRatio')}
+              >
+                <Ratio className="w-3 h-3 mr-1" />
+                {t('components.dsd.proportionOverlay.goldenRatio')}
+              </Button>
+              <Button
+                variant={visibleProportionLayers.has('smileArc') ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => onToggleProportionLayer('smileArc')}
+                className="text-xs"
+                aria-pressed={visibleProportionLayers.has('smileArc')}
+              >
+                <SmilePlus className="w-3 h-3 mr-1" />
+                {t('components.dsd.proportionOverlay.smileArc')}
+              </Button>
+            </>
           )}
           <Button
             variant="outline"
@@ -195,14 +241,26 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
           beforeImage={beforeImage}
           afterImage={simulationImageUrl || ''}
           afterLabel={layers.length > 0 ? layers[activeLayerIndex]?.label || t('components.wizard.dsd.simulationViewer.defaultLabel') : t('components.wizard.dsd.simulationViewer.defaultLabel')}
-          annotationOverlay={!isActiveFaceMockup && showAnnotations ? (
-            <AnnotationOverlay
-              suggestions={suggestions || []}
-              toothBounds={toothBounds}
-              visible={showAnnotations}
-              containerWidth={annotationDimensions.width}
-              containerHeight={annotationDimensions.height}
-            />
+          annotationOverlay={!isActiveFaceMockup && (showAnnotations || visibleProportionLayers.size > 0) ? (
+            <>
+              {showAnnotations && (
+                <AnnotationOverlay
+                  suggestions={suggestions || []}
+                  toothBounds={toothBounds}
+                  visible={showAnnotations}
+                  containerWidth={annotationDimensions.width}
+                  containerHeight={annotationDimensions.height}
+                />
+              )}
+              {visibleProportionLayers.size > 0 && (
+                <ProportionOverlay
+                  lines={proportionLines}
+                  visibleLayers={visibleProportionLayers}
+                  containerWidth={annotationDimensions.width}
+                  containerHeight={annotationDimensions.height}
+                />
+              )}
+            </>
           ) : undefined}
         />
       </div>

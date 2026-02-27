@@ -14,6 +14,7 @@ import { TIMING } from '@/lib/constants';
 // Gemini's prompt-based preservation of lips/gums produces better results
 import { compositeGengivoplastyLips } from '@/lib/compositeGingivo';
 import { useDSDFaceMockup } from './useDSDFaceMockup';
+import type { ProportionLayerType } from '@/components/dsd/ProportionOverlay';
 import type {
   DSDAnalysis,
   DSDResult,
@@ -141,6 +142,21 @@ export function useDSDStep({
   const [showAnnotations, setShowAnnotations] = useState(false);
   const annotationContainerRef = useRef<HTMLDivElement>(null);
   const [annotationDimensions, setAnnotationDimensions] = useState({ width: 0, height: 0 });
+
+  // E5b: Proportion overlay layers
+  const [visibleProportionLayers, setVisibleProportionLayers] = useState<Set<ProportionLayerType>>(new Set());
+
+  const toggleProportionLayer = useCallback((layer: ProportionLayerType) => {
+    setVisibleProportionLayers(prev => {
+      const next = new Set(prev);
+      if (next.has(layer)) {
+        next.delete(layer);
+      } else {
+        next.add(layer);
+      }
+      return next;
+    });
+  }, []);
 
   const { invokeFunction } = useAuthenticatedFetch();
   const { user } = useAuth();
@@ -1020,6 +1036,7 @@ export function useDSDStep({
     annotationContainerRef,
     annotationDimensions,
     toothBounds,
+    visibleProportionLayers,
 
     // Derived
     analysisSteps,
@@ -1036,6 +1053,7 @@ export function useDSDStep({
     generateFaceMockup: faceMockup.generateFaceMockup,
     retryFailedLayer,
     setShowAnnotations,
+    toggleProportionLayer,
     setShowWhiteningComparison,
     handleSelectWhiteningLevel,
     handleSelectLayer,

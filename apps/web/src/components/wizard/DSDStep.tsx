@@ -119,6 +119,8 @@ export function DSDStep(props: DSDStepProps) {
         toothBounds={state.toothBounds}
         annotationContainerRef={state.annotationContainerRef}
         annotationDimensions={state.annotationDimensions}
+        visibleProportionLayers={state.visibleProportionLayers}
+        onToggleProportionLayer={state.toggleProportionLayer}
         showWhiteningComparison={state.showWhiteningComparison}
         whiteningComparison={state.whiteningComparison}
         isComparingWhitening={state.isComparingWhitening}

@@ -13,6 +13,7 @@ import type {
   ToothBoundsPct,
   PatientPreferences,
 } from '@/types/dsd';
+import type { ProportionLayerType } from '@/components/dsd/ProportionOverlay';
 const DSDSimulationViewer = lazy(() => import('./DSDSimulationViewer'));
 import { DSDWhiteningComparison } from './DSDWhiteningComparison';
 import { ComponentSkeleton } from '@/components/ui/skeleton-wrapper';
@@ -35,6 +36,8 @@ interface DSDAnalysisViewProps {
   toothBounds: ToothBoundsPct[];
   annotationContainerRef: RefObject<HTMLDivElement | null>;
   annotationDimensions: { width: number; height: number };
+  visibleProportionLayers: Set<ProportionLayerType>;
+  onToggleProportionLayer: (layer: ProportionLayerType) => void;
   showWhiteningComparison: boolean;
   whiteningComparison: Record<string, string>;
   isComparingWhitening: boolean;
@@ -79,6 +82,8 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
   toothBounds,
   annotationContainerRef,
   annotationDimensions,
+  visibleProportionLayers,
+  onToggleProportionLayer,
   showWhiteningComparison,
   whiteningComparison,
   isComparingWhitening,
@@ -372,6 +377,9 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
             suggestions={analysis.suggestions || []}
             annotationContainerRef={annotationContainerRef}
             annotationDimensions={annotationDimensions}
+            analysis={analysis}
+            visibleProportionLayers={visibleProportionLayers}
+            onToggleProportionLayer={onToggleProportionLayer}
             gingivoplastyApproved={gingivoplastyApproved}
             hasFacePhoto={hasFacePhoto}
             isFaceMockupGenerating={isFaceMockupGenerating}
