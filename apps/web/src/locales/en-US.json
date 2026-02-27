@@ -1139,8 +1139,8 @@
         "dropZoneLabel": "Drag an intraoral photo or click to select",
         "checkingQuality": "Checking photo quality...",
         "qualityGood": "Photo suitable for DSD simulation",
-        "qualityWarning": "Photo may not be ideal for DSD simulation. Use a lip retractor for better results.",
-        "qualityLow": "Low tooth visibility. DSD simulation may be compromised.",
+        "qualityWarning": "Partial gum visibility. Simulation will work, but result may not be perfect.",
+        "qualityLow": "Gum not visible — lip covers the teeth. DSD simulation won't produce a good result.",
         "qualityCheckFailed": "Could not verify photo quality"
       },
       "analyzing": {

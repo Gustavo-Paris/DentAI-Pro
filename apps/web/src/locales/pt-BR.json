@@ -1139,8 +1139,8 @@
         "dropZoneLabel": "Arraste uma foto intraoral ou clique para selecionar",
         "checkingQuality": "Verificando qualidade da foto...",
         "qualityGood": "Foto adequada para simulação DSD",
-        "qualityWarning": "Foto pode não ser ideal para a simulação DSD. Use afastador labial para melhor resultado.",
-        "qualityLow": "Foto com baixa visibilidade dos dentes. A simulação DSD pode ficar comprometida.",
+        "qualityWarning": "Visibilidade parcial da gengiva. A simulação vai funcionar, mas o resultado pode não ser perfeito.",
+        "qualityLow": "Gengiva não visível — o lábio cobre os dentes. A simulação DSD não vai conseguir um bom resultado.",
         "qualityCheckFailed": "Não foi possível verificar a qualidade da foto"
       },
       "analyzing": {

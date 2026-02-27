@@ -155,7 +155,7 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
 
         if (score >= 60) {
           setQualityStatus('good');
-        } else if (score >= 40) {
+        } else if (score >= 35) {
           setQualityStatus('warning');
         } else {
           setQualityStatus('low');

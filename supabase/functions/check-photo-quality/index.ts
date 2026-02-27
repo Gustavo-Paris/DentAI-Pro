@@ -50,29 +50,46 @@ Deno.serve(async (req: Request) => {
       return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders);
     }
 
-    const prompt = `Avalie esta foto dental para edição de imagem por IA.
+    const prompt = `Look at this smile photo. This is a DENTAL photo — a close-up of someone smiling to show their teeth.
 
-A IA precisa editar cada dente. Para isso precisa ver onde cada dente começa (na gengiva) e termina (borda incisal).
+Answer TWO independent questions:
 
-REGRA ÚNICA: Olhe para os INCISIVOS CENTRAIS e LATERAIS superiores (os 4 dentes da frente).
-- Você consegue ver GENGIVA (tecido rosa) ACIMA desses dentes? A gengiva está visível entre o lábio superior e o topo dos dentes?
+QUESTION 1 — GUM TISSUE:
+Look above the upper front teeth. Is there ANY pink/red tissue (gum) visible between the teeth and the upper lip? Even a thin strip counts as visible.
 
-SE SIM (gengiva visível acima dos centrais/laterais): score 65-85
-SE NÃO (lábio superior cobre a gengiva, toca o topo dos dentes): score 25-45
+QUESTION 2 — LIP POSITION:
+Is the upper lip pressed DIRECTLY against the top edge of the upper front teeth? Meaning the lip physically touches the teeth with absolutely NO gap or space between them.
 
-Ajuste ±10 por foco, iluminação e visibilidade dos caninos.
+Fill in the function:
+- gum_visible: true if ANY pink/red gum tissue is visible above the upper front teeth.
+- gum_amount: "full" if gum clearly visible across multiple teeth, "some" if small strip visible, "none" if zero.
+- lip_touches_teeth: true ONLY if the upper lip is physically pressed against the top of the teeth with no gap. false if there is ANY space between lip and teeth (even if filled by gum).
+- teeth_with_gum: count of upper front teeth (0-6) where you can see gum tissue above them.
 
-Use a função.`;
+Call the function.`;
 
     const toolSchema = {
       type: "object",
       properties: {
-        score: {
-          type: "number",
-          description: "Score 0-100 de adequação da foto para edição de imagem por IA",
+        gum_visible: {
+          type: "boolean",
+          description: "Is there ANY pink/red gum tissue visible above the upper front teeth?",
+        },
+        gum_amount: {
+          type: "string",
+          enum: ["full", "some", "none"],
+          description: "Amount of visible gum: full=clearly visible across multiple teeth, some=small strip, none=zero",
+        },
+        lip_touches_teeth: {
+          type: "boolean",
+          description: "Is the upper lip physically pressed against the top edge of the teeth with no gap?",
+        },
+        teeth_with_gum: {
+          type: "integer",
+          description: "Count of upper front teeth (0-6) where gum tissue is visible above them.",
         },
       },
-      required: ["score"],
+      required: ["gum_visible", "gum_amount", "lip_touches_teeth", "teeth_with_gum"],
     };
 
     const controller = new AbortController();
@@ -94,13 +111,13 @@ Use a função.`;
           ],
         }],
         generationConfig: {
-          temperature: 0.1,
-          maxOutputTokens: 50,
+          temperature: 0.3,
+          maxOutputTokens: 100,
         },
         tools: [{
           functionDeclarations: [{
             name: "report_quality",
-            description: "Report the photo quality score",
+            description: "Classificar a qualidade da foto dental",
             parameters: toolSchema,
           }],
         }],
@@ -134,20 +151,54 @@ Use a função.`;
     const parts = candidate?.content?.parts || [];
     const functionCall = parts.find((p: { functionCall?: unknown }) => p.functionCall);
 
-    if (!functionCall?.functionCall?.args?.score && functionCall?.functionCall?.args?.score !== 0) {
-      logger.warn("Gemini did not return score via function call", { parts: JSON.stringify(parts).substring(0, 500) });
+    const args = functionCall?.functionCall?.args as {
+      gum_visible?: boolean;
+      gum_amount?: string;
+      lip_touches_teeth?: boolean;
+      teeth_with_gum?: number;
+    } | undefined;
+
+    if (!args) {
+      logger.warn("Gemini did not return args via function call", { parts: JSON.stringify(parts).substring(0, 500) });
       return new Response(
-        JSON.stringify({ score: 50, latency_ms: latencyMs }),
+        JSON.stringify({ score: 50, quality: "parcial", latency_ms: latencyMs }),
         { status: 200, headers: jsonHeaders },
       );
     }
 
-    const score = Math.max(0, Math.min(100, Math.round(functionCall.functionCall.args.score)));
+    const { gum_visible, gum_amount, lip_touches_teeth, teeth_with_gum = 0 } = args;
 
-    logger.log(`Photo quality score: ${score} (${latencyMs}ms)`);
+    // OPTIMISTIC 2-tier scoring — GREEN or YELLOW only.
+    // Gemini Flash has a strong negative bias for gum detection, so we never
+    // return RED from this lightweight check. The full analyze-dental-photo
+    // (Gemini Pro) provides a more reliable second check at the DSD step.
+    const proGum = [
+      gum_visible === true,
+      gum_amount !== "none",
+      lip_touches_teeth === false,
+      teeth_with_gum > 0,
+    ];
+    const proGumCount = proGum.filter(Boolean).length;
+
+    let quality: string;
+    let score: number;
+
+    if (proGumCount >= 2) {
+      // Multiple signals say gum exists → GREEN
+      quality = "otimo";
+      score = 80;
+    } else {
+      // Few or no signals → YELLOW (advisory warning, never block)
+      // Gemini Flash is non-deterministic and unreliable for gum detection,
+      // so we never return RED from this lightweight check.
+      quality = "parcial";
+      score = 50;
+    }
+
+    logger.log(`Photo quality: gum_visible=${gum_visible}, gum_amount=${gum_amount}, lip_touches=${lip_touches_teeth}, teeth_count=${teeth_with_gum}, proGum=${proGumCount}/4 → ${quality} (score ${score}, ${latencyMs}ms)`);
 
     return new Response(
-      JSON.stringify({ score, latency_ms: latencyMs }),
+      JSON.stringify({ score, quality, gum_visible, gum_amount, lip_touches_teeth, teeth_with_gum, latency_ms: latencyMs }),
       { status: 200, headers: jsonHeaders },
     );
   } catch (err) {
