@@ -120,6 +120,10 @@ export function useDSDStep({
   const [failedLayers, setFailedLayers] = useState<SimulationLayerType[]>([]);
   const [retryingLayer, setRetryingLayer] = useState<SimulationLayerType | null>(null);
 
+  // Face mockup states
+  const [isFaceMockupGenerating, setIsFaceMockupGenerating] = useState(false);
+  const [faceMockupError, setFaceMockupError] = useState<string | null>(null);
+
   // Gengivoplasty approval: null = not decided, true = approved, false = discarded
   // Derive initial state from draft layers — if complete-treatment layer exists, it was previously approved
   const [gingivoplastyApproved, setGingivoplastyApproved] = useState<boolean | null>(
@@ -547,6 +551,86 @@ export function useDSDStep({
       generateAllLayers(result.analysis);
     }
   }, [result?.analysis, layers.length, isSimulationGenerating, simulationError, layersGenerating, imageBase64, generateAllLayers, initialResult]);
+
+  // Generate face mockup layer on demand (requires face photo + existing analysis)
+  const generateFaceMockup = useCallback(async () => {
+    if (!additionalPhotos?.face || !result?.analysis) return;
+
+    setIsFaceMockupGenerating(true);
+    setFaceMockupError(null);
+
+    try {
+      const reqId = crypto.randomUUID();
+      const { data, error: fnError } = await withRetry(
+        async () => {
+          const resp = await invokeFunction<DSDResult & { simulation_debug?: string }>('generate-dsd', {
+            body: {
+              reqId,
+              imageBase64: additionalPhotos.face,
+              regenerateSimulationOnly: true,
+              existingAnalysis: result.analysis,
+              patientPreferences,
+              layerType: 'face-mockup' as const,
+              additionalPhotos: { face: additionalPhotos.face, smile45: null },
+            },
+          });
+          if (resp.error || !resp.data?.simulation_url) {
+            const debug = resp.data?.simulation_debug;
+            if (debug) logger.error('Face mockup server error:', debug);
+            throw resp.error || new Error(`Face mockup returned no URL${debug ? `: ${debug}` : ''}`);
+          }
+          return resp;
+        },
+        {
+          maxRetries: 2,
+          baseDelay: 3000,
+          onRetry: (attempt, err) => {
+            logger.warn(`Face mockup retry ${attempt}:`, err);
+          },
+        },
+      );
+
+      if (fnError) throw fnError;
+
+      if (data?.simulation_url) {
+        const { layer: processed, url } = await resolveLayerUrl({
+          type: 'face-mockup',
+          label: getLayerLabel('face-mockup', t),
+          simulation_url: data.simulation_url,
+          whitening_level: patientPreferences?.whiteningLevel || 'natural',
+          includes_gengivoplasty: false,
+        });
+
+        setLayers(prev => {
+          const filtered = prev.filter(l => l.type !== 'face-mockup');
+          const updated = [...filtered, processed];
+          // Auto-select the new face-mockup layer
+          setActiveLayerIndex(updated.length - 1);
+          return updated;
+        });
+        if (url) {
+          setLayerUrls(prev => ({ ...prev, 'face-mockup': url }));
+          setSimulationImageUrl(url);
+        }
+        setResult(prev => prev ? {
+          ...prev,
+          layers: [...(prev.layers || []).filter(l => l.type !== 'face-mockup'), processed],
+        } : prev);
+
+        toast.success(t('toasts.dsd.layerReady', { layer: getLayerLabel('face-mockup', t) }));
+        trackEvent('dsd_face_mockup_generated');
+      } else {
+        setFaceMockupError(data?.simulation_debug || 'Face mockup generation failed');
+      }
+    } catch (err) {
+      const message = (err as Error).message || 'Face mockup generation failed';
+      setFaceMockupError(message);
+      logger.error('Face mockup generation failed:', err);
+      toast.error(t('toasts.dsd.layerError', { layer: getLayerLabel('face-mockup', t) }));
+    } finally {
+      setIsFaceMockupGenerating(false);
+    }
+  }, [additionalPhotos?.face, result?.analysis, invokeFunction, patientPreferences, resolveLayerUrl, t]);
 
   // Retry a single failed layer (respects L2-first architecture)
   const retryFailedLayer = useCallback(async (layerType: SimulationLayerType) => {
@@ -989,6 +1073,8 @@ export function useDSDStep({
     showWhiteningComparison,
     gingivoplastyApproved,
     dsdConfirmed,
+    isFaceMockupGenerating,
+    faceMockupError,
     showAnnotations,
     annotationContainerRef,
     annotationDimensions,
@@ -998,6 +1084,7 @@ export function useDSDStep({
     analysisSteps,
     determineLayersNeeded,
     hasGingivoSuggestion,
+    hasFacePhoto: !!additionalPhotos?.face,
 
     // Actions
     handleRetry,
@@ -1005,6 +1092,7 @@ export function useDSDStep({
     handleContinue,
     generateWhiteningComparison,
     generateAllLayers,
+    generateFaceMockup,
     retryFailedLayer,
     setShowAnnotations,
     setShowWhiteningComparison,
