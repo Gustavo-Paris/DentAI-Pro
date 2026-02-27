@@ -281,7 +281,7 @@ export function useDSDStep({
     const isGingivalLayer = layerType === 'complete-treatment' || layerType === 'root-coverage';
     // Lip retries: L3 from original gets 2 retries, L3 chained from L2 gets 1 retry,
     // non-gingival layers get 0. Server validates lips and returns lips_moved=true.
-    const MAX_LIP_RETRIES = isGingivalLayer ? (baseImageOverride ? 1 : 2) : 0;
+    const MAX_LIP_RETRIES = isGingivalLayer ? (baseImageOverride ? 2 : 2) : 0;
 
     try {
       let bestResult: (DSDResult & { lips_moved?: boolean }) | null = null;

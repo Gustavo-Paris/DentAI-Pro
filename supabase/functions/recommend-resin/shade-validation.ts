@@ -365,26 +365,40 @@ export async function validateAndFixProtocolLayers({
         }
 
         // Prefer Estelite Omega or Palfique LX5 over Z350 for esmalte vestibular final
+        // Whitening goal determines preference: MW Estelite (natural) vs WE Palfique (lighter)
         if (isVestibularFinal && productLine && /z350/i.test(productLine)) {
           const palfiqueWE = catalogRows.find(r =>
             matchesLine(r.product_line, 'Palfique') && r.shade === 'WE'
           );
-          const esteliteWE = catalogRows.find(r =>
-            matchesLine(r.product_line, 'Estelite Omega') && (r.shade === 'WE' || r.shade === 'MW')
+          const esteliteMW = catalogRows.find(r =>
+            matchesLine(r.product_line, 'Estelite Omega') && r.shade === 'MW'
           );
-          const preferred = palfiqueWE || esteliteWE;
+          const esteliteWE = catalogRows.find(r =>
+            matchesLine(r.product_line, 'Estelite Omega') && r.shade === 'WE'
+          );
+
+          // Whitening: prefer Palfique LX5 WE (lighter result)
+          // Natural: prefer Estelite Omega MW (natural result)
+          const preferred = wantsWhitening
+            ? (palfiqueWE || esteliteWE)
+            : (esteliteMW || palfiqueWE || esteliteWE);
+
           if (preferred) {
             const originalBrand = layer.resin_brand;
             const originalShade = layer.shade;
-            layer.resin_brand = palfiqueWE
+            const isPalfique = preferred === palfiqueWE;
+            layer.resin_brand = isPalfique
               ? 'Tokuyama - Palfique LX5'
               : 'Tokuyama - Estelite Omega';
             layer.shade = preferred.shade;
             shadeReplacements[originalShade] = preferred.shade;
+            const reason = wantsWhitening
+              ? 'resultado mais claro (whitening)'
+              : 'resultado natural';
             validationAlerts.push(
-              `Esmalte Vestibular Final: ${originalBrand} (${originalShade}) → ${layer.resin_brand} (${preferred.shade}) — polimento superior para camada de esmalte anterior.`
+              `Esmalte Vestibular Final: ${originalBrand} (${originalShade}) → ${layer.resin_brand} (${preferred.shade}) — ${reason}, polimento superior.`
             );
-            logger.warn(`Enamel final preference: ${originalBrand} ${originalShade} → ${layer.resin_brand} ${preferred.shade}`);
+            logger.warn(`Enamel final preference: ${originalBrand} ${originalShade} → ${layer.resin_brand} ${preferred.shade} (whitening=${!!wantsWhitening})`);
           }
         }
       }
@@ -472,10 +486,10 @@ export async function validateAndFixProtocolLayers({
           order: insertIdx + 1,
           name: 'Efeitos Incisais',
           resin_brand: 'Ivoclar - Empress Direct Color',
-          shade: 'White/Amber',
+          shade: 'White/Amber/Blue',
           thickness: '0.1mm',
-          purpose: 'Reproduzir efeitos ópticos naturais: halo opaco incisal, linhas de craze, micro-pontos de caracterização',
-          technique: 'Aplicar corante branco para halo opaco na borda incisal. Corante âmbar para linhas de craze. Pincel fino antes da camada de esmalte.',
+          purpose: 'Reproduzir efeitos ópticos naturais: halo opaco incisal, linhas de craze, translucidez adicional, micro-pontos de caracterização',
+          technique: 'Aplicar corante branco para halo opaco na borda incisal. Corante âmbar para linhas de craze. Corante azul (blue) para translucidez adicional e efeito de profundidade nas bordas incisais. Pincel fino antes da camada de esmalte.',
           optional: true,
         };
         recommendation.protocol.layers.splice(insertIdx, 0, efeitosLayer);

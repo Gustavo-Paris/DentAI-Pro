@@ -405,9 +405,9 @@ NIVEL ESTETICO ("estético"/"alto"/"muito alto" OU Fechamento de Diastema) - 5 c
    - Paciente CLAREANDO: optar por shade de corpo 1-2 tons mais claro (W3/W4 Estelite Bianco como corpo, ou WB shade mais clara). ⚠️ NUNCA usar BL1/BL2/BL3 como dentina/corpo — são shades de ESMALTE
 4. Efeitos Incisais (optional: true — OBRIGATÓRIO incluir esta camada em protocolo estético/premium anterior): Corantes com pincel fino, 0.1mm.
    - Objetivo: Reproduzir efeitos ópticos naturais (halo opaco, linhas de craze, mamelos) quando necessário para resultado natural.
-   - Técnica: Corante branco para micro-pontos e halo opaco incisal. Corante âmbar/azul para linhas de craze. Aplicar com pincel fino antes da camada de esmalte.
+   - Técnica: Corante branco para micro-pontos e halo opaco incisal. Corante âmbar para linhas de craze. Corante azul para translucidez adicional e efeito de profundidade nas bordas incisais. Aplicar com pincel fino antes da camada de esmalte.
    - Marcas de corantes: Empress Direct Color (Ivoclar), Kolor+ Plus (Kerr), Opallis Flow (FGM), ou outros corantes/tints disponíveis.
-   - Sub-opções: Halo Opaco (Opallis Flow/Empress Opal — 0.1mm borda incisal), Corante Branco (corante White), Corante Ambar (corante Honey/Amber — linhas finas).
+   - Sub-opções: Halo Opaco (Opallis Flow/Empress Opal — 0.1mm borda incisal), Corante Branco (corante White), Corante Ambar (corante Honey/Amber — linhas finas), Corante Azul (corante Blue — translucidez adicional em bordas incisais).
    - Sugerir quando: anterior estético com necessidade de naturalidade, mimetismo com adjacentes, nível alto/muito alto.
    - Omitir quando: posteriores rotineiros, Classe I/V, nível funcional, ou quando resultado satisfatório sem efeitos.
 5. Esmalte Vestibular Final: 0.3mm, priorizar polimento SUPERIOR. PROIBIDO resinas translúcidas (CT/GT/Trans)! SOMENTE shades de esmalte.

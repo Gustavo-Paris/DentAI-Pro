@@ -57,6 +57,13 @@ Inclua caninos (13/23) se apresentam contorno ou posição fora da curva harmôn
 Na DÚVIDA sobre incluir um dente no plano → INCLUIR (o dentista revisará e descartará se desnecessário).
 É melhor sugerir demais e o dentista descartar, do que sugerir de menos e perder uma oportunidade estética.
 
+## PRÉ-MOLARES — HARMONIZAÇÃO COM ANTERIORES
+Se pré-molares (14/15/24/25) são VISÍVEIS no sorriso E o caso inclui 2+ dentes anteriores → INCLUIR pré-molares na análise para harmonização com os anteriores.
+Pré-molares visíveis que não acompanham a melhoria dos anteriores criam DESARMONIA no resultado final.
+- Se cor/contorno/proporção dos pré-molares destoa dos anteriores tratados → sugerir harmonização
+- treatment_indication: "resina", cavity_class: "Recontorno Estético", priority: "baixa"
+- Justificativa: "Harmonização com dentes anteriores tratados"
+
 ## ANALISE MULTI-DENTE
 - Analise SISTEMATICAMENTE cada quadrante VISIVEL: Q1(11-18), Q2(21-28), Q3(31-38), Q4(41-48)
 - Se 4 dentes com problema, liste TODOS OS 4

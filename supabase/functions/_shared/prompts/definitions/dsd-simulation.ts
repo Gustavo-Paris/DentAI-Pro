@@ -496,66 +496,69 @@ Output: Same photo with teeth whitened to ${params.whiteningIntensity} level. Al
 }
 
 function buildGengivoplastyOnlyPrompt(params: Params): string {
-  return `DENTAL PHOTO EDIT - GINGIVAL RECONTOURING
+  return `DENTAL PHOTO EDIT — PRIMARY TASK: GINGIVAL RECONTOURING
 
-Input is an ALREADY PROCESSED dental photo (teeth corrected + whitened). Modify ONLY gum margins.
+Input: ALREADY PROCESSED dental photo (teeth corrected + whitened).
 Output dimensions MUST equal input dimensions.
 
-=== ANATOMICAL DEFINITIONS ===
-Gingival margin = PINK GUM TISSUE where gum meets tooth surface.
-Lip = tissue with VERMILION BORDER (red/pink lip tissue above the gum).
-The gum sits BETWEEN the tooth crown and the upper lip.
+YOUR SINGLE TASK: Reduce the visible pink gum tissue above the teeth to simulate gengivoplasty.
+⚠️ If the output looks identical to the input, you have FAILED the task.
 
-=== INPAINTING TECHNIQUE ===
-1. COPY the entire input image EXACTLY as-is
-2. IDENTIFY the gingival margin (pink tissue where gum meets each tooth)
-3. MEASURE the visible PINK GUM BAND between the top of each tooth crown and the upper lip
-4. For each affected tooth, MOVE the gingival margin APICALLY (toward the root):
-   - REPLACE pink gum pixels with enamel-colored pixels that are a SEAMLESS CONTINUATION of the existing visible tooth surface
-   - Copy the EXACT color, texture, and curvature from the adjacent tooth area — do NOT invent new geometry
-   - The tooth shape, width, and contour MUST remain unchanged — only the gum-covered cervical area becomes visible
-5. Create SYMMETRICAL gum line — left side mirrors right side
-6. Create smooth, harmonious gingival arch across all visible teeth
-7. Keep remaining gum tissue natural — healthy pink, smooth, realistic
+=== LIP DISTANCE RULE (SACRED — APPLIES TO THIS LAYER) ===
+A DISTÂNCIA entre o lábio superior e o lábio inferior é FIXA e IMUTÁVEL.
+Meça a distância vertical entre os lábios na entrada — a saída DEVE ter a MESMA distância exata.
+- NÃO levantar o lábio superior (nem 1 pixel)
+- NÃO abaixar o lábio inferior (nem 1 pixel)
+- A abertura labial na saída = CÓPIA EXATA da abertura labial na entrada
+Se você precisa mostrar mais resultado dental, faça isso DENTRO do espaço existente entre os lábios — NUNCA expanda a abertura.
+⚠️ ERRO FREQUENTE DO MODELO: Levantar o lábio superior e abaixar o inferior para "mostrar mais resultado" — PROIBIDO
 
-${params.gingivoSuggestions ? `SPECIFIC TEETH TO RESHAPE:\n${params.gingivoSuggestions}\n` : `Reshape the gum line on the upper anterior teeth (canine to canine) to create a balanced, aesthetic smile.\nTarget: 2-3mm apical movement of gingival margin per tooth.\n`}
+=== WHAT TO CHANGE (THIS IS THE WHOLE POINT) ===
+${params.gingivoSuggestions ? `SPECIFIC TEETH TO RESHAPE:\n${params.gingivoSuggestions}\n` : `Reshape the gum line on all visible upper anterior teeth (canine to canine).\nTarget: 2-3mm apical movement of gingival margin per tooth.\n`}
 
-=== VISUAL MAGNITUDE (CRITICAL) ===
-The GUM REDUCTION must be clearly visible in a before/after comparison.
-- REDUCE the visible PINK GUM BAND between tooth crowns and upper lip by 30-40%
-- Replace removed gum pixels with a SEAMLESS EXTENSION of the existing tooth enamel surface — copy color, texture, and curvature from the adjacent visible tooth area
-- Do NOT invent new tooth geometry — the existing tooth shape, contour, and proportions are SACRED
-- A subtle change is acceptable if the photo has minimal gum exposure — do NOT distort teeth to force a dramatic result
-- The upper portion of the pink gum band should become tooth-colored enamel that perfectly matches what is already visible
+HOW TO EXECUTE:
+1. Identify the PINK GUM BAND between each tooth crown and the upper lip
+2. For each affected tooth, move the gingival margin APICALLY (toward the root) by 2-3mm
+3. REPLACE the removed pink gum pixels with TOOTH-COLORED pixels — the newly exposed area represents CERVICAL ENAMEL (clinical crown increase)
+4. The tooth should appear LONGER (more clinical crown exposed) — this is the clinical goal of gengivoplasty
+5. Copy the EXACT color, texture, and curvature from the adjacent visible tooth area for seamless blending
+6. Create SYMMETRICAL gum line — left side mirrors right side
+7. Create smooth, harmonious gingival arch across all visible teeth
+8. Remaining gum tissue: healthy pink, smooth, realistic
 
-⚠️ QUALITY REQUIREMENT — PHOTOREALISTIC GUM-TOOTH INTERFACE:
-- Gum margins must be SMOOTH, even, crisp lines — no jagged or fuzzy edges
-- Newly exposed area must be a seamless continuation of the existing enamel — same color, same texture, same surface detail
-- ⚠️ NO dark spots, shadows, bruise-like patches, or discoloration at gum-tooth margins — this is the #1 artifact to avoid
-- NO pixelation, banding, or patchy color at the gum-tooth interface
-- Remaining gum tissue must be uniform healthy PINK — no dark patches, no unnatural color variations
-- If you cannot make a clean, artifact-free transition for a tooth, preserve that tooth's original gum margin
+=== ZENITH SYMMETRY & CLINICAL QUALITY (CRITICAL) ===
+GINGIVAL ZENITH = highest point of the gum margin on each tooth (most apical point).
+- Zenith of CONTRALATERAL teeth MUST be SYMMETRICAL: 11↔21, 12↔22, 13↔23
+- Zenith of centrals (11/21): slightly DISTAL to the tooth's long axis
+- Zenith of laterals (12/22): at or near the CENTER of the tooth — naturally ~1mm more coronal than centrals
+- Zenith of canines (13/23): at or near the CENTER — same height as centrals or ~0.5mm more coronal
+- INTERPROXIMAL PAPILLAE must remain intact and POINTED — do NOT flatten or remove papillae
+- The resulting gingival contour should follow a SMOOTH SCALLOPED curve across the arch
+- Each tooth's gum margin should have a gentle PARABOLIC curve (not a straight horizontal line)
 
-EXPECTED RESULT:
-- Pink gum band visibly reduced — this is the PRIMARY and ONLY visual change
-- Gum line is more even and symmetrical
-- Teeth have the EXACT SAME shape, width, contour, and proportions as the input — only more cervical area is exposed
-- Result looks like a REAL clinical photo, not a digital manipulation
+MAGNITUDE REQUIREMENT (NON-NEGOTIABLE):
+- The pink gum band MUST be visibly reduced by 30-40% — this is the WHOLE POINT of the simulation
+- The difference between input and output MUST be obvious in a side-by-side comparison
+- The upper portion of the pink gum band becomes tooth-colored enamel that matches what is already visible
+- Newly exposed cervical area = seamless continuation of existing enamel (same color, texture, curvature)
+- The clinical crown (visible tooth) should be LONGER than in the input — the patient sees MORE TOOTH, LESS GUM
 
-=== PRESERVATION RULE (HIGHEST PRIORITY) ===
-PRESERVE pixel-identical: ALL existing tooth surfaces (shape, color, contour, texture, width, proportions), BOTH lips (position, shape, opening), face, skin, background, image framing.
-ONLY gum margin pixels may change — replaced by enamel-colored extension that continues the existing tooth surface.
-Do NOT lift upper lip or lower the lower lip to "show more teeth."
-Do NOT widen, narrow, lengthen, or reshape any tooth crown. The tooth anatomy is FIXED.
+=== QUALITY STANDARDS ===
+- Gum-tooth margins: SMOOTH, crisp lines — no jagged edges, no pixelation
+- No dark spots, shadows, or bruise-like patches at gum-tooth interface
+- Remaining gum tissue: uniform healthy pink
+- Result must look like a REAL clinical photo
 
-=== MIDLINE & PROPORTIONS (ABSOLUTE) ===
-- The DENTAL MIDLINE (vertical line between central incisors 11/21) must NOT shift laterally — keep it in the EXACT same horizontal position as the input
-- The WIDTH of each central incisor (11, 21) must be IDENTICAL to the input — do NOT make one wider/narrower
-- The WIDTH RATIO between lateral incisors (12/22) and central incisors must be PRESERVED
+=== WHAT NOT TO CHANGE ===
+Keep identical to input: ALL existing tooth surfaces (shape, color, width, proportions), BOTH lips (position, shape, opening), face, skin, background, framing.
+- Do NOT lift upper lip or lower the lower lip — LIP POSITION IS SACRED
+- Do NOT widen, narrow, or reshape any tooth crown — tooth width is FIXED
+- Dental midline (between 11/21) stays in the EXACT same position
+- Width ratio between lateral and central incisors: PRESERVED
 - ⚠️ COMMON ERROR: Model widens one central incisor to "fill space" after gum reduction — PROHIBITED
-- If you cannot reduce gum without altering tooth width or midline, produce a SMALLER gum reduction instead
+- ⚠️ COMMON ERROR: Model lifts upper lip to show more result — PROHIBITED (lip is a FIXED reference)
 
-Output: Same photo with ONLY the gum line reshaped — teeth are anatomically identical to input.`
+Output: Same photo with gum line clearly reshaped — teeth anatomically identical but LONGER (more clinical crown), pink gum band visibly reduced, lips UNMOVED.`
 }
 
 function buildWithGengivoplastyPrompt(params: Params): string {
@@ -592,21 +595,20 @@ If lips change, the clinical comparison is DESTROYED.
 - The DENTAL MIDLINE (vertical line between 11/21) must stay in the EXACT same horizontal position
 - The WIDTH of each individual tooth must be IDENTICAL to the input — gum reduction does NOT change tooth width
 - Do NOT make central incisors wider/narrower to "fill space" after gum recontouring
-- If the model cannot reduce gum without altering tooth width or midline, produce a SMALLER gum reduction
+- ⚠️ COMMON ERROR: Model widens one central incisor to "fill space" after gum reduction — PROHIBITED
 
-=== GINGIVAL RECONTOURING ===
+=== GINGIVAL RECONTOURING (MUST BE VISIBLE) ===
 Expose more clinical crown by moving the gingival margin APICALLY (toward the root):
+- REDUCE the visible pink gum band by 30-40% — this is a GUM-ONLY operation and MUST be clearly visible in a side-by-side comparison
 - Replace pink gum pixels with a seamless extension of the existing tooth enamel — copy color, texture, and curvature exactly
 - Create symmetrical gingival zeniths between contralateral teeth
 - Harmonize the gum line curvature across the smile
 - Recontoured gums must look NATURAL (healthy pink tissue, smooth texture)
-- REDUCE the visible pink gum band by 30-40% — this is a GUM-ONLY operation
-- Do NOT change tooth shape, width, contour, or proportions — teeth are FIXED anatomical structures
-- A subtle change is acceptable if gum exposure is minimal — do NOT distort teeth to force a dramatic result
+- Tooth shape, width, contour, and proportions are FIXED — only gum margin changes
 - Gum margins must be SMOOTH, crisp lines — no jagged edges, no pixelation, no patchy artifacts
-- ⚠️ NO dark spots, shadows, or bruise-like patches at gum-tooth margins — this is the #1 artifact to avoid
+- No dark spots, shadows, or bruise-like patches at gum-tooth margins
 - Newly exposed area must seamlessly continue the existing enamel surface
-- Remaining gum tissue must be uniform healthy PINK — no dark patches or discoloration
+- Remaining gum tissue must be uniform healthy PINK
 
 ${params.gingivoSuggestions ? `GENGIVOPLASTY SPECIFICATIONS (per tooth):\n${params.gingivoSuggestions}\n` : ''}
 

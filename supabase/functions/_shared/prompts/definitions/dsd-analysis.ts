@@ -257,7 +257,8 @@ CANINOS (13/23) — avaliação OBRIGATÓRIA e COMPLETA:
 PRE-MOLARES (14/15/24/25) — incluir na análise quando:
 - Incluir se: corredor bucal "excessivo" (com evidência), OU 2+ anteriores receberão tratamento, OU foto 45° disponível, OU pré-molares VISIVEIS na foto com problemas estéticos (cor, formato, restaurações antigas)
 - Se pré-molares são visíveis no sorriso e apresentam QUALQUER desarmonia estética com os anteriores (cor diferente, restaurações antigas, escurecimento) → INCLUIR nas sugestões
-- NAO sugerir tratamento APENAS se: corredor "adequado" E pré-molares em posição normal E sem problemas estéticos visíveis
+- Se 2+ dentes anteriores estão sendo tratados E pré-molares são VISÍVEIS no sorriso → SEMPRE incluir pré-molares na avaliação para HARMONIZAÇÃO com os anteriores (cor, contorno, proporção)
+- NAO sugerir tratamento APENAS se: corredor "adequado" E pré-molares em posição normal E sem problemas estéticos visíveis E menos de 2 anteriores em tratamento
 
 Se >=2 anteriores precisam de intervenção -> avaliar 6-10 dentes do arco (13-23 sempre + 14/15/24/25 se visíveis).
 
@@ -274,6 +275,12 @@ Se >=2 anteriores precisam de intervenção -> avaliar 6-10 dentes do arco (13-2
 | ALINHAR dentes                          | Ortodontia (encaminhamento)       | -                     |
 
 VALIDACAO: Para CADA sugestão: "O tratamento PRODUZ o mesmo efeito visual que o DSD simulou?" Se NAO -> corrigir.
+
+=== REGRA DE COERÊNCIA DSD-TRATAMENTO (OBRIGATÓRIO) ===
+TODOS os dentes que foram visualmente melhorados na simulação DSD DEVEM ter sugestão de tratamento correspondente.
+Se a simulação melhorou contorno, volume, cor ou proporção de pré-molares (14/15/24/25), INCLUIR nas sugestões com tratamento adequado (resina para harmonização com anteriores).
+⚠️ Se o DSD mostra pré-molares VISIVELMENTE melhores e o plano de tratamento NÃO os inclui → o plano está INCOMPLETO.
+Regra complementar: Se 2+ dentes anteriores estão sendo tratados E pré-molares são VISÍVEIS no sorriso → SEMPRE incluir pré-molares na avaliação para harmonização com os anteriores, mesmo sem problemas estéticos óbvios. Pré-molares visíveis que não acompanham a melhoria dos anteriores criam DESARMONIA no resultado final.
 
 === AUTOVALIDACAO (ANTES DE FINALIZAR) ===
 1. Dente ficará MAIOR -> treatment: "resina" (NUNCA gengivoplastia)
