@@ -288,8 +288,8 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
             onOpenChange={setShowComparison}
             originalImage={imageBase64}
             layers={layers
-              .filter(l => l.simulation_url && layerUrls?.[l.simulation_url])
-              .map(l => ({ ...l, resolvedUrl: layerUrls![l.simulation_url!] }))}
+              .filter(l => l.simulation_url && layerUrls?.[l.type])
+              .map(l => ({ ...l, resolvedUrl: layerUrls![l.type] }))}
           />
         </Suspense>
       )}
