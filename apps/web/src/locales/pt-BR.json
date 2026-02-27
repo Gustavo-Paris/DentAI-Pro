@@ -1389,6 +1389,12 @@
           "goldenRatio": "Proporção Áurea",
           "smileArc": "Arco do Sorriso"
         },
+        "layerComparison": {
+          "title": "Comparar Camadas",
+          "leftSide": "Lado Esquerdo",
+          "rightSide": "Lado Direito",
+          "button": "Comparar"
+        },
         "simulateOnFace": "Simular no rosto",
         "generatingFaceMockup": "Gerando simulação no rosto...",
         "faceMockupError": "Erro ao gerar simulação no rosto",
@@ -2296,7 +2302,12 @@
       "facialMidline": "Linha Media Facial",
       "dentalMidline": "Linha Media Dental",
       "smileLine": "Linha do Sorriso",
-      "buccalCorridor": "Corredor Bucal"
+      "buccalCorridor": "Corredor Bucal",
+      "suggestionsTitle": "SUGESTOES DE TRATAMENTO (DSD)",
+      "suggestionTooth": "Dente",
+      "suggestionIssue": "Problema Atual",
+      "suggestionChange": "Mudanca Proposta",
+      "observationsTitle": "OBSERVACOES CLINICAS (DSD)"
     },
     "protocol": {
       "title": "PROTOCOLO DE CAMADAS",

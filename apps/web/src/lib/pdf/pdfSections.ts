@@ -290,6 +290,70 @@ export function renderDSDAnalysis(ctx: PDFRenderContext, data: PDFData) {
   ctx.y += 10;
 }
 
+// ============ DSD SUGGESTIONS TABLE ============
+export function renderDSDSuggestions(ctx: PDFRenderContext, data: PDFData) {
+  const suggestions = data.dsdAnalysis?.suggestions;
+  if (!suggestions || suggestions.length === 0) return;
+
+  const { pdf, margin, contentWidth, t } = ctx;
+
+  checkPageBreak(ctx, 30 + suggestions.length * 10);
+
+  addText(ctx, t('pdf.dsd.suggestionsTitle'), margin, ctx.y, { fontSize: 10, fontStyle: 'bold', color: [37, 99, 235] });
+  ctx.y += 6;
+
+  // Table header
+  const colTooth = margin;
+  const colIssue = margin + 22;
+  const colChange = margin + contentWidth * 0.45;
+
+  pdf.setFillColor(241, 245, 249);
+  pdf.rect(margin, ctx.y - 3, contentWidth, 6, 'F');
+
+  addText(ctx, t('pdf.dsd.suggestionTooth'), colTooth + 2, ctx.y, { fontSize: 7, fontStyle: 'bold', color: [71, 85, 105] });
+  addText(ctx, t('pdf.dsd.suggestionIssue'), colIssue, ctx.y, { fontSize: 7, fontStyle: 'bold', color: [71, 85, 105] });
+  addText(ctx, t('pdf.dsd.suggestionChange'), colChange, ctx.y, { fontSize: 7, fontStyle: 'bold', color: [71, 85, 105] });
+  ctx.y += 6;
+
+  // Table rows
+  suggestions.forEach((s, i) => {
+    if (i > 0 && i % 10 === 0) checkPageBreak(ctx, 20);
+
+    if (i % 2 === 0) {
+      pdf.setFillColor(248, 250, 252);
+      pdf.rect(margin, ctx.y - 3, contentWidth, 6, 'F');
+    }
+
+    addText(ctx, sanitizeText(s.tooth), colTooth + 2, ctx.y, { fontSize: 8, fontStyle: 'bold' });
+    addText(ctx, sanitizeText(s.current_issue), colIssue, ctx.y, { fontSize: 7, color: [100, 100, 100], maxWidth: contentWidth * 0.4 - 22 });
+    addText(ctx, sanitizeText(s.proposed_change), colChange, ctx.y, { fontSize: 7, color: [60, 60, 60], maxWidth: contentWidth * 0.55 });
+    ctx.y += 6;
+  });
+
+  ctx.y += 4;
+}
+
+// ============ DSD OBSERVATIONS ============
+export function renderDSDObservations(ctx: PDFRenderContext, data: PDFData) {
+  const observations = data.dsdAnalysis?.observations;
+  if (!observations || observations.length === 0) return;
+
+  const { margin, contentWidth, t } = ctx;
+
+  checkPageBreak(ctx, 20 + observations.length * 6);
+
+  addText(ctx, t('pdf.dsd.observationsTitle'), margin, ctx.y, { fontSize: 10, fontStyle: 'bold', color: [37, 99, 235] });
+  ctx.y += 6;
+
+  observations.forEach((obs) => {
+    checkPageBreak(ctx, 8);
+    addText(ctx, `• ${sanitizeText(obs)}`, margin + 3, ctx.y, { fontSize: 8, color: [60, 60, 60], maxWidth: contentWidth - 6 });
+    ctx.y += 5;
+  });
+
+  ctx.y += 4;
+}
+
 // ============ PROTOCOL LAYERS TABLE ============
 export function renderProtocolTable(ctx: PDFRenderContext, data: PDFData) {
   if (data.layers.length === 0) return;

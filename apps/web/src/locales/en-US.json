@@ -1389,6 +1389,12 @@
           "goldenRatio": "Golden Ratio",
           "smileArc": "Smile Arc"
         },
+        "layerComparison": {
+          "title": "Compare Layers",
+          "leftSide": "Left Side",
+          "rightSide": "Right Side",
+          "button": "Compare"
+        },
         "simulateOnFace": "Simulate on face",
         "generatingFaceMockup": "Generating face simulation...",
         "faceMockupError": "Error generating face simulation",
@@ -2296,7 +2302,12 @@
       "facialMidline": "Facial Midline",
       "dentalMidline": "Dental Midline",
       "smileLine": "Smile Line",
-      "buccalCorridor": "Buccal Corridor"
+      "buccalCorridor": "Buccal Corridor",
+      "suggestionsTitle": "TREATMENT SUGGESTIONS (DSD)",
+      "suggestionTooth": "Tooth",
+      "suggestionIssue": "Current Issue",
+      "suggestionChange": "Proposed Change",
+      "observationsTitle": "CLINICAL OBSERVATIONS (DSD)"
     },
     "protocol": {
       "title": "LAYER PROTOCOL",

@@ -59,7 +59,7 @@ export function LayerComparisonModal({
       <DialogContent className="max-w-4xl w-full">
         <DialogHeader>
           <DialogTitle>
-            {t('components.dsd.layerComparison.title')}
+            {t('components.wizard.dsd.layerComparison.title')}
           </DialogTitle>
         </DialogHeader>
 
@@ -69,7 +69,7 @@ export function LayerComparisonModal({
             {/* Left side */}
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-medium text-muted-foreground">
-                {t('components.dsd.layerComparison.leftSide')}
+                {t('components.wizard.dsd.layerComparison.leftSide')}
               </label>
               <Select value={leftValue} onValueChange={setLeftValue}>
                 <SelectTrigger>
@@ -91,7 +91,7 @@ export function LayerComparisonModal({
             {/* Right side */}
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-medium text-muted-foreground">
-                {t('components.dsd.layerComparison.rightSide')}
+                {t('components.wizard.dsd.layerComparison.rightSide')}
               </label>
               <Select value={rightValue} onValueChange={setRightValue}>
                 <SelectTrigger>

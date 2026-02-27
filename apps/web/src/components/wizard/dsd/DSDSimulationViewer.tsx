@@ -1,7 +1,7 @@
-import { RefObject, memo } from 'react';
+import { RefObject, memo, useState, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Badge } from '@parisgroup-ai/pageshell/primitives';
-import { Loader2, RefreshCw, Eye, EyeOff, User, Ruler, Ratio, SmilePlus } from 'lucide-react';
+import { Loader2, RefreshCw, Eye, EyeOff, User, Ruler, Ratio, SmilePlus, Columns2 } from 'lucide-react';
 import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
 import { AnnotationOverlay } from '@/components/dsd/AnnotationOverlay';
 import { ProportionOverlay, type ProportionLayerType } from '@/components/dsd/ProportionOverlay';
@@ -15,6 +15,8 @@ import type {
   ToothBoundsPct,
 } from '@/types/dsd';
 import { getLayerLabel } from '@/types/dsd';
+
+const LayerComparisonModal = lazy(() => import('@/components/dsd/LayerComparisonModal'));
 
 interface DSDSimulationViewerProps {
   imageBase64: string;
@@ -44,6 +46,7 @@ interface DSDSimulationViewerProps {
   onRetryFailedLayer: (layerType: SimulationLayerType) => void;
   onRegenerateSimulation: () => void;
   onToggleAnnotations: () => void;
+  layerUrls?: Record<string, string>;
 }
 
 export const DSDSimulationViewer = memo(function DSDSimulationViewer({
@@ -74,8 +77,10 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
   onRetryFailedLayer,
   onRegenerateSimulation,
   onToggleAnnotations,
+  layerUrls,
 }: DSDSimulationViewerProps) {
   const { t } = useTranslation();
+  const [showComparison, setShowComparison] = useState(false);
 
   const hasFaceMockupLayer = layers.some(l => l.type === 'face-mockup');
   const isActiveFaceMockup = layers[activeLayerIndex]?.type === 'face-mockup';
@@ -135,6 +140,17 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
                 {t('components.wizard.dsd.proportionOverlay.smileArc')}
               </Button>
             </>
+          )}
+          {layers.length >= 2 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowComparison(true)}
+              className="text-xs"
+            >
+              <Columns2 className="w-3 h-3 mr-1" />
+              {t('components.wizard.dsd.layerComparison.button')}
+            </Button>
           )}
           <Button
             variant="outline"
@@ -264,6 +280,19 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
           ) : undefined}
         />
       </div>
+
+      {showComparison && (
+        <Suspense fallback={null}>
+          <LayerComparisonModal
+            open={showComparison}
+            onOpenChange={setShowComparison}
+            originalImage={imageBase64}
+            layers={layers
+              .filter(l => l.simulation_url && layerUrls?.[l.simulation_url])
+              .map(l => ({ ...l, resolvedUrl: layerUrls![l.simulation_url!] }))}
+          />
+        </Suspense>
+      )}
     </div>
   );
 });

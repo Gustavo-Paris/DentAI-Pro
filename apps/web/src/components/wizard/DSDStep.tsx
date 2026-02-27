@@ -145,6 +145,7 @@ export function DSDStep(props: DSDStepProps) {
         faceMockupError={state.faceMockupError}
         onGenerateFaceMockup={state.generateFaceMockup}
         facePhotoBase64={props.additionalPhotos?.face || null}
+        layerUrls={state.layerUrls}
       />
       </Suspense>
     );

@@ -9,6 +9,8 @@ import {
   renderCaseSummary,
   renderResinRecommendation,
   renderDSDAnalysis,
+  renderDSDSuggestions,
+  renderDSDObservations,
   renderProtocolTable,
   renderAlternative,
   renderChecklist,
@@ -36,6 +38,8 @@ export async function generateProtocolPDF(data: PDFData, t: TFunction): Promise<
   renderCaseSummary(ctx, data);
   renderResinRecommendation(ctx, data);
   renderDSDAnalysis(ctx, data);
+  renderDSDSuggestions(ctx, data);
+  renderDSDObservations(ctx, data);
   renderProtocolTable(ctx, data);
   renderAlternative(ctx, data);
   renderChecklist(ctx, data);

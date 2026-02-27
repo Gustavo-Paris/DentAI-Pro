@@ -62,6 +62,7 @@ interface DSDAnalysisViewProps {
   faceMockupError?: string | null;
   onGenerateFaceMockup?: () => void;
   facePhotoBase64?: string | null;
+  layerUrls?: Record<string, string>;
 }
 
 export const DSDAnalysisView = memo(function DSDAnalysisView({
@@ -108,6 +109,7 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
   faceMockupError,
   onGenerateFaceMockup,
   facePhotoBase64,
+  layerUrls,
 }: DSDAnalysisViewProps) {
   const { t } = useTranslation();
   const { analysis } = result;
@@ -390,6 +392,7 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
             onRetryFailedLayer={onRetryFailedLayer}
             onRegenerateSimulation={onRegenerateSimulation}
             onToggleAnnotations={onToggleAnnotations}
+            layerUrls={layerUrls}
           />
           </Suspense>
 
