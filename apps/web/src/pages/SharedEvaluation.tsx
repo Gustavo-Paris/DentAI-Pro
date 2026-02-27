@@ -128,43 +128,65 @@ export default function SharedEvaluation() {
               )}
               <div className="print:hidden" aria-live="polite">
                 {/* Hidden probes to detect image load failures */}
-                <img src={beforeImageUrl} alt="" className="hidden" onError={() => setDsdImageError(true)} />
+                {activeLayer?.type !== 'face-mockup' && (
+                  <img src={beforeImageUrl} alt="" className="hidden" onError={() => setDsdImageError(true)} />
+                )}
                 <img src={activeAfterImage} alt="" className="hidden" onError={() => setDsdImageError(true)} />
-                <ComparisonSlider
-                  beforeImage={beforeImageUrl}
-                  afterImage={activeAfterImage}
-                  afterLabel={activeLayer?.label || t('dsd.simulation')}
-                />
+                {activeLayer?.type === 'face-mockup' ? (
+                  <div className="relative w-full overflow-hidden rounded-lg">
+                    <img
+                      src={activeAfterImage}
+                      alt={t('dsd.layers.faceMockup')}
+                      className="w-full rounded-lg"
+                    />
+                  </div>
+                ) : (
+                  <ComparisonSlider
+                    beforeImage={beforeImageUrl}
+                    afterImage={activeAfterImage}
+                    afterLabel={activeLayer?.label || t('dsd.simulation')}
+                  />
+                )}
               </div>
               <ProportionsCard analysis={analysis} />
-              <PageImageCompare
-                pair={{
-                  before: {
-                    id: 'original',
-                    url: beforeImageUrl,
-                    type: 'intraoral-photo',
-                    patientId: '',
-                    patientName: evaluations[0]?.patient_name || '',
-                    capturedDate: evalDate,
-                    createdAt: evaluations[0]?.created_at || '',
-                    updatedAt: evaluations[0]?.created_at || '',
-                  },
-                  after: {
-                    id: 'simulation',
-                    url: activeAfterImage,
-                    type: 'intraoral-photo',
-                    patientId: '',
-                    patientName: evaluations[0]?.patient_name || '',
-                    capturedDate: evalDate,
-                    createdAt: evaluations[0]?.created_at || '',
-                    updatedAt: evaluations[0]?.created_at || '',
-                  },
-                  label: t('pages.dsdComparison'),
-                }}
-                beforeLabel={t('dsd.original')}
-                afterLabel={t('dsd.simulation')}
-                className="mt-4 hidden print:block"
-              />
+              {activeLayer?.type === 'face-mockup' ? (
+                <div className="mt-4 hidden print:block">
+                  <img
+                    src={activeAfterImage}
+                    alt={t('dsd.layers.faceMockup')}
+                    className="w-full rounded-lg"
+                  />
+                </div>
+              ) : (
+                <PageImageCompare
+                  pair={{
+                    before: {
+                      id: 'original',
+                      url: beforeImageUrl,
+                      type: 'intraoral-photo',
+                      patientId: '',
+                      patientName: evaluations[0]?.patient_name || '',
+                      capturedDate: evalDate,
+                      createdAt: evaluations[0]?.created_at || '',
+                      updatedAt: evaluations[0]?.created_at || '',
+                    },
+                    after: {
+                      id: 'simulation',
+                      url: activeAfterImage,
+                      type: 'intraoral-photo',
+                      patientId: '',
+                      patientName: evaluations[0]?.patient_name || '',
+                      capturedDate: evalDate,
+                      createdAt: evaluations[0]?.created_at || '',
+                      updatedAt: evaluations[0]?.created_at || '',
+                    },
+                    label: t('pages.dsdComparison'),
+                  }}
+                  beforeLabel={t('dsd.original')}
+                  afterLabel={t('dsd.simulation')}
+                  className="mt-4 hidden print:block"
+                />
+              )}
             </CardContent>
           </Card>
         );

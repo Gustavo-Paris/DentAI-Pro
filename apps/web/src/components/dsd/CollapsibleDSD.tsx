@@ -162,14 +162,22 @@ export function CollapsibleDSD({
           </div>
         )}
 
-        {/* Comparison Slider */}
-        {beforeImage && activeAfterImage && (
+        {/* Comparison Slider — face-mockup has no before image, show result only */}
+        {activeLayer?.type === 'face-mockup' && activeAfterImage ? (
+          <div className="relative w-full overflow-hidden rounded-lg">
+            <img
+              src={activeAfterImage}
+              alt={t('dsd.layers.faceMockup')}
+              className="w-full rounded-lg"
+            />
+          </div>
+        ) : beforeImage && activeAfterImage ? (
           <ComparisonSlider
             beforeImage={beforeImage}
             afterImage={activeAfterImage}
             afterLabel={activeLayer?.label || t('dsd.simulation')}
           />
-        )}
+        ) : null}
 
         {/* Gingival changes section */}
         {hasGingival && (
