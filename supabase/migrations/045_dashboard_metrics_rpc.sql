@@ -7,48 +7,58 @@
 
 CREATE OR REPLACE FUNCTION public.get_dashboard_metrics(p_user_id uuid)
 RETURNS json
-LANGUAGE sql
+LANGUAGE plpgsql
 STABLE
 SECURITY DEFINER
 SET search_path = public
 AS $$
-  WITH session_stats AS (
-    SELECT
-      session_id,
-      COUNT(*) AS total,
-      COUNT(*) FILTER (WHERE status = 'completed') AS completed
-    FROM evaluations_raw
-    WHERE user_id = p_user_id
-    GROUP BY session_id
-  ),
-  weekly AS (
-    SELECT COUNT(DISTINCT session_id) AS cnt
-    FROM evaluations_raw
-    WHERE user_id = p_user_id
-      AND created_at >= date_trunc('week', now())
-  ),
-  pending_teeth AS (
-    SELECT COUNT(*) AS cnt
-    FROM evaluations_raw
-    WHERE user_id = p_user_id
-      AND status != 'completed'
-  )
-  SELECT json_build_object(
-    'pending_sessions', (SELECT COUNT(*) FROM session_stats WHERE completed < total),
-    'weekly_sessions', (SELECT cnt FROM weekly),
-    'completion_rate', (
-      SELECT CASE
-        WHEN COUNT(*) = 0 THEN 0
-        ELSE ROUND(COUNT(*) FILTER (WHERE completed = total) * 100.0 / COUNT(*))
-      END
-      FROM session_stats
+BEGIN
+  -- Enforce tenant isolation: caller can only query their own metrics.
+  IF p_user_id != auth.uid() THEN
+    RAISE EXCEPTION 'Forbidden' USING ERRCODE = '42501';
+  END IF;
+
+  RETURN (
+    WITH session_stats AS (
+      SELECT
+        session_id,
+        COUNT(*) AS total,
+        COUNT(*) FILTER (WHERE status = 'completed') AS completed
+      FROM evaluations_raw
+      WHERE user_id = p_user_id
+      GROUP BY session_id
     ),
-    'pending_teeth', (SELECT cnt FROM pending_teeth)
+    weekly AS (
+      SELECT COUNT(DISTINCT session_id) AS cnt
+      FROM evaluations_raw
+      WHERE user_id = p_user_id
+        AND created_at >= date_trunc('week', now())
+    ),
+    pending_teeth AS (
+      SELECT COUNT(*) AS cnt
+      FROM evaluations_raw
+      WHERE user_id = p_user_id
+        AND status != 'completed'
+    )
+    SELECT json_build_object(
+      'pending_sessions', (SELECT COUNT(*) FROM session_stats WHERE completed < total),
+      'weekly_sessions', (SELECT cnt FROM weekly),
+      'completion_rate', (
+        SELECT CASE
+          WHEN COUNT(*) = 0 THEN 0
+          ELSE ROUND(COUNT(*) FILTER (WHERE completed = total) * 100.0 / COUNT(*))
+        END
+        FROM session_stats
+      ),
+      'pending_teeth', (SELECT cnt FROM pending_teeth)
+    )
   );
+END;
 $$;
 
--- Grant execute to authenticated users (RLS on evaluations_raw enforces row-level security,
--- but SECURITY DEFINER bypasses RLS so we filter by p_user_id explicitly).
+-- Revoke default public access, grant only to authenticated users.
+REVOKE EXECUTE ON FUNCTION public.get_dashboard_metrics(uuid) FROM public;
+REVOKE EXECUTE ON FUNCTION public.get_dashboard_metrics(uuid) FROM anon;
 GRANT EXECUTE ON FUNCTION public.get_dashboard_metrics(uuid) TO authenticated;
 
 COMMENT ON FUNCTION public.get_dashboard_metrics IS
