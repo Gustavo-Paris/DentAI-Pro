@@ -319,15 +319,21 @@ export function renderDSDSuggestions(ctx: PDFRenderContext, data: PDFData) {
   suggestions.forEach((s, i) => {
     if (i > 0 && i % 10 === 0) checkPageBreak(ctx, 20);
 
+    // Calculate row height from wrapped text
+    const issueLines = pdf.splitTextToSize(sanitizeText(s.current_issue), contentWidth * 0.4 - 22);
+    const changeLines = pdf.splitTextToSize(sanitizeText(s.proposed_change), contentWidth * 0.55);
+    const maxLines = Math.max(issueLines.length, changeLines.length, 1);
+    const rowHeight = Math.max(6, maxLines * 3 + 3);
+
     if (i % 2 === 0) {
       pdf.setFillColor(248, 250, 252);
-      pdf.rect(margin, ctx.y - 3, contentWidth, 6, 'F');
+      pdf.rect(margin, ctx.y - 3, contentWidth, rowHeight, 'F');
     }
 
     addText(ctx, sanitizeText(s.tooth), colTooth + 2, ctx.y, { fontSize: 8, fontStyle: 'bold' });
     addText(ctx, sanitizeText(s.current_issue), colIssue, ctx.y, { fontSize: 7, color: [100, 100, 100], maxWidth: contentWidth * 0.4 - 22 });
     addText(ctx, sanitizeText(s.proposed_change), colChange, ctx.y, { fontSize: 7, color: [60, 60, 60], maxWidth: contentWidth * 0.55 });
-    ctx.y += 6;
+    ctx.y += rowHeight;
   });
 
   ctx.y += 4;

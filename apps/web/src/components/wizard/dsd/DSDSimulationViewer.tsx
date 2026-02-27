@@ -87,7 +87,7 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
   const beforeImage = isActiveFaceMockup && facePhotoBase64 ? facePhotoBase64 : imageBase64;
 
   // Proportion overlay lines — computed from tooth bounds and analysis
-  const proportionLines = useProportionLines(toothBounds, analysis as DSDAnalysis);
+  const proportionLines = useProportionLines(toothBounds, analysis);
 
   return (
     <div className="space-y-3">

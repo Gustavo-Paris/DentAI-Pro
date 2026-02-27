@@ -66,7 +66,7 @@ const GOLDEN_RATIO = 1.618;
  */
 export function computeProportionLines(
   bounds: ToothBoundsPct[] | undefined | null,
-  _analysis: DSDAnalysis,
+  _analysis?: DSDAnalysis | null,
 ): ProportionLines {
   const empty: ProportionLines = {
     midline: null,
@@ -252,7 +252,7 @@ function computeSmileArc(sorted: ToothBoundsPct[]): SmileArcPoint[] {
  */
 export function useProportionLines(
   bounds: ToothBoundsPct[] | undefined | null,
-  analysis: DSDAnalysis,
+  analysis?: DSDAnalysis | null,
 ): ProportionLines {
   return useMemo(
     () => computeProportionLines(bounds, analysis),
