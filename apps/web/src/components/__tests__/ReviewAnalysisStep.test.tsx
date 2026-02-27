@@ -4,16 +4,20 @@ import { ReviewAnalysisStep } from '../wizard/ReviewAnalysisStep';
 import type { PhotoAnalysisResult, ReviewFormData } from '../wizard/ReviewAnalysisStep';
 
 // Mock react-i18next
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string, params?: Record<string, any>) => {
-      if (params) return `${key}:${JSON.stringify(params)}`;
-      return key;
-    },
-    i18n: { language: 'pt-BR', changeLanguage: vi.fn() },
-  }),
-  Trans: ({ children }: any) => children,
-}));
+vi.mock('react-i18next', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('react-i18next')>();
+  return {
+    ...actual,
+    useTranslation: () => ({
+      t: (key: string, params?: Record<string, any>) => {
+        if (params) return `${key}:${JSON.stringify(params)}`;
+        return key;
+      },
+      i18n: { language: 'pt-BR', changeLanguage: vi.fn() },
+    }),
+    Trans: ({ children }: any) => children,
+  };
+});
 
 // Mock react-router-dom
 vi.mock('react-router-dom', () => ({
@@ -154,6 +158,18 @@ vi.mock('@/components/ui/accordion', () => ({
   AccordionItem: ({ children, value }: any) => <div data-testid={`accordion-item-${value}`}>{children}</div>,
   AccordionTrigger: ({ children }: any) => <div>{children}</div>,
 }));
+
+// Mock pageshell primitives — spread actual then override Accordion to render transparently
+vi.mock('@parisgroup-ai/pageshell/primitives', async (importOriginal) => {
+  const actual = await importOriginal<Record<string, any>>();
+  return {
+    ...actual,
+    Accordion: ({ children }: any) => <div data-testid="accordion">{children}</div>,
+    AccordionContent: ({ children }: any) => <div>{children}</div>,
+    AccordionItem: ({ children, value }: any) => <div data-testid={`accordion-item-${value}`}>{children}</div>,
+    AccordionTrigger: ({ children }: any) => <div>{children}</div>,
+  };
+});
 
 vi.mock('@/components/ui/tooltip', () => ({
   Tooltip: ({ children }: any) => <>{children}</>,
