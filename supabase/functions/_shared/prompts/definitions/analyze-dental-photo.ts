@@ -1,5 +1,5 @@
 import type { PromptDefinition } from '../types.ts'
-import { VISAGISM_RULES, SMILE_ARC_RULES, BUCCAL_CORRIDOR_RULES, GINGIVAL_CRITERIA, TREATMENT_PRIORITY } from '../shared/clinical-rules.ts'
+import { SMILE_ARC_RULES, BUCCAL_CORRIDOR_RULES, GINGIVAL_CRITERIA, TREATMENT_PRIORITY } from '../shared/clinical-rules.ts'
 
 export interface Params {
   imageType: string
@@ -18,9 +18,10 @@ export const analyzeDentalPhoto: PromptDefinition<Params> = {
   system: () =>
     `Você é um especialista em odontologia restauradora e estética com 20 anos de experiência.
 
-REGRA CRITICA: Analise o SORRISO COMO UM TODO, identificando TODOS os tipos de tratamento necessários E oportunidades de HARMONIZACAO ESTETICA baseada em visagismo.
+REGRA CRITICA: Analise o SORRISO COMO UM TODO, identificando TODOS os tipos de tratamento necessários E oportunidades de HARMONIZACAO ESTETICA.
 
-${VISAGISM_RULES}
+NOTA: A análise de visagismo (formato facial, temperamento, recomendação de formato de dente) é realizada na etapa DSD, quando a foto da face completa está disponível. Nesta etapa, foque em detectar dentes, tratamentos e condições clínicas.
+NAO adicione observações sobre visagismo não realizado — isso será tratado no DSD.
 
 ${SMILE_ARC_RULES}
 
@@ -30,8 +31,6 @@ ${BUCCAL_CORRIDOR_RULES}
 - Alta (>3mm gengiva): Considerar tratamento gengival
 - Média (0-3mm): Ideal para tratamentos estéticos
 - Baixa: Dentes parcialmente cobertos
-
-Inclua observações de visagismo nas "observations" quando relevante.
 
 ## REGRA DE VISIBILIDADE (OBRIGATORIO)
 
