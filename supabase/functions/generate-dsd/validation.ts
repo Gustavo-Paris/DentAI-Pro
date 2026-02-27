@@ -79,7 +79,7 @@ export function validateRequest(data: unknown): { success: boolean; error?: stri
     : undefined;
 
   // Validate layerType if provided
-  const validLayerTypes = ['restorations-only', 'whitening-restorations', 'complete-treatment', 'root-coverage'];
+  const validLayerTypes = ['restorations-only', 'whitening-restorations', 'complete-treatment', 'root-coverage', 'face-mockup'];
   const layerType = validLayerTypes.includes(req.layerType as string)
     ? req.layerType as RequestData['layerType']
     : undefined;

@@ -87,7 +87,7 @@ export interface RequestData {
   analysisOnly?: boolean; // Return only analysis, skip simulation
   clinicalObservations?: string[]; // Observations from analyze-dental-photo to prevent contradictions
   clinicalTeethFindings?: ClinicalToothFinding[]; // Per-tooth findings to prevent false restoration claims
-  layerType?: 'restorations-only' | 'whitening-restorations' | 'complete-treatment' | 'root-coverage'; // Multi-layer simulation
+  layerType?: 'restorations-only' | 'whitening-restorations' | 'complete-treatment' | 'root-coverage' | 'face-mockup'; // Multi-layer simulation
   inputAlreadyProcessed?: boolean; // When true, input image already has corrected/whitened teeth (Layer 2→3 chaining)
 }
 

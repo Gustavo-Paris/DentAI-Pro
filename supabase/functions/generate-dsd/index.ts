@@ -213,7 +213,12 @@ Deno.serve(async (req: Request) => {
         let simulationDebug: string | undefined;
         let lipsMoved = false;
         try {
-          const simResult = await generateSimulation(imageBase64, analysis, user.id, supabase, toothShape || 'natural', patientPreferences, layerType, inputAlreadyProcessed);
+          // For face-mockup, use the face photo as base image
+          const simulationBaseImage = layerType === 'face-mockup' && additionalPhotos?.face
+            ? additionalPhotos.face
+            : imageBase64;
+
+          const simResult = await generateSimulation(simulationBaseImage, analysis, user.id, supabase, toothShape || 'natural', patientPreferences, layerType, inputAlreadyProcessed);
           simulationUrl = simResult.url;
           lipsMoved = simResult.lips_moved || false;
         } catch (simError) {
@@ -246,10 +251,11 @@ Deno.serve(async (req: Request) => {
                 label: layerType === 'restorations-only' ? 'Apenas Restaurações'
                   : layerType === 'complete-treatment' ? 'Tratamento Completo'
                   : layerType === 'root-coverage' ? 'Recobrimento Radicular'
+                  : layerType === 'face-mockup' ? 'Simulação no Rosto'
                   : 'Restaurações + Clareamento',
                 simulation_url: simulationUrl,
                 whitening_level: patientPreferences?.whiteningLevel || 'natural',
-                includes_gengivoplasty: (layerType === 'complete-treatment' || layerType === 'root-coverage') &&
+                includes_gengivoplasty: layerType !== 'face-mockup' && (layerType === 'complete-treatment' || layerType === 'root-coverage') &&
                   analysis.suggestions.some(s => {
                     const t = (s.treatment_indication || '').toLowerCase();
                     return t === 'gengivoplastia' || t === 'recobrimento_radicular';

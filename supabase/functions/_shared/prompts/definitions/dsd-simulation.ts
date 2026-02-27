@@ -22,7 +22,7 @@ export interface Params {
   /** Allowed changes from filtered analysis suggestions */
   allowedChangesFromAnalysis?: string
   /** Layer type for multi-layer simulation (overrides caseType routing when set) */
-  layerType?: 'restorations-only' | 'whitening-restorations' | 'complete-treatment' | 'root-coverage'
+  layerType?: 'restorations-only' | 'whitening-restorations' | 'complete-treatment' | 'root-coverage' | 'face-mockup'
   /** Gengivoplasty suggestions text, injected for complete-treatment layer */
   gingivoSuggestions?: string
   /** Root coverage suggestions text, injected for root-coverage layer */
@@ -675,6 +675,76 @@ ${qualityRequirements}
 Output: Same photo with teeth corrected AND gingival root coverage applied.`
 }
 
+function buildFaceMockupPrompt(params: Params): string {
+  const whiteningConfig = params.whiteningLevel === 'hollywood'
+    ? 'EXTREMELY WHITE (BL1) — porcelain veneer brightness, maximum whitening.'
+    : params.whiteningLevel === 'white'
+    ? 'CLEARLY WHITER — target shade A1 or brighter. Professional in-office whitening result.'
+    : 'SUBTLY WHITER — 1-2 shades lighter (A1/A2). Natural, realistic whitening.';
+
+  const allowedChangesFromAnalysis = params.allowedChangesFromAnalysis || '';
+
+  // Build bullet points from suggestions for clarity
+  const suggestionsBlock = allowedChangesFromAnalysis
+    ? `\nDENTAL MODIFICATIONS TO APPLY:\n${allowedChangesFromAnalysis}\n`
+    : '';
+
+  return `Edit this FULL FACE PHOTO to show improved teeth in the smile.
+
+ABSOLUTE RULES — VIOLATING ANY RULE INVALIDATES THE RESULT:
+1. ONLY modify the TEETH visible in the smile opening. Nothing else.
+2. The face must remain IDENTICAL: eyes, nose, skin texture, hair, ears, background, lighting, shadows.
+3. The LIPS must stay in EXACTLY the same position, shape, color and size — do not move, reshape, recolor or resize them.
+4. Keep the same camera angle, perspective, and photo quality.
+5. The teeth should look NATURAL — not artificially perfect or CGI-like.
+6. Output dimensions MUST equal input dimensions — do NOT crop or resize the image.
+7. Do NOT zoom into the mouth area — the output must show the FULL FACE exactly as framed in the input.
+
+=== FACE PRESERVATION (PIXEL-IDENTICAL) ===
+Every pixel OUTSIDE the teeth area must be an EXACT COPY of the input:
+- EYES: iris color, pupil, eyelids, eyelashes, eyebrows — IDENTICAL
+- NOSE: shape, nostrils, bridge — IDENTICAL
+- SKIN: texture, tone, pores, wrinkles, facial hair — IDENTICAL
+- HAIR: color, style, position — IDENTICAL
+- EARS, JAWLINE, CHIN, FOREHEAD — IDENTICAL
+- LIPS: upper and lower lip shape, color, texture, vermillion border — IDENTICAL
+- LIP OPENING: the vertical distance between upper and lower lip is FIXED
+- GUMS: gingival contour, color, papillae — IDENTICAL (no gengivoplasty in this layer)
+- BACKGROUND: every pixel — IDENTICAL
+- LIGHTING: ambient light, shadows, highlights — IDENTICAL
+
+=== TEETH EDITING ZONE ===
+You may ONLY modify pixels that are TEETH (white/ivory enamel surfaces visible through the smile opening).
+
+COLOR/WHITENING: ${whiteningConfig}
+- Apply whitening COHERENTLY across ALL visible teeth
+- Canines (13/23) are naturally 1-2 shades more saturated — PRESERVE this relative difference
+- Incisal edges should maintain natural translucency — do NOT make them opaque
+- Each tooth must retain individual micro-variations in color and texture
+
+TOOTH SHAPE: ${params.toothShapeRecommendation?.toUpperCase() || 'NATURAL'}
+${params.toothShapeRecommendation === 'natural' ? '- PRESERVE the current shape of each tooth' : `- Guide contours toward ${params.toothShapeRecommendation} form where corrections are applied`}
+${suggestionsBlock}
+TEXTURE & REALISM (CRITICAL):
+- Maintain/create PERIQUIMACIES (subtle horizontal enamel lines)
+- Preserve natural LIGHT REFLECTIONS on tooth surfaces
+- Create TRANSLUCENCY GRADIENT: opaque cervical region → translucent incisal region
+- Each tooth must have INDIVIDUAL characteristics — do NOT make them uniform
+- The result must look like a REAL PHOTOGRAPH, not a digital render or CGI
+
+=== WHAT NOT TO DO ===
+- Do NOT lift the upper lip or lower the lower lip to "show more teeth"
+- Do NOT reshape or recolor the lips
+- Do NOT alter the gum line (gengivoplasty is handled in a separate layer)
+- Do NOT change facial expression or head position
+- Do NOT crop the image to focus on the mouth
+- Do NOT add any artificial glow, halo, or smoothing to the face
+- Do NOT make ALL teeth identical — natural variation between teeth is DESIRED
+
+The final image must look like a real photograph of the SAME PERSON with naturally improved teeth.
+Output: Full face photo with ONLY the teeth modified.`
+}
+
 // --- Prompt definition ---
 
 export const dsdSimulation: PromptDefinition<Params> = {
@@ -697,6 +767,8 @@ export const dsdSimulation: PromptDefinition<Params> = {
           return buildWithGengivoplastyPrompt(params)
         case 'root-coverage':
           return buildRootCoveragePrompt(params)
+        case 'face-mockup':
+          return buildFaceMockupPrompt(params)
         case 'whitening-restorations':
           if (params.inputAlreadyProcessed) {
             return buildWhiteningOnlyPrompt(params)

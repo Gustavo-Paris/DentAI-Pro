@@ -82,7 +82,7 @@ export async function generateSimulation(
   supabase: SupabaseClient,
   toothShape: string = 'natural',
   patientPreferences?: PatientPreferences,
-  layerType?: 'restorations-only' | 'whitening-restorations' | 'complete-treatment' | 'root-coverage',
+  layerType?: 'restorations-only' | 'whitening-restorations' | 'complete-treatment' | 'root-coverage' | 'face-mockup',
   inputAlreadyProcessed?: boolean,
 ): Promise<{ url: string | null; lips_moved?: boolean }> {
   const SIMULATION_TIMEOUT = 55_000; // 55s max
@@ -374,7 +374,8 @@ corrections are MINOR refinements, NOT redesign. For each tooth:
   // Lip validation for ALL layers: checks if EITHER lip moved.
   // Previously only gingival layers were validated, but Gemini frequently
   // lifts lips in ALL modes to "show more result" (known model behavior).
-  const shouldValidateLips = true; // All layers now validated
+  // Skip lip validation for face-mockup — full face context makes close-up lip comparison unreliable
+  const shouldValidateLips = layerType !== 'face-mockup';
   const isGingivalLayer = layerType === 'complete-treatment' || layerType === 'root-coverage';
 
   // Use Haiku for lip validation — binary SIM/NÃO task doesn't need Sonnet
