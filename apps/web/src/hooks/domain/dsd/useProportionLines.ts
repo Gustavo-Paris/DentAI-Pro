@@ -5,6 +5,8 @@ import type { ToothBoundsPct, DSDAnalysis } from '@/types/dsd';
 // Types
 // =============================================================================
 
+export type ProportionMidline = MidlineResult;
+
 export interface MidlineResult {
   /** X position of the midline in % */
   x: number;
