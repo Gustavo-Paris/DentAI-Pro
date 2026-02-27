@@ -65,6 +65,10 @@ export interface DashboardState {
 
   // Loading & error states
   loading: boolean;
+  loadingProfile: boolean;
+  loadingMetrics: boolean;
+  loadingSessions: boolean;
+  loadingInsights: boolean;
   loadingCredits: boolean;
   isError: boolean;
 
@@ -426,7 +430,7 @@ export function useDashboard(): DashboardState {
     };
   }, []);
 
-  const isNewUser = !loading && sessions.length === 0 && metrics.pendingSessions === 0;
+  const isNewUser = !loadingDashboard && sessions.length === 0 && metrics.pendingSessions === 0;
 
   const showWelcome = isNewUser && !welcomeDismissed;
 
@@ -496,6 +500,10 @@ export function useDashboard(): DashboardState {
     sessions,
     weekRange,
     loading,
+    loadingProfile,
+    loadingMetrics: loadingDashboard,
+    loadingSessions: loadingDashboard,
+    loadingInsights,
     loadingCredits,
     isError,
     isNewUser,

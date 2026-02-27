@@ -112,7 +112,7 @@ export default function Dashboard() {
             <PrincipalTab
               modules={modules}
               sessions={dashboard.sessions}
-              loading={dashboard.loading}
+              loading={dashboard.loadingSessions}
               pendingDraft={dashboard.pendingDraft}
               pendingSessions={dashboard.metrics.pendingSessions}
               onDiscardDraft={dashboard.requestDiscardDraft}
@@ -128,7 +128,7 @@ export default function Dashboard() {
               <InsightsTab
                 clinicalInsights={dashboard.clinicalInsights}
                 weeklyTrends={dashboard.weeklyTrends}
-                loading={dashboard.loading}
+                loading={dashboard.loadingInsights}
                 patientsThisMonth={dashboard.patientsThisMonth}
                 patientGrowth={dashboard.patientGrowth}
               />
@@ -136,7 +136,7 @@ export default function Dashboard() {
           ),
         },
       ]
-    : undefined, [isTabbed, t, modules, dashboard.sessions, dashboard.loading, dashboard.pendingDraft, dashboard.metrics.pendingSessions, dashboard.requestDiscardDraft, dashboard.clinicalInsights, dashboard.weeklyTrends]);
+    : undefined, [isTabbed, t, modules, dashboard.sessions, dashboard.loadingSessions, dashboard.loadingInsights, dashboard.pendingDraft, dashboard.metrics.pendingSessions, dashboard.requestDiscardDraft, dashboard.clinicalInsights, dashboard.weeklyTrends]);
 
   const hour = new Date().getHours();
 
@@ -153,7 +153,7 @@ export default function Dashboard() {
           {TimeIcon}
           <h2 className="text-2xl sm:text-3xl font-semibold font-display tracking-tight">
             {dashboard.greeting},{' '}
-            {dashboard.loading ? (
+            {dashboard.loadingProfile ? (
               <Skeleton className="inline-block h-7 w-32 align-middle rounded-lg" />
             ) : (
               <span className="text-primary">{dashboard.firstName}</span>
@@ -183,7 +183,7 @@ export default function Dashboard() {
           <Suspense fallback={<StatsGridFallback />}>
             <StatsGrid
               metrics={dashboard.metrics}
-              loading={dashboard.loading}
+              loading={dashboard.loadingMetrics}
               weekRange={dashboard.weekRange}
               weeklyTrends={dashboard.weeklyTrends}
             />
@@ -197,7 +197,7 @@ export default function Dashboard() {
             <Suspense fallback={<StatsGridFallback />}>
               <StatsGrid
                 metrics={dashboard.metrics}
-                loading={dashboard.loading}
+                loading={dashboard.loadingMetrics}
                 weekRange={dashboard.weekRange}
                 weeklyTrends={dashboard.weeklyTrends}
               />
@@ -206,7 +206,7 @@ export default function Dashboard() {
           afterStats: <OnboardingProgress />,
         }
       : {}),
-  }), [TimeIcon, dashboard.greeting, dashboard.firstName, dashboard.showCreditsBanner, dashboard.creditsRemaining, dashboard.dismissCreditsBanner, clinicAlerts, isTabbed, dashboard.metrics, dashboard.loading, dashboard.weekRange, dashboard.weeklyTrends]);
+  }), [TimeIcon, dashboard.greeting, dashboard.firstName, dashboard.loadingProfile, dashboard.showCreditsBanner, dashboard.creditsRemaining, dashboard.dismissCreditsBanner, clinicAlerts, isTabbed, dashboard.metrics, dashboard.loadingMetrics, dashboard.weekRange, dashboard.weeklyTrends]);
 
   if (dashboard.isError) {
     return (
