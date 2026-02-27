@@ -1,4 +1,5 @@
-import { RefObject, memo, useState, lazy, Suspense } from 'react';
+import { memo, useState, lazy, Suspense } from 'react';
+import type { Ref } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Badge } from '@parisgroup-ai/pageshell/primitives';
 import { Loader2, RefreshCw, Eye, EyeOff, User, Ruler, Ratio, SmilePlus, Columns2 } from 'lucide-react';
@@ -31,7 +32,7 @@ interface DSDSimulationViewerProps {
   showAnnotations: boolean;
   toothBounds: ToothBoundsPct[];
   suggestions: DSDSuggestion[];
-  annotationContainerRef: RefObject<HTMLDivElement | null>;
+  annotationContainerRef: Ref<HTMLDivElement>;
   annotationDimensions: { width: number; height: number };
   analysis?: DSDAnalysis;
   visibleProportionLayers: Set<ProportionLayerType>;

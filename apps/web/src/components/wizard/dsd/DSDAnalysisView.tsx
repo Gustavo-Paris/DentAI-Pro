@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Alert, AlertDescription, AlertTitle } from '@parisgroup-ai/pageshell/primitives';
 import { Smile, Loader2, RefreshCw, Lightbulb, AlertCircle, Zap, ArrowRight, CheckCircle, XCircle } from 'lucide-react';
 import { memo, lazy, Suspense } from 'react';
-import type { RefObject } from 'react';
+import type { Ref } from 'react';
 import { ProportionsCard } from '@/components/dsd/ProportionsCard';
 import type {
   DSDAnalysis,
@@ -34,7 +34,7 @@ interface DSDAnalysisViewProps {
   isCompositing: boolean;
   showAnnotations: boolean;
   toothBounds: ToothBoundsPct[];
-  annotationContainerRef: RefObject<HTMLDivElement | null>;
+  annotationContainerRef: Ref<HTMLDivElement>;
   annotationDimensions: { width: number; height: number };
   visibleProportionLayers: Set<ProportionLayerType>;
   onToggleProportionLayer: (layer: ProportionLayerType) => void;

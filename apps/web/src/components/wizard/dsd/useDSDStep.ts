@@ -67,8 +67,9 @@ export function useDSDStep({
 
   // E5: Annotations
   const [showAnnotations, setShowAnnotations] = useState(false);
-  const annotationContainerRef = useRef<HTMLDivElement>(null);
+  const annotationContainerRef = useRef<HTMLDivElement | null>(null);
   const [annotationDimensions, setAnnotationDimensions] = useState({ width: 0, height: 0 });
+  const resizeObserverRef = useRef<ResizeObserver | null>(null);
 
   // E5b: Proportion overlay layers
   const [visibleProportionLayers, setVisibleProportionLayers] = useState<Set<ProportionLayerType>>(new Set());
@@ -194,9 +195,18 @@ export function useDSDStep({
     loadSimulationUrl();
   }, [result?.simulation_url]);
 
-  // Measure annotation container
-  useEffect(() => {
-    if (!annotationContainerRef.current) return;
+  // Callback ref that sets up ResizeObserver when the DOM element mounts.
+  // The lazy-loaded DSDSimulationViewer renders <div ref={annotationContainerRef}>,
+  // so a plain useEffect([]) would miss it (ref is null on initial mount).
+  const annotationContainerCallbackRef = useCallback((node: HTMLDivElement | null) => {
+    // Disconnect previous observer if element changes
+    if (resizeObserverRef.current) {
+      resizeObserverRef.current.disconnect();
+      resizeObserverRef.current = null;
+    }
+    // Store node for components that read the ref directly
+    annotationContainerRef.current = node;
+    if (!node) return;
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         setAnnotationDimensions({
@@ -205,8 +215,8 @@ export function useDSDStep({
         });
       }
     });
-    observer.observe(annotationContainerRef.current);
-    return () => observer.disconnect();
+    observer.observe(node);
+    resizeObserverRef.current = observer;
   }, []);
 
   const toothBounds = useMemo(() => {
@@ -438,7 +448,7 @@ export function useDSDStep({
     isFaceMockupGenerating: faceMockup.isFaceMockupGenerating,
     faceMockupError: faceMockup.faceMockupError,
     showAnnotations,
-    annotationContainerRef,
+    annotationContainerRef: annotationContainerCallbackRef,
     annotationDimensions,
     toothBounds,
     visibleProportionLayers,
