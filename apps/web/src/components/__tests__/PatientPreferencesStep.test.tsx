@@ -4,20 +4,19 @@ import { PatientPreferencesStep } from '../wizard/PatientPreferencesStep';
 import type { PatientPreferences } from '../wizard/PatientPreferencesStep';
 
 // Mock react-i18next
-vi.mock('react-i18next', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('react-i18next')>();
-  return {
-    ...actual,
-    useTranslation: () => ({
-      t: (key: string, params?: Record<string, any>) => {
-        if (params) return `${key}:${JSON.stringify(params)}`;
-        return key;
-      },
-      i18n: { language: 'pt-BR', changeLanguage: vi.fn() },
-    }),
-    Trans: ({ children }: any) => children,
-  };
-});
+vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
+  useTranslation: () => ({
+    t: (key: string, params?: Record<string, any>) => {
+      if (params) return `${key}:${JSON.stringify(params)}`;
+      return key;
+    },
+    i18n: { language: 'pt-BR', changeLanguage: vi.fn() },
+  }),
+  Trans: ({ children }: any) => children,
+  I18nextProvider: ({ children }: { children: React.ReactNode }) => children,
+  withTranslation: () => (Component: any) => Component,
+}));
 
 // Mock useSubscription
 const mockGetCreditCost = vi.fn().mockReturnValue(1);

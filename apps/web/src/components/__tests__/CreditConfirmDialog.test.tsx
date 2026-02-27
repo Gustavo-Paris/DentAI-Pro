@@ -4,37 +4,33 @@ import { CreditConfirmDialog } from '../CreditConfirmDialog';
 import type { CreditConfirmData } from '@/hooks/domain/wizard/types';
 
 // Mock react-i18next
-vi.mock('react-i18next', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('react-i18next')>();
-  return {
-    ...actual,
-    useTranslation: () => ({
-      t: (key: string, opts?: Record<string, unknown>) => {
-        const map: Record<string, string> = {
-          'components.creditConfirm.title': 'Confirmar uso de créditos',
-          'components.creditConfirm.willCost': 'custará',
-          'components.creditConfirm.credit': `${opts?.count ?? 1} crédito(s)`,
-          'components.creditConfirm.currentBalance': 'Saldo atual',
-          'components.creditConfirm.credits': 'créditos',
-          'components.creditConfirm.afterOperation': 'Após operação',
-          'common.cancel': 'Cancelar',
-          'common.confirm': 'Confirmar',
-        };
-        return map[key] ?? key;
-      },
-      i18n: { language: 'pt-BR' },
-    }),
-  };
-});
+vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
+  useTranslation: () => ({
+    t: (key: string, opts?: Record<string, unknown>) => {
+      const map: Record<string, string> = {
+        'components.creditConfirm.title': 'Confirmar uso de créditos',
+        'components.creditConfirm.willCost': 'custará',
+        'components.creditConfirm.credit': `${opts?.count ?? 1} crédito(s)`,
+        'components.creditConfirm.currentBalance': 'Saldo atual',
+        'components.creditConfirm.credits': 'créditos',
+        'components.creditConfirm.afterOperation': 'Após operação',
+        'common.cancel': 'Cancelar',
+        'common.confirm': 'Confirmar',
+      };
+      return map[key] ?? key;
+    },
+    i18n: { language: 'pt-BR' },
+  }),
+  Trans: ({ children }: { children: React.ReactNode }) => children,
+  I18nextProvider: ({ children }: { children: React.ReactNode }) => children,
+  withTranslation: () => (Component: any) => Component,
+}));
 
 // Mock lucide-react
-vi.mock('lucide-react', async (importOriginal) => {
-  const actual = await importOriginal<Record<string, any>>();
-  return {
-    ...actual,
-    Coins: ({ className }: { className?: string }) => <span data-testid="coins-icon" className={className} />,
-  };
-});
+vi.mock('lucide-react', () => ({
+  Coins: ({ className }: { className?: string }) => <span data-testid="coins-icon" className={className} />,
+}));
 
 // Mock analytics
 vi.mock('@/lib/analytics', () => ({

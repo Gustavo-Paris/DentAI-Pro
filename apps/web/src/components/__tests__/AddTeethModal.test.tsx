@@ -3,20 +3,19 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { AddTeethModal, type PendingTooth } from '../AddTeethModal';
 
 // Mock react-i18next
-vi.mock('react-i18next', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('react-i18next')>();
-  return {
-    ...actual,
-    useTranslation: () => ({
-      t: (key: string, params?: Record<string, any>) => {
-        if (params) return `${key}:${JSON.stringify(params)}`;
-        return key;
-      },
-      i18n: { language: 'pt-BR', changeLanguage: vi.fn() },
-    }),
-    Trans: ({ children }: any) => children,
-  };
-});
+vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
+  useTranslation: () => ({
+    t: (key: string, params?: Record<string, any>) => {
+      if (params) return `${key}:${JSON.stringify(params)}`;
+      return key;
+    },
+    i18n: { language: 'pt-BR', changeLanguage: vi.fn() },
+  }),
+  Trans: ({ children }: any) => children,
+  I18nextProvider: ({ children }: { children: React.ReactNode }) => children,
+  withTranslation: () => (Component: any) => Component,
+}));
 
 // Mock sonner
 vi.mock('sonner', () => ({
@@ -38,16 +37,12 @@ vi.mock('@/lib/logger', () => ({
 }));
 
 // Mock lucide-react
-vi.mock('lucide-react', async (importOriginal) => {
-  const actual = await importOriginal<Record<string, any>>();
-  return {
-    ...actual,
-    Loader2: ({ className }: any) => <span data-testid="loader-icon" className={className} />,
-    Plus: ({ className }: any) => <span data-testid="plus-icon" className={className} />,
-    Wrench: ({ className }: any) => <span data-testid="wrench-icon" className={className} />,
-    Wand2: ({ className }: any) => <span data-testid="wand-icon" className={className} />,
-  };
-});
+vi.mock('lucide-react', () => ({
+  Loader2: ({ className }: any) => <span data-testid="loader-icon" className={className} />,
+  Plus: ({ className }: any) => <span data-testid="plus-icon" className={className} />,
+  Wrench: ({ className }: any) => <span data-testid="wrench-icon" className={className} />,
+  Wand2: ({ className }: any) => <span data-testid="wand-icon" className={className} />,
+}));
 
 // Mock UI components
 vi.mock('@/components/ui/dialog', () => ({

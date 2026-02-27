@@ -24,16 +24,16 @@ vi.mock('react-router-dom', () => ({
   Outlet: () => <div data-testid="outlet">Page Content</div>,
 }));
 
-vi.mock('react-i18next', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('react-i18next')>();
-  return {
-    ...actual,
-    useTranslation: () => ({
-      t: (key: string) => key,
-      i18n: { language: 'pt-BR', changeLanguage: vi.fn() },
-    }),
-  };
-});
+vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
+  useTranslation: () => ({
+    t: (key: string) => key,
+    i18n: { language: 'pt-BR', changeLanguage: vi.fn() },
+  }),
+  Trans: ({ children }: { children: React.ReactNode }) => children,
+  I18nextProvider: ({ children }: { children: React.ReactNode }) => children,
+  withTranslation: () => (Component: any) => Component,
+}));
 
 const mockSignOut = vi.fn();
 vi.mock('@/contexts/AuthContext', () => ({

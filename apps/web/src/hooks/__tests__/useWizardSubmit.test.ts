@@ -43,15 +43,15 @@ vi.mock('sonner', () => ({
   },
 }));
 
-vi.mock('react-i18next', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('react-i18next')>();
-  return {
-    ...actual,
-    useTranslation: () => ({
-      t: (key: string) => key,
-    }),
-  };
-});
+vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
+  useTranslation: () => ({
+    t: (key: string) => key,
+  }),
+  Trans: ({ children }: { children: unknown }) => children,
+  I18nextProvider: ({ children }: { children: unknown }) => children,
+  withTranslation: () => (Component: any) => Component,
+}));
 
 vi.mock('@/lib/analytics', () => ({
   trackEvent: vi.fn(),

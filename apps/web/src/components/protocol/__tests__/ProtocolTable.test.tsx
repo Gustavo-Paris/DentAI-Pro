@@ -4,16 +4,16 @@ import ProtocolTable from '../ProtocolTable';
 import type { ProtocolLayer } from '@/types/protocol';
 
 // Mock react-i18next
-vi.mock('react-i18next', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('react-i18next')>();
-  return {
-    ...actual,
-    useTranslation: () => ({
-      t: (key: string) => key,
-      i18n: { language: 'pt-BR', changeLanguage: vi.fn() },
-    }),
-  };
-});
+vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
+  useTranslation: () => ({
+    t: (key: string) => key,
+    i18n: { language: 'pt-BR', changeLanguage: vi.fn() },
+  }),
+  Trans: ({ children }: { children: React.ReactNode }) => children,
+  I18nextProvider: ({ children }: { children: React.ReactNode }) => children,
+  withTranslation: () => (Component: any) => Component,
+}));
 
 // Mock UI components
 vi.mock('@/components/ui/table', () => ({

@@ -3,20 +3,19 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { WelcomeModal, WELCOME_STORAGE_KEY } from '../onboarding/WelcomeModal';
 
 // Mock react-i18next
-vi.mock('react-i18next', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('react-i18next')>();
-  return {
-    ...actual,
-    useTranslation: () => ({
-      t: (key: string, params?: Record<string, any>) => {
-        if (params) return `${key}:${JSON.stringify(params)}`;
-        return key;
-      },
-      i18n: { language: 'pt-BR', changeLanguage: vi.fn() },
-    }),
-    Trans: ({ children }: any) => children,
-  };
-});
+vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
+  useTranslation: () => ({
+    t: (key: string, params?: Record<string, any>) => {
+      if (params) return `${key}:${JSON.stringify(params)}`;
+      return key;
+    },
+    i18n: { language: 'pt-BR', changeLanguage: vi.fn() },
+  }),
+  Trans: ({ children }: any) => children,
+  I18nextProvider: ({ children }: { children: React.ReactNode }) => children,
+  withTranslation: () => (Component: any) => Component,
+}));
 
 // Mock branding
 vi.mock('@/lib/branding', () => ({

@@ -3,29 +3,24 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { DSDPreviewModal } from '../DSDPreviewModal';
 
 // Mock react-i18next
-vi.mock('react-i18next', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('react-i18next')>();
-  return {
-    ...actual,
-    useTranslation: () => ({
-      t: (key: string, params?: Record<string, any>) => {
-        if (params) return `${key}:${JSON.stringify(params)}`;
-        return key;
-      },
-      i18n: { language: 'pt-BR', changeLanguage: vi.fn() },
-    }),
-    Trans: ({ children }: any) => children,
-  };
-});
+vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
+  useTranslation: () => ({
+    t: (key: string, params?: Record<string, any>) => {
+      if (params) return `${key}:${JSON.stringify(params)}`;
+      return key;
+    },
+    i18n: { language: 'pt-BR', changeLanguage: vi.fn() },
+  }),
+  Trans: ({ children }: any) => children,
+  I18nextProvider: ({ children }: { children: React.ReactNode }) => children,
+  withTranslation: () => (Component: any) => Component,
+}));
 
 // Mock lucide-react
-vi.mock('lucide-react', async (importOriginal) => {
-  const actual = await importOriginal<Record<string, any>>();
-  return {
-    ...actual,
-    Smile: ({ className }: any) => <span data-testid="smile-icon" className={className} />,
-  };
-});
+vi.mock('lucide-react', () => ({
+  Smile: ({ className }: any) => <span data-testid="smile-icon" className={className} />,
+}));
 
 // Mock useSignedUrl
 vi.mock('@/hooks/useSignedUrl', () => ({

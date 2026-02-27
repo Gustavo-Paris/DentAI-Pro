@@ -21,15 +21,11 @@ vi.mock('@/components/ui/tooltip', () => ({
   TooltipTrigger: ({ children }: React.PropsWithChildren) => <>{children}</>,
 }));
 
-vi.mock('lucide-react', async (importOriginal) => {
-  const actual = await importOriginal<Record<string, any>>();
-  return {
-    ...actual,
-    Sun: () => <span data-testid="icon-sun" />,
-    Moon: () => <span data-testid="icon-moon" />,
-    Monitor: () => <span data-testid="icon-monitor" />,
-  };
-});
+vi.mock('lucide-react', () => ({
+  Sun: () => <span data-testid="icon-sun" />,
+  Moon: () => <span data-testid="icon-moon" />,
+  Monitor: () => <span data-testid="icon-monitor" />,
+}));
 
 describe('ThemeToggle', () => {
   it('should render with system icon by default', () => {

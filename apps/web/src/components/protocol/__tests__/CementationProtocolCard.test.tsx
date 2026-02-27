@@ -3,19 +3,19 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { CementationProtocolCard } from '../CementationProtocolCard';
 
 // Mock react-i18next
-vi.mock('react-i18next', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('react-i18next')>();
-  return {
-    ...actual,
-    useTranslation: () => ({
-      t: (key: string, params?: Record<string, unknown>) => {
-        if (params) return `${key}(${JSON.stringify(params)})`;
-        return key;
-      },
-      i18n: { language: 'pt-BR', changeLanguage: vi.fn() },
-    }),
-  };
-});
+vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
+  useTranslation: () => ({
+    t: (key: string, params?: Record<string, unknown>) => {
+      if (params) return `${key}(${JSON.stringify(params)})`;
+      return key;
+    },
+    i18n: { language: 'pt-BR', changeLanguage: vi.fn() },
+  }),
+  Trans: ({ children }: { children: React.ReactNode }) => children,
+  I18nextProvider: ({ children }: { children: React.ReactNode }) => children,
+  withTranslation: () => (Component: any) => Component,
+}));
 
 // Mock UI components
 vi.mock('@/components/ui/card', () => ({
@@ -45,18 +45,14 @@ vi.mock('@/lib/utils', () => ({
 }));
 
 // Mock lucide-react icons
-vi.mock('lucide-react', async (importOriginal) => {
-  const actual = await importOriginal<Record<string, any>>();
-  return {
-    ...actual,
-    Crown: ({ className }: any) => <span data-testid="icon-crown" className={className} />,
-    Droplets: ({ className }: any) => <span data-testid="icon-droplets" className={className} />,
-    Sparkles: ({ className }: any) => <span data-testid="icon-sparkles" className={className} />,
-    CheckCircle: ({ className }: any) => <span data-testid="icon-check" className={className} />,
-    AlertTriangle: ({ className }: any) => <span data-testid="icon-alert" className={className} />,
-    ClipboardCheck: ({ className }: any) => <span data-testid="icon-clipboard" className={className} />,
-  };
-});
+vi.mock('lucide-react', () => ({
+  Crown: ({ className }: any) => <span data-testid="icon-crown" className={className} />,
+  Droplets: ({ className }: any) => <span data-testid="icon-droplets" className={className} />,
+  Sparkles: ({ className }: any) => <span data-testid="icon-sparkles" className={className} />,
+  CheckCircle: ({ className }: any) => <span data-testid="icon-check" className={className} />,
+  AlertTriangle: ({ className }: any) => <span data-testid="icon-alert" className={className} />,
+  ClipboardCheck: ({ className }: any) => <span data-testid="icon-clipboard" className={className} />,
+}));
 
 // -- Fixtures --
 

@@ -3,27 +3,23 @@ import { render, screen } from '@testing-library/react';
 import StratificationProtocol from '../StratificationProtocol';
 
 // Mock react-i18next
-vi.mock('react-i18next', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('react-i18next')>();
-  return {
-    ...actual,
-    useTranslation: () => ({
-      t: (key: string) => key,
-      i18n: { language: 'pt-BR', changeLanguage: vi.fn() },
-    }),
-  };
-});
+vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
+  useTranslation: () => ({
+    t: (key: string) => key,
+    i18n: { language: 'pt-BR', changeLanguage: vi.fn() },
+  }),
+  Trans: ({ children }: { children: React.ReactNode }) => children,
+  I18nextProvider: ({ children }: { children: React.ReactNode }) => children,
+  withTranslation: () => (Component: any) => Component,
+}));
 
 // Mock lucide-react
-vi.mock('lucide-react', async (importOriginal) => {
-  const actual = await importOriginal<Record<string, any>>();
-  return {
-    ...actual,
-    Palette: ({ className }: { className?: string }) => <span data-testid="palette-icon" className={className} />,
-    Layers: ({ className }: { className?: string }) => <span data-testid="layers-icon" className={className} />,
-    Sparkles: ({ className }: { className?: string }) => <span data-testid="sparkles-icon" className={className} />,
-  };
-});
+vi.mock('lucide-react', () => ({
+  Palette: ({ className }: { className?: string }) => <span data-testid="palette-icon" className={className} />,
+  Layers: ({ className }: { className?: string }) => <span data-testid="layers-icon" className={className} />,
+  Sparkles: ({ className }: { className?: string }) => <span data-testid="sparkles-icon" className={className} />,
+}));
 
 // Mock shadcn Card components
 vi.mock('@/components/ui/card', () => ({

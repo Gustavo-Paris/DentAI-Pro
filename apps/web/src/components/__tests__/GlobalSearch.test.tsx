@@ -10,19 +10,19 @@ import type { SearchEvaluation } from '../GlobalSearch';
 let mockUserValue: { id: string; email: string } | null = { id: 'user-1', email: 'test@test.com' };
 
 // Mock react-i18next
-vi.mock('react-i18next', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('react-i18next')>();
-  return {
-    ...actual,
-    useTranslation: () => ({
-      t: (key: string, opts?: Record<string, unknown>) => {
-        if (opts?.count !== undefined) return `${key}:${opts.count}`;
-        return key;
-      },
-      i18n: { language: 'pt-BR', changeLanguage: vi.fn() },
-    }),
-  };
-});
+vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
+  useTranslation: () => ({
+    t: (key: string, opts?: Record<string, unknown>) => {
+      if (opts?.count !== undefined) return `${key}:${opts.count}`;
+      return key;
+    },
+    i18n: { language: 'pt-BR', changeLanguage: vi.fn() },
+  }),
+  Trans: ({ children }: { children: React.ReactNode }) => children,
+  I18nextProvider: ({ children }: { children: React.ReactNode }) => children,
+  withTranslation: () => (Component: any) => Component,
+}));
 
 // Mock react-router-dom
 const mockNavigate = vi.fn();
@@ -49,15 +49,11 @@ vi.mock('date-fns/locale', () => ({
 }));
 
 // Mock lucide-react
-vi.mock('lucide-react', async (importOriginal) => {
-  const actual = await importOriginal<Record<string, any>>();
-  return {
-    ...actual,
-    User: ({ className }: { className?: string }) => <span data-testid="user-icon" className={className} />,
-    Calendar: ({ className }: { className?: string }) => <span data-testid="calendar-icon" className={className} />,
-    Loader2: ({ className }: { className?: string }) => <span data-testid="loader-icon" className={className} />,
-  };
-});
+vi.mock('lucide-react', () => ({
+  User: ({ className }: { className?: string }) => <span data-testid="user-icon" className={className} />,
+  Calendar: ({ className }: { className?: string }) => <span data-testid="calendar-icon" className={className} />,
+  Loader2: ({ className }: { className?: string }) => <span data-testid="loader-icon" className={className} />,
+}));
 
 // Mock command UI components
 vi.mock('@/components/ui/command', () => ({

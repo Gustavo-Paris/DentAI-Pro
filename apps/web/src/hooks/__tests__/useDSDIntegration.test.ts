@@ -16,16 +16,16 @@ vi.mock('sonner', () => ({
 }));
 
 // Mock react-i18next — return key as-is so assertions match i18n keys
-vi.mock('react-i18next', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('react-i18next')>();
-  return {
-    ...actual,
-    useTranslation: () => ({
-      t: (key: string) => key,
-      i18n: { language: 'pt-BR' },
-    }),
-  };
-});
+vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
+  useTranslation: () => ({
+    t: (key: string) => key,
+    i18n: { language: 'pt-BR' },
+  }),
+  Trans: ({ children }: { children: unknown }) => children,
+  I18nextProvider: ({ children }: { children: unknown }) => children,
+  withTranslation: () => (Component: any) => Component,
+}));
 
 // ---------------------------------------------------------------------------
 // Fixtures

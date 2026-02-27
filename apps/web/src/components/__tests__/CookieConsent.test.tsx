@@ -11,23 +11,23 @@ vi.mock('@sentry/react', () => ({
 }));
 
 // Mock react-i18next
-vi.mock('react-i18next', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('react-i18next')>();
-  return {
-    ...actual,
-    useTranslation: () => ({
-      t: (key: string) => {
-        const parts = key.split('.');
-        let value: unknown = translations;
-        for (const part of parts) {
-          value = (value as Record<string, unknown>)?.[part];
-        }
-        return (value as string) ?? key;
-      },
-      i18n: { language: 'pt-BR' },
-    }),
-  };
-});
+vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
+  useTranslation: () => ({
+    t: (key: string) => {
+      const parts = key.split('.');
+      let value: unknown = translations;
+      for (const part of parts) {
+        value = (value as Record<string, unknown>)?.[part];
+      }
+      return (value as string) ?? key;
+    },
+    i18n: { language: 'pt-BR' },
+  }),
+  Trans: ({ children }: { children: React.ReactNode }) => children,
+  I18nextProvider: ({ children }: { children: React.ReactNode }) => children,
+  withTranslation: () => (Component: any) => Component,
+}));
 
 // Mock the Button component to avoid shadcn dependency chain
 vi.mock('@/components/ui/button', () => ({
