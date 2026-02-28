@@ -11,7 +11,7 @@ import { getPrompt } from "../_shared/prompts/registry.ts";
 import { withMetrics } from "../_shared/prompts/index.ts";
 import type { Params as DsdSimulationParams } from "../_shared/prompts/definitions/dsd-simulation.ts";
 import { createSupabaseMetrics, PROMPT_VERSION } from "../_shared/metrics-adapter.ts";
-import { callFluxImageEdit, FluxError } from "../_shared/flux.ts";
+// Nano Banana 2 (gemini-3.1-flash-image-preview) used as fallback model
 import type { DSDAnalysis, PatientPreferences } from "./types.ts";
 import { WHITENING_INSTRUCTIONS } from "./types.ts";
 
@@ -491,40 +491,55 @@ Responda APENAS 'SIM' ou 'NÃO'.`,
     logger.log("Simulation generated and uploaded:", fileName, lipsMoved ? "(lips_moved)" : "");
     return { url: fileName, lips_moved: lipsMoved || undefined };
   } catch (err) {
-    // Primary (Gemini) failed — try FLUX Kontext Pro as fallback
+    // Primary (Gemini 3 Pro) failed — try Nano Banana 2 (Gemini 3.1 Flash Image) as fallback
+    const FALLBACK_MODEL = 'gemini-3.1-flash-image-preview';
     const geminiMsg = err instanceof Error ? err.message : String(err);
-    logger.warn(`Gemini simulation failed: ${geminiMsg}. Trying FLUX fallback...`);
+    logger.warn(`Gemini simulation failed: ${geminiMsg}. Trying Nano Banana 2 fallback...`);
 
     try {
       const remainingMs = Math.max(SIMULATION_TIMEOUT - (Date.now() - simulationStartTime), 15_000);
-      const fluxResult = await callFluxImageEdit(
-        simulationPrompt,
-        inputBase64Data,
-        inputMimeType,
-        {
-          seed: imageSeed,
-          timeoutMs: remainingMs,
-        },
-      );
 
-      if (!fluxResult.imageUrl) {
-        throw new Error("FLUX returned no image");
+      const fallbackResult = await withMetrics<{ imageUrl: string | null; text: string | null }>(metrics, dsdSimulationPromptDef.id, PROMPT_VERSION, FALLBACK_MODEL)(async () => {
+        const response = await callGeminiImageEdit(
+          simulationPrompt,
+          inputBase64Data,
+          inputMimeType,
+          {
+            temperature: dsdSimulationPromptDef.temperature,
+            timeoutMs: remainingMs,
+            seed: imageSeed,
+            maxRetries: 0,
+            model: FALLBACK_MODEL,
+          }
+        );
+        if (response.tokens) {
+          logger.info('gemini_tokens', { operation: 'generate-dsd:simulation-fallback', ...response.tokens });
+        }
+        return {
+          result: { imageUrl: response.imageUrl, text: response.text },
+          tokensIn: response.tokens?.promptTokenCount ?? 0,
+          tokensOut: response.tokens?.candidatesTokenCount ?? 0,
+        };
+      });
+
+      if (!fallbackResult.imageUrl) {
+        throw new Error("Nano Banana 2 returned no image");
       }
 
-      logger.log("FLUX fallback simulation succeeded");
+      logger.log("Nano Banana 2 fallback simulation succeeded");
 
       // Lip validation for ALL layers (same as primary path)
       let lipsMoved = false;
       if (shouldValidateLips) {
-        const lipsValid = await validateLips(fluxResult.imageUrl);
+        const lipsValid = await validateLips(fallbackResult.imageUrl);
         lipsMoved = !lipsValid;
         if (lipsMoved) {
-          logger.warn(`Lip validation FAILED for ${layerType || 'standard'} layer — lips_moved flag set (FLUX fallback)`);
+          logger.warn(`Lip validation FAILED for ${layerType || 'standard'} layer — lips_moved flag set (Nano Banana 2 fallback)`);
         }
       }
 
-      // Upload FLUX image (same pattern as primary path)
-      const base64Data = fluxResult.imageUrl.replace(/^data:image\/\w+;base64,/, "");
+      // Upload fallback image (same pattern as primary path)
+      const base64Data = fallbackResult.imageUrl.replace(/^data:image\/\w+;base64,/, "");
       const binaryData = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
       const fileName = `${userId}/dsd_${Date.now()}.png`;
 
@@ -536,21 +551,21 @@ Responda APENAS 'SIM' ou 'NÃO'.`,
         });
 
       if (uploadError) {
-        logger.error("FLUX upload error:", uploadError);
+        logger.error("Nano Banana 2 upload error:", uploadError);
         throw new Error(`Storage upload failed: ${uploadError.message}`);
       }
 
-      logger.log("FLUX fallback simulation uploaded:", fileName, lipsMoved ? "(lips_moved)" : "");
+      logger.log("Nano Banana 2 fallback simulation uploaded:", fileName, lipsMoved ? "(lips_moved)" : "");
       return { url: fileName, lips_moved: lipsMoved || undefined };
-    } catch (fluxErr) {
-      // Both Gemini and FLUX failed — propagate with context from both
-      const fluxMsg = fluxErr instanceof Error ? fluxErr.message : String(fluxErr);
-      logger.warn(`FLUX fallback also failed: ${fluxMsg}`);
+    } catch (fallbackErr) {
+      // Both Gemini 3 Pro and Nano Banana 2 failed — propagate with context from both
+      const fallbackMsg = fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr);
+      logger.warn(`Nano Banana 2 fallback also failed: ${fallbackMsg}`);
 
       if (err instanceof GeminiError) {
-        throw new Error(`GeminiError ${(err as GeminiError).statusCode}: ${(err as GeminiError).message} (FLUX fallback: ${fluxMsg})`);
+        throw new Error(`GeminiError ${(err as GeminiError).statusCode}: ${(err as GeminiError).message} (NB2 fallback: ${fallbackMsg})`);
       }
-      throw new Error(`Simulation failed: ${geminiMsg} (FLUX fallback: ${fluxMsg})`);
+      throw new Error(`Simulation failed: ${geminiMsg} (NB2 fallback: ${fallbackMsg})`);
     }
   }
 }

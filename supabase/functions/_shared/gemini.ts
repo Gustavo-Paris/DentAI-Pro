@@ -698,13 +698,13 @@ export async function callGeminiImageEdit(
     seed?: number;
     /** Max retries per model. Set to 0 when caller handles retries (e.g. inside edge functions with 60s limit). Default: 2. */
     maxRetries?: number;
+    /** Override model. Default: gemini-3-pro-image-preview. */
+    model?: string;
   } = {}
 ): Promise<{ imageUrl: string | null; text: string | null; tokens?: TokenUsage }> {
   const apiKey = getApiKey();
 
-  // Gemini 3 Pro only — no fallback models (alternatives produce inferior quality).
-  // When unavailable (503), fail gracefully so client can show retry UI.
-  const MODEL = "gemini-3-pro-image-preview";
+  const MODEL = options.model ?? "gemini-3-pro-image-preview";
   const url = `${GEMINI_API_BASE}/${MODEL}:generateContent`;
 
   const request = {
