@@ -258,12 +258,19 @@ async function makeClaudeRequest(
 ): Promise<ClaudeResponse> {
   const apiKey = getApiKey();
 
+  // When maxRetries=0, the caller handles retries at a higher level (client-side).
+  // Skip circuit breaker to avoid cascading failures from shared warm-isolate state:
+  // with maxRetries=0, each edge function invocation makes exactly 1 attempt, but
+  // the circuit breaker state persists across HTTP requests in the same isolate,
+  // causing a single transient failure to block ALL subsequent calls for 30s.
+  const useCircuitBreaker = maxRetries > 0;
+
   let lastError: Error | null = null;
   let retryCount = 0;
 
   while (retryCount <= maxRetries) {
-    // Check circuit breaker before each attempt
-    circuitBreakerCheck();
+    // Check circuit breaker before each attempt (only when doing internal retries)
+    if (useCircuitBreaker) circuitBreakerCheck();
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -288,7 +295,7 @@ async function makeClaudeRequest(
 
       // Handle rate limiting (429)
       if (response.status === 429) {
-        circuitBreakerOnFailure();
+        if (useCircuitBreaker) circuitBreakerOnFailure();
 
         const retryAfter = response.headers.get("Retry-After");
         const waitTime = retryAfter
@@ -317,7 +324,7 @@ async function makeClaudeRequest(
         response.status === 503 ||
         response.status === 529
       ) {
-        circuitBreakerOnFailure();
+        if (useCircuitBreaker) circuitBreakerOnFailure();
 
         logger.warn(`Server error (${response.status}). Retrying...`);
 
@@ -363,7 +370,7 @@ async function makeClaudeRequest(
       const data: ClaudeResponse = await response.json();
 
       // Success — reset circuit breaker
-      circuitBreakerOnSuccess();
+      if (useCircuitBreaker) circuitBreakerOnSuccess();
 
       return data;
     } catch (error) {
@@ -375,7 +382,7 @@ async function makeClaudeRequest(
 
       // Handle AbortController timeout
       if ((error as Error).name === "AbortError") {
-        circuitBreakerOnFailure();
+        if (useCircuitBreaker) circuitBreakerOnFailure();
         lastError = new ClaudeError(
           "Timeout na chamada do Claude API",
           408,
@@ -391,7 +398,7 @@ async function makeClaudeRequest(
       }
 
       lastError = error as Error;
-      circuitBreakerOnFailure();
+      if (useCircuitBreaker) circuitBreakerOnFailure();
       logger.error(`Claude request failed:`, error);
 
       if (retryCount < maxRetries) {
