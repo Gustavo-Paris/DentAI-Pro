@@ -261,7 +261,32 @@ export function useWizardSubmit({
           isGengivoplasty ? 'gengivoplastia' : (toothData?.treatment_indication || analysisResult?.treatment_indication || null),
         ai_indication_reason:
           isGengivoplasty ? 'dsd_gingival_harmonization' : (toothData?.indication_reason || analysisResult?.indication_reason || null),
-        dsd_analysis: dsdResult?.analysis || null,
+        dsd_analysis: analysisResult ? {
+          facial_midline: analysisResult.facial_midline,
+          dental_midline: analysisResult.dental_midline,
+          smile_line: analysisResult.smile_line,
+          buccal_corridor: analysisResult.buccal_corridor,
+          occlusal_plane: analysisResult.occlusal_plane,
+          golden_ratio_compliance: analysisResult.golden_ratio_compliance,
+          symmetry_score: analysisResult.symmetry_score,
+          lip_thickness: analysisResult.lip_thickness,
+          overbite_suspicion: analysisResult.overbite_suspicion,
+          smile_arc: analysisResult.smile_arc,
+          face_shape: analysisResult.face_shape,
+          perceived_temperament: analysisResult.perceived_temperament,
+          recommended_tooth_shape: analysisResult.recommended_tooth_shape,
+          visagism_notes: analysisResult.visagism_notes,
+          suggestions: analysisResult.detected_teeth
+            .filter(t => t.current_issue)
+            .map(t => ({
+              tooth: t.tooth,
+              current_issue: t.current_issue,
+              proposed_change: t.proposed_change,
+              treatment_indication: t.treatment_indication,
+            })),
+          observations: analysisResult.observations,
+          confidence: 'alta',
+        } : null,
         dsd_simulation_url: dsdResult?.simulation_url || null,
         dsd_simulation_layers: dsdResult?.layers || null,
         tooth_bounds: toothData?.tooth_bounds || null,
@@ -283,10 +308,16 @@ export function useWizardSubmit({
       evaluationId: string,
       toothData: DetectedTooth | undefined,
     ): Promise<void> {
-      // Build DSD context for this tooth if available
-      const dsdSuggestion = dsdResult?.analysis?.suggestions?.find(
-        s => s.tooth === tooth,
-      );
+      // Build DSD context from unified analysis (replaces legacy dsdResult.analysis.suggestions)
+      const dsdContext = toothData?.current_issue ? {
+        currentIssue: toothData.current_issue,
+        proposedChange: toothData.proposed_change,
+        observations: analysisResult?.observations || [],
+        smileLine: analysisResult?.smile_line,
+        symmetryScore: analysisResult?.symmetry_score,
+        smileArc: analysisResult?.smile_arc,
+        faceShape: analysisResult?.face_shape,
+      } : undefined;
 
       // Data-client adapters for wizard context
       const wizardClients: ProtocolDispatchClients = {
@@ -321,17 +352,7 @@ export function useWizardSubmit({
                   patientPreferences.whiteningLevel === 'hollywood'
                     ? 'Paciente deseja clareamento INTENSO - nível Hollywood (BL1). Ajustar todas as camadas 2-3 tons mais claras que a cor detectada.'
                     : 'Paciente prefere aparência NATURAL (A1/A2). Manter tons naturais.',
-                dsdContext: dsdSuggestion
-                  ? {
-                      currentIssue: dsdSuggestion.current_issue,
-                      proposedChange: dsdSuggestion.proposed_change,
-                      observations: dsdResult?.analysis?.observations || [],
-                      smileLine: dsdResult?.analysis?.smile_line,
-                      faceShape: dsdResult?.analysis?.face_shape,
-                      symmetryScore: dsdResult?.analysis?.symmetry_score,
-                      smileArc: dsdResult?.analysis?.smile_arc,
-                    }
-                  : undefined,
+                dsdContext,
               } : undefined,
               cementationParams: normalizedTreatment === 'porcelana' ? {
                 teeth: [tooth],
@@ -344,23 +365,23 @@ export function useWizardSubmit({
                   patientPreferences.whiteningLevel === 'hollywood'
                     ? 'Paciente deseja clareamento INTENSO - nível Hollywood (BL1). A cor ALVO da faceta e do cimento deve ser BL1 ou compatível.'
                     : 'Paciente prefere aparência NATURAL (A1/A2).',
-                dsdContext: dsdSuggestion
+                dsdContext: dsdContext
                   ? {
-                      currentIssue: dsdSuggestion.current_issue,
-                      proposedChange: dsdSuggestion.proposed_change,
-                      observations: dsdResult?.analysis?.observations || [],
+                      currentIssue: dsdContext.currentIssue,
+                      proposedChange: dsdContext.proposedChange,
+                      observations: dsdContext.observations,
                     }
                   : undefined,
               } : undefined,
               genericToothData: toothData,
-              enrichGenericProtocol: normalizedTreatment === 'gengivoplastia' && dsdResult?.analysis?.suggestions
+              enrichGenericProtocol: normalizedTreatment === 'gengivoplastia' && analysisResult?.detected_teeth
                 ? (protocol: GenericProtocolResult) => {
-                    const gingivoSuggestions = dsdResult.analysis.suggestions.filter(s => {
-                      const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
+                    const gingivoTeeth = analysisResult.detected_teeth.filter(t => {
+                      const text = `${t.current_issue ?? ''} ${t.proposed_change ?? ''}`.toLowerCase();
                       return text.includes('gengiv') || text.includes('zênite') || text.includes('zenite');
                     });
-                    if (gingivoSuggestions.length > 0) {
-                      protocol.summary += ` Dentes envolvidos: ${gingivoSuggestions.map(s => s.tooth).join(', ')}. Observações DSD: ${gingivoSuggestions.map(s => s.proposed_change).join('; ')}.`;
+                    if (gingivoTeeth.length > 0) {
+                      protocol.summary += ` Dentes envolvidos: ${gingivoTeeth.map(t => t.tooth).join(', ')}. Observações DSD: ${gingivoTeeth.map(t => t.proposed_change).join('; ')}.`;
                     }
                   }
                 : undefined,

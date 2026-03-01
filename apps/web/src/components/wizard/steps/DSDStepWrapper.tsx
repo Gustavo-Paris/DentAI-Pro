@@ -56,6 +56,7 @@ export const DSDStepWrapper = memo(function DSDStepWrapper({
           photoQualityScore={effectiveQualityScore}
           onResultChange={handleDSDResultChange}
           onPreferencesChange={setPatientPreferences}
+          analysisResult={analysisResult}
         />
       </div>
     </div>

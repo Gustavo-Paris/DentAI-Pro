@@ -22,7 +22,7 @@ import { INITIAL_FORM_DATA } from './wizard/constants';
 
 // Sub-hooks
 import { usePhotoAnalysis } from './wizard/usePhotoAnalysis';
-import { useDSDIntegration } from './wizard/useDSDIntegration';
+
 import { useWizardSubmit } from './wizard/useWizardSubmit';
 import { useWizardNavigation } from './wizard/useWizardNavigation';
 import { useWizardReview } from './wizard/useWizardReview';
@@ -169,6 +169,10 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     navigate,
     setAnalysisResult,
     patientWhiteningLevel: patientPreferences.whiteningLevel === 'natural' ? 'natural' : 'hollywood',
+    additionalPhotos,
+    patientPreferences: {
+      whiteningLevel: patientPreferences.whiteningLevel === 'natural' ? 'natural' : 'hollywood',
+    },
   });
 
   // Wire up forward refs now that photo hook is created
@@ -177,15 +181,31 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
   photoSettersRef.current.setAnalysisError = photo.setAnalysisError;
   photoSettersRef.current.setIsAnalyzing = photo.setIsAnalyzing;
 
-  // DSD
-  const dsd = useDSDIntegration({
-    analysisResult,
-    setAnalysisResult,
-    setSelectedTeeth,
-    setToothTreatments,
-    setStep: nav.setStep,
-    setDsdResult,
-  });
+  // DSD handlers (inline — analysis is unified, no merge needed)
+  const handleDSDComplete = useCallback((result: DSDResult | null) => {
+    setDsdResult(result);
+
+    // Auto-include gengivoplasty from unified analysis (teeth already in analysisResult)
+    const hasGingivo = analysisResult?.detected_teeth?.some(
+      t => t.treatment_indication === 'gengivoplastia'
+    );
+    if (hasGingivo && result?.gingivoplastyApproved !== false) {
+      setSelectedTeeth(prev => prev.includes('GENGIVO') ? prev : [...prev, 'GENGIVO']);
+      setToothTreatments(prev => ({ ...prev, GENGIVO: 'gengivoplastia' as TreatmentType }));
+      toast.info(t('toasts.wizard.gingivoplastyAdded'));
+    }
+
+    nav.setStep(5); // Review step
+  }, [analysisResult, nav, setDsdResult, setSelectedTeeth, setToothTreatments, t]);
+
+  const handleDSDSkip = useCallback(() => {
+    setDsdResult(null);
+    nav.setStep(5);
+  }, [nav, setDsdResult]);
+
+  const handleDSDResultChange = useCallback((result: DSDResult | null) => {
+    setDsdResult(result);
+  }, [setDsdResult]);
 
   // Submit
   const submit = useWizardSubmit({
@@ -404,9 +424,9 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
       handleRetryAnalysis: nav.handleRetryAnalysis,
       handleSkipToReview: nav.handleSkipToReview,
       cancelAnalysis: nav.cancelAnalysis,
-      handleDSDComplete: dsd.handleDSDComplete,
-      handleDSDSkip: dsd.handleDSDSkip,
-      handleDSDResultChange: dsd.handleDSDResultChange,
+      handleDSDComplete: handleDSDComplete,
+      handleDSDSkip: handleDSDSkip,
+      handleDSDResultChange: handleDSDResultChange,
       updateFormData: review.updateFormData,
       setSelectedTeeth,
       handleToothTreatmentChange: review.handleToothTreatmentChange,
@@ -473,9 +493,9 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
       nav.handleRetryAnalysis,
       nav.handleSkipToReview,
       nav.cancelAnalysis,
-      dsd.handleDSDComplete,
-      dsd.handleDSDSkip,
-      dsd.handleDSDResultChange,
+      handleDSDComplete,
+      handleDSDSkip,
+      handleDSDResultChange,
       review.updateFormData,
       setSelectedTeeth,
       review.handleToothTreatmentChange,

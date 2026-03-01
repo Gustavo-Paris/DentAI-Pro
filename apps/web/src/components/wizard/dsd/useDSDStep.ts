@@ -16,12 +16,47 @@ import { useDSDGingivoplasty } from './useDSDGingivoplasty';
 import { useDSDWhitening } from './useDSDWhitening';
 import type {
   DSDResult,
+  DSDAnalysis,
   ToothBoundsPct,
   AdditionalPhotos,
   PatientPreferences,
   DetectedToothForMask,
   ClinicalToothFinding,
 } from '@/types/dsd';
+import type { PhotoAnalysisResult } from '@/types/wizard';
+
+// ---------------------------------------------------------------------------
+// Converter: unified PhotoAnalysisResult → legacy DSDAnalysis
+// ---------------------------------------------------------------------------
+
+function convertToLegacyDSD(analysis: PhotoAnalysisResult): DSDAnalysis {
+  return {
+    facial_midline: analysis.facial_midline ?? 'centrada',
+    dental_midline: analysis.dental_midline ?? 'alinhada',
+    smile_line: analysis.smile_line ?? 'média',
+    buccal_corridor: analysis.buccal_corridor ?? 'adequado',
+    occlusal_plane: analysis.occlusal_plane ?? 'nivelado',
+    golden_ratio_compliance: analysis.golden_ratio_compliance ?? 50,
+    symmetry_score: analysis.symmetry_score ?? 50,
+    suggestions: analysis.detected_teeth
+      .filter(t => t.current_issue && t.proposed_change)
+      .map(t => ({
+        tooth: t.tooth,
+        current_issue: t.current_issue!,
+        proposed_change: t.proposed_change!,
+        treatment_indication: t.treatment_indication as DSDAnalysis['suggestions'][number]['treatment_indication'],
+      })),
+    observations: analysis.observations,
+    confidence: 'alta',
+    lip_thickness: analysis.lip_thickness,
+    overbite_suspicion: analysis.overbite_suspicion,
+    smile_arc: analysis.smile_arc,
+    face_shape: analysis.face_shape,
+    perceived_temperament: analysis.perceived_temperament,
+    recommended_tooth_shape: analysis.recommended_tooth_shape,
+    visagism_notes: analysis.visagism_notes,
+  };
+}
 
 export interface DSDStepProps {
   imageBase64: string | null;
@@ -36,6 +71,8 @@ export interface DSDStepProps {
   photoQualityScore?: number;
   onResultChange?: (result: DSDResult | null) => void;
   onPreferencesChange?: (prefs: PatientPreferences) => void;
+  /** Unified analysis result from analyze-dental-photo (skips DSD analysis call) */
+  analysisResult?: PhotoAnalysisResult | null;
 }
 
 export function useDSDStep({
@@ -51,6 +88,7 @@ export function useDSDStep({
   photoQualityScore,
   onResultChange,
   onPreferencesChange,
+  analysisResult,
 }: DSDStepProps) {
   // -------------------------------------------------------------------------
   // Core state
@@ -177,6 +215,17 @@ export function useDSDStep({
   // Effects
   // -------------------------------------------------------------------------
 
+  // Seed DSD result from unified analysis (analysis already done, no DSD analysis call needed)
+  useEffect(() => {
+    if (analysisResult && !initialResult && !result) {
+      const legacyAnalysis = convertToLegacyDSD(analysisResult);
+      setResult({
+        analysis: legacyAnalysis,
+        simulation_url: null,
+      });
+    }
+  }, [analysisResult, initialResult]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Propagate result changes to parent for draft auto-save
   useEffect(() => {
     onResultChange?.(result);
@@ -249,6 +298,9 @@ export function useDSDStep({
       return;
     }
 
+    // Build the legacy DSD analysis from the unified analysis result
+    const legacyAnalysis = analysisResult ? convertToLegacyDSD(analysisResult) : null;
+
     setIsAnalyzing(true);
     setError(null);
     setErrorCode(null);
@@ -266,8 +318,16 @@ export function useDSDStep({
         reqId: crypto.randomUUID(),
         imageBase64,
         toothShape: 'natural',
-        analysisOnly: true,
       };
+
+      // When unified analysis is available, skip DSD analysis — simulation only
+      if (legacyAnalysis) {
+        requestBody.regenerateSimulationOnly = true;
+        requestBody.existingAnalysis = legacyAnalysis;
+      } else {
+        // Fallback: no unified analysis, do full DSD analysis (legacy path)
+        requestBody.analysisOnly = true;
+      }
 
       if (additionalPhotos?.smile45 || additionalPhotos?.face) {
         requestBody.additionalPhotos = {
@@ -298,15 +358,23 @@ export function useDSDStep({
 
       if (fnError) throw fnError;
 
-      if (data?.analysis) {
-        setResult(data);
+      // When we have unified analysis, use it for the result analysis instead of
+      // whatever the DSD endpoint returned (it might be a passthrough or empty)
+      const analysisForResult = legacyAnalysis || data?.analysis;
+
+      if (analysisForResult) {
+        const resultWithAnalysis: DSDResult = {
+          ...data!,
+          analysis: analysisForResult,
+        };
+        setResult(resultWithAnalysis);
         setIsAnalyzing(false);
         const dsdCost = getCreditCost('dsd_simulation');
         toast.success(t('toasts.dsd.analysisCompleted'), {
           description: t('toasts.dsd.creditsUsed', { count: dsdCost }),
         });
         refreshSubscription();
-        layerGen.generateAllLayers(data.analysis);
+        layerGen.generateAllLayers(analysisForResult);
       } else {
         throw new Error(t('errors.noAnalysisData'));
       }
@@ -355,7 +423,7 @@ export function useDSDStep({
         setIsAnalyzing(false);
       }
     }
-  }, [imageBase64, canUseCredits, invokeFunction, refreshSubscription, getCreditCost, layerGen.generateAllLayers, additionalPhotos, patientPreferences, clinicalObservations, clinicalTeethFindings, analysisSteps.length, t]);
+  }, [imageBase64, canUseCredits, invokeFunction, refreshSubscription, getCreditCost, layerGen.generateAllLayers, additionalPhotos, patientPreferences, clinicalObservations, clinicalTeethFindings, analysisSteps.length, analysisResult, t]);
 
   // Auto-start analysis
   useEffect(() => {

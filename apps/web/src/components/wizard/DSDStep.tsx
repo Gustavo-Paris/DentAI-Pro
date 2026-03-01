@@ -8,6 +8,7 @@ import type {
   DetectedToothForMask,
   ClinicalToothFinding,
 } from '@/types/dsd';
+import type { PhotoAnalysisResult } from '@/types/wizard';
 import { useEffect, useRef, useCallback, useState, lazy, Suspense } from 'react';
 import { trackEvent } from '@/lib/analytics';
 import { useDSDStep } from './dsd/useDSDStep';
@@ -40,6 +41,8 @@ interface DSDStepProps {
   onResultChange?: (result: DSDResult | null) => void;
   /** Called when user changes whitening level in E4 comparison */
   onPreferencesChange?: (prefs: PatientPreferences) => void;
+  /** Unified analysis result from analyze-dental-photo (skips DSD analysis call) */
+  analysisResult?: PhotoAnalysisResult | null;
 }
 
 const PHOTO_QUALITY_THRESHOLD = 55;

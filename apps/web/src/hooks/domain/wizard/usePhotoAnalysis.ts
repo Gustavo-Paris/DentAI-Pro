@@ -42,6 +42,10 @@ export interface UsePhotoAnalysisParams {
   setAnalysisResult: React.Dispatch<React.SetStateAction<PhotoAnalysisResult | null>>;
   /** Patient whitening preference — when non-natural, protects vitaShade from AI override */
   patientWhiteningLevel?: 'natural' | 'hollywood';
+  /** Additional photos (45-degree smile, face) for unified analysis */
+  additionalPhotos?: { smile45: string | null; face: string | null };
+  /** Patient aesthetic preferences for unified analysis */
+  patientPreferences?: { whiteningLevel: 'natural' | 'hollywood' };
 }
 
 // ---------------------------------------------------------------------------
@@ -114,6 +118,8 @@ export function usePhotoAnalysis({
   navigate,
   setAnalysisResult,
   patientWhiteningLevel,
+  additionalPhotos,
+  patientPreferences,
 }: UsePhotoAnalysisParams) {
   const { t } = useTranslation();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -203,10 +209,21 @@ export function usePhotoAnalysis({
             throw abortError;
           }
 
+          const requestBody: Record<string, unknown> = {
+            imageBase64: analysisImage,
+            imageType: 'intraoral',
+          };
+          if (additionalPhotos?.face || additionalPhotos?.smile45) {
+            requestBody.additionalPhotos = additionalPhotos;
+          }
+          if (patientPreferences) {
+            requestBody.patientPreferences = patientPreferences;
+          }
+
           const result = await Promise.race([
             invokeFunction<{ analysis: PhotoAnalysisResult }>(
               'analyze-dental-photo',
-              { body: { imageBase64: analysisImage, imageType: 'intraoral' } },
+              { body: requestBody },
             ),
             new Promise<never>((_, reject) => {
               if (controller.signal.aborted) {
@@ -336,6 +353,8 @@ export function usePhotoAnalysis({
     setFormData,
     setAnalysisResult,
     patientWhiteningLevel,
+    additionalPhotos,
+    patientPreferences,
   ]);
 
   // -------------------------------------------------------------------------
@@ -371,11 +390,22 @@ export function usePhotoAnalysis({
         analysisImage = imageBase64;
       }
 
+      const reanalyzeBody: Record<string, unknown> = {
+        imageBase64: analysisImage,
+        imageType: 'intraoral',
+      };
+      if (additionalPhotos?.face || additionalPhotos?.smile45) {
+        reanalyzeBody.additionalPhotos = additionalPhotos;
+      }
+      if (patientPreferences) {
+        reanalyzeBody.patientPreferences = patientPreferences;
+      }
+
       const { data } = await withRetry(
         async () => {
           const result = await invokeFunction<{ analysis: PhotoAnalysisResult }>(
             'analyze-dental-photo',
-            { body: { imageBase64: analysisImage, imageType: 'intraoral' } },
+            { body: reanalyzeBody },
           );
           if (result.error) throw result.error;
           return result;
@@ -432,7 +462,7 @@ export function usePhotoAnalysis({
     } finally {
       setIsReanalyzing(false);
     }
-  }, [imageBase64, canUseCredits, navigate, invokeFunction, refreshSubscription, setFormData, setAnalysisResult, patientWhiteningLevel, t]);
+  }, [imageBase64, canUseCredits, navigate, invokeFunction, refreshSubscription, setFormData, setAnalysisResult, patientWhiteningLevel, additionalPhotos, patientPreferences, t]);
 
   return {
     isAnalyzing,
