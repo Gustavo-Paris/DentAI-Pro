@@ -377,9 +377,9 @@ Deno.serve(async (req) => {
             temperature: 0.0,
             maxTokens: promptDef.maxTokens,
             forceFunctionName: "generate_resin_protocol",
-            timeoutMs: 50_000,
-            // No internal retries — edge function has 60s limit, a single 50s
-            // attempt + ~5-7s pre/post-processing fits within 60s. Client-side
+            timeoutMs: 45_000,
+            // No internal retries — edge function has 60s limit. Haiku 4.5
+            // typically responds in 10-15s. Client-side
             // withRetry handles retries at the full-request level.
             maxRetries: 0,
           }
