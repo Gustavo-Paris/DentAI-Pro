@@ -378,8 +378,8 @@ corrections are MINOR refinements, NOT redesign. For each tooth:
   const shouldValidateLips = layerType !== 'face-mockup';
   const isGingivalLayer = layerType === 'complete-treatment' || layerType === 'root-coverage';
 
-  // Use Haiku for lip validation — binary SIM/NÃO task doesn't need Sonnet
-  const smileLinePromptDef = getPrompt('smile-line-classifier');
+  // Use Haiku for lip validation — binary SIM/NÃO task with maxTokens:10, Haiku is sufficient
+  const LIP_VALIDATION_MODEL = 'claude-haiku-4-5-20251001';
 
   async function validateLips(simImageUrl: string): Promise<boolean> {
     try {
@@ -388,7 +388,7 @@ corrections are MINOR refinements, NOT redesign. For each tooth:
       const simMimeType = simMimeMatch ? simMimeMatch[1] : 'image/png';
 
       const lipCheck = await callClaudeVision(
-        smileLinePromptDef.model,
+        LIP_VALIDATION_MODEL,
         `Imagem 1 é a ORIGINAL. Imagem 2 é a SIMULAÇÃO odontológica.
 Compare AMBOS os lábios entre as duas imagens:
 1. O LÁBIO SUPERIOR mudou de posição, formato ou contorno?

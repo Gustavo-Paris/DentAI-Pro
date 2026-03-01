@@ -371,50 +371,7 @@ Deno.test("Vision prompts have adequate maxTokens for their complexity", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 6. Smile line classifier parsing regression
+// 6. Smile line classifier parsing tests removed — parseSmileLineClassifierResponse
+//    was in generate-dsd/smile-line-classifier.ts which has been deleted.
+//    Smile line classification is now handled by analyze-dental-photo.
 // ---------------------------------------------------------------------------
-
-import { parseSmileLineClassifierResponse } from "../../generate-dsd/smile-line-classifier.ts";
-
-Deno.test("parseSmileLineClassifierResponse: valid alta response", () => {
-  const result = parseSmileLineClassifierResponse(
-    '{"smile_line":"alta","gingival_exposure_mm":4,"confidence":"alta","justification":"Faixa rosa visível acima dos dentes"}'
-  );
-  assertExists(result);
-  assertEquals(result!.smile_line, "alta");
-  assertEquals(result!.gingival_exposure_mm, 4);
-  assertEquals(result!.confidence, "alta");
-});
-
-Deno.test("parseSmileLineClassifierResponse: normalizes 'media' to 'média'", () => {
-  const result = parseSmileLineClassifierResponse(
-    '{"smile_line":"media","gingival_exposure_mm":1,"confidence":"media","justification":"Papilas visíveis"}'
-  );
-  assertExists(result);
-  assertEquals(result!.smile_line, "média");
-  assertEquals(result!.confidence, "média");
-});
-
-Deno.test("parseSmileLineClassifierResponse: handles markdown-wrapped JSON", () => {
-  const result = parseSmileLineClassifierResponse(
-    '```json\n{"smile_line":"baixa","gingival_exposure_mm":0,"confidence":"alta","justification":"Lábio cobre tudo"}\n```'
-  );
-  assertExists(result);
-  assertEquals(result!.smile_line, "baixa");
-});
-
-Deno.test("parseSmileLineClassifierResponse: returns null for invalid input", () => {
-  assertEquals(parseSmileLineClassifierResponse("not json"), null);
-  assertEquals(parseSmileLineClassifierResponse(""), null);
-  assertEquals(parseSmileLineClassifierResponse('{"smile_line":"unknown"}'), null);
-});
-
-Deno.test("parseSmileLineClassifierResponse: handles missing optional fields", () => {
-  const result = parseSmileLineClassifierResponse(
-    '{"smile_line":"alta","gingival_exposure_mm":3}'
-  );
-  assertExists(result);
-  assertEquals(result!.smile_line, "alta");
-  assertEquals(result!.confidence, "média"); // default
-  assertEquals(result!.justification, ""); // default
-});

@@ -150,7 +150,7 @@ export function applyPostProcessingSafetyNets(
   }
 
   // Safety net #5 (replaced by dual-pass classifier): observability log
-  logger.log(`Post-processing: smile_line="${analysis.smile_line}" (dual-pass applied in analyzeProportions)`);
+  logger.log(`Post-processing: smile_line="${analysis.smile_line}" (from analyze-dental-photo)`);
 
   // Safety net #6: Flag when DSD suggests gengivoplasty but it may not be in the photo analysis treatment plan.
   // The DSD and photo analysis are independent AI calls — the DSD may detect gingival issues
