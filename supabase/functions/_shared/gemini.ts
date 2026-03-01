@@ -238,12 +238,16 @@ async function makeGeminiRequest(
   const apiKey = getApiKey();
   const url = `${GEMINI_API_BASE}/${model}:generateContent`;
 
+  // When maxRetries=0, the caller handles retries at a higher level (client-side).
+  // Skip circuit breaker to avoid cascading failures from shared warm-isolate state.
+  const useCircuitBreaker = maxRetries > 0;
+
   let lastError: Error | null = null;
   let retryCount = 0;
 
   while (retryCount <= maxRetries) {
-    // Check circuit breaker before each attempt
-    circuitBreakerCheck();
+    // Check circuit breaker before each attempt (only when doing internal retries)
+    if (useCircuitBreaker) circuitBreakerCheck();
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -265,7 +269,7 @@ async function makeGeminiRequest(
 
       // Handle rate limiting (429)
       if (response.status === 429) {
-        circuitBreakerOnFailure();
+        if (useCircuitBreaker) circuitBreakerOnFailure();
 
         const retryAfter = response.headers.get("Retry-After");
         const waitTime = retryAfter
@@ -288,7 +292,7 @@ async function makeGeminiRequest(
 
       // Handle server errors (500, 503) - retry once
       if (response.status === 500 || response.status === 503) {
-        circuitBreakerOnFailure();
+        if (useCircuitBreaker) circuitBreakerOnFailure();
 
         logger.warn(`Server error (${response.status}). Retrying once...`);
 
@@ -332,7 +336,7 @@ async function makeGeminiRequest(
       }
 
       // Success — reset circuit breaker
-      circuitBreakerOnSuccess();
+      if (useCircuitBreaker) circuitBreakerOnSuccess();
 
       return data;
     } catch (error) {
@@ -344,7 +348,7 @@ async function makeGeminiRequest(
 
       // Handle AbortController timeout
       if ((error as Error).name === "AbortError") {
-        circuitBreakerOnFailure();
+        if (useCircuitBreaker) circuitBreakerOnFailure();
         lastError = new GeminiError(
           "Timeout na chamada do Gemini API",
           408,
@@ -360,7 +364,7 @@ async function makeGeminiRequest(
       }
 
       lastError = error as Error;
-      circuitBreakerOnFailure();
+      if (useCircuitBreaker) circuitBreakerOnFailure();
       logger.error(`Gemini request failed:`, error);
 
       if (retryCount < maxRetries) {
@@ -600,6 +604,8 @@ export async function callGeminiVisionWithTools(
     maxTokens?: number;
     forceFunctionName?: string;
     timeoutMs?: number;
+    /** Max internal retries. Set to 0 when caller handles retries (e.g. inside edge functions with 60s limit). Default: 1. */
+    maxRetries?: number;
     thinkingLevel?: "minimal" | "low" | "medium" | "high";
     /** Additional images to include after the first image */
     additionalImages?: Array<{ data: string; mimeType: string }>;
@@ -668,9 +674,9 @@ export async function callGeminiVisionWithTools(
     };
   }
 
-  // Vision calls send large payloads — limit retries to 1 to avoid OOM on edge functions.
-  // The client-side withRetry handles broader retry logic.
-  const response = await makeGeminiRequest(model, request, 1, options.timeoutMs ?? DEFAULT_TIMEOUT_MS);
+  // Vision calls send large payloads — limit retries. Set maxRetries=0 in edge functions
+  // with tight time budgets; client-side withRetry handles broader retry logic.
+  const response = await makeGeminiRequest(model, request, options.maxRetries ?? 1, options.timeoutMs ?? DEFAULT_TIMEOUT_MS);
   const text = extractTextResponse(response);
   const functionCall = extractFunctionCall(response);
   const finishReason = response.candidates?.[0]?.finishReason || "UNKNOWN";
