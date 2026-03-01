@@ -164,7 +164,7 @@ const VALID_TREATMENT_VALUES = new Set(TREATMENT_TYPE_OPTIONS.map(o => o.value))
 export default function Evaluations() {
   const { t } = useTranslation();
   useDocumentTitle(t('pageTitle.evaluations'));
-  const { sessions, total, isLoading, isError, newSessionId, newTeethCount } =
+  const { sessions, isLoading, isError, newSessionId, newTeethCount } =
     useEvaluationSessions();
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();

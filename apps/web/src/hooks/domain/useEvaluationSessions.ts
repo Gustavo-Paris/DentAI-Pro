@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation } from 'react-router-dom';
@@ -6,12 +5,6 @@ import { evaluations } from '@/data';
 import { evaluationKeys } from '@/hooks/domain/useEvaluationDetail';
 import { QUERY_STALE_TIMES } from '@/lib/constants';
 import { EVALUATION_STATUS } from '@/lib/evaluation-status';
-
-// ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
-
-const PAGE_SIZE = 20;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -84,20 +77,21 @@ export function useEvaluationSessions() {
     teethCount?: number;
   } | null;
 
-  const [page, setPage] = useState(0);
-
+  // Fetch ALL evaluations (lightweight query — only 8 small columns) and group
+  // by session client-side. ListPage handles pagination of the grouped sessions.
+  // Previous approach fetched 20 evaluations server-side, which produced only
+  // ~5 sessions when each session had ~4 teeth.
   const query = useQuery({
-    queryKey: [...evaluationKeys.sessions(), user?.id, page],
+    queryKey: [...evaluationKeys.sessions(), user?.id],
     queryFn: async () => {
       if (!user) throw new Error('User not authenticated');
-      const { rows, count } = await evaluations.list({
+      const { rows } = await evaluations.list({
         userId: user.id,
-        page,
-        pageSize: PAGE_SIZE,
+        page: 0,
+        pageSize: 1000,
       });
       return {
         sessions: groupBySession(rows as RawEvaluation[]),
-        total: count,
       };
     },
     enabled: !!user,
@@ -105,15 +99,8 @@ export function useEvaluationSessions() {
     placeholderData: keepPreviousData,
   });
 
-  const total = query.data?.total ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-
   return {
     sessions: query.data?.sessions ?? [],
-    total,
-    page,
-    setPage,
-    totalPages,
     isLoading: query.isLoading,
     isError: query.isError,
     newSessionId: locationState?.newSessionId ?? null,
