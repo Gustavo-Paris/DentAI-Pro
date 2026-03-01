@@ -1,11 +1,11 @@
 /**
  * Shared clinical rules extracted from prompt definitions to eliminate duplication.
- * Used by analyze-dental-photo.ts and dsd-analysis.ts.
+ * Used by analyze-dental-photo.ts (unified clinical + aesthetic prompt).
  */
 
 /**
  * Visagism conditional rules: face shape analysis, temperament, smile arc, incisal hierarchy.
- * Shared between analyze-dental-photo and dsd-analysis prompts.
+ * Used by the unified analyze-dental-photo prompt.
  */
 export const VISAGISM_RULES = `=== VISAGISMO (CONDICIONAL A VISIBILIDADE FACIAL) ===
 

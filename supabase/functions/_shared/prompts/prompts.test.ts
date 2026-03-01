@@ -26,6 +26,7 @@ import type { PromptDefinition } from "./types.ts";
 const VALID_MODELS: Record<string, string> = {
   "gemini-3.1-pro-preview": "gemini",
   "gemini-3-pro-image-preview": "gemini",
+  "gemini-3.1-flash-image-preview": "gemini",
   "gemini-2.0-flash": "gemini",
   "claude-sonnet-4-6": "claude",
   "claude-haiku-4-5-20251001": "claude",
@@ -37,7 +38,7 @@ const VALID_MODELS: Record<string, string> = {
 
 Deno.test("All prompts have required metadata fields", () => {
   const prompts = listPrompts();
-  assert(prompts.length >= 6, `Expected at least 6 prompts, got ${prompts.length}`);
+  assert(prompts.length >= 4, `Expected at least 4 prompts, got ${prompts.length}`);
 
   for (const p of prompts) {
     assertExists(p.id, `Prompt missing id`);
@@ -64,9 +65,7 @@ Deno.test("getPrompt retrieves each registered prompt", () => {
   const expectedIds = [
     "analyze-dental-photo",
     "recommend-resin",
-    "dsd-analysis",
     "dsd-simulation",
-    "smile-line-classifier",
     "recommend-cementation",
   ];
   for (const id of expectedIds) {
@@ -132,27 +131,11 @@ Deno.test("recommend-resin uses Claude Sonnet 4.6", () => {
   assertEquals(p.temperature, 0.0);
 });
 
-Deno.test("dsd-analysis uses Gemini 3.1 Pro", () => {
-  const p = getPrompt("dsd-analysis");
-  assertEquals(p.model, "gemini-3.1-pro-preview");
-  assertEquals(p.provider, "gemini");
-  assertEquals(p.mode, "vision-tools");
-});
-
-Deno.test("dsd-simulation uses Gemini 3 Pro Image", () => {
+Deno.test("dsd-simulation uses Nano Banana 2 (primary)", () => {
   const p = getPrompt("dsd-simulation");
-  assertEquals(p.model, "gemini-3-pro-image-preview");
+  assertEquals(p.model, "gemini-3.1-flash-image-preview");
   assertEquals(p.provider, "gemini");
   assertEquals(p.mode, "image-edit");
-});
-
-Deno.test("smile-line-classifier uses Gemini Flash", () => {
-  const p = getPrompt("smile-line-classifier");
-  assertEquals(p.model, "gemini-2.0-flash");
-  assertEquals(p.provider, "gemini");
-  assertEquals(p.mode, "vision");
-  assertEquals(p.temperature, 0.0);
-  assert(p.maxTokens <= 300, "Classifier should have low maxTokens");
 });
 
 Deno.test("recommend-cementation uses Claude Haiku", () => {
@@ -230,33 +213,6 @@ Deno.test("recommend-resin: contains recontorno section", () => {
   assertStringIncludes(system, "RECONTORNO", "Must have recontorno protocol");
 });
 
-Deno.test("dsd-analysis: contains smile line definitions", () => {
-  const p = getPrompt("dsd-analysis");
-  const system = p.system({});
-  assertStringIncludes(system, "alta", "Must define alta smile line");
-  assertStringIncludes(system, "baixa", "Must define baixa smile line");
-  assertStringIncludes(system, "gengiv", "Must reference gingival tissue");
-});
-
-Deno.test("dsd-analysis: contains gengivoplasty conservative bias for média", () => {
-  const p = getPrompt("dsd-analysis");
-  const system = p.system({});
-  // Must have conservative guidance for média smile line gengivoplasty
-  assert(
-    system.includes("média") || system.includes("media"),
-    "Must reference média smile line",
-  );
-});
-
-Deno.test("dsd-analysis: contains lip preservation rule", () => {
-  const p = getPrompt("dsd-analysis");
-  const system = p.system({});
-  assert(
-    system.toLowerCase().includes("lábio") || system.toLowerCase().includes("labio") || system.toLowerCase().includes("lip"),
-    "Must contain lip preservation guidance",
-  );
-});
-
 Deno.test("dsd-simulation: contains lip preservation rule", () => {
   const p = getPrompt("dsd-simulation");
   const system = p.system({
@@ -294,23 +250,6 @@ Deno.test("dsd-simulation: contains pixel preservation rules", () => {
   );
 });
 
-Deno.test("smile-line-classifier: contains 3-zone color test", () => {
-  const p = getPrompt("smile-line-classifier");
-  const system = p.system({});
-  assertStringIncludes(system, "ZONA", "Must define color zones");
-  assertStringIncludes(system, "ROSA", "Must reference pink gum zone");
-  assertStringIncludes(system, "BRANCA", "Must reference white teeth zone");
-});
-
-Deno.test("smile-line-classifier: outputs JSON format", () => {
-  const p = getPrompt("smile-line-classifier");
-  const system = p.system({});
-  assertStringIncludes(system, "smile_line", "Must define smile_line output field");
-  assertStringIncludes(system, "gingival_exposure_mm", "Must define exposure mm field");
-  assertStringIncludes(system, "confidence", "Must define confidence field");
-  assertStringIncludes(system, "JSON", "Must request JSON output");
-});
-
 Deno.test("recommend-cementation: contains HF concentration rules", () => {
   const p = getPrompt("recommend-cementation");
   const system = p.system({} as never);
@@ -328,32 +267,73 @@ Deno.test("recommend-cementation: contains contralateral consistency", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 5. Cross-prompt consistency
+// 5. Unified prompt tests (analyze-dental-photo contains clinical + aesthetic)
 // ---------------------------------------------------------------------------
 
-Deno.test("analyze-dental-photo and dsd-analysis share clinical rules module", () => {
-  const photo = getPrompt("analyze-dental-photo");
-  const dsd = getPrompt("dsd-analysis");
+Deno.test("unified prompt contains clinical AND aesthetic rules", () => {
+  const prompt = getPrompt("analyze-dental-photo");
+  const system = prompt.system({});
 
-  const photoSystem = photo.system({});
-  const dsdSystem = dsd.system({});
+  // Clinical rules present
+  assert(system.includes("Classe I") || system.includes("Classe II") || system.includes("Classe III"), "Missing Black classification");
+  assert(system.includes("substrato") || system.includes("Substrato") || system.includes("SUBSTRATO"), "Missing substrate analysis");
 
-  // Both must include shared clinical rules from clinical-rules.ts
-  const sharedTerms = ["FORMATO FACIAL", "temperamento", "arco"];
-  for (const term of sharedTerms) {
-    assert(
-      photoSystem.includes(term) && dsdSystem.includes(term),
-      `Both prompts must include shared term "${term}"`,
-    );
-  }
+  // Aesthetic rules present
+  assert(system.includes("proporção") || system.includes("PROPORÇÃO") || system.includes("Proporção"), "Missing proportion analysis");
+  assert(system.includes("homólog") || system.includes("HOMÓLOG") || system.includes("Homólog"), "Missing homolog comparison");
+  assert(system.includes("gengivoplastia") || system.includes("GENGIVOPLASTIA") || system.includes("Gengivoplastia"), "Missing gengivoplasty rules");
 });
+
+Deno.test("unified prompt accepts additionalContext param", () => {
+  const prompt = getPrompt("analyze-dental-photo");
+  const user = prompt.user({ imageType: "intraoral", additionalContext: "TEST_CONTEXT" });
+  assert(user.includes("TEST_CONTEXT"), "additionalContext not injected into user prompt");
+});
+
+Deno.test("unified prompt contains smile line classification", () => {
+  const prompt = getPrompt("analyze-dental-photo");
+  const system = prompt.system({});
+
+  // Must include smile line definitions (previously in separate dsd-analysis and smile-line-classifier)
+  assert(
+    system.includes("alta") && system.includes("baixa"),
+    "Must define smile line classifications (alta/baixa)",
+  );
+  assert(
+    system.includes("gengiv") || system.includes("GENGIV"),
+    "Must reference gingival tissue in smile line rules",
+  );
+});
+
+Deno.test("unified prompt contains conservative gengivoplasty bias for média", () => {
+  const prompt = getPrompt("analyze-dental-photo");
+  const system = prompt.system({});
+
+  // Must have conservative guidance for média smile line gengivoplasty (previously in dsd-analysis)
+  assert(
+    system.includes("média") || system.includes("media") || system.includes("MEDIA"),
+    "Must reference média smile line",
+  );
+});
+
+Deno.test("unified prompt contains lip preservation rule", () => {
+  const prompt = getPrompt("analyze-dental-photo");
+  const system = prompt.system({});
+
+  assert(
+    system.toLowerCase().includes("lábio") || system.toLowerCase().includes("labio") || system.toLowerCase().includes("lip"),
+    "Must contain lip preservation guidance (previously in dsd-analysis)",
+  );
+});
+
+// ---------------------------------------------------------------------------
+// 6. Cross-prompt consistency
+// ---------------------------------------------------------------------------
 
 Deno.test("Clinical temperature is 0.0 for deterministic outputs", () => {
   const deterministicPrompts = [
     "analyze-dental-photo",
     "recommend-resin",
-    "dsd-analysis",
-    "smile-line-classifier",
     "recommend-cementation",
   ];
   for (const id of deterministicPrompts) {
@@ -365,13 +345,28 @@ Deno.test("Clinical temperature is 0.0 for deterministic outputs", () => {
 Deno.test("Vision prompts have adequate maxTokens for their complexity", () => {
   const p = getPrompt("analyze-dental-photo");
   assert(p.maxTokens >= 2000, "Photo analysis needs at least 2000 tokens for multi-tooth output");
-
-  const dsd = getPrompt("dsd-analysis");
-  assert(dsd.maxTokens >= 3000, "DSD analysis needs at least 3000 tokens for full analysis");
 });
 
 // ---------------------------------------------------------------------------
-// 6. Smile line classifier parsing tests removed — parseSmileLineClassifierResponse
-//    was in generate-dsd/smile-line-classifier.ts which has been deleted.
-//    Smile line classification is now handled by analyze-dental-photo.
+// 7. Removed prompts are no longer registered
 // ---------------------------------------------------------------------------
+
+Deno.test("dsd-analysis prompt is no longer registered", () => {
+  let threw = false;
+  try {
+    getPrompt("dsd-analysis");
+  } catch {
+    threw = true;
+  }
+  assert(threw, "getPrompt('dsd-analysis') should throw — prompt was removed");
+});
+
+Deno.test("smile-line-classifier prompt is no longer registered", () => {
+  let threw = false;
+  try {
+    getPrompt("smile-line-classifier");
+  } catch {
+    threw = true;
+  }
+  assert(threw, "getPrompt('smile-line-classifier') should throw — prompt was removed");
+});

@@ -2,9 +2,7 @@ import type { PromptDefinition, PromptMode } from './types.ts'
 import { recommendCementation } from './definitions/recommend-cementation.ts'
 import { analyzeDentalPhoto } from './definitions/analyze-dental-photo.ts'
 import { recommendResin } from './definitions/recommend-resin.ts'
-import { dsdAnalysis } from './definitions/dsd-analysis.ts'
 import { dsdSimulation } from './definitions/dsd-simulation.ts'
-import { smileLineClassifier } from './definitions/smile-line-classifier.ts'
 
 /** Widen a specific PromptDefinition<T> to PromptDefinition<unknown> for registry storage */
 function register<T>(def: PromptDefinition<T>): PromptDefinition<unknown> {
@@ -15,9 +13,7 @@ const registry: Record<string, PromptDefinition<unknown>> = {
   [recommendCementation.id]: register(recommendCementation),
   [analyzeDentalPhoto.id]: register(analyzeDentalPhoto),
   [recommendResin.id]: register(recommendResin),
-  [dsdAnalysis.id]: register(dsdAnalysis),
   [dsdSimulation.id]: register(dsdSimulation),
-  [smileLineClassifier.id]: register(smileLineClassifier),
 }
 
 export type PromptId = keyof typeof registry
