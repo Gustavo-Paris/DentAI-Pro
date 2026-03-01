@@ -100,6 +100,16 @@ export const ANALYZE_PHOTO_TOOL: OpenAITool[] = [
                     height: { type: "number", description: "Altura aproximada do dente (0-100%)" }
                   },
                   required: ["x", "y", "width", "height"]
+                },
+                current_issue: {
+                  type: "string",
+                  description: "Problema estético identificado (ex: 'Restauração infiltrada com gap mesial de ~1mm')",
+                  nullable: true
+                },
+                proposed_change: {
+                  type: "string",
+                  description: "Mudança proposta com medidas em mm (ex: 'Fechamento com resina composta ~1.5mm, harmonização com 21')",
+                  nullable: true
                 }
               },
               required: ["tooth", "priority", "treatment_indication"]
@@ -137,9 +147,88 @@ export const ANALYZE_PHOTO_TOOL: OpenAITool[] = [
           indication_reason: {
             type: "string",
             description: "Razão detalhada da indicação de tratamento predominante"
+          },
+
+          // --- DSD aesthetic analysis fields ---
+          facial_midline: {
+            type: "string",
+            enum: ["centrada", "desviada_esquerda", "desviada_direita"],
+            description: "Posição da linha média facial em relação ao filtro labial"
+          },
+          dental_midline: {
+            type: "string",
+            enum: ["alinhada", "desviada_esquerda", "desviada_direita"],
+            description: "Alinhamento da linha média dental em relação à facial"
+          },
+          smile_line: {
+            type: "string",
+            enum: ["alta", "média", "baixa"],
+            description: "Classificação da linha do sorriso (exposição gengival)"
+          },
+          buccal_corridor: {
+            type: "string",
+            enum: ["adequado", "excessivo", "ausente"],
+            description: "Corredor bucal (espaço escuro lateral ao sorrir)"
+          },
+          occlusal_plane: {
+            type: "string",
+            enum: ["nivelado", "inclinado_esquerda", "inclinado_direita"],
+            description: "Plano oclusal em relação à linha bipupilar"
+          },
+          golden_ratio_compliance: {
+            type: "number",
+            description: "Aderência à proporção áurea (0-100). Mede a relação largura aparente central:lateral:canino"
+          },
+          symmetry_score: {
+            type: "number",
+            description: "Score de simetria bilateral do sorriso (0-100)"
+          },
+          lip_thickness: {
+            type: "string",
+            enum: ["fino", "médio", "volumoso"],
+            description: "Espessura labial (influencia visibilidade dos dentes)"
+          },
+          overbite_suspicion: {
+            type: "string",
+            enum: ["sim", "não", "indeterminado"],
+            description: "Suspeita de sobremordida excessiva baseada na foto"
+          },
+          smile_arc: {
+            type: "string",
+            enum: ["consonante", "plano", "reverso"],
+            description: "Arco do sorriso em relação à curvatura do lábio inferior"
+          },
+          face_shape: {
+            type: "string",
+            enum: ["oval", "quadrado", "triangular", "retangular", "redondo"],
+            description: "Formato do rosto (para visagismo). Requer foto facial.",
+            nullable: true
+          },
+          perceived_temperament: {
+            type: "string",
+            enum: ["colérico", "sanguíneo", "melancólico", "fleumático", "misto"],
+            description: "Temperamento percebido (visagismo). Requer foto facial.",
+            nullable: true
+          },
+          recommended_tooth_shape: {
+            type: "string",
+            enum: ["quadrado", "oval", "triangular", "retangular", "natural"],
+            description: "Formato de dente recomendado baseado no visagismo.",
+            nullable: true
+          },
+          visagism_notes: {
+            type: "string",
+            description: "Notas sobre visagismo e personalidade dental. Requer foto facial.",
+            nullable: true
           }
         },
-        required: ["detected", "confidence", "detected_teeth", "observations", "warnings", "dsd_simulation_suitability"],
+        required: [
+          "detected", "confidence", "detected_teeth", "observations", "warnings",
+          "dsd_simulation_suitability",
+          "facial_midline", "dental_midline", "smile_line", "buccal_corridor",
+          "occlusal_plane", "golden_ratio_compliance", "symmetry_score",
+          "lip_thickness", "overbite_suspicion", "smile_arc"
+        ],
         additionalProperties: false
       }
     }

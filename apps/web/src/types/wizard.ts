@@ -23,6 +23,10 @@ export interface DetectedTooth {
     width: number;
     height: number;
   };
+  /** Problema estético identificado (ex: 'Restauração infiltrada com gap mesial de ~1mm') */
+  current_issue?: string;
+  /** Mudança proposta com medidas em mm (ex: 'Fechamento com resina composta ~1.5mm, harmonização com 21') */
+  proposed_change?: string;
 }
 
 export interface PhotoAnalysisResult {
@@ -37,6 +41,22 @@ export interface PhotoAnalysisResult {
   indication_reason?: string;
   /** 0-100 score: how suitable is this photo for DSD image editing (simulation) */
   dsd_simulation_suitability?: number;
+
+  // --- DSD aesthetic analysis fields ---
+  facial_midline?: "centrada" | "desviada_esquerda" | "desviada_direita";
+  dental_midline?: "alinhada" | "desviada_esquerda" | "desviada_direita";
+  smile_line?: "alta" | "média" | "baixa";
+  buccal_corridor?: "adequado" | "excessivo" | "ausente";
+  occlusal_plane?: "nivelado" | "inclinado_esquerda" | "inclinado_direita";
+  golden_ratio_compliance?: number;
+  symmetry_score?: number;
+  lip_thickness?: "fino" | "médio" | "volumoso";
+  overbite_suspicion?: "sim" | "não" | "indeterminado";
+  smile_arc?: "consonante" | "plano" | "reverso";
+  face_shape?: "oval" | "quadrado" | "triangular" | "retangular" | "redondo";
+  perceived_temperament?: "colérico" | "sanguíneo" | "melancólico" | "fleumático" | "misto";
+  recommended_tooth_shape?: "quadrado" | "oval" | "triangular" | "retangular" | "natural";
+  visagism_notes?: string;
 }
 
 export interface ReviewFormData {
