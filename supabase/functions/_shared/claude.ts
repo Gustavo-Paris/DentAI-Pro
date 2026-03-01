@@ -533,6 +533,7 @@ export async function callClaudeWithTools(
     maxTokens?: number;
     forceFunctionName?: string;
     timeoutMs?: number;
+    maxRetries?: number;
   } = {},
 ): Promise<{
   text: string | null;
@@ -564,7 +565,7 @@ export async function callClaudeWithTools(
 
   const response = await makeClaudeRequest(
     request,
-    3,
+    options.maxRetries ?? 3,
     options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
   );
   const text = extractTextResponse(response);
@@ -597,6 +598,7 @@ export async function callClaudeVisionWithTools(
     maxTokens?: number;
     forceFunctionName?: string;
     timeoutMs?: number;
+    maxRetries?: number;
   } = {},
 ): Promise<{
   text: string | null;
@@ -639,7 +641,7 @@ export async function callClaudeVisionWithTools(
 
   const response = await makeClaudeRequest(
     request,
-    3,
+    options.maxRetries ?? 3,
     options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
   );
   const text = extractTextResponse(response);

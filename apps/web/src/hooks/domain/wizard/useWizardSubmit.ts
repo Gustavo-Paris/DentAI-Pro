@@ -389,8 +389,6 @@ export function useWizardSubmit({
       // concurrent edge-function calls that hit the Supabase 60s timeout.
       setSubmissionStep(2);
 
-      const resolvedCount = { value: 0 };
-
       // Pre-compute treatment types and pick one "primary" tooth per group
       const primaryPerGroup: Record<string, string> = {}; // treatmentType -> first tooth
       for (const tooth of teethToProcess) {
@@ -400,9 +398,16 @@ export function useWizardSubmit({
         if (!primaryPerGroup[tt]) primaryPerGroup[tt] = tooth;
       }
 
+      // Track groups where the primary tooth failed — siblings will be promoted
+      const failedPrimaryGroups = new Set<string>();
+
       // Process ALL teeth sequentially — only primary teeth call the AI edge function
       const successfulEvalIds: string[] = [];
+      let loopIndex = 0;
       for (const tooth of teethToProcess) {
+        // Update progress BEFORE processing so the UI shows which tooth is active
+        setCurrentToothIndex(loopIndex);
+
         const toothData = getToothData(analysisResult, tooth);
         const treatmentType = getToothTreatment(tooth, toothTreatments, analysisResult, formData);
         // Normalize treatment type: Gemini sometimes returns English values
@@ -416,13 +421,18 @@ export function useWizardSubmit({
           // Is this tooth the primary (first) in its treatment group?
           const isPrimary = primaryPerGroup[normalizedTreatment] === tooth;
 
+          // If the primary of this group already failed, promote this sibling
+          const promotedAsPrimary = !isPrimary && failedPrimaryGroups.has(normalizedTreatment);
+
           const insertData = buildEvaluationInsertData(tooth, normalizedTreatment, toothData, patientId);
           const evaluation = await wizardData.createEvaluation(insertData);
           evaluationId = evaluation.id;
 
-          // Only call AI edge functions for the primary tooth of each group.
+          // Only call AI edge functions for the primary tooth of each group
+          // (or promoted sibling if primary failed).
           // Non-primary teeth of the same type will be synced via syncGroupProtocols.
           const needsAICall = isPrimary ||
+            promotedAsPrimary ||
             normalizedTreatment === 'implante' ||
             normalizedTreatment === 'coroa' ||
             normalizedTreatment === 'endodontia' ||
@@ -432,13 +442,14 @@ export function useWizardSubmit({
 
           if (needsAICall) {
             await dispatchProtocolForTooth(tooth, normalizedTreatment, evaluation.id, toothData);
+            // Promoted sibling succeeded — clear the failed flag so remaining
+            // siblings won't each redundantly call the AI
+            if (promotedAsPrimary) {
+              failedPrimaryGroups.delete(normalizedTreatment);
+            }
           }
 
           await wizardData.updateEvaluationStatus(evaluation.id, EVALUATION_STATUS.DRAFT);
-
-          // Update progress counter
-          resolvedCount.value++;
-          setCurrentToothIndex(resolvedCount.value - 1);
 
           successCount++;
           treatmentCounts[normalizedTreatment] = (treatmentCounts[normalizedTreatment] || 0) + 1;
@@ -447,11 +458,18 @@ export function useWizardSubmit({
           logger.error(`Failed to process tooth ${tooth}:`, err);
           failedTeeth.push({ tooth, error: err });
 
+          // Track failed primary so next sibling in the group can be promoted
+          if (primaryPerGroup[normalizedTreatment] === tooth) {
+            failedPrimaryGroups.add(normalizedTreatment);
+          }
+
           // Mark the evaluation as error so the user can identify it
           if (evaluationId) {
             await wizardData.updateEvaluationStatus(evaluationId, EVALUATION_STATUS.ERROR);
           }
         }
+
+        loopIndex++;
       }
 
       // Synchronize protocols across teeth in same treatment group

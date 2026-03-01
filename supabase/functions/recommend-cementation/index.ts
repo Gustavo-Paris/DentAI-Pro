@@ -475,6 +475,7 @@ Deno.serve(async (req: Request) => {
             maxTokens: 4000,
             forceFunctionName: "generate_cementation_protocol",
             timeoutMs: 45_000,
+            maxRetries: 0,
           }
         );
         if (response.tokens) {

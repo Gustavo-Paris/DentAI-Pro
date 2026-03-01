@@ -378,6 +378,10 @@ Deno.serve(async (req) => {
             maxTokens: promptDef.maxTokens,
             forceFunctionName: "generate_resin_protocol",
             timeoutMs: 45_000,
+            // No internal retries — edge function has 60s limit, a single 45s
+            // attempt + pre/post-processing already fills ~55s. Client-side
+            // withRetry handles retries at the full-request level.
+            maxRetries: 0,
           }
         );
         if (response.tokens) {
