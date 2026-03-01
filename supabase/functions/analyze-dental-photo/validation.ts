@@ -21,11 +21,45 @@ export function validateImageRequest(data: unknown): { success: boolean; error?:
     }
   }
 
+  // Extract optional additionalPhotos (face, smile45 — base64 data URLs)
+  let additionalPhotos: AnalyzePhotoRequest['additionalPhotos'];
+  if (obj.additionalPhotos && typeof obj.additionalPhotos === 'object') {
+    const ap = obj.additionalPhotos as Record<string, unknown>;
+    additionalPhotos = {};
+    if (typeof ap.face === 'string' && ap.face.length > 0) {
+      additionalPhotos.face = ap.face;
+    }
+    if (typeof ap.smile45 === 'string' && ap.smile45.length > 0) {
+      additionalPhotos.smile45 = ap.smile45;
+    }
+    // If neither field was populated, discard the object
+    if (!additionalPhotos.face && !additionalPhotos.smile45) {
+      additionalPhotos = undefined;
+    }
+  }
+
+  // Extract optional patientPreferences
+  let patientPreferences: AnalyzePhotoRequest['patientPreferences'];
+  if (obj.patientPreferences && typeof obj.patientPreferences === 'object') {
+    const pp = obj.patientPreferences as Record<string, unknown>;
+    patientPreferences = {};
+    const validWhiteningLevels = ['natural', 'white', 'hollywood'];
+    if (typeof pp.whiteningLevel === 'string' && validWhiteningLevels.includes(pp.whiteningLevel)) {
+      patientPreferences.whiteningLevel = pp.whiteningLevel as 'natural' | 'white' | 'hollywood';
+    }
+    // If no valid preferences, discard
+    if (!patientPreferences.whiteningLevel) {
+      patientPreferences = undefined;
+    }
+  }
+
   return {
     success: true,
     data: {
       imageBase64: obj.imageBase64 as string,
       imageType: (obj.imageType as string) || "intraoral",
+      additionalPhotos,
+      patientPreferences,
     },
   };
 }

@@ -67,6 +67,7 @@ Deno.serve(async (req) => {
     }
 
     const data = validation.data;
+    const { additionalPhotos, patientPreferences } = data;
 
     // Server-side validation of image data
     const base64Data = data.imageBase64.includes(",")
@@ -97,14 +98,44 @@ Deno.serve(async (req) => {
     const sanitizedBase64 = isJPEG ? stripJpegExif(base64Data) : base64Data;
     const base64Image = sanitizedBase64;
 
+    // Build context strings from additional photos and preferences
+    let additionalContext = '';
+    if (additionalPhotos?.face) {
+      additionalContext += '\nFoto de ROSTO fornecida: análise de visagismo OBRIGATÓRIA (formato facial, temperamento, formato dental recomendado).';
+    }
+    if (additionalPhotos?.smile45) {
+      additionalContext += '\nFoto de SORRISO 45° fornecida: avaliar corredor bucal, projeção labial e curvatura do arco com mais precisão.';
+    }
+
+    let preferencesContext = '';
+    if (patientPreferences?.whiteningLevel) {
+      preferencesContext += `\nNível de clareamento desejado: ${patientPreferences.whiteningLevel}`;
+    }
+
     // Prompt from management module
     const promptDef = getPrompt('analyze-dental-photo') as PromptDefinition<AnalyzePhotoParams>;
-    const promptParams: AnalyzePhotoParams = { imageType: data.imageType || "intraoral" };
+    const promptParams: AnalyzePhotoParams = {
+      imageType: data.imageType || "intraoral",
+      additionalContext: additionalContext || undefined,
+      preferencesContext: preferencesContext || undefined,
+    };
     const systemPrompt = promptDef.system(promptParams);
     const userPrompt = promptDef.user(promptParams);
 
     // Determine MIME type from magic bytes
     const mimeType = isJPEG ? "image/jpeg" : isPNG ? "image/png" : "image/webp";
+
+    // Build additional images array from face/smile45 photos
+    const additionalImages: Array<{ data: string; mimeType: string }> = [];
+    if (additionalPhotos?.face) {
+      additionalImages.push({ data: extractBase64(additionalPhotos.face), mimeType: 'image/jpeg' });
+    }
+    if (additionalPhotos?.smile45) {
+      additionalImages.push({ data: extractBase64(additionalPhotos.smile45), mimeType: 'image/jpeg' });
+    }
+    if (additionalImages.length > 0) {
+      step(`additionalImages: ${additionalImages.length} extra photo(s)`);
+    }
 
     // Metrics setup
     const metrics = createSupabaseMetrics(
@@ -142,10 +173,11 @@ Deno.serve(async (req) => {
           {
             systemPrompt,
             temperature: 0.0,
-            maxTokens: 3000,
+            maxTokens: 4000,
             forceFunctionName: "analyze_dental_photo",
             timeoutMs: 55_000,
             thinkingLevel: "low",
+            additionalImages: additionalImages.length > 0 ? additionalImages : undefined,
           }
         );
         if (response.tokens) {
@@ -184,9 +216,10 @@ Deno.serve(async (req) => {
             {
               systemPrompt,
               temperature: 0.0,
-              maxTokens: 3000,
+              maxTokens: 4000,
               forceFunctionName: "analyze_dental_photo",
               timeoutMs: 50_000,
+              additionalImages: additionalImages.length > 0 ? additionalImages : undefined,
             }
           );
           if (response.tokens) {
@@ -226,7 +259,9 @@ Deno.serve(async (req) => {
         step("credits: consumed");
 
         // Post-process AI result: normalize, deduplicate, filter, sort, add warnings
-        const result = processAnalysisResult(analysisResult);
+        const result = processAnalysisResult(analysisResult, {
+          hasFacePhoto: !!additionalPhotos?.face,
+        });
 
         // Ensure mandatory clinical safety disclaimer
         const DISCLAIMER = 'Esta análise é assistida por IA e tem caráter de apoio à decisão clínica. Todos os achados devem ser confirmados por exame clínico e radiográfico complementar.';
@@ -255,3 +290,15 @@ Deno.serve(async (req) => {
     return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders, undefined, reqId);
   }
 });
+
+/**
+ * Extract raw base64 data from a data URL or return as-is if already raw base64.
+ * Strips the `data:image/...;base64,` prefix if present.
+ */
+function extractBase64(dataUrl: string): string {
+  const commaIndex = dataUrl.indexOf(',');
+  if (commaIndex !== -1 && dataUrl.startsWith('data:')) {
+    return dataUrl.substring(commaIndex + 1);
+  }
+  return dataUrl;
+}

@@ -39,7 +39,15 @@ function safeNormalizeTreatment(
  * without an explicit 2+ threshold. Align the analyze-dental-photo prompt
  * to also require 2+ signs for restoration detection (prompt agent task).
  */
-export function processAnalysisResult(analysisResult: PhotoAnalysisResult): PhotoAnalysisResult {
+export interface PostProcessingOptions {
+  /** Whether a face photo was provided (enables visagism fields) */
+  hasFacePhoto?: boolean;
+}
+
+export function processAnalysisResult(
+  analysisResult: PhotoAnalysisResult,
+  options: PostProcessingOptions = {},
+): PhotoAnalysisResult {
   // Ensure required fields have defaults and normalize detected_teeth
   // Use the global treatment_indication as fallback instead of always defaulting to "resina"
   // This prevents the inconsistency where the case-level banner says "Facetas de Porcelana"
@@ -59,6 +67,8 @@ export function processAnalysisResult(analysisResult: PhotoAnalysisResult): Phot
     treatment_indication: safeNormalizeTreatment(tooth.treatment_indication, globalIndication),
     indication_reason: tooth.indication_reason ?? undefined,
     tooth_bounds: tooth.tooth_bounds ?? undefined,
+    current_issue: tooth.current_issue ?? undefined,
+    proposed_change: tooth.proposed_change ?? undefined,
   }));
 
   // Deduplicate: the AI model can return the same tooth number multiple times
@@ -205,6 +215,19 @@ export function processAnalysisResult(analysisResult: PhotoAnalysisResult): Phot
     }
   }
 
+  // Aesthetic safety net: if smile_line is "baixa", gengivoplastia is contraindicated
+  // (gums are not visible, so gingival procedures won't improve smile aesthetics)
+  const smileLine = analysisResult.smile_line;
+  if (smileLine === 'baixa') {
+    for (let i = detectedTeeth.length - 1; i >= 0; i--) {
+      const t = detectedTeeth[i];
+      if (t.treatment_indication === 'gengivoplastia') {
+        logger.warn(`Post-processing: removing gengivoplastia for tooth ${t.tooth} — smile line is "baixa" (gums not visible)`);
+        detectedTeeth.splice(i, 1);
+      }
+    }
+  }
+
   // Sort by priority: alta > média > baixa
   const priorityOrder = { alta: 0, média: 1, baixa: 2 };
   detectedTeeth.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
@@ -213,6 +236,17 @@ export function processAnalysisResult(analysisResult: PhotoAnalysisResult): Phot
   let primaryTooth = analysisResult.primary_tooth ?? (detectedTeeth.length > 0 ? detectedTeeth[0].tooth : null);
   if (primaryTooth && !detectedTeeth.some(t => t.tooth === primaryTooth)) {
     primaryTooth = detectedTeeth.length > 0 ? detectedTeeth[0].tooth : null;
+  }
+
+  // Visagism safety net: clear visagism fields if no face photo was provided
+  // (AI may hallucinate face shape and temperament from an intraoral/smile photo alone)
+  const hasFacePhoto = options.hasFacePhoto ?? false;
+  const faceShape = hasFacePhoto ? analysisResult.face_shape : undefined;
+  const perceivedTemperament = hasFacePhoto ? analysisResult.perceived_temperament : undefined;
+  const recommendedToothShape = hasFacePhoto ? analysisResult.recommended_tooth_shape : undefined;
+  const visagismNotes = hasFacePhoto ? analysisResult.visagism_notes : undefined;
+  if (!hasFacePhoto && (analysisResult.face_shape || analysisResult.perceived_temperament)) {
+    logger.warn('Post-processing: clearing visagism fields — no face photo provided');
   }
 
   const result: PhotoAnalysisResult = {
@@ -226,6 +260,24 @@ export function processAnalysisResult(analysisResult: PhotoAnalysisResult): Phot
     treatment_indication: safeNormalizeTreatment(analysisResult.treatment_indication),
     indication_reason: analysisResult.indication_reason ?? undefined,
     dsd_simulation_suitability: analysisResult.dsd_simulation_suitability,
+
+    // Aesthetic analysis fields (from unified analysis)
+    facial_midline: analysisResult.facial_midline,
+    dental_midline: analysisResult.dental_midline,
+    smile_line: analysisResult.smile_line,
+    buccal_corridor: analysisResult.buccal_corridor,
+    occlusal_plane: analysisResult.occlusal_plane,
+    golden_ratio_compliance: analysisResult.golden_ratio_compliance,
+    symmetry_score: analysisResult.symmetry_score,
+    lip_thickness: analysisResult.lip_thickness,
+    overbite_suspicion: analysisResult.overbite_suspicion,
+    smile_arc: analysisResult.smile_arc,
+
+    // Visagism fields (only if face photo was provided)
+    face_shape: faceShape,
+    perceived_temperament: perceivedTemperament,
+    recommended_tooth_shape: recommendedToothShape,
+    visagism_notes: visagismNotes,
   };
 
   // Log detection results for debugging
