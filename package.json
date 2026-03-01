@@ -20,6 +20,9 @@
       "react-dom": "^18.3.1",
       "@types/react": "^18.3.18",
       "@types/react-dom": "^18.3.5"
+    },
+    "patchedDependencies": {
+      "@parisgroup-ai/pageshell@2.16.3": "patches/@parisgroup-ai__pageshell@2.16.3.patch"
     }
   }
 }
