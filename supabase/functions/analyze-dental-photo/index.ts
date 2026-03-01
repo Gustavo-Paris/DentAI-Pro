@@ -144,6 +144,8 @@ Deno.serve(async (req) => {
     );
 
     // Call Gemini 3.1 Pro Vision (primary) with Claude Sonnet fallback
+    // Budget: 60s edge function limit. Track wall clock to give fallback real time.
+    const analysisStartMs = Date.now();
     let analysisResult: PhotoAnalysisResult | null = null;
 
     const parseVisionResult = (result: { text: string | null; functionCall: { name: string; args: Record<string, unknown> } | null }) => {
@@ -175,7 +177,7 @@ Deno.serve(async (req) => {
             temperature: 0.0,
             maxTokens: 4000,
             forceFunctionName: "analyze_dental_photo",
-            timeoutMs: 55_000,
+            timeoutMs: 40_000,
             thinkingLevel: "low",
             additionalImages: additionalImages.length > 0 ? additionalImages : undefined,
           }
@@ -203,6 +205,11 @@ Deno.serve(async (req) => {
         return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
       }
 
+      // Dynamic fallback timeout: use remaining time within 57s budget (3s safety margin)
+      const elapsedMs = Date.now() - analysisStartMs;
+      const fallbackTimeoutMs = Math.max(57_000 - elapsedMs, 8_000);
+      logger.log(`Gemini took ${elapsedMs}ms. Fallback budget: ${fallbackTimeoutMs}ms`);
+
       try {
         step("claude-fallback: calling");
         const fallbackModel = "claude-sonnet-4-6";
@@ -218,7 +225,7 @@ Deno.serve(async (req) => {
               temperature: 0.0,
               maxTokens: 4000,
               forceFunctionName: "analyze_dental_photo",
-              timeoutMs: 50_000,
+              timeoutMs: fallbackTimeoutMs,
               additionalImages: additionalImages.length > 0 ? additionalImages : undefined,
             }
           );
