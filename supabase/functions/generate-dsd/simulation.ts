@@ -11,7 +11,7 @@ import { getPrompt } from "../_shared/prompts/registry.ts";
 import { withMetrics } from "../_shared/prompts/index.ts";
 import type { Params as DsdSimulationParams } from "../_shared/prompts/definitions/dsd-simulation.ts";
 import { createSupabaseMetrics, PROMPT_VERSION } from "../_shared/metrics-adapter.ts";
-// Nano Banana 2 (gemini-3.1-flash-image-preview) used as fallback model
+// Gemini 3 Pro Image used as fallback when Nano Banana 2 (primary) fails
 import type { DSDAnalysis, PatientPreferences } from "./types.ts";
 import { WHITENING_INSTRUCTIONS } from "./types.ts";
 
@@ -491,10 +491,10 @@ Responda APENAS 'SIM' ou 'NÃO'.`,
     logger.log("Simulation generated and uploaded:", fileName, lipsMoved ? "(lips_moved)" : "");
     return { url: fileName, lips_moved: lipsMoved || undefined };
   } catch (err) {
-    // Primary (Gemini 3 Pro) failed — try Nano Banana 2 (Gemini 3.1 Flash Image) as fallback
-    const FALLBACK_MODEL = 'gemini-3.1-flash-image-preview';
+    // Primary (Nano Banana 2) failed — try Gemini 3 Pro Image as fallback
+    const FALLBACK_MODEL = 'gemini-3-pro-image-preview';
     const geminiMsg = err instanceof Error ? err.message : String(err);
-    logger.warn(`Gemini simulation failed: ${geminiMsg}. Trying Nano Banana 2 fallback...`);
+    logger.warn(`Gemini simulation failed: ${geminiMsg}. Trying Gemini 3 Pro fallback...`);
 
     try {
       const remainingMs = Math.max(SIMULATION_TIMEOUT - (Date.now() - simulationStartTime), 15_000);
@@ -523,10 +523,10 @@ Responda APENAS 'SIM' ou 'NÃO'.`,
       });
 
       if (!fallbackResult.imageUrl) {
-        throw new Error("Nano Banana 2 returned no image");
+        throw new Error("Gemini 3 Pro fallback returned no image");
       }
 
-      logger.log("Nano Banana 2 fallback simulation succeeded");
+      logger.log("Gemini 3 Pro fallback simulation succeeded");
 
       // Lip validation for ALL layers (same as primary path)
       let lipsMoved = false;
@@ -534,7 +534,7 @@ Responda APENAS 'SIM' ou 'NÃO'.`,
         const lipsValid = await validateLips(fallbackResult.imageUrl);
         lipsMoved = !lipsValid;
         if (lipsMoved) {
-          logger.warn(`Lip validation FAILED for ${layerType || 'standard'} layer — lips_moved flag set (Nano Banana 2 fallback)`);
+          logger.warn(`Lip validation FAILED for ${layerType || 'standard'} layer — lips_moved flag set (Gemini 3 Pro fallback)`);
         }
       }
 
@@ -551,21 +551,21 @@ Responda APENAS 'SIM' ou 'NÃO'.`,
         });
 
       if (uploadError) {
-        logger.error("Nano Banana 2 upload error:", uploadError);
+        logger.error("Gemini 3 Pro fallback upload error:", uploadError);
         throw new Error(`Storage upload failed: ${uploadError.message}`);
       }
 
-      logger.log("Nano Banana 2 fallback simulation uploaded:", fileName, lipsMoved ? "(lips_moved)" : "");
+      logger.log("Gemini 3 Pro fallback simulation uploaded:", fileName, lipsMoved ? "(lips_moved)" : "");
       return { url: fileName, lips_moved: lipsMoved || undefined };
     } catch (fallbackErr) {
-      // Both Gemini 3 Pro and Nano Banana 2 failed — propagate with context from both
+      // Both Nano Banana 2 and Gemini 3 Pro failed — propagate with context from both
       const fallbackMsg = fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr);
-      logger.warn(`Nano Banana 2 fallback also failed: ${fallbackMsg}`);
+      logger.warn(`Gemini 3 Pro fallback also failed: ${fallbackMsg}`);
 
       if (err instanceof GeminiError) {
-        throw new Error(`GeminiError ${(err as GeminiError).statusCode}: ${(err as GeminiError).message} (NB2 fallback: ${fallbackMsg})`);
+        throw new Error(`GeminiError ${(err as GeminiError).statusCode}: ${(err as GeminiError).message} (Pro fallback: ${fallbackMsg})`);
       }
-      throw new Error(`Simulation failed: ${geminiMsg} (NB2 fallback: ${fallbackMsg})`);
+      throw new Error(`Simulation failed: ${geminiMsg} (Pro fallback: ${fallbackMsg})`);
     }
   }
 }

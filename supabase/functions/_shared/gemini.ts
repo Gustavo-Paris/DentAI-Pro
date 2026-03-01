@@ -704,7 +704,7 @@ export async function callGeminiImageEdit(
 ): Promise<{ imageUrl: string | null; text: string | null; tokens?: TokenUsage }> {
   const apiKey = getApiKey();
 
-  const MODEL = options.model ?? "gemini-3-pro-image-preview";
+  const MODEL = options.model ?? "gemini-3.1-flash-image-preview";
   const url = `${GEMINI_API_BASE}/${MODEL}:generateContent`;
 
   const request = {
