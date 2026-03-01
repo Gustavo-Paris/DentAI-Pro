@@ -29,7 +29,7 @@ const SESSION_STATUS_CONFIG = defineStatusConfig({
 });
 
 const SEARCH_FIELDS: ('patient_name')[] = ['patient_name'];
-const PAGINATION_CONFIG = { defaultPageSize: 20 } as const;
+const PAGINATION_CONFIG = { defaultPageSize: 10 } as const;
 
 const TREATMENT_TYPE_OPTIONS = [
   { value: 'all', labelKey: 'evaluation.treatmentAll' },
