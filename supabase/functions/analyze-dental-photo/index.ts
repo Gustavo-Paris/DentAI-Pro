@@ -177,7 +177,7 @@ Deno.serve(async (req) => {
             temperature: 0.0,
             maxTokens: 4000,
             forceFunctionName: "analyze_dental_photo",
-            timeoutMs: 40_000,
+            timeoutMs: 50_000,
             thinkingLevel: "low",
             additionalImages: additionalImages.length > 0 ? additionalImages : undefined,
           }
@@ -212,7 +212,7 @@ Deno.serve(async (req) => {
 
       try {
         step("claude-fallback: calling");
-        const fallbackModel = "claude-sonnet-4-6";
+        const fallbackModel = "claude-haiku-4-5-20251001";
         const fallbackResult = await withMetrics<{ text: string | null; functionCall: { name: string; args: Record<string, unknown> } | null; finishReason: string }>(metrics, promptDef.id, PROMPT_VERSION, fallbackModel)(async () => {
           const response = await callClaudeVisionWithTools(
             fallbackModel,
@@ -226,6 +226,7 @@ Deno.serve(async (req) => {
               maxTokens: 4000,
               forceFunctionName: "analyze_dental_photo",
               timeoutMs: fallbackTimeoutMs,
+              maxRetries: 0, // Skip circuit breaker — single attempt, client retries handle the rest
               additionalImages: additionalImages.length > 0 ? additionalImages : undefined,
             }
           );
@@ -248,7 +249,11 @@ Deno.serve(async (req) => {
         }
         const fbMsg = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
         logger.error(`Both Gemini and Claude failed. Gemini: ${errMsg}. Claude: ${fbMsg}`);
-        return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
+        return createErrorResponse(
+          `${ERROR_MESSAGES.AI_ERROR} [Gemini: ${errMsg} | Claude: ${fbMsg}]`,
+          500,
+          corsHeaders,
+        );
       }
     }
 
