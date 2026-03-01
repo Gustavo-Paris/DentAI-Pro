@@ -241,8 +241,10 @@ export default function Evaluations() {
     }, { replace: true });
   }, [setSearchParams]);
 
-  // Controlled state — initial values from URL (page/pageSize managed by ListPage internally)
+  // Controlled state — initial values from URL
   const controlledState = useMemo(() => ({
+    page: 1,
+    pageSize: PAGINATION_CONFIG.defaultPageSize,
     sortKey: null,
     sortDirection: 'desc' as const,
     filters: initialFilters,
