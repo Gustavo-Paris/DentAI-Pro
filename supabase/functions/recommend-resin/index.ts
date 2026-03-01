@@ -377,9 +377,9 @@ Deno.serve(async (req) => {
             temperature: 0.0,
             maxTokens: promptDef.maxTokens,
             forceFunctionName: "generate_resin_protocol",
-            timeoutMs: 45_000,
-            // No internal retries — edge function has 60s limit, a single 45s
-            // attempt + pre/post-processing already fills ~55s. Client-side
+            timeoutMs: 50_000,
+            // No internal retries — edge function has 60s limit, a single 50s
+            // attempt + ~5-7s pre/post-processing fits within 60s. Client-side
             // withRetry handles retries at the full-request level.
             maxRetries: 0,
           }
@@ -409,11 +409,22 @@ Deno.serve(async (req) => {
         if (error.statusCode === 429) {
           return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
         }
-        logger.error("Claude API error:", error.message);
+        logger.error(`Claude API error (${error.statusCode}):`, error.message);
+        return createErrorResponse(
+          `${ERROR_MESSAGES.AI_ERROR} [${error.statusCode}: ${error.message}]`,
+          500,
+          corsHeaders,
+          `CLAUDE_${error.statusCode}`,
+        );
       } else {
-        logger.error("AI error:", error);
+        const errMsg = error instanceof Error ? error.message : String(error);
+        logger.error("AI error:", errMsg);
+        return createErrorResponse(
+          `${ERROR_MESSAGES.AI_ERROR} [${errMsg}]`,
+          500,
+          corsHeaders,
+        );
       }
-      return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
     }
 
     // Credits + post-processing wrapped in credit protection (auto-refund on error)

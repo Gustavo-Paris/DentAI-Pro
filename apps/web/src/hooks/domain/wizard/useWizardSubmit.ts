@@ -392,8 +392,19 @@ export function useWizardSubmit({
         {
           maxRetries: 2,
           baseDelay: 2000,
-          onRetry: (attempt, err) => {
-            logger.warn(`Retry ${attempt} for tooth ${tooth}:`, err);
+          onRetry: async (attempt, err) => {
+            // Extract edge function response body for better debugging
+            const context = (err as { context?: Response }).context;
+            if (context && typeof context.json === 'function') {
+              try {
+                const body = await context.json();
+                logger.warn(`Retry ${attempt} for tooth ${tooth}: ${body?.error || body?.message || 'unknown'}`, body);
+              } catch {
+                logger.warn(`Retry ${attempt} for tooth ${tooth}:`, err);
+              }
+            } else {
+              logger.warn(`Retry ${attempt} for tooth ${tooth}:`, err);
+            }
           },
         },
       );
@@ -476,7 +487,18 @@ export function useWizardSubmit({
           treatmentCounts[normalizedTreatment] = (treatmentCounts[normalizedTreatment] || 0) + 1;
           if (evaluationId) successfulEvalIds.push(evaluationId);
         } catch (err) {
-          logger.error(`Failed to process tooth ${tooth}:`, err);
+          // Extract edge function response body for debugging
+          const errContext = (err as { context?: Response }).context;
+          if (errContext && typeof errContext.json === 'function') {
+            try {
+              const body = await errContext.json();
+              logger.error(`Failed to process tooth ${tooth}: ${body?.error || body?.message || 'unknown'}`, body);
+            } catch {
+              logger.error(`Failed to process tooth ${tooth}:`, err);
+            }
+          } else {
+            logger.error(`Failed to process tooth ${tooth}:`, err);
+          }
           failedTeeth.push({ tooth, error: err });
 
           // Track failed primary so next sibling in the group can be promoted
