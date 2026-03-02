@@ -18,12 +18,12 @@ const ANTHROPIC_VERSION = "2023-06-01";
 const DEFAULT_MODEL = "claude-sonnet-4-6";
 const DEFAULT_TIMEOUT_MS = 50_000;
 
-// Fallback models for 5xx errors — after 2 failed attempts, switch model
+// Fallback models for 5xx errors — after 1 failed attempt, switch model
 const FALLBACK_MODELS: Record<string, string> = {
   "claude-sonnet-4-6": "claude-sonnet-4-5-20250929",
   "claude-haiku-4-5-20251001": "claude-sonnet-4-6",
 };
-const FALLBACK_AFTER_ATTEMPT = 2; // switch on 3rd attempt (0-indexed)
+const FALLBACK_AFTER_ATTEMPT = 1; // switch on 2nd attempt (0-indexed)
 
 // ---------------------------------------------------------------------------
 // Error class (mirrors GeminiError)

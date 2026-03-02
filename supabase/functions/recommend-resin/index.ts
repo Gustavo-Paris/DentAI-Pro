@@ -377,11 +377,11 @@ Deno.serve(async (req) => {
             temperature: 0.0,
             maxTokens: promptDef.maxTokens,
             forceFunctionName: "generate_resin_protocol",
-            timeoutMs: 45_000,
-            // No internal retries — edge function has 60s limit. Haiku 4.5
-            // typically responds in 10-15s. Client-side
-            // withRetry handles retries at the full-request level.
-            maxRetries: 0,
+            timeoutMs: 15_000,
+            // Haiku 4.5 responds in 10-15s. 15s timeout fails fast on incidents.
+            // 3 attempts (15s + 2s + 15s + 4s + 15s = 51s) fits 60s limit.
+            // Fallback to Sonnet 4.6 on 2nd attempt.
+            maxRetries: 2,
           }
         );
         if (response.tokens) {

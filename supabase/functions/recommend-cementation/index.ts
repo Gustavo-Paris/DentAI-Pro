@@ -474,8 +474,11 @@ Deno.serve(async (req: Request) => {
             temperature: 0.0,
             maxTokens: 4000,
             forceFunctionName: "generate_cementation_protocol",
-            timeoutMs: 45_000,
-            maxRetries: 0,
+            timeoutMs: 15_000,
+            // Haiku 4.5 responds in 10-15s. 15s timeout fails fast on incidents.
+            // 3 attempts (15s + 2s + 15s + 4s + 15s = 51s) fits 60s Supabase limit.
+            // Fallback to Sonnet 4.6 kicks in on 3rd attempt.
+            maxRetries: 2,
           }
         );
         if (response.tokens) {
@@ -499,11 +502,18 @@ Deno.serve(async (req: Request) => {
         if (error.statusCode === 429) {
           return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
         }
-        logger.error("Claude API error:", error.message);
-      } else {
-        logger.error("AI error:", error);
+        logger.error(`[${reqId}] Claude API error (${error.statusCode}):`, error.message);
+        return createErrorResponse(
+          `${ERROR_MESSAGES.AI_ERROR} [${error.statusCode}: ${error.message.slice(0, 100)}]`,
+          500, corsHeaders, undefined, reqId,
+        );
       }
-      return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
+      const errMsg = error instanceof Error ? error.message : String(error);
+      logger.error(`[${reqId}] AI error:`, errMsg);
+      return createErrorResponse(
+        `${ERROR_MESSAGES.AI_ERROR} [${errMsg.slice(0, 150)}]`,
+        500, corsHeaders, undefined, reqId,
+      );
     }
 
     // Credits + post-processing wrapped in credit protection (auto-refund on error)
@@ -548,7 +558,11 @@ Deno.serve(async (req: Request) => {
       },
     );
   } catch (error) {
-    logger.error(`[${reqId}] recommend-cementation error:`, error);
-    return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders, undefined, reqId);
+    const errMsg = error instanceof Error ? error.message : String(error);
+    logger.error(`[${reqId}] recommend-cementation error:`, errMsg);
+    return createErrorResponse(
+      `${ERROR_MESSAGES.PROCESSING_ERROR} [${errMsg.slice(0, 150)}]`,
+      500, corsHeaders, undefined, reqId,
+    );
   }
 });
