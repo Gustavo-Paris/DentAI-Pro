@@ -3,6 +3,7 @@ import { getSupabaseClient, authenticateRequest, isAuthError } from "../_shared/
 import { sanitizeForPrompt } from "../_shared/validation.ts";
 import { logger } from "../_shared/logger.ts";
 import { callClaudeWithTools, ClaudeError, type OpenAIMessage, type OpenAITool } from "../_shared/claude.ts";
+import { callGeminiWithTools, GeminiError } from "../_shared/gemini.ts";
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 import { withCreditProtection, isInsufficientCreditsResponse } from "../_shared/withCreditProtection.ts";
 import { getPrompt, withMetrics } from "../_shared/prompts/index.ts";
@@ -464,45 +465,73 @@ Deno.serve(async (req: Request) => {
     ];
 
     let protocol: CementationProtocol;
+    let usedProvider: 'claude' | 'gemini' = 'claude';
     try {
-      const claudeResult = await withMetrics<{ text: string | null; functionCall: { name: string; args: Record<string, unknown> } | null; finishReason: string }>(metrics, prompt.id, PROMPT_VERSION, prompt.model)(async () => {
-        const response = await callClaudeWithTools(
-          prompt.model,
+      let aiResult: { functionCall: { name: string; args: Record<string, unknown> } | null; text: string | null };
+      try {
+        const claudeResult = await withMetrics<{ text: string | null; functionCall: { name: string; args: Record<string, unknown> } | null; finishReason: string }>(metrics, prompt.id, PROMPT_VERSION, prompt.model)(async () => {
+          const response = await callClaudeWithTools(
+            prompt.model,
+            messages,
+            tools as OpenAITool[],
+            {
+              temperature: 0.0,
+              maxTokens: 4000,
+              forceFunctionName: "generate_cementation_protocol",
+              timeoutMs: 45_000,
+              maxRetries: 1,
+            }
+          );
+          if (response.tokens) {
+            logger.info('claude_tokens', { operation: 'recommend-cementation', ...response.tokens });
+          }
+          return {
+            result: { text: response.text, functionCall: response.functionCall, finishReason: response.finishReason },
+            tokensIn: response.tokens?.promptTokenCount ?? 0,
+            tokensOut: response.tokens?.candidatesTokenCount ?? 0,
+          };
+        });
+        aiResult = claudeResult;
+      } catch (claudeErr) {
+        const isRateLimit = claudeErr instanceof ClaudeError && claudeErr.statusCode === 429;
+        if (isRateLimit) {
+          return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
+        }
+        logger.warn(`[${reqId}] Claude failed, falling back to Gemini Flash: ${claudeErr instanceof Error ? claudeErr.message : String(claudeErr)}`);
+        usedProvider = 'gemini';
+        const geminiResult = await callGeminiWithTools(
+          'gemini-2.0-flash',
           messages,
           tools as OpenAITool[],
           {
             temperature: 0.0,
             maxTokens: 4000,
             forceFunctionName: "generate_cementation_protocol",
-            timeoutMs: 45_000,
-            // Haiku normally responds in 10-20s but can spike to 30s+.
-            // 2 attempts (45s + 2s + 45s = 92s) fits 150s edge function limit.
-            // Fallback to Sonnet 4.6 on 2nd attempt via FALLBACK_MODELS.
+            timeoutMs: 55_000,
             maxRetries: 1,
           }
         );
-        if (response.tokens) {
-          logger.info('claude_tokens', { operation: 'recommend-cementation', ...response.tokens });
+        if (geminiResult.tokens) {
+          logger.info('gemini_tokens', { operation: 'recommend-cementation-fallback', ...geminiResult.tokens });
         }
-        return {
-          result: { text: response.text, functionCall: response.functionCall, finishReason: response.finishReason },
-          tokensIn: response.tokens?.promptTokenCount ?? 0,
-          tokensOut: response.tokens?.candidatesTokenCount ?? 0,
-        };
-      });
+        aiResult = geminiResult;
+      }
 
-      if (!claudeResult.functionCall) {
-        logger.error("No function call in Claude response");
+      if (!aiResult.functionCall) {
+        logger.error(`No function call in ${usedProvider} response`);
         return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
       }
 
-      protocol = parseAIResponse(CementationProtocolSchema, claudeResult.functionCall.args, 'recommend-cementation') as CementationProtocol;
+      protocol = parseAIResponse(CementationProtocolSchema, aiResult.functionCall.args, 'recommend-cementation') as CementationProtocol;
     } catch (error) {
       if (error instanceof ClaudeError) {
-        if (error.statusCode === 429) {
-          return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
-        }
         logger.error(`[${reqId}] Claude API error (${error.statusCode}):`, error.message);
+        return createErrorResponse(
+          `${ERROR_MESSAGES.AI_ERROR} [${error.statusCode}: ${error.message.slice(0, 100)}]`,
+          500, corsHeaders, undefined, reqId,
+        );
+      } else if (error instanceof GeminiError) {
+        logger.error(`[${reqId}] Gemini API error (${error.statusCode}):`, error.message);
         return createErrorResponse(
           `${ERROR_MESSAGES.AI_ERROR} [${error.statusCode}: ${error.message.slice(0, 100)}]`,
           500, corsHeaders, undefined, reqId,

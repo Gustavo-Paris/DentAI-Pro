@@ -3,6 +3,7 @@ import { getSupabaseClient, authenticateRequest, isAuthError } from "../_shared/
 import { validateEvaluationData, sanitizeFieldsForPrompt, type EvaluationData } from "../_shared/validation.ts";
 import { logger } from "../_shared/logger.ts";
 import { callClaudeWithTools, ClaudeError, type OpenAIMessage, type OpenAITool } from "../_shared/claude.ts";
+import { callGeminiWithTools, GeminiError } from "../_shared/gemini.ts";
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 import { withCreditProtection, isInsufficientCreditsResponse } from "../_shared/withCreditProtection.ts";
 import { getPrompt } from "../_shared/prompts/registry.ts";
@@ -367,54 +368,86 @@ Deno.serve(async (req) => {
     ];
 
     let recommendation: RecommendResinResponseParsed;
+    let usedProvider: 'claude' | 'gemini' = 'claude';
     try {
-      const claudeResult = await withMetrics<{ text: string | null; functionCall: { name: string; args: Record<string, unknown> } | null; finishReason: string }>(metrics, promptDef.id, PROMPT_VERSION, promptDef.model)(async () => {
-        const response = await callClaudeWithTools(
-          promptDef.model,
+      // Try Claude first
+      let aiResult: { functionCall: { name: string; args: Record<string, unknown> } | null; text: string | null };
+      try {
+        const claudeResult = await withMetrics<{ text: string | null; functionCall: { name: string; args: Record<string, unknown> } | null; finishReason: string }>(metrics, promptDef.id, PROMPT_VERSION, promptDef.model)(async () => {
+          const response = await callClaudeWithTools(
+            promptDef.model,
+            messages,
+            tools,
+            {
+              temperature: 0.0,
+              maxTokens: promptDef.maxTokens,
+              forceFunctionName: "generate_resin_protocol",
+              timeoutMs: 45_000,
+              maxRetries: 1,
+            }
+          );
+          if (response.tokens) {
+            logger.info('claude_tokens', { operation: 'recommend-resin', ...response.tokens });
+          }
+          return {
+            result: { text: response.text, functionCall: response.functionCall, finishReason: response.finishReason },
+            tokensIn: response.tokens?.promptTokenCount ?? 0,
+            tokensOut: response.tokens?.candidatesTokenCount ?? 0,
+          };
+        });
+        aiResult = claudeResult;
+      } catch (claudeErr) {
+        // Claude failed — fallback to Gemini Flash
+        const isRateLimit = claudeErr instanceof ClaudeError && claudeErr.statusCode === 429;
+        if (isRateLimit) {
+          return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
+        }
+        logger.warn(`Claude failed, falling back to Gemini Flash: ${claudeErr instanceof Error ? claudeErr.message : String(claudeErr)}`);
+        usedProvider = 'gemini';
+        const geminiResult = await callGeminiWithTools(
+          'gemini-2.0-flash',
           messages,
           tools,
           {
             temperature: 0.0,
             maxTokens: promptDef.maxTokens,
             forceFunctionName: "generate_resin_protocol",
-            timeoutMs: 45_000,
-            // Haiku normally responds in 10-20s but can spike to 30s+.
-            // 2 attempts (45s + 2s + 45s = 92s) fits 150s edge function limit.
-            // Fallback to Sonnet 4.6 on 2nd attempt via FALLBACK_MODELS.
+            timeoutMs: 55_000,
             maxRetries: 1,
           }
         );
-        if (response.tokens) {
-          logger.info('claude_tokens', { operation: 'recommend-resin', ...response.tokens });
+        if (geminiResult.tokens) {
+          logger.info('gemini_tokens', { operation: 'recommend-resin-fallback', ...geminiResult.tokens });
         }
-        return {
-          result: { text: response.text, functionCall: response.functionCall, finishReason: response.finishReason },
-          tokensIn: response.tokens?.promptTokenCount ?? 0,
-          tokensOut: response.tokens?.candidatesTokenCount ?? 0,
-        };
-      });
+        aiResult = geminiResult;
+      }
 
-      if (!claudeResult.functionCall) {
-        logger.error("No function call in Claude response");
+      if (!aiResult.functionCall) {
+        logger.error(`No function call in ${usedProvider} response`);
         return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders);
       }
 
-      recommendation = parseAIResponse(RecommendResinResponseSchema, claudeResult.functionCall.args, 'recommend-resin');
+      recommendation = parseAIResponse(RecommendResinResponseSchema, aiResult.functionCall.args, 'recommend-resin');
 
       if (!recommendation.protocol) {
-        logger.warn(`[${reqId}] Claude omitted protocol object — response will lack stratification details`);
+        logger.warn(`[${reqId}] ${usedProvider} omitted protocol object — response will lack stratification details`);
       }
     } catch (error) {
       if (error instanceof ClaudeError) {
-        if (error.statusCode === 429) {
-          return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
-        }
         logger.error(`Claude API error (${error.statusCode}):`, error.message);
         return createErrorResponse(
           `${ERROR_MESSAGES.AI_ERROR} [${error.statusCode}: ${error.message}]`,
           500,
           corsHeaders,
           `CLAUDE_${error.statusCode}`,
+        );
+      } else if (error instanceof GeminiError) {
+        logger.error(`Gemini API error (${error.statusCode}):`, error.message);
+        return createErrorResponse(
+          `${ERROR_MESSAGES.AI_ERROR} [${error.statusCode}: ${error.message}]`,
+          500,
+          corsHeaders,
+          `GEMINI_${error.statusCode}`,
         );
       } else {
         const errMsg = error instanceof Error ? error.message : String(error);
