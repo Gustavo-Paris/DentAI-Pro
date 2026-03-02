@@ -304,7 +304,7 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
       )}
 
       {/* Background simulation generating card — granular layer progress */}
-      {isSimulationGenerating && !simulationImageUrl && (() => {
+      {(isSimulationGenerating || layersGenerating) && (() => {
         const totalLayers = determineLayersNeeded(analysis).length;
         const currentLayer = layerGenerationProgress; // 0-based: 0 = generating L1, 1 = generating L2, etc.
         const layerLabels: Record<number, string> = {

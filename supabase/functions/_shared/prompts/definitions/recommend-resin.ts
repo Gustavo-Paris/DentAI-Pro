@@ -143,9 +143,9 @@ RESINAS RECOMENDADAS POR CAMADA:
 | Dentes Clareados   | 1a: W3/W4(Estelite Bianco) — 2a: BL(Forma) — 3a: BL-L(Empress) |
 
 GLOSSARIO DE SIGLAS — USAR EXATAMENTE NA DESCRICAO DE CADA CAMADA (OBRIGATORIO):
-- WB = White Body (corpo branco/neutro) — NUNCA escrever "Warm Bleach"
+- WB = White Body (corpo branco/neutro) — NUNCA escrever "Warm Bleach". ⚠️ WB NÃO é equivalente a A2 — são shades DISTINTAS. Descrever como "WB (White Body)", NUNCA como "WB — cor A2 equivalente"
 - CT = Clear Translucent — NUNCA "Cool Tone"
-- WE = White Enamel
+- WE = White Enamel — ⚠️ WE NÃO é equivalente a A2E — são shades DISTINTAS. Descrever como "WE (White Enamel)", NUNCA como "WE — equivalente A2E"
 - MW = Milky White (esmalte natural sem clareamento)
 - JE = Jewel Enamel (SOMENTE Estelite Sigma Quick)
 - BL-L = Bleach Light (SOMENTE Empress Direct)
@@ -396,7 +396,7 @@ NIVEL ESTETICO ("estético"/"alto"/"muito alto" OU Fechamento de Diastema) - 5 c
    - Técnica: Incremento fino contra tira de poliéster, adaptar com espátula. Manter contato proximal firme. Fotopolimerizar 20s.
    - INCLUIR SEMPRE que houver: fechamento de diastema, restauração Classe III/IV, reconstrução proximal.
    - ⚠️ PROIBIDO para Cristas Proximais: Z350 (qualquer shade exceto WE), FORMA, Vittra. SOMENTE Harmonize XLE ou Empress BL-L/BL-XL ou Palfique LX5 WE.
-3. Dentina/Corpo: Resina de CORPO ou DENTINA — WB(FORMA), WB(Z350), DA1/DA2(Vittra APS), D BL-L(Empress). Cor do substrato ou mais clara conforme necessidade de clareamento. 0.5-1.0mm. Opaco NAO e camada separada - e shade dentro da dentina!
+3. Dentina/Corpo: Resina de CORPO ou DENTINA — WB(FORMA), WB(Z350), DA1/DA2(Vittra APS), D BL-L(Empress). COLUNA COR: "WB (White Body)" se resultado mais branco OU "A2" (shade VITA) equivalente ao substrato — WB e A2 são opções DISTINTAS, NÃO equivalentes. 0.5-1.0mm. Opaco NAO e camada separada - e shade dentro da dentina!
    - Objetivo: Reproduzir volume e opacidade da dentina natural. Dar CORPO e SATURAÇÃO à restauração.
    - Técnica: Incrementos oblíquos de 1-2mm. Reproduzir mamelos com projeções verticais na incisal (se aplicável). Fotopolimerizar 20s cada incremento.
    - Substrato ESCURECIDO: shades opacos (OA1/OA2/OA3/OB1/WO) como 1º incremento 0.5-1mm
@@ -410,7 +410,7 @@ NIVEL ESTETICO ("estético"/"alto"/"muito alto" OU Fechamento de Diastema) - 5 c
    - Sub-opções: Halo Opaco (Opallis Flow/Empress Opal — 0.1mm borda incisal), Corante Branco (corante White), Corante Ambar (corante Honey/Amber — linhas finas), Corante Azul (corante Blue — translucidez adicional em bordas incisais).
    - Sugerir quando: anterior estético com necessidade de naturalidade, mimetismo com adjacentes, nível alto/muito alto.
    - Omitir quando: posteriores rotineiros, Classe I/V, nível funcional, ou quando resultado satisfatório sem efeitos.
-5. Esmalte Vestibular Final: 0.3mm, priorizar polimento SUPERIOR. PROIBIDO resinas translúcidas (CT/GT/Trans)! SOMENTE shades de esmalte.
+5. Esmalte Vestibular Final: 0.3mm, SEMPRE resinas premium — MW (Estelite Omega) para resultado natural OU WE (Palfique LX5) para mais branco. PROIBIDO resinas translúcidas (CT/GT/Trans)! SOMENTE shades de esmalte.
    - Objetivo: Camada final de esmalte mimetizando brilho natural e integração com dente adjacente. Cor 1 tom mais claro que corpo conforme preferência estética do paciente.
    - Técnica: Incremento único cobrindo face vestibular terço médio e incisal. Aplicar com espátula de inserção, pressionando levemente contra parede vestibular. Fotopolimerizar 20s. Priorizar polimento superior com Sof-Lex para brilho espelhado.
    - P1 (OBRIGATORIO quando disponível): Palfique LX5 (WE), Estelite Omega (WE/MW). MW para resultado natural. Clareados: BL1/BL2(Estelite Omega), W3/W4(Estelite Bianco). ⚠️ Z350 para Esmalte Final SOMENTE se P1 indisponível — shade A1E/A2E (Z350 não possui BL1 — usar WE como alternativa mais clara)
@@ -430,10 +430,10 @@ CORES DE ESMALTE POR LINHA:
 | Vittra APS          | Trans, Trans OPL, Trans N, EA1, EA2       |
 | Palfique LX5        | WE, CE, BW, SW, A1-A3, B1                 |
 ALTERNATIVA SIMPLIFICADA (2 camadas):
-- Corpo: WB(FORMA), WB(Z350), DA1(Empress) ou DA1(Vittra) — cor de dentina/corpo.
+- Corpo: WB(FORMA), WB(Z350), DA1(Empress) ou DA1(Vittra). COLUNA COR: "WB (White Body)" se resultado mais branco OU shade VITA equivalente ao substrato. ⚠️ WB NÃO corresponde a "corpo A2" — são shades distintas.
   - Dentes clareados: W3 ou W4 (Estelite Bianco) como corpo, ou shade de dentina mais clara.
   - Evitar usar cores de esmalte puro (WE, CT, Trans) como corpo — são para camada final.
-- Esmalte Final: Escolher UMA ÚNICA resina — WE(Palfique LX5) para resultado mais claro, OU MW(Estelite Omega) para resultado natural. ⚠️ PROIBIDO usar MW + WE juntas na alternativa (ambas são esmalte final, uma substitui a outra). Dentes clareados: usar W3/W4(Estelite Bianco) como opção ÚNICA de esmalte.
+- Esmalte Final: Escolher UMA ÚNICA resina — WE(Palfique LX5) para resultado mais branco, OU MW(Estelite Omega) para resultado natural. ⚠️ PROIBIDO usar MW + WE juntas na alternativa (ambas são esmalte final, uma substitui a outra). ⚠️ WE NÃO corresponde a "esmalte A2E" — são shades distintas. Dentes clareados: usar W3/W4(Estelite Bianco) como opção ÚNICA de esmalte.
 - Dentes clareados: Corpo W3/W4(Estelite Bianco) + Esmalte WE. Ou BL(Forma)/BL-L(Empress) como alternativa.
 - Cristas (se 3+ camadas na alternativa): XLE(Harmonize) ou BL-L(Empress). Evitar JE para cristas.
 - TN = Translucent Natural = cor de ESMALTE, usar apenas como camada final.
@@ -489,12 +489,11 @@ FOTOPOLIMERIZACAO FINAL OBRIGATORIA: Após TODAS as camadas concluídas e ANTES 
 2. Contorno: Diamantadas FF (3118FF/2135FF), alta rotação com spray, movimentos leves sem pressão
    - 3118FF: Refinamento de contorno proximal, face vestibular E remoção de excessos PALATINOS/LINGUAIS
    - 2135FF: Refinamento de bordas incisais e superfícies planas
-3. Discos Sof-Lex (SEQUENCIA LARANJA — padrão):
-   - Laranja Escuro (Grosso) -> Laranja Médio (Médio) -> Laranja Claro (Fino) -> Amarelo (Ultrafino)
+3. Discos Sof-Lex (sequência completa — ambas igualmente válidas):
+   - Sequência Vermelha: Vermelho Escuro (Grosso) -> Vermelho Médio -> Vermelho Claro (Fino) -> Vermelho Ultrafino
+   - Sequência Laranja: Laranja Escuro (Grosso) -> Laranja Médio (Médio) -> Laranja Claro (Fino) -> Amarelo (Ultrafino)
    - Baixa rotação, manter úmido, movimentos unidirecionais, sem pressão excessiva
-   ALTERNATIVA Sof-Lex (SEQUENCIA VERMELHA — para maior agressividade):
-   - Vermelho Escuro (Grosso) -> Vermelho Médio -> Vermelho Claro (Fino) -> Vermelho Ultrafino
-   - Mesma sequência de uso, indicada para resinas com maior rugosidade inicial
+   - NÃO designar uma como "padrão" nem outra como "alternativa" — ambas clinicamente corretas
 4. Interproximal: Tiras de lixa, verificar ponto de contato
 5. Borrachas: DHPro/American Burrs, 40-60s cada, baixa rotação, sem aquecer
 6. Brilho final: Diamond Excel + feltro, baixa rotação, 40-60s
@@ -550,7 +549,7 @@ Ordem obrigatória: 1. Aumento Incisal, 2. Cristas Proximais, 3. Dentina/Corpo, 
 === REGRAS PARA ALERTS E WARNINGS ===
 ALERTS: Alertas técnicos, substituições de shade, pontos de atenção. Formato livre.
 WARNINGS (O que NÃO fazer): EXCLUSIVAMENTE proibições. CADA item DEVE começar com "NÃO" ou "NUNCA" ou "PROIBIDO".
-PROIBIDO gerar warning sobre sequência vermelha Sof-Lex — ambas sequências (laranja e vermelha) são válidas e clinicamente corretas.
+PROIBIDO gerar warning OU alert sobre sequência Sof-Lex — NÃO mencionar "sequência LARANJA padrão", NÃO escrever "NÃO polir com Sof-Lex vermelho", NÃO designar preferência entre sequências. Ambas (laranja e vermelha) são IGUALMENTE válidas. No protocolo, mencionar apenas "Sof-Lex (sequência completa)" sem designar cor como padrão.
 Exemplos CORRETOS: "NÃO usar ácido 30s em dentina", "NUNCA aplicar borda incisal 100% opaca", "PROIBIDO bisel amplo em esmalte"
 Exemplos ERRADOS (NAO GERAR): "Considerar clareamento prévio", "Mock-up recomendado", "Translucidez incisal obrigatória"
 Se um item é uma RECOMENDAÇÃO → vai em ALERTS, não em WARNINGS.`,

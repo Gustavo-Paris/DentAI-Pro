@@ -20,6 +20,7 @@ import {
 } from '@parisgroup-ai/pageshell/primitives';
 import { Loader2, Plus, Wrench, Wand2 } from 'lucide-react';
 import { logger } from '@/lib/logger';
+import { toI18nKeySuffix } from '@/lib/utils';
 
 // Types re-exported from canonical location for backward compatibility
 export type { TreatmentType, PendingTooth, SubmitTeethPayload } from '@/types/evaluation';
@@ -178,7 +179,7 @@ export function AddTeethModal({
                           <Badge
                             className={`text-xs ${priorityStyles[tooth.priority || 'média']}`}
                           >
-                            {t(`common.priority${(tooth.priority || 'média').charAt(0).toUpperCase() + (tooth.priority || 'média').slice(1)}`)}
+                            {t(`common.priority${toI18nKeySuffix(tooth.priority || 'média')}`)}
                           </Badge>
                         </div>
                         <div className="text-xs text-muted-foreground mb-2">

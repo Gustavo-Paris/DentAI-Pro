@@ -7,7 +7,7 @@ import {
   Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
 } from '@parisgroup-ai/pageshell/primitives';
 import { Check, CircleDot, Plus, Wrench, Wand2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, toI18nKeySuffix } from '@/lib/utils';
 import { trackEvent } from '@/lib/analytics';
 import type { DetectedTooth, TreatmentType } from '../ReviewAnalysisStep';
 import { TEETH, TREATMENT_LABEL_KEYS, TREATMENT_BORDER_COLORS } from './review-constants';
@@ -114,7 +114,7 @@ export const ToothSelectionCard = memo(function ToothSelectionCard({
                   tooth.priority === 'média' && 'bg-warning',
                   tooth.priority === 'baixa' && 'bg-muted-foreground',
                 )} />
-                {t(`common.priority${tooth.priority.charAt(0).toUpperCase() + tooth.priority.slice(1)}`)}
+                {t(`common.priority${toI18nKeySuffix(tooth.priority)}`)}
               </Badge>
             </div>
 

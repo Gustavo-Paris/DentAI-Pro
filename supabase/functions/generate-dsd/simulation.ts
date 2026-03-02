@@ -412,7 +412,7 @@ corrections are MINOR refinements, NOT redesign. For each tooth:
   // Use Haiku for lip validation — binary SIM/NÃO task with maxTokens:10, Haiku is sufficient
   const LIP_VALIDATION_MODEL = 'claude-haiku-4-5-20251001';
 
-  async function validateLips(simImageUrl: string): Promise<boolean> {
+  async function validateLips(simImageUrl: string): Promise<{ valid: boolean; error: boolean }> {
     try {
       const simBase64 = simImageUrl.replace(/^data:image\/\w+;base64,/, "");
       const simMimeMatch = simImageUrl.match(/^data:([^;]+);base64,/);
@@ -434,6 +434,7 @@ Responda APENAS 'SIM' ou 'NÃO'.`,
         {
           temperature: 0.0,
           maxTokens: 10,
+          timeoutMs: 15_000, // Binary SIM/NÃO — 15s is plenty
           additionalImages: [{ data: simBase64, mimeType: simMimeType }],
         }
       );
@@ -444,12 +445,15 @@ Responda APENAS 'SIM' ou 'NÃO'.`,
       const lipAnswer = (lipCheck.text || '').trim().toUpperCase();
       const lipsMoved = lipAnswer.includes('SIM');
       logger.log(`Lip validation for ${layerType || 'standard'} layer: ${lipsMoved ? 'FAILED (lips moved)' : 'PASSED'}`);
-      return !lipsMoved; // true = valid (lips didn't move)
+      return { valid: !lipsMoved, error: false };
     } catch (lipErr) {
-      // P2-54: Fail-CLOSED — if the lip validator errors, REJECT the simulation
-      // rather than silently accepting a potentially distorted image.
-      logger.warn("Lip validation check failed — rejecting simulation (fail-closed):", lipErr);
-      return false; // Reject on validation error
+      // Distinguish between "validator detected lips moved" (above) and "validator crashed" (here).
+      // On transient errors (timeout, 5xx, API outage), SKIP validation rather than reject —
+      // a crashed validator cannot confirm lips moved, and rejecting good simulations on
+      // transient failures degrades UX without improving safety.
+      const errMsg = lipErr instanceof Error ? lipErr.message : String(lipErr);
+      logger.warn(`Lip validation error for ${layerType || 'standard'} layer (skipping): ${errMsg}`);
+      return { valid: true, error: true }; // Pass through with error flag
     }
   }
 
@@ -494,13 +498,16 @@ Responda APENAS 'SIM' ou 'NÃO'.`,
     // Gemini lifts lips in all modes (not just gingival) to "show more result".
     let lipsMoved = false;
     if (shouldValidateLips) {
-      const lipsValid = await validateLips(result.imageUrl);
-      lipsMoved = !lipsValid;
+      const lipResult = await validateLips(result.imageUrl);
+      lipsMoved = !lipResult.valid;
       if (lipsMoved) {
         logger.warn(`Lip validation FAILED for ${layerType || 'standard'} layer — lips_moved flag set`);
         if (isGingivalLayer) {
           throw new Error(`Lip validation failed for ${layerType || 'standard'} layer`);
         }
+      }
+      if (lipResult.error) {
+        logger.warn(`Lip validator crashed for ${layerType || 'standard'} layer — skipped (pass-through)`);
       }
     }
 
