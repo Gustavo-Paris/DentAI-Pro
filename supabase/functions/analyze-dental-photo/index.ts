@@ -177,7 +177,7 @@ Deno.serve(async (req) => {
             temperature: 0.0,
             maxTokens: 4000,
             forceFunctionName: "analyze_dental_photo",
-            timeoutMs: 40_000,
+            timeoutMs: 35_000,
             thinkingLevel: "low",
             maxRetries: 0, // Single attempt — client-side retries handle failures. Avoids burning 50s*2 in a 60s function.
             additionalImages: additionalImages.length > 0 ? additionalImages : undefined,
