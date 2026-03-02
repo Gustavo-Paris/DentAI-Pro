@@ -1388,7 +1388,14 @@
           "ariaLabel": "Linhas de proporção DSD",
           "midline": "Linha Média",
           "goldenRatio": "Proporção Áurea",
-          "smileArc": "Arco do Sorriso"
+          "smileArc": "Arco do Sorriso",
+          "toothCentral": "Central",
+          "toothLateral": "Lateral",
+          "toothCanine": "Canino",
+          "toothPremolar": "Pré-molar",
+          "ratioTooltip": "Proporção {{inner}}/{{outer}}: {{ratio}} (ideal: {{ideal}}). Quando a relação de largura entre dentes adjacentes se aproxima de 1.618 (proporção áurea), o sorriso é visualmente mais harmônico.",
+          "midlineAdjusted": "Ajustada",
+          "resetMidline": "Restaurar posição original"
         },
         "layerComparison": {
           "title": "Comparar Camadas",

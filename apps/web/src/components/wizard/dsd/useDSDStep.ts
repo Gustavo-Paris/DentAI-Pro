@@ -124,6 +124,11 @@ export function useDSDStep({
     });
   }, []);
 
+  // E5c: Manual midline adjustment offset (in % of image width)
+  const [midlineOffset, setMidlineOffset] = useState(0);
+  const isMidlineAdjusted = midlineOffset !== 0;
+  const resetMidline = useCallback(() => setMidlineOffset(0), []);
+
   const { invokeFunction } = useAuthenticatedFetch();
   const { user } = useAuth();
   const { t } = useTranslation();
@@ -527,6 +532,8 @@ export function useDSDStep({
     annotationDimensions,
     toothBounds,
     visibleProportionLayers,
+    midlineOffset,
+    isMidlineAdjusted,
 
     // Derived
     analysisSteps,
@@ -545,6 +552,8 @@ export function useDSDStep({
       layerGen.retryFailedLayer(layerType, result?.analysis),
     setShowAnnotations,
     toggleProportionLayer,
+    setMidlineOffset,
+    resetMidline,
     setShowWhiteningComparison: whitening.setShowWhiteningComparison,
     handleSelectWhiteningLevel: whitening.handleSelectWhiteningLevel,
     handleSelectLayer: layerGen.handleSelectLayer,

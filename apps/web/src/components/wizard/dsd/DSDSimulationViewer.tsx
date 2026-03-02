@@ -37,6 +37,10 @@ interface DSDSimulationViewerProps {
   analysis?: DSDAnalysis;
   visibleProportionLayers: Set<ProportionLayerType>;
   onToggleProportionLayer: (layer: ProportionLayerType) => void;
+  midlineOffset?: number;
+  isMidlineAdjusted?: boolean;
+  onMidlineOffsetChange?: (deltaX: number) => void;
+  onResetMidline?: () => void;
   gingivoplastyApproved?: boolean | null;
   hasFacePhoto?: boolean;
   isFaceMockupGenerating?: boolean;
@@ -68,6 +72,10 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
   analysis,
   visibleProportionLayers,
   onToggleProportionLayer,
+  midlineOffset,
+  isMidlineAdjusted,
+  onMidlineOffsetChange,
+  onResetMidline,
   gingivoplastyApproved,
   hasFacePhoto,
   isFaceMockupGenerating,
@@ -87,8 +95,8 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
   const isActiveFaceMockup = layers[activeLayerIndex]?.type === 'face-mockup';
   const beforeImage = isActiveFaceMockup && facePhotoBase64 ? facePhotoBase64 : imageBase64;
 
-  // Proportion overlay lines — computed from tooth bounds and analysis
-  const proportionLines = useProportionLines(toothBounds, analysis);
+  // Proportion overlay lines — computed from tooth bounds, analysis, and manual midline offset
+  const proportionLines = useProportionLines(toothBounds, analysis, midlineOffset);
 
   return (
     <div className="space-y-3">
@@ -119,7 +127,19 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
               >
                 <Ruler className="w-3 h-3 mr-1" />
                 {t('components.wizard.dsd.proportionOverlay.midline')}
+                {isMidlineAdjusted && <span className="ml-1 opacity-60">*</span>}
               </Button>
+              {isMidlineAdjusted && visibleProportionLayers.has('midline') && onResetMidline && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onResetMidline}
+                  className="text-xs px-2 text-muted-foreground"
+                  title={t('components.wizard.dsd.proportionOverlay.resetMidline')}
+                >
+                  <RefreshCw className="w-3 h-3" />
+                </Button>
+              )}
               <Button
                 variant={visibleProportionLayers.has('goldenRatio') ? 'default' : 'outline'}
                 size="sm"
@@ -275,6 +295,8 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
                   visibleLayers={visibleProportionLayers}
                   containerWidth={annotationDimensions.width}
                   containerHeight={annotationDimensions.height}
+                  isMidlineAdjusted={isMidlineAdjusted}
+                  onMidlineOffsetChange={onMidlineOffsetChange}
                 />
               )}
             </>

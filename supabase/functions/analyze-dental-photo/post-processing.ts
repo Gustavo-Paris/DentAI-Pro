@@ -28,6 +28,7 @@ function safeNormalizeTreatment(
  * - Uses global treatment_indication as fallback for individual teeth
  * - Deduplicates teeth by tooth number
  * - Strips suspected false-positive diastema diagnoses
+ * - Strips suspected false-positive cervical lesions on premolars (natural concavity)
  * - Filters out lower teeth when photo predominantly shows upper arch
  * - Removes Black classification for aesthetic cases
  * - Sorts by priority
@@ -216,6 +217,53 @@ export function processAnalysisResult(
     }
   }
 
+  // Safety net: Strip suspected false-positive cervical lesion diagnoses on premolars.
+  // Premolars (14/15/24/25/34/35/44/45) have naturally deeper cervical concavity that
+  // the AI can misinterpret as LCNC (abfração/erosão). Require stronger evidence
+  // on premolars: the notes/current_issue must mention 2+ distinct clinical signs.
+  const premolarNumbers = new Set(['14', '15', '24', '25', '34', '35', '44', '45']);
+  let filteredCervicalWarning: string | null = null;
+  const removedCervicalTeeth: string[] = [];
+
+  for (let i = detectedTeeth.length - 1; i >= 0; i--) {
+    const t = detectedTeeth[i];
+    if (!premolarNumbers.has(t.tooth)) continue;
+
+    const cavClass = (t.cavity_class || '').toLowerCase();
+    const enamel = (t.enamel_condition || '').toLowerCase();
+    const notes = (t.notes || '').toLowerCase();
+    const issue = (t.current_issue || '').toLowerCase();
+    const reason = (t.indication_reason || '').toLowerCase();
+    const text = `${notes} ${issue} ${reason}`;
+
+    // Only check premolars diagnosed as cervical lesion (Classe V without existing restoration)
+    const isCervicalLesion = cavClass.includes('classe v') && !enamel.includes('restauração prévia');
+    const isLCNC = text.includes('lcnc') || text.includes('abfração') || text.includes('abfracao')
+      || text.includes('erosão') || text.includes('erosao') || text.includes('abrasão')
+      || text.includes('abrasao') || text.includes('lesão cervical') || text.includes('lesao cervical');
+
+    if (!isCervicalLesion && !isLCNC) continue;
+
+    // Count distinct clinical signs mentioned in the text
+    const signs = [
+      text.includes('defeito') || text.includes('nicho') || text.includes('entalhadura') || text.includes('concavidade'),
+      text.includes('discoloração') || text.includes('discoloracao') || text.includes('amarelad') || text.includes('escurecid') || text.includes('dentina exposta'),
+      text.includes('convexidade') || text.includes('côncav') || text.includes('concav') || text.includes('contorno') && text.includes('alter'),
+      text.includes('polid') || text.includes('rugos') || text.includes('textura'),
+      text.includes('recessão') || text.includes('recessao') || text.includes('migra'),
+    ].filter(Boolean).length;
+
+    if (signs < 2) {
+      logger.warn(`Post-processing: removing suspected false-positive cervical lesion on premolar ${t.tooth} — only ${signs} clinical sign(s) mentioned (need 2+)`);
+      removedCervicalTeeth.push(t.tooth);
+      detectedTeeth.splice(i, 1);
+    }
+  }
+
+  if (removedCervicalTeeth.length > 0) {
+    filteredCervicalWarning = `Lesão cervical em pré-molar(es) ${removedCervicalTeeth.join(', ')} removida — evidência insuficiente (concavidade cervical pode ser anatomia normal). Verifique clinicamente.`;
+  }
+
   // Filter out lower teeth when photo predominantly shows upper arch
   // This is a backend guardrail because the AI sometimes ignores prompt rules
   const upperTeeth = detectedTeeth.filter(t => {
@@ -356,6 +404,11 @@ export function processAnalysisResult(
   // Add warning about stripped diastema false positives
   if (filteredDiastemaWarning) {
     result.warnings.push(filteredDiastemaWarning);
+  }
+
+  // Add warning about stripped cervical lesion false positives
+  if (filteredCervicalWarning) {
+    result.warnings.push(filteredCervicalWarning);
   }
 
   // Add warning if multiple teeth detected

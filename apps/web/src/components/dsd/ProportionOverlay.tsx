@@ -1,3 +1,4 @@
+import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ProportionLines } from '@/hooks/domain/dsd/useProportionLines';
 
@@ -12,6 +13,10 @@ interface ProportionOverlayProps {
   visibleLayers: Set<ProportionLayerType>;
   containerWidth: number;
   containerHeight: number;
+  /** Whether the midline has been manually adjusted (shows indicator). */
+  isMidlineAdjusted?: boolean;
+  /** Callback when the user drags the midline. Delta is in percentage (0-100). */
+  onMidlineOffsetChange?: (deltaX: number) => void;
 }
 
 // =============================================================================
@@ -76,6 +81,21 @@ function buildSmoothPath(points: Array<{ x: number; y: number }>): string {
 }
 
 // =============================================================================
+// Helpers — tooth position labels
+// =============================================================================
+
+/** Map positional index (from midline outward) to a human-readable label. */
+function toothPositionLabel(index: number, t: (key: string) => string): string {
+  const labels = [
+    t('components.wizard.dsd.proportionOverlay.toothCentral'),
+    t('components.wizard.dsd.proportionOverlay.toothLateral'),
+    t('components.wizard.dsd.proportionOverlay.toothCanine'),
+    t('components.wizard.dsd.proportionOverlay.toothPremolar'),
+  ];
+  return labels[index] ?? `#${index + 1}`;
+}
+
+// =============================================================================
 // Component
 // =============================================================================
 
@@ -84,8 +104,12 @@ export function ProportionOverlay({
   visibleLayers,
   containerWidth,
   containerHeight,
+  isMidlineAdjusted,
+  onMidlineOffsetChange,
 }: ProportionOverlayProps) {
   const { t } = useTranslation();
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = useRef<{ startClientX: number; startMidlinePct: number } | null>(null);
 
   if (!containerWidth || !containerHeight) return null;
 
@@ -100,6 +124,8 @@ export function ProportionOverlay({
   const showSmileArc =
     visibleLayers.has('smileArc') && lines.smileArc.length >= 2;
 
+  const canDragMidline = showMidline && !!onMidlineOffsetChange;
+
   return (
     <svg
       aria-label={t('components.wizard.dsd.proportionOverlay.ariaLabel')}
@@ -109,31 +135,93 @@ export function ProportionOverlay({
       viewBox={`0 0 ${containerWidth} ${containerHeight}`}
     >
       {/* ----------------------------------------------------------------- */}
-      {/* Midline — red dashed vertical line                                */}
+      {/* Midline — red dashed vertical line (draggable when enabled)       */}
       {/* ----------------------------------------------------------------- */}
-      {showMidline && (
-        <g>
-          <line
-            x1={px(lines.midline!.x)}
-            y1={py(lines.midline!.yStart)}
-            x2={px(lines.midline!.x)}
-            y2={py(lines.midline!.yEnd)}
-            stroke={COLORS.midline}
-            strokeWidth={1.5}
-            strokeDasharray="6 4"
-            strokeOpacity={0.85}
-          />
-          <text
-            x={px(lines.midline!.x) + 6}
-            y={py(lines.midline!.yStart) + 12}
-            fill={COLORS.midline}
-            fontSize={10}
-            fontWeight={600}
-          >
-            {t('components.wizard.dsd.proportionOverlay.midline')}
-          </text>
-        </g>
-      )}
+      {showMidline && (() => {
+        const midX = px(lines.midline!.x);
+        const yStart = py(lines.midline!.yStart);
+        const yEnd = py(lines.midline!.yEnd);
+        const handleRadius = 6;
+
+        const handlePointerDown = (e: React.PointerEvent) => {
+          if (!canDragMidline) return;
+          e.preventDefault();
+          e.stopPropagation();
+          (e.target as SVGElement).setPointerCapture(e.pointerId);
+          dragStartRef.current = { startClientX: e.clientX, startMidlinePct: lines.midline!.x };
+          setIsDragging(true);
+        };
+        const handlePointerMove = (e: React.PointerEvent) => {
+          if (!isDragging || !dragStartRef.current || !canDragMidline) return;
+          const deltaPixels = e.clientX - dragStartRef.current.startClientX;
+          const deltaPct = (deltaPixels / containerWidth) * 100;
+          onMidlineOffsetChange!(deltaPct);
+        };
+        const handlePointerUp = (e: React.PointerEvent) => {
+          if (!isDragging) return;
+          (e.target as SVGElement).releasePointerCapture(e.pointerId);
+          setIsDragging(false);
+          dragStartRef.current = null;
+        };
+
+        return (
+          <g style={canDragMidline ? { pointerEvents: 'auto' } : undefined}>
+            <line
+              x1={midX}
+              y1={yStart}
+              x2={midX}
+              y2={yEnd}
+              stroke={COLORS.midline}
+              strokeWidth={1.5}
+              strokeDasharray="6 4"
+              strokeOpacity={0.85}
+            />
+            {/* Drag handle — visible circle at top of midline */}
+            {canDragMidline && (
+              <circle
+                cx={midX}
+                cy={yStart + handleRadius + 2}
+                r={handleRadius}
+                fill={COLORS.midline}
+                fillOpacity={isDragging ? 0.9 : 0.6}
+                stroke="white"
+                strokeWidth={1.5}
+                style={{ cursor: isDragging ? 'grabbing' : 'grab', touchAction: 'none' }}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                onPointerCancel={handlePointerUp}
+              />
+            )}
+            {/* Wider invisible hit area for easier drag on mobile */}
+            {canDragMidline && (
+              <line
+                x1={midX}
+                y1={yStart}
+                x2={midX}
+                y2={yEnd}
+                stroke="transparent"
+                strokeWidth={20}
+                style={{ cursor: isDragging ? 'grabbing' : 'ew-resize', touchAction: 'none' }}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                onPointerCancel={handlePointerUp}
+              />
+            )}
+            <text
+              x={midX + 6}
+              y={yStart + 12}
+              fill={COLORS.midline}
+              fontSize={10}
+              fontWeight={600}
+            >
+              {t('components.wizard.dsd.proportionOverlay.midline')}
+              {isMidlineAdjusted ? ` (${t('components.wizard.dsd.proportionOverlay.midlineAdjusted')})` : ''}
+            </text>
+          </g>
+        );
+      })()}
 
       {/* ----------------------------------------------------------------- */}
       {/* Golden Ratio — amber/green brackets                               */}
@@ -218,18 +306,43 @@ export function ProportionOverlay({
                 strokeOpacity={0.85}
               />
 
-              {/* Ratio label below brackets */}
-              <text
-                x={(cx1 + cx2) / 2}
-                y={bracketY + capH + 14}
-                textAnchor="middle"
-                fill={color}
-                fontSize={10}
-                fontWeight={600}
-              >
-                {bracket.ratio.toFixed(2)}
-                {isGood ? ' \u2713' : ` (${bracket.ideal})`}
-              </text>
+              {/* Ratio label below brackets — shows tooth pair + ratio */}
+              <g>
+                <title>
+                  {t('components.wizard.dsd.proportionOverlay.ratioTooltip', {
+                    inner: bracket.innerTooth ?? toothPositionLabel(bracket.innerIndex, t),
+                    outer: bracket.outerTooth ?? toothPositionLabel(bracket.innerIndex + 1, t),
+                    ratio: bracket.ratio.toFixed(2),
+                    ideal: String(bracket.ideal),
+                  })}
+                </title>
+                {/* Tooth pair label (e.g., "11/12") */}
+                <text
+                  x={(cx1 + cx2) / 2}
+                  y={bracketY + capH + 12}
+                  textAnchor="middle"
+                  fill={color}
+                  fontSize={9}
+                  fontWeight={500}
+                  opacity={0.8}
+                >
+                  {bracket.innerTooth && bracket.outerTooth
+                    ? `${bracket.innerTooth}/${bracket.outerTooth}`
+                    : toothPositionLabel(bracket.innerIndex, t) + '/' + toothPositionLabel(bracket.innerIndex + 1, t)}
+                </text>
+                {/* Ratio value */}
+                <text
+                  x={(cx1 + cx2) / 2}
+                  y={bracketY + capH + 24}
+                  textAnchor="middle"
+                  fill={color}
+                  fontSize={10}
+                  fontWeight={600}
+                >
+                  {bracket.ratio.toFixed(2)}
+                  {isGood ? ' \u2713' : ` (${bracket.ideal})`}
+                </text>
+              </g>
             </g>
           );
         })}

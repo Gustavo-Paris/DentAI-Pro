@@ -38,6 +38,10 @@ interface DSDAnalysisViewProps {
   annotationDimensions: { width: number; height: number };
   visibleProportionLayers: Set<ProportionLayerType>;
   onToggleProportionLayer: (layer: ProportionLayerType) => void;
+  midlineOffset?: number;
+  isMidlineAdjusted?: boolean;
+  onMidlineOffsetChange?: (deltaX: number) => void;
+  onResetMidline?: () => void;
   showWhiteningComparison: boolean;
   whiteningComparison: Record<string, string>;
   isComparingWhitening: boolean;
@@ -85,6 +89,10 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
   annotationDimensions,
   visibleProportionLayers,
   onToggleProportionLayer,
+  midlineOffset,
+  isMidlineAdjusted,
+  onMidlineOffsetChange,
+  onResetMidline,
   showWhiteningComparison,
   whiteningComparison,
   isComparingWhitening,
@@ -389,6 +397,10 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
             analysis={analysis}
             visibleProportionLayers={visibleProportionLayers}
             onToggleProportionLayer={onToggleProportionLayer}
+            midlineOffset={midlineOffset}
+            isMidlineAdjusted={isMidlineAdjusted}
+            onMidlineOffsetChange={onMidlineOffsetChange}
+            onResetMidline={onResetMidline}
             gingivoplastyApproved={gingivoplastyApproved}
             hasFacePhoto={hasFacePhoto}
             isFaceMockupGenerating={isFaceMockupGenerating}

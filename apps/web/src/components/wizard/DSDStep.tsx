@@ -124,6 +124,10 @@ export function DSDStep(props: DSDStepProps) {
         annotationDimensions={state.annotationDimensions}
         visibleProportionLayers={state.visibleProportionLayers}
         onToggleProportionLayer={state.toggleProportionLayer}
+        midlineOffset={state.midlineOffset}
+        isMidlineAdjusted={state.isMidlineAdjusted}
+        onMidlineOffsetChange={state.setMidlineOffset}
+        onResetMidline={state.resetMidline}
         showWhiteningComparison={state.showWhiteningComparison}
         whiteningComparison={state.whiteningComparison}
         isComparingWhitening={state.isComparingWhitening}

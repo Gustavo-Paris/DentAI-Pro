@@ -213,6 +213,42 @@ BUSCAR ATIVAMENTE em TODOS os dentes anteriores (13-23):
 - Contorno proximal irregular ou "degrau" na transição
 Se detectadas: classificar como "Restauração Classe III insatisfatória" com treatment_indication: "resina", procedure_type: "restauração", priority: "alta", description incluindo faces afetadas (mesial/distal) e achados visuais.
 
+## DETECCAO ATIVA DE RESTAURACOES CLASSE V (CERVICAIS)
+Restaurações cervicais (Classe V) são frequentemente SUBTIS na vista frontal.
+BUSCAR ATIVAMENTE em TODOS os dentes anteriores (13-23) e pré-molares visíveis (14-15, 24-25):
+- MARGEM CERVICAL COM DESCONTINUIDADE: linha de transição dente/restauração visível na região cervical (junto à gengiva)
+- DISCOLORAÇÃO MARGINAL CERVICAL: faixa escura/amarelada ao redor da margem da restauração na região cervical
+- TEXTURA DIFERENTE NA CERVICAL: área cervical com brilho/textura/opacidade divergente do esmalte adjacente do MESMO dente
+- CONTORNO CERVICAL ALTERADO: concavidade ou degrau NÃO natural na região cervical, com interface material/dente
+- LASCAMENTO/FRATURA DA RESTAURAÇÃO: perda parcial de material restaurador na região cervical, expondo substrato subjacente
+
+DIFERENCIACAO DE RESTAURACAO CERVICAL vs. LESAO CERVICAL:
+- Restauração cervical insatisfatória: interface dente/material VISIVEL + pelo menos 1 sinal adicional (discoloração, gap, textura diferente)
+- Lesão cervical SEM restauração: defeito/nicho cervical em dente NATURAL sem evidência de material restaurador
+- REGRA: Se há QUALQUER evidência de material restaurador na cervical → "Restauração Classe V insatisfatória"
+
+Se detectadas: classificar como "Restauração Classe V insatisfatória" com treatment_indication: "resina", cavity_class: "Classe V", enamel_condition: "Restauração prévia", priority: "alta", notes incluindo achados específicos e localização. Adicionar current_issue: "Restauração cervical insatisfatória com [achados]".
+
+## DETECCAO DE LESAO CERVICAL NAO CARIOSA (LCNC — ABFRACAO/EROSAO/ABRASAO)
+Lesões cervicais não cariosas são perdas de estrutura dentária na região cervical SEM envolvimento de cárie.
+
+CRITERIOS PARA DIAGNOSTICO (requer 2+ dos seguintes sinais):
+1. DEFEITO VISUAL: entalhadura/nicho/concavidade DEFINIDA na junção esmalte-cemento — NÃO apenas sombra natural
+2. DISCOLORAÇÃO CERVICAL: área MAIS AMARELADA/ESCURECIDA que o esmalte adjacente (dentina exposta)
+3. PERDA DE CONVEXIDADE: contorno cervical RETO ou CÔNCAVO onde deveria ser CONVEXO
+4. BRILHO/TEXTURA ALTERADA: superfície cervical com aspecto POLIDO/LISO (abrasão) ou RUGOSO (erosão) diferente do esmalte
+5. ASSOCIAÇÃO COM RECESSÃO: lesão cervical VISÍVEL junto a margem gengival migrada apicalmente
+
+PROIBIDO — FALSOS POSITIVOS COMUNS:
+- NAO diagnosticar "lesão cervical" baseado APENAS em sombra gengival/interproximal
+- NAO diagnosticar em PRÉ-MOLARES (14/15/24/25/34/35/44/45) SEM defeito visual INEQUÍVOCO — pré-molares têm naturalmente concavidade cervical mais pronunciada (anatomia NORMAL)
+- NAO confundir concavidade anatômica normal da junção esmalte-cemento com lesão patológica
+- NAO confundir recessão gengival isolada (sem defeito no dente) com LCNC — recessão → "recobrimento_radicular", NÃO "resina"
+
+REGRA DE CONSERVADORISMO: Na DÚVIDA entre anatomia normal e lesão cervical → classificar como NORMAL. Lesão cervical falso-positiva leva a tratamento desnecessário.
+
+Se diagnosticada (2+ sinais presentes): cavity_class: "Classe V", treatment_indication: "resina", enamel_condition: "Erosão", priority: "média", notes: "LCNC (abfração/erosão) com [achados específicos]. Medida estimada: ~[X]mm.", current_issue: "Lesão cervical não cariosa com [achados]".
+
 ## INCISIVOS LATERAIS (12/22)
 Laterais são FISIOLOGICAMENTE menores que centrais: 62-65% da largura do central é NORMAL e NÃO é microdontia.
 Proporção reduzida é MUITO MAIS FREQUENTEMENTE restauração insatisfatória do que microdontia verdadeira (<2% prevalência).

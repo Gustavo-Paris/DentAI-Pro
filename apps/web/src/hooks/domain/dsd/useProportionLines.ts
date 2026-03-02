@@ -29,6 +29,12 @@ export interface GoldenRatioBracket {
   ideal: 1.618;
   /** Y position for the bracket label in % */
   y: number;
+  /** FDI number of the inner (wider) tooth, if available */
+  innerTooth?: string;
+  /** FDI number of the outer (narrower) tooth, if available */
+  outerTooth?: string;
+  /** Positional index from midline outward (0 = central, 1 = lateral, etc.) */
+  innerIndex: number;
 }
 
 export interface SmileArcPoint {
@@ -67,6 +73,8 @@ const GOLDEN_RATIO = 1.618;
 export function computeProportionLines(
   bounds: ToothBoundsPct[] | undefined | null,
   _analysis?: DSDAnalysis | null,
+  /** Manual X offset to apply to the auto-detected midline (in %). */
+  midlineOffset?: number,
 ): ProportionLines {
   const empty: ProportionLines = {
     midline: null,
@@ -79,10 +87,13 @@ export function computeProportionLines(
   // --- Sort by X for consistent processing ---
   const sorted = [...bounds].sort((a, b) => a.x - b.x);
 
-  // --- Midline ---
+  // --- Midline (with optional manual offset) ---
   const midline = computeMidline(sorted);
+  if (midlineOffset) {
+    midline.x += midlineOffset;
+  }
 
-  // --- Golden ratio brackets ---
+  // --- Golden ratio brackets (recalculated with adjusted midline) ---
   const goldenRatio =
     sorted.length >= 4 ? computeGoldenRatioBrackets(sorted, midline) : [];
 
@@ -222,6 +233,9 @@ function addBrackets(
       ratio,
       ideal: GOLDEN_RATIO as 1.618,
       y,
+      innerTooth: inner.tooth,
+      outerTooth: outer.tooth,
+      innerIndex: i,
     });
   }
 }
@@ -253,9 +267,10 @@ function computeSmileArc(sorted: ToothBoundsPct[]): SmileArcPoint[] {
 export function useProportionLines(
   bounds: ToothBoundsPct[] | undefined | null,
   analysis?: DSDAnalysis | null,
+  midlineOffset?: number,
 ): ProportionLines {
   return useMemo(
-    () => computeProportionLines(bounds, analysis),
-    [bounds, analysis],
+    () => computeProportionLines(bounds, analysis, midlineOffset),
+    [bounds, analysis, midlineOffset],
   );
 }
