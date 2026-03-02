@@ -1,7 +1,7 @@
 ---
 title: "AGENTS.md (supabase)"
 created: 2026-02-23
-updated: 2026-02-25
+updated: 2026-03-02
 author: Team AURIA
 status: published
 tags:
@@ -28,15 +28,15 @@ related:
 
 ## Project Context
 
-Backend do AURIA: 14 edge functions em Deno que proveem análise dental com IA, recomendações clínicas, billing (Stripe), e conformidade LGPD. Toda lógica compartilhada vive em `functions/_shared/`.
+Backend do AURIA: 15 edge functions em Deno que proveem análise dental com IA, recomendações clínicas, billing (Stripe), e conformidade LGPD. Toda lógica compartilhada vive em `functions/_shared/`.
 
 ## Key Locations
 
 | Diretório | Conteúdo |
 |-----------|----------|
-| `functions/` | 14 edge functions |
+| `functions/` | 15 edge functions |
 | `functions/_shared/` | Middleware, AI clients, credits, rate limiting, prompts |
-| `functions/_shared/prompts/definitions/` | Definições de prompts IA (6 prompts) |
+| `functions/_shared/prompts/definitions/` | Definições de prompts IA (4 prompts) |
 | `migrations/` | 20+ migrações SQL (schema, RLS, indexes) |
 | `config.toml` | Configuração Supabase (auth, JWT, functions) |
 
@@ -44,8 +44,9 @@ Backend do AURIA: 14 edge functions em Deno que proveem análise dental com IA, 
 
 | Função | Tipo | AI | Descrição |
 |--------|------|-----|-----------|
-| `analyze-dental-photo` | vision-tools | Gemini + Claude fallback | Detecta cavidades, manchas, fraturas |
-| `generate-dsd` | multi-step | Gemini vision + image-edit + Haiku | Digital Smile Design completo |
+| `analyze-dental-photo` | vision-tools | Gemini + Claude fallback | Análise unificada clínica + estética (cores, cavidades, proporções, DSD) |
+| `check-photo-quality` | vision | Gemini | Validação de qualidade de foto antes da análise |
+| `generate-dsd` | simulation-only | NB2 (primary) + G3PI (fallback) + Haiku (lip validation) | Simulação DSD (requer existingAnalysis da análise unificada) |
 | `recommend-resin` | text-tools | Claude tool-calling | Protocolo de estratificação de resina |
 | `recommend-cementation` | text-tools | Claude tool-calling | Protocolo de cimentação cerâmica |
 | `stripe-webhook` | webhook | — | Sync assinaturas e créditos |
@@ -99,7 +100,7 @@ Backend do AURIA: 14 edge functions em Deno que proveem análise dental com IA, 
 | **Gemini vision** | OBRIGATÓRIO `thinkingLevel: "low"` — "medium" causa WORKER_LIMIT (150s timeout) |
 | **Claude recommendations** | Usar Haiku 4.5 (~10-15s), NÃO Sonnet (~50s, timeout 60s) |
 | **Tool-calling** | `tool_choice: { type: "tool", name }` para forçar structured output |
-| **DSD simulation** | Apenas Gemini 3 Pro — outros modelos produzem resultado artificial |
+| **DSD simulation** | Nano Banana 2 (primary) → Gemini 3 Pro Image (fallback). `callGeminiImageEdit` default model is NB2 |
 | **Timeout** | Edge functions têm 60s timeout. FunctionsFetchError no browser = timeout |
 
 ### Credits & Rate Limiting
@@ -122,16 +123,14 @@ Backend do AURIA: 14 edge functions em Deno que proveem análise dental com IA, 
 
 ## Prompts
 
-6 definições em `_shared/prompts/definitions/`:
+4 definições em `_shared/prompts/definitions/`:
 
 | Prompt | Provider | Modo | Model |
 |--------|----------|------|-------|
 | `analyze-dental-photo` | Gemini | vision-tools | gemini-3.1-pro |
-| `dsd-analysis` | Gemini | vision | gemini-3.1-pro |
-| `dsd-simulation` | Gemini | image-edit | gemini-3-pro |
+| `dsd-simulation` | Gemini | image-edit | NB2 (primary) / gemini-3-pro-image (fallback) |
 | `recommend-resin` | Claude | text-tools | claude-haiku-4-5 |
 | `recommend-cementation` | Claude | text-tools | claude-haiku-4-5 |
-| `smile-line-classifier` | Claude | vision | claude-haiku-4-5 |
 
 ## Comandos
 
@@ -148,4 +147,4 @@ Backend do AURIA: 14 edge functions em Deno que proveem análise dental com IA, 
 - [[../AGENTS.md]] — Índice geral
 
 ---
-*Atualizado: 2026-02-25*
+*Atualizado: 2026-03-02*

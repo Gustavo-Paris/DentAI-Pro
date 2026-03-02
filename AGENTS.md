@@ -1,7 +1,7 @@
 ---
 title: Agentes do Projeto - AURIA
 created: 2026-02-04
-updated: 2026-02-25
+updated: 2026-02-26
 author: Team AURIA
 status: published
 tags:
