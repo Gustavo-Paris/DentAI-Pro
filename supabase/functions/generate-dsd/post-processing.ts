@@ -1,6 +1,30 @@
 import { logger } from "../_shared/logger.ts";
 import type { DSDAnalysis, AdditionalPhotos } from "./types.ts";
 
+function normalizeText(value: string | undefined): string {
+  return (value || '').toLowerCase();
+}
+
+function hasLateralAgenesisPattern(analysis: DSDAnalysis): boolean {
+  const allText = [
+    ...(analysis.observations || []),
+    ...analysis.suggestions.flatMap((s) => [s.current_issue, s.proposed_change]),
+  ]
+    .map((text) => normalizeText(text))
+    .join(' | ');
+
+  const mentionsAgenesis = allText.includes('agenesia') && (
+    allText.includes('lateral') ||
+    allText.includes('12') ||
+    allText.includes('22')
+  );
+  const mentionsCanineSubstitution =
+    allText.includes('canino') &&
+    (allText.includes('lugar dos laterais') || allText.includes('no lugar dos laterais') || allText.includes('substituindo laterais'));
+
+  return mentionsAgenesis || mentionsCanineSubstitution;
+}
+
 // Apply all post-processing safety nets to the analysis
 export function applyPostProcessingSafetyNets(
   analysis: DSDAnalysis,
@@ -99,9 +123,9 @@ export function applyPostProcessingSafetyNets(
   // Safety net #4: Validate treatment suggestion consistency (inverted logic detection)
   // If a suggestion proposes "aumento incisal" (making tooth bigger) but treatment is gengivoplastia → fix it
   for (const suggestion of analysis.suggestions) {
-    const proposed = suggestion.proposed_change.toLowerCase();
-    const issue = suggestion.current_issue.toLowerCase();
-    const treatment = (suggestion.treatment_indication || '').toLowerCase();
+    const proposed = normalizeText(suggestion.proposed_change);
+    const issue = normalizeText(suggestion.current_issue);
+    const treatment = normalizeText(suggestion.treatment_indication);
 
     // Case 1: Proposed change is about increasing incisal edge (tooth gets bigger)
     // but treatment says gengivoplastia → should be resina
@@ -146,6 +170,50 @@ export function applyPostProcessingSafetyNets(
     if (proposesToothBigger && treatment === 'gengivoplastia' && !proposed.includes('gengivoplastia')) {
       logger.log(`Post-processing: fixing inverted logic for tooth ${suggestion.tooth} — tooth increase should be resina, not gengivoplastia`);
       (suggestion as { treatment_indication: string }).treatment_indication = 'resina';
+    }
+  }
+
+  // Safety net #7: Preserve anatomy in lateral agenesis / canine substitution cases.
+  // In these cases the model tends to "idealize" 12/22 as generic narrow laterals,
+  // but clinically they are often broader canine-substitution teeth with unsatisfactory
+  // restorations. Force the plan to preserve width and focus on contour/color only.
+  if (hasLateralAgenesisPattern(analysis)) {
+    let adjustedLaterals = 0;
+
+    for (const suggestion of analysis.suggestions) {
+      if (suggestion.tooth !== '12' && suggestion.tooth !== '22') continue;
+
+      const proposed = normalizeText(suggestion.proposed_change);
+      const issue = normalizeText(suggestion.current_issue);
+      const narrowsTooth =
+        proposed.includes('estreit') ||
+        proposed.includes('afinar') ||
+        proposed.includes('diminu') ||
+        proposed.includes('reduzir largura') ||
+        issue.includes('estreit');
+
+      if (!narrowsTooth) continue;
+
+      suggestion.proposed_change = 'Manter a largura atual do dente e harmonizar apenas contorno vestibular/incisal e cor da restauração, sem estreitar 12/22.';
+      if ((suggestion.treatment_indication || '') === 'gengivoplastia') {
+        (suggestion as { treatment_indication: string }).treatment_indication = 'resina';
+      }
+      adjustedLaterals++;
+      logger.log(`Post-processing: preserving width for tooth ${suggestion.tooth} in lateral agenesis pattern`);
+    }
+
+    const hasObservation = analysis.observations?.some((o) =>
+      normalizeText(o).includes('agenesia dos incisivos laterais'),
+    );
+    if (!hasObservation) {
+      analysis.observations = analysis.observations || [];
+      analysis.observations.push(
+        'Padrão compatível com agenesia dos incisivos laterais/caninos em substituição: preservar a largura de 12/22 e priorizar harmonização de contorno e cor, sem afinamento.'
+      );
+    }
+
+    if (adjustedLaterals > 0) {
+      logger.log(`Post-processing: adjusted ${adjustedLaterals} lateral suggestion(s) to preserve width in agenesis case`);
     }
   }
 

@@ -14,6 +14,7 @@
 import {
   assertEquals,
   assertExists,
+  assertStringIncludes,
 } from "https://deno.land/std@0.208.0/assert/mod.ts";
 
 import { processAnalysisResult } from "./post-processing.ts";
@@ -37,6 +38,8 @@ function makeTooth(overrides: Partial<DetectedTooth> & { tooth: string }): Detec
     notes: overrides.notes ?? null,
     treatment_indication: overrides.treatment_indication ?? "resina",
     indication_reason: overrides.indication_reason ?? undefined,
+    current_issue: overrides.current_issue ?? undefined,
+    proposed_change: overrides.proposed_change ?? undefined,
   };
 }
 
@@ -548,4 +551,52 @@ Deno.test("Single tooth at low confidence adds reanalisar warning", () => {
 
   const hasReanalyzeWarning = result.warnings.some((w: string) => w.includes("Reanalisar"));
   assertEquals(hasReanalyzeWarning, true, "Should suggest reanalyze for single tooth at low confidence");
+});
+
+// ==========================================================================
+// Test: Lateral agenesis heuristic (canine substitution)
+// ==========================================================================
+
+Deno.test("Adds agenesis observation and preserve-width note when canine substitution pattern is suspected", () => {
+  const analysis = makeAnalysis({
+    confidence: 90,
+    primary_tooth: "13",
+    detected_teeth: [
+      makeTooth({
+        tooth: "12",
+        current_issue: "Lateral com proporção L/A ~85%; formato conoide leve",
+        proposed_change: "Acréscimo incisal para harmonização com 22",
+      }),
+      makeTooth({
+        tooth: "13",
+        current_issue: "Canino em destaque no sorriso",
+        proposed_change: "Sem alteração necessária",
+      }),
+      makeTooth({
+        tooth: "22",
+        current_issue: "Lateral com comprimento adequado; referência para harmonização de 12",
+        proposed_change: "Sem alteração necessária",
+      }),
+      makeTooth({
+        tooth: "23",
+        current_issue: "Canino íntegro",
+        proposed_change: "Sem alteração necessária",
+      }),
+    ],
+  });
+
+  const result = processAnalysisResult(analysis);
+
+  const hasAgenesisObservation = result.observations.some((obs) =>
+    obs.toLowerCase().includes("possível agenesia dos incisivos laterais"),
+  );
+  assertEquals(hasAgenesisObservation, true, "Should add conservative agenesis observation for DSD");
+
+  const tooth12 = result.detected_teeth.find((tooth) => tooth.tooth === "12");
+  assertExists(tooth12);
+  assertStringIncludes(
+    tooth12.proposed_change || "",
+    "preservar a largura vestibular atual",
+    "Should enrich atypical lateral to preserve width",
+  );
 });

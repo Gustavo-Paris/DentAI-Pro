@@ -44,6 +44,67 @@ export interface PostProcessingOptions {
   hasFacePhoto?: boolean;
 }
 
+function normalizeText(value: string | undefined | null): string {
+  return (value || '').toLowerCase();
+}
+
+function applyLateralAgenesisHeuristic(
+  detectedTeeth: DetectedTooth[],
+  observations: string[],
+  primaryTooth: string | null,
+): void {
+  if (primaryTooth !== '13' && primaryTooth !== '23') return;
+
+  const byTooth = new Map(detectedTeeth.map((tooth) => [tooth.tooth, tooth]));
+  const lateralCandidates = ['12', '22']
+    .map((tooth) => byTooth.get(tooth))
+    .filter((tooth): tooth is DetectedTooth => Boolean(tooth));
+
+  if (lateralCandidates.length === 0) return;
+
+  const hasSuspiciousLateralPattern = lateralCandidates.some((tooth) => {
+    const issue = normalizeText(tooth.current_issue);
+    const change = normalizeText(tooth.proposed_change);
+    const reason = normalizeText(tooth.indication_reason);
+    const notes = normalizeText(tooth.notes);
+    const text = `${issue} ${change} ${reason} ${notes}`;
+
+    const hasConoidSignal = text.includes('conoide') || text.includes('microdont');
+    const hasRatioSignal = text.includes('proporção l/a') || text.includes('proporcao l/a');
+    const hasHarmonizationSignal =
+      text.includes('harmoniz') ||
+      text.includes('referência') ||
+      text.includes('referencia');
+
+    return (hasConoidSignal || hasRatioSignal) && hasHarmonizationSignal;
+  });
+
+  if (!hasSuspiciousLateralPattern) return;
+
+  const hasObservation = observations.some((obs) =>
+    normalizeText(obs).includes('possível agenesia dos incisivos laterais'),
+  );
+  if (!hasObservation) {
+    observations.push(
+      'Possível agenesia dos incisivos laterais com caninos em substituição: preservar a largura real de 12/22 e confirmar a anatomia antes de propor afinamento.'
+    );
+  }
+
+  for (const tooth of lateralCandidates) {
+    const currentChange = normalizeText(tooth.proposed_change);
+    const currentIssue = normalizeText(tooth.current_issue);
+    const hasAtypicalSignal =
+      currentIssue.includes('conoide') ||
+      currentIssue.includes('proporção l/a') ||
+      currentIssue.includes('proporcao l/a');
+    if (!hasAtypicalSignal) continue;
+    if (currentChange.includes('preservar a largura')) continue;
+
+    tooth.proposed_change = `${tooth.proposed_change || 'Harmonização estética'}; preservar a largura vestibular atual, sem estreitamento mesiodistal de ${tooth.tooth}.`;
+    logger.log(`Post-processing: lateral agenesis heuristic enriched tooth ${tooth.tooth} to preserve width`);
+  }
+}
+
 export function processAnalysisResult(
   analysisResult: PhotoAnalysisResult,
   options: PostProcessingOptions = {},
@@ -238,6 +299,9 @@ export function processAnalysisResult(
     primaryTooth = detectedTeeth.length > 0 ? detectedTeeth[0].tooth : null;
   }
 
+  const observations = [...(analysisResult.observations ?? [])];
+  applyLateralAgenesisHeuristic(detectedTeeth, observations, primaryTooth);
+
   // Visagism safety net: clear visagism fields if no face photo was provided
   // (AI may hallucinate face shape and temperament from an intraoral/smile photo alone)
   const hasFacePhoto = options.hasFacePhoto ?? false;
@@ -255,7 +319,7 @@ export function processAnalysisResult(
     detected_teeth: detectedTeeth,
     primary_tooth: primaryTooth,
     vita_shade: analysisResult.vita_shade ?? null,
-    observations: analysisResult.observations ?? [],
+    observations,
     warnings: analysisResult.warnings ?? [],
     treatment_indication: safeNormalizeTreatment(analysisResult.treatment_indication),
     indication_reason: analysisResult.indication_reason ?? undefined,

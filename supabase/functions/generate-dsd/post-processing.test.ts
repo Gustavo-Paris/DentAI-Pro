@@ -414,6 +414,37 @@ Deno.test("Tooth increase (aumento) with gengivoplastia fixed to resina (Case 6)
   );
 });
 
+Deno.test("Lateral agenesis case preserves width of 12/22 instead of narrowing", () => {
+  const analysis = makeAnalysis({
+    observations: [
+      "Paciente com agenesia dos incisivos laterais e caninos no lugar dos laterais",
+    ],
+    suggestions: [
+      {
+        tooth: "12",
+        current_issue: "Dente amplo em posição de lateral com resina insatisfatória",
+        proposed_change: "Estreitar 12 para parecer incisivo lateral",
+        treatment_indication: "resina",
+      },
+      {
+        tooth: "22",
+        current_issue: "Dente amplo em posição de lateral",
+        proposed_change: "Afinar 22 para reduzir largura",
+        treatment_indication: "resina",
+      },
+    ],
+  });
+
+  applyPostProcessingSafetyNets(analysis);
+
+  assertStringIncludes(analysis.suggestions[0].proposed_change, "Manter a largura atual");
+  assertStringIncludes(analysis.suggestions[1].proposed_change, "sem estreitar 12/22");
+  const hasAgenesisObs = analysis.observations.some((o) =>
+    o.toLowerCase().includes("agenesia dos incisivos laterais"),
+  );
+  assertEquals(hasAgenesisObs, true, "Should document the preserve-width rule in observations");
+});
+
 // ==========================================================================
 // Test: Overbite warning
 // ==========================================================================

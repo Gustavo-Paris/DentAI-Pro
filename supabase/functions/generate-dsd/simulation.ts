@@ -74,6 +74,36 @@ function simplifyForImageEdit(proposedChange: string): string {
   return text;
 }
 
+function buildSpecialAnatomyConstraints(analysis: DSDAnalysis): string {
+  const allText = [
+    ...(analysis.observations || []),
+    ...analysis.suggestions.flatMap((s) => [s.current_issue, s.proposed_change]),
+  ]
+    .join(' | ')
+    .toLowerCase();
+
+  const hasLateralAgenesis =
+    allText.includes('agenesia') &&
+    (allText.includes('lateral') || allText.includes('12') || allText.includes('22'));
+  const hasCanineSubstitution =
+    allText.includes('canino') &&
+    (allText.includes('lugar dos laterais') || allText.includes('no lugar dos laterais') || allText.includes('substituindo laterais'));
+
+  if (!hasLateralAgenesis && !hasCanineSubstitution) {
+    return '';
+  }
+
+  return `
+SPECIAL ANATOMY CONSTRAINTS (NON-NEGOTIABLE):
+- This case matches lateral incisor agenesis / canine substitution anatomy.
+- Teeth 12 and 22 are NOT generic narrow lateral incisors in this patient.
+- NEVER make 12/22 thinner, narrower, or more delicate than the input photo.
+- PRESERVE the current mesiodistal width and the canine-derived volume of 12/22.
+- If 12/22 have unsatisfactory restorations, improve ONLY contour blending and color integration.
+- DO NOT "swap" tooth identities, redesign the smile, or turn canines into idealized template laterals.
+- The correct result is subtle harmonization of the REAL anatomy, not a textbook smile makeover.`;
+}
+
 // SIMPLIFIED: Generate simulation image - single attempt, no blend, no verification
 export async function generateSimulation(
   imageBase64: string,
@@ -305,6 +335,8 @@ corrections are MINOR refinements, NOT redesign. For each tooth:
     }
   }
 
+  const specialAnatomyConstraints = buildSpecialAnatomyConstraints(analysis);
+
   // P2-46: Add lower arch perspective instruction when lower teeth are involved
   const lowerArchInstruction = hasLowerTeeth
     ? '\nSe o tratamento inclui dentes inferiores (31-38, 41-48), ajustar perspectiva da simulação para incluir arco inferior.'
@@ -331,7 +363,7 @@ corrections are MINOR refinements, NOT redesign. For each tooth:
     gingivoSuggestions,
     rootCoverageSuggestions,
     inputAlreadyProcessed,
-  } as DsdSimulationParams) + lowerArchInstruction + whiteBalanceInstruction;
+  } as DsdSimulationParams) + specialAnatomyConstraints + lowerArchInstruction + whiteBalanceInstruction;
 
   logger.log("DSD Simulation Request:", {
     promptType,
@@ -377,7 +409,6 @@ corrections are MINOR refinements, NOT redesign. For each tooth:
   // Skip lip validation for face-mockup — full face context makes close-up lip comparison unreliable
   const shouldValidateLips = layerType !== 'face-mockup';
   const isGingivalLayer = layerType === 'complete-treatment' || layerType === 'root-coverage';
-
   // Use Haiku for lip validation — binary SIM/NÃO task with maxTokens:10, Haiku is sufficient
   const LIP_VALIDATION_MODEL = 'claude-haiku-4-5-20251001';
 
@@ -467,6 +498,9 @@ Responda APENAS 'SIM' ou 'NÃO'.`,
       lipsMoved = !lipsValid;
       if (lipsMoved) {
         logger.warn(`Lip validation FAILED for ${layerType || 'standard'} layer — lips_moved flag set`);
+        if (isGingivalLayer) {
+          throw new Error(`Lip validation failed for ${layerType || 'standard'} layer`);
+        }
       }
     }
 
@@ -535,6 +569,9 @@ Responda APENAS 'SIM' ou 'NÃO'.`,
         lipsMoved = !lipsValid;
         if (lipsMoved) {
           logger.warn(`Lip validation FAILED for ${layerType || 'standard'} layer — lips_moved flag set (Gemini 3 Pro fallback)`);
+          if (isGingivalLayer) {
+            throw new Error(`Lip validation failed for ${layerType || 'standard'} layer (Gemini 3 Pro fallback)`);
+          }
         }
       }
 
