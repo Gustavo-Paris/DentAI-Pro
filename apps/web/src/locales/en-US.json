@@ -432,6 +432,7 @@
     "regenerateAsPremium": "Regenerate as Premium",
     "regenerateAsPadrao": "Regenerate as Standard",
     "regenerating": "Regenerating...",
+    "regeneratingProgress": "Regenerating {{current}}/{{total}}...",
     "tipAddMoreTitle": "Evaluate more teeth in this case",
     "tipAddMoreDescription": "There are still {{count}} pending teeth that can be added to this session for a more complete evaluation.",
     "tipNewCaseTitle": "Need to evaluate more teeth?",

@@ -30,6 +30,7 @@ export interface UseEvaluationActionsReturn {
   isSharing: boolean;
   retryingEvaluationId: string | null;
   isRegenerating: boolean;
+  regenerationProgress: { current: number; total: number } | null;
   handleMarkAsCompleted: (id: string, force?: boolean) => PendingChecklistResult | void;
   handleMarkAllAsCompleted: () => void;
   handleBulkComplete: (ids: string[]) => void;
@@ -93,6 +94,7 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
   const [isSharing, setIsSharing] = useState(false);
   const [retryingEvaluationId, setRetryingEvaluationId] = useState<string | null>(null);
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [regenerationProgress, setRegenerationProgress] = useState<{ current: number; total: number } | null>(null);
 
   // Use shared evaluation clients from protocol-dispatch
   const evalClients = evaluationClients;
@@ -326,9 +328,12 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
       );
 
       let successCount = 0;
+      setRegenerationProgress({ current: 0, total: aiEvals.length });
+
       for (const evaluation of aiEvals) {
         try {
           await evaluations.updateStatus(evaluation.id, EVALUATION_STATUS.ANALYZING);
+          queryClient.invalidateQueries({ queryKey: evaluationKeys.session(sessionId) });
 
           const regenTreatment = (evaluation.treatment_type || 'resina') as TreatmentType;
           await dispatchTreatmentProtocol(
@@ -366,6 +371,8 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
 
           await evaluations.updateStatus(evaluation.id, EVALUATION_STATUS.DRAFT);
           successCount++;
+          setRegenerationProgress({ current: successCount, total: aiEvals.length });
+          queryClient.invalidateQueries({ queryKey: evaluationKeys.session(sessionId) });
         } catch (err) {
           logger.error(`Regenerate failed for ${evaluation.tooth}:`, err);
           await evaluations.updateStatus(evaluation.id, EVALUATION_STATUS.ERROR).catch(() => {});
@@ -402,6 +409,7 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
       );
     } finally {
       setIsRegenerating(false);
+      setRegenerationProgress(null);
       queryClient.invalidateQueries({ queryKey: evaluationKeys.session(sessionId) });
     }
   }, [user, evals, sessionId, queryClient, evalClients, t]);
@@ -412,6 +420,7 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
     isSharing,
     retryingEvaluationId,
     isRegenerating,
+    regenerationProgress,
     handleMarkAsCompleted,
     handleMarkAllAsCompleted,
     handleBulkComplete,

@@ -73,6 +73,7 @@ export interface EvaluationDetailActions {
   handleRegenerateWithBudget: (newBudget: 'padrão' | 'premium') => Promise<void>;
   retryingEvaluationId: string | null;
   isRegenerating: boolean;
+  regenerationProgress: { current: number; total: number } | null;
   toggleSelection: (id: string) => void;
   toggleSelectAll: () => void;
   clearSelection: () => void;
@@ -130,6 +131,7 @@ export function useEvaluationDetail(): EvaluationDetailState & EvaluationDetailA
     isSharing: actions.isSharing,
     retryingEvaluationId: actions.retryingEvaluationId,
     isRegenerating: actions.isRegenerating,
+    regenerationProgress: actions.regenerationProgress,
 
     // State — from selection
     selectedIds: selection.selectedIds,
