@@ -377,11 +377,11 @@ Deno.serve(async (req) => {
             temperature: 0.0,
             maxTokens: promptDef.maxTokens,
             forceFunctionName: "generate_resin_protocol",
-            timeoutMs: 15_000,
-            // Haiku 4.5 responds in 10-15s. 15s timeout fails fast on incidents.
-            // 3 attempts (15s + 2s + 15s + 4s + 15s = 51s) fits 60s limit.
-            // Fallback to Sonnet 4.6 on 2nd attempt.
-            maxRetries: 2,
+            timeoutMs: 45_000,
+            // Haiku normally responds in 10-20s but can spike to 30s+.
+            // 2 attempts (45s + 2s + 45s = 92s) fits 150s edge function limit.
+            // Fallback to Sonnet 4.6 on 2nd attempt via FALLBACK_MODELS.
+            maxRetries: 1,
           }
         );
         if (response.tokens) {

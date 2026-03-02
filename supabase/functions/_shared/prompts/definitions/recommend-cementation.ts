@@ -18,7 +18,7 @@ export const recommendCementation: PromptDefinition<Params> = {
   id: 'recommend-cementation',
   name: 'Protocolo de Cimentação',
   description: 'Gera protocolo completo de cimentação de facetas cerâmicas',
-  model: 'claude-haiku-4-5-20251001',
+  model: 'claude-sonnet-4-6',
   temperature: 0.0,
   maxTokens: 4000,
   mode: 'text-tools',

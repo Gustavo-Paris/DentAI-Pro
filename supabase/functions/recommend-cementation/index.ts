@@ -474,11 +474,11 @@ Deno.serve(async (req: Request) => {
             temperature: 0.0,
             maxTokens: 4000,
             forceFunctionName: "generate_cementation_protocol",
-            timeoutMs: 15_000,
-            // Haiku 4.5 responds in 10-15s. 15s timeout fails fast on incidents.
-            // 3 attempts (15s + 2s + 15s + 4s + 15s = 51s) fits 60s Supabase limit.
-            // Fallback to Sonnet 4.6 kicks in on 3rd attempt.
-            maxRetries: 2,
+            timeoutMs: 45_000,
+            // Haiku normally responds in 10-20s but can spike to 30s+.
+            // 2 attempts (45s + 2s + 45s = 92s) fits 150s edge function limit.
+            // Fallback to Sonnet 4.6 on 2nd attempt via FALLBACK_MODELS.
+            maxRetries: 1,
           }
         );
         if (response.tokens) {

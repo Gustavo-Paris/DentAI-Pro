@@ -110,7 +110,8 @@ export default function GroupResult() {
               {/* Protocol unavailable fallback */}
               {!g.hasProtocol && !g.isSpecialTreatment && g.treatmentType === 'resina' && (
                 <ProtocolUnavailableAlert
-                  onReprocess={() => navigate(`/evaluation/${g.sessionId}?retry=${g.primaryEval?.id}`)}
+                  onReprocess={g.handleRetryProtocol}
+                  isRetrying={g.isRetrying}
                 />
               )}
 

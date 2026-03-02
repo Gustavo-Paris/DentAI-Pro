@@ -1,8 +1,8 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { evaluations, storage } from '@/data';
+import { evaluations, storage, wizard } from '@/data';
 import type { Resin, StratificationProtocol, ProtocolLayer, CementationProtocol } from '@/types/protocol';
 import type { SimulationLayer } from '@/types/dsd';
 import { toast } from 'sonner';
@@ -12,6 +12,12 @@ import { EVALUATION_STATUS } from '@/lib/evaluation-status';
 import { SIGNED_URL_EXPIRY_SECONDS, QUERY_STALE_TIMES } from '@/lib/constants';
 import { getProtocolFingerprint } from '@/lib/protocol-fingerprint';
 import { computeProtocol } from './protocolComputed';
+import {
+  dispatchTreatmentProtocol,
+  DEFAULT_CERAMIC_TYPE,
+  evaluationClients,
+} from '@/lib/protocol-dispatch';
+import { getFullRegion } from './wizard/helpers';
 
 // ---------------------------------------------------------------------------
 // Types (reuse from useResult where possible)
@@ -194,6 +200,62 @@ export function useGroupResult() {
     checklistMutation.mutate(indices);
   }, [checklistMutation]);
 
+  // Retry protocol generation for the primary evaluation (in-place, no navigation)
+  const [isRetrying, setIsRetrying] = useState(false);
+  const handleRetryProtocol = useCallback(async () => {
+    if (!user || !primaryEval) return;
+    setIsRetrying(true);
+    try {
+      await evaluations.updateStatus(primaryEval.id, EVALUATION_STATUS.ANALYZING);
+      const treatmentType = (primaryEval.treatment_type || 'resina') as 'resina' | 'porcelana';
+      await dispatchTreatmentProtocol(
+        {
+          treatmentType,
+          evaluationId: primaryEval.id,
+          tooth: primaryEval.tooth,
+          resinParams: treatmentType === 'resina' ? {
+            userId: user.id,
+            patientAge: String(primaryEval.patient_age),
+            tooth: primaryEval.tooth,
+            region: primaryEval.region || getFullRegion(primaryEval.tooth),
+            cavityClass: primaryEval.cavity_class || 'Classe I',
+            restorationSize: primaryEval.restoration_size || 'Média',
+            substrate: primaryEval.substrate || 'Esmalte e Dentina',
+            bruxism: primaryEval.bruxism,
+            aestheticLevel: primaryEval.aesthetic_level,
+            toothColor: primaryEval.tooth_color,
+            stratificationNeeded: true,
+            budget: primaryEval.budget,
+            longevityExpectation: primaryEval.longevity_expectation,
+          } : undefined,
+          cementationParams: treatmentType === 'porcelana' ? {
+            teeth: [primaryEval.tooth],
+            shade: primaryEval.tooth_color,
+            ceramicType: DEFAULT_CERAMIC_TYPE,
+            substrate: primaryEval.substrate || 'Esmalte e Dentina',
+            substrateCondition: 'Saudável',
+          } : undefined,
+          genericToothData: { indication_reason: primaryEval.ai_indication_reason },
+        },
+        evaluationClients,
+      );
+      await evaluations.updateStatus(primaryEval.id, EVALUATION_STATUS.DRAFT);
+      // Sync protocols across group
+      const allIds = groupEvaluations.map(ev => ev.id);
+      if (allIds.length >= 2) {
+        try { await wizard.syncGroupProtocols(sessionId, allIds); } catch { /* non-critical */ }
+      }
+      queryClient.invalidateQueries({ queryKey: ['group-result', sessionId] });
+      toast.success(t('toasts.evaluationDetail.retrySuccess'));
+    } catch (err) {
+      logger.error('Retry protocol failed:', err);
+      await evaluations.updateStatus(primaryEval.id, EVALUATION_STATUS.ERROR).catch(() => {});
+      toast.error(t('toasts.evaluationDetail.retryError'));
+    } finally {
+      setIsRetrying(false);
+    }
+  }, [user, primaryEval, groupEvaluations, sessionId, queryClient, t]);
+
   // Mark all evaluations in the group as completed
   const handleMarkAllCompleted = useCallback(async () => {
     if (!user) return;
@@ -244,5 +306,7 @@ export function useGroupResult() {
     // Actions
     handleChecklistChange,
     handleMarkAllCompleted,
+    handleRetryProtocol,
+    isRetrying,
   };
 }

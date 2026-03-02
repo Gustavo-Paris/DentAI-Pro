@@ -391,6 +391,14 @@ async function makeClaudeRequest(
         logger.warn(`Claude request timed out after ${timeoutMs}ms`);
 
         if (retryCount < maxRetries) {
+          // Switch to fallback model on timeout (same logic as 5xx errors)
+          if (retryCount + 1 >= FALLBACK_AFTER_ATTEMPT) {
+            const fallback = FALLBACK_MODELS[request.model];
+            if (fallback && request.model !== fallback) {
+              logger.warn(`Model ${request.model} timed out — falling back to ${fallback}`);
+              request = { ...request, model: fallback };
+            }
+          }
           retryCount++;
           continue;
         }
@@ -402,6 +410,14 @@ async function makeClaudeRequest(
       logger.error(`Claude request failed:`, error);
 
       if (retryCount < maxRetries) {
+        // Switch to fallback model on network errors (same logic as 5xx/timeout)
+        if (retryCount + 1 >= FALLBACK_AFTER_ATTEMPT) {
+          const fallback = FALLBACK_MODELS[request.model];
+          if (fallback && request.model !== fallback) {
+            logger.warn(`Model ${request.model} failed — falling back to ${fallback}`);
+            request = { ...request, model: fallback };
+          }
+        }
         const waitTime = Math.min(1000 * Math.pow(2, retryCount), 16000);
         await sleep(waitTime);
         retryCount++;

@@ -1,13 +1,14 @@
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, Button } from '@parisgroup-ai/pageshell/primitives';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Loader2 } from 'lucide-react';
 
 interface ProtocolUnavailableAlertProps {
   onReprocess: () => void;
+  isRetrying?: boolean;
   className?: string;
 }
 
-export function ProtocolUnavailableAlert({ onReprocess, className }: ProtocolUnavailableAlertProps) {
+export function ProtocolUnavailableAlert({ onReprocess, isRetrying, className }: ProtocolUnavailableAlertProps) {
   const { t } = useTranslation();
 
   return (
@@ -28,9 +29,14 @@ export function ProtocolUnavailableAlert({ onReprocess, className }: ProtocolUna
                 size="sm"
                 className="mt-3"
                 onClick={onReprocess}
+                disabled={isRetrying}
               >
-                <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
-                {t('result.reprocess')}
+                {isRetrying ? (
+                  <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+                )}
+                {isRetrying ? t('result.reprocessing', 'Reprocessando...') : t('result.reprocess')}
               </Button>
             </div>
           </div>
