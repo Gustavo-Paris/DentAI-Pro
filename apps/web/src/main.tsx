@@ -1,10 +1,9 @@
 import { createRoot } from "react-dom/client";
 import * as Sentry from "@sentry/react";
 import { registerSW } from "virtual:pwa-register";
-import { toast } from "sonner";
 import App from "./App.tsx";
 import "./index.css";
-import i18n from "./lib/i18n"; // i18n initialization (must be before App)
+import "./lib/i18n"; // i18n initialization (must be before App)
 import { initWebVitals } from "./lib/webVitals";
 import { env } from "./lib/env";
 import { logger } from "./lib/logger";
@@ -52,19 +51,9 @@ initWebVitals();
 
 createRoot(document.getElementById("root")!).render(<App />);
 
-// Register service worker for PWA support
+// Register service worker for PWA support (autoUpdate — reloads automatically on new version)
 if ("serviceWorker" in navigator) {
-  const updateSW = registerSW({
-    onNeedRefresh() {
-      toast(i18n.t('pwa.newVersionAvailable'), {
-        description: i18n.t('pwa.updateDescription'),
-        duration: Infinity,
-        action: {
-          label: i18n.t('pwa.update'),
-          onClick: () => updateSW(true),
-        },
-      });
-    },
+  registerSW({
     onOfflineReady() {
       logger.log("App ready to work offline");
     },
