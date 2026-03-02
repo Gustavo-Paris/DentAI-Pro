@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Zap } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@parisgroup-ai/pageshell/primitives";
 import { ProtocolAlternative } from "@/types/protocol";
 
 export type { ProtocolAlternative };

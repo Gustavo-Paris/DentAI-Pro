@@ -6,9 +6,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
+  Button,
+  Checkbox,
+} from '@parisgroup-ai/pageshell/primitives';
 import { Shield } from 'lucide-react';
 
 const STORAGE_KEY = 'ai-disclaimer-accepted';

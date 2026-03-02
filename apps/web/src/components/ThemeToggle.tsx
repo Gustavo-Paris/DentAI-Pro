@@ -1,12 +1,12 @@
 import { usePageShellColorMode } from '@parisgroup-ai/pageshell/theme';
 import { useTranslation } from 'react-i18next';
 import { Sun, Moon, Monitor } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
+  Button,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@parisgroup-ai/pageshell/primitives";
 
 const modes = ["system", "light", "dark"] as const;
 

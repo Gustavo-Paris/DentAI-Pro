@@ -1,8 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Card, CardHeader, CardTitle, Badge, Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@parisgroup-ai/pageshell/primitives';
 import { ClipboardList, Layers, Wrench, Ruler } from 'lucide-react';
 
 const WAXUP_KEYS = [

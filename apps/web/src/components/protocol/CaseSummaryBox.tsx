@@ -1,12 +1,6 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Card, CardContent, CardHeader, CardTitle, Badge, Tooltip, TooltipContent, TooltipTrigger } from "@parisgroup-ai/pageshell/primitives";
 import { User, MapPin, Layers, Palette, Info } from "lucide-react";
 import { getTreatmentConfig } from "@/lib/treatment-config";
 import { tEnum } from "@/lib/clinical-enums";

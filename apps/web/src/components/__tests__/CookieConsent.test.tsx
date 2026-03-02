@@ -30,7 +30,7 @@ vi.mock('react-i18next', () => ({
 }));
 
 // Mock the Button component to avoid shadcn dependency chain
-vi.mock('@/components/ui/button', () => ({
+vi.mock('@parisgroup-ai/pageshell/primitives', () => ({
   Button: ({ children, onClick, ...props }: React.ComponentPropsWithoutRef<'button'>) => (
     <button onClick={onClick} {...props}>{children}</button>
   ),

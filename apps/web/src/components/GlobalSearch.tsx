@@ -9,7 +9,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/ui/command';
+} from '@parisgroup-ai/pageshell/primitives';
 import { User, Calendar, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { getDateLocale, getDateFormat } from '@/lib/date-utils';

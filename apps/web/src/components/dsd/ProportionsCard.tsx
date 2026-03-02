@@ -1,8 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, X, AlertCircle, Minus, ChevronDown, ChevronUp } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import { Card, CardContent, CardHeader, CardTitle, Progress } from '@parisgroup-ai/pageshell/primitives';
 import { cn } from '@/lib/utils';
 import type { DSDAnalysis } from '@/types/dsd';
 

@@ -16,16 +16,13 @@ vi.mock('react-i18next', () => ({
 }));
 
 // Mock UI components
-vi.mock('@/components/ui/table', () => ({
+vi.mock('@parisgroup-ai/pageshell/primitives', () => ({
   Table: ({ children, ...props }: any) => <table {...props}>{children}</table>,
   TableBody: ({ children, ...props }: any) => <tbody {...props}>{children}</tbody>,
   TableCell: ({ children, ...props }: any) => <td {...props}>{children}</td>,
   TableHead: ({ children, ...props }: any) => <th {...props}>{children}</th>,
   TableHeader: ({ children, ...props }: any) => <thead {...props}>{children}</thead>,
   TableRow: ({ children, ...props }: any) => <tr {...props}>{children}</tr>,
-}));
-
-vi.mock('@/components/ui/tooltip', () => ({
   Tooltip: ({ children }: any) => <>{children}</>,
   TooltipContent: ({ children }: any) => <div>{children}</div>,
   TooltipTrigger: ({ children }: any) => <>{children}</>,

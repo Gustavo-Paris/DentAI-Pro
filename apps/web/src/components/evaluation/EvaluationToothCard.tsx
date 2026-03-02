@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@parisgroup-ai/pageshell/primitives';
 
 export interface EvaluationToothInfo {
   tooth: string;

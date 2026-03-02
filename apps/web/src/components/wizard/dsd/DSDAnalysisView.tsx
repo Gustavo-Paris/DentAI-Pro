@@ -16,7 +16,7 @@ import type {
 import type { ProportionLayerType } from '@/components/dsd/ProportionOverlay';
 const DSDSimulationViewer = lazy(() => import('./DSDSimulationViewer'));
 import { DSDWhiteningComparison } from './DSDWhiteningComparison';
-import { ComponentSkeleton } from '@/components/ui/skeleton-wrapper';
+import { ComponentSkeleton } from '@/components/skeleton-wrapper';
 
 interface DSDAnalysisViewProps {
   result: DSDResult;

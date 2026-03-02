@@ -1,4 +1,4 @@
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@parisgroup-ai/pageshell/primitives';
 import { cn } from '@/lib/utils';
 
 interface ComponentSkeletonProps {

@@ -1,7 +1,6 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
 import * as Sentry from '@sentry/react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, Button } from '@parisgroup-ai/pageshell/primitives';
 import { AlertCircle, RefreshCw, Home } from 'lucide-react';
 import { logger } from '@/lib/logger';
 import { trackEvent } from '@/lib/analytics';

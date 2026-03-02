@@ -28,15 +28,12 @@ vi.mock('@/hooks/useSubscription', () => ({
 }));
 
 // Mock UI components
-vi.mock('@/components/ui/card', () => ({
+vi.mock('@parisgroup-ai/pageshell/primitives', () => ({
   Card: ({ children, ...props }: any) => <div data-testid="card" {...props}>{children}</div>,
   CardContent: ({ children, ...props }: any) => <div {...props}>{children}</div>,
   CardHeader: ({ children, ...props }: any) => <div {...props}>{children}</div>,
   CardTitle: ({ children, ...props }: any) => <h3 {...props}>{children}</h3>,
   CardDescription: ({ children }: any) => <p>{children}</p>,
-}));
-
-vi.mock('@/components/ui/button', () => ({
   Button: ({ children, onClick, disabled, ...props }: any) => (
     <button onClick={onClick} disabled={disabled} {...props}>{children}</button>
   ),

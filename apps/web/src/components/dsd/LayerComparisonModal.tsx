@@ -5,14 +5,12 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@parisgroup-ai/pageshell/primitives';
 import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
 import type { SimulationLayer } from '@/types/dsd';
 import { getLayerLabel } from '@/types/dsd';

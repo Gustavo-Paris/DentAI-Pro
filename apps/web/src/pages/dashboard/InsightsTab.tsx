@@ -7,8 +7,8 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from '@/components/ui/chart';
-import type { ChartConfig } from '@/components/ui/chart';
+} from '@/components/chart';
+import type { ChartConfig } from '@/components/chart';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   PieChart, Pie, Cell, Tooltip as RechartsTooltip,

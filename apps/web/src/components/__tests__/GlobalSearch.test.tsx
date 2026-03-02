@@ -56,7 +56,7 @@ vi.mock('lucide-react', () => ({
 }));
 
 // Mock command UI components
-vi.mock('@/components/ui/command', () => ({
+vi.mock('@parisgroup-ai/pageshell/primitives', () => ({
   CommandDialog: ({ children, open, onOpenChange }: any) =>
     open ? (
       <div data-testid="command-dialog" onClick={() => onOpenChange?.(false)}>

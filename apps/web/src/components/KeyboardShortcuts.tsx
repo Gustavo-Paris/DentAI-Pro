@@ -7,7 +7,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from '@parisgroup-ai/pageshell/primitives';
 import { Keyboard } from 'lucide-react';
 
 const isMac = typeof navigator !== 'undefined' && /Mac/.test(navigator.userAgent);

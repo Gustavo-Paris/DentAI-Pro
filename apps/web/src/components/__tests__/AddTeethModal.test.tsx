@@ -45,26 +45,17 @@ vi.mock('lucide-react', () => ({
 }));
 
 // Mock UI components
-vi.mock('@/components/ui/dialog', () => ({
+vi.mock('@parisgroup-ai/pageshell/primitives', () => ({
   Dialog: ({ children, open }: any) => open ? <div data-testid="dialog" role="dialog">{children}</div> : null,
   DialogContent: ({ children }: any) => <div data-testid="dialog-content">{children}</div>,
   DialogHeader: ({ children }: any) => <div>{children}</div>,
   DialogTitle: ({ children, className }: any) => <h2 className={className}>{children}</h2>,
   DialogDescription: ({ children }: any) => <p>{children}</p>,
   DialogFooter: ({ children }: any) => <div data-testid="dialog-footer">{children}</div>,
-}));
-
-vi.mock('@/components/ui/button', () => ({
   Button: ({ children, onClick, disabled, ...props }: any) => (
     <button onClick={onClick} disabled={disabled} {...props}>{children}</button>
   ),
-}));
-
-vi.mock('@/components/ui/badge', () => ({
   Badge: ({ children, ...props }: any) => <span {...props}>{children}</span>,
-}));
-
-vi.mock('@/components/ui/checkbox', () => ({
   Checkbox: ({ checked, onCheckedChange, id, ...props }: any) => (
     <input
       type="checkbox"
@@ -75,9 +66,6 @@ vi.mock('@/components/ui/checkbox', () => ({
       {...props}
     />
   ),
-}));
-
-vi.mock('@/components/ui/select', () => ({
   Select: ({ children, value, onValueChange }: any) => (
     <div data-testid="select-wrapper" data-value={value}>
       {children}

@@ -24,13 +24,10 @@ vi.mock('@/lib/branding', () => ({
 }));
 
 // Mock UI components
-vi.mock('@/components/ui/dialog', () => ({
+vi.mock('@parisgroup-ai/pageshell/primitives', () => ({
   Dialog: ({ children, open }: any) => open ? <div data-testid="dialog" role="dialog">{children}</div> : null,
   DialogContent: ({ children }: any) => <div data-testid="dialog-content">{children}</div>,
   DialogTitle: ({ children, className }: any) => <h2 className={className}>{children}</h2>,
-}));
-
-vi.mock('@/components/ui/button', () => ({
   Button: ({ children, onClick, disabled, ...props }: any) => (
     <button onClick={onClick} disabled={disabled} {...props}>{children}</button>
   ),

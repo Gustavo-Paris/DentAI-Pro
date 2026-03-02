@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as Sentry from '@sentry/react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@parisgroup-ai/pageshell/primitives';
 import { trackEvent } from '@/lib/analytics';
 
 type ConsentValue = 'accepted' | 'essential';

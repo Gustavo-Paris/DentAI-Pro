@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@parisgroup-ai/pageshell/primitives';
 
 const typeColors: Record<string, { bg: string; text: string; i18nKey: string }> = {
   Esmalte: { bg: 'bg-[rgb(var(--layer-esmalte-rgb)/0.15)] dark:bg-[rgb(var(--layer-esmalte-rgb)/0.1)]', text: 'text-[rgb(var(--layer-esmalte-rgb))]', i18nKey: 'components.resinLegend.types.Esmalte' },

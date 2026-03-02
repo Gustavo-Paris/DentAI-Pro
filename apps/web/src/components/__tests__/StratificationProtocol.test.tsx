@@ -21,16 +21,12 @@ vi.mock('lucide-react', () => ({
   Sparkles: ({ className }: { className?: string }) => <span data-testid="sparkles-icon" className={className} />,
 }));
 
-// Mock shadcn Card components
-vi.mock('@/components/ui/card', () => ({
+// Mock shadcn Card and Badge components
+vi.mock('@parisgroup-ai/pageshell/primitives', () => ({
   Card: ({ children }: any) => <div data-testid="card">{children}</div>,
   CardContent: ({ children, className }: any) => <div className={className}>{children}</div>,
   CardHeader: ({ children, className }: any) => <div className={className}>{children}</div>,
   CardTitle: ({ children, className }: any) => <h3 className={className}>{children}</h3>,
-}));
-
-// Mock shadcn Badge
-vi.mock('@/components/ui/badge', () => ({
   Badge: ({ children, variant, className }: any) => (
     <span data-testid="badge" data-variant={variant} className={className}>{children}</span>
   ),

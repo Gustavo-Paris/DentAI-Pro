@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { HelpCircle, BookOpen, Play, Bug } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import {
+  Button,
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
+} from '@parisgroup-ai/pageshell/primitives';
 
 export function HelpButton() {
   const { t } = useTranslation();

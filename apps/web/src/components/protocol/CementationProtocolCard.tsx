@@ -1,8 +1,6 @@
 import { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Card, CardContent, CardHeader, CardTitle, Badge, Checkbox } from '@parisgroup-ai/pageshell/primitives';
 import { Crown, Droplets, Sparkles, CheckCircle, AlertTriangle, ClipboardCheck } from 'lucide-react';
 import type { CementationProtocol, CementationStep } from '@/types/protocol';
 

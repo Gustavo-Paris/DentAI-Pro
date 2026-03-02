@@ -109,6 +109,8 @@ export function getLayerLabel(
 // ---------------------------------------------------------------------------
 
 export type ToothBoundsPct = {
+  /** FDI tooth number associated with this bound (when available) */
+  tooth?: string;
   /** center X in % */
   x: number;
   /** center Y in % */
@@ -120,6 +122,7 @@ export type ToothBoundsPct = {
 };
 
 export type DetectedToothForMask = {
+  tooth?: string;
   tooth_bounds?: ToothBoundsPct;
 };
 

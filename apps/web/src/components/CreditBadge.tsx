@@ -8,7 +8,7 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
+} from '@parisgroup-ai/pageshell/primitives';
 
 interface CreditBadgeProps {
   /** 'compact' = icon + number only; 'full' = with label and bar */

@@ -9,17 +9,15 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
-import {
+  Button,
+  Badge,
+  Checkbox,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@parisgroup-ai/pageshell/primitives';
 import { Loader2, Plus, Wrench, Wand2 } from 'lucide-react';
 import { logger } from '@/lib/logger';
 

@@ -1,7 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Skeleton } from '@parisgroup-ai/pageshell/primitives';
 import { Copy, Gift, Users, Zap, MessageCircle, Link as LinkIcon } from 'lucide-react';
 import { useReferral } from '@/hooks/domain/useReferral';
 import { toast } from 'sonner';

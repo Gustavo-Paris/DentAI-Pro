@@ -16,14 +16,11 @@ vi.mock('react-i18next', () => ({
 }));
 
 // Mock UI components
-vi.mock('@/components/ui/card', () => ({
+vi.mock('@parisgroup-ai/pageshell/primitives', () => ({
   Card: ({ children, ...props }: any) => <div data-testid="card" {...props}>{children}</div>,
   CardContent: ({ children, ...props }: any) => <div {...props}>{children}</div>,
   CardHeader: ({ children, ...props }: any) => <div {...props}>{children}</div>,
   CardTitle: ({ children, ...props }: any) => <h3 {...props}>{children}</h3>,
-}));
-
-vi.mock('@/components/ui/badge', () => ({
   Badge: ({ children, ...props }: any) => <span data-testid="badge" {...props}>{children}</span>,
 }));
 

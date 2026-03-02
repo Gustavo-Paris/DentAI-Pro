@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Label, Popover, PopoverContent, PopoverTrigger } from '@parisgroup-ai/pageshell/primitives';
-import { Calendar } from '@/components/ui/calendar';
+import { Calendar } from '@/components/calendar';
 import { CalendarIcon, User } from 'lucide-react';
 import { PatientAutocomplete } from '@/components/PatientAutocomplete';
 import type { Patient } from '@/components/PatientAutocomplete';

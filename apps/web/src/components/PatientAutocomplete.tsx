@@ -1,8 +1,6 @@
 import { useState, useEffect, useMemo, useRef, memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
+import { Input, Label, Badge } from '@parisgroup-ai/pageshell/primitives';
 import { User, Plus, Check } from 'lucide-react';
 import { trackEvent } from '@/lib/analytics';
 

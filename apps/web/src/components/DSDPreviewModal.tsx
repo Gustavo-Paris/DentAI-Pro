@@ -5,9 +5,9 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+  Skeleton,
+} from '@parisgroup-ai/pageshell/primitives';
 import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Smile } from 'lucide-react';
 import { getSignedUrl } from '@/hooks/useSignedUrl';
 

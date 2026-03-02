@@ -65,7 +65,7 @@ vi.mock('@/lib/analytics', () => ({
 }));
 
 // Mock PillToggle
-vi.mock('@/components/ui/pill-toggle', () => ({
+vi.mock('@/components/pill-toggle', () => ({
   PillToggle: ({ options, value, onChange }: any) => (
     <div data-testid="pill-toggle" data-value={value}>
       {options.map((opt: any) => (
@@ -89,38 +89,24 @@ vi.mock('@/lib/dateUtils', () => ({
   calculateAge: () => 30,
 }));
 
-// Mock UI components
-vi.mock('@/components/ui/card', () => ({
+vi.mock('@/components/calendar', () => ({
+  Calendar: () => <div data-testid="calendar" />,
+}));
+
+// Mock UI components — consolidated into single pageshell/primitives mock
+vi.mock('@parisgroup-ai/pageshell/primitives', () => ({
   Card: ({ children, ...props }: any) => <div data-testid="card" {...props}>{children}</div>,
   CardContent: ({ children, ...props }: any) => <div {...props}>{children}</div>,
   CardHeader: ({ children, ...props }: any) => <div {...props}>{children}</div>,
   CardTitle: ({ children, ...props }: any) => <h3 {...props}>{children}</h3>,
   CardDescription: ({ children }: any) => <p>{children}</p>,
-}));
-
-vi.mock('@/components/ui/button', () => ({
   Button: ({ children, onClick, disabled, ...props }: any) => (
     <button onClick={onClick} disabled={disabled} {...props}>{children}</button>
   ),
-}));
-
-vi.mock('@/components/ui/badge', () => ({
   Badge: ({ children, ...props }: any) => <span data-testid="badge" {...props}>{children}</span>,
-}));
-
-vi.mock('@/components/ui/input', () => ({
   Input: (props: any) => <input {...props} />,
-}));
-
-vi.mock('@/components/ui/label', () => ({
   Label: ({ children, ...props }: any) => <label {...props}>{children}</label>,
-}));
-
-vi.mock('@/components/ui/textarea', () => ({
   Textarea: (props: any) => <textarea {...props} />,
-}));
-
-vi.mock('@/components/ui/checkbox', () => ({
   Checkbox: ({ checked, onCheckedChange, ...props }: any) => (
     <input
       type="checkbox"
@@ -129,19 +115,9 @@ vi.mock('@/components/ui/checkbox', () => ({
       {...props}
     />
   ),
-}));
-
-vi.mock('@/components/ui/calendar', () => ({
-  Calendar: () => <div data-testid="calendar" />,
-}));
-
-vi.mock('@/components/ui/popover', () => ({
   Popover: ({ children }: any) => <div>{children}</div>,
   PopoverContent: ({ children }: any) => <div>{children}</div>,
   PopoverTrigger: ({ children }: any) => <div>{children}</div>,
-}));
-
-vi.mock('@/components/ui/select', () => ({
   Select: ({ children, value, onValueChange }: any) => (
     <div data-testid="select" data-value={value}>{children}</div>
   ),
@@ -149,32 +125,15 @@ vi.mock('@/components/ui/select', () => ({
   SelectItem: ({ children, value }: any) => <option value={value}>{children}</option>,
   SelectTrigger: ({ children }: any) => <div>{children}</div>,
   SelectValue: (props: any) => <span>{props.placeholder || ''}</span>,
-}));
-
-vi.mock('@/components/ui/accordion', () => ({
   Accordion: ({ children }: any) => <div data-testid="accordion">{children}</div>,
   AccordionContent: ({ children }: any) => <div>{children}</div>,
   AccordionItem: ({ children, value }: any) => <div data-testid={`accordion-item-${value}`}>{children}</div>,
   AccordionTrigger: ({ children }: any) => <div>{children}</div>,
-}));
-
-// Mock pageshell primitives — spread actual then override Accordion to render transparently
-vi.mock('@parisgroup-ai/pageshell/primitives', async (importOriginal) => {
-  const actual = await importOriginal<Record<string, any>>();
-  return {
-    ...actual,
-    Accordion: ({ children }: any) => <div data-testid="accordion">{children}</div>,
-    AccordionContent: ({ children }: any) => <div>{children}</div>,
-    AccordionItem: ({ children, value }: any) => <div data-testid={`accordion-item-${value}`}>{children}</div>,
-    AccordionTrigger: ({ children }: any) => <div>{children}</div>,
-  };
-});
-
-vi.mock('@/components/ui/tooltip', () => ({
   Tooltip: ({ children }: any) => <>{children}</>,
   TooltipContent: ({ children }: any) => <div>{children}</div>,
   TooltipProvider: ({ children }: any) => <>{children}</>,
   TooltipTrigger: ({ children }: any) => <>{children}</>,
+  Skeleton: ({ className }: any) => <div data-testid="skeleton" className={className} />,
 }));
 
 vi.mock('@/lib/utils', () => ({

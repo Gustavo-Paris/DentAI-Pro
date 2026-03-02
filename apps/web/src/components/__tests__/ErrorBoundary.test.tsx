@@ -8,12 +8,9 @@ vi.mock('@sentry/react', () => ({
 }));
 
 // Mock shadcn components
-vi.mock('@/components/ui/card', () => ({
+vi.mock('@parisgroup-ai/pageshell/primitives', () => ({
   Card: ({ children, ...props }: React.PropsWithChildren) => <div {...props}>{children}</div>,
   CardContent: ({ children, ...props }: React.PropsWithChildren) => <div {...props}>{children}</div>,
-}));
-
-vi.mock('@/components/ui/button', () => ({
   Button: ({ children, onClick, ...props }: React.ComponentPropsWithoutRef<'button'>) => (
     <button onClick={onClick} {...props}>{children}</button>
   ),

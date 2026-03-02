@@ -5,7 +5,7 @@ import {
 } from '@parisgroup-ai/pageshell/primitives';
 import { Sparkles, Mic, MicOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { PillToggle } from '@/components/ui/pill-toggle';
+import { PillToggle } from '@/components/pill-toggle';
 import type { ReviewFormData } from '../ReviewAnalysisStep';
 
 interface ReviewFormAccordionProps {

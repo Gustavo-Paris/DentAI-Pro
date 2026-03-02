@@ -2,9 +2,7 @@ import { useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import i18n from '@/lib/i18n';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Button, Card, CardContent, CardHeader, CardTitle, CardDescription, Skeleton } from '@parisgroup-ai/pageshell/primitives';
 import { FileText, ArrowRight, Download } from 'lucide-react';
 import { useSubscription, formatPrice } from '@/hooks/useSubscription';
 

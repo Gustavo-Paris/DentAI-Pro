@@ -1,16 +1,16 @@
 import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import {
+  Button,
+  Card,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+  Checkbox,
+} from '@parisgroup-ai/pageshell/primitives';
 import { FileDown, CheckCircle, MoreHorizontal, Eye, RefreshCw, Loader2 } from 'lucide-react';
-import { Checkbox } from '@/components/ui/checkbox';
 
 import type { EvaluationItem, ChecklistProgress } from '@/hooks/domain/useEvaluationDetail';
 import { EVALUATION_STATUS } from '@/lib/evaluation-status';

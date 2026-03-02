@@ -1,8 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import i18n from '@/lib/i18n';
 import { Camera, Sparkles, History, Zap } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardHeader, CardTitle, Skeleton } from '@parisgroup-ai/pageshell/primitives';
 import { useSubscription, type CreditUsageRecord } from '@/hooks/useSubscription';
 
 const operationConfig: Record<string, { labelKey: string; icon: typeof Camera; color: string }> = {

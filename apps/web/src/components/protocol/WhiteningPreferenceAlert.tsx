@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Palette, Sparkles } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@parisgroup-ai/pageshell/primitives";
 import { ProtocolLayer } from "@/types/protocol";
 
 interface WhiteningPreferenceAlertProps {

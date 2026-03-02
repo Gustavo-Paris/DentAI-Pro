@@ -2,10 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { getDateLocale, getDateFormat } from '@/lib/date-utils';
 import { CreditCard, Calendar, Zap, Settings, AlertTriangle, Loader2, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Badge, Progress } from '@parisgroup-ai/pageshell/primitives';
 import { useSubscription, formatPrice } from '@/hooks/useSubscription';
 import { cn } from '@/lib/utils';
 

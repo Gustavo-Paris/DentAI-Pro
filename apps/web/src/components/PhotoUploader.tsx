@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Button, Card, CardContent } from '@parisgroup-ai/pageshell/primitives';
 import { Camera, X, Loader2, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';

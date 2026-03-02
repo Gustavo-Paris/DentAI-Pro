@@ -168,7 +168,7 @@ export default function Result() {
             {/* Protocol unavailable fallback */}
             {!r.hasProtocol && !r.isSpecialTreatment && r.treatmentType === 'resina' && (
               <ProtocolUnavailableAlert
-                onReprocess={() => r.evaluation?.session_id && navigate(`/evaluation/${r.evaluation.session_id}`)}
+                onReprocess={() => r.evaluation?.session_id && navigate(`/evaluation/${r.evaluation.session_id}?retry=${r.evaluation.id}`)}
               />
             )}
 

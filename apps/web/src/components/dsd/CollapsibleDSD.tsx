@@ -1,9 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Card, CardContent, Button, Badge, Collapsible, CollapsibleContent, CollapsibleTrigger } from '@parisgroup-ai/pageshell/primitives';
 import { ChevronDown, ChevronUp, Smile, Sparkles, Eye, Scissors, ArrowUp, ArrowDown, ShieldCheck } from 'lucide-react';
 import { ComparisonSlider } from './ComparisonSlider';
 import { ProportionsCard } from './ProportionsCard';

@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription, AlertTitle, Badge } from '@parisgroup-ai/pageshell/primitives';
 import { AlertTriangle, Shield, Moon } from 'lucide-react';
 
 interface BruxismAlertProps {

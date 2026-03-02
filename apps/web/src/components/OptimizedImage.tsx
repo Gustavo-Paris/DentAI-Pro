@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useSignedUrl, THUMBNAIL_PRESETS } from '@/hooks/useSignedUrl';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@parisgroup-ai/pageshell/primitives';
 import { ImageOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 

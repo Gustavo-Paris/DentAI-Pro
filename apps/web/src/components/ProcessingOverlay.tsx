@@ -1,7 +1,7 @@
 import { memo, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@parisgroup-ai/pageshell/primitives';
 import { ProgressRing } from './ProgressRing';
 import { CompactStepIndicator } from './CompactStepIndicator';
 

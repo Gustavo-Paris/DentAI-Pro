@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Loader2, Plus, CreditCard } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@parisgroup-ai/pageshell/primitives';
 import { useSubscription, formatPrice } from '@/hooks/useSubscription';
 import { cn } from '@/lib/utils';
 

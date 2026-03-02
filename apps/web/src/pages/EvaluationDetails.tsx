@@ -1,5 +1,5 @@
 import { useEffect, useState, lazy, Suspense } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { Button } from '@parisgroup-ai/pageshell/primitives';
@@ -37,6 +37,7 @@ export default function EvaluationDetails() {
   useDocumentTitle(t('pageTitle.evaluationDetails'));
   const detail = useEvaluationDetail();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     evaluationId: string;
@@ -78,6 +79,15 @@ export default function EvaluationDetails() {
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [detail.selectedIds.size, detail.clearSelection]);
+
+  // Auto-trigger retry when navigated from "Reprocessar caso" button
+  useEffect(() => {
+    const retryId = searchParams.get('retry');
+    if (retryId && !detail.isLoading && detail.evaluations.length > 0) {
+      setSearchParams({}, { replace: true });
+      detail.handleRetryEvaluation(retryId);
+    }
+  }, [searchParams, detail.isLoading, detail.evaluations.length]);
 
   const handleCompleteClick = (id: string) => {
     const result = detail.handleMarkAsCompleted(id);
@@ -126,7 +136,9 @@ export default function EvaluationDetails() {
           },
           {
             label: detail.isRegenerating
-              ? t('evaluation.regenerating')
+              ? (detail.regenerationProgress
+                ? t('evaluation.regeneratingProgress', { current: detail.regenerationProgress.current, total: detail.regenerationProgress.total })
+                : t('evaluation.regenerating'))
               : targetLabel,
             icon: detail.isRegenerating ? Loader2 : RefreshCw,
             onClick: () => setShowRegenerateDialog(true),
@@ -376,6 +388,7 @@ export default function EvaluationDetails() {
         onOpenChange={setShowRegenerateDialog}
         title={t('evaluation.regenerateTitle')}
         description={t('evaluation.regenerateDescription', {
+            targetBudget: targetBudget === 'premium' ? 'Premium' : 'Padrão',
           })}
         confirmText={t('evaluation.regenerateConfirm')}
         cancelText={t('common.cancel')}

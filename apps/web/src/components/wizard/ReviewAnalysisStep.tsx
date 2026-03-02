@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Info, ClipboardCheck } from 'lucide-react';
 import type { Patient } from '@/components/PatientAutocomplete';
 import { useSpeechToText } from '@/hooks/useSpeechToText';
-import { ComponentSkeleton } from '@/components/ui/skeleton-wrapper';
+import { ComponentSkeleton } from '@/components/skeleton-wrapper';
 
 // Re-export constants for backward compatibility
 export { TREATMENT_LABEL_KEYS, TREATMENT_DESC_KEYS } from './review/review-constants';

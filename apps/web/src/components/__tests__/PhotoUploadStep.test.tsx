@@ -35,18 +35,12 @@ vi.mock('heic-to', () => ({
 }));
 
 // Mock UI components
-vi.mock('@/components/ui/card', () => ({
+vi.mock('@parisgroup-ai/pageshell/primitives', () => ({
   Card: ({ children, ...props }: any) => <div data-testid="card" {...props}>{children}</div>,
   CardContent: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-}));
-
-vi.mock('@/components/ui/button', () => ({
   Button: ({ children, onClick, disabled, ...props }: any) => (
     <button onClick={onClick} disabled={disabled} {...props}>{children}</button>
   ),
-}));
-
-vi.mock('@/components/ui/badge', () => ({
   Badge: ({ children, ...props }: any) => <span {...props}>{children}</span>,
 }));
 

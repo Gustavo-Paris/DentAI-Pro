@@ -22,7 +22,7 @@ vi.mock('lucide-react', () => ({
 }));
 
 // Mock Skeleton
-vi.mock('@/components/ui/skeleton', () => ({
+vi.mock('@parisgroup-ai/pageshell/primitives', () => ({
   Skeleton: ({ className }: { className?: string }) => (
     <div data-testid="skeleton" className={className} />
   ),

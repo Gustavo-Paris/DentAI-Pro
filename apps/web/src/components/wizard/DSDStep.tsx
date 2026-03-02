@@ -17,7 +17,7 @@ import { DSDErrorState } from './dsd/DSDErrorState';
 import { DSDPhotoQualityGate } from './dsd/DSDPhotoQualityGate';
 const DSDAnalysisView = lazy(() => import('./dsd/DSDAnalysisView'));
 import { DSDInitialState } from './dsd/DSDInitialState';
-import { ComponentSkeleton } from '@/components/ui/skeleton-wrapper';
+import { ComponentSkeleton } from '@/components/skeleton-wrapper';
 
 // Re-export types for backward compatibility with existing importers
 export type { TreatmentIndication, DSDSuggestion, DSDAnalysis, DSDResult };

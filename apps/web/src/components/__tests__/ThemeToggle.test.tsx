@@ -9,13 +9,10 @@ vi.mock('@parisgroup-ai/pageshell/theme', () => ({
   usePageShellColorMode: () => ({ colorMode: mockColorMode, setColorMode: mockSetColorMode }),
 }));
 
-vi.mock('@/components/ui/button', () => ({
+vi.mock('@parisgroup-ai/pageshell/primitives', () => ({
   Button: ({ children, onClick, ...props }: React.ComponentPropsWithoutRef<'button'>) => (
     <button onClick={onClick} {...props}>{children}</button>
   ),
-}));
-
-vi.mock('@/components/ui/tooltip', () => ({
   Tooltip: ({ children }: React.PropsWithChildren) => <>{children}</>,
   TooltipContent: ({ children }: React.PropsWithChildren) => <div data-testid="tooltip-content">{children}</div>,
   TooltipTrigger: ({ children }: React.PropsWithChildren) => <>{children}</>,

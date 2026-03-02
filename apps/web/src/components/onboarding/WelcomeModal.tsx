@@ -4,8 +4,8 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+  Button,
+} from '@parisgroup-ai/pageshell/primitives';
 import { BRAND_NAME, WELCOME_STORAGE_KEY } from '@/lib/branding';
 import { Camera, Sparkles, FileText, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';

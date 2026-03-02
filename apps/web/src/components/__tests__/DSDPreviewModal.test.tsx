@@ -42,7 +42,7 @@ vi.mock('@/components/dsd/ComparisonSlider', () => ({
 }));
 
 // Mock UI components
-vi.mock('@/components/ui/dialog', () => ({
+vi.mock('@parisgroup-ai/pageshell/primitives', () => ({
   Dialog: ({ children, open, onOpenChange }: any) =>
     open ? (
       <div data-testid="dialog" role="dialog">
@@ -55,9 +55,6 @@ vi.mock('@/components/ui/dialog', () => ({
   DialogContent: ({ children }: any) => <div data-testid="dialog-content">{children}</div>,
   DialogHeader: ({ children }: any) => <div>{children}</div>,
   DialogTitle: ({ children, className }: any) => <h2 className={className}>{children}</h2>,
-}));
-
-vi.mock('@/components/ui/skeleton', () => ({
   Skeleton: ({ className }: any) => <div data-testid="skeleton" className={className} />,
 }));
 

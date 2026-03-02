@@ -1,4 +1,4 @@
-import { Checkbox } from "@/components/ui/checkbox";
+import { Checkbox } from "@parisgroup-ai/pageshell/primitives";
 import { cn } from "@/lib/utils";
 import { CheckCircle2 } from "lucide-react";
 

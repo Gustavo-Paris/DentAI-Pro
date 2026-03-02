@@ -51,20 +51,25 @@ export function AnnotationOverlay({
 }: AnnotationOverlayProps) {
   if (!visible || !containerWidth || !containerHeight) return null;
 
-  // Build map: tooth number -> bounds
-  // Heuristic: match by index (both arrays ordered by tooth position)
-  // This is imperfect but works for the common case where detected teeth align with suggestions
-  const boundsMap = new Map<number, ToothBoundsPct>();
-  toothBounds.forEach((b, i) => boundsMap.set(i, b));
+  const normalizeTooth = (value: string | undefined): string | null => {
+    if (!value) return null;
+    const match = value.match(/[1-4][1-8]/);
+    return match ? match[0] : null;
+  };
 
-  // Match suggestions to bounds by tooth number proximity
+  const boundsByTooth = new Map<string, ToothBoundsPct>();
+  const fallbackBounds = toothBounds.filter((b) => {
+    const tooth = normalizeTooth(b.tooth);
+    if (!tooth) return true;
+    boundsByTooth.set(tooth, b);
+    return false;
+  });
+
   const annotatedSuggestions = suggestions
     .filter(s => s.tooth && s.proposed_change)
     .slice(0, 20); // Limit to avoid clutter
 
-  // Simple approach: distribute suggestions across available bounds
-  // For each suggestion, try to find a tooth bound at a matching position
-  const usedBounds = new Set<number>();
+  const usedFallbackBounds = new Set<number>();
 
   return (
     <svg
@@ -84,13 +89,16 @@ export function AnnotationOverlay({
         </marker>
       </defs>
       {annotatedSuggestions.map((suggestion, idx) => {
-        // Try to find a bound to attach this annotation to
-        let bound: ToothBoundsPct | undefined;
-        for (const [i, b] of boundsMap.entries()) {
-          if (!usedBounds.has(i)) {
-            bound = b;
-            usedBounds.add(i);
-            break;
+        const suggestionTooth = normalizeTooth(suggestion.tooth);
+        let bound = suggestionTooth ? boundsByTooth.get(suggestionTooth) : undefined;
+
+        if (!bound) {
+          for (const [fallbackIdx, fallbackBound] of fallbackBounds.entries()) {
+            if (!usedFallbackBounds.has(fallbackIdx)) {
+              bound = fallbackBound;
+              usedFallbackBounds.add(fallbackIdx);
+              break;
+            }
           }
         }
 

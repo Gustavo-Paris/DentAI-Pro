@@ -4,15 +4,14 @@ import { getDateLocale } from '@/lib/date-utils';
 import { useTranslation } from 'react-i18next';
 import { Clock, Trash2, RotateCcw, Loader2 } from 'lucide-react';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Button,
+} from '@parisgroup-ai/pageshell/primitives';
 
 interface DraftRestoreModalProps {
   open: boolean;
@@ -45,14 +44,14 @@ export function DraftRestoreModal({
   }, [onRestore]);
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-center gap-2">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent onInteractOutside={(e) => e.preventDefault()}>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
             <RotateCcw className="w-5 h-5 text-primary" />
             {t('components.wizard.draftRestore.title')}
-          </AlertDialogTitle>
-          <AlertDialogDescription asChild>
+          </DialogTitle>
+          <DialogDescription asChild>
             <div className="text-sm text-muted-foreground space-y-3">
               <p>
                 {t('components.wizard.draftRestore.description')}
@@ -66,14 +65,14 @@ export function DraftRestoreModal({
                 <span>{t('components.wizard.draftRestore.lastSaved', { time: timeAgo })}</span>
               </div>
             </div>
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-          <AlertDialogCancel onClick={onDiscard} disabled={isRestoring} className="gap-2">
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="flex-col sm:flex-row gap-2">
+          <Button variant="outline" onClick={onDiscard} disabled={isRestoring} className="gap-2">
             <Trash2 className="w-4 h-4" />
             {t('components.wizard.draftRestore.startOver')}
-          </AlertDialogCancel>
-          <AlertDialogAction onClick={handleRestore} disabled={isRestoring} className="gap-2">
+          </Button>
+          <Button onClick={handleRestore} disabled={isRestoring} className="gap-2">
             {isRestoring ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
@@ -82,9 +81,9 @@ export function DraftRestoreModal({
             {isRestoring
               ? t('components.wizard.draftRestore.restoring', 'Restaurando...')
               : t('components.wizard.draftRestore.continue')}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

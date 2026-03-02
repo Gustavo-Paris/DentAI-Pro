@@ -270,7 +270,14 @@ export function useDSDStep({
 
   const toothBounds = useMemo(() => {
     const bounds = (detectedTeeth || [])
-      .map((t) => t.tooth_bounds)
+      .map((t) => (
+        t.tooth_bounds
+          ? {
+              ...t.tooth_bounds,
+              tooth: t.tooth,
+            }
+          : null
+      ))
       .filter(Boolean) as ToothBoundsPct[];
     return bounds.filter((b) =>
       Number.isFinite(b.x) && Number.isFinite(b.y) && Number.isFinite(b.width) && Number.isFinite(b.height) &&

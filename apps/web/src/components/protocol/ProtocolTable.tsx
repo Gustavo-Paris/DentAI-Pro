@@ -1,18 +1,6 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tooltip, TooltipContent, TooltipTrigger } from "@parisgroup-ai/pageshell/primitives";
 import { ProtocolLayer } from "@/types/protocol";
 
 export type { ProtocolLayer };
