@@ -37,14 +37,11 @@ export async function save(userId: string, draftData: unknown) {
   await withMutation(() =>
     supabase
       .from('evaluation_drafts')
-      .upsert(
-        {
-          user_id: userId,
-          draft_data: JSON.parse(JSON.stringify(draftData)),
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'user_id' },
-      ),
+      .insert({
+        user_id: userId,
+        draft_data: JSON.parse(JSON.stringify(draftData)),
+        updated_at: new Date().toISOString(),
+      }),
   );
 }
 

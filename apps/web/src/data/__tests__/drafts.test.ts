@@ -10,7 +10,7 @@ let terminalResult: unknown = { data: null, error: null };
 const mockSelect = vi.fn();
 const mockEq = vi.fn();
 const mockMaybeSingle = vi.fn();
-const mockUpsert = vi.fn();
+const mockInsert = vi.fn();
 const mockDelete = vi.fn();
 
 function createBuilder(): Record<string, (...args: unknown[]) => unknown> {
@@ -25,7 +25,7 @@ function createBuilder(): Record<string, (...args: unknown[]) => unknown> {
 
   builder.select = chainMethod(mockSelect);
   builder.eq = chainMethod(mockEq);
-  builder.upsert = chainMethod(mockUpsert);
+  builder.insert = chainMethod(mockInsert);
   builder.delete = (...args: unknown[]) => {
     mockDelete(...args);
     return builder;
@@ -84,17 +84,16 @@ describe('drafts.load', () => {
 });
 
 describe('drafts.save', () => {
-  it('should call upsert with draft data and onConflict user_id', async () => {
+  it('should call insert with draft data', async () => {
     terminalResult = { error: null };
 
     await save('u1', { step: 4, patientName: 'Test' });
 
-    expect(mockUpsert).toHaveBeenCalledWith(
+    expect(mockInsert).toHaveBeenCalledWith(
       expect.objectContaining({
         user_id: 'u1',
         draft_data: { step: 4, patientName: 'Test' },
       }),
-      { onConflict: 'user_id' },
     );
   });
 
@@ -105,14 +104,14 @@ describe('drafts.save', () => {
     await save('u1', circular);
 
     // Verify the draft_data is a clean copy (JSON.parse(JSON.stringify(...)))
-    const upsertArg = mockUpsert.mock.calls[0][0];
-    expect(upsertArg.draft_data).toEqual({ a: 1 });
+    const insertArg = mockInsert.mock.calls[0][0];
+    expect(insertArg.draft_data).toEqual({ a: 1 });
   });
 
-  it('should throw when upsert fails', async () => {
-    terminalResult = { error: new Error('Upsert failed') };
+  it('should throw when insert fails', async () => {
+    terminalResult = { error: new Error('Insert failed') };
 
-    await expect(save('u1', { step: 1 })).rejects.toThrow('Upsert failed');
+    await expect(save('u1', { step: 1 })).rejects.toThrow('Insert failed');
   });
 });
 
