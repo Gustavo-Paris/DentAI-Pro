@@ -93,6 +93,12 @@ export async function validateAndFixProtocolLayers({
   const validatedLayers = [];
   const validationAlerts: string[] = [];
   const shadeReplacements: Record<string, string> = {}; // Track all shade corrections for checklist sync
+  const brandReplacements: Record<string, string> = {}; // Track product-line changes for checklist sync
+
+  // Normalize shade: strip parenthetical descriptions AI sometimes adds, e.g. "MW (Milky White)" → "MW"
+  function normalizeShade(shade: string): string {
+    return shade.replace(/\s*\(.*?\)\s*$/, '').trim();
+  }
 
   // Check if patient requested whitening (BL shades)
   const wantsWhitening = aestheticGoals?.toLowerCase().includes('hollywood') ||
@@ -108,6 +114,8 @@ export async function validateAndFixProtocolLayers({
   // ── Batch prefetch: single query replaces N+1 per-layer lookups ──
   const productLines = new Set<string>();
   for (const layer of recommendation.protocol.layers) {
+    // Pre-normalize shade values before any lookups
+    if (layer.shade) layer.shade = normalizeShade(layer.shade);
     if (layer.shade === 'WT' && layer.resin_brand?.includes('Z350')) {
       shadeReplacements['WT'] = 'CT';
       layer.shade = 'CT';
@@ -161,6 +169,15 @@ export async function validateAndFixProtocolLayers({
     const productLine = brandMatch ? brandMatch[2].trim() : layer.resin_brand;
     const layerType = layer.name?.toLowerCase() || '';
 
+    // Normalize shade: strip AI-generated descriptions like "MW (Milky White)" → "MW"
+    if (layer.shade) {
+      const normalized = normalizeShade(layer.shade);
+      if (normalized !== layer.shade) {
+        logger.log(`Shade normalized: "${layer.shade}" → "${normalized}" for layer "${layer.name}"`);
+        layer.shade = normalized;
+      }
+    }
+
     if (productLine && layer.shade) {
       const lineRows = getRowsForLine(productLine);
 
@@ -188,6 +205,7 @@ export async function validateAndFixProtocolLayers({
               layer.resin_brand = `Kerr - Harmonize`;
               layer.shade = xle.shade;
               shadeReplacements[originalShade] = xle.shade;
+              if (productLine) brandReplacements[productLine] = 'Harmonize';
             }
           } else if (empressRows.length > 0) {
             const blL = empressRows.find(r => /BL-?L/i.test(r.shade)) || empressRows.find(r => r.type?.toLowerCase().includes('esmalte'));
@@ -195,6 +213,7 @@ export async function validateAndFixProtocolLayers({
               layer.resin_brand = `Ivoclar - IPS Empress Direct`;
               layer.shade = blL.shade;
               shadeReplacements[originalShade] = blL.shade;
+              if (productLine) brandReplacements[productLine] = 'IPS Empress Direct';
             }
           }
           const actuallyChanged = layer.resin_brand !== originalBrand || layer.shade !== originalShade;
@@ -246,7 +265,13 @@ export async function validateAndFixProtocolLayers({
             // Align brand with whichever catalog row was matched
             for (const entry of brandAlignmentMap) {
               if (replacement === entry.row) {
-                if (!entry.pattern.test(originalBrand || '')) layer.resin_brand = entry.brand;
+                if (!entry.pattern.test(originalBrand || '')) {
+                  layer.resin_brand = entry.brand;
+                  if (productLine) {
+                    const newPL = entry.brand.match(/^.+?\s*-\s*(.+)$/)?.[1] || entry.brand;
+                    brandReplacements[productLine] = newPL;
+                  }
+                }
                 break;
               }
             }
@@ -436,7 +461,11 @@ export async function validateAndFixProtocolLayers({
               ? 'Tokuyama - Palfique LX5'
               : 'Tokuyama - Estelite Omega';
             layer.shade = preferred.shade;
-            shadeReplacements[originalShade] = preferred.shade;
+            if (originalShade !== preferred.shade) shadeReplacements[originalShade] = preferred.shade;
+            if (productLine) {
+              const newPL = isPalfique ? 'Palfique LX5' : 'Estelite Omega';
+              if (productLine !== newPL) brandReplacements[productLine] = newPL;
+            }
             const reason = wantsWhitening
               ? 'resultado mais claro (whitening)'
               : 'resultado natural';
@@ -556,15 +585,31 @@ export async function validateAndFixProtocolLayers({
     }
   }
 
-  // Apply ALL shade replacements to text fields so they match validated layers
-  if (Object.keys(shadeReplacements).length > 0) {
-    logger.log(`Applying ${Object.keys(shadeReplacements).length} shade replacements to text fields: ${JSON.stringify(shadeReplacements)}`);
+  // Apply ALL shade and brand replacements to text fields so they match validated layers
+  const hasShadeReplacements = Object.keys(shadeReplacements).length > 0;
+  const hasBrandReplacements = Object.keys(brandReplacements).length > 0;
 
-    // Helper: replace all tracked shade names using word-boundary matching
-    const applyShadeFixes = (text: string): string => {
+  if (hasShadeReplacements || hasBrandReplacements) {
+    if (hasShadeReplacements) {
+      logger.log(`Applying ${Object.keys(shadeReplacements).length} shade replacements: ${JSON.stringify(shadeReplacements)}`);
+    }
+    if (hasBrandReplacements) {
+      logger.log(`Applying ${Object.keys(brandReplacements).length} brand replacements: ${JSON.stringify(brandReplacements)}`);
+    }
+
+    // Helper: replace all tracked shade names and product line names in text
+    const applyTextFixes = (text: string): string => {
       let fixed = text;
+      // Apply brand (product line) replacements first — e.g. "Filtek Z350 XT" → "Harmonize"
+      for (const [oldPL, newPL] of Object.entries(brandReplacements)) {
+        // Match with flexible patterns: "Filtek Z350 XT", "Z350 XT", "Z350", etc.
+        const escaped = oldPL.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        fixed = fixed.replace(new RegExp(escaped, 'gi'), newPL);
+      }
+      // Apply shade replacements — e.g. "WE" → "XLE"
       for (const [original, replacement] of Object.entries(shadeReplacements)) {
-        fixed = fixed.replace(new RegExp(`\\b${original}\\b`, 'g'), replacement);
+        const escaped = original.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        fixed = fixed.replace(new RegExp(`\\b${escaped}\\b`, 'g'), replacement);
       }
       return fixed;
     };
@@ -572,17 +617,17 @@ export async function validateAndFixProtocolLayers({
     // 1. Checklist (passo a passo)
     if (recommendation.protocol.checklist) {
       recommendation.protocol.checklist = recommendation.protocol.checklist.map(
-        (item: string) => typeof item === 'string' ? applyShadeFixes(item) : item
+        (item: string) => typeof item === 'string' ? applyTextFixes(item) : item
       );
     }
 
     // 2. Per-layer technique and purpose text
     for (const layer of recommendation.protocol.layers) {
       if (typeof layer.technique === 'string') {
-        layer.technique = applyShadeFixes(layer.technique);
+        layer.technique = applyTextFixes(layer.technique);
       }
       if (typeof layer.purpose === 'string') {
-        layer.purpose = applyShadeFixes(layer.purpose);
+        layer.purpose = applyTextFixes(layer.purpose);
       }
     }
 
@@ -590,19 +635,19 @@ export async function validateAndFixProtocolLayers({
     if (recommendation.protocol.alternative) {
       const alt = recommendation.protocol.alternative;
       if (typeof alt.shade === 'string') {
-        alt.shade = applyShadeFixes(alt.shade);
+        alt.shade = applyTextFixes(alt.shade);
       }
       if (typeof alt.technique === 'string') {
-        alt.technique = applyShadeFixes(alt.technique);
+        alt.technique = applyTextFixes(alt.technique);
       }
       if (typeof alt.tradeoff === 'string') {
-        alt.tradeoff = applyShadeFixes(alt.tradeoff);
+        alt.tradeoff = applyTextFixes(alt.tradeoff);
       }
     }
 
     // 4. Justification text
     if (typeof recommendation.justification === 'string') {
-      recommendation.justification = applyShadeFixes(recommendation.justification);
+      recommendation.justification = applyTextFixes(recommendation.justification);
     }
   }
 
