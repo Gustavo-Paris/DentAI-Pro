@@ -116,9 +116,13 @@ export async function validateAndFixProtocolLayers({
     const pl = brandMatch ? brandMatch[2].trim() : layer.resin_brand;
     if (pl) productLines.add(pl);
   }
-  // Always include Harmonize and Empress Direct for cristas proximais auto-fix
+  // Always include brands referenced by enforcement rules (cristas, aumento incisal, enamel final)
   productLines.add('Harmonize');
   productLines.add('Empress Direct');
+  productLines.add('FORMA');
+  productLines.add('Vittra APS');
+  productLines.add('Estelite Omega');
+  productLines.add('Palfique');
 
   // Single DB call: fetch all catalog rows for every product line mentioned
   const catalogRows: Array<{ shade: string; type: string; product_line: string }> = [];
@@ -212,47 +216,59 @@ export async function validateAndFixProtocolLayers({
       const isAumentoIncisal = (layerType.includes('aumento') && layerType.includes('incisal')) ||
                                layerType.includes('incisal build');
       if (isAumentoIncisal && !layerType.includes('efeito') && layer.shade) {
-        const translucentShades = ['CT', 'GT', 'Trans', 'Trans20', 'Trans30'];
+        // All translucent shades that are clinically acceptable for palatal shell
+        const translucentShades = ['CT', 'GT', 'BT', 'YT', 'TN', 'Trans', 'Trans20', 'Trans30', 'Opal'];
         const isTranslucent = translucentShades.some(ts =>
-          layer.shade.toUpperCase().includes(ts.toUpperCase())
+          layer.shade.toUpperCase() === ts.toUpperCase()
         );
         if (!isTranslucent) {
           const originalShade = layer.shade;
           const originalBrand = layer.resin_brand;
-          // Prefer CT from Z350 or Trans from FORMA in catalog
-          const z350CT = catalogRows.find(r => r.shade === 'CT' && matchesLine(r.product_line, 'Z350'));
+          // Priority: Estelite Omega CT > FORMA Trans > Vittra Trans > Empress Opal > Z350 BT
+          const esteliteCT = catalogRows.find(r => r.shade === 'CT' && matchesLine(r.product_line, 'Estelite Omega'));
           const formaTrans = catalogRows.find(r => /^Trans$/i.test(r.shade) && matchesLine(r.product_line, 'FORMA'));
-          const empressTrans = catalogRows.find(r => /Trans20/i.test(r.shade) && matchesLine(r.product_line, 'Empress'));
           const vittraTrans = catalogRows.find(r => /^Trans$/i.test(r.shade) && matchesLine(r.product_line, 'Vittra'));
-          const replacement = z350CT || formaTrans || empressTrans || vittraTrans;
+          const empressOpal = catalogRows.find(r => r.shade === 'Opal' && matchesLine(r.product_line, 'Empress'));
+          const z350BT = catalogRows.find(r => r.shade === 'BT' && matchesLine(r.product_line, 'Z350'));
+          const replacement = esteliteCT || formaTrans || vittraTrans || empressOpal || z350BT;
+
+          // Brand alignment map — maps catalog row back to canonical brand string
+          const brandAlignmentMap: Array<{ row: typeof replacement; pattern: RegExp; brand: string }> = [
+            { row: esteliteCT, pattern: /estelite/i, brand: 'Tokuyama - Estelite Omega' },
+            { row: formaTrans, pattern: /forma/i, brand: 'Tokuyama - FORMA' },
+            { row: vittraTrans, pattern: /vittra/i, brand: 'FGM - Vittra APS' },
+            { row: empressOpal, pattern: /empress/i, brand: 'Ivoclar - IPS Empress Direct' },
+            { row: z350BT, pattern: /z350/i, brand: '3M ESPE - Filtek Z350 XT' },
+          ];
+
           if (replacement) {
             layer.shade = replacement.shade;
             // Align brand with whichever catalog row was matched
-            if (replacement === z350CT) {
-              if (!/z350/i.test(originalBrand || '')) layer.resin_brand = '3M ESPE - Filtek Z350 XT';
-            } else if (replacement === formaTrans) {
-              if (!/forma/i.test(originalBrand || '')) layer.resin_brand = 'Ultradent - FORMA';
-            } else if (replacement === empressTrans) {
-              if (!/empress/i.test(originalBrand || '')) layer.resin_brand = 'Ivoclar - IPS Empress Direct';
-            } else if (replacement === vittraTrans) {
-              if (!/vittra/i.test(originalBrand || '')) layer.resin_brand = 'FGM - Vittra APS';
+            for (const entry of brandAlignmentMap) {
+              if (replacement === entry.row) {
+                if (!entry.pattern.test(originalBrand || '')) layer.resin_brand = entry.brand;
+                break;
+              }
             }
             shadeReplacements[originalShade] = replacement.shade;
           } else {
-            // Fallback: find ANY translucent shade in catalog and use that brand
+            // Fallback: find ANY translucent shade in entire catalog
             const anyTranslucent = catalogRows.find(r =>
-              ['CT', 'Trans', 'Trans20', 'Trans30', 'GT'].some(ts => r.shade.toUpperCase() === ts.toUpperCase())
+              ['CT', 'Trans', 'TRANS', 'Trans20', 'Trans30', 'GT', 'BT', 'YT', 'TN', 'Opal'].some(
+                ts => r.shade.toUpperCase() === ts.toUpperCase()
+              )
             );
             if (anyTranslucent) {
               layer.shade = anyTranslucent.shade;
               // Derive brand name from catalog product_line
               const knownBrands: Record<string, string> = {
                 'z350': '3M ESPE - Filtek Z350 XT',
-                'forma': 'Ultradent - FORMA',
+                'forma': 'Tokuyama - FORMA',
                 'empress': 'Ivoclar - IPS Empress Direct',
                 'vittra': 'FGM - Vittra APS',
                 'estelite omega': 'Tokuyama - Estelite Omega',
                 'harmonize': 'Kerr - Harmonize',
+                'palfique': 'Tokuyama - Palfique LX5',
               };
               for (const [keyword, brand] of Object.entries(knownBrands)) {
                 if (anyTranslucent.product_line.toLowerCase().includes(keyword)) {
@@ -262,9 +278,9 @@ export async function validateAndFixProtocolLayers({
               }
               shadeReplacements[originalShade] = anyTranslucent.shade;
             } else {
-              // Hard fallback: force CT — downstream catalog check will handle
-              layer.shade = 'CT';
-              shadeReplacements[originalShade] = 'CT';
+              // Hard fallback: force BT (Z350 always has it) — downstream catalog check will handle
+              layer.shade = 'BT';
+              shadeReplacements[originalShade] = 'BT';
             }
           }
           validationAlerts.push(

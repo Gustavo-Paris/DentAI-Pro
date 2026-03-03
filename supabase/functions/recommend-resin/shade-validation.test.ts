@@ -627,33 +627,56 @@ Deno.test("Layer orders are re-numbered after Efeitos Incisais injection", async
 // by the general catalog check when shade doesn't exist in original brand
 // ==========================================================================
 
-// Z350 catalog WITHOUT CT (simulates production DB)
-const Z350_NO_CT: Array<{ shade: string; type: string; product_line: string }> = [
+// Production-realistic catalogs (match actual resin_catalog DB)
+const Z350_PRODUCTION: Array<{ shade: string; type: string; product_line: string }> = [
   { shade: "A1", type: "universal", product_line: "3M ESPE - Filtek Z350 XT" },
   { shade: "A2", type: "universal", product_line: "3M ESPE - Filtek Z350 XT" },
   { shade: "A2B", type: "body", product_line: "3M ESPE - Filtek Z350 XT" },
   { shade: "WE", type: "esmalte", product_line: "3M ESPE - Filtek Z350 XT" },
   { shade: "A1E", type: "esmalte", product_line: "3M ESPE - Filtek Z350 XT" },
   { shade: "WB", type: "body", product_line: "3M ESPE - Filtek Z350 XT" },
+  { shade: "BT", type: "Translucido", product_line: "3M ESPE - Filtek Z350 XT" },
+  { shade: "YT", type: "Translucido", product_line: "3M ESPE - Filtek Z350 XT" },
+  // NOTE: Z350 does NOT have CT in production — only BT and YT
 ];
 
-const HARMONIZE_WITH_XLE: Array<{ shade: string; type: string; product_line: string }> = [
+const HARMONIZE_PRODUCTION: Array<{ shade: string; type: string; product_line: string }> = [
   { shade: "A1", type: "universal", product_line: "Kerr - Harmonize" },
   { shade: "XLE", type: "esmalte", product_line: "Kerr - Harmonize" },
+  { shade: "TN", type: "Translucido", product_line: "Kerr - Harmonize" },
 ];
 
-const EMPRESS_WITH_TRANS: Array<{ shade: string; type: string; product_line: string }> = [
-  { shade: "Trans20", type: "esmalte translúcido", product_line: "Ivoclar - IPS Empress Direct" },
+const EMPRESS_PRODUCTION: Array<{ shade: string; type: string; product_line: string }> = [
   { shade: "BL-L", type: "esmalte", product_line: "Ivoclar - IPS Empress Direct" },
+  { shade: "Opal", type: "Translucido", product_line: "Ivoclar - IPS Empress Direct" },
   { shade: "A1", type: "dentina", product_line: "Ivoclar - IPS Empress Direct" },
+  // NOTE: Empress does NOT have Trans20 in production — has Opal instead
 ];
 
-const ESTELITE_OMEGA: Array<{ shade: string; type: string; product_line: string }> = [
+const ESTELITE_OMEGA_PRODUCTION: Array<{ shade: string; type: string; product_line: string }> = [
   { shade: "WE", type: "esmalte", product_line: "Tokuyama - Estelite Omega" },
   { shade: "MW", type: "esmalte", product_line: "Tokuyama - Estelite Omega" },
+  { shade: "CT", type: "Translucido", product_line: "Tokuyama - Estelite Omega" },
+  { shade: "TRANS", type: "Translucido", product_line: "Tokuyama - Estelite Omega" },
 ];
 
-const PRODUCTION_CATALOG = [...Z350_NO_CT, ...HARMONIZE_WITH_XLE, ...EMPRESS_WITH_TRANS, ...ESTELITE_OMEGA];
+const FORMA_PRODUCTION: Array<{ shade: string; type: string; product_line: string }> = [
+  { shade: "Trans", type: "Translucido", product_line: "Tokuyama - Forma" },
+];
+
+const VITTRA_PRODUCTION: Array<{ shade: string; type: string; product_line: string }> = [
+  { shade: "Trans", type: "Translucido", product_line: "FGM - Vittra APS" },
+  { shade: "T-Neutral", type: "Translucido", product_line: "FGM - Vittra APS" },
+];
+
+const PRODUCTION_CATALOG = [
+  ...Z350_PRODUCTION,
+  ...HARMONIZE_PRODUCTION,
+  ...EMPRESS_PRODUCTION,
+  ...ESTELITE_OMEGA_PRODUCTION,
+  ...FORMA_PRODUCTION,
+  ...VITTRA_PRODUCTION,
+];
 
 Deno.test("Aumento Incisal: enforcement finds translucent from another brand when Z350 has no CT", async () => {
   const rec = makeRecommendation([
@@ -672,15 +695,12 @@ Deno.test("Aumento Incisal: enforcement finds translucent from another brand whe
 
   const aumentoLayer = rec.protocol.layers.find(l => l.name === "Aumento Incisal");
   assertExists(aumentoLayer);
-  // Must NOT be A1E — must be a translucent shade (Trans20 from Empress or similar)
-  const translucentShades = ["CT", "GT", "Trans", "Trans20", "Trans30"];
-  const isTranslucent = translucentShades.some(ts =>
-    aumentoLayer.shade.toUpperCase().includes(ts.toUpperCase()),
-  );
+  // With production catalog, Estelite Omega CT is highest priority translucent
+  assertEquals(aumentoLayer.shade, "CT", `Aumento Incisal should be CT (Estelite Omega), got ${aumentoLayer.shade}`);
   assertEquals(
-    isTranslucent,
+    aumentoLayer.resin_brand?.includes("Estelite Omega"),
     true,
-    `Aumento Incisal shade must be translucent, got ${aumentoLayer.shade} (brand: ${aumentoLayer.resin_brand})`,
+    `Brand should be Estelite Omega, got ${aumentoLayer.resin_brand}`,
   );
   // A1E must NOT survive the enforcement
   assertEquals(aumentoLayer.shade !== "A1E", true, "A1E must not remain on Aumento Incisal");
