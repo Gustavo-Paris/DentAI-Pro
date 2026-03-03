@@ -360,7 +360,7 @@ export async function validateAndFixProtocolLayers({
         );
 
         if (enamelShades.length > 0) {
-          const currentIsUniversal = !['WE', 'CE', 'JE', 'CT', 'Trans', 'IT', 'TN', 'Opal', 'INC'].some(
+          const currentIsUniversal = !['WE', 'CE', 'JE', 'CT', 'Trans', 'IT', 'TN', 'Opal', 'INC', 'MW'].some(
             prefix => layer.shade.toUpperCase().includes(prefix)
           );
 
@@ -556,20 +556,54 @@ export async function validateAndFixProtocolLayers({
     }
   }
 
-  // Apply ALL shade replacements to checklist text so steps match validated layers
-  if (recommendation.protocol.checklist && Object.keys(shadeReplacements).length > 0) {
-    logger.log(`Applying ${Object.keys(shadeReplacements).length} shade replacements to checklist: ${JSON.stringify(shadeReplacements)}`);
-    recommendation.protocol.checklist = recommendation.protocol.checklist.map(
-      (item: string) => {
-        if (typeof item !== 'string') return item;
-        let fixed = item;
-        for (const [original, replacement] of Object.entries(shadeReplacements)) {
-          // Use word-boundary regex to avoid partial matches (e.g., "A1E" inside "DA1E")
-          fixed = fixed.replace(new RegExp(`\\b${original}\\b`, 'g'), replacement);
-        }
-        return fixed;
+  // Apply ALL shade replacements to text fields so they match validated layers
+  if (Object.keys(shadeReplacements).length > 0) {
+    logger.log(`Applying ${Object.keys(shadeReplacements).length} shade replacements to text fields: ${JSON.stringify(shadeReplacements)}`);
+
+    // Helper: replace all tracked shade names using word-boundary matching
+    const applyShadeFixes = (text: string): string => {
+      let fixed = text;
+      for (const [original, replacement] of Object.entries(shadeReplacements)) {
+        fixed = fixed.replace(new RegExp(`\\b${original}\\b`, 'g'), replacement);
       }
-    );
+      return fixed;
+    };
+
+    // 1. Checklist (passo a passo)
+    if (recommendation.protocol.checklist) {
+      recommendation.protocol.checklist = recommendation.protocol.checklist.map(
+        (item: string) => typeof item === 'string' ? applyShadeFixes(item) : item
+      );
+    }
+
+    // 2. Per-layer technique and purpose text
+    for (const layer of recommendation.protocol.layers) {
+      if (typeof layer.technique === 'string') {
+        layer.technique = applyShadeFixes(layer.technique);
+      }
+      if (typeof layer.purpose === 'string') {
+        layer.purpose = applyShadeFixes(layer.purpose);
+      }
+    }
+
+    // 3. Alternative protocol fields
+    if (recommendation.protocol.alternative) {
+      const alt = recommendation.protocol.alternative;
+      if (typeof alt.shade === 'string') {
+        alt.shade = applyShadeFixes(alt.shade);
+      }
+      if (typeof alt.technique === 'string') {
+        alt.technique = applyShadeFixes(alt.technique);
+      }
+      if (typeof alt.tradeoff === 'string') {
+        alt.tradeoff = applyShadeFixes(alt.tradeoff);
+      }
+    }
+
+    // 4. Justification text
+    if (typeof recommendation.justification === 'string') {
+      recommendation.justification = applyShadeFixes(recommendation.justification);
+    }
   }
 
   // Add validation alerts to protocol alerts (with deduplication)

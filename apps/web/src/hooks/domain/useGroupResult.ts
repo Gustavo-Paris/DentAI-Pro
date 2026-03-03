@@ -259,6 +259,10 @@ export function useGroupResult() {
   // Mark all evaluations in the group as completed
   const handleMarkAllCompleted = useCallback(async () => {
     if (!user) return;
+    if (!hasProtocol) {
+      toast.error(t('toasts.result.noProtocolCannotComplete'));
+      return;
+    }
     try {
       const ids = groupEvaluations.map(ev => ev.id);
       await evaluations.updateStatusBulk(ids, EVALUATION_STATUS.COMPLETED);
@@ -268,7 +272,7 @@ export function useGroupResult() {
       logger.error('Failed to mark evaluations as completed:', error);
       toast.error(t('toasts.result.saveError'));
     }
-  }, [user, groupEvaluations, queryClient, sessionId]);
+  }, [user, hasProtocol, groupEvaluations, queryClient, sessionId, t]);
 
   return {
     // Data

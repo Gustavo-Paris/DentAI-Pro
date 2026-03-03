@@ -127,14 +127,16 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
   );
 
   const handleMarkAllAsCompleted = useCallback(() => {
-    const pending = evals.filter((e) => e.status !== EVALUATION_STATUS.COMPLETED);
+    const pending = evals.filter((e) =>
+      e.status !== EVALUATION_STATUS.COMPLETED && isChecklistComplete(e)
+    );
 
     if (pending.length === 0) {
       toast.info(t('toasts.evaluationDetail.allCompleted'));
       return;
     }
 
-    const withIncompleteChecklist = pending.filter((e) => !isChecklistComplete(e)).length;
+    const withIncompleteChecklist = 0; // already filtered above
 
     bulkCompleteMutation.mutate(pending.map((e) => e.id), {
       onSuccess: () => {
@@ -220,7 +222,7 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
   const handleBulkComplete = useCallback((ids: string[]) => {
     const pending = ids.filter((id) => {
       const e = evals.find((ev) => ev.id === id);
-      return e && e.status !== EVALUATION_STATUS.COMPLETED;
+      return e && e.status !== EVALUATION_STATUS.COMPLETED && isChecklistComplete(e);
     });
 
     if (pending.length === 0) {

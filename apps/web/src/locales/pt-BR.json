@@ -1013,7 +1013,8 @@
     "result": {
       "saveError": "Erro ao salvar progresso",
       "pdfSuccess": "PDF gerado com sucesso!",
-      "pdfError": "Erro ao gerar PDF. Tente novamente."
+      "pdfError": "Erro ao gerar PDF. Tente novamente.",
+      "noProtocolCannotComplete": "Não é possível finalizar sem protocolo gerado. Tente recalcular o caso primeiro."
     },
     "wizard": {
       "insufficientCredits": "Créditos insuficientes para análise completa. Faça upgrade do seu plano.",

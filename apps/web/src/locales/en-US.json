@@ -1013,7 +1013,8 @@
     "result": {
       "saveError": "Error saving progress",
       "pdfSuccess": "PDF generated successfully!",
-      "pdfError": "Error generating PDF"
+      "pdfError": "Error generating PDF",
+      "noProtocolCannotComplete": "Cannot mark as completed without a generated protocol. Try recalculating the case first."
     },
     "wizard": {
       "insufficientCredits": "Insufficient credits for full analysis. Upgrade your plan.",

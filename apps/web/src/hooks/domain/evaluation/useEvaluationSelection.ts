@@ -80,14 +80,37 @@ export function useEvaluationSelection(
     }
   }, []);
 
+  /** Check if a protocol exists for this evaluation's treatment type */
+  const hasProtocol = useCallback(
+    (evaluation: EvaluationItem): boolean => {
+      const treatmentType = evaluation.treatment_type || 'resina';
+      switch (treatmentType) {
+        case 'porcelana':
+          return !!evaluation.cementation_protocol;
+        case 'coroa':
+        case 'implante':
+        case 'endodontia':
+        case 'encaminhamento':
+        case 'gengivoplastia':
+        case 'recobrimento_radicular':
+          return !!evaluation.generic_protocol;
+        default:
+          return !!evaluation.stratification_protocol;
+      }
+    },
+    [],
+  );
+
   const isChecklistComplete = useCallback(
     (evaluation: EvaluationItem): boolean => {
+      // No protocol = not complete (prevents "Finalizado" without protocol)
+      if (!hasProtocol(evaluation)) return false;
       const checklist = getChecklist(evaluation);
       const progress = evaluation.checklist_progress || [];
       if (checklist.length === 0) return true;
       return progress.length >= checklist.length;
     },
-    [getChecklist],
+    [getChecklist, hasProtocol],
   );
 
   const getChecklistProgressFn = useCallback(
@@ -101,9 +124,11 @@ export function useEvaluationSelection(
 
   const canMarkAsCompleted = useCallback(
     (evaluation: EvaluationItem): boolean => {
-      return evaluation.status !== EVALUATION_STATUS.COMPLETED;
+      if (evaluation.status === EVALUATION_STATUS.COMPLETED) return false;
+      // Prevent completion without a generated protocol
+      return hasProtocol(evaluation);
     },
-    [],
+    [hasProtocol],
   );
 
   const getClinicalDetails = useCallback((evaluation: EvaluationItem): string => {
