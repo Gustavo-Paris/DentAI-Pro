@@ -1,10 +1,8 @@
 import type { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import type Stripe from "npm:stripe@17";
 import { logger } from "../_shared/logger.ts";
-import { sendEmail, paymentReceivedEmail, paymentFailedEmail } from "../_shared/email.ts";
-
-/** Known valid credit pack sizes — prevents tampered metadata from granting arbitrary credits */
-const VALID_CREDIT_PACK_SIZES = [5, 10, 25, 50, 100] as const;
+import { sendEmail, paymentReceivedEmail, paymentFailedEmail, paymentActionRequiredEmail } from "../_shared/email.ts";
+import { isValidCreditPackSize } from "../_shared/billing-constants.ts";
 
 /**
  * Resolve our internal plan ID from a Stripe price ID.
@@ -344,7 +342,7 @@ export async function handleCreditPackPurchase(supabase: SupabaseClient, session
       logger.error(`Invalid credits: DB query failed and metadata value is invalid (${creditsStr})`);
       return;
     }
-    if (!VALID_CREDIT_PACK_SIZES.includes(fallback as typeof VALID_CREDIT_PACK_SIZES[number])) {
+    if (!isValidCreditPackSize(fallback)) {
       logger.error(`Suspicious credits value: ${fallback} not in allowed pack sizes. session=${session.id}`);
       return;
     }
@@ -404,4 +402,28 @@ export async function handlePaymentActionRequired(supabase: SupabaseClient, invo
   }
 
   logger.important(`3DS/payment action required for user ${sub.user_id}, invoice ${invoice.id}. Customer may need to complete authentication.`);
+
+  // Notify user via email so they can complete 3DS authentication
+  try {
+    const [{ data: profile }, { data: authData }] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", sub.user_id)
+        .single(),
+      supabase.auth.admin.getUserById(sub.user_id),
+    ]);
+    const email = authData?.user?.email;
+    const name = profile?.full_name || email?.split("@")[0] || "Usuario";
+    if (email) {
+      const amount = new Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: invoice.currency || "brl",
+      }).format((invoice.amount_due || 0) / 100);
+      const { subject, html } = paymentActionRequiredEmail(name, amount);
+      await sendEmail({ to: email, subject, html });
+    }
+  } catch (err) {
+    logger.warn(`3DS notification email failed (non-blocking): ${(err as Error).message}`);
+  }
 }

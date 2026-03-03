@@ -3,14 +3,12 @@ import { getCorsHeaders, createErrorResponse } from "../_shared/cors.ts";
 import { logger } from "../_shared/logger.ts";
 import { getSupabaseClient, authenticateRequest, isAuthError, withErrorBoundary } from "../_shared/middleware.ts";
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
+import { isValidCreditPackSize } from "../_shared/billing-constants.ts";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
   apiVersion: "2024-09-30.acacia",
   httpClient: Stripe.createFetchHttpClient(),
 });
-
-/** Known valid credit pack sizes — prevents tampered metadata from granting arbitrary credits */
-const VALID_CREDIT_PACK_SIZES = [5, 10, 25, 50, 100] as const;
 
 /**
  * Sync credit pack purchase from Stripe.
@@ -82,7 +80,7 @@ Deno.serve(withErrorBoundary(async (req: Request) => {
     } else {
       // Fallback to metadata with validation
       const fallback = parseInt(creditsStr || "0", 10);
-      if (!fallback || !VALID_CREDIT_PACK_SIZES.includes(fallback as typeof VALID_CREDIT_PACK_SIZES[number])) {
+      if (!fallback || !isValidCreditPackSize(fallback)) {
         logger.warn(`Skipping session ${session.id}: invalid credits (pack lookup failed, metadata=${creditsStr})`);
         continue;
       }

@@ -67,6 +67,7 @@ DECLARE
 BEGIN
   UPDATE evaluations
   SET status = 'error',
+      recommendation_text = 'Timeout: análise ficou presa por mais de 10 minutos. Tente novamente.',
       updated_at = NOW()
   WHERE status = 'analyzing'
     AND updated_at < now() - interval '10 minutes';

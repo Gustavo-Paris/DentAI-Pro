@@ -323,6 +323,35 @@ export function paymentReceivedEmail(
 // Template: Payment Failed
 // ---------------------------------------------------------------------------
 
+export function paymentActionRequiredEmail(
+  name: string,
+  amount: string,
+): { subject: string; html: string } {
+  const firstName = escapeHtml(name.split(" ")[0]);
+  return {
+    subject: "Acao necessaria no pagamento — ToSmile.ai",
+    html: layout(`
+      <h2 style="margin:0 0 16px;font-size:22px;color:${DARK};">Ola, ${firstName}</h2>
+      <p style="margin:0 0 16px;font-size:15px;color:${GRAY_TEXT};line-height:1.6;">
+        Seu pagamento de <strong>${escapeHtml(amount)}</strong> requer uma verificacao adicional de seguranca (3D Secure).
+      </p>
+      <p style="margin:0 0 24px;font-size:15px;color:${GRAY_TEXT};line-height:1.6;">
+        Acesse o link abaixo ou verifique o aplicativo do seu banco para autorizar a transacao.
+        Caso nao seja concluida, sua assinatura pode ser afetada.
+      </p>
+      <table role="presentation" cellspacing="0" cellpadding="0" style="margin:0 auto;">
+        <tr>
+          <td style="background-color:${TEAL};border-radius:6px;">
+            <a href="https://tosmile.ai/settings" style="display:inline-block;padding:12px 32px;font-size:15px;font-weight:600;color:${DARK};text-decoration:none;">
+              Verificar pagamento
+            </a>
+          </td>
+        </tr>
+      </table>
+    `),
+  };
+}
+
 export function paymentFailedEmail(
   name: string,
   amount: string,
