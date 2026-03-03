@@ -29,6 +29,7 @@ export function classifyEdgeFunctionError(error: unknown): EdgeFunctionErrorType
   const code = err.code ?? '';
   const status = err.status ?? 0;
   const msg = (err.message ?? '').toLowerCase();
+  const name = (err as { name?: string }).name ?? '';
 
   // Rate limited
   if (code === 'RATE_LIMITED' || status === 429 || msg.includes('429')) {
@@ -53,6 +54,21 @@ export function classifyEdgeFunctionError(error: unknown): EdgeFunctionErrorType
   // No data returned
   if (msg.includes('não retornou dados') || msg.includes('no data')) {
     return 'no_data';
+  }
+
+  // Supabase FunctionsFetchError — network/timeout reaching the edge function
+  if (name === 'FunctionsFetchError' || msg.includes('functionsfetcherror')) {
+    return 'connection';
+  }
+
+  // Supabase FunctionsHttpError — edge function returned an HTTP error (5xx)
+  if (name === 'FunctionsHttpError' || msg.includes('functionshttperror')) {
+    return 'server';
+  }
+
+  // Supabase FunctionsRelayError — relay/gateway error
+  if (name === 'FunctionsRelayError' || msg.includes('functionsrelayerror')) {
+    return 'server';
   }
 
   // Connection / network errors

@@ -1633,7 +1633,8 @@
       "credit_one": "{{count}} credit",
       "credit_other": "{{count}} credits",
       "credits": "credits",
-      "lowBalanceWarning": "Warning: low balance after this operation"
+      "lowBalanceWarning": "Warning: low balance after this operation",
+      "description": "{{operation}} will cost {{cost}} credit(s). Confirm to proceed."
     },
     "creditBadge": {
       "creditsLabel": "Credits",

@@ -1,4 +1,4 @@
-import { useEffect, useState, lazy, Suspense } from 'react';
+import { useEffect, useRef, useState, lazy, Suspense } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
@@ -81,9 +81,14 @@ export default function EvaluationDetails() {
   }, [detail.selectedIds.size, detail.clearSelection]);
 
   // Auto-trigger retry when navigated from "Reprocessar caso" button
+  // Use a ref to track processed retry IDs and prevent race conditions:
+  // without this, setSearchParams clears the param before evaluations finish loading,
+  // causing the retry to never fire.
+  const processedRetryRef = useRef<string | null>(null);
   useEffect(() => {
     const retryId = searchParams.get('retry');
-    if (retryId && !detail.isLoading && detail.evaluations.length > 0) {
+    if (retryId && retryId !== processedRetryRef.current && !detail.isLoading && detail.evaluations.length > 0) {
+      processedRetryRef.current = retryId;
       setSearchParams({}, { replace: true });
       detail.handleRetryEvaluation(retryId);
     }

@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { trackEvent } from '@/lib/analytics';
 import { EVALUATION_STATUS } from '@/lib/evaluation-status';
+import { withRetry } from '@/lib/retry';
 import { getFullRegion } from '../wizard/helpers';
 
 import { evaluationKeys } from './useEvaluationData';
@@ -251,36 +252,45 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
       queryClient.invalidateQueries({ queryKey: evaluationKeys.session(sessionId) });
 
       const treatmentType = (evaluation.treatment_type || 'resina') as TreatmentType;
-      await dispatchTreatmentProtocol(
-        {
-          treatmentType,
-          evaluationId,
-          tooth: evaluation.tooth,
-          resinParams: treatmentType === 'resina' ? {
-            userId: user.id,
-            patientAge: String(evaluation.patient_age),
+      await withRetry(
+        () => dispatchTreatmentProtocol(
+          {
+            treatmentType,
+            evaluationId,
             tooth: evaluation.tooth,
-            region: evaluation.region || getFullRegion(evaluation.tooth),
-            cavityClass: evaluation.cavity_class || 'Classe I',
-            restorationSize: evaluation.restoration_size || 'Média',
-            substrate: evaluation.substrate || 'Esmalte e Dentina',
-            bruxism: evaluation.bruxism,
-            aestheticLevel: evaluation.aesthetic_level,
-            toothColor: evaluation.tooth_color,
-            stratificationNeeded: true,
-            budget: evaluation.budget,
-            longevityExpectation: evaluation.longevity_expectation,
-          } : undefined,
-          cementationParams: treatmentType === 'porcelana' ? {
-            teeth: [evaluation.tooth],
-            shade: evaluation.tooth_color,
-            ceramicType: DEFAULT_CERAMIC_TYPE,
-            substrate: evaluation.substrate || 'Esmalte e Dentina',
-            substrateCondition: 'Saudável',
-          } : undefined,
-          genericToothData: { indication_reason: evaluation.ai_indication_reason },
+            resinParams: treatmentType === 'resina' ? {
+              userId: user.id,
+              patientAge: String(evaluation.patient_age),
+              tooth: evaluation.tooth,
+              region: evaluation.region || getFullRegion(evaluation.tooth),
+              cavityClass: evaluation.cavity_class || 'Classe I',
+              restorationSize: evaluation.restoration_size || 'Média',
+              substrate: evaluation.substrate || 'Esmalte e Dentina',
+              bruxism: evaluation.bruxism,
+              aestheticLevel: evaluation.aesthetic_level,
+              toothColor: evaluation.tooth_color,
+              stratificationNeeded: true,
+              budget: evaluation.budget,
+              longevityExpectation: evaluation.longevity_expectation,
+            } : undefined,
+            cementationParams: treatmentType === 'porcelana' ? {
+              teeth: [evaluation.tooth],
+              shade: evaluation.tooth_color,
+              ceramicType: DEFAULT_CERAMIC_TYPE,
+              substrate: evaluation.substrate || 'Esmalte e Dentina',
+              substrateCondition: 'Saudável',
+            } : undefined,
+            genericToothData: { indication_reason: evaluation.ai_indication_reason },
+          },
+          evalClients,
+        ),
+        {
+          maxRetries: 2,
+          baseDelay: 2000,
+          onRetry: (attempt, err) => {
+            logger.warn(`Retry ${attempt} for evaluation ${evaluationId}:`, err);
+          },
         },
-        evalClients,
       );
 
       await evaluations.updateStatus(evaluationId, EVALUATION_STATUS.DRAFT);

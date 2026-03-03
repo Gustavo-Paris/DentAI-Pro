@@ -36,6 +36,7 @@ export function CreditConfirmDialog({ data, onConfirm }: CreditConfirmDialogProp
         }
       }}
       title={t('components.creditConfirm.title')}
+      description={t('components.creditConfirm.description', { operation: data.operationLabel, cost: data.cost })}
       icon={<Coins className="w-5 h-5 text-primary" />}
       confirmText={t('common.confirm')}
       cancelText={t('common.cancel')}

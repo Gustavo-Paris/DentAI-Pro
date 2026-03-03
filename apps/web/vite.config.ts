@@ -21,6 +21,8 @@ export default defineConfig(() => ({
       includeAssets: ['favicon.svg', 'icon-192.png', 'icon-512.png'],
       manifest: false,
       workbox: {
+        skipWaiting: true,
+        clientsClaim: true,
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
         globIgnores: ['**/vendor-heic-*.js', '**/vendor-pdf-*.js', '**/vendor-recharts-*.js'],
         runtimeCaching: [

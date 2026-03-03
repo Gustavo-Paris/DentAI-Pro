@@ -227,16 +227,45 @@ export async function validateAndFixProtocolLayers({
           const replacement = z350CT || formaTrans || empressTrans || vittraTrans;
           if (replacement) {
             layer.shade = replacement.shade;
-            if (z350CT && !/z350/i.test(originalBrand || '')) {
-              layer.resin_brand = '3M ESPE - Filtek Z350 XT';
-            } else if (formaTrans && !/forma/i.test(originalBrand || '')) {
-              layer.resin_brand = 'Ultradent - FORMA';
+            // Align brand with whichever catalog row was matched
+            if (replacement === z350CT) {
+              if (!/z350/i.test(originalBrand || '')) layer.resin_brand = '3M ESPE - Filtek Z350 XT';
+            } else if (replacement === formaTrans) {
+              if (!/forma/i.test(originalBrand || '')) layer.resin_brand = 'Ultradent - FORMA';
+            } else if (replacement === empressTrans) {
+              if (!/empress/i.test(originalBrand || '')) layer.resin_brand = 'Ivoclar - IPS Empress Direct';
+            } else if (replacement === vittraTrans) {
+              if (!/vittra/i.test(originalBrand || '')) layer.resin_brand = 'FGM - Vittra APS';
             }
             shadeReplacements[originalShade] = replacement.shade;
           } else {
-            // Fallback: force CT if no catalog match
-            layer.shade = 'CT';
-            shadeReplacements[originalShade] = 'CT';
+            // Fallback: find ANY translucent shade in catalog and use that brand
+            const anyTranslucent = catalogRows.find(r =>
+              ['CT', 'Trans', 'Trans20', 'Trans30', 'GT'].some(ts => r.shade.toUpperCase() === ts.toUpperCase())
+            );
+            if (anyTranslucent) {
+              layer.shade = anyTranslucent.shade;
+              // Derive brand name from catalog product_line
+              const knownBrands: Record<string, string> = {
+                'z350': '3M ESPE - Filtek Z350 XT',
+                'forma': 'Ultradent - FORMA',
+                'empress': 'Ivoclar - IPS Empress Direct',
+                'vittra': 'FGM - Vittra APS',
+                'estelite omega': 'Tokuyama - Estelite Omega',
+                'harmonize': 'Kerr - Harmonize',
+              };
+              for (const [keyword, brand] of Object.entries(knownBrands)) {
+                if (anyTranslucent.product_line.toLowerCase().includes(keyword)) {
+                  layer.resin_brand = brand;
+                  break;
+                }
+              }
+              shadeReplacements[originalShade] = anyTranslucent.shade;
+            } else {
+              // Hard fallback: force CT — downstream catalog check will handle
+              layer.shade = 'CT';
+              shadeReplacements[originalShade] = 'CT';
+            }
           }
           validationAlerts.push(
             `Aumento Incisal: shade ${originalShade} inválido — requer resina translúcida (Trans/CT). Substituído por ${layer.shade}.`
@@ -415,7 +444,13 @@ export async function validateAndFixProtocolLayers({
         }
       }
 
-      if (!catalogMatch) {
+      // Re-check catalog match after enforcement rules may have changed shade and/or brand
+      const enforcedBrandMatch = layer.resin_brand?.match(/^(.+?)\s*-\s*(.+)$/);
+      const enforcedProductLine = enforcedBrandMatch ? enforcedBrandMatch[2].trim() : layer.resin_brand;
+      const enforcedLineRows = enforcedProductLine !== productLine ? getRowsForLine(enforcedProductLine || '') : lineRows;
+      const enforcedCatalogMatch = enforcedLineRows.find((r) => r.shade === layer.shade);
+
+      if (!enforcedCatalogMatch) {
         // Shade doesn't exist - find appropriate alternative from cached rows
         let typeFilter = '';
         if (layerType.includes('opaco') || layerType.includes('mascaramento')) {
@@ -427,8 +462,8 @@ export async function validateAndFixProtocolLayers({
         }
 
         const alternatives = typeFilter
-          ? lineRows.filter((r) => r.type?.toLowerCase().includes(typeFilter)).slice(0, 5)
-          : lineRows.slice(0, 5);
+          ? enforcedLineRows.filter((r) => r.type?.toLowerCase().includes(typeFilter)).slice(0, 5)
+          : enforcedLineRows.slice(0, 5);
 
         if (alternatives.length > 0) {
           const originalShade = layer.shade;
@@ -438,11 +473,11 @@ export async function validateAndFixProtocolLayers({
           layer.shade = closestAlt.shade;
           shadeReplacements[originalShade] = closestAlt.shade;
           validationAlerts.push(
-            `Cor ${originalShade} substituída por ${closestAlt.shade}: a cor original não está disponível na linha ${productLine}.`
+            `Cor ${originalShade} substituída por ${closestAlt.shade}: a cor original não está disponível na linha ${enforcedProductLine}.`
           );
-          logger.warn(`Shade validation: ${originalShade} → ${closestAlt.shade} for ${productLine}`);
+          logger.warn(`Shade validation: ${originalShade} → ${closestAlt.shade} for ${enforcedProductLine}`);
         } else {
-          logger.warn(`No valid shades found for ${productLine}, keeping original: ${layer.shade}`);
+          logger.warn(`No valid shades found for ${enforcedProductLine}, keeping original: ${layer.shade}`);
         }
       }
     }

@@ -1633,7 +1633,8 @@
       "credit_one": "{{count}} crédito",
       "credit_other": "{{count}} créditos",
       "credits": "créditos",
-      "lowBalanceWarning": "Atenção: saldo baixo após esta operação"
+      "lowBalanceWarning": "Atenção: saldo baixo após esta operação",
+      "description": "{{operation}} custará {{cost}} crédito(s). Confirme para prosseguir."
     },
     "creditBadge": {
       "creditsLabel": "Créditos",

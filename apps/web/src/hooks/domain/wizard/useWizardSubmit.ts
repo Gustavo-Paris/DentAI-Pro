@@ -245,7 +245,7 @@ export function useWizardSubmit({
         cavity_class: isGengivoplasty ? 'N/A' : inferCavityClass(toothData, formData.cavityClass, normalizedTreatment),
         restoration_size: isGengivoplasty ? 'N/A' : (toothData?.restoration_size || formData.restorationSize),
         substrate: isGengivoplasty ? 'N/A' : (toothData?.substrate || formData.substrate),
-        tooth_color: formData.vitaShade || 'A2',
+        tooth_color: analysisResult?.vita_shade || formData.vitaShade || 'A2',
         depth: isGengivoplasty ? null : (toothData?.depth || formData.depth),
         substrate_condition: isGengivoplasty ? null : (toothData?.substrate_condition || formData.substrateCondition),
         enamel_condition: isGengivoplasty ? null : (toothData?.enamel_condition || formData.enamelCondition),
