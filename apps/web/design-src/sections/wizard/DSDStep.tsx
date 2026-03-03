@@ -126,7 +126,7 @@ export default function DSDStep({
             <p className="text-sm text-muted-foreground">
               {LAYER_DESC[layer]}
             </p>
-            <button className="inline-flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors">
+            <button className="inline-flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors focus-visible:ring-2 focus-visible:ring-ring rounded-md">
               <RefreshCw className="w-4 h-4" /> Regenerar Camada
             </button>
           </>
@@ -159,13 +159,13 @@ export default function DSDStep({
           <div className="flex gap-2">
             <button
               onClick={onApproveGingivo ?? (() => setInternalGingivo(true))}
-              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium btn-press"
+              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium btn-press focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <Check className="w-4 h-4" /> Incluir
             </button>
             <button
               onClick={onRejectGingivo ?? (() => setInternalGingivo(false))}
-              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-border text-foreground text-sm font-medium hover:bg-muted transition-colors btn-press"
+              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-border text-foreground text-sm font-medium hover:bg-muted transition-colors btn-press focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <X className="w-4 h-4" /> Descartar
             </button>

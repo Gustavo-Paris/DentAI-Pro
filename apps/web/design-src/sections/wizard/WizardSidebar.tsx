@@ -47,7 +47,7 @@ export default function WizardSidebar({
 
             {/* Step row */}
             <div
-              className={`flex items-center gap-3 ${isCompleted ? 'cursor-pointer' : ''}`}
+              className={`flex items-center gap-3 transition-colors ${isCompleted ? 'cursor-pointer hover:bg-muted/30 rounded-lg px-1 -mx-1' : ''}`}
               onClick={() => isCompleted && onGoToStep(step.id)}
             >
               {/* Circle */}

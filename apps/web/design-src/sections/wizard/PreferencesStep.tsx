@@ -41,7 +41,7 @@ export default function PreferencesStep({
             <button
               key={option.key}
               onClick={() => setLevel(option.key as WhiteningLevel)}
-              className={`relative rounded-xl border-2 p-5 text-left transition-all ${
+              className={`relative rounded-xl border-2 p-5 text-left transition-all hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                 isSelected
                   ? 'ai-shimmer-border bg-primary/5'
                   : 'border-border bg-card hover:border-primary/50 hover:bg-primary/5'
@@ -58,7 +58,7 @@ export default function PreferencesStep({
               <div
                 className={`h-2 rounded-full mb-4 ${
                   option.key === 'natural'
-                    ? 'bg-gradient-to-r from-amber-200 to-amber-100'
+                    ? 'bg-gradient-to-r from-warning/30 to-warning/15'
                     : 'bg-gradient-to-r from-background to-primary/10'
                 }`}
               />
@@ -66,7 +66,7 @@ export default function PreferencesStep({
               {/* Icon + label */}
               <div className="flex items-center gap-2 mb-2">
                 {option.key === 'natural' ? (
-                  <Sun className="w-5 h-5 text-amber-500" />
+                  <Sun className="w-5 h-5 text-warning" />
                 ) : (
                   <Star className="w-5 h-5 text-primary" />
                 )}

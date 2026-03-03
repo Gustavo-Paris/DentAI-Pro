@@ -118,7 +118,7 @@ export default function WizardShell({
               {currentStep > 1 ? (
                 <button
                   onClick={onBack}
-                  className="px-4 py-2.5 rounded-xl border border-border text-foreground text-sm font-medium hover:bg-muted transition-colors btn-press"
+                  className="px-4 py-2.5 rounded-xl border border-border text-foreground text-sm font-medium hover:bg-muted transition-colors btn-press focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   Voltar
                 </button>
@@ -128,7 +128,7 @@ export default function WizardShell({
               <button
                 onClick={onNext}
                 disabled={nextDisabled}
-                className={`px-6 py-2.5 rounded-xl text-sm font-medium btn-press transition-all ${
+                className={`px-6 py-2.5 rounded-xl text-sm font-medium btn-press transition-all focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                   nextDisabled
                     ? 'bg-muted text-muted-foreground cursor-not-allowed'
                     : 'bg-primary text-primary-foreground btn-glow'

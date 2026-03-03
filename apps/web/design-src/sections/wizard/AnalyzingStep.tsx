@@ -65,19 +65,19 @@ export default function AnalyzingStep({
         <div className="flex flex-col gap-2 max-w-xs mx-auto">
           <button
             onClick={onRetry}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium btn-glow btn-press"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium btn-glow btn-press focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             <RefreshCw className="w-4 h-4" /> Tentar Novamente
           </button>
           <button
             onClick={onChangePhoto}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-border text-foreground text-sm font-medium hover:bg-muted transition-colors btn-press"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-border text-foreground text-sm font-medium hover:bg-muted transition-colors btn-press focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             <Camera className="w-4 h-4" /> Trocar Foto
           </button>
           <button
             onClick={onManualReview}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-muted-foreground text-sm hover:text-foreground transition-colors btn-press"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-muted-foreground text-sm hover:text-foreground transition-colors btn-press focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             <ArrowRight className="w-4 h-4" /> Revisão Manual
           </button>
@@ -179,7 +179,7 @@ export default function AnalyzingStep({
       <button
         onClick={onCancel}
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground
-                 transition-colors btn-press"
+                 transition-colors btn-press focus-visible:ring-2 focus-visible:ring-ring rounded-md"
       >
         <X className="w-3.5 h-3.5" />
         Cancelar

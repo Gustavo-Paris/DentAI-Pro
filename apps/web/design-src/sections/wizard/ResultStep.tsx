@@ -48,7 +48,7 @@ export default function ResultStep({
 
           {/* Title */}
           <div className="space-y-2">
-            <h2 className="text-2xl font-bold neon-text">Caso Criado!</h2>
+            <h2 className="text-xl font-semibold neon-text">Caso Criado!</h2>
             <p className="text-sm text-muted-foreground max-w-sm">
               O caso foi criado com sucesso e os protocolos estão sendo processados.
             </p>
@@ -96,13 +96,13 @@ export default function ResultStep({
           <div className="flex flex-col sm:flex-row gap-3 w-full max-w-xs animate-[fade-in-up_0.4s_ease-out_0.3s_both]">
             <button
               onClick={onViewCase}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-primary text-primary-foreground font-medium btn-glow btn-press"
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-primary text-primary-foreground font-medium btn-glow btn-press focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <Eye className="w-4 h-4" /> Ver Caso
             </button>
             <button
               onClick={onNewCase}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-border text-foreground font-medium hover:bg-muted transition-colors btn-press"
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-border text-foreground font-medium hover:bg-muted transition-colors btn-press focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <Plus className="w-4 h-4" /> Novo Caso
             </button>

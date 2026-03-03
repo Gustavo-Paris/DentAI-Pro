@@ -73,6 +73,16 @@
   /* Brand */
   --brand-accent: #8b5cf6;
   --accent-violet-rgb: 139 92 246;
+
+  /* Treatment type colors (data visualization) */
+  --color-treatment-resina: var(--color-primary);
+  --color-treatment-porcelana: var(--color-warning);
+  --color-treatment-coroa: #a855f7;
+  --color-treatment-implante: var(--color-destructive);
+  --color-treatment-endodontia: #f43f5e;
+  --color-treatment-encaminhamento: var(--color-muted-foreground);
+  --color-treatment-gengivoplastia: #ec4899;
+  --color-treatment-recobrimento: var(--color-success);
 }
 
 .dark {
@@ -412,6 +422,11 @@ body {
   border-right: none;
 }
 .wizard-tab:hover { color: var(--color-foreground); }
+.wizard-tab:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: -2px;
+  border-radius: 4px;
+}
 .wizard-tab.active {
   color: var(--color-primary);
   border-bottom-color: var(--color-primary);

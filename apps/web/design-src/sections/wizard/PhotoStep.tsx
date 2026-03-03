@@ -56,7 +56,7 @@ export default function PhotoStep({
               <p className="text-sm text-muted-foreground mt-1">ou clique para selecionar</p>
             </div>
             <button className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground
-                             text-sm font-medium btn-glow btn-press">
+                             text-sm font-medium btn-glow btn-press focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
               <Upload className="w-4 h-4" />
               Enviar Foto
             </button>
@@ -81,7 +81,7 @@ export default function PhotoStep({
             <button
               onClick={onRemovePhoto}
               className="absolute top-3 right-3 p-1.5 rounded-full bg-background/80 backdrop-blur-sm
-                       text-muted-foreground hover:text-foreground transition-colors"
+                       text-muted-foreground hover:text-foreground transition-colors focus-visible:ring-2 focus-visible:ring-ring"
             >
               <X className="w-4 h-4" />
             </button>
@@ -125,7 +125,8 @@ export default function PhotoStep({
             <button
               key={label}
               className="border-2 border-dashed border-border rounded-xl p-4 text-center
-                       hover:border-primary/40 transition-colors group"
+                       hover:border-primary/40 transition-colors group
+                       focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               onClick={onUpload}
             >
               <Camera className="w-5 h-5 text-muted-foreground mx-auto mb-1 group-hover:text-primary/60" />
@@ -142,7 +143,8 @@ export default function PhotoStep({
           <button
             onClick={onStartFullCase}
             className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl
-                     bg-primary text-primary-foreground font-medium btn-glow btn-press"
+                     bg-primary text-primary-foreground font-medium btn-glow btn-press
+                     focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             Análise Completa — 2 créditos
           </button>
@@ -150,7 +152,8 @@ export default function PhotoStep({
           <button
             onClick={onStartQuickCase}
             className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl
-                     border border-border text-foreground font-medium hover:bg-muted transition-colors btn-press"
+                     border border-border text-foreground font-medium hover:bg-muted transition-colors btn-press
+                     focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             <Zap className="w-4 h-4" />
             Caso Rápido — 1 crédito

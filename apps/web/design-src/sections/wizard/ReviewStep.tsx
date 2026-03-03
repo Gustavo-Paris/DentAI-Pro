@@ -5,11 +5,16 @@ import type { AnalysisResult, ToothDetection, TreatmentType, BudgetTier } from '
 import sampleData from '../../../design/sections/wizard/data.json'
 
 const TREATMENT_COLORS: Record<string, string> = {
-  resina: '#3b82f6', porcelana: '#f59e0b', coroa: '#a855f7',
-  implante: '#ef4444', endodontia: '#f43f5e', encaminhamento: '#6b7280',
-  gengivoplastia: '#ec4899', recobrimento_radicular: '#14b8a6',
+  resina: 'var(--color-treatment-resina)',
+  porcelana: 'var(--color-treatment-porcelana)',
+  coroa: 'var(--color-treatment-coroa)',
+  implante: 'var(--color-treatment-implante)',
+  endodontia: 'var(--color-treatment-endodontia)',
+  encaminhamento: 'var(--color-treatment-encaminhamento)',
+  gengivoplastia: 'var(--color-treatment-gengivoplastia)',
+  recobrimento_radicular: 'var(--color-treatment-recobrimento)',
 }
-const TREATMENT_COLOR_FALLBACK = '#6b7280'
+const TREATMENT_COLOR_FALLBACK = 'var(--color-treatment-encaminhamento)'
 
 const DEFAULT_ANALYSIS = sampleData.sampleAnalysis as AnalysisResult
 
@@ -71,13 +76,16 @@ function ToothCard({
 
   return (
     <div
-      className={`relative rounded-lg border p-3 cursor-pointer transition-all ${
+      className={`relative rounded-lg border p-3 cursor-pointer transition-all hover:shadow-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
         selected
           ? 'border-primary/40 bg-primary/5 shadow-sm'
           : 'border-border hover:border-primary/20'
       }`}
       style={{ borderLeftWidth: 4, borderLeftColor: color }}
       onClick={onToggle}
+      tabIndex={0}
+      role="checkbox"
+      aria-checked={selected}
     >
       <div className="flex items-center justify-between mb-1.5">
         <div className="flex items-center gap-2">
@@ -139,7 +147,7 @@ function CaseSummary({
           {complexity}
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-2 text-xs">
+      <div className="grid grid-cols-2 gap-3 text-xs">
         <div>
           <span className="text-muted-foreground">Paciente</span>
           <p className="font-medium">{patientName || '—'}</p>
@@ -186,14 +194,15 @@ function DentesTab({
               key={label}
               title={title}
               className="text-xs px-2 py-1 rounded-md bg-muted text-muted-foreground
-                         hover:bg-primary/10 hover:text-primary transition-colors"
+                         hover:bg-primary/10 hover:text-primary transition-colors
+                         focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
             >
               {label}
             </button>
           ))}
         </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {teeth.map(tooth => (
           <ToothCard
             key={tooth.tooth}
@@ -313,7 +322,7 @@ function ResumoTab({
           {(['padrao', 'premium'] as BudgetTier[]).map(tier => (
             <button
               key={tier}
-              className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+              className={`px-3 py-1.5 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring ${
                 budget === tier
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:text-foreground'
