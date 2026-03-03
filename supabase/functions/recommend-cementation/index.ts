@@ -465,25 +465,26 @@ Deno.serve(async (req: Request) => {
     ];
 
     let protocol: CementationProtocol;
-    let usedProvider: 'claude' | 'gemini' = 'claude';
+    let usedProvider: 'gemini' | 'claude' = 'gemini';
     try {
+      // Gemini 3 Flash primary — 20x cheaper than Claude, frontier-class quality
       let aiResult: { functionCall: { name: string; args: Record<string, unknown> } | null; text: string | null };
       try {
-        const claudeResult = await withMetrics<{ text: string | null; functionCall: { name: string; args: Record<string, unknown> } | null; finishReason: string }>(metrics, prompt.id, PROMPT_VERSION, prompt.model)(async () => {
-          const response = await callClaudeWithTools(
-            prompt.model,
+        const geminiResult = await withMetrics<{ text: string | null; functionCall: { name: string; args: Record<string, unknown> } | null; finishReason: string }>(metrics, prompt.id, PROMPT_VERSION, 'gemini-3-flash-preview')(async () => {
+          const response = await callGeminiWithTools(
+            'gemini-3-flash-preview',
             messages,
             tools as OpenAITool[],
             {
               temperature: 0.0,
               maxTokens: 4000,
               forceFunctionName: "generate_cementation_protocol",
-              timeoutMs: 45_000,
+              timeoutMs: 55_000,
               maxRetries: 1,
             }
           );
           if (response.tokens) {
-            logger.info('claude_tokens', { operation: 'recommend-cementation', ...response.tokens });
+            logger.info('gemini_tokens', { operation: 'recommend-cementation', ...response.tokens });
           }
           return {
             result: { text: response.text, functionCall: response.functionCall, finishReason: response.finishReason },
@@ -491,30 +492,30 @@ Deno.serve(async (req: Request) => {
             tokensOut: response.tokens?.candidatesTokenCount ?? 0,
           };
         });
-        aiResult = claudeResult;
-      } catch (claudeErr) {
-        const isRateLimit = claudeErr instanceof ClaudeError && claudeErr.statusCode === 429;
+        aiResult = geminiResult;
+      } catch (geminiErr) {
+        const isRateLimit = geminiErr instanceof GeminiError && geminiErr.statusCode === 429;
         if (isRateLimit) {
           return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
         }
-        logger.warn(`[${reqId}] Claude failed, falling back to Gemini Flash: ${claudeErr instanceof Error ? claudeErr.message : String(claudeErr)}`);
-        usedProvider = 'gemini';
-        const geminiResult = await callGeminiWithTools(
-          'gemini-2.0-flash',
+        logger.warn(`[${reqId}] Gemini failed, falling back to Claude Sonnet: ${geminiErr instanceof Error ? geminiErr.message : String(geminiErr)}`);
+        usedProvider = 'claude';
+        const claudeResult = await callClaudeWithTools(
+          prompt.model,
           messages,
           tools as OpenAITool[],
           {
             temperature: 0.0,
             maxTokens: 4000,
             forceFunctionName: "generate_cementation_protocol",
-            timeoutMs: 55_000,
+            timeoutMs: 45_000,
             maxRetries: 1,
           }
         );
-        if (geminiResult.tokens) {
-          logger.info('gemini_tokens', { operation: 'recommend-cementation-fallback', ...geminiResult.tokens });
+        if (claudeResult.tokens) {
+          logger.info('claude_tokens', { operation: 'recommend-cementation-fallback', ...claudeResult.tokens });
         }
-        aiResult = geminiResult;
+        aiResult = claudeResult;
       }
 
       if (!aiResult.functionCall) {

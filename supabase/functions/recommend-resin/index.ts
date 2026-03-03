@@ -368,26 +368,26 @@ Deno.serve(async (req) => {
     ];
 
     let recommendation: RecommendResinResponseParsed;
-    let usedProvider: 'claude' | 'gemini' = 'claude';
+    let usedProvider: 'gemini' | 'claude' = 'gemini';
     try {
-      // Try Claude first
+      // Gemini 3 Flash primary — 20x cheaper than Claude, frontier-class quality
       let aiResult: { functionCall: { name: string; args: Record<string, unknown> } | null; text: string | null };
       try {
-        const claudeResult = await withMetrics<{ text: string | null; functionCall: { name: string; args: Record<string, unknown> } | null; finishReason: string }>(metrics, promptDef.id, PROMPT_VERSION, promptDef.model)(async () => {
-          const response = await callClaudeWithTools(
-            promptDef.model,
+        const geminiResult = await withMetrics<{ text: string | null; functionCall: { name: string; args: Record<string, unknown> } | null; finishReason: string }>(metrics, promptDef.id, PROMPT_VERSION, 'gemini-3-flash-preview')(async () => {
+          const response = await callGeminiWithTools(
+            'gemini-3-flash-preview',
             messages,
             tools,
             {
               temperature: 0.0,
               maxTokens: promptDef.maxTokens,
               forceFunctionName: "generate_resin_protocol",
-              timeoutMs: 45_000,
+              timeoutMs: 55_000,
               maxRetries: 1,
             }
           );
           if (response.tokens) {
-            logger.info('claude_tokens', { operation: 'recommend-resin', ...response.tokens });
+            logger.info('gemini_tokens', { operation: 'recommend-resin', ...response.tokens });
           }
           return {
             result: { text: response.text, functionCall: response.functionCall, finishReason: response.finishReason },
@@ -395,31 +395,31 @@ Deno.serve(async (req) => {
             tokensOut: response.tokens?.candidatesTokenCount ?? 0,
           };
         });
-        aiResult = claudeResult;
-      } catch (claudeErr) {
-        // Claude failed — fallback to Gemini Flash
-        const isRateLimit = claudeErr instanceof ClaudeError && claudeErr.statusCode === 429;
+        aiResult = geminiResult;
+      } catch (geminiErr) {
+        // Gemini failed — fallback to Claude Sonnet
+        const isRateLimit = geminiErr instanceof GeminiError && geminiErr.statusCode === 429;
         if (isRateLimit) {
           return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
         }
-        logger.warn(`Claude failed, falling back to Gemini Flash: ${claudeErr instanceof Error ? claudeErr.message : String(claudeErr)}`);
-        usedProvider = 'gemini';
-        const geminiResult = await callGeminiWithTools(
-          'gemini-2.0-flash',
+        logger.warn(`Gemini failed, falling back to Claude Sonnet: ${geminiErr instanceof Error ? geminiErr.message : String(geminiErr)}`);
+        usedProvider = 'claude';
+        const claudeResult = await callClaudeWithTools(
+          promptDef.model,
           messages,
           tools,
           {
             temperature: 0.0,
             maxTokens: promptDef.maxTokens,
             forceFunctionName: "generate_resin_protocol",
-            timeoutMs: 55_000,
+            timeoutMs: 45_000,
             maxRetries: 1,
           }
         );
-        if (geminiResult.tokens) {
-          logger.info('gemini_tokens', { operation: 'recommend-resin-fallback', ...geminiResult.tokens });
+        if (claudeResult.tokens) {
+          logger.info('claude_tokens', { operation: 'recommend-resin-fallback', ...claudeResult.tokens });
         }
-        aiResult = geminiResult;
+        aiResult = claudeResult;
       }
 
       if (!aiResult.functionCall) {
