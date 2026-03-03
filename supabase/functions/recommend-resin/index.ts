@@ -64,6 +64,7 @@ Deno.serve(async (req) => {
     }
 
     const data: EvaluationData = validation.data;
+    const clientOperationId = (rawData as Record<string, unknown>).operationId as string | undefined;
 
     // Backward compat: map old budget values to new ones
     if (data.budget === 'econômico' || data.budget === 'moderado') {
@@ -462,7 +463,7 @@ Deno.serve(async (req) => {
 
     // Credits + post-processing wrapped in credit protection (auto-refund on error)
     return await withCreditProtection(
-      { supabase: supabaseService, userId, operation: "resin_recommendation", operationId: reqId, corsHeaders },
+      { supabase: supabaseService, userId, operation: "resin_recommendation", operationId: clientOperationId || reqId, corsHeaders },
       async (credits) => {
         const creditResult = await credits.consume();
         if (isInsufficientCreditsResponse(creditResult)) return creditResult;

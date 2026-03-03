@@ -139,11 +139,13 @@ export function useAddTeethFlow(deps: UseAddTeethFlowDeps): UseAddTeethFlowRetur
           (treatmentType !== 'resina' && treatmentType !== 'porcelana');
 
         if (shouldDispatch) {
+          const operationId = `${evaluation.id}:${toothNumber}:protocol`;
           await dispatchTreatmentProtocol(
             {
               treatmentType,
               evaluationId: evaluation.id,
               tooth: toothNumber,
+              operationId,
               resinParams: treatmentType === 'resina' ? {
                 userId: user.id,
                 patientAge: String(patientDataForModal.age),

@@ -165,6 +165,12 @@ export async function validateAndFixProtocolLayers({
   }
 
   for (const layer of recommendation.protocol.layers) {
+    // Skip catalog re-check for injected layers (e.g., Efeitos Incisais with synthetic shades)
+    if (layer._injected) {
+      validatedLayers.push(layer);
+      continue;
+    }
+
     const brandMatch = layer.resin_brand?.match(/^(.+?)\s*-\s*(.+)$/);
     const productLine = brandMatch ? brandMatch[2].trim() : layer.resin_brand;
     const layerType = layer.name?.toLowerCase() || '';
@@ -571,6 +577,7 @@ export async function validateAndFixProtocolLayers({
           purpose: 'Reproduzir efeitos ópticos naturais: halo opaco incisal, linhas de craze, translucidez adicional, micro-pontos de caracterização',
           technique: 'Aplicar corante branco para halo opaco na borda incisal. Corante âmbar para linhas de craze. Corante azul (blue) para translucidez adicional e efeito de profundidade nas bordas incisais. Pincel fino antes da camada de esmalte.',
           optional: true,
+          _injected: true,
         };
         recommendation.protocol.layers.splice(insertIdx, 0, efeitosLayer);
         // Re-number all layers
@@ -677,5 +684,10 @@ export async function validateAndFixProtocolLayers({
       recommendation.protocol.warnings = recommendation.protocol.warnings || [];
       recommendation.protocol.warnings.push(layerWarning);
     }
+  }
+
+  // Clean up internal markers before returning
+  for (const layer of recommendation.protocol.layers) {
+    delete layer._injected;
   }
 }

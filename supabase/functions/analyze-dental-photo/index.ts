@@ -20,6 +20,22 @@ import { processAnalysisResult } from "./post-processing.ts";
 
 // stripJpegExif imported from _shared/image-utils.ts
 
+/**
+ * Validate image magic bytes and return detected MIME type.
+ * Supports JPEG, PNG, and WebP formats.
+ */
+function validateImageMagicBytes(base64Data: string): { valid: boolean; mimeType: string } {
+  const bytes = Uint8Array.from(atob(base64Data.slice(0, 16)), c => c.charCodeAt(0));
+  const isJPEG = bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF;
+  const isPNG = bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47;
+  const isWEBP = bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46;
+
+  if (isJPEG) return { valid: true, mimeType: 'image/jpeg' };
+  if (isPNG) return { valid: true, mimeType: 'image/png' };
+  if (isWEBP) return { valid: true, mimeType: 'image/webp' };
+  return { valid: false, mimeType: '' };
+}
+
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   const reqId = generateRequestId();
@@ -85,16 +101,13 @@ Deno.serve(async (req) => {
     }
 
     // Verify magic bytes for common image formats
-    const bytes = Uint8Array.from(atob(base64Data.slice(0, 16)), c => c.charCodeAt(0));
-    const isJPEG = bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF;
-    const isPNG = bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47;
-    const isWEBP = bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46;
-
-    if (!isJPEG && !isPNG && !isWEBP) {
+    const mainValidation = validateImageMagicBytes(base64Data);
+    if (!mainValidation.valid) {
       return createErrorResponse(ERROR_MESSAGES.IMAGE_FORMAT_UNSUPPORTED, 400, corsHeaders);
     }
 
     // Strip EXIF metadata from JPEG images (privacy: remove GPS, device info, etc.)
+    const isJPEG = mainValidation.mimeType === 'image/jpeg';
     const sanitizedBase64 = isJPEG ? stripJpegExif(base64Data) : base64Data;
     const base64Image = sanitizedBase64;
 
@@ -122,16 +135,28 @@ Deno.serve(async (req) => {
     const systemPrompt = promptDef.system(promptParams);
     const userPrompt = promptDef.user(promptParams);
 
-    // Determine MIME type from magic bytes
-    const mimeType = isJPEG ? "image/jpeg" : isPNG ? "image/png" : "image/webp";
+    // MIME type from validated magic bytes
+    const mimeType = mainValidation.mimeType;
 
-    // Build additional images array from face/smile45 photos
+    // Build additional images array from face/smile45 photos (validate magic bytes, skip invalid)
     const additionalImages: Array<{ data: string; mimeType: string }> = [];
     if (additionalPhotos?.face) {
-      additionalImages.push({ data: extractBase64(additionalPhotos.face), mimeType: 'image/jpeg' });
+      const faceBase64 = extractBase64(additionalPhotos.face);
+      const faceValidation = validateImageMagicBytes(faceBase64);
+      if (faceValidation.valid) {
+        additionalImages.push({ data: faceBase64, mimeType: faceValidation.mimeType });
+      } else {
+        logger.warn(`[${reqId}] Face photo failed magic bytes validation — skipping`);
+      }
     }
     if (additionalPhotos?.smile45) {
-      additionalImages.push({ data: extractBase64(additionalPhotos.smile45), mimeType: 'image/jpeg' });
+      const smile45Base64 = extractBase64(additionalPhotos.smile45);
+      const smile45Validation = validateImageMagicBytes(smile45Base64);
+      if (smile45Validation.valid) {
+        additionalImages.push({ data: smile45Base64, mimeType: smile45Validation.mimeType });
+      } else {
+        logger.warn(`[${reqId}] Smile 45° photo failed magic bytes validation — skipping`);
+      }
     }
     if (additionalImages.length > 0) {
       step(`additionalImages: ${additionalImages.length} extra photo(s)`);

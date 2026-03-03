@@ -208,11 +208,13 @@ export function useGroupResult() {
     try {
       await evaluations.updateStatus(primaryEval.id, EVALUATION_STATUS.ANALYZING);
       const treatmentType = (primaryEval.treatment_type || 'resina') as 'resina' | 'porcelana';
+      const operationId = `${primaryEval.id}:${primaryEval.tooth}:protocol`;
       await dispatchTreatmentProtocol(
         {
           treatmentType,
           evaluationId: primaryEval.id,
           tooth: primaryEval.tooth,
+          operationId,
           resinParams: treatmentType === 'resina' ? {
             userId: user.id,
             patientAge: String(primaryEval.patient_age),

@@ -53,6 +53,8 @@ export interface ResinDispatchParams {
     symmetryScore?: number;
     smileArc?: string;
   };
+  /** Stable operation ID for credit idempotency on retry */
+  operationId?: string;
 }
 
 /** Parameters for the cementation (porcelana) edge function call. */
@@ -69,6 +71,8 @@ export interface CementationDispatchParams {
     proposedChange: string;
     observations: string[];
   };
+  /** Stable operation ID for credit idempotency on retry */
+  operationId?: string;
 }
 
 /** Generic protocol result shape (matches getGenericProtocol output). */
@@ -116,6 +120,8 @@ export interface DispatchTreatmentProtocolParams {
   tooth: string;
   /** Optional enrichment callback for the generic protocol (e.g. DSD gengivoplasty details). */
   enrichGenericProtocol?: (protocol: GenericProtocolResult) => void;
+  /** Stable operation ID for credit idempotency on retry */
+  operationId?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -147,6 +153,7 @@ export async function dispatchTreatmentProtocol(
       await clients.invokeResin({
         evaluationId,
         ...params.resinParams,
+        operationId: params.operationId,
       });
       break;
     }
@@ -158,6 +165,7 @@ export async function dispatchTreatmentProtocol(
       await clients.invokeCementation({
         evaluationId,
         ...params.cementationParams,
+        operationId: params.operationId,
       });
       break;
     }

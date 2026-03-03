@@ -235,6 +235,16 @@ export default function Pricing() {
     [t],
   );
 
+  const discountPercent = useMemo(() => {
+    const paidPlans = plans.filter(p => p.price_monthly > 0 && p.price_yearly);
+    if (paidPlans.length === 0) return 16; // fallback
+    const avg = paidPlans.reduce((sum, p) => {
+      const monthlyAnnualized = p.price_monthly * 12;
+      return sum + Math.round((1 - p.price_yearly! / monthlyAnnualized) * 100);
+    }, 0) / paidPlans.length;
+    return Math.round(avg);
+  }, [plans]);
+
   const currentPlanSortOrder = currentPlan?.sort_order;
   const popularPlanId = 'price_pro_monthly_v2';
 
@@ -289,7 +299,7 @@ export default function Pricing() {
         onSelectPlan={handleSelectPlan}
         defaultCycle="monthly"
         currency="R$"
-        discountLabel="-16%"
+        discountLabel={`-${discountPercent}%`}
         loading={isLoading || isCheckingOut}
       />
 

@@ -3,6 +3,9 @@ import type Stripe from "npm:stripe@17";
 import { logger } from "../_shared/logger.ts";
 import { sendEmail, paymentReceivedEmail, paymentFailedEmail } from "../_shared/email.ts";
 
+/** Known valid credit pack sizes — prevents tampered metadata from granting arbitrary credits */
+const VALID_CREDIT_PACK_SIZES = [5, 10, 25, 50, 100] as const;
+
 /**
  * Resolve our internal plan ID from a Stripe price ID.
  * Falls back to the Stripe price ID if no mapping found.
@@ -341,6 +344,10 @@ export async function handleCreditPackPurchase(supabase: SupabaseClient, session
       logger.error(`Invalid credits: DB query failed and metadata value is invalid (${creditsStr})`);
       return;
     }
+    if (!VALID_CREDIT_PACK_SIZES.includes(fallback as typeof VALID_CREDIT_PACK_SIZES[number])) {
+      logger.error(`Suspicious credits value: ${fallback} not in allowed pack sizes. session=${session.id}`);
+      return;
+    }
     credits = fallback;
   }
 
@@ -378,4 +385,23 @@ export async function handleCreditPackPurchase(supabase: SupabaseClient, session
   }
 
   logger.important(`Credit pack ${packId} (+${credits} credits) applied for user ${userId}`);
+}
+
+export async function handlePaymentActionRequired(supabase: SupabaseClient, invoice: Stripe.Invoice) {
+  const customerId = invoice.customer as string;
+  logger.important(`Payment action required: customer=${customerId}, invoice=${invoice.id}, amount=${invoice.amount_due}`);
+
+  // Find user by Stripe customer ID
+  const { data: sub } = await supabase
+    .from("subscriptions")
+    .select("user_id")
+    .eq("stripe_customer_id", customerId)
+    .maybeSingle();
+
+  if (!sub?.user_id) {
+    logger.warn(`No subscription found for customer ${customerId} on payment_action_required`);
+    return;
+  }
+
+  logger.important(`3DS/payment action required for user ${sub.user_id}, invoice ${invoice.id}. Customer may need to complete authentication.`);
 }

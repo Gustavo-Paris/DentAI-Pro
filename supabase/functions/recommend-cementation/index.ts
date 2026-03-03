@@ -290,6 +290,7 @@ Deno.serve(async (req: Request) => {
     } catch {
       return createErrorResponse("Invalid request body", 400, corsHeaders);
     }
+    const clientOperationId = (body as Record<string, unknown>).operationId as string | undefined;
     const validation = validateRequest(body);
 
     if (!validation.success || !validation.data) {
@@ -548,7 +549,7 @@ Deno.serve(async (req: Request) => {
 
     // Credits + post-processing wrapped in credit protection (auto-refund on error)
     return await withCreditProtection(
-      { supabase, userId: user.id, operation: "cementation_recommendation", operationId: reqId, corsHeaders },
+      { supabase, userId: user.id, operation: "cementation_recommendation", operationId: clientOperationId || reqId, corsHeaders },
       async (credits) => {
         const creditResult = await credits.consume();
         if (isInsufficientCreditsResponse(creditResult)) return creditResult;

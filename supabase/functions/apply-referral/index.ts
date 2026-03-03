@@ -57,7 +57,7 @@ Deno.serve(
       supabase,
       user.id,
       "apply-referral",
-      RATE_LIMITS.STANDARD,
+      RATE_LIMITS.REFERRAL,
     );
     if (!rateLimitResult.allowed) {
       logger.warn(

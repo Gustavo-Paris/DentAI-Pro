@@ -7,6 +7,7 @@ import {
   handleSubscriptionDeleted,
   handleInvoicePaid,
   handleInvoiceFailed,
+  handlePaymentActionRequired,
 } from "./webhook-handlers.ts";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
@@ -86,6 +87,12 @@ Deno.serve(async (req: Request) => {
       case "invoice.payment_failed": {
         const invoice = event.data.object as Stripe.Invoice;
         await handleInvoiceFailed(supabase, invoice);
+        break;
+      }
+
+      case "invoice.payment_action_required": {
+        const invoice = event.data.object as Stripe.Invoice;
+        await handlePaymentActionRequired(supabase, invoice);
         break;
       }
 

@@ -326,6 +326,8 @@ export function useWizardSubmit({
         saveGenericProtocol: (id, protocol) => wizardData.updateEvaluationProtocol(id, protocol),
       };
 
+      const operationId = `${evaluationId}:${tooth}:protocol`;
+
       // Generate protocol WITH retry (2 retries, 2s exponential backoff)
       await withRetry(
         async () => {
@@ -334,6 +336,7 @@ export function useWizardSubmit({
               treatmentType: normalizedTreatment,
               evaluationId,
               tooth,
+              operationId,
               resinParams: normalizedTreatment === 'resina' ? {
                 userId: user!.id,
                 patientAge: formData.patientAge || '30',

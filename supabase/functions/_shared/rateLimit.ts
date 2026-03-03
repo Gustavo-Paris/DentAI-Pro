@@ -54,6 +54,12 @@ export const RATE_LIMITS = {
     perHour: 500,
     perDay: 5000,
   },
+  // Referral operations (abuse-sensitive)
+  REFERRAL: {
+    perMinute: 5,
+    perHour: 20,
+    perDay: 50,
+  },
 } as const;
 
 /**

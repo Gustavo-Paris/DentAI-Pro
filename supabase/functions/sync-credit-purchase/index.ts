@@ -9,6 +9,9 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
   httpClient: Stripe.createFetchHttpClient(),
 });
 
+/** Known valid credit pack sizes — prevents tampered metadata from granting arbitrary credits */
+const VALID_CREDIT_PACK_SIZES = [5, 10, 25, 50, 100] as const;
+
 /**
  * Sync credit pack purchase from Stripe.
  * Called by the frontend after checkout completes to ensure credits are applied.
@@ -61,10 +64,30 @@ Deno.serve(withErrorBoundary(async (req: Request) => {
       continue;
     }
 
-    const credits = parseInt(session.metadata?.credits || "0", 10);
     const packId = session.metadata?.pack_id;
+    const creditsStr = session.metadata?.credits;
 
-    if (!credits || !packId) continue;
+    if (!packId) continue;
+
+    // DB-first: authoritative credit count from credit_packs table
+    let credits: number;
+    const { data: pack } = await supabase
+      .from("credit_packs")
+      .select("credits")
+      .eq("id", packId)
+      .single();
+
+    if (pack?.credits && pack.credits > 0) {
+      credits = pack.credits;
+    } else {
+      // Fallback to metadata with validation
+      const fallback = parseInt(creditsStr || "0", 10);
+      if (!fallback || !VALID_CREDIT_PACK_SIZES.includes(fallback as typeof VALID_CREDIT_PACK_SIZES[number])) {
+        logger.warn(`Skipping session ${session.id}: invalid credits (pack lookup failed, metadata=${creditsStr})`);
+        continue;
+      }
+      credits = fallback;
+    }
 
     // Check if already processed (idempotent via unique stripe_session_id)
     const { data: existing } = await supabase

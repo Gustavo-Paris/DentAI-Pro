@@ -254,12 +254,14 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
       queryClient.invalidateQueries({ queryKey: evaluationKeys.session(sessionId) });
 
       const treatmentType = (evaluation.treatment_type || 'resina') as TreatmentType;
+      const operationId = `${evaluationId}:${evaluation.tooth}:protocol`;
       await withRetry(
         () => dispatchTreatmentProtocol(
           {
             treatmentType,
             evaluationId,
             tooth: evaluation.tooth,
+            operationId,
             resinParams: treatmentType === 'resina' ? {
               userId: user.id,
               patientAge: String(evaluation.patient_age),
@@ -348,11 +350,13 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
           queryClient.invalidateQueries({ queryKey: evaluationKeys.session(sessionId) });
 
           const regenTreatment = (evaluation.treatment_type || 'resina') as TreatmentType;
+          const operationId = `${evaluation.id}:${evaluation.tooth}:protocol`;
           await dispatchTreatmentProtocol(
             {
               treatmentType: regenTreatment,
               evaluationId: evaluation.id,
               tooth: evaluation.tooth,
+              operationId,
               resinParams: regenTreatment === 'resina' ? {
                 userId: user.id,
                 patientAge: String(evaluation.patient_age),
