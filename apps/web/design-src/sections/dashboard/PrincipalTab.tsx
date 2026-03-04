@@ -68,6 +68,7 @@ export default function PrincipalTab({
 
       {/* ── 2. KPI Banner ── */}
       <div className="glass-panel rounded-xl p-4 sm:p-5">
+        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Sua Performance</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
           {/* Total Casos */}
           <div className="flex items-center gap-3">
@@ -154,7 +155,7 @@ export default function PrincipalTab({
       </div>
 
       {/* ── 3. Acoes Rapidas ── */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
           { icon: Users, label: 'Meus Pacientes' },
           { icon: Package, label: 'Meu Inventario' },

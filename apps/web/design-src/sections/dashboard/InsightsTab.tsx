@@ -305,7 +305,7 @@ export default function InsightsTab({
             Top Resinas
           </h3>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             {topResins.map((resin, i) => {
               const pct = (resin.count / maxResinCount) * 100
               return (

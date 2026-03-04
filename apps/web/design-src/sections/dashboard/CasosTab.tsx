@@ -87,7 +87,7 @@ export default function CasosTab({
       </div>
 
       {/* Filter pills */}
-      <div className="flex gap-1">
+      <div className="flex gap-2">
         {filters.map((f) => (
           <button
             key={f.key}
@@ -122,7 +122,7 @@ export default function CasosTab({
             <div className="flex items-center gap-3">
               <button
                 onClick={onContinueDraft}
-                className="bg-primary text-primary-foreground btn-press rounded-lg px-4 py-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring"
+                className="bg-primary text-primary-foreground btn-press btn-glow rounded-lg px-4 py-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring"
               >
                 Continuar
               </button>
@@ -139,7 +139,7 @@ export default function CasosTab({
 
       {/* Session Cards */}
       {filteredSessions.length > 0 ? (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {filteredSessions.map((session) => {
             const isComplete =
               session.completedCount === session.evaluationCount
@@ -177,7 +177,7 @@ export default function CasosTab({
                 </div>
 
                 {/* Treatment type chips */}
-                <div className="flex flex-wrap gap-1.5 mb-3">
+                <div className="flex flex-wrap gap-2 mb-3">
                   {session.treatmentTypes.map((type) => {
                     const color =
                       TREATMENT_COLOR_VARS[type] ?? 'var(--color-muted-foreground)'
@@ -209,7 +209,7 @@ export default function CasosTab({
 
                 {/* Progress bar + label */}
                 <div className="flex items-center gap-3">
-                  <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+                  <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
                     <div
                       className="h-full rounded-full transition-all"
                       style={{
@@ -240,7 +240,9 @@ export default function CasosTab({
 function EmptyState({ onCreateCase }: { onCreateCase: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-12 space-y-4">
-      <FileText className="w-10 h-10 text-muted-foreground" />
+      <div className="p-4 rounded-full bg-muted">
+        <FileText className="w-8 h-8 text-muted-foreground" />
+      </div>
       <div className="text-center space-y-1">
         <p className="font-medium text-foreground">Nenhum caso ainda</p>
         <p className="text-sm text-muted-foreground">
@@ -249,7 +251,7 @@ function EmptyState({ onCreateCase }: { onCreateCase: () => void }) {
       </div>
       <button
         onClick={onCreateCase}
-        className="flex items-center gap-2 bg-primary text-primary-foreground btn-press rounded-lg px-4 py-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex items-center gap-2 bg-primary text-primary-foreground btn-press btn-glow rounded-lg px-4 py-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring"
       >
         <Plus className="w-4 h-4" />
         Criar Primeiro Caso
