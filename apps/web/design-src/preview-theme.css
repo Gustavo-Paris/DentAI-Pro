@@ -84,6 +84,15 @@
   --color-treatment-encaminhamento: var(--color-muted-foreground);
   --color-treatment-gengivoplastia: #ec4899;
   --color-treatment-recobrimento: var(--color-success);
+
+  /* Layer stratification colors (protocol view) */
+  --layer-incisal-rgb: 20 184 166;
+  --layer-dentina-rgb: 245 158 11;
+  --layer-opaco-rgb: 249 115 22;
+  --layer-effect-rgb: 139 92 246;
+  --layer-esmalte-rgb: 16 185 129;
+  --layer-translucido-rgb: 96 165 250;
+  --layer-default-rgb: 168 85 247;
 }
 
 .dark {
