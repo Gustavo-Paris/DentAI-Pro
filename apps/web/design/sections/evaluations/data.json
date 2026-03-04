@@ -1,0 +1,249 @@
+{
+  "_meta": {
+    "models": {
+      "EvalSession": "A session in the evaluation list with patient info and progress.",
+      "EvalItem": "Individual tooth evaluation with treatment type and status.",
+      "ProtocolData": "Full protocol data for the Protocol view."
+    }
+  },
+  "sampleSessions": [
+    {
+      "session_id": "sess-001",
+      "patient_name": "Maria Clara Oliveira",
+      "created_at": "2026-03-03T14:30:00Z",
+      "teeth": ["11", "21", "12"],
+      "evaluationCount": 3,
+      "completedCount": 3,
+      "treatmentTypes": ["resina"],
+      "patientAge": 33,
+      "hasDSD": true
+    },
+    {
+      "session_id": "sess-002",
+      "patient_name": "João Pedro Santos",
+      "created_at": "2026-03-02T09:15:00Z",
+      "teeth": ["14", "15", "24", "25"],
+      "evaluationCount": 4,
+      "completedCount": 2,
+      "treatmentTypes": ["resina", "gengivoplastia"],
+      "patientAge": 45,
+      "hasDSD": false
+    },
+    {
+      "session_id": "sess-003",
+      "patient_name": "Ana Beatriz Lima",
+      "created_at": "2026-03-01T16:45:00Z",
+      "teeth": ["11", "21", "22", "12", "13"],
+      "evaluationCount": 5,
+      "completedCount": 5,
+      "treatmentTypes": ["resina", "porcelana"],
+      "patientAge": 28,
+      "hasDSD": true
+    },
+    {
+      "session_id": "sess-004",
+      "patient_name": "Carlos Eduardo Ferreira",
+      "created_at": "2026-02-28T11:00:00Z",
+      "teeth": ["46", "47"],
+      "evaluationCount": 2,
+      "completedCount": 2,
+      "treatmentTypes": ["endodontia", "coroa"],
+      "patientAge": 52,
+      "hasDSD": false
+    },
+    {
+      "session_id": "sess-005",
+      "patient_name": "Larissa Mendes",
+      "created_at": "2026-02-26T08:30:00Z",
+      "teeth": ["11", "21"],
+      "evaluationCount": 2,
+      "completedCount": 1,
+      "treatmentTypes": ["resina"],
+      "patientAge": 19,
+      "hasDSD": true
+    }
+  ],
+  "sampleSessionHeader": {
+    "patient_name": "Maria Clara Oliveira",
+    "created_at": "2026-03-03T14:30:00Z",
+    "teeth": ["11", "21", "12"],
+    "completedCount": 2,
+    "evaluationCount": 3,
+    "hasDSD": true,
+    "treatmentTypes": ["resina", "gengivoplastia"]
+  },
+  "sampleEvaluations": [
+    {
+      "id": "eval-001",
+      "tooth": "11",
+      "treatment_type": "resina",
+      "status": "completed",
+      "resinName": "Z350 XT",
+      "resinManufacturer": "3M",
+      "checklistCurrent": 5,
+      "checklistTotal": 5
+    },
+    {
+      "id": "eval-002",
+      "tooth": "21",
+      "treatment_type": "resina",
+      "status": "completed",
+      "resinName": "Z350 XT",
+      "resinManufacturer": "3M",
+      "checklistCurrent": 5,
+      "checklistTotal": 5
+    },
+    {
+      "id": "eval-003",
+      "tooth": "12",
+      "treatment_type": "resina",
+      "status": "planned",
+      "resinName": "Z350 XT",
+      "resinManufacturer": "3M",
+      "checklistCurrent": 2,
+      "checklistTotal": 5
+    },
+    {
+      "id": "eval-004",
+      "tooth": "GENGIVO",
+      "treatment_type": "gengivoplastia",
+      "status": "planned",
+      "resinName": null,
+      "resinManufacturer": null,
+      "checklistCurrent": 0,
+      "checklistTotal": 3
+    }
+  ],
+  "sampleProtocol": {
+    "treatmentType": "resina",
+    "treatmentLabel": "Resina Composta",
+    "tooth": "11",
+    "region": "Anterior",
+    "createdAt": "2026-03-03T14:30:00Z",
+    "resin": {
+      "name": "Z350 XT",
+      "manufacturer": "3M",
+      "type": "Nanoparticulada",
+      "opacity": "Alta",
+      "resistance": "9/10",
+      "polishing": "9/10",
+      "aesthetics": "9/10",
+      "justification": "Resina nanoparticulada com excelente propriedade optica e mecanica, ideal para restauracoes anteriores classe IV com necessidade estetica alta. Comportamento cromatico estavel e alta resistencia ao desgaste.",
+      "isFromInventory": true
+    },
+    "layers": [
+      {
+        "order": 1,
+        "name": "Dentina",
+        "resin_brand": "Z350 XT A3D",
+        "shade": "A3D",
+        "thickness": "1.0mm",
+        "purpose": "Reconstrucao da camada de dentina, reproduzindo opacidade e fluorescencia natural",
+        "technique": "Incremental obliqua, partindo da parede lingual"
+      },
+      {
+        "order": 2,
+        "name": "Corpo",
+        "resin_brand": "Z350 XT A2B",
+        "shade": "A2B",
+        "thickness": "0.8mm",
+        "purpose": "Transicao cromatica entre dentina e esmalte, construindo volume anatomico",
+        "technique": "Incremento unico moldando cristas marginais e vertente triturante"
+      },
+      {
+        "order": 3,
+        "name": "Efeitos Incisais",
+        "resin_brand": "Kolor+ Branco Azulado",
+        "shade": "Branco Azulado",
+        "thickness": "0.2mm",
+        "purpose": "Reproducao de halo opalescente e mamelos incisais",
+        "technique": "Pincel fino, aplicar nas pontas dos mamelos e borda incisal",
+        "optional": true
+      },
+      {
+        "order": 4,
+        "name": "Esmalte",
+        "resin_brand": "Z350 XT WE",
+        "shade": "WE",
+        "thickness": "0.5mm",
+        "purpose": "Camada final de esmalte para selamento, translucidez e anatomia de superficie",
+        "technique": "Camada continua envolvendo toda face vestibular, esculpir anatomia primaria"
+      }
+    ],
+    "alternative": {
+      "resin": "Z350 XT WE",
+      "shade": "WE",
+      "technique": "Camada unica com escultura anatomica — sem estratificacao de dentina/corpo",
+      "tradeoff": "Resultado estetico aceitavel com menor tempo clinico, indicado para casos com menor exigencia estetica ou tempo limitado"
+    },
+    "finishing": {
+      "contouring": [
+        {
+          "order": 1,
+          "tool": "Ponta diamantada FF (granulacao extra-fina)",
+          "speed": "Alta rotacao com refrigeracao",
+          "time": "30-60s por face",
+          "tip": "Movimentos leves e intermitentes para evitar superaquecimento"
+        },
+        {
+          "order": 2,
+          "tool": "Discos de lixa Sof-Lex (medio a fino)",
+          "speed": "Baixa rotacao",
+          "time": "20-30s por disco",
+          "tip": "Sequencia decrescente de granulacao, unidirecional"
+        }
+      ],
+      "polishing": [
+        {
+          "order": 1,
+          "tool": "Borracha abrasiva Enhance (Dentsply)",
+          "speed": "Baixa rotacao com pressao leve",
+          "time": "30s",
+          "tip": "Movimentos circulares sem pressao excessiva"
+        },
+        {
+          "order": 2,
+          "tool": "Pasta diamantada Diamond Excel (FGM)",
+          "speed": "Baixa rotacao com feltro",
+          "time": "60s",
+          "tip": "Aplicar com feltro ou disco de algodao, brilho final"
+        }
+      ],
+      "finalGlaze": "Aplicar selante de superficie (ex: Biscover LV) para brilho extra e protecao",
+      "maintenanceAdvice": "Polimento de manutencao a cada 6-12 meses. Evitar alimentos pigmentantes nas primeiras 48h."
+    },
+    "checklist": [
+      "Isolamento absoluto posicionado",
+      "Condicionamento acido do esmalte (37%, 30s)",
+      "Aplicacao do sistema adesivo (2 camadas, fotopolimerizar)",
+      "Insercao das camadas conforme protocolo de estratificacao",
+      "Verificar adaptacao marginal e anatomia oclusal",
+      "Acabamento e polimento seguindo protocolo",
+      "Verificar oclusao e ajustar contatos prematuros"
+    ],
+    "alerts": [
+      "Paciente com alto nivel estetico — atentar para reproducao de texturas de superficie e brilho",
+      "Dente adjacente (21) restaurado — buscar harmonizacao cromatica bilateral"
+    ],
+    "warnings": [
+      "Evitar camada de esmalte com espessura maior que 0.5mm para prevenir trincas por estresse residual"
+    ],
+    "confidence": "alta",
+    "dsdLayers": [
+      { "type": "gingival", "label": "Gengival", "active": true },
+      { "type": "whitening", "label": "Clareamento", "active": false },
+      { "type": "composite", "label": "Resina", "active": false }
+    ],
+    "caseSummary": {
+      "patientAge": 33,
+      "tooth": "11",
+      "region": "Anterior",
+      "cavityClass": "Classe IV",
+      "restorationSize": "Media",
+      "toothColor": "A2",
+      "aestheticLevel": "Alto",
+      "bruxism": false,
+      "budget": "Premium"
+    }
+  }
+}
