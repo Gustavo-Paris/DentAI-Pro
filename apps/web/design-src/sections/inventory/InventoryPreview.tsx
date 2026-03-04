@@ -21,7 +21,7 @@ function getTypeStyle(type: string): React.CSSProperties {
     'Universal': '--layer-default-rgb',
   }
   const token = tokenMap[type]
-  if (!token) return { backgroundColor: 'rgb(var(--color-muted))', color: 'rgb(var(--color-muted-foreground))' }
+  if (!token) return {} // Body — use Tailwind classes
   return {
     backgroundColor: `rgb(var(${token}) / 0.15)`,
     color: `rgb(var(${token}))`,
@@ -219,7 +219,7 @@ export default function InventoryPreview() {
                     {resin.brand} · {resin.product_line}
                   </p>
                   <div className="flex justify-end">
-                    <button className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-ring">
+                    <button className="opacity-0 group-hover:opacity-100 transition-opacity transition-colors p-1 rounded hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-ring">
                       <Trash2 className="h-3.5 w-3.5 text-destructive" />
                     </button>
                   </div>
