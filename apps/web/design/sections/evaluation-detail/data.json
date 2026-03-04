@@ -1,0 +1,44 @@
+{
+  "_meta": {
+    "models": {
+      "EvaluationDetailItem": "A single tooth evaluation in the detail view.",
+      "SessionHeader": "Session metadata for the header card.",
+      "TreatmentGroup": "Group of evaluations by treatment type."
+    }
+  },
+  "sessionHeader": {
+    "patient_name": "Maria Clara Oliveira",
+    "date": "2026-03-03T14:30:00Z",
+    "teeth": ["11", "12", "21", "22", "14", "15"],
+    "completed_count": 4,
+    "total_count": 6,
+    "has_photo": true,
+    "has_dsd": true
+  },
+  "treatmentGroups": [
+    {
+      "treatment_type": "resina",
+      "label": "Resina Composta",
+      "evaluations": [
+        { "id": "eval-001", "tooth": "11", "treatment_type": "resina", "status": "completed", "has_protocol": true },
+        { "id": "eval-002", "tooth": "12", "treatment_type": "resina", "status": "completed", "has_protocol": true },
+        { "id": "eval-003", "tooth": "21", "treatment_type": "resina", "status": "completed", "has_protocol": true },
+        { "id": "eval-004", "tooth": "22", "treatment_type": "resina", "status": "pending", "has_protocol": false }
+      ]
+    },
+    {
+      "treatment_type": "faceta",
+      "label": "Faceta",
+      "evaluations": [
+        { "id": "eval-005", "tooth": "14", "treatment_type": "faceta", "status": "completed", "has_protocol": true }
+      ]
+    },
+    {
+      "treatment_type": "gengivoplastia",
+      "label": "Gengivoplastia",
+      "evaluations": [
+        { "id": "eval-006", "tooth": "15", "treatment_type": "gengivoplastia", "status": "pending", "has_protocol": false }
+      ]
+    }
+  ]
+}
