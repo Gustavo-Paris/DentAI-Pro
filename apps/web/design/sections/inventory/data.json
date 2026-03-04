@@ -1,0 +1,101 @@
+{
+  "_meta": {
+    "models": {
+      "InventoryResinItem": "A resin shade in the inventory with brand, type, and VITA shade color."
+    }
+  },
+  "sampleResins": [
+    {
+      "id": "inv-001",
+      "shade": "A2",
+      "brand": "3M",
+      "product_line": "Filtek Z350 XT",
+      "type": "Esmalte",
+      "opacity": null,
+      "shadeColor": "#EBDAC8"
+    },
+    {
+      "id": "inv-002",
+      "shade": "A3",
+      "brand": "3M",
+      "product_line": "Filtek Z350 XT",
+      "type": "Dentina",
+      "opacity": null,
+      "shadeColor": "#E0CEBD"
+    },
+    {
+      "id": "inv-003",
+      "shade": "Trans20",
+      "brand": "Tokuyama",
+      "product_line": "Estelite Omega",
+      "type": "Translúcido",
+      "opacity": "Alta",
+      "shadeColor": "linear-gradient(135deg, #E8F4FC 0%, #D0E8F7 100%)"
+    },
+    {
+      "id": "inv-004",
+      "shade": "OA2",
+      "brand": "Tokuyama",
+      "product_line": "Estelite Omega",
+      "type": "Opaco",
+      "opacity": "Baixa",
+      "shadeColor": "#EBE0D4"
+    },
+    {
+      "id": "inv-005",
+      "shade": "B1",
+      "brand": "Ivoclar",
+      "product_line": "IPS Empress Direct",
+      "type": "Esmalte",
+      "opacity": null,
+      "shadeColor": "#F7EBD9"
+    },
+    {
+      "id": "inv-006",
+      "shade": "DA2",
+      "brand": "FGM",
+      "product_line": "Vittra APS",
+      "type": "Dentina",
+      "opacity": null,
+      "shadeColor": "#E8D2C0"
+    },
+    {
+      "id": "inv-007",
+      "shade": "WE",
+      "brand": "Tokuyama",
+      "product_line": "Estelite Omega",
+      "type": "Universal",
+      "opacity": null,
+      "shadeColor": "#FAFAFA"
+    },
+    {
+      "id": "inv-008",
+      "shade": "A2",
+      "brand": "3M",
+      "product_line": "Filtek Z350 XT",
+      "type": "Body",
+      "opacity": null,
+      "shadeColor": "#EBDAC8"
+    },
+    {
+      "id": "inv-009",
+      "shade": "BL1",
+      "brand": "Ivoclar",
+      "product_line": "IPS Empress Direct",
+      "type": "Esmalte",
+      "opacity": null,
+      "shadeColor": "#FFFFFF"
+    },
+    {
+      "id": "inv-010",
+      "shade": "MW",
+      "brand": "Tokuyama",
+      "product_line": "Estelite Omega",
+      "type": "Universal",
+      "opacity": null,
+      "shadeColor": "#F8F8F6"
+    }
+  ],
+  "brands": ["3M", "Tokuyama", "Ivoclar", "FGM"],
+  "types": ["Esmalte", "Dentina", "Body", "Opaco", "Translúcido", "Universal"]
+}
