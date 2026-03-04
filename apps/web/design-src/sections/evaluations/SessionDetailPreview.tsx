@@ -80,7 +80,11 @@ export default function SessionDetailPreview() {
       : 0
 
   return (
-    <div className="space-y-4">
+    <div className="section-glow-bg relative min-h-screen p-6 sm:p-8 space-y-6">
+      {/* Glow orbs */}
+      <div className="glow-orb w-64 h-64 -top-20 -right-20 bg-primary/10" />
+      <div className="glow-orb glow-orb-slow w-48 h-48 bottom-40 -left-20 bg-accent/10" />
+
       {/* ── 1. Breadcrumb ── */}
       <nav className="flex items-center gap-1">
         <span className="text-sm text-primary font-medium">Avaliacoes</span>
