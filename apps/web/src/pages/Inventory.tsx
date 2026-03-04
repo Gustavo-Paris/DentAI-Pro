@@ -8,8 +8,9 @@ import { Button } from '@parisgroup-ai/pageshell/primitives';
 import { TipBanner } from '@/components/TipBanner';
 import { useInventoryManagement } from '@/hooks/domain/useInventoryManagement';
 import type { FlatInventoryItem } from '@/hooks/domain/useInventoryManagement';
-import { ResinBadge } from '@/components/ResinBadge';
+import { getTypeColorClasses } from '@/components/ResinTypeLegend';
 import { ResinTypeLegend } from '@/components/ResinTypeLegend';
+import { getVitaShadeColor, isGradient } from '@/lib/vitaShadeColors';
 import { AddResinsDialog } from '@/components/inventory/AddResinsDialog';
 import { CSVImportDialog } from '@/components/inventory/CSVImportDialog';
 
@@ -20,7 +21,22 @@ import { CSVImportDialog } from '@/components/inventory/CSVImportDialog';
 const SEARCH_FIELDS: ('shade' | 'brand' | 'product_line')[] = ['shade', 'brand', 'product_line'];
 
 // =============================================================================
-// Card component (presentation only)
+// Helpers
+// =============================================================================
+
+function getContrastColor(color: string): string {
+  if (color.includes('linear-gradient')) return '#374151';
+  const hex = color.replace('#', '');
+  if (hex.length < 6) return '#374151';
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.6 ? '#374151' : '#FAFAFA';
+}
+
+// =============================================================================
+// Card component — swatch header + info section
 // =============================================================================
 
 const InventoryResinCard = memo(function InventoryResinCard({
@@ -31,14 +47,40 @@ const InventoryResinCard = memo(function InventoryResinCard({
   onRemove: (id: string) => void;
 }) {
   const { t } = useTranslation();
+  const shadeColor = getVitaShadeColor(item.shade);
+  const isGrad = isGradient(shadeColor);
+  const contrastColor = getContrastColor(shadeColor);
+  const typeClasses = getTypeColorClasses(item.type);
+
   return (
-    <div className="group relative p-2 rounded-xl border bg-card hover:bg-accent/50 hover:shadow-md transition-all duration-200">
-      <ResinBadge shade={item.shade} type={item.type} size="md" showColorSwatch />
-      <p className="text-xs text-muted-foreground mt-1 truncate">{item.brand}</p>
-      <p className="text-xs text-muted-foreground truncate">{item.product_line}</p>
+    <div className="group relative rounded-xl border bg-card overflow-hidden hover:shadow-md transition-all duration-200">
+      {/* Shade swatch header */}
+      <div
+        className="h-14 sm:h-16 w-full flex items-center justify-center"
+        style={isGrad ? { background: shadeColor } : { backgroundColor: shadeColor }}
+      >
+        <span className="text-sm font-semibold" style={{ color: contrastColor }}>
+          {item.shade}
+        </span>
+      </div>
+
+      {/* Info */}
+      <div className="p-2.5 space-y-1.5">
+        <div className="flex items-center justify-between gap-1">
+          <span className="text-sm font-semibold text-foreground truncate">{item.shade}</span>
+          <span className={`text-[10px] rounded-full px-2 py-0.5 font-medium shrink-0 ${typeClasses}`}>
+            {item.type}
+          </span>
+        </div>
+        <p className="text-xs text-muted-foreground truncate">
+          {item.brand} · {item.product_line}
+        </p>
+      </div>
+
+      {/* Remove button */}
       <button
         onClick={() => onRemove(item.id)}
-        className="absolute -top-2 -right-2 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-destructive/10 hover:bg-destructive/20 transition-colors sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 focus-visible:opacity-100"
+        className="absolute top-1.5 right-1.5 p-2 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-full bg-destructive/10 hover:bg-destructive/20 transition-colors sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 focus-visible:opacity-100"
         title={t('common.remove')}
         aria-label={t('inventory.removeResin')}
       >
