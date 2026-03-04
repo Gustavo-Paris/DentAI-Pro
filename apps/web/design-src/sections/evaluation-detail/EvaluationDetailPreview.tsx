@@ -53,50 +53,50 @@ export default function EvaluationDetailPreview() {
 
         {/* -- 2. Session Header Card -- */}
         <div className="glass-panel rounded-xl overflow-hidden">
-          <div className="bg-gradient-to-br from-primary/5 to-transparent p-5">
-            <div className="flex flex-col sm:flex-row gap-5">
-              {/* Photo placeholder */}
-              <div className="w-full sm:w-48 h-32 rounded-xl bg-muted flex items-center justify-center shrink-0 relative group cursor-pointer">
-                <Camera className="h-8 w-8 text-muted-foreground" />
+          <div className="bg-gradient-to-br from-primary/5 to-transparent p-4 sm:p-5">
+            <div className="flex gap-4">
+              {/* Photo thumbnail */}
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-muted flex items-center justify-center shrink-0 relative group cursor-pointer">
+                <Camera className="h-6 w-6 text-muted-foreground" />
                 {session.has_dsd && (
                   <div className="absolute inset-0 rounded-xl bg-primary/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Eye className="h-5 w-5 text-primary-foreground mr-1.5" />
-                    <span className="text-sm font-medium text-primary-foreground">Ver DSD</span>
+                    <Eye className="h-4 w-4 text-primary-foreground mr-1" />
+                    <span className="text-xs font-medium text-primary-foreground">DSD</span>
                   </div>
                 )}
               </div>
 
               {/* Info */}
-              <div className="flex-1 space-y-3">
+              <div className="flex-1 min-w-0 space-y-2.5">
                 <div>
-                  <h1 className="text-xl font-semibold text-heading">{session.patient_name}</h1>
-                  <p className="text-sm text-muted-foreground">
+                  <h1 className="text-lg font-semibold text-heading truncate">{session.patient_name}</h1>
+                  <p className="text-xs text-muted-foreground">
                     {new Date(session.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
                   </p>
                 </div>
 
                 {/* Tooth badges */}
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex flex-wrap gap-1">
                   {session.teeth.map(tooth => (
-                    <span key={tooth} className="text-xs rounded-full px-2.5 py-0.5 border border-border font-medium text-foreground">
+                    <span key={tooth} className="text-[11px] rounded-full px-2 py-0.5 border border-border font-medium text-foreground">
                       {tooth}
                     </span>
                   ))}
                 </div>
+              </div>
+            </div>
 
-                {/* Progress */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">Progresso</span>
-                    <span className="font-medium text-foreground">{session.completed_count}/{session.total_count} completos</span>
-                  </div>
-                  <div className="h-2.5 rounded-full bg-primary/20 overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-primary transition-all"
-                      style={{ width: `${(session.completed_count / session.total_count) * 100}%` }}
-                    />
-                  </div>
-                </div>
+            {/* Progress — full width below */}
+            <div className="mt-3 space-y-1.5">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">Progresso</span>
+                <span className="font-medium text-foreground">{session.completed_count}/{session.total_count} completos</span>
+              </div>
+              <div className="h-2 rounded-full bg-primary/20 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-primary transition-all"
+                  style={{ width: `${(session.completed_count / session.total_count) * 100}%` }}
+                />
               </div>
             </div>
           </div>
