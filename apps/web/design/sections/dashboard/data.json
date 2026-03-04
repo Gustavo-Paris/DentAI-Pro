@@ -1,0 +1,132 @@
+{
+  "_meta": {
+    "models": {
+      "DashboardMetrics": "Aggregate KPI metrics for the clinician's practice.",
+      "DashboardSession": "A recent case/session with patient info, teeth, treatments, and progress.",
+      "ClinicalInsights": "Analytics data: treatment distribution, top resins, inventory rate.",
+      "WeeklyTrendPoint": "Weekly evaluation count for trend charts.",
+      "DraftInfo": "Pending wizard draft metadata."
+    },
+    "relationships": [
+      "DashboardMetrics summarize all evaluations and patients",
+      "DashboardSession is derived from evaluations grouped by session_id",
+      "ClinicalInsights aggregates evaluations for analytics charts",
+      "WeeklyTrendPoint is computed from evaluation created_at timestamps",
+      "DraftInfo references an in-progress wizard case saved to localStorage"
+    ]
+  },
+  "sampleMetrics": {
+    "totalCases": 47,
+    "totalPatients": 32,
+    "pendingSessions": 3,
+    "weeklySessions": 5,
+    "completionRate": 78,
+    "pendingTeeth": 8
+  },
+  "sampleSessions": [
+    {
+      "session_id": "sess-001",
+      "patient_name": "Maria Clara Oliveira",
+      "created_at": "2026-03-02T14:30:00Z",
+      "teeth": ["11", "21", "12"],
+      "evaluationCount": 3,
+      "completedCount": 3,
+      "treatmentTypes": ["resina"],
+      "patientAge": 33,
+      "hasDSD": true
+    },
+    {
+      "session_id": "sess-002",
+      "patient_name": "João Pedro Santos",
+      "created_at": "2026-03-01T09:15:00Z",
+      "teeth": ["14", "15", "24", "25"],
+      "evaluationCount": 4,
+      "completedCount": 2,
+      "treatmentTypes": ["resina", "gengivoplastia"],
+      "patientAge": 45,
+      "hasDSD": false
+    },
+    {
+      "session_id": "sess-003",
+      "patient_name": "Ana Beatriz Lima",
+      "created_at": "2026-02-28T16:45:00Z",
+      "teeth": ["11", "21", "22", "12", "13"],
+      "evaluationCount": 5,
+      "completedCount": 5,
+      "treatmentTypes": ["resina", "porcelana"],
+      "patientAge": 28,
+      "hasDSD": true
+    },
+    {
+      "session_id": "sess-004",
+      "patient_name": "Carlos Eduardo Ferreira",
+      "created_at": "2026-02-27T11:00:00Z",
+      "teeth": ["46", "47"],
+      "evaluationCount": 2,
+      "completedCount": 2,
+      "treatmentTypes": ["endodontia", "coroa"],
+      "patientAge": 52,
+      "hasDSD": false
+    },
+    {
+      "session_id": "sess-005",
+      "patient_name": "Larissa Mendes",
+      "created_at": "2026-02-25T08:30:00Z",
+      "teeth": ["11", "21"],
+      "evaluationCount": 2,
+      "completedCount": 1,
+      "treatmentTypes": ["resina"],
+      "patientAge": 19,
+      "hasDSD": true
+    }
+  ],
+  "sampleDraft": {
+    "patientName": "Roberto Silva",
+    "teethCount": 3,
+    "savedAt": "2026-03-03T10:15:00Z"
+  },
+  "sampleInsights": {
+    "treatmentDistribution": [
+      { "label": "Resina", "value": 28, "color": "var(--color-treatment-resina)" },
+      { "label": "Gengivoplastia", "value": 8, "color": "var(--color-treatment-gengivoplastia)" },
+      { "label": "Porcelana", "value": 5, "color": "var(--color-treatment-porcelana)" },
+      { "label": "Coroa", "value": 3, "color": "var(--color-treatment-coroa)" },
+      { "label": "Endodontia", "value": 2, "color": "var(--color-treatment-endodontia)" },
+      { "label": "Implante", "value": 1, "color": "var(--color-treatment-implante)" }
+    ],
+    "topResin": "Z350 XT (3M)",
+    "topResins": [
+      { "name": "Z350 XT (3M)", "count": 12 },
+      { "name": "Filtek Supreme (3M)", "count": 8 },
+      { "name": "Estelite Sigma (Tokuyama)", "count": 5 },
+      { "name": "IPS Empress Direct (Ivoclar)", "count": 3 },
+      { "name": "Charisma Diamond (Kulzer)", "count": 2 }
+    ],
+    "inventoryRate": 72,
+    "totalEvaluated": 47,
+    "avgCompletionHours": 18.5
+  },
+  "weeklyTrends": [
+    { "label": "Sem 1", "value": 3 },
+    { "label": "Sem 2", "value": 5 },
+    { "label": "Sem 3", "value": 2 },
+    { "label": "Sem 4", "value": 7 },
+    { "label": "Sem 5", "value": 4 },
+    { "label": "Sem 6", "value": 6 },
+    { "label": "Sem 7", "value": 8 },
+    { "label": "Sem 8", "value": 5 },
+    { "label": "Sem 9", "value": 3 },
+    { "label": "Sem 10", "value": 6 },
+    { "label": "Sem 11", "value": 4 },
+    { "label": "Sem 12", "value": 5 }
+  ],
+  "profile": {
+    "firstName": "Dra. Camila",
+    "creditsRemaining": 12,
+    "planName": "Pro"
+  },
+  "patientGrowth": {
+    "thisMonth": 8,
+    "growthPercent": 14
+  }
+}
