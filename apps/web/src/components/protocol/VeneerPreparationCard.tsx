@@ -57,7 +57,7 @@ export function VeneerPreparationCard() {
 
       <Accordion type="multiple" defaultValue={["waxup", "mockup", "prep"]} className="space-y-3">
         {/* 1. Diagnostic Wax-up */}
-        <AccordionItem value="waxup" className="border rounded-lg">
+        <AccordionItem value="waxup" className="border rounded-xl">
           <AccordionTrigger className="px-4 py-3 hover:no-underline">
             <div className="flex items-center gap-2">
               <Layers className="w-4 h-4 text-blue-500" />
@@ -82,7 +82,7 @@ export function VeneerPreparationCard() {
         </AccordionItem>
 
         {/* 2. Mock-up */}
-        <AccordionItem value="mockup" className="border rounded-lg">
+        <AccordionItem value="mockup" className="border rounded-xl">
           <AccordionTrigger className="px-4 py-3 hover:no-underline">
             <div className="flex items-center gap-2">
               <Layers className="w-4 h-4 text-cyan-500" />
@@ -107,7 +107,7 @@ export function VeneerPreparationCard() {
         </AccordionItem>
 
         {/* 3. Preparation Sequence */}
-        <AccordionItem value="prep" className="border rounded-lg">
+        <AccordionItem value="prep" className="border rounded-xl">
           <AccordionTrigger className="px-4 py-3 hover:no-underline">
             <div className="flex items-center gap-2">
               <Wrench className="w-4 h-4 text-purple-500" />

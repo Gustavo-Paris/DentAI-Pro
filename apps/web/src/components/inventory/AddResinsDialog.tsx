@@ -123,7 +123,7 @@ export function AddResinsDialog({
               className="space-y-2"
             >
               {Object.entries(groupedCatalog).map(([brand, productLines]) => (
-                <AccordionItem key={brand} value={brand} className="border rounded-lg px-4">
+                <AccordionItem key={brand} value={brand} className="border rounded-xl px-4">
                   <AccordionTrigger className="hover:no-underline">
                     <span className="font-semibold">{brand}</span>
                   </AccordionTrigger>
@@ -134,7 +134,7 @@ export function AddResinsDialog({
                           <p className="text-sm font-medium text-muted-foreground mb-2">
                             {productLine}
                           </p>
-                          <div className="flex flex-wrap gap-2">
+                          <div className="flex flex-wrap gap-2.5">
                             {resins.map((resin) => (
                               <ResinBadge
                                 key={resin.id}

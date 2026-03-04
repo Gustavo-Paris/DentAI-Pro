@@ -117,7 +117,7 @@ export const EvaluationCards = memo(function EvaluationCards({
                 </div>
 
                 {!isGrouped && evaluation.treatment_type === 'resina' && evaluation.resins && (
-                  <div className="mb-3 p-2 bg-muted/50 rounded">
+                  <div className="mb-3 p-2 bg-muted/50 rounded-lg">
                     <p className="text-sm font-medium">{evaluation.resins.name}</p>
                     <p className="text-xs text-muted-foreground">{evaluation.resins.manufacturer}</p>
                   </div>
