@@ -1,0 +1,112 @@
+{
+  "_meta": {
+    "models": {
+      "PricingPlanFull": "A pricing plan with monthly/annual prices and feature comparison.",
+      "PricingFeatureRow": "A feature row in the comparison table."
+    }
+  },
+  "featureRows": [
+    { "id": "creditsMonth", "label": "Creditos/mes" },
+    { "id": "caseAnalyses", "label": "Analises de caso" },
+    { "id": "dsdSimulations", "label": "Simulacoes DSD" },
+    { "id": "creditRollover", "label": "Acumulo de creditos" },
+    { "id": "users", "label": "Usuarios" },
+    { "id": "resinRecommendations", "label": "Recomendacao de resinas" },
+    { "id": "cementationProtocols", "label": "Protocolos de cimentacao" },
+    { "id": "pdfExport", "label": "Exportar PDF" },
+    { "id": "prioritySupport", "label": "Suporte prioritario" },
+    { "id": "dedicatedSupport", "label": "Suporte dedicado" },
+    { "id": "personalOnboarding", "label": "Onboarding pessoal" }
+  ],
+  "plans": [
+    {
+      "id": "free",
+      "name": "Free",
+      "description": "Para testar a plataforma",
+      "price_monthly": 0,
+      "price_annual": 0,
+      "credits": 5,
+      "popular": false,
+      "features": [
+        { "featureId": "creditsMonth", "value": "5 creditos/mes" },
+        { "featureId": "caseAnalyses", "value": "5 analises" },
+        { "featureId": "dsdSimulations", "value": "2 simulacoes" },
+        { "featureId": "creditRollover", "value": false },
+        { "featureId": "users", "value": "1 usuario" },
+        { "featureId": "resinRecommendations", "value": "Recomendacao de resinas" },
+        { "featureId": "cementationProtocols", "value": false },
+        { "featureId": "pdfExport", "value": false },
+        { "featureId": "prioritySupport", "value": false },
+        { "featureId": "dedicatedSupport", "value": false },
+        { "featureId": "personalOnboarding", "value": false }
+      ]
+    },
+    {
+      "id": "starter",
+      "name": "Starter",
+      "description": "Para profissionais individuais",
+      "price_monthly": 5900,
+      "price_annual": 4900,
+      "credits": 30,
+      "popular": false,
+      "features": [
+        { "featureId": "creditsMonth", "value": "30 creditos/mes" },
+        { "featureId": "caseAnalyses", "value": "30 analises" },
+        { "featureId": "dsdSimulations", "value": "15 simulacoes" },
+        { "featureId": "creditRollover", "value": false },
+        { "featureId": "users", "value": "1 usuario" },
+        { "featureId": "resinRecommendations", "value": "Recomendacao de resinas" },
+        { "featureId": "cementationProtocols", "value": "Protocolos de cimentacao" },
+        { "featureId": "pdfExport", "value": "Exportar PDF" },
+        { "featureId": "prioritySupport", "value": "Suporte prioritario" },
+        { "featureId": "dedicatedSupport", "value": false },
+        { "featureId": "personalOnboarding", "value": false }
+      ]
+    },
+    {
+      "id": "pro",
+      "name": "Pro",
+      "description": "Para clinicas em crescimento",
+      "price_monthly": 11900,
+      "price_annual": 9900,
+      "credits": 80,
+      "popular": true,
+      "features": [
+        { "featureId": "creditsMonth", "value": "80 creditos/mes" },
+        { "featureId": "caseAnalyses", "value": "80 analises" },
+        { "featureId": "dsdSimulations", "value": "40 simulacoes" },
+        { "featureId": "creditRollover", "value": "Acumulo de creditos" },
+        { "featureId": "users", "value": "Ate 3 usuarios" },
+        { "featureId": "resinRecommendations", "value": "Recomendacao de resinas" },
+        { "featureId": "cementationProtocols", "value": "Protocolos de cimentacao" },
+        { "featureId": "pdfExport", "value": "Exportar PDF" },
+        { "featureId": "prioritySupport", "value": "Suporte prioritario" },
+        { "featureId": "dedicatedSupport", "value": false },
+        { "featureId": "personalOnboarding", "value": false }
+      ]
+    },
+    {
+      "id": "elite",
+      "name": "Elite",
+      "description": "Para clinicas e redes",
+      "price_monthly": 24900,
+      "price_annual": 20900,
+      "credits": 200,
+      "popular": false,
+      "features": [
+        { "featureId": "creditsMonth", "value": "200 creditos/mes" },
+        { "featureId": "caseAnalyses", "value": "Ilimitado" },
+        { "featureId": "dsdSimulations", "value": "100 simulacoes" },
+        { "featureId": "creditRollover", "value": "Acumulo de creditos" },
+        { "featureId": "users", "value": "Ate 10 usuarios" },
+        { "featureId": "resinRecommendations", "value": "Recomendacao de resinas" },
+        { "featureId": "cementationProtocols", "value": "Protocolos de cimentacao" },
+        { "featureId": "pdfExport", "value": "Exportar PDF" },
+        { "featureId": "prioritySupport", "value": "Suporte prioritario" },
+        { "featureId": "dedicatedSupport", "value": "Suporte dedicado" },
+        { "featureId": "personalOnboarding", "value": "Onboarding pessoal" }
+      ]
+    }
+  ],
+  "discountPercent": 16
+}
