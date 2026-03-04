@@ -1,0 +1,49 @@
+{
+  "_meta": {
+    "models": {
+      "LandingStat": "A stat displayed in the stats section.",
+      "LandingFeature": "A feature card in the features grid.",
+      "LandingStep": "A step in the how-it-works timeline.",
+      "LandingTestimonial": "A testimonial card.",
+      "LandingFAQ": "A FAQ accordion item.",
+      "LandingPlan": "A pricing plan card."
+    }
+  },
+  "stats": [
+    { "value": "<2min", "label": "Para primeiro resultado" },
+    { "value": "6", "label": "Tipos de tratamento" },
+    { "value": "15+", "label": "Marcas de resinas" },
+    { "value": "250+", "label": "Cores VITA disponiveis" }
+  ],
+  "features": [
+    { "icon": "Camera", "title": "Analise Visual com IA", "description": "Tire uma foto e a IA identifica dentes, classifica cavidades e detecta cor VITA." },
+    { "icon": "Smile", "title": "Simulacao de Sorriso", "description": "Visualize o resultado antes de iniciar com simulacao DSD e niveis de clareamento." },
+    { "icon": "Layers", "title": "Protocolo de Estratificacao", "description": "Receba camada por camada qual resina usar do seu inventario pessoal." },
+    { "icon": "FileText", "title": "Relatorio Profissional", "description": "Exporte PDF personalizado com logo do consultorio e protocolo completo." }
+  ],
+  "steps": [
+    { "number": "01", "title": "Tire a foto intraoral", "description": "Faca upload da foto clinica e fotos adicionais para analise completa." },
+    { "number": "02", "title": "IA analisa o caso completo", "description": "Detecta dentes, classifica tratamentos e identifica cor VITA." },
+    { "number": "03", "title": "Visualize o resultado", "description": "Simulacao de clareamento e analise de proporcoes ideais do sorriso." },
+    { "number": "04", "title": "Receba o protocolo", "description": "Protocolo de estratificacao personalizado com suas resinas disponiveis." }
+  ],
+  "testimonials": [
+    { "name": "Dr. Carlos Mendonca", "role": "Dentista Estetico", "clinic": "Clinica Sorriso Perfeito", "quote": "Economizo 3h por semana com a analise automatica. O protocolo e preciso e personalizado.", "rating": 5, "highlight": "Economizo 3h/semana" },
+    { "name": "Dra. Ana Paula Ribeiro", "role": "Clinica Geral", "clinic": "Odonto Excellence", "quote": "A simulacao de sorriso ajuda muito na comunicacao com o paciente. Eles entendem o resultado antes de comecar.", "rating": 5 },
+    { "name": "Dr. Fernando Costa", "role": "Especialista em Dentistica", "clinic": "Instituto Costa Dental", "quote": "Os protocolos de estratificacao sao detalhados e consideram exatamente as resinas que tenho no consultorio.", "rating": 4 },
+    { "name": "Dra. Juliana Santos", "role": "Cirurgia-Dentista", "clinic": "Juliana Santos Odontologia", "quote": "Interface intuitiva e resultados rapidos. Recomendo para qualquer dentista que faz estetica.", "rating": 5 }
+  ],
+  "faqs": [
+    { "question": "Como a IA faz a recomendacao?", "answer": "A IA analisa a foto clinica para identificar dentes, classificar o tipo de tratamento e detectar a cor VITA. Com base nisso, gera um protocolo personalizado usando as resinas do seu inventario." },
+    { "question": "O que e a simulacao DSD?", "answer": "O Digital Smile Design (DSD) permite visualizar o resultado estetico antes de iniciar o tratamento, com diferentes niveis de clareamento e ajustes de proporcao." },
+    { "question": "Quais tipos de tratamento sao suportados?", "answer": "Resina composta, porcelana, coroa, faceta, gengivoplastia e recobrimento radicular." },
+    { "question": "Posso exportar as recomendacoes?", "answer": "Sim! Exporte PDF profissional com logo do consultorio, protocolo completo de estratificacao e recomendacoes detalhadas." },
+    { "question": "Quanto custa?", "answer": "Oferecemos plano gratuito com 5 creditos/mes. Planos pagos a partir de R$59/mes com mais creditos e funcionalidades." }
+  ],
+  "plans": [
+    { "name": "Free", "price": "Gratis", "credits": "5/mes", "popular": false, "features": ["Analise com IA", "5 creditos/mes", "Exportar PDF", "Inventario de resinas"] },
+    { "name": "Starter", "price": "R$59/mes", "credits": "30/mes", "popular": false, "features": ["Tudo do Free", "30 creditos/mes", "Simulacao DSD", "Suporte prioritario"] },
+    { "name": "Pro", "price": "R$119/mes", "credits": "80/mes", "popular": true, "features": ["Tudo do Starter", "80 creditos/mes", "Ate 3 usuarios", "Creditos acumulaveis"] },
+    { "name": "Elite", "price": "R$249/mes", "credits": "200/mes", "popular": false, "features": ["Tudo do Pro", "200 creditos/mes", "Ate 10 usuarios", "Onboarding dedicado"] }
+  ]
+}
