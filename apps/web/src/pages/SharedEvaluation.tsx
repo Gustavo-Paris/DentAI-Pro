@@ -23,6 +23,8 @@ import { ProportionsCard } from '@/components/dsd/ProportionsCard';
 import type { DSDAnalysis, SimulationLayer, SimulationLayerType } from '@/types/dsd';
 import { getLayerLabel } from '@/types/dsd';
 import { useSharedEvaluation } from '@/hooks/domain/useSharedEvaluation';
+import { PatientDocumentSection } from '@/components/evaluation/PatientDocumentSection';
+import type { PatientDocument } from '@/data/evaluations';
 import { Calendar } from 'lucide-react';
 
 export default function SharedEvaluation() {
@@ -42,6 +44,11 @@ export default function SharedEvaluation() {
   const evalDate = !loading && !expired && evaluations[0]?.created_at
     ? format(new Date(evaluations[0].created_at), getDateFormat('long'), { locale: getDateLocale() })
     : '';
+  const patientDocuments = !loading && !expired
+    ? evaluations
+        .filter((e: any) => e.patient_document)
+        .map((e: any) => e.patient_document as PatientDocument)
+    : [];
 
   return (
     <SharedDetailPage
@@ -191,6 +198,11 @@ export default function SharedEvaluation() {
           </Card>
         );
       })()}
+
+      {/* Patient Document */}
+      {patientDocuments.length > 0 && (
+        <PatientDocumentSection documents={patientDocuments} />
+      )}
 
       {/* Tooth Cards */}
       <div className="space-y-4 animate-[fade-in-up_0.6s_ease-out_0.2s_both]">
