@@ -1518,7 +1518,8 @@
           "title": "Comparar Camadas",
           "leftSide": "Lado Esquerdo",
           "rightSide": "Lado Direito",
-          "button": "Comparar"
+          "button": "Comparar",
+          "faceOriginal": "Rosto Original"
         },
         "simulateOnFace": "Simular no rosto",
         "generatingFaceMockup": "Gerando simulação no rosto...",
