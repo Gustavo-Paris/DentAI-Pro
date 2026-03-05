@@ -9,3 +9,6 @@ export type { UseAddTeethFlowReturn, UseAddTeethFlowDeps } from './useAddTeethFl
 
 export { useEvaluationSelection } from './useEvaluationSelection';
 export type { UseEvaluationSelectionReturn } from './useEvaluationSelection';
+
+export { usePatientDocument } from './usePatientDocument';
+export type { UsePatientDocumentReturn } from './usePatientDocument';
