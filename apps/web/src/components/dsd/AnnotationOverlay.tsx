@@ -70,10 +70,10 @@ export function AnnotationOverlay({
     >
       <defs>
         <marker id="arrowUp" markerWidth="6" markerHeight="6" refX="3" refY="6" orient="auto">
-          <path d="M0,6 L3,0 L6,6" fill="none" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M0,6 L3,0 L6,6" fill="none" stroke="currentColor" strokeWidth="1" />
         </marker>
         <marker id="arrowDown" markerWidth="6" markerHeight="6" refX="3" refY="0" orient="auto">
-          <path d="M0,0 L3,6 L6,0" fill="none" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M0,0 L3,6 L6,0" fill="none" stroke="currentColor" strokeWidth="1" />
         </marker>
       </defs>
       {annotatedSuggestions.map((suggestion, idx) => {
@@ -104,36 +104,24 @@ export function AnnotationOverlay({
 
         return (
           <g key={idx}>
-            {/* Tooth ellipse highlight */}
-            <ellipse
-              cx={cx}
-              cy={cy}
-              rx={rx}
-              ry={ry}
-              fill={color}
-              fillOpacity={0.15}
-              stroke={color}
-              strokeWidth={2}
-              strokeOpacity={0.7}
-              strokeDasharray={isGingivo ? '6 3' : undefined}
-            />
-            {/* Treatment label */}
+            {/* Tooth dot marker */}
+            <circle cx={cx} cy={cy} r={3} fill={color} fillOpacity={0.4} />
+            {/* Treatment label — glass pill */}
             <rect
-              x={cx - 24}
+              x={cx - 14}
               y={cy + ry + 4}
-              width={48}
-              height={16}
-              rx={4}
-              fill={color}
-              fillOpacity={0.85}
+              width={28}
+              height={14}
+              rx={7}
+              fill="rgba(0,0,0,0.6)"
             />
             <text
               x={cx}
-              y={cy + ry + 15}
+              y={cy + ry + 14}
               textAnchor="middle"
               fill="white"
-              fontSize={9}
-              fontWeight={600}
+              fontSize={8}
+              fontWeight={500}
             >
               {suggestion.tooth}
             </text>
@@ -148,9 +136,9 @@ export function AnnotationOverlay({
                   x2={cx + rx}
                   y2={cy - ry * 0.8}
                   stroke="#ec4899"
-                  strokeWidth={2}
+                  strokeWidth={1}
                   strokeDasharray="4 2"
-                  strokeOpacity={0.8}
+                  strokeOpacity={0.5}
                 />
                 {/* Measurement arrow + label */}
                 <line
@@ -159,28 +147,28 @@ export function AnnotationOverlay({
                   x2={cx + rx + 4}
                   y2={cy - ry * 0.6}
                   stroke="#ec4899"
-                  strokeWidth={1.5}
+                  strokeWidth={1}
+                  strokeOpacity={0.6}
                   markerStart="url(#arrowUp)"
                   markerEnd="url(#arrowDown)"
                 />
                 <rect
                   x={cx + rx + 8}
                   y={cy - ry * 0.9}
-                  width={measurement ? 32 : 20}
-                  height={14}
-                  rx={3}
-                  fill="#ec4899"
-                  fillOpacity={0.9}
+                  width={measurement ? 30 : 18}
+                  height={12}
+                  rx={6}
+                  fill="rgba(0,0,0,0.6)"
                 />
                 <text
-                  x={cx + rx + 8 + (measurement ? 16 : 10)}
-                  y={cy - ry * 0.9 + 10.5}
+                  x={cx + rx + 8 + (measurement ? 15 : 9)}
+                  y={cy - ry * 0.9 + 9}
                   textAnchor="middle"
                   fill="white"
-                  fontSize={8}
-                  fontWeight={700}
+                  fontSize={7}
+                  fontWeight={500}
                 >
-                  {measurement || '↕'}
+                  {measurement || '...'}
                 </text>
               </>
             )}
@@ -194,28 +182,28 @@ export function AnnotationOverlay({
                   x2={cx + rx + 4}
                   y2={cy + ry}
                   stroke="#3b82f6"
-                  strokeWidth={1.5}
+                  strokeWidth={1}
+                  strokeOpacity={0.6}
                   markerStart="url(#arrowUp)"
                   markerEnd="url(#arrowDown)"
                 />
                 <rect
                   x={cx + rx + 8}
                   y={cy + ry * 0.7}
-                  width={measurement ? 32 : 20}
-                  height={14}
-                  rx={3}
-                  fill="#3b82f6"
-                  fillOpacity={0.9}
+                  width={measurement ? 30 : 18}
+                  height={12}
+                  rx={6}
+                  fill="rgba(0,0,0,0.6)"
                 />
                 <text
-                  x={cx + rx + 8 + (measurement ? 16 : 10)}
-                  y={cy + ry * 0.7 + 10.5}
+                  x={cx + rx + 8 + (measurement ? 15 : 9)}
+                  y={cy + ry * 0.7 + 9}
                   textAnchor="middle"
                   fill="white"
-                  fontSize={8}
-                  fontWeight={700}
+                  fontSize={7}
+                  fontWeight={500}
                 >
-                  {measurement || '↕'}
+                  {measurement || '...'}
                 </text>
               </>
             )}
