@@ -180,7 +180,7 @@ export function useDSDStep({
     setActiveLayerIndex: layerGen.setActiveLayerIndex,
     setFailedLayers: layerGen.setFailedLayers,
     setResult,
-    setRetryingLayer: () => {}, // Bridge: layer gen owns retryingLayer state
+    setRetryingLayer: layerGen.setRetryingLayer,
   });
 
   // -------------------------------------------------------------------------

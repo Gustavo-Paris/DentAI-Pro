@@ -470,6 +470,7 @@ export function useDSDLayerGeneration({
     setActiveLayerIndex,
     setSimulationError,
     setFailedLayers,
+    setRetryingLayer,
 
     // Actions
     generateSingleLayer,
