@@ -1192,6 +1192,10 @@
       "logoMaxSize": "Logo must be at most 1MB",
       "logoUpdated": "Logo updated!",
       "logoError": "Error uploading logo"
+    },
+    "patientDocument": {
+      "generated": "Patient document generated successfully!",
+      "error": "Error generating document. Please try again."
     }
   },
   "components": {
@@ -2531,5 +2535,25 @@
   },
   "indicationReasons": {
     "dsd_gingival_harmonization": "Gingival harmonization identified by DSD analysis"
+  },
+  "patientDocument": {
+    "title": "Patient Document",
+    "generate": "Generate Document",
+    "generating": "Generating...",
+    "includeTCLE": "Include Consent Form",
+    "treatmentExplanation": "About your treatment",
+    "postOperative": "Post-procedure care",
+    "dietaryGuide": "Diet",
+    "dietaryAvoid": "Avoid",
+    "dietaryPrefer": "Prefer",
+    "dietaryDuration": "For the next {{hours}} hours",
+    "tcle": "Consent Form",
+    "downloadPDF": "Download PDF",
+    "sendWhatsApp": "Send via WhatsApp",
+    "copy": "Copy text",
+    "copied": "Text copied!",
+    "orientationsTitle": "Your Dentist's Instructions",
+    "noDocuments": "No documents generated yet",
+    "generateDescription": "Generate personalized instructions for your patient"
   }
 }
