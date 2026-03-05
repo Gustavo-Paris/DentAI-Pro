@@ -143,6 +143,9 @@ interface EvaluationRow {
   patient_age: number | null;
   bruxism: boolean | null;
   alerts: string[] | null;
+  warnings: string[] | null;
+  patient_name: string | null;
+  ai_indication_reason: string | null;
   session_id: string;
   patient_id: string | null;
   // Joined resin name
@@ -203,7 +206,7 @@ Deno.serve(async (req) => {
     // Fetch evaluations for the session
     const { data: evaluations, error: evalError } = await supabaseService
       .from("evaluations")
-      .select("id, tooth, treatment_type, recommended_resin_id, aesthetic_level, region, patient_age, bruxism, alerts, session_id, patient_id, resins(name, manufacturer)")
+      .select("id, tooth, treatment_type, recommended_resin_id, aesthetic_level, region, patient_age, bruxism, alerts, warnings, patient_name, ai_indication_reason, session_id, patient_id, resins(name, manufacturer)")
       .eq("session_id", sessionId)
       .eq("user_id", userId);
 
@@ -227,16 +230,8 @@ Deno.serve(async (req) => {
       profile = profileData;
     }
 
-    // Fetch patient name if TCLE requested
-    let patientName = "Paciente";
-    if (includeTCLE && evaluations[0]?.patient_id) {
-      const { data: patient } = await supabaseService
-        .from("patients")
-        .select("name")
-        .eq("id", evaluations[0].patient_id)
-        .single();
-      if (patient?.name) patientName = patient.name;
-    }
+    // Patient name from evaluation (already decrypted by the view)
+    const patientName = (evaluations[0] as EvaluationRow)?.patient_name || "Paciente";
 
     // Prompt definition
     const promptDef = getPrompt<PatientDocumentParams>("patient-document");
@@ -321,18 +316,6 @@ Deno.serve(async (req) => {
 
         const doc = aiResult.functionCall.args as unknown as PatientDocument;
 
-        // Save patient_document to evaluation row
-        const { error: updateError } = await supabaseService
-          .from("evaluations")
-          .update({ patient_document: doc })
-          .eq("id", evaluation.id)
-          .eq("user_id", userId);
-
-        if (updateError) {
-          logger.error(`[${reqId}] Error saving document for evaluation ${evaluation.id}:`, updateError);
-          continue;
-        }
-
         // Generate TCLE if requested
         let tcle: string | undefined;
         if (includeTCLE && profile) {
@@ -340,8 +323,8 @@ Deno.serve(async (req) => {
             procedimento: treatmentDesc,
             dente: `${evaluation.tooth} - ${toothName}`,
             material: materialName,
-            riscos: [],
-            alternativas: "Alternativas ao tratamento serao discutidas em consulta.",
+            riscos: [...(evaluation.alerts || []), ...(evaluation.warnings || [])],
+            alternativas: evaluation.ai_indication_reason || "Alternativas ao tratamento serao discutidas em consulta.",
             clinica: profile.clinic_name || "Clinica",
             dentista: profile.full_name || "Dentista",
             cro: profile.cro || "",
@@ -351,14 +334,28 @@ Deno.serve(async (req) => {
           tcle = generateTCLE(tcleParams);
         }
 
-        documents.push({
-          evaluationId: evaluation.id,
+        // Build full document (flat structure matching frontend PatientDocument type)
+        const fullDoc = {
           tooth: evaluation.tooth,
-          toothName,
-          treatmentType: evaluation.treatment_type,
-          document: doc,
+          treatment_type: evaluation.treatment_type,
+          ...doc,
+          generated_at: new Date().toISOString(),
           ...(tcle ? { tcle } : {}),
-        });
+        };
+
+        // Save patient_document to evaluation row
+        const { error: updateError } = await supabaseService
+          .from("evaluations")
+          .update({ patient_document: fullDoc })
+          .eq("id", evaluation.id)
+          .eq("user_id", userId);
+
+        if (updateError) {
+          logger.error(`[${reqId}] Error saving document for evaluation ${evaluation.id}:`, updateError);
+          continue;
+        }
+
+        documents.push(fullDoc);
 
         logger.log(`[${reqId}] Document generated for evaluation ${evaluation.id}`);
       } catch (error) {
