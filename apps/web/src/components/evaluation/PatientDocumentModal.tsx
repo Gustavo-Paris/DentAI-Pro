@@ -31,10 +31,9 @@ export function PatientDocumentModal({ open, onOpenChange, sessionId, evaluation
   const [includeTCLE, setIncludeTCLE] = useState(true);
   const { isGenerating, documents, handleGenerateDocument } = usePatientDocument(sessionId);
 
-  // Check if any evaluation already has a patient_document
-  const existingDocs = evaluations
-    .filter(e => e.patient_document)
-    .map(e => e.patient_document as PatientDocument);
+  // Check if any evaluation already has a patient_document (consolidated: all evals share the same doc)
+  const firstExisting = evaluations.find(e => e.patient_document)?.patient_document as PatientDocument | undefined;
+  const existingDocs = firstExisting ? [firstExisting] : [];
 
   const displayDocs = documents || (existingDocs.length > 0 ? existingDocs : null);
 

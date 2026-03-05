@@ -18,7 +18,7 @@ export interface PatientDocumentDiet {
 }
 
 export interface PatientDocument {
-  tooth: string;
+  teeth: string[];
   treatment_type: string;
   treatment_explanation: string;
   post_operative: string[];
