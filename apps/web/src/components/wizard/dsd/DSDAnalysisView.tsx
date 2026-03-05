@@ -58,7 +58,7 @@ interface DSDAnalysisViewProps {
   onRetry: () => void;
   onContinue: () => void;
   gingivoplastyApproved: boolean | null;
-  hasGingivoSuggestion: boolean;
+  gingivoConfidence: 'recommended' | 'optional' | 'none';
   onApproveGingivoplasty: () => void;
   onDiscardGingivoplasty: () => void;
   hasFacePhoto?: boolean;
@@ -109,7 +109,7 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
   onRetry,
   onContinue,
   gingivoplastyApproved,
-  hasGingivoSuggestion,
+  gingivoConfidence,
   onApproveGingivoplasty,
   onDiscardGingivoplasty,
   hasFacePhoto,
@@ -210,39 +210,39 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
         </Alert>
       )}
 
-      {/* Gengivoplasty approval — conditional on smile_line and AI detection */}
-      {gingivoplastyApproved === null && (hasGingivoSuggestion || analysis.smile_line !== 'baixa') && (
-        <Card className={hasGingivoSuggestion
+      {/* Gengivoplasty approval — three-tier confidence: recommended / optional / none */}
+      {gingivoplastyApproved === null && gingivoConfidence !== 'none' && (
+        <Card className={gingivoConfidence === 'recommended'
           ? "border-warning/60 bg-warning/5"
           : "border-border bg-secondary/30"
         }>
           <CardContent className="py-4">
             <div className="flex flex-col gap-3">
               <div className="flex items-start gap-3">
-                <AlertCircle className={`w-5 h-5 mt-0.5 shrink-0 ${hasGingivoSuggestion ? 'text-warning' : 'text-muted-foreground'}`} />
+                <AlertCircle className={`w-5 h-5 mt-0.5 shrink-0 ${gingivoConfidence === 'recommended' ? 'text-warning' : 'text-muted-foreground'}`} />
                 <div>
                   <div className="flex items-center gap-2">
-                    <p className={`text-sm font-medium ${hasGingivoSuggestion ? 'text-warning-foreground dark:text-warning' : 'text-foreground'}`}>
-                      {hasGingivoSuggestion
+                    <p className={`text-sm font-medium ${gingivoConfidence === 'recommended' ? 'text-warning-foreground dark:text-warning' : 'text-foreground'}`}>
+                      {gingivoConfidence === 'recommended'
                         ? t('components.wizard.dsd.analysisView.gingivoplastyDetected')
                         : t('components.wizard.dsd.analysisView.gingivoplastyOption')
                       }
                     </p>
                     <Badge
-                      variant={hasGingivoSuggestion ? 'default' : 'secondary'}
-                      className={hasGingivoSuggestion
+                      variant={gingivoConfidence === 'recommended' ? 'default' : 'secondary'}
+                      className={gingivoConfidence === 'recommended'
                         ? 'bg-warning text-warning-foreground text-xs px-1.5 py-0'
                         : 'text-xs px-1.5 py-0'
                       }
                     >
-                      {hasGingivoSuggestion
+                      {gingivoConfidence === 'recommended'
                         ? t('components.wizard.dsd.analysisView.aiRecommended')
                         : t('components.wizard.dsd.analysisView.optional')
                       }
                     </Badge>
                   </div>
-                  <p className={`text-xs mt-1 ${hasGingivoSuggestion ? 'text-warning-foreground dark:text-warning' : 'text-muted-foreground'}`}>
-                    {hasGingivoSuggestion
+                  <p className={`text-xs mt-1 ${gingivoConfidence === 'recommended' ? 'text-warning-foreground dark:text-warning' : 'text-muted-foreground'}`}>
+                    {gingivoConfidence === 'recommended'
                       ? t('components.wizard.dsd.analysisView.gingivoplastyDesc')
                       : t('components.wizard.dsd.analysisView.gingivoplastyOptionalDesc')
                     }

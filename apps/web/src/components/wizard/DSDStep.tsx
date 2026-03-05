@@ -144,7 +144,7 @@ export function DSDStep(props: DSDStepProps) {
         onRetry={state.handleRetry}
         onContinue={state.handleContinue}
         gingivoplastyApproved={state.gingivoplastyApproved}
-        hasGingivoSuggestion={state.result?.analysis ? state.hasGingivoSuggestion(state.result.analysis) : false}
+        gingivoConfidence={state.result?.analysis ? state.getGingivoConfidence(state.result.analysis) : 'none'}
         onApproveGingivoplasty={state.handleApproveGingivoplasty}
         onDiscardGingivoplasty={state.handleDiscardGingivoplasty}
         hasFacePhoto={state.hasFacePhoto}

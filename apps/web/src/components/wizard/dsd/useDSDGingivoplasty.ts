@@ -20,6 +20,8 @@ import { getLayerLabel } from '@/types/dsd';
 // Types
 // ---------------------------------------------------------------------------
 
+export type GingivoConfidence = 'recommended' | 'optional' | 'none';
+
 export interface UseDSDGingivoplastyParams {
   imageBase64: string | null;
   /** Current DSD result with analysis */
@@ -103,23 +105,31 @@ export function useDSDGingivoplasty({
 }: UseDSDGingivoplastyParams) {
   const { t } = useTranslation();
 
-  // Check if analysis has gengivoplasty suggestions — use structured fields only
-  const hasGingivoSuggestion = useCallback((analysis: DSDAnalysis): boolean => {
-    const hasExplicit = !!analysis.suggestions?.some(s => {
+  // Determine gingivoplasty confidence level from analysis
+  const getGingivoConfidence = useCallback((analysis: DSDAnalysis): GingivoConfidence => {
+    // Check for explicit gengivoplasty treatment indication
+    const hasExplicitIndication = !!analysis.suggestions?.some(s => {
       const indication = (s.treatment_indication || '').toLowerCase();
       return indication === 'gengivoplastia' || indication === 'gingivoplasty';
     });
-    if (hasExplicit) return true;
-    if (analysis.smile_line === 'alta') return true;
-    if (analysis.smile_line === 'média') {
-      const gingivoKeywords = ['gengivoplastia', 'excesso gengival', 'sorriso gengival', 'coroa clínica curta', 'coroa clinica curta'];
-      const hasKeywordInSuggestions = !!analysis.suggestions?.some(s => {
-        const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
-        return gingivoKeywords.some(kw => text.includes(kw));
-      });
-      if (hasKeywordInSuggestions) return true;
+    if (hasExplicitIndication) return 'recommended';
+
+    // Check for gingival keywords in suggestions text
+    const gingivoKeywords = ['gengivoplastia', 'excesso gengival', 'sorriso gengival', 'coroa clínica curta', 'coroa clinica curta'];
+    const hasKeywordInSuggestions = !!analysis.suggestions?.some(s => {
+      const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
+      return gingivoKeywords.some(kw => text.includes(kw));
+    });
+
+    if (analysis.smile_line === 'alta') {
+      return hasKeywordInSuggestions ? 'recommended' : 'optional';
     }
-    return false;
+
+    if (analysis.smile_line === 'média' && hasKeywordInSuggestions) {
+      return 'recommended';
+    }
+
+    return 'none';
   }, []);
 
   // Determine which layers to generate based on analysis
@@ -182,7 +192,7 @@ export function useDSDGingivoplasty({
 
   return {
     gingivoplastyApproved,
-    hasGingivoSuggestion,
+    getGingivoConfidence,
     determineLayersNeeded,
     handleApproveGingivoplasty,
     handleDiscardGingivoplasty,

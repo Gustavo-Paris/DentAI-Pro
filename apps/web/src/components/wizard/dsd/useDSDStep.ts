@@ -538,7 +538,7 @@ export function useDSDStep({
     // Derived
     analysisSteps,
     determineLayersNeeded: gingivo.determineLayersNeeded,
-    hasGingivoSuggestion: gingivo.hasGingivoSuggestion,
+    getGingivoConfidence: gingivo.getGingivoConfidence,
     hasFacePhoto: faceMockup.hasFacePhoto,
 
     // Actions
