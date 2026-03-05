@@ -13,7 +13,7 @@ import {
   Switch,
   Label,
 } from '@parisgroup-ai/pageshell/primitives';
-import { FileText, Download, Copy, Loader2, Check, UtensilsCrossed, Heart, AlertCircle } from 'lucide-react';
+import { FileText, Download, Copy, Loader2, Check, UtensilsCrossed, Heart, AlertCircle, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePatientDocument } from '@/hooks/domain/evaluation';
 import type { PatientDocument } from '@/data/evaluations';
@@ -61,6 +61,21 @@ export function PatientDocumentModal({ open, onOpenChange, sessionId, evaluation
     const { generatePatientPDF } = await import('@/lib/pdf/patientPDF');
     const patientName = evaluations[0]?.patient_name || 'Paciente';
     await generatePatientPDF(displayDocs, patientName);
+  };
+
+  const handleShareWhatsApp = () => {
+    if (!displayDocs) return;
+    const text = displayDocs.map(doc => {
+      let content = `*${t('patientDocument.treatmentExplanation')}*\n\n${doc.treatment_explanation}\n\n`;
+      content += `*${t('patientDocument.postOperative')}*\n${doc.post_operative.map((item, i) => `${i + 1}. ${item}`).join('\n')}\n\n`;
+      content += `*${t('patientDocument.dietaryGuide')}* (${t('patientDocument.dietaryDuration', { hours: doc.dietary_guide.duration_hours })})\n`;
+      content += `${t('patientDocument.dietaryAvoid')}: ${doc.dietary_guide.avoid.join(', ')}\n`;
+      content += `${t('patientDocument.dietaryPrefer')}: ${doc.dietary_guide.prefer.join(', ')}`;
+      return content;
+    }).join('\n\n---\n\n');
+
+    const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(waUrl, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -194,6 +209,10 @@ export function PatientDocumentModal({ open, onOpenChange, sessionId, evaluation
 
             {/* Action buttons */}
             <div className="flex flex-wrap gap-2 pt-2 border-t">
+              <Button variant="outline" size="sm" onClick={handleShareWhatsApp}>
+                <MessageCircle className="w-4 h-4 mr-1.5" />
+                WhatsApp
+              </Button>
               <Button variant="outline" size="sm" onClick={handleCopy}>
                 <Copy className="w-4 h-4 mr-1.5" />
                 {t('patientDocument.copy')}

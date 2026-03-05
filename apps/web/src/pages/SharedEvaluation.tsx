@@ -44,11 +44,11 @@ export default function SharedEvaluation() {
   const evalDate = !loading && !expired && evaluations[0]?.created_at
     ? format(new Date(evaluations[0].created_at), getDateFormat('long'), { locale: getDateLocale() })
     : '';
-  const patientDocuments = !loading && !expired
-    ? evaluations
-        .filter((e: any) => e.patient_document)
-        .map((e: any) => e.patient_document as PatientDocument)
-    : [];
+  // Consolidated: all evaluations share the same document, take the first one
+  const firstPatientDoc = !loading && !expired
+    ? evaluations.find((e: any) => e.patient_document)?.patient_document as PatientDocument | undefined
+    : undefined;
+  const patientDocuments = firstPatientDoc ? [firstPatientDoc] : [];
 
   return (
     <SharedDetailPage
