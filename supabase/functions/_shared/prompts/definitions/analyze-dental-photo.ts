@@ -466,6 +466,11 @@ Se 2+ sinais detectados:
 1. Linha Média Facial: centrada ou desviada
 2. Linha Média Dental: alinhada com facial
 3. Linha do Sorriso: exposição gengival (alta/média/baixa)
+   CLASSIFICACAO OBRIGATORIA:
+   - "alta": tecido gengival VISIVELMENTE EXPOSTO acima dos centrais no sorriso (>2mm de gengiva visível), OU papilas interdentais completamente expostas, OU contorno gengival dos centrais claramente visível na foto de sorriso. REGRA: gengiva visível = "alta".
+   - "média": bordos gengivais APENAS tangenciam o lábio superior, gengiva minimamente visível (0-2mm)
+   - "baixa": nenhuma gengiva visível no sorriso, lábio cobre toda margem gengival
+   ERRO COMUM: Classificar como "média" quando gengiva é claramente visível acima dos centrais. Se QUALQUER tecido gengival rosa é visível acima da linha cervical dos incisivos centrais → "alta".
 4. Corredor Bucal: ${BUCCAL_CORRIDOR_RULES}
 5. Plano Oclusal: nivelado ou inclinado
 6. Proporção Dourada: conformidade 0-100% (CAVEAT: A proporção áurea é uma REFERÊNCIA estética, não um alvo obrigatório. Variações de ±10% são naturais e esteticamente aceitáveis. Não indicar tratamento APENAS por desvio da proporção áurea.)
@@ -522,7 +527,7 @@ Smile line MEDIA: VIES FORTEMENTE CONSERVADOR — gengivoplastia SOMENTE se:
   c) Hiperplasia gengival localizada visualmente ÓBVIA (ex: inchaço, contorno anormal)
   Se nenhuma dessas condições está CLARAMENTE presente: NÃO indicar gengivoplastia para smile_line "média".
   Um sorriso com gengiva levemente visível NÃO é indicação de gengivoplastia — é anatomia NORMAL.
-IMPORTANTE: Se papilas estao totalmente visiveis ou contorno gengival dos centrais e visivel → reclassificar para "alta", nao "media".
+REGRA CRITICA DE RECLASSIFICACAO: Se papilas estao totalmente visiveis ou contorno gengival dos centrais e visivel → smile_line DEVE ser "alta", NUNCA "média". Verifique ANTES de classificar smile_line — este erro é o mais comum.
 
 IDENTIFICACAO DE DENTES PARA GENGIVOPLASTIA (quando indicada):
 - Listar CADA dente que precisa de gengivoplastia como sugestão SEPARADA
