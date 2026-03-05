@@ -137,7 +137,6 @@ interface EvaluationRow {
   id: string;
   tooth: string;
   treatment_type: string;
-  recommended_resin_id: string | null;
   aesthetic_level: string | null;
   region: string | null;
   patient_age: number | null;
@@ -147,9 +146,7 @@ interface EvaluationRow {
   patient_name: string | null;
   ai_indication_reason: string | null;
   session_id: string;
-  patient_id: string | null;
-  // Joined resin name
-  resins: { name: string; manufacturer: string } | null;
+  stratification_protocol: { layers?: Array<{ resin_brand?: string }> } | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -206,7 +203,7 @@ Deno.serve(async (req) => {
     // Fetch evaluations for the session
     const { data: evaluations, error: evalError } = await supabaseService
       .from("evaluations")
-      .select("id, tooth, treatment_type, recommended_resin_id, aesthetic_level, region, patient_age, bruxism, alerts, warnings, patient_name, ai_indication_reason, session_id, patient_id, resins(name, manufacturer)")
+      .select("id, tooth, treatment_type, aesthetic_level, region, patient_age, bruxism, alerts, warnings, patient_name, ai_indication_reason, session_id, stratification_protocol")
       .eq("session_id", sessionId)
       .eq("user_id", userId);
 
@@ -255,9 +252,8 @@ Deno.serve(async (req) => {
     for (const evaluation of evaluations as EvaluationRow[]) {
       const toothName = toothToName(evaluation.tooth);
       const treatmentDesc = treatmentToDescription(evaluation.treatment_type);
-      const materialName = evaluation.resins
-        ? `${evaluation.resins.name} (${evaluation.resins.manufacturer})`
-        : "material restaurador";
+      const firstLayerBrand = evaluation.stratification_protocol?.layers?.[0]?.resin_brand;
+      const materialName = firstLayerBrand || "material restaurador";
 
       const promptParams: PatientDocumentParams = {
         treatmentType: treatmentDesc,
