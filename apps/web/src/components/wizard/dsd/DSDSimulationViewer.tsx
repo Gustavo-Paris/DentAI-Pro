@@ -1,8 +1,8 @@
 import { memo, useState, lazy, Suspense } from 'react';
 import type { Ref } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Badge } from '@parisgroup-ai/pageshell/primitives';
-import { Check, Loader2, RefreshCw, Eye, EyeOff, User, Ruler, Ratio, SmilePlus, Columns2 } from 'lucide-react';
+import { Button, Badge, Popover, PopoverContent, PopoverTrigger } from '@parisgroup-ai/pageshell/primitives';
+import { Check, Loader2, RefreshCw, Eye, User, Ruler, Ratio, SmilePlus, Columns2, SlidersHorizontal } from 'lucide-react';
 import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
 import { AnnotationOverlay } from '@/components/dsd/AnnotationOverlay';
 import { ProportionOverlay, type ProportionLayerType } from '@/components/dsd/ProportionOverlay';
@@ -100,98 +100,110 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
 
   return (
     <div className="space-y-3">
-      <div className="space-y-2">
-        <h3 className="font-medium text-sm text-muted-foreground">{t('components.wizard.dsd.simulationViewer.beforeAfter')}</h3>
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Annotation toggle (E5) */}
-          {toothBounds.length > 0 && suggestions?.length > 0 && (
-            <Button
-              variant={showAnnotations ? 'default' : 'outline'}
-              size="sm"
-              onClick={onToggleAnnotations}
-              className="text-xs"
-            >
-              {showAnnotations ? <EyeOff className="w-3 h-3 mr-1" /> : <Eye className="w-3 h-3 mr-1" />}
-              {t('components.wizard.dsd.simulationViewer.annotations')}
-            </Button>
-          )}
-          {/* Proportion overlay toggles */}
-          {toothBounds.length >= 2 && (
+      {/* HERO: Image first */}
+      <div ref={annotationContainerRef} className="relative">
+        <ComparisonSlider
+          beforeImage={beforeImage}
+          afterImage={simulationImageUrl || ''}
+          afterLabel={layers.length > 0 ? layers[activeLayerIndex]?.label || t('components.wizard.dsd.simulationViewer.defaultLabel') : t('components.wizard.dsd.simulationViewer.defaultLabel')}
+          annotationOverlay={!isActiveFaceMockup && (showAnnotations || visibleProportionLayers.size > 0) ? (
             <>
-              <Button
-                variant={visibleProportionLayers.has('midline') ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => onToggleProportionLayer('midline')}
-                className="text-xs"
-                aria-pressed={visibleProportionLayers.has('midline')}
-              >
-                <Ruler className="w-3 h-3 mr-1" />
-                {t('components.wizard.dsd.proportionOverlay.midline')}
-                {isMidlineAdjusted && <span className="ml-1 opacity-60">*</span>}
-              </Button>
-              {isMidlineAdjusted && visibleProportionLayers.has('midline') && onResetMidline && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onResetMidline}
-                  className="text-xs px-2 text-muted-foreground"
-                  title={t('components.wizard.dsd.proportionOverlay.resetMidline')}
-                >
-                  <RefreshCw className="w-3 h-3" />
-                </Button>
+              {showAnnotations && (
+                <AnnotationOverlay
+                  suggestions={suggestions || []}
+                  toothBounds={toothBounds}
+                  visible={showAnnotations}
+                  containerWidth={annotationDimensions.width}
+                  containerHeight={annotationDimensions.height}
+                />
               )}
-              <Button
-                variant={visibleProportionLayers.has('goldenRatio') ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => onToggleProportionLayer('goldenRatio')}
-                className="text-xs"
-                aria-pressed={visibleProportionLayers.has('goldenRatio')}
-              >
-                <Ratio className="w-3 h-3 mr-1" />
-                {t('components.wizard.dsd.proportionOverlay.goldenRatio')}
-              </Button>
-              <Button
-                variant={visibleProportionLayers.has('smileArc') ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => onToggleProportionLayer('smileArc')}
-                className="text-xs"
-                aria-pressed={visibleProportionLayers.has('smileArc')}
-              >
-                <SmilePlus className="w-3 h-3 mr-1" />
-                {t('components.wizard.dsd.proportionOverlay.smileArc')}
-              </Button>
+              {visibleProportionLayers.size > 0 && (
+                <ProportionOverlay
+                  lines={proportionLines}
+                  visibleLayers={visibleProportionLayers}
+                  containerWidth={annotationDimensions.width}
+                  containerHeight={annotationDimensions.height}
+                  isMidlineAdjusted={isMidlineAdjusted}
+                  onMidlineOffsetChange={onMidlineOffsetChange}
+                />
+              )}
             </>
-          )}
-          {layers.length >= 2 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowComparison(true)}
-              className="text-xs"
-            >
-              <Columns2 className="w-3 h-3 mr-1" />
-              {t('components.wizard.dsd.layerComparison.button')}
-            </Button>
-          )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onRegenerateSimulation}
-            disabled={isRegeneratingSimulation || isCompositing || layersGenerating}
-          >
-            {isRegeneratingSimulation || isCompositing || layersGenerating ? (
-              <>
-                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                {isCompositing ? t('components.wizard.dsd.simulationViewer.adjusting') : t('components.wizard.dsd.simulationViewer.generating')}
-              </>
-            ) : (
-              <>
-                <RefreshCw className="w-3 h-3 mr-1" />
-                {t('components.wizard.dsd.simulationViewer.newSimulation')}
-                <span className="text-xs opacity-60 ml-0.5">{t('components.wizard.dsd.simulationViewer.free')}</span>
-              </>
-            )}
-          </Button>
+          ) : undefined}
+        />
+        {/* Floating toolbar (top-left, inside image) */}
+        <div className="absolute top-2 left-2 z-20">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="secondary" size="sm" className="bg-background/80 backdrop-blur-sm hover:bg-background text-xs gap-1.5">
+                <SlidersHorizontal className="w-3.5 h-3.5" />
+                {t('components.wizard.dsd.simulationViewer.analysisTools')}
+                {(showAnnotations || visibleProportionLayers.size > 0) && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-48 p-1">
+              {/* Annotations toggle */}
+              {suggestions?.length > 0 && (
+                <button
+                  onClick={onToggleAnnotations}
+                  className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs transition-colors ${
+                    showAnnotations ? 'bg-primary/10 text-primary' : 'hover:bg-secondary text-foreground'
+                  }`}
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  {t('components.wizard.dsd.simulationViewer.annotations')}
+                  {showAnnotations && <Check className="w-3 h-3 ml-auto" />}
+                </button>
+              )}
+              {/* Midline toggle */}
+              {toothBounds.length >= 2 && (
+                <>
+                  <button
+                    onClick={() => onToggleProportionLayer('midline')}
+                    className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs transition-colors ${
+                      visibleProportionLayers.has('midline') ? 'bg-primary/10 text-primary' : 'hover:bg-secondary text-foreground'
+                    }`}
+                  >
+                    <Ruler className="w-3.5 h-3.5" />
+                    {t('components.wizard.dsd.proportionOverlay.midline')}
+                    {visibleProportionLayers.has('midline') && <Check className="w-3 h-3 ml-auto" />}
+                  </button>
+                  {isMidlineAdjusted && visibleProportionLayers.has('midline') && onResetMidline && (
+                    <button
+                      onClick={onResetMidline}
+                      className="w-full flex items-center gap-2 px-2 py-1.5 pl-6 rounded text-xs transition-colors hover:bg-secondary text-muted-foreground"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      {t('components.wizard.dsd.proportionOverlay.resetMidline')}
+                    </button>
+                  )}
+                  {/* Golden Ratio toggle */}
+                  <button
+                    onClick={() => onToggleProportionLayer('goldenRatio')}
+                    className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs transition-colors ${
+                      visibleProportionLayers.has('goldenRatio') ? 'bg-primary/10 text-primary' : 'hover:bg-secondary text-foreground'
+                    }`}
+                  >
+                    <Ratio className="w-3.5 h-3.5" />
+                    {t('components.wizard.dsd.proportionOverlay.goldenRatio')}
+                    {visibleProportionLayers.has('goldenRatio') && <Check className="w-3 h-3 ml-auto" />}
+                  </button>
+                  {/* Smile Arc toggle */}
+                  <button
+                    onClick={() => onToggleProportionLayer('smileArc')}
+                    className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs transition-colors ${
+                      visibleProportionLayers.has('smileArc') ? 'bg-primary/10 text-primary' : 'hover:bg-secondary text-foreground'
+                    }`}
+                  >
+                    <SmilePlus className="w-3.5 h-3.5" />
+                    {t('components.wizard.dsd.proportionOverlay.smileArc')}
+                    {visibleProportionLayers.has('smileArc') && <Check className="w-3 h-3 ml-auto" />}
+                  </button>
+                </>
+              )}
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
 
@@ -274,35 +286,35 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
         </div>
       )}
 
-      <div ref={annotationContainerRef} className="relative">
-        <ComparisonSlider
-          beforeImage={beforeImage}
-          afterImage={simulationImageUrl || ''}
-          afterLabel={layers.length > 0 ? layers[activeLayerIndex]?.label || t('components.wizard.dsd.simulationViewer.defaultLabel') : t('components.wizard.dsd.simulationViewer.defaultLabel')}
-          annotationOverlay={!isActiveFaceMockup && (showAnnotations || visibleProportionLayers.size > 0) ? (
+      {/* Action bar */}
+      <div className="flex items-center justify-between">
+        <div>
+          {layers.length >= 2 && (
+            <Button variant="outline" size="sm" onClick={() => setShowComparison(true)} className="text-xs">
+              <Columns2 className="w-3 h-3 mr-1" />
+              {t('components.wizard.dsd.layerComparison.button')}
+            </Button>
+          )}
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onRegenerateSimulation}
+          disabled={isRegeneratingSimulation || isCompositing || layersGenerating}
+        >
+          {isRegeneratingSimulation || isCompositing || layersGenerating ? (
             <>
-              {showAnnotations && (
-                <AnnotationOverlay
-                  suggestions={suggestions || []}
-                  toothBounds={toothBounds}
-                  visible={showAnnotations}
-                  containerWidth={annotationDimensions.width}
-                  containerHeight={annotationDimensions.height}
-                />
-              )}
-              {visibleProportionLayers.size > 0 && (
-                <ProportionOverlay
-                  lines={proportionLines}
-                  visibleLayers={visibleProportionLayers}
-                  containerWidth={annotationDimensions.width}
-                  containerHeight={annotationDimensions.height}
-                  isMidlineAdjusted={isMidlineAdjusted}
-                  onMidlineOffsetChange={onMidlineOffsetChange}
-                />
-              )}
+              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+              {isCompositing ? t('components.wizard.dsd.simulationViewer.adjusting') : t('components.wizard.dsd.simulationViewer.generating')}
             </>
-          ) : undefined}
-        />
+          ) : (
+            <>
+              <RefreshCw className="w-3 h-3 mr-1" />
+              {t('components.wizard.dsd.simulationViewer.newSimulation')}
+              <span className="text-xs opacity-60 ml-0.5">{t('components.wizard.dsd.simulationViewer.free')}</span>
+            </>
+          )}
+        </Button>
       </div>
 
       {showComparison && (

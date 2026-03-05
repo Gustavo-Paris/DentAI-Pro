@@ -1486,7 +1486,8 @@
           "newSimulation": "New Simulation",
           "free": "(free)",
           "gingiva": "Gingiva",
-          "defaultLabel": "DSD Simulation"
+          "defaultLabel": "DSD Simulation",
+          "analysisTools": "Analysis"
         },
         "whiteningComparison": {
           "generating": "Generating comparison...",

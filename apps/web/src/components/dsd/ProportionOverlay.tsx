@@ -141,7 +141,7 @@ export function ProportionOverlay({
         const midX = px(lines.midline!.x);
         const yStart = py(lines.midline!.yStart);
         const yEnd = py(lines.midline!.yEnd);
-        const handleRadius = 6;
+        const handleRadius = 5;
 
         const handlePointerDown = (e: React.PointerEvent) => {
           if (!canDragMidline) return;
@@ -172,9 +172,9 @@ export function ProportionOverlay({
               x2={midX}
               y2={yEnd}
               stroke={COLORS.midline}
-              strokeWidth={1.5}
+              strokeWidth={1}
               strokeDasharray="6 4"
-              strokeOpacity={0.85}
+              strokeOpacity={0.6}
             />
             {/* Drag handle — visible circle at top of midline */}
             {canDragMidline && (
@@ -183,9 +183,9 @@ export function ProportionOverlay({
                 cy={yStart + handleRadius + 2}
                 r={handleRadius}
                 fill={COLORS.midline}
-                fillOpacity={isDragging ? 0.9 : 0.6}
+                fillOpacity={isDragging ? 0.7 : 0.4}
                 stroke="white"
-                strokeWidth={1.5}
+                strokeWidth={1}
                 style={{ cursor: isDragging ? 'grabbing' : 'grab', touchAction: 'none' }}
                 onPointerDown={handlePointerDown}
                 onPointerMove={handlePointerMove}
@@ -213,8 +213,9 @@ export function ProportionOverlay({
               x={midX + 6}
               y={yStart + 12}
               fill={COLORS.midline}
-              fontSize={10}
-              fontWeight={600}
+              fontSize={9}
+              fontWeight={500}
+              opacity={0.7}
             >
               {t('components.wizard.dsd.proportionOverlay.midline')}
               {isMidlineAdjusted ? ` (${t('components.wizard.dsd.proportionOverlay.midlineAdjusted')})` : ''}
@@ -240,7 +241,7 @@ export function ProportionOverlay({
           const bracketY = py(bracket.y) - 4; // slightly above the teeth
 
           // End-cap height
-          const capH = 4;
+          const capH = 3;
 
           return (
             <g key={`gr-${idx}`}>
@@ -251,8 +252,8 @@ export function ProportionOverlay({
                 x2={cx1 + hw1}
                 y2={bracketY}
                 stroke={color}
-                strokeWidth={1.5}
-                strokeOpacity={0.85}
+                strokeWidth={0.75}
+                strokeOpacity={0.7}
               />
               {/* Left end cap */}
               <line
@@ -261,8 +262,8 @@ export function ProportionOverlay({
                 x2={cx1 - hw1}
                 y2={bracketY + capH}
                 stroke={color}
-                strokeWidth={1.5}
-                strokeOpacity={0.85}
+                strokeWidth={0.75}
+                strokeOpacity={0.7}
               />
               {/* Right end cap */}
               <line
@@ -271,8 +272,8 @@ export function ProportionOverlay({
                 x2={cx1 + hw1}
                 y2={bracketY + capH}
                 stroke={color}
-                strokeWidth={1.5}
-                strokeOpacity={0.85}
+                strokeWidth={0.75}
+                strokeOpacity={0.7}
               />
 
               {/* Bracket for tooth 2 (narrower) */}
@@ -282,8 +283,8 @@ export function ProportionOverlay({
                 x2={cx2 + hw2}
                 y2={bracketY}
                 stroke={color}
-                strokeWidth={1.5}
-                strokeOpacity={0.85}
+                strokeWidth={0.75}
+                strokeOpacity={0.7}
               />
               {/* Left end cap */}
               <line
@@ -292,8 +293,8 @@ export function ProportionOverlay({
                 x2={cx2 - hw2}
                 y2={bracketY + capH}
                 stroke={color}
-                strokeWidth={1.5}
-                strokeOpacity={0.85}
+                strokeWidth={0.75}
+                strokeOpacity={0.7}
               />
               {/* Right end cap */}
               <line
@@ -302,11 +303,11 @@ export function ProportionOverlay({
                 x2={cx2 + hw2}
                 y2={bracketY + capH}
                 stroke={color}
-                strokeWidth={1.5}
-                strokeOpacity={0.85}
+                strokeWidth={0.75}
+                strokeOpacity={0.7}
               />
 
-              {/* Ratio label below brackets — shows tooth pair + ratio */}
+              {/* Ratio label below brackets — glass-pill with tooth pair + ratio */}
               <g>
                 <title>
                   {t('components.wizard.dsd.proportionOverlay.ratioTooltip', {
@@ -316,13 +317,22 @@ export function ProportionOverlay({
                     ideal: String(bracket.ideal),
                   })}
                 </title>
+                {/* Glass-pill background */}
+                <rect
+                  x={(cx1 + cx2) / 2 - 22}
+                  y={bracketY + capH + 2}
+                  width={44}
+                  height={26}
+                  rx={6}
+                  fill="rgba(0,0,0,0.5)"
+                />
                 {/* Tooth pair label (e.g., "11/12") */}
                 <text
                   x={(cx1 + cx2) / 2}
-                  y={bracketY + capH + 12}
+                  y={bracketY + capH + 13}
                   textAnchor="middle"
-                  fill={color}
-                  fontSize={9}
+                  fill="white"
+                  fontSize={8}
                   fontWeight={500}
                   opacity={0.8}
                 >
@@ -335,8 +345,8 @@ export function ProportionOverlay({
                   x={(cx1 + cx2) / 2}
                   y={bracketY + capH + 24}
                   textAnchor="middle"
-                  fill={color}
-                  fontSize={10}
+                  fill="white"
+                  fontSize={9}
                   fontWeight={600}
                 >
                   {bracket.ratio.toFixed(2)}
@@ -358,21 +368,11 @@ export function ProportionOverlay({
             )}
             fill="none"
             stroke={COLORS.smileArc}
-            strokeWidth={2}
-            strokeOpacity={0.85}
+            strokeWidth={1.5}
+            strokeOpacity={0.7}
             strokeLinecap="round"
             strokeLinejoin="round"
           />
-          {/* Label near the first point */}
-          <text
-            x={px(lines.smileArc[0].x)}
-            y={py(lines.smileArc[0].y) + 16}
-            fill={COLORS.smileArc}
-            fontSize={10}
-            fontWeight={600}
-          >
-            {t('components.wizard.dsd.proportionOverlay.smileArc')}
-          </text>
         </g>
       )}
     </svg>
