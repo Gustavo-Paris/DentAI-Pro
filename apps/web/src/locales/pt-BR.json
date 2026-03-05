@@ -1363,7 +1363,19 @@
         "selected_one": "{{count}} selecionado",
         "selected_other": "{{count}} selecionados",
         "teethSelectedCount_one": "{{count}} dente selecionado para gerar protocolo",
-        "teethSelectedCount_other": "{{count}} dentes selecionados para gerar protocolo"
+        "teethSelectedCount_other": "{{count}} dentes selecionados para gerar protocolo",
+        "tabs": {
+          "teeth": "Dentes",
+          "treatment": "Tratamento",
+          "patient": "Paciente",
+          "summary": "Resumo"
+        },
+        "treatmentGroup": "{{count}} dente",
+        "treatmentGroup_other": "{{count}} dentes",
+        "noTeethSelected": "Nenhum dente selecionado ainda. Volte à aba Dentes para selecionar.",
+        "budgetHint": "Afeta resinas recomendadas e número de camadas do protocolo",
+        "treatmentTypes_one": "{{count}} tipo",
+        "treatmentTypes_other": "{{count}} tipos"
       },
       "draftRestore": {
         "title": "Continuar avaliação anterior?",

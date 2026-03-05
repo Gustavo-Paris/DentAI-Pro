@@ -2,7 +2,7 @@ import { memo, useState, lazy, Suspense } from 'react';
 import type { Ref } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Badge } from '@parisgroup-ai/pageshell/primitives';
-import { Loader2, RefreshCw, Eye, EyeOff, User, Ruler, Ratio, SmilePlus, Columns2 } from 'lucide-react';
+import { Check, Loader2, RefreshCw, Eye, EyeOff, User, Ruler, Ratio, SmilePlus, Columns2 } from 'lucide-react';
 import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
 import { AnnotationOverlay } from '@/components/dsd/AnnotationOverlay';
 import { ProportionOverlay, type ProportionLayerType } from '@/components/dsd/ProportionOverlay';
@@ -213,6 +213,7 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
                   : 'bg-secondary/50 text-muted-foreground border-border hover:border-primary/50 hover:text-foreground'
               }`}
             >
+              <Check className="w-3 h-3" />
               {layer.label}
               {layer.includes_gengivoplasty && (
                 <Badge variant="secondary" className="text-xs px-1 py-0 h-4">

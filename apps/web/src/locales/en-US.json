@@ -1363,7 +1363,19 @@
         "selected_one": "{{count}} selected",
         "selected_other": "{{count}} selected",
         "teethSelectedCount_one": "{{count}} tooth selected for protocol generation",
-        "teethSelectedCount_other": "{{count}} teeth selected for protocol generation"
+        "teethSelectedCount_other": "{{count}} teeth selected for protocol generation",
+        "tabs": {
+          "teeth": "Teeth",
+          "treatment": "Treatment",
+          "patient": "Patient",
+          "summary": "Summary"
+        },
+        "treatmentGroup": "{{count}} tooth",
+        "treatmentGroup_other": "{{count}} teeth",
+        "noTeethSelected": "No teeth selected yet. Go back to the Teeth tab to select.",
+        "budgetHint": "Affects recommended resins and protocol layer count",
+        "treatmentTypes_one": "{{count}} type",
+        "treatmentTypes_other": "{{count}} types"
       },
       "draftRestore": {
         "title": "Continue previous evaluation?",
