@@ -18,7 +18,7 @@ export function UpgradeCTA({ isFree, isActive }: UpgradeCTAProps) {
   if (!isFree || isActive) return null;
 
   return (
-    <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
+    <Card className="rounded-xl glass-panel bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
       <CardContent className="flex items-center justify-between py-4">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-full bg-primary/10">

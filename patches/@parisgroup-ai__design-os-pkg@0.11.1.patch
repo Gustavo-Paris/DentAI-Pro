@@ -1,0 +1,16 @@
+diff --git a/src/server/create-server.mjs b/src/server/create-server.mjs
+index 491496dd546b1f283bac7a902cb91ebe2acf8a40..1782f54e7493ec4b40d6b3d8bfd8de537481db42 100644
+--- a/src/server/create-server.mjs
++++ b/src/server/create-server.mjs
+@@ -151,6 +151,11 @@ export async function createDevServer(options = {}) {
+       }),
+       designOSAppPlugin(projectDir),
+     ],
++    css: {
++      // Override project's postcss.config.js — the project may use Tailwind v3
++      // as a PostCSS plugin, which conflicts with @tailwindcss/vite (v4).
++      postcss: { plugins: [] },
++    },
+     resolve: {
+       dedupe,
+     },

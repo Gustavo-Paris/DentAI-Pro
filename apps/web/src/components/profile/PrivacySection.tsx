@@ -96,7 +96,7 @@ export function PrivacySection({
   return (
     <div className="space-y-6">
       {/* LGPD Rights Summary */}
-      <Card>
+      <Card className="rounded-xl glass-panel">
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-full bg-primary/10">
@@ -131,7 +131,7 @@ export function PrivacySection({
       </Card>
 
       {/* Export Data */}
-      <Card>
+      <Card className="rounded-xl glass-panel">
         <CardHeader>
           <CardTitle className="text-lg font-display">{t('profile.exportDataTitle')}</CardTitle>
           <CardDescription>

@@ -130,15 +130,7 @@ function extractFirstName(fullName: string | null | undefined): string {
 // Insights computation (pure function)
 // ---------------------------------------------------------------------------
 
-const TREATMENT_COLORS: Record<string, string> = {
-  resina: '#3b82f6',
-  porcelana: '#a855f7',
-  coroa: '#f59e0b',
-  implante: '#ef4444',
-  endodontia: '#10b981',
-  encaminhamento: '#6b7280',
-  gengivoplastia: '#ec4899',
-};
+import { TREATMENT_COLORS, TREATMENT_COLOR_FALLBACK } from '@/lib/treatment-colors';
 
 function getTreatmentLabels(): Record<string, string> {
   return {
@@ -181,7 +173,7 @@ function computeInsights(
     .map(([type, count]) => ({
       label: treatmentLabels[type] || type,
       value: count,
-      color: TREATMENT_COLORS[type] || '#6b7280',
+      color: TREATMENT_COLORS[type] || TREATMENT_COLOR_FALLBACK,
     }));
 
   // 2. Top resin

@@ -20,7 +20,7 @@ export function CreditPackSection() {
   if (!isActive || creditPacks.length === 0) return null;
 
   return (
-    <Card>
+    <Card className="rounded-xl glass-panel">
       <CardHeader>
         <CardTitle className="text-lg font-display">{t('components.pricing.creditPack.title')}</CardTitle>
         <CardDescription>

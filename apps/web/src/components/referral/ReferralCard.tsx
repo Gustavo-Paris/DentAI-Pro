@@ -10,7 +10,7 @@ export function ReferralCard() {
 
   if (isLoading) {
     return (
-      <Card>
+      <Card className="rounded-xl glass-panel">
         <CardHeader>
           <Skeleton className="h-6 w-48" />
           <Skeleton className="h-4 w-64 mt-1" />
@@ -34,7 +34,7 @@ export function ReferralCard() {
   };
 
   return (
-    <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
+    <Card className="rounded-xl glass-panel bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
       <CardHeader>
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-full bg-primary/10">

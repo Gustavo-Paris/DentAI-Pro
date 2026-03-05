@@ -144,3 +144,78 @@ Skipped — aplicacao nao rodando localmente (`http://localhost:5173` connection
 2. **Protocol components** (CementationProtocolCard, VeneerPreparationCard) usam `text-blue-500`, `text-cyan-500`, `text-purple-500` para icones de secao. Sao accent colors intencionais, mas poderiam usar tokens `--layer-*-rgb` se desejado.
 
 > **Cross-skill**: ProportionsCard seria melhor tratado pela skill `dental-qa-specialist` para validar se as cores de diagrama estao corretas clinicamente.
+
+---
+
+## Addendum: Dashboard Post-DesignOS Adjustments (2026-03-04)
+
+### Redundancies Found & Fixed
+
+#### [P1-005] TRIPLE credit display — CreditsPill + CreditsBanner + clinicAlerts
+**Pilar**: Information Hierarchy
+**Arquivos**: `Dashboard.tsx`
+**Problema**: When credits <= 5, three UI elements displayed the same information:
+1. CreditsPill (header): "X creditos" — always visible
+2. CreditsBanner (afterHeader): "X creditos restantes" + upgrade CTA (dismissible)
+3. clinicAlerts (afterHeader): "Creditos baixos" + count + upgrade CTA
+
+With CreditsPill permanently showing count, CreditsBanner was sandwiched and redundant.
+**Fix**: Removed CreditsBanner from Dashboard.tsx. CreditsPill (informational) + clinicAlerts (warning) = sufficient.
+**Status**: Corrigido
+
+#### [P2-003] Empty section comment blocks
+**Pilar**: Polish & Craft
+**Arquivo**: `Dashboard.tsx:37-43`
+**Problema**: Two empty `// ===` section headers with no code between them.
+**Fix**: Removed.
+**Status**: Corrigido
+
+#### [P2-004] slotsConfig useMemo missing `t` dependency
+**Pilar**: Visual Consistency
+**Arquivo**: `Dashboard.tsx`
+**Problema**: `t('dashboard.creditsPill.label')` used in slotsConfig but `t` not in deps. Stale refs to removed CreditsBanner.
+**Fix**: Added `t`, removed `dashboard.showCreditsBanner` and `dashboard.dismissCreditsBanner`.
+**Status**: Corrigido
+
+#### [P2-005] RecentSessions "Ver todas" vs CasosTab — noted, not fixed
+**Pilar**: Information Hierarchy
+**Problema**: "Ver todas" links to `/evaluations` (full page) while CasosTab (dashboard tab) shows same sessions.
+**Decision**: Intentional — CasosTab is quick overview, /evaluations is full ListPage with pagination.
+
+---
+
+## Addendum 2: Playwright Visual Review (2026-03-04)
+
+### Screenshots captured
+- Desktop 1440x900: Principal, Casos, Insights tabs
+
+### P1-006 — CasosTab dumps ALL sessions without pagination
+**Pilar**: Information Hierarchy / Interaction Quality
+**Arquivo**: `apps/web/src/pages/dashboard/CasosTab.tsx`
+**Problema**: CasosTab rendered ALL sessions (100+ cards) in an endless scroll. `useEvaluationSessions` fetches up to 1000 evaluations and groups them client-side. No limit was applied.
+**Fix**:
+- Added `PAGE_SIZE = 10` constant
+- Progressive "Ver mais" button to load 10 more at a time
+- Reset visible count when filter changes
+- Added count badges on filter pills (e.g., "Todos 47", "Concluidos 38")
+**Status**: Corrigido
+
+### P2-006 — CreditsPill in header + Sidebar credits
+**Pilar**: Information Hierarchy
+**Problema**: Sidebar shell shows "Creditos 245/900" permanently. CreditsPill in greeting header shows the same count.
+**Decision**: Kept — sidebar is hidden on mobile. CreditsPill is contextually valuable in the greeting area. Not a true redundancy since they serve different viewport contexts.
+
+### P2-007 — Filter pills lack count badges
+**Pilar**: Interaction Quality
+**Arquivo**: `apps/web/src/pages/dashboard/CasosTab.tsx`
+**Problema**: Filter pills (Todos / Em Progresso / Concluidos) didn't show how many sessions were in each category. User had to click each filter to discover counts.
+**Fix**: Added inline count badges to each filter pill.
+**Status**: Corrigido (included in P1-006 fix)
+
+### Updated Scores
+
+| Pagina | VC | IH | IQ | SD | PC | Total |
+|--------|----|----|----|----|----| ------|
+| Dashboard | 9 | 9 | 9 | 8 | 9 | 8.9 |
+
+CasosTab issues resolved. Score maintained at 8.9 (was dragged down by unpaginated list, now fixed).

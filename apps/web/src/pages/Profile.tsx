@@ -137,7 +137,7 @@ export default function Profile() {
           label: t('profile.tab'),
           children: () => (
             <div className="space-y-6">
-              <Card className="rounded-xl">
+              <Card className="rounded-xl glass-panel">
                 <CardHeader className="text-center pb-2">
                   <div className="flex justify-center items-start gap-8 mb-4">
                     {/* Avatar Section */}
@@ -354,7 +354,7 @@ export default function Profile() {
           label: t('profile.privacyTab'),
           children: () => (
             <div className="space-y-6">
-              <Card>
+              <Card className="rounded-xl glass-panel">
                 <CardHeader>
                   <CardTitle className="text-lg font-display">{t('profile.weeklyDigest')}</CardTitle>
                   <CardDescription>{t('profile.weeklyDigestDescription')}</CardDescription>

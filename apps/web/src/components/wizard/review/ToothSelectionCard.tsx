@@ -194,7 +194,7 @@ export const ToothSelectionCard = memo(function ToothSelectionCard({
   };
 
   return (
-    <Card className="card-elevated border-primary/30">
+    <Card className="glass-panel card-elevated border-primary/30">
       <CardHeader className="pb-2">
         <CardTitle className="text-base flex items-center gap-2">
           <CircleDot className="w-4 h-4 text-primary" />

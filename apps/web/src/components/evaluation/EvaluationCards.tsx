@@ -65,7 +65,7 @@ export const EvaluationCards = memo(function EvaluationCards({
         return (
           <div key={`mgroup-${gi}`}>
             {showGroupHeader && (
-              <div className="flex items-center justify-between px-2 py-2 mb-1 bg-muted/40 rounded-lg">
+              <div className="flex items-center justify-between px-3 py-2.5 mb-2 bg-muted/30 rounded-lg border border-border/50">
                 <div>
                   <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide block">
                     {t(group.labelKey)} — {t('components.evaluationDetail.teethCount', { count: group.evaluations.length, teeth: groupTeeth })}
@@ -94,7 +94,7 @@ export const EvaluationCards = memo(function EvaluationCards({
               return (
               <Card
                 key={evaluation.id}
-                className={`shadow-sm rounded-xl border-l-[3px] ${borderColor} cursor-pointer hover:shadow-md transition-shadow mb-2 ${isGrouped ? 'ml-3 border-l-2 p-3' : 'p-4'}`}
+                className={`glass-panel glow-card rounded-xl border-l-[3px] ${borderColor} cursor-pointer mb-2 ${isGrouped ? 'ml-3 border-l-2 p-3' : 'p-4'}`}
                 onClick={() => navigate(`/result/${evaluation.id}`)}
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/result/${evaluation.id}`); } }}
                 role="button"

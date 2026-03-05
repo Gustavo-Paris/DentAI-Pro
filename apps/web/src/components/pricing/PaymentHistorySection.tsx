@@ -87,7 +87,7 @@ export function PaymentHistorySection({
 
   if (!paymentRecords || paymentRecords.length === 0) {
     return (
-      <Card>
+      <Card className="rounded-xl glass-panel">
         <CardContent className="py-12 text-center">
           <FileText className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
           <h3 className="font-semibold font-display mb-2">{t('profile.noInvoices')}</h3>
@@ -110,7 +110,7 @@ export function PaymentHistorySection({
   }
 
   return (
-    <Card>
+    <Card className="rounded-xl glass-panel">
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <div>
           <CardTitle className="text-lg font-display">{t('profile.paymentHistory')}</CardTitle>

@@ -1,0 +1,66 @@
+{
+  "_meta": {
+    "models": {
+      "WizardStep": "A step in the wizard flow, with id, label, icon, and completion status.",
+      "PhotoUpload": "Uploaded dental photo with base64 data, quality score, and type classification.",
+      "AnalysisResult": "AI-generated clinical analysis including detected teeth, treatments, and observations.",
+      "DSDResult": "Digital Smile Design simulation result with layer images and suggestions.",
+      "ToothDetection": "Single detected tooth with number, treatment type, priority, and clinical notes.",
+      "PatientData": "Patient information: name, date of birth, age."
+    },
+    "relationships": [
+      "WizardStep contains the flow sequence for both Full and Quick case modes",
+      "PhotoUpload feeds into AnalysisResult via AI edge function",
+      "AnalysisResult contains ToothDetection array and feeds into DSDResult",
+      "DSDResult provides simulation layers for clinical review",
+      "PatientData is entered at review step and attached to the created case"
+    ]
+  },
+  "steps": {
+    "full": [
+      { "id": 1, "key": "foto", "label": "Foto", "icon": "Camera" },
+      { "id": 2, "key": "preferencias", "label": "Preferências", "icon": "Heart" },
+      { "id": 3, "key": "analise", "label": "Análise", "icon": "Brain" },
+      { "id": 4, "key": "dsd", "label": "DSD", "icon": "Smile" },
+      { "id": 5, "key": "revisao", "label": "Revisão", "icon": "ClipboardCheck" },
+      { "id": 6, "key": "resultado", "label": "Resultado", "icon": "FileText" }
+    ],
+    "quick": [
+      { "id": 1, "key": "foto", "label": "Foto", "icon": "Camera" },
+      { "id": 3, "key": "analise", "label": "Análise", "icon": "Brain" },
+      { "id": 5, "key": "revisao", "label": "Revisão", "icon": "ClipboardCheck" },
+      { "id": 6, "key": "resultado", "label": "Resultado", "icon": "FileText" }
+    ]
+  },
+  "sampleAnalysis": {
+    "confidence": "alta",
+    "detected_teeth": [
+      { "tooth": "11", "treatment_type": "resina", "priority": "alta", "findings": ["Fratura incisal", "Perda de translucidez"] },
+      { "tooth": "12", "treatment_type": "resina", "priority": "média", "findings": ["Restauração antiga com infiltração marginal"] },
+      { "tooth": "21", "treatment_type": "resina", "priority": "alta", "findings": ["Fratura incisal simétrica ao 11"] },
+      { "tooth": "22", "treatment_type": "resina", "priority": "baixa", "findings": ["Leve discromia cervical"] },
+      { "tooth": "13", "treatment_type": "resina", "priority": "baixa", "findings": ["Desgaste incisal leve"] },
+      { "tooth": "23", "treatment_type": "resina", "priority": "baixa", "findings": ["Desgaste incisal leve, contorno harmônico"] },
+      { "tooth": "14", "treatment_type": "gengivoplastia", "priority": "média", "findings": ["Excesso de tecido gengival, coroa clínica curta"] }
+    ],
+    "observations": [
+      "Sorriso com boa exposição dentária e linha labial média",
+      "Assimetria gengival leve entre 11 e 21 — avaliar gengivoplastia",
+      "Proporção largura/altura dos centrais dentro do ideal (75-80%)",
+      "Diastema central de aproximadamente 0.5mm"
+    ]
+  },
+  "samplePatient": {
+    "name": "Maria Clara Oliveira",
+    "birthDate": "1992-03-15",
+    "age": 33
+  },
+  "whiteningLevels": [
+    { "key": "natural", "label": "Natural", "description": "Clareamento conservador — alvo B1/A1", "shades": ["B1", "A1"] },
+    { "key": "hollywood", "label": "Hollywood", "description": "Clareamento intenso — alvo BL1/BL2", "shades": ["BL1", "BL2", "BL3"] }
+  ],
+  "budgetOptions": [
+    { "key": "padrao", "label": "Padrão", "description": "Protocolo com melhor custo-benefício" },
+    { "key": "premium", "label": "Premium", "description": "Protocolo estético avançado com mais camadas" }
+  ]
+}

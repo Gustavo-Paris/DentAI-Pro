@@ -289,9 +289,12 @@ export default function Pricing() {
   }
 
   return (
-    <>
+    <div className="relative section-glow-bg overflow-hidden pricing-page">
+      {/* Ambient AI grid overlay */}
+      <div className="ai-grid-pattern absolute inset-0 opacity-30 dark:opacity-50 [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,black_70%,transparent_100%)] pointer-events-none" aria-hidden="true" />
+
       <PricingPage
-        className="max-w-6xl mx-auto py-6 sm:py-8"
+        className="relative max-w-6xl mx-auto py-6 sm:py-8"
         title={t('pricing.title')}
         description={t('components.pricing.section.subtitle')}
         plans={pricingPlans}
@@ -304,7 +307,7 @@ export default function Pricing() {
       />
 
       <Dialog open={showSuccess} onOpenChange={setShowSuccess}>
-        <DialogContent className="sm:max-w-md text-center" aria-labelledby="pricing-success-title">
+        <DialogContent className="sm:max-w-md text-center glass-panel" aria-labelledby="pricing-success-title">
           <DialogHeader className="items-center">
             <div className="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-success/10 dark:bg-success/20">
               <CheckCircle2 className="h-10 w-10 text-success" aria-hidden="true" />
@@ -328,6 +331,6 @@ export default function Pricing() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 }

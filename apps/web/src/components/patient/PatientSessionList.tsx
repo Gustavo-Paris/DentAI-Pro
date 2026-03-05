@@ -4,7 +4,6 @@ import {
   Card,
   Badge,
   Button,
-  Progress,
 } from '@parisgroup-ai/pageshell/primitives';
 import {
   Plus,
@@ -48,33 +47,46 @@ export function PatientSessionList({
       </div>
 
       {sessions.length === 0 ? (
-        <Card className="p-8 text-center">
-          <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-          <h3 className="font-semibold font-display mb-2">{t('patients.noEvaluationsYet')}</h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            {t('patients.createFirstEvaluation')}
-          </p>
-          <Link to={`/new-case?patient=${patientId}`}>
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              {t('evaluation.newEvaluation')}
-            </Button>
-          </Link>
+        <Card className="p-8 sm:p-10 text-center">
+          <div className="flex flex-col items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+              <Calendar className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
+            </div>
+            <div>
+              <p className="font-medium font-display text-sm mb-1 text-primary">
+                {t('patients.noEvaluationsYet')}
+              </p>
+              <p className="text-xs text-muted-foreground mb-4">
+                {t('patients.createFirstEvaluation')}
+              </p>
+            </div>
+            <Link to={`/new-case?patient=${patientId}`}>
+              <Button size="sm">
+                <Plus className="w-3.5 h-3.5 mr-1.5" />
+                {t('evaluation.newEvaluation')}
+              </Button>
+            </Link>
+          </div>
         </Card>
       ) : (
         <div className="space-y-3">
           {sessions.map((session, index) => {
             const isCompleted = session.completedCount === session.evaluationCount;
-            const progressPercent = (session.completedCount / session.evaluationCount) * 100;
+            const progressPercent = Math.round((session.completedCount / session.evaluationCount) * 100);
 
             return (
               <Link key={session.session_id} to={`/evaluation/${session.session_id}`}>
                 <Card
-                  className={`p-3 sm:p-4 shadow-sm hover:shadow-md rounded-xl transition-all duration-300 cursor-pointer border-l-[3px] animate-[fade-in-up_0.6s_ease-out_both] ${
-                    isCompleted ? 'border-l-emerald-500' : 'border-l-primary'
-                  }`}
+                  className="group relative overflow-hidden p-3 sm:p-4 shadow-sm hover:shadow-md rounded-xl transition-all duration-300 cursor-pointer dark:bg-gradient-to-br dark:from-card dark:to-card/80 glass-panel glow-card animate-[fade-in-up_0.6s_ease-out_both]"
                   style={{ animationDelay: `${index * 0.05}s` }}
                 >
+                  {/* Gradient accent bar */}
+                  <div className={`absolute left-0 top-0 bottom-0 w-[3px] bg-gradient-to-b ${
+                    isCompleted
+                      ? 'from-success to-success/70'
+                      : 'from-primary to-primary/70'
+                  }`} />
+
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium">
@@ -83,8 +95,12 @@ export function PatientSessionList({
                         })}
                       </span>
                       <Badge
-                        variant={isCompleted ? 'default' : 'secondary'}
-                        className={isCompleted ? 'bg-primary' : ''}
+                        variant="outline"
+                        className={`text-xs font-semibold uppercase tracking-wider ${
+                          isCompleted
+                            ? 'border-success/30 text-success bg-success/5 dark:bg-success/10'
+                            : 'border-primary/30 text-primary bg-primary/5 dark:bg-primary/10'
+                        }`}
                       >
                         {isCompleted ? (
                           <CheckCircle2 className="w-3 h-3 mr-1" />
@@ -94,7 +110,7 @@ export function PatientSessionList({
                         {isCompleted ? t('patients.completedStatus') : t('patients.inProgressStatus')}
                       </Badge>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                    <ChevronRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-muted-foreground group-hover:translate-x-0.5 transition-all" aria-hidden="true" />
                   </div>
 
                   <div className="flex items-center gap-4">
@@ -117,8 +133,16 @@ export function PatientSessionList({
                     </div>
 
                     <div className="flex items-center gap-2 min-w-[100px]">
-                      <Progress value={progressPercent} className="h-2 flex-1" />
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                      <div className="flex-1 h-1.5 rounded-full bg-secondary overflow-hidden" role="progressbar" aria-valuenow={progressPercent} aria-valuemin={0} aria-valuemax={100}>
+                        <div
+                          className={`h-full rounded-full transition-all duration-500 ${isCompleted ? 'bg-success' : 'bg-primary'}`}
+                          style={{
+                            width: `${progressPercent}%`,
+                            boxShadow: `0 0 8px rgb(var(${isCompleted ? '--color-success-rgb' : '--color-primary-rgb'}) / 0.4)`,
+                          }}
+                        />
+                      </div>
+                      <span className="text-xs text-muted-foreground tabular-nums whitespace-nowrap">
                         {session.completedCount}/{session.evaluationCount}
                       </span>
                     </div>

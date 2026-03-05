@@ -9,7 +9,7 @@ import { TooltipProvider, Skeleton } from '@parisgroup-ai/pageshell/primitives';
 import { PageConfirmDialog } from '@parisgroup-ai/pageshell/interactions';
 import {
   Sparkles, Users, Package, Sun, Moon, Sunset,
-  LayoutDashboard, BarChart3,
+  LayoutDashboard, BarChart3, Briefcase,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { getDateLocale, getDateFormat } from '@/lib/date-utils';
@@ -17,7 +17,7 @@ import { getDateLocale, getDateFormat } from '@/lib/date-utils';
 const StatsGrid = lazy(() => import('./dashboard/StatsGrid').then(m => ({ default: m.StatsGrid })));
 import { PrincipalTab } from './dashboard/PrincipalTab';
 const InsightsTab = lazy(() => import('./dashboard/InsightsTab').then(m => ({ default: m.InsightsTab })));
-import { CreditsBanner } from './dashboard/CreditsBanner';
+const CasosTab = lazy(() => import('./dashboard/CasosTab').then(m => ({ default: m.CasosTab })));
 import { PageClinicAlerts } from '@parisgroup-ai/domain-odonto-ai/dashboard';
 import type { ClinicAlert } from '@parisgroup-ai/domain-odonto-ai/dashboard';
 import { OnboardingProgress } from '@/components/onboarding/OnboardingProgress';
@@ -32,14 +32,6 @@ function StatsGridFallback() {
     </div>
   );
 }
-
-// =============================================================================
-// Module Config
-// =============================================================================
-
-// =============================================================================
-// Page Adapter — maps domain hook → DashboardPage composite
-// =============================================================================
 
 export default function Dashboard() {
   const { t } = useTranslation();
@@ -110,13 +102,22 @@ export default function Dashboard() {
           icon: LayoutDashboard,
           content: (
             <PrincipalTab
-              modules={modules}
               sessions={dashboard.sessions}
               loading={dashboard.loadingSessions}
               pendingDraft={dashboard.pendingDraft}
               pendingSessions={dashboard.metrics.pendingSessions}
               onDiscardDraft={dashboard.requestDiscardDraft}
             />
+          ),
+        },
+        {
+          id: 'casos',
+          label: t('dashboard.casosTab'),
+          icon: Briefcase,
+          content: (
+            <Suspense fallback={<StatsGridFallback />}>
+              <CasosTab />
+            </Suspense>
           ),
         },
         {
@@ -136,7 +137,7 @@ export default function Dashboard() {
           ),
         },
       ]
-    : undefined, [isTabbed, t, modules, dashboard.sessions, dashboard.loadingSessions, dashboard.loadingInsights, dashboard.pendingDraft, dashboard.metrics.pendingSessions, dashboard.requestDiscardDraft, dashboard.clinicalInsights, dashboard.weeklyTrends]);
+    : undefined, [isTabbed, t, dashboard.sessions, dashboard.loadingSessions, dashboard.loadingInsights, dashboard.pendingDraft, dashboard.metrics.pendingSessions, dashboard.requestDiscardDraft, dashboard.clinicalInsights, dashboard.weeklyTrends]);
 
   const hour = new Date().getHours();
 
@@ -168,12 +169,6 @@ export default function Dashboard() {
     ),
     afterHeader: (
       <>
-        {dashboard.showCreditsBanner && (
-          <CreditsBanner
-            creditsRemaining={dashboard.creditsRemaining}
-            onDismiss={dashboard.dismissCreditsBanner}
-          />
-        )}
         {clinicAlerts.length > 0 && (
           <div className="mb-4">
             <PageClinicAlerts alerts={clinicAlerts} />
@@ -206,7 +201,7 @@ export default function Dashboard() {
           afterStats: <OnboardingProgress />,
         }
       : {}),
-  }), [TimeIcon, dashboard.greeting, dashboard.firstName, dashboard.loadingProfile, dashboard.showCreditsBanner, dashboard.creditsRemaining, dashboard.dismissCreditsBanner, clinicAlerts, isTabbed, dashboard.metrics, dashboard.loadingMetrics, dashboard.weekRange, dashboard.weeklyTrends]);
+  }), [TimeIcon, dashboard.greeting, dashboard.firstName, dashboard.loadingProfile, t, clinicAlerts, isTabbed, dashboard.metrics, dashboard.loadingMetrics, dashboard.weekRange, dashboard.weeklyTrends]);
 
   if (dashboard.isError) {
     return (

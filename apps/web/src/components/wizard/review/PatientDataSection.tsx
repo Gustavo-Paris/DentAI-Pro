@@ -44,7 +44,7 @@ export function PatientDataSection({
   };
 
   return (
-    <Card className="card-elevated">
+    <Card className="glass-panel card-elevated">
       <CardHeader className="pb-2">
         <CardTitle className="text-base flex items-center gap-2">
           <User className="w-4 h-4 text-primary" />

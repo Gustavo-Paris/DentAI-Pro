@@ -73,7 +73,7 @@ export const EvaluationTable = memo(function EvaluationTable({
   const navigate = useNavigate();
 
   return (
-    <Card className="hidden sm:block shadow-sm rounded-xl">
+    <Card className="hidden sm:block glass-panel rounded-xl">
       <CardHeader>
         <CardTitle className="text-lg font-display">{t('evaluation.generatedTreatments')}</CardTitle>
       </CardHeader>

@@ -8,19 +8,7 @@ interface AnnotationOverlayProps {
   containerHeight: number;
 }
 
-// SVG attributes require resolved color values — CSS custom properties
-// not universally supported in SVG stroke/fill attributes.
-// TODO: Migrate to style={{ stroke: 'var(--chart-N)' }} when browser support is confirmed.
-const TREATMENT_COLORS: Record<string, string> = {
-  resina: '#3b82f6',       // blue
-  porcelana: '#f59e0b',    // amber
-  coroa: '#a855f7',        // purple
-  implante: '#ef4444',     // red
-  endodontia: '#f43f5e',   // rose
-  encaminhamento: '#6b7280', // gray
-  gengivoplastia: '#ec4899', // pink
-  recobrimento_radicular: '#14b8a6', // teal
-};
+import { TREATMENT_COLORS } from '@/lib/treatment-colors';
 
 /** Extract mm measurement from proposed_change text (e.g. "aumentar 1.5mm") */
 function extractMeasurement(text: string): string | null {

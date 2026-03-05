@@ -117,7 +117,7 @@ export function SessionHeaderCard({
                 <span className="text-muted-foreground">{t('evaluation.progress')}</span>
                 <Progress
                   value={evaluationCount > 0 ? (completedCount / evaluationCount) * 100 : 0}
-                  className="h-2 flex-1 max-w-[200px]"
+                  className="h-2 flex-1 max-w-[200px] bg-secondary [&>div]:bg-primary [&>div]:shadow-[0_0_8px_rgb(var(--color-primary-rgb)/0.4)]"
                 />
                 <span className="font-medium text-xs tabular-nums">
                   {completedCount}/{evaluationCount}

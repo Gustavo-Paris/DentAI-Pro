@@ -100,7 +100,7 @@ interface FeaturePreviewProps {
 export function FeaturePreview({ type }: FeaturePreviewProps) {
   const Preview = previews[type];
   return (
-    <div className="mt-4 px-2 opacity-60 group-hover:opacity-100 transition-opacity duration-300">
+    <div className="mt-4 px-2 opacity-70 group-hover:opacity-100 transition-opacity duration-300">
       <Preview />
     </div>
   );

@@ -76,7 +76,7 @@ export default function PatientProfile() {
             id: 'contact',
             title: t('patients.contactInfo'),
             children: () => (
-              <Card className="p-4 rounded-xl">
+              <Card className="p-4 rounded-xl glass-panel">
                 <div className="flex flex-wrap gap-4 text-sm">
                   {patient?.phone && (
                     <div className="flex items-center gap-2 text-muted-foreground">

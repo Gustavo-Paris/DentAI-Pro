@@ -99,14 +99,8 @@ const TREATMENT_NORMALIZE: Record<string, string> = {
   referral: 'encaminhamento',
 };
 
-const TREATMENT_COLORS: Record<string, string> = {
-  resina: '#3b82f6',
-  porcelana: '#a855f7',
-  coroa: '#f59e0b',
-  implante: '#ef4444',
-  endodontia: '#10b981',
-  encaminhamento: '#6b7280',
-};
+// Use canonical colors from shared module
+import { TREATMENT_COLORS, TREATMENT_COLOR_FALLBACK } from '@/lib/treatment-colors';
 
 const TREATMENT_LABELS: Record<string, string> = {
   resina: 'Resina',
@@ -188,7 +182,7 @@ function computeInsights(
     .map(([type, count]) => ({
       label: TREATMENT_LABELS[type] || type,
       value: count,
-      color: TREATMENT_COLORS[type] || '#6b7280',
+      color: TREATMENT_COLORS[type] || TREATMENT_COLOR_FALLBACK,
     }));
 
   const resinCounts = new Map<string, number>();
@@ -357,7 +351,7 @@ describe('computeInsights', () => {
       { id: '1', created_at: new Date().toISOString(), treatment_type: 'unknown_type', is_from_inventory: false, resins: null },
     ];
     const { clinicalInsights } = computeInsights(rows, 4);
-    expect(clinicalInsights.treatmentDistribution[0].color).toBe('#6b7280');
+    expect(clinicalInsights.treatmentDistribution[0].color).toBe(TREATMENT_COLOR_FALLBACK);
     expect(clinicalInsights.treatmentDistribution[0].label).toBe('unknown_type');
   });
 });

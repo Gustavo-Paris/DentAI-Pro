@@ -30,7 +30,7 @@ export function CreditUsageHistory() {
 
   if (isCreditUsageLoading) {
     return (
-      <Card>
+      <Card className="rounded-xl glass-panel">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg font-display">
             <History className="h-5 w-5" />
@@ -47,7 +47,7 @@ export function CreditUsageHistory() {
   }
 
   return (
-    <Card>
+    <Card className="rounded-xl glass-panel">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg font-display">

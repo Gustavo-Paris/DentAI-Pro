@@ -1,0 +1,127 @@
+{
+  "source": "tailwind.config.ts + src/index.css",
+  "preset": "odonto-ai",
+  "css": [
+    "@parisgroup-ai/pageshell/theme/tokens.css",
+    "@parisgroup-ai/pageshell/theme/portal-base.css",
+    "@parisgroup-ai/pageshell/theme/presets/odonto-ai.css"
+  ],
+  "tokens": {
+    "colors": {
+      "primary": {
+        "DEFAULT": "rgb(6, 182, 212)",
+        "hover": "rgb(34, 211, 238)",
+        "foreground": "#000000",
+        "source": "--color-cyan-500 / --color-cyan-400"
+      },
+      "accent": {
+        "DEFAULT": "rgb(14, 165, 233)",
+        "hover": "rgb(56, 189, 248)",
+        "foreground": "#000000",
+        "source": "--color-sky-500 / --color-sky-400"
+      },
+      "brand-accent": {
+        "DEFAULT": "#8b5cf6",
+        "light": "#a78bfa",
+        "note": "Violet — ToSmile wordmark, premium moments"
+      },
+      "background": {
+        "light": "rgb(250, 249, 247)",
+        "dark": "#0c111b"
+      },
+      "foreground": {
+        "light": "rgb(15, 23, 42)",
+        "dark": "#f6f9fb"
+      },
+      "card": {
+        "light": "#ffffff",
+        "dark": "#141a26"
+      },
+      "muted": {
+        "light": "rgb(243, 242, 239)",
+        "dark": "#161c28",
+        "foreground-light": "rgb(71, 85, 105)",
+        "foreground-dark": "#78879a"
+      },
+      "border": {
+        "light": "rgb(226, 232, 240)",
+        "dark": "#252f3e"
+      },
+      "destructive": "rgb(220, 38, 38)",
+      "warning": "rgb(217, 119, 6)",
+      "success": "rgb(22, 163, 74)",
+      "info": "rgb(59, 130, 246)",
+      "ring": "var(--color-cyan-500)",
+      "sidebar": {
+        "dark-bg": "#0f1520",
+        "dark-border": "#1a2235",
+        "dark-accent": "#161c28"
+      },
+      "layer-colors": {
+        "incisal": "rgb(20, 184, 166)",
+        "dentina": "rgb(245, 158, 11)",
+        "opaco": "rgb(249, 115, 22)",
+        "effect": "rgb(139, 92, 246)",
+        "esmalte": "rgb(16, 185, 129)",
+        "translucido": "rgb(96, 165, 250)",
+        "default": "rgb(168, 85, 247)"
+      },
+      "decorative": {
+        "violet": "rgb(139, 92, 246)",
+        "emerald": "rgb(16, 185, 129)",
+        "rose": "rgb(251, 113, 133)"
+      }
+    },
+    "fonts": {
+      "sans": ["DM Sans", "ui-sans-serif", "system-ui", "sans-serif"],
+      "display": ["Plus Jakarta Sans", "DM Sans", "ui-sans-serif", "system-ui", "sans-serif"],
+      "serif": ["ui-serif", "Georgia", "Cambria", "Times New Roman", "serif"],
+      "mono": ["JetBrains Mono", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"]
+    },
+    "spacing": {
+      "container-max": "1400px",
+      "container-padding": "2rem",
+      "note": "Uses PageShell default spacing scale"
+    },
+    "borderRadius": {
+      "2xl": "var(--radius-2xl)",
+      "xl": "var(--radius-xl)",
+      "lg": "var(--radius-lg)",
+      "md": "var(--radius-md)",
+      "sm": "var(--radius-sm)",
+      "full": "var(--radius-full)"
+    },
+    "boxShadow": {
+      "sm": "var(--shadow-sm)",
+      "md": "var(--shadow-md)",
+      "lg": "var(--shadow-lg)",
+      "xl": "var(--shadow-xl)"
+    },
+    "transitions": {
+      "duration": {
+        "fast": "var(--duration-fast)",
+        "normal": "var(--duration-normal)",
+        "slow": "var(--duration-slow)",
+        "slower": "var(--duration-slower)"
+      },
+      "easing": {
+        "ease-out": "var(--ease-out)",
+        "ease-in-out": "var(--ease-in-out)",
+        "bounce": "var(--ease-bounce)"
+      }
+    },
+    "effects": {
+      "glass": {
+        "bg-light": "rgba(255, 255, 255, 0.75)",
+        "bg-dark": "rgba(255, 255, 255, 0.03)",
+        "border-light": "rgba(0, 0, 0, 0.06)",
+        "border-dark": "rgba(255, 255, 255, 0.08)"
+      },
+      "glow": {
+        "sm": "0 0 15px rgb(var(--color-primary-rgb) / 0.08)",
+        "md": "0 0 30px rgb(var(--color-primary-rgb) / 0.08), 0 0 60px rgb(var(--color-primary-rgb) / 0.03)",
+        "lg": "0 0 40px rgb(var(--color-primary-rgb) / 0.1), 0 0 80px rgb(var(--color-primary-rgb) / 0.04)"
+      }
+    }
+  }
+}

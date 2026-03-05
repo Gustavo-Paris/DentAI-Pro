@@ -72,8 +72,32 @@ export default {
   				border: 'var(--color-sidebar-border)',
   				ring: 'var(--color-ring)',
   			},
+  			/* PageShell semantic layer — surfaces, borders, text */
+  			surface: {
+  				bg: 'var(--surface-bg)',
+  				DEFAULT: 'var(--surface-default)',
+  				elevated: 'var(--surface-elevated)',
+  				hover: 'var(--surface-hover)',
+  				active: 'var(--surface-active)',
+  			},
+  			'border-semantic': {
+  				subtle: 'var(--border-subtle)',
+  				DEFAULT: 'var(--border-default)',
+  				emphasis: 'var(--border-emphasis)',
+  			},
+  			'text-semantic': {
+  				primary: 'var(--text-primary)',
+  				secondary: 'var(--text-secondary)',
+  				tertiary: 'var(--text-tertiary)',
+  				disabled: 'var(--text-disabled)',
+  			},
+  			info: {
+  				DEFAULT: 'var(--color-info)',
+  				muted: 'var(--color-info-muted)',
+  			},
   		},
   		borderRadius: {
+  			none: 'var(--radius-none)',
   			'2xl': 'var(--radius-2xl)',
   			xl: 'var(--radius-xl)',
   			lg: 'var(--radius-lg)',
@@ -127,6 +151,10 @@ export default {
   			md: 'var(--shadow-md)',
   			lg: 'var(--shadow-lg)',
   			xl: 'var(--shadow-xl)',
+  			card: 'var(--shadow-card)',
+  			dropdown: 'var(--shadow-dropdown)',
+  			modal: 'var(--shadow-modal)',
+  			glow: 'var(--shadow-glow-primary)',
   		},
   		transitionDuration: {
   			fast: 'var(--duration-fast)',
@@ -137,7 +165,20 @@ export default {
   		transitionTimingFunction: {
   			'ease-out': 'var(--ease-out)',
   			'ease-in-out': 'var(--ease-in-out)',
+  			'ease-in': 'var(--ease-in)',
+  			'ease-default': 'var(--ease-default)',
   			bounce: 'var(--ease-bounce)',
+  		},
+  		zIndex: {
+  			base: 'var(--z-base)',
+  			dropdown: 'var(--z-dropdown)',
+  			sticky: 'var(--z-sticky)',
+  			fixed: 'var(--z-fixed)',
+  			'modal-backdrop': 'var(--z-modal-backdrop)',
+  			modal: 'var(--z-modal)',
+  			popover: 'var(--z-popover)',
+  			tooltip: 'var(--z-tooltip)',
+  			toast: 'var(--z-toast)',
   		},
   		fontFamily: {
   			sans: [

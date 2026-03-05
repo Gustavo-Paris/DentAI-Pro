@@ -85,7 +85,7 @@ export function PatientPreferencesStep({
                   onClick={() => handleSelect(option.value)}
                   className={cn(
                     'relative flex flex-col items-center rounded-xl border-2 transition-all duration-200 overflow-hidden btn-press cursor-pointer',
-                    'hover:border-primary/50 hover:bg-primary/5 hover:shadow-sm',
+                    'glow-card hover:border-primary/50 hover:bg-primary/5',
                     'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                     isSelected
                       ? 'ai-shimmer-border shadow-md'
@@ -135,9 +135,19 @@ export function PatientPreferencesStep({
                     </span>
 
                     {/* Description */}
-                    <p className="text-xs text-muted-foreground text-center">
+                    <p className="text-xs text-muted-foreground text-center mb-3">
                       {t(option.descKey)}
                     </p>
+
+                    {/* Per-card credit cost */}
+                    <div className="flex items-center gap-1 text-xs">
+                      <Zap className="w-3 h-3 text-primary" />
+                      <span className="text-muted-foreground">
+                        {option.value === 'natural'
+                          ? t('components.wizard.preferences.noExtraCredits')
+                          : t('components.wizard.preferences.extraCredits')}
+                      </span>
+                    </div>
                   </div>
                 </button>
               );

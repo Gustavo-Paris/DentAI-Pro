@@ -230,7 +230,7 @@ export default function EvaluationDetails() {
 
             {/* floating selection bar — below modal z-50 */}
             {detail.selectedIds.size > 0 && (
-              <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-background border shadow-lg rounded-full px-4 py-2 pb-[env(safe-area-inset-bottom)] flex items-center gap-3 animate-in slide-in-from-bottom-4">
+              <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 glass-panel shadow-lg rounded-full px-4 py-2 pb-[env(safe-area-inset-bottom)] flex items-center gap-3 animate-in slide-in-from-bottom-4">
                 <span className="text-sm font-medium">{t('common.selected', { count: detail.selectedIds.size })}</span>
                 <Button
                   size="sm"

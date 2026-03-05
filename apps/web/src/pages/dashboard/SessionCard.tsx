@@ -4,6 +4,7 @@ import type { DashboardSession } from '@/hooks/domain/useDashboard';
 import { Card, Badge } from '@parisgroup-ai/pageshell/primitives';
 import { ChevronRight, Smile } from 'lucide-react';
 import { getTreatmentConfig } from '@/lib/treatment-config';
+import { TREATMENT_COLORS, TREATMENT_COLOR_FALLBACK } from '@/lib/treatment-colors';
 import { format } from 'date-fns';
 import { getDateLocale, getDateFormat } from '@/lib/date-utils';
 
@@ -26,7 +27,7 @@ const STATUS_STYLES = {
 
 const DSD_BADGE_CLASS = 'border-accent/30 text-accent';
 
-export function SessionCard({ session }: { session: DashboardSession }) {
+export function SessionCard({ session }: { session: Pick<DashboardSession, 'session_id' | 'patient_name' | 'created_at' | 'teeth' | 'evaluationCount' | 'completedCount' | 'treatmentTypes'> & { hasDSD?: boolean; patientAge?: number | null } }) {
   const { t } = useTranslation();
   const isCompleted = session.completedCount === session.evaluationCount;
   const progressPercent = session.evaluationCount > 0
@@ -82,8 +83,17 @@ export function SessionCard({ session }: { session: DashboardSession }) {
                   <div className="flex gap-1.5 flex-wrap">
                     {session.treatmentTypes.map(type => {
                       const config = getTreatmentConfig(type);
+                      const color = TREATMENT_COLORS[type] ?? TREATMENT_COLOR_FALLBACK;
                       return (
-                        <Badge key={type} variant="outline" className="text-xs px-1.5 gap-1">
+                        <Badge
+                          key={type}
+                          variant="outline"
+                          className="text-xs px-1.5 gap-1 border-transparent"
+                          style={{
+                            backgroundColor: `color-mix(in srgb, ${color} 12%, transparent)`,
+                            color,
+                          }}
+                        >
                           <config.icon className="w-2.5 h-2.5" />
                           {t(config.shortLabelKey)}
                         </Badge>

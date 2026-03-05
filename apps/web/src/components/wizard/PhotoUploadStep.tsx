@@ -398,8 +398,11 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-semibold font-display mb-2 neon-text">{t('components.wizard.photoUpload.title')}</h2>
-        <p className="text-muted-foreground">
+        <div className="mx-auto w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3 glow-icon">
+          <Camera className="w-6 h-6 text-primary" />
+        </div>
+        <h2 className="text-xl font-semibold font-display neon-text">{t('components.wizard.photoUpload.title')}</h2>
+        <p className="text-sm text-muted-foreground mt-1">
           {t('components.wizard.photoUpload.subtitle')}
         </p>
       </div>
@@ -412,7 +415,7 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
           className={`relative rounded-xl overflow-hidden transition-all duration-300 ${
             dragActive
               ? 'border-2 border-primary bg-primary/5 scale-[1.02] shadow-[0_0_30px_rgb(var(--color-primary-rgb)/0.15)]'
-              : 'border-2 border-dashed border-primary/15 hover:border-primary/30'
+              : 'border-2 border-dashed border-border hover:border-primary/40 transition-colors'
           }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
@@ -420,7 +423,7 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
           onDrop={handleDrop}
         >
           <div className="relative">
-            <div className="ai-grid-pattern absolute inset-0 opacity-15 dark:opacity-30 pointer-events-none" aria-hidden="true" />
+            <div className="ai-grid-pattern absolute inset-0 opacity-20 dark:opacity-40 pointer-events-none" aria-hidden="true" />
             <div className="py-10 px-4 relative">
               {isCompressing ? (
                 <div className="flex flex-col items-center justify-center text-center" role="status" aria-live="polite">
@@ -451,7 +454,7 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
                     <Button
                       variant="default"
                       onClick={() => fileInputRef.current?.click()}
-                      className="btn-press"
+                      className="btn-glow btn-press"
                     >
                       <Upload className="w-4 h-4 mr-2" />
                       {t('components.wizard.photoUpload.chooseFromGallery')}
@@ -483,7 +486,7 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
         </div>
       ) : (
         /* Photo Preview — Premium Card */
-        <Card className="card-elevated overflow-hidden rounded-xl">
+        <Card className="glass-panel card-elevated overflow-hidden rounded-xl">
           <CardContent className="p-0">
             <div className="relative">
               <img
@@ -613,7 +616,7 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
               style={{ animationDelay: '100ms', animationFillMode: 'backwards' }}
             >
               <Card
-                className={`card-elevated overflow-hidden transition-all duration-200 ${
+                className={`glass-panel card-elevated overflow-hidden transition-all duration-200 ${
                   dragActiveSmile45 ? 'border-primary bg-primary/5 scale-[1.02]' : ''
                 } ${!additionalPhotos.smile45 ? 'opacity-60 hover:opacity-100' : ''}`}
                 onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setDragActiveSmile45(true); }}
@@ -676,7 +679,7 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
               style={{ animationDelay: '200ms', animationFillMode: 'backwards' }}
             >
               <Card
-                className={`card-elevated overflow-hidden transition-all duration-200 ${
+                className={`glass-panel card-elevated overflow-hidden transition-all duration-200 ${
                   dragActiveFace ? 'border-primary bg-primary/5 scale-[1.02]' : ''
                 } ${!additionalPhotos.face ? 'opacity-60 hover:opacity-100' : ''}`}
                 onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setDragActiveFace(true); }}
@@ -784,8 +787,8 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
 
       {/* Tips — Discrete card with gold accent stripe */}
       <div className="rounded-lg px-4 py-3 bg-muted/30">
-        <div className="flex items-start gap-2">
-          <Lightbulb className="w-3.5 h-3.5 text-primary/50 mt-0.5 shrink-0" />
+        <div className="flex items-start gap-3">
+          <Lightbulb className="w-4 h-4 text-warning mt-0.5 shrink-0" />
           <div>
             <p className="text-xs text-muted-foreground font-medium mb-1">{t('components.wizard.photoUpload.tipsTitle')}</p>
             <ul className="text-xs text-muted-foreground/80 space-y-0.5">

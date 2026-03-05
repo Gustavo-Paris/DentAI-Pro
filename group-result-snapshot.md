@@ -1,0 +1,342 @@
+- generic [ref=e4]:
+  - link "Pular para o conteúdo principal" [ref=e5] [cursor=pointer]:
+    - /url: "#main-content"
+  - region "Notifications alt+T"
+  - generic [ref=e7]:
+    - navigation "[object Object] navigation" [ref=e9]:
+      - link "[object Object] ToSmile.ai" [ref=e11] [cursor=pointer]:
+        - /url: /dashboard
+        - generic [ref=e12]:
+          - img "[object Object]" [ref=e14]
+          - heading "ToSmile.ai" [level=2] [ref=e16]
+      - navigation [ref=e19]:
+        - generic [ref=e21]:
+          - link "Início" [ref=e22] [cursor=pointer]:
+            - /url: /dashboard
+            - img [ref=e23]
+            - generic [ref=e28]: Início
+          - link "Avaliações" [ref=e29] [cursor=pointer]:
+            - /url: /evaluations
+            - img [ref=e30]
+            - generic [ref=e33]: Avaliações
+          - link "Pacientes" [ref=e34] [cursor=pointer]:
+            - /url: /patients
+            - img [ref=e35]
+            - generic [ref=e40]: Pacientes
+          - link "Inventário" [ref=e41] [cursor=pointer]:
+            - /url: /inventory
+            - img [ref=e42]
+            - generic [ref=e46]: Inventário
+        - generic [ref=e47]:
+          - generic [ref=e49]: Conta
+          - generic [ref=e50]:
+            - link "Perfil" [ref=e51] [cursor=pointer]:
+              - /url: /profile
+              - img [ref=e52]
+              - generic [ref=e55]: Perfil
+            - link "Assinatura" [ref=e56] [cursor=pointer]:
+              - /url: /profile?tab=assinatura
+              - img [ref=e57]
+              - generic [ref=e59]: Assinatura
+            - link "Suporte" [ref=e60] [cursor=pointer]:
+              - /url: mailto:suporte@tosmile.ai
+              - img [ref=e61]
+              - generic [ref=e64]: Suporte
+              - img [ref=e65]
+      - generic [ref=e67]:
+        - link "Créditos 271/900 ≈ 271 análises | 135 DSD" [ref=e69] [cursor=pointer]:
+          - /url: /profile?tab=assinatura
+          - generic [ref=e70]:
+            - generic [ref=e71]: Créditos
+            - generic [ref=e72]: 271/900
+          - paragraph [ref=e75]: ≈ 271 análises | 135 DSD
+        - button "Menu do usuário" [ref=e76] [cursor=pointer]:
+          - img "Dr. Gustavo Barbosa Paris" [ref=e78]
+          - paragraph [ref=e81]: Dr. Gustavo Barbosa Paris
+          - img [ref=e82]
+    - main [ref=e85]:
+      - button "Ajuda" [ref=e86] [cursor=pointer]:
+        - img [ref=e87]
+      - main [ref=e90]:
+        - generic [ref=e92]:
+          - navigation "Navegação" [ref=e93]:
+            - link "Início" [ref=e94] [cursor=pointer]:
+              - /url: /dashboard
+            - img [ref=e95]
+            - link "Avaliação" [ref=e97] [cursor=pointer]:
+              - /url: /evaluation/3fca302c-abc0-4426-99d8-554101e1f39b
+            - img [ref=e98]
+            - generic [ref=e100]: Protocolo Unificado (6 dentes)
+          - generic [ref=e101]:
+            - navigation "Voltar" [ref=e102]:
+              - link "← Voltar" [ref=e103] [cursor=pointer]:
+                - /url: /evaluation/3fca302c-abc0-4426-99d8-554101e1f39b
+            - generic "Cabeçalho da página" [ref=e104]:
+              - heading "Restauração em Resina — Protocolo Unificado" [level=1] [ref=e108]
+              - button "Marcar todos como concluídos" [ref=e110] [cursor=pointer]:
+                - img [ref=e112]
+                - text: Marcar todos como concluídos
+          - region "Conteúdo da página" [ref=e115]:
+            - generic [ref=e117]:
+              - generic [ref=e120] [cursor=pointer]:
+                - generic [ref=e121]:
+                  - img [ref=e123]
+                  - generic [ref=e126]:
+                    - heading "Planejamento Digital do Sorriso (DSD) 6 sugestões 3 camadas" [level=3] [ref=e127]:
+                      - text: Planejamento Digital do Sorriso (DSD)
+                      - generic [ref=e128]: 6 sugestões
+                      - generic [ref=e129]: 3 camadas
+                    - generic [ref=e130]:
+                      - generic [ref=e131]:
+                        - img [ref=e132]
+                        - text: "Simetria: 85%"
+                      - generic [ref=e134]:
+                        - img [ref=e135]
+                        - text: "Proporção áurea: 85%"
+                - img [ref=e138]
+              - generic [ref=e140]:
+                - generic [ref=e141]:
+                  - button "Apenas Restaurações" [ref=e142] [cursor=pointer]
+                  - button "Restaurações + Clareamento" [ref=e143] [cursor=pointer]
+                  - button "Tratamento Completo Gengiva" [ref=e144] [cursor=pointer]:
+                    - text: Tratamento Completo
+                    - generic [ref=e145]: Gengiva
+                - slider "Comparação antes e depois" [ref=e147]:
+                  - img "Apenas Restaurações" [ref=e148]
+                  - img "Antes" [ref=e150]
+                  - img [ref=e153]
+                  - generic [ref=e160]:
+                    - button "Diminuir zoom" [disabled]:
+                      - img
+                    - button "Resetar zoom" [ref=e161] [cursor=pointer]: 1:1
+                    - button "Aumentar zoom" [ref=e162] [cursor=pointer]:
+                      - img [ref=e163]
+                  - generic [ref=e166]: Antes
+                  - generic [ref=e167]: Apenas Restaurações
+                - generic [ref=e169]:
+                  - generic [ref=e170]:
+                    - heading "Alterações Gengivais" [level=4] [ref=e171]:
+                      - img [ref=e172]
+                      - text: Alterações Gengivais
+                    - button "Ver com gengiva" [ref=e178] [cursor=pointer]
+                  - paragraph [ref=e179]: Gengivoplastia incluída no tratamento completo. Compare as camadas para visualizar a diferença.
+                - generic [ref=e180]:
+                  - heading "Análise de Proporções" [level=3] [ref=e182]
+                  - generic [ref=e183]:
+                    - generic [ref=e184]:
+                      - generic [ref=e185]:
+                        - generic [ref=e186]:
+                          - generic [ref=e187]: Proporção Dourada
+                          - generic [ref=e188]: 85%
+                        - progressbar [ref=e189]
+                      - generic [ref=e191]:
+                        - generic [ref=e192]:
+                          - generic [ref=e193]: Simetria
+                          - generic [ref=e194]: 85%
+                        - progressbar [ref=e195]
+                    - generic [ref=e197]:
+                      - generic [ref=e198]:
+                        - generic [ref=e199]: Linha Média Facial
+                        - generic [ref=e200]:
+                          - generic [ref=e201]: Centrada
+                          - img [ref=e202]
+                      - generic [ref=e204]:
+                        - generic [ref=e205]: Linha Média Dental
+                        - generic [ref=e206]:
+                          - generic [ref=e207]: Alinhada
+                          - img [ref=e208]
+                      - generic [ref=e210]:
+                        - generic [ref=e211]: Linha do Sorriso
+                        - generic [ref=e212]:
+                          - generic [ref=e213]: Média (ideal)
+                          - img [ref=e214]
+                      - generic [ref=e216]:
+                        - generic [ref=e217]: Corredor Bucal
+                        - generic [ref=e218]:
+                          - generic [ref=e219]: Adequado
+                          - img [ref=e220]
+                      - generic [ref=e222]:
+                        - generic [ref=e223]: Plano Oclusal
+                        - generic [ref=e224]:
+                          - generic [ref=e225]: Nivelado
+                          - img [ref=e226]
+                      - generic [ref=e228]:
+                        - generic [ref=e229]: Espessura Labial
+                        - generic [ref=e230]:
+                          - generic [ref=e231]: Médio
+                          - img [ref=e232]
+                    - button "Valores de referência ideais" [ref=e235] [cursor=pointer]:
+                      - img [ref=e236]
+                      - generic [ref=e238]: Valores de referência ideais
+            - generic [ref=e239]:
+              - heading "Protocolo de Estratificação" [level=3] [ref=e240]:
+                - img [ref=e241]
+                - generic [ref=e245]: Protocolo de Estratificação
+              - generic [ref=e247]:
+                - table [ref=e249]:
+                  - rowgroup [ref=e250]:
+                    - row "Camada Resina Cor Espessura" [ref=e251]:
+                      - columnheader "Camada" [ref=e252]
+                      - columnheader "Resina" [ref=e253]
+                      - columnheader "Cor" [ref=e254]
+                      - columnheader "Espessura" [ref=e255]
+                  - rowgroup [ref=e256]:
+                    - row "1. Aumento Incisal Estelite Omega (Tokuyama) CT (Clear Translucent) 0.2-0.3mm" [ref=e257]:
+                      - cell "1. Aumento Incisal" [ref=e258]
+                      - cell "Estelite Omega (Tokuyama)" [ref=e259]
+                      - cell "CT (Clear Translucent)" [ref=e260]:
+                        - generic [ref=e261]: CT (Clear Translucent)
+                      - cell "0.2-0.3mm" [ref=e262]
+                    - row "2. Cristas Proximais Harmonize (Kerr) XLE (Extra Light Enamel) 0.2mm" [ref=e263]:
+                      - cell "2. Cristas Proximais" [ref=e264]
+                      - cell "Harmonize (Kerr)" [ref=e265]
+                      - cell "XLE (Extra Light Enamel)" [ref=e266]:
+                        - generic [ref=e267]: XLE (Extra Light Enamel)
+                      - cell "0.2mm" [ref=e268]
+                    - row "3. Dentina/Corpo Estelite Omega (Tokuyama) A2 (Dentin A2 — cor natural do substrato) 0.5-1.0mm" [ref=e269]:
+                      - cell "3. Dentina/Corpo" [ref=e270]
+                      - cell "Estelite Omega (Tokuyama)" [ref=e271]
+                      - cell "A2 (Dentin A2 — cor natural do substrato)" [ref=e272]:
+                        - generic [ref=e273]: A2 (Dentin A2 — cor natural do substrato)
+                      - cell "0.5-1.0mm" [ref=e274]
+                    - row "4. Efeitos Incisais(opcional) Empress Direct Color (Ivoclar Vivadent) Halo Opaco + Corante Branco 0.1mm" [ref=e275]:
+                      - cell "4. Efeitos Incisais(opcional)" [ref=e276]
+                      - cell "Empress Direct Color (Ivoclar Vivadent)" [ref=e277]
+                      - cell "Halo Opaco + Corante Branco" [ref=e278]:
+                        - generic [ref=e279]: Halo Opaco + Corante Branco
+                      - cell "0.1mm" [ref=e280]
+                    - row "5. Esmalte Vestibular Final Estelite Omega (Tokuyama) MW (Milky White — esmalte natural sem clareamento) 0.3mm" [ref=e281]:
+                      - cell "5. Esmalte Vestibular Final" [ref=e282]
+                      - cell "Estelite Omega (Tokuyama)" [ref=e283]
+                      - cell "MW (Milky White — esmalte natural sem clareamento)" [ref=e284]:
+                        - generic [ref=e285]: MW (Milky White — esmalte natural sem clareamento)
+                      - cell "0.3mm" [ref=e286]
+                - generic [ref=e287]:
+                  - generic [ref=e289]:
+                    - generic [ref=e290]: "Objetivo: Reproduzir forma e comprimento da borda incisal com translucidez natural. Criar efeito de borda incisal translúcida característica de dentes naturais."
+                    - generic [ref=e291]: "Técnica: Incremento único em forma de cunha, adaptado contra matriz de silicone ou guia de contorno. Aplicar com espátula de inserção, pressionando levemente contra borda incisal. Fotopolimerizar 20s. Supra-nano esférica Estelite Omega permite incremento único sem estratificação adicional nesta camada."
+                  - generic [ref=e293]:
+                    - generic [ref=e294]: "Objetivo: Restabelecer cristas marginais e pontos de contato proximais. Definir anatomia proximal com cor 1 tom mais claro que corpo (A2 → A1 equivalente)."
+                    - generic [ref=e295]: "Técnica: Incremento fino contra tira de poliéster adaptada. Usar espátula de inserção para adaptar material contra parede proximal. Manter contato proximal firme e bem definido. Fotopolimerizar 20s. Harmonize XLE oferece cor de esmalte extra clara ideal para cristas proximais."
+                  - generic [ref=e297]:
+                    - generic [ref=e298]: "Objetivo: Reproduzir volume e opacidade da dentina natural. Dar corpo e saturação à restauração, mantendo tons naturais conforme preferência do paciente."
+                    - generic [ref=e299]: "Técnica: Incrementos oblíquos de 1-2mm, reproduzindo mamelos com projeções verticais na incisal. Aplicar com espátula de inserção, adaptando contra paredes vestibular e lingual. Fotopolimerizar 20s cada incremento. Estelite Omega supra-nano permite incrementos até 2mm com conversão adequada."
+                  - generic [ref=e301]:
+                    - generic [ref=e302]: "Objetivo: Reproduzir efeitos ópticos naturais (halo opaco incisal, micro-pontos brancos) para resultado natural e mimetismo com dentes adjacentes. Aumentar profundidade e naturalidade da borda incisal."
+                    - generic [ref=e303]: "Técnica: Aplicar com pincel fino. Halo opaco: depositar 0.1mm na borda incisal (terço incisal) com Empress Opal ou flow translúcido. Corante branco: micro-pontos na região de mamelos com Empress Direct Color White ou similar. Fotopolimerizar 20s após cada aplicação. Técnica de pincel permite controle preciso de efeitos."
+                  - generic [ref=e305]:
+                    - generic [ref=e306]: "Objetivo: Camada final de esmalte mimetizando brilho natural e integração com dente adjacente. MW proporciona translucidez e naturalidade mantendo tons A1/A2 conforme preferência do paciente."
+                    - generic [ref=e307]: "Técnica: Incremento único cobrindo face vestibular terço médio e incisal. Aplicar com espátula de inserção, pressionando levemente contra parede vestibular. Fotopolimerizar 20s. Priorizar polimento superior com Sof-Lex para brilho espelhado. Estelite Omega MW oferece polimento duradouro superior (tecnologia RAP)."
+              - generic [ref=e308]:
+                - heading "Resinas Utilizadas" [level=3] [ref=e310]:
+                  - img [ref=e311]
+                  - text: Resinas Utilizadas
+                - generic [ref=e318]:
+                  - generic [ref=e319]: Estelite Omega (Tokuyama) CT (Clear Translucent)
+                  - generic [ref=e320]: Harmonize (Kerr) XLE (Extra Light Enamel)
+                  - generic [ref=e321]: Estelite Omega (Tokuyama) A2 (Dentin A2 — cor natural do substrato)
+                  - generic [ref=e322]: Empress Direct Color (Ivoclar Vivadent) Halo Opaco + Corante Branco
+                  - generic [ref=e323]: Estelite Omega (Tokuyama) MW (Milky White — esmalte natural sem clareamento)
+            - generic [ref=e325]:
+              - heading "Alternativa Simplificada" [level=3] [ref=e327]:
+                - img [ref=e328]
+                - text: Alternativa Simplificada
+              - generic [ref=e330]:
+                - generic [ref=e331]:
+                  - generic [ref=e332]:
+                    - text: Resina
+                    - paragraph [ref=e333]: Estelite Omega (Tokuyama)
+                  - generic [ref=e334]:
+                    - text: Cor
+                    - paragraph [ref=e335]: A2 (Corpo) + MW (Esmalte Final)
+                - generic [ref=e336]:
+                  - text: Técnica
+                  - paragraph [ref=e337]: "Alternativa simplificada 2 camadas: Corpo A2 (0.5-1.0mm, incrementos oblíquos) + Esmalte MW (0.3mm, incremento único). Fotopolimerizar 20s cada. Priorizar polimento com Sof-Lex laranja → amarelo para brilho natural."
+                - generic [ref=e338]: "Custo-benefício: Reduz tempo clínico e simplifica procedimento, mas sacrifica translucidez incisal, cristas proximais definidas e efeitos naturais. Resultado menos estético e com menor mimetismo com adjacentes. Não recomendado para orçamento premium ou nível estético alto."
+            - generic [ref=e340]:
+              - heading "Passo a Passo" [level=3] [ref=e342]
+              - generic [ref=e344]:
+                - generic [ref=e347]: 0/24
+                - generic [ref=e348]:
+                  - generic [ref=e349] [cursor=pointer]:
+                    - checkbox "1. Isolamento absoluto com lençol de borracha — procedimento estético anterior exige isolamento completo" [ref=e350]
+                    - generic [ref=e351]: 1. Isolamento absoluto com lençol de borracha — procedimento estético anterior exige isolamento completo
+                  - generic [ref=e352] [cursor=pointer]:
+                    - checkbox "2. Limpeza e profilaxia da superfície com pedra-pomes e água" [ref=e353]
+                    - generic [ref=e354]: 2. Limpeza e profilaxia da superfície com pedra-pomes e água
+                  - generic [ref=e355] [cursor=pointer]:
+                    - checkbox "3. Seleção de cor VITA A2 com dente úmido e luz natural — confirmar com paciente" [ref=e356]
+                    - generic [ref=e357]: 3. Seleção de cor VITA A2 com dente úmido e luz natural — confirmar com paciente
+                  - generic [ref=e358] [cursor=pointer]:
+                    - checkbox "4. Condicionamento com ácido fosfórico 37% por 15s em esmalte íntegro (etch-and-rinse)" [ref=e359]
+                    - generic [ref=e360]: 4. Condicionamento com ácido fosfórico 37% por 15s em esmalte íntegro (etch-and-rinse)
+                  - generic [ref=e361] [cursor=pointer]:
+                    - checkbox "5. Enxague abundante com água por 15s, secar com ar comprimido sem dessecação excessiva" [ref=e362]
+                    - generic [ref=e363]: 5. Enxague abundante com água por 15s, secar com ar comprimido sem dessecação excessiva
+                  - generic [ref=e364] [cursor=pointer]:
+                    - checkbox "6. Aplicação de sistema adesivo universal (Single Bond Universal, 3M) em modo etch-and-rinse — 2 camadas, fotopolimerizar 20s" [ref=e365]
+                    - generic [ref=e366]: 6. Aplicação de sistema adesivo universal (Single Bond Universal, 3M) em modo etch-and-rinse — 2 camadas, fotopolimerizar 20s
+                  - generic [ref=e367] [cursor=pointer]:
+                    - checkbox "7. Preparação de matriz de silicone ou guia de contorno para recontorno incisal" [ref=e368]
+                    - generic [ref=e369]: 7. Preparação de matriz de silicone ou guia de contorno para recontorno incisal
+                  - generic [ref=e370] [cursor=pointer]:
+                    - 'checkbox "8. Camada 1 — Aumento Incisal: Estelite Omega CT 0.2-0.3mm em forma de cunha contra matriz. Fotopolimerizar 20s" [ref=e371]'
+                    - generic [ref=e372]: "8. Camada 1 — Aumento Incisal: Estelite Omega CT 0.2-0.3mm em forma de cunha contra matriz. Fotopolimerizar 20s"
+                  - generic [ref=e373] [cursor=pointer]:
+                    - 'checkbox "9. Camada 2 — Cristas Proximais: Harmonize XLE 0.2mm contra tira de poliéster. Fotopolimerizar 20s" [ref=e374]'
+                    - generic [ref=e375]: "9. Camada 2 — Cristas Proximais: Harmonize XLE 0.2mm contra tira de poliéster. Fotopolimerizar 20s"
+                  - generic [ref=e376] [cursor=pointer]:
+                    - 'checkbox "10. Camada 3 — Dentina/Corpo: Estelite Omega A2 em incrementos oblíquos 1-2mm (0.5-1.0mm total). Fotopolimerizar 20s cada incremento" [ref=e377]'
+                    - generic [ref=e378]: "10. Camada 3 — Dentina/Corpo: Estelite Omega A2 em incrementos oblíquos 1-2mm (0.5-1.0mm total). Fotopolimerizar 20s cada incremento"
+                  - generic [ref=e379] [cursor=pointer]:
+                    - 'checkbox "11. Camada 4 — Efeitos Incisais (OPCIONAL): Empress Direct Color — Halo Opaco 0.1mm borda incisal + Corante Branco micro-pontos. Fotopolimerizar 20s" [ref=e380]'
+                    - generic [ref=e381]: "11. Camada 4 — Efeitos Incisais (OPCIONAL): Empress Direct Color — Halo Opaco 0.1mm borda incisal + Corante Branco micro-pontos. Fotopolimerizar 20s"
+                  - generic [ref=e382] [cursor=pointer]:
+                    - 'checkbox "12. Camada 5 — Esmalte Final: Estelite Omega MW 0.3mm cobrindo face vestibular terço médio/incisal. Fotopolimerizar 20s" [ref=e383]'
+                    - generic [ref=e384]: "12. Camada 5 — Esmalte Final: Estelite Omega MW 0.3mm cobrindo face vestibular terço médio/incisal. Fotopolimerizar 20s"
+                  - generic [ref=e385] [cursor=pointer]:
+                    - 'checkbox "13. Fotopolimerização final obrigatória: 60s face vestibular + 60s face palatina/lingual para conversão completa de monômeros residuais" [ref=e386]'
+                    - generic [ref=e387]: "13. Fotopolimerização final obrigatória: 60s face vestibular + 60s face palatina/lingual para conversão completa de monômeros residuais"
+                  - generic [ref=e388] [cursor=pointer]:
+                    - checkbox "14. Remoção de excessos com bisturi nº12 e sonda exploradora" [ref=e389]
+                    - generic [ref=e390]: 14. Remoção de excessos com bisturi nº12 e sonda exploradora
+                  - generic [ref=e391] [cursor=pointer]:
+                    - checkbox "15. Contorno com diamantada FF 3118FF (refinamento proximal e face palatina) — alta rotação com spray, movimentos leves" [ref=e392]
+                    - generic [ref=e393]: 15. Contorno com diamantada FF 3118FF (refinamento proximal e face palatina) — alta rotação com spray, movimentos leves
+                  - generic [ref=e394] [cursor=pointer]:
+                    - checkbox "16. Refinamento de borda incisal com diamantada FF 2135FF — alta rotação com spray" [ref=e395]
+                    - generic [ref=e396]: 16. Refinamento de borda incisal com diamantada FF 2135FF — alta rotação com spray
+                  - generic [ref=e397] [cursor=pointer]:
+                    - 'checkbox "17. Polimento com discos Sof-Lex sequência LARANJA: Laranja Escuro → Laranja Médio → Laranja Claro → Amarelo. Baixa rotação, manter úmido, movimentos unidirecionais" [ref=e398]'
+                    - generic [ref=e399]: "17. Polimento com discos Sof-Lex sequência LARANJA: Laranja Escuro → Laranja Médio → Laranja Claro → Amarelo. Baixa rotação, manter úmido, movimentos unidirecionais"
+                  - generic [ref=e400] [cursor=pointer]:
+                    - checkbox "18. Polimento interproximal com tiras de lixa — verificar ponto de contato" [ref=e401]
+                    - generic [ref=e402]: 18. Polimento interproximal com tiras de lixa — verificar ponto de contato
+                  - generic [ref=e403] [cursor=pointer]:
+                    - checkbox "19. Polimento com borrachas DHPro/American Burrs 40-60s cada — baixa rotação, sem aquecer" [ref=e404]
+                    - generic [ref=e405]: 19. Polimento com borrachas DHPro/American Burrs 40-60s cada — baixa rotação, sem aquecer
+                  - generic [ref=e406] [cursor=pointer]:
+                    - checkbox "20. Brilho final com Diamond Excel + feltro — baixa rotação 40-60s" [ref=e407]
+                    - generic [ref=e408]: 20. Brilho final com Diamond Excel + feltro — baixa rotação 40-60s
+                  - generic [ref=e409] [cursor=pointer]:
+                    - 'checkbox "21. Texturização OPCIONAL: diamantada fina para periquimáceas na face vestibular terço médio/incisal (mimetismo com adjacentes)" [ref=e410]'
+                    - generic [ref=e411]: "21. Texturização OPCIONAL: diamantada fina para periquimáceas na face vestibular terço médio/incisal (mimetismo com adjacentes)"
+                  - generic [ref=e412] [cursor=pointer]:
+                    - checkbox "22. Verificação de oclusão e contatos proximais com carbono articular" [ref=e413]
+                    - generic [ref=e414]: 22. Verificação de oclusão e contatos proximais com carbono articular
+                  - generic [ref=e415] [cursor=pointer]:
+                    - 'checkbox "23. Orientação pós-operatória: evitar alimentos duros, pastas abrasivas (RDA <70), hábitos parafuncionais" [ref=e416]'
+                    - generic [ref=e417]: "23. Orientação pós-operatória: evitar alimentos duros, pastas abrasivas (RDA <70), hábitos parafuncionais"
+                  - generic [ref=e418] [cursor=pointer]:
+                    - checkbox "24. Agendamento retorno 6 meses para profilaxia + polimento retoque" [ref=e419]
+                    - generic [ref=e420]: 24. Agendamento retorno 6 meses para profilaxia + polimento retoque
+            - generic [ref=e422]:
+              - img [ref=e423]
+              - generic [ref=e426]:
+                - generic [ref=e427]:
+                  - generic [ref=e428]: Alta Confiança
+                  - generic [ref=e433]: Alta Confiança (3/3)
+                - paragraph [ref=e434]: Caso bem documentado, protocolo recomendado com segurança
+            - button "Recalcular Caso" [ref=e436] [cursor=pointer]:
+              - img [ref=e438]
+              - text: Recalcular Caso

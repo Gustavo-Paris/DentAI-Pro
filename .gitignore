@@ -33,6 +33,8 @@ dist-ssr
 
 # Claude Code
 .claude/
+!.claude/commands/
+!.claude/agents/
 
 # Supabase temp files
 supabase/.temp/

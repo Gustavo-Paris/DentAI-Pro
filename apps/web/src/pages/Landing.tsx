@@ -126,7 +126,7 @@ export default function Landing() {
             ].map((stat, i) => (
               <div
                 key={i}
-                className={`scroll-reveal scroll-reveal-delay-${i + 1} ${i > 0 ? 'sm:border-l sm:border-primary/20' : ''}`}
+                className={`scroll-reveal scroll-reveal-delay-${i + 1} ${i > 0 ? 'sm:border-l sm:border-primary/30' : ''}`}
               >
                 <p className="text-4xl sm:text-5xl md:text-6xl font-semibold font-display text-primary glow-stat">{stat.value}</p>
                 <p className="text-xs sm:text-sm text-muted-foreground mt-1">{stat.label}</p>
@@ -171,7 +171,7 @@ export default function Landing() {
             ]).map((feature, index) => (
               <div
                 key={index}
-                className={`scroll-reveal scroll-reveal-delay-${index + 1} text-left border border-border rounded-xl p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md group dark:bg-gradient-to-br dark:from-card dark:to-card/80 glow-card`}
+                className={`scroll-reveal scroll-reveal-delay-${index + 1} text-left border border-border rounded-xl p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md group dark:bg-gradient-to-br dark:from-card dark:to-card/80 glass-panel glow-card`}
               >
                 <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-primary/15 via-primary/8 to-[rgb(var(--accent-violet-rgb)/0.06)] flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110 glow-icon">
                   <feature.icon className="w-6 h-6 sm:w-7 sm:h-7 text-primary" aria-hidden="true" />
@@ -191,7 +191,7 @@ export default function Landing() {
           <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-10 sm:mb-16 font-display neon-text">
             {t('landing.howItWorksTitle')}
           </h2>
-          <div ref={howItWorksRef} className="space-y-8 sm:space-y-12 timeline-line">
+          <div ref={howItWorksRef} className="space-y-6 sm:space-y-8 timeline-line">
             {[
               {
                 step: '01',
@@ -214,8 +214,8 @@ export default function Landing() {
                 description: t('landing.step4Desc'),
               },
             ].map((item, index) => (
-              <div key={index} className={`scroll-reveal scroll-reveal-delay-${index + 1} flex items-start gap-4 pl-12 sm:pl-16 relative`}>
-                <div className="absolute left-[12px] sm:left-[16px] top-0 w-[18px] h-[18px] sm:w-[18px] sm:h-[18px] rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold shrink-0 glow-icon">
+              <div key={index} className={`scroll-reveal scroll-reveal-delay-${index + 1} flex items-start gap-4 pl-14 sm:pl-16 relative`}>
+                <div className="absolute left-[8px] sm:left-[12px] top-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold shrink-0 glow-icon">
                   {index + 1}
                 </div>
                 <div>
@@ -278,7 +278,7 @@ export default function Landing() {
             ].map((testimonial, i) => (
               <div
                 key={i}
-                className={`scroll-reveal scroll-reveal-delay-${i + 1} relative bg-background rounded-xl p-6 border border-border/50 border-l-4 border-l-primary/40 glow-card`}
+                className={`scroll-reveal scroll-reveal-delay-${i + 1} relative bg-background rounded-xl p-6 border border-border/50 border-l-4 border-l-primary/40 glass-panel glow-card`}
               >
                 <span className="absolute top-2 right-4 text-7xl leading-none font-serif text-primary/[0.05] select-none" aria-hidden="true">&ldquo;</span>
                 {testimonial.highlight && (
@@ -315,52 +315,38 @@ export default function Landing() {
 
       {/* FAQ */}
       <section aria-label={t('landing.faqTitle')} className="py-12 sm:py-20 bg-secondary/20 relative overflow-hidden section-glow-bg">
-        <div className="container mx-auto px-4 sm:px-6 max-w-2xl">
+        <div className="container mx-auto px-4 sm:px-6 max-w-3xl">
           <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-8 sm:mb-12 font-display neon-text">
             {t('landing.faqTitle')}
           </h2>
-          <Accordion type="single" collapsible className="w-full glass-panel rounded-xl p-1">
+          <Accordion type="single" collapsible className="w-full glass-panel rounded-xl px-4 py-3 sm:px-8 sm:py-5">
             <AccordionItem value="item-1">
-              <AccordionTrigger>{t('landing.faq1Q')}</AccordionTrigger>
-              <AccordionContent>
-                {t('landing.faq1A')}
-              </AccordionContent>
+              <AccordionTrigger className="px-3 sm:px-4">{t('landing.faq1Q')}</AccordionTrigger>
+              <AccordionContent className="px-3 sm:px-4">{t('landing.faq1A')}</AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-2">
-              <AccordionTrigger>{t('landing.faq2Q')}</AccordionTrigger>
-              <AccordionContent>
-                {t('landing.faq2A')}
-              </AccordionContent>
+              <AccordionTrigger className="px-3 sm:px-4">{t('landing.faq2Q')}</AccordionTrigger>
+              <AccordionContent className="px-3 sm:px-4">{t('landing.faq2A')}</AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-3">
-              <AccordionTrigger>{t('landing.faq3Q')}</AccordionTrigger>
-              <AccordionContent>
-                {t('landing.faq3A')}
-              </AccordionContent>
+              <AccordionTrigger className="px-3 sm:px-4">{t('landing.faq3Q')}</AccordionTrigger>
+              <AccordionContent className="px-3 sm:px-4">{t('landing.faq3A')}</AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-4">
-              <AccordionTrigger>{t('landing.faq4Q')}</AccordionTrigger>
-              <AccordionContent>
-                {t('landing.faq4A')}
-              </AccordionContent>
+              <AccordionTrigger className="px-3 sm:px-4">{t('landing.faq4Q')}</AccordionTrigger>
+              <AccordionContent className="px-3 sm:px-4">{t('landing.faq4A')}</AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-5">
-              <AccordionTrigger>{t('landing.faq5Q')}</AccordionTrigger>
-              <AccordionContent>
-                {t('landing.faq5A')}
-              </AccordionContent>
+              <AccordionTrigger className="px-3 sm:px-4">{t('landing.faq5Q')}</AccordionTrigger>
+              <AccordionContent className="px-3 sm:px-4">{t('landing.faq5A')}</AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-6">
-              <AccordionTrigger>{t('landing.faq6Q')}</AccordionTrigger>
-              <AccordionContent>
-                {t('landing.faq6A', { brandName: BRAND_NAME })}
-              </AccordionContent>
+              <AccordionTrigger className="px-3 sm:px-4">{t('landing.faq6Q')}</AccordionTrigger>
+              <AccordionContent className="px-3 sm:px-4">{t('landing.faq6A', { brandName: BRAND_NAME })}</AccordionContent>
             </AccordionItem>
-            <AccordionItem value="item-7">
-              <AccordionTrigger>{t('landing.faq7Q')}</AccordionTrigger>
-              <AccordionContent>
-                {t('landing.faq7A', { brandName: BRAND_NAME })}
-              </AccordionContent>
+            <AccordionItem value="item-7" className="border-b-0">
+              <AccordionTrigger className="px-3 sm:px-4">{t('landing.faq7Q')}</AccordionTrigger>
+              <AccordionContent className="px-3 sm:px-4">{t('landing.faq7A', { brandName: BRAND_NAME })}</AccordionContent>
             </AccordionItem>
           </Accordion>
         </div>
@@ -526,7 +512,7 @@ function LandingPricing() {
               return (
                 <Card
                   key={plan.id}
-                  className={`relative flex flex-col glow-card ${isPopular ? 'border-primary shadow-lg scale-105 ai-shimmer-border' : ''}`}
+                  className={`relative flex flex-col rounded-xl glass-panel glow-card ${isPopular ? 'border-primary shadow-lg scale-105 ai-shimmer-border' : ''}`}
                 >
                   {isPopular && (
                     <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary">
@@ -607,7 +593,7 @@ function LandingPricing() {
               return (
                 <Card
                   key={plan.id}
-                  className={`relative flex flex-col glow-card ${plan.isPopular ? 'border-primary shadow-lg scale-105 ai-shimmer-border' : ''}`}
+                  className={`relative flex flex-col rounded-xl glass-panel glow-card ${plan.isPopular ? 'border-primary shadow-lg scale-105 ai-shimmer-border' : ''}`}
                 >
                   {plan.isPopular && (
                     <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary">
