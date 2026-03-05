@@ -14,6 +14,7 @@ import {
   Trash2,
   Lightbulb,
   RefreshCw,
+  FileText,
 } from 'lucide-react';
 import { TipBanner } from '@/components/TipBanner';
 
@@ -25,6 +26,7 @@ const DSDPreviewModal = lazy(() => import('@/components/DSDPreviewModal'));
 import { EvaluationTable } from '@/components/evaluation/EvaluationTable';
 import { EvaluationCards } from '@/components/evaluation/EvaluationCards';
 import { SessionHeaderCard } from '@/components/evaluation/SessionHeaderCard';
+import { PatientDocumentModal } from '@/components/evaluation/PatientDocumentModal';
 
 // Helpers, grouping logic, and getProtocolFingerprint imported from EvaluationDetails.helpers.tsx
 
@@ -50,6 +52,7 @@ export default function EvaluationDetails() {
   const [showRegenerateDialog, setShowRegenerateDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isMarkingAll, setIsMarkingAll] = useState(false);
+  const [showPatientDoc, setShowPatientDoc] = useState(false);
 
   const firstEval = detail.evaluations[0];
   const hasDSD = !!(firstEval?.dsd_simulation_url || firstEval?.dsd_simulation_layers?.length);
@@ -192,6 +195,15 @@ export default function EvaluationDetails() {
                   </svg>
                 )}
                 WhatsApp
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="min-h-11"
+                onClick={() => setShowPatientDoc(true)}
+              >
+                <FileText className="w-4 h-4 mr-1.5" />
+                {t('patientDocument.title')}
               </Button>
               {detail.pendingTeeth.length > 0 && (
                 <Button
@@ -402,6 +414,14 @@ export default function EvaluationDetails() {
           detail.handleRegenerateWithBudget(targetBudget as 'padrão' | 'premium');
         }}
         variant="warning"
+      />
+
+      {/* Patient Document Modal */}
+      <PatientDocumentModal
+        open={showPatientDoc}
+        onOpenChange={setShowPatientDoc}
+        sessionId={detail.sessionId}
+        evaluations={detail.evaluations}
       />
     </>
   );
