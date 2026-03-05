@@ -295,6 +295,24 @@
       "noDataDescription": "Insights will appear here after your first evaluations.",
       "createFirstCase": "Create first case",
       "periodFilter": "Period filter"
+    },
+    "hero": {
+      "title": "Hello, shall we start?",
+      "subtitle": "Create a new AI evaluation in minutes",
+      "cta": "Start New Case",
+      "credits": "{{count}} credits"
+    },
+    "casosTab": "Cases",
+    "casos": {
+      "all": "All",
+      "inProgress": "In Progress",
+      "completed": "Completed",
+      "emptyTitle": "No cases found",
+      "emptyDescription": "Start by creating your first AI evaluation",
+      "loadMore": "Load {{count}} more cases"
+    },
+    "creditsPill": {
+      "label": "{{count}} credits"
     }
   },
   "wizard": {
@@ -906,7 +924,13 @@
     "notFoundDescription": "The requested result was not found.",
     "protocolUnavailable": "Protocol unavailable",
     "protocolUnavailableDesc": "The resin protocol generation was not completed. Try reprocessing this case.",
-    "reprocess": "Reprocess case"
+    "reprocess": "Reprocess case",
+    "tabs": {
+      "protocol": "Protocol",
+      "finishing": "Finishing",
+      "checklist": "Checklist",
+      "dsd": "DSD"
+    }
   },
   "odontogram": {
     "healthy": "Healthy",
@@ -1177,6 +1201,8 @@
         "creditCostSuffix": "(analysis + DSD)",
         "insufficientCredits_one": "You only have {{count}} credit. Insufficient credits for the full flow.",
         "insufficientCredits_other": "You only have {{count}} credits. Insufficient credits for the full flow.",
+        "noExtraCredits": "0 extra credits",
+        "extraCredits": "+1 extra credit",
         "continueSimulation": "Continue with simulation"
       },
       "review": {

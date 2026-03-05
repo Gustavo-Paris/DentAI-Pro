@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button, Card, CardContent, CardHeader, CardTitle, Badge } from '@parisgroup-ai/pageshell/primitives';
 import { PageConfirmDialog } from '@parisgroup-ai/pageshell/interactions';
@@ -19,8 +20,22 @@ import { useTranslation } from 'react-i18next';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useResult } from '@/hooks/domain/useResult';
 import { BRAND_NAME } from '@/lib/branding';
+import { cn } from '@/lib/utils';
 import { formatToothLabel } from '@/lib/treatment-config';
 
+
+// =============================================================================
+// Tab navigation (resina only)
+// =============================================================================
+
+type ResultTab = 'protocol' | 'finishing' | 'checklist' | 'dsd';
+
+const RESULT_TABS: { key: ResultTab; labelKey: string }[] = [
+  { key: 'protocol', labelKey: 'result.tabs.protocol' },
+  { key: 'finishing', labelKey: 'result.tabs.finishing' },
+  { key: 'checklist', labelKey: 'result.tabs.checklist' },
+  { key: 'dsd', labelKey: 'result.tabs.dsd' },
+];
 
 // =============================================================================
 // Page Adapter
@@ -31,6 +46,7 @@ export default function Result() {
   useDocumentTitle(t('pageTitle.result'));
   const r = useResult();
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<ResultTab>('protocol');
 
   if ((!r.evaluation && !r.isLoading) || r.isError) {
     return (
@@ -228,26 +244,87 @@ export default function Result() {
               </section>
             )}
 
-            {/* Protocol sections */}
-            <ProtocolSections
-              treatmentType={r.treatmentType}
-              hasProtocol={r.hasProtocol}
-              isPorcelain={r.isPorcelain}
-              isSpecialTreatment={r.isSpecialTreatment}
-              layers={r.layers}
-              finishingProtocol={evaluation.stratification_protocol?.finishing}
-              genericProtocol={r.genericProtocol}
-              cementationProtocol={r.cementationProtocol}
-              protocolAlternative={r.protocolAlternative}
-              checklist={r.checklist}
-              alerts={r.treatmentType === 'resina' ? r.alerts : []}
-              warnings={r.treatmentType === 'resina' ? r.warnings : []}
-              confidence={r.confidence}
-              checkedIndices={evaluation.checklist_progress || []}
-              onProgressChange={r.handleChecklistChange}
-              t={t}
-              printHideStepByStep
-            />
+            {/* Tab navigation -- resina only */}
+            {r.treatmentType === 'resina' && r.hasProtocol && (
+              <div className="glass-panel rounded-xl px-3 py-2 inline-flex gap-1 mb-6">
+                {RESULT_TABS
+                  .filter(tab => tab.key !== 'dsd' || evaluation.dsd_analysis)
+                  .map((tab) => (
+                    <button
+                      key={tab.key}
+                      onClick={() => setActiveTab(tab.key)}
+                      className={cn(
+                        'px-4 py-1.5 rounded-full text-sm font-medium transition-colors',
+                        activeTab === tab.key
+                          ? 'bg-primary text-primary-foreground'
+                          : 'text-muted-foreground hover:text-foreground'
+                      )}
+                    >
+                      {t(tab.labelKey)}
+                    </button>
+                  ))}
+              </div>
+            )}
+
+            {/* Protocol sections -- tabbed for resina, linear for others */}
+            {r.treatmentType === 'resina' && r.hasProtocol ? (
+              <>
+                {activeTab !== 'dsd' && (
+                  <ProtocolSections
+                    treatmentType={r.treatmentType}
+                    hasProtocol={r.hasProtocol}
+                    isPorcelain={r.isPorcelain}
+                    isSpecialTreatment={r.isSpecialTreatment}
+                    layers={r.layers}
+                    finishingProtocol={evaluation.stratification_protocol?.finishing}
+                    genericProtocol={r.genericProtocol}
+                    cementationProtocol={r.cementationProtocol}
+                    protocolAlternative={r.protocolAlternative}
+                    checklist={r.checklist}
+                    alerts={r.alerts}
+                    warnings={r.warnings}
+                    confidence={r.confidence}
+                    checkedIndices={evaluation.checklist_progress || []}
+                    onProgressChange={r.handleChecklistChange}
+                    t={t}
+                    printHideStepByStep
+                    visibleSection={activeTab as 'protocol' | 'finishing' | 'checklist'}
+                  />
+                )}
+                {activeTab === 'dsd' && evaluation.dsd_analysis && (
+                  <section className="mb-8">
+                    <CollapsibleDSD
+                      analysis={evaluation.dsd_analysis}
+                      beforeImage={r.photoUrls.frontal}
+                      afterImage={r.dsdSimulationUrl}
+                      defaultOpen={true}
+                      layers={r.dsdSimulationLayers}
+                      layerUrls={r.dsdLayerUrls}
+                    />
+                  </section>
+                )}
+              </>
+            ) : (
+              <ProtocolSections
+                treatmentType={r.treatmentType}
+                hasProtocol={r.hasProtocol}
+                isPorcelain={r.isPorcelain}
+                isSpecialTreatment={r.isSpecialTreatment}
+                layers={r.layers}
+                finishingProtocol={evaluation.stratification_protocol?.finishing}
+                genericProtocol={r.genericProtocol}
+                cementationProtocol={r.cementationProtocol}
+                protocolAlternative={r.protocolAlternative}
+                checklist={r.checklist}
+                alerts={r.treatmentType === 'resina' ? r.alerts : []}
+                warnings={r.treatmentType === 'resina' ? r.warnings : []}
+                confidence={r.confidence}
+                checkedIndices={evaluation.checklist_progress || []}
+                onProgressChange={r.handleChecklistChange}
+                t={t}
+                printHideStepByStep
+              />
+            )}
 
             {/* Whitening Preference Alert */}
             {r.treatmentType === 'resina' && (
@@ -330,8 +407,8 @@ export default function Result() {
               />
             </section>
 
-            {/* DSD Section */}
-            {evaluation.dsd_analysis && (
+            {/* DSD Section -- only for non-resina or when tabs not active */}
+            {evaluation.dsd_analysis && !(r.treatmentType === 'resina' && r.hasProtocol) && (
               <section className="mb-8">
                 <CollapsibleDSD
                   analysis={evaluation.dsd_analysis}

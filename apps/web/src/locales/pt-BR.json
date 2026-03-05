@@ -295,6 +295,24 @@
       "noDataDescription": "Os insights aparecerão aqui após suas primeiras avaliações.",
       "createFirstCase": "Criar primeiro caso",
       "periodFilter": "Filtro de período"
+    },
+    "hero": {
+      "title": "Olá, vamos começar?",
+      "subtitle": "Crie uma nova avaliação com IA em poucos minutos",
+      "cta": "Iniciar Novo Caso",
+      "credits": "{{count}} créditos"
+    },
+    "casosTab": "Casos",
+    "casos": {
+      "all": "Todos",
+      "inProgress": "Em Progresso",
+      "completed": "Concluídos",
+      "emptyTitle": "Nenhum caso encontrado",
+      "emptyDescription": "Comece criando sua primeira avaliação com IA",
+      "loadMore": "Ver mais {{count}} casos"
+    },
+    "creditsPill": {
+      "label": "{{count}} créditos"
     }
   },
   "wizard": {
@@ -906,7 +924,13 @@
     "notFoundDescription": "O resultado solicitado não foi encontrado.",
     "protocolUnavailable": "Protocolo não disponível",
     "protocolUnavailableDesc": "A geração do protocolo de resina não foi concluída. Tente reprocessar este caso.",
-    "reprocess": "Reprocessar caso"
+    "reprocess": "Reprocessar caso",
+    "tabs": {
+      "protocol": "Protocolo",
+      "finishing": "Acabamento",
+      "checklist": "Checklist",
+      "dsd": "DSD"
+    }
   },
   "odontogram": {
     "healthy": "Saudável",
@@ -1177,6 +1201,8 @@
         "creditCostSuffix": "(análise + DSD)",
         "insufficientCredits_one": "Você tem apenas {{count}} crédito. Créditos insuficientes para o fluxo completo.",
         "insufficientCredits_other": "Você tem apenas {{count}} créditos. Créditos insuficientes para o fluxo completo.",
+        "noExtraCredits": "0 créditos extra",
+        "extraCredits": "+1 crédito extra",
         "continueSimulation": "Continuar com simulação"
       },
       "review": {

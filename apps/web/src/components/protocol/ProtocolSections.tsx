@@ -59,6 +59,8 @@ export interface ProtocolSectionsProps {
   treatmentStyleLabel?: string;
   /** Whether the step-by-step section should be hidden from print */
   printHideStepByStep?: boolean;
+  /** When set, only render the specified section (for tabbed layout). Default: render all. */
+  visibleSection?: 'protocol' | 'finishing' | 'checklist';
 }
 
 // =============================================================================
@@ -108,6 +110,7 @@ export function ProtocolSections({
   t,
   treatmentStyleLabel,
   printHideStepByStep = false,
+  visibleSection,
 }: ProtocolSectionsProps) {
   return (
     <>
@@ -127,7 +130,7 @@ export function ProtocolSections({
         </>
       ) : (
         <>
-          {hasProtocol && treatmentType === 'resina' && (
+          {(!visibleSection || visibleSection === 'protocol') && hasProtocol && treatmentType === 'resina' && (
             <section className="mb-8">
               <h3 className="font-semibold font-display mb-3 flex items-center gap-2">
                 <Layers className="w-4 h-4" />
@@ -156,7 +159,7 @@ export function ProtocolSections({
             </section>
           )}
 
-          {treatmentType === 'resina' && finishingProtocol && (
+          {(!visibleSection || visibleSection === 'finishing') && treatmentType === 'resina' && finishingProtocol && (
             <section className="mb-8">
               <FinishingPolishingCard protocol={finishingProtocol} />
             </section>
@@ -185,7 +188,7 @@ export function ProtocolSections({
             </section>
           )}
 
-          {treatmentType === 'resina' && protocolAlternative && (
+          {(!visibleSection || visibleSection === 'protocol') && treatmentType === 'resina' && protocolAlternative && (
             <section className="mb-8">
               <AlternativeBox alternative={protocolAlternative} />
             </section>
@@ -194,7 +197,7 @@ export function ProtocolSections({
       )}
 
       {/* Step-by-Step Checklist */}
-      {treatmentType === 'resina' && checklist.length > 0 && (
+      {(!visibleSection || visibleSection === 'checklist') && treatmentType === 'resina' && checklist.length > 0 && (
         <section className={`mb-8 ${printHideStepByStep ? 'print:hidden' : ''}`}>
           <Card>
             <CardHeader className="pb-3">
@@ -212,7 +215,7 @@ export function ProtocolSections({
       )}
 
       {/* Alerts and Warnings */}
-      {(alerts.length > 0 || warnings.length > 0) && (
+      {(!visibleSection || visibleSection === 'protocol') && (alerts.length > 0 || warnings.length > 0) && (
         <section className="mb-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <AlertsSection alerts={alerts} />
           <WarningsSection warnings={warnings} />
@@ -220,7 +223,7 @@ export function ProtocolSections({
       )}
 
       {/* Confidence Indicator */}
-      {treatmentType === 'resina' && hasProtocol && (
+      {(!visibleSection || visibleSection === 'protocol') && treatmentType === 'resina' && hasProtocol && (
         <section className="mb-8">
           <ConfidenceIndicator confidence={confidence} />
         </section>
