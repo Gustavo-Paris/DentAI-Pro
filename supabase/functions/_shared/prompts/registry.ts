@@ -3,6 +3,7 @@ import { recommendCementation } from './definitions/recommend-cementation.ts'
 import { analyzeDentalPhoto } from './definitions/analyze-dental-photo.ts'
 import { recommendResin } from './definitions/recommend-resin.ts'
 import { dsdSimulation } from './definitions/dsd-simulation.ts'
+import { patientDocument } from './definitions/patient-document.ts'
 
 /** Widen a specific PromptDefinition<T> to PromptDefinition<unknown> for registry storage */
 function register<T>(def: PromptDefinition<T>): PromptDefinition<unknown> {
@@ -14,6 +15,7 @@ const registry: Record<string, PromptDefinition<unknown>> = {
   [analyzeDentalPhoto.id]: register(analyzeDentalPhoto),
   [recommendResin.id]: register(recommendResin),
   [dsdSimulation.id]: register(dsdSimulation),
+  [patientDocument.id]: register(patientDocument),
 }
 
 export type PromptId = keyof typeof registry
