@@ -11,6 +11,22 @@ import type { StratificationProtocol, CementationProtocol } from '@/types/protoc
 // Types
 // ---------------------------------------------------------------------------
 
+export interface PatientDocumentDiet {
+  avoid: string[];
+  prefer: string[];
+  duration_hours: number;
+}
+
+export interface PatientDocument {
+  tooth: string;
+  treatment_type: string;
+  treatment_explanation: string;
+  post_operative: string[];
+  dietary_guide: PatientDocumentDiet;
+  tcle?: string;
+  generated_at: string;
+}
+
 export interface EvaluationListRow {
   id: string;
   created_at: string;
@@ -65,6 +81,7 @@ export interface SessionEvaluationRow {
   }> | null;
   resins: { name: string; manufacturer: string } | null;
   ideal_resin: { name: string; manufacturer: string } | null;
+  patient_document: PatientDocument | null;
 }
 
 /** Row shape returned by `listPendingTeeth` with JSON fields narrowed. */
@@ -324,6 +341,7 @@ export interface SharedEvaluationRow {
   ai_treatment_indication: string | null;
   created_at: string;
   clinic_name: string | null;
+  patient_document: PatientDocument | null;
 }
 
 export async function getSharedEvaluation(token: string): Promise<SharedEvaluationRow[]> {
@@ -512,4 +530,19 @@ export async function getByIdWithRelations(id: string, userId: string) {
       .eq('user_id', userId)
       .maybeSingle(),
   );
+}
+
+// ---------------------------------------------------------------------------
+// Patient document generation
+// ---------------------------------------------------------------------------
+
+export async function generatePatientDocument(
+  sessionId: string,
+  includeTCLE: boolean = true,
+): Promise<PatientDocument[]> {
+  const { data, error } = await supabase.functions.invoke('generate-patient-document', {
+    body: { sessionId, includeTCLE },
+  });
+  if (error) throw error;
+  return data.documents as PatientDocument[];
 }
