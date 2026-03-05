@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import type { ModuleConfig } from '@parisgroup-ai/pageshell/composites';
 import { PageClinicActivityFeed } from '@parisgroup-ai/domain-odonto-ai/dashboard';
 import type { ActivityFeedItem } from '@parisgroup-ai/domain-odonto-ai/dashboard';
 import type { DashboardSession } from '@/hooks/domain/useDashboard';
@@ -8,10 +7,12 @@ import { WizardDraft } from '@/hooks/useWizardDraft';
 import { Button, Card, Badge, Skeleton } from '@parisgroup-ai/pageshell/primitives';
 import {
   FileText, FileWarning, ChevronRight, ArrowRight, Plus,
+  Sparkles, Users, Package, Settings, Zap,
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { getDateLocale } from '@/lib/date-utils';
-import { useScrollReveal, useScrollRevealChildren } from '@/hooks/useScrollReveal';
+import { useScrollReveal } from '@/hooks/useScrollReveal';
+import { useSubscription } from '@/hooks/useSubscription';
 import { SessionCard } from './SessionCard';
 
 // ---------------------------------------------------------------------------
@@ -39,7 +40,7 @@ function DraftCard({
   const teethCount = draft.selectedTeeth?.length || 0;
 
   return (
-    <Card className="relative overflow-hidden p-3 sm:p-4 animate-scale-in">
+    <Card className="relative overflow-hidden p-3 sm:p-4 animate-scale-in ai-shimmer-border">
       <div className={`absolute left-0 top-0 bottom-0 w-0.5 ${DRAFT_ACCENT_GRADIENT}`} />
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex-1">
@@ -266,51 +267,88 @@ function ActivityFeedSection({ sessions, loading }: { sessions: DashboardSession
 }
 
 // ---------------------------------------------------------------------------
+// HeroCard — prominent CTA for existing users
+// ---------------------------------------------------------------------------
+
+function HeroCard() {
+  const { t } = useTranslation();
+  const { getCreditCost } = useSubscription();
+  const totalCost = getCreditCost('case_analysis') + getCreditCost('dsd_simulation');
+  return (
+    <Link to="/new-case">
+      <Card className="group relative overflow-hidden p-5 sm:p-6 rounded-xl glass-panel bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-primary/20 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 cursor-pointer ai-shimmer-border">
+        <div className="relative flex items-center gap-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15 shrink-0 transition-transform duration-200 group-hover:scale-110 glow-icon">
+            <Sparkles className="w-6 h-6 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-base sm:text-lg font-display">{t('dashboard.hero.title')}</h3>
+            <p className="text-xs sm:text-sm text-muted-foreground">{t('dashboard.hero.subtitle')}</p>
+            <span className="text-xs text-muted-foreground/70 flex items-center gap-1 mt-0.5">
+              <Zap className="w-3 h-3 text-primary" />
+              {t('dashboard.hero.credits', { count: totalCost })}
+            </span>
+          </div>
+          <ArrowRight className="w-5 h-5 text-primary/60 group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0" aria-hidden="true" />
+        </div>
+      </Card>
+    </Link>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// QuickActions — compact navigation shortcuts
+// ---------------------------------------------------------------------------
+
+function QuickActions() {
+  const { t } = useTranslation();
+  const actions = [
+    { to: '/patients', icon: Users, label: t('dashboard.myPatients') },
+    { to: '/inventory', icon: Package, label: t('dashboard.myInventory') },
+    { to: '/profile', icon: Settings, label: t('nav.profile') },
+  ];
+
+  return (
+    <div className="grid grid-cols-3 gap-3">
+      {actions.map(({ to, icon: Icon, label }) => (
+        <Link key={to} to={to}>
+          <Card className="group glass-panel p-3 sm:p-4 rounded-xl text-center hover:shadow-sm hover:-translate-y-0.5 transition-all duration-300 cursor-pointer">
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted/60 group-hover:bg-primary/10 transition-colors">
+                <Icon className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              </div>
+              <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors truncate w-full">{label}</span>
+            </div>
+          </Card>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // PrincipalTab
 // ---------------------------------------------------------------------------
 
 export function PrincipalTab({
-  modules,
   sessions,
   loading,
   pendingDraft,
   pendingSessions,
   onDiscardDraft,
 }: {
-  modules: ModuleConfig[];
   sessions: DashboardSession[];
   loading: boolean;
   pendingDraft: WizardDraft | null;
   pendingSessions: number;
   onDiscardDraft: () => void;
 }) {
-  const modulesRef = useScrollRevealChildren();
-
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Module cards */}
-      <div ref={modulesRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 stagger-enter">
-        {modules.map((mod, i) => {
-          const Icon = mod.icon;
-          const isPrimary = mod.variant === 'primary';
-          return (
-            <Link key={mod.id} to={mod.href!} className={`scroll-reveal scroll-reveal-delay-${i + 1}`}>
-              <Card className={`group relative overflow-hidden p-4 sm:p-5 rounded-xl transition-all duration-300 cursor-pointer h-full hover:shadow-md hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 ${isPrimary ? 'bg-primary text-primary-foreground shadow-md btn-glow ai-shimmer-border' : 'border border-border/50 hover:border-border shadow-sm dark:bg-gradient-to-br dark:from-card dark:to-card/80 glow-card'}`}>
-                {!isPrimary && <div className="absolute inset-0 bg-gradient-to-br from-muted/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />}
-                <div className="relative flex items-center gap-3">
-                  <div className={`flex h-10 w-10 items-center justify-center rounded-xl shrink-0 transition-transform duration-200 group-hover:scale-110 ${isPrimary ? 'bg-primary-foreground/20' : 'bg-primary/10 dark:bg-primary/15 glow-icon'}`}>
-                    {Icon && <Icon className={`w-5 h-5 ${isPrimary ? '' : 'text-primary'}`} />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-sm">{mod.title}</h3>
-                    <p className={`text-xs ${isPrimary ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>{mod.description}</p>
-                  </div>
-                  <ChevronRight className={`w-4 h-4 shrink-0 group-hover:translate-x-0.5 transition-transform ${isPrimary ? 'text-primary-foreground/60' : 'text-muted-foreground/40'}`} aria-hidden="true" />
-                </div>
-              </Card>
-            </Link>
-          );
-        })}
+      {/* Hero + Quick Actions */}
+      <div className="space-y-4">
+        <HeroCard />
+        <QuickActions />
       </div>
 
       {/* Glow divider */}

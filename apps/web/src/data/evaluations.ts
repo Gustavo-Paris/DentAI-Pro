@@ -115,7 +115,7 @@ export async function list({ userId, page = 0, pageSize = 20 }: EvaluationListPa
   const { data, error, count } = await supabase
     .from('evaluations')
     .select(
-      'id, created_at, patient_name, tooth, cavity_class, status, session_id, treatment_type',
+      'id, created_at, patient_name, patient_age, tooth, cavity_class, status, session_id, treatment_type',
       { count: 'exact' },
     )
     .eq('user_id', userId)

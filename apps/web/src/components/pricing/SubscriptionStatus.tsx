@@ -36,7 +36,7 @@ export function SubscriptionStatus() {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card>
+        <Card className="rounded-xl glass-panel">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CreditCard className="h-5 w-5" />
@@ -50,7 +50,7 @@ export function SubscriptionStatus() {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-xl glass-panel">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Zap className="h-5 w-5" />
@@ -74,7 +74,7 @@ export function SubscriptionStatus() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {/* Card 1 — Plan */}
-      <Card>
+      <Card className="rounded-xl glass-panel">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
@@ -141,7 +141,7 @@ export function SubscriptionStatus() {
       </Card>
 
       {/* Card 2 — Credits */}
-      <Card>
+      <Card className="rounded-xl glass-panel">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Zap className="h-5 w-5 text-primary" />
@@ -169,18 +169,17 @@ export function SubscriptionStatus() {
           </div>
 
           {/* Credit Breakdown */}
-          <div className="grid grid-cols-2 gap-3 text-sm">
+          <div className="space-y-3 text-sm">
             <div className="p-3 bg-muted/30 rounded-lg">
               <div className="text-muted-foreground text-xs">{t('components.pricing.subscription.planCredits')}</div>
               <div className="font-semibold">{creditsPerMonth}</div>
             </div>
             {creditsRollover > 0 && (
-              <div className="p-3 bg-muted/30 rounded-lg">
-                <div className="flex items-center gap-1 text-muted-foreground text-xs">
-                  <RefreshCw className="h-3 w-3" />
-                  <span>{t('pricing.creditRollover')}</span>
-                </div>
-                <div className="font-semibold text-success">+{creditsRollover}</div>
+              <div className="flex items-center gap-1.5">
+                <RefreshCw className="h-3 w-3 text-success" />
+                <span className="inline-flex items-center text-xs rounded-full px-2.5 py-1 bg-muted font-medium">
+                  +{creditsRollover} {t('pricing.creditRollover')}
+                </span>
               </div>
             )}
           </div>

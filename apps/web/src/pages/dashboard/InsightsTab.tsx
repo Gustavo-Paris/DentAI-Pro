@@ -14,7 +14,7 @@ import {
   PieChart, Pie, Cell, Tooltip as RechartsTooltip,
   BarChart, Bar,
 } from 'recharts';
-import { BarChart3, Plus } from 'lucide-react';
+import { BarChart3, Plus, Trophy } from 'lucide-react';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { cn } from '@/lib/utils';
 
@@ -169,6 +169,12 @@ function TopResinsChart({ resins }: { resins: Array<{ name: string; count: numbe
         <h3 className="text-sm font-semibold font-display text-muted-foreground mb-3">
           {t('dashboard.insights.topResins')}
         </h3>
+        {resins.length > 0 && (
+          <div className="flex items-center gap-1.5 mb-2">
+            <Trophy className="w-3.5 h-3.5 text-warning" />
+            <span className="text-xs font-medium">{resins[0].name}</span>
+          </div>
+        )}
         <ChartContainer config={chartConfig} className="aspect-auto h-44 w-full">
           <BarChart layout="vertical" data={resins} margin={{ left: 0, right: 16 }}>
             <YAxis

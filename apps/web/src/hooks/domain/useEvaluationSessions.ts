@@ -13,6 +13,7 @@ import { EVALUATION_STATUS } from '@/lib/evaluation-status';
 export interface EvaluationSession {
   session_id: string;
   patient_name: string | null;
+  patientAge: number | null;
   created_at: string;
   teeth: string[];
   evaluationCount: number;
@@ -26,6 +27,7 @@ interface RawEvaluation {
   id: string;
   created_at: string;
   patient_name: string | null;
+  patient_age: number | null;
   tooth: string;
   cavity_class: string;
   status: string | null;
@@ -54,6 +56,7 @@ function groupBySession(data: RawEvaluation[]): EvaluationSession[] {
     return {
       session_id: sessionId,
       patient_name: evals[0].patient_name,
+      patientAge: evals[0].patient_age ?? null,
       created_at: evals[0].created_at,
       teeth: evals.map((e) => e.tooth),
       evaluationCount,
@@ -77,7 +80,7 @@ export function useEvaluationSessions() {
     teethCount?: number;
   } | null;
 
-  // Fetch ALL evaluations (lightweight query — only 8 small columns) and group
+  // Fetch ALL evaluations (lightweight query — only 9 small columns) and group
   // by session client-side. ListPage handles pagination of the grouped sessions.
   // Previous approach fetched 20 evaluations server-side, which produced only
   // ~5 sessions when each session had ~4 teeth.
