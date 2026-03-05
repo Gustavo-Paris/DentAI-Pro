@@ -1,10 +1,13 @@
 /* eslint-disable react-refresh/only-export-components */
-import { useState, useRef, useEffect, lazy, Suspense } from 'react';
+import { useState, useRef, useEffect, useMemo, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Info, ClipboardCheck } from 'lucide-react';
+import { Info, ClipboardCheck, Mic, MicOff, Sparkles } from 'lucide-react';
+import { Label, Textarea, Button } from '@parisgroup-ai/pageshell/primitives';
 import type { Patient } from '@/components/PatientAutocomplete';
 import { useSpeechToText } from '@/hooks/useSpeechToText';
 import { ComponentSkeleton } from '@/components/skeleton-wrapper';
+import { cn } from '@/lib/utils';
+import { PillToggle } from '@/components/pill-toggle';
 
 // Re-export constants for backward compatibility
 export { TREATMENT_LABEL_KEYS, TREATMENT_DESC_KEYS } from './review/review-constants';
@@ -15,12 +18,21 @@ import { TreatmentBanners } from './review/TreatmentBanners';
 import { AnalysisWarnings } from './review/AnalysisWarnings';
 const ToothSelectionCard = lazy(() => import('./review/ToothSelectionCard'));
 import { PatientDataSection } from './review/PatientDataSection';
-import { ReviewFormAccordion } from './review/ReviewFormAccordion';
+import { TreatmentGroupView } from './review/TreatmentGroupView';
 import { CaseSummaryCard } from './review/CaseSummaryCard';
 
 // Types re-exported from canonical location for backward compatibility
 export type { TreatmentType, DetectedTooth, PhotoAnalysisResult, ReviewFormData } from '@/types/wizard';
 import type { TreatmentType, PhotoAnalysisResult, ReviewFormData } from '@/types/wizard';
+
+type ReviewTab = 'dentes' | 'tratamento' | 'paciente' | 'resumo';
+
+const REVIEW_TABS: { key: ReviewTab; labelKey: string }[] = [
+  { key: 'dentes', labelKey: 'components.wizard.review.tabs.teeth' },
+  { key: 'tratamento', labelKey: 'components.wizard.review.tabs.treatment' },
+  { key: 'paciente', labelKey: 'components.wizard.review.tabs.patient' },
+  { key: 'resumo', labelKey: 'components.wizard.review.tabs.summary' },
+];
 
 interface ReviewAnalysisStepProps {
   analysisResult: PhotoAnalysisResult | null;
@@ -76,6 +88,7 @@ export function ReviewAnalysisStep({
 }: Omit<ReviewAnalysisStepProps, 'onToothSelect'>) {
   const { t } = useTranslation();
   const [internalDobError, setInternalDobError] = useState(false);
+  const [activeTab, setActiveTab] = useState<ReviewTab>('dentes');
   const speech = useSpeechToText('pt-BR');
 
   // Append transcript to clinical notes when user stops recording
@@ -98,6 +111,23 @@ export function ReviewAnalysisStep({
 
   const detectedTeeth = analysisResult?.detected_teeth || [];
   const hasMultipleTeeth = detectedTeeth.length > 1;
+  const realSelectedTeeth = selectedTeeth.filter(st => st !== 'GENGIVO');
+
+  // Count unique treatment types for tab badge
+  const treatmentTypeCount = useMemo(() => {
+    const types = new Set<string>();
+    for (const tooth of realSelectedTeeth) {
+      types.add(toothTreatments[tooth] || detectedTeeth.find(dt => dt.tooth === tooth)?.treatment_indication || 'resina');
+    }
+    return types.size;
+  }, [realSelectedTeeth, toothTreatments, detectedTeeth]);
+
+  const tabBadges: Record<ReviewTab, string | null> = {
+    dentes: realSelectedTeeth.length > 0 ? String(realSelectedTeeth.length) : null,
+    tratamento: treatmentTypeCount > 0 ? t('components.wizard.review.treatmentTypes', { count: treatmentTypeCount }) : null,
+    paciente: formData.patientName ? '✓' : null,
+    resumo: null,
+  };
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -114,7 +144,7 @@ export function ReviewAnalysisStep({
         </p>
       </div>
 
-      {/* 1. AI Confidence Banner */}
+      {/* AI Confidence Banner — always visible above tabs */}
       {analysisResult && (
         <AiConfidenceBanner
           analysisResult={analysisResult}
@@ -123,83 +153,192 @@ export function ReviewAnalysisStep({
         />
       )}
 
-      {/* Treatment banners: whitening, gengivoplasty, inventory, porcelain */}
-      <TreatmentBanners
-        analysisResult={analysisResult}
-        selectedTeeth={selectedTeeth}
-        hasInventory={hasInventory}
-        whiteningLevel={whiteningLevel}
-        dsdSuggestions={dsdSuggestions}
-      />
+      {/* Tab bar */}
+      <div className="flex gap-0 border-b border-border overflow-x-auto" role="tablist">
+        {REVIEW_TABS.map(tab => (
+          <button
+            key={tab.key}
+            role="tab"
+            aria-selected={activeTab === tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={cn(
+              'px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors border-b-2 -mb-px',
+              activeTab === tab.key
+                ? 'text-primary border-primary'
+                : 'text-muted-foreground border-transparent hover:text-foreground'
+            )}
+          >
+            {t(tab.labelKey)}
+            {tabBadges[tab.key] && (
+              <span className="ml-1.5 text-xs opacity-70">{tabBadges[tab.key]}</span>
+            )}
+          </button>
+        ))}
+      </div>
 
-      {/* Warnings */}
-      {analysisResult && (
-        <AnalysisWarnings analysisResult={analysisResult} />
-      )}
-
-      {/* 2. Tooth Selection Cards */}
-      {hasMultipleTeeth && (
-        <Suspense fallback={<ComponentSkeleton height="280px" />}>
-          <ToothSelectionCard
-            analysisResult={analysisResult!}
+      {/* Tab content */}
+      {activeTab === 'dentes' && (
+        <div className="space-y-4">
+          <TreatmentBanners
+            analysisResult={analysisResult}
             selectedTeeth={selectedTeeth}
-            onSelectedTeethChange={onSelectedTeethChange}
-            toothTreatments={toothTreatments}
-            onToothTreatmentChange={onToothTreatmentChange}
-            originalToothTreatments={originalToothTreatments}
-            onRestoreAiSuggestion={onRestoreAiSuggestion}
+            hasInventory={hasInventory}
+            whiteningLevel={whiteningLevel}
+            dsdSuggestions={dsdSuggestions}
           />
-        </Suspense>
+          {analysisResult && (
+            <AnalysisWarnings analysisResult={analysisResult} />
+          )}
+          {hasMultipleTeeth && (
+            <Suspense fallback={<ComponentSkeleton height="280px" />}>
+              <ToothSelectionCard
+                analysisResult={analysisResult!}
+                selectedTeeth={selectedTeeth}
+                onSelectedTeethChange={onSelectedTeethChange}
+                toothTreatments={toothTreatments}
+                onToothTreatmentChange={onToothTreatmentChange}
+                originalToothTreatments={originalToothTreatments}
+                onRestoreAiSuggestion={onRestoreAiSuggestion}
+              />
+            </Suspense>
+          )}
+        </div>
       )}
 
-      {/* 3. Observations */}
-      {analysisResult?.observations && analysisResult.observations.length > 0 && (
-        <div className="glass-panel rounded-xl p-4">
-          <div className="flex items-start gap-2">
-            <Info className="w-4 h-4 text-primary/50 mt-0.5 shrink-0" />
-            <div>
-              <p className="text-sm font-medium mb-1">{t('components.wizard.review.aiObservations')}</p>
-              <ul className="space-y-1">
-                {analysisResult.observations.map((obs, i) => (
-                  <li key={i} className="text-xs text-muted-foreground">• {obs}</li>
-                ))}
-              </ul>
+      {activeTab === 'tratamento' && (
+        <TreatmentGroupView
+          selectedTeeth={selectedTeeth}
+          toothTreatments={toothTreatments}
+          detectedTeeth={detectedTeeth}
+        />
+      )}
+
+      {activeTab === 'paciente' && (
+        <div className="space-y-4">
+          <PatientDataSection
+            formData={formData}
+            onFormChange={onFormChange}
+            patients={patients}
+            selectedPatientId={selectedPatientId}
+            onPatientSelect={onPatientSelect}
+            patientBirthDate={patientBirthDate}
+            onPatientBirthDateChange={onPatientBirthDateChange}
+            dobError={dobError}
+            setDobError={setDobError}
+          />
+          {/* Observations */}
+          {analysisResult?.observations && analysisResult.observations.length > 0 && (
+            <div className="glass-panel rounded-xl p-4">
+              <div className="flex items-start gap-2">
+                <Info className="w-4 h-4 text-primary/50 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-sm font-medium mb-1">{t('components.wizard.review.aiObservations')}</p>
+                  <ul className="space-y-1">
+                    {analysisResult.observations.map((obs, i) => (
+                      <li key={i} className="text-xs text-muted-foreground">• {obs}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
             </div>
+          )}
+          {/* Clinical Notes */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">{t('components.wizard.review.clinicalNotes')}</Label>
+            <div className="relative">
+              <Textarea
+                placeholder={t('components.wizard.review.clinicalNotesPlaceholder')}
+                value={formData.clinicalNotes}
+                onChange={(e) => onFormChange({ clinicalNotes: e.target.value })}
+                rows={4}
+              />
+              {speech.isSupported && (
+                <Button
+                  type="button"
+                  variant={speech.isListening ? 'destructive' : 'ghost'}
+                  size="icon"
+                  className={cn(
+                    'absolute bottom-2 right-2 h-10 w-10',
+                    speech.isListening && 'animate-pulse',
+                  )}
+                  onClick={speech.toggle}
+                  aria-label={speech.isListening ? t('components.wizard.review.stopRecording') : t('components.wizard.review.startRecording')}
+                >
+                  {speech.isListening ? (
+                    <MicOff className="w-4 h-4" />
+                  ) : (
+                    <Mic className="w-4 h-4" />
+                  )}
+                </Button>
+              )}
+            </div>
+            {speech.isListening && (
+              <div className="flex items-center gap-2 text-xs text-destructive" role="status" aria-live="polite">
+                <span className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
+                {t('components.wizard.review.listening')}
+                {speech.transcript && (
+                  <span className="text-muted-foreground truncate">
+                    {speech.transcript}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}
 
-      {/* 4. Patient Data Card */}
-      <PatientDataSection
-        formData={formData}
-        onFormChange={onFormChange}
-        patients={patients}
-        selectedPatientId={selectedPatientId}
-        onPatientSelect={onPatientSelect}
-        patientBirthDate={patientBirthDate}
-        onPatientBirthDateChange={onPatientBirthDateChange}
-        dobError={dobError}
-        setDobError={setDobError}
-      />
-
-      {/* 5-7. Collapsible sections */}
-      <ReviewFormAccordion
-        imageBase64={imageBase64}
-        formData={formData}
-        onFormChange={onFormChange}
-        dsdObservations={dsdObservations}
-        dsdSuggestions={dsdSuggestions}
-        speech={speech}
-      />
-
-      {/* 8. Summary Card */}
-      <CaseSummaryCard
-        selectedTeeth={selectedTeeth}
-        toothTreatments={toothTreatments}
-        detectedTeeth={detectedTeeth}
-        formData={formData}
-        patientBirthDate={patientBirthDate}
-      />
+      {activeTab === 'resumo' && (
+        <div className="space-y-4">
+          {/* Photo + DSD notes side-by-side on desktop */}
+          {imageBase64 && (
+            <div className="flex flex-col sm:flex-row gap-4">
+              <img
+                src={imageBase64}
+                alt={t('components.wizard.review.analyzedPhoto')}
+                className="w-full sm:w-48 sm:h-48 object-cover rounded-lg ring-1 ring-border shrink-0"
+              />
+              {/* DSD per-tooth suggestions only (observations moved to Paciente tab) */}
+              {dsdSuggestions && dsdSuggestions.length > 0 && (
+                <div className="flex-1 p-3 bg-primary/5 border border-primary/20 rounded-lg">
+                  <h4 className="text-sm font-medium mb-2 flex items-center gap-2 text-primary">
+                    <Sparkles className="w-4 h-4" />
+                    {t('components.wizard.review.aestheticNotesDSD')}
+                  </h4>
+                  <ul className="space-y-1">
+                    {dsdSuggestions.map((s, i) => (
+                      <li key={i} className="text-sm text-muted-foreground">
+                        <span className="font-medium">{t('components.wizard.review.tooth', { number: s.tooth })}:</span> {s.proposed_change}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+          {/* Budget toggle */}
+          <div>
+            <Label className="text-sm font-medium mb-1 block">{t('components.wizard.review.budget')}</Label>
+            <p className="text-xs text-muted-foreground mb-2">{t('components.wizard.review.budgetHint')}</p>
+            <PillToggle
+              options={[
+                { value: 'padrão', label: t('components.wizard.review.standard') },
+                { value: 'premium', label: t('components.wizard.review.premium') },
+              ]}
+              value={formData.budget}
+              onChange={(value) => onFormChange({ budget: value })}
+              columns={2}
+            />
+          </div>
+          {/* Case Summary */}
+          <CaseSummaryCard
+            selectedTeeth={selectedTeeth}
+            toothTreatments={toothTreatments}
+            detectedTeeth={detectedTeeth}
+            formData={formData}
+            patientBirthDate={patientBirthDate}
+          />
+        </div>
+      )}
     </div>
   );
 }
