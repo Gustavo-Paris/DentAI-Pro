@@ -65,14 +65,23 @@ export function PatientDocumentModal({ open, onOpenChange, sessionId, evaluation
 
   const handleShareWhatsApp = () => {
     if (!displayDocs) return;
+    const patientName = evaluations[0]?.patient_name || 'Paciente';
     const text = displayDocs.map(doc => {
-      let content = `*${t('patientDocument.treatmentExplanation')}*\n\n${doc.treatment_explanation}\n\n`;
-      content += `*${t('patientDocument.postOperative')}*\n${doc.post_operative.map((item, i) => `${i + 1}. ${item}`).join('\n')}\n\n`;
-      content += `*${t('patientDocument.dietaryGuide')}* (${t('patientDocument.dietaryDuration', { hours: doc.dietary_guide.duration_hours })})\n`;
-      content += `${t('patientDocument.dietaryAvoid')}: ${doc.dietary_guide.avoid.join(', ')}\n`;
-      content += `${t('patientDocument.dietaryPrefer')}: ${doc.dietary_guide.prefer.join(', ')}`;
-      return content;
-    }).join('\n\n---\n\n');
+      const lines: string[] = [];
+      lines.push(`Ola, ${patientName}! Seguem as orientacoes do seu tratamento:\n`);
+      lines.push(`*${t('patientDocument.treatmentExplanation')}*`);
+      lines.push(doc.treatment_explanation);
+      lines.push('');
+      lines.push(`*${t('patientDocument.postOperative')}*`);
+      doc.post_operative.forEach((item, i) => lines.push(`${i + 1}. ${item}`));
+      lines.push('');
+      lines.push(`*${t('patientDocument.dietaryGuide')}* (${t('patientDocument.dietaryDuration', { hours: doc.dietary_guide.duration_hours })})`);
+      lines.push(`🚫 *${t('patientDocument.dietaryAvoid')}:* ${doc.dietary_guide.avoid.join(', ')}`);
+      lines.push(`✅ *${t('patientDocument.dietaryPrefer')}:* ${doc.dietary_guide.prefer.join(', ')}`);
+      lines.push('');
+      lines.push('_Em caso de duvidas, entre em contato com o consultorio._');
+      return lines.join('\n');
+    }).join('\n');
 
     const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
     window.open(waUrl, '_blank', 'noopener,noreferrer');
