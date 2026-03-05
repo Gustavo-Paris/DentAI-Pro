@@ -125,8 +125,8 @@ export function useDSDGingivoplasty({
       return hasKeywordInSuggestions ? 'recommended' : 'optional';
     }
 
-    if (analysis.smile_line === 'média' && hasKeywordInSuggestions) {
-      return 'recommended';
+    if (analysis.smile_line === 'média') {
+      return hasKeywordInSuggestions ? 'recommended' : 'optional';
     }
 
     return 'none';
