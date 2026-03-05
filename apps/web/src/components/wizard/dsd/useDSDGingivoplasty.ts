@@ -114,19 +114,24 @@ export function useDSDGingivoplasty({
     });
     if (hasExplicitIndication) return 'recommended';
 
-    // Check for gingival keywords in suggestions text
-    const gingivoKeywords = ['gengivoplastia', 'excesso gengival', 'sorriso gengival', 'coroa clínica curta', 'coroa clinica curta'];
+    // Check for gingival keywords in suggestions text AND observations
+    const gingivoKeywords = ['gengivoplastia', 'excesso gengival', 'sorriso gengival', 'gengiva inserida', 'coroa clínica curta', 'coroa clinica curta', 'gummy smile'];
     const hasKeywordInSuggestions = !!analysis.suggestions?.some(s => {
       const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
       return gingivoKeywords.some(kw => text.includes(kw));
     });
+    const hasKeywordInObservations = !!analysis.observations?.some(obs => {
+      const text = obs.toLowerCase();
+      return gingivoKeywords.some(kw => text.includes(kw));
+    });
+    const hasGingivoEvidence = hasKeywordInSuggestions || hasKeywordInObservations;
 
     if (analysis.smile_line === 'alta') {
-      return hasKeywordInSuggestions ? 'recommended' : 'optional';
+      return hasGingivoEvidence ? 'recommended' : 'optional';
     }
 
     if (analysis.smile_line === 'média') {
-      return hasKeywordInSuggestions ? 'recommended' : 'optional';
+      return hasGingivoEvidence ? 'recommended' : 'optional';
     }
 
     return 'none';
