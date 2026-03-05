@@ -185,10 +185,10 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
   const handleDSDComplete = useCallback((result: DSDResult | null) => {
     setDsdResult(result);
 
-    // Auto-include gengivoplasty from unified analysis (teeth already in analysisResult)
+    // Auto-include gengivoplasty: either AI detected it OR user approved it in DSD
     const hasGingivo = analysisResult?.detected_teeth?.some(
       t => t.treatment_indication === 'gengivoplastia'
-    );
+    ) || result?.gingivoplastyApproved === true;
     if (hasGingivo && result?.gingivoplastyApproved !== false) {
       setSelectedTeeth(prev => prev.includes('GENGIVO') ? prev : [...prev, 'GENGIVO']);
       setToothTreatments(prev => ({ ...prev, GENGIVO: 'gengivoplastia' as TreatmentType }));

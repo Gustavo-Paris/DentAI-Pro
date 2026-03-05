@@ -260,7 +260,11 @@ export function useWizardSubmit({
         ai_treatment_indication:
           isGengivoplasty ? 'gengivoplastia' : (toothData?.treatment_indication || analysisResult?.treatment_indication || null),
         ai_indication_reason:
-          isGengivoplasty ? 'dsd_gingival_harmonization' : (toothData?.indication_reason || analysisResult?.indication_reason || null),
+          isGengivoplasty
+            ? (analysisResult?.detected_teeth?.some(t => t.treatment_indication === 'gengivoplastia')
+              ? 'dsd_gingival_analysis'
+              : 'dsd_professional_choice')
+            : (toothData?.indication_reason || analysisResult?.indication_reason || null),
         dsd_analysis: analysisResult ? {
           facial_midline: analysisResult.facial_midline,
           dental_midline: analysisResult.dental_midline,
@@ -377,14 +381,22 @@ export function useWizardSubmit({
                   : undefined,
               } : undefined,
               genericToothData: toothData,
-              enrichGenericProtocol: normalizedTreatment === 'gengivoplastia' && analysisResult?.detected_teeth
+              enrichGenericProtocol: normalizedTreatment === 'gengivoplastia'
                 ? (protocol: GenericProtocolResult) => {
-                    const gingivoTeeth = analysisResult.detected_teeth.filter(t => {
+                    const gingivoTeeth = analysisResult?.detected_teeth?.filter(t => {
                       const text = `${t.current_issue ?? ''} ${t.proposed_change ?? ''}`.toLowerCase();
                       return text.includes('gengiv') || text.includes('zênite') || text.includes('zenite');
-                    });
+                    }) ?? [];
                     if (gingivoTeeth.length > 0) {
-                      protocol.summary += ` Dentes envolvidos: ${gingivoTeeth.map(t => t.tooth).join(', ')}. Observações DSD: ${gingivoTeeth.map(t => t.proposed_change).join('; ')}.`;
+                      // Recommended: AI detected per-tooth gingival issues
+                      const perToothDetail = gingivoTeeth.map(t =>
+                        `${t.tooth}: ${t.proposed_change}`
+                      ).join('. ');
+                      protocol.summary += ` Planejamento por dente: ${perToothDetail}.`;
+                      protocol.summary += ` Sequência: gengivoplastia ANTES das restaurações (60-90 dias de maturação tecidual).`;
+                    } else {
+                      // Optional: user approved without AI detection
+                      protocol.summary += ` Aprovada pelo profissional via planejamento digital — medidas a definir clinicamente. Requer avaliação periodontal (sondagem + radiografia periapical).`;
                     }
                   }
                 : undefined,

@@ -89,11 +89,20 @@ export function useAddTeethFlow(deps: UseAddTeethFlowDeps): UseAddTeethFlowRetur
       if (!primaryPerGroup[treatmentType]) primaryPerGroup[treatmentType] = toothNumber;
     }
 
+    // Dedup: skip per-tooth gengivoplastia if GENGIVO evaluation already exists
+    const hasExistingGengivo = evals.some(e => e.tooth === 'GENGIVO' && e.treatment_type === 'gengivoplastia');
+
     for (const toothNumber of payload.selectedTeeth) {
       const toothData = payload.pendingTeeth.find(t => t.tooth === toothNumber);
       if (!toothData) continue;
 
       const treatmentType = (payload.toothTreatments[toothNumber] || toothData.treatment_indication || 'resina') as TreatmentType;
+
+      // Skip duplicate gengivoplastia if one already exists in session
+      if (treatmentType === 'gengivoplastia' && hasExistingGengivo) {
+        logger.warn(`Skipping duplicate gengivoplastia for tooth ${toothNumber} — GENGIVO already exists`);
+        continue;
+      }
 
       try {
         // Create evaluation record
