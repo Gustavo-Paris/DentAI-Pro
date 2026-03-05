@@ -10,6 +10,7 @@ import {
   Checkbox,
 } from '@parisgroup-ai/pageshell/primitives';
 import { Shield } from 'lucide-react';
+import { BRAND_NAME } from '@/lib/branding';
 
 const STORAGE_KEY = 'ai-disclaimer-accepted';
 
@@ -67,8 +68,9 @@ export function AiDisclaimerModal({ open, onAccept }: AiDisclaimerModalProps) {
             <li>{t('consent.bullet1')}</li>
             <li>{t('consent.bullet2')}</li>
             <li>{t('consent.bullet3')}</li>
-            <li>{t('consent.bullet4')}</li>
+            <li>{t('consent.bullet4', { brandName: BRAND_NAME })}</li>
             <li>{t('consent.bullet5')}</li>
+            <li>{t('consent.bullet6')}</li>
           </ul>
         </div>
 
