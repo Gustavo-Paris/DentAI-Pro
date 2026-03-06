@@ -540,6 +540,9 @@ export async function callGeminiWithTools(
     temperature?: number;
     maxTokens?: number;
     forceFunctionName?: string; // Force calling a specific function
+    timeoutMs?: number;
+    /** Max internal retries. Default: 1. */
+    maxRetries?: number;
   } = {}
 ): Promise<{
   text: string | null;
@@ -579,7 +582,7 @@ export async function callGeminiWithTools(
     };
   }
 
-  const response = await makeGeminiRequest(model, request);
+  const response = await makeGeminiRequest(model, request, options.maxRetries ?? 1, options.timeoutMs ?? DEFAULT_TIMEOUT_MS);
   const text = extractTextResponse(response);
   const functionCall = extractFunctionCall(response);
   const finishReason = response.candidates?.[0]?.finishReason || "UNKNOWN";
