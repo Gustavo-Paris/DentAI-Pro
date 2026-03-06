@@ -1,4 +1,3 @@
-import '../../preview-theme.css'
 import { useState } from 'react'
 import {
   Award,
@@ -13,10 +12,9 @@ import type {
   ClinicalInsights,
   WeeklyTrendPoint,
   InsightsPeriod,
-} from '../../../design/sections/dashboard/types'
-import sampleData from '../../../design/sections/dashboard/data.json'
+} from '../../../../design/sections/dashboard/types'
 
-/* ── helpers ── */
+/* ---- helpers ---- */
 
 function formatAvgTime(hours: number | null): string {
   if (hours == null) return '--'
@@ -24,26 +22,33 @@ function formatAvgTime(hours: number | null): string {
   return `${(hours / 24).toFixed(1)} dias`
 }
 
-/* ── props ── */
+/* ---- types ---- */
 
-interface InsightsTabProps {
-  insights?: ClinicalInsights
-  weeklyTrends?: WeeklyTrendPoint[]
-  period?: InsightsPeriod
+export interface InsightsTabProps {
+  insights: ClinicalInsights
+  weeklyTrends: WeeklyTrendPoint[]
   patientGrowthThisMonth?: number
   patientGrowthPercent?: number
+  initialPeriod?: InsightsPeriod
+  onPeriodChange?: (period: InsightsPeriod) => void
 }
 
 export default function InsightsTab({
-  insights = sampleData.sampleInsights,
-  weeklyTrends = sampleData.weeklyTrends,
-  period: initialPeriod = '12sem',
-  patientGrowthThisMonth = sampleData.patientGrowth.thisMonth,
-  patientGrowthPercent = sampleData.patientGrowth.growthPercent,
-}: InsightsTabProps = {}) {
+  insights,
+  weeklyTrends,
+  patientGrowthThisMonth = 0,
+  patientGrowthPercent = 0,
+  initialPeriod = '12sem',
+  onPeriodChange,
+}: InsightsTabProps) {
   const [period, setPeriod] = useState<InsightsPeriod>(initialPeriod)
 
-  /* ── area chart math ── */
+  const handlePeriodChange = (p: InsightsPeriod) => {
+    setPeriod(p)
+    onPeriodChange?.(p)
+  }
+
+  /* ---- area chart math ---- */
   const chartW = 480
   const chartH = 160
   const padTop = 16
@@ -55,7 +60,8 @@ export default function InsightsTab({
   const maxVal = Math.max(...weeklyTrends.map((p) => p.value), 1)
 
   const points = weeklyTrends.map((pt, i) => {
-    const x = padLeft + (plotW / Math.max(weeklyTrends.length - 1, 1)) * i
+    const x =
+      padLeft + (plotW / Math.max(weeklyTrends.length - 1, 1)) * i
     const y = padTop + plotH - (pt.value / maxVal) * plotH
     return { x, y, label: pt.label, value: pt.value }
   })
@@ -67,7 +73,7 @@ export default function InsightsTab({
     (frac) => padTop + plotH - frac * plotH,
   )
 
-  /* ── donut chart math ── */
+  /* ---- donut chart math ---- */
   const donutCx = 80
   const donutCy = 80
   const donutOuter = 60
@@ -82,13 +88,14 @@ export default function InsightsTab({
 
   let cumulativeOffset = 0
   const donutSegments = insights.treatmentDistribution.map((seg) => {
-    const segmentLength = (seg.value / totalTreatments) * donutCircumference
+    const segmentLength =
+      (seg.value / totalTreatments) * donutCircumference
     const offset = cumulativeOffset
     cumulativeOffset += segmentLength
     return { ...seg, segmentLength, offset }
   })
 
-  /* ── top resins bar ── */
+  /* ---- top resins ---- */
   const topResins = insights.topResins.slice(0, 5)
   const maxResinCount = Math.max(...topResins.map((r) => r.count), 1)
 
@@ -102,12 +109,12 @@ export default function InsightsTab({
 
   return (
     <div className="space-y-4">
-      {/* ── 1. Period Filter ── */}
+      {/* Period Filter */}
       <div className="glass-panel rounded-xl px-3 py-2 flex items-center gap-1 w-fit">
         {periodOptions.map((opt) => (
           <button
             key={opt.key}
-            onClick={() => setPeriod(opt.key)}
+            onClick={() => handlePeriodChange(opt.key)}
             className={`px-3 py-1 text-xs font-medium transition-colors
               focus-visible:ring-2 focus-visible:ring-ring rounded-full
               ${
@@ -121,7 +128,7 @@ export default function InsightsTab({
         ))}
       </div>
 
-      {/* ── 2. Weekly Trends Card ── */}
+      {/* Weekly Trends */}
       <div className="glass-panel rounded-xl p-5">
         <div className="mb-3">
           <h3 className="text-sm font-semibold text-foreground">
@@ -171,10 +178,8 @@ export default function InsightsTab({
             />
           ))}
 
-          {/* Area fill */}
           <polygon points={polygonStr} fill="url(#areaGrad)" />
 
-          {/* Line */}
           <polyline
             points={polylineStr}
             fill="none"
@@ -184,7 +189,6 @@ export default function InsightsTab({
             strokeLinecap="round"
           />
 
-          {/* Dots */}
           {points.map((p, i) => (
             <circle
               key={i}
@@ -195,7 +199,6 @@ export default function InsightsTab({
             />
           ))}
 
-          {/* X-axis labels (every other) */}
           {points.map((p, i) =>
             i % 2 === 0 ? (
               <text
@@ -213,14 +216,13 @@ export default function InsightsTab({
         </svg>
       </div>
 
-      {/* ── 3. Two-column grid ── */}
+      {/* Two-column grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Left: Treatment Distribution */}
+        {/* Treatment Distribution */}
         <div className="glass-panel rounded-xl p-5">
           <h3 className="text-sm font-semibold text-foreground mb-4">
             Distribuicao de Tratamentos
           </h3>
-
           <div className="flex flex-col items-center">
             <svg
               width="160"
@@ -229,7 +231,6 @@ export default function InsightsTab({
               aria-label="Grafico de distribuicao de tratamentos"
               role="img"
             >
-              {/* Background ring */}
               <circle
                 cx={donutCx}
                 cy={donutCy}
@@ -238,8 +239,6 @@ export default function InsightsTab({
                 stroke="var(--color-muted)"
                 strokeWidth={donutStrokeW}
               />
-
-              {/* Segments */}
               {donutSegments.map((seg, i) => (
                 <circle
                   key={i}
@@ -255,8 +254,6 @@ export default function InsightsTab({
                   strokeLinecap="butt"
                 />
               ))}
-
-              {/* Center text */}
               <text
                 x={donutCx}
                 y={donutCy - 4}
@@ -278,7 +275,6 @@ export default function InsightsTab({
               </text>
             </svg>
 
-            {/* Legend */}
             <div className="flex flex-wrap gap-2 mt-4 justify-center">
               {insights.treatmentDistribution.map((seg) => (
                 <div
@@ -299,12 +295,11 @@ export default function InsightsTab({
           </div>
         </div>
 
-        {/* Right: Top Resinas */}
+        {/* Top Resinas */}
         <div className="glass-panel rounded-xl p-5">
           <h3 className="text-sm font-semibold text-foreground mb-4">
             Top Resinas
           </h3>
-
           <div className="space-y-4">
             {topResins.map((resin, i) => {
               const pct = (resin.count / maxResinCount) * 100
@@ -336,10 +331,9 @@ export default function InsightsTab({
         </div>
       </div>
 
-      {/* ── 4. Clinical Summary ── */}
+      {/* Clinical Summary */}
       <div className="glass-panel rounded-xl p-5">
         <div className="grid grid-cols-2 gap-4">
-          {/* Top resin */}
           <div className="space-y-1">
             <div className="flex items-center gap-1.5">
               <Award className="w-3.5 h-3.5 text-muted-foreground" />
@@ -352,7 +346,6 @@ export default function InsightsTab({
             </p>
           </div>
 
-          {/* Inventory rate */}
           <div className="space-y-1">
             <span className="text-xs text-muted-foreground">
               Uso do inventario
@@ -368,7 +361,6 @@ export default function InsightsTab({
             </div>
           </div>
 
-          {/* Total evaluated */}
           <div className="space-y-1">
             <div className="flex items-center gap-1.5">
               <ClipboardCheck className="w-3.5 h-3.5 text-muted-foreground" />
@@ -381,7 +373,6 @@ export default function InsightsTab({
             </p>
           </div>
 
-          {/* Avg time */}
           <div className="space-y-1">
             <div className="flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5 text-muted-foreground" />
@@ -396,7 +387,7 @@ export default function InsightsTab({
         </div>
       </div>
 
-      {/* ── 5. Patient Growth ── */}
+      {/* Patient Growth */}
       <div className="glass-panel rounded-xl p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-accent/10 shrink-0">

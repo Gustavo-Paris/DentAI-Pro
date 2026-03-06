@@ -1,9 +1,11 @@
-export { default as PhotoStep } from './PhotoStep'
-export { default as PreferencesStep } from './PreferencesStep'
-export { default as AnalyzingStep } from './AnalyzingStep'
-export { default as DSDStep } from './DSDStep'
-export { default as ReviewStep } from './ReviewStep'
-export { default as ResultStep } from './ResultStep'
-export { default as WizardSidebar } from './WizardSidebar'
-export { default as WizardShell } from './WizardShell'
+export {
+  WizardShell,
+  PhotoStep,
+  PreferencesStep,
+  AnalyzingStep,
+  DSDStep,
+  ReviewStep,
+  ResultStep,
+  DentalArchDiagram,
+} from './components'
 export { default as WizardPreview } from './WizardPreview'

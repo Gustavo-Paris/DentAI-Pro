@@ -1,7 +1,8 @@
-import { memo, useMemo } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardHeader, CardTitle, Badge, Checkbox } from '@parisgroup-ai/pageshell/primitives';
-import { Crown, Droplets, Sparkles, CheckCircle, AlertTriangle, ClipboardCheck } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, Badge, Button, Checkbox } from '@parisgroup-ai/pageshell/primitives';
+import { Crown, Droplets, Sparkles, CheckCircle, AlertTriangle, ClipboardCheck, Copy, Check } from 'lucide-react';
+import { toast } from 'sonner';
 import type { CementationProtocol, CementationStep } from '@/types/protocol';
 
 interface CementationProtocolCardProps {
@@ -64,6 +65,96 @@ function StepsList({
   );
 }
 
+function formatCementationText(protocol: CementationProtocol, t: (key: string, opts?: Record<string, unknown>) => string): string {
+  const lines: string[] = [];
+  lines.push(t('components.protocol.cementation.title', { defaultValue: 'Protocolo de Cimentacao' }));
+  lines.push('');
+
+  const formatSteps = (title: string, steps: CementationStep[]) => {
+    if (!steps || steps.length === 0) return;
+    lines.push(`${title}:`);
+    const sorted = [...steps].sort((a, b) => a.order - b.order);
+    for (const step of sorted) {
+      lines.push(`  ${step.order}. ${step.step} — ${step.material}${step.time ? ` (${step.time})` : ''}`);
+      if (step.technique) lines.push(`     ${step.technique}`);
+    }
+    lines.push('');
+  };
+
+  if (protocol.preparation_steps) {
+    formatSteps(t('components.protocol.cementation.prepSteps', { defaultValue: 'Preparo' }), protocol.preparation_steps);
+  }
+  formatSteps(t('components.protocol.cementation.ceramicTreatment', { defaultValue: 'Tratamento Ceramico' }), protocol.ceramic_treatment);
+  formatSteps(t('components.protocol.cementation.toothTreatment', { defaultValue: 'Tratamento Dental' }), protocol.tooth_treatment);
+
+  lines.push(`${t('components.protocol.cementation.cementationStep', { defaultValue: 'Cimentacao' })}:`);
+  lines.push(`  ${t('components.protocol.cementation.cementType', { defaultValue: 'Tipo' })}: ${protocol.cementation.cement_type}`);
+  lines.push(`  ${t('components.protocol.cementation.brand', { defaultValue: 'Marca' })}: ${protocol.cementation.cement_brand}`);
+  lines.push(`  ${t('components.protocol.cementation.color', { defaultValue: 'Cor' })}: ${protocol.cementation.shade}`);
+  lines.push(`  ${t('components.protocol.cementation.lightCuring', { defaultValue: 'Fotopolimerizacao' })}: ${protocol.cementation.light_curing_time}`);
+  lines.push(`  ${t('components.protocol.cementation.technique', { defaultValue: 'Tecnica' })}: ${protocol.cementation.technique}`);
+  lines.push('');
+
+  formatSteps(t('components.protocol.cementation.finishing', { defaultValue: 'Acabamento' }), protocol.finishing);
+
+  if (protocol.post_operative && protocol.post_operative.length > 0) {
+    lines.push(`${t('components.protocol.cementation.postOperative', { defaultValue: 'Pos-operatorio' })}:`);
+    protocol.post_operative.forEach((item) => lines.push(`  - ${item}`));
+    lines.push('');
+  }
+
+  if (protocol.checklist && protocol.checklist.length > 0) {
+    lines.push(`${t('components.protocol.cementation.checklist', { defaultValue: 'Checklist' })}:`);
+    protocol.checklist.forEach((item, i) => lines.push(`  ${i + 1}. ${item}`));
+    lines.push('');
+  }
+
+  if (protocol.alerts && protocol.alerts.length > 0) {
+    lines.push(`${t('components.protocol.cementation.doNot', { defaultValue: 'Nao Fazer' })}:`);
+    protocol.alerts.forEach((a) => lines.push(`  - ${a}`));
+    lines.push('');
+  }
+
+  if (protocol.warnings && protocol.warnings.length > 0) {
+    lines.push(`${t('components.protocol.cementation.attentionPoints', { defaultValue: 'Pontos de Atencao' })}:`);
+    protocol.warnings.forEach((w) => lines.push(`  - ${w}`));
+  }
+
+  return lines.join('\n').trim();
+}
+
+function CopyCementationButton({ protocol, t }: { protocol: CementationProtocol; t: (key: string, opts?: Record<string, unknown>) => string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = useCallback(async () => {
+    try {
+      const text = formatCementationText(protocol, t);
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      toast.success(t('toasts.copiedToClipboard', { defaultValue: 'Copiado para a area de transferencia' }));
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error(t('toasts.copyFailed', { defaultValue: 'Falha ao copiar' }));
+    }
+  }, [protocol, t]);
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="h-7 w-7 shrink-0"
+      onClick={handleCopy}
+      aria-label={t('components.protocol.copy.label', { defaultValue: 'Copiar protocolo' })}
+    >
+      {copied ? (
+        <Check className="w-3.5 h-3.5 text-emerald-500" />
+      ) : (
+        <Copy className="w-3.5 h-3.5 text-muted-foreground" />
+      )}
+    </Button>
+  );
+}
+
 export const CementationProtocolCard = memo(function CementationProtocolCard({
   protocol,
   checkedIndices = [],
@@ -86,13 +177,14 @@ export const CementationProtocolCard = memo(function CementationProtocolCard({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Crown className="w-5 h-5 text-warning" />
-            {t('components.protocol.cementation.title')}
-            <Badge 
+            <span className="flex-1">{t('components.protocol.cementation.title')}</span>
+            <Badge
               variant={protocol.confidence === 'alta' ? 'default' : 'secondary'}
               className={protocol.confidence === 'alta' ? 'bg-primary' : ''}
             >
               {t('components.protocol.cementation.confidence', { level: protocol.confidence })}
             </Badge>
+            <CopyCementationButton protocol={protocol} t={t} />
           </CardTitle>
         </CardHeader>
       </Card>

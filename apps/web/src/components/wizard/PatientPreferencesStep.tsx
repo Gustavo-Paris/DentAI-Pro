@@ -14,32 +14,45 @@ interface PatientPreferencesStepProps {
   onContinue: () => void;
 }
 
+/** Shade swatch colors for the gradient strip and before/after indicators */
+const SHADE_COLORS = {
+  natural: {
+    gradientFrom: '#F5E6D3', // warm ivory (A2)
+    gradientTo: '#F0EDE8',   // clean white (B1)
+    before: '#E8D5B8',       // yellowish (current teeth)
+    after: '#F0EDE8',        // B1 target
+  },
+  hollywood: {
+    gradientFrom: '#F0EDE8', // clean white (B1)
+    gradientTo: '#FAFAFA',   // bright bleach white (BL1)
+    before: '#E8D5B8',       // yellowish (current teeth)
+    after: '#FAFAFA',        // BL1 target
+  },
+} as const;
+
 const WHITENING_OPTIONS: {
   value: WhiteningLevel;
   labelKey: string;
   descKey: string;
   shade: string;
+  shadeLabel: string;
   icon: typeof Sun;
-  swatchGradient: string;
-  swatchGradientSelected: string;
 }[] = [
   {
     value: 'natural',
     labelKey: 'components.wizard.preferences.naturalLabel',
     descKey: 'components.wizard.preferences.naturalDesc',
     shade: 'B1',
+    shadeLabel: 'Alvo: B1 / A1 (clareamento profissional)',
     icon: Sun,
-    swatchGradient: 'bg-gradient-to-r from-amber-200 to-amber-100',
-    swatchGradientSelected: 'bg-gradient-to-r from-amber-300 to-amber-200',
   },
   {
     value: 'hollywood',
     labelKey: 'components.wizard.preferences.hollywoodLabel',
     descKey: 'components.wizard.preferences.hollywoodDesc',
     shade: 'BL1 / BL2 / BL3',
+    shadeLabel: 'Alvo: BL1 / BL3 (ultra branco)',
     icon: Star,
-    swatchGradient: 'bg-gradient-to-r from-background to-primary/10',
-    swatchGradientSelected: 'bg-gradient-to-r from-background via-primary/10 to-primary/20',
   },
 ];
 
@@ -74,6 +87,7 @@ export function PatientPreferencesStep({
             {WHITENING_OPTIONS.map((option) => {
               const Icon = option.icon;
               const isSelected = preferences.whiteningLevel === option.value;
+              const colors = SHADE_COLORS[option.value];
 
               return (
                 <button
@@ -84,7 +98,7 @@ export function PatientPreferencesStep({
                   aria-label={t(option.labelKey)}
                   onClick={() => handleSelect(option.value)}
                   className={cn(
-                    'relative flex flex-col items-center rounded-xl border-2 transition-all duration-200 overflow-hidden btn-press cursor-pointer',
+                    'relative flex flex-col items-stretch rounded-xl border-2 transition-all duration-200 overflow-hidden btn-press cursor-pointer',
                     'glow-card hover:border-primary/50 hover:bg-primary/5',
                     'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                     isSelected
@@ -92,18 +106,19 @@ export function PatientPreferencesStep({
                       : 'border-border bg-card'
                   )}
                 >
-                  {/* Color swatch bar at top — fixed height to prevent layout shift */}
+                  {/* Shade gradient swatch strip at top */}
                   <div
-                    className={cn(
-                      'w-full h-1.5 transition-colors duration-200',
-                      isSelected ? option.swatchGradientSelected : option.swatchGradient,
-                    )}
+                    className="w-full h-3 transition-opacity duration-200"
+                    style={{
+                      background: `linear-gradient(to right, ${colors.gradientFrom}, ${colors.gradientTo})`,
+                      opacity: isSelected ? 1 : 0.7,
+                    }}
                   />
 
                   <div className="p-4 flex flex-col items-center">
                     {/* Selected indicator */}
                     {isSelected && (
-                      <div className="absolute top-3 right-2 w-5 h-5 rounded-full bg-primary flex items-center justify-center animate-scale-in">
+                      <div className="absolute top-4 right-2 w-5 h-5 rounded-full bg-primary flex items-center justify-center animate-scale-in">
                         <Check className="w-3 h-3 text-primary-foreground" />
                       </div>
                     )}
@@ -124,15 +139,45 @@ export function PatientPreferencesStep({
                       {t(option.labelKey)}
                     </h3>
 
+                    {/* Before/After tooth color indicators */}
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center gap-1">
+                        <span className="text-[10px] text-muted-foreground">
+                          {t('components.wizard.preferences.shadeBeforeLabel', { defaultValue: 'Antes' })}
+                        </span>
+                        <div
+                          className="w-5 h-5 rounded-full border border-border/60 shadow-sm"
+                          style={{ backgroundColor: colors.before }}
+                          aria-hidden="true"
+                        />
+                      </div>
+                      <ArrowRight className="w-3 h-3 text-muted-foreground/60" />
+                      <div className="flex items-center gap-1">
+                        <div
+                          className="w-5 h-5 rounded-full border border-border/60 shadow-sm"
+                          style={{ backgroundColor: colors.after }}
+                          aria-hidden="true"
+                        />
+                        <span className="text-[10px] text-muted-foreground">
+                          {t('components.wizard.preferences.shadeAfterLabel', { defaultValue: 'Depois' })}
+                        </span>
+                      </div>
+                    </div>
+
                     {/* Shade badge */}
                     <span className={cn(
-                      'text-xs font-medium px-2 py-0.5 rounded-full mb-2',
+                      'text-xs font-medium px-2 py-0.5 rounded-full mb-1',
                       isSelected
                         ? 'bg-primary/20 text-primary'
                         : 'bg-muted text-muted-foreground'
                     )}>
                       {option.shade}
                     </span>
+
+                    {/* Shade target label */}
+                    <p className="text-[10px] text-muted-foreground mb-2">
+                      {t(`components.wizard.preferences.shadeTarget_${option.value}`, { defaultValue: option.shadeLabel })}
+                    </p>
 
                     {/* Description */}
                     <p className="text-xs text-muted-foreground text-center mb-3">

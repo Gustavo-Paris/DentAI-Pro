@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@parisgroup-ai/pageshell/primitives';
-import { Sparkles, RefreshCw, ArrowRight, ArrowLeft, Lightbulb, AlertCircle, X } from 'lucide-react';
+import { Sparkles, RefreshCw, ArrowRight, ArrowLeft, Lightbulb, AlertCircle, X, Check } from 'lucide-react';
 import { ProgressRing } from '@/components/ProgressRing';
-import { CompactStepIndicator } from '@/components/CompactStepIndicator';
 import { trackEvent } from '@/lib/analytics';
 
 interface AnalyzingStepProps {
@@ -17,12 +16,12 @@ interface AnalyzingStepProps {
 }
 
 const analysisStepKeys = [
-  { id: 1, key: 'step1', delay: 0 },
-  { id: 2, key: 'step2', delay: 5000 },
-  { id: 3, key: 'step3', delay: 12000 },
-  { id: 4, key: 'step4', delay: 22000 },
-  { id: 5, key: 'step5', delay: 35000 },
-  { id: 6, key: 'step6', delay: 50000 },
+  { id: 1, key: 'step1', delay: 0, etaSeconds: 50 },
+  { id: 2, key: 'step2', delay: 5000, etaSeconds: 42 },
+  { id: 3, key: 'step3', delay: 12000, etaSeconds: 33 },
+  { id: 4, key: 'step4', delay: 22000, etaSeconds: 22 },
+  { id: 5, key: 'step5', delay: 35000, etaSeconds: 12 },
+  { id: 6, key: 'step6', delay: 50000, etaSeconds: 5 },
 ];
 
 export function AnalyzingStep({
@@ -85,12 +84,7 @@ export function AnalyzingStep({
     };
   }, [isAnalyzing]);
 
-  // Build step data for CompactStepIndicator
-  const compactSteps = useMemo(() => analysisSteps.map((step, index) => ({
-    label: step.label.replace('...', ''),
-    completed: currentStep > index + 1,
-  })), [analysisSteps, currentStep]);
-  const activeIndex = Math.max(0, currentStep - 1);
+  // Current label for progress ring area
   const currentLabel = currentStep > 0 && currentStep <= analysisSteps.length
     ? analysisSteps[currentStep - 1].label
     : t('components.wizard.analyzing.defaultStep');
@@ -149,11 +143,34 @@ export function AnalyzingStep({
     );
   }
 
+  // Compute ETA based on active step
+  const activeEta = currentStep > 0 && currentStep <= analysisSteps.length
+    ? analysisStepKeys[currentStep - 1].etaSeconds
+    : analysisStepKeys[0].etaSeconds;
+
   // Loading state with scan-line + ring
   return (
     <div className="space-y-6" role="status" aria-live="polite">
       <div className="text-center">
         <h2 className="text-2xl font-semibold font-display mb-2 text-primary">{t('components.wizard.analyzing.analyzingTitle')}</h2>
+      </div>
+
+      {/* Smooth progress bar */}
+      <div className="w-full max-w-md mx-auto px-4">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-xs font-medium text-muted-foreground tabular-nums">{progress}%</span>
+          {activeEta > 0 && (
+            <span className="text-xs text-muted-foreground tabular-nums">
+              ~{activeEta}s {t('components.wizard.analyzing.remaining', { defaultValue: 'restante' })}
+            </span>
+          )}
+        </div>
+        <div className="h-1 w-full rounded-full bg-muted overflow-hidden">
+          <div
+            className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
       </div>
 
       {/* Photo with scan-line animation */}
@@ -178,13 +195,53 @@ export function AnalyzingStep({
         </div>
       </div>
 
-      {/* Horizontal compact steps */}
-      <div className="flex justify-center">
-        <CompactStepIndicator
-          steps={compactSteps}
-          currentIndex={activeIndex}
-          variant="horizontal"
-        />
+      {/* Vertical sub-step checklist with ETAs */}
+      <div className="flex flex-col gap-3 max-w-sm mx-auto text-left px-4" role="list" aria-label={t('components.wizard.analyzing.analyzingTitle')}>
+        {analysisSteps.map((step, i) => {
+          const stepIndex = i + 1;
+          const isCompleted = currentStep > stepIndex;
+          const isActive = currentStep === stepIndex;
+          const eta = analysisStepKeys[i].etaSeconds;
+
+          return (
+            <div
+              key={step.id}
+              className={`flex items-center gap-3 transition-all duration-300 ${
+                isActive ? 'bg-primary/5 dark:bg-primary/10 -mx-3 px-3 py-2 rounded-lg' : ''
+              }`}
+              role="listitem"
+              aria-current={isActive ? 'step' : undefined}
+            >
+              {isCompleted ? (
+                <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center shrink-0 animate-scale-in">
+                  <Check className="w-3 h-3 text-primary-foreground" />
+                </div>
+              ) : isActive ? (
+                <div className="w-5 h-5 rounded-full bg-primary shrink-0 pulse-dot flex items-center justify-center">
+                  <div className="w-2 h-2 rounded-full bg-primary-foreground" />
+                </div>
+              ) : (
+                <div className="w-5 h-5 rounded-full border-2 border-muted-foreground/20 shrink-0" />
+              )}
+              <span
+                className={
+                  isCompleted
+                    ? 'text-sm text-muted-foreground line-through decoration-muted-foreground/30'
+                    : isActive
+                      ? 'text-sm text-foreground font-medium'
+                      : 'text-sm text-muted-foreground/40'
+                }
+              >
+                {step.label.replace('...', '')}
+              </span>
+              {isActive && eta > 0 && (
+                <span className="text-xs text-muted-foreground/60 ml-auto tabular-nums">
+                  ~{eta}s
+                </span>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       <div className="flex flex-col items-center gap-3">

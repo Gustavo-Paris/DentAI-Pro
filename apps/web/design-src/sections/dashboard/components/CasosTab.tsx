@@ -1,8 +1,10 @@
-import '../../preview-theme.css'
 import { useState } from 'react'
 import { FileEdit, FileText, Plus } from 'lucide-react'
-import type { DashboardSession, DraftInfo, CasosFilter } from '../../../design/sections/dashboard/types'
-import sampleData from '../../../design/sections/dashboard/data.json'
+import type {
+  DashboardSession,
+  DraftInfo,
+  CasosFilter,
+} from '../../../../design/sections/dashboard/types'
 
 const TREATMENT_COLOR_VARS: Record<string, string> = {
   resina: 'var(--color-treatment-resina)',
@@ -40,8 +42,8 @@ function formatRelativeDate(dateStr: string): string {
   return `ha ${diffDays} dias`
 }
 
-interface CasosTabProps {
-  sessions?: DashboardSession[]
+export interface CasosTabProps {
+  sessions: DashboardSession[]
   draft?: DraftInfo | null
   totalCases?: number
   onContinueDraft?: () => void
@@ -51,20 +53,22 @@ interface CasosTabProps {
 }
 
 export default function CasosTab({
-  sessions = sampleData.sampleSessions as DashboardSession[],
-  draft = sampleData.sampleDraft as DraftInfo,
-  totalCases = sampleData.sampleMetrics.totalCases,
-  onContinueDraft = () => {},
-  onDiscardDraft = () => {},
-  onSelectSession = () => {},
-  onCreateCase = () => {},
+  sessions,
+  draft,
+  totalCases,
+  onContinueDraft,
+  onDiscardDraft,
+  onSelectSession,
+  onCreateCase,
 }: CasosTabProps) {
   const [filter, setFilter] = useState<CasosFilter>('todos')
 
   const filteredSessions = sessions.filter((s) => {
     if (filter === 'todos') return true
-    if (filter === 'concluidos') return s.completedCount === s.evaluationCount
-    if (filter === 'progresso') return s.completedCount < s.evaluationCount
+    if (filter === 'concluidos')
+      return s.completedCount === s.evaluationCount
+    if (filter === 'progresso')
+      return s.completedCount < s.evaluationCount
     return true
   })
 
@@ -80,9 +84,11 @@ export default function CasosTab({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h2 className="text-xl font-semibold text-foreground">Seus Casos</h2>
-          <span className="text-xs bg-muted text-muted-foreground rounded-full px-2 py-0.5">
-            {totalCases} casos
-          </span>
+          {totalCases != null && (
+            <span className="text-xs bg-muted text-muted-foreground rounded-full px-2 py-0.5">
+              {totalCases} casos
+            </span>
+          )}
         </div>
       </div>
 
@@ -116,18 +122,19 @@ export default function CasosTab({
             <div>
               <p className="font-medium text-foreground">{draft.patientName}</p>
               <p className="text-xs text-muted-foreground">
-                {draft.teethCount} dentes &bull; Salvo {formatRelativeDate(draft.savedAt)}
+                {draft.teethCount} dentes &bull; Salvo{' '}
+                {formatRelativeDate(draft.savedAt)}
               </p>
             </div>
             <div className="flex items-center gap-3">
               <button
-                onClick={onContinueDraft}
+                onClick={() => onContinueDraft?.()}
                 className="bg-primary text-primary-foreground btn-press btn-glow rounded-lg px-4 py-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring"
               >
                 Continuar
               </button>
               <button
-                onClick={onDiscardDraft}
+                onClick={() => onDiscardDraft?.()}
                 className="text-muted-foreground hover:text-foreground text-sm transition-colors focus-visible:ring-2 focus-visible:ring-ring rounded-lg px-2 py-2"
               >
                 Descartar
@@ -140,102 +147,120 @@ export default function CasosTab({
       {/* Session Cards */}
       {filteredSessions.length > 0 ? (
         <div className="space-y-4">
-          {filteredSessions.map((session) => {
-            const isComplete =
-              session.completedCount === session.evaluationCount
-            const progressPercent =
-              session.evaluationCount > 0
-                ? (session.completedCount / session.evaluationCount) * 100
-                : 0
-
-            return (
-              <div
-                key={session.session_id}
-                onClick={() => onSelectSession(session.session_id)}
-                className="glass-panel rounded-xl p-4 hover:shadow-md transition-shadow cursor-pointer border-l-4"
-                style={{
-                  borderLeftColor: isComplete
-                    ? 'var(--color-success)'
-                    : 'var(--color-primary)',
-                }}
-              >
-                {/* Top row: patient name + age | date */}
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-foreground">
-                      {session.patient_name ?? 'Paciente'}
-                    </span>
-                    {session.patientAge != null && (
-                      <span className="text-xs text-muted-foreground">
-                        {session.patientAge} anos
-                      </span>
-                    )}
-                  </div>
-                  <span className="text-xs text-muted-foreground">
-                    {formatRelativeDate(session.created_at)}
-                  </span>
-                </div>
-
-                {/* Treatment type chips */}
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {session.treatmentTypes.map((type) => {
-                    const color =
-                      TREATMENT_COLOR_VARS[type] ?? 'var(--color-muted-foreground)'
-                    return (
-                      <span
-                        key={type}
-                        className="text-xs rounded-full px-2 py-0.5 font-medium"
-                        style={{
-                          backgroundColor: `color-mix(in srgb, ${color} 10%, transparent)`,
-                          color,
-                        }}
-                      >
-                        {TREATMENT_LABELS[type] ?? type}
-                      </span>
-                    )
-                  })}
-                  {session.hasDSD && (
-                    <span
-                      className="text-xs rounded-full px-2 py-0.5 font-medium"
-                      style={{
-                        backgroundColor: `color-mix(in srgb, var(--color-primary) 10%, transparent)`,
-                        color: 'var(--color-primary)',
-                      }}
-                    >
-                      DSD
-                    </span>
-                  )}
-                </div>
-
-                {/* Progress bar + label */}
-                <div className="flex items-center gap-3">
-                  <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all"
-                      style={{
-                        width: `${progressPercent}%`,
-                        backgroundColor: isComplete
-                          ? 'var(--color-success)'
-                          : 'var(--color-primary)',
-                      }}
-                    />
-                  </div>
-                  <span className="text-xs text-muted-foreground whitespace-nowrap">
-                    {session.completedCount}/{session.evaluationCount} protocolos
-                  </span>
-                </div>
-              </div>
-            )
-          })}
+          {filteredSessions.map((session) => (
+            <SessionCard
+              key={session.session_id}
+              session={session}
+              onSelect={() => onSelectSession?.(session.session_id)}
+            />
+          ))}
         </div>
       ) : (
-        <EmptyState onCreateCase={onCreateCase} />
+        <EmptyState onCreateCase={() => onCreateCase?.()} />
       )}
     </div>
   )
 }
 
-/* ── Empty State ── */
+/* ---- Sub-components ---- */
+
+function SessionCard({
+  session,
+  onSelect,
+}: {
+  session: DashboardSession
+  onSelect: () => void
+}) {
+  const isComplete = session.completedCount === session.evaluationCount
+  const progressPercent =
+    session.evaluationCount > 0
+      ? (session.completedCount / session.evaluationCount) * 100
+      : 0
+
+  return (
+    <div
+      onClick={onSelect}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') onSelect()
+      }}
+      className="glass-panel rounded-xl p-4 hover:shadow-md transition-shadow cursor-pointer border-l-4"
+      style={{
+        borderLeftColor: isComplete
+          ? 'var(--color-success)'
+          : 'var(--color-primary)',
+      }}
+    >
+      {/* Top row */}
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <span className="font-medium text-foreground">
+            {session.patient_name ?? 'Paciente'}
+          </span>
+          {session.patientAge != null && (
+            <span className="text-xs text-muted-foreground">
+              {session.patientAge} anos
+            </span>
+          )}
+        </div>
+        <span className="text-xs text-muted-foreground">
+          {formatRelativeDate(session.created_at)}
+        </span>
+      </div>
+
+      {/* Treatment chips */}
+      <div className="flex flex-wrap gap-2 mb-3">
+        {session.treatmentTypes.map((type) => {
+          const color =
+            TREATMENT_COLOR_VARS[type] ?? 'var(--color-muted-foreground)'
+          return (
+            <span
+              key={type}
+              className="text-xs rounded-full px-2 py-0.5 font-medium"
+              style={{
+                backgroundColor: `color-mix(in srgb, ${color} 10%, transparent)`,
+                color,
+              }}
+            >
+              {TREATMENT_LABELS[type] ?? type}
+            </span>
+          )
+        })}
+        {session.hasDSD && (
+          <span
+            className="text-xs rounded-full px-2 py-0.5 font-medium"
+            style={{
+              backgroundColor:
+                'color-mix(in srgb, var(--color-primary) 10%, transparent)',
+              color: 'var(--color-primary)',
+            }}
+          >
+            DSD
+          </span>
+        )}
+      </div>
+
+      {/* Progress */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all"
+            style={{
+              width: `${progressPercent}%`,
+              backgroundColor: isComplete
+                ? 'var(--color-success)'
+                : 'var(--color-primary)',
+            }}
+          />
+        </div>
+        <span className="text-xs text-muted-foreground whitespace-nowrap">
+          {session.completedCount}/{session.evaluationCount} protocolos
+        </span>
+      </div>
+    </div>
+  )
+}
 
 function EmptyState({ onCreateCase }: { onCreateCase: () => void }) {
   return (

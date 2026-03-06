@@ -2,7 +2,8 @@ import { memo, useState, lazy, Suspense } from 'react';
 import type { Ref } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Badge, Popover, PopoverContent, PopoverTrigger } from '@parisgroup-ai/pageshell/primitives';
-import { Check, Loader2, RefreshCw, Eye, User, Ruler, Ratio, SmilePlus, Columns2, SlidersHorizontal } from 'lucide-react';
+import { Check, Loader2, RefreshCw, Eye, User, Ruler, Ratio, SmilePlus, Columns2, SlidersHorizontal, SplitSquareHorizontal, Image, ImageOff } from 'lucide-react';
+import type { ComparisonViewMode } from '@/components/dsd/ComparisonSlider';
 import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
 import { AnnotationOverlay } from '@/components/dsd/AnnotationOverlay';
 import { ProportionOverlay, type ProportionLayerType } from '@/components/dsd/ProportionOverlay';
@@ -90,6 +91,7 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
 }: DSDSimulationViewerProps) {
   const { t } = useTranslation();
   const [showComparison, setShowComparison] = useState(false);
+  const [viewMode, setViewMode] = useState<ComparisonViewMode>('split');
 
   const hasFaceMockupLayer = layers.some(l => l.type === 'face-mockup');
   const isActiveFaceMockup = layers[activeLayerIndex]?.type === 'face-mockup';
@@ -106,6 +108,7 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
           beforeImage={beforeImage}
           afterImage={simulationImageUrl || ''}
           afterLabel={layers.length > 0 ? layers[activeLayerIndex]?.label || t('components.wizard.dsd.simulationViewer.defaultLabel') : t('components.wizard.dsd.simulationViewer.defaultLabel')}
+          viewMode={viewMode}
           annotationOverlay={!isActiveFaceMockup && (showAnnotations || visibleProportionLayers.size > 0) ? (
             <>
               {showAnnotations && (
@@ -205,6 +208,34 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
             </PopoverContent>
           </Popover>
         </div>
+        {/* Floating view mode toggle — bottom center, inside image */}
+        {simulationImageUrl && (
+          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20">
+            <div className="inline-flex items-center gap-1 p-1 rounded-lg bg-card/80 backdrop-blur-sm border border-border/50 shadow-sm">
+              {([
+                { mode: 'before' as ComparisonViewMode, icon: ImageOff, labelKey: 'components.wizard.dsd.simulationViewer.viewBefore' },
+                { mode: 'split' as ComparisonViewMode, icon: SplitSquareHorizontal, labelKey: 'components.wizard.dsd.simulationViewer.viewSplit' },
+                { mode: 'after' as ComparisonViewMode, icon: Image, labelKey: 'components.wizard.dsd.simulationViewer.viewAfter' },
+              ] as const).map(({ mode, icon: ModeIcon, labelKey }) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setViewMode(mode); }}
+                  aria-pressed={viewMode === mode}
+                  aria-label={t(labelKey, { defaultValue: mode === 'before' ? 'Antes' : mode === 'split' ? 'Dividir' : 'Depois' })}
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all duration-200 ${
+                    viewMode === mode
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'
+                  }`}
+                >
+                  <ModeIcon className="w-3.5 h-3.5" />
+                  {t(labelKey, { defaultValue: mode === 'before' ? 'Antes' : mode === 'split' ? 'Dividir' : 'Depois' })}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Layer tabs */}

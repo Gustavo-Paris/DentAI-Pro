@@ -594,6 +594,7 @@
   filter: blur(80px);
   animation: orb-drift 12s ease-in-out infinite;
   pointer-events: none;
+  z-index: 0;
 }
 
 .glow-orb-slow {
@@ -671,6 +672,7 @@
     radial-gradient(ellipse 80% 60% at 50% 0%, rgb(var(--color-primary-rgb) / 0.03) 0%, transparent 60%),
     radial-gradient(ellipse 60% 40% at 0% 100%, rgb(var(--color-accent-rgb) / 0.02) 0%, transparent 50%);
   pointer-events: none;
+  z-index: 0;
 }
 
 .dark .section-glow-bg::before {
@@ -1261,7 +1263,40 @@ button:not(:disabled):active,
 }
 
 .success-pulse {
-  animation: success-pulse-ring 1.5s ease-out;
+  animation: success-pulse-ring 1.5s ease-out 0.3s both,
+             success-scale-bounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Success celebration — confetti particles */
+@keyframes confetti-float {
+  0%   { opacity: 0; transform: translateY(0) scale(0); }
+  15%  { opacity: 1; transform: translateY(-10px) scale(1); }
+  100% { opacity: 0; transform: translateY(-120px) scale(0.5) rotate(180deg); }
+}
+
+@keyframes success-scale-bounce {
+  0%   { opacity: 0; transform: scale(0); }
+  60%  { opacity: 1; transform: scale(1.15); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.confetti-particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: confetti-float 2s ease-out both;
+}
+
+/* Analyzing step — pulsing active dot */
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(var(--color-primary-rgb) / 0.4); }
+  50%      { box-shadow: 0 0 0 6px rgb(var(--color-primary-rgb) / 0); }
+}
+
+.pulse-dot {
+  animation: pulse-dot 1.5s ease-in-out infinite;
 }
 
 /* ─── Pricing page — glass-panel + shimmer on composite PlanCards ─── */
@@ -1329,7 +1364,9 @@ button:not(:disabled):active,
   .card-interactive { transition: none; }
   .card-interactive:hover { transform: none; }
   button:not(:disabled):active, [role="button"]:not(:disabled):active { transform: none; }
-  .success-pulse { animation: none; }
+  .success-pulse { animation: none; opacity: 1; transform: none; }
+  .confetti-particle { animation: none; opacity: 0; }
+  .pulse-dot { animation: none; }
   .animate-count-up { animation: none; opacity: 1; transform: none; }
   .glow-orb { animation: none; }
   .neon-text { text-shadow: none; }

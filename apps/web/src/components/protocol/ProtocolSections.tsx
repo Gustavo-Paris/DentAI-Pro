@@ -1,5 +1,7 @@
-import { Card, CardContent, CardHeader, CardTitle, Badge } from '@parisgroup-ai/pageshell/primitives';
-import { Layers, Crown, Stethoscope, ArrowUpRight, CircleX, Smile, HeartPulse, Palette } from 'lucide-react';
+import { useState, useCallback } from 'react';
+import { Card, CardContent, CardHeader, CardTitle, Badge, Button } from '@parisgroup-ai/pageshell/primitives';
+import { Layers, Crown, Stethoscope, ArrowUpRight, CircleX, Smile, HeartPulse, Palette, Copy, Check } from 'lucide-react';
+import { toast } from 'sonner';
 
 import ProtocolTable from '@/components/protocol/ProtocolTable';
 import ProtocolChecklist from '@/components/protocol/ProtocolChecklist';
@@ -88,6 +90,119 @@ function getSpecialTreatmentTitle(treatmentType: string, t: ProtocolSectionsProp
 }
 
 // =============================================================================
+// Copy to Clipboard
+// =============================================================================
+
+function formatResinProtocolText(
+  layers: ProtocolLayer[],
+  checklist: string[],
+  alerts: string[],
+  warnings: string[],
+  protocolAlternative?: ProtocolAlternative | null,
+  t?: ProtocolSectionsProps['t'],
+): string {
+  const tFn = t ?? ((k: string, fallback?: unknown) => (typeof fallback === 'string' ? fallback : k));
+  const lines: string[] = [];
+
+  lines.push(tFn('result.stratificationProtocol', { defaultValue: 'Protocolo de Estratificacao' }));
+  lines.push('');
+
+  if (layers.length > 0) {
+    lines.push(`${tFn('components.protocol.copy.layers', { defaultValue: 'Camadas' })}:`);
+    for (const layer of layers) {
+      const optionalTag = layer.optional ? ` (${tFn('components.protocol.table.optional', { defaultValue: 'opcional' })})` : '';
+      lines.push(`  ${layer.order}. ${layer.name}: ${layer.shade} (${layer.resin_brand})${optionalTag}`);
+      lines.push(`     ${tFn('components.protocol.table.thickness', { defaultValue: 'Espessura' })}: ${layer.thickness}`);
+      lines.push(`     ${tFn('components.protocol.table.technique', { defaultValue: 'Tecnica' })}: ${layer.technique}`);
+    }
+    lines.push('');
+  }
+
+  if (protocolAlternative) {
+    lines.push(`${tFn('components.protocol.copy.alternative', { defaultValue: 'Alternativa Simplificada' })}:`);
+    lines.push(`  ${protocolAlternative.resin} - ${protocolAlternative.shade}`);
+    lines.push(`  ${tFn('components.protocol.table.technique', { defaultValue: 'Tecnica' })}: ${protocolAlternative.technique}`);
+    lines.push(`  ${tFn('components.protocol.copy.tradeoff', { defaultValue: 'Trade-off' })}: ${protocolAlternative.tradeoff}`);
+    lines.push('');
+  }
+
+  if (checklist.length > 0) {
+    lines.push(`${tFn('result.stepByStep', { defaultValue: 'Passo a Passo' })}:`);
+    checklist.forEach((item, i) => {
+      lines.push(`  ${i + 1}. ${item}`);
+    });
+    lines.push('');
+  }
+
+  if (alerts.length > 0) {
+    lines.push(`${tFn('components.protocol.copy.alerts', { defaultValue: 'Alertas' })}:`);
+    alerts.forEach((a) => lines.push(`  - ${a}`));
+    lines.push('');
+  }
+
+  if (warnings.length > 0) {
+    lines.push(`${tFn('components.protocol.copy.warnings', { defaultValue: 'Avisos' })}:`);
+    warnings.forEach((w) => lines.push(`  - ${w}`));
+  }
+
+  return lines.join('\n').trim();
+}
+
+function formatGenericProtocolText(
+  genericProtocol: GenericProtocol,
+  title: string,
+): string {
+  const lines: string[] = [];
+  lines.push(title);
+  lines.push('');
+
+  if (genericProtocol.summary) {
+    lines.push(genericProtocol.summary);
+    lines.push('');
+  }
+
+  if (genericProtocol.checklist.length > 0) {
+    genericProtocol.checklist.forEach((item, i) => {
+      lines.push(`${i + 1}. ${item}`);
+    });
+  }
+
+  return lines.join('\n').trim();
+}
+
+function CopyProtocolButton({ getText, t }: { getText: () => string; t: ProtocolSectionsProps['t'] }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = useCallback(async () => {
+    try {
+      const text = getText();
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      toast.success(t('toasts.copiedToClipboard', { defaultValue: 'Copiado para a area de transferencia' }));
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error(t('toasts.copyFailed', { defaultValue: 'Falha ao copiar' }));
+    }
+  }, [getText, t]);
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="h-7 w-7 shrink-0"
+      onClick={handleCopy}
+      aria-label={t('components.protocol.copy.label', { defaultValue: 'Copiar protocolo' })}
+    >
+      {copied ? (
+        <Check className="w-3.5 h-3.5 text-emerald-500" />
+      ) : (
+        <Copy className="w-3.5 h-3.5 text-muted-foreground" />
+      )}
+    </Button>
+  );
+}
+
+// =============================================================================
 // Component
 // =============================================================================
 
@@ -134,7 +249,13 @@ export function ProtocolSections({
             <section className="mb-8">
               <h3 className="font-semibold font-display mb-3 flex items-center gap-2">
                 <Layers className="w-4 h-4" />
-                <span>{t('result.stratificationProtocol')}</span>
+                <span className="flex-1">{t('result.stratificationProtocol')}</span>
+                <CopyProtocolButton
+                  getText={() =>
+                    formatResinProtocolText(layers, checklist, alerts, warnings, protocolAlternative, t)
+                  }
+                  t={t}
+                />
               </h3>
               <ProtocolTable layers={layers} />
               {layers.length > 0 && (
@@ -171,7 +292,16 @@ export function ProtocolSections({
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base flex items-center gap-2">
                     <SpecialTreatmentIcon treatmentType={treatmentType} />
-                    {getSpecialTreatmentTitle(treatmentType, t, treatmentStyleLabel)}
+                    <span className="flex-1">{getSpecialTreatmentTitle(treatmentType, t, treatmentStyleLabel)}</span>
+                    <CopyProtocolButton
+                      getText={() =>
+                        formatGenericProtocolText(
+                          genericProtocol,
+                          getSpecialTreatmentTitle(treatmentType, t, treatmentStyleLabel),
+                        )
+                      }
+                      t={t}
+                    />
                   </CardTitle>
                 </CardHeader>
                 <CardContent>

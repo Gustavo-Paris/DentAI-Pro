@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { GripVertical, ZoomIn, ZoomOut, Maximize } from 'lucide-react';
 import { Button } from '@parisgroup-ai/pageshell/primitives';
 
+export type ComparisonViewMode = 'split' | 'before' | 'after';
+
 interface ComparisonSliderProps {
   beforeImage: string;
   afterImage: string;
@@ -12,6 +14,8 @@ interface ComparisonSliderProps {
   annotationOverlay?: React.ReactNode;
   /** Optional label indicating what was changed (e.g., "Gengiva reconturada") */
   changeIndicator?: string;
+  /** View mode: 'split' (default slider), 'before' (full before), 'after' (full after) */
+  viewMode?: ComparisonViewMode;
 }
 
 const MIN_ZOOM = 1;
@@ -25,6 +29,7 @@ export function ComparisonSlider({
   afterLabel,
   annotationOverlay,
   changeIndicator,
+  viewMode = 'split',
 }: ComparisonSliderProps) {
   const { t } = useTranslation();
   const resolvedBeforeLabel = beforeLabel ?? t('components.wizard.dsd.simulationViewer.before');
@@ -39,6 +44,10 @@ export function ComparisonSlider({
   const containerRef = useRef<HTMLDivElement>(null);
   const pinchDistRef = useRef<number | null>(null);
   const pinchZoomRef = useRef(1);
+
+  // Compute effective slider position based on view mode
+  const effectiveSliderPosition = viewMode === 'before' ? 100 : viewMode === 'after' ? 0 : sliderPosition;
+  const isSliderInteractive = viewMode === 'split';
 
   // Clamp pan to prevent going out of bounds
   const clampPan = useCallback((p: { x: number; y: number }, z: number) => {
@@ -76,14 +85,14 @@ export function ComparisonSlider({
 
   // Mouse events
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (isNearSliderHandle(e.clientX)) {
+    if (isSliderInteractive && isNearSliderHandle(e.clientX)) {
       setIsDragging(true);
     } else if (zoom > 1) {
       setIsPanning(true);
       panStartRef.current = { x: e.clientX, y: e.clientY };
       panOriginRef.current = { ...pan };
     }
-  }, [zoom, pan, isNearSliderHandle]);
+  }, [zoom, pan, isNearSliderHandle, isSliderInteractive]);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -127,7 +136,7 @@ export function ComparisonSlider({
 
     if (e.touches.length === 1) {
       const touch = e.touches[0];
-      if (isNearSliderHandle(touch.clientX)) {
+      if (isSliderInteractive && isNearSliderHandle(touch.clientX)) {
         setIsDragging(true);
       } else if (zoom > 1) {
         setIsPanning(true);
@@ -135,7 +144,7 @@ export function ComparisonSlider({
         panOriginRef.current = { ...pan };
       }
     }
-  }, [zoom, pan, isNearSliderHandle]);
+  }, [zoom, pan, isNearSliderHandle, isSliderInteractive]);
 
   useEffect(() => {
     const handleTouchMove = (e: TouchEvent) => {
@@ -205,7 +214,7 @@ export function ComparisonSlider({
   };
 
   const imageTransform = `scale(${zoom}) translate(${pan.x / zoom}%, ${pan.y / zoom}%)`;
-  const cursorStyle = isDragging ? 'cursor-ew-resize' : isPanning ? 'cursor-grabbing' : zoom > 1 ? 'cursor-grab' : 'cursor-ew-resize';
+  const cursorStyle = isDragging ? 'cursor-ew-resize' : isPanning ? 'cursor-grabbing' : zoom > 1 ? 'cursor-grab' : isSliderInteractive ? 'cursor-ew-resize' : 'cursor-default';
 
   // Keyboard handler for arrow keys
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -232,27 +241,35 @@ export function ComparisonSlider({
         className={`relative w-full rounded-xl overflow-hidden select-none touch-none bg-secondary ${cursorStyle}`}
         onMouseDown={handleMouseDown}
         onTouchStart={handleTouchStart}
-        role="slider"
-        aria-valuenow={Math.round(sliderPosition)}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-label={t('components.wizard.dsd.comparisonSlider.ariaLabel')}
+        role={isSliderInteractive ? 'slider' : 'img'}
+        aria-valuenow={isSliderInteractive ? Math.round(sliderPosition) : undefined}
+        aria-valuemin={isSliderInteractive ? 0 : undefined}
+        aria-valuemax={isSliderInteractive ? 100 : undefined}
+        aria-label={isSliderInteractive ? t('components.wizard.dsd.comparisonSlider.ariaLabel') : (viewMode === 'before' ? resolvedBeforeLabel : resolvedAfterLabel)}
         tabIndex={0}
-        onKeyDown={handleKeyDown}
+        onKeyDown={isSliderInteractive ? handleKeyDown : undefined}
       >
         {/* After image (in-flow, sets container height via object-contain) */}
         <img
           src={afterImage}
           alt={resolvedAfterLabel}
-          className="w-full max-h-[80vh] object-contain"
-          style={{ transform: imageTransform, transformOrigin: 'center center', imageRendering: zoom > 1 ? 'high-quality' : undefined }}
+          className="w-full max-h-[80vh] object-contain transition-opacity duration-300"
+          style={{
+            transform: imageTransform,
+            transformOrigin: 'center center',
+            imageRendering: zoom > 1 ? 'high-quality' : undefined,
+            opacity: viewMode === 'before' ? 0 : 1,
+          }}
           draggable={false}
         />
 
-        {/* Before image (clipped overlay) */}
+        {/* Before image (clipped overlay in split mode, full in before mode) */}
         <div
-          className="absolute inset-0 overflow-hidden"
-          style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
+          className="absolute inset-0 overflow-hidden transition-[clip-path,opacity] duration-300"
+          style={{
+            clipPath: viewMode === 'split' ? `inset(0 ${100 - effectiveSliderPosition}% 0 0)` : undefined,
+            opacity: viewMode === 'after' ? 0 : 1,
+          }}
         >
           <img
             src={beforeImage}
@@ -262,22 +279,24 @@ export function ComparisonSlider({
             draggable={false}
           />
           {/* Annotation overlay on the "before" side */}
-          {annotationOverlay && sliderPosition > 5 && (
+          {annotationOverlay && effectiveSliderPosition > 5 && (
             <div className="absolute inset-0" style={{ transform: imageTransform, transformOrigin: 'center center' }}>
               {annotationOverlay}
             </div>
           )}
         </div>
 
-        {/* Slider line and handle */}
-        <div
-          className="absolute top-0 bottom-0 w-1 bg-background shadow-lg z-10"
-          style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
-        >
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-background rounded-full shadow-lg flex items-center justify-center border-2 border-primary">
-            <GripVertical className="w-5 h-5 text-primary" />
+        {/* Slider line and handle — only visible in split mode */}
+        {isSliderInteractive && (
+          <div
+            className="absolute top-0 bottom-0 w-1 bg-background shadow-lg z-10 transition-opacity duration-300"
+            style={{ left: `${effectiveSliderPosition}%`, transform: 'translateX(-50%)' }}
+          >
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-background rounded-full shadow-lg flex items-center justify-center border-2 border-primary">
+              <GripVertical className="w-5 h-5 text-primary" />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Zoom controls */}
         <div className="absolute top-2 right-2 flex items-center gap-1 z-20">
@@ -319,13 +338,17 @@ export function ComparisonSlider({
           </div>
         )}
 
-        {/* Labels */}
-        <div className="absolute bottom-3 left-3 px-2 py-1 bg-background/90 rounded text-xs font-medium z-10">
-          {resolvedBeforeLabel}
-        </div>
-        <div className="absolute bottom-3 right-3 px-2 py-1 bg-primary text-primary-foreground rounded text-xs font-medium z-10">
-          {resolvedAfterLabel}
-        </div>
+        {/* Labels — shown contextually based on view mode */}
+        {viewMode !== 'after' && (
+          <div className="absolute bottom-3 left-3 px-2 py-1 bg-background/90 rounded text-xs font-medium z-10 transition-opacity duration-300">
+            {resolvedBeforeLabel}
+          </div>
+        )}
+        {viewMode !== 'before' && (
+          <div className={`absolute bottom-3 right-3 px-2 py-1 bg-primary text-primary-foreground rounded text-xs font-medium z-10 transition-opacity duration-300`}>
+            {resolvedAfterLabel}
+          </div>
+        )}
 
         {/* Change indicator */}
         {changeIndicator && (

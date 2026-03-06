@@ -125,6 +125,10 @@ export default function Profile() {
 
   return (
     <div className="relative section-glow-bg overflow-hidden">
+      {/* Ambient glow orbs */}
+      <div className="glow-orb w-72 h-72 bg-primary/15 dark:bg-primary/20 top-[-5%] right-[5%]" aria-hidden="true" />
+      <div className="glow-orb glow-orb-slow glow-orb-reverse w-56 h-56 bg-[rgb(var(--accent-violet-rgb)/0.10)] dark:bg-[rgb(var(--accent-violet-rgb)/0.12)] top-[40%] left-[-8%]" aria-hidden="true" />
+      <div className="glow-orb glow-orb-slow w-48 h-48 bg-primary/10 dark:bg-primary/15 bottom-[10%] right-[55%]" aria-hidden="true" />
       {/* Ambient AI grid overlay */}
       <div className="ai-grid-pattern absolute inset-0 opacity-30 dark:opacity-50 [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,black_70%,transparent_100%)] pointer-events-none" aria-hidden="true" />
     <DetailPage

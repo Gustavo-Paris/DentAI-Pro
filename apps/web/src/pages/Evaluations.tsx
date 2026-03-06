@@ -1,20 +1,18 @@
 import { useCallback, useEffect, memo, useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
-import { GenericErrorState } from '@parisgroup-ai/pageshell/composites';
-import { useListLogic } from '@parisgroup-ai/pageshell/core';
+import { ListPage, GenericErrorState } from '@parisgroup-ai/pageshell/composites';
 import { useEvaluationSessions } from '@/hooks/domain/useEvaluationSessions';
 import type { EvaluationSession } from '@/hooks/domain/useEvaluationSessions';
 import { evaluationKeys } from '@/hooks/domain/evaluation/useEvaluationData';
 import { evaluations } from '@/data';
 import { useAuth } from '@/contexts/AuthContext';
-import { Card, SearchInput } from '@parisgroup-ai/pageshell/primitives';
+import { Card } from '@parisgroup-ai/pageshell/primitives';
 import { StatusBadge, defineStatusConfig } from '@parisgroup-ai/pageshell/primitives';
 import { Badge } from '@parisgroup-ai/pageshell/primitives';
-import { Button } from '@parisgroup-ai/pageshell/primitives';
-import { CheckCircle, ChevronRight, ChevronLeft, Plus, FileText } from 'lucide-react';
+import { CheckCircle, ChevronRight, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { getDateLocale, getDateFormat } from '@/lib/date-utils';
 import { formatToothLabel, getTreatmentConfig } from '@/lib/treatment-config';
@@ -31,7 +29,6 @@ const SESSION_STATUS_CONFIG = defineStatusConfig({
   pending: { label: '', variant: 'muted' },
 });
 
-const SEARCH_FIELDS: ('patient_name')[] = ['patient_name'];
 const PAGE_SIZE = 10;
 
 const TREATMENT_TYPE_OPTIONS = [
@@ -203,8 +200,7 @@ const SessionCard = memo(function SessionCard({
 });
 
 // =============================================================================
-// Page Adapter — uses useListLogic directly (workaround for ListPage
-// pagination bug where client-side items are not sliced by page)
+// Page Adapter — maps domain hook to ListPage composite
 // =============================================================================
 
 export default function Evaluations() {
@@ -215,6 +211,7 @@ export default function Evaluations() {
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   // ---------------------------------------------------------------------------
   // Persist "New" badge across page reloads via sessionStorage
@@ -243,9 +240,10 @@ export default function Evaluations() {
   const urlSearch = searchParams.get('q') ?? '';
 
   // ---------------------------------------------------------------------------
-  // Treatment filter — managed separately because useListLogic.matchesFilters
-  // uses toComparableString() which returns null for arrays. Since
-  // session.treatmentTypes is string[], the built-in filter always fails.
+  // Treatment filter — managed separately because ListPage's built-in filters
+  // use matchesFilters with toComparableString() which returns null for arrays.
+  // Since session.treatmentTypes is string[], the built-in filter always fails.
+  // We pre-filter items before passing to ListPage.
   // ---------------------------------------------------------------------------
   const [treatmentFilter, setTreatmentFilter] = useState<string>(() => {
     if (urlTreatment && VALID_TREATMENT_VALUES.has(urlTreatment)) return urlTreatment;
@@ -257,71 +255,105 @@ export default function Evaluations() {
     return sessions.filter(s => s.treatmentTypes.includes(treatmentFilter));
   }, [sessions, treatmentFilter]);
 
-  const initialFilters = useMemo(() => {
+  // ---------------------------------------------------------------------------
+  // Treatment filter change handler
+  // ---------------------------------------------------------------------------
+  const handleTreatmentChange = useCallback((value: string) => {
+    setTreatmentFilter(value);
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      if (value && value !== 'all') next.set('treatment', value);
+      else next.delete('treatment');
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  // ---------------------------------------------------------------------------
+  // ListPage configuration
+  // ---------------------------------------------------------------------------
+
+  const searchConfig = useMemo(
+    () => ({ fields: ['patient_name'] as string[], placeholder: t('evaluation.searchByPatient') }),
+    [t],
+  );
+
+  // Compute initial default state for URL-driven filters
+  const defaultState = useMemo(() => {
     const filters: Record<string, string> = {};
     if (urlStatus && VALID_STATUS_VALUES.has(urlStatus)) {
       filters.status = urlStatus;
     }
-    return filters;
-    // Only compute once on mount — URL is the source of truth for initial state
+    return {
+      search: urlSearch,
+      filters,
+    };
+    // Only compute once on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ---------------------------------------------------------------------------
-  // useListLogic — handles search, status filter, sort, and pagination.
-  // Treatment filter is applied upstream (filteredByTreatment).
-  // ---------------------------------------------------------------------------
-  const listLogicFilters = useMemo(() => ({
-    status: {
-      options: [
-        { value: 'all', label: t('evaluation.statusAll') },
-        { value: 'pending', label: t('evaluation.statusPending') },
-        { value: 'completed', label: t('evaluation.statusCompleted') },
-      ],
-      defaultValue: 'all',
-    },
-  }), [t]);
+  const filtersConfig = useMemo(
+    () => [
+      {
+        key: 'status',
+        label: t('evaluation.filterStatus', { defaultValue: 'Status' }),
+        options: [
+          { value: 'all', label: t('evaluation.statusAll') },
+          { value: 'pending', label: t('evaluation.statusPending') },
+          { value: 'completed', label: t('evaluation.statusCompleted') },
+        ],
+        default: 'all',
+        cardRenderAs: 'buttons' as const,
+      },
+    ],
+    [t],
+  );
 
-  const listLogic = useListLogic<EvaluationSession>({
-    items: filteredByTreatment,
-    searchFields: SEARCH_FIELDS,
-    filters: listLogicFilters,
-    initialFilters,
-    initialSearch: urlSearch,
-    pageSize: PAGE_SIZE,
-  });
+  const paginationConfig = useMemo(
+    () => ({
+      defaultPageSize: PAGE_SIZE,
+      showTotal: true,
+      variant: 'detailed' as const,
+    }),
+    [],
+  );
 
-  // Sync filter/search changes back to URL
-  const handleFilterChange = useCallback((key: string, value: string) => {
-    if (key === 'treatmentTypes') {
-      setTreatmentFilter(value);
-      listLogic.setPage(1);
-    } else {
-      listLogic.setFilter(key, value);
-    }
-    setSearchParams(prev => {
-      const next = new URLSearchParams(prev);
-      if (key === 'status') {
-        if (value && value !== 'all') next.set('status', value);
-        else next.delete('status');
-      }
-      if (key === 'treatmentTypes') {
-        if (value && value !== 'all') next.set('treatment', value);
-        else next.delete('treatment');
-      }
-      return next;
-    }, { replace: true });
-  }, [listLogic, setSearchParams]);
+  const createAction = useMemo(
+    () => ({ label: t('evaluation.newEvaluation'), onClick: () => navigate('/new-case') }),
+    [t, navigate],
+  );
 
-  const handleSearchChange = useCallback((value: string) => {
-    listLogic.setSearch(value);
-    setSearchParams(prev => {
-      const next = new URLSearchParams(prev);
-      if (value) next.set('q', value);
-      else next.delete('q');
-      return next;
-    }, { replace: true });
-  }, [listLogic, setSearchParams]);
+  const emptyState = useMemo(
+    () => ({
+      title: t('evaluation.emptyTitle'),
+      description: t('evaluation.emptyDescription'),
+      action: { label: t('evaluation.emptyAction'), onClick: () => navigate('/new-case') },
+    }),
+    [t, navigate],
+  );
+
+  const emptySearchState = useMemo(
+    () => ({
+      title: t('evaluation.emptyTitle'),
+      description: t('evaluation.emptyFilteredDescription', { defaultValue: 'Nenhuma avaliacao corresponde aos filtros selecionados.' }),
+      showClearButton: true,
+    }),
+    [t],
+  );
+
+  const labels = useMemo(
+    () => ({
+      search: { placeholder: t('evaluation.searchByPatient') },
+      pagination: {
+        showing: t('common.showingOf', { defaultValue: 'Mostrando' }),
+        of: t('common.of', { defaultValue: 'de' }),
+        to: t('common.to', { defaultValue: 'a' }),
+        items: t('evaluation.paginationItems', { defaultValue: 'avaliacoes' }),
+        previous: t('common.previousPage', { defaultValue: 'Pagina anterior' }),
+        next: t('common.nextPage', { defaultValue: 'Proxima pagina' }),
+      },
+    }),
+    [t],
+  );
 
   // Prefetch evaluation detail data on hover for instant navigation
   const handleSessionHover = useCallback((sessionId: string) => {
@@ -333,6 +365,97 @@ export default function Evaluations() {
     });
   }, [queryClient, user]);
 
+  // Sync filter changes to URL params
+  const handleFiltersChange = useCallback((filters: Record<string, string>) => {
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      const status = filters.status;
+      if (status && status !== 'all') next.set('status', status);
+      else next.delete('status');
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  const handleSearchChange = useCallback((search: string) => {
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      if (search) next.set('q', search);
+      else next.delete('q');
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  // ---------------------------------------------------------------------------
+  // renderCard — wraps SessionCard with effectiveNewId and hover handler
+  // ---------------------------------------------------------------------------
+  const renderCard = useCallback(
+    (session: EvaluationSession, index: number) => (
+      <SessionCard
+        session={session}
+        isNew={effectiveNewId === session.session_id}
+        index={index}
+        onHover={handleSessionHover}
+      />
+    ),
+    [effectiveNewId, handleSessionHover],
+  );
+
+  // ---------------------------------------------------------------------------
+  // Treatment pills slot (injected after ListPage's built-in filters)
+  // ---------------------------------------------------------------------------
+  const treatmentPillsSlot = useMemo(() => (
+    <div className="flex gap-2 overflow-x-auto pb-1 -mb-1 scrollbar-none">
+      {TREATMENT_TYPE_OPTIONS.map(({ value, labelKey }) => {
+        const isActive = treatmentFilter === value;
+        const color = value !== 'all' ? TREATMENT_COLORS[value] ?? TREATMENT_COLOR_FALLBACK : undefined;
+        return (
+          <button
+            key={value}
+            onClick={() => handleTreatmentChange(value)}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+              isActive
+                ? color
+                  ? 'text-white'
+                  : 'bg-primary text-primary-foreground'
+                : 'glass-panel text-muted-foreground hover:text-foreground'
+            }`}
+            style={isActive && color ? {
+              backgroundColor: `color-mix(in srgb, ${color} 85%, black)`,
+            } : undefined}
+          >
+            {t(labelKey)}
+          </button>
+        );
+      })}
+    </div>
+  ), [treatmentFilter, handleTreatmentChange, t]);
+
+  // Success banner slot (shown when freshly navigated)
+  const headerSlot = useMemo(() => {
+    if (!newSessionId) return undefined;
+    return (
+      <div role="status" aria-live="polite" className="mb-4 sm:mb-6 p-3 sm:p-4 bg-primary/10 border border-primary/20 rounded-xl shadow-sm flex items-center gap-3 animate-[fade-in-up_0.6s_ease-out_both] glow-badge">
+        <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" aria-hidden="true" />
+        <div>
+          <p className="font-medium text-sm sm:text-base">
+            {t('evaluation.createdWithCases', { count: newTeethCount })}
+          </p>
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            {t('evaluation.newHighlighted')}
+          </p>
+        </div>
+      </div>
+    );
+  }, [newSessionId, newTeethCount, t]);
+
+  const slots = useMemo(
+    () => ({
+      headerSlot,
+      afterFilters: treatmentPillsSlot,
+    }),
+    [headerSlot, treatmentPillsSlot],
+  );
+
   if (isError) {
     return (
       <GenericErrorState
@@ -342,209 +465,35 @@ export default function Evaluations() {
     );
   }
 
-  const showingStart = Math.min((listLogic.page - 1) * PAGE_SIZE + 1, listLogic.filteredCount);
-  const showingEnd = Math.min(listLogic.page * PAGE_SIZE, listLogic.filteredCount);
-
   return (
-    <div className="relative section-glow-bg overflow-hidden max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+    <div className="relative section-glow-bg overflow-hidden max-w-5xl mx-auto py-6 sm:py-8">
+      {/* Ambient glow orbs */}
+      <div className="glow-orb w-64 h-64 bg-primary/15 dark:bg-primary/20 top-[-8%] left-[5%]" aria-hidden="true" />
+      <div className="glow-orb glow-orb-slow glow-orb-reverse w-56 h-56 bg-[rgb(var(--accent-violet-rgb)/0.10)] dark:bg-[rgb(var(--accent-violet-rgb)/0.12)] top-[40%] right-[-5%]" aria-hidden="true" />
+      <div className="glow-orb glow-orb-slow w-48 h-48 bg-primary/10 dark:bg-primary/15 bottom-[5%] left-[60%]" aria-hidden="true" />
       {/* Ambient AI grid overlay */}
       <div className="ai-grid-pattern absolute inset-0 opacity-30 dark:opacity-50 [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,black_70%,transparent_100%)] pointer-events-none" aria-hidden="true" />
 
-      {/* Success Banner — only when freshly navigated (not from sessionStorage) */}
-      {newSessionId && (
-        <div role="status" aria-live="polite" className="mb-4 sm:mb-6 p-3 sm:p-4 bg-primary/10 border border-primary/20 rounded-xl shadow-sm flex items-center gap-3 animate-[fade-in-up_0.6s_ease-out_both] glow-badge">
-          <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" aria-hidden="true" />
-          <div>
-            <p className="font-medium text-sm sm:text-base">
-              {t('evaluation.createdWithCases', { count: newTeethCount })}
-            </p>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              {t('evaluation.newHighlighted')}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4 sm:mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold">{t('evaluation.title')}</h1>
-        <Link to="/new-case">
-          <Button size="sm">
-            <Plus className="w-4 h-4 mr-1.5" />
-            {t('evaluation.newEvaluation')}
-          </Button>
-        </Link>
-      </div>
-
-      {/* Search */}
-      <div className="mb-4 sm:mb-5">
-        <SearchInput
-          value={listLogic.search}
-          onChange={(e) => handleSearchChange(e.target.value)}
-          placeholder={t('evaluation.searchByPatient')}
-        />
-      </div>
-
-      {/* Filter pills */}
-      <div className="flex flex-col gap-3 mb-4 sm:mb-6">
-        {/* Status pills */}
-        <div className="flex gap-2">
-          {[
-            { value: 'all', label: t('evaluation.statusAll') },
-            { value: 'pending', label: t('evaluation.statusPending') },
-            { value: 'completed', label: t('evaluation.statusCompleted') },
-          ].map(f => (
-            <button
-              key={f.value}
-              onClick={() => handleFilterChange('status', f.value)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                (listLogic.filters.status || 'all') === f.value
-                  ? 'bg-primary text-primary-foreground'
-                  : 'glass-panel text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Treatment pills */}
-        <div className="flex gap-2 overflow-x-auto pb-1 -mb-1 scrollbar-none">
-          {TREATMENT_TYPE_OPTIONS.map(({ value, labelKey }) => {
-            const isActive = treatmentFilter === value;
-            const color = value !== 'all' ? TREATMENT_COLORS[value] ?? TREATMENT_COLOR_FALLBACK : undefined;
-            return (
-              <button
-                key={value}
-                onClick={() => handleFilterChange('treatmentTypes', value)}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
-                  isActive
-                    ? color
-                      ? 'text-white'
-                      : 'bg-primary text-primary-foreground'
-                    : 'glass-panel text-muted-foreground hover:text-foreground'
-                }`}
-                style={isActive && color ? {
-                  backgroundColor: `color-mix(in srgb, ${color} 85%, black)`,
-                } : undefined}
-              >
-                {t(labelKey)}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Loading skeleton */}
-      {isLoading && (
-        <div className="grid grid-cols-1 gap-4">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-20 rounded-xl bg-muted animate-pulse" />
-          ))}
-        </div>
-      )}
-
-      {/* Empty state */}
-      {!isLoading && listLogic.filteredCount === 0 && (
-        <Card className="p-8 sm:p-10 text-center">
-          <div className="flex flex-col items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-              <FileText className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
-            </div>
-            {(listLogic.hasActiveFilters || treatmentFilter !== 'all') ? (
-              <div>
-                <p className="font-medium font-display text-sm mb-1 text-primary">
-                  {t('evaluation.emptyTitle')}
-                </p>
-                <p className="text-xs text-muted-foreground mb-4">
-                  {t('evaluation.emptyFilteredDescription', { defaultValue: 'Nenhuma avaliação corresponde aos filtros selecionados.' })}
-                </p>
-                <Button variant="outline" size="sm" onClick={() => { listLogic.clearFilters(); setTreatmentFilter('all'); setSearchParams({}, { replace: true }); }}>
-                  {t('evaluation.clearFilters', { defaultValue: 'Limpar filtros' })}
-                </Button>
-              </div>
-            ) : (
-              <div>
-                <p className="font-medium font-display text-sm mb-1 text-primary">
-                  {t('evaluation.emptyTitle')}
-                </p>
-                <p className="text-xs text-muted-foreground mb-4">
-                  {t('evaluation.emptyDescription')}
-                </p>
-                <Link to="/new-case">
-                  <Button size="sm">
-                    <Plus className="w-3.5 h-3.5 mr-1.5" />
-                    {t('evaluation.emptyAction')}
-                  </Button>
-                </Link>
-              </div>
-            )}
-          </div>
-        </Card>
-      )}
-
-      {/* Card grid — uses paginatedItems (correctly sliced) */}
-      {!isLoading && listLogic.paginatedItems.length > 0 && (
-        <div className="grid grid-cols-1 gap-4 stagger-enter">
-          {listLogic.paginatedItems.map((session, index) => (
-            <SessionCard
-              key={session.session_id}
-              session={session}
-              isNew={effectiveNewId === session.session_id}
-              index={index}
-              onHover={handleSessionHover}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Pagination */}
-      {!isLoading && listLogic.totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 pt-4 border-t border-border">
-          <p className="text-sm text-muted-foreground">
-            {t('common.showingOf', { defaultValue: 'Mostrando' })}{' '}
-            <span className="font-medium">{showingStart}</span>
-            {' '}{t('common.to', { defaultValue: 'a' })}{' '}
-            <span className="font-medium">{showingEnd}</span>
-            {' '}{t('common.of', { defaultValue: 'de' })}{' '}
-            <span className="font-medium">{listLogic.filteredCount}</span>
-            {' '}{t('evaluation.paginationItems', { defaultValue: 'avaliações' })}
-          </p>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              disabled={listLogic.page <= 1}
-              onClick={() => listLogic.prevPage()}
-              aria-label={t('common.previousPage', { defaultValue: 'Página anterior' })}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            {Array.from({ length: listLogic.totalPages }, (_, i) => i + 1).map((pageNum) => (
-              <Button
-                key={pageNum}
-                variant={pageNum === listLogic.page ? 'default' : 'outline'}
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => listLogic.setPage(pageNum)}
-              >
-                {pageNum}
-              </Button>
-            ))}
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              disabled={listLogic.page >= listLogic.totalPages}
-              onClick={() => listLogic.nextPage()}
-              aria-label={t('common.nextPage', { defaultValue: 'Próxima página' })}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      )}
+      <ListPage<EvaluationSession>
+        title={t('evaluation.title')}
+        viewMode="cards"
+        items={filteredByTreatment}
+        isLoading={isLoading}
+        itemKey="session_id"
+        renderCard={renderCard}
+        gridClassName="grid grid-cols-1 gap-4 stagger-enter"
+        searchConfig={searchConfig}
+        filters={filtersConfig}
+        defaultState={defaultState}
+        pagination={paginationConfig}
+        createAction={createAction}
+        emptyState={emptyState}
+        emptySearchState={emptySearchState}
+        slots={slots}
+        labels={labels}
+        onFiltersChange={handleFiltersChange}
+        onSearchChange={handleSearchChange}
+      />
     </div>
   );
 }

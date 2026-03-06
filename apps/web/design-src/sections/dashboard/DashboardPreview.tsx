@@ -1,16 +1,19 @@
 import '../../preview-theme.css'
 import { useState } from 'react'
-import { Sun, Moon, CloudSun, Zap } from 'lucide-react'
-import PrincipalTab from './PrincipalTab'
-import CasosTab from './CasosTab'
-import InsightsTab from './InsightsTab'
-import type { DashboardTab } from '../../../design/sections/dashboard/types'
+import { CloudSun, Zap } from 'lucide-react'
+import { PrincipalTab, CasosTab, InsightsTab } from './components'
+import type {
+  DashboardTab,
+  DashboardSession,
+  DraftInfo,
+  ClinicalInsights,
+  WeeklyTrendPoint,
+} from '../../../design/sections/dashboard/types'
 import sampleData from '../../../design/sections/dashboard/data.json'
 
 export default function DashboardPreview() {
   const [activeTab, setActiveTab] = useState<DashboardTab>('principal')
 
-  // Time-based greeting (use afternoon for prototype)
   const greetingIcon = <CloudSun className="w-5 h-5 text-warning" />
   const greeting = `Boa tarde, ${sampleData.profile.firstName}`
 
@@ -38,14 +41,16 @@ export default function DashboardPreview() {
           </div>
           <div className="flex items-center gap-1.5 text-sm text-muted-foreground glass-panel rounded-full px-3 py-1.5">
             <Zap className="w-4 h-4 text-primary" />
-            <span className="font-medium">{sampleData.profile.creditsRemaining}</span>
+            <span className="font-medium">
+              {sampleData.profile.creditsRemaining}
+            </span>
             <span className="hidden sm:inline">creditos</span>
           </div>
         </div>
 
         {/* Tab bar */}
         <div className="wizard-tabs">
-          {TABS.map(tab => (
+          {TABS.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
@@ -57,9 +62,41 @@ export default function DashboardPreview() {
         </div>
 
         {/* Tab content */}
-        {activeTab === 'principal' && <PrincipalTab />}
-        {activeTab === 'casos' && <CasosTab />}
-        {activeTab === 'insights' && <InsightsTab />}
+        {activeTab === 'principal' && (
+          <PrincipalTab
+            metrics={sampleData.sampleMetrics}
+            draft={sampleData.sampleDraft as DraftInfo}
+            creditsRemaining={sampleData.profile.creditsRemaining}
+            showCreditsBanner
+            onNewCase={() => console.log('new case')}
+            onContinueDraft={() => console.log('continue draft')}
+            onDiscardDraft={() => console.log('discard draft')}
+            onNavigatePatients={() => console.log('patients')}
+            onNavigateInventory={() => console.log('inventory')}
+            onNavigateSettings={() => console.log('settings')}
+            onUpgrade={() => console.log('upgrade')}
+          />
+        )}
+        {activeTab === 'casos' && (
+          <CasosTab
+            sessions={sampleData.sampleSessions as DashboardSession[]}
+            draft={sampleData.sampleDraft as DraftInfo}
+            totalCases={sampleData.sampleMetrics.totalCases}
+            onContinueDraft={() => console.log('continue draft')}
+            onDiscardDraft={() => console.log('discard draft')}
+            onSelectSession={(id) => console.log('select session', id)}
+            onCreateCase={() => console.log('create case')}
+          />
+        )}
+        {activeTab === 'insights' && (
+          <InsightsTab
+            insights={sampleData.sampleInsights as ClinicalInsights}
+            weeklyTrends={sampleData.weeklyTrends as WeeklyTrendPoint[]}
+            patientGrowthThisMonth={sampleData.patientGrowth.thisMonth}
+            patientGrowthPercent={sampleData.patientGrowth.growthPercent}
+            onPeriodChange={(p) => console.log('period', p)}
+          />
+        )}
       </div>
     </div>
   )

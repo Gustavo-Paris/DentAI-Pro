@@ -11,6 +11,7 @@ import { cn, toI18nKeySuffix } from '@/lib/utils';
 import { trackEvent } from '@/lib/analytics';
 import type { DetectedTooth, TreatmentType } from '../ReviewAnalysisStep';
 import { TEETH, TREATMENT_LABEL_KEYS, TREATMENT_BORDER_COLORS } from './review-constants';
+import { DentalArchDiagram } from './DentalArchDiagram';
 
 interface ToothSelectionCardProps {
   analysisResult: {
@@ -208,6 +209,21 @@ export const ToothSelectionCard = memo(function ToothSelectionCard({
         <p className="text-sm text-muted-foreground mb-4">
           {t('components.wizard.review.selectTeethDesc')}
         </p>
+
+        {/* Interactive dental arch diagram */}
+        <div className="mb-6">
+          <DentalArchDiagram
+            selectedTeeth={selectedTeeth}
+            toothTreatments={toothTreatments}
+            onToggleTooth={(tooth) => {
+              const isCurrentlySelected = selectedTeeth.includes(tooth);
+              handleToggleTooth(tooth, !isCurrentlySelected);
+            }}
+            toothPriorities={Object.fromEntries(
+              detectedTeeth.map((dt) => [dt.tooth, { priority: dt.priority }])
+            )}
+          />
+        </div>
 
         {/* Quick selection buttons */}
         <div className="flex flex-wrap gap-2 mb-4">

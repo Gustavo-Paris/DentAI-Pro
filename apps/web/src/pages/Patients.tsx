@@ -2,13 +2,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
-import { GenericErrorState } from '@parisgroup-ai/pageshell/composites';
-import { useListLogic } from '@parisgroup-ai/pageshell/core';
+import { ListPage, GenericErrorState } from '@parisgroup-ai/pageshell/composites';
 import { PageConfirmDialog } from '@parisgroup-ai/pageshell/interactions';
 import {
   Button,
   Card,
-  SearchInput,
   Input,
   Textarea,
   Label,
@@ -24,18 +22,16 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { getDateLocale, getDateFormat } from '@/lib/date-utils';
 import i18n from '@/lib/i18n';
-import { Phone, Mail, ChevronRight, ChevronLeft, Plus, Users } from 'lucide-react';
+import { Phone, Mail, ChevronRight, Plus, Users } from 'lucide-react';
 
 // =============================================================================
 // Static configs (no hook dependencies)
 // =============================================================================
 
 const SEARCH_FIELDS: ('name' | 'phone' | 'email')[] = ['name', 'phone', 'email'];
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 10;
 
-type SortKey = 'recent' | 'name-asc' | 'name-desc' | 'cases';
-
-const SORT_COMPARATORS: Record<SortKey, (a: PatientWithStats, b: PatientWithStats) => number> = {
+const SORT_COMPARATORS: Record<string, (a: PatientWithStats, b: PatientWithStats) => number> = {
   recent: (a, b) => {
     if (!a.lastVisit && !b.lastVisit) return 0;
     if (!a.lastVisit) return 1;
@@ -121,7 +117,7 @@ const PatientCard = memo(function PatientCard({
 });
 
 // =============================================================================
-// Page Adapter
+// Page Adapter — maps domain hook to ListPage composite
 // =============================================================================
 
 export default function Patients() {
@@ -130,20 +126,83 @@ export default function Patients() {
   const navigate = useNavigate();
   const { patients: patientsList, total, isLoading, isError, createPatient, isCreating } = usePatientList();
 
-  // ---- Sort state (managed outside useListLogic — needs custom comparators) ----
-  const [sortKey, setSortKey] = useState<SortKey>('recent');
+  // ---- ListPage: search config ----
+  const searchConfig = useMemo(
+    () => ({ fields: SEARCH_FIELDS, placeholder: t('patients.searchPlaceholder') }),
+    [t],
+  );
 
-  const sortedPatients = useMemo(() => {
-    if (!patientsList.length) return patientsList;
-    return [...patientsList].sort(SORT_COMPARATORS[sortKey]);
-  }, [patientsList, sortKey]);
+  // ---- ListPage: sort config ----
+  const sortConfig = useMemo(
+    () => ({
+      options: [
+        { value: 'recent', label: t('patients.sortRecent'), compare: SORT_COMPARATORS.recent },
+        { value: 'name-asc', label: t('patients.sortNameAsc'), compare: SORT_COMPARATORS['name-asc'] },
+        { value: 'name-desc', label: t('patients.sortNameDesc'), compare: SORT_COMPARATORS['name-desc'] },
+        { value: 'cases', label: t('patients.sortCases'), compare: SORT_COMPARATORS.cases },
+      ],
+      default: 'recent',
+    }),
+    [t],
+  );
 
-  // ---- useListLogic for search + pagination ----
-  const listLogic = useListLogic<PatientWithStats>({
-    items: sortedPatients,
-    searchFields: SEARCH_FIELDS,
-    pageSize: PAGE_SIZE,
-  });
+  // ---- ListPage: pagination config ----
+  const paginationConfig = useMemo(
+    () => ({ defaultPageSize: PAGE_SIZE, showTotal: true, variant: 'detailed' as const }),
+    [],
+  );
+
+  // ---- ListPage: create action ----
+  const createAction = useMemo(
+    () => ({ label: t('patients.createPatient'), onClick: () => setShowCreateDialog(true) }),
+    [t],
+  );
+
+  // ---- ListPage: empty state ----
+  const emptyState = useMemo(
+    () => ({
+      title: t('patients.emptyTitle'),
+      description: t('patients.emptyDescription'),
+      icon: Users,
+      action: { label: t('patients.createPatient'), onClick: () => setShowCreateDialog(true) },
+    }),
+    [t],
+  );
+
+  // ---- ListPage: empty search state ----
+  const emptySearchState = useMemo(
+    () => ({
+      title: t('patients.emptyTitle'),
+      description: t('patients.emptySearchDescription', { defaultValue: 'Nenhum paciente encontrado para a busca.' }),
+      showClearButton: true,
+    }),
+    [t],
+  );
+
+  // ---- ListPage: description ----
+  const description = total > 0 ? t('patients.count', { count: total }) : undefined;
+
+  // ---- ListPage: labels ----
+  const labels = useMemo(
+    () => ({
+      search: { placeholder: t('patients.searchPlaceholder') },
+      pagination: {
+        showing: t('common.showingOf', { defaultValue: 'Mostrando' }),
+        to: t('common.to', { defaultValue: 'a' }),
+        of: t('common.of', { defaultValue: 'de' }),
+        items: t('patients.paginationItems', { defaultValue: 'pacientes' }),
+      },
+    }),
+    [t],
+  );
+
+  // ---- ListPage: renderCard ----
+  const renderCard = useCallback(
+    (patient: PatientWithStats, index: number) => (
+      <PatientCard patient={patient} index={index} />
+    ),
+    [],
+  );
 
   // ---- Create patient dialog ----
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -210,13 +269,6 @@ export default function Patients() {
     }
   }, [createForm, createPatient, t, navigate]);
 
-  const sortOptions: { key: SortKey; labelKey: string }[] = [
-    { key: 'recent', labelKey: 'patients.sortRecent' },
-    { key: 'name-asc', labelKey: 'patients.sortNameAsc' },
-    { key: 'name-desc', labelKey: 'patients.sortNameDesc' },
-    { key: 'cases', labelKey: 'patients.sortCases' },
-  ];
-
   if (isError) {
     return (
       <GenericErrorState
@@ -226,159 +278,33 @@ export default function Patients() {
     );
   }
 
-  const showingStart = Math.min((listLogic.page - 1) * PAGE_SIZE + 1, listLogic.filteredCount);
-  const showingEnd = Math.min(listLogic.page * PAGE_SIZE, listLogic.filteredCount);
-
   return (
     <>
-      <div className="relative section-glow-bg overflow-hidden max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <div className="relative section-glow-bg overflow-hidden max-w-5xl mx-auto py-6 sm:py-8">
+        {/* Ambient glow orbs */}
+        <div className="glow-orb w-64 h-64 bg-primary/15 dark:bg-primary/20 top-[-10%] right-[10%]" aria-hidden="true" />
+        <div className="glow-orb glow-orb-slow glow-orb-reverse w-56 h-56 bg-[rgb(var(--accent-violet-rgb)/0.10)] dark:bg-[rgb(var(--accent-violet-rgb)/0.12)] top-[50%] left-[-8%]" aria-hidden="true" />
+        <div className="glow-orb glow-orb-slow w-44 h-44 bg-primary/10 dark:bg-primary/15 bottom-[5%] right-[60%]" aria-hidden="true" />
         {/* Ambient AI grid overlay */}
         <div className="ai-grid-pattern absolute inset-0 opacity-30 dark:opacity-50 [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,black_70%,transparent_100%)] pointer-events-none" aria-hidden="true" />
 
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4 sm:mb-6">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold">{t('patients.title')}</h1>
-            {total > 0 && (
-              <p className="text-sm text-muted-foreground mt-0.5">
-                {t('patients.count', { count: total })}
-              </p>
-            )}
-          </div>
-          <Button size="sm" onClick={() => setShowCreateDialog(true)}>
-            <Plus className="w-4 h-4 mr-1.5" />
-            {t('patients.createPatient')}
-          </Button>
-        </div>
-
-        {/* Search */}
-        <div className="mb-4 sm:mb-5">
-          <SearchInput
-            value={listLogic.search}
-            onChange={(e) => listLogic.setSearch(e.target.value)}
-            placeholder={t('patients.searchPlaceholder')}
-          />
-        </div>
-
-        {/* Sort pills */}
-        <div className="flex gap-2 overflow-x-auto pb-1 -mb-1 scrollbar-none mb-4 sm:mb-6">
-          {sortOptions.map(opt => (
-            <button
-              key={opt.key}
-              onClick={() => setSortKey(opt.key)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
-                sortKey === opt.key
-                  ? 'bg-primary text-primary-foreground'
-                  : 'glass-panel text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {t(opt.labelKey)}
-            </button>
-          ))}
-        </div>
-
-        {/* Loading skeleton */}
-        {isLoading && (
-          <div className="grid grid-cols-1 gap-4">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-[72px] rounded-xl bg-muted animate-pulse" />
-            ))}
-          </div>
-        )}
-
-        {/* Empty state */}
-        {!isLoading && listLogic.filteredCount === 0 && (
-          <Card className="p-8 sm:p-10 text-center">
-            <div className="flex flex-col items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                <Users className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
-              </div>
-              {listLogic.hasActiveFilters ? (
-                <div>
-                  <p className="font-medium font-display text-sm mb-1 text-primary">
-                    {t('patients.emptyTitle')}
-                  </p>
-                  <p className="text-xs text-muted-foreground mb-4">
-                    {t('patients.emptySearchDescription', { defaultValue: 'Nenhum paciente encontrado para a busca.' })}
-                  </p>
-                  <Button variant="outline" size="sm" onClick={() => listLogic.clearFilters()}>
-                    {t('evaluation.clearFilters', { defaultValue: 'Limpar filtros' })}
-                  </Button>
-                </div>
-              ) : (
-                <div>
-                  <p className="font-medium font-display text-sm mb-1 text-primary">
-                    {t('patients.emptyTitle')}
-                  </p>
-                  <p className="text-xs text-muted-foreground mb-4">
-                    {t('patients.emptyDescription')}
-                  </p>
-                  <Button size="sm" onClick={() => setShowCreateDialog(true)}>
-                    <Plus className="w-3.5 h-3.5 mr-1.5" />
-                    {t('patients.createPatient')}
-                  </Button>
-                </div>
-              )}
-            </div>
-          </Card>
-        )}
-
-        {/* Patient cards */}
-        {!isLoading && listLogic.paginatedItems.length > 0 && (
-          <div className="grid grid-cols-1 gap-4 stagger-enter">
-            {listLogic.paginatedItems.map((patient, index) => (
-              <PatientCard key={patient.id} patient={patient} index={index} />
-            ))}
-          </div>
-        )}
-
-        {/* Pagination */}
-        {!isLoading && listLogic.totalPages > 1 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 pt-4 border-t border-border">
-            <p className="text-sm text-muted-foreground">
-              {t('common.showingOf', { defaultValue: 'Mostrando' })}{' '}
-              <span className="font-medium">{showingStart}</span>
-              {' '}{t('common.to', { defaultValue: 'a' })}{' '}
-              <span className="font-medium">{showingEnd}</span>
-              {' '}{t('common.of', { defaultValue: 'de' })}{' '}
-              <span className="font-medium">{listLogic.filteredCount}</span>
-              {' '}{t('patients.paginationItems', { defaultValue: 'pacientes' })}
-            </p>
-            <div className="flex items-center gap-1">
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                disabled={listLogic.page <= 1}
-                onClick={() => listLogic.prevPage()}
-                aria-label={t('common.previousPage', { defaultValue: 'Página anterior' })}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              {Array.from({ length: listLogic.totalPages }, (_, i) => i + 1).map((pageNum) => (
-                <Button
-                  key={pageNum}
-                  variant={pageNum === listLogic.page ? 'default' : 'outline'}
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => listLogic.setPage(pageNum)}
-                >
-                  {pageNum}
-                </Button>
-              ))}
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                disabled={listLogic.page >= listLogic.totalPages}
-                onClick={() => listLogic.nextPage()}
-                aria-label={t('common.nextPage', { defaultValue: 'Próxima página' })}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        )}
+        <ListPage<PatientWithStats>
+          title={t('patients.title')}
+          description={description}
+          viewMode="cards"
+          items={patientsList}
+          isLoading={isLoading}
+          itemKey="id"
+          renderCard={renderCard}
+          gridClassName="grid grid-cols-1 gap-4 stagger-enter"
+          searchConfig={searchConfig}
+          sort={sortConfig}
+          pagination={paginationConfig}
+          createAction={createAction}
+          emptyState={emptyState}
+          emptySearchState={emptySearchState}
+          labels={labels}
+        />
       </div>
 
       {/* Create Patient Dialog */}
