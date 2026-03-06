@@ -186,13 +186,23 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     setDsdResult(result);
 
     // Auto-include gengivoplasty: either AI detected it OR user approved it in DSD
-    const hasGingivo = analysisResult?.detected_teeth?.some(
-      t => t.treatment_indication === 'gengivoplastia'
-    ) || result?.gingivoplastyApproved === true;
-    if (hasGingivo && result?.gingivoplastyApproved !== false) {
-      setSelectedTeeth(prev => prev.includes('GENGIVO') ? prev : [...prev, 'GENGIVO']);
-      setToothTreatments(prev => ({ ...prev, GENGIVO: 'gengivoplastia' as TreatmentType }));
-      toast.info(t('toasts.wizard.gingivoplastyAdded'));
+    // If user explicitly rejected (gingivoplastyApproved === false), remove GENGIVO
+    if (result?.gingivoplastyApproved === false) {
+      setSelectedTeeth(prev => prev.filter(t => t !== 'GENGIVO'));
+      setToothTreatments(prev => {
+        const next = { ...prev };
+        delete next['GENGIVO'];
+        return next;
+      });
+    } else {
+      const hasGingivo = analysisResult?.detected_teeth?.some(
+        t => t.treatment_indication === 'gengivoplastia'
+      ) || result?.gingivoplastyApproved === true;
+      if (hasGingivo) {
+        setSelectedTeeth(prev => prev.includes('GENGIVO') ? prev : [...prev, 'GENGIVO']);
+        setToothTreatments(prev => ({ ...prev, GENGIVO: 'gengivoplastia' as TreatmentType }));
+        toast.info(t('toasts.wizard.gingivoplastyAdded'));
+      }
     }
 
     nav.setStep(5); // Review step

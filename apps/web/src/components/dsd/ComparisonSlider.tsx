@@ -265,10 +265,11 @@ export function ComparisonSlider({
 
         {/* Before image (clipped overlay in split mode, full in before mode) */}
         <div
-          className="absolute inset-0 overflow-hidden transition-[clip-path,opacity] duration-300"
+          className="absolute inset-0 overflow-hidden"
           style={{
             clipPath: viewMode === 'split' ? `inset(0 ${100 - effectiveSliderPosition}% 0 0)` : undefined,
             opacity: viewMode === 'after' ? 0 : 1,
+            transition: viewMode === 'split' ? 'opacity 300ms' : 'clip-path 300ms, opacity 300ms',
           }}
         >
           <img

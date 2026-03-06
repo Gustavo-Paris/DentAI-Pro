@@ -91,15 +91,22 @@ export function DSDWhiteningComparison({
               );
               const isActive = patientPreferences?.whiteningLevel === level;
               return (
-                <button
-                  type="button"
+                <div
                   key={level}
+                  role="button"
+                  tabIndex={0}
                   className={`rounded-lg overflow-hidden border-2 cursor-pointer transition-all duration-300 text-left w-full ${isActive ? 'border-primary shadow-md' : 'border-transparent hover:border-primary/40'}`}
                   aria-pressed={isActive}
                   aria-label={`${WHITENING_LABELS[level]}${isActive ? ` - ${t('components.wizard.dsd.whiteningComparison.selected')}` : ''}`}
                   onClick={() => {
                     if (isActive) return;
                     onSelectLevel(level, url);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      if (!isActive) onSelectLevel(level, url);
+                    }
                   }}
                 >
                   {/* TODO: Use lightweight thumbnails instead of full ComparisonSliders for better performance */}
@@ -117,7 +124,7 @@ export function DSDWhiteningComparison({
                       <span className="text-xs font-medium text-muted-foreground">{t('components.wizard.dsd.whiteningComparison.clickToSelect')}</span>
                     </div>
                   )}
-                </button>
+                </div>
               );
             })}
           </div>
