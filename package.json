@@ -21,8 +21,6 @@
       "@types/react": "^18.3.18",
       "@types/react-dom": "^18.3.5"
     },
-    "patchedDependencies": {
-      "@parisgroup-ai/design-os-pkg@0.11.1": "patches/@parisgroup-ai__design-os-pkg@0.11.1.patch"
-    }
+    "patchedDependencies": {}
   }
 }
