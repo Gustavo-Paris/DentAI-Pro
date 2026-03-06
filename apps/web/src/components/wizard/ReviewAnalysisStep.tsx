@@ -215,6 +215,7 @@ export function ReviewAnalysisStep({
 
       {activeTab === 'paciente' && (
         <div className="space-y-4">
+          <div className="relative z-10">
           <PatientDataSection
             formData={formData}
             onFormChange={onFormChange}
@@ -226,6 +227,7 @@ export function ReviewAnalysisStep({
             dobError={dobError}
             setDobError={setDobError}
           />
+          </div>
           {/* Observations */}
           {analysisResult?.observations && analysisResult.observations.length > 0 && (
             <div className="glass-panel rounded-xl p-4">
