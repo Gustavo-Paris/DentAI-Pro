@@ -163,6 +163,10 @@ export function useWizardSubmit({
     if (isSubmittingRef.current || !user || !validateForm()) return;
     isSubmittingRef.current = true;
 
+    // Wake up edge function runtimes in parallel (fire-and-forget).
+    // Avoids cold-start delays when the first real AI call hits.
+    wizardData.warmupEdgeFunctions();
+
     setIsSubmitting(true);
     setSubmissionStep(0);
     setCurrentToothIndex(-1);

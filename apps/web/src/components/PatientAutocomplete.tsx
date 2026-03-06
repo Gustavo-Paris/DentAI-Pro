@@ -112,7 +112,7 @@ export const PatientAutocomplete = memo(function PatientAutocomplete({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const showDropdown = isOpen && value.trim().length > 0 && (filteredPatients.length > 0 || value.trim().length >= 2);
+  const showDropdown = isOpen && value.trim().length > 0 && !selectedPatientId && (filteredPatients.length > 0 || value.trim().length >= 2);
   const exactMatch = patients.find((p) => p.name.toLowerCase() === value.toLowerCase().trim());
 
   const resolvedLabel = label ?? t('components.wizard.review.patientNameLabel');

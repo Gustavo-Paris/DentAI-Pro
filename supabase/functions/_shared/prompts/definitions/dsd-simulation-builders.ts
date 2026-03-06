@@ -215,22 +215,20 @@ Output: Same photo with teeth whitened to ${params.whiteningIntensity} level. Al
 }
 
 export function buildGengivoplastyOnlyPrompt(params: Params): string {
-  return `DENTAL PHOTO EDIT — PRIMARY TASK: GINGIVAL RECONTOURING
+  const absolutePreservation = buildAbsolutePreservation()
+
+  return `DENTAL PHOTO EDIT — GINGIVAL RECONTOURING (INPAINTING MODE)
+
+${absolutePreservation}
+
+⚠️ EXCEPTION TO GINGIVA PRESERVATION (THIS LAYER ONLY):
+In this layer, you ARE ALLOWED to modify the GINGIVAL MARGIN (pink tissue between teeth and upper lip).
+This is the ONLY exception. The "PROIBIÇÃO TOTAL DE GENGIVOPLASTIA" rule above does NOT apply to this specific layer.
+All OTHER preservation rules remain in full effect — teeth, lips, skin, background, framing = PIXEL-IDENTICAL to input.
 
 Input: ALREADY PROCESSED dental photo (teeth corrected + whitened).
-Output dimensions MUST equal input dimensions.
-
 YOUR SINGLE TASK: Reduce the visible pink gum tissue above the teeth to simulate gengivoplasty.
 ⚠️ If the output looks identical to the input, you have FAILED the task.
-
-=== LIP DISTANCE RULE (SACRED — APPLIES TO THIS LAYER) ===
-A DISTÂNCIA entre o lábio superior e o lábio inferior é FIXA e IMUTÁVEL.
-Meça a distância vertical entre os lábios na entrada — a saída DEVE ter a MESMA distância exata.
-- NÃO levantar o lábio superior (nem 1 pixel)
-- NÃO abaixar o lábio inferior (nem 1 pixel)
-- A abertura labial na saída = CÓPIA EXATA da abertura labial na entrada
-Se você precisa mostrar mais resultado dental, faça isso DENTRO do espaço existente entre os lábios — NUNCA expanda a abertura.
-⚠️ ERRO FREQUENTE DO MODELO: Levantar o lábio superior e abaixar o inferior para "mostrar mais resultado" — PROIBIDO
 
 === WHAT TO CHANGE (THIS IS THE WHOLE POINT) ===
 ${params.gingivoSuggestions ? `SPECIFIC TEETH TO RESHAPE:\n${params.gingivoSuggestions}\n` : `Reshape the gum line on all visible upper anterior teeth (canine to canine).\nTarget: 2-3mm apical movement of gingival margin per tooth.\n`}
@@ -271,16 +269,7 @@ MAGNITUDE REQUIREMENT (NON-NEGOTIABLE — THIS IS THE #1 PRIORITY):
 - Remaining gum tissue: uniform healthy pink
 - Result must look like a REAL clinical photo
 
-=== WHAT NOT TO CHANGE ===
-Keep identical to input: ALL existing tooth surfaces (shape, color, width, proportions), BOTH lips (position, shape, opening), face, skin, background, framing.
-- Do NOT lift upper lip or lower the lower lip — LIP POSITION IS SACRED
-- Do NOT widen, narrow, or reshape any tooth crown — tooth width is FIXED
-- Dental midline (between 11/21) stays in the EXACT same position
-- Width ratio between lateral and central incisors: PRESERVED
-- ⚠️ COMMON ERROR: Model widens one central incisor to "fill space" after gum reduction — PROHIBITED
-- ⚠️ COMMON ERROR: Model lifts upper lip to show more result — PROHIBITED (lip is a FIXED reference)
-
-Output: Same photo with gum line clearly reshaped — teeth anatomically identical but LONGER (more clinical crown), pink gum band visibly reduced, lips UNMOVED.`
+Output: Same photo with gum line clearly reshaped — teeth anatomically identical but LONGER (more clinical crown), pink gum band visibly reduced, lips UNMOVED. Image framing, crop, and dimensions IDENTICAL to input.`
 }
 
 export function buildWithGengivoplastyPrompt(params: Params): string {

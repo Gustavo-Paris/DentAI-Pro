@@ -5,6 +5,22 @@ import { logger } from '@/lib/logger';
 import type { EvaluationStatus } from '@/lib/evaluation-status';
 
 // ---------------------------------------------------------------------------
+// Edge Function Warmup
+// ---------------------------------------------------------------------------
+
+/**
+ * Fire-and-forget warmup pings to edge functions that will be called during
+ * case generation. The POST with empty body returns 400/401 almost instantly
+ * but wakes the Deno runtime so subsequent real calls avoid cold-start delays.
+ */
+export function warmupEdgeFunctions() {
+  const fns = ['recommend-resin', 'recommend-cementation'];
+  for (const fn of fns) {
+    supabase.functions.invoke(fn, { body: {} }).catch(() => {/* expected to fail */});
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Storage
 // ---------------------------------------------------------------------------
 

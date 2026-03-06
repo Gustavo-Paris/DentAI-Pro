@@ -72,6 +72,9 @@ export function useAddTeethFlow(deps: UseAddTeethFlowDeps): UseAddTeethFlowRetur
   const handleSubmitTeeth = useCallback(async (payload: SubmitTeethPayload) => {
     if (!user || !patientDataForModal) return;
 
+    // Wake up edge function runtimes (fire-and-forget) to avoid cold-start delays
+    wizard.warmupEdgeFunctions();
+
     const treatmentCounts: Record<string, number> = {};
     const newEvalIds: string[] = [];
     const results: Array<{ tooth: string; success: boolean; error?: string }> = [];
