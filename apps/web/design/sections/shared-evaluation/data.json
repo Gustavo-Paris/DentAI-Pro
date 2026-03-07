@@ -1,0 +1,121 @@
+{
+  "_meta": {
+    "models": {
+      "SharedEvaluation": "A single tooth evaluation in the shared view.",
+      "SharedDSDData": "DSD simulation data with analysis and layer URLs.",
+      "SharedFooter": "Footer attribution metadata."
+    }
+  },
+  "summary": {
+    "date": "2026-03-05T10:15:00Z",
+    "total_count": 5,
+    "completed_count": 4
+  },
+  "evaluations": [
+    {
+      "tooth": "11",
+      "treatment_type": "resina",
+      "treatment_label": "Resina Composta",
+      "treatment_icon": "Layers",
+      "status": "completed",
+      "ai_treatment_indication": "Restauração direta em resina composta com estratificação anatômica. Classe IV com envolvimento incisal. Protocolo de 4 camadas: opaco, dentina, esmalte e efeitos incisais.",
+      "patient_name": "Ana Beatriz Ferreira",
+      "clinic_name": "Clínica Odontológica Sorrisos",
+      "created_at": "2026-03-05T10:15:00Z"
+    },
+    {
+      "tooth": "12",
+      "treatment_type": "resina",
+      "treatment_label": "Resina Composta",
+      "treatment_icon": "Layers",
+      "status": "completed",
+      "ai_treatment_indication": "Restauração direta classe III mesial. Protocolo de 3 camadas com resina Filtek Z350 XT. Cor corpo A2, esmalte A1.",
+      "patient_name": "Ana Beatriz Ferreira",
+      "clinic_name": "Clínica Odontológica Sorrisos",
+      "created_at": "2026-03-05T10:15:00Z"
+    },
+    {
+      "tooth": "21",
+      "treatment_type": "resina",
+      "treatment_label": "Resina Composta",
+      "treatment_icon": "Layers",
+      "status": "completed",
+      "ai_treatment_indication": "Restauração direta em resina composta. Classe IV com fratura incisal. Estratificação com 4 camadas incluindo efeitos incisais com corante Kolor+.",
+      "patient_name": "Ana Beatriz Ferreira",
+      "clinic_name": "Clínica Odontológica Sorrisos",
+      "created_at": "2026-03-05T10:15:00Z"
+    },
+    {
+      "tooth": "22",
+      "treatment_type": "resina",
+      "treatment_label": "Resina Composta",
+      "treatment_icon": "Layers",
+      "status": "completed",
+      "ai_treatment_indication": "Restauração direta classe III distal. Protocolo simplificado de 2 camadas. Resina Filtek Z350 XT cor A2B e WE.",
+      "patient_name": "Ana Beatriz Ferreira",
+      "clinic_name": "Clínica Odontológica Sorrisos",
+      "created_at": "2026-03-05T10:15:00Z"
+    },
+    {
+      "tooth": "13",
+      "treatment_type": "gengivoplastia",
+      "treatment_label": "Gengivoplastia",
+      "treatment_icon": "Scissors",
+      "status": "planned",
+      "ai_treatment_indication": "Gengivoplastia para correção de assimetria gengival. Redução de 1.5mm na margem gengival vestibular para harmonização do sorriso.",
+      "patient_name": "Ana Beatriz Ferreira",
+      "clinic_name": "Clínica Odontológica Sorrisos",
+      "created_at": "2026-03-05T10:15:00Z"
+    }
+  ],
+  "dsdData": {
+    "dsd_analysis": {
+      "smile_line": "alta",
+      "face_midline_deviation": "nenhuma",
+      "upper_lip_symmetry": "simetrico",
+      "proportions": {
+        "central_width_height_ratio": 78,
+        "lateral_central_ratio": 67,
+        "canine_central_ratio": 55
+      },
+      "detected_teeth": ["11", "12", "13", "21", "22", "23"]
+    },
+    "dsd_simulation_layers": [
+      {
+        "type": "natural",
+        "label": "Natural",
+        "includes_gengivoplasty": false
+      },
+      {
+        "type": "whitening",
+        "label": "Clareamento",
+        "includes_gengivoplasty": false
+      },
+      {
+        "type": "gingival",
+        "label": "Gengival",
+        "includes_gengivoplasty": true
+      }
+    ]
+  },
+  "patientDocument": {
+    "id": "doc-001",
+    "patient_name": "Ana Beatriz Ferreira",
+    "content": "Paciente apresenta classe IV nos elementos 11 e 21 com envolvimento incisal. Classe III mesial no 12 e distal no 22. Assimetria gengival no 13 indicando gengivoplastia. Plano de tratamento inclui restaurações diretas em resina composta com estratificação anatômica e correção gengival.",
+    "created_at": "2026-03-05T10:15:00Z"
+  },
+  "footer": {
+    "clinic_name": "Clínica Odontológica Sorrisos",
+    "attribution": "Gerado por ToSmile.ai - Apoio à decisão clínica"
+  },
+  "expiredState": {
+    "title": "Link Expirado",
+    "description": "Este link de compartilhamento não está mais disponível. Solicite um novo link ao profissional responsável.",
+    "cta_label": "Ir para ToSmile.ai"
+  },
+  "notFoundState": {
+    "title": "Link Não Encontrado",
+    "description": "Este link de compartilhamento não existe ou já foi removido.",
+    "cta_label": "Ir para ToSmile.ai"
+  }
+}

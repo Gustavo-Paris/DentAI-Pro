@@ -1,0 +1,184 @@
+{
+  "_meta": {
+    "models": {
+      "PrivacySection": "A numbered legal section with title, body text, optional labeled items and sub-sections.",
+      "PrivacyLabeledItem": "A list item with a bold label and description text.",
+      "PrivacySubSection": "A sub-section within a parent section, with its own title and content."
+    }
+  },
+  "title": "Política de Privacidade",
+  "lastUpdated": "05/03/2026",
+  "contactEmail": "privacidade@tosmile.ai",
+  "dpoEmail": "dpo@tosmile.ai",
+  "sections": [
+    {
+      "number": 1,
+      "title": "Introdução",
+      "paragraphs": [
+        "O ToSmile.ai está comprometido com a proteção da privacidade e dos dados pessoais de seus usuários, em conformidade com a Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/2018). Esta política descreve como coletamos, utilizamos, armazenamos e protegemos seus dados e os dados clínicos dos pacientes processados pela plataforma."
+      ]
+    },
+    {
+      "number": 2,
+      "title": "Dados Coletados",
+      "paragraphs": ["Coletamos os seguintes tipos de dados:"],
+      "labeledItems": [
+        { "label": "Dados de cadastro:", "text": "Nome completo, email profissional, CRO (opcional)" },
+        { "label": "Dados clínicos dos pacientes:", "text": "Informações inseridas pelo profissional para análise, incluindo: nome/iniciais do paciente, idade, região dental, tipo de cavidade, fotografias intraorais e de sorriso, preferências de tratamento e histórico de avaliações" },
+        { "label": "Fotografias clínicas:", "text": "Imagens intraorais, fotos de sorriso e demais registros fotográficos enviados para análise pela IA e simulação digital de sorriso (DSD)" },
+        { "label": "Dados de uso:", "text": "Histórico de avaliações realizadas, protocolos gerados, preferências de materiais" },
+        { "label": "Dados técnicos:", "text": "Endereço IP, tipo de dispositivo, navegador utilizado" }
+      ]
+    },
+    {
+      "number": 3,
+      "title": "Base Legal para Tratamento (Art. 7º LGPD)",
+      "paragraphs": ["O tratamento dos dados é fundamentado nas seguintes bases legais da LGPD:"],
+      "labeledItems": [
+        { "label": "Consentimento (Art. 7º, I):", "text": "Para o processamento de fotografias clínicas e dados do paciente pela IA. O profissional deve obter consentimento do paciente antes de inserir seus dados na plataforma" },
+        { "label": "Execução de contrato (Art. 7º, V):", "text": "Para fornecer o serviço de apoio à decisão clínica contratado" },
+        { "label": "Legítimo interesse (Art. 7º, IX):", "text": "Para melhorias de segurança, prevenção de fraudes e análises estatísticas agregadas e anonimizadas" }
+      ]
+    },
+    {
+      "number": 4,
+      "title": "Processamento de Dados pela Inteligência Artificial",
+      "paragraphs": ["Esta seção detalha como a IA processa os dados clínicos e imagens dos pacientes:"],
+      "subSections": [
+        {
+          "title": "4.1. Ciclo de Vida das Imagens na IA",
+          "items": [
+            "As fotografias clínicas são enviadas de forma criptografada (TLS 1.2+) para os provedores de IA exclusivamente durante o processamento da análise",
+            "O processamento ocorre em tempo real — as imagens NÃO são armazenadas permanentemente pelos provedores de IA",
+            "Após a conclusão da análise (geralmente segundos), as imagens são descartadas dos servidores de processamento da IA",
+            "As fotografias originais permanecem armazenadas com segurança em nossos servidores (Supabase Storage), vinculadas exclusivamente à conta do profissional"
+          ]
+        },
+        {
+          "title": "4.2. Provedores de IA e Subprocessadores",
+          "paragraphs": ["Utilizamos os seguintes provedores de IA como subprocessadores de dados:"],
+          "labeledItems": [
+            { "label": "Google (Gemini):", "text": "Análise de fotografias clínicas, geração de protocolos de tratamento e simulação digital de sorriso (DSD)" },
+            { "label": "Anthropic (Claude):", "text": "Geração de protocolos de recomendação de materiais e validação de imagens" }
+          ],
+          "closing": "Ambos os provedores operam sob contratos que proíbem o uso dos dados para treinamento de modelos, em conformidade com suas respectivas políticas de dados para APIs comerciais."
+        },
+        {
+          "title": "4.3. Anonimização e Minimização",
+          "items": [
+            "Os dados enviados à IA são MINIMIZADOS — apenas as informações clinicamente necessárias são transmitidas (idade, região dental, tipo de tratamento)",
+            "Dados de identificação direta do paciente (nome completo, CPF, endereço) NÃO são transmitidos aos provedores de IA",
+            "As análises da IA retornam apenas dados técnicos (cores de resina, camadas, protocolos) — não contêm dados pessoais do paciente"
+          ]
+        },
+        {
+          "title": "4.4. Não Treinamento",
+          "paragraphs": [
+            "Garantimos que: os dados clínicos e imagens dos seus pacientes NÃO são utilizados para treinar, aprimorar ou calibrar modelos de IA — nem por nós, nem pelos provedores subprocessadores. Os dados são processados exclusivamente para gerar as sugestões solicitadas pelo profissional."
+          ]
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "title": "Finalidade do Uso dos Dados",
+      "paragraphs": ["Utilizamos seus dados para:"],
+      "items": [
+        "Gerar sugestões de protocolos restauradores e de cimentação via IA",
+        "Processar fotografias clínicas para análise e simulação digital de sorriso",
+        "Manter histórico de avaliações e protocolos gerados",
+        "Fornecer recomendações personalizadas baseadas no perfil do profissional",
+        "Enviar comunicações sobre o serviço (quando autorizado)",
+        "Gerar relatórios em PDF para compartilhamento com pacientes",
+        "Cumprir obrigações legais e regulatórias"
+      ]
+    },
+    {
+      "number": 6,
+      "title": "Armazenamento e Segurança",
+      "paragraphs": ["Seus dados são armazenados em servidores seguros com múltiplas camadas de proteção:"],
+      "items": [
+        "Criptografia SSL/TLS 1.2+ para toda transmissão de dados",
+        "Criptografia em repouso (AES-256) para dados sensíveis e fotografias",
+        "Controle de acesso baseado em funções (RBAC) — cada profissional acessa apenas seus próprios dados",
+        "Autenticação segura com tokens JWT e rotação automática",
+        "Monitoramento contínuo de segurança e logs de auditoria",
+        "Backups regulares com recuperação de desastres",
+        "Fotografias armazenadas em buckets isolados com URLs assinadas de acesso temporário"
+      ]
+    },
+    {
+      "number": 7,
+      "title": "Compartilhamento de Dados",
+      "paragraphs": ["Não vendemos, alugamos ou compartilhamos seus dados pessoais ou de seus pacientes com terceiros para fins comerciais. Os dados podem ser compartilhados apenas:"],
+      "items": [
+        "Com provedores de IA (Google e Anthropic) exclusivamente para processamento em tempo real das análises, conforme descrito na Seção 4",
+        "Com provedores de infraestrutura essenciais (Supabase para banco de dados e armazenamento, Vercel para hospedagem)",
+        "Com processadores de pagamento (Stripe) para dados estritamente de cobrança",
+        "Quando exigido por lei, ordem judicial ou autoridade regulatória competente",
+        "Para proteger nossos direitos legais em caso de litígio"
+      ]
+    },
+    {
+      "number": 8,
+      "title": "Seus Direitos (LGPD)",
+      "paragraphs": ["De acordo com a LGPD (Arts. 17-22), você tem direito a:"],
+      "labeledItems": [
+        { "label": "Acesso:", "text": "Solicitar cópia de todos os seus dados pessoais e dos dados clínicos processados" },
+        { "label": "Correção:", "text": "Solicitar correção de dados incompletos ou incorretos" },
+        { "label": "Exclusão:", "text": "Solicitar a eliminação dos seus dados pessoais e de todas as imagens clínicas armazenadas" },
+        { "label": "Portabilidade:", "text": "Exportar seus dados em formato estruturado (JSON) através do painel de privacidade" },
+        { "label": "Revogação:", "text": "Revogar consentimento a qualquer momento, cessando o processamento futuro dos dados" },
+        { "label": "Informação:", "text": "Saber exatamente com quais subprocessadores seus dados foram compartilhados" },
+        { "label": "Oposição:", "text": "Opor-se ao tratamento de dados quando baseado em legítimo interesse" }
+      ],
+      "closing": "Para exercer qualquer desses direitos, utilize o painel de Dados e Privacidade no seu perfil ou entre em contato:"
+    },
+    {
+      "number": 9,
+      "title": "Cookies",
+      "paragraphs": [
+        "Utilizamos cookies essenciais para o funcionamento do serviço, como manutenção de sessão e preferências de usuário. Não utilizamos cookies de rastreamento de terceiros para publicidade."
+      ]
+    },
+    {
+      "number": 10,
+      "title": "Retenção de Dados",
+      "paragraphs": [
+        "Mantemos seus dados enquanto sua conta estiver ativa ou conforme necessário para fornecer nossos serviços. Após a exclusão da conta, seus dados pessoais, avaliações e fotografias clínicas serão removidos em até 30 dias, exceto quando houver obrigação legal de retenção (ex.: dados fiscais por 5 anos conforme legislação tributária)."
+      ]
+    },
+    {
+      "number": 11,
+      "title": "Responsabilidade do Profissional",
+      "paragraphs": [
+        "O cirurgião-dentista é o controlador dos dados pessoais de seus pacientes perante a LGPD. Ao utilizar o ToSmile.ai, o profissional se responsabiliza por: (a) obter consentimento informado do paciente para captura e processamento de suas imagens e dados clínicos na plataforma; (b) informar o paciente sobre o uso de IA no apoio ao planejamento do tratamento; (c) manter registro do consentimento obtido."
+      ]
+    },
+    {
+      "number": 12,
+      "title": "Menores de Idade",
+      "paragraphs": [
+        "O ToSmile.ai é destinado exclusivamente a profissionais de odontologia. Quando o profissional inserir dados de pacientes menores de 18 anos, deverá obter consentimento do responsável legal conforme Art. 14 da LGPD."
+      ]
+    },
+    {
+      "number": 13,
+      "title": "Alterações nesta Política",
+      "paragraphs": [
+        "Podemos atualizar esta Política de Privacidade periodicamente. Notificaremos sobre alterações significativas através do email cadastrado ou aviso no serviço. Alterações que ampliem o escopo de processamento de dados pela IA requerão novo consentimento."
+      ]
+    },
+    {
+      "number": 14,
+      "title": "Contato e Encarregado de Dados",
+      "paragraphs": [
+        "Para dúvidas sobre esta Política de Privacidade ou sobre o tratamento dos seus dados, entre em contato:"
+      ],
+      "contacts": [
+        { "label": "Email:", "email": "privacidade@tosmile.ai" },
+        { "label": "Encarregado de Dados (DPO):", "email": "dpo@tosmile.ai" }
+      ]
+    }
+  ]
+}

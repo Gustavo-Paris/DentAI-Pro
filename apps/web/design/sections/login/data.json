@@ -1,0 +1,33 @@
+{
+  "_meta": {
+    "models": {
+      "AuthFeature": "A feature highlight shown in the brand panel.",
+      "LoginForm": "Login form field values."
+    }
+  },
+  "brandName": "ToSmile.ai",
+  "title": "Entrar na sua conta",
+  "subtitle": "Acesse sua conta para continuar",
+  "brandSlogan": "Odontologia estética inteligente",
+  "brandDescription": "Protocolos de estratificação e simulações de sorriso com IA generativa.",
+  "features": [
+    { "icon": "Sparkles", "label": "Análise visual inteligente com IA" },
+    { "icon": "Shield", "label": "Dados protegidos e criptografados" },
+    { "icon": "Zap", "label": "Resultados em menos de 2 minutos" },
+    { "icon": "Palette", "label": "Protocolos com suas resinas favoritas" }
+  ],
+  "socialProof": "Mais de 500 dentistas já usam ToSmile.ai",
+  "googleButtonLabel": "Continuar com Google",
+  "dividerLabel": "ou",
+  "form": {
+    "emailLabel": "Email",
+    "emailPlaceholder": "nome@exemplo.com",
+    "passwordLabel": "Senha",
+    "passwordPlaceholder": "••••••••"
+  },
+  "forgotPasswordLabel": "Esqueceu a senha?",
+  "submitLabel": "Entrar",
+  "submittingLabel": "Entrando...",
+  "registerPrompt": "Não tem uma conta?",
+  "registerLabel": "Criar conta"
+}

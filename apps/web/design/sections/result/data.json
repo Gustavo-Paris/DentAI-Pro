@@ -1,0 +1,125 @@
+{
+  "_meta": {
+    "models": {
+      "Evaluation": "Full evaluation record with treatment type, protocol, resin, photos, DSD analysis.",
+      "Resin": "Recommended resin with name, manufacturer, type, and properties.",
+      "ProtocolLayer": "A single stratification layer with order, name, shade, thickness, technique, purpose.",
+      "Alternative": "An alternative resin suggestion with name, manufacturer, and reason.",
+      "CementationProtocol": "Protocol data for indirect restorations (porcelana/coroa).",
+      "GenericProtocol": "Fallback protocol for special treatment types."
+    }
+  },
+  "sampleEvaluation": {
+    "id": "eval-001",
+    "session_id": "sess-201",
+    "created_at": "2026-03-05T10:30:00Z",
+    "patient_name": "Ana Beatriz Lima",
+    "patient_age": 34,
+    "tooth": "21",
+    "region": "anterior-superior",
+    "cavity_class": "Classe IV",
+    "restoration_size": "Grande",
+    "substrate": "Esmalte e Dentina",
+    "aesthetic_level": "alto",
+    "tooth_color": "A2",
+    "stratification_needed": true,
+    "bruxism": false,
+    "longevity_expectation": "longa",
+    "budget": "premium",
+    "recommendation_text": "Z350 XT foi selecionada por sua excelente capacidade de mimetismo estético em restaurações anteriores de Classe IV. Sua nanotecnologia proporciona polimento superior e longevidade cromática, essencial para a região anterior com nível estético alto.",
+    "treatment_type": "resina",
+    "is_from_inventory": true,
+    "has_inventory_at_creation": true,
+    "patient_aesthetic_goals": "natural"
+  },
+  "sampleResin": {
+    "id": "resin-001",
+    "name": "Filtek Z350 XT",
+    "manufacturer": "3M ESPE",
+    "type": "Nanoparticulada",
+    "opacity": "Translúcida",
+    "resistance": "Alta",
+    "polishing": "Excelente",
+    "aesthetics": "Superior"
+  },
+  "sampleLayers": [
+    {
+      "order": 1,
+      "name": "Camada Opaca / Mascaramento",
+      "resin_brand": "Z350 XT",
+      "shade": "OA2",
+      "thickness": "0.3mm",
+      "purpose": "Mascarar substrato escurecido e criar base opaca para estratificação",
+      "technique": "Aplicar em camada fina e uniforme no fundo da cavidade"
+    },
+    {
+      "order": 2,
+      "name": "Dentina / Corpo",
+      "resin_brand": "Z350 XT",
+      "shade": "A2D",
+      "thickness": "1.0mm",
+      "purpose": "Reproduzir a massa de dentina com cor e opacidade adequadas",
+      "technique": "Inserir em incrementos oblíquos, respeitando a anatomia interna"
+    },
+    {
+      "order": 3,
+      "name": "Efeitos Incisais",
+      "resin_brand": "Z350 XT",
+      "shade": "CT",
+      "thickness": "0.3mm",
+      "purpose": "Simular opalescência e translucidez do terço incisal",
+      "technique": "Aplicar pequenas porções entre mamelos de dentina",
+      "optional": true
+    },
+    {
+      "order": 4,
+      "name": "Esmalte Palatino",
+      "resin_brand": "Z350 XT",
+      "shade": "A2E",
+      "thickness": "0.5mm",
+      "purpose": "Reconstruir parede palatina e conferir translucidez natural",
+      "technique": "Moldar com matriz de silicone previamente confeccionada"
+    },
+    {
+      "order": 5,
+      "name": "Esmalte Vestibular",
+      "resin_brand": "Z350 XT",
+      "shade": "WE",
+      "thickness": "0.5mm",
+      "purpose": "Camada final de esmalte com translucidez e brilho natural",
+      "technique": "Aplicar em camada única, esculpir anatomia de superfície"
+    }
+  ],
+  "sampleAlternatives": [
+    {
+      "name": "Harmonize",
+      "manufacturer": "Kerr",
+      "reason": "Tecnologia ARC que se adapta à cor dos dentes adjacentes, boa opção para casos estéticos anteriores."
+    },
+    {
+      "name": "Empress Direct",
+      "manufacturer": "Ivoclar Vivadent",
+      "reason": "Excelente mimetismo óptico com sistema de camadas simplificado."
+    }
+  ],
+  "sampleChecklist": [
+    "Isolamento absoluto instalado",
+    "Condicionamento ácido 37% por 15s em esmalte",
+    "Aplicação do adesivo em 2 camadas ativas",
+    "Fotopolimerização adequada de cada incremento",
+    "Verificação oclusal com papel articular",
+    "Acabamento com discos de granulação decrescente",
+    "Polimento final com pasta diamantada"
+  ],
+  "sampleBreadcrumbs": [
+    { "label": "Dashboard", "href": "/dashboard" },
+    { "label": "Avaliação", "href": "/evaluation/sess-201" },
+    { "label": "Dente 21" }
+  ],
+  "sampleTabs": [
+    { "key": "protocol", "label": "Protocolo" },
+    { "key": "finishing", "label": "Acabamento" },
+    { "key": "checklist", "label": "Checklist" },
+    { "key": "dsd", "label": "DSD" }
+  ]
+}

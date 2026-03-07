@@ -1,0 +1,54 @@
+{
+  "_meta": {
+    "models": {
+      "AuthFeature": "A feature highlight shown in the brand panel.",
+      "RegisterForm": "Registration form field values.",
+      "PasswordRequirement": "A password validation rule with pass/fail state."
+    }
+  },
+  "brandName": "ToSmile.ai",
+  "title": "Criar sua conta",
+  "subtitle": "Comece a usar em poucos minutos",
+  "brandSlogan": "Odontologia estética inteligente",
+  "brandDescription": "Protocolos de estratificação e simulações de sorriso com IA generativa.",
+  "features": [
+    { "icon": "Sparkles", "label": "Análise visual inteligente com IA" },
+    { "icon": "Shield", "label": "Dados protegidos e criptografados" },
+    { "icon": "Zap", "label": "Resultados em menos de 2 minutos" },
+    { "icon": "Palette", "label": "Protocolos com suas resinas favoritas" }
+  ],
+  "socialProof": "Mais de 500 dentistas já usam ToSmile.ai",
+  "googleButtonLabel": "Continuar com Google",
+  "dividerLabel": "ou",
+  "form": {
+    "fullNameLabel": "Nome completo",
+    "fullNamePlaceholder": "Dr. João Silva",
+    "croLabel": "CRO (opcional)",
+    "croPlaceholder": "CRO-SP 12345",
+    "emailLabel": "Email profissional",
+    "emailPlaceholder": "nome@exemplo.com",
+    "passwordLabel": "Senha",
+    "passwordPlaceholder": "••••••••••••",
+    "confirmPasswordLabel": "Confirmar senha",
+    "confirmPasswordPlaceholder": "••••••••••••"
+  },
+  "passwordRequirements": [
+    { "label": "Mínimo 8 caracteres", "met": true },
+    { "label": "Letra maiúscula", "met": true },
+    { "label": "Letra minúscula", "met": true },
+    { "label": "Número", "met": false }
+  ],
+  "termsLabel": "Concordo com os",
+  "termsLink": "Termos de Uso",
+  "andLabel": "e",
+  "privacyLink": "Política de Privacidade",
+  "submitLabel": "Criar conta",
+  "submittingLabel": "Criando conta...",
+  "loginPrompt": "Já tem uma conta?",
+  "loginLabel": "Entrar",
+  "emailSent": {
+    "title": "Verifique seu email",
+    "subtitle": "Enviamos um link de verificação para dr.joao@clinica.com. Clique no link para ativar sua conta.",
+    "goToLoginLabel": "Ir para login"
+  }
+}

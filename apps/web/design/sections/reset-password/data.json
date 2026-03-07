@@ -1,0 +1,45 @@
+{
+  "_meta": {
+    "models": {
+      "AuthFeature": "A feature highlight shown in the brand panel.",
+      "ResetPasswordForm": "Reset password form field values.",
+      "PasswordRequirement": "A password validation rule with pass/fail state."
+    }
+  },
+  "brandName": "ToSmile.ai",
+  "title": "Redefinir senha",
+  "subtitle": "Digite sua nova senha",
+  "brandSlogan": "Odontologia estética inteligente",
+  "brandDescription": "Protocolos de estratificação e simulações de sorriso com IA generativa.",
+  "features": [
+    { "icon": "Sparkles", "label": "Análise visual inteligente com IA" },
+    { "icon": "Shield", "label": "Dados protegidos e criptografados" },
+    { "icon": "Zap", "label": "Resultados em menos de 2 minutos" },
+    { "icon": "Palette", "label": "Protocolos com suas resinas favoritas" }
+  ],
+  "socialProof": "Mais de 500 dentistas já usam ToSmile.ai",
+  "form": {
+    "newPasswordLabel": "Nova senha",
+    "newPasswordPlaceholder": "••••••••••••",
+    "confirmPasswordLabel": "Confirmar nova senha",
+    "confirmPasswordPlaceholder": "••••••••••••"
+  },
+  "passwordRequirements": [
+    { "label": "Mínimo 8 caracteres", "met": true },
+    { "label": "Letra maiúscula", "met": true },
+    { "label": "Letra minúscula", "met": true },
+    { "label": "Número", "met": true }
+  ],
+  "submitLabel": "Atualizar senha",
+  "submittingLabel": "Atualizando...",
+  "invalidLink": {
+    "title": "Link inválido",
+    "subtitle": "Este link expirou ou já foi utilizado. Solicite um novo link de recuperação.",
+    "requestNewLabel": "Solicitar novo link"
+  },
+  "success": {
+    "title": "Senha atualizada!",
+    "subtitle": "Você será redirecionado em instantes...",
+    "redirectMessage": "Redirecionando para o dashboard..."
+  }
+}

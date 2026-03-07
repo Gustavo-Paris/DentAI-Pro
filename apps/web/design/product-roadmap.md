@@ -28,3 +28,36 @@ Página de marketing com hero, features, depoimentos, FAQ e pricing para convers
 
 ### 9. Pricing
 Página de planos e preços com toggle mensal/anual, cards de planos e tabela comparativa de recursos.
+
+### 10. Patient Profile
+Ficha detalhada do paciente com avatar, dados de contato, KPIs (sessões, casos, concluídos), timeline de tratamentos e histórico de sessões.
+
+### 11. Result
+Exibição individual de protocolo — recomendação de resina, tabela de estratificação com camadas/cores/espessuras, checklist, alternativas e exportação PDF.
+
+### 12. Group Result
+Resultado agrupado para múltiplos dentes — protocolo unificado com badges de dentes, resina compartilhada, checklist sincronizado e ações em lote.
+
+### 13. Shared Evaluation
+Página pública de compartilhamento de caso clínico via token — sem autenticação, com simulação DSD, documento do paciente e avaliações por dente.
+
+### 14. Login
+Página de login com email/senha e Google OAuth. Layout split-panel com branding à esquerda e formulário à direita.
+
+### 15. Register
+Cadastro de novo usuário com validação de senha, checkbox de termos e Google OAuth.
+
+### 16. Forgot Password
+Fluxo de recuperação de senha — envio de email com link de reset.
+
+### 17. Reset Password
+Confirmação de nova senha após link de recuperação.
+
+### 18. Terms
+Termos de uso do ToSmile.ai — 12 seções legais com conteúdo estático.
+
+### 19. Privacy
+Política de privacidade — 14 seções incluindo LGPD, cookies e direitos do titular.
+
+### 20. Not Found
+Página 404 minimalista com ícone, mensagem e CTA para voltar ao dashboard.

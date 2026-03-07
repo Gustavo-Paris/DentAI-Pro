@@ -1,0 +1,30 @@
+{
+  "_meta": {
+    "models": {
+      "AuthFeature": "A feature highlight shown in the brand panel.",
+      "ForgotPasswordForm": "Forgot password form field values."
+    }
+  },
+  "brandName": "ToSmile.ai",
+  "title": "Esqueceu a senha?",
+  "subtitleInput": "Digite seu email para receber o link de recuperação",
+  "subtitleSent": "Verifique sua caixa de entrada",
+  "brandSlogan": "Odontologia estética inteligente",
+  "brandDescription": "Protocolos de estratificação e simulações de sorriso com IA generativa.",
+  "features": [
+    { "icon": "Sparkles", "label": "Análise visual inteligente com IA" },
+    { "icon": "Shield", "label": "Dados protegidos e criptografados" },
+    { "icon": "Zap", "label": "Resultados em menos de 2 minutos" },
+    { "icon": "Palette", "label": "Protocolos com suas resinas favoritas" }
+  ],
+  "socialProof": "Mais de 500 dentistas já usam ToSmile.ai",
+  "form": {
+    "emailLabel": "Email",
+    "emailPlaceholder": "nome@exemplo.com"
+  },
+  "submitLabel": "Enviar link de recuperação",
+  "submittingLabel": "Enviando...",
+  "sentConfirmation": "Enviamos um link para dr.joao@clinica.com. Clique no link para redefinir sua senha.",
+  "resendLabel": "Enviar novamente",
+  "backToLoginLabel": "Voltar para login"
+}

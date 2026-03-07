@@ -1,0 +1,12 @@
+{
+  "_meta": {
+    "models": {
+      "NotFoundPage": "A 404 error page with error code, heading, description, and CTA."
+    }
+  },
+  "errorCode": "404",
+  "heading": "Página não encontrada",
+  "description": "O endereço que você tentou acessar não existe ou foi removido.",
+  "ctaLabel": "Voltar ao início",
+  "ctaHref": "/"
+}

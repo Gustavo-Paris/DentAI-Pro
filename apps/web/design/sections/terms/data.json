@@ -1,0 +1,140 @@
+{
+  "_meta": {
+    "models": {
+      "TermsSection": "A numbered legal section with title, body text, and optional bullet list."
+    }
+  },
+  "title": "Termos de Uso",
+  "lastUpdated": "05/03/2026",
+  "contactEmail": "contato@tosmile.ai",
+  "sections": [
+    {
+      "number": 1,
+      "title": "Aceitação dos Termos",
+      "paragraphs": [
+        "Ao acessar e usar o ToSmile.ai, você concorda com estes Termos de Uso. Se você não concordar com qualquer parte destes termos, não deve usar nosso serviço."
+      ]
+    },
+    {
+      "number": 2,
+      "title": "Descrição do Serviço",
+      "paragraphs": [
+        "O ToSmile.ai é uma ferramenta de apoio à decisão clínica destinada exclusivamente a cirurgiões-dentistas devidamente habilitados. O sistema utiliza modelos de Inteligência Artificial (IA) para analisar fotografias clínicas, dados do caso e preferências do profissional, gerando SUGESTÕES de:"
+      ],
+      "items": [
+        "Seleção de resinas compostas e sistemas adesivos adequados ao caso",
+        "Protocolos de estratificação com sequência de camadas, cores e espessuras",
+        "Simulações digitais de sorriso (DSD) para planejamento estético",
+        "Protocolo de cimentação para restaurações indiretas"
+      ],
+      "closing": "Todas as saídas do sistema são SUGESTÕES geradas por algoritmos e devem ser interpretadas exclusivamente como referência técnica, nunca como diagnóstico, prescrição ou plano de tratamento definitivo."
+    },
+    {
+      "number": 3,
+      "title": "Natureza das Sugestões da IA",
+      "important": "AVISO FUNDAMENTAL:",
+      "paragraphs": [
+        "A Inteligência Artificial utilizada pelo ToSmile.ai é uma FERRAMENTA DE AUXÍLIO ao diagnóstico e ao planejamento de tratamento. Suas saídas constituem SUGESTÕES que devem ser obrigatoriamente validadas pelo cirurgião-dentista antes de qualquer aplicação clínica.",
+        "O resultado clínico final do tratamento depende de múltiplos fatores que estão FORA do escopo e controle da IA, incluindo mas não limitado a:"
+      ],
+      "items": [
+        "Experiência, habilidade técnica e formação do profissional",
+        "Seleção e qualidade do material restaurador efetivamente utilizado",
+        "Condições clínicas específicas do paciente (saúde periodontal, bruxismo, higiene oral, etc.)",
+        "Protocolo de isolamento, preparo cavitário e técnica adesiva empregada",
+        "Sequência clínica adequada de inserção, fotoativação e acabamento/polimento",
+        "Condições de iluminação, umidade e temperatura durante o procedimento",
+        "Colaboração e adesão do paciente às orientações pós-operatórias",
+        "Interações medicamentosas, alergias e condições sistêmicas do paciente"
+      ],
+      "closing": "A IA NÃO realiza exame clínico, NÃO avalia condições periodontais em tempo real, NÃO verifica a integridade do substrato dental e NÃO substitui exames complementares (radiografias, tomografias, etc.). As análises são baseadas exclusivamente nas informações e imagens fornecidas pelo profissional."
+    },
+    {
+      "number": 4,
+      "title": "Limitação de Responsabilidade",
+      "paragraphs": [
+        "O cirurgião-dentista é o ÚNICO responsável pelas decisões clínicas tomadas em relação ao tratamento de seus pacientes. O ToSmile.ai e seus desenvolvedores NÃO se responsabilizam por:"
+      ],
+      "items": [
+        "Diagnósticos, planos de tratamento ou condutas clínicas baseadas nas sugestões da IA",
+        "Resultados estéticos ou funcionais dos procedimentos realizados",
+        "Danos, prejuízos ou complicações decorrentes do uso das sugestões fornecidas",
+        "Incompatibilidade entre as sugestões e as condições clínicas reais do paciente",
+        "Falhas decorrentes de informações incorretas ou incompletas fornecidas pelo profissional"
+      ],
+      "closing": "O uso do ToSmile.ai não estabelece relação profissional-paciente entre os desenvolvedores da plataforma e os pacientes dos profissionais usuários."
+    },
+    {
+      "number": 5,
+      "title": "Uso Adequado",
+      "paragraphs": ["Você concorda em:"],
+      "items": [
+        "Utilizar o serviço exclusivamente como ferramenta complementar de apoio à decisão clínica",
+        "Fornecer informações precisas e verdadeiras ao usar o serviço",
+        "Validar clinicamente TODA sugestão antes de aplicá-la ao paciente",
+        "Não compartilhar suas credenciais de acesso com terceiros",
+        "Não utilizar o serviço para fins ilegais ou não autorizados",
+        "Não tentar acessar áreas restritas do sistema",
+        "Respeitar a privacidade e dados de pacientes conforme a LGPD",
+        "Obter consentimento informado do paciente para uso de suas imagens e dados na plataforma"
+      ]
+    },
+    {
+      "number": 6,
+      "title": "Processamento de Imagens e Dados Clínicos pela IA",
+      "paragraphs": [
+        "Ao enviar fotografias clínicas e dados do paciente, você consente que estes sejam processados por modelos de IA de terceiros (Google Gemini e Anthropic Claude) para geração das sugestões. Esclarecemos que:"
+      ],
+      "items": [
+        "As imagens são transmitidas de forma criptografada (TLS 1.2+) exclusivamente para os servidores dos provedores de IA durante o processamento",
+        "Os provedores de IA contratados NÃO utilizam as imagens ou dados dos seus pacientes para treinamento ou aprimoramento de seus modelos",
+        "As imagens são processadas em tempo real e NÃO são armazenadas pelos provedores de IA após a conclusão da análise",
+        "Os dados dos pacientes são transmitidos de forma anonimizada — sem nome, CPF ou dados que identifiquem diretamente o paciente",
+        "As fotografias clínicas originais são armazenadas em nossos servidores seguros (Supabase Storage) com criptografia em repouso, vinculadas à conta do profissional",
+        "O profissional pode solicitar a exclusão de todas as imagens e dados a qualquer momento através do painel de privacidade ou por email"
+      ]
+    },
+    {
+      "number": 7,
+      "title": "Propriedade Intelectual",
+      "paragraphs": [
+        "Todo o conteúdo do ToSmile.ai, incluindo mas não limitado a textos, gráficos, logos, ícones, imagens, algoritmos e software, é propriedade exclusiva do ToSmile.ai ou de seus licenciadores e é protegido por leis de propriedade intelectual."
+      ]
+    },
+    {
+      "number": 8,
+      "title": "Conta do Usuário",
+      "paragraphs": [
+        "Você é responsável por manter a confidencialidade de sua conta e senha. Qualquer atividade realizada em sua conta é de sua responsabilidade. Notifique-nos imediatamente sobre qualquer uso não autorizado de sua conta."
+      ]
+    },
+    {
+      "number": 9,
+      "title": "Modificações do Serviço",
+      "paragraphs": [
+        "Reservamo-nos o direito de modificar, suspender ou descontinuar o serviço a qualquer momento, com ou sem aviso prévio. Também podemos atualizar estes Termos de Uso periodicamente."
+      ]
+    },
+    {
+      "number": 10,
+      "title": "Rescisão",
+      "paragraphs": [
+        "Podemos encerrar ou suspender seu acesso ao serviço imediatamente, sem aviso prévio, por qualquer motivo, incluindo violação destes Termos de Uso."
+      ]
+    },
+    {
+      "number": 11,
+      "title": "Lei Aplicável",
+      "paragraphs": [
+        "Estes Termos de Uso são regidos pelas leis da República Federativa do Brasil, em especial a Lei Geral de Proteção de Dados (Lei nº 13.709/2018), o Código de Defesa do Consumidor (Lei nº 8.078/1990) e o Marco Civil da Internet (Lei nº 12.965/2014). Qualquer disputa será submetida ao foro da comarca de São Paulo, SP."
+      ]
+    },
+    {
+      "number": 12,
+      "title": "Contato",
+      "paragraphs": [
+        "Para dúvidas sobre estes Termos de Uso, entre em contato através do email:"
+      ]
+    }
+  ]
+}

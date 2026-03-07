@@ -1,0 +1,94 @@
+{
+  "_meta": {
+    "models": {
+      "GroupEvaluation": "An evaluation in the group, sharing the same protocol fingerprint.",
+      "Resin": "Shared resin recommendation applied identically to all teeth in the group.",
+      "ProtocolLayer": "Stratification layer from the primary evaluation, shared across group.",
+      "GenericProtocol": "Fallback protocol for special treatment types.",
+      "CementationProtocol": "Cementation protocol for indirect restorations."
+    }
+  },
+  "sampleGroupEvaluations": [
+    {
+      "id": "eval-301",
+      "tooth": "11",
+      "treatment_type": "resina",
+      "session_id": "sess-301"
+    },
+    {
+      "id": "eval-302",
+      "tooth": "21",
+      "treatment_type": "resina",
+      "session_id": "sess-301"
+    },
+    {
+      "id": "eval-303",
+      "tooth": "12",
+      "treatment_type": "resina",
+      "session_id": "sess-301"
+    },
+    {
+      "id": "eval-304",
+      "tooth": "22",
+      "treatment_type": "resina",
+      "session_id": "sess-301"
+    }
+  ],
+  "sampleGroupTeeth": ["11", "21", "12", "22"],
+  "sampleResin": {
+    "id": "resin-002",
+    "name": "Filtek Z350 XT",
+    "manufacturer": "3M ESPE",
+    "type": "Nanoparticulada"
+  },
+  "sampleLayers": [
+    {
+      "order": 1,
+      "name": "Dentina / Corpo",
+      "resin_brand": "Z350 XT",
+      "shade": "A2D",
+      "thickness": "0.8mm",
+      "purpose": "Reproduzir massa de dentina para todos os elementos do grupo",
+      "technique": "Incrementos oblíquos respeitando anatomia individual de cada dente"
+    },
+    {
+      "order": 2,
+      "name": "Efeitos Incisais",
+      "resin_brand": "Z350 XT",
+      "shade": "CT",
+      "thickness": "0.3mm",
+      "purpose": "Opalescência e translucidez uniforme no grupo anterior",
+      "technique": "Aplicar entre mamelos, manter simetria bilateral",
+      "optional": true
+    },
+    {
+      "order": 3,
+      "name": "Esmalte Vestibular",
+      "resin_brand": "Z350 XT",
+      "shade": "WE",
+      "thickness": "0.5mm",
+      "purpose": "Camada final com translucidez e continuidade cromática entre dentes",
+      "technique": "Camada única, texturizar superfície para naturalidade"
+    }
+  ],
+  "sampleChecklist": [
+    "Isolamento absoluto em todos os elementos",
+    "Condicionamento ácido seletivo por 15s",
+    "Adesivo universal em 2 camadas ativas",
+    "Fotopolimerização individual por dente",
+    "Ajuste oclusal bilateral verificado",
+    "Acabamento com discos sequenciais",
+    "Polimento final com pasta diamantada"
+  ],
+  "sampleBreadcrumbs": [
+    { "label": "Dashboard", "href": "/dashboard" },
+    { "label": "Avaliação", "href": "/evaluation/sess-301" },
+    { "label": "Protocolo Unificado (4 dentes)" }
+  ],
+  "sampleHeaderActions": [
+    { "label": "Marcar Todos Concluídos", "variant": "outline" }
+  ],
+  "sampleFooterActions": [
+    { "label": "Recalcular", "variant": "outline" }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "_meta": {
+    "models": {
+      "PatientProfile": "Full patient data including contact info, shown in the header and contact card.",
+      "PatientMetrics": "Computed KPI values: total sessions, total cases, completed, first visit date.",
+      "PatientSession": "A session card showing teeth evaluated, completion progress, and date.",
+      "EditForm": "Editable patient fields: name, phone, email, notes."
+    }
+  },
+  "sampleProfile": {
+    "id": "pat-001",
+    "name": "Maria Clara Oliveira",
+    "phone": "(11) 98765-4321",
+    "email": "maria.clara@email.com",
+    "notes": "Paciente com histórico de sensibilidade dentária. Preferência por tratamentos estéticos. Alergia a látex."
+  },
+  "sampleMetrics": {
+    "totalSessions": 5,
+    "totalCases": 12,
+    "completedCases": 9,
+    "firstVisit": "2025-08-20T10:00:00Z",
+    "firstVisitFormatted": "20/ago"
+  },
+  "sampleSessions": [
+    {
+      "session_id": "sess-101",
+      "created_at": "2026-03-03T14:30:00Z",
+      "teeth": ["11", "21", "12", "22"],
+      "evaluationCount": 4,
+      "completedCount": 4
+    },
+    {
+      "session_id": "sess-102",
+      "created_at": "2026-02-15T09:00:00Z",
+      "teeth": ["14", "15", "24"],
+      "evaluationCount": 3,
+      "completedCount": 3
+    },
+    {
+      "session_id": "sess-103",
+      "created_at": "2026-01-10T11:30:00Z",
+      "teeth": ["36", "46"],
+      "evaluationCount": 2,
+      "completedCount": 1
+    },
+    {
+      "session_id": "sess-104",
+      "created_at": "2025-11-22T08:45:00Z",
+      "teeth": ["37", "47", "38"],
+      "evaluationCount": 3,
+      "completedCount": 1
+    },
+    {
+      "session_id": "sess-105",
+      "created_at": "2025-08-20T10:00:00Z",
+      "teeth": ["16"],
+      "evaluationCount": 1,
+      "completedCount": 0
+    }
+  ],
+  "sampleBreadcrumbs": [
+    { "label": "Dashboard", "href": "/dashboard" },
+    { "label": "Pacientes", "href": "/patients" },
+    { "label": "Maria Clara Oliveira" }
+  ],
+  "sampleHeaderActions": [
+    { "label": "Nova Avaliação", "variant": "default" },
+    { "label": "Editar", "variant": "outline" },
+    { "label": "Excluir", "variant": "ghost" }
+  ]
+}
