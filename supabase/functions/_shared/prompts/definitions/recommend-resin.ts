@@ -348,7 +348,7 @@ export const recommendResin: PromptDefinition<Params> = {
   id: 'recommend-resin',
   name: 'Recomendação de Resina',
   description: 'Gera recomendação completa de resina com protocolo de estratificação',
-  model: 'claude-sonnet-4-6',
+  model: 'claude-opus-4-6',
   temperature: 0.0,
   maxTokens: 4096,
   mode: 'text',

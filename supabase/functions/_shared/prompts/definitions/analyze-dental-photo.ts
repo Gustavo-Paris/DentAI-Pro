@@ -11,7 +11,7 @@ export const analyzeDentalPhoto: PromptDefinition<Params> = {
   id: 'analyze-dental-photo',
   name: 'Análise Clínica e Estética Unificada',
   description: 'Análise unificada: identificação clínica de todos os dentes com problemas + análise estética DSD com visagismo e proporções faciais',
-  model: 'gemini-3.1-pro-preview',
+  model: 'gemini-2.5-pro',
   temperature: 0.0,
   maxTokens: 4000,
   mode: 'vision-tools',

@@ -20,6 +20,7 @@ const DEFAULT_TIMEOUT_MS = 50_000;
 
 // Fallback models for 5xx errors — after 1 failed attempt, switch model
 const FALLBACK_MODELS: Record<string, string> = {
+  "claude-opus-4-6": "claude-sonnet-4-6",
   "claude-sonnet-4-6": "claude-sonnet-4-5-20250929",
   "claude-haiku-4-5-20251001": "claude-sonnet-4-6",
 };

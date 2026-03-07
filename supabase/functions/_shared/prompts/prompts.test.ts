@@ -25,9 +25,11 @@ import type { PromptDefinition } from "./types.ts";
 
 const VALID_MODELS: Record<string, string> = {
   "gemini-3.1-pro-preview": "gemini",
+  "gemini-2.5-pro": "gemini",
   "gemini-3-pro-image-preview": "gemini",
   "gemini-3.1-flash-image-preview": "gemini",
   "gemini-2.0-flash": "gemini",
+  "claude-opus-4-6": "claude",
   "claude-sonnet-4-6": "claude",
   "claude-haiku-4-5-20251001": "claude",
 };
@@ -116,17 +118,17 @@ Deno.test("MaxTokens in reasonable range", () => {
 // 3. Specific model assignments (regression guards)
 // ---------------------------------------------------------------------------
 
-Deno.test("analyze-dental-photo uses Gemini 3.1 Pro", () => {
+Deno.test("analyze-dental-photo uses Gemini 2.5 Pro", () => {
   const p = getPrompt("analyze-dental-photo");
-  assertEquals(p.model, "gemini-3.1-pro-preview");
+  assertEquals(p.model, "gemini-2.5-pro");
   assertEquals(p.provider, "gemini");
   assertEquals(p.mode, "vision-tools");
   assertEquals(p.temperature, 0.0);
 });
 
-Deno.test("recommend-resin uses Claude Sonnet 4.6", () => {
+Deno.test("recommend-resin uses Claude Opus 4.6", () => {
   const p = getPrompt("recommend-resin");
-  assertEquals(p.model, "claude-sonnet-4-6");
+  assertEquals(p.model, "claude-opus-4-6");
   assertEquals(p.provider, "claude");
   assertEquals(p.temperature, 0.0);
 });
@@ -138,9 +140,9 @@ Deno.test("dsd-simulation uses Nano Banana 2 (primary)", () => {
   assertEquals(p.mode, "image-edit");
 });
 
-Deno.test("recommend-cementation uses Claude Haiku", () => {
+Deno.test("recommend-cementation uses Claude Opus 4.6", () => {
   const p = getPrompt("recommend-cementation");
-  assertEquals(p.model, "claude-haiku-4-5-20251001");
+  assertEquals(p.model, "claude-opus-4-6");
   assertEquals(p.provider, "claude");
 });
 

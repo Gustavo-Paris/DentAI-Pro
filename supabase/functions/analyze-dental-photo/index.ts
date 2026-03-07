@@ -203,7 +203,6 @@ Deno.serve(async (req) => {
             maxTokens: 4000,
             forceFunctionName: "analyze_dental_photo",
             timeoutMs: 90_000,
-            thinkingLevel: "low",
             maxRetries: 0, // Single attempt — client-side retries handle failures.
             additionalImages: additionalImages.length > 0 ? additionalImages : undefined,
           }
@@ -238,7 +237,7 @@ Deno.serve(async (req) => {
 
       try {
         step("claude-fallback: calling");
-        const fallbackModel = "claude-haiku-4-5-20251001";
+        const fallbackModel = "claude-sonnet-4-6";
         const fallbackResult = await withMetrics<{ text: string | null; functionCall: { name: string; args: Record<string, unknown> } | null; finishReason: string }>(metrics, promptDef.id, PROMPT_VERSION, fallbackModel)(async () => {
           const response = await callClaudeVisionWithTools(
             fallbackModel,
