@@ -84,15 +84,26 @@ export default function PatientListPreview() {
     <div className="min-h-screen section-glow-bg">
       {/* Ambient background */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="glow-orb w-64 h-64 bg-primary/10 -top-20 -right-20" />
-        <div className="glow-orb glow-orb-slow w-48 h-48 bg-accent/10 bottom-40 -left-20" />
+        <div className="glow-orb" style={{
+          width: 380, height: 380, top: '-5%', right: '-5%',
+          background: 'radial-gradient(circle, rgb(var(--color-primary-rgb) / 0.10) 0%, transparent 70%)',
+        }} />
+        <div className="glow-orb glow-orb-slow" style={{
+          width: 300, height: 300, bottom: '20%', left: '-5%',
+          background: 'radial-gradient(circle, rgb(var(--color-accent-rgb) / 0.10) 0%, transparent 70%)',
+        }} />
+        <div className="glow-orb" style={{
+          width: 320, height: 320, top: '40%', right: '30%',
+          background: 'radial-gradient(circle, rgb(var(--accent-violet-rgb) / 0.08) 0%, transparent 70%)',
+        }} />
       </div>
+      <div className="ai-grid-pattern absolute inset-0 pointer-events-none" />
 
       {/* Content */}
       <div className="relative max-w-5xl mx-auto px-4 py-8 space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-semibold text-heading">Pacientes</h1>
+        <div className="flex items-center justify-between" style={{ animation: 'fade-in-up 0.6s ease-out 0.1s both' }}>
+          <h1 className="text-xl font-semibold text-heading neon-text">Pacientes</h1>
           <button className="flex items-center gap-2 bg-primary text-primary-foreground btn-press btn-glow rounded-lg px-4 py-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring">
             <Plus className="w-4 h-4" />
             Novo Paciente
@@ -100,7 +111,7 @@ export default function PatientListPreview() {
         </div>
 
         {/* Search */}
-        <div className="glass-panel rounded-xl px-4 py-3 flex items-center gap-3">
+        <div className="glass-panel rounded-xl px-4 py-3 flex items-center gap-3" style={{ animation: 'fade-in-up 0.6s ease-out 0.15s both' }}>
           <Search className="w-4 h-4 text-muted-foreground shrink-0" />
           <input
             type="text"
@@ -137,10 +148,11 @@ export default function PatientListPreview() {
         {/* Patient Cards */}
         {paginatedPatients.length > 0 ? (
           <div className="space-y-4">
-            {paginatedPatients.map((patient) => (
+            {paginatedPatients.map((patient, idx) => (
               <div
                 key={patient.id}
-                className="glass-panel rounded-xl p-4 hover:shadow-md transition-shadow cursor-pointer"
+                className="glass-panel card-elevated rounded-xl p-4 hover:shadow-md transition-shadow cursor-pointer"
+                style={{ animation: `fade-in-up 0.6s ease-out ${0.15 + idx * 0.05}s both` }}
               >
                 <div className="flex gap-4">
                   {/* Avatar */}

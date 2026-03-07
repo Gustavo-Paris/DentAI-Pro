@@ -117,13 +117,47 @@ export default function EvaluationDetail({
   return (
     <div className="section-glow-bg relative min-h-screen p-6 sm:p-8 space-y-6">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="glow-orb glow-orb-slow w-72 h-72 bg-primary/10 -top-24 -right-24" />
-        <div className="glow-orb glow-orb-reverse w-48 h-48 bg-accent/8 bottom-32 -left-16" />
+        <div
+          className="glow-orb glow-orb-slow"
+          style={{
+            width: 450,
+            height: 450,
+            top: '-8%',
+            right: '5%',
+            background: 'radial-gradient(circle, rgb(var(--color-primary-rgb) / 0.10) 0%, transparent 70%)',
+          }}
+        />
+        <div
+          className="glow-orb glow-orb-reverse"
+          style={{
+            width: 350,
+            height: 350,
+            bottom: '15%',
+            left: '-5%',
+            background: 'radial-gradient(circle, rgb(var(--color-accent-rgb) / 0.08) 0%, transparent 70%)',
+          }}
+        />
+        <div
+          className="glow-orb"
+          style={{
+            width: 280,
+            height: 280,
+            top: '45%',
+            left: '55%',
+            background: 'radial-gradient(circle, rgb(var(--accent-violet-rgb, 139 92 246) / 0.06) 0%, transparent 70%)',
+          }}
+        />
       </div>
+
+      {/* AI grid overlay */}
+      <div className="ai-grid-pattern absolute inset-0 pointer-events-none" />
 
       <div className="relative space-y-6">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-1 text-sm">
+        <nav
+          className="flex items-center gap-1 text-sm"
+          style={{ animation: 'fade-in-up 0.6s ease-out 0.1s both' }}
+        >
           <button
             onClick={() => onBack?.()}
             className="text-primary font-medium hover:underline focus-visible:ring-2 focus-visible:ring-ring rounded"
@@ -137,7 +171,10 @@ export default function EvaluationDetail({
         </nav>
 
         {/* Session Header Card */}
-        <div className="glass-panel rounded-xl overflow-hidden">
+        <div
+          className="glass-panel rounded-xl overflow-hidden"
+          style={{ animation: 'fade-in-up 0.6s ease-out 0.15s both' }}
+        >
           <div className="bg-gradient-to-br from-primary/5 to-transparent p-4 sm:p-5">
             <div className="flex gap-4">
               {/* Photo thumbnail */}
@@ -156,7 +193,7 @@ export default function EvaluationDetail({
               {/* Info */}
               <div className="flex-1 min-w-0 space-y-2.5">
                 <div>
-                  <h1 className="text-lg font-semibold text-heading truncate">
+                  <h1 className="text-heading text-lg font-semibold neon-text truncate">
                     {session.patient_name}
                   </h1>
                   <p className="text-xs text-muted-foreground">
@@ -203,7 +240,10 @@ export default function EvaluationDetail({
         </div>
 
         {/* Action Buttons Row */}
-        <div className="flex flex-wrap gap-2">
+        <div
+          className="flex flex-wrap gap-2"
+          style={{ animation: 'fade-in-up 0.6s ease-out 0.2s both' }}
+        >
           <button
             onClick={() => onNewEvaluation?.()}
             className="bg-primary text-primary-foreground rounded-lg px-4 py-2 text-sm font-medium btn-press btn-glow flex items-center gap-2 transition-colors focus-visible:ring-2 focus-visible:ring-ring"
@@ -243,10 +283,14 @@ export default function EvaluationDetail({
 
         {/* Treatment Groups */}
         <div className="space-y-4">
-          {groups.map((group) => {
+          {groups.map((group, idx) => {
             const treatStyle = getTreatmentStyle(group.treatment_type)
             return (
-              <div key={group.treatment_type} className="space-y-3">
+              <div
+                key={group.treatment_type}
+                className="space-y-3"
+                style={{ animation: `fade-in-up 0.6s ease-out ${0.25 + idx * 0.05}s both` }}
+              >
                 {/* Group header */}
                 <div className="flex items-center gap-2">
                   <span
@@ -261,7 +305,7 @@ export default function EvaluationDetail({
                 </div>
 
                 {/* Evaluation rows */}
-                <div className="glass-panel rounded-xl overflow-hidden divide-y divide-border/50">
+                <div className="glass-panel card-elevated rounded-xl overflow-hidden divide-y divide-border/50">
                   {group.evaluations.map((eval_) => {
                     const statusStyle = getStatusStyle(eval_.status)
                     const isSelected = selectedIds.has(eval_.id)

@@ -100,20 +100,30 @@ export default function ProfilePreview() {
   return (
     <div className="section-glow-bg relative min-h-screen p-6 sm:p-8 space-y-6">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="glow-orb glow-orb-1" />
-        <div className="glow-orb glow-orb-2" />
-        <div className="glow-orb glow-orb-3" />
+        <div className="glow-orb" style={{
+          width: 450, height: 450, top: '0%', left: '15%',
+          background: 'radial-gradient(circle, rgb(var(--color-primary-rgb) / 0.10) 0%, transparent 70%)',
+        }} />
+        <div className="glow-orb glow-orb-slow" style={{
+          width: 350, height: 350, bottom: '10%', right: '5%',
+          background: 'radial-gradient(circle, rgb(var(--color-accent-rgb) / 0.10) 0%, transparent 70%)',
+        }} />
+        <div className="glow-orb" style={{
+          width: 320, height: 320, top: '50%', left: '60%',
+          background: 'radial-gradient(circle, rgb(var(--accent-violet-rgb) / 0.08) 0%, transparent 70%)',
+        }} />
       </div>
+      <div className="ai-grid-pattern absolute inset-0 pointer-events-none" />
 
       <div className="relative space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold text-heading">Meu Perfil</h1>
+        <div style={{ animation: 'fade-in-up 0.6s ease-out 0.1s both' }}>
+          <h1 className="text-2xl font-bold text-heading neon-text">Meu Perfil</h1>
           <p className="text-sm text-muted-foreground">Gerencie sua conta e configuracoes</p>
         </div>
 
         {/* Tab Bar */}
-        <div className="glass-panel rounded-xl p-1 flex gap-1">
+        <div className="glass-panel rounded-xl p-1 flex gap-1" style={{ animation: 'fade-in-up 0.6s ease-out 0.15s both' }}>
           {TABS.map((tab) => (
             <button
               key={tab.id}
@@ -131,7 +141,7 @@ export default function ProfilePreview() {
 
         {/* Tab Content */}
         {activeTab === 'perfil' && (
-          <div className="space-y-6">
+          <div className="space-y-6" style={{ animation: 'fade-in-up 0.6s ease-out 0.2s both' }}>
             {/* Avatar Section */}
             <div className="flex items-center gap-6 justify-center">
               {/* User Avatar */}
@@ -153,7 +163,7 @@ export default function ProfilePreview() {
             </div>
 
             {/* Form */}
-            <div className="glass-panel rounded-xl p-6 space-y-4">
+            <div className="glass-panel card-elevated rounded-xl p-6 space-y-4">
               <FormField icon={User} label="Nome Completo" value={profile.full_name} />
               <FormField
                 icon={Hash}
@@ -183,7 +193,7 @@ export default function ProfilePreview() {
             </div>
 
             {/* Referral Card */}
-            <div className="glass-panel rounded-xl overflow-hidden">
+            <div className="glass-panel card-elevated rounded-xl overflow-hidden">
               <div className="bg-gradient-to-br from-primary/10 to-transparent p-5">
                 <div className="flex items-center gap-2 mb-3">
                   <Gift className="h-5 w-5 text-primary" />
@@ -227,11 +237,11 @@ export default function ProfilePreview() {
         )}
 
         {activeTab === 'assinatura' && (
-          <div className="space-y-6">
+          <div className="space-y-6" style={{ animation: 'fade-in-up 0.6s ease-out 0.2s both' }}>
             {/* Plan + Credits 2-col grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Plan Card */}
-              <div className="glass-panel rounded-xl p-5 space-y-3">
+              <div className="glass-panel card-elevated rounded-xl p-5 space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold text-foreground">{subscription.plan_name}</h3>
                   <span className="text-xs rounded-full px-2.5 py-1 font-medium bg-success/10 text-success">
@@ -253,7 +263,7 @@ export default function ProfilePreview() {
               </div>
 
               {/* Credits Card */}
-              <div className="glass-panel rounded-xl p-5 space-y-3">
+              <div className="glass-panel card-elevated rounded-xl p-5 space-y-3">
                 <h3 className="font-semibold text-foreground">Creditos</h3>
                 {/* Progress bar */}
                 <div className="h-3 rounded-full bg-primary/20 overflow-hidden">
@@ -311,7 +321,7 @@ export default function ProfilePreview() {
         )}
 
         {activeTab === 'faturas' && (
-          <div className="space-y-4">
+          <div className="space-y-4" style={{ animation: 'fade-in-up 0.6s ease-out 0.2s both' }}>
             {/* Header */}
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
@@ -328,7 +338,7 @@ export default function ProfilePreview() {
               {payments.map((payment) => (
                 <div
                   key={payment.id}
-                  className="glass-panel rounded-xl p-4 flex items-center justify-between hover:shadow-md transition-shadow"
+                  className="glass-panel card-elevated rounded-xl p-4 flex items-center justify-between hover:shadow-md transition-shadow"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
@@ -356,9 +366,9 @@ export default function ProfilePreview() {
         )}
 
         {activeTab === 'privacidade' && (
-          <div className="space-y-4">
+          <div className="space-y-4" style={{ animation: 'fade-in-up 0.6s ease-out 0.2s both' }}>
             {/* LGPD Rights Card */}
-            <div className="glass-panel rounded-xl p-5 space-y-3">
+            <div className="glass-panel card-elevated rounded-xl p-5 space-y-3">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="h-5 w-5 text-primary" />
                 <h3 className="font-semibold text-foreground">Seus Direitos (LGPD)</h3>
@@ -388,7 +398,7 @@ export default function ProfilePreview() {
             </div>
 
             {/* Export Data */}
-            <div className="glass-panel rounded-xl p-5 space-y-3">
+            <div className="glass-panel card-elevated rounded-xl p-5 space-y-3">
               <div className="flex items-center gap-2">
                 <Download className="h-5 w-5 text-primary" />
                 <h3 className="font-semibold text-foreground">Exportar Dados</h3>
@@ -403,7 +413,7 @@ export default function ProfilePreview() {
             </div>
 
             {/* Delete Account */}
-            <div className="glass-panel rounded-xl p-5 space-y-3 border border-destructive/30">
+            <div className="glass-panel card-elevated rounded-xl p-5 space-y-3 border border-destructive/30">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5 text-destructive" />
                 <h3 className="font-semibold text-destructive">Excluir Conta</h3>

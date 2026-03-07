@@ -110,7 +110,7 @@ export default function InsightsTab({
   return (
     <div className="space-y-4">
       {/* Period Filter */}
-      <div className="glass-panel rounded-xl px-3 py-2 flex items-center gap-1 w-fit">
+      <div className="glass-panel rounded-xl px-3 py-2 flex items-center gap-1 w-fit" style={{ animation: 'fade-in-up 0.6s ease-out 0.1s both' }}>
         {periodOptions.map((opt) => (
           <button
             key={opt.key}
@@ -129,9 +129,9 @@ export default function InsightsTab({
       </div>
 
       {/* Weekly Trends */}
-      <div className="glass-panel rounded-xl p-5">
+      <div className="glass-panel rounded-xl card-elevated p-5" style={{ animation: 'fade-in-up 0.6s ease-out 0.15s both' }}>
         <div className="mb-3">
-          <h3 className="text-sm font-semibold text-foreground">
+          <h3 className="text-sm font-semibold text-heading">
             Tendencia Semanal
           </h3>
           <p className="text-xs text-muted-foreground">
@@ -217,10 +217,10 @@ export default function InsightsTab({
       </div>
 
       {/* Two-column grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4" style={{ animation: 'fade-in-up 0.6s ease-out 0.2s both' }}>
         {/* Treatment Distribution */}
-        <div className="glass-panel rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-foreground mb-4">
+        <div className="glass-panel rounded-xl card-elevated p-5">
+          <h3 className="text-sm font-semibold text-heading mb-4">
             Distribuicao de Tratamentos
           </h3>
           <div className="flex flex-col items-center">
@@ -296,8 +296,8 @@ export default function InsightsTab({
         </div>
 
         {/* Top Resinas */}
-        <div className="glass-panel rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-foreground mb-4">
+        <div className="glass-panel rounded-xl card-elevated p-5">
+          <h3 className="text-sm font-semibold text-heading mb-4">
             Top Resinas
           </h3>
           <div className="space-y-4">
@@ -332,7 +332,7 @@ export default function InsightsTab({
       </div>
 
       {/* Clinical Summary */}
-      <div className="glass-panel rounded-xl p-5">
+      <div className="glass-panel rounded-xl card-elevated p-5" style={{ animation: 'fade-in-up 0.6s ease-out 0.25s both' }}>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-1.5">
@@ -388,7 +388,7 @@ export default function InsightsTab({
       </div>
 
       {/* Patient Growth */}
-      <div className="glass-panel rounded-xl p-4 flex items-center justify-between">
+      <div className="glass-panel rounded-xl card-elevated p-4 flex items-center justify-between" style={{ animation: 'fade-in-up 0.6s ease-out 0.3s both' }}>
         <div className="flex items-center gap-3">
           <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-accent/10 shrink-0">
             <Users className="w-5 h-5 text-accent" />

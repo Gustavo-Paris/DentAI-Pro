@@ -27,9 +27,20 @@ export default function DashboardPreview() {
     <div className="min-h-screen section-glow-bg">
       {/* Ambient background */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="glow-orb glow-orb-slow w-48 h-48 bg-primary/10 top-20 right-10" />
-        <div className="glow-orb glow-orb-reverse w-36 h-36 bg-accent/8 bottom-32 left-10" />
+        <div className="glow-orb glow-orb-slow" style={{
+          width: 380, height: 380, top: '5%', right: '5%',
+          background: 'radial-gradient(circle, rgb(var(--color-primary-rgb) / 0.10) 0%, transparent 70%)',
+        }} />
+        <div className="glow-orb glow-orb-reverse" style={{
+          width: 280, height: 280, bottom: '15%', left: '5%',
+          background: 'radial-gradient(circle, rgb(var(--color-accent-rgb) / 0.08) 0%, transparent 70%)',
+        }} />
+        <div className="glow-orb glow-orb-slow" style={{
+          width: 320, height: 320, top: '40%', left: '50%',
+          background: 'radial-gradient(circle, rgb(var(--accent-violet-rgb) / 0.06) 0%, transparent 70%)',
+        }} />
       </div>
+      <div className="ai-grid-pattern absolute inset-0 pointer-events-none" />
 
       {/* Content */}
       <div className="relative max-w-5xl mx-auto px-4 py-8 space-y-6">
@@ -37,7 +48,7 @@ export default function DashboardPreview() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {greetingIcon}
-            <h1 className="text-2xl font-bold text-heading">{greeting}</h1>
+            <h1 className="text-2xl font-bold text-heading neon-text">{greeting}</h1>
           </div>
           <div className="flex items-center gap-1.5 text-sm text-muted-foreground glass-panel rounded-full px-3 py-1.5">
             <Zap className="w-4 h-4 text-primary" />

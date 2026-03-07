@@ -78,17 +78,27 @@ export default function InventoryPreview() {
     <div className="section-glow-bg relative min-h-screen p-6 sm:p-8 space-y-6">
       {/* Glow orbs */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="glow-orb glow-orb-1" />
-        <div className="glow-orb glow-orb-2" />
-        <div className="glow-orb glow-orb-3" />
+        <div className="glow-orb" style={{
+          width: 450, height: 450, top: '0%', left: '15%',
+          background: 'radial-gradient(circle, rgb(var(--color-primary-rgb) / 0.10) 0%, transparent 70%)',
+        }} />
+        <div className="glow-orb glow-orb-slow" style={{
+          width: 350, height: 350, bottom: '10%', right: '5%',
+          background: 'radial-gradient(circle, rgb(var(--color-accent-rgb) / 0.10) 0%, transparent 70%)',
+        }} />
+        <div className="glow-orb" style={{
+          width: 320, height: 320, top: '50%', left: '60%',
+          background: 'radial-gradient(circle, rgb(var(--accent-violet-rgb) / 0.08) 0%, transparent 70%)',
+        }} />
       </div>
+      <div className="ai-grid-pattern absolute inset-0 pointer-events-none" />
 
       {/* Content */}
       <div className="relative space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" style={{ animation: 'fade-in-up 0.6s ease-out 0.1s both' }}>
           <div>
-            <h1 className="text-2xl font-bold text-heading">Estoque de Resinas</h1>
+            <h1 className="text-2xl font-bold text-heading neon-text">Estoque de Resinas</h1>
             <p className="text-sm text-muted-foreground">Gerencie suas resinas compostas</p>
           </div>
           <div className="flex items-center gap-2">
@@ -108,7 +118,7 @@ export default function InventoryPreview() {
         </div>
 
         {/* Type Legend Strip */}
-        <div className="glass-panel rounded-xl p-3 flex flex-wrap items-center gap-2">
+        <div className="glass-panel rounded-xl p-3 flex flex-wrap items-center gap-2" style={{ animation: 'fade-in-up 0.6s ease-out 0.15s both' }}>
           <span className="text-sm font-medium text-muted-foreground mr-1">Tipos:</span>
           {RESIN_TYPES.map((type) => (
             <span
@@ -122,7 +132,7 @@ export default function InventoryPreview() {
         </div>
 
         {/* Search + Filters Row */}
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col sm:flex-row gap-3" style={{ animation: 'fade-in-up 0.6s ease-out 0.2s both' }}>
           <div className="glass-panel rounded-xl flex-1 flex items-center gap-2 px-4 py-3">
             <Search className="h-4 w-4 text-muted-foreground shrink-0" />
             <input
@@ -183,10 +193,11 @@ export default function InventoryPreview() {
         {/* Resin Card Grid */}
         {filteredResins.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {filteredResins.map((resin) => (
+            {filteredResins.map((resin, idx) => (
               <div
                 key={resin.id}
-                className="glass-panel rounded-xl overflow-hidden hover:shadow-md transition-shadow cursor-pointer group"
+                className="glass-panel card-elevated rounded-xl overflow-hidden hover:shadow-md transition-shadow cursor-pointer group"
+                style={{ animation: `fade-in-up 0.6s ease-out ${0.25 + idx * 0.03}s both` }}
               >
                 {/* Shade swatch */}
                 <div

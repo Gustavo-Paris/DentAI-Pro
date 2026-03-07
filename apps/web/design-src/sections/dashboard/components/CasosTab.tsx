@@ -83,7 +83,7 @@ export default function CasosTab({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h2 className="text-xl font-semibold text-foreground">Seus Casos</h2>
+          <h2 className="text-xl font-semibold text-heading">Seus Casos</h2>
           {totalCases != null && (
             <span className="text-xs bg-muted text-muted-foreground rounded-full px-2 py-0.5">
               {totalCases} casos
@@ -93,7 +93,7 @@ export default function CasosTab({
       </div>
 
       {/* Filter pills */}
-      <div className="flex gap-2">
+      <div className="flex gap-2" style={{ animation: 'fade-in-up 0.6s ease-out 0.1s both' }}>
         {filters.map((f) => (
           <button
             key={f.key}
@@ -147,10 +147,11 @@ export default function CasosTab({
       {/* Session Cards */}
       {filteredSessions.length > 0 ? (
         <div className="space-y-4">
-          {filteredSessions.map((session) => (
+          {filteredSessions.map((session, idx) => (
             <SessionCard
               key={session.session_id}
               session={session}
+              index={idx}
               onSelect={() => onSelectSession?.(session.session_id)}
             />
           ))}
@@ -166,9 +167,11 @@ export default function CasosTab({
 
 function SessionCard({
   session,
+  index = 0,
   onSelect,
 }: {
   session: DashboardSession
+  index?: number
   onSelect: () => void
 }) {
   const isComplete = session.completedCount === session.evaluationCount
@@ -185,8 +188,9 @@ function SessionCard({
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') onSelect()
       }}
-      className="glass-panel rounded-xl p-4 hover:shadow-md transition-shadow cursor-pointer border-l-4"
+      className="glass-panel rounded-xl card-elevated p-4 hover:shadow-md transition-shadow cursor-pointer border-l-4"
       style={{
+        animation: `fade-in-up 0.6s ease-out ${0.15 + index * 0.05}s both`,
         borderLeftColor: isComplete
           ? 'var(--color-success)'
           : 'var(--color-primary)',

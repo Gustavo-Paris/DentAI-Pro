@@ -165,7 +165,7 @@ export default function SharedEvaluationPreview() {
       <main className="relative max-w-2xl mx-auto px-4 py-8 space-y-6">
         {/* Summary Card */}
         <div className="glass-panel rounded-xl p-5 animate-[fade-in-up_0.6s_ease-out_0.05s_both]">
-          <h1 className="text-xl font-bold text-heading font-display mb-3">
+          <h1 className="text-xl font-bold text-heading font-display neon-text mb-3">
             Avaliação Odontológica
           </h1>
           <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">

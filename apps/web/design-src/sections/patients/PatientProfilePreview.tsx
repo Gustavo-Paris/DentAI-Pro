@@ -37,8 +37,21 @@ export default function PatientProfilePreview() {
   return (
     <section className="section-glow-bg relative min-h-screen p-6 sm:p-8 space-y-6">
       {/* Glow orbs */}
-      <div className="glow-orb w-64 h-64 -top-20 -right-20 bg-primary/10" />
-      <div className="glow-orb glow-orb-slow w-48 h-48 bottom-40 -left-20 bg-accent/10" />
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="glow-orb" style={{
+          width: 380, height: 380, top: '-5%', right: '-5%',
+          background: 'radial-gradient(circle, rgb(var(--color-primary-rgb) / 0.10) 0%, transparent 70%)',
+        }} />
+        <div className="glow-orb glow-orb-slow" style={{
+          width: 300, height: 300, bottom: '20%', left: '-5%',
+          background: 'radial-gradient(circle, rgb(var(--color-accent-rgb) / 0.10) 0%, transparent 70%)',
+        }} />
+        <div className="glow-orb" style={{
+          width: 320, height: 320, top: '40%', right: '30%',
+          background: 'radial-gradient(circle, rgb(var(--accent-violet-rgb) / 0.08) 0%, transparent 70%)',
+        }} />
+      </div>
+      <div className="ai-grid-pattern absolute inset-0 pointer-events-none" />
 
       {/* ── 1. Breadcrumb ── */}
       <nav className="flex items-center gap-1">
@@ -48,7 +61,7 @@ export default function PatientProfilePreview() {
       </nav>
 
       {/* ── 2. Header Card ── */}
-      <div className="glass-panel rounded-xl overflow-hidden">
+      <div className="glass-panel rounded-xl overflow-hidden" style={{ animation: 'fade-in-up 0.6s ease-out 0.1s both' }}>
         <div className="bg-gradient-to-br from-primary/5 to-transparent p-5">
           <div className="flex flex-col sm:flex-row gap-4">
             {/* Avatar */}
@@ -58,7 +71,7 @@ export default function PatientProfilePreview() {
 
             {/* Info */}
             <div className="flex-1">
-              <h1 className="text-xl font-semibold text-heading">{profile.name}</h1>
+              <h1 className="text-xl font-semibold text-heading neon-text">{profile.name}</h1>
               <p className="text-sm text-muted-foreground">Perfil do Paciente</p>
             </div>
 
@@ -82,7 +95,7 @@ export default function PatientProfilePreview() {
       </div>
 
       {/* ── 3. Contact Info ── */}
-      <div className="glass-panel rounded-xl p-4">
+      <div className="glass-panel card-elevated rounded-xl p-4" style={{ animation: 'fade-in-up 0.6s ease-out 0.15s both' }}>
         <div className="flex flex-wrap gap-4 text-sm">
           {profile.phone && (
             <span className="flex items-center gap-1.5 text-foreground">
@@ -109,20 +122,20 @@ export default function PatientProfilePreview() {
       </div>
 
       {/* ── 4. Metrics KPIs ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="glass-panel rounded-xl p-4 text-center">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" style={{ animation: 'fade-in-up 0.6s ease-out 0.2s both' }}>
+        <div className="glass-panel card-elevated rounded-xl p-4 text-center">
           <p className="text-2xl font-semibold text-foreground">{metrics.totalSessions}</p>
           <p className="text-xs text-muted-foreground">Avaliacoes</p>
         </div>
-        <div className="glass-panel rounded-xl p-4 text-center">
+        <div className="glass-panel card-elevated rounded-xl p-4 text-center">
           <p className="text-2xl font-semibold text-foreground">{metrics.totalCases}</p>
           <p className="text-xs text-muted-foreground">Casos</p>
         </div>
-        <div className="glass-panel rounded-xl p-4 text-center">
+        <div className="glass-panel card-elevated rounded-xl p-4 text-center">
           <p className="text-2xl font-semibold text-primary">{metrics.completedCases}</p>
           <p className="text-xs text-muted-foreground">Concluidos</p>
         </div>
-        <div className="glass-panel rounded-xl p-4 text-center">
+        <div className="glass-panel card-elevated rounded-xl p-4 text-center">
           <p className="text-2xl font-semibold text-foreground">
             {new Date(metrics.firstVisit).toLocaleDateString('pt-BR')}
           </p>
@@ -131,7 +144,7 @@ export default function PatientProfilePreview() {
       </div>
 
       {/* ── 5. Session History ── */}
-      <div>
+      <div style={{ animation: 'fade-in-up 0.6s ease-out 0.25s both' }}>
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
           Historico de Sessoes
         </h3>
@@ -147,7 +160,7 @@ export default function PatientProfilePreview() {
             return (
               <div
                 key={session.session_id}
-                className="glass-panel rounded-xl p-4 border-l-4 hover:shadow-md transition-shadow cursor-pointer"
+                className="glass-panel card-elevated rounded-xl p-4 border-l-4 hover:shadow-md transition-shadow cursor-pointer"
                 style={{
                   borderLeftColor: isCompleted
                     ? 'var(--color-success)'

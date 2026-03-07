@@ -82,8 +82,8 @@ export default function PrincipalTab({
       </div>
 
       {/* KPI Banner */}
-      <div className="glass-panel rounded-xl p-4 sm:p-5">
-        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+      <div className="glass-panel rounded-xl card-elevated p-4 sm:p-5" style={{ animation: 'fade-in-up 0.6s ease-out 0.1s both' }}>
+        <h3 className="text-xs font-semibold text-heading text-muted-foreground uppercase tracking-wider mb-3">
           Sua Performance
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
@@ -159,7 +159,7 @@ export default function PrincipalTab({
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4" style={{ animation: 'fade-in-up 0.6s ease-out 0.15s both' }}>
         {quickActions.map(({ icon: Icon, label, onClick }) => (
           <button
             key={label}
@@ -181,7 +181,7 @@ export default function PrincipalTab({
       <div className="space-y-4">
         {/* Credit warning */}
         {showCreditsBanner && (
-          <div className="rounded-xl bg-gradient-to-r from-warning/10 to-warning/5 border border-warning/20 p-4">
+          <div className="rounded-xl bg-gradient-to-r from-warning/10 to-warning/5 border border-warning/20 p-4" style={{ animation: 'fade-in-up 0.6s ease-out 0.2s both' }}>
             <div className="flex items-center gap-3">
               <AlertTriangle className="w-5 h-5 text-warning shrink-0" />
               <div className="flex-1 min-w-0">
@@ -205,7 +205,7 @@ export default function PrincipalTab({
 
         {/* Draft pending */}
         {draft && (
-          <div className="ai-shimmer-border rounded-xl glass-panel p-4">
+          <div className="ai-shimmer-border rounded-xl glass-panel p-4" style={{ animation: 'fade-in-up 0.6s ease-out 0.25s both' }}>
             <div className="flex items-start gap-3">
               <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary/10 shrink-0 mt-0.5">
                 <FileEdit className="w-5 h-5 text-primary" />

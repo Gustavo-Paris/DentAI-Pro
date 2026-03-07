@@ -125,6 +125,9 @@ export default function TermsPreview() {
         />
       </div>
 
+      {/* AI grid overlay */}
+      <div className="ai-grid-pattern absolute inset-0 pointer-events-none" />
+
       <div className="relative">
         {/* Nav bar */}
         <header
