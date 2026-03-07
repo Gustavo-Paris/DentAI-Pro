@@ -546,6 +546,41 @@ ALERTA GUIA DE SILICONE: Se anterior (11-13/21-23) + reanatomização + Grande/E
 Se cavityClass contém "Diastema", "Fechamento", "Recontorno" ou "Faceta" E região anterior → CONTAR camadas no layers[]. Se < 4 → ADICIONAR camadas faltantes (Cristas Proximais é a mais frequentemente omitida).
 Ordem obrigatória: 1. Aumento Incisal, 2. Cristas Proximais, 3. Dentina/Corpo, 4. Esmalte Vestibular Final.
 
+=== JUSTIFICATIVA CLINICA OBRIGATORIA ===
+
+Para CADA decisao no protocolo, inclua justificativa concisa (1 frase) no campo correspondente:
+- Resina escolhida: propriedade que se aplica ao caso (ex: "Z350 XT — nanoparticulada, excelente polimento para regiao anterior estetica")
+- Tecnica de estratificacao: motivo da abordagem (ex: "3 camadas — substrato escurecido requer opacificacao + corpo + esmalte para mascarar")
+- Cor de cada camada: logica da selecao (ex: "Dentina A3 como corpo para reproduzir saturacao natural, Esmalte CT para translucidez incisal")
+
+NAO adicione justificativa generica. Cada justificativa deve referenciar uma caracteristica ESPECIFICA do caso.
+
+=== SEQUENCIA OPERATORIA ===
+
+Inclua no campo \`clinical_sequence\` (string) uma sequencia concisa:
+
+1. PREPARO: tipo (bisel longo/curto/sem bisel), extensao, observacoes
+2. PROTECAO PULPAR: se proximidade pulpar detectada na analise → "Capeamento indireto com [material] ANTES da restauracao"
+3. SISTEMA ADESIVO: referenciar o protocolo adesivo acima — qual sistema, por que (ex: "autocondicionante para substrato sensivel" ou "convencional 2 passos para melhor adesao em esmalte")
+4. INCREMENTOS: sequencia de insercao, espessura maxima por incremento (2mm), direcao (obliquo para reduzir fator C)
+5. ACABAMENTO: referenciar o protocolo de acabamento e polimento acima — instrumentos (discos Sof-Lex sequenciais ou brocas multilaminadas), sequencia de grits
+6. POLIMENTO: pasta diamantada + feltro, ou borrachas de silicone sequenciais
+
+Seja CONCISO — 1 linha por passo, sem repeticao do obvio.
+
+=== ALERTAS CONTEXTUAIS ===
+
+Adicione ao campo \`warnings\` quando aplicavel:
+
+- Proximidade pulpar detectada na analise → "⚠️ Proximidade pulpar — realizar capeamento indireto com [CIV/MTA/Biodentine] antes da restauracao direta"
+- Sensibilidade reportada na anamnese → "⚠️ Sensibilidade reportada — aplicar dessensibilizante (Gluma/oxalato de potassio) antes do sistema adesivo"
+- Bruxismo detectado/reportado → "⚠️ Bruxismo — considerar resina de alta resistencia ao desgaste (ex: Filtek One Bulk Fill posterior). Avaliar placa oclusal"
+- Dente antagonista ceramica → "⚠️ Antagonista ceramico — selecionar resina com resistencia ao desgaste compativel para evitar desgaste prematuro"
+- Restauracao em area de carga oclusal → "⚠️ Area de carga — espessura minima de 2mm, incrementos obliquos, fotopolimerizar por face"
+- Margem subgengival → "⚠️ Margem subgengival — isolamento absoluto + afastamento gengival com fio retrator"
+
+Inclua SOMENTE alertas que se aplicam ao caso. NAO adicione alertas genericos.
+
 === REGRAS PARA ALERTS E WARNINGS ===
 ALERTS: Alertas técnicos, substituições de shade, pontos de atenção. Formato livre.
 WARNINGS (O que NÃO fazer): EXCLUSIVAMENTE proibições. CADA item DEVE começar com "NÃO" ou "NUNCA" ou "PROIBIDO".
