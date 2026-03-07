@@ -66,9 +66,9 @@ export default function SharedEvaluation() {
       }}
     >
       {/* Summary Card */}
-      <Card className="mb-6 shadow-sm rounded-xl animate-[fade-in-up_0.6s_ease-out_both]">
+      <Card className="mb-6 glass-panel rounded-xl animate-[fade-in-up_0.6s_ease-out_both]">
         <CardHeader>
-          <CardTitle className="text-xl font-display">{t('evaluation.dental')}</CardTitle>
+          <CardTitle className="text-xl font-display neon-text">{t('evaluation.dental')}</CardTitle>
           <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
               <Calendar className="w-4 h-4" />
@@ -95,7 +95,7 @@ export default function SharedEvaluation() {
 
         if (dsdImageError) {
           return (
-            <Card className="mb-6 shadow-sm rounded-xl overflow-hidden animate-[fade-in-up_0.6s_ease-out_0.1s_both]">
+            <Card className="mb-6 glass-panel rounded-xl overflow-hidden animate-[fade-in-up_0.6s_ease-out_0.1s_both]">
               <CardHeader>
                 <CardTitle className="text-lg font-display">{t('pages.dsdSimulation')}</CardTitle>
               </CardHeader>
@@ -109,7 +109,7 @@ export default function SharedEvaluation() {
         }
 
         return (
-          <Card className="mb-6 shadow-sm rounded-xl overflow-hidden animate-[fade-in-up_0.6s_ease-out_0.1s_both]">
+          <Card className="mb-6 glass-panel rounded-xl overflow-hidden animate-[fade-in-up_0.6s_ease-out_0.1s_both]">
             <CardHeader>
               <CardTitle className="text-lg font-display">{t('pages.dsdSimulation')}</CardTitle>
             </CardHeader>

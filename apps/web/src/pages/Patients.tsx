@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { ListPage, GenericErrorState } from '@parisgroup-ai/pageshell/composites';
@@ -126,6 +126,39 @@ export default function Patients() {
   const navigate = useNavigate();
   const { patients: patientsList, total, isLoading, isError, createPatient, isCreating } = usePatientList();
 
+  // ---- External search, sort & pagination ----
+  // PageShell ListPage card view has a bug: pagination UI renders but items
+  // aren't sliced. We manage search/sort/pagination externally and pass
+  // only the current page's items.
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortValue, setSortValue] = useState('recent');
+  const [page, setPage] = useState(1);
+
+  const processedPatients = useMemo(() => {
+    let result = patientsList;
+    // Search
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      result = result.filter(p =>
+        SEARCH_FIELDS.some(f => p[f]?.toLowerCase().includes(q)),
+      );
+    }
+    // Sort
+    const comparator = SORT_COMPARATORS[sortValue];
+    if (comparator) {
+      result = [...result].sort(comparator);
+    }
+    return result;
+  }, [patientsList, searchQuery, sortValue]);
+
+  const filteredCount = processedPatients.length;
+  useEffect(() => { setPage(1); }, [filteredCount]);
+
+  const paginatedPatients = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return processedPatients.slice(start, start + PAGE_SIZE);
+  }, [processedPatients, page]);
+
   // ---- ListPage: search config ----
   const searchConfig = useMemo(
     () => ({ fields: SEARCH_FIELDS, placeholder: t('patients.searchPlaceholder') }),
@@ -144,12 +177,6 @@ export default function Patients() {
       default: 'recent',
     }),
     [t],
-  );
-
-  // ---- ListPage: pagination config ----
-  const paginationConfig = useMemo(
-    () => ({ defaultPageSize: PAGE_SIZE, showTotal: true, variant: 'detailed' as const }),
-    [],
   );
 
   // ---- ListPage: create action ----
@@ -180,7 +207,7 @@ export default function Patients() {
   );
 
   // ---- ListPage: description ----
-  const description = total > 0 ? t('patients.count', { count: total }) : undefined;
+  const description = filteredCount > 0 ? t('patients.count', { count: filteredCount }) : undefined;
 
   // ---- ListPage: labels ----
   const labels = useMemo(
@@ -280,30 +307,32 @@ export default function Patients() {
 
   return (
     <>
-      <div className="relative section-glow-bg overflow-hidden max-w-5xl mx-auto py-6 sm:py-8">
-        {/* Ambient glow orbs */}
-        <div className="glow-orb w-64 h-64 bg-primary/15 dark:bg-primary/20 top-[-10%] right-[10%]" aria-hidden="true" />
-        <div className="glow-orb glow-orb-slow glow-orb-reverse w-56 h-56 bg-[rgb(var(--accent-violet-rgb)/0.10)] dark:bg-[rgb(var(--accent-violet-rgb)/0.12)] top-[50%] left-[-8%]" aria-hidden="true" />
-        <div className="glow-orb glow-orb-slow w-44 h-44 bg-primary/10 dark:bg-primary/15 bottom-[5%] right-[60%]" aria-hidden="true" />
-        {/* Ambient AI grid overlay */}
-        <div className="ai-grid-pattern absolute inset-0 opacity-30 dark:opacity-50 [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,black_70%,transparent_100%)] pointer-events-none" aria-hidden="true" />
-
+      <div className="relative z-10 max-w-5xl mx-auto py-6 sm:py-8">
         <ListPage<PatientWithStats>
           title={t('patients.title')}
           description={description}
           viewMode="cards"
-          items={patientsList}
+          items={paginatedPatients}
           isLoading={isLoading}
           itemKey="id"
           renderCard={renderCard}
           gridClassName="grid grid-cols-1 gap-4 stagger-enter"
           searchConfig={searchConfig}
           sort={sortConfig}
-          pagination={paginationConfig}
+          pagination={false}
+          offsetPagination={{
+            type: 'offset',
+            page,
+            pageSize: PAGE_SIZE,
+            total: filteredCount,
+            onPageChange: setPage,
+          }}
           createAction={createAction}
           emptyState={emptyState}
           emptySearchState={emptySearchState}
           labels={labels}
+          onSearchChange={setSearchQuery}
+          onSortChange={(key) => { if (key) setSortValue(key); }}
         />
       </div>
 

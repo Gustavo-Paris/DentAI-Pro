@@ -289,10 +289,7 @@ export default function Pricing() {
   }
 
   return (
-    <div className="relative section-glow-bg overflow-hidden pricing-page">
-      {/* Ambient AI grid overlay */}
-      <div className="ai-grid-pattern absolute inset-0 opacity-30 dark:opacity-50 [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,black_70%,transparent_100%)] pointer-events-none" aria-hidden="true" />
-
+    <div className="pricing-page">
       <PricingPage
         className="relative max-w-6xl mx-auto py-6 sm:py-8"
         title={t('pricing.title')}

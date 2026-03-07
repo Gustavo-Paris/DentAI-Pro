@@ -298,13 +298,6 @@ export default function NewCase() {
           label: stepsMeta[displayStep]?.label ?? '',
           })}
       </div>
-      <div className="relative section-glow-bg overflow-hidden">
-        {/* Ambient glow orbs */}
-        <div className="glow-orb-slow absolute top-20 -left-40 w-72 h-72 bg-primary/10 dark:bg-primary/15 rounded-full pointer-events-none" aria-hidden="true" />
-        <div className="glow-orb-reverse absolute bottom-20 -right-40 w-60 h-60 bg-accent/8 dark:bg-accent/12 rounded-full pointer-events-none" aria-hidden="true" />
-        {/* Subtle AI dot grid overlay */}
-        <div className="ai-grid-pattern absolute inset-0 opacity-30 dark:opacity-50 [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,black_70%,transparent_100%)] pointer-events-none" aria-hidden="true" />
-
         <div className="relative z-10">
           <PageShellWizard
             theme="odonto-ai"
@@ -400,7 +393,6 @@ export default function NewCase() {
             <ActiveStepContent wizard={wizard} />
           </PageShellWizard>
         </div>{/* /relative z-10 */}
-      </div>{/* /section-glow-bg */}
 
       {/* Draft Restore Modal */}
       <DraftRestoreModal

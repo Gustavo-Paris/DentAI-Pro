@@ -42,9 +42,6 @@ export default function GroupResult() {
 
   return (
     <>
-      <div className="relative section-glow-bg overflow-hidden">
-        {/* Ambient AI grid overlay */}
-        <div className="ai-grid-pattern absolute inset-0 opacity-30 dark:opacity-50 [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,black_70%,transparent_100%)] pointer-events-none" aria-hidden="true" />
       <DetailPage
         className="relative z-10 max-w-5xl mx-auto py-6 sm:py-8"
         title={`${g.currentTreatmentStyle.label} — ${t('components.groupResult.unifiedProtocol')}`}
@@ -185,7 +182,6 @@ export default function GroupResult() {
           );
         }}
       </DetailPage>
-      </div>{/* /section-glow-bg */}
 
     {/* Confirm mark all as completed */}
     <PageConfirmDialog

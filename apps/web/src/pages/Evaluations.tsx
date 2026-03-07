@@ -240,20 +240,47 @@ export default function Evaluations() {
   const urlSearch = searchParams.get('q') ?? '';
 
   // ---------------------------------------------------------------------------
-  // Treatment filter — managed separately because ListPage's built-in filters
-  // use matchesFilters with toComparableString() which returns null for arrays.
-  // Since session.treatmentTypes is string[], the built-in filter always fails.
-  // We pre-filter items before passing to ListPage.
+  // External filtering — all filters managed here because PageShell's ListPage
+  // card view has a bug where pagination UI renders but items aren't sliced.
+  // By managing search/filter/pagination externally, we control the slice.
   // ---------------------------------------------------------------------------
   const [treatmentFilter, setTreatmentFilter] = useState<string>(() => {
     if (urlTreatment && VALID_TREATMENT_VALUES.has(urlTreatment)) return urlTreatment;
     return 'all';
   });
+  const [statusFilter, setStatusFilter] = useState<string>(() => {
+    if (urlStatus && VALID_STATUS_VALUES.has(urlStatus)) return urlStatus;
+    return 'all';
+  });
+  const [searchQuery, setSearchQuery] = useState(urlSearch);
+  const [page, setPage] = useState(1);
 
-  const filteredByTreatment = useMemo(() => {
-    if (treatmentFilter === 'all') return sessions;
-    return sessions.filter(s => s.treatmentTypes.includes(treatmentFilter));
-  }, [sessions, treatmentFilter]);
+  const filteredSessions = useMemo(() => {
+    let result = sessions;
+    // Treatment filter
+    if (treatmentFilter !== 'all') {
+      result = result.filter(s => s.treatmentTypes.includes(treatmentFilter));
+    }
+    // Status filter
+    if (statusFilter !== 'all') {
+      result = result.filter(s => s.status === statusFilter);
+    }
+    // Search
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      result = result.filter(s => s.patient_name?.toLowerCase().includes(q));
+    }
+    return result;
+  }, [sessions, treatmentFilter, statusFilter, searchQuery]);
+
+  // Reset page when filters change
+  const filteredCount = filteredSessions.length;
+  useEffect(() => { setPage(1); }, [filteredCount]);
+
+  const paginatedSessions = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return filteredSessions.slice(start, start + PAGE_SIZE);
+  }, [filteredSessions, page]);
 
   // ---------------------------------------------------------------------------
   // Treatment filter change handler
@@ -275,46 +302,6 @@ export default function Evaluations() {
   const searchConfig = useMemo(
     () => ({ fields: ['patient_name'] as string[], placeholder: t('evaluation.searchByPatient') }),
     [t],
-  );
-
-  // Compute initial default state for URL-driven filters
-  const defaultState = useMemo(() => {
-    const filters: Record<string, string> = {};
-    if (urlStatus && VALID_STATUS_VALUES.has(urlStatus)) {
-      filters.status = urlStatus;
-    }
-    return {
-      search: urlSearch,
-      filters,
-    };
-    // Only compute once on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const filtersConfig = useMemo(
-    () => [
-      {
-        key: 'status',
-        label: t('evaluation.filterStatus', { defaultValue: 'Status' }),
-        options: [
-          { value: 'all', label: t('evaluation.statusAll') },
-          { value: 'pending', label: t('evaluation.statusPending') },
-          { value: 'completed', label: t('evaluation.statusCompleted') },
-        ],
-        default: 'all',
-        cardRenderAs: 'buttons' as const,
-      },
-    ],
-    [t],
-  );
-
-  const paginationConfig = useMemo(
-    () => ({
-      defaultPageSize: PAGE_SIZE,
-      showTotal: true,
-      variant: 'detailed' as const,
-    }),
-    [],
   );
 
   const createAction = useMemo(
@@ -365,11 +352,12 @@ export default function Evaluations() {
     });
   }, [queryClient, user]);
 
-  // Sync filter changes to URL params
+  // Sync filter/search changes to URL params + local state
   const handleFiltersChange = useCallback((filters: Record<string, string>) => {
+    const status = filters.status ?? 'all';
+    setStatusFilter(status);
     setSearchParams(prev => {
       const next = new URLSearchParams(prev);
-      const status = filters.status;
       if (status && status !== 'all') next.set('status', status);
       else next.delete('status');
       return next;
@@ -377,6 +365,7 @@ export default function Evaluations() {
   }, [setSearchParams]);
 
   const handleSearchChange = useCallback((search: string) => {
+    setSearchQuery(search);
     setSearchParams(prev => {
       const next = new URLSearchParams(prev);
       if (search) next.set('q', search);
@@ -466,26 +455,42 @@ export default function Evaluations() {
   }
 
   return (
-    <div className="relative section-glow-bg overflow-hidden max-w-5xl mx-auto py-6 sm:py-8">
-      {/* Ambient glow orbs */}
-      <div className="glow-orb w-64 h-64 bg-primary/15 dark:bg-primary/20 top-[-8%] left-[5%]" aria-hidden="true" />
-      <div className="glow-orb glow-orb-slow glow-orb-reverse w-56 h-56 bg-[rgb(var(--accent-violet-rgb)/0.10)] dark:bg-[rgb(var(--accent-violet-rgb)/0.12)] top-[40%] right-[-5%]" aria-hidden="true" />
-      <div className="glow-orb glow-orb-slow w-48 h-48 bg-primary/10 dark:bg-primary/15 bottom-[5%] left-[60%]" aria-hidden="true" />
-      {/* Ambient AI grid overlay */}
-      <div className="ai-grid-pattern absolute inset-0 opacity-30 dark:opacity-50 [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,black_70%,transparent_100%)] pointer-events-none" aria-hidden="true" />
-
+    <div className="relative z-10 max-w-5xl mx-auto py-6 sm:py-8">
       <ListPage<EvaluationSession>
         title={t('evaluation.title')}
+        description={filteredCount > 0 ? t('patients.count', { count: filteredCount }) : undefined}
         viewMode="cards"
-        items={filteredByTreatment}
+        items={paginatedSessions}
         isLoading={isLoading}
         itemKey="session_id"
         renderCard={renderCard}
         gridClassName="grid grid-cols-1 gap-4 stagger-enter"
         searchConfig={searchConfig}
-        filters={filtersConfig}
-        defaultState={defaultState}
-        pagination={paginationConfig}
+        filters={[
+          {
+            key: 'status',
+            label: t('evaluation.filterStatus', { defaultValue: 'Status' }),
+            options: [
+              { value: 'all', label: t('evaluation.statusAll') },
+              { value: 'pending', label: t('evaluation.statusPending') },
+              { value: 'completed', label: t('evaluation.statusCompleted') },
+            ],
+            default: 'all',
+            cardRenderAs: 'buttons' as const,
+          },
+        ]}
+        defaultState={{
+          search: urlSearch,
+          filters: urlStatus && VALID_STATUS_VALUES.has(urlStatus) ? { status: urlStatus } : {},
+        }}
+        pagination={false}
+        offsetPagination={{
+          type: 'offset',
+          page,
+          pageSize: PAGE_SIZE,
+          total: filteredCount,
+          onPageChange: setPage,
+        }}
         createAction={createAction}
         emptyState={emptyState}
         emptySearchState={emptySearchState}

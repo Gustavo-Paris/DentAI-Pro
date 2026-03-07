@@ -53,7 +53,7 @@ const InventoryResinCard = memo(function InventoryResinCard({
   const typeClasses = getTypeColorClasses(item.type);
 
   return (
-    <div className="group relative rounded-xl border bg-card overflow-hidden hover:shadow-md transition-all duration-200">
+    <div className="group relative rounded-xl glass-panel overflow-hidden hover:shadow-md transition-all duration-200">
       {/* Shade swatch header */}
       <div
         className="h-14 sm:h-16 w-full flex items-center justify-center"
@@ -206,7 +206,7 @@ export default function Inventory() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto py-6 sm:py-8">
+    <div className="relative z-10 max-w-5xl mx-auto py-6 sm:py-8">
       <ListPage<FlatInventoryItem>
         title={t('inventory.title')}
         description={t('inventory.resinColors', { count: inv.total })}
