@@ -3,10 +3,17 @@ import react from "@vitejs/plugin-react-swc";
 import { VitePWA } from "vite-plugin-pwa";
 import { visualizer } from "rollup-plugin-visualizer";
 import { sentryVitePlugin } from '@sentry/vite-plugin';
+import tailwindcss from "tailwindcss";
+import autoprefixer from "autoprefixer";
 import path from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig(() => ({
+  css: {
+    postcss: {
+      plugins: [tailwindcss(), autoprefixer()],
+    },
+  },
   server: {
     host: "::",
     port: 8080,
