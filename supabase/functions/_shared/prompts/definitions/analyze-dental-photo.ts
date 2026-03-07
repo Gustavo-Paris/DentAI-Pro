@@ -132,7 +132,12 @@ IRREGULARIDADE DE BORDO INCISAL (≠ desgaste):
 8. Profundidade estimada (Superficial, Média, Profunda)
 9. Prioridade: "alta" (cáries, fraturas, dor) | "média" (restaurações defeituosas, coroas) | "baixa" (estética opcional)
 10. INDICACAO DE TRATAMENTO: resina, porcelana, coroa, implante, endodontia, encaminhamento, gengivoplastia, ou recobrimento_radicular
-11. POSICAO NA IMAGEM (tooth_bounds): x, y (centro, 0-100%), width, height (% da imagem)
+11. POSICAO NA IMAGEM (tooth_bounds): bounding box da COROA CLÍNICA visível (NÃO incluir gengiva ou raiz).
+    - x: centro horizontal do dente (0=esquerda da imagem, 100=direita)
+    - y: centro vertical da COROA VISÍVEL (entre margem gengival e borda incisal). Para dentes superiores em foto de sorriso, geralmente entre 35-55% da imagem
+    - width: largura aparente do dente (tipicamente 5-12% para anteriores)
+    - height: altura da COROA VISÍVEL (margem gengival até borda incisal, tipicamente 10-20%)
+    ⚠️ NÃO colocar y na borda incisal — y deve ser o CENTRO vertical da coroa
 
 ## QUALIDADE DA FOTO
 Se foto DISTANTE (face inteira em vez de close-up):

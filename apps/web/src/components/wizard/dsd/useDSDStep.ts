@@ -284,10 +284,14 @@ export function useDSDStep({
           : null
       ))
       .filter(Boolean) as ToothBoundsPct[];
-    return bounds.filter((b) =>
+    const valid = bounds.filter((b) =>
       Number.isFinite(b.x) && Number.isFinite(b.y) && Number.isFinite(b.width) && Number.isFinite(b.height) &&
       b.width > 0 && b.height > 0
     );
+    if (valid.length > 0) {
+      logger.log('toothBounds debug:', JSON.stringify(valid.map(b => ({ tooth: b.tooth, x: b.x, y: b.y, w: b.width, h: b.height }))));
+    }
+    return valid;
   }, [detectedTeeth]);
 
   // -------------------------------------------------------------------------

@@ -92,12 +92,12 @@ export const ANALYZE_PHOTO_TOOL: OpenAITool[] = [
                 },
                 tooth_bounds: {
                   type: "object",
-                  description: "Posição aproximada do dente na imagem, em porcentagem (0-100). SEMPRE forneça para o dente principal.",
+                  description: "Bounding box da COROA CLÍNICA visível (sem gengiva/raiz), em porcentagem (0-100). SEMPRE forneça para cada dente.",
                   properties: {
-                    x: { type: "number", description: "Posição X do centro do dente (0-100%)" },
-                    y: { type: "number", description: "Posição Y do centro do dente (0-100%)" },
-                    width: { type: "number", description: "Largura aproximada do dente (0-100%)" },
-                    height: { type: "number", description: "Altura aproximada do dente (0-100%)" }
+                    x: { type: "number", description: "Centro horizontal do dente (0=esquerda, 100=direita da imagem)" },
+                    y: { type: "number", description: "Centro VERTICAL da coroa visível (entre margem gengival e borda incisal). Para superiores em foto de sorriso ~35-55%" },
+                    width: { type: "number", description: "Largura aparente do dente (tipicamente 5-12% para anteriores)" },
+                    height: { type: "number", description: "Altura da coroa visível, de margem gengival até borda incisal (tipicamente 10-20%)" }
                   },
                   required: ["x", "y", "width", "height"]
                 },
