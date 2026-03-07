@@ -347,6 +347,8 @@ export function useResult() {
         isFromInventory: evaluation.is_from_inventory,
         treatmentType: (evaluation.treatment_type === 'porcelana' ? 'porcelana' : 'resina') as 'resina' | 'porcelana',
         cementationProtocol: evaluation.cementation_protocol || undefined,
+        anamnesis: evaluation.anamnesis || undefined,
+        radiographType: evaluation.radiograph_type || undefined,
       }, t);
 
       toast.success(t('toasts.result.pdfSuccess'));

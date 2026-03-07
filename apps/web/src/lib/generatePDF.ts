@@ -6,6 +6,8 @@ import type { PDFRenderContext } from './pdf/pdfHelpers';
 import {
   renderHeader,
   renderPatientId,
+  renderAnamnesis,
+  renderRadiograph,
   renderCaseSummary,
   renderResinRecommendation,
   renderDSDAnalysis,
@@ -35,6 +37,8 @@ export async function generateProtocolPDF(data: PDFData, t: TFunction): Promise<
 
   renderHeader(ctx, data);
   renderPatientId(ctx, data);
+  renderAnamnesis(ctx, data);
+  renderRadiograph(ctx, data);
   renderCaseSummary(ctx, data);
   renderResinRecommendation(ctx, data);
   renderDSDAnalysis(ctx, data);

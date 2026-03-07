@@ -70,6 +70,52 @@ export function renderPatientId(ctx: PDFRenderContext, data: PDFData) {
   ctx.y += 18;
 }
 
+// ============ ANAMNESIS ============
+export function renderAnamnesis(ctx: PDFRenderContext, data: PDFData) {
+  if (!data.anamnesis) return;
+
+  const { pdf, margin, contentWidth, t } = ctx;
+
+  checkPageBreak(ctx, 25);
+
+  addText(ctx, t('pdf.anamnesis.title', 'Anamnese'), margin, ctx.y, { fontSize: 11, fontStyle: 'bold', color: [37, 99, 235] });
+  ctx.y += 6;
+
+  pdf.setFillColor(248, 250, 252);
+  const lines = pdf.splitTextToSize(sanitizeText(data.anamnesis), contentWidth - 10);
+  const boxHeight = Math.max(lines.length * 4 + 8, 14);
+  pdf.roundedRect(margin, ctx.y, contentWidth, boxHeight, 2, 2, 'F');
+
+  ctx.y += 5;
+  addText(ctx, sanitizeText(data.anamnesis), margin + 5, ctx.y, { fontSize: 8, color: [60, 60, 60], maxWidth: contentWidth - 10 });
+  ctx.y += boxHeight - 1;
+}
+
+// ============ RADIOGRAPH NOTE ============
+export function renderRadiograph(ctx: PDFRenderContext, data: PDFData) {
+  if (!data.radiographType) return;
+
+  const { pdf, margin, contentWidth, t } = ctx;
+
+  checkPageBreak(ctx, 14);
+
+  const typeLabels: Record<string, string> = {
+    panoramic: t('pdf.radiograph.panoramic', 'Panoramica'),
+    periapical: t('pdf.radiograph.periapical', 'Periapical'),
+    bitewing: t('pdf.radiograph.bitewing', 'Bitewing'),
+  };
+
+  const label = typeLabels[data.radiographType] || data.radiographType;
+
+  pdf.setFillColor(248, 250, 252);
+  pdf.roundedRect(margin, ctx.y, contentWidth, 10, 2, 2, 'F');
+
+  addText(ctx, t('pdf.radiograph.title', 'Radiografia'), margin + 4, ctx.y + 6, { fontSize: 9, fontStyle: 'bold', color: [37, 99, 235] });
+  addText(ctx, `${label} - ${t('pdf.radiograph.availableInSystem', 'Disponivel no sistema')}`, margin + 38, ctx.y + 6, { fontSize: 8, color: [100, 100, 100] });
+
+  ctx.y += 16;
+}
+
 // ============ CASE SUMMARY GRID ============
 export function renderCaseSummary(ctx: PDFRenderContext, data: PDFData) {
   const { pdf, margin, contentWidth, t } = ctx;

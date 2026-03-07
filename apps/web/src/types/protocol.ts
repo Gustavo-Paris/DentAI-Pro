@@ -149,4 +149,8 @@ export interface PDFData {
   // Porcelain treatment data
   treatmentType?: 'resina' | 'porcelana';
   cementationProtocol?: CementationProtocol;
+
+  // Anamnesis & Radiograph
+  anamnesis?: string;
+  radiographType?: 'panoramic' | 'periapical' | 'bitewing';
 }
