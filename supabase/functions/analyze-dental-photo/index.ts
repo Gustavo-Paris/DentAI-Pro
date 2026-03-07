@@ -220,6 +220,7 @@ Deno.serve(async (req) => {
             maxTokens: 4000,
             forceFunctionName: "analyze_dental_photo",
             timeoutMs: 90_000,
+            thinkingLevel: "low", // Gemini 2.5 Pro needs explicit thinking control to avoid timeout
             maxRetries: 0, // Single attempt — client-side retries handle failures.
             additionalImages: additionalImages.length > 0 ? additionalImages : undefined,
           }
