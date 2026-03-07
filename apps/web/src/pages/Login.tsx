@@ -90,7 +90,7 @@ export default function Login() {
       <div className="animate-[fade-in-up_0.6s_ease-out_0.4s_both]">
         <Button
           variant="outline"
-          className="w-full mb-4 shadow-sm hover:shadow-md transition-all duration-200"
+          className="w-full mb-4 shadow-sm hover:shadow-md transition-all duration-200 btn-press"
           onClick={handleGoogleLogin}
           disabled={googleLoading}
           type="button"
@@ -170,7 +170,7 @@ export default function Login() {
               className="flex justify-center"
             />
 
-            <Button type="submit" className="w-full btn-glow" disabled={loading}>
+            <Button type="submit" className="w-full btn-glow btn-press" disabled={loading}>
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />

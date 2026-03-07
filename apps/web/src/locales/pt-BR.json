@@ -861,6 +861,8 @@
       "s12Text": "Para dúvidas sobre estes Termos de Uso, entre em contato através do email:"
     },
     "privacy": {
+      "lgpdBadgeTitle": "Em conformidade com a LGPD",
+      "lgpdBadgeSubtitle": "Lei nº 13.709/2018 — Lei Geral de Proteção de Dados",
       "s1Title": "1. Introdução",
       "s1Text": "O {{brandName}} está comprometido com a proteção da privacidade e dos dados pessoais de seus usuários, em conformidade com a Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/2018). Esta política descreve como coletamos, utilizamos, armazenamos e protegemos seus dados e os dados clínicos dos pacientes processados pela plataforma.",
       "s2Title": "2. Dados Coletados",

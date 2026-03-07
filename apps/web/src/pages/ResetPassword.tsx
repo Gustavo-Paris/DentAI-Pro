@@ -105,7 +105,7 @@ export default function ResetPassword() {
         subtitle={t('auth.invalidLinkDescription')}
       >
         <Link to="/forgot-password">
-          <Button className="w-full btn-glow">{t('auth.requestNewLink')}</Button>
+          <Button className="w-full btn-glow btn-press">{t('auth.requestNewLink')}</Button>
         </Link>
       </AuthLayout>
     );
@@ -120,7 +120,7 @@ export default function ResetPassword() {
       }
     >
       {success ? (
-        <div className="flex flex-col items-center gap-4 animate-[scale-in_0.6s_ease-out_both]" role="status" aria-live="polite">
+        <div className="flex flex-col items-center gap-4 animate-[scale-in_0.6s_ease-out_both] glass-panel p-6 rounded-xl" role="status" aria-live="polite">
           <IconCircle>
             <CheckCircle className="w-8 h-8 text-primary" aria-hidden="true" />
           </IconCircle>
@@ -171,7 +171,7 @@ export default function ResetPassword() {
                 )}
               />
 
-              <Button type="submit" className="w-full btn-glow" disabled={loading}>
+              <Button type="submit" className="w-full btn-glow btn-press" disabled={loading}>
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />

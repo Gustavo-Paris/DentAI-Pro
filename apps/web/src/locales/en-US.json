@@ -861,6 +861,8 @@
       "s12Text": "For questions about these Terms of Use, contact us via email:"
     },
     "privacy": {
+      "lgpdBadgeTitle": "LGPD Compliant",
+      "lgpdBadgeSubtitle": "Law No. 13,709/2018 — General Data Protection Law",
       "s1Title": "1. Introduction",
       "s1Text": "{{brandName}} is committed to protecting the privacy and personal data of its users, in compliance with the General Data Protection Law (LGPD - Law No. 13,709/2018). This policy describes how we collect, use, store and protect your data and patient clinical data processed by the platform.",
       "s2Title": "2. Data Collected",

@@ -157,7 +157,7 @@ export default function Dashboard() {
             {dashboard.loadingProfile ? (
               <Skeleton className="inline-block h-7 w-32 align-middle rounded-lg" />
             ) : (
-              <span className="text-primary">{dashboard.firstName}</span>
+              <span className="text-primary neon-text">{dashboard.firstName}</span>
             )}
           </h2>
         </div>

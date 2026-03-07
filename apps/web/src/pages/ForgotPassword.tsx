@@ -45,7 +45,7 @@ export default function ForgotPassword() {
       }
     >
       {sent ? (
-        <div className="space-y-6 animate-[scale-in_0.6s_ease-out_both]">
+        <div className="space-y-6 animate-[scale-in_0.6s_ease-out_both] glass-panel p-6 rounded-xl">
           <div className="flex items-center justify-center">
             <IconCircle>
               <Mail className="w-8 h-8 text-primary" aria-hidden="true" />
@@ -80,7 +80,7 @@ export default function ForgotPassword() {
               />
             </div>
 
-            <Button type="submit" className="w-full btn-glow" disabled={loading}>
+            <Button type="submit" className="w-full btn-glow btn-press" disabled={loading}>
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
