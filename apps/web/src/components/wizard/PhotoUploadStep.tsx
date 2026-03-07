@@ -1,12 +1,14 @@
 import { useState, useRef, useCallback, useEffect, memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, Button, Badge, Alert, AlertDescription } from '@parisgroup-ai/pageshell/primitives';
-import { Camera, Upload, X, Loader2, User, Smile, Sparkles, Lightbulb, Zap, AlertCircle, CheckCircle2, AlertTriangle, ShieldAlert } from 'lucide-react';
+import { Card, CardContent, Button, Badge, Alert, AlertDescription, Label, Textarea } from '@parisgroup-ai/pageshell/primitives';
+import { Camera, Upload, X, Loader2, User, Smile, Sparkles, Lightbulb, Zap, AlertCircle, CheckCircle2, AlertTriangle, ShieldAlert, FileImage, Mic, MicOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { compressImage, getImageDimensions } from '@/lib/imageUtils';
 import { compressBase64ForAnalysis } from '@/lib/imageUtils';
 import { trackEvent } from '@/lib/analytics';
 import { supabase } from '@/data';
+import { useSpeechToText } from '@/hooks/useSpeechToText';
+import { cn } from '@/lib/utils';
 // heic-to is dynamically imported to reduce initial bundle size (20MB library)
 
 export interface AdditionalPhotos {
@@ -25,6 +27,8 @@ interface PhotoUploadStepProps {
   onAdditionalPhotosChange?: (photos: AdditionalPhotos) => void;
   /** Called when the background quality check completes with a 0-100 score */
   onPhotoQualityScore?: (score: number | null) => void;
+  anamnesis?: string;
+  onAnamnesisChange?: (text: string) => void;
 }
 
 type QualityStatus = 'idle' | 'checking' | 'good' | 'warning' | 'low' | 'error';
@@ -82,15 +86,18 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
   additionalPhotos = { smile45: null, face: null, radiograph: null },
   onAdditionalPhotosChange,
   onPhotoQualityScore,
+  anamnesis,
+  onAnamnesisChange,
 }: PhotoUploadStepProps) {
   const { t } = useTranslation();
   const [dragActive, setDragActive] = useState(false);
   const [dragActiveSmile45, setDragActiveSmile45] = useState(false);
   const [dragActiveFace, setDragActiveFace] = useState(false);
+  const [dragActiveRadiograph, setDragActiveRadiograph] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [isCompressing, setIsCompressing] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [processingOptional, setProcessingOptional] = useState<'smile45' | 'face' | null>(null);
+  const [processingOptional, setProcessingOptional] = useState<'smile45' | 'face' | 'radiograph' | null>(null);
   const [qualityStatus, setQualityStatus] = useState<QualityStatus>('idle');
   const [qualityScore, setQualityScore] = useState<number | null>(null);
   const qualityAbortRef = useRef<AbortController | null>(null);
@@ -98,6 +105,19 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const smile45InputRef = useRef<HTMLInputElement>(null);
   const faceInputRef = useRef<HTMLInputElement>(null);
+  const radiographInputRef = useRef<HTMLInputElement>(null);
+  const speech = useSpeechToText('pt-BR');
+
+  // Append transcript to anamnesis when user stops recording
+  const prevListeningRef = useRef(false);
+  useEffect(() => {
+    if (prevListeningRef.current && !speech.isListening && speech.transcript) {
+      const existing = anamnesis || '';
+      const separator = existing ? '\n' : '';
+      onAnamnesisChange?.(existing + separator + speech.transcript);
+    }
+    prevListeningRef.current = speech.isListening;
+  }, [speech.isListening, speech.transcript, anamnesis, onAnamnesisChange]);
 
   const isMobileDevice = IS_MOBILE_DEVICE;
 
@@ -305,7 +325,7 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
   };
 
   // Handle optional photo upload (45° or Face)
-  const handleOptionalFile = useCallback(async (file: File, type: 'smile45' | 'face') => {
+  const handleOptionalFile = useCallback(async (file: File, type: 'smile45' | 'face' | 'radiograph') => {
     if (!file.type.startsWith('image/') && file.type !== '' && file.type !== 'application/octet-stream') {
       toast.error(t('components.wizard.photoUpload.onlyImages'));
       return;
@@ -334,7 +354,7 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
           });
         }
 
-        toast.success(type === 'smile45' ? t('components.wizard.photoUpload.photo45Added') : t('components.wizard.photoUpload.faceAdded'));
+        toast.success(type === 'smile45' ? t('components.wizard.photoUpload.photo45Added') : type === 'face' ? t('components.wizard.photoUpload.faceAdded') : t('components.wizard.photoUpload.radiographAdded'));
         return;
       }
 
@@ -347,7 +367,7 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
         });
       }
 
-      toast.success(type === 'smile45' ? t('components.wizard.photoUpload.photo45Added') : t('components.wizard.photoUpload.faceAdded'));
+      toast.success(type === 'smile45' ? t('components.wizard.photoUpload.photo45Added') : type === 'face' ? t('components.wizard.photoUpload.faceAdded') : t('components.wizard.photoUpload.radiographAdded'));
     } catch {
       try {
         const base64 = await readFileAsDataURL(file);
@@ -381,7 +401,13 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
     }
   }, [handleOptionalFile]);
 
-  const removeOptionalPhoto = (type: 'smile45' | 'face') => {
+  const handleRadiographFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      handleOptionalFile(e.target.files[0], 'radiograph');
+    }
+  }, [handleOptionalFile]);
+
+  const removeOptionalPhoto = (type: 'smile45' | 'face' | 'radiograph') => {
     if (onAdditionalPhotosChange) {
       onAdditionalPhotosChange({
         ...additionalPhotos,
@@ -393,6 +419,9 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
     }
     if (type === 'face' && faceInputRef.current) {
       faceInputRef.current.value = '';
+    }
+    if (type === 'radiograph' && radiographInputRef.current) {
+      radiographInputRef.current.value = '';
     }
   };
 
@@ -603,6 +632,14 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
         className="hidden"
         aria-label={t('components.wizard.photoUpload.faceLabel')}
       />
+      <input
+        ref={radiographInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleRadiographFileChange}
+        className="hidden"
+        aria-label={t('components.wizard.photoUpload.radiographLabel')}
+      />
 
       {/* Fotos adicionais — always visible after main photo (dimmed if empty) */}
       {imageBase64 && (
@@ -610,7 +647,7 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
           <p className="text-sm text-muted-foreground text-center">
             {t('components.wizard.photoUpload.additionalPhotos')}
           </p>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {/* Foto 45° */}
             <div
               className="animate-fade-in-up"
@@ -736,6 +773,102 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
                 </CardContent>
               </Card>
             </div>
+
+            {/* Radiografia */}
+            <div
+              className="animate-fade-in-up"
+              style={{ animationDelay: '300ms', animationFillMode: 'backwards' }}
+            >
+              <Card
+                className={`glass-panel card-elevated overflow-hidden transition-all duration-200 ${
+                  dragActiveRadiograph ? 'border-primary bg-primary/5 scale-[1.02]' : ''
+                } ${!additionalPhotos.radiograph ? 'opacity-60 hover:opacity-100' : ''}`}
+                onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setDragActiveRadiograph(true); }}
+                onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setDragActiveRadiograph(false); }}
+                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setDragActiveRadiograph(false);
+                  if (e.dataTransfer.files?.[0]) {
+                    handleOptionalFile(e.dataTransfer.files[0], 'radiograph');
+                  }
+                }}
+              >
+                <CardContent className="p-3">
+                  {additionalPhotos.radiograph ? (
+                    <div className="relative">
+                      <img
+                        src={additionalPhotos.radiograph}
+                        alt={t('components.wizard.photoUpload.radiographAlt')}
+                        className="w-full h-24 object-cover rounded-lg ring-1 ring-primary/20"
+                      />
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="absolute top-1 right-1 h-8 w-8 bg-background/80 backdrop-blur-sm"
+                        onClick={() => removeOptionalPhoto('radiograph')}
+                        aria-label={t('components.wizard.photoUpload.removeRadiograph')}
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                      <Badge className="absolute bottom-1 left-1 bg-background/80 backdrop-blur-sm text-foreground text-xs border border-border/50">
+                        {t('components.wizard.photoUpload.radiographLabel')}
+                      </Badge>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => radiographInputRef.current?.click()}
+                      disabled={processingOptional === 'radiograph'}
+                      className="w-full h-24 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors border border-dashed border-border/50"
+                    >
+                      {processingOptional === 'radiograph' ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <>
+                          <FileImage className="w-5 h-5" />
+                          <span className="text-xs font-medium">{t('components.wizard.photoUpload.radiographLabel')}</span>
+                          <span className="text-xs">{t('components.wizard.photoUpload.optional')}</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Anamnesis Section */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">{t('components.wizard.photo.anamnesis')}</Label>
+            <p className="text-xs text-muted-foreground">{t('components.wizard.photo.anamnesisHint')}</p>
+            <div className="relative">
+              <Textarea
+                placeholder={t('components.wizard.photo.anamnesisPlaceholder')}
+                value={anamnesis || ''}
+                onChange={(e) => onAnamnesisChange?.(e.target.value)}
+                rows={4}
+              />
+              {speech.isSupported && (
+                <Button
+                  type="button"
+                  variant={speech.isListening ? 'destructive' : 'ghost'}
+                  size="icon"
+                  className={cn('absolute bottom-2 right-2 h-10 w-10', speech.isListening && 'animate-pulse')}
+                  onClick={speech.toggle}
+                  aria-label={speech.isListening ? t('components.wizard.photo.stopRecording') : t('components.wizard.photo.startRecording')}
+                >
+                  {speech.isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                </Button>
+              )}
+            </div>
+            {speech.isListening && (
+              <div className="flex items-center gap-2 text-xs text-destructive" role="status" aria-live="polite">
+                <span className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
+                {t('components.wizard.photo.listening')}
+                {speech.transcript && <span className="text-muted-foreground truncate">{speech.transcript}</span>}
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -1229,6 +1229,10 @@
         "optional": "Opcional",
         "photo45Added": "Foto 45° adicionada",
         "faceAdded": "Foto de face adicionada",
+        "radiographAlt": "Radiografia",
+        "radiographLabel": "Radiografia",
+        "removeRadiograph": "Remover radiografia",
+        "radiographAdded": "Radiografia adicionada",
         "imageTooSmall": "Imagem muito pequena. Para melhor análise, use resolução mínima de 640x480.",
         "optionalPhotoError": "Erro ao processar foto opcional",
         "photoError": "Erro ao processar foto",
@@ -1247,6 +1251,16 @@
         "qualityWarning": "Visibilidade parcial da gengiva. A simulação vai funcionar, mas o resultado pode não ser perfeito.",
         "qualityLow": "Gengiva não visível — o lábio cobre os dentes. A simulação DSD não vai conseguir um bom resultado.",
         "qualityCheckFailed": "Não foi possível verificar a qualidade da foto"
+      },
+      "photo": {
+        "radiograph": "Radiografia",
+        "radiographHint": "Panoramica, periapical ou bitewing — melhora a precisao da analise",
+        "anamnesis": "Anamnese",
+        "anamnesisHint": "Grave ou digite observacoes clinicas e queixas do paciente",
+        "anamnesisPlaceholder": "Ex: Paciente queixa de escurecimento no 11, fratura incisal no 21, quer sorriso mais harmonioso...",
+        "startRecording": "Iniciar gravacao",
+        "stopRecording": "Parar gravacao",
+        "listening": "Gravando..."
       },
       "analyzing": {
         "step1": "Processando imagem...",

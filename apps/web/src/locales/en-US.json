@@ -1229,6 +1229,10 @@
         "optional": "Optional",
         "photo45Added": "45° photo added",
         "faceAdded": "Face photo added",
+        "radiographAlt": "X-Ray",
+        "radiographLabel": "X-Ray",
+        "removeRadiograph": "Remove x-ray",
+        "radiographAdded": "X-ray added",
         "imageTooSmall": "Image too small. For better analysis, use minimum resolution of 640x480.",
         "optionalPhotoError": "Error processing optional photo",
         "photoError": "Error processing photo",
@@ -1247,6 +1251,16 @@
         "qualityWarning": "Partial gum visibility. Simulation will work, but result may not be perfect.",
         "qualityLow": "Gum not visible — lip covers the teeth. DSD simulation won't produce a good result.",
         "qualityCheckFailed": "Could not verify photo quality"
+      },
+      "photo": {
+        "radiograph": "X-Ray",
+        "radiographHint": "Panoramic, periapical or bitewing — improves analysis accuracy",
+        "anamnesis": "Patient Interview",
+        "anamnesisHint": "Record or type clinical observations and patient complaints",
+        "anamnesisPlaceholder": "E.g.: Patient complains of darkening on tooth 11, incisal fracture on 21, wants a more harmonious smile...",
+        "startRecording": "Start recording",
+        "stopRecording": "Stop recording",
+        "listening": "Recording..."
       },
       "analyzing": {
         "step1": "Processing image...",
