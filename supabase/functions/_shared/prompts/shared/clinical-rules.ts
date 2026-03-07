@@ -91,19 +91,34 @@ CLASSIFICACAO DA LINHA DO SORRISO (DEFINICOES CLINICAS):
 - "baixa": Labio cobre completamente a margem gengival e parte das coroas. Gengiva NAO visivel.
 DISTINCAO CRITICA: "alta" = faixa rosa HORIZONTAL acima dos dentes (entre labio e coroas). "media" = papilas VERTICAIS entre os dentes mas labio encosta na margem. Papilas entre dentes NAO indicam "alta" — apenas gengiva ACIMA dos dentes indica "alta".
 
-REGRA DE VISIBILIDADE:
-- Linha do sorriso ALTA: AVALIAR gengiva e sugerir gengivoplastia se indicado
-- Linha do sorriso MEDIA: AVALIAR gengiva — exposicao pode ser suficiente para detectar assimetrias
-- Linha do sorriso BAIXA (gengiva NAO visivel / labios cobrem): NAO sugerir gengivoplastia
-- Gengiva NAO exposta na foto -> NAO mencione "proporcao coroa/gengiva"
+## GENGIVOPLASTIA — INDICACAO BASEADA EM EVIDENCIA COMBINADA
 
-SE gengiva visivel (linha media ou alta), avalie:
-1. Coroas clinicas curtas: proporcao altura/largura inadequada -> gengivoplastia p/ aumentar coroa
-2. Assimetria gengival: comparar homologos (11 vs 21, 12 vs 22, 13 vs 23), diferenca >1.5mm -> gengivoplastia
-3. Sorriso gengival com exposicao gengival significativa: considerar gengivoplastia ou encaminhamento periodontia
-4. Zenites assimetricos entre homologos -> gengivoplastia para harmonizar
+NAO use smile line isoladamente como criterio decisorio. Combine TODAS as evidencias disponiveis:
 
-NOTA: A classificacao da linha do sorriso sera validada por um classificador dedicado pos-analise. Nao reclassifique manualmente — apenas descreva o que voce observa com precisao.
+EVIDENCIAS A FAVOR (cada uma soma peso):
+1. Exposicao gengival excessiva (>3mm alem da margem gengival ao sorrir) — peso ALTO
+2. Assimetria gengival visivel entre dentes homologos (ex: zenith do 11 ≠ zenith do 21) — peso ALTO
+3. Coroa clinica visivelmente curta com excesso de tecido gengival cobrindo coroa anatomica — peso ALTO
+4. Paciente REPORTA incomodo com sorriso gengival na anamnese — peso ALTO
+5. Radiografia mostra proporcao coroa/raiz favoravel (raiz longa, coroa clinica curta = erupcao passiva alterada) — peso CONFIRMATORIO
+6. Contorno gengival irregular (zeniths desalinhados entre dentes adjacentes) — peso MEDIO
+
+EVIDENCIAS CONTRA (cada uma reduz indicacao):
+1. Radiografia mostra raiz CURTA (proporcao coroa/raiz desfavoravel) — CONTRAINDICACAO RELATIVA
+2. Paciente NAO menciona queixa gengival e exposicao gengival <2mm — peso CONTRA
+3. Simetria gengival adequada, contorno harmonico, zeniths alinhados — nao intervir
+4. Coroa clinica com comprimento adequado (>10mm em dente anterior) — nao e erupcao passiva
+
+REGRA DE DECISAO:
+- 2+ evidencias a favor + nenhuma contra forte → INDICAR gengivoplastia
+- Evidencia a favor + evidencia contra → REGISTRAR ambas no notes, sugerir avaliacao periodontal
+- Radiografia confirma erupcao passiva alterada → INDICAR com ALTA confianca
+- Sem evidencia objetiva clara, apenas smile line "media" → NAO INDICAR (exposicao gengival leve e NORMAL)
+- Exposicao radicular visivel → NUNCA gengivoplastia, indicar "recobrimento_radicular"
+
+Para CADA dente com gengivoplastia indicada, OBRIGATORIAMENTE especifique:
+- No campo notes: "gingival_reduction_pct: [N]" — estimativa de % de reducao necessaria (ex: 15 = reduzir 15% da margem visivel)
+- No campo indication_reason: justificativa clinica (ex: "erupcao passiva alterada — coroa clinica curta ~7mm, assimetria de 2mm com contralateral, zenith deslocado mesialmente")
 
 GENGIVOPLASTIA vs RECOBRIMENTO RADICULAR (diferenciar!):
 | Procedimento             | Objetivo                        | Indicacao                              |
@@ -120,7 +135,8 @@ Toda sugestao de gengivoplastia DEVE incluir nas notes:
 "Requer avaliação periodontal prévia (sondagem + radiografia periapical) para verificar nível ósseo crestal e largura biológica antes de qualquer remoção tecidual."
 Isso e OBRIGATORIO mesmo para remoções pequenas (1mm). Gengivoplastia sem avaliação radiográfica pode violar largura biológica.
 
-PROIBIDO: Sugerir gengivoplastia baseado APENAS em proporcao largura/altura quando gengiva NAO visivel`
+PROIBIDO: Sugerir gengivoplastia baseado APENAS em proporcao largura/altura quando gengiva NAO visivel
+PROIBIDO: Sugerir gengivoplastia baseado APENAS em smile line "alta" sem evidencia anatomica adicional`
 
 /**
  * Conservative treatment priority hierarchy.

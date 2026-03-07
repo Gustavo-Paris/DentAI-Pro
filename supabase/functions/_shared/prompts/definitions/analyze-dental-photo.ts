@@ -547,14 +547,14 @@ ${GINGIVAL_CRITERIA}
 REGRA PARA LATERAIS (12/22) - GENGIVOPLASTIA:
 - Laterais NATURALMENTE mais curtos que centrais (1-2mm diferença e NORMAL)
 - NAO indicar gengivoplastia nos laterais APENAS para igualar centrais
-- Gengivoplastia nos laterais SOMENTE se: assimetria entre 12 e 22 >1mm, proporcao L/A >90%, ou sorriso gengival >3mm afetando laterais
+- Gengivoplastia nos laterais SOMENTE se: assimetria entre 12 e 22 >1mm, ou evidencia combinada (ver regras de evidencia acima)
 - Proporção ideal: Central > Lateral > Canino
 
-CORRECAO COMPLETA DO ARCO: Ao detectar assimetria em qualquer dente, avaliar e sugerir para TODOS (13-23). Gerar sugestões individuais por dente.
-REGRA DE COMPLETUDE GENGIVAL: Ao indicar gengivoplastia para QUALQUER dente anterior, OBRIGATORIAMENTE avaliar e gerar sugestão individual para CADA dente do arco (13, 12, 11, 21, 22, 23). Se dente não necessita → NÃO incluir. Se necessita → INCLUIR com medida específica. NÃO omitir dentes por conveniência.
+CORRECAO COMPLETA DO ARCO: Ao detectar evidencia suficiente em qualquer dente, avaliar e sugerir para TODOS (13-23). Gerar sugestões individuais por dente.
+REGRA DE COMPLETUDE GENGIVAL: Ao indicar gengivoplastia para QUALQUER dente anterior, OBRIGATORIAMENTE avaliar e gerar sugestão individual para CADA dente do arco (13, 12, 11, 21, 22, 23). Se dente não necessita → NÃO incluir. Se necessita → INCLUIR com medida específica e gingival_reduction_pct. NÃO omitir dentes por conveniência.
 
 FORMATO DA SUGESTAO DE GENGIVOPLASTIA (seguir quando indicada):
-{ tooth_number: "dentes envolvidos", treatment_indication: "gengivoplastia"|"recobrimento_radicular", procedure_type: "complementar", description: "[justificativa]", priority: "alta", notes: "Procedimento preparatório - realizar ANTES do restaurador. Requer avaliação periodontal prévia (sondagem + radiografia periapical) para verificar nível ósseo crestal e largura biológica." }
+{ tooth_number: "dentes envolvidos", treatment_indication: "gengivoplastia"|"recobrimento_radicular", procedure_type: "complementar", description: "[justificativa com evidencias combinadas]", priority: "alta", notes: "gingival_reduction_pct: [N]. Procedimento preparatório - realizar ANTES do restaurador. Requer avaliação periodontal prévia (sondagem + radiografia periapical) para verificar nível ósseo crestal e largura biológica.", indication_reason: "[lista das evidencias a favor e contra]" }
 
 PROTOCOLO DE GENGIVOPLASTIA: Avaliação periodontal (sondagem + radiografia periapical) -> Enceramento prévio + guia cirúrgica -> Respeitar distâncias biológicas -> 60-90 dias maturação tecidual.
 
@@ -574,24 +574,19 @@ REGRA: Exposição radicular → treatment_indication: "recobrimento_radicular",
 
 REGRAS ABSOLUTAS GENGIVOPLASTIA:
 1. Avaliar APENAS com base no SORRISO REAL (nao na simulação DSD)
-2. VIES CONSERVADOR: Na dúvida, NAO sugira (procedimento cirúrgico)
+2. VIES CONSERVADOR: Na dúvida, NAO sugira (procedimento cirúrgico). Exigir 2+ evidencias a favor
 3. Exposição cervical/radicular -> RECOBRIMENTO, NUNCA gengivoplastia
 4. Dente curto por DESGASTE INCISAL -> acréscimo incisal, NAO gengivoplastia
-   Dente curto por EXCESSO DE GENGIVA -> gengivoplastia
+   Dente curto por EXCESSO DE GENGIVA -> gengivoplastia (evidencia a favor #3)
 
-NAO gerar gengivoplastia se: smile_line BAIXA (gengiva nao visivel) E zênites simétricos E proporção 75-80%.
-NAO gerar gengivoplastia se gengiva NAO visivel na foto.
-Smile line MEDIA: VIES FORTEMENTE CONSERVADOR — gengivoplastia SOMENTE se:
-  a) Assimetria gengival EVIDENTE entre homólogos (>1.5mm diferença visual), OU
-  b) Coroa clínica curta INEQUÍVOCA por excesso de tecido gengival (NOT por desgaste incisal), OU
-  c) Hiperplasia gengival localizada visualmente ÓBVIA (ex: inchaço, contorno anormal)
-  Se nenhuma dessas condições está CLARAMENTE presente: NÃO indicar gengivoplastia para smile_line "média".
-  Um sorriso com gengiva levemente visível NÃO é indicação de gengivoplastia — é anatomia NORMAL.
-REGRA CRITICA DE RECLASSIFICACAO: Se papilas estao totalmente visiveis ou contorno gengival dos centrais e visivel → smile_line DEVE ser "alta", NUNCA "média". Verifique ANTES de classificar smile_line — este erro é o mais comum.
+NAO gerar gengivoplastia se gengiva NAO visivel na foto (impossivel avaliar evidencias).
+NAO gerar gengivoplastia baseado APENAS em smile_line "alta" — exigir evidencia anatomica adicional (assimetria, coroa curta, excesso tecidual).
+Smile line "media" sem evidencia objetiva adicional → NAO INDICAR (exposicao gengival leve e anatomia NORMAL).
 
-IDENTIFICACAO DE DENTES PARA GENGIVOPLASTIA (quando indicada):
+IDENTIFICACAO DE DENTES PARA GENGIVOPLASTIA (quando indicada por evidencia combinada):
 - Listar CADA dente que precisa de gengivoplastia como sugestão SEPARADA
-- Especificar quanto de tecido remover em mm para cada dente (ex: "Gengivoplastia ~1.5mm")
+- Especificar gingival_reduction_pct no notes para cada dente
+- Especificar indication_reason com as evidencias combinadas que justificam a indicacao
 - Indicar sequencia no tratamento: gengivoplastia ANTES das restaurações (60-90 dias de cicatrização)
 
 === DETECCAO DE PROTESES / IMPLANTES / TRABALHO PROTÉTICO ===
