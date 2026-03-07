@@ -342,6 +342,18 @@ corrections are MINOR refinements, NOT redesign. For each tooth:
       if (reductionByTooth.size > 0) {
         gingivoSuggestions = `DADOS DE REDUCAO DA ANALISE (usar como guia de magnitude):\n${gingivoSuggestions}`;
       }
+
+      // Wire radiographic findings to validate gengivoplasty magnitude
+      const radiographicObs = analysis.observations?.filter(
+        (obs: string) => obs.toLowerCase().includes('radiograf') ||
+                         obs.toLowerCase().includes('coroa/raiz') ||
+                         obs.toLowerCase().includes('osseo') ||
+                         obs.toLowerCase().includes('periapical')
+      ) || [];
+
+      if (radiographicObs.length > 0 && gingivoSuggestions) {
+        gingivoSuggestions += `\n\nDADOS RADIOGRAFICOS RELEVANTES PARA GENGIVOPLASTIA:\n${radiographicObs.map((o: string) => `- ${sanitizeAnalysisText(o)}`).join('\n')}\nUse proporcao coroa/raiz para validar magnitude do corte. Se raiz curta detectada, REDUZA magnitude em 50%.`;
+      }
     }
   }
 
