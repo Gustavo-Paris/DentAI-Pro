@@ -27,7 +27,7 @@ export function warmupEdgeFunctions() {
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic'];
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
-export async function uploadPhoto(userId: string, blob: Blob): Promise<string> {
+export async function uploadPhoto(userId: string, blob: Blob, fileNameOverride?: string): Promise<string> {
   if (!ALLOWED_IMAGE_TYPES.includes(blob.type)) {
     throw new Error('Tipo de arquivo inválido. Apenas imagens são permitidas.');
   }
@@ -35,7 +35,9 @@ export async function uploadPhoto(userId: string, blob: Blob): Promise<string> {
     throw new Error('Arquivo muito grande. Máximo: 10MB.');
   }
 
-  const fileName = `${userId}/intraoral_${Date.now()}.jpg`;
+  const fileName = fileNameOverride
+    ? `${userId}/${fileNameOverride}.jpg`
+    : `${userId}/intraoral_${Date.now()}.jpg`;
   const { error } = await supabase.storage
     .from('clinical-photos')
     .upload(fileName, blob, { upsert: true });

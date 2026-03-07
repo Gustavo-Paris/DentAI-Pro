@@ -46,6 +46,7 @@ export type Database = {
           ai_treatment_indication: string | null
           alerts: Json | null
           alternatives: Json | null
+          anamnesis: string | null
           bruxism: boolean
           budget: string
           cavity_class: string
@@ -74,6 +75,7 @@ export type Database = {
           photo_frontal: string | null
           priority: string | null
           protocol_layers: Json | null
+          radiograph_url: string | null
           recommendation_text: string | null
           recommended_resin_id: string | null
           region: string
@@ -95,6 +97,7 @@ export type Database = {
         Insert: {
           additional_photos?: Json | null
           aesthetic_level: string
+          anamnesis?: string | null
           ai_indication_reason?: string | null
           ai_treatment_indication?: string | null
           alerts?: Json | null
@@ -127,6 +130,7 @@ export type Database = {
           photo_frontal?: string | null
           priority?: string | null
           protocol_layers?: Json | null
+          radiograph_url?: string | null
           recommendation_text?: string | null
           recommended_resin_id?: string | null
           region: string
@@ -147,6 +151,7 @@ export type Database = {
         }
         Update: {
           additional_photos?: Json | null
+          anamnesis?: string | null
           aesthetic_level?: string
           ai_indication_reason?: string | null
           ai_treatment_indication?: string | null
@@ -180,6 +185,7 @@ export type Database = {
           photo_frontal?: string | null
           priority?: string | null
           protocol_layers?: Json | null
+          radiograph_url?: string | null
           recommendation_text?: string | null
           recommended_resin_id?: string | null
           region?: string
