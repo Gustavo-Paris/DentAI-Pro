@@ -126,9 +126,9 @@ Deno.test("analyze-dental-photo uses Gemini 2.5 Pro", () => {
   assertEquals(p.temperature, 0.0);
 });
 
-Deno.test("recommend-resin uses Claude Opus 4.6", () => {
+Deno.test("recommend-resin uses Claude Sonnet 4.6", () => {
   const p = getPrompt("recommend-resin");
-  assertEquals(p.model, "claude-opus-4-6");
+  assertEquals(p.model, "claude-sonnet-4-6");
   assertEquals(p.provider, "claude");
   assertEquals(p.temperature, 0.0);
 });
@@ -140,9 +140,9 @@ Deno.test("dsd-simulation uses Nano Banana 2 (primary)", () => {
   assertEquals(p.mode, "image-edit");
 });
 
-Deno.test("recommend-cementation uses Claude Opus 4.6", () => {
+Deno.test("recommend-cementation uses Claude Sonnet 4.6", () => {
   const p = getPrompt("recommend-cementation");
-  assertEquals(p.model, "claude-opus-4-6");
+  assertEquals(p.model, "claude-sonnet-4-6");
   assertEquals(p.provider, "claude");
 });
 

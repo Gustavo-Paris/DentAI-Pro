@@ -348,7 +348,7 @@ export const recommendResin: PromptDefinition<Params> = {
   id: 'recommend-resin',
   name: 'Recomendação de Resina',
   description: 'Gera recomendação completa de resina com protocolo de estratificação',
-  model: 'claude-opus-4-6',
+  model: 'claude-sonnet-4-6',
   temperature: 0.0,
   maxTokens: 4096,
   mode: 'text',
@@ -568,6 +568,14 @@ Inclua no campo \`clinical_sequence\` (string) uma sequencia concisa:
 
 Seja CONCISO — 1 linha por passo, sem repeticao do obvio.
 
+=== REGRA DE SHADE ÚNICA POR CAMADA ===
+CADA camada do protocolo deve ter EXATAMENTE UMA shade/resina. PROIBIDO usar "ou" entre shades na mesma camada.
+- ERRADO: "T (Trans) ou Corante Branco" → gera ambiguidade clínica
+- CORRETO: "Trans (FORMA Vitanova)" → shade única, sem alternativa
+- ERRADO: "WE ou MW" → duas opções na mesma camada
+- CORRETO: "MW (Estelite Omega)" → decisão tomada
+Se houver necessidade de alternativa, usar o campo alt_simplified com shade única diferente.
+
 === ALERTAS CONTEXTUAIS ===
 
 Adicione ao campo \`warnings\` quando aplicavel:
@@ -603,6 +611,8 @@ Se um item é uma RECOMENDAÇÃO → vai em ALERTS, não em WARNINGS.`,
 
     return `${budgetRules}
 
+${dsdContext}
+
 CASO CLINICO:
 - Idade: ${p.patientAge} anos | Dente: ${p.tooth} | Região: ${p.region}
 - Classe: ${p.cavityClass} | Tamanho: ${p.restorationSize} | Profundidade: ${p.depth || 'N/A'}
@@ -612,7 +622,6 @@ CASO CLINICO:
 - Longevidade: ${p.longevityExpectation} | Orçamento: ${p.budget}
 ${p.clinicalNotes ? `- Observações: ${p.clinicalNotes}` : ''}
 ${aestheticGoals}
-${dsdContext}
 
 ${resinsByPrice}
 ${inventory}

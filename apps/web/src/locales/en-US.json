@@ -1280,7 +1280,7 @@
         "analyzingTitle": "Analyzing Photo",
         "photoAnalyzing": "Photo being analyzed",
         "estimatedTime": "~30-60 seconds",
-        "poweredBy": "Powered by Gemini 3 Pro",
+        "poweredBy": "Powered by Gemini 2.5 Pro",
         "cancel": "Cancel",
         "defaultStep": "Detecting dental structures..."
       },

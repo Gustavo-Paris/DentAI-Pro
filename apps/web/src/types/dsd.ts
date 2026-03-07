@@ -135,6 +135,7 @@ export interface ClinicalToothFinding {
 export interface AdditionalPhotos {
   smile45: string | null;
   face: string | null;
+  radiograph: string | null;
 }
 
 export type WhiteningLevel = 'natural' | 'hollywood';

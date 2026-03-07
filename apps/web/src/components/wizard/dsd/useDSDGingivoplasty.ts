@@ -115,7 +115,7 @@ export function useDSDGingivoplasty({
     if (hasExplicitIndication) return 'recommended';
 
     // Check for gingival keywords in suggestions text AND observations
-    const gingivoKeywords = ['gengivoplastia', 'excesso gengival', 'sorriso gengival', 'gengiva inserida', 'coroa clínica curta', 'coroa clinica curta', 'gummy smile'];
+    const gingivoKeywords = ['gengivoplastia', 'excesso gengival', 'sorriso gengival', 'gengiva inserida', 'coroa clínica curta', 'coroa clinica curta', 'gummy smile', 'linha do sorriso alta', 'exposicao gengival', 'exposição gengival'];
     const hasKeywordInSuggestions = !!analysis.suggestions?.some(s => {
       const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
       return gingivoKeywords.some(kw => text.includes(kw));
@@ -138,13 +138,15 @@ export function useDSDGingivoplasty({
   }, []);
 
   // Determine which layers to generate based on analysis
-  const determineLayersNeeded = useCallback((_analysis: DSDAnalysis): SimulationLayerType[] => {
+  const determineLayersNeeded = useCallback((analysis: DSDAnalysis): SimulationLayerType[] => {
     const needed: SimulationLayerType[] = ['restorations-only', 'whitening-restorations'];
     if (gingivoplastyApproved === true) {
       needed.push('complete-treatment');
+    } else if (gingivoplastyApproved === null && getGingivoConfidence(analysis) === 'recommended') {
+      needed.push('complete-treatment');
     }
     return needed;
-  }, [gingivoplastyApproved]);
+  }, [gingivoplastyApproved, getGingivoConfidence]);
 
   // Approve gengivoplasty: generate L3 chained from L2's composited image
   const handleApproveGingivoplasty = useCallback(async () => {
