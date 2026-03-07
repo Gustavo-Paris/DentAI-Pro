@@ -30,6 +30,7 @@ export interface UseWizardDraftRestoreParams {
   setImageBase64: (base64: string | null) => void;
   clearDraft: () => void;
   vitaShadeManuallySetRef?: React.MutableRefObject<boolean>;
+  setAnamnesis: (text: string) => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -49,6 +50,7 @@ export function useWizardDraftRestore({
   setImageBase64,
   clearDraft,
   vitaShadeManuallySetRef,
+  setAnamnesis,
 }: UseWizardDraftRestoreParams) {
   const { t } = useTranslation();
   const [showRestoreModal, setShowRestoreModal] = useState(false);
@@ -66,6 +68,9 @@ export function useWizardDraftRestore({
     setUploadedPhotoPath(pendingDraft.uploadedPhotoPath);
     setAdditionalPhotos(pendingDraft.additionalPhotos || { smile45: null, face: null, radiograph: null });
     setPatientPreferences(pendingDraft.patientPreferences || { whiteningLevel: 'natural' });
+    if (pendingDraft.anamnesis) {
+      setAnamnesis(pendingDraft.anamnesis);
+    }
     // Restore manual shade override flag — only sets `true` since `false` is the useRef default
     if (vitaShadeManuallySetRef && pendingDraft.vitaShadeManuallySet) {
       vitaShadeManuallySetRef.current = true;
@@ -102,6 +107,7 @@ export function useWizardDraftRestore({
     setUploadedPhotoPath,
     setAdditionalPhotos,
     setPatientPreferences,
+    setAnamnesis,
     setImageBase64,
     clearDraft,
     vitaShadeManuallySetRef,

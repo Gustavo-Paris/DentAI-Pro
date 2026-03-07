@@ -46,6 +46,8 @@ export interface UsePhotoAnalysisParams {
   additionalPhotos?: { smile45: string | null; face: string | null; radiograph: string | null };
   /** Patient aesthetic preferences for unified analysis */
   patientPreferences?: { whiteningLevel: 'natural' | 'hollywood' };
+  /** Free-text clinical anamnesis to enrich AI analysis */
+  anamnesis?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -120,6 +122,7 @@ export function usePhotoAnalysis({
   patientWhiteningLevel,
   additionalPhotos,
   patientPreferences,
+  anamnesis,
 }: UsePhotoAnalysisParams) {
   const { t } = useTranslation();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -218,6 +221,9 @@ export function usePhotoAnalysis({
           }
           if (patientPreferences) {
             requestBody.patientPreferences = patientPreferences;
+          }
+          if (anamnesis) {
+            requestBody.anamnesis = anamnesis;
           }
 
           const result = await Promise.race([
@@ -399,6 +405,9 @@ export function usePhotoAnalysis({
       }
       if (patientPreferences) {
         reanalyzeBody.patientPreferences = patientPreferences;
+      }
+      if (anamnesis) {
+        reanalyzeBody.anamnesis = anamnesis;
       }
 
       const { data } = await withRetry(

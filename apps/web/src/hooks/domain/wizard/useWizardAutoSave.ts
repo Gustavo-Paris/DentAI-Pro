@@ -19,6 +19,7 @@ export interface UseWizardAutoSaveParams {
   uploadedPhotoPath: string | null;
   additionalPhotos: AdditionalPhotos;
   patientPreferences: PatientPreferences;
+  anamnesis: string;
   vitaShadeManuallySet: boolean;
   saveDraft: (draft: Omit<WizardDraft, 'lastSavedAt'>) => void;
   userId: string | undefined;
@@ -47,6 +48,7 @@ export function useWizardAutoSave({
   uploadedPhotoPath,
   additionalPhotos,
   patientPreferences,
+  anamnesis,
   vitaShadeManuallySet,
   saveDraft,
   userId,
@@ -67,6 +69,7 @@ export function useWizardAutoSave({
         uploadedPhotoPath,
         additionalPhotos,
         patientPreferences,
+        anamnesis,
         vitaShadeManuallySet,
       });
     }
@@ -81,6 +84,7 @@ export function useWizardAutoSave({
     uploadedPhotoPath,
     additionalPhotos,
     patientPreferences,
+    anamnesis,
     saveDraft,
     userId,
   ]);
@@ -120,6 +124,7 @@ export function useWizardAutoSave({
           uploadedPhotoPath,
           additionalPhotos,
           patientPreferences,
+          anamnesis,
           vitaShadeManuallySet,
         });
       }
@@ -137,6 +142,7 @@ export function useWizardAutoSave({
     uploadedPhotoPath,
     additionalPhotos,
     patientPreferences,
+    anamnesis,
     saveDraft,
     userId,
   ]);

@@ -69,7 +69,7 @@ const QUICK_STEP_META = [
 function ActiveStepContent({ wizard }: { wizard: ReturnType<typeof useWizardFlow> }) {
   const {
     step, stepDirection, imageBase64, setImageBase64, goToPreferences, goToQuickCase,
-    additionalPhotos, setAdditionalPhotos, patientPreferences, setPatientPreferences,
+    additionalPhotos, setAdditionalPhotos, anamnesis, setAnamnesis, patientPreferences, setPatientPreferences,
     handlePreferencesContinue, isAnalyzing, analysisError, handleRetryAnalysis,
     handleSkipToReview, handleBack, cancelAnalysis, handleDSDComplete, handleDSDSkip,
     analysisResult, dsdResult, handleDSDResultChange, formData, updateFormData,
@@ -93,6 +93,8 @@ function ActiveStepContent({ wizard }: { wizard: ReturnType<typeof useWizardFlow
           additionalPhotos={additionalPhotos}
           setAdditionalPhotos={setAdditionalPhotos}
           onPhotoQualityScore={setEarlyPhotoQualityScore}
+          anamnesis={anamnesis}
+          setAnamnesis={setAnamnesis}
         />
       );
     case 2:

@@ -11,6 +11,8 @@ interface FotoStepWrapperProps {
   additionalPhotos: AdditionalPhotos;
   setAdditionalPhotos: (photos: AdditionalPhotos) => void;
   onPhotoQualityScore?: (score: number | null) => void;
+  anamnesis: string;
+  setAnamnesis: (text: string) => void;
 }
 
 export const FotoStepWrapper = memo(function FotoStepWrapper({
@@ -22,6 +24,8 @@ export const FotoStepWrapper = memo(function FotoStepWrapper({
   additionalPhotos,
   setAdditionalPhotos,
   onPhotoQualityScore,
+  anamnesis,
+  setAnamnesis,
 }: FotoStepWrapperProps) {
   return (
     <div className={`wizard-step-${stepDirection}`}>
@@ -35,6 +39,8 @@ export const FotoStepWrapper = memo(function FotoStepWrapper({
           additionalPhotos={additionalPhotos}
           onAdditionalPhotosChange={setAdditionalPhotos}
           onPhotoQualityScore={onPhotoQualityScore}
+          anamnesis={anamnesis}
+          onAnamnesisChange={setAnamnesis}
         />
       </div>
     </div>

@@ -89,6 +89,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     face: null,
     radiograph: null,
   });
+  const [anamnesis, setAnamnesis] = useState('');
   const [patientPreferences, setPatientPreferences] = useState<PatientPreferences>({
     whiteningLevel: 'natural',
   });
@@ -174,6 +175,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     patientPreferences: {
       whiteningLevel: patientPreferences.whiteningLevel === 'natural' ? 'natural' : 'hollywood',
     },
+    anamnesis,
   });
 
   // Wire up forward refs now that photo hook is created
@@ -263,6 +265,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     setImageBase64,
     clearDraft,
     vitaShadeManuallySetRef: photo.vitaShadeManuallySetRef,
+    setAnamnesis,
   });
 
   // Sample case detection
@@ -296,6 +299,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     uploadedPhotoPath: photo.uploadedPhotoPath,
     additionalPhotos,
     patientPreferences,
+    anamnesis,
     vitaShadeManuallySet: photo.vitaShadeManuallySetRef.current,
     saveDraft,
     userId: user?.id,
@@ -389,6 +393,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
       stepDirection: nav.stepDirection,
       imageBase64,
       additionalPhotos,
+      anamnesis,
       patientPreferences,
       isAnalyzing: photo.isAnalyzing,
       analysisError: photo.analysisError,
@@ -426,6 +431,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
       // Actions
       setImageBase64,
       setAdditionalPhotos,
+      setAnamnesis,
       setPatientPreferences,
       goToStep: nav.goToStep,
       goToPreferences: nav.goToPreferences,
@@ -458,6 +464,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
       nav.stepDirection,
       imageBase64,
       additionalPhotos,
+      anamnesis,
       patientPreferences,
       photo.isAnalyzing,
       photo.analysisError,
@@ -495,6 +502,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
       // Action deps
       setImageBase64,
       setAdditionalPhotos,
+      setAnamnesis,
       setPatientPreferences,
       nav.goToStep,
       nav.goToPreferences,
