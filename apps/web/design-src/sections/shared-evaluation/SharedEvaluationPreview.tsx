@@ -1,3 +1,4 @@
+import '../../preview-theme.css'
 import React, { useState } from 'react'
 import {
   Calendar,

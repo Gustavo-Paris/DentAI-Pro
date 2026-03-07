@@ -497,6 +497,20 @@ body {
   border-bottom: 1px solid rgb(var(--color-border-rgb) / 0.5);
 }
 
+/* ═══ Brand Gradient ═══ */
+.text-gradient-brand {
+  background: linear-gradient(135deg, var(--color-primary), var(--brand-accent), var(--color-primary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ═══ Font Display ═══ */
+.font-display {
+  font-family: 'Plus Jakarta Sans', 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 700;
+}
+
 /* ═══ Reduced Motion ═══ */
 @media (prefers-reduced-motion: reduce) {
   .scan-line-animation::after, .ai-glow, .ai-dot, .ai-text,
