@@ -305,6 +305,13 @@ Deno.serve(async (req: Request) => {
     const substrateCondition = validation.data.substrateCondition ? sanitizeForPrompt(validation.data.substrateCondition) : validation.data.substrateCondition;
     const aestheticGoals = validation.data.aestheticGoals ? sanitizeForPrompt(validation.data.aestheticGoals) : validation.data.aestheticGoals;
 
+    // Read optional anamnesis from request body
+    const rawAnamnesis = (body as Record<string, unknown>).anamnesis;
+    let anamnesisContext = '';
+    if (rawAnamnesis && typeof rawAnamnesis === 'string' && rawAnamnesis.trim().length > 0) {
+      anamnesisContext = `\n\nANAMNESE DO PACIENTE:\n"""${sanitizeForPrompt(rawAnamnesis.trim())}"""\nConsidere queixas do paciente. Se sensibilidade reportada → protocolo dessensibilizante antes da cimentacao. Se bruxismo → cimento de alta resistencia.`;
+    }
+
     // Sanitize dsdContext free-text fields to prevent prompt injection
     const dsdContext = validation.data.dsdContext ? {
       ...validation.data.dsdContext,
@@ -329,7 +336,7 @@ Deno.serve(async (req: Request) => {
     // AI prompt for cementation protocol (from prompt registry)
     const prompt = getPrompt('recommend-cementation');
     const systemPrompt = prompt.system({ teeth, shade, ceramicType, substrate, substrateCondition, aestheticGoals, dsdContext });
-    const userPrompt = prompt.user({ teeth, shade, ceramicType, substrate, substrateCondition, aestheticGoals, dsdContext });
+    const userPrompt = prompt.user({ teeth, shade, ceramicType, substrate, substrateCondition, aestheticGoals, dsdContext }) + anamnesisContext;
 
     // Tool definition for structured output
     const tools = [

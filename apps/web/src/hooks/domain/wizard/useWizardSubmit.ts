@@ -7,6 +7,7 @@ import type {
 } from '@/types/wizard';
 import type { DSDResult } from '@/types/dsd';
 import type { PatientPreferences } from '@/types/dsd';
+import type { AdditionalPhotos } from '@/hooks/useWizardDraft';
 import type { SubmissionStep } from './types';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
@@ -43,6 +44,8 @@ export interface UseWizardSubmitParams {
   dsdResult: DSDResult | null;
   patientPreferences: PatientPreferences;
   toothTreatments: Record<string, TreatmentType>;
+  additionalPhotos: AdditionalPhotos;
+  anamnesis?: string;
   setStep: React.Dispatch<React.SetStateAction<number>>;
   clearDraft: () => void;
   navigate: (path: string) => void;
@@ -95,6 +98,8 @@ export function useWizardSubmit({
   dsdResult,
   patientPreferences,
   toothTreatments,
+  additionalPhotos,
+  anamnesis,
   setStep,
   clearDraft,
   navigate,
@@ -186,6 +191,7 @@ export function useWizardSubmit({
       : rawTeeth;
 
     const sessionId = crypto.randomUUID();
+    let radiographPath: string | null = null;
     const treatmentCounts: Record<string, number> = {};
     let successCount = 0;
     const failedTeeth: Array<{ tooth: string; error: unknown }> = [];
@@ -304,6 +310,8 @@ export function useWizardSubmit({
             : 'whitening_natural',
         patient_desired_changes: null,
         stratification_needed: !isGengivoplasty,
+        anamnesis: anamnesis || null,
+        radiograph_url: radiographPath,
       };
     }
 
@@ -364,6 +372,7 @@ export function useWizardSubmit({
                     ? 'Paciente deseja clareamento INTENSO - nível Hollywood (BL1). Ajustar todas as camadas 2-3 tons mais claras que a cor detectada.'
                     : 'Paciente prefere aparência NATURAL (A1/A2). Manter tons naturais.',
                 dsdContext,
+                anamnesis,
               } : undefined,
               cementationParams: normalizedTreatment === 'porcelana' ? {
                 teeth: [tooth],
@@ -376,6 +385,7 @@ export function useWizardSubmit({
                   patientPreferences.whiteningLevel === 'hollywood'
                     ? 'Paciente deseja clareamento INTENSO - nível Hollywood (BL1). A cor ALVO da faceta e do cimento deve ser BL1 ou compatível.'
                     : 'Paciente prefere aparência NATURAL (A1/A2).',
+                anamnesis,
                 dsdContext: dsdContext
                   ? {
                       currentIssue: dsdContext.currentIssue,
@@ -627,6 +637,24 @@ export function useWizardSubmit({
     // -------------------------------------------------------------------
     try {
       const patientId = await createOrFindPatient();
+
+      // Upload radiograph to storage (follows same pattern as frontal photo)
+      if (additionalPhotos.radiograph && user) {
+        try {
+          const base64Data = additionalPhotos.radiograph.split(',')[1] || additionalPhotos.radiograph;
+          const byteString = atob(base64Data);
+          const ab = new ArrayBuffer(byteString.length);
+          const ia = new Uint8Array(ab);
+          for (let i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
+          }
+          const blob = new Blob([ab], { type: 'image/jpeg' });
+          radiographPath = await wizardData.uploadPhoto(user.id, blob, `${sessionId}/radiograph`);
+        } catch (uploadErr) {
+          logger.warn('Radiograph upload failed (non-critical):', uploadErr);
+        }
+      }
+
       await createEvaluationsWithProtocols(patientId);
       await finalizeSubmission();
     } catch (error: unknown) {
@@ -672,6 +700,8 @@ export function useWizardSubmit({
     dsdResult,
     patientPreferences,
     toothTreatments,
+    additionalPhotos,
+    anamnesis,
     clearDraft,
     navigate,
     setStep,

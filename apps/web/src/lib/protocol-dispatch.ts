@@ -53,6 +53,8 @@ export interface ResinDispatchParams {
     symmetryScore?: number;
     smileArc?: string;
   };
+  /** Patient anamnesis text for AI context */
+  anamnesis?: string;
   /** Stable operation ID for credit idempotency on retry */
   operationId?: string;
 }
@@ -71,6 +73,8 @@ export interface CementationDispatchParams {
     proposedChange: string;
     observations: string[];
   };
+  /** Patient anamnesis text for AI context */
+  anamnesis?: string;
   /** Stable operation ID for credit idempotency on retry */
   operationId?: string;
 }

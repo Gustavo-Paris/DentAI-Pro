@@ -234,6 +234,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     dsdResult,
     patientPreferences,
     toothTreatments,
+    anamnesis,
     setStep: nav.setStep,
     clearDraft,
     navigate,

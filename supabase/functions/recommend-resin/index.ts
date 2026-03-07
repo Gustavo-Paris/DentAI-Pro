@@ -1,6 +1,6 @@
 import { getCorsHeaders, handleCorsPreFlight, ERROR_MESSAGES, createErrorResponse, generateRequestId } from "../_shared/cors.ts";
 import { getSupabaseClient, authenticateRequest, isAuthError } from "../_shared/middleware.ts";
-import { validateEvaluationData, sanitizeFieldsForPrompt, type EvaluationData } from "../_shared/validation.ts";
+import { validateEvaluationData, sanitizeFieldsForPrompt, sanitizeForPrompt, type EvaluationData } from "../_shared/validation.ts";
 import { logger } from "../_shared/logger.ts";
 import { callClaudeWithTools, ClaudeError, type OpenAIMessage, type OpenAITool } from "../_shared/claude.ts";
 import { callGeminiWithTools, GeminiError } from "../_shared/gemini.ts";
@@ -164,6 +164,13 @@ Deno.serve(async (req) => {
     // Read optional DSD context from request body
     const dsdContext = (rawData as Record<string, unknown>).dsdContext as RecommendResinParams['dsdContext'] | undefined;
 
+    // Read optional anamnesis from request body
+    const rawAnamnesis = (rawData as Record<string, unknown>).anamnesis;
+    let anamnesisContext = '';
+    if (rawAnamnesis && typeof rawAnamnesis === 'string' && rawAnamnesis.trim().length > 0) {
+      anamnesisContext = `\n\nANAMNESE DO PACIENTE:\n"""${sanitizeForPrompt(rawAnamnesis.trim())}"""\nConsidere queixas do paciente ao selecionar materiais e tecnica. Se sensibilidade reportada → incluir dessensibilizante. Se bruxismo → resina de alta resistencia. Se expectativa estetica especifica → priorizar resultado estetico.`;
+    }
+
     // Sanitise free-text user input before prompt interpolation
     const safeData = sanitizeFieldsForPrompt(data, ['clinicalNotes', 'aestheticGoals']);
 
@@ -194,7 +201,7 @@ Deno.serve(async (req) => {
       dsdContext,
     };
 
-    const prompt = promptDef.user(promptParams);
+    const prompt = promptDef.user(promptParams) + anamnesisContext;
 
     // Compute deterministic seed from input hash for reproducibility
     const seedSource = JSON.stringify({
