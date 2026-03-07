@@ -385,6 +385,66 @@ Se a UNICA indicação para tratamento é diferença de cor entre dentes (sem pa
 
 VALIDACAO FINAL: Cada observation que menciona problema DEVE ter dente correspondente com tratamento.
 
+## DIAGNOSTICO DIFERENCIAL OBRIGATORIO
+
+Para CADA achado clinico ambiguo, JUSTIFIQUE o diagnostico escolhido:
+
+| Achado visual | Possibilidades | Como diferenciar |
+|---|---|---|
+| Mancha escura | Carie vs pigmentacao extrinseca vs restauracao antiga vs fluorose | Carie: bordas difusas, fundo amolecido. Pigmentacao: superficie lisa, nao cavitada. Restauracao: margens definidas, material visivel. Fluorose: bilateral simetrica, estrias horizontais |
+| Fratura/perda de estrutura | Trauma vs desgaste oclusal vs fadiga | Trauma: linha de fratura irregular, assimetrica. Desgaste: facetas lisas, bilateral. Fadiga: craze lines, trincas lineares |
+| Descoloracao unitaria | Necrose pulpar vs restauracao metalica vs pigmentacao intrinseca | Necrose: escurecimento acinzentado difuso. Metalica: escurecimento localizado cervical. Pigmentacao: amarelamento uniforme |
+| Area esbranquicada | Desmineralizacao vs fluorose vs hipoplasia | Desmineralizacao: opaca, rugosa, proxima a gengiva. Fluorose: bilateral, linhas horizontais. Hipoplasia: forma irregular, pode ter depressao |
+
+Registre o diagnostico E a justificativa no campo indication_reason.
+Se 2+ diagnosticos sao igualmente provaveis, registre ambos com "DD:" prefixo.
+
+## CLASSIFICACAO DE SEVERIDADE
+
+Para CADA dente com achado, classifique:
+
+EXTENSAO:
+- Pequena: <1/3 da face acometida
+- Media: 1/3 a 2/3 da face
+- Grande: >2/3 da face ou multiplas faces
+
+PROFUNDIDADE VISUAL (baseado em sombra e translucidez):
+- Superficial: opacidade superficial, sem sombra
+- Media: sombra parcial, translucidez preservada nas margens
+- Profunda: sombra extensa, perda de translucidez, possivel comprometimento pulpar
+
+URGENCIA:
+- Imediato: fratura com exposicao, dor relatada, estetica comprometida em zona visivel
+- Eletivo: carie incipiente, restauracao deficiente sem sintomas, estetica
+- Monitorar: mancha suspeita sem cavitacao, trinca sem sintomas, desgaste leve
+
+Registre severidade no campo indication_reason junto com o diagnostico.
+Formato: "[diagnostico] | [extensao] | [profundidade] | [urgencia]"
+
+## PROGNOSTICO RESTAURADOR
+
+Para CADA dente indicado para tratamento, avalie:
+
+FAVORAVEL (registre "prognostico: favoravel"):
+- Estrutura dental suficiente (>50% remanescente)
+- Acesso adequado para restauracao
+- Sem comprometimento pulpar aparente
+- Gengiva saudavel ao redor
+
+RESERVADO (registre "prognostico: reservado"):
+- Grande extensao (>50% destruicao)
+- Proximidade pulpar suspeitada (sombra profunda)
+- Multiplas faces acometidas
+- Restauracao antiga extensa a ser substituida
+
+DESFAVORAVEL (registre "prognostico: desfavoravel"):
+- Destruicao extensa com pouco remanescente
+- Suspeita de comprometimento endodontico (escurecimento + historico)
+- Fratura subgengival suspeitada
+- WARNING: sugira avaliacao endodontica/protética antes de restauracao
+
+Registre prognostico no campo notes do dente.
+
 ========================================================================
 SEÇÃO 2: ANÁLISE ESTÉTICA (DSD / VISAGISMO / PROPORÇÕES)
 ========================================================================
@@ -781,7 +841,44 @@ DETALHAMENTO DAS SUGESTÕES (OBRIGATÓRIO):
 - BOM: "Proporção L/A de ~85% (ideal 75-80%), lateral visivelmente mais curto que central (~2mm diferença), formato conoide leve"
 
 APLIQUE visagismo. Seja CONSERVADOR com restaurações. Seja COMPLETO no arco. Seja ABRANGENTE na detecção. Considere o RESULTADO ESTETICO FINAL, não apenas patologias isoladas.
-INCLUIR SEMPRE: "Recomenda-se exames radiográficos complementares (periapical/interproximal) para diagnósticos auxiliares"`,
+INCLUIR SEMPRE: "Recomenda-se exames radiográficos complementares (periapical/interproximal) para diagnósticos auxiliares"
+
+========================================================================
+SEÇÃO 6: DADOS COMPLEMENTARES (CONDICIONAL)
+========================================================================
+
+## ANALISE RADIOGRAFICA (aplicar SOMENTE quando radiografia fornecida como imagem adicional)
+
+Ao receber radiografia como imagem adicional, CRUZE com achados clinicos:
+
+EXTRAIA da radiografia:
+- Nivel osseo alveolar: crista em relacao a JAC (normal / perda horizontal / perda vertical)
+- Proporcao coroa/raiz dos dentes anteriores visiveis
+- Lesoes periapicais: presenca de radiolucidez
+- Caries interproximais nao visiveis na foto clinica
+- Estado de restauracoes existentes (extensao real, adaptacao marginal)
+- Reabsorcoes (interna ou externa)
+
+REGRAS DE CRUZAMENTO:
+- Carie detectada na foto + confirmada no rx → ALTA confianca, manter
+- Foto sugere carie mas rx NAO confirma → REDUZIR confianca, anotar "DD: considerar pigmentacao"
+- Rx mostra carie interproximal NAO visivel na foto → ADICIONAR ao detected_teeth com nota "achado radiografico — nao visivel clinicamente"
+- Rx mostra lesao periapical → ADICIONAR warning "Lesao periapical no dente [N] — avaliar necessidade de tratamento endodontico ANTES de procedimento restaurador"
+- Rx mostra reabsorcao → WARNING CRITICO no campo warnings
+
+PARA GENGIVOPLASTIA (quando indicada):
+- Proporcao coroa/raiz: registre no campo gingival_reason
+- Raiz longa + coroa curta = erupcao passiva alterada = indicacao CONFIRMADA
+- Raiz curta = CONTRAINDICACAO RELATIVA — registre warning
+
+## CORRELACAO COM ANAMNESE (aplicar SOMENTE quando transcricao fornecida)
+
+Quando anamnese do paciente estiver disponivel no contexto:
+- PRIORIZE achados que o paciente REPORTOU (queixa principal = foco da avaliacao)
+- Se paciente reporta sintoma NAO visivel (sensibilidade ao frio, dor noturna, sangramento gengival), registre em observations como informacao clinica relevante para o protocolo
+- Se paciente tem expectativa estetica especifica ("quero dentes mais brancos", "nao gosto do formato"), considere na priorizacao dos tratamentos
+- NUNCA descarte queixa do paciente por nao ter achado visual correspondente — registre como "queixa subjetiva sem achado clinico visivel — avaliar clinicamente"
+- Se anamnese menciona bruxismo, apertamento ou habitos parafuncionais, registre em observations — impacta selecao de material no protocolo`,
 
   user: ({ imageType, additionalContext, preferencesContext }: Params) => {
     let prompt = `Analise esta foto dental e forneça uma análise COMPLETA:
