@@ -42,6 +42,10 @@ vi.mock('@parisgroup-ai/pageshell/primitives', () => ({
     <button onClick={onClick} disabled={disabled} {...props}>{children}</button>
   ),
   Badge: ({ children, ...props }: any) => <span {...props}>{children}</span>,
+  Alert: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+  AlertDescription: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+  Label: ({ children, ...props }: any) => <label {...props}>{children}</label>,
+  Textarea: (props: any) => <textarea {...props} />,
 }));
 
 describe('PhotoUploadStep', () => {
