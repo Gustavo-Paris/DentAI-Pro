@@ -82,7 +82,7 @@ export function useDSDFaceMockup({
               existingAnalysis: analysis,
               patientPreferences,
               layerType: 'face-mockup' as const,
-              additionalPhotos: { face: additionalPhotos.face, smile45: null },
+              additionalPhotos: { face: additionalPhotos.face, smile45: null, radiograph: null },
             },
           });
           if (resp.error || !resp.data?.simulation_url) {

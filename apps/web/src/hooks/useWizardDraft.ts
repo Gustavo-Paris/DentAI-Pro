@@ -9,6 +9,7 @@ import { drafts } from '@/data';
 export interface AdditionalPhotos {
   smile45: string | null;
   face: string | null;
+  radiograph: string | null;
 }
 
 export interface WizardDraft {
@@ -20,6 +21,7 @@ export interface WizardDraft {
   dsdResult: DSDResult | null;
   uploadedPhotoPath: string | null;
   additionalPhotos?: AdditionalPhotos;
+  anamnesis?: string;
   patientPreferences?: PatientPreferences;
   vitaShadeManuallySet?: boolean;
   lastSavedAt: string;

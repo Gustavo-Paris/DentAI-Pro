@@ -538,7 +538,7 @@ describe('useWizardDraftRestore', () => {
         analysisResult: { detected: true } as any,
         dsdResult: null,
         uploadedPhotoPath: null,
-        additionalPhotos: { smile45: null, face: null },
+        additionalPhotos: { smile45: null, face: null, radiograph: null },
         patientPreferences: { whiteningLevel: 'natural' },
       };
 
@@ -557,7 +557,7 @@ describe('useWizardDraftRestore', () => {
       expect(setAnalysisResult).toHaveBeenCalledWith(mockDraft.analysisResult);
       expect(setDsdResult).toHaveBeenCalledWith(null);
       expect(setUploadedPhotoPath).toHaveBeenCalledWith(null);
-      expect(setAdditionalPhotos).toHaveBeenCalledWith({ smile45: null, face: null });
+      expect(setAdditionalPhotos).toHaveBeenCalledWith({ smile45: null, face: null, radiograph: null });
       expect(setPatientPreferences).toHaveBeenCalledWith({ whiteningLevel: 'natural' });
       expect(result.current.showRestoreModal).toBe(false);
       expect(result.current.pendingDraft).toBeNull();
@@ -600,7 +600,7 @@ describe('useWizardDraftRestore', () => {
         await result.current.handleRestoreDraft();
       });
 
-      expect(setAdditionalPhotos).toHaveBeenCalledWith({ smile45: null, face: null });
+      expect(setAdditionalPhotos).toHaveBeenCalledWith({ smile45: null, face: null, radiograph: null });
     });
 
     it('should default patientPreferences when draft has none', async () => {

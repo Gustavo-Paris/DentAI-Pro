@@ -43,7 +43,7 @@ export interface UsePhotoAnalysisParams {
   /** Patient whitening preference — when non-natural, protects vitaShade from AI override */
   patientWhiteningLevel?: 'natural' | 'hollywood';
   /** Additional photos (45-degree smile, face) for unified analysis */
-  additionalPhotos?: { smile45: string | null; face: string | null };
+  additionalPhotos?: { smile45: string | null; face: string | null; radiograph: string | null };
   /** Patient aesthetic preferences for unified analysis */
   patientPreferences?: { whiteningLevel: 'natural' | 'hollywood' };
 }

@@ -76,6 +76,9 @@ export interface Evaluation {
   tooth_bounds: { x: number; y: number; width: number; height: number } | null;
   patient_aesthetic_goals: string | null;
   patient_desired_changes: string[] | null;
+  anamnesis?: string | null;
+  radiograph_url?: string | null;
+  radiograph_type?: 'panoramic' | 'periapical' | 'bitewing' | null;
 }
 
 interface DentistProfile {

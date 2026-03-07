@@ -203,7 +203,7 @@ function makeDraft(overrides: Record<string, unknown> = {}) {
     analysisResult: { detected: true, confidence: 0.9, detected_teeth: [] },
     dsdResult: null,
     uploadedPhotoPath: null,
-    additionalPhotos: { smile45: null, face: null },
+    additionalPhotos: { smile45: null, face: null, radiograph: null },
     patientPreferences: { whiteningLevel: 'natural' },
     vitaShadeManuallySet: false,
     lastSavedAt: new Date().toISOString(),
@@ -730,7 +730,7 @@ describe('useWizardFlow', () => {
       expect(result.current.isSampleCase).toBe(false);
       expect(result.current.selectedTeeth).toEqual([]);
       expect(result.current.toothTreatments).toEqual({});
-      expect(result.current.additionalPhotos).toEqual({ smile45: null, face: null });
+      expect(result.current.additionalPhotos).toEqual({ smile45: null, face: null, radiograph: null });
       expect(result.current.patientPreferences).toEqual({ whiteningLevel: 'natural' });
     });
 

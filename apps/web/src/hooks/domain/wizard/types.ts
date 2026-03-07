@@ -88,6 +88,9 @@ export interface WizardFlowState {
 
   // Early photo quality score (from check-photo-quality, before full analysis)
   earlyPhotoQualityScore: number | null;
+
+  // Anamnesis
+  anamnesis: string;
 }
 
 export interface WizardFlowActions {
@@ -135,4 +138,7 @@ export interface WizardFlowActions {
 
   // Photo quality
   setEarlyPhotoQualityScore: (score: number | null) => void;
+
+  // Anamnesis
+  setAnamnesis: (text: string) => void;
 }

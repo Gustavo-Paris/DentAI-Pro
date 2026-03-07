@@ -28,3 +28,5 @@ export interface SubmitTeethPayload {
   toothTreatments: Record<string, TreatmentType>;
   pendingTeeth: PendingTooth[];
 }
+
+export type RadiographType = 'panoramic' | 'periapical' | 'bitewing';

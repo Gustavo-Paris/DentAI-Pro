@@ -12,6 +12,7 @@ import { supabase } from '@/data';
 export interface AdditionalPhotos {
   smile45: string | null;
   face: string | null;
+  radiograph: string | null;
 }
 
 interface PhotoUploadStepProps {
@@ -78,7 +79,7 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
   onAnalyze,
   onQuickCase,
   isUploading,
-  additionalPhotos = { smile45: null, face: null },
+  additionalPhotos = { smile45: null, face: null, radiograph: null },
   onAdditionalPhotosChange,
   onPhotoQualityScore,
 }: PhotoUploadStepProps) {

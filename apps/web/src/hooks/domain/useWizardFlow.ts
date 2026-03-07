@@ -87,6 +87,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
   const [additionalPhotos, setAdditionalPhotos] = useState<AdditionalPhotos>({
     smile45: null,
     face: null,
+    radiograph: null,
   });
   const [patientPreferences, setPatientPreferences] = useState<PatientPreferences>({
     whiteningLevel: 'natural',
