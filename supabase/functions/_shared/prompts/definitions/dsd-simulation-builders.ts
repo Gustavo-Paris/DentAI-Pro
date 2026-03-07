@@ -11,6 +11,7 @@ import {
   buildBaseCorrections,
   buildTextureInstruction,
   buildQualityRequirements,
+  buildGingivalTextureRules,
   PROPORTION_RULES,
 } from './dsd-simulation-shared.ts'
 
@@ -215,6 +216,7 @@ Output: Same photo with teeth whitened to ${params.whiteningIntensity} level. Al
 }
 
 export function buildGengivoplastyOnlyPrompt(params: Params): string {
+  const gingivalTextureRules = buildGingivalTextureRules()
   return `DENTAL PHOTO EDIT — PRIMARY TASK: GINGIVAL RECONTOURING
 
 Input: ALREADY PROCESSED dental photo (teeth corrected + whitened).
@@ -244,6 +246,17 @@ HOW TO EXECUTE:
 6. Create SYMMETRICAL gum line — left side mirrors right side
 7. Create smooth, harmonious gingival arch across all visible teeth
 8. Remaining gum tissue: healthy pink, smooth, realistic
+
+${gingivalTextureRules}
+
+MAGNITUDE DO CORTE GENGIVAL:
+- Use os valores de gingival_reduction_pct da analise quando disponiveis no contexto (ex: "dente 11: reduzir ~15%")
+- Se NAO disponiveis, calcule pela proporcao ideal: largura/comprimento alvo = 75-80% (golden ratio)
+- MAXIMO absoluto de reducao: 2mm (seguranca biologica — alem disso requer osteotomia)
+- A reducao deve ser GRADUAL entre dentes adjacentes — NAO pode haver degrau abrupto de gengiva
+- Zenith gengival: posicionar ligeiramente distal ao eixo longo do dente (anatomia natural)
+- Simetria: reducao SIMETRICA entre dentes homologos (11=21, 12=22, 13=23)
+- Se a analise indica proporcao coroa/raiz desfavoravel (raiz curta), REDUZIR a magnitude em 50%
 
 === ZENITH SYMMETRY & CLINICAL QUALITY (CRITICAL) ===
 GINGIVAL ZENITH = highest point of the gum margin on each tooth (most apical point).
@@ -294,6 +307,7 @@ export function buildWithGengivoplastyPrompt(params: Params): string {
   const baseCorrections = buildBaseCorrections()
   const textureInstruction = buildTextureInstruction(params.whiteningLevel)
   const qualityRequirements = buildQualityRequirements(params)
+  const gingivalTextureRules = buildGingivalTextureRules()
   const allowedChangesFromAnalysis = params.allowedChangesFromAnalysis || ''
 
   return `DENTAL PHOTO EDIT - COMPLETE TREATMENT WITH GENGIVOPLASTY
@@ -333,6 +347,17 @@ Expose more clinical crown by moving the gingival margin APICALLY (toward the ro
 - No dark spots, shadows, or bruise-like patches at gum-tooth margins
 - Newly exposed area must seamlessly continue the existing enamel surface
 - Remaining gum tissue must be uniform healthy PINK
+
+${gingivalTextureRules}
+
+MAGNITUDE DO CORTE GENGIVAL:
+- Use os valores de gingival_reduction_pct da analise quando disponiveis no contexto (ex: "dente 11: reduzir ~15%")
+- Se NAO disponiveis, calcule pela proporcao ideal: largura/comprimento alvo = 75-80% (golden ratio)
+- MAXIMO absoluto de reducao: 2mm (seguranca biologica — alem disso requer osteotomia)
+- A reducao deve ser GRADUAL entre dentes adjacentes — NAO pode haver degrau abrupto de gengiva
+- Zenith gengival: posicionar ligeiramente distal ao eixo longo do dente (anatomia natural)
+- Simetria: reducao SIMETRICA entre dentes homologos (11=21, 12=22, 13=23)
+- Se a analise indica proporcao coroa/raiz desfavoravel (raiz curta), REDUZIR a magnitude em 50%
 
 ${params.gingivoSuggestions ? `GENGIVOPLASTY SPECIFICATIONS (per tooth):\n${params.gingivoSuggestions}\n` : ''}
 

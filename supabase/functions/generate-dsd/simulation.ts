@@ -304,6 +304,7 @@ corrections are MINOR refinements, NOT redesign. For each tooth:
   }
 
   // Build gengivoplasty suggestions for complete-treatment layer
+  // Includes gingival_reduction_pct from detected_teeth notes when available
   let gingivoSuggestions: string | undefined;
   if (layerType === 'complete-treatment') {
     const gingivoItems = analysis.suggestions?.filter(s => {
@@ -315,9 +316,32 @@ corrections are MINOR refinements, NOT redesign. For each tooth:
       return text.includes('gengiv') || text.includes('zênite') || text.includes('zenite') || text.includes('gengivoplastia');
     }) || [];
     if (gingivoItems.length > 0) {
-      gingivoSuggestions = gingivoItems.map(s =>
-        `- Dente ${s.tooth}: ${s.proposed_change}`
-      ).join('\n');
+      // Extract gingival_reduction_pct from detected_teeth notes for precise magnitude control.
+      // detected_teeth comes from the unified photo analysis and may be present on the
+      // existingAnalysis object even though it's not part of the strict DSDAnalysis type.
+      const reductionByTooth = new Map<string, string>();
+      // deno-lint-ignore no-explicit-any
+      const detectedTeeth = (analysis as any).detected_teeth as Array<{ tooth: number | string; notes?: string }> | undefined;
+      if (detectedTeeth) {
+        for (const dt of detectedTeeth) {
+          const notes = dt.notes || '';
+          const match = notes.match(/gingival_reduction_pct\s*:\s*(\d+)/i);
+          if (match) {
+            reductionByTooth.set(String(dt.tooth), match[1]);
+          }
+        }
+      }
+
+      gingivoSuggestions = gingivoItems.map(s => {
+        const reductionPct = reductionByTooth.get(s.tooth);
+        const reductionNote = reductionPct ? ` (gingival_reduction_pct: ${reductionPct}% — reduzir ~${reductionPct}%)` : '';
+        return `- Dente ${s.tooth}: ${s.proposed_change}${reductionNote}`;
+      }).join('\n');
+
+      // If we have reduction data, prepend a context line
+      if (reductionByTooth.size > 0) {
+        gingivoSuggestions = `DADOS DE REDUCAO DA ANALISE (usar como guia de magnitude):\n${gingivoSuggestions}`;
+      }
     }
   }
 

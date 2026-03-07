@@ -138,6 +138,24 @@ Se você precisa mostrar mais resultado dental, faça isso DENTRO do espaço exi
 }
 
 // ---------------------------------------------------------------------------
+// Gingival texture & color (gengivoplasty layers)
+// ---------------------------------------------------------------------------
+
+export function buildGingivalTextureRules(): string {
+  return `REGRAS DE TEXTURA E COR GENGIVAL (OBRIGATORIO para camada com gengivoplastia):
+
+1. A gengiva apos reducao DEVE ter a MESMA cor e textura da gengiva adjacente nao-modificada — use como REFERENCIA
+2. COPIE o padrao de stippling (pontilhado) da gengiva original na area modificada — NAO pinte area uniforme/lisa
+3. Gradiente de cor natural: rosa-coral na gengiva aderida, rosa mais escuro/avermelhado na gengiva marginal
+4. Vascularizacao sutil: mantenha a variacao natural de tonalidade presente na foto original
+5. A transicao entre gengiva modificada e nao-modificada deve ser IMPERCEPTIVEL — sem linha de corte visivel
+6. REFERENCIA DE COR: use a gengiva entre os caninos (13-23) da foto original como source of truth
+7. PROIBIDO: cor uniforme rosa-chiclete, textura lisa sem stippling, linha reta de corte, rosa artificial neon
+
+REGRA CRITICA: Se a gengiva original na foto tem tom mais escuro (melanoderma ou pigmentacao), a gengiva modificada DEVE manter o MESMO tom. NAO clarear a gengiva artificialmente.`
+}
+
+// ---------------------------------------------------------------------------
 // Whitening priority section
 // ---------------------------------------------------------------------------
 
