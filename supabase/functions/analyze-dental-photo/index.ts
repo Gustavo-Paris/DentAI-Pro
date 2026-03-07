@@ -12,6 +12,7 @@ import type { Params as AnalyzePhotoParams } from "../_shared/prompts/definition
 import { createSupabaseMetrics, PROMPT_VERSION } from "../_shared/metrics-adapter.ts";
 import { parseAIResponse, PhotoAnalysisResultSchema } from "../_shared/aiSchemas.ts";
 import { stripJpegExif } from "../_shared/image-utils.ts";
+import { sanitizeForPrompt } from "../_shared/validation.ts";
 
 import type { PhotoAnalysisResult } from "./types.ts";
 import { validateImageRequest } from "./validation.ts";
@@ -83,7 +84,7 @@ Deno.serve(async (req) => {
     }
 
     const data = validation.data;
-    const { additionalPhotos, patientPreferences } = data;
+    const { additionalPhotos, patientPreferences, anamnesis } = data;
 
     // Server-side validation of image data
     const base64Data = data.imageBase64.includes(",")
@@ -118,6 +119,13 @@ Deno.serve(async (req) => {
     }
     if (additionalPhotos?.smile45) {
       additionalContext += '\nFoto de SORRISO 45° fornecida: avaliar corredor bucal, projeção labial e curvatura do arco com mais precisão.';
+    }
+    if (additionalPhotos?.radiograph) {
+      additionalContext += '\n\nRADIOGRAFIA fornecida como imagem adicional. Analise em conjunto com a foto clinica. Extraia: nivel osseo alveolar, proporcao coroa/raiz, lesoes periapicais, caries interproximais, reabsorcoes. CRUZE achados radiograficos com achados clinicos da foto.';
+    }
+
+    if (anamnesis && typeof anamnesis === 'string' && anamnesis.trim().length > 0) {
+      additionalContext += `\n\nTRANSCRICAO DA ANAMNESE DO PACIENTE:\n"""${sanitizeForPrompt(anamnesis.trim())}"""\n\nCORRELACIONE os achados visuais com a queixa do paciente. Priorize problemas que o paciente reportou. Se o paciente mencionar sintomas nao visiveis na foto (sensibilidade, dor), registre em observations como informacao clinica relevante.`;
     }
 
     let preferencesContext = '';
@@ -156,6 +164,15 @@ Deno.serve(async (req) => {
         additionalImages.push({ data: smile45Base64, mimeType: smile45Validation.mimeType });
       } else {
         logger.warn(`[${reqId}] Smile 45° photo failed magic bytes validation — skipping`);
+      }
+    }
+    if (additionalPhotos?.radiograph) {
+      const rxBase64 = extractBase64(additionalPhotos.radiograph);
+      const rxValidation = validateImageMagicBytes(rxBase64);
+      if (rxValidation.valid) {
+        additionalImages.push({ data: rxBase64, mimeType: rxValidation.mimeType });
+      } else {
+        logger.warn(`[${reqId}] Radiograph failed magic bytes validation — skipping`);
       }
     }
     if (additionalImages.length > 0) {
