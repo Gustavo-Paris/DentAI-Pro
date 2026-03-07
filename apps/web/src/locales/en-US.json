@@ -60,6 +60,7 @@
     "goToLogin": "Go to Login",
     "backToLogin": "Back to login",
     "backToHome": "Back to home",
+    "goBack": "Go back",
     "viewPlans": "View Plans",
     "selected_one": "{{count}} selected",
     "selected_other": "{{count}} selected",

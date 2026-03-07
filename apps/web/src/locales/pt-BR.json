@@ -60,6 +60,7 @@
     "goToLogin": "Ir para Login",
     "backToLogin": "Voltar para o login",
     "backToHome": "Voltar ao início",
+    "goBack": "Voltar",
     "viewPlans": "Ver Planos",
     "selected_one": "{{count}} selecionado",
     "selected_other": "{{count}} selecionados",

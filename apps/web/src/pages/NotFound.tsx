@@ -77,12 +77,17 @@ export default function NotFound() {
           <p className="text-sm text-muted-foreground mb-6">
             {t('errors.pageNotFoundDescription')}
           </p>
-          <Button asChild className="btn-glow">
-            <Link to="/">
-              <ArrowLeft className="w-4 h-4 mr-2" aria-hidden="true" />
-              {t('common.backToHome')}
-            </Link>
-          </Button>
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <Button asChild className="btn-glow">
+              <Link to="/">
+                <ArrowLeft className="w-4 h-4 mr-2" aria-hidden="true" />
+                {t('common.backToHome')}
+              </Link>
+            </Button>
+            <Button variant="outline" onClick={() => window.history.back()} className="btn-press">
+              {t('common.goBack')}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
