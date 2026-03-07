@@ -1,203 +1,364 @@
-import React from 'react';
+import '../../preview-theme.css'
+import {
+  Phone,
+  Mail,
+  FileText,
+  ChevronRight,
+  Plus,
+  Calendar,
+  ClipboardList,
+  CheckCircle2,
+  Clock,
+  Pencil,
+  Trash2,
+} from 'lucide-react'
 
 /* -----------------------------------------------------------------------
-   PatientProfilePreview -- Visual mockup of the Patient Profile detail page.
-   NOT real app code. Uses Tailwind classes only. Hardcoded sample data.
+   PatientProfilePreview — Polished patient profile detail page.
+   Uses Design OS preview-theme tokens, glass panels, glow orbs,
+   staggered animations. Hardcoded sample data from data.json.
    ----------------------------------------------------------------------- */
 
+const profile = {
+  name: 'Maria Clara Oliveira',
+  initials: 'MC',
+  phone: '(11) 98765-4321',
+  email: 'maria.clara@email.com',
+  notes:
+    'Paciente com histórico de sensibilidade dentária. Preferência por tratamentos estéticos. Alergia a látex.',
+}
+
+const metrics = [
+  { value: '5', label: 'Avaliações', color: 'text-primary' },
+  { value: '12', label: 'Casos', color: 'text-foreground' },
+  { value: '9', label: 'Concluídos', color: 'text-primary' },
+  { value: '20/ago', label: 'Primeira Visita', color: 'text-foreground' },
+]
+
 const sessions = [
-  { id: 'sess-101', date: '03 Mar 2026, 14:30', teeth: ['11', '21', '12', '22'], done: 4, total: 4 },
-  { id: 'sess-102', date: '15 Fev 2026, 09:00', teeth: ['14', '15', '24'], done: 3, total: 3 },
-  { id: 'sess-103', date: '10 Jan 2026, 11:30', teeth: ['36', '46'], done: 1, total: 2 },
-  { id: 'sess-104', date: '22 Nov 2025, 08:45', teeth: ['37', '47', '38'], done: 1, total: 3 },
-];
-
-function Badge({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return (
-    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${className}`}>
-      {children}
-    </span>
-  );
-}
-
-function GlassCard({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return (
-    <div className={`rounded-xl border border-border bg-card backdrop-blur-md shadow-sm ${className}`}>
-      {children}
-    </div>
-  );
-}
+  {
+    id: 'sess-101',
+    date: '03 Mar 2026',
+    teeth: ['11', '21', '12', '22'],
+    done: 4,
+    total: 4,
+  },
+  {
+    id: 'sess-102',
+    date: '15 Fev 2026',
+    teeth: ['14', '15', '24'],
+    done: 3,
+    total: 3,
+  },
+  {
+    id: 'sess-103',
+    date: '10 Jan 2026',
+    teeth: ['36', '46'],
+    done: 1,
+    total: 2,
+  },
+  {
+    id: 'sess-104',
+    date: '22 Nov 2025',
+    teeth: ['37', '47', '38'],
+    done: 1,
+    total: 3,
+  },
+]
 
 export default function PatientProfilePreview() {
   return (
-    <div className="relative min-h-screen bg-background text-foreground overflow-hidden font-sans">
+    <div className="section-glow-bg relative min-h-screen">
       {/* Ambient glow orbs */}
-      <div className="absolute w-64 h-64 rounded-full bg-primary/15 blur-3xl top-[-8%] left-[10%] animate-pulse" />
-      <div className="absolute w-56 h-56 rounded-full bg-accent/10 blur-3xl top-[30%] right-[-6%] animate-pulse" />
-      <div className="absolute w-48 h-48 rounded-full bg-primary/10 blur-3xl bottom-[8%] left-[55%] animate-pulse" />
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div
+          className="glow-orb"
+          style={{
+            width: 450,
+            height: 450,
+            top: '0%',
+            left: '15%',
+            background:
+              'radial-gradient(circle, rgb(var(--color-primary-rgb) / 0.10) 0%, transparent 70%)',
+          }}
+        />
+        <div
+          className="glow-orb glow-orb-slow"
+          style={{
+            width: 350,
+            height: 350,
+            top: '40%',
+            right: '5%',
+            background:
+              'radial-gradient(circle, rgb(var(--color-accent-rgb) / 0.08) 0%, transparent 70%)',
+          }}
+        />
+        <div
+          className="glow-orb glow-orb-reverse"
+          style={{
+            width: 300,
+            height: 300,
+            bottom: '5%',
+            left: '50%',
+            background:
+              'radial-gradient(circle, rgb(var(--color-primary-rgb) / 0.06) 0%, transparent 70%)',
+          }}
+        />
+      </div>
 
-      <div className="relative z-10 max-w-5xl mx-auto px-4 py-8 space-y-6">
+      {/* Content */}
+      <div className="relative max-w-5xl mx-auto px-4 py-8 space-y-6">
         {/* Breadcrumbs */}
-        <nav className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <span className="hover:text-foreground/70 cursor-pointer transition-colors">Dashboard</span>
-          <span>/</span>
-          <span className="hover:text-foreground/70 cursor-pointer transition-colors">Pacientes</span>
-          <span>/</span>
-          <span className="text-foreground">Maria Clara Oliveira</span>
+        <nav
+          className="flex items-center gap-1.5 text-xs text-muted-foreground animate-[fade-in-up_0.6s_ease-out_both]"
+          aria-label="Breadcrumb"
+        >
+          <span className="hover:text-foreground cursor-pointer transition-colors">
+            Dashboard
+          </span>
+          <span className="text-muted-foreground/50">/</span>
+          <span className="hover:text-foreground cursor-pointer transition-colors">
+            Pacientes
+          </span>
+          <span className="text-muted-foreground/50">/</span>
+          <span className="text-foreground font-medium">{profile.name}</span>
         </nav>
 
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold text-sm">
-              MC
+        {/* Header Card */}
+        <div className="glass-panel rounded-xl p-5 sm:p-6 animate-[fade-in-up_0.6s_ease-out_0.05s_both]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <span className="text-lg font-bold text-primary">
+                  {profile.initials}
+                </span>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-heading neon-text tracking-tight">
+                  {profile.name}
+                </h1>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Perfil do Paciente
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-semibold tracking-tight">Maria Clara Oliveira</h1>
-              <p className="text-sm text-muted-foreground">Perfil do Paciente</p>
+            <div className="flex items-center gap-2">
+              <button className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium btn-press btn-glow focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-colors">
+                <Plus className="w-4 h-4" />
+                Nova Avaliação
+              </button>
+              <button className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted/50 btn-press focus-visible:ring-2 focus-visible:ring-ring transition-colors">
+                <Pencil className="w-3.5 h-3.5" />
+                Editar
+              </button>
+              <button className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 btn-press focus-visible:ring-2 focus-visible:ring-destructive transition-colors">
+                <Trash2 className="w-3.5 h-3.5" />
+                Excluir
+              </button>
             </div>
-          </div>
-          <div className="flex gap-2">
-            <button className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors focus-visible:ring-2 focus-visible:ring-primary">
-              Nova Avaliacao
-            </button>
-            <button className="px-3 py-1.5 rounded-lg border border-border text-sm text-foreground/70 hover:bg-muted/50 transition-colors focus-visible:ring-2 focus-visible:ring-ring">
-              Editar
-            </button>
-            <button className="px-3 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors focus-visible:ring-2 focus-visible:ring-destructive">
-              Excluir
-            </button>
           </div>
         </div>
 
         {/* Contact Info Card */}
-        <GlassCard className="p-4">
-          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Informacoes de Contato</h3>
-          <div className="flex flex-wrap gap-4 text-sm">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-              <span>(11) 98765-4321</span>
+        <div className="glass-panel rounded-xl p-5 animate-[fade-in-up_0.6s_ease-out_0.1s_both]">
+          <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm">
+            <div className="flex items-center gap-2.5 text-foreground">
+              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
+                <Phone className="w-4 h-4 text-primary" />
+              </div>
+              <span>{profile.phone}</span>
             </div>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-              <span>maria.clara@email.com</span>
+            <div className="flex items-center gap-2.5 text-foreground">
+              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
+                <Mail className="w-4 h-4 text-primary" />
+              </div>
+              <span>{profile.email}</span>
             </div>
           </div>
-          <div className="flex items-start gap-2 text-muted-foreground text-sm mt-3 pt-3 border-t border-border">
-            <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-            <span>Paciente com historico de sensibilidade dentaria. Preferencia por tratamentos esteticos. Alergia a latex.</span>
+          <div className="flex items-start gap-2.5 text-sm mt-4 pt-4 border-t border-border/50">
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-muted shrink-0 mt-0.5">
+              <FileText className="w-4 h-4 text-muted-foreground" />
+            </div>
+            <p className="text-muted-foreground leading-relaxed">
+              {profile.notes}
+            </p>
           </div>
-        </GlassCard>
+        </div>
 
         {/* Metrics KPIs */}
-        <div>
-          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Metricas</h3>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { value: '5', label: 'Avaliacoes' },
-              { value: '12', label: 'Casos' },
-              { value: '9', label: 'Concluidos', highlight: true },
-              { value: '20/ago', label: 'Primeira Visita' },
-            ].map((stat, i) => (
-              <GlassCard key={stat.label} className="p-4 text-center">
-                <p className={`text-2xl font-semibold ${stat.highlight ? 'text-primary' : 'text-foreground'}`}>
-                  {stat.value}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
-              </GlassCard>
-            ))}
-          </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-[fade-in-up_0.6s_ease-out_0.15s_both]">
+          {metrics.map((stat, i) => {
+            const icons = [ClipboardList, FileText, CheckCircle2, Calendar]
+            const Icon = icons[i]
+            const iconColors = [
+              'text-primary',
+              'text-accent',
+              'text-success',
+              'text-warning',
+            ]
+            const iconBgs = [
+              'bg-primary/10',
+              'bg-accent/10',
+              'bg-success/10',
+              'bg-warning/10',
+            ]
+
+            return (
+              <div
+                key={stat.label}
+                className="glass-panel card-elevated rounded-xl p-4"
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`flex items-center justify-center w-9 h-9 rounded-lg shrink-0 ${iconBgs[i]}`}
+                  >
+                    <Icon className={`w-5 h-5 ${iconColors[i]}`} />
+                  </div>
+                  <div>
+                    <p
+                      className={`text-2xl font-bold leading-none ${stat.color}`}
+                    >
+                      {stat.value}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {stat.label}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
         </div>
 
         {/* Session History */}
         <div>
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Historico de Sessoes</h3>
-            <button className="px-3 py-1 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors">
-              + Nova Avaliacao
+          <div className="flex items-center justify-between mb-4 animate-[fade-in-up_0.6s_ease-out_0.2s_both]">
+            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Histórico de Sessões
+            </h2>
+            <button className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium btn-press btn-glow focus-visible:ring-2 focus-visible:ring-ring transition-colors">
+              <Plus className="w-3.5 h-3.5" />
+              Nova Avaliação
             </button>
           </div>
 
           <div className="space-y-3">
-            {sessions.map((session) => {
-              const isCompleted = session.done === session.total;
-              const pct = Math.round((session.done / session.total) * 100);
+            {sessions.map((session, idx) => {
+              const isCompleted = session.done === session.total
+              const pct = Math.round((session.done / session.total) * 100)
+              const delay = 0.25 + idx * 0.08
 
               return (
-                <GlassCard
+                <div
                   key={session.id}
-                  className="relative overflow-hidden p-4 hover:shadow-md transition-all duration-300 cursor-pointer group"
+                  className="glass-panel card-elevated rounded-xl relative overflow-hidden cursor-pointer group"
+                  style={{
+                    animation: `fade-in-up 0.6s ease-out ${delay}s both`,
+                  }}
                 >
                   {/* Left accent bar */}
                   <div
-                    className={`absolute left-0 top-0 bottom-0 w-[3px] bg-gradient-to-b ${
-                      isCompleted ? 'from-primary to-primary/70' : 'from-primary to-primary/70'
-                    }`}
+                    className="absolute left-0 top-0 bottom-0 w-[3px]"
+                    style={{
+                      background: isCompleted
+                        ? `linear-gradient(to bottom, rgb(var(--color-success-rgb)), rgb(var(--color-success-rgb) / 0.5))`
+                        : `linear-gradient(to bottom, rgb(var(--color-primary-rgb)), rgb(var(--color-primary-rgb) / 0.5))`,
+                    }}
                   />
 
-                  <div className="flex items-center justify-between mb-2 pl-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-foreground">{session.date}</span>
-                      <Badge
-                        className={
-                          isCompleted
-                            ? 'border-primary/30 text-primary bg-primary/10'
-                            : 'border-primary/30 text-primary bg-primary/10'
-                        }
-                      >
-                        {isCompleted ? 'Concluido' : 'Em progresso'}
-                      </Badge>
-                    </div>
-                    <svg
-                      className="w-4 h-4 text-muted-foreground/50 group-hover:text-muted-foreground group-hover:translate-x-0.5 transition-all"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-
-                  <div className="flex items-center gap-4 pl-2">
-                    <div className="flex-1">
-                      <div className="flex flex-wrap gap-1.5 mb-2">
-                        {session.teeth.map((tooth) => (
-                          <Badge key={tooth} className="text-muted-foreground border-border">
-                            Dente {tooth}
-                          </Badge>
-                        ))}
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        {session.total} {session.total === 1 ? 'caso' : 'casos'}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-2 min-w-[100px]">
-                      <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all duration-500 ${
-                            isCompleted ? 'bg-primary' : 'bg-primary'
+                  <div className="p-4 pl-5">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2.5">
+                        <div className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                          <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
+                          {session.date}
+                        </div>
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                            isCompleted
+                              ? 'bg-success/10 text-success'
+                              : 'bg-warning/10 text-warning'
                           }`}
-                          style={{ width: `${pct}%` }}
-                        />
+                        >
+                          {isCompleted ? (
+                            <>
+                              <CheckCircle2 className="w-3 h-3" />
+                              Concluído
+                            </>
+                          ) : (
+                            <>
+                              <Clock className="w-3 h-3" />
+                              Em progresso
+                            </>
+                          )}
+                        </span>
                       </div>
-                      <span className="text-xs text-muted-foreground tabular-nums whitespace-nowrap">
-                        {session.done}/{session.total}
-                      </span>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-muted-foreground group-hover:translate-x-0.5 transition-all" />
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                      <div className="flex-1">
+                        <div className="flex flex-wrap gap-1.5 mb-2">
+                          {session.teeth.map((tooth) => (
+                            <span
+                              key={tooth}
+                              className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-foreground"
+                            >
+                              Dente {tooth}
+                            </span>
+                          ))}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {session.total}{' '}
+                          {session.total === 1 ? 'caso' : 'casos'}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2.5 min-w-[120px]">
+                        <div
+                          className="flex-1 h-2 rounded-full bg-muted overflow-hidden"
+                          role="progressbar"
+                          aria-valuenow={pct}
+                          aria-valuemin={0}
+                          aria-valuemax={100}
+                        >
+                          <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{
+                              width: `${pct}%`,
+                              background: isCompleted
+                                ? 'rgb(var(--color-success-rgb))'
+                                : 'rgb(var(--color-primary-rgb))',
+                              boxShadow: isCompleted
+                                ? '0 0 8px rgb(var(--color-success-rgb) / 0.3)'
+                                : '0 0 8px rgb(var(--color-primary-rgb) / 0.3)',
+                            }}
+                          />
+                        </div>
+                        <span className="text-xs font-medium text-muted-foreground tabular-nums whitespace-nowrap">
+                          {session.done}/{session.total}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </GlassCard>
-              );
+                </div>
+              )
             })}
           </div>
 
-          <div className="pt-4 text-center">
-            <button className="px-4 py-1.5 rounded-lg border border-border text-sm text-muted-foreground hover:bg-muted/50 transition-colors">
+          {/* Load more */}
+          <div
+            className="pt-6 text-center"
+            style={{
+              animation: 'fade-in-up 0.6s ease-out 0.6s both',
+            }}
+          >
+            <button className="px-5 py-2 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:bg-muted/50 hover:text-foreground btn-press focus-visible:ring-2 focus-visible:ring-ring transition-colors">
               Carregar mais
             </button>
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 }
