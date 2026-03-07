@@ -94,6 +94,50 @@ Gere um protocolo COMPLETO e DETALHADO de cimentação para facetas cerâmicas, 
    - REGRA: Se tipo cerâmico é zircônia → NÃO condicionar com HF. Usar jateamento com Al₂O₃ 50μm + primer universal com MDP (Monobond Plus ou Z-Prime Plus)
    - REGRA: Dissilicato de lítio (e.max) = SEMPRE 5% por 20s. NUNCA 10% (sobrecondicionamento fragiliza a superfície)
 
+## DECISAO FUNDAMENTADA SUBSTRATO → CIMENTO
+
+NAO apenas selecione o cimento — JUSTIFIQUE a escolha:
+- Substrato claro + peca translucida → cimento translucido/Clear (ex: "Substrato A2, peca e.max 0.5mm — cimento Variolink Esthetic Neutral para nao alterar cor final")
+- Substrato escurecido → cimento opaco (ex: "Substrato escurecido por amalgama — cimento Variolink Esthetic Warm Opaque para bloquear fundo e evitar acinzentamento")
+- Peca fina (<0.5mm) → cimento de alta translucidez + try-in OBRIGATORIO (ex: "Faceta 0.3mm — qualquer alteracao no cimento sera visivel. Try-in com todas as cores disponiveis")
+- Peca espessa (>1mm) → cimento tem menor influencia na cor final — priorizar resistencia mecanica
+
+Registre justificativa no campo de selecao do cimento.
+
+## SEQUENCIA COM TEMPOS PRATICOS
+
+Especifique tempos EXATOS em cada passo:
+
+PREPARO DA PECA CERAMICA:
+- Acido fluoridrico: "[concentracao]% por [tempo]s" (ex: "5% HF por 20s para dissilicato de litio")
+- Lavagem: "jato de agua por 30s + ultrassom por 60s para remover residuos"
+- Silano: "aplicar camada unica, aguardar [tempo]s para evaporacao" (ex: "60s")
+- Adesivo na peca: "aplicar SEM fotopolimerizar" ou "fotopolimerizar por [tempo]s"
+
+PREPARO DO DENTE:
+- Condicionamento: "acido fosforico 37% por [tempo]s em esmalte, [tempo]s em dentina"
+- Adesivo: "[sistema] — aplicar [N] camadas, [fotopolimerizar/nao fotopolimerizar]"
+
+CIMENTACAO:
+- Insercao: "aplicar cimento na face interna da peca, posicionar com pressao LEVE"
+- Excesso: "remover excessos ANTES da polimerizacao com pincel/fio dental interproximal"
+- Fotopolimerizacao: "[tempo]s por face vestibular + [tempo]s por face palatina/lingual"
+- Acabamento: "remover excessos com lamina 12 + tira de lixa interproximal"
+
+Tempos devem ser ESPECIFICOS ao material selecionado, NAO genericos.
+
+## WARNINGS CONTEXTUAIS
+
+Adicione ao campo warnings quando aplicavel:
+
+- Remanescente comprometido → "⚠️ Remanescente dental insuficiente — avaliar reforco com pino de fibra de vidro ANTES da cimentacao"
+- Contaminacao salivar apos preparo → "⚠️ Se ocorrer contaminacao salivar: limpar com alcool 70%, reaplicar silano por 60s, reaplicar adesivo"
+- Margem subgengival → "⚠️ Margem subgengival — controle de umidade com fio retrator #000 embebido em cloreto de aluminio"
+- Dente vital com sensibilidade → "⚠️ Sensibilidade pos-operatoria possivel — considerar dessensibilizante antes do adesivo"
+- Multiplas pecas adjacentes → "⚠️ Cimentar UMA peca por vez, proximal → distal. Verificar contato interproximal com fio dental antes de fotopolimerizar cada peca"
+
+Inclua SOMENTE warnings que se aplicam ao caso.
+
 IMPORTANTE:
 - Seja específico com marcas e materiais brasileiros quando possível
 - Inclua tempos precisos para cada etapa
