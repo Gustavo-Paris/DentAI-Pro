@@ -14,9 +14,9 @@ export function FinishingPolishingCard({ protocol }: FinishingPolishingCardProps
   const renderStep = (step: PolishingStep) => (
     <div
       key={step.order}
-      className="flex items-start gap-3 p-3 bg-secondary/50 rounded-lg"
+      className="glass-panel rounded-xl p-4 flex gap-3 card-elevated"
     >
-      <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-medium shrink-0">
+      <div className="w-8 h-8 rounded-full bg-primary/10 text-primary font-semibold flex items-center justify-center shrink-0 text-sm">
         {step.order}
       </div>
       <div className="flex-1 min-w-0">
@@ -44,7 +44,7 @@ export function FinishingPolishingCard({ protocol }: FinishingPolishingCardProps
   );
 
   return (
-    <Card className="border-primary/20 bg-primary/5">
+    <Card className="glass-panel rounded-xl">
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-primary" />
@@ -78,7 +78,7 @@ export function FinishingPolishingCard({ protocol }: FinishingPolishingCardProps
 
         {/* Final Glaze */}
         {protocol.final_glaze && (
-          <div className="p-3 bg-primary/10 rounded-lg">
+          <div className="glass-panel rounded-xl p-3">
             <p className="text-sm">
               <span className="font-medium">{t('components.protocol.finishingPolishing.finalGlaze')}</span>
               {protocol.final_glaze}

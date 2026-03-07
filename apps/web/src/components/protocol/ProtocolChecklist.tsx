@@ -1,6 +1,4 @@
-import { Checkbox } from "@parisgroup-ai/pageshell/primitives";
 import { cn } from "@/lib/utils";
-import { CheckCircle2 } from "lucide-react";
 
 interface ProtocolChecklistProps {
   items: string[];
@@ -35,8 +33,8 @@ export default function ProtocolChecklist({
   return (
     <div className="space-y-3">
       {/* Progress bar */}
-      <div className="flex items-center gap-3">
-        <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+      <div className="glass-panel rounded-xl p-4 flex items-center gap-3">
+        <div className="flex-1 h-2 bg-primary/20 rounded-full overflow-hidden">
           <div
             className={cn(
               "h-full transition-all duration-300",
@@ -48,41 +46,34 @@ export default function ProtocolChecklist({
         <span className="text-sm text-muted-foreground">
           {checkedSet.size}/{items.length}
         </span>
-        {allComplete && (
-          <CheckCircle2 className="w-5 h-5 text-success" />
-        )}
       </div>
 
       {/* Checklist items */}
-      <div className="space-y-2">
+      <div className="glass-panel rounded-xl divide-y divide-border/50 overflow-hidden">
         {items.map((item, index) => {
           const isChecked = checkedSet.has(index);
           return (
-            <label
-              key={`step-${index}-${item.slice(0, 20)}`}
-              htmlFor={`checklist-item-${index}`}
-              className={cn(
-                "flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-colors",
-                isChecked
-                  ? "bg-success/10 border border-success/20"
-                  : "bg-muted/30 hover:bg-muted/50 border border-transparent"
-              )}
+            <button
+              key={`step-${index}`}
+              onClick={() => toggleItem(index)}
+              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors text-left cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <Checkbox
-                id={`checklist-item-${index}`}
-                checked={isChecked}
-                onCheckedChange={() => toggleItem(index)}
-                className="mt-0.5"
-              />
-              <span
+              <div
                 className={cn(
-                  "text-sm flex-1",
-                  isChecked && "line-through text-muted-foreground"
+                  "w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors",
+                  isChecked ? "bg-success border-success" : "border-border"
                 )}
               >
+                {isChecked && (
+                  <svg className="w-3 h-3 text-success-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </div>
+              <span className={cn("text-sm", isChecked && "line-through text-muted-foreground")}>
                 {item}
               </span>
-            </label>
+            </button>
           );
         })}
       </div>

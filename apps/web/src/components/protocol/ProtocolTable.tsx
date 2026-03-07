@@ -1,6 +1,5 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tooltip, TooltipContent, TooltipTrigger } from "@parisgroup-ai/pageshell/primitives";
 import { ProtocolLayer } from "@/types/protocol";
 
 export type { ProtocolLayer };
@@ -9,30 +8,42 @@ interface ProtocolTableProps {
   layers: ProtocolLayer[];
 }
 
-const getLayerStyles = (layerName: string): string => {
+interface LayerColors {
+  border: string;
+  bg: string;
+  numberBg: string;
+}
+
+const LAYER_COLOR_MAP: Array<{ keywords: string[]; rgb: string }> = [
+  { keywords: ["opaco", "mascaramento"], rgb: "249 115 22" },
+  { keywords: ["dentina", "corpo", "body"], rgb: "245 158 11" },
+  { keywords: ["efeito", "incisai", "corante", "opalescente"], rgb: "139 92 246" },
+  { keywords: ["aumento incisal", "incisal edge"], rgb: "20 184 166" },
+  { keywords: ["crista", "proxima"], rgb: "16 185 129" },
+  { keywords: ["esmalte", "enamel"], rgb: "16 185 129" },
+  { keywords: ["translucido"], rgb: "96 165 250" },
+  { keywords: ["bulk"], rgb: "168 85 247" },
+];
+
+const getLayerColors = (layerName: string): LayerColors => {
   const name = layerName.toLowerCase();
-  if (name.includes("aumento incisal") || name.includes("incisal edge")) {
-    return "bg-[rgb(var(--layer-incisal-rgb)/0.2)] dark:bg-[rgb(var(--layer-incisal-rgb)/0.1)] border-l-4 border-l-[rgb(var(--layer-incisal-rgb))]";
+
+  for (const entry of LAYER_COLOR_MAP) {
+    if (entry.keywords.some((kw) => name.includes(kw))) {
+      const rgb = entry.rgb;
+      return {
+        border: `rgb(${rgb})`,
+        bg: `color-mix(in srgb, rgb(${rgb}) 8%, transparent)`,
+        numberBg: `color-mix(in srgb, rgb(${rgb}) 15%, transparent)`,
+      };
+    }
   }
-  if (name.includes("opaco") || name.includes("mascaramento")) {
-    return "bg-[rgb(var(--layer-opaco-rgb)/0.2)] dark:bg-[rgb(var(--layer-opaco-rgb)/0.1)] border-l-4 border-l-[rgb(var(--layer-opaco-rgb))]";
-  }
-  if (name.includes("dentina") || name.includes("body") || name.includes("corpo")) {
-    return "bg-[rgb(var(--layer-dentina-rgb)/0.2)] dark:bg-[rgb(var(--layer-dentina-rgb)/0.1)] border-l-4 border-l-[rgb(var(--layer-dentina-rgb))]";
-  }
-  if (name.includes("efeito") || name.includes("effect") || name.includes("corante") || name.includes("opalescente")) {
-    return "bg-[rgb(var(--layer-effect-rgb)/0.2)] dark:bg-[rgb(var(--layer-effect-rgb)/0.1)] border-l-4 border-l-[rgb(var(--layer-effect-rgb))]";
-  }
-  if (name.includes("crista") || name.includes("proxima")) {
-    return "bg-[rgb(var(--layer-esmalte-rgb)/0.2)] dark:bg-[rgb(var(--layer-esmalte-rgb)/0.1)] border-l-4 border-l-[rgb(var(--layer-esmalte-rgb))]";
-  }
-  if (name.includes("esmalte") || name.includes("enamel")) {
-    return "bg-[rgb(var(--layer-translucido-rgb)/0.2)] dark:bg-[rgb(var(--layer-translucido-rgb)/0.1)] border-l-4 border-l-[rgb(var(--layer-translucido-rgb))]";
-  }
-  if (name.includes("bulk")) {
-    return "bg-[rgb(var(--layer-default-rgb)/0.2)] dark:bg-[rgb(var(--layer-default-rgb)/0.1)] border-l-4 border-l-[rgb(var(--layer-default-rgb))]";
-  }
-  return "bg-muted/50";
+
+  return {
+    border: 'var(--color-border)',
+    bg: 'transparent',
+    numberBg: 'var(--color-muted)',
+  };
 };
 
 function ProtocolTable({ layers }: ProtocolTableProps) {
@@ -40,94 +51,78 @@ function ProtocolTable({ layers }: ProtocolTableProps) {
   if (!layers || layers.length === 0) return null;
 
   return (
-    <div className="rounded-xl border overflow-hidden">
-      {/* Desktop Table */}
-      <div className="hidden sm:block overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-muted/50">
-              <TableHead scope="col" className="w-[140px]">{t('components.protocol.table.layer')}</TableHead>
-              <TableHead scope="col">{t('components.protocol.table.resin')}</TableHead>
-              <TableHead scope="col" className="w-[80px]">{t('components.protocol.table.color')}</TableHead>
-              <TableHead scope="col" className="w-[100px]">{t('components.protocol.table.thickness')}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {layers.map((layer) => (
-              <TableRow key={layer.order} className={getLayerStyles(layer.name)}>
-                <TableCell className="font-medium">
-                  {layer.order}. {layer.name}
-                  {layer.optional && (
-                    <span className="ml-1.5 text-xs font-normal text-muted-foreground">{t('components.protocol.table.optional')}</span>
-                  )}
-                </TableCell>
-                <TableCell>{layer.resin_brand}</TableCell>
-                <TableCell>
-                  <span className="inline-flex items-center px-2 py-1 rounded-md bg-background font-medium text-sm">
+    <div className="space-y-3">
+      {layers.map((layer, i) => {
+        const colors = getLayerColors(layer.name);
+        return (
+          <div
+            key={layer.order}
+            className="glass-panel rounded-xl p-4 border-l-[3px]"
+            style={{
+              borderLeftColor: colors.border,
+              background: colors.bg,
+              animation: `fade-in-up 0.6s ease-out ${0.3 + i * 0.06}s both`,
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <div
+                className="w-8 h-8 rounded-full font-semibold flex items-center justify-center text-sm shrink-0"
+                style={{ backgroundColor: colors.numberBg }}
+              >
+                {layer.order}
+              </div>
+              <span className="font-medium text-foreground">{layer.name}</span>
+              {layer.optional && (
+                <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                  {t('components.protocol.table.optional')}
+                </span>
+              )}
+            </div>
+
+            <dl className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-2 mt-3">
+              <div>
+                <dt className="text-xs text-muted-foreground uppercase tracking-wider">
+                  {t('components.protocol.table.resin')}
+                </dt>
+                <dd className="text-sm font-medium">{layer.resin_brand}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted-foreground uppercase tracking-wider">
+                  {t('components.protocol.table.color')}
+                </dt>
+                <dd className="text-sm font-medium">
+                  <span
+                    className="inline-flex items-center px-2 py-0.5 rounded-md text-sm font-medium"
+                    style={{ backgroundColor: colors.numberBg }}
+                  >
                     {layer.shade}
                   </span>
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className="cursor-help border-b border-dotted border-muted-foreground/50">
-                        {layer.thickness}
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent side="top">
-                      <p className="text-xs">{t('components.protocol.table.thicknessTooltip')}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        
-        {/* Layer details */}
-        <div className="divide-y divide-border">
-          {layers.map((layer) => (
-            <div key={`detail-${layer.order}`} className="px-4 py-3 bg-muted/30">
-              <div className="flex items-start gap-4 text-sm">
-                <div className="flex-1">
-                  <span className="text-muted-foreground">{t('components.protocol.table.purpose')}</span>
-                  <span>{layer.purpose}</span>
-                </div>
-                <div className="flex-1">
-                  <span className="text-muted-foreground">{t('components.protocol.table.technique')}</span>
-                  <span>{layer.technique}</span>
-                </div>
+                </dd>
               </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Mobile Cards */}
-      <div className="sm:hidden divide-y divide-border">
-        {layers.map((layer) => (
-          <div key={layer.order} className={`p-3 ${getLayerStyles(layer.name)}`}>
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-medium text-sm">
-                {layer.order}. {layer.name}
-                {layer.optional && (
-                  <span className="ml-1 text-xs font-normal text-muted-foreground">{t('components.protocol.table.optional')}</span>
-                )}
-              </span>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-background font-medium text-xs">
-                {layer.shade}
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground mb-1">
-              {layer.resin_brand} • {layer.thickness}
-            </p>
-            <div className="text-xs space-y-1 mt-2 pt-2 border-t border-border/50">
-              <p><span className="text-muted-foreground">{t('components.protocol.table.purpose')}</span>{layer.purpose}</p>
-              <p><span className="text-muted-foreground">{t('components.protocol.table.technique')}</span>{layer.technique}</p>
-            </div>
+              <div>
+                <dt className="text-xs text-muted-foreground uppercase tracking-wider">
+                  {t('components.protocol.table.thickness')}
+                </dt>
+                <dd className="text-sm font-medium">{layer.thickness}</dd>
+              </div>
+              <div className="col-span-2 sm:col-span-4">
+                <dt className="text-xs text-muted-foreground uppercase tracking-wider">
+                  {t('components.protocol.table.technique')}
+                </dt>
+                <dd className="text-sm font-medium">{layer.technique}</dd>
+              </div>
+              {layer.purpose && (
+                <div className="col-span-2 sm:col-span-4">
+                  <dt className="text-xs text-muted-foreground uppercase tracking-wider">
+                    {t('components.protocol.table.purpose')}
+                  </dt>
+                  <dd className="text-sm text-muted-foreground">{layer.purpose}</dd>
+                </div>
+              )}
+            </dl>
           </div>
-        ))}
-      </div>
+        );
+      })}
     </div>
   );
 }

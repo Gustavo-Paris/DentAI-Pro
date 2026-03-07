@@ -116,10 +116,10 @@ export default function Result() {
               </div>
 
               {/* Treatment Type Header */}
-              <Card className={`mb-6 shadow-md rounded-xl ${r.currentTreatmentStyle.bgClass} ${r.currentTreatmentStyle.borderClass}`}>
+              <Card className={`mb-6 shadow-md rounded-xl glass-panel ${r.currentTreatmentStyle.bgClass} ${r.currentTreatmentStyle.borderClass}`}>
                 <CardContent className="py-4">
                   <div className="relative flex items-center gap-3">
-                    <div className={`p-3 rounded-lg ${r.currentTreatmentStyle.bgClass}`}>
+                    <div className="p-3 rounded-xl bg-primary/10">
                       <TreatmentIcon className={`w-8 h-8 ${r.currentTreatmentStyle.iconClass}`} />
                     </div>
                     <div className="flex-1">
@@ -191,12 +191,15 @@ export default function Result() {
             {/* Main Recommendation */}
             {r.resin && (
               <section className="mb-8">
-                <Card className="shadow-sm hover:shadow-md rounded-xl transition-shadow duration-300 ai-glow">
+                <div className="ai-shimmer-border rounded-xl">
+                <Card className="shadow-sm rounded-xl ai-glow glass-panel">
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div>
                         <CardTitle className="text-xl font-display flex items-center gap-2">
-                          <CheckCircle className="w-5 h-5 text-success" />
+                          <div className="w-8 h-8 rounded-full bg-success/10 flex items-center justify-center shrink-0">
+                            <CheckCircle className="w-5 h-5 text-success" />
+                          </div>
                           {r.resin.name}
                         </CardTitle>
                         <p className="text-muted-foreground mt-1">{r.resin.manufacturer}</p>
@@ -214,26 +217,28 @@ export default function Result() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                      <div className="bg-secondary/30 rounded-xl p-3">
-                        <span className="text-muted-foreground">{t('result.opacity')}</span>
-                        <p className="font-medium">{r.resin.opacity}</p>
+                      <div className="glass-panel rounded-xl p-3 card-elevated">
+                        <p className="text-xs text-muted-foreground uppercase tracking-wider">{t('result.opacity')}</p>
+                        <p className="text-sm font-semibold mt-1">{r.resin.opacity}</p>
                       </div>
-                      <div className="bg-secondary/30 rounded-xl p-3">
-                        <span className="text-muted-foreground">{t('result.resistance')}</span>
-                        <p className="font-medium">{r.resin.resistance}</p>
+                      <div className="glass-panel rounded-xl p-3 card-elevated">
+                        <p className="text-xs text-muted-foreground uppercase tracking-wider">{t('result.resistance')}</p>
+                        <p className="text-sm font-semibold mt-1">{r.resin.resistance}</p>
                       </div>
-                      <div className="bg-secondary/30 rounded-xl p-3">
-                        <span className="text-muted-foreground">{t('result.polishing')}</span>
-                        <p className="font-medium">{r.resin.polishing}</p>
+                      <div className="glass-panel rounded-xl p-3 card-elevated">
+                        <p className="text-xs text-muted-foreground uppercase tracking-wider">{t('result.polishing')}</p>
+                        <p className="text-sm font-semibold mt-1">{r.resin.polishing}</p>
                       </div>
-                      <div className="bg-secondary/30 rounded-xl p-3">
-                        <span className="text-muted-foreground">{t('result.aesthetics')}</span>
-                        <p className="font-medium">{r.resin.aesthetics}</p>
+                      <div className="glass-panel rounded-xl p-3 card-elevated">
+                        <p className="text-xs text-muted-foreground uppercase tracking-wider">{t('result.aesthetics')}</p>
+                        <p className="text-sm font-semibold mt-1">{r.resin.aesthetics}</p>
                       </div>
                     </div>
                     {evaluation.recommendation_text && (
                       <div className="pt-4 border-t border-border">
-                        <h4 className="font-medium mb-2">{t('result.justification')}</h4>
+                        <h4 className="text-xs text-muted-foreground uppercase tracking-wider font-medium mb-2">
+                          {t('result.justification')}
+                        </h4>
                         <p className="text-sm text-muted-foreground leading-relaxed">
                           {evaluation.recommendation_text}
                         </p>
@@ -241,6 +246,7 @@ export default function Result() {
                     )}
                   </CardContent>
                 </Card>
+                </div>
               </section>
             )}
 

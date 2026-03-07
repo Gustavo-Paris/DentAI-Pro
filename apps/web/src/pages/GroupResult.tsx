@@ -73,10 +73,10 @@ export default function GroupResult() {
         ]}
         slots={{
           beforeContent: evaluation && (
-            <Card className={`mb-6 shadow-md rounded-xl ${g.currentTreatmentStyle.bgClass} ${g.currentTreatmentStyle.borderClass}`}>
+            <Card className={`mb-6 shadow-md rounded-xl glass-panel ${g.currentTreatmentStyle.bgClass} ${g.currentTreatmentStyle.borderClass}`}>
               <CardContent className="py-4">
                 <div className="flex items-center gap-3">
-                  <div className={`p-3 rounded-lg ${g.currentTreatmentStyle.bgClass}`}>
+                  <div className="p-3 rounded-xl bg-primary/10">
                     <TreatmentIcon className={`w-8 h-8 ${g.currentTreatmentStyle.iconClass}`} />
                   </div>
                   <div className="flex-1">
@@ -118,12 +118,15 @@ export default function GroupResult() {
               {/* Resin recommendation */}
               {g.resin && (
                 <section className="mb-8">
-                  <Card className="shadow-sm rounded-xl hover:shadow-md transition-shadow duration-300 ai-glow">
+                  <div className="ai-shimmer-border rounded-xl">
+                  <Card className="shadow-sm rounded-xl ai-glow glass-panel">
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div>
                           <CardTitle className="text-xl font-display flex items-center gap-2">
-                            <CheckCircle className="w-5 h-5 text-foreground" />
+                            <div className="w-8 h-8 rounded-full bg-success/10 flex items-center justify-center shrink-0">
+                              <CheckCircle className="w-5 h-5 text-success" />
+                            </div>
                             {g.resin.name}
                           </CardTitle>
                           <p className="text-muted-foreground mt-1">{g.resin.manufacturer}</p>
@@ -132,11 +135,15 @@ export default function GroupResult() {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {t('components.groupResult.applyIdenticalProtocol')} <strong>{teethLabel}</strong>
-                      </p>
+                      <div className="rounded-lg bg-primary/5 border border-primary/10 px-4 py-3">
+                        <p className="text-sm text-muted-foreground">
+                          {t('components.groupResult.applyIdenticalProtocol')}{' '}
+                          <strong className="text-foreground font-semibold">{teethLabel}</strong>
+                        </p>
+                      </div>
                     </CardContent>
                   </Card>
+                  </div>
                 </section>
               )}
 
