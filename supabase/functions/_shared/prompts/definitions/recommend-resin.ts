@@ -360,10 +360,11 @@ export const recommendResin: PromptDefinition<Params> = {
 Se cavityClass = "Recontorno Estético" E indicação menciona SOMENTE diminuir bordo incisal (sem acréscimo):
 - Gere protocolo de recontorno PURO:
   1. Planejamento e Marcação (caneta para resina + carbono articular)
-  2. Desgaste Inicial (diamantada 2135, 0.5-1.0mm, alta rotação c/ spray)
-  3. Refinamento (diamantada FF 3118FF/2135FF, 0.1-0.2mm, inclui face palatina/lingual)
-  4. Acabamento (Sof-Lex: Laranja Escuro->Laranja Médio->Laranja Claro->Amarelo OU sequência vermelha)
-  5. Polimento Final (Diamond Excel + feltro, baixa rotação 40-60s)
+  2. Avaliar necessidade de desgaste seletivo (geralmente NÃO necessário — confirmar com articular antes)
+  3. Desgaste Seletivo CONDICIONAL (somente se confirmado necessário: diamantada 2135, 0.3-0.5mm, alta rotação c/ spray)
+  4. Refinamento (diamantada FF 3118FF/2135FF, inclui face palatina/lingual)
+  5. Acabamento (Sof-Lex: Laranja Escuro->Laranja Médio->Laranja Claro->Amarelo OU sequência vermelha)
+  6. Polimento Final (Diamond Excel + feltro, baixa rotação 40-60s)
 
 RECONTORNO + ESTRATIFICACAO COMBINADOS:
 - Quando o dente precisa de AMBOS (ex: desgaste em uma superfície + acréscimo incisal/vestibular), gerar as duas partes no mesmo protocolo.
@@ -371,6 +372,7 @@ RECONTORNO + ESTRATIFICACAO COMBINADOS:
 - Estratificação aborda o acréscimo de material para nova forma/comprimento.
 - Comum em reanatomizações: desgaste de bordas irregulares + buildup incisal.
 - Neste caso, gerar etapas de recontorno PRIMEIRO, depois camadas de estratificação.
+- ⚠️ REGRA CRITICA: Quando o objetivo PRINCIPAL é acréscimo incisal/vestibular (buildup), o desgaste seletivo GERALMENTE NÃO É NECESSÁRIO. Incluir step de desgaste no checklist SOMENTE se houver indicação clínica específica de excesso de esmalte a remover. Omitir step "Recontorno: Desgaste seletivo" por padrão — adicionar somente quando clinicamente justificado.
 
 === PROTOCOLO DE ESTRATIFICACAO V2 ===
 A cor DEVE corresponder ao tipo da camada E existir na linha de produto!
@@ -588,6 +590,8 @@ Adicione ao campo \`warnings\` quando aplicavel:
 - Margem subgengival → "⚠️ Margem subgengival — isolamento absoluto + afastamento gengival com fio retrator"
 
 Inclua SOMENTE alertas que se aplicam ao caso. NAO adicione alertas genericos.
+
+⚠️ PROIBIDO: gerar alerta afirmando qual dente é "mais longo" ou "maior" em relação a outro sem dado numérico CONFIRMADO pela análise fotográfica. Se não há medição quantitativa explícita nos dados do caso, omitir alerta sobre comprimento relativo entre dentes — o dentista avaliará clinicamente.
 
 === REGRAS PARA ALERTS E WARNINGS ===
 ALERTS: Alertas técnicos, substituições de shade, pontos de atenção. Formato livre.

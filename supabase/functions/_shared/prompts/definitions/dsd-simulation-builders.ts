@@ -292,6 +292,8 @@ Keep identical to input: ALL existing tooth surfaces (shape, color, width, propo
 - Width ratio between lateral and central incisors: PRESERVED
 - ⚠️ COMMON ERROR: Model widens one central incisor to "fill space" after gum reduction — PROHIBITED
 - ⚠️ COMMON ERROR: Model lifts upper lip to show more result — PROHIBITED (lip is a FIXED reference)
+- ⚠️ COMMON ERROR: Model uniformizes all teeth to "ideal" proportions while doing gum reduction — PROHIBITED. Each tooth crown is UNIQUE and must remain exactly as input.
+- If one tooth is longer, shorter, or wider than its contralateral: PRESERVE this asymmetry — it is NATURAL ANATOMY, not an error to fix
 
 Output: Same photo with gum line clearly reshaped — teeth anatomically identical but LONGER (more clinical crown), pink gum band visibly reduced, lips UNMOVED.`
 }
@@ -332,6 +334,15 @@ If lips change, the clinical comparison is DESTROYED.
 - The WIDTH of each individual tooth must be IDENTICAL to the input — gum reduction does NOT change tooth width
 - Do NOT make central incisors wider/narrower to "fill space" after gum recontouring
 - ⚠️ COMMON ERROR: Model widens one central incisor to "fill space" after gum reduction — PROHIBITED
+
+=== TOOTH INDIVIDUALITY PRESERVED (CRITICAL) ===
+Each tooth is a UNIQUE INDIVIDUAL with its own anatomy. Gingival recontouring exposes MORE of the existing crown — it does NOT redesign or reshape the crown.
+- After gengivoplasty, each tooth crown must look EXACTLY like before — same shape, same proportions, same individual characteristics
+- Do NOT make teeth look more uniform, symmetric, or "ideal" — natural variations ARE the patient's identity
+- Do NOT redesign tooth anatomy because gum is being modified — the crown shape is FIXED
+- ⚠️ MOST COMMON FAILURE for this layer: Gemini "improves" all teeth to look uniform while doing gingival reduction. PROHIBITED.
+- If tooth 12 is longer than 11 in the input, it remains proportionally longer in the output — gum reduction does NOT equalize tooth lengths
+- Individual irregularities, rotations, and size differences between teeth: PRESERVE EXACTLY as input
 
 === GINGIVAL RECONTOURING (MUST BE VISIBLE — #1 DIFFERENTIATOR OF THIS LAYER) ===
 Expose more clinical crown by moving the gingival margin APICALLY (toward the root):

@@ -171,6 +171,16 @@ export async function validateAndFixProtocolLayers({
       continue;
     }
 
+    const layerTypePre = layer.name?.toLowerCase() || '';
+    // Skip catalog validation for corante/efeitos layers — these use artistic shade names (White, Amber, Opal)
+    // that don't exist in the resin catalog and should never trigger substitution alerts
+    const isCoranteLayer = layerTypePre.includes('efeito') || layerTypePre.includes('corante') ||
+      layerTypePre.includes('caracteriza') || layerTypePre.includes('tint');
+    if (isCoranteLayer) {
+      validatedLayers.push(layer);
+      continue;
+    }
+
     const brandMatch = layer.resin_brand?.match(/^(.+?)\s*-\s*(.+)$/);
     const productLine = brandMatch ? brandMatch[2].trim() : layer.resin_brand;
     const layerType = layer.name?.toLowerCase() || '';

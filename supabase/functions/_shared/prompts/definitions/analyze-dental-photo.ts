@@ -614,6 +614,12 @@ Para agenesia de laterais com caninos no lugar: sugerir reanatomização dos can
 === COMPARACAO OBRIGATORIA DE HOMOLOGOS (11/21, 12/22, 13/23) ===
 Para CADA par de homólogos visíveis, comparar OBRIGATORIAMENTE:
 1. INCLINACAO: vestibular/lingual/vertical — se um dente tem inclinação vestibular diferente do contralateral → desarmonia
+   ⚠️ DISTINGUIR CORRETAMENTE — são OPOSTOS clínicos com tratamentos OPOSTOS:
+   - VESTIBULARIZAÇÃO (inclinação vestibular): coroa PROJETADA para frente/labial — dente "vindo em direção ao lábio"
+   - RETRUSÃO/PALATINIZAÇÃO: coroa RETRAÍDA para palatina/lingual — dente "afastado do lábio, inclinado para palato"
+   - CONFUNDIR os dois é ERRO GRAVE: conduz a plano de tratamento inverso.
+   - MÉTODO: Verificar se a borda incisal do dente está MAIS PARA FRENTE (vestibularizado) ou MAIS PARA TRÁS (retraído/palatinizado) em relação ao arco normal e ao contralateral.
+   - Se 12 está mais projetado/avançado que 11/21 → 12 VESTIBULARIZADO, 11/21 RETRAÍDOS (a proposta é acréscimo em 11/21, não redução do 12)
 2. FORMATO: se formato (contorno) difere do contralateral (um mais quadrado, outro mais oval) → desarmonia
 3. TAMANHO: largura e comprimento comparados — diferença >0.5mm = sugestão
 4. POSICAO: rotação, extrusão, intrusão em relação ao contralateral
@@ -647,6 +653,7 @@ REGRA: Se recontorno nos centrais melhora harmonia geral do sorriso, sugerir com
 | Bordos incisais irregulares/assimétricos | Recontorno incisal (desgaste seletivo) | Acréscimo desnecessário |
 | ALARGAR arco / preencher corredor       | Expansão ortodôntica + facetas    | -                     |
 | ALINHAR dentes                          | Ortodontia (encaminhamento)       | -                     |
+| Incisivos (11/21) RETRAÍDOS + lateral (12) mais projetado | Acréscimo vestibular/incisal em 11/21 (buildup) | Desgaste/redução do 12 — desgastar dente mais projetado para igualar retraídos é MUTILATÓRIO |
 
 VALIDACAO: Para CADA sugestão: "O tratamento PRODUZ o mesmo efeito visual que o DSD simulou?" Se NAO -> corrigir.
 
