@@ -106,6 +106,13 @@ export function useWizardSubmit({
 }: UseWizardSubmitParams) {
   const { t } = useTranslation();
   const isSubmittingRef = useRef(false);
+
+  // Merge dentist's clinical notes into anamnesis so both reach the AI and persist to DB
+  const fullAnamnesis = [
+    anamnesis?.trim(),
+    formData.clinicalNotes?.trim() ? `Notas clínicas do dentista: ${formData.clinicalNotes.trim()}` : undefined,
+  ].filter(Boolean).join('\n\n') || null;
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionComplete, setSubmissionComplete] = useState(false);
   const [completedSessionId, setCompletedSessionId] = useState<string | null>(null);
@@ -310,7 +317,7 @@ export function useWizardSubmit({
             : 'whitening_natural',
         patient_desired_changes: null,
         stratification_needed: !isGengivoplasty,
-        anamnesis: anamnesis || null,
+        anamnesis: fullAnamnesis,
         radiograph_url: radiographPath,
       };
     }
@@ -372,7 +379,7 @@ export function useWizardSubmit({
                     ? 'Paciente deseja clareamento INTENSO - nível Hollywood (BL1). Ajustar todas as camadas 2-3 tons mais claras que a cor detectada.'
                     : 'Paciente prefere aparência NATURAL (A1/A2). Manter tons naturais.',
                 dsdContext,
-                anamnesis,
+                anamnesis: fullAnamnesis,
               } : undefined,
               cementationParams: normalizedTreatment === 'porcelana' ? {
                 teeth: [tooth],
@@ -385,7 +392,7 @@ export function useWizardSubmit({
                   patientPreferences.whiteningLevel === 'hollywood'
                     ? 'Paciente deseja clareamento INTENSO - nível Hollywood (BL1). A cor ALVO da faceta e do cimento deve ser BL1 ou compatível.'
                     : 'Paciente prefere aparência NATURAL (A1/A2).',
-                anamnesis,
+                anamnesis: fullAnamnesis,
                 dsdContext: dsdContext
                   ? {
                       currentIssue: dsdContext.currentIssue,
