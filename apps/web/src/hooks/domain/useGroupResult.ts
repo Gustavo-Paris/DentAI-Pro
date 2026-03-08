@@ -18,6 +18,7 @@ import {
   evaluationClients,
 } from '@/lib/protocol-dispatch';
 import { getFullRegion } from './wizard/helpers';
+import { resolveAestheticGoalsForAI } from '@/lib/aesthetic-goals';
 
 // ---------------------------------------------------------------------------
 // Types (reuse from useResult where possible)
@@ -55,6 +56,10 @@ interface GroupEvaluation {
   cementation_protocol: CementationProtocol | null;
   ai_treatment_indication: string | null;
   ai_indication_reason: string | null;
+  substrate_condition: string | null;
+  enamel_condition: string | null;
+  depth: string | null;
+  anamnesis: string | null;
   generic_protocol: {
     treatment_type: string;
     tooth: string;
@@ -223,12 +228,17 @@ export function useGroupResult() {
             cavityClass: primaryEval.cavity_class || 'Classe I',
             restorationSize: primaryEval.restoration_size || 'Média',
             substrate: primaryEval.substrate || 'Esmalte e Dentina',
+            substrateCondition: primaryEval.substrate_condition ?? undefined,
+            enamelCondition: primaryEval.enamel_condition ?? undefined,
+            depth: primaryEval.depth ?? undefined,
             bruxism: primaryEval.bruxism,
             aestheticLevel: primaryEval.aesthetic_level,
             toothColor: primaryEval.tooth_color,
             stratificationNeeded: true,
             budget: primaryEval.budget,
             longevityExpectation: primaryEval.longevity_expectation,
+            aestheticGoals: resolveAestheticGoalsForAI(primaryEval.patient_aesthetic_goals),
+            anamnesis: primaryEval.anamnesis ?? undefined,
           } : undefined,
           cementationParams: treatmentType === 'porcelana' ? {
             teeth: [primaryEval.tooth],
@@ -236,6 +246,8 @@ export function useGroupResult() {
             ceramicType: DEFAULT_CERAMIC_TYPE,
             substrate: primaryEval.substrate || 'Esmalte e Dentina',
             substrateCondition: 'Saudável',
+            aestheticGoals: resolveAestheticGoalsForAI(primaryEval.patient_aesthetic_goals),
+            anamnesis: primaryEval.anamnesis ?? undefined,
           } : undefined,
           genericToothData: { indication_reason: primaryEval.ai_indication_reason },
         },
