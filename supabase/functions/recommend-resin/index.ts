@@ -391,7 +391,7 @@ Deno.serve(async (req) => {
               maxTokens: promptDef.maxTokens,
               forceFunctionName: "generate_resin_protocol",
               timeoutMs: 55_000,
-              maxRetries: 1,
+              maxRetries: 0, // no retry — fallback to Claude keeps total within 150s edge limit
             }
           );
           if (response.tokens) {
@@ -420,8 +420,8 @@ Deno.serve(async (req) => {
             temperature: 0.0,
             maxTokens: promptDef.maxTokens,
             forceFunctionName: "generate_resin_protocol",
-            timeoutMs: 60_000,
-            maxRetries: 1,
+            timeoutMs: 75_000, // 55s Gemini + 75s Claude = 130s < 150s edge limit
+            maxRetries: 0,
           }
         );
         if (claudeResult.tokens) {
