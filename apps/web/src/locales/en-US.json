@@ -2553,6 +2553,7 @@
     "whitening_natural": "Natural and subtle appearance (A1/A2)"
   },
   "indicationReasons": {
+    "dsd_professional_choice": "Tooth added by professional indication via DSD",
     "dsd_gingival_harmonization": "Gingival harmonization identified by DSD analysis"
   },
   "patientDocument": {

@@ -84,7 +84,7 @@ export default function Result() {
           {
             label: t('result.recalculate'),
             icon: RefreshCw,
-            onClick: () => { navigate('/new-case'); },
+            onClick: () => { navigate(evaluation ? `/evaluation/${evaluation.session_id}` : '/evaluations'); },
             variant: 'outline',
           },
           {
