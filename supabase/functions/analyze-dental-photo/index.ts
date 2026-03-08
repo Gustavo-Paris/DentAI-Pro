@@ -125,7 +125,24 @@ Deno.serve(async (req) => {
     }
 
     if (anamnesis && typeof anamnesis === 'string' && anamnesis.trim().length > 0) {
-      additionalContext += `\n\nTRANSCRICAO DA ANAMNESE DO PACIENTE:\n"""${sanitizeForPrompt(anamnesis.trim())}"""\n\nCORRELACIONE os achados visuais com a queixa do paciente. Priorize problemas que o paciente reportou. Se o paciente mencionar sintomas nao visiveis na foto (sensibilidade, dor), registre em observations como informacao clinica relevante.`;
+      const anamnesisLower = anamnesis.toLowerCase();
+      const extraInstructions: string[] = [
+        'CORRELACIONE os achados visuais com a queixa do paciente. Priorize problemas que o paciente reportou.',
+        'Se o paciente mencionar sintomas nao visiveis na foto (sensibilidade, dor), registre em observations como informacao clinica relevante.',
+      ];
+      if (anamnesisLower.includes('fluorose') || anamnesisLower.includes('hipoplasia') || anamnesisLower.includes('mancha') || anamnesisLower.includes('leucoma')) {
+        extraInstructions.push('OBRIGATORIO: Paciente reportou fluorose/hipoplasia/manchas. Inspecionar ATIVAMENTE manchas brancas opacas (leucomas), manchas marrons e irregularidades de superficie. Diferenciar de carie (carie: marron/preta, localizada; fluorose: branca/creme, difusa/bilateral). Registrar em cada dente afetado.');
+      }
+      if (anamnesisLower.includes('bruxismo') || anamnesisLower.includes('apertamento') || anamnesisLower.includes('ranger')) {
+        extraInstructions.push('OBRIGATORIO: Paciente reportou bruxismo/apertamento. Inspecionar ATIVAMENTE facetas de desgaste (superficies oclusais/incisais planas, brilhantes), desgaste generalizado e abfracao cervical. Registrar urgencia adequada para dentes com desgaste severo.');
+      }
+      if (anamnesisLower.includes('trauma') || anamnesisLower.includes('queda') || anamnesisLower.includes('acidente')) {
+        extraInstructions.push('OBRIGATORIO: Paciente reportou trauma. Inspecionar ATIVAMENTE alteracao de cor (escurecimento intriseco), fraturas coronais/radiculares, restauracoes antigas pos-trauma. Considerar vitalidade pulpar comprometida em dentes com historico de trauma.');
+      }
+      if (anamnesisLower.includes('sensibilidade') || anamnesisLower.includes('sensivel') || anamnesisLower.includes('dor ao frio') || anamnesisLower.includes('dor ao quente')) {
+        extraInstructions.push('Paciente reportou sensibilidade/dor. Registrar em observations. O protocolo deve incluir dessensibilizante se indicado.');
+      }
+      additionalContext += `\n\nTRANSCRICAO DA ANAMNESE DO PACIENTE:\n"""${sanitizeForPrompt(anamnesis.trim())}"""\n\n${extraInstructions.join('\n')}`;
     }
 
     let preferencesContext = '';
