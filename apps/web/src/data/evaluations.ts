@@ -65,6 +65,10 @@ export interface SessionEvaluationRow {
   patient_aesthetic_goals: string | null;
   region: string | null;
   substrate: string | null;
+  substrate_condition: string | null;
+  enamel_condition: string | null;
+  depth: string | null;
+  anamnesis: string | null;
   stratification_needed: boolean;
   recommendation_text: string | null;
   alternatives: Record<string, unknown> | null;
@@ -167,9 +171,10 @@ export async function listBySession(sessionId: string, userId: string): Promise<
         checklist_progress, stratification_protocol, treatment_type,
         ai_treatment_indication, ai_indication_reason, cementation_protocol, generic_protocol,
         tooth_color, bruxism, aesthetic_level, budget, longevity_expectation, patient_aesthetic_goals,
-        region, substrate, stratification_needed, recommendation_text, alternatives,
-        protocol_layers, alerts, warnings, session_id,
+        region, substrate, substrate_condition, enamel_condition, depth, stratification_needed,
+        recommendation_text, alternatives, protocol_layers, alerts, warnings, session_id,
         dsd_analysis, dsd_simulation_url, dsd_simulation_layers,
+        anamnesis,
         resins:resins!recommended_resin_id (*),
         ideal_resin:resins!ideal_resin_id (*)
       `)

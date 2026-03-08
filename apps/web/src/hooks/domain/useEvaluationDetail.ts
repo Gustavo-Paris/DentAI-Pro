@@ -34,6 +34,7 @@ export interface PatientDataForModal {
   longevityExpectation: string;
   photoPath: string | null;
   aestheticGoals: string | null;
+  anamnesis: string | null;
 }
 
 export interface EvaluationDetailState {

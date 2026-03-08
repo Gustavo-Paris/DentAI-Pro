@@ -121,6 +121,7 @@ export function useEvaluationData(): UseEvaluationDataReturn {
       longevityExpectation: first.longevity_expectation || 'médio',
       photoPath: first.photo_frontal,
       aestheticGoals: first.patient_aesthetic_goals ?? null,
+      anamnesis: first.anamnesis ?? null,
     };
   }, [evals]);
 
