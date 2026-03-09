@@ -32,7 +32,7 @@ function isAnteriorTooth(tooth: string): boolean {
 
 // Aesthetic cavity classes that require full stratification
 const AESTHETIC_CLASSES = [
-  'classe i', 'classe ii', 'classe iii', 'classe iv', 'classe v',
+  'classe iii', 'classe iv', 'classe v',
   'faceta direta', 'fechamento de diastema',
   'recontorno estético', 'lente de contato',
 ];
@@ -101,12 +101,18 @@ export async function validateAndFixProtocolLayers({
   }
 
   // Check if patient requested whitening (BL shades)
-  const wantsWhitening = aestheticGoals?.toLowerCase().includes('hollywood') ||
-                         aestheticGoals?.toLowerCase().includes('bl1') ||
-                         aestheticGoals?.toLowerCase().includes('bl2') ||
-                         aestheticGoals?.toLowerCase().includes('bl3') ||
-                         aestheticGoals?.toLowerCase().includes('intenso') ||
-                         aestheticGoals?.toLowerCase().includes('notável');
+  const goalsLower = aestheticGoals?.toLowerCase() ?? '';
+  const wantsWhitening = goalsLower.includes('hollywood') ||
+                         goalsLower.includes('bl1') ||
+                         goalsLower.includes('bl2') ||
+                         goalsLower.includes('bl3') ||
+                         goalsLower.includes('intenso') ||
+                         goalsLower.includes('notável') ||
+                         goalsLower.includes('clareamento') ||
+                         goalsLower.includes('branqueamento') ||
+                         goalsLower.includes('mais claro') ||
+                         goalsLower.includes('mais branco') ||
+                         goalsLower.includes('white');
 
   // Track if any layer uses a product line without BL shades
   let productLineWithoutBL: string | null = null;

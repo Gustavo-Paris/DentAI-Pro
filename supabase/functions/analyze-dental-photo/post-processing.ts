@@ -248,7 +248,7 @@ export function processAnalysisResult(
     const signs = [
       text.includes('defeito') || text.includes('nicho') || text.includes('entalhadura') || text.includes('concavidade'),
       text.includes('discoloração') || text.includes('discoloracao') || text.includes('amarelad') || text.includes('escurecid') || text.includes('dentina exposta'),
-      text.includes('convexidade') || text.includes('côncav') || text.includes('concav') || text.includes('contorno') && text.includes('alter'),
+      text.includes('convexidade') || text.includes('côncav') || text.includes('concav') || (text.includes('contorno') && text.includes('alter')),
       text.includes('polid') || text.includes('rugos') || text.includes('textura'),
       text.includes('recessão') || text.includes('recessao') || text.includes('migra'),
     ].filter(Boolean).length;

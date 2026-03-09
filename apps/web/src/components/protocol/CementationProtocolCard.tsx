@@ -36,8 +36,8 @@ function StepsList({
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {sortedSteps.map((step, index) => (
-            <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-secondary/50 border border-border">
+          {sortedSteps.map((step) => (
+            <div key={`step-${step.order}-${step.step}`} className="flex items-start gap-3 p-3 rounded-lg bg-secondary/50 border border-border">
               <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium text-primary">
                 {step.order}
               </div>

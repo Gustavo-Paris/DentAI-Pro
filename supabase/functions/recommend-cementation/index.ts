@@ -542,20 +542,20 @@ Deno.serve(async (req: Request) => {
       if (error instanceof ClaudeError) {
         logger.error(`[${reqId}] Claude API error (${error.statusCode}):`, error.message);
         return createErrorResponse(
-          `${ERROR_MESSAGES.AI_ERROR} [${error.statusCode}: ${error.message.slice(0, 100)}]`,
-          500, corsHeaders, undefined, reqId,
+          ERROR_MESSAGES.AI_ERROR,
+          500, corsHeaders, `CLAUDE_${error.statusCode}`, reqId,
         );
       } else if (error instanceof GeminiError) {
         logger.error(`[${reqId}] Gemini API error (${error.statusCode}):`, error.message);
         return createErrorResponse(
-          `${ERROR_MESSAGES.AI_ERROR} [${error.statusCode}: ${error.message.slice(0, 100)}]`,
-          500, corsHeaders, undefined, reqId,
+          ERROR_MESSAGES.AI_ERROR,
+          500, corsHeaders, `GEMINI_${error.statusCode}`, reqId,
         );
       }
       const errMsg = error instanceof Error ? error.message : String(error);
       logger.error(`[${reqId}] AI error:`, errMsg);
       return createErrorResponse(
-        `${ERROR_MESSAGES.AI_ERROR} [${errMsg.slice(0, 150)}]`,
+        ERROR_MESSAGES.AI_ERROR,
         500, corsHeaders, undefined, reqId,
       );
     }
@@ -605,7 +605,7 @@ Deno.serve(async (req: Request) => {
     const errMsg = error instanceof Error ? error.message : String(error);
     logger.error(`[${reqId}] recommend-cementation error:`, errMsg);
     return createErrorResponse(
-      `${ERROR_MESSAGES.PROCESSING_ERROR} [${errMsg.slice(0, 150)}]`,
+      ERROR_MESSAGES.PROCESSING_ERROR,
       500, corsHeaders, undefined, reqId,
     );
   }

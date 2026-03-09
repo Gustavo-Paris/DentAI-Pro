@@ -12,6 +12,7 @@
 
 import * as Sentry from "@sentry/react";
 import { onCLS, onFCP, onINP, onLCP, onTTFB, type Metric } from "web-vitals";
+import { logger } from "@/lib/logger";
 
 // Thresholds for good/needs improvement/poor (in ms, except CLS)
 const THRESHOLDS = {
@@ -55,7 +56,6 @@ function sendToSentry(metric: Metric) {
 
   // Log poor metrics as warnings for debugging
   if (rating === "poor" && import.meta.env.DEV) {
-    // eslint-disable-next-line no-console
     console.warn(`[Web Vital] Poor ${metric.name}: ${metric.value.toFixed(2)}`);
   }
 }
@@ -89,7 +89,7 @@ export function initWebVitals() {
       console.log("[Web Vitals] Monitoring initialized");
     }
   } catch (error) {
-    console.error("[Web Vitals] Failed to initialize:", error);
+    logger.error("[Web Vitals] Failed to initialize:", error);
   }
 }
 

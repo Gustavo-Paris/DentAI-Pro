@@ -11,32 +11,6 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { PageShellI18nProvider, PT_BR_MESSAGES } from '@parisgroup-ai/pageshell/core';
-
-// Domain-odonto-ai components use tPageShell() with domain.odonto.* keys
-// that don't exist in PageShell's built-in PT_BR_MESSAGES.
-// Deep-merge domain to preserve built-in keys (credits, chat, etc.) while adding odonto.
-const EXTENDED_PT_BR_MESSAGES = {
-  ...PT_BR_MESSAGES,
-  domain: {
-    ...((PT_BR_MESSAGES as Record<string, Record<string, unknown>>).domain ?? {}),
-    odonto: {
-      patients: {
-        card: {
-          statusActive: 'Ativo',
-          statusInactive: 'Inativo',
-          statusArchived: 'Arquivado',
-          lastVisit: 'Última visita',
-        },
-      },
-      dashboard: {
-        activity: {
-          title: 'Atividade Recente',
-          empty: 'Nenhuma atividade recente',
-        },
-      },
-    },
-  },
-};
 import CookieConsent from "@/components/CookieConsent";
 import PostHogProvider from "@/components/PostHogProvider";
 import { KeyboardShortcuts } from "@/components/KeyboardShortcuts";
@@ -197,7 +171,7 @@ function ConnectedGlobalSearch() {
 const App = () => (
   <ErrorBoundary>
     <ThemeProvider>
-    <PageShellI18nProvider locale="pt-BR" bundle={{ locale: 'pt-BR', messages: EXTENDED_PT_BR_MESSAGES, currency: 'BRL' }}>
+    <PageShellI18nProvider locale="pt-BR" bundle={{ locale: 'pt-BR', messages: PT_BR_MESSAGES, currency: 'BRL' }}>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <a

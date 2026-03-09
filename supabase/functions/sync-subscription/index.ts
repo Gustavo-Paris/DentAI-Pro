@@ -101,7 +101,6 @@ Deno.serve(withErrorBoundary(async (req: Request) => {
       synced: true,
       plan_id: planId,
       status: activeSub.status,
-      stripe_price_id: stripePriceId,
     }),
     { headers: { ...corsHeaders, "Content-Type": "application/json" } }
   );

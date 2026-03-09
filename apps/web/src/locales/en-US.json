@@ -339,6 +339,7 @@
     "generatingCase": "Generating Clinical Case",
     "preparingCase": "Preparing case...",
     "caseCreated": "Case created successfully!",
+    "caseCreatedSubtitle": "Your case has been processed successfully.",
     "createMyOwnCase": "Create My Own Case",
     "generateCase": "Generate Case",
     "submission": {
@@ -404,6 +405,7 @@
     "newEvaluation": "New Evaluation",
     "searchByPatient": "Search by patient...",
     "statusFilter": "Status",
+    "filterStatus": "Status",
     "statusAll": "All",
     "statusPending": "In progress",
     "statusCompleted": "Completed",
@@ -1203,6 +1205,8 @@
       "logoUpdated": "Logo updated!",
       "logoError": "Error uploading logo"
     },
+    "copiedToClipboard": "Copied to clipboard",
+    "copyFailed": "Failed to copy",
     "patientDocument": {
       "generated": "Patient document generated successfully!",
       "error": "Error generating document. Please try again."
@@ -1289,7 +1293,8 @@
         "estimatedTime": "~30-60 seconds",
         "poweredBy": "Powered by Gemini 2.5 Pro",
         "cancel": "Cancel",
-        "defaultStep": "Detecting dental structures..."
+        "defaultStep": "Detecting dental structures...",
+        "remaining": "remaining"
       },
       "preferences": {
         "title": "Whitening Level",
@@ -1304,7 +1309,9 @@
         "insufficientCredits_other": "You only have {{count}} credits. Insufficient credits for the full flow.",
         "noExtraCredits": "0 extra credits",
         "extraCredits": "+1 extra credit",
-        "continueSimulation": "Continue with simulation"
+        "continueSimulation": "Continue with simulation",
+        "shadeBeforeLabel": "Before",
+        "shadeAfterLabel": "After"
       },
       "review": {
         "title": "Analysis Review",
@@ -1504,6 +1511,8 @@
           "layerTabs": "Simulation layers",
           "beforeAfter": "Before/After Comparison",
           "before": "Before",
+          "after": "After",
+          "split": "Split",
           "annotations": "Annotations",
           "adjusting": "Adjusting...",
           "generating": "Generating...",
@@ -1650,6 +1659,14 @@
         "color": "Shade",
         "technique": "Technique",
         "tradeoff": "Tradeoff: "
+      },
+      "copy": {
+        "label": "Copy protocol",
+        "layers": "Layers",
+        "alternative": "Simplified Alternative",
+        "tradeoff": "Trade-off",
+        "alerts": "Alerts",
+        "warnings": "Warnings"
       }
     },
     "pricing": {

@@ -171,7 +171,7 @@ export default function Profile() {
                         <input
                           ref={p.fileInputRef}
                           type="file"
-                          accept="image/*"
+                          accept=".jpg,.jpeg,.png,.webp"
                           onChange={p.handleAvatarUpload}
                           className="hidden"
                         />
@@ -191,7 +191,7 @@ export default function Profile() {
                           {p.isUploadingLogo ? (
                             <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
                           ) : p.logoPreview ? (
-                            <img src={p.logoPreview} alt="Logo" className="w-full h-full object-contain p-1" />
+                            <img src={p.logoPreview} alt={t('profile.clinicLogo')} className="w-full h-full object-contain p-1" />
                           ) : (
                             <Building2 className="w-8 h-8 text-muted-foreground" />
                           )}
@@ -208,7 +208,7 @@ export default function Profile() {
                         <input
                           ref={p.logoInputRef}
                           type="file"
-                          accept="image/png,image/jpeg,image/svg+xml"
+                          accept=".jpg,.jpeg,.png,.webp"
                           onChange={p.handleLogoUpload}
                           className="hidden"
                         />

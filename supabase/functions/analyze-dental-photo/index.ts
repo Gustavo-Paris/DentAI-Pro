@@ -310,7 +310,7 @@ Deno.serve(async (req) => {
         const fbMsg = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
         logger.error(`Both Gemini and Claude failed. Gemini: ${errMsg}. Claude: ${fbMsg}`);
         return createErrorResponse(
-          `${ERROR_MESSAGES.AI_ERROR} [Gemini: ${errMsg} | Claude: ${fbMsg}]`,
+          ERROR_MESSAGES.AI_ERROR,
           500,
           corsHeaders,
         );

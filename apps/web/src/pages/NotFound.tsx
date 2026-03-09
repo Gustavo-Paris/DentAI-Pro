@@ -1,4 +1,4 @@
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useTranslation } from 'react-i18next';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
@@ -13,6 +13,7 @@ export default function NotFound() {
   const { t } = useTranslation();
   useDocumentTitle(t('pageTitle.notFound'));
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     logger.info("404: User attempted to access non-existent route:", location.pathname);
@@ -84,7 +85,7 @@ export default function NotFound() {
                 {t('common.backToHome')}
               </Link>
             </Button>
-            <Button variant="outline" onClick={() => window.history.back()} className="btn-press">
+            <Button variant="outline" onClick={() => navigate(-1)} className="btn-press">
               {t('common.goBack')}
             </Button>
           </div>

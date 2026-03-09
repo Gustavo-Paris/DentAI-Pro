@@ -450,7 +450,7 @@ Deno.serve(async (req) => {
       if (error instanceof ClaudeError) {
         logger.error(`Claude API error (${error.statusCode}):`, error.message);
         return createErrorResponse(
-          `${ERROR_MESSAGES.AI_ERROR} [${error.statusCode}: ${error.message}]`,
+          ERROR_MESSAGES.AI_ERROR,
           500,
           corsHeaders,
           `CLAUDE_${error.statusCode}`,
@@ -458,7 +458,7 @@ Deno.serve(async (req) => {
       } else if (error instanceof GeminiError) {
         logger.error(`Gemini API error (${error.statusCode}):`, error.message);
         return createErrorResponse(
-          `${ERROR_MESSAGES.AI_ERROR} [${error.statusCode}: ${error.message}]`,
+          ERROR_MESSAGES.AI_ERROR,
           500,
           corsHeaders,
           `GEMINI_${error.statusCode}`,
@@ -467,7 +467,7 @@ Deno.serve(async (req) => {
         const errMsg = error instanceof Error ? error.message : String(error);
         logger.error("AI error:", errMsg);
         return createErrorResponse(
-          `${ERROR_MESSAGES.AI_ERROR} [${errMsg}]`,
+          ERROR_MESSAGES.AI_ERROR,
           500,
           corsHeaders,
         );

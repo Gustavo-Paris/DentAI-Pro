@@ -339,6 +339,7 @@
     "generatingCase": "Gerando Caso Clínico",
     "preparingCase": "Preparando caso...",
     "caseCreated": "Caso criado com sucesso!",
+    "caseCreatedSubtitle": "Seu caso foi processado com sucesso.",
     "createMyOwnCase": "Criar Meu Próprio Caso",
     "generateCase": "Gerar Caso",
     "submission": {
@@ -404,6 +405,7 @@
     "newEvaluation": "Nova Avaliação",
     "searchByPatient": "Buscar por paciente...",
     "statusFilter": "Status",
+    "filterStatus": "Status",
     "statusAll": "Todas",
     "statusPending": "Em progresso",
     "statusCompleted": "Finalizadas",
@@ -1203,6 +1205,8 @@
       "logoUpdated": "Logo atualizada!",
       "logoError": "Erro ao enviar logo"
     },
+    "copiedToClipboard": "Copiado para a área de transferência",
+    "copyFailed": "Falha ao copiar",
     "patientDocument": {
       "generated": "Documento do paciente gerado com sucesso!",
       "error": "Erro ao gerar documento. Tente novamente."
@@ -1264,12 +1268,12 @@
       },
       "photo": {
         "radiograph": "Radiografia",
-        "radiographHint": "Panoramica, periapical ou bitewing — melhora a precisao da analise",
+        "radiographHint": "Panorâmica, periapical ou bitewing — melhora a precisão da análise",
         "anamnesis": "Anamnese",
-        "anamnesisHint": "Grave ou digite observacoes clinicas e queixas do paciente",
+        "anamnesisHint": "Grave ou digite observações clínicas e queixas do paciente",
         "anamnesisPlaceholder": "Ex: Paciente queixa de escurecimento no 11, fratura incisal no 21, quer sorriso mais harmonioso...",
-        "startRecording": "Iniciar gravacao",
-        "stopRecording": "Parar gravacao",
+        "startRecording": "Iniciar gravação",
+        "stopRecording": "Parar gravação",
         "listening": "Gravando..."
       },
       "analyzing": {
@@ -1289,7 +1293,8 @@
         "estimatedTime": "~30-60 segundos",
         "poweredBy": "Desenvolvido com Gemini 2.5 Pro",
         "cancel": "Cancelar",
-        "defaultStep": "Detectando estruturas dentárias..."
+        "defaultStep": "Detectando estruturas dentárias...",
+        "remaining": "restante"
       },
       "preferences": {
         "title": "Nível de Clareamento",
@@ -1304,7 +1309,9 @@
         "insufficientCredits_other": "Você tem apenas {{count}} créditos. Créditos insuficientes para o fluxo completo.",
         "noExtraCredits": "0 créditos extra",
         "extraCredits": "+1 crédito extra",
-        "continueSimulation": "Continuar com simulação"
+        "continueSimulation": "Continuar com simulação",
+        "shadeBeforeLabel": "Antes",
+        "shadeAfterLabel": "Depois"
       },
       "review": {
         "title": "Revisão da Análise",
@@ -1504,6 +1511,8 @@
           "layerTabs": "Camadas da simulação",
           "beforeAfter": "Comparação Antes/Depois",
           "before": "Antes",
+          "after": "Depois",
+          "split": "Dividir",
           "annotations": "Marcações",
           "adjusting": "Ajustando...",
           "generating": "Gerando...",
@@ -1650,6 +1659,14 @@
         "color": "Cor",
         "technique": "Técnica",
         "tradeoff": "Custo-benefício: "
+      },
+      "copy": {
+        "label": "Copiar protocolo",
+        "layers": "Camadas",
+        "alternative": "Alternativa Simplificada",
+        "tradeoff": "Trade-off",
+        "alerts": "Alertas",
+        "warnings": "Avisos"
       }
     },
     "pricing": {

@@ -177,7 +177,7 @@ export default function PhotoUploader({
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept=".jpg,.jpeg,.png,.webp,.heic"
           onChange={handleFileSelect}
           className="hidden"
         />

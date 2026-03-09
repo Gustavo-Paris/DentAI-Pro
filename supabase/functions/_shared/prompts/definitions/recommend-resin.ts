@@ -546,7 +546,7 @@ ALERTA GUIA DE SILICONE: Se anterior (11-13/21-23) + reanatomização + Grande/E
 
 ⚠️ VERIFICACAO FINAL ANTES DE GERAR JSON:
 Se cavityClass contém "Diastema", "Fechamento", "Recontorno" ou "Faceta" E região anterior → CONTAR camadas no layers[]. Se < 4 → ADICIONAR camadas faltantes (Cristas Proximais é a mais frequentemente omitida).
-Ordem obrigatória: 1. Aumento Incisal, 2. Cristas Proximais, 3. Dentina/Corpo, 4. Esmalte Vestibular Final.
+Ordem obrigatória: 1. Aumento Incisal, 2. Cristas Proximais, 3. Dentina/Corpo, 4. Efeitos Incisais (quando aplicável), 5. Esmalte Vestibular Final.
 
 === JUSTIFICATIVA CLINICA OBRIGATORIA ===
 

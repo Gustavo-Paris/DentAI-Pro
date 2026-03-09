@@ -26,7 +26,7 @@ Deno.serve(async (req: Request) => {
   // Fail-fast: reject all webhooks if secret is not configured
   if (!WEBHOOK_SECRET) {
     logger.error("STRIPE_WEBHOOK_SECRET is not configured — rejecting all webhooks");
-    return new Response("Webhook secret not configured", { status: 503 });
+    return new Response("Service unavailable", { status: 503 });
   }
 
   try {

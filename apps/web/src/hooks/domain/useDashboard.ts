@@ -6,7 +6,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { useWizardDraft, WizardDraft } from '@/hooks/useWizardDraft';
 import { sendEmail } from '@/data/email';
 import { WELCOME_STORAGE_KEY } from '@/lib/branding';
-import { QUERY_STALE_TIMES } from '@/lib/constants';
+import { QUERY_STALE_TIMES, QUERY_GC_TIMES } from '@/lib/constants';
 import { normalizeTreatmentType } from '@/lib/treatment-config';
 import { EVALUATION_STATUS } from '@/lib/evaluation-status';
 import i18n from '@/lib/i18n';
@@ -273,6 +273,7 @@ export function useDashboard(): DashboardState {
     },
     enabled: !!user,
     staleTime: QUERY_STALE_TIMES.LONG,
+    gcTime: QUERY_GC_TIMES.PHI_SENSITIVE,
   });
 
   const profileData = useMemo(() => {
@@ -330,6 +331,7 @@ export function useDashboard(): DashboardState {
     },
     enabled: !!user,
     staleTime: QUERY_STALE_TIMES.LONG,
+    gcTime: QUERY_GC_TIMES.PHI_SENSITIVE,
   });
   const { data: countsData } = useQuery({
     queryKey: dashboardQueryKeys.counts(user?.id),
@@ -347,6 +349,7 @@ export function useDashboard(): DashboardState {
     },
     enabled: !!user,
     staleTime: QUERY_STALE_TIMES.MEDIUM,
+    gcTime: QUERY_GC_TIMES.PHI_SENSITIVE,
   });
 
   const { data: insightsData, isLoading: loadingInsights, isError: insightsError } = useQuery({
@@ -358,6 +361,7 @@ export function useDashboard(): DashboardState {
     },
     enabled: !!user,
     staleTime: QUERY_STALE_TIMES.MEDIUM,
+    gcTime: QUERY_GC_TIMES.PHI_SENSITIVE,
   });
 
   const {

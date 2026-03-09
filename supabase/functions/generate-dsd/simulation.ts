@@ -616,8 +616,8 @@ Responda APENAS 'SIM' ou 'NÃO'.`,
       // Lip validation for ALL layers (same as primary path)
       let lipsMoved = false;
       if (shouldValidateLips) {
-        const lipsValid = await validateLips(fallbackResult.imageUrl);
-        lipsMoved = !lipsValid;
+        const lipResult = await validateLips(fallbackResult.imageUrl);
+        lipsMoved = !lipResult.valid;
         if (lipsMoved) {
           logger.warn(`Lip validation FAILED for ${layerType || 'standard'} layer — lips_moved flag set (Gemini 3 Pro fallback)`);
           if (isGingivalLayer) {
