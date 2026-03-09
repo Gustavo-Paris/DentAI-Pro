@@ -417,6 +417,26 @@
 
 /* ─── Keyframes ─── */
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   Animation Token System
+   ─────────────────────────────────────────────────────────────────────────
+   All animation durations/easings as CSS custom properties.
+   Component-level animations reference these tokens for consistency.
+   Duration/easing tokens from PageShell: --duration-fast/normal/slow/slower,
+   --ease-out/ease-in-out/ease-in/ease-default/bounce.
+
+   Animation categories:
+   1. Loading    — shimmer (1.5s), scan-line (2.5s), progress-ring (0.8s)
+   2. Entrance   — fade-in (0.25s), fade-in-up (0.4-0.6s), scale-in (0.3s),
+                   route-enter (0.25s), list-item-enter (0.3s), count-up (0.4s)
+   3. Continuous  — float (3s), hero-float (6s), orb-drift (12-18s),
+                   ai-glow (3s), ai-border-travel (4s), ai-dot-pulse (1.5s),
+                   ai-text-shimmer (4s), badge-pulse-ring (3s), pulse-dot (1.5s)
+   4. Celebration — sparkle-burst (0.6s), confetti-float (2s),
+                   success-scale-bounce (0.6s), success-pulse-ring (1.5s)
+   5. Interaction — btn-press, card-hover-lift, card-interactive
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 /* ─── Shimmer loading (replaces pulse in skeletons) ─── */
 
 @keyframes shimmer {
@@ -846,15 +866,59 @@
 .scroll-reveal-delay-5 { transition-delay: 0.5s; }
 .scroll-reveal-delay-6 { transition-delay: 0.6s; }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   Reduced Motion — single consolidated block for all animations
+   ═══════════════════════════════════════════════════════════════════════════ */
 @media (prefers-reduced-motion: reduce) {
+  /* ── Scroll reveals ── */
   .scroll-reveal,
   .scroll-reveal-scale {
     opacity: 1;
     transform: none;
     transition: none;
   }
+
+  /* ── Loading / skeletons ── */
   .skeleton-shimmer { animation: none; background: var(--color-muted); }
+  .scan-line-animation::after { animation: none; opacity: 0; }
+  .progress-bar::after { animation: none; }
+  .progress-ring-circle { animation: none; stroke-dashoffset: var(--ring-target); }
+  .progress-ring-transition { transition: none; }
+
+  /* ── Entrance animations ── */
+  .route-enter { animation: none; }
+  .wizard-step-enter { animation: none; }
+  .stagger-enter > * { animation: none; opacity: 1; transform: none; }
+  .animate-count-up { animation: none; opacity: 1; transform: none; }
+  .animate-fade-in-up { animation: none; opacity: 1; transform: none; }
+  .animate-progress-indeterminate { animation: none; }
+
+  /* ── Continuous / AI indicators ── */
+  .ai-glow { animation: none; }
+  .ai-shimmer-border::before { animation: none; opacity: 0.3; }
+  .ai-dot { animation: none; opacity: 0.7; }
+  .ai-text { animation: none; }
+  .pulse-dot { animation: none; }
+  .glow-orb { animation: none; }
+  .neon-text { text-shadow: none; }
+  .glow-stat { text-shadow: none; }
+
+  /* ── Celebration ── */
+  .celebrate-sparkle { animation: none; opacity: 0; }
+  .celebrate-confetti > span { animation: none; opacity: 0; }
+  .confetti-particle { animation: none; opacity: 0; }
+  .success-pulse { animation: none; opacity: 1; transform: none; }
+
+  /* ── Interactions ── */
   .btn-press:active { transform: none; }
+  button:not(:disabled):active, [role="button"]:not(:disabled):active { transform: none; }
+  .card-interactive { transition: none; }
+  .card-interactive:hover { transform: none; }
+  .card-elevated:hover { transform: none; }
+
+  /* ── Pricing page ── */
+  .pricing-page .grid > .rounded-xl.border.ring-2::before { animation: none; opacity: 0.3; }
+  .pricing-page .grid > .rounded-xl.border:hover { transform: none; }
 }
 
 /* ─── Utility Classes ─── */
@@ -1081,11 +1145,7 @@
 .progress-ring-transition {
   transition: stroke-dashoffset 0.4s ease-out;
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .progress-ring-circle { animation: none; stroke-dashoffset: var(--ring-target); }
-  .progress-ring-transition { transition: none; }
-}
+/* Reduced motion for progress-ring consolidated above */
 
 /* ─── Celebration: sparkle burst on case completion ─── */
 
@@ -1352,28 +1412,4 @@ button:not(:disabled):active,
   border-color: rgb(var(--color-border-rgb));
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .scan-line-animation::after { animation: none; opacity: 0; }
-  .progress-bar::after { animation: none; }
-  .wizard-step-enter { animation: none; }
-  .celebrate-sparkle { animation: none; opacity: 0; }
-  .celebrate-confetti > span { animation: none; opacity: 0; }
-  .route-enter { animation: none; }
-  .ai-glow { animation: none; }
-  .ai-shimmer-border::before { animation: none; opacity: 0.3; }
-  .pricing-page .grid > .rounded-xl.border.ring-2::before { animation: none; opacity: 0.3; }
-  .pricing-page .grid > .rounded-xl.border:hover { transform: none; }
-  .ai-dot { animation: none; opacity: 0.7; }
-  .ai-text { animation: none; }
-  .stagger-enter > * { animation: none; opacity: 1; transform: none; }
-  .card-interactive { transition: none; }
-  .card-interactive:hover { transform: none; }
-  button:not(:disabled):active, [role="button"]:not(:disabled):active { transform: none; }
-  .success-pulse { animation: none; opacity: 1; transform: none; }
-  .confetti-particle { animation: none; opacity: 0; }
-  .pulse-dot { animation: none; }
-  .animate-count-up { animation: none; opacity: 1; transform: none; }
-  .glow-orb { animation: none; }
-  .neon-text { text-shadow: none; }
-  .glow-stat { text-shadow: none; }
-}
+/* Reduced motion rules consolidated above (search: "Reduced Motion") */
