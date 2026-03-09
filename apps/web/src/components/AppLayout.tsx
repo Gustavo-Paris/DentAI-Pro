@@ -150,7 +150,6 @@ export default function AppLayout() {
       }}
       renderAvatar={renderAvatar}
       headerThemeToggle={themeToggleSlot}
-      showHeaderThemeToggle={false}
       navigation={navigation}
       user={userInfo}
       userMenuItems={userMenuItems}

@@ -342,7 +342,7 @@ export function InsightsTab({
   const filteredTrends = weeklyTrends.slice(-period);
 
   return (
-    <div className="space-y-4 stagger-enter">
+    <div className="space-y-4">
       <div className="flex items-center gap-1 mb-3" role="group" aria-label={t('dashboard.insights.periodFilter')}>
         {[8, 12, 26].map((w) => (
           <button

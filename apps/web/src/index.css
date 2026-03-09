@@ -153,16 +153,6 @@
   --sidebar-user-card-bg: #eff2f1;
   --sidebar-user-card-border: #e0e4e3;
 
-  /* PageShell Tailwind v4 --color-sidebar-* convention (light mode) */
-  --color-sidebar: hsl(180 8% 97%);
-  --color-sidebar-foreground: hsl(200 12% 12%);
-  --color-sidebar-primary: hsl(173 58% 39%);
-  --color-sidebar-primary-foreground: hsl(0 0% 100%);
-  --color-sidebar-accent: hsl(180 8% 94%);
-  --color-sidebar-accent-foreground: hsl(200 10% 18%);
-  --color-sidebar-border: hsl(180 6% 90%);
-  --color-sidebar-ring: hsl(173 58% 39%);
-
   /* Brand accent — violet for ToSmile wordmark */
   --brand-accent: #8b5cf6;
   --brand-accent-light: #a78bfa;
@@ -279,17 +269,6 @@
   --color-sidebar-accent: #161c28;
   --color-sidebar-accent-foreground: #f6f9fb;
   --color-sidebar-border: #1a2235;
-  --color-sidebar-ring: var(--color-cyan-500);
-
-  /* PageShell sidebar depth tokens — gradient, glow, shadow for dark sidebar */
-  --sidebar-gradient-from: hsl(210 15% 6.5%);
-  --sidebar-gradient-to: hsl(210 15% 4%);
-  --sidebar-edge-shadow: 1px 0 16px -2px hsl(173 50% 55% / 0.06);
-  --sidebar-active-glow-from: hsl(173 50% 55% / 0.12);
-  --sidebar-active-glow-to: transparent;
-  --sidebar-active-shadow: 0 0 14px hsl(173 50% 55% / 0.15);
-  --sidebar-brand-glow: 0 0 20px hsl(173 50% 55% / 0.12);
-  --sidebar-hover-glow: 0 0 8px hsl(173 50% 55% / 0.06);
 
   /* ── Brand ── */
   --brand-accent: #a78bfa;

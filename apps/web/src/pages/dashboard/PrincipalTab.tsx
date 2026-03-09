@@ -324,7 +324,7 @@ export function PrincipalTab({
   onDiscardDraft: () => void;
 }) {
   return (
-    <div className="space-y-4 sm:space-y-6 stagger-enter">
+    <div className="space-y-4 sm:space-y-6">
       {/* Hero + Quick Actions */}
       <div className="space-y-4">
         <HeroCard />

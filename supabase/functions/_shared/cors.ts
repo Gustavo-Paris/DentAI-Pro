@@ -9,14 +9,9 @@ export function generateRequestId(): string {
 }
 
 const PRODUCTION_ORIGINS = [
-  // Production domains
-  "https://tosmile.ai",
-  "https://www.tosmile.ai",
-  "https://dentai.pro",
-  "https://www.dentai.pro",
-  // Vercel deployments
+  // Current production (only domain we own)
   "https://tosmile-ai.vercel.app",
-  // Legacy Vercel subdomains — keep until traffic verified at zero
+  // Legacy Vercel subdomain — keep until traffic verified at zero
   "https://auria-ai.vercel.app",
   "https://dentai-pro.vercel.app",
 ];
