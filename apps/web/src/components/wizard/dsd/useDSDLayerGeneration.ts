@@ -204,7 +204,14 @@ export function useDSDLayerGeneration({
           bestResult = data;
         }
 
-        if (!data.lips_moved || !isGingivalLayer) break;
+        if (!data.lips_moved) break;
+
+        // Gingival layers intentionally change the gum-lip boundary, so lips_moved
+        // is expected — accept first result without retries or compositing
+        if (isGingivalLayer) {
+          logger.log(`Layer ${layerType}: lips_moved expected for gengivoplasty — accepting result`);
+          break;
+        }
 
         if (lipAttempt < MAX_LIP_RETRIES) {
           logger.warn(`Layer ${layerType}: lips moved, retrying (${lipAttempt + 1}/${MAX_LIP_RETRIES})...`);
@@ -214,7 +221,10 @@ export function useDSDLayerGeneration({
       }
 
       // Post-processing: composite L2 lips onto L3 if lips moved after retries exhausted
-      if (bestResult?.lips_moved && isGingivalLayer && l2SignedUrl && bestResult.simulation_url) {
+      // SKIP for gingival layers — gengivoplasty changes the gum-lip boundary by design,
+      // and the compositor's isLipPixel heuristic catches gum pixels near the boundary,
+      // effectively undoing the gengivoplasty changes.
+      if (bestResult?.lips_moved && !isGingivalLayer && l2SignedUrl && bestResult.simulation_url) {
         try {
           const l3SignedUrl = await getSignedDSDUrl(bestResult.simulation_url);
           if (l3SignedUrl) {
