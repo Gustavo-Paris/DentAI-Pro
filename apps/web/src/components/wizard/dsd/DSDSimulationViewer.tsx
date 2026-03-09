@@ -92,6 +92,7 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
   const { t } = useTranslation();
   const [showComparison, setShowComparison] = useState(false);
   const [viewMode, setViewMode] = useState<ComparisonViewMode>('split');
+  const [analysisPopoverOpen, setAnalysisPopoverOpen] = useState(false);
 
   const hasFaceMockupLayer = layers.some(l => l.type === 'face-mockup');
   const isActiveFaceMockup = layers[activeLayerIndex]?.type === 'face-mockup';
@@ -135,7 +136,7 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
         />
         {/* Floating toolbar (top-left, inside image) */}
         <div className="absolute top-2 left-2 z-20">
-          <Popover>
+          <Popover open={analysisPopoverOpen} onOpenChange={setAnalysisPopoverOpen}>
             <PopoverTrigger asChild>
               <Button variant="secondary" size="sm" className="bg-background/80 backdrop-blur-sm hover:bg-background text-xs gap-1.5">
                 <SlidersHorizontal className="w-3.5 h-3.5" />
@@ -145,66 +146,66 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
                 )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent align="start" className="w-48 p-1">
-              {/* Annotations toggle */}
-              {suggestions?.length > 0 && (
+            <PopoverContent align="start" sideOffset={4} className="w-48 p-1">
+              {/* Annotations toggle — always visible, disabled when no suggestions */}
+              <button
+                onClick={onToggleAnnotations}
+                disabled={!suggestions?.length}
+                className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs transition-colors ${
+                  !suggestions?.length ? 'text-muted-foreground/50 cursor-not-allowed'
+                    : showAnnotations ? 'bg-primary/10 text-primary' : 'hover:bg-secondary text-foreground'
+                }`}
+              >
+                <Eye className="w-3.5 h-3.5" />
+                {t('components.wizard.dsd.simulationViewer.annotations')}
+                {showAnnotations && <Check className="w-3 h-3 ml-auto" />}
+              </button>
+              {/* Proportion overlays — always visible, disabled when insufficient tooth bounds */}
+              <button
+                onClick={() => onToggleProportionLayer('midline')}
+                disabled={toothBounds.length < 2}
+                className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs transition-colors ${
+                  toothBounds.length < 2 ? 'text-muted-foreground/50 cursor-not-allowed'
+                    : visibleProportionLayers.has('midline') ? 'bg-primary/10 text-primary' : 'hover:bg-secondary text-foreground'
+                }`}
+              >
+                <Ruler className="w-3.5 h-3.5" />
+                {t('components.wizard.dsd.proportionOverlay.midline')}
+                {visibleProportionLayers.has('midline') && <Check className="w-3 h-3 ml-auto" />}
+              </button>
+              {isMidlineAdjusted && visibleProportionLayers.has('midline') && onResetMidline && (
                 <button
-                  onClick={onToggleAnnotations}
-                  className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs transition-colors ${
-                    showAnnotations ? 'bg-primary/10 text-primary' : 'hover:bg-secondary text-foreground'
-                  }`}
+                  onClick={onResetMidline}
+                  className="w-full flex items-center gap-2 px-2 py-1.5 pl-6 rounded text-xs transition-colors hover:bg-secondary text-muted-foreground"
                 >
-                  <Eye className="w-3.5 h-3.5" />
-                  {t('components.wizard.dsd.simulationViewer.annotations')}
-                  {showAnnotations && <Check className="w-3 h-3 ml-auto" />}
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  {t('components.wizard.dsd.proportionOverlay.resetMidline')}
                 </button>
               )}
-              {/* Midline toggle */}
-              {toothBounds.length >= 2 && (
-                <>
-                  <button
-                    onClick={() => onToggleProportionLayer('midline')}
-                    className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs transition-colors ${
-                      visibleProportionLayers.has('midline') ? 'bg-primary/10 text-primary' : 'hover:bg-secondary text-foreground'
-                    }`}
-                  >
-                    <Ruler className="w-3.5 h-3.5" />
-                    {t('components.wizard.dsd.proportionOverlay.midline')}
-                    {visibleProportionLayers.has('midline') && <Check className="w-3 h-3 ml-auto" />}
-                  </button>
-                  {isMidlineAdjusted && visibleProportionLayers.has('midline') && onResetMidline && (
-                    <button
-                      onClick={onResetMidline}
-                      className="w-full flex items-center gap-2 px-2 py-1.5 pl-6 rounded text-xs transition-colors hover:bg-secondary text-muted-foreground"
-                    >
-                      <RefreshCw className="w-3.5 h-3.5" />
-                      {t('components.wizard.dsd.proportionOverlay.resetMidline')}
-                    </button>
-                  )}
-                  {/* Golden Ratio toggle */}
-                  <button
-                    onClick={() => onToggleProportionLayer('goldenRatio')}
-                    className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs transition-colors ${
-                      visibleProportionLayers.has('goldenRatio') ? 'bg-primary/10 text-primary' : 'hover:bg-secondary text-foreground'
-                    }`}
-                  >
-                    <Ratio className="w-3.5 h-3.5" />
-                    {t('components.wizard.dsd.proportionOverlay.goldenRatio')}
-                    {visibleProportionLayers.has('goldenRatio') && <Check className="w-3 h-3 ml-auto" />}
-                  </button>
-                  {/* Smile Arc toggle */}
-                  <button
-                    onClick={() => onToggleProportionLayer('smileArc')}
-                    className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs transition-colors ${
-                      visibleProportionLayers.has('smileArc') ? 'bg-primary/10 text-primary' : 'hover:bg-secondary text-foreground'
-                    }`}
-                  >
-                    <SmilePlus className="w-3.5 h-3.5" />
-                    {t('components.wizard.dsd.proportionOverlay.smileArc')}
-                    {visibleProportionLayers.has('smileArc') && <Check className="w-3 h-3 ml-auto" />}
-                  </button>
-                </>
-              )}
+              <button
+                onClick={() => onToggleProportionLayer('goldenRatio')}
+                disabled={toothBounds.length < 2}
+                className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs transition-colors ${
+                  toothBounds.length < 2 ? 'text-muted-foreground/50 cursor-not-allowed'
+                    : visibleProportionLayers.has('goldenRatio') ? 'bg-primary/10 text-primary' : 'hover:bg-secondary text-foreground'
+                }`}
+              >
+                <Ratio className="w-3.5 h-3.5" />
+                {t('components.wizard.dsd.proportionOverlay.goldenRatio')}
+                {visibleProportionLayers.has('goldenRatio') && <Check className="w-3 h-3 ml-auto" />}
+              </button>
+              <button
+                onClick={() => onToggleProportionLayer('smileArc')}
+                disabled={toothBounds.length < 2}
+                className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs transition-colors ${
+                  toothBounds.length < 2 ? 'text-muted-foreground/50 cursor-not-allowed'
+                    : visibleProportionLayers.has('smileArc') ? 'bg-primary/10 text-primary' : 'hover:bg-secondary text-foreground'
+                }`}
+              >
+                <SmilePlus className="w-3.5 h-3.5" />
+                {t('components.wizard.dsd.proportionOverlay.smileArc')}
+                {visibleProportionLayers.has('smileArc') && <Check className="w-3 h-3 ml-auto" />}
+              </button>
             </PopoverContent>
           </Popover>
         </div>
