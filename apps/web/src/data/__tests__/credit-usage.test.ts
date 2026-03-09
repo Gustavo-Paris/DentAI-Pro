@@ -162,9 +162,9 @@ describe('creditUsage.getMonthlyStats', () => {
     const rawRows = [
       { operation: 'case_analysis', credits_used: 1 },
       { operation: 'case_analysis', credits_used: 1 },
-      { operation: 'dsd_simulation', credits_used: 2 },
+      { operation: 'dsd_simulation', credits_used: 1 },
       { operation: 'case_analysis', credits_used: 1 },
-      { operation: 'dsd_simulation', credits_used: 2 },
+      { operation: 'dsd_simulation', credits_used: 1 },
     ];
     terminalResult = { data: rawRows, error: null };
 
@@ -172,7 +172,7 @@ describe('creditUsage.getMonthlyStats', () => {
 
     expect(result).toEqual([
       { operation: 'case_analysis', total_credits: 3, count: 3 },
-      { operation: 'dsd_simulation', total_credits: 4, count: 2 },
+      { operation: 'dsd_simulation', total_credits: 2, count: 2 },
     ]);
   });
 

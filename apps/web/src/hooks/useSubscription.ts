@@ -13,7 +13,7 @@ export type { CreditUsageRecord } from '@/data/credit-usage';
 // Default credit costs (fallback if DB not available)
 const DEFAULT_CREDIT_COSTS: Record<string, number> = {
   case_analysis: 1,
-  dsd_simulation: 2,
+  dsd_simulation: 1,
 };
 
 /**
@@ -274,7 +274,7 @@ export function formatCredits(credits: number, operation?: string): string {
     return i18n.t('credits.format.analysis', { count: credits });
   }
   if (operation === 'dsd_simulation') {
-    const simCount = Math.floor(credits / 2);
+    const simCount = credits;
     return i18n.t('credits.format.simulation', { count: simCount });
   }
   return i18n.t('credits.format.credit', { count: credits });

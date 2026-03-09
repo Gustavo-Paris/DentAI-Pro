@@ -5,7 +5,6 @@ import { logger } from "../_shared/logger.ts";
 import { callClaudeWithTools, ClaudeError, type OpenAIMessage, type OpenAITool } from "../_shared/claude.ts";
 import { callGeminiWithTools, GeminiError } from "../_shared/gemini.ts";
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
-import { withCreditProtection, isInsufficientCreditsResponse } from "../_shared/withCreditProtection.ts";
 import { getPrompt } from "../_shared/prompts/registry.ts";
 import { withMetrics } from "../_shared/prompts/index.ts";
 import type { Params as RecommendResinParams } from "../_shared/prompts/definitions/recommend-resin.ts";
@@ -172,7 +171,7 @@ Deno.serve(async (req) => {
     }
 
     // Sanitise free-text user input before prompt interpolation
-    const safeData = sanitizeFieldsForPrompt(data, ['clinicalNotes', 'aestheticGoals']);
+    const safeData = sanitizeFieldsForPrompt(data as EvaluationData & Record<string, unknown>, ['clinicalNotes', 'aestheticGoals']);
 
     const promptParams: RecommendResinParams = {
       patientAge: safeData.patientAge,
@@ -474,13 +473,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Credits + post-processing wrapped in credit protection (auto-refund on error)
-    return await withCreditProtection(
-      { supabase: supabaseService, userId, operation: "resin_recommendation", operationId: clientOperationId || reqId, corsHeaders },
-      async (credits) => {
-        const creditResult = await credits.consume();
-        if (isInsufficientCreditsResponse(creditResult)) return creditResult;
-
+    // Post-processing (no credit charge — protocol generation is included in case_analysis credit)
+    {
         // Validate and fix protocol layers against resin_catalog
         await validateAndFixProtocolLayers({
           recommendation,
@@ -498,22 +492,21 @@ Deno.serve(async (req) => {
         logger.log(`Budget: ${data.budget}, Recommended: ${recommendation.recommended_resin_name}, Price Range: ${recommendation.price_range}, Budget Compliant: ${recommendation.budget_compliance}`);
 
         // Find the recommended resin in database
+        const recName = recommendation.recommended_resin_name ?? '';
         const recommendedResin = resins.find(
           (r: { name: string }) =>
-            r.name.toLowerCase() ===
-            recommendation.recommended_resin_name.toLowerCase()
+            r.name.toLowerCase() === recName.toLowerCase()
         );
 
         // Find the ideal resin if different
         let idealResin = null;
         if (
           recommendation.ideal_resin_name &&
-          recommendation.ideal_resin_name.toLowerCase() !==
-            recommendation.recommended_resin_name.toLowerCase()
+          recommendation.ideal_resin_name.toLowerCase() !== recName.toLowerCase()
         ) {
           idealResin = resins.find(
             (r: { name: string }) =>
-              r.name.toLowerCase() === recommendation.ideal_resin_name.toLowerCase()
+              r.name.toLowerCase() === recommendation.ideal_resin_name!.toLowerCase()
           );
         }
 
@@ -575,8 +568,7 @@ Deno.serve(async (req) => {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           }
         );
-      },
-    );
+    }
   } catch (error: unknown) {
     logger.error(`[${reqId}] recommend-resin error:`, error);
     return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders, undefined, reqId);

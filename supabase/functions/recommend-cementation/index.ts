@@ -5,7 +5,6 @@ import { logger } from "../_shared/logger.ts";
 import { callClaudeWithTools, ClaudeError, type OpenAIMessage, type OpenAITool } from "../_shared/claude.ts";
 import { callGeminiWithTools, GeminiError } from "../_shared/gemini.ts";
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
-import { withCreditProtection, isInsufficientCreditsResponse } from "../_shared/withCreditProtection.ts";
 import { getPrompt, withMetrics } from "../_shared/prompts/index.ts";
 import { createSupabaseMetrics, PROMPT_VERSION } from "../_shared/metrics-adapter.ts";
 import { parseAIResponse, CementationProtocolSchema } from "../_shared/aiSchemas.ts";
@@ -560,13 +559,8 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Credits + post-processing wrapped in credit protection (auto-refund on error)
-    return await withCreditProtection(
-      { supabase, userId: user.id, operation: "cementation_recommendation", operationId: clientOperationId || reqId, corsHeaders },
-      async (credits) => {
-        const creditResult = await credits.consume();
-        if (isInsufficientCreditsResponse(creditResult)) return creditResult;
-
+    // Post-processing (no credit charge — protocol generation is included in case_analysis credit)
+    {
         // HF acid safety net: ensure lithium disilicate never gets 10% HF
         validateHFConcentration(protocol as unknown as Record<string, unknown>, ceramicType);
 
@@ -599,8 +593,7 @@ Deno.serve(async (req: Request) => {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           }
         );
-      },
-    );
+    }
   } catch (error) {
     const errMsg = error instanceof Error ? error.message : String(error);
     logger.error(`[${reqId}] recommend-cementation error:`, errMsg);

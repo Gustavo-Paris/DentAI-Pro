@@ -41,11 +41,11 @@ describe('formatCredits', () => {
   });
 
   it('should format dsd_simulation (singular)', () => {
-    expect(formatCredits(2, 'dsd_simulation')).toBe('1 simulação DSD');
+    expect(formatCredits(1, 'dsd_simulation')).toBe('1 simulação DSD');
   });
 
   it('should format dsd_simulation (plural)', () => {
-    expect(formatCredits(6, 'dsd_simulation')).toBe('3 simulações DSD');
+    expect(formatCredits(3, 'dsd_simulation')).toBe('3 simulações DSD');
   });
 });
 
@@ -281,7 +281,7 @@ describe('subscription status logic', () => {
 describe('getCreditCost logic', () => {
   const DEFAULT_CREDIT_COSTS: Record<string, number> = {
     case_analysis: 1,
-    dsd_simulation: 2,
+    dsd_simulation: 1,
   };
 
   function getCreditCost(
@@ -298,7 +298,7 @@ describe('getCreditCost logic', () => {
 
   it('should fall back to default when not in DB map', () => {
     expect(getCreditCost({}, 'case_analysis')).toBe(1);
-    expect(getCreditCost({}, 'dsd_simulation')).toBe(2);
+    expect(getCreditCost({}, 'dsd_simulation')).toBe(1);
   });
 
   it('should return 1 for unknown operations', () => {
