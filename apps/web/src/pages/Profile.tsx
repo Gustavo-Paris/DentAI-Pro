@@ -121,6 +121,7 @@ export default function Profile() {
       toast.success(t('profile.creditsAddedGeneric'));
     };
     syncWithRetry();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: only re-run on specific method change, not entire p object
   }, [searchParams, navigate, refreshSubscription, p.syncCreditPurchase, t]);
 
   const activeTab = searchParams.get('tab') || 'perfil';

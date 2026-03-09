@@ -351,6 +351,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
       submit.resetSubmission();
     }
     nav.handleBack();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: only re-create when specific methods/values change, not entire nav/submit objects
   }, [nav.step, nav.handleBack, submit.resetSubmission]);
 
   // Credits-guarded submit — check credits before delegating to actual submit
@@ -364,6 +365,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
       return;
     }
     await submit.handleSubmit();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: only re-create when specific method changes, not entire submit object
   }, [canUseCredits, submit.handleSubmit, navigate, t]);
 
   // -------------------------------------------------------------------------

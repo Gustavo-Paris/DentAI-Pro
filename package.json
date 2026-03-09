@@ -32,7 +32,7 @@
       "bash -c 'scripts/typecheck-baseline.sh'"
     ],
     "supabase/functions/**/*.ts": [
-      "bash -c 'deno check --no-lock \"$@\"' _"
+      "bash -c 'cd supabase/functions && deno check --no-lock \"$@\"' _"
     ]
   },
   "dependencies": {
