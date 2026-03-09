@@ -27,7 +27,13 @@
     "patchedDependencies": {}
   },
   "lint-staged": {
-    "*": "true"
+    "apps/web/src/**/*.{ts,tsx}": [
+      "bash -c 'cd apps/web && npx eslint --no-warn-ignored --max-warnings=0 \"$@\"' _",
+      "bash -c 'cd apps/web && pnpm exec tsc --noEmit'"
+    ],
+    "supabase/functions/**/*.ts": [
+      "bash -c 'deno check --no-lock \"$@\"' _"
+    ]
   },
   "dependencies": {
     "@parisgroup-ai/agent-hub": "^4.9.2"
