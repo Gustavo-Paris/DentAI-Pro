@@ -5,7 +5,6 @@ import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import {
   FileText, Users, TrendingUp, CheckCircle2,
 } from 'lucide-react';
-import { useScrollRevealChildren } from '@/hooks/useScrollReveal';
 import { useCountAnimation } from './useCountAnimation';
 
 // ---------------------------------------------------------------------------
@@ -172,11 +171,10 @@ export function StatsGrid({
   weeklyTrends: WeeklyTrendPoint[];
 }) {
   const { t } = useTranslation();
-  const containerRef = useScrollRevealChildren();
 
   return (
-    <div ref={containerRef} className="grid grid-cols-2 lg:grid-cols-4 gap-4 stagger-enter">
-      {statConfigs.map((stat, i) => {
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 stagger-enter">
+      {statConfigs.map((stat) => {
         const Icon = stat.icon;
         const value = metrics[stat.key];
         const tooltipText =
@@ -188,7 +186,7 @@ export function StatsGrid({
           <Tooltip key={stat.key}>
             <TooltipTrigger asChild>
               <Card
-                className={`scroll-reveal scroll-reveal-delay-${i + 1} group relative overflow-hidden p-3 sm:p-4 cursor-default rounded-xl transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 glass-card glow-card`}
+                className="group relative overflow-hidden p-3 sm:p-4 cursor-default rounded-xl transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 glass-card glow-card"
               >
                 {/* Glass top-edge highlight — subtle depth cue in dark mode */}
                 <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-foreground/[0.06] to-transparent dark:block hidden pointer-events-none" />

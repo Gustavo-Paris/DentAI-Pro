@@ -143,7 +143,7 @@ export default function Result() {
         {(evaluation) => {
           if (!evaluation) return null;
           return (
-          <>
+          <div className="stagger-enter">
             {/* Inventory Banner */}
             {r.treatmentType === 'resina' && !evaluation.has_inventory_at_creation && (
               <Card className="mb-6 border-primary/20 bg-primary/5 dark:bg-primary/10 print:hidden">
@@ -454,7 +454,7 @@ export default function Result() {
                 </p>
               </div>
             </div>
-          </>
+          </div>
           );
         }}
       </DetailPage>

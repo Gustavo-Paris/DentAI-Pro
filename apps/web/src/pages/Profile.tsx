@@ -143,7 +143,7 @@ export default function Profile() {
           id: 'perfil',
           label: t('profile.tab'),
           children: () => (
-            <div className="space-y-6">
+            <div className="space-y-6 stagger-enter">
               <Card className="rounded-xl glass-panel">
                 <CardHeader className="text-center pb-2">
                   <div className="flex justify-center items-start gap-8 mb-4">
@@ -338,7 +338,7 @@ export default function Profile() {
           id: 'assinatura',
           label: t('profile.subscriptionTab'),
           children: () => (
-            <div className="space-y-6">
+            <div className="space-y-6 stagger-enter">
               <SubscriptionStatus />
               <CreditPackSection />
               <CreditUsageHistory />
@@ -360,7 +360,7 @@ export default function Profile() {
           id: 'privacidade',
           label: t('profile.privacyTab'),
           children: () => (
-            <div className="space-y-6">
+            <div className="space-y-6 stagger-enter">
               <Card className="rounded-xl glass-panel">
                 <CardHeader>
                   <CardTitle className="text-lg font-display">{t('profile.weeklyDigest')}</CardTitle>

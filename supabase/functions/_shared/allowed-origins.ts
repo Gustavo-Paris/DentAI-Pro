@@ -4,6 +4,12 @@
  * against this whitelist.
  */
 export const ALLOWED_ORIGINS = [
+  // Production domains
+  "https://tosmile.ai",
+  "https://www.tosmile.ai",
+  "https://dentai.pro",
+  "https://www.dentai.pro",
+  // Vercel deployments
   "https://tosmile-ai.vercel.app",
   "https://auria-ai.vercel.app",
   "https://dentai-pro.vercel.app",

@@ -103,7 +103,7 @@ export default function GroupResult() {
         {(evaluation) => {
           if (!evaluation) return null;
           return (
-            <>
+            <div className="stagger-enter">
               {/* Protocol unavailable fallback */}
               {!g.hasProtocol && !g.isSpecialTreatment && g.treatmentType === 'resina' && (
                 <ProtocolUnavailableAlert
@@ -178,7 +178,7 @@ export default function GroupResult() {
                 t={t}
                 treatmentStyleLabel={g.currentTreatmentStyle.label}
               />
-            </>
+            </div>
           );
         }}
       </DetailPage>

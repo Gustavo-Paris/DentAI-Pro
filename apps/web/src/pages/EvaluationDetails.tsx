@@ -154,7 +154,7 @@ export default function EvaluationDetails() {
         ]}
       >
         {() => (
-          <>
+          <div className="stagger-enter">
             <SessionHeaderCard
               photoPath={firstEval?.photo_frontal}
               patientName={detail.patientName}
@@ -320,7 +320,7 @@ export default function EvaluationDetails() {
                 }}
               />
             )}
-          </>
+          </div>
         )}
       </DetailPage>
 
