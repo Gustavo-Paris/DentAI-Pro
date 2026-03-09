@@ -192,6 +192,7 @@ export default function PatientProfile() {
   return (
     <>
       <DetailPage
+        containerVariant="shell"
         className="relative z-10 max-w-5xl mx-auto stagger-enter"
         title={(data) => data?.name ?? '...'}
         description={t('patients.profileTitle')}

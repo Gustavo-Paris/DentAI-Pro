@@ -307,7 +307,8 @@ export default function NewCase() {
             enableKeyboardNav={false} // Disabled: wizard steps contain form inputs that need arrow/tab keys
             showProgress={true}
             scrollToTop={true}
-            containerVariant="narrow"
+            containerVariant="default"
+            className="!max-w-5xl !mx-auto"
             hideNavigation={true}
             steps={stepsMeta}
             slots={{

@@ -43,6 +43,7 @@ export default function GroupResult() {
   return (
     <>
       <DetailPage
+        containerVariant="shell"
         className="relative z-10 max-w-5xl mx-auto py-6 sm:py-8 stagger-enter"
         title={`${g.currentTreatmentStyle.label} — ${t('components.groupResult.unifiedProtocol')}`}
         breadcrumbs={[

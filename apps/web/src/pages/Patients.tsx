@@ -309,6 +309,7 @@ export default function Patients() {
     <>
       <div className="relative z-10 max-w-5xl mx-auto py-6 sm:py-8">
         <ListPage<PatientWithStats>
+          containerVariant="shell"
           title={t('patients.title')}
           description={description}
           viewMode="cards"

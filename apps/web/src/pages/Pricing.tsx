@@ -291,6 +291,7 @@ export default function Pricing() {
   return (
     <div className="pricing-page stagger-enter">
       <PricingPage
+        containerVariant="shell"
         className="relative max-w-6xl mx-auto py-6 sm:py-8"
         title={t('pricing.title')}
         description={t('components.pricing.section.subtitle')}
