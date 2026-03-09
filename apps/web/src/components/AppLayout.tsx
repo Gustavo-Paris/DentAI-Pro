@@ -6,6 +6,7 @@ import { ReactRouterAppShell } from '@parisgroup-ai/pageshell/layouts/adapters/r
 import { useAuth } from '@/contexts/AuthContext';
 import { BRAND_NAME } from '@/lib/branding';
 import { CreditBadge } from '@/components/CreditBadge';
+import { PaymentWarningBanner } from '@/components/pricing/PaymentWarningBanner';
 import { SidebarCredits } from '@/components/SidebarCredits';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { HelpButton } from '@/components/HelpButton';
@@ -165,6 +166,9 @@ export default function AppLayout() {
         <div className="glow-orb glow-orb-slow w-48 h-48 bg-primary/10 dark:bg-primary/15 bottom-[10%] right-[55%]" aria-hidden="true" />
         <div className="ai-grid-pattern absolute inset-0 opacity-30 dark:opacity-50 [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,black_70%,transparent_100%)] pointer-events-none" aria-hidden="true" />
         <div className="relative z-10">
+          <div className="px-4 pt-4 sm:px-6 lg:px-8 empty:hidden">
+            <PaymentWarningBanner />
+          </div>
           <Outlet />
         </div>
       </main>

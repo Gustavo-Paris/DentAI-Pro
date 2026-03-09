@@ -705,6 +705,18 @@
     "unlimitedDsdSimulations": "{{count}} DSD simulations",
     "dsdSimulations": "~{{count}} DSD simulations"
   },
+  "billing": {
+    "pastDue": {
+      "title": "Payment past due",
+      "message": "Your payment has failed. Please update your payment method to avoid service interruption.",
+      "action": "Update payment"
+    },
+    "unpaid": {
+      "title": "Subscription suspended",
+      "message": "Your subscription is suspended due to non-payment. Update your payment method to reactivate.",
+      "action": "Update payment"
+    }
+  },
   "landing": {
     "heroTagline": "Clinical Aesthetic Intelligence",
     "heroTitlePre": "Smart aesthetic",

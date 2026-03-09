@@ -705,6 +705,18 @@
     "unlimitedDsdSimulations": "{{count}} simulações DSD",
     "dsdSimulations": "~{{count}} simulações DSD"
   },
+  "billing": {
+    "pastDue": {
+      "title": "Pagamento pendente",
+      "message": "Seu pagamento falhou. Atualize seu método de pagamento para evitar interrupção do serviço.",
+      "action": "Atualizar pagamento"
+    },
+    "unpaid": {
+      "title": "Assinatura suspensa",
+      "message": "Sua assinatura está suspensa por falta de pagamento. Atualize seu método de pagamento para reativar.",
+      "action": "Atualizar pagamento"
+    }
+  },
   "landing": {
     "heroTagline": "Inteligência Clínica Estética",
     "heroTitlePre": "Odontologia estética",

@@ -4,6 +4,7 @@ import { getDateLocale, getDateFormat } from '@/lib/date-utils';
 import { CreditCard, Calendar, Zap, Settings, AlertTriangle, Loader2, RefreshCw } from 'lucide-react';
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Badge, Progress } from '@parisgroup-ai/pageshell/primitives';
 import { useSubscription, formatPrice } from '@/hooks/useSubscription';
+import { PaymentWarningBanner } from '@/components/pricing/PaymentWarningBanner';
 import { cn } from '@/lib/utils';
 
 const statusKeys: Record<string, { key: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
@@ -72,6 +73,8 @@ export function SubscriptionStatus() {
   const statusConfig = statusKeys[status] || statusKeys.inactive;
 
   return (
+    <div className="space-y-4">
+      <PaymentWarningBanner />
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {/* Card 1 — Plan */}
       <Card className="rounded-xl glass-panel">
@@ -204,6 +207,7 @@ export function SubscriptionStatus() {
           )}
         </CardContent>
       </Card>
+    </div>
     </div>
   );
 }
