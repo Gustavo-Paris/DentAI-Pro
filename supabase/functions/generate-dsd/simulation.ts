@@ -545,10 +545,7 @@ Responda APENAS 'SIM' ou 'NÃO'.`,
       const lipResult = await validateLips(result.imageUrl);
       lipsMoved = !lipResult.valid;
       if (lipsMoved) {
-        logger.warn(`Lip validation FAILED for ${layerType || 'standard'} layer — lips_moved flag set`);
-        if (isGingivalLayer) {
-          throw new Error(`Lip validation failed for ${layerType || 'standard'} layer`);
-        }
+        logger.warn(`Lip validation FAILED for ${layerType || 'standard'} layer — lips_moved flag set (returning image for client-side handling)`);
       }
       if (lipResult.error) {
         logger.warn(`Lip validator crashed for ${layerType || 'standard'} layer — skipped (pass-through)`);
@@ -619,10 +616,7 @@ Responda APENAS 'SIM' ou 'NÃO'.`,
         const lipResult = await validateLips(fallbackResult.imageUrl);
         lipsMoved = !lipResult.valid;
         if (lipsMoved) {
-          logger.warn(`Lip validation FAILED for ${layerType || 'standard'} layer — lips_moved flag set (Gemini 3 Pro fallback)`);
-          if (isGingivalLayer) {
-            throw new Error(`Lip validation failed for ${layerType || 'standard'} layer (Gemini 3 Pro fallback)`);
-          }
+          logger.warn(`Lip validation FAILED for ${layerType || 'standard'} layer — lips_moved flag set (Gemini 3 Pro fallback, returning image for client-side handling)`);
         }
       }
 

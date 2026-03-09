@@ -458,6 +458,7 @@ export default function Evaluations() {
   return (
     <div className="relative z-10 max-w-5xl mx-auto py-6 sm:py-8">
       <ListPage<EvaluationSession>
+        containerVariant="shell"
         title={t('evaluation.title')}
         description={filteredCount > 0 ? t('patients.count', { count: filteredCount }) : undefined}
         viewMode="cards"

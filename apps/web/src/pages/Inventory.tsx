@@ -208,6 +208,7 @@ export default function Inventory() {
   return (
     <div className="relative z-10 max-w-5xl mx-auto py-6 sm:py-8">
       <ListPage<FlatInventoryItem>
+        containerVariant="shell"
         title={t('inventory.title')}
         description={t('inventory.resinColors', { count: inv.total })}
         viewMode="cards"

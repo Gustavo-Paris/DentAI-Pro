@@ -131,6 +131,7 @@ export default function Profile() {
 
   return (
     <DetailPage
+      containerVariant="shell"
       className="relative z-10 max-w-5xl mx-auto py-6 sm:py-8 stagger-enter"
       title={t('profile.title')}
       breadcrumbs={[

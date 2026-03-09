@@ -126,6 +126,7 @@ export default function EvaluationDetails() {
   return (
     <>
       <DetailPage
+        containerVariant="shell"
         className="relative z-10 max-w-5xl mx-auto stagger-enter"
         title={detail.patientName}
         breadcrumbs={[
