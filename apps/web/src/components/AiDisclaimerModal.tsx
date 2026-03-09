@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -60,10 +61,10 @@ export function AiDisclaimerModal({ open, onAccept }: AiDisclaimerModalProps) {
             <Shield className="w-5 h-5 text-primary" />
             {t('consent.title')}
           </DialogTitle>
+          <DialogDescription>{t('consent.intro')}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3 py-4">
-          <p className="text-sm text-muted-foreground">{t('consent.intro')}</p>
           <ul className="text-sm space-y-2 list-disc pl-5 text-muted-foreground">
             <li>{t('consent.bullet1')}</li>
             <li>{t('consent.bullet2')}</li>

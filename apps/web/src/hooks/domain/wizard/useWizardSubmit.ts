@@ -118,6 +118,7 @@ export function useWizardSubmit({
   const [completedSessionId, setCompletedSessionId] = useState<string | null>(null);
   const [submissionStep, setSubmissionStep] = useState(0);
   const [currentToothIndex, setCurrentToothIndex] = useState(-1);
+  const [currentRetryAttempt, setCurrentRetryAttempt] = useState(0);
 
   // -------------------------------------------------------------------------
   // Derived
@@ -136,8 +137,11 @@ export function useWizardSubmit({
         const toothLabel = teethToShow[i] === 'GENGIVO'
           ? t('components.wizard.review.treatmentGengivoplastia')
           : t('toothLabel.tooth', { number: teethToShow[i] });
+        const retryLabel = isActive && currentRetryAttempt > 0
+          ? ` — ${t('wizard.submission.retryAttempt', { attempt: currentRetryAttempt + 1, total: 3 })}`
+          : isActive ? ` — ${t('wizard.submission.generatingProtocol')}` : '';
         steps.push({
-          label: `${toothLabel}${isActive ? ` — ${t('wizard.submission.generatingProtocol')}` : ''}`,
+          label: `${toothLabel}${retryLabel}`,
           completed: isCompleted,
         });
       }
@@ -145,7 +149,7 @@ export function useWizardSubmit({
 
     steps.push({ label: t('wizard.submission.finalizing'), completed: submissionStep >= 4 });
     return steps;
-  }, [submissionStep, selectedTeeth, formData.tooth, currentToothIndex, t]);
+  }, [submissionStep, selectedTeeth, formData.tooth, currentToothIndex, currentRetryAttempt, t]);
 
   // -------------------------------------------------------------------------
   // Validation
@@ -429,6 +433,9 @@ export function useWizardSubmit({
           maxRetries: 2,
           baseDelay: 2000,
           onRetry: async (attempt, err) => {
+            // Update UI to show retry indicator
+            setCurrentRetryAttempt(attempt);
+
             // Extract edge function response body for better debugging
             const context = (err as { context?: Response }).context;
             if (context && typeof context.json === 'function') {
@@ -475,6 +482,7 @@ export function useWizardSubmit({
       for (const tooth of teethToProcess) {
         // Update progress BEFORE processing so the UI shows which tooth is active
         setCurrentToothIndex(loopIndex);
+        setCurrentRetryAttempt(0);
 
         const toothData = getToothData(analysisResult, tooth);
         const treatmentType = getToothTreatment(tooth, toothTreatments, analysisResult, formData);
@@ -640,10 +648,14 @@ export function useWizardSubmit({
     }
 
     // -------------------------------------------------------------------
-    // Main flow: patient -> evaluations -> finalize
+    // Main flow: patient -> evaluations -> finalize (with global timeout)
     // -------------------------------------------------------------------
+    const globalTimeout = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('CASE_GENERATION_TIMEOUT')), TIMING.CASE_GENERATION_TIMEOUT);
+    });
+
     try {
-      const patientId = await createOrFindPatient();
+      const patientId = await Promise.race([createOrFindPatient(), globalTimeout]);
 
       // Upload radiograph to storage (follows same pattern as frontal photo)
       if (additionalPhotos.radiograph && user) {
@@ -662,7 +674,7 @@ export function useWizardSubmit({
         }
       }
 
-      await createEvaluationsWithProtocols(patientId);
+      await Promise.race([createEvaluationsWithProtocols(patientId), globalTimeout]);
       await finalizeSubmission();
     } catch (error: unknown) {
       // This catch handles errors BEFORE the loop (patient creation, etc.)
@@ -672,7 +684,9 @@ export function useWizardSubmit({
       let errorMessage = t('toasts.wizard.createCaseError');
       let shouldGoBack = true;
 
-      if (err.code === '23505') {
+      if (err.message === 'CASE_GENERATION_TIMEOUT') {
+        errorMessage = t('toasts.wizard.globalTimeout');
+      } else if (err.code === '23505') {
         errorMessage = t('toasts.wizard.duplicatePatient');
       } else if (err.code === '23503') {
         errorMessage = t('toasts.wizard.referenceError');
@@ -720,6 +734,7 @@ export function useWizardSubmit({
     setCompletedSessionId(null);
     setSubmissionStep(0);
     setCurrentToothIndex(-1);
+    setCurrentRetryAttempt(0);
   }, []);
 
   return {

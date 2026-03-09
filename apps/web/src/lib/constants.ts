@@ -28,4 +28,6 @@ export const TIMING = {
   WIZARD_SUBMIT_DELAY: 800,
   /** Retry delay for DSD photo processing. */
   DSD_RETRY_DELAY: 2_000,
+  /** Global timeout for entire case generation (10 minutes). */
+  CASE_GENERATION_TIMEOUT: 10 * 60 * 1000,
 } as const;

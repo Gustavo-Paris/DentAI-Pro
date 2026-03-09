@@ -341,6 +341,7 @@
     "submission": {
       "preparingPatient": "Preparing patient data...",
       "generatingProtocol": "generating protocol...",
+      "retryAttempt": "attempt {{attempt}}/{{total}}",
       "finalizing": "Finalizing and saving...",
       "toothLabel": "{{tooth}}"
     },
@@ -1124,6 +1125,7 @@
       "selectTooth": "Select at least one tooth",
       "allFailed": "Error creating case. No protocols were generated.",
       "connectionErrorSubmit": "Server connection error. Check your internet and try again.",
+      "globalTimeout": "Case generation timed out (10 min). Try again with fewer teeth or check your connection.",
       "partialSuccess": "{{success}} of {{total}} protocols generated. Teeth {{failed}} failed — try again.",
       "duplicatePatient": "Patient already registered with this name. Select the existing patient.",
       "referenceError": "Database reference error. Check patient data.",

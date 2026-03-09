@@ -341,6 +341,7 @@
     "submission": {
       "preparingPatient": "Preparando dados do paciente...",
       "generatingProtocol": "gerando protocolo...",
+      "retryAttempt": "tentativa {{attempt}}/{{total}}",
       "finalizing": "Finalizando e salvando...",
       "toothLabel": "{{tooth}}"
     },
@@ -1124,6 +1125,7 @@
       "selectTooth": "Selecione pelo menos um dente",
       "allFailed": "Erro ao criar caso. Nenhum protocolo foi gerado. Tente novamente ou entre em contato com o suporte.",
       "connectionErrorSubmit": "Erro de conexão com o servidor. Verifique sua internet e tente novamente.",
+      "globalTimeout": "A geração do caso excedeu o tempo limite (10 min). Tente novamente com menos dentes ou verifique sua conexão.",
       "partialSuccess": "{{success}} de {{total}} protocolos gerados. Dentes {{failed}} falharam — tente novamente.",
       "duplicatePatient": "Paciente já cadastrado com este nome. Selecione o paciente existente.",
       "referenceError": "Erro ao salvar os dados. Verifique as informações do paciente e tente novamente.",
