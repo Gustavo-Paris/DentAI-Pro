@@ -18,7 +18,17 @@ export function getSupabaseClient(): SupabaseClient {
   return createClient(url, key);
 }
 
-/** Validate auth header and return user, or error Response */
+/**
+ * Authenticate the request by validating the JWT token.
+ *
+ * REQUIRED: Every edge function MUST call this unless explicitly public.
+ * All functions have verify_jwt=false in config.toml — there is NO infrastructure-level
+ * JWT protection. Forgetting to call authenticateRequest() creates a fully public endpoint.
+ *
+ * Public exceptions (documented): health-check (GET only, no data access)
+ *
+ * @returns `{ user }` on success, or an error `Response` (401/403) on failure.
+ */
 export async function authenticateRequest(
   req: Request,
   supabase: SupabaseClient,

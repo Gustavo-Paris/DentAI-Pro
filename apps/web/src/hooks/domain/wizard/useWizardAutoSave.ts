@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import type { ReviewFormData, PhotoAnalysisResult, TreatmentType } from '@/types/wizard';
 import type { DSDResult } from '@/types/dsd';
 import type { AdditionalPhotos, WizardDraft } from '@/hooks/useWizardDraft';
@@ -54,25 +54,31 @@ export function useWizardAutoSave({
   userId,
 }: UseWizardAutoSaveParams) {
   // -------------------------------------------------------------------------
-  // Auto-save when state changes (from step 1 with image)
+  // Auto-save when state changes (from step 1 with image), debounced 2s
   // -------------------------------------------------------------------------
+
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
     if (step >= 1 && step < 6 && imageBase64 !== null && userId) {
-      saveDraft({
-        step,
-        formData,
-        selectedTeeth,
-        toothTreatments,
-        analysisResult,
-        dsdResult,
-        uploadedPhotoPath,
-        additionalPhotos,
-        patientPreferences,
-        anamnesis,
-        vitaShadeManuallySet,
-      });
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = setTimeout(() => {
+        saveDraft({
+          step,
+          formData,
+          selectedTeeth,
+          toothTreatments,
+          analysisResult,
+          dsdResult,
+          uploadedPhotoPath,
+          additionalPhotos,
+          patientPreferences,
+          anamnesis,
+          vitaShadeManuallySet,
+        });
+      }, 2000);
     }
+    return () => { if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current); };
   }, [
     step,
     imageBase64,
@@ -87,6 +93,7 @@ export function useWizardAutoSave({
     anamnesis,
     saveDraft,
     userId,
+    vitaShadeManuallySet,
   ]);
 
   // -------------------------------------------------------------------------

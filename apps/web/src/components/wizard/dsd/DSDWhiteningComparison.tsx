@@ -15,11 +15,6 @@ interface DSDWhiteningComparisonProps {
   onSelectLevel: (level: 'natural' | 'hollywood', url: string) => void;
 }
 
-const WHITENING_LABELS: Record<string, string> = {
-  natural: 'Natural (A1/A2)',
-  hollywood: 'Diamond (BL1/BL2/BL3)',
-};
-
 export function DSDWhiteningComparison({
   imageBase64,
   showWhiteningComparison,
@@ -31,6 +26,10 @@ export function DSDWhiteningComparison({
   onSelectLevel,
 }: DSDWhiteningComparisonProps) {
   const { t } = useTranslation();
+  const whiteningLabels: Record<string, string> = {
+    natural: t('components.wizard.dsd.whiteningComparison.levelNatural', 'Natural (A1/A2)'),
+    hollywood: t('components.wizard.dsd.whiteningComparison.levelHollywood', 'Diamond (BL1/BL2/BL3)'),
+  };
   const hasResults = showWhiteningComparison && Object.keys(whiteningComparison).length > 0;
 
   return (
@@ -97,7 +96,7 @@ export function DSDWhiteningComparison({
                   tabIndex={0}
                   className={`rounded-lg overflow-hidden border-2 cursor-pointer transition-all duration-300 text-left w-full ${isActive ? 'border-primary shadow-md' : 'border-transparent hover:border-primary/40'}`}
                   aria-pressed={isActive}
-                  aria-label={`${WHITENING_LABELS[level]}${isActive ? ` - ${t('components.wizard.dsd.whiteningComparison.selected')}` : ''}`}
+                  aria-label={`${whiteningLabels[level]}${isActive ? ` - ${t('components.wizard.dsd.whiteningComparison.selected')}` : ''}`}
                   onClick={() => {
                     if (isActive) return;
                     onSelectLevel(level, url);
@@ -113,7 +112,7 @@ export function DSDWhiteningComparison({
                   <ComparisonSlider
                     beforeImage={imageBase64}
                     afterImage={url}
-                    afterLabel={WHITENING_LABELS[level]}
+                    afterLabel={whiteningLabels[level]}
                   />
                   {isActive ? (
                     <div className="text-center py-1 bg-primary/10">

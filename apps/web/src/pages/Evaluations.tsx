@@ -103,7 +103,7 @@ const SessionCard = memo(function SessionCard({
   return (
     <Link to={`/evaluation/${session.session_id}`} onClick={handleClick} onMouseEnter={handleHover} className="block rounded-xl focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2" aria-label={t('evaluation.viewEvaluationOf', { name: session.patient_name || t('evaluation.patientNoName') })}>
       <Card
-        className={`group relative overflow-hidden p-3 sm:p-4 shadow-sm hover:shadow-md rounded-xl transition-all duration-300 cursor-pointer animate-[fade-in-up_0.6s_ease-out_both] dark:bg-gradient-to-br dark:from-card dark:to-card/80 glass-panel glow-card ${isNew ? 'ai-shimmer-border' : ''}`}
+        className={`group relative overflow-hidden p-3 sm:p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 rounded-xl transition-all duration-300 cursor-pointer animate-[fade-in-up_0.6s_ease-out_both] dark:bg-gradient-to-br dark:from-card dark:to-card/80 glass-panel glow-card ${isNew ? 'ai-shimmer-border' : ''}`}
         style={{ animationDelay: `${index * 0.05}s` }}
       >
         {/* Gradient accent bar */}
@@ -321,7 +321,7 @@ export default function Evaluations() {
   const emptySearchState = useMemo(
     () => ({
       title: t('evaluation.emptyTitle'),
-      description: t('evaluation.emptyFilteredDescription', { defaultValue: 'Nenhuma avaliacao corresponde aos filtros selecionados.' }),
+      description: t('evaluation.emptyFilteredDescription'),
       showClearButton: true,
     }),
     [t],
@@ -331,12 +331,12 @@ export default function Evaluations() {
     () => ({
       search: { placeholder: t('evaluation.searchByPatient') },
       pagination: {
-        showing: t('common.showingOf', { defaultValue: 'Mostrando' }),
-        of: t('common.of', { defaultValue: 'de' }),
-        to: t('common.to', { defaultValue: 'a' }),
-        items: t('evaluation.paginationItems', { defaultValue: 'avaliacoes' }),
-        previous: t('common.previousPage', { defaultValue: 'Pagina anterior' }),
-        next: t('common.nextPage', { defaultValue: 'Proxima pagina' }),
+        showing: t('common.showingOf'),
+        of: t('common.of'),
+        to: t('common.to'),
+        items: t('evaluation.paginationItems'),
+        previous: t('common.previousPage'),
+        next: t('common.nextPage'),
       },
     }),
     [t],
@@ -404,12 +404,13 @@ export default function Evaluations() {
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
               isActive
                 ? color
-                  ? 'text-white'
+                  ? ''
                   : 'bg-primary text-primary-foreground'
                 : 'glass-panel text-muted-foreground hover:text-foreground'
             }`}
             style={isActive && color ? {
               backgroundColor: `color-mix(in srgb, ${color} 85%, black)`,
+              color: '#fafafa',
             } : undefined}
           >
             {t(labelKey)}

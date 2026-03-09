@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLocation } from 'react-router-dom';
 import { evaluations } from '@/data';
 import { evaluationKeys } from '@/hooks/domain/useEvaluationDetail';
-import { QUERY_STALE_TIMES } from '@/lib/constants';
+import { QUERY_STALE_TIMES, QUERY_GC_TIMES } from '@/lib/constants';
 import { EVALUATION_STATUS } from '@/lib/evaluation-status';
 
 // ---------------------------------------------------------------------------
@@ -99,6 +99,7 @@ export function useEvaluationSessions() {
     },
     enabled: !!user,
     staleTime: QUERY_STALE_TIMES.SHORT,
+    gcTime: QUERY_GC_TIMES.PHI_SENSITIVE,
     placeholderData: keepPreviousData,
   });
 

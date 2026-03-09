@@ -1,5 +1,5 @@
 {
-  "id": "/",
+  "id": "https://tosmile-ai.vercel.app/",
   "name": "ToSmile.ai — Odontologia Digital Inteligente",
   "short_name": "ToSmile.ai",
   "description": "IA que analisa, planeja e gera protocolos odontológicos personalizados com precisão.",
@@ -27,7 +27,7 @@
   "theme_color": "#2A9D8F",
   "background_color": "#F9FAFA",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "any",
   "start_url": "/",
   "scope": "/",
   "screenshots": [

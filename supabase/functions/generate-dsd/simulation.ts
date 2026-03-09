@@ -488,6 +488,14 @@ Responda APENAS 'SIM' ou 'NÃO'.`,
       // a crashed validator cannot confirm lips moved, and rejecting good simulations on
       // transient failures degrades UX without improving safety.
       const errMsg = lipErr instanceof Error ? lipErr.message : String(lipErr);
+      if (isGingivalLayer) {
+        // Fail CLOSED for gingival layers — a crashed validator cannot confirm lips are intact,
+        // and gingival simulations are especially prone to lip lifting artifacts.
+        logger.warn(`Lip validation error for ${layerType || 'standard'} layer (fail-closed): ${errMsg}`);
+        return { valid: false, error: true };
+      }
+      // Fail OPEN for non-gingival layers — rejecting good simulations on transient failures
+      // degrades UX without improving safety.
       logger.warn(`Lip validation error for ${layerType || 'standard'} layer (skipping): ${errMsg}`);
       return { valid: true, error: true }; // Pass through with error flag
     }

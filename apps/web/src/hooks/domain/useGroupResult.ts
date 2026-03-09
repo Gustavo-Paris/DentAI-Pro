@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { logger } from '@/lib/logger';
 import { EVALUATION_STATUS } from '@/lib/evaluation-status';
-import { SIGNED_URL_EXPIRY_SECONDS, QUERY_STALE_TIMES } from '@/lib/constants';
+import { SIGNED_URL_EXPIRY_SECONDS, QUERY_STALE_TIMES, QUERY_GC_TIMES } from '@/lib/constants';
 import { getProtocolFingerprint } from '@/lib/protocol-fingerprint';
 import { computeProtocol } from './protocolComputed';
 import {
@@ -92,6 +92,7 @@ export function useGroupResult() {
     queryFn: () => evaluations.listBySession(sessionId, user!.id),
     enabled: !!user && !!sessionId,
     staleTime: QUERY_STALE_TIMES.SHORT,
+    gcTime: QUERY_GC_TIMES.PHI_SENSITIVE,
   });
 
   // Filter to evaluations matching the fingerprint

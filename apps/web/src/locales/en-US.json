@@ -69,7 +69,10 @@
     "markAsCompleted": "Mark as completed",
     "moreOptions": "More options",
     "showingOf": "Showing",
+    "to": "to",
     "of": "of",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
     "discard": "Discard",
     "clearSelection": "Clear selection",
     "siteNavigation": "Site navigation",
@@ -407,6 +410,7 @@
     "emptyTitle": "No evaluations found",
     "emptyDescription": "You haven't created any evaluations yet.",
     "emptyAction": "Create first evaluation",
+    "emptyFilteredDescription": "No evaluations match the selected filters.",
     "viewEvaluationOf": "View evaluation of {{name}}",
     "paginationItems": "evaluations",
     "patientNoName": "Unnamed patient",
@@ -485,6 +489,7 @@
     "sortCases": "Most cases",
     "emptyTitle": "No patients registered",
     "emptyDescription": "Create an evaluation to add your first patient",
+    "emptySearchDescription": "No patients found matching the search.",
     "paginationItems": "patients",
     "profileTitle": "Patient Profile",
     "contactInfo": "Contact Information",
@@ -1515,7 +1520,9 @@
           "title": "Whitening Comparison",
           "close": "Close",
           "selected": "Selected",
-          "clickToSelect": "Click to select"
+          "clickToSelect": "Click to select",
+          "levelNatural": "Natural (A1/A2)",
+          "levelHollywood": "Diamond (BL1/BL2/BL3)"
         },
         "comparisonSlider": {
           "ariaLabel": "Before and after comparison"
@@ -2577,5 +2584,23 @@
     "orientationsTitle": "Your Dentist's Instructions",
     "noDocuments": "No documents generated yet",
     "generateDescription": "Generate personalized instructions for your patient"
+  },
+  "domain": {
+    "odonto": {
+      "patients": {
+        "card": {
+          "statusActive": "Active",
+          "statusInactive": "Inactive",
+          "statusArchived": "Archived",
+          "lastVisit": "Last visit"
+        }
+      },
+      "dashboard": {
+        "activity": {
+          "title": "Recent Activity",
+          "empty": "No recent activity"
+        }
+      }
+    }
   }
 }

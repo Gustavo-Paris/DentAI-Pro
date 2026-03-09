@@ -227,7 +227,7 @@ Call the function.`;
 
     logger.error("check-photo-quality error:", err);
     return new Response(
-      JSON.stringify({ error: "Internal error", debug: errMsg }),
+      JSON.stringify({ error: "Internal error" }),
       { status: 500, headers: jsonHeaders },
     );
   }

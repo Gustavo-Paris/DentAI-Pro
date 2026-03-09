@@ -63,7 +63,7 @@ const PatientCard = memo(function PatientCard({
       aria-label={patient.name}
     >
       <Card
-        className="group relative overflow-hidden p-3 sm:p-4 shadow-sm hover:shadow-md rounded-xl transition-all duration-300 cursor-pointer dark:bg-gradient-to-br dark:from-card dark:to-card/80 glass-panel glow-card animate-[fade-in-up_0.6s_ease-out_both]"
+        className="group relative overflow-hidden p-3 sm:p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 rounded-xl transition-all duration-300 cursor-pointer dark:bg-gradient-to-br dark:from-card dark:to-card/80 glass-panel glow-card animate-[fade-in-up_0.6s_ease-out_both]"
         style={{ animationDelay: `${index * 0.05}s` }}
       >
         <div className="flex items-center gap-3 sm:gap-4">
@@ -200,7 +200,7 @@ export default function Patients() {
   const emptySearchState = useMemo(
     () => ({
       title: t('patients.emptyTitle'),
-      description: t('patients.emptySearchDescription', { defaultValue: 'Nenhum paciente encontrado para a busca.' }),
+      description: t('patients.emptySearchDescription'),
       showClearButton: true,
     }),
     [t],
@@ -214,10 +214,10 @@ export default function Patients() {
     () => ({
       search: { placeholder: t('patients.searchPlaceholder') },
       pagination: {
-        showing: t('common.showingOf', { defaultValue: 'Mostrando' }),
-        to: t('common.to', { defaultValue: 'a' }),
-        of: t('common.of', { defaultValue: 'de' }),
-        items: t('patients.paginationItems', { defaultValue: 'pacientes' }),
+        showing: t('common.showingOf'),
+        to: t('common.to'),
+        of: t('common.of'),
+        items: t('patients.paginationItems'),
       },
     }),
     [t],
@@ -361,9 +361,10 @@ export default function Patients() {
                 onChange={(e) => setCreateForm((prev) => ({ ...prev, phone: e.target.value }))}
                 onBlur={(e) => validateField('phone', e.target.value)}
                 placeholder={t('patients.phonePlaceholder')}
+                aria-describedby={validationErrors.phone ? "create-phone-error" : undefined}
               />
               {validationErrors.phone && (
-                <p className="text-sm text-destructive">{validationErrors.phone}</p>
+                <p id="create-phone-error" role="alert" className="text-sm text-destructive">{validationErrors.phone}</p>
               )}
             </div>
             <div>
@@ -375,9 +376,10 @@ export default function Patients() {
                 onChange={(e) => setCreateForm((prev) => ({ ...prev, email: e.target.value }))}
                 onBlur={(e) => validateField('email', e.target.value)}
                 placeholder={t('patients.emailPlaceholder')}
+                aria-describedby={validationErrors.email ? "create-email-error" : undefined}
               />
               {validationErrors.email && (
-                <p className="text-sm text-destructive">{validationErrors.email}</p>
+                <p id="create-email-error" role="alert" className="text-sm text-destructive">{validationErrors.email}</p>
               )}
             </div>
             <div>

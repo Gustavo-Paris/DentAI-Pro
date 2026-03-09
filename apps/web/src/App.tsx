@@ -45,7 +45,7 @@ import { Skeleton } from "@parisgroup-ai/pageshell/primitives";
 import AppLayout from "@/components/AppLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { evaluations } from "@/data";
-import { QUERY_STALE_TIMES } from "@/lib/constants";
+import { QUERY_STALE_TIMES, QUERY_GC_TIMES } from "@/lib/constants";
 import i18n from '@/lib/i18n';
 import { logger } from '@/lib/logger';
 
@@ -117,7 +117,7 @@ const queryClient = new QueryClient({
       },
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
       staleTime: QUERY_STALE_TIMES.SHORT,
-      gcTime: 10 * 60 * 1000, // 10 minutes — keep unused query cache longer to reduce re-fetches
+      gcTime: QUERY_GC_TIMES.DEFAULT, // 10 minutes — keep unused query cache longer to reduce re-fetches
     },
     mutations: {
       retry: 0, // Never auto-retry mutations (payments, AI calls, etc.)
@@ -202,7 +202,7 @@ const App = () => (
       <TooltipProvider>
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:bg-background focus:px-4 focus:py-2 focus:rounded-md focus:ring-2 focus:ring-primary"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:bg-background focus:px-4 focus:py-2 focus:rounded-lg focus:ring-2 focus:ring-primary"
         >
           {i18n.t('components.layout.skipToContent')}
         </a>

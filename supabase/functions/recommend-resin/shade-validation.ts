@@ -55,7 +55,7 @@ export function validateMinimumLayerCount(layers: unknown[], context: LayerCount
   const isAestheticCase = AESTHETIC_CLASSES.some(c => classLower.includes(c));
 
   if (anterior && isAestheticCase) {
-    const minRequired = 3;
+    const minRequired = 4;
     if (layerCount < minRequired) {
       const warning = `Protocolo gerou apenas ${layerCount} camada(s) para dente anterior estético (${context.tooth}, ${context.cavityClass}). Mínimo recomendado: ${minRequired} camadas (dentina + efeitos/translucidez + esmalte).`;
       logger.warn(`Layer count validation: ${warning}`);

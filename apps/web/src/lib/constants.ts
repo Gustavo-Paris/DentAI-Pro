@@ -15,6 +15,14 @@ export const QUERY_STALE_TIMES = {
   VERY_LONG: 60 * 60 * 1000,
 } as const;
 
+/** React Query gcTime presets (in milliseconds). */
+export const QUERY_GC_TIMES = {
+  /** PHI-containing queries: clear from cache quickly after unmount */
+  PHI_SENSITIVE: 30 * 1000, // 30 seconds
+  /** Non-sensitive queries: default gc time */
+  DEFAULT: 10 * 60 * 1000, // 10 minutes
+} as const;
+
 /** Bonus credits awarded to both referrer and referred user on successful referral. */
 export const BONUS_CREDITS = 5;
 

@@ -1,5 +1,6 @@
 import { getCorsHeaders, handleCorsPreFlight } from "../_shared/cors.ts";
 import { getSupabaseClient, authenticateRequest, isAuthError } from "../_shared/middleware.ts";
+import { checkRateLimit, createRateLimitResponse } from "../_shared/rateLimit.ts";
 
 Deno.serve(async (req: Request) => {
   const corsHeaders = { ...getCorsHeaders(req), "Content-Type": "application/json" };
@@ -28,6 +29,17 @@ Deno.serve(async (req: Request) => {
   if (geminiParam) {
     const authResult = await authenticateRequest(req, supabase, corsHeaders);
     if (isAuthError(authResult)) return authResult;
+
+    // Rate limit Gemini test branches to prevent abuse as an unauthenticated AI proxy
+    const rateLimitResult = await checkRateLimit(
+      supabase,
+      authResult.user.id,
+      "health-check",
+      { perMinute: 10, perHour: 30, perDay: 100 },
+    );
+    if (!rateLimitResult.allowed) {
+      return createRateLimitResponse(rateLimitResult, corsHeaders);
+    }
   }
 
   // Test Gemini simple text

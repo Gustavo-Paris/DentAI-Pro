@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { getDateLocale, getDateFormat } from '@/lib/date-utils';
-import { QUERY_STALE_TIMES } from '@/lib/constants';
+import { QUERY_STALE_TIMES, QUERY_GC_TIMES } from '@/lib/constants';
 import { EVALUATION_STATUS } from '@/lib/evaluation-status';
 import type { PendingTooth } from '@/types/evaluation';
 
@@ -64,6 +64,7 @@ export function useEvaluationData(): UseEvaluationDataReturn {
     queryFn: () => evaluations.listBySession(sessionId, user!.id),
     enabled: !!user && !!sessionId,
     staleTime: QUERY_STALE_TIMES.SHORT,
+    gcTime: QUERY_GC_TIMES.PHI_SENSITIVE,
     retry: 1,
   });
 
@@ -92,6 +93,7 @@ export function useEvaluationData(): UseEvaluationDataReturn {
     queryFn: () => evaluations.listPendingTeeth(sessionId, user!.id),
     enabled: !!user && !!sessionId,
     staleTime: QUERY_STALE_TIMES.SHORT,
+    gcTime: QUERY_GC_TIMES.PHI_SENSITIVE,
   });
 
   // ---- Computed ----

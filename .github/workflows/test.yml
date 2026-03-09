@@ -34,7 +34,7 @@ jobs:
         run: pnpm turbo run lint
 
       - name: Security audit
-        run: pnpm audit --audit-level=critical --prod
+        run: pnpm audit --audit-level=high --prod
 
   typecheck:
     name: Type Check

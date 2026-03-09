@@ -24,7 +24,7 @@ import type { DSDAnalysis, SimulationLayer, SimulationLayerType } from '@/types/
 import { getLayerLabel } from '@/types/dsd';
 import { useSharedEvaluation } from '@/hooks/domain/useSharedEvaluation';
 import { PatientDocumentSection } from '@/components/evaluation/PatientDocumentSection';
-import type { PatientDocument } from '@/data/evaluations';
+import type { PatientDocument, SharedEvaluationRow } from '@/data/evaluations';
 import { Calendar } from 'lucide-react';
 
 export default function SharedEvaluation() {
@@ -46,7 +46,7 @@ export default function SharedEvaluation() {
     : '';
   // Consolidated: all evaluations share the same document, take the first one
   const firstPatientDoc = !loading && !expired
-    ? evaluations.find((e: any) => e.patient_document)?.patient_document as PatientDocument | undefined
+    ? evaluations.find((e: SharedEvaluationRow) => e.patient_document)?.patient_document as PatientDocument | undefined
     : undefined;
   const patientDocuments = firstPatientDoc ? [firstPatientDoc] : [];
 

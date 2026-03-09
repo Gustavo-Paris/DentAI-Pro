@@ -69,7 +69,10 @@
     "markAsCompleted": "Marcar como finalizado",
     "moreOptions": "Mais opções",
     "showingOf": "Mostrando",
+    "to": "a",
     "of": "de",
+    "previousPage": "Página anterior",
+    "nextPage": "Próxima página",
     "discard": "Descartar",
     "clearSelection": "Limpar seleção",
     "siteNavigation": "Navegação do site",
@@ -407,6 +410,7 @@
     "emptyTitle": "Nenhuma avaliação encontrada",
     "emptyDescription": "Você ainda não criou nenhuma avaliação.",
     "emptyAction": "Criar primeira avaliação",
+    "emptyFilteredDescription": "Nenhuma avaliação corresponde aos filtros selecionados.",
     "viewEvaluationOf": "Ver avaliação de {{name}}",
     "paginationItems": "avaliações",
     "patientNoName": "Paciente sem nome",
@@ -485,6 +489,7 @@
     "sortCases": "Mais casos",
     "emptyTitle": "Nenhum paciente cadastrado",
     "emptyDescription": "Crie uma avaliação para adicionar seu primeiro paciente",
+    "emptySearchDescription": "Nenhum paciente encontrado para a busca.",
     "paginationItems": "pacientes",
     "profileTitle": "Perfil do Paciente",
     "contactInfo": "Informações de Contato",
@@ -1515,7 +1520,9 @@
           "title": "Comparação de Clareamento",
           "close": "Fechar",
           "selected": "Selecionado",
-          "clickToSelect": "Clique para selecionar"
+          "clickToSelect": "Clique para selecionar",
+          "levelNatural": "Natural (A1/A2)",
+          "levelHollywood": "Diamond (BL1/BL2/BL3)"
         },
         "comparisonSlider": {
           "ariaLabel": "Comparação antes e depois"
@@ -2577,5 +2584,23 @@
     "orientationsTitle": "Orientações do seu Dentista",
     "noDocuments": "Nenhum documento gerado ainda",
     "generateDescription": "Gere orientações personalizadas para seu paciente"
+  },
+  "domain": {
+    "odonto": {
+      "patients": {
+        "card": {
+          "statusActive": "Ativo",
+          "statusInactive": "Inativo",
+          "statusArchived": "Arquivado",
+          "lastVisit": "Última visita"
+        }
+      },
+      "dashboard": {
+        "activity": {
+          "title": "Atividade Recente",
+          "empty": "Nenhuma atividade recente"
+        }
+      }
+    }
   }
 }

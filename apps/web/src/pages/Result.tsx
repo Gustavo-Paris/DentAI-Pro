@@ -57,7 +57,7 @@ export default function Result() {
             ? t('errors.loadFailed')
             : t('result.notFoundDescription')
           }
-          action={{ label: t('common.back'), onClick: () => window.history.back() }}
+          action={{ label: t('common.back'), onClick: () => navigate(-1) }}
         />
       </div>
     );

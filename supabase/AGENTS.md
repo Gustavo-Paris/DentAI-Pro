@@ -83,6 +83,7 @@ Backend do AURIA: 15 edge functions em Deno que proveem análise dental com IA, 
 | **Deploy** | SEMPRE com `--no-verify-jwt` |
 | **Validação** | Manual via `supabase.auth.getUser(token)` com service role key |
 | **Soft delete** | Verificar `deleted_at` e `banned_until` após auth |
+| **authenticateRequest()** | OBRIGATÓRIO em toda edge function. Sem chamada = endpoint público sem proteção. Única exceção: `health-check` (GET only, sem acesso a dados) |
 
 ### Deploy
 

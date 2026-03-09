@@ -94,6 +94,8 @@ export default defineConfig(() => ({
           'vendor-date': ['date-fns', 'react-day-picker'],
           // Supabase client
           'vendor-supabase': ['@supabase/supabase-js'],
+          // Icon library
+          'vendor-icons': ['lucide-react'],
           // PDF generation (lazy loaded)
           'vendor-pdf': ['jspdf'],
           // HEIC conversion (lazy loaded)

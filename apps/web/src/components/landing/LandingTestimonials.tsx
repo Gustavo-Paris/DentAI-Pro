@@ -57,7 +57,7 @@ export function LandingTestimonials() {
             }
           ].map((testimonial, i) => (
             <div
-              key={i}
+              key={testimonial.author}
               className={`scroll-reveal scroll-reveal-delay-${i + 1} relative bg-background rounded-xl p-6 border border-border/50 border-l-4 border-l-primary/40 glass-panel glow-card`}
             >
               <span className="absolute top-2 right-4 text-7xl leading-none font-serif text-primary/[0.05] select-none" aria-hidden="true">&ldquo;</span>

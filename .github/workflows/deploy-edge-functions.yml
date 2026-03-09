@@ -36,6 +36,9 @@ jobs:
       - name: Link project
         run: supabase link --project-ref "$SUPABASE_PROJECT_ID"
 
+      - name: Remove stale deno.lock
+        run: rm -f supabase/functions/deno.lock
+
       - name: Deploy functions sequentially
         env:
           INPUT_FUNCTIONS: ${{ inputs.functions }}

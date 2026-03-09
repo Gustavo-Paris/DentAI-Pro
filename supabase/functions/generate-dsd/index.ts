@@ -184,15 +184,11 @@ Deno.serve(async (req: Request) => {
     }
 
     // Return result with note if applicable
-    const result: DSDResult & { layer_type?: string; lips_moved?: boolean; simulation_debug?: string } = {
+    const result: DSDResult & { layer_type?: string; lips_moved?: boolean } = {
       analysis,
       simulation_url: simulationUrl,
       simulation_note: simulationNote,
     };
-    // Include debug info for layer generation calls (helps client-side error logging)
-    if (simulationDebug && !simulationUrl) {
-      result.simulation_debug = simulationDebug.substring(0, 300);
-    }
     if (layerType) {
       result.layer_type = layerType;
     }

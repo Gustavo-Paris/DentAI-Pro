@@ -598,7 +598,7 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept=".jpg,.jpeg,.png,.webp,.heic"
         onChange={handleFileChange}
         className="hidden"
         aria-label={t('components.wizard.photoUpload.chooseFromGallery')}
@@ -608,7 +608,7 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
       <input
         ref={cameraInputRef}
         type="file"
-        accept="image/*"
+        accept=".jpg,.jpeg,.png,.webp,.heic"
         capture="environment"
         onChange={handleFileChange}
         className="hidden"
@@ -619,7 +619,7 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
       <input
         ref={smile45InputRef}
         type="file"
-        accept="image/*"
+        accept=".jpg,.jpeg,.png,.webp,.heic"
         onChange={handleSmile45FileChange}
         className="hidden"
         aria-label={t('components.wizard.photoUpload.smile45Label')}
@@ -627,7 +627,7 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
       <input
         ref={faceInputRef}
         type="file"
-        accept="image/*"
+        accept=".jpg,.jpeg,.png,.webp,.heic"
         onChange={handleFaceFileChange}
         className="hidden"
         aria-label={t('components.wizard.photoUpload.faceLabel')}
@@ -635,7 +635,7 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
       <input
         ref={radiographInputRef}
         type="file"
-        accept="image/*"
+        accept=".jpg,.jpeg,.png,.webp,.heic"
         onChange={handleRadiographFileChange}
         className="hidden"
         aria-label={t('components.wizard.photoUpload.radiographLabel')}

@@ -277,7 +277,7 @@ export function processAnalysisResult(
 
   // If majority of detected teeth are upper arch, remove lower teeth
   let filteredLowerWarning: string | null = null;
-  if (upperTeeth.length > 0 && lowerTeeth.length > 0 && upperTeeth.length > lowerTeeth.length) {
+  if (upperTeeth.length > 0 && lowerTeeth.length > 0 && upperTeeth.length >= lowerTeeth.length) {
     const removedNumbers = lowerTeeth.map(t => t.tooth);
     logger.warn(`Removing lower teeth ${removedNumbers.join(', ')} — photo predominantly shows upper arch (${upperTeeth.length} upper vs ${lowerTeeth.length} lower)`);
     filteredLowerWarning = `Dentes inferiores (${removedNumbers.join(', ')}) removidos da análise — foto mostra predominantemente a arcada superior.`;

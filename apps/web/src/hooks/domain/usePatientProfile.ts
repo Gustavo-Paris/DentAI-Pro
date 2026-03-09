@@ -6,7 +6,7 @@ import { patients } from '@/data';
 import type { PatientRow } from '@/data/patients';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { QUERY_STALE_TIMES } from '@/lib/constants';
+import { QUERY_STALE_TIMES, QUERY_GC_TIMES } from '@/lib/constants';
 import { EVALUATION_STATUS } from '@/lib/evaluation-status';
 import { logger } from '@/lib/logger';
 import { format } from 'date-fns';
@@ -102,6 +102,7 @@ export function usePatientProfile(): PatientProfileState & PatientProfileActions
     },
     enabled: !!user && !!patientId,
     staleTime: QUERY_STALE_TIMES.MEDIUM,
+    gcTime: QUERY_GC_TIMES.PHI_SENSITIVE,
   });
 
   const {
@@ -138,6 +139,7 @@ export function usePatientProfile(): PatientProfileState & PatientProfileActions
     },
     enabled: !!user && !!patientId,
     staleTime: QUERY_STALE_TIMES.SHORT,
+    gcTime: QUERY_GC_TIMES.PHI_SENSITIVE,
   });
 
   const updatePatientMutation = useMutation({

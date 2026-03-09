@@ -9,7 +9,7 @@ import type { SimulationLayer } from '@/types/dsd';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { logger } from '@/lib/logger';
-import { SIGNED_URL_EXPIRY_SECONDS, QUERY_STALE_TIMES } from '@/lib/constants';
+import { SIGNED_URL_EXPIRY_SECONDS, QUERY_STALE_TIMES, QUERY_GC_TIMES } from '@/lib/constants';
 import type { TreatmentStyle } from '@/lib/treatment-config';
 import { fetchImageAsBase64 } from '@/lib/imageUtils';
 import { computeProtocol } from './protocolComputed';
@@ -132,6 +132,7 @@ export function useResult() {
     },
     enabled: !!user && !!id,
     staleTime: QUERY_STALE_TIMES.SHORT,
+    gcTime: QUERY_GC_TIMES.PHI_SENSITIVE,
   });
 
   const { data: dentistProfile } = useQuery({
