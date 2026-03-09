@@ -1,0 +1,163 @@
+{
+  "title": "QA Report — DentAI-Pro (ToSmile.ai) — 2026-03-08",
+  "team": "qa-dentai",
+  "summary": {
+    "environment": "local-dev (http://localhost:8080)",
+    "date": "2026-03-08T22:25:26.187430",
+    "duration_seconds": 900,
+    "routes_tested": 12,
+    "scenarios": {
+      "total": 9,
+      "passed": 9,
+      "failed": 0
+    },
+    "bugs": {
+      "total": 0,
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0
+    },
+    "pass_rate": 100,
+    "overall_health": "EXCELLENT",
+    "pages_tested": [
+      {
+        "route": "/",
+        "status": "PASS",
+        "notes": "9 sections, 26 CTAs, no JS errors, full heading hierarchy, skip link, rich OG meta"
+      },
+      {
+        "route": "/pricing",
+        "status": "PASS",
+        "notes": "Auth-protected (ProtectedRoute) — expected redirect to /login"
+      },
+      {
+        "route": "/terms",
+        "status": "PASS",
+        "notes": "13 headings, legal content present, no errors"
+      },
+      {
+        "route": "/privacy",
+        "status": "PASS",
+        "notes": "19 headings, legal content present, no errors"
+      },
+      {
+        "route": "/this-page-xyz",
+        "status": "PASS",
+        "notes": "Custom 404 page renders, back-to-home link, SVG watermark"
+      },
+      {
+        "route": "/login",
+        "status": "PASS",
+        "notes": "Form with email/password/submit, Zod validation works, no errors"
+      },
+      {
+        "route": "/register",
+        "status": "PASS",
+        "notes": "6 fields (fullName, CRO, email, password, confirmPassword, checkbox), terms/privacy links, PasswordRequirements component"
+      },
+      {
+        "route": "/forgot-password",
+        "status": "PASS",
+        "notes": "Form works, 'Email enviado!' success toast, back to login link"
+      },
+      {
+        "route": "/reset-password",
+        "status": "PASS",
+        "notes": "Shows 'Link inválido ou expirado' when no valid token — expected behavior"
+      },
+      {
+        "route": "/shared/:token",
+        "status": "PASS",
+        "notes": "Shows 'Avaliação não encontrada' for invalid token — expected error handling"
+      },
+      {
+        "route": "/dashboard",
+        "status": "PASS",
+        "notes": "ProtectedRoute redirect to /login works"
+      },
+      {
+        "route": "/evaluations",
+        "status": "PASS",
+        "notes": "ProtectedRoute redirect to /login works"
+      },
+      {
+        "route": "/patients",
+        "status": "PASS",
+        "notes": "ProtectedRoute redirect to /login works"
+      },
+      {
+        "route": "/profile",
+        "status": "PASS",
+        "notes": "ProtectedRoute redirect to /login works"
+      }
+    ],
+    "a11y_findings": {
+      "skip_link": "PRESENT — a[href=#main-content]",
+      "main_landmark": "PRESENT",
+      "images_without_alt": 0,
+      "buttons_without_text": 0,
+      "lang_attr": "pt-BR (correct)",
+      "form_labels": "All inputs properly labeled with htmlFor"
+    },
+    "insights": [
+      "Pattern: /pricing is auth-protected (inside ProtectedRoute) — correct UX design",
+      "Testing pattern: Hub fill() does not trigger React controlled input onChange — use type() instead",
+      "Google Fonts status:0 in performance API is expected cross-origin behavior, not a bug"
+    ],
+    "no_bugs_found": true,
+    "recommendations": [
+      "Consider adding visual regression baselines for future comparisons",
+      "Consider adding E2E auth tests with real Supabase test credentials",
+      "The /pricing page is auth-protected — users who click pricing from landing header go to login, then pricing after auth. Consider a public pricing stub or redirect to landing#pricing for unauthenticated users",
+      "Register form: empty submit doesn't show validation errors immediately (no captcha configured in dev) — behavior is correct but may confuse users in prod without Cloudflare Turnstile"
+    ]
+  },
+  "bugs": [],
+  "scenarios": [
+    {
+      "title": "Landing page loads correctly",
+      "status": "passed"
+    },
+    {
+      "title": "Login page — valid credentials",
+      "status": "passed"
+    },
+    {
+      "title": "Login page — invalid credentials",
+      "status": "passed"
+    },
+    {
+      "title": "Register page loads and form works",
+      "status": "passed"
+    },
+    {
+      "title": "Pricing page loads correctly",
+      "status": "passed"
+    },
+    {
+      "title": "Terms and Privacy pages load",
+      "status": "passed"
+    },
+    {
+      "title": "Forgot password flow",
+      "status": "passed"
+    },
+    {
+      "title": "Protected routes redirect unauthenticated users",
+      "status": "passed"
+    },
+    {
+      "title": "404 Not Found page",
+      "status": "passed"
+    }
+  ],
+  "metrics": {
+    "routes_tested": 12,
+    "pass_rate": 100,
+    "bugs_found": 0,
+    "duration_seconds": 900
+  },
+  "id": "report-1773019526208-ycj6",
+  "timestamp": "2026-03-09T01:25:26.208Z"
+}

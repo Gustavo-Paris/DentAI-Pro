@@ -1,0 +1,17 @@
+{
+  "routes": [
+    {
+      "path": "/",
+      "name": "Homepage",
+      "category": "public",
+      "authRequired": false,
+      "testSlugs": [],
+      "expectedElements": [
+        { "selector": "h1, [role=\"heading\"]", "description": "Main heading", "required": true },
+        { "selector": "nav, header", "description": "Navigation", "required": true }
+      ],
+      "knownBehaviors": [],
+      "priority": "high"
+    }
+  ]
+}

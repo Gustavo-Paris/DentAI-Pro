@@ -1,0 +1,60 @@
+{
+  "name": "auth-flow",
+  "description": "Login and logout flow — verifies authentication works end-to-end",
+  "version": 2,
+  "steps": [
+    {
+      "name": "Navigate to Login",
+      "actions": [
+        { "type": "navigate", "url": "${PROJECT_BASE_URL}/login" },
+        { "type": "wait", "ms": 2000 },
+        { "type": "screenshot" }
+      ],
+      "asserts": [
+        { "type": "status", "expected": 200 },
+        { "type": "selector", "selector": "form, [role=\"form\"]", "description": "Login form is present" },
+        { "type": "selector", "selector": "input[type=\"email\"], input[type=\"text\"]", "description": "Email/username input exists" },
+        { "type": "selector", "selector": "input[type=\"password\"]", "description": "Password input exists" }
+      ],
+      "severity": "critical"
+    },
+    {
+      "name": "Submit Login",
+      "actions": [
+        { "type": "fill", "selector": "input[type=\"email\"], input[type=\"text\"]", "value": "${AUTH_EMAIL}" },
+        { "type": "fill", "selector": "input[type=\"password\"]", "value": "${AUTH_PASSWORD}" },
+        { "type": "click", "selector": "button[type=\"submit\"], form button" },
+        { "type": "wait", "ms": 3000 },
+        { "type": "screenshot" }
+      ],
+      "asserts": [
+        { "type": "url-not", "pattern": "/login", "description": "Redirected away from login page" }
+      ],
+      "severity": "critical"
+    },
+    {
+      "name": "Verify Authenticated State",
+      "actions": [
+        { "type": "wait", "ms": 1000 },
+        { "type": "screenshot" }
+      ],
+      "asserts": [
+        { "type": "no-console-errors", "description": "No console errors after login" },
+        { "type": "selector", "selector": "nav, [role=\"navigation\"], aside", "description": "App navigation is visible" }
+      ],
+      "severity": "high"
+    },
+    {
+      "name": "Logout",
+      "actions": [
+        { "type": "click", "selector": "[data-testid=\"logout\"], a[href*=\"logout\"], button:has-text(\"Logout\"), button:has-text(\"Sign out\")" },
+        { "type": "wait", "ms": 3000 },
+        { "type": "screenshot" }
+      ],
+      "asserts": [
+        { "type": "selector", "selector": "form, [role=\"form\"], input[type=\"email\"], input[type=\"text\"]", "description": "Back to login/public page after logout" }
+      ],
+      "severity": "high"
+    }
+  ]
+}

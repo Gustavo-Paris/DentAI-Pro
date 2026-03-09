@@ -1,0 +1,20 @@
+{
+  "name": "smoke-test",
+  "description": "Basic smoke test — visits homepage and checks for errors",
+  "version": 2,
+  "steps": [
+    {
+      "name": "Visit Homepage",
+      "actions": [
+        { "type": "navigate", "url": "${PROJECT_BASE_URL}/" },
+        { "type": "wait", "ms": 2000 },
+        { "type": "screenshot" }
+      ],
+      "asserts": [
+        { "type": "status", "expected": 200 },
+        { "type": "selector", "selector": "h1, [role=\"heading\"]", "description": "Page has a heading" }
+      ],
+      "severity": "critical"
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "name": "accessibility-audit",
+  "description": "WCAG 2.1 AA Accessibility Audit",
+  "target": "{{TARGET_URL}}",
+  "settings": { "retries": 0 },
+  "agents": [
+    {
+      "id": "a11y-auditor",
+      "name": "Accessibility Auditor",
+      "group": 1,
+      "headless": true,
+      "startUrl": "{{TARGET_URL}}",
+      "mission": "Comprehensive accessibility audit",
+      "steps": [
+        {
+          "name": "Navigate to target",
+          "action": { "type": "navigate", "url": "{{TARGET_URL}}" },
+          "severity": "critical",
+          "on_fail": "abort"
+        },
+        {
+          "name": "Check heading order",
+          "action": { "type": "wait_ms", "ms": 1000 },
+          "assert": { "type": "accessibility_heading_order" },
+          "severity": "high",
+          "on_fail": "screenshot_and_continue"
+        },
+        {
+          "name": "Check alt texts",
+          "action": { "type": "wait_ms", "ms": 100 },
+          "assert": { "type": "accessibility_alt_texts" },
+          "severity": "high",
+          "on_fail": "screenshot_and_continue"
+        },
+        {
+          "name": "Check page loads properly",
+          "action": { "type": "wait_ms", "ms": 100 },
+          "assert": { "type": "page_loaded", "minHeight": 200 },
+          "severity": "critical",
+          "on_fail": "screenshot_and_continue"
+        },
+        {
+          "name": "Check no broken text patterns",
+          "action": { "type": "wait_ms", "ms": 100 },
+          "assert": { "type": "no_text_patterns", "patterns": ["undefined", "null", "NaN", "[object Object]", "Error"] },
+          "severity": "high",
+          "on_fail": "screenshot_and_continue"
+        },
+        {
+          "name": "Performance check",
+          "action": { "type": "wait_ms", "ms": 100 },
+          "assert": { "type": "performance_load_time", "maxMs": 5000 },
+          "severity": "medium",
+          "on_fail": "continue"
+        }
+      ]
+    }
+  ]
+}

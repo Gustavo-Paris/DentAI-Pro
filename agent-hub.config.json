@@ -1,0 +1,25 @@
+{
+  "project": {
+    "name": "My Project",
+    "baseUrl": "http://localhost:3000"
+  },
+  "server": {
+    "port": 4000
+  },
+  "knowledge": {
+    "dir": ".agent-hub/knowledge"
+  },
+  "playbooks": [".agent-hub/playbooks"],
+  "teams": [".agent-hub/teams"],
+  "data": {
+    "dir": ".agent-hub/data"
+  },
+  "auth": {
+    "provider": "none",
+    "accounts": []
+  },
+  "browser": {
+    "maxBrowsers": 10,
+    "headless": false
+  }
+}

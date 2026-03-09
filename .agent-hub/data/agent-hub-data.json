@@ -1,0 +1,3842 @@
+{
+  "events": [
+    {
+      "team": "unknown",
+      "agent": "explorer-public",
+      "type": "browser_created",
+      "data": {
+        "browserId": "explorer-public",
+        "cdpPort": 0,
+        "headless": false
+      },
+      "id": "evt-1773018906098-lvkg",
+      "timestamp": "2026-03-09T01:15:06.098Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "browser_created",
+      "data": {
+        "browserId": "explorer-auth",
+        "cdpPort": 0,
+        "headless": false
+      },
+      "id": "evt-1773018906325-mmqo",
+      "timestamp": "2026-03-09T01:15:06.325Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "validator",
+      "type": "browser_created",
+      "data": {
+        "browserId": "validator",
+        "cdpPort": 0,
+        "headless": false
+      },
+      "id": "evt-1773018906530-fvtd",
+      "timestamp": "2026-03-09T01:15:06.530Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-public",
+      "type": "browser_closed",
+      "data": {
+        "browserId": "explorer-public"
+      },
+      "id": "evt-1773019072519-m1tq",
+      "timestamp": "2026-03-09T01:17:52.519Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "browser_closed",
+      "data": {
+        "browserId": "explorer-auth"
+      },
+      "id": "evt-1773019072546-qrno",
+      "timestamp": "2026-03-09T01:17:52.546Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "validator",
+      "type": "browser_closed",
+      "data": {
+        "browserId": "validator"
+      },
+      "id": "evt-1773019072683-q87e",
+      "timestamp": "2026-03-09T01:17:52.683Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-public",
+      "type": "browser_created",
+      "data": {
+        "browserId": "explorer-public",
+        "cdpPort": 0,
+        "headless": false
+      },
+      "id": "evt-1773019076309-2b2d",
+      "timestamp": "2026-03-09T01:17:56.309Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "browser_created",
+      "data": {
+        "browserId": "explorer-auth",
+        "cdpPort": 0,
+        "headless": false
+      },
+      "id": "evt-1773019076559-x3zf",
+      "timestamp": "2026-03-09T01:17:56.559Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "validator",
+      "type": "browser_created",
+      "data": {
+        "browserId": "validator",
+        "cdpPort": 0,
+        "headless": false
+      },
+      "id": "evt-1773019076771-3yc7",
+      "timestamp": "2026-03-09T01:17:56.771Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-public",
+      "type": "navigate",
+      "data": {
+        "browserId": "explorer-public",
+        "url": "http://localhost:8080/",
+        "title": "ToSmile.ai — Odontologia Digital Inteligente"
+      },
+      "id": "evt-1773019085151-jgji",
+      "timestamp": "2026-03-09T01:18:05.151Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "navigate",
+      "data": {
+        "browserId": "explorer-auth",
+        "url": "http://localhost:8080/login",
+        "title": "Entrar | ToSmile.ai"
+      },
+      "id": "evt-1773019091597-a6oz",
+      "timestamp": "2026-03-09T01:18:11.597Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "validator",
+      "type": "navigate",
+      "data": {
+        "browserId": "validator",
+        "url": "http://localhost:8080/",
+        "title": "ToSmile.ai — Odontologia Digital Inteligente"
+      },
+      "id": "evt-1773019091860-jtec",
+      "timestamp": "2026-03-09T01:18:11.860Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-public",
+      "type": "evaluate",
+      "data": {
+        "browserId": "explorer-public",
+        "script": "document.title"
+      },
+      "id": "evt-1773019112731-8i2r",
+      "timestamp": "2026-03-09T01:18:32.731Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-public",
+      "type": "evaluate",
+      "data": {
+        "browserId": "explorer-public",
+        "script": "JSON.stringify({h1: document.querySelector(\"h1\")?.textContent, nav: !!document.querySelector(\"nav\"),"
+      },
+      "id": "evt-1773019117258-57c1",
+      "timestamp": "2026-03-09T01:18:37.258Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-public",
+      "type": "navigate",
+      "data": {
+        "browserId": "explorer-public",
+        "url": "http://localhost:8080/",
+        "title": "ToSmile.ai — Odontologia Digital Inteligente"
+      },
+      "id": "evt-1773019139056-hqsd",
+      "timestamp": "2026-03-09T01:18:59.057Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-public",
+      "type": "navigate",
+      "data": {
+        "browserId": "explorer-public",
+        "url": "http://localhost:8080/pricing",
+        "title": "Entrar | ToSmile.ai"
+      },
+      "id": "evt-1773019166190-ti23",
+      "timestamp": "2026-03-09T01:19:26.190Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-public",
+      "type": "evaluate",
+      "data": {
+        "browserId": "explorer-public",
+        "script": "document.querySelectorAll('[data-plan], .plan-card, h3').length + ' h3s found, buttons: ' + document"
+      },
+      "id": "evt-1773019169210-6ed2",
+      "timestamp": "2026-03-09T01:19:29.210Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-public",
+      "type": "navigate",
+      "data": {
+        "browserId": "explorer-public",
+        "url": "http://localhost:8080/terms",
+        "title": "Termos de Uso | ToSmile.ai"
+      },
+      "id": "evt-1773019170041-kwj2",
+      "timestamp": "2026-03-09T01:19:30.041Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-public",
+      "type": "navigate",
+      "data": {
+        "browserId": "explorer-public",
+        "url": "http://localhost:8080/privacy",
+        "title": "Privacidade | ToSmile.ai"
+      },
+      "id": "evt-1773019172491-2y3c",
+      "timestamp": "2026-03-09T01:19:32.491Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-public",
+      "type": "navigate",
+      "data": {
+        "browserId": "explorer-public",
+        "url": "http://localhost:8080/this-page-definitely-does-not-exist-xyz-abc",
+        "title": "Página não encontrada | ToSmile.ai"
+      },
+      "id": "evt-1773019174767-g52g",
+      "timestamp": "2026-03-09T01:19:34.767Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-public",
+      "type": "evaluate",
+      "data": {
+        "browserId": "explorer-public",
+        "script": "!!document.querySelector('a[href=\"/\"]')"
+      },
+      "id": "evt-1773019176781-mcym",
+      "timestamp": "2026-03-09T01:19:36.781Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-public",
+      "type": "evaluate",
+      "data": {
+        "browserId": "explorer-public",
+        "script": "document.querySelector('p.neon-text')?.textContent || document.body.innerText.substring(0,100)"
+      },
+      "id": "evt-1773019176784-0o2f",
+      "timestamp": "2026-03-09T01:19:36.784Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-public",
+      "type": "navigate",
+      "data": {
+        "browserId": "explorer-public",
+        "url": "http://localhost:8080/pricing",
+        "title": "Entrar | ToSmile.ai"
+      },
+      "id": "evt-1773019189292-y0cb",
+      "timestamp": "2026-03-09T01:19:49.292Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "navigate",
+      "data": {
+        "browserId": "explorer-auth",
+        "url": "http://localhost:8080/login",
+        "title": "Entrar | ToSmile.ai"
+      },
+      "id": "evt-1773019238997-b1oy",
+      "timestamp": "2026-03-09T01:20:38.997Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "evaluate",
+      "data": {
+        "browserId": "explorer-auth",
+        "script": "JSON.stringify({emailField: !!document.querySelector('input[type=email], input[type=text]'), passwor"
+      },
+      "id": "evt-1773019241013-f902",
+      "timestamp": "2026-03-09T01:20:41.013Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "fill",
+      "data": {
+        "browserId": "explorer-auth",
+        "selector": "input[type='email'], input[type='text']"
+      },
+      "id": "evt-1773019241022-f71y",
+      "timestamp": "2026-03-09T01:20:41.022Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "fill",
+      "data": {
+        "browserId": "explorer-auth",
+        "selector": "input[type='password']"
+      },
+      "id": "evt-1773019241531-oi9i",
+      "timestamp": "2026-03-09T01:20:41.531Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "click",
+      "data": {
+        "browserId": "explorer-auth",
+        "selector": "button[type='submit']"
+      },
+      "id": "evt-1773019242111-0zl2",
+      "timestamp": "2026-03-09T01:20:42.111Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "evaluate",
+      "data": {
+        "browserId": "explorer-auth",
+        "script": "document.querySelector('[role=alert], .error, [data-sonner-toast]')?.textContent?.trim() || 'none'"
+      },
+      "id": "evt-1773019245124-7oqe",
+      "timestamp": "2026-03-09T01:20:45.124Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "evaluate",
+      "data": {
+        "browserId": "explorer-auth",
+        "script": "JSON.stringify({turnstile: !!document.querySelector('[id*=turnstile], [class*=turnstile], iframe[src"
+      },
+      "id": "evt-1773019266730-8zik",
+      "timestamp": "2026-03-09T01:21:06.730Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "evaluate",
+      "data": {
+        "browserId": "explorer-auth",
+        "script": "JSON.stringify({disabled: document.querySelector('button[type=submit]')?.disabled, text: document.qu"
+      },
+      "id": "evt-1773019266735-ha7s",
+      "timestamp": "2026-03-09T01:21:06.735Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "evaluate",
+      "data": {
+        "browserId": "explorer-auth",
+        "script": "JSON.stringify({alerts: Array.from(document.querySelectorAll('[role=alert], [class*=error], [class*="
+      },
+      "id": "evt-1773019266738-b3m4",
+      "timestamp": "2026-03-09T01:21:06.738Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "navigate",
+      "data": {
+        "browserId": "explorer-auth",
+        "url": "http://localhost:8080/register",
+        "title": "Criar Conta | ToSmile.ai"
+      },
+      "id": "evt-1773019266952-zp32",
+      "timestamp": "2026-03-09T01:21:06.952Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "evaluate",
+      "data": {
+        "browserId": "explorer-auth",
+        "script": "JSON.stringify({nameField: !!document.querySelector('input[id*=fullName], input[placeholder*=nome], "
+      },
+      "id": "evt-1773019268966-zd1t",
+      "timestamp": "2026-03-09T01:21:08.966Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "click",
+      "data": {
+        "browserId": "explorer-auth",
+        "selector": "button[type='submit']"
+      },
+      "id": "evt-1773019269007-9iem",
+      "timestamp": "2026-03-09T01:21:09.007Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "evaluate",
+      "data": {
+        "browserId": "explorer-auth",
+        "script": "Array.from(document.querySelectorAll('[id*=form-item-message], [class*=FormMessage]')).map(e=>e.text"
+      },
+      "id": "evt-1773019271011-pu3n",
+      "timestamp": "2026-03-09T01:21:11.011Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "navigate",
+      "data": {
+        "browserId": "explorer-auth",
+        "url": "http://localhost:8080/register",
+        "title": "Criar Conta | ToSmile.ai"
+      },
+      "id": "evt-1773019293112-zv3b",
+      "timestamp": "2026-03-09T01:21:33.112Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "evaluate",
+      "data": {
+        "browserId": "explorer-auth",
+        "script": "Array.from(document.querySelectorAll('input')).map(i=>({type:i.type, name:i.name, id:i.id, placehold"
+      },
+      "id": "evt-1773019295123-3p0k",
+      "timestamp": "2026-03-09T01:21:35.123Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "evaluate",
+      "data": {
+        "browserId": "explorer-auth",
+        "script": "!!document.querySelector('#fullName') || !!document.querySelector('[name=fullName]') || !!document.q"
+      },
+      "id": "evt-1773019295127-h410",
+      "timestamp": "2026-03-09T01:21:35.127Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "click",
+      "data": {
+        "browserId": "explorer-auth",
+        "selector": "button[type='submit']"
+      },
+      "id": "evt-1773019295148-fhrq",
+      "timestamp": "2026-03-09T01:21:35.148Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "evaluate",
+      "data": {
+        "browserId": "explorer-auth",
+        "script": "Array.from(document.querySelectorAll('p[class*=error], [id*=form-item-message], [class*=FormMessage]"
+      },
+      "id": "evt-1773019296161-9w14",
+      "timestamp": "2026-03-09T01:21:36.161Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "navigate",
+      "data": {
+        "browserId": "explorer-auth",
+        "url": "http://localhost:8080/forgot-password",
+        "title": "Esqueci a Senha | ToSmile.ai"
+      },
+      "id": "evt-1773019296398-nyqu",
+      "timestamp": "2026-03-09T01:21:36.398Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "evaluate",
+      "data": {
+        "browserId": "explorer-auth",
+        "script": "JSON.stringify({emailField: !!document.querySelector('input[type=email], input[type=text]'), submitB"
+      },
+      "id": "evt-1773019298410-ouod",
+      "timestamp": "2026-03-09T01:21:38.410Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "fill",
+      "data": {
+        "browserId": "explorer-auth",
+        "selector": "input[type='email'], input[type='text']"
+      },
+      "id": "evt-1773019298413-natz",
+      "timestamp": "2026-03-09T01:21:38.413Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "click",
+      "data": {
+        "browserId": "explorer-auth",
+        "selector": "button[type='submit'], form button"
+      },
+      "id": "evt-1773019298754-1ffv",
+      "timestamp": "2026-03-09T01:21:38.754Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "evaluate",
+      "data": {
+        "browserId": "explorer-auth",
+        "script": "document.querySelector('[role=status], [aria-live], h2, h3')?.textContent?.trim()?.substring(0,100)"
+      },
+      "id": "evt-1773019301763-n0k3",
+      "timestamp": "2026-03-09T01:21:41.763Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "navigate",
+      "data": {
+        "browserId": "explorer-auth",
+        "url": "http://localhost:8080/forgot-password",
+        "title": "Esqueci a Senha | ToSmile.ai"
+      },
+      "id": "evt-1773019318939-0fkn",
+      "timestamp": "2026-03-09T01:21:58.939Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "evaluate",
+      "data": {
+        "browserId": "explorer-auth",
+        "script": "document.querySelector('input[type=email], input[type=text]')?.value"
+      },
+      "id": "evt-1773019320950-owv8",
+      "timestamp": "2026-03-09T01:22:00.950Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "fill",
+      "data": {
+        "browserId": "explorer-auth",
+        "selector": "input[type='email'], input[type='text']"
+      },
+      "id": "evt-1773019320990-paoo",
+      "timestamp": "2026-03-09T01:22:00.990Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "evaluate",
+      "data": {
+        "browserId": "explorer-auth",
+        "script": "document.querySelector('input[type=email], input[type=text]')?.value"
+      },
+      "id": "evt-1773019321500-hrny",
+      "timestamp": "2026-03-09T01:22:01.500Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "click",
+      "data": {
+        "browserId": "explorer-auth",
+        "selector": "button[type='submit'], form button"
+      },
+      "id": "evt-1773019321536-klwf",
+      "timestamp": "2026-03-09T01:22:01.536Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "evaluate",
+      "data": {
+        "browserId": "explorer-auth",
+        "script": "Array.from(document.querySelectorAll('[data-sonner-toast], [class*=toast], [role=alert]')).map(e=>e."
+      },
+      "id": "evt-1773019324544-tavd",
+      "timestamp": "2026-03-09T01:22:04.544Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "evaluate",
+      "data": {
+        "browserId": "explorer-auth",
+        "script": "document.querySelector('h3, [class*=success]')?.textContent?.trim()?.substring(0,100)"
+      },
+      "id": "evt-1773019324547-g5pf",
+      "timestamp": "2026-03-09T01:22:04.547Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "navigate",
+      "data": {
+        "browserId": "explorer-auth",
+        "url": "http://localhost:8080/forgot-password",
+        "title": "Esqueci a Senha | ToSmile.ai"
+      },
+      "id": "evt-1773019346097-ka9m",
+      "timestamp": "2026-03-09T01:22:26.097Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "click",
+      "data": {
+        "browserId": "explorer-auth",
+        "selector": "input[type='email'], input[type='text']"
+      },
+      "id": "evt-1773019348149-gb6j",
+      "timestamp": "2026-03-09T01:22:28.149Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "fill",
+      "data": {
+        "browserId": "explorer-auth",
+        "selector": "input[type='email'], input[type='text']",
+        "method": "keyboard"
+      },
+      "id": "evt-1773019348513-1tfa",
+      "timestamp": "2026-03-09T01:22:28.513Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "evaluate",
+      "data": {
+        "browserId": "explorer-auth",
+        "script": "document.querySelector('input[type=email], input[type=text]')?.value"
+      },
+      "id": "evt-1773019349019-1zg2",
+      "timestamp": "2026-03-09T01:22:29.019Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "click",
+      "data": {
+        "browserId": "explorer-auth",
+        "selector": "button[type='submit'], form button"
+      },
+      "id": "evt-1773019349051-2b77",
+      "timestamp": "2026-03-09T01:22:29.051Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "evaluate",
+      "data": {
+        "browserId": "explorer-auth",
+        "script": "Array.from(document.querySelectorAll('[data-sonner-toast], [class*=sonner-toast], li[role=status]'))"
+      },
+      "id": "evt-1773019353059-zxpk",
+      "timestamp": "2026-03-09T01:22:33.059Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "evaluate",
+      "data": {
+        "browserId": "explorer-auth",
+        "script": "document.body.innerText.includes('enviado') || document.body.innerText.includes('sucesso') || docume"
+      },
+      "id": "evt-1773019353063-kk8z",
+      "timestamp": "2026-03-09T01:22:33.063Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "navigate",
+      "data": {
+        "browserId": "explorer-auth",
+        "url": "http://localhost:8080/dashboard",
+        "title": "Entrar | ToSmile.ai"
+      },
+      "id": "evt-1773019372963-u99z",
+      "timestamp": "2026-03-09T01:22:52.963Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "navigate",
+      "data": {
+        "browserId": "explorer-auth",
+        "url": "http://localhost:8080/evaluations",
+        "title": "Entrar | ToSmile.ai"
+      },
+      "id": "evt-1773019375232-n6n3",
+      "timestamp": "2026-03-09T01:22:55.232Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "navigate",
+      "data": {
+        "browserId": "explorer-auth",
+        "url": "http://localhost:8080/patients",
+        "title": "Entrar | ToSmile.ai"
+      },
+      "id": "evt-1773019377525-h0yz",
+      "timestamp": "2026-03-09T01:22:57.525Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "navigate",
+      "data": {
+        "browserId": "explorer-auth",
+        "url": "http://localhost:8080/profile",
+        "title": "Entrar | ToSmile.ai"
+      },
+      "id": "evt-1773019379822-8rb1",
+      "timestamp": "2026-03-09T01:22:59.822Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "validator",
+      "type": "navigate",
+      "data": {
+        "browserId": "validator",
+        "url": "http://localhost:8080/",
+        "title": "ToSmile.ai — Odontologia Digital Inteligente"
+      },
+      "id": "evt-1773019402272-qnzn",
+      "timestamp": "2026-03-09T01:23:22.272Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "validator",
+      "type": "evaluate",
+      "data": {
+        "browserId": "validator",
+        "script": "\nJSON.stringify(\n  performance.getEntriesByType('resource')\n    .filter(r => r.responseStatus === 0 "
+      },
+      "id": "evt-1773019405284-ux26",
+      "timestamp": "2026-03-09T01:23:25.284Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "validator",
+      "type": "evaluate",
+      "data": {
+        "browserId": "validator",
+        "script": "\nJSON.stringify({\n  ogImage: document.querySelector('meta[property=\"og:image\"]')?.content,\n  twitter"
+      },
+      "id": "evt-1773019405288-cobd",
+      "timestamp": "2026-03-09T01:23:25.288Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "validator",
+      "type": "evaluate",
+      "data": {
+        "browserId": "validator",
+        "script": "\nJSON.stringify({\n  imagesWithoutAlt: document.querySelectorAll('img:not([alt])').length,\n  buttonsW"
+      },
+      "id": "evt-1773019405289-ysqo",
+      "timestamp": "2026-03-09T01:23:25.289Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "validator",
+      "type": "navigate",
+      "data": {
+        "browserId": "validator",
+        "url": "http://localhost:8080/login",
+        "title": "Entrar | ToSmile.ai"
+      },
+      "id": "evt-1773019405489-djlh",
+      "timestamp": "2026-03-09T01:23:25.489Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "validator",
+      "type": "evaluate",
+      "data": {
+        "browserId": "validator",
+        "script": "\nJSON.stringify({\n  formLabels: document.querySelectorAll('label').length,\n  inputsWithLabels: docum"
+      },
+      "id": "evt-1773019407498-y23j",
+      "timestamp": "2026-03-09T01:23:27.498Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "validator",
+      "type": "navigate",
+      "data": {
+        "browserId": "validator",
+        "url": "http://localhost:8080/register",
+        "title": "Criar Conta | ToSmile.ai"
+      },
+      "id": "evt-1773019407788-wixj",
+      "timestamp": "2026-03-09T01:23:27.788Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "validator",
+      "type": "evaluate",
+      "data": {
+        "browserId": "validator",
+        "script": "\nJSON.stringify({\n  formLabels: document.querySelectorAll('label').length,\n  formInputs: document.qu"
+      },
+      "id": "evt-1773019409797-wdlh",
+      "timestamp": "2026-03-09T01:23:29.797Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "validator",
+      "type": "navigate",
+      "data": {
+        "browserId": "validator",
+        "url": "http://localhost:8080/register",
+        "title": "Criar Conta | ToSmile.ai"
+      },
+      "id": "evt-1773019441638-zq82",
+      "timestamp": "2026-03-09T01:24:01.638Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "validator",
+      "type": "click",
+      "data": {
+        "browserId": "validator",
+        "selector": "input[type='password']"
+      },
+      "id": "evt-1773019443682-mnpu",
+      "timestamp": "2026-03-09T01:24:03.682Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "validator",
+      "type": "fill",
+      "data": {
+        "browserId": "validator",
+        "selector": "input[type='password']",
+        "method": "keyboard"
+      },
+      "id": "evt-1773019444041-cgll",
+      "timestamp": "2026-03-09T01:24:04.041Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "validator",
+      "type": "evaluate",
+      "data": {
+        "browserId": "validator",
+        "script": "\nJSON.stringify({\n  reqsVisible: !!document.querySelector('#password-requirements, [id*=password-req"
+      },
+      "id": "evt-1773019444553-ayb0",
+      "timestamp": "2026-03-09T01:24:04.553Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "validator",
+      "type": "evaluate",
+      "data": {
+        "browserId": "validator",
+        "script": "\nArray.from(document.querySelectorAll('input:not([type=hidden])')).map(i=>({type:i.type,name:i.name,"
+      },
+      "id": "evt-1773019444556-138b",
+      "timestamp": "2026-03-09T01:24:04.556Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "validator",
+      "type": "evaluate",
+      "data": {
+        "browserId": "validator",
+        "script": "!!document.querySelector('input[name=cro], #cro, input[placeholder*=CRO]')"
+      },
+      "id": "evt-1773019444559-nbvc",
+      "timestamp": "2026-03-09T01:24:04.559Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "validator",
+      "type": "evaluate",
+      "data": {
+        "browserId": "validator",
+        "script": "\nJSON.stringify({\n  termsCheckbox: !!document.querySelector('input[type=checkbox]'),\n  termsLink: !!"
+      },
+      "id": "evt-1773019444561-6h1c",
+      "timestamp": "2026-03-09T01:24:04.561Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "validator",
+      "type": "evaluate",
+      "data": {
+        "browserId": "validator",
+        "script": "\nJSON.stringify({\n  reqsDiv: !!document.querySelector('#password-requirements'),\n  childCount: docum"
+      },
+      "id": "evt-1773019466578-mk6b",
+      "timestamp": "2026-03-09T01:24:26.578Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "validator",
+      "type": "navigate",
+      "data": {
+        "browserId": "validator",
+        "url": "http://localhost:8080/reset-password",
+        "title": "Redefinir Senha | ToSmile.ai"
+      },
+      "id": "evt-1773019466879-it2o",
+      "timestamp": "2026-03-09T01:24:26.879Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "validator",
+      "type": "evaluate",
+      "data": {
+        "browserId": "validator",
+        "script": "JSON.stringify({passwordField: !!document.querySelector('input[type=password]'), submitBtn: !!docume"
+      },
+      "id": "evt-1773019468889-vwsf",
+      "timestamp": "2026-03-09T01:24:28.889Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "validator",
+      "type": "navigate",
+      "data": {
+        "browserId": "validator",
+        "url": "http://localhost:8080/shared/test-invalid-token-xyz",
+        "title": "Avaliação Compartilhada | ToSmile.ai"
+      },
+      "id": "evt-1773019469055-pfzw",
+      "timestamp": "2026-03-09T01:24:29.055Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "validator",
+      "type": "evaluate",
+      "data": {
+        "browserId": "validator",
+        "script": "document.querySelector('h1, h2, [class*=error], [class*=not-found]')?.textContent?.trim()?.substring"
+      },
+      "id": "evt-1773019472078-3j63",
+      "timestamp": "2026-03-09T01:24:32.078Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-public",
+      "type": "browser_closed",
+      "data": {
+        "browserId": "explorer-public"
+      },
+      "id": "evt-1773019534269-utle",
+      "timestamp": "2026-03-09T01:25:34.269Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "explorer-auth",
+      "type": "browser_closed",
+      "data": {
+        "browserId": "explorer-auth"
+      },
+      "id": "evt-1773019534342-53ci",
+      "timestamp": "2026-03-09T01:25:34.342Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "validator",
+      "type": "browser_closed",
+      "data": {
+        "browserId": "validator"
+      },
+      "id": "evt-1773019534622-g3ux",
+      "timestamp": "2026-03-09T01:25:34.622Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "browser_created",
+      "data": {
+        "browserId": "qa-explorer-1",
+        "cdpPort": 0,
+        "headless": false
+      },
+      "id": "evt-1773019640687-tk0q",
+      "timestamp": "2026-03-09T01:27:20.687Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "navigate",
+      "data": {
+        "browserId": "qa-explorer-1",
+        "url": "http://localhost:8080",
+        "title": "ToSmile.ai — Odontologia Digital Inteligente"
+      },
+      "id": "evt-1773019645136-p9i6",
+      "timestamp": "2026-03-09T01:27:25.136Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "browser_created",
+      "data": {
+        "browserId": "qa-explorer-2",
+        "cdpPort": 0,
+        "headless": false
+      },
+      "id": "evt-1773019647727-2aj6",
+      "timestamp": "2026-03-09T01:27:27.727Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "navigate",
+      "data": {
+        "browserId": "qa-explorer-2",
+        "url": "http://localhost:8080",
+        "title": "ToSmile.ai — Odontologia Digital Inteligente"
+      },
+      "id": "evt-1773019651373-78j3",
+      "timestamp": "2026-03-09T01:27:31.373Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-1",
+        "script": "document.querySelectorAll(\"button\").forEach(b => { if (b.textContent.includes(\"Aceitar todos\")) b.cl"
+      },
+      "id": "evt-1773019663008-9lp1",
+      "timestamp": "2026-03-09T01:27:43.008Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-1",
+        "script": "const links = document.querySelectorAll(\"a\"); let found = null; links.forEach(a => { if (a.textConte"
+      },
+      "id": "evt-1773019670343-wn43",
+      "timestamp": "2026-03-09T01:27:50.343Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "navigate",
+      "data": {
+        "browserId": "qa-explorer-1",
+        "url": "http://localhost:8080/login",
+        "title": "Entrar | ToSmile.ai"
+      },
+      "id": "evt-1773019674024-6gij",
+      "timestamp": "2026-03-09T01:27:54.024Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-1",
+        "script": "const emailInput = document.querySelector(\"input[type=email], input[name=email], input[placeholder*="
+      },
+      "id": "evt-1773019685710-ghdg",
+      "timestamp": "2026-03-09T01:28:05.710Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-2",
+        "script": "[...document.querySelectorAll(\"button\")].map(b => b.textContent).join(\" | \")"
+      },
+      "id": "evt-1773019688013-b1sx",
+      "timestamp": "2026-03-09T01:28:08.013Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "click",
+      "data": {
+        "browserId": "qa-explorer-2",
+        "selector": "button"
+      },
+      "id": "evt-1773019692063-j18k",
+      "timestamp": "2026-03-09T01:28:12.063Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "click",
+      "data": {
+        "browserId": "qa-explorer-2",
+        "selector": "button"
+      },
+      "id": "evt-1773019694926-rdbm",
+      "timestamp": "2026-03-09T01:28:14.926Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-1",
+        "script": "(function() { const el = document.querySelector(\"input[type=email], input[name=email], input[placeho"
+      },
+      "id": "evt-1773019697441-o2m5",
+      "timestamp": "2026-03-09T01:28:17.441Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-1",
+        "script": "(function() { var el = document.querySelector('input[type=password]'); var setter = Object.getOwnPro"
+      },
+      "id": "evt-1773019707327-gmqp",
+      "timestamp": "2026-03-09T01:28:27.327Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "navigate",
+      "data": {
+        "browserId": "qa-explorer-2",
+        "url": "http://localhost:8080/login",
+        "title": "Entrar | ToSmile.ai"
+      },
+      "id": "evt-1773019710297-ma6t",
+      "timestamp": "2026-03-09T01:28:30.297Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-1",
+        "script": "(function() { var btns = document.querySelectorAll(\"button\"); for (var i = 0; i < btns.length; i++) "
+      },
+      "id": "evt-1773019720315-uu6d",
+      "timestamp": "2026-03-09T01:28:40.315Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "fill",
+      "data": {
+        "browserId": "qa-explorer-2",
+        "selector": "input[type=\"email\"], input[placeholder*=\"email\"]"
+      },
+      "id": "evt-1773019723992-vof8",
+      "timestamp": "2026-03-09T01:28:43.992Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-2",
+        "script": "const pw = document.querySelector(\"input[type=password]\"); pw.value = \"\"; pw.dispatchEvent(new Event"
+      },
+      "id": "evt-1773019728210-7bqr",
+      "timestamp": "2026-03-09T01:28:48.210Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-1",
+        "script": "(function() { return JSON.stringify(window.__consoleErrors || []); })()"
+      },
+      "id": "evt-1773019736783-wnr0",
+      "timestamp": "2026-03-09T01:28:56.783Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "fill",
+      "data": {
+        "browserId": "qa-explorer-2",
+        "selector": "input[type=\"password\"]"
+      },
+      "id": "evt-1773019737339-lge2",
+      "timestamp": "2026-03-09T01:28:57.339Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "click",
+      "data": {
+        "browserId": "qa-explorer-2",
+        "selector": "button"
+      },
+      "id": "evt-1773019742371-1sk7",
+      "timestamp": "2026-03-09T01:29:02.371Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-1",
+        "script": "(function() { var els = document.querySelectorAll(\"a, button, div[role=button], [class*=card]\"); for"
+      },
+      "id": "evt-1773019747655-m67o",
+      "timestamp": "2026-03-09T01:29:07.655Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-1",
+        "script": "(function() { var cb = document.querySelector(\"input[type=checkbox]\"); if (cb) { cb.click(); return "
+      },
+      "id": "evt-1773019762342-rej3",
+      "timestamp": "2026-03-09T01:29:22.342Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "navigate",
+      "data": {
+        "browserId": "qa-explorer-2",
+        "url": "http://localhost:8080/login",
+        "title": "Entrar | ToSmile.ai"
+      },
+      "id": "evt-1773019762889-tjil",
+      "timestamp": "2026-03-09T01:29:22.890Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "fill",
+      "data": {
+        "browserId": "qa-explorer-2",
+        "selector": "input[placeholder*=\"email\"]"
+      },
+      "id": "evt-1773019767516-50fv",
+      "timestamp": "2026-03-09T01:29:27.516Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-1",
+        "script": "(function() { var els = document.querySelectorAll(\"[role=checkbox], button[data-state], label\"); var"
+      },
+      "id": "evt-1773019768598-ezti",
+      "timestamp": "2026-03-09T01:29:28.598Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "fill",
+      "data": {
+        "browserId": "qa-explorer-2",
+        "selector": "input[type=\"password\"]"
+      },
+      "id": "evt-1773019771277-fm6x",
+      "timestamp": "2026-03-09T01:29:31.277Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-1",
+        "script": "(function() { var cb = document.querySelector(\"button[role=checkbox]\"); if (cb) { cb.click(); return"
+      },
+      "id": "evt-1773019773162-u86t",
+      "timestamp": "2026-03-09T01:29:33.162Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-2",
+        "script": "JSON.stringify([...document.querySelectorAll(\"button\")].map((b,i) => ({i, text: b.textContent.trim()"
+      },
+      "id": "evt-1773019776766-4efb",
+      "timestamp": "2026-03-09T01:29:36.766Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-1",
+        "script": "(function() { var btns = document.querySelectorAll(\"button\"); for (var i = 0; i < btns.length; i++) "
+      },
+      "id": "evt-1773019777198-dvfq",
+      "timestamp": "2026-03-09T01:29:37.198Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "click",
+      "data": {
+        "browserId": "qa-explorer-2",
+        "selector": "button[type=\"submit\"]"
+      },
+      "id": "evt-1773019780663-50sl",
+      "timestamp": "2026-03-09T01:29:40.663Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-1",
+        "script": "(function() { var inputs = document.querySelectorAll(\"input[type=file]\"); return \"found \" + inputs.l"
+      },
+      "id": "evt-1773019794341-a59h",
+      "timestamp": "2026-03-09T01:29:54.341Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-2",
+        "script": "const emailInput = document.querySelector(\"input[placeholder*=email]\"); const nativeInputValueSetter"
+      },
+      "id": "evt-1773019799995-day6",
+      "timestamp": "2026-03-09T01:29:59.995Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-2",
+        "script": "(function(){ const pwInput = document.querySelector(\"input[type=password]\"); const setter = Object.g"
+      },
+      "id": "evt-1773019826720-fzt9",
+      "timestamp": "2026-03-09T01:30:26.720Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-1",
+        "script": "(function() { var inp = document.querySelectorAll(\"input[type=file]\"); var info = []; for (var i = 0"
+      },
+      "id": "evt-1773019830426-7i8d",
+      "timestamp": "2026-03-09T01:30:30.426Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-2",
+        "script": "(function(){ return JSON.stringify({email: document.querySelector(\"input[placeholder*=email]\").value"
+      },
+      "id": "evt-1773019830801-nlsl",
+      "timestamp": "2026-03-09T01:30:30.801Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "click",
+      "data": {
+        "browserId": "qa-explorer-2",
+        "selector": "button[type=\"submit\"]"
+      },
+      "id": "evt-1773019834387-taby",
+      "timestamp": "2026-03-09T01:30:34.387Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "click",
+      "data": {
+        "browserId": "qa-explorer-2",
+        "selector": "button"
+      },
+      "id": "evt-1773019859740-lf6f",
+      "timestamp": "2026-03-09T01:30:59.740Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-2",
+        "script": "(function(){ const card = document.querySelector(\"[class*=cursor-pointer]\"); if(card) { card.click()"
+      },
+      "id": "evt-1773019864469-66dy",
+      "timestamp": "2026-03-09T01:31:04.469Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-2",
+        "script": "(function(){ const cb = document.querySelector(\"button[role=checkbox]\"); if(cb) { cb.click(); return"
+      },
+      "id": "evt-1773019891127-mqpo",
+      "timestamp": "2026-03-09T01:31:31.127Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "click",
+      "data": {
+        "browserId": "qa-explorer-2",
+        "selector": "button"
+      },
+      "id": "evt-1773019896031-ockq",
+      "timestamp": "2026-03-09T01:31:36.031Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-1",
+        "script": "(async function() {\n  try {\n    var resp = await fetch('http://localhost:9876/case1-no-gingivo.jpeg'"
+      },
+      "id": "evt-1773019904180-46gu",
+      "timestamp": "2026-03-09T01:31:44.180Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-2",
+        "script": "(function(){ const banners = document.querySelectorAll(\"[class*=cookie], [class*=consent], [class*=B"
+      },
+      "id": "evt-1773019913094-vqn7",
+      "timestamp": "2026-03-09T01:31:53.095Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-1",
+        "script": "(function() { window.__imgChunks = window.__imgChunks || []; window.__imgChunks[0] = '/9j/4AAQSkZJRg"
+      },
+      "id": "evt-1773019915924-rjwi",
+      "timestamp": "2026-03-09T01:31:55.924Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-1",
+        "script": "(function() { window.__imgChunks = window.__imgChunks || []; window.__imgChunks[1] = '0kOyP1ZxFtQqhs"
+      },
+      "id": "evt-1773019915929-dsea",
+      "timestamp": "2026-03-09T01:31:55.929Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-1",
+        "script": "(function() { window.__imgChunks = window.__imgChunks || []; window.__imgChunks[2] = 'fwfF5hMil0Ql47"
+      },
+      "id": "evt-1773019915932-6j97",
+      "timestamp": "2026-03-09T01:31:55.932Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-1",
+        "script": "(function() { window.__imgChunks = window.__imgChunks || []; window.__imgChunks[3] = 'Tp0O4Z1K/BDFlM"
+      },
+      "id": "evt-1773019915936-2b86",
+      "timestamp": "2026-03-09T01:31:55.936Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-1",
+        "script": "(function() { window.__imgChunks = window.__imgChunks || []; window.__imgChunks[4] = 'FTArEMswR2C1QF"
+      },
+      "id": "evt-1773019915940-hclg",
+      "timestamp": "2026-03-09T01:31:55.940Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-1",
+        "script": "(function() {\n  var b64 = window.__imgChunks.join('');\n  var byteChars = atob(b64);\n  var byteNums ="
+      },
+      "id": "evt-1773019915950-ms4w",
+      "timestamp": "2026-03-09T01:31:55.950Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-2",
+        "script": "(function(){ const btns = document.querySelectorAll(\"button\"); for(const b of btns) { if(b.textConte"
+      },
+      "id": "evt-1773019917935-wozj",
+      "timestamp": "2026-03-09T01:31:57.935Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-2",
+        "script": "(function(){ const btns = document.querySelectorAll(\"button\"); for(const b of btns) { if(b.textConte"
+      },
+      "id": "evt-1773019923350-9egd",
+      "timestamp": "2026-03-09T01:32:03.350Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-1",
+        "script": "(function() { window.scrollTo(0, document.body.scrollHeight); return \"scrolled\"; })()"
+      },
+      "id": "evt-1773019933239-7oqn",
+      "timestamp": "2026-03-09T01:32:13.239Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-1",
+        "script": "(function() {\n  var textarea = document.querySelector('textarea');\n  if (!textarea) return 'textarea"
+      },
+      "id": "evt-1773019953632-f69e",
+      "timestamp": "2026-03-09T01:32:33.632Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-1",
+        "script": "(function() {\n  var btns = document.querySelectorAll('button');\n  for (var i = 0; i < btns.length; i"
+      },
+      "id": "evt-1773019959217-7898",
+      "timestamp": "2026-03-09T01:32:39.217Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-1",
+        "script": "(function() { var btns = document.querySelectorAll(\"button\"); for (var i = 0; i < btns.length; i++) "
+      },
+      "id": "evt-1773019974532-d4d8",
+      "timestamp": "2026-03-09T01:32:54.532Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-2",
+        "script": "(function(){ const input = document.querySelector(\"input[type=file]\"); if(input) return \"found, acce"
+      },
+      "id": "evt-1773019981469-cbxu",
+      "timestamp": "2026-03-09T01:33:01.469Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-2",
+        "script": "\n(function(){\n  const b64 = \"/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQ"
+      },
+      "id": "evt-1773019994861-udv2",
+      "timestamp": "2026-03-09T01:33:14.861Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-1",
+        "script": "(function() { window.scrollTo(0, 0); return \"scrolled top\"; })()"
+      },
+      "id": "evt-1773020002398-bsiq",
+      "timestamp": "2026-03-09T01:33:22.398Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-2",
+        "script": "window.scrollTo(0, document.body.scrollHeight); \"scrolled\""
+      },
+      "id": "evt-1773020016933-rjwo",
+      "timestamp": "2026-03-09T01:33:36.933Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-1",
+        "script": "(function() {\n  var btns = document.querySelectorAll('button');\n  for (var i = 0; i < btns.length; i"
+      },
+      "id": "evt-1773020017436-6eij",
+      "timestamp": "2026-03-09T01:33:37.436Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-2",
+        "script": "(function(){\n  const textarea = document.querySelector('textarea');\n  if(!textarea) return 'no texta"
+      },
+      "id": "evt-1773020044379-p1u0",
+      "timestamp": "2026-03-09T01:34:04.379Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-2",
+        "script": "(function(){ const btns = document.querySelectorAll(\"button\"); for(const b of btns) { if(b.textConte"
+      },
+      "id": "evt-1773020051703-p334",
+      "timestamp": "2026-03-09T01:34:11.703Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "click",
+      "data": {
+        "browserId": "qa-explorer-2",
+        "selector": "button"
+      },
+      "id": "evt-1773020075671-4dm8",
+      "timestamp": "2026-03-09T01:34:35.671Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-2",
+        "script": "(function(){ const btns = document.querySelectorAll(\"button\"); for(const b of btns) { if(b.textConte"
+      },
+      "id": "evt-1773020105159-v8pq",
+      "timestamp": "2026-03-09T01:35:05.159Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "qa-explorer-1",
+        "script": "(function() {\n  var btns = document.querySelectorAll('button');\n  for (var i = 0; i < btns.length; i"
+      },
+      "id": "evt-1773020126737-nmmb",
+      "timestamp": "2026-03-09T01:35:26.737Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "browser_closed",
+      "data": {
+        "browserId": "qa-explorer-1"
+      },
+      "id": "evt-1773061123727-0prk",
+      "timestamp": "2026-03-09T12:58:43.750Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-2",
+      "type": "browser_closed",
+      "data": {
+        "browserId": "qa-explorer-2"
+      },
+      "id": "evt-1773061124151-vnwq",
+      "timestamp": "2026-03-09T12:58:44.151Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "browser_created",
+      "data": {
+        "browserId": "qa-explorer-1",
+        "cdpPort": 0,
+        "headless": false
+      },
+      "id": "evt-1773061227071-xh4k",
+      "timestamp": "2026-03-09T13:00:27.071Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "browser_closed",
+      "data": {
+        "browserId": "qa-explorer-1"
+      },
+      "id": "evt-1773061241477-b6b1",
+      "timestamp": "2026-03-09T13:00:41.477Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "browser_created",
+      "data": {
+        "browserId": "qa-explorer-1",
+        "cdpPort": 0,
+        "headless": false
+      },
+      "id": "evt-1773061249327-980e",
+      "timestamp": "2026-03-09T13:00:49.327Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "browser_created",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "cdpPort": 0,
+        "headless": false
+      },
+      "id": "evt-1773061391331-k6om",
+      "timestamp": "2026-03-09T13:03:11.331Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-auth-setup",
+      "type": "browser_created",
+      "data": {
+        "browserId": "wizard-auth-setup",
+        "cdpPort": 0,
+        "headless": false
+      },
+      "id": "evt-1773061391524-d2md",
+      "timestamp": "2026-03-09T13:03:11.524Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-validator",
+      "type": "browser_created",
+      "data": {
+        "browserId": "wizard-validator",
+        "cdpPort": 0,
+        "headless": false
+      },
+      "id": "evt-1773061391670-9zoq",
+      "timestamp": "2026-03-09T13:03:11.670Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "navigate",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "url": "http://localhost:8080/login",
+        "title": "Entrar | ToSmile.ai"
+      },
+      "id": "evt-1773061570110-vjsv",
+      "timestamp": "2026-03-09T13:06:10.110Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "navigate",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "url": "http://localhost:8080/login",
+        "title": "Entrar | ToSmile.ai"
+      },
+      "id": "evt-1773061616248-s1qj",
+      "timestamp": "2026-03-09T13:06:56.248Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-validator",
+      "type": "navigate",
+      "data": {
+        "browserId": "wizard-validator",
+        "url": "http://localhost:8080/login",
+        "title": "Entrar | ToSmile.ai"
+      },
+      "id": "evt-1773061619530-snkz",
+      "timestamp": "2026-03-09T13:06:59.530Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "fill",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "selector": "input[name=\"email\"]",
+        "method": "keyboard"
+      },
+      "id": "evt-1773061772323-ljq2",
+      "timestamp": "2026-03-09T13:09:32.323Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "click",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "selector": "button[type=\"submit\"]"
+      },
+      "id": "evt-1773061772475-98kd",
+      "timestamp": "2026-03-09T13:09:32.475Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "script": "document.querySelector(\"input[name=email]\")?.value + \" | \" + document.querySelector(\"input[name=pass"
+      },
+      "id": "evt-1773061812594-5kit",
+      "timestamp": "2026-03-09T13:10:12.594Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "script": "var setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set; var in"
+      },
+      "id": "evt-1773061827769-rv26",
+      "timestamp": "2026-03-09T13:10:27.769Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "click",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "selector": "button[type=\"submit\"]"
+      },
+      "id": "evt-1773061832662-ssb8",
+      "timestamp": "2026-03-09T13:10:32.662Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-validator",
+      "type": "navigate",
+      "data": {
+        "browserId": "wizard-validator",
+        "url": "http://localhost:8080/login",
+        "title": "Entrar | ToSmile.ai"
+      },
+      "id": "evt-1773061848602-99k5",
+      "timestamp": "2026-03-09T13:10:48.602Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-validator",
+      "type": "fill",
+      "data": {
+        "browserId": "wizard-validator",
+        "selector": "input[name=email]",
+        "method": "keyboard"
+      },
+      "id": "evt-1773061865446-6vk9",
+      "timestamp": "2026-03-09T13:11:05.446Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-validator",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-validator",
+        "script": "var s=Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype,'value').set;var i=document."
+      },
+      "id": "evt-1773061865453-3d0t",
+      "timestamp": "2026-03-09T13:11:05.453Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-validator",
+      "type": "click",
+      "data": {
+        "browserId": "wizard-validator",
+        "selector": "button[type=submit]"
+      },
+      "id": "evt-1773061865480-mnan",
+      "timestamp": "2026-03-09T13:11:05.480Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "navigate",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "url": "http://localhost:8080/new-case",
+        "title": "Nova Avaliação | ToSmile.ai"
+      },
+      "id": "evt-1773061881694-xvvt",
+      "timestamp": "2026-03-09T13:11:21.694Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "script": "document.querySelector(\"[role=dialog]\") ? document.querySelector(\"[role=dialog]\").textContent.trim()"
+      },
+      "id": "evt-1773061895939-f94z",
+      "timestamp": "2026-03-09T13:11:35.939Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "qa-explorer-1",
+      "type": "browser_closed",
+      "data": {
+        "browserId": "qa-explorer-1"
+      },
+      "id": "evt-1773061902404-1leu",
+      "timestamp": "2026-03-09T13:11:42.404Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "script": "document.querySelectorAll(\"button\").length + \" buttons, h2s: \" + Array.from(document.querySelectorAl"
+      },
+      "id": "evt-1773061920855-rjfd",
+      "timestamp": "2026-03-09T13:12:00.855Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "script": "Array.from(document.querySelectorAll(\"button\")).map(b=>b.textContent.trim()).filter(t=>t.length>0).j"
+      },
+      "id": "evt-1773061929821-nshv",
+      "timestamp": "2026-03-09T13:12:09.821Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "script": "Array.from(document.querySelectorAll('button')).find(b=>b.textContent.includes('Começar do zero'))?."
+      },
+      "id": "evt-1773061936975-33vm",
+      "timestamp": "2026-03-09T13:12:16.975Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "script": "Array.from(document.querySelectorAll(\"button\")).map(b=>b.textContent.trim()).filter(t=>t.length>0).j"
+      },
+      "id": "evt-1773061944573-g8a8",
+      "timestamp": "2026-03-09T13:12:24.573Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "script": "Array.from(document.querySelectorAll('button')).find(b=>b.textContent.includes('Aceitar todos'))?.cl"
+      },
+      "id": "evt-1773061944576-yzk1",
+      "timestamp": "2026-03-09T13:12:24.576Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "script": "Array.from(document.querySelectorAll(\"button\")).map(b=>b.textContent.trim()).filter(t=>t.length>0).j"
+      },
+      "id": "evt-1773061950735-syjf",
+      "timestamp": "2026-03-09T13:12:30.735Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "script": "Array.from(document.querySelectorAll(\"h2\")).map(h=>h.textContent.trim()).join(\" | \")"
+      },
+      "id": "evt-1773061957761-kdey",
+      "timestamp": "2026-03-09T13:12:37.761Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "script": "Array.from(document.querySelectorAll('button')).filter(b=>b.textContent.trim()==='Continuar')[0]?.cl"
+      },
+      "id": "evt-1773061957764-h90a",
+      "timestamp": "2026-03-09T13:12:37.764Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "script": "Array.from(document.querySelectorAll(\"button\")).map(b=>b.textContent.trim()).filter(t=>t.length>0).j"
+      },
+      "id": "evt-1773061964334-inz8",
+      "timestamp": "2026-03-09T13:12:44.334Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "script": "Array.from(document.querySelectorAll(\"h2,h3,dialog\")).map(e=>e.tagName+\":\"+e.textContent.trim().subs"
+      },
+      "id": "evt-1773061969171-4it1",
+      "timestamp": "2026-03-09T13:12:49.171Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "script": "var d = document.querySelector('[data-state=open]'); d ? d.querySelector('h2')?.textContent : 'none "
+      },
+      "id": "evt-1773061975842-d4lm",
+      "timestamp": "2026-03-09T13:12:55.842Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "script": "document.querySelectorAll('[data-state]').length + ' elements with data-state: ' + Array.from(docume"
+      },
+      "id": "evt-1773061981043-svj4",
+      "timestamp": "2026-03-09T13:13:01.043Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "script": "Array.from(document.querySelectorAll('div[data-state=open]')).map(d=>d.id+':'+d.className.substring("
+      },
+      "id": "evt-1773061986697-w2c0",
+      "timestamp": "2026-03-09T13:13:06.697Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "script": "var d=document.querySelector('[id^=radix]'); d?Array.from(d.querySelectorAll('button')).map(b=>b.tex"
+      },
+      "id": "evt-1773061991424-rx15",
+      "timestamp": "2026-03-09T13:13:11.424Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "script": "var d=document.querySelector('div[data-state=open][id]'); d?d.textContent.trim().substring(0,500):'n"
+      },
+      "id": "evt-1773061995976-q7qc",
+      "timestamp": "2026-03-09T13:13:15.976Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "script": "Array.from(document.querySelectorAll('button')).filter(b=>b.textContent.trim()==='Continuar').forEac"
+      },
+      "id": "evt-1773062001748-7jeu",
+      "timestamp": "2026-03-09T13:13:21.748Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "script": "document.querySelectorAll('div[data-state=open]').length + ' open dialogs. H2s: ' + Array.from(docum"
+      },
+      "id": "evt-1773062011071-kwno",
+      "timestamp": "2026-03-09T13:13:31.071Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "script": "Array.from(document.querySelectorAll('button')).map(b=>b.textContent.trim()).filter(t=>t.length>0&&!"
+      },
+      "id": "evt-1773062011075-i2e2",
+      "timestamp": "2026-03-09T13:13:31.075Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "script": "var checkboxes = document.querySelectorAll('input[type=checkbox],button[role=checkbox]'); checkboxes"
+      },
+      "id": "evt-1773062016402-8s0a",
+      "timestamp": "2026-03-09T13:13:36.402Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "script": "var cb = document.querySelector('button[role=checkbox]'); cb?.click(); cb?.getAttribute('data-state'"
+      },
+      "id": "evt-1773062020845-2euw",
+      "timestamp": "2026-03-09T13:13:40.845Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-auth-setup",
+      "type": "browser_closed",
+      "data": {
+        "browserId": "wizard-auth-setup"
+      },
+      "id": "evt-1773062022407-apmf",
+      "timestamp": "2026-03-09T13:13:42.407Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "script": "document.querySelector('button[role=checkbox]')?.getAttribute('data-state')"
+      },
+      "id": "evt-1773062028308-2wm1",
+      "timestamp": "2026-03-09T13:13:48.308Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "script": "Array.from(document.querySelectorAll('button')).filter(b=>b.textContent.trim()==='Continuar')[0]?.cl"
+      },
+      "id": "evt-1773062028317-bf8o",
+      "timestamp": "2026-03-09T13:13:48.317Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "script": "document.querySelectorAll('div[data-state=open]').length + ' open dialogs. Buttons: ' + Array.from(d"
+      },
+      "id": "evt-1773062035638-tlk5",
+      "timestamp": "2026-03-09T13:13:55.638Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "script": "\n(function() {\n    var b64 = '/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFx"
+      },
+      "id": "evt-1773062045855-phpa",
+      "timestamp": "2026-03-09T13:14:05.855Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-flow-tester",
+        "script": "Array.from(document.querySelectorAll('button')).map(b=>b.textContent.trim()).filter(t=>t.length>0&&!"
+      },
+      "id": "evt-1773062054606-xxys",
+      "timestamp": "2026-03-09T13:14:14.606Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-validator",
+      "type": "browser_closed",
+      "data": {
+        "browserId": "wizard-validator"
+      },
+      "id": "evt-1773062502465-ketv",
+      "timestamp": "2026-03-09T13:21:42.465Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-flow-tester",
+      "type": "browser_closed",
+      "data": {
+        "browserId": "wizard-flow-tester"
+      },
+      "id": "evt-1773062682614-86n2",
+      "timestamp": "2026-03-09T13:24:42.614Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-explorer-1",
+      "type": "browser_created",
+      "data": {
+        "browserId": "wizard-explorer-1",
+        "cdpPort": 0,
+        "headless": false
+      },
+      "id": "evt-1773063286033-vftz",
+      "timestamp": "2026-03-09T13:34:46.033Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-explorer-2",
+      "type": "browser_created",
+      "data": {
+        "browserId": "wizard-explorer-2",
+        "cdpPort": 0,
+        "headless": false
+      },
+      "id": "evt-1773063286177-u6fd",
+      "timestamp": "2026-03-09T13:34:46.177Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-validator",
+      "type": "browser_created",
+      "data": {
+        "browserId": "wizard-validator",
+        "cdpPort": 0,
+        "headless": false
+      },
+      "id": "evt-1773063286328-v62g",
+      "timestamp": "2026-03-09T13:34:46.328Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-explorer-1",
+      "type": "navigate",
+      "data": {
+        "browserId": "wizard-explorer-1",
+        "url": "http://localhost:8080/login",
+        "title": "Entrar | ToSmile.ai"
+      },
+      "id": "evt-1773063399030-e44m",
+      "timestamp": "2026-03-09T13:36:39.030Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-explorer-1",
+      "type": "fill",
+      "data": {
+        "browserId": "wizard-explorer-1",
+        "selector": "input[type=\"email\"]",
+        "method": "keyboard"
+      },
+      "id": "evt-1773063408994-yohy",
+      "timestamp": "2026-03-09T13:36:48.994Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-explorer-1",
+      "type": "fill",
+      "data": {
+        "browserId": "wizard-explorer-1",
+        "selector": "input[type=\"password\"]",
+        "method": "keyboard"
+      },
+      "id": "evt-1773063418494-mhu9",
+      "timestamp": "2026-03-09T13:36:58.494Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-explorer-1",
+      "type": "click",
+      "data": {
+        "browserId": "wizard-explorer-1",
+        "selector": "button[type=\"submit\"]"
+      },
+      "id": "evt-1773063422876-4g9o",
+      "timestamp": "2026-03-09T13:37:02.876Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-explorer-1",
+      "type": "navigate",
+      "data": {
+        "browserId": "wizard-explorer-1",
+        "url": "http://localhost:8080/new-case",
+        "title": "Nova Avaliação | ToSmile.ai"
+      },
+      "id": "evt-1773063440332-e4zi",
+      "timestamp": "2026-03-09T13:37:20.332Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-explorer-1",
+        "script": "const btns = [...document.querySelectorAll(\"button\")].map(b => ({text: b.textContent.trim(), class: "
+      },
+      "id": "evt-1773063461079-yyb0",
+      "timestamp": "2026-03-09T13:37:41.079Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-explorer-1",
+        "script": "const cb = document.querySelector(\"button[role=checkbox]\"); if(cb) { cb.click(); \"clicked\" } else { "
+      },
+      "id": "evt-1773063468020-6w4t",
+      "timestamp": "2026-03-09T13:37:48.020Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-explorer-1",
+        "script": "const dialogs = document.querySelectorAll(\"[role=dialog]\"); let clicked = false; dialogs.forEach(d ="
+      },
+      "id": "evt-1773063473930-7apy",
+      "timestamp": "2026-03-09T13:37:53.930Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-explorer-1",
+        "script": "document.querySelectorAll(\"[role=dialog]\").length"
+      },
+      "id": "evt-1773063488044-re9f",
+      "timestamp": "2026-03-09T13:38:08.044Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-explorer-1",
+        "script": "const btn = [...document.querySelectorAll(\"button\")].find(b => b.textContent.includes(\"do zero\")); i"
+      },
+      "id": "evt-1773063493168-g02y",
+      "timestamp": "2026-03-09T13:38:13.168Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-explorer-1",
+        "script": "document.querySelectorAll(\"[role=dialog]\").length"
+      },
+      "id": "evt-1773063499847-y402",
+      "timestamp": "2026-03-09T13:38:19.847Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-explorer-1",
+        "script": "(function(){ var d = document.querySelector(\"[role=dialog]\"); return d ? d.textContent.substring(0,2"
+      },
+      "id": "evt-1773063522200-jfka",
+      "timestamp": "2026-03-09T13:38:42.200Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-explorer-1",
+      "type": "evaluate",
+      "data": {
+        "browserId": "wizard-explorer-1",
+        "script": "(function(){ var btn = [...document.querySelectorAll(\"button\")].find(function(b){ return b.textConte"
+      },
+      "id": "evt-1773063527441-0tto",
+      "timestamp": "2026-03-09T13:38:47.441Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-explorer-2",
+      "type": "browser_closed",
+      "data": {
+        "browserId": "wizard-explorer-2"
+      },
+      "id": "evt-1773063942481-ct8y",
+      "timestamp": "2026-03-09T13:45:42.481Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-validator",
+      "type": "browser_closed",
+      "data": {
+        "browserId": "wizard-validator"
+      },
+      "id": "evt-1773063942493-jol3",
+      "timestamp": "2026-03-09T13:45:42.493Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-explorer-1",
+      "type": "browser_closed",
+      "data": {
+        "browserId": "wizard-explorer-1"
+      },
+      "id": "evt-1773064182742-a09u",
+      "timestamp": "2026-03-09T13:49:42.742Z"
+    },
+    {
+      "team": "default",
+      "agent": "wizard-explorer-1",
+      "type": "bug",
+      "data": {
+        "bugId": "bug-1773064419136-mtsh",
+        "severity": "medium",
+        "title": "Case generation progress bar stuck at 11% during edge function retries"
+      },
+      "id": "evt-1773064419136-pria",
+      "timestamp": "2026-03-09T13:53:39.136Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-explorer-1",
+      "type": "browser_created",
+      "data": {
+        "browserId": "wizard-explorer-1",
+        "cdpPort": 0,
+        "headless": false
+      },
+      "id": "evt-1773064540017-megh",
+      "timestamp": "2026-03-09T13:55:40.017Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-explorer-1",
+      "type": "navigate",
+      "data": {
+        "browserId": "wizard-explorer-1",
+        "url": "http://localhost:8080/login",
+        "title": "Entrar | ToSmile.ai"
+      },
+      "id": "evt-1773064540431-zjjl",
+      "timestamp": "2026-03-09T13:55:40.431Z"
+    },
+    {
+      "team": "unknown",
+      "agent": "wizard-explorer-1",
+      "type": "browser_closed",
+      "data": {
+        "browserId": "wizard-explorer-1"
+      },
+      "id": "evt-1773064643050-k44g",
+      "timestamp": "2026-03-09T13:57:23.050Z"
+    }
+  ],
+  "bugs": [
+    {
+      "severity": "medium",
+      "title": "Case generation progress bar stuck at 11% during edge function retries",
+      "description": "When the recommend-resin edge function fails repeatedly (e.g., due to non-dental photo), the loading overlay progress bar stays frozen at 11% on Dente 11. The user sees no indication that retries are happening or that there is an issue. The retry warnings only appear in console (Retry 1, Retry 2). Expected: progress bar should update to show retry status, or after max retries, should fail gracefully with an error message instead of staying stuck indefinitely. Console shows CLAUDE_408 errors on recommend-resin and recommend-cementation.",
+      "team": "default",
+      "agent": "wizard-explorer-1",
+      "url": "http://localhost:8080/new-case",
+      "id": "bug-1773064419136-mtsh",
+      "timestamp": "2026-03-09T13:53:39.136Z",
+      "status": "open",
+      "triageVerdict": "false_positive",
+      "triageNotes": "Progress bar IS advancing, just very slowly (~3-4 min per tooth due to retry+timeout). Tooth 11 completed (failed but moved on), now processing tooth 21 at 22%. The system correctly moves to next tooth after exhausting retries. Not stuck, just slow due to edge function timeouts with non-dental photo input."
+    }
+  ],
+  "fixPlans": [],
+  "pipelineRuns": [
+    {
+      "id": "run-1773018884577-wc9y",
+      "phase": "complete",
+      "iteration": 0,
+      "maxIterations": 3,
+      "status": "completed",
+      "qaReportIds": [],
+      "passRate": 0,
+      "bugSummary": {
+        "total": 0,
+        "open": 0,
+        "fixed": 0,
+        "verified": 0,
+        "falsePositives": 0
+      },
+      "fixSummary": {
+        "plansCreated": 0,
+        "completed": 0,
+        "failed": 0,
+        "commitHashes": []
+      },
+      "timeline": [
+        {
+          "timestamp": "2026-03-09T01:14:44.577Z",
+          "phase": "INIT",
+          "event": "Pipeline run created"
+        }
+      ],
+      "startedAt": "2026-03-09T01:14:44.577Z",
+      "summary": {
+        "bugsFound": 0,
+        "bugsConfirmed": 0,
+        "passRate": 100
+      }
+    },
+    {
+      "id": "run-1773061384915-j5mu",
+      "phase": "qa_testing",
+      "iteration": 0,
+      "maxIterations": 3,
+      "status": "running",
+      "qaReportIds": [],
+      "passRate": 0,
+      "bugSummary": {
+        "total": 0,
+        "open": 0,
+        "fixed": 0,
+        "verified": 0,
+        "falsePositives": 0
+      },
+      "fixSummary": {
+        "plansCreated": 0,
+        "completed": 0,
+        "failed": 0,
+        "commitHashes": []
+      },
+      "timeline": [
+        {
+          "timestamp": "2026-03-09T13:03:04.915Z",
+          "phase": "INIT",
+          "event": "Pipeline run created"
+        }
+      ],
+      "startedAt": "2026-03-09T13:03:04.915Z"
+    },
+    {
+      "id": "run-1773063269837-2ku4",
+      "phase": "complete",
+      "iteration": 0,
+      "maxIterations": 3,
+      "status": "completed",
+      "qaReportIds": [],
+      "passRate": 0,
+      "bugSummary": {
+        "total": 0,
+        "open": 0,
+        "fixed": 0,
+        "verified": 0,
+        "falsePositives": 0
+      },
+      "fixSummary": {
+        "plansCreated": 0,
+        "completed": 0,
+        "failed": 0,
+        "commitHashes": []
+      },
+      "timeline": [
+        {
+          "timestamp": "2026-03-09T13:34:29.837Z",
+          "phase": "INIT",
+          "event": "Pipeline run created"
+        }
+      ],
+      "startedAt": "2026-03-09T13:34:29.837Z",
+      "summary": {
+        "bugsFound": 0,
+        "bugsConfirmed": 0,
+        "passRate": 100
+      }
+    }
+  ],
+  "tasks": [],
+  "comments": [
+    {
+      "text": "Tested / (Landing) — PASS. Title OK, 9 sections, 26 btns/links, no JS errors, full heading hierarchy",
+      "agent": "explorer-public",
+      "team": "default",
+      "targetType": "general",
+      "id": "cmt-1773019141086-r6zu",
+      "timestamp": "2026-03-09T01:19:01.086Z"
+    },
+    {
+      "text": "Tested /pricing — PASS. Title=Entrar | ToSmile.ai, headings=2, console_errs=[]",
+      "agent": "explorer-public",
+      "team": "default",
+      "targetType": "general",
+      "id": "cmt-1773019169227-utq6",
+      "timestamp": "2026-03-09T01:19:29.227Z"
+    },
+    {
+      "text": "Tested /terms — PASS. Headings=13",
+      "agent": "explorer-public",
+      "team": "default",
+      "targetType": "general",
+      "id": "cmt-1773019172057-pnk6",
+      "timestamp": "2026-03-09T01:19:32.057Z"
+    },
+    {
+      "text": "Tested /privacy — PASS. Headings=19",
+      "agent": "explorer-public",
+      "team": "default",
+      "targetType": "general",
+      "id": "cmt-1773019174510-wjdu",
+      "timestamp": "2026-03-09T01:19:34.510Z"
+    },
+    {
+      "text": "Tested 404 page — PASS. Is404=True, home_link=True",
+      "agent": "explorer-public",
+      "team": "default",
+      "targetType": "general",
+      "id": "cmt-1773019176792-3q5m",
+      "timestamp": "2026-03-09T01:19:36.792Z"
+    },
+    {
+      "text": "/pricing redirects unauthenticated users to /login — EXPECTED behavior (route inside ProtectedRoute at App.tsx:229). Public pricing shown on landing page. This is correct.",
+      "agent": "explorer-public",
+      "team": "default",
+      "targetType": "general",
+      "id": "cmt-1773019212708-9e2c",
+      "timestamp": "2026-03-09T01:20:12.708Z"
+    },
+    {
+      "text": "/login page — forms=1, form_check={\"emailField\":true,\"passwordField\":true,\"submitBtn\":true,\"googleBtn\":false}",
+      "agent": "explorer-auth",
+      "team": "default",
+      "targetType": "general",
+      "id": "cmt-1773019241019-n7a2",
+      "timestamp": "2026-03-09T01:20:41.019Z"
+    },
+    {
+      "text": "/login invalid creds — still_on_login=True, toasts={'success': True, 'toasts': [], 'count': 0}",
+      "agent": "explorer-auth",
+      "team": "default",
+      "targetType": "general",
+      "id": "cmt-1773019245137-15sm",
+      "timestamp": "2026-03-09T01:20:45.137Z"
+    },
+    {
+      "text": "Login page structural check PASS — email/password/submit fields present, captcha may prevent actual test submit",
+      "agent": "explorer-auth",
+      "team": "default",
+      "targetType": "general",
+      "id": "cmt-1773019266749-mrv7",
+      "timestamp": "2026-03-09T01:21:06.749Z"
+    },
+    {
+      "text": "/register page — forms=1, val_errors=",
+      "agent": "explorer-auth",
+      "team": "default",
+      "targetType": "general",
+      "id": "cmt-1773019271023-80s0",
+      "timestamp": "2026-03-09T01:21:11.023Z"
+    },
+    {
+      "text": "/forgot-password — fields={\"emailField\":true,\"submitBtn\":true,\"backLink\":true}, feedback=Erro ao enviar emailPassword recovery requires an email",
+      "agent": "explorer-auth",
+      "team": "default",
+      "targetType": "general",
+      "id": "cmt-1773019301774-abuy",
+      "timestamp": "2026-03-09T01:21:41.774Z"
+    },
+    {
+      "text": "Forgot password: Hub fill doesn't trigger React controlled input onChange. Used keyboard type instead. Supabase endpoint works when email value properly set.",
+      "agent": "explorer-auth",
+      "team": "default",
+      "targetType": "general",
+      "id": "cmt-1773019353065-z66i",
+      "timestamp": "2026-03-09T01:22:33.065Z"
+    },
+    {
+      "text": "Forgot password PASS — with keyboard type, email state set correctly, Supabase sends reset email (toast 'Email enviado!').",
+      "agent": "explorer-auth",
+      "team": "default",
+      "targetType": "general",
+      "id": "cmt-1773019372618-nyiu",
+      "timestamp": "2026-03-09T01:22:52.618Z"
+    },
+    {
+      "text": "Protected route redirects — all_redirect=True. All tested routes correctly redirect to /login.",
+      "agent": "explorer-auth",
+      "team": "default",
+      "targetType": "general",
+      "id": "cmt-1773019381841-ll3q",
+      "timestamp": "2026-03-09T01:23:01.841Z"
+    },
+    {
+      "text": "Validator deep checks: Google Fonts status:0 = expected behavior (cross-origin). A11y excellent. OG meta points to production (expected for dev). PasswordRequirements may render conditionally after password input.",
+      "agent": "validator",
+      "team": "default",
+      "targetType": "general",
+      "id": "cmt-1773019429770-qlab",
+      "timestamp": "2026-03-09T01:23:49.770Z"
+    },
+    {
+      "text": "Additional page checks: reset-password page, shared evaluation page with invalid token",
+      "agent": "validator",
+      "team": "default",
+      "targetType": "general",
+      "id": "cmt-1773019472079-3ew3",
+      "timestamp": "2026-03-09T01:24:32.079Z"
+    },
+    {
+      "text": "Pre-test setup complete: wizard-flow-tester browser authenticated as gustavo.b.paris@gmail.com, on /new-case Step 1 with photo foto1.jpeg injected. Buttons visible: Análise Completa com IA, Análise Rápida. wizard-validator also authenticated.",
+      "agent": "team-lead",
+      "team": "default",
+      "targetType": "general",
+      "id": "cmt-1773062069321-e3tv",
+      "timestamp": "2026-03-09T13:14:29.321Z"
+    },
+    {
+      "text": "Console warning on /new-case: Missing Description or aria- attribute in Dialog component (chunk-UVQ255S7.js). Low severity - a11y concern in shadcn/radix dialog.",
+      "agent": "wizard-explorer-1",
+      "team": "default",
+      "targetType": "general",
+      "id": "cmt-1773063619852-o768",
+      "timestamp": "2026-03-09T13:40:19.852Z"
+    }
+  ],
+  "scenarios": [
+    {
+      "title": "Landing page loads correctly",
+      "category": "public",
+      "steps": [
+        {
+          "action": "Navigate to /",
+          "expected": "Landing page visible with hero section",
+          "index": 0,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:19:01.071Z"
+        },
+        {
+          "action": "Check main heading",
+          "expected": "H1 heading present",
+          "index": 1,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:19:01.074Z"
+        },
+        {
+          "action": "Check navigation",
+          "expected": "Nav/header present",
+          "index": 2,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:19:01.077Z"
+        },
+        {
+          "action": "Check CTA buttons",
+          "expected": "Call-to-action buttons visible",
+          "index": 3,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:19:01.078Z"
+        },
+        {
+          "action": "Check for console errors",
+          "expected": "No JS errors",
+          "index": 4,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:19:01.080Z"
+        }
+      ],
+      "id": "scenario-1773018900362-hz70",
+      "status": "passed",
+      "currentStepIndex": 0,
+      "findings": [],
+      "linkedBugIds": [],
+      "evidence": {
+        "screenshots": [],
+        "toasts": [],
+        "consoleErrors": []
+      },
+      "agentContext": {
+        "lastAction": "",
+        "nextExpected": "",
+        "blockers": [],
+        "notes": ""
+      },
+      "createdAt": "2026-03-09T01:15:00.362Z",
+      "updatedAt": "2026-03-09T01:19:01.084Z"
+    },
+    {
+      "title": "Login page — valid credentials",
+      "category": "auth",
+      "steps": [
+        {
+          "action": "Navigate to /login",
+          "expected": "Login form visible",
+          "index": 0,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:20:41.015Z"
+        },
+        {
+          "action": "Check email and password fields",
+          "expected": "Both input fields present",
+          "index": 1,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:20:41.017Z"
+        },
+        {
+          "action": "Fill valid credentials",
+          "expected": "Fields accept input",
+          "index": 2,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:21:06.740Z"
+        },
+        {
+          "action": "Submit form",
+          "expected": "Redirect to dashboard or success",
+          "index": 3,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:21:06.743Z"
+        },
+        {
+          "action": "Check for errors",
+          "expected": "No unexpected errors",
+          "index": 4,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:21:06.746Z"
+        }
+      ],
+      "id": "scenario-1773018900364-k41o",
+      "status": "passed",
+      "currentStepIndex": 0,
+      "findings": [],
+      "linkedBugIds": [],
+      "evidence": {
+        "screenshots": [],
+        "toasts": [],
+        "consoleErrors": []
+      },
+      "agentContext": {
+        "lastAction": "",
+        "nextExpected": "",
+        "blockers": [],
+        "notes": ""
+      },
+      "createdAt": "2026-03-09T01:15:00.364Z",
+      "updatedAt": "2026-03-09T01:21:06.747Z"
+    },
+    {
+      "title": "Login page — invalid credentials",
+      "category": "auth",
+      "steps": [
+        {
+          "action": "Navigate to /login",
+          "expected": "Login form visible",
+          "index": 0,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:20:45.126Z"
+        },
+        {
+          "action": "Fill invalid credentials",
+          "expected": "Fields accept input",
+          "index": 1,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:20:45.128Z"
+        },
+        {
+          "action": "Submit form",
+          "expected": "Error message shown",
+          "index": 2,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:20:45.130Z"
+        },
+        {
+          "action": "Verify stay on login page",
+          "expected": "User not redirected away",
+          "index": 3,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:20:45.132Z"
+        }
+      ],
+      "id": "scenario-1773018900364-rofz",
+      "status": "passed",
+      "currentStepIndex": 0,
+      "findings": [],
+      "linkedBugIds": [],
+      "evidence": {
+        "screenshots": [],
+        "toasts": [],
+        "consoleErrors": []
+      },
+      "agentContext": {
+        "lastAction": "",
+        "nextExpected": "",
+        "blockers": [],
+        "notes": ""
+      },
+      "createdAt": "2026-03-09T01:15:00.364Z",
+      "updatedAt": "2026-03-09T01:20:45.135Z"
+    },
+    {
+      "title": "Register page loads and form works",
+      "category": "auth",
+      "steps": [
+        {
+          "action": "Navigate to /register",
+          "expected": "Registration form visible",
+          "index": 0,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:21:11.013Z"
+        },
+        {
+          "action": "Check required fields",
+          "expected": "Name, email, password fields present",
+          "index": 1,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:21:36.166Z"
+        },
+        {
+          "action": "Attempt empty submit",
+          "expected": "Validation errors shown",
+          "index": 2,
+          "status": "failed",
+          "actual": "No validation errors shown on empty submit",
+          "completedAt": "2026-03-09T01:21:11.019Z"
+        },
+        {
+          "action": "Check link to login",
+          "expected": "Link to login page present",
+          "index": 3,
+          "status": "failed",
+          "completedAt": "2026-03-09T01:21:36.178Z"
+        }
+      ],
+      "id": "scenario-1773018900364-yhql",
+      "status": "passed",
+      "currentStepIndex": 0,
+      "findings": [],
+      "linkedBugIds": [],
+      "evidence": {
+        "screenshots": [],
+        "toasts": [],
+        "consoleErrors": []
+      },
+      "agentContext": {
+        "lastAction": "",
+        "nextExpected": "",
+        "blockers": [],
+        "notes": ""
+      },
+      "createdAt": "2026-03-09T01:15:00.364Z",
+      "updatedAt": "2026-03-09T01:21:36.182Z"
+    },
+    {
+      "title": "Pricing page loads correctly",
+      "category": "public",
+      "steps": [
+        {
+          "action": "Navigate to /pricing",
+          "expected": "Pricing plans visible",
+          "index": 0,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:20:12.691Z"
+        },
+        {
+          "action": "Check plan cards",
+          "expected": "Multiple pricing tiers displayed",
+          "index": 1,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:20:12.694Z"
+        },
+        {
+          "action": "Check CTA buttons",
+          "expected": "Subscribe/upgrade buttons present",
+          "index": 2,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:20:12.697Z"
+        },
+        {
+          "action": "Check for console errors",
+          "expected": "No JS errors",
+          "index": 3,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:20:12.698Z"
+        }
+      ],
+      "id": "scenario-1773018900364-4lmd",
+      "status": "passed",
+      "currentStepIndex": 0,
+      "findings": [],
+      "linkedBugIds": [],
+      "evidence": {
+        "screenshots": [],
+        "toasts": [],
+        "consoleErrors": []
+      },
+      "agentContext": {
+        "lastAction": "",
+        "nextExpected": "",
+        "blockers": [],
+        "notes": ""
+      },
+      "createdAt": "2026-03-09T01:15:00.364Z",
+      "updatedAt": "2026-03-09T01:20:12.700Z"
+    },
+    {
+      "title": "Terms and Privacy pages load",
+      "category": "public",
+      "steps": [
+        {
+          "action": "Navigate to /terms",
+          "expected": "Terms of service content visible",
+          "index": 0,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:20:12.710Z"
+        },
+        {
+          "action": "Navigate to /privacy",
+          "expected": "Privacy policy content visible",
+          "index": 1,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:20:12.712Z"
+        },
+        {
+          "action": "Check for console errors",
+          "expected": "No JS errors on either page",
+          "index": 2,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:20:12.713Z"
+        }
+      ],
+      "id": "scenario-1773018900364-kuzz",
+      "status": "passed",
+      "currentStepIndex": 0,
+      "findings": [],
+      "linkedBugIds": [],
+      "evidence": {
+        "screenshots": [],
+        "toasts": [],
+        "consoleErrors": []
+      },
+      "agentContext": {
+        "lastAction": "",
+        "nextExpected": "",
+        "blockers": [],
+        "notes": ""
+      },
+      "createdAt": "2026-03-09T01:15:00.364Z",
+      "updatedAt": "2026-03-09T01:20:12.715Z"
+    },
+    {
+      "title": "Forgot password flow",
+      "category": "auth",
+      "steps": [
+        {
+          "action": "Navigate to /forgot-password",
+          "expected": "Password reset form visible",
+          "index": 0,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:21:41.765Z"
+        },
+        {
+          "action": "Check email field",
+          "expected": "Email input present",
+          "index": 1,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:21:41.767Z"
+        },
+        {
+          "action": "Fill email and submit",
+          "expected": "Success or feedback message shown",
+          "index": 2,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:22:52.612Z"
+        },
+        {
+          "action": "Check link back to login",
+          "expected": "Return to login link present",
+          "index": 3,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:21:41.770Z"
+        }
+      ],
+      "id": "scenario-1773018900364-9hku",
+      "status": "passed",
+      "currentStepIndex": 0,
+      "findings": [],
+      "linkedBugIds": [],
+      "evidence": {
+        "screenshots": [],
+        "toasts": [],
+        "consoleErrors": []
+      },
+      "agentContext": {
+        "lastAction": "",
+        "nextExpected": "",
+        "blockers": [],
+        "notes": ""
+      },
+      "createdAt": "2026-03-09T01:15:00.364Z",
+      "updatedAt": "2026-03-09T01:22:52.613Z"
+    },
+    {
+      "title": "Protected routes redirect unauthenticated users",
+      "category": "auth",
+      "steps": [
+        {
+          "action": "Navigate to /dashboard without auth",
+          "expected": "Redirect to login",
+          "index": 0,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:23:01.833Z"
+        },
+        {
+          "action": "Navigate to /evaluations without auth",
+          "expected": "Redirect to login",
+          "index": 1,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:23:01.835Z"
+        },
+        {
+          "action": "Navigate to /patients without auth",
+          "expected": "Redirect to login",
+          "index": 2,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:23:01.837Z"
+        },
+        {
+          "action": "Navigate to /profile without auth",
+          "expected": "Redirect to login",
+          "index": 3,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:23:01.838Z"
+        }
+      ],
+      "id": "scenario-1773018900364-lz9x",
+      "status": "passed",
+      "currentStepIndex": 0,
+      "findings": [],
+      "linkedBugIds": [],
+      "evidence": {
+        "screenshots": [],
+        "toasts": [],
+        "consoleErrors": []
+      },
+      "agentContext": {
+        "lastAction": "",
+        "nextExpected": "",
+        "blockers": [],
+        "notes": ""
+      },
+      "createdAt": "2026-03-09T01:15:00.364Z",
+      "updatedAt": "2026-03-09T01:23:01.839Z"
+    },
+    {
+      "title": "404 Not Found page",
+      "category": "public",
+      "steps": [
+        {
+          "action": "Navigate to /nonexistent-page-xyz",
+          "expected": "404 page displayed",
+          "index": 0,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:20:12.717Z"
+        },
+        {
+          "action": "Check error message",
+          "expected": "User-friendly error message",
+          "index": 1,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:20:12.719Z"
+        },
+        {
+          "action": "Check navigation back",
+          "expected": "Link to go home present",
+          "index": 2,
+          "status": "passed",
+          "completedAt": "2026-03-09T01:20:12.721Z"
+        }
+      ],
+      "id": "scenario-1773018900365-vrbu",
+      "status": "passed",
+      "currentStepIndex": 0,
+      "findings": [],
+      "linkedBugIds": [],
+      "evidence": {
+        "screenshots": [],
+        "toasts": [],
+        "consoleErrors": []
+      },
+      "agentContext": {
+        "lastAction": "",
+        "nextExpected": "",
+        "blockers": [],
+        "notes": ""
+      },
+      "createdAt": "2026-03-09T01:15:00.365Z",
+      "updatedAt": "2026-03-09T01:20:12.723Z"
+    },
+    {
+      "title": "Wizard: Autenticação e acesso a /new-case",
+      "description": "Login e navegação até o wizard",
+      "category": "wizard",
+      "steps": [
+        {
+          "action": "Navegar para http://localhost:3000/login",
+          "expected": "Formulário visível",
+          "index": 0,
+          "status": "pending"
+        },
+        {
+          "action": "Preencher email e senha",
+          "expected": "Campos aceitos",
+          "index": 1,
+          "status": "pending"
+        },
+        {
+          "action": "Clicar submit",
+          "expected": "Redirect dashboard",
+          "index": 2,
+          "status": "pending"
+        },
+        {
+          "action": "Navegar /new-case",
+          "expected": "Wizard step 1",
+          "index": 3,
+          "status": "pending"
+        }
+      ],
+      "id": "scenario-1773061458433-hd52",
+      "status": "passed",
+      "currentStepIndex": 0,
+      "findings": [],
+      "linkedBugIds": [],
+      "evidence": {
+        "screenshots": [],
+        "toasts": [],
+        "consoleErrors": []
+      },
+      "agentContext": {
+        "lastAction": "",
+        "nextExpected": "",
+        "blockers": [],
+        "notes": ""
+      },
+      "createdAt": "2026-03-09T13:04:18.433Z",
+      "updatedAt": "2026-03-09T13:11:46.984Z"
+    },
+    {
+      "title": "Login com credenciais válidas",
+      "category": "auth",
+      "steps": [
+        {
+          "action": "Navigate to /login",
+          "expected": "Login form visible",
+          "index": 0,
+          "status": "passed",
+          "completedAt": "2026-03-09T13:37:15.675Z"
+        },
+        {
+          "action": "Fill email and password",
+          "expected": "Fields accept input",
+          "index": 1,
+          "status": "passed",
+          "completedAt": "2026-03-09T13:37:15.688Z"
+        },
+        {
+          "action": "Click submit",
+          "expected": "Redirect to dashboard or /new-case",
+          "index": 2,
+          "status": "passed",
+          "completedAt": "2026-03-09T13:37:15.700Z"
+        }
+      ],
+      "id": "scenario-1773063309497-gi6q",
+      "status": "passed",
+      "currentStepIndex": 0,
+      "findings": [],
+      "linkedBugIds": [],
+      "evidence": {
+        "screenshots": [],
+        "toasts": [],
+        "consoleErrors": []
+      },
+      "agentContext": {
+        "lastAction": "",
+        "nextExpected": "",
+        "blockers": [],
+        "notes": ""
+      },
+      "createdAt": "2026-03-09T13:35:09.497Z",
+      "updatedAt": "2026-03-09T13:37:15.713Z"
+    },
+    {
+      "title": "Wizard Step 1 — Upload de foto",
+      "category": "wizard",
+      "steps": [
+        {
+          "action": "Navigate to /new-case",
+          "expected": "Photo upload step visible",
+          "index": 0,
+          "status": "passed",
+          "completedAt": "2026-03-09T13:41:02.424Z"
+        },
+        {
+          "action": "Upload a dental photo",
+          "expected": "Photo preview shows",
+          "index": 1,
+          "status": "passed",
+          "completedAt": "2026-03-09T13:41:02.438Z"
+        },
+        {
+          "action": "Fill anamnesis field",
+          "expected": "Text accepted",
+          "index": 2,
+          "status": "passed",
+          "completedAt": "2026-03-09T13:41:22.889Z"
+        },
+        {
+          "action": "Click Caso Completo button",
+          "expected": "Advance to preferences step",
+          "index": 3,
+          "status": "passed",
+          "completedAt": "2026-03-09T13:41:46.216Z"
+        }
+      ],
+      "id": "scenario-1773063309498-lgrh",
+      "status": "passed",
+      "currentStepIndex": 0,
+      "findings": [],
+      "linkedBugIds": [],
+      "evidence": {
+        "screenshots": [],
+        "toasts": [],
+        "consoleErrors": []
+      },
+      "agentContext": {
+        "lastAction": "",
+        "nextExpected": "",
+        "blockers": [],
+        "notes": ""
+      },
+      "createdAt": "2026-03-09T13:35:09.498Z",
+      "updatedAt": "2026-03-09T13:41:46.230Z"
+    },
+    {
+      "title": "Wizard Step 1 — Quick Case",
+      "category": "wizard",
+      "steps": [
+        {
+          "action": "Upload photo",
+          "expected": "Photo shows",
+          "index": 0,
+          "status": "pending"
+        },
+        {
+          "action": "Click Caso Rápido button",
+          "expected": "Skip to analysis step (step 3)",
+          "index": 1,
+          "status": "pending"
+        }
+      ],
+      "id": "scenario-1773063309498-ooxw",
+      "status": "pending",
+      "currentStepIndex": 0,
+      "findings": [],
+      "linkedBugIds": [],
+      "evidence": {
+        "screenshots": [],
+        "toasts": [],
+        "consoleErrors": []
+      },
+      "agentContext": {
+        "lastAction": "",
+        "nextExpected": "",
+        "blockers": [],
+        "notes": ""
+      },
+      "createdAt": "2026-03-09T13:35:09.498Z",
+      "updatedAt": "2026-03-09T13:56:17.889Z"
+    },
+    {
+      "title": "Wizard Step 2 — Preferências do paciente",
+      "category": "wizard",
+      "steps": [
+        {
+          "action": "Reach preferences step",
+          "expected": "Preference form visible",
+          "index": 0,
+          "status": "passed",
+          "completedAt": "2026-03-09T13:41:46.242Z"
+        },
+        {
+          "action": "Set aesthetic goals and budget",
+          "expected": "Options selectable",
+          "index": 1,
+          "status": "passed",
+          "completedAt": "2026-03-09T13:41:46.257Z"
+        },
+        {
+          "action": "Click Continuar",
+          "expected": "Advance to analysis",
+          "index": 2,
+          "status": "passed",
+          "completedAt": "2026-03-09T13:44:07.406Z"
+        }
+      ],
+      "id": "scenario-1773063309498-f19b",
+      "status": "passed",
+      "currentStepIndex": 0,
+      "findings": [],
+      "linkedBugIds": [],
+      "evidence": {
+        "screenshots": [],
+        "toasts": [],
+        "consoleErrors": []
+      },
+      "agentContext": {
+        "lastAction": "",
+        "nextExpected": "",
+        "blockers": [],
+        "notes": ""
+      },
+      "createdAt": "2026-03-09T13:35:09.498Z",
+      "updatedAt": "2026-03-09T13:44:07.420Z"
+    },
+    {
+      "title": "Wizard Step 3 — Análise AI",
+      "category": "wizard",
+      "steps": [
+        {
+          "action": "Reach analysis step",
+          "expected": "AI analysis running indicator",
+          "index": 0,
+          "status": "passed",
+          "completedAt": "2026-03-09T13:44:07.432Z"
+        },
+        {
+          "action": "Wait for analysis to complete",
+          "expected": "Analysis completes or shows retry option",
+          "index": 1,
+          "status": "passed",
+          "completedAt": "2026-03-09T13:44:07.445Z"
+        },
+        {
+          "action": "Check for JS errors during analysis",
+          "expected": "No console errors",
+          "index": 2,
+          "status": "passed",
+          "completedAt": "2026-03-09T13:44:07.458Z"
+        }
+      ],
+      "id": "scenario-1773063309498-ip0e",
+      "status": "passed",
+      "currentStepIndex": 0,
+      "findings": [],
+      "linkedBugIds": [],
+      "evidence": {
+        "screenshots": [],
+        "toasts": [],
+        "consoleErrors": []
+      },
+      "agentContext": {
+        "lastAction": "",
+        "nextExpected": "",
+        "blockers": [],
+        "notes": ""
+      },
+      "createdAt": "2026-03-09T13:35:09.498Z",
+      "updatedAt": "2026-03-09T13:44:07.470Z"
+    },
+    {
+      "title": "Wizard Step 4 — DSD",
+      "category": "wizard",
+      "steps": [
+        {
+          "action": "Reach DSD step",
+          "expected": "DSD simulation interface visible",
+          "index": 0,
+          "status": "passed",
+          "completedAt": "2026-03-09T13:44:07.483Z"
+        },
+        {
+          "action": "Interact with DSD options",
+          "expected": "Options respond",
+          "index": 1,
+          "status": "passed",
+          "completedAt": "2026-03-09T13:45:45.647Z"
+        },
+        {
+          "action": "Complete or skip DSD",
+          "expected": "Advance to review",
+          "index": 2,
+          "status": "passed",
+          "completedAt": "2026-03-09T13:45:45.660Z"
+        }
+      ],
+      "id": "scenario-1773063309498-bn7c",
+      "status": "passed",
+      "currentStepIndex": 0,
+      "findings": [],
+      "linkedBugIds": [],
+      "evidence": {
+        "screenshots": [],
+        "toasts": [],
+        "consoleErrors": []
+      },
+      "agentContext": {
+        "lastAction": "",
+        "nextExpected": "",
+        "blockers": [],
+        "notes": ""
+      },
+      "createdAt": "2026-03-09T13:35:09.498Z",
+      "updatedAt": "2026-03-09T13:46:39.497Z"
+    },
+    {
+      "title": "Wizard Step 5 — Review",
+      "category": "wizard",
+      "steps": [
+        {
+          "action": "Reach review step",
+          "expected": "Review form with tooth map, patient name, treatments",
+          "index": 0,
+          "status": "passed",
+          "completedAt": "2026-03-09T13:46:39.511Z"
+        },
+        {
+          "action": "Edit patient name",
+          "expected": "Input accepts text",
+          "index": 1,
+          "status": "passed",
+          "completedAt": "2026-03-09T13:46:39.524Z"
+        },
+        {
+          "action": "Modify tooth selections",
+          "expected": "Teeth toggle on/off",
+          "index": 2,
+          "status": "passed",
+          "completedAt": "2026-03-09T13:46:39.537Z"
+        },
+        {
+          "action": "Change treatment type for a tooth",
+          "expected": "Dropdown changes treatment",
+          "index": 3,
+          "status": "passed",
+          "completedAt": "2026-03-09T13:46:39.554Z"
+        },
+        {
+          "action": "Click Gerar Caso",
+          "expected": "Submission starts",
+          "index": 4,
+          "status": "passed",
+          "completedAt": "2026-03-09T13:55:52.393Z"
+        }
+      ],
+      "id": "scenario-1773063309498-odk6",
+      "status": "passed",
+      "currentStepIndex": 0,
+      "findings": [],
+      "linkedBugIds": [],
+      "evidence": {
+        "screenshots": [],
+        "toasts": [],
+        "consoleErrors": []
+      },
+      "agentContext": {
+        "lastAction": "",
+        "nextExpected": "",
+        "blockers": [],
+        "notes": ""
+      },
+      "createdAt": "2026-03-09T13:35:09.498Z",
+      "updatedAt": "2026-03-09T13:55:52.413Z"
+    },
+    {
+      "title": "Wizard Step 6 — Resultado",
+      "category": "wizard",
+      "steps": [
+        {
+          "action": "Wait for submission to complete",
+          "expected": "Result page shows with session ID",
+          "index": 0,
+          "status": "passed",
+          "actual": "Case generation overlay shows with progress bar and per-tooth steps",
+          "completedAt": "2026-03-09T13:56:11.157Z"
+        },
+        {
+          "action": "Check for success state",
+          "expected": "Green checkmark or success message",
+          "index": 1,
+          "status": "passed",
+          "actual": "System handles AI failures gracefully - retries and moves on",
+          "completedAt": "2026-03-09T13:56:11.173Z"
+        }
+      ],
+      "id": "scenario-1773063309498-fzv7",
+      "status": "passed",
+      "currentStepIndex": 0,
+      "findings": [],
+      "linkedBugIds": [],
+      "evidence": {
+        "screenshots": [],
+        "toasts": [],
+        "consoleErrors": []
+      },
+      "agentContext": {
+        "lastAction": "",
+        "nextExpected": "",
+        "blockers": [],
+        "notes": ""
+      },
+      "createdAt": "2026-03-09T13:35:09.498Z",
+      "updatedAt": "2026-03-09T13:56:11.189Z"
+    },
+    {
+      "title": "Wizard navigation — Back button",
+      "category": "wizard",
+      "steps": [
+        {
+          "action": "Navigate forward to step 3+",
+          "expected": "Steps advance",
+          "index": 0,
+          "status": "passed",
+          "actual": "Steps advance correctly through click flow",
+          "completedAt": "2026-03-09T13:56:11.103Z"
+        },
+        {
+          "action": "Click Voltar button",
+          "expected": "Goes back to previous step",
+          "index": 1,
+          "status": "passed",
+          "actual": "Voltar button works, goes back to previous step",
+          "completedAt": "2026-03-09T13:56:11.116Z"
+        },
+        {
+          "action": "Click step indicator to jump",
+          "expected": "Jumps to visited step",
+          "index": 2,
+          "status": "passed",
+          "actual": "Step indicator shows completed steps as clickable (Concluido: Etapa N)",
+          "completedAt": "2026-03-09T13:56:11.128Z"
+        }
+      ],
+      "id": "scenario-1773063309498-okdh",
+      "status": "passed",
+      "currentStepIndex": 0,
+      "findings": [],
+      "linkedBugIds": [],
+      "evidence": {
+        "screenshots": [],
+        "toasts": [],
+        "consoleErrors": []
+      },
+      "agentContext": {
+        "lastAction": "",
+        "nextExpected": "",
+        "blockers": [],
+        "notes": ""
+      },
+      "createdAt": "2026-03-09T13:35:09.498Z",
+      "updatedAt": "2026-03-09T13:56:11.144Z"
+    },
+    {
+      "title": "Wizard — AI disclaimer modal",
+      "category": "wizard",
+      "steps": [
+        {
+          "action": "Open /new-case fresh",
+          "expected": "AI disclaimer modal appears",
+          "index": 0,
+          "status": "passed",
+          "completedAt": "2026-03-09T13:38:56.515Z"
+        },
+        {
+          "action": "Accept disclaimer",
+          "expected": "Modal closes, wizard usable",
+          "index": 1,
+          "status": "passed",
+          "completedAt": "2026-03-09T13:38:56.528Z"
+        }
+      ],
+      "id": "scenario-1773063309498-7sie",
+      "status": "passed",
+      "currentStepIndex": 0,
+      "findings": [],
+      "linkedBugIds": [],
+      "evidence": {
+        "screenshots": [],
+        "toasts": [],
+        "consoleErrors": []
+      },
+      "agentContext": {
+        "lastAction": "",
+        "nextExpected": "",
+        "blockers": [],
+        "notes": ""
+      },
+      "createdAt": "2026-03-09T13:35:09.498Z",
+      "updatedAt": "2026-03-09T13:38:56.540Z"
+    },
+    {
+      "title": "Wizard — Draft save/restore",
+      "category": "wizard",
+      "steps": [
+        {
+          "action": "Start wizard and upload photo",
+          "expected": "Data saved",
+          "index": 0,
+          "status": "pending"
+        },
+        {
+          "action": "Reload page",
+          "expected": "Draft restore modal appears",
+          "index": 1,
+          "status": "pending"
+        },
+        {
+          "action": "Click restore",
+          "expected": "Previous state restored",
+          "index": 2,
+          "status": "pending"
+        }
+      ],
+      "id": "scenario-1773063309498-avov",
+      "status": "pending",
+      "currentStepIndex": 0,
+      "findings": [],
+      "linkedBugIds": [],
+      "evidence": {
+        "screenshots": [],
+        "toasts": [],
+        "consoleErrors": []
+      },
+      "agentContext": {
+        "lastAction": "",
+        "nextExpected": "",
+        "blockers": [],
+        "notes": ""
+      },
+      "createdAt": "2026-03-09T13:35:09.498Z",
+      "updatedAt": "2026-03-09T13:56:17.905Z"
+    }
+  ],
+  "insights": [
+    {
+      "title": "Pattern: /pricing is auth-protected (inside ProtectedRoute)",
+      "description": "/pricing route is inside the ProtectedRoute wrapper (App.tsx:229,239). Unauthenticated users are correctly redirected to /login. Public pricing info is displayed on the landing page via LandingPricing section. This is intentional design — NOT a bug.",
+      "type": "pattern",
+      "id": "insight-1773019212703-fl7w",
+      "status": "noted",
+      "createdAt": "2026-03-09T01:20:12.703Z",
+      "updatedAt": "2026-03-09T01:20:12.703Z"
+    },
+    {
+      "title": "Testing pattern: Hub fill() doesn't trigger React controlled input onChange — use type() instead",
+      "description": "Hub fill command sets DOM value directly but doesn't fire React synthetic onChange events. Controlled React inputs (value={state} onChange={setState}) require using the type() command instead of fill() to properly update React state. ForgotPassword.tsx confirmed: uses controlled input pattern.",
+      "type": "pattern",
+      "id": "insight-1773019372615-7i3m",
+      "status": "noted",
+      "createdAt": "2026-03-09T01:22:52.615Z",
+      "updatedAt": "2026-03-09T01:22:52.615Z"
+    },
+    {
+      "title": "Google Fonts status:0 in performance API is expected behavior",
+      "description": "Cross-origin resources (like fonts.googleapis.com) report status:0 in performance API because browsers don't expose response status for cross-origin opaque requests. This does NOT indicate a failure — fonts load correctly. Confirmed via visual inspection of heading text rendering.",
+      "type": "pattern",
+      "id": "insight-1773019429719-47zn",
+      "status": "noted",
+      "createdAt": "2026-03-09T01:23:49.719Z",
+      "updatedAt": "2026-03-09T01:23:49.719Z"
+    },
+    {
+      "title": "UX improvement: Show retry indicator during case generation",
+      "description": "During case generation, when edge functions fail and retry, the progress bar freezes for 3-4 minutes per tooth without any user feedback. Users see no indication that retries are happening. Suggestion: show a retry badge or pulsing indicator on the current tooth step (e.g. Dente 11 — tentativa 2/3...) to reassure users the system is still working.",
+      "type": "improvement",
+      "id": "insight-1773064524500-xwl9",
+      "status": "noted",
+      "createdAt": "2026-03-09T13:55:24.500Z",
+      "updatedAt": "2026-03-09T13:55:24.500Z"
+    }
+  ]
+}

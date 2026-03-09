@@ -1,0 +1,20 @@
+{
+  "falsePositives": [
+    {
+      "id": "favicon-404",
+      "pattern": "favicon\\.ico.*404|Failed to load.*favicon",
+      "type": "network",
+      "description": "Missing favicon is not a real bug",
+      "autoAction": "dismiss",
+      "confidence": 0.95
+    },
+    {
+      "id": "devtools-warning",
+      "pattern": "Download the React DevTools|React DevTools",
+      "type": "console_error",
+      "description": "React DevTools suggestion in development",
+      "autoAction": "dismiss",
+      "confidence": 0.95
+    }
+  ]
+}

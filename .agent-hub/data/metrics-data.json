@@ -1,0 +1,113 @@
+{
+  "runs": [
+    {
+      "runId": "agent-run-1773019501745-whdd",
+      "playbook": "agent-team",
+      "timestamp": "2026-03-09T01:25:01.745Z",
+      "durationMs": 0,
+      "totalChecks": 36,
+      "passed": 34,
+      "failed": 2,
+      "passRate": 94,
+      "bugsReported": 0,
+      "bugsReal": 0,
+      "bugsFP": 0,
+      "bugsAutoTriaged": 0,
+      "routeResults": [
+        {
+          "route": "public",
+          "passRate": 100,
+          "failedChecks": []
+        },
+        {
+          "route": "auth",
+          "passRate": 100,
+          "failedChecks": []
+        }
+      ]
+    },
+    {
+      "runId": "agent-run-1773064628540-smfl",
+      "playbook": "agent-team",
+      "timestamp": "2026-03-09T13:57:08.541Z",
+      "durationMs": 0,
+      "totalChecks": 73,
+      "passed": 62,
+      "failed": 2,
+      "passRate": 85,
+      "bugsReported": 1,
+      "bugsReal": 0,
+      "bugsFP": 1,
+      "bugsAutoTriaged": 1,
+      "routeResults": [
+        {
+          "route": "public",
+          "passRate": 100,
+          "failedChecks": []
+        },
+        {
+          "route": "auth",
+          "passRate": 100,
+          "failedChecks": []
+        },
+        {
+          "route": "wizard",
+          "passRate": 100,
+          "failedChecks": []
+        }
+      ]
+    }
+  ],
+  "routeHealth": {
+    "public": {
+      "route": "public",
+      "lastNRuns": [
+        {
+          "runId": "agent-run-1773019501745-whdd",
+          "passRate": 100,
+          "timestamp": "2026-03-09T01:25:01.745Z"
+        },
+        {
+          "runId": "agent-run-1773064628540-smfl",
+          "passRate": 100,
+          "timestamp": "2026-03-09T13:57:08.541Z"
+        }
+      ],
+      "overallPassRate": 100,
+      "flakyScore": 0,
+      "consecutivePasses": 2
+    },
+    "auth": {
+      "route": "auth",
+      "lastNRuns": [
+        {
+          "runId": "agent-run-1773019501745-whdd",
+          "passRate": 100,
+          "timestamp": "2026-03-09T01:25:01.745Z"
+        },
+        {
+          "runId": "agent-run-1773064628540-smfl",
+          "passRate": 100,
+          "timestamp": "2026-03-09T13:57:08.541Z"
+        }
+      ],
+      "overallPassRate": 100,
+      "flakyScore": 0,
+      "consecutivePasses": 2
+    },
+    "wizard": {
+      "route": "wizard",
+      "lastNRuns": [
+        {
+          "runId": "agent-run-1773064628540-smfl",
+          "passRate": 100,
+          "timestamp": "2026-03-09T13:57:08.541Z"
+        }
+      ],
+      "overallPassRate": 100,
+      "flakyScore": 0,
+      "consecutivePasses": 1
+    }
+  },
+  "flakyChecks": []
+}
