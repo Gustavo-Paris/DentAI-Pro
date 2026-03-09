@@ -35,6 +35,16 @@
             "timeout": 30000
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/post-edit-prompt-test.sh",
+            "timeout": 60000
+          }
+        ]
       }
     ]
   }
