@@ -405,12 +405,18 @@ Deno.serve(async (req) => {
         });
         aiResult = geminiResult;
       } catch (geminiErr) {
-        // Gemini failed — fallback to Claude Sonnet
+        // Gemini threw — fallback to Claude Sonnet
         const isRateLimit = geminiErr instanceof GeminiError && geminiErr.statusCode === 429;
         if (isRateLimit) {
           return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
         }
         logger.warn(`Gemini failed, falling back to Claude Sonnet: ${geminiErr instanceof Error ? geminiErr.message : String(geminiErr)}`);
+        aiResult = { functionCall: null, text: null }; // trigger Claude fallback below
+      }
+
+      // Gemini returned no function call (empty/text-only response) — also fall back to Claude
+      if (!aiResult.functionCall && usedProvider === 'gemini') {
+        logger.warn(`Gemini returned no function call, falling back to Claude Sonnet`);
         usedProvider = 'claude';
         const claudeResult = await callClaudeWithTools(
           promptDef.model,

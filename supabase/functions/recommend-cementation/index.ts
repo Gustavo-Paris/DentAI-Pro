@@ -507,6 +507,12 @@ Deno.serve(async (req: Request) => {
           return createErrorResponse(ERROR_MESSAGES.RATE_LIMITED, 429, corsHeaders, "RATE_LIMITED");
         }
         logger.warn(`[${reqId}] Gemini failed, falling back to Claude Sonnet: ${geminiErr instanceof Error ? geminiErr.message : String(geminiErr)}`);
+        aiResult = { functionCall: null, text: null }; // trigger Claude fallback below
+      }
+
+      // Gemini returned no function call (empty/text-only response) — also fall back to Claude
+      if (!aiResult.functionCall && usedProvider === 'gemini') {
+        logger.warn(`[${reqId}] Gemini returned no function call, falling back to Claude Sonnet`);
         usedProvider = 'claude';
         const claudeResult = await callClaudeWithTools(
           prompt.model,
