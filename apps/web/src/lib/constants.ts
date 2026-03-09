@@ -39,3 +39,4 @@ export const TIMING = {
   /** Global timeout for entire case generation (10 minutes). */
   CASE_GENERATION_TIMEOUT: 10 * 60 * 1000,
 } as const;
+const badType: number = 'this should fail';
