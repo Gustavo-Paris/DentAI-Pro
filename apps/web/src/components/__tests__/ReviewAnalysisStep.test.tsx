@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- test file uses any for mock flexibility */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ReviewAnalysisStep } from '../wizard/ReviewAnalysisStep';
@@ -84,10 +85,7 @@ vi.mock('date-fns/locale', () => ({
   ptBR: {},
 }));
 
-// Mock calculateAge
-vi.mock('@/lib/dateUtils', () => ({
-  calculateAge: () => 30,
-}));
+// calculateAge mock moved below with @/lib/date-utils
 
 vi.mock('@/components/calendar', () => ({
   Calendar: () => <div data-testid="calendar" />,
@@ -138,6 +136,20 @@ vi.mock('@parisgroup-ai/pageshell/primitives', () => ({
 
 vi.mock('@/lib/utils', () => ({
   cn: (...args: any[]) => args.filter(Boolean).join(' '),
+  toI18nKeySuffix: (value: string) => {
+    const stripped = value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return stripped.charAt(0).toUpperCase() + stripped.slice(1);
+  },
+}));
+
+// Mock skeletons (used in Suspense fallback for lazy-loaded ToothSelectionCard)
+vi.mock('@/components/skeletons', () => ({
+  ComponentSkeleton: ({ height }: any) => <div data-testid="component-skeleton" style={{ height }} />,
+}));
+
+// Mock date-utils (note: NOT dateUtils — the import path changed)
+vi.mock('@/lib/date-utils', () => ({
+  calculateAge: () => 30,
 }));
 
 describe('ReviewAnalysisStep', () => {
@@ -248,11 +260,15 @@ describe('ReviewAnalysisStep', () => {
 
   it('should render patient data section', () => {
     render(<ReviewAnalysisStep {...defaultProps} />);
+    // Patient data is in the 'paciente' tab
+    fireEvent.click(screen.getByText('components.wizard.review.tabs.patient'));
     expect(screen.getByText('components.wizard.review.patientData')).toBeInTheDocument();
   });
 
   it('should render observations when present', () => {
     render(<ReviewAnalysisStep {...defaultProps} />);
+    // Observations are in the 'paciente' tab
+    fireEvent.click(screen.getByText('components.wizard.review.tabs.patient'));
     expect(screen.getByText('components.wizard.review.aiObservations')).toBeInTheDocument();
     expect(screen.getByText(/Observacao 1/)).toBeInTheDocument();
   });
@@ -260,6 +276,8 @@ describe('ReviewAnalysisStep', () => {
   it('should not render observations when empty', () => {
     const noObsAnalysis = { ...singleToothAnalysis, observations: [] };
     render(<ReviewAnalysisStep {...defaultProps} analysisResult={noObsAnalysis} />);
+    // Switch to paciente tab where observations would appear
+    fireEvent.click(screen.getByText('components.wizard.review.tabs.patient'));
     expect(screen.queryByText('components.wizard.review.aiObservations')).not.toBeInTheDocument();
   });
 
@@ -312,11 +330,12 @@ describe('ReviewAnalysisStep', () => {
     expect(screen.queryByText('components.wizard.review.noResins')).not.toBeInTheDocument();
   });
 
-  it('should render accordion sections', () => {
+  it('should render tab bar with all sections', () => {
     render(<ReviewAnalysisStep {...defaultProps} />);
-    expect(screen.getByTestId('accordion-item-photo')).toBeInTheDocument();
-    expect(screen.getByTestId('accordion-item-budget')).toBeInTheDocument();
-    expect(screen.getByTestId('accordion-item-notes')).toBeInTheDocument();
+    expect(screen.getByText('components.wizard.review.tabs.teeth')).toBeInTheDocument();
+    expect(screen.getByText('components.wizard.review.tabs.treatment')).toBeInTheDocument();
+    expect(screen.getByText('components.wizard.review.tabs.patient')).toBeInTheDocument();
+    expect(screen.getByText('components.wizard.review.tabs.summary')).toBeInTheDocument();
   });
 
   it('should render summary card when teeth are selected', () => {
@@ -329,6 +348,8 @@ describe('ReviewAnalysisStep', () => {
         toothTreatments={{ '11': 'resina', '21': 'porcelana' }}
       />
     );
+    // Summary card is in the 'resumo' tab
+    fireEvent.click(screen.getByText('components.wizard.review.tabs.summary'));
     expect(screen.getByText('components.wizard.review.caseSummary')).toBeInTheDocument();
   });
 
@@ -341,6 +362,8 @@ describe('ReviewAnalysisStep', () => {
         onSelectedTeethChange={vi.fn()}
       />
     );
+    // Summary card is in the 'resumo' tab
+    fireEvent.click(screen.getByText('components.wizard.review.tabs.summary'));
     expect(screen.queryByText('components.wizard.review.caseSummary')).not.toBeInTheDocument();
   });
 
@@ -378,6 +401,8 @@ describe('ReviewAnalysisStep', () => {
         dsdSuggestions={[{ tooth: '11', current_issue: 'Desgaste', proposed_change: 'Faceta' }]}
       />
     );
+    // DSD aesthetic notes are in the 'resumo' tab
+    fireEvent.click(screen.getByText('components.wizard.review.tabs.summary'));
     expect(screen.getByText('components.wizard.review.aestheticNotesDSD')).toBeInTheDocument();
   });
 });

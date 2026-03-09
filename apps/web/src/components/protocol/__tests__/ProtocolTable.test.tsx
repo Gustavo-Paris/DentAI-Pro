@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- test file uses any for mock flexibility */
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import ProtocolTable from '../ProtocolTable';
@@ -71,20 +72,24 @@ describe('ProtocolTable', () => {
     const layers = makeLayers();
     render(<ProtocolTable layers={layers} />);
 
-    // Each layer name appears in both desktop table and mobile cards
-    expect(screen.getAllByText(/1\. Dentina \/ Body/).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText(/2\. Esmalte \/ Enamel/).length).toBeGreaterThanOrEqual(1);
+    // Layer names rendered as card headings (order is in a separate number badge)
+    expect(screen.getByText('Dentina / Body')).toBeInTheDocument();
+    expect(screen.getByText('Esmalte / Enamel')).toBeInTheDocument();
+
+    // Order numbers in separate badges
+    expect(screen.getByText('1')).toBeInTheDocument();
+    expect(screen.getByText('2')).toBeInTheDocument();
 
     // Resin brands
     expect(screen.getAllByText('Filtek Z350 XT').length).toBeGreaterThanOrEqual(1);
 
     // Shades
-    expect(screen.getAllByText('A2B').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText('A2E').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText('A2B')).toBeInTheDocument();
+    expect(screen.getByText('A2E')).toBeInTheDocument();
 
     // Thickness
-    expect(screen.getAllByText('1.0 mm').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText('0.5 mm').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText('1.0 mm')).toBeInTheDocument();
+    expect(screen.getByText('0.5 mm')).toBeInTheDocument();
   });
 
   it('renders purpose and technique for each layer', () => {
@@ -119,17 +124,18 @@ describe('ProtocolTable', () => {
     ];
     render(<ProtocolTable layers={layers} />);
 
-    // Verify all layers render (style classes are applied via className, not easily testable via text)
-    expect(screen.getAllByText(/1\. Opaco/).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText(/2\. Efeito/).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText(/3\. Bulk/).length).toBeGreaterThanOrEqual(1);
+    // Layer names rendered as card headings (order is in separate number badge)
+    expect(screen.getByText('Opaco / Mascaramento')).toBeInTheDocument();
+    expect(screen.getByText('Efeito opalescente')).toBeInTheDocument();
+    expect(screen.getByText('Bulk Fill')).toBeInTheDocument();
   });
 
-  it('renders table header with translated column names', () => {
+  it('renders translated labels in card layout', () => {
     render(<ProtocolTable layers={makeLayers()} />);
-    expect(screen.getByText('components.protocol.table.layer')).toBeInTheDocument();
-    expect(screen.getByText('components.protocol.table.resin')).toBeInTheDocument();
-    expect(screen.getByText('components.protocol.table.color')).toBeInTheDocument();
-    expect(screen.getByText('components.protocol.table.thickness')).toBeInTheDocument();
+    // Card layout uses dt labels instead of table headers
+    expect(screen.getAllByText('components.protocol.table.resin').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('components.protocol.table.color').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('components.protocol.table.thickness').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('components.protocol.table.technique').length).toBeGreaterThanOrEqual(1);
   });
 });

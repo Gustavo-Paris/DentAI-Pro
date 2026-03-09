@@ -68,10 +68,10 @@ export default function PatientProfile() {
       setShowDeleteDialog(false);
     }
   };
+  const sections = useMemo(() => {
   const sessionsList = sessions?.sessions || [];
   const hasMoreSessions = sessions?.hasMore || false;
-
-  const sections = useMemo(() => [
+  return [
           {
             id: 'contact',
             title: t('patients.contactInfo'),
@@ -177,7 +177,8 @@ export default function PatientProfile() {
               />
             ),
           },
-  ], [t, patient, metrics, sessionsList, patientId, hasMoreSessions, profile.openEditDialog, profile.loadMoreSessions, profile.isFetchingSessions]);
+  ];
+  }, [t, patient, metrics, sessions, patientId, profile.openEditDialog, profile.loadMoreSessions, profile.isFetchingSessions]);
 
   if (!profile.patient && !profile.isLoading) {
     return (
@@ -191,7 +192,7 @@ export default function PatientProfile() {
   return (
     <>
       <DetailPage
-        className="relative z-10 max-w-5xl mx-auto"
+        className="relative z-10 max-w-5xl mx-auto stagger-enter"
         title={(data) => data?.name ?? '...'}
         description={t('patients.profileTitle')}
         backHref="/patients"

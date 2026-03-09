@@ -48,7 +48,7 @@ export function CasosTab() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 stagger-enter">
       {/* Filter pills with counts */}
       <div className="flex gap-2">
         {filters.map(f => (

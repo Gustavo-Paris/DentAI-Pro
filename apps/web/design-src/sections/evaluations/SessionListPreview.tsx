@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import '../../preview-theme.css'
 import { SessionList } from './components'
 import type { EvalSession } from '../../../design/sections/evaluations/types'

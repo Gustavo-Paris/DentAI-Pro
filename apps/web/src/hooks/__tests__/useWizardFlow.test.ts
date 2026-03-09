@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- test file uses any for mock flexibility */
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 
@@ -606,24 +607,26 @@ describe('useWizardFlow', () => {
   // =========================================================================
 
   describe('action delegation', () => {
-    it('should delegate handleDSDComplete to dsd sub-hook', () => {
+    it('should handle handleDSDComplete by setting dsdResult and navigating to review step', () => {
       const { result } = renderHook(() => useWizardFlow());
 
       act(() => {
         result.current.handleDSDComplete(null);
       });
 
-      expect(mockDsdReturn.handleDSDComplete).toHaveBeenCalledWith(null);
+      // handleDSDComplete is now inline — it sets dsdResult and calls nav.setStep(5)
+      expect(mockNavReturn.setStep).toHaveBeenCalledWith(5);
     });
 
-    it('should delegate handleDSDSkip to dsd sub-hook', () => {
+    it('should handle handleDSDSkip by clearing dsdResult and navigating to review step', () => {
       const { result } = renderHook(() => useWizardFlow());
 
       act(() => {
         result.current.handleDSDSkip();
       });
 
-      expect(mockDsdReturn.handleDSDSkip).toHaveBeenCalled();
+      // handleDSDSkip is now inline — it sets dsdResult to null and calls nav.setStep(5)
+      expect(mockNavReturn.setStep).toHaveBeenCalledWith(5);
     });
 
     it('should delegate updateFormData to review sub-hook', () => {

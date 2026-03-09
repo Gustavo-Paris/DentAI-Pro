@@ -289,7 +289,7 @@ export default function Pricing() {
   }
 
   return (
-    <div className="pricing-page">
+    <div className="pricing-page stagger-enter">
       <PricingPage
         className="relative max-w-6xl mx-auto py-6 sm:py-8"
         title={t('pricing.title')}

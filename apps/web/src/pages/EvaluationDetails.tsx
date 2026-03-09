@@ -81,6 +81,7 @@ export default function EvaluationDetails() {
     }
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [detail.selectedIds.size, detail.clearSelection]);
 
   // Auto-trigger retry when navigated from "Reprocessar caso" button
@@ -95,6 +96,7 @@ export default function EvaluationDetails() {
       setSearchParams({}, { replace: true });
       detail.handleRetryEvaluation(retryId);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, detail.isLoading, detail.evaluations.length]);
 
   const handleCompleteClick = (id: string) => {
@@ -124,7 +126,7 @@ export default function EvaluationDetails() {
   return (
     <>
       <DetailPage
-        className="relative z-10 max-w-5xl mx-auto"
+        className="relative z-10 max-w-5xl mx-auto stagger-enter"
         title={detail.patientName}
         breadcrumbs={[
           { label: t('evaluation.title'), href: '/evaluations' },

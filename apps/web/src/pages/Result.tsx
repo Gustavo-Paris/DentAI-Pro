@@ -71,7 +71,7 @@ export default function Result() {
       <LoadingOverlay isLoading={r.generatingPDF} message={t('result.generatingPDF')} />
 
       <DetailPage
-        className="relative z-10 max-w-5xl mx-auto py-6 sm:py-8"
+        className="relative z-10 max-w-5xl mx-auto py-6 sm:py-8 stagger-enter"
         title={r.currentTreatmentStyle.label}
         breadcrumbs={[
           { label: t('result.home'), href: '/dashboard' },

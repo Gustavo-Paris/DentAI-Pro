@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import '../../preview-theme.css'
 import { ProtocolView } from './components'
 import type { ProtocolData } from '../../../design/sections/evaluations/types'

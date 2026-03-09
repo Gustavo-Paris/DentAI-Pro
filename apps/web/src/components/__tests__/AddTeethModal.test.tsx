@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- test file uses any for mock flexibility */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { AddTeethModal, type PendingTooth } from '../AddTeethModal';
@@ -24,6 +25,20 @@ vi.mock('sonner', () => ({
     success: vi.fn(),
     info: vi.fn(),
   },
+}));
+
+// Mock utils
+vi.mock('@/lib/utils', () => ({
+  cn: (...args: any[]) => args.filter(Boolean).join(' '),
+  toI18nKeySuffix: (value: string) => {
+    const stripped = value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return stripped.charAt(0).toUpperCase() + stripped.slice(1);
+  },
+}));
+
+// Mock clinical-enums
+vi.mock('@/lib/clinical-enums', () => ({
+  tEnum: (_t: any, _type: string, value: string) => value,
 }));
 
 // Mock logger
@@ -188,9 +203,10 @@ describe('AddTeethModal', () => {
 
     it('should display priority badges for restorative teeth', () => {
       render(<AddTeethModal {...defaultProps} />);
-      // Component renders t(`common.priority${Priority}`) — mock returns key as-is
+      // Component renders t(`common.priority${toI18nKeySuffix(priority)}`)
+      // toI18nKeySuffix strips diacritics: "média" → "Media"
       expect(screen.getByText('common.priorityAlta')).toBeInTheDocument();
-      expect(screen.getByText('common.priorityMédia')).toBeInTheDocument();
+      expect(screen.getByText('common.priorityMedia')).toBeInTheDocument();
     });
 
     it('should display cavity/restoration info for restorative teeth', () => {

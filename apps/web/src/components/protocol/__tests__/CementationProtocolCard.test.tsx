@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- test file uses any for mock flexibility */
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { CementationProtocolCard } from '../CementationProtocolCard';
@@ -24,6 +25,9 @@ vi.mock('@parisgroup-ai/pageshell/primitives', () => ({
   CardHeader: ({ children, ...props }: any) => <div {...props}>{children}</div>,
   CardTitle: ({ children, ...props }: any) => <h3 {...props}>{children}</h3>,
   Badge: ({ children, ...props }: any) => <span data-testid="badge" {...props}>{children}</span>,
+  Button: ({ children, onClick, disabled, ...props }: any) => (
+    <button onClick={onClick} disabled={disabled} {...props}>{children}</button>
+  ),
   Checkbox: ({ checked, onCheckedChange, ...props }: any) => (
     <input
       type="checkbox"
@@ -32,6 +36,11 @@ vi.mock('@parisgroup-ai/pageshell/primitives', () => ({
       {...props}
     />
   ),
+}));
+
+// Mock sonner
+vi.mock('sonner', () => ({
+  toast: { success: vi.fn(), error: vi.fn() },
 }));
 
 vi.mock('@/lib/utils', () => ({
@@ -46,6 +55,8 @@ vi.mock('lucide-react', () => ({
   CheckCircle: ({ className }: any) => <span data-testid="icon-check" className={className} />,
   AlertTriangle: ({ className }: any) => <span data-testid="icon-alert" className={className} />,
   ClipboardCheck: ({ className }: any) => <span data-testid="icon-clipboard" className={className} />,
+  Copy: ({ className }: any) => <span data-testid="icon-copy" className={className} />,
+  Check: ({ className }: any) => <span data-testid="icon-check-mark" className={className} />,
 }));
 
 // -- Fixtures --

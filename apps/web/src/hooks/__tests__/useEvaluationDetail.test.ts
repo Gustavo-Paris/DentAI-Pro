@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- test file uses any for mock flexibility */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { toast } from 'sonner';
@@ -86,6 +87,7 @@ vi.mock('@/data', () => ({
   },
   wizard: {
     syncGroupProtocols: vi.fn().mockResolvedValue(undefined),
+    warmupEdgeFunctions: vi.fn(),
   },
 }));
 
@@ -400,13 +402,14 @@ describe('useEvaluationSelection', () => {
   // ---- isChecklistComplete ----
 
   describe('isChecklistComplete', () => {
-    it('should return true when no checklist exists (null protocol)', () => {
+    it('should return false when no protocol exists (null protocol)', () => {
+      // hasProtocol returns false → isChecklistComplete returns false
       const eval1 = makeEval({ stratification_protocol: null });
       const { result } = renderHook(() => useEvaluationSelection([eval1]));
-      expect(result.current.isChecklistComplete(eval1)).toBe(true);
+      expect(result.current.isChecklistComplete(eval1)).toBe(false);
     });
 
-    it('should return true when checklist is empty', () => {
+    it('should return true when checklist is empty but protocol exists', () => {
       const eval1 = makeEval({ stratification_protocol: { checklist: [] } });
       const { result } = renderHook(() => useEvaluationSelection([eval1]));
       expect(result.current.isChecklistComplete(eval1)).toBe(true);
@@ -500,29 +503,34 @@ describe('useEvaluationSelection', () => {
   // ---- canMarkAsCompleted ----
 
   describe('canMarkAsCompleted', () => {
-    it('should return true for draft status', () => {
-      const { result } = renderHook(() => useEvaluationSelection([makeEval({ status: 'draft' })]));
-      expect(result.current.canMarkAsCompleted(makeEval({ status: 'draft' }))).toBe(true);
+    it('should return true for draft status with protocol', () => {
+      const evalWithProtocol = makeEval({ status: 'draft', stratification_protocol: { checklist: ['A'] } });
+      const { result } = renderHook(() => useEvaluationSelection([evalWithProtocol]));
+      expect(result.current.canMarkAsCompleted(evalWithProtocol)).toBe(true);
     });
 
-    it('should return true for analyzing status', () => {
-      const { result } = renderHook(() => useEvaluationSelection([makeEval({ status: 'analyzing' })]));
-      expect(result.current.canMarkAsCompleted(makeEval({ status: 'analyzing' }))).toBe(true);
+    it('should return true for analyzing status with protocol', () => {
+      const evalWithProtocol = makeEval({ status: 'analyzing', stratification_protocol: { checklist: ['A'] } });
+      const { result } = renderHook(() => useEvaluationSelection([evalWithProtocol]));
+      expect(result.current.canMarkAsCompleted(evalWithProtocol)).toBe(true);
     });
 
-    it('should return true for error status', () => {
-      const { result } = renderHook(() => useEvaluationSelection([makeEval({ status: 'error' })]));
-      expect(result.current.canMarkAsCompleted(makeEval({ status: 'error' }))).toBe(true);
+    it('should return true for error status with protocol', () => {
+      const evalWithProtocol = makeEval({ status: 'error', stratification_protocol: { checklist: ['A'] } });
+      const { result } = renderHook(() => useEvaluationSelection([evalWithProtocol]));
+      expect(result.current.canMarkAsCompleted(evalWithProtocol)).toBe(true);
     });
 
     it('should return false for completed status', () => {
-      const { result } = renderHook(() => useEvaluationSelection([makeEval({ status: 'completed' })]));
-      expect(result.current.canMarkAsCompleted(makeEval({ status: 'completed' }))).toBe(false);
+      const evalWithProtocol = makeEval({ status: 'completed', stratification_protocol: { checklist: ['A'] } });
+      const { result } = renderHook(() => useEvaluationSelection([evalWithProtocol]));
+      expect(result.current.canMarkAsCompleted(evalWithProtocol)).toBe(false);
     });
 
-    it('should return true for null status', () => {
-      const { result } = renderHook(() => useEvaluationSelection([makeEval({ status: null })]));
-      expect(result.current.canMarkAsCompleted(makeEval({ status: null }))).toBe(true);
+    it('should return false when no protocol exists (regardless of status)', () => {
+      const evalNoProtocol = makeEval({ status: 'draft', stratification_protocol: null });
+      const { result } = renderHook(() => useEvaluationSelection([evalNoProtocol]));
+      expect(result.current.canMarkAsCompleted(evalNoProtocol)).toBe(false);
     });
   });
 

@@ -131,7 +131,7 @@ export default function Profile() {
 
   return (
     <DetailPage
-      className="relative z-10 max-w-5xl mx-auto py-6 sm:py-8"
+      className="relative z-10 max-w-5xl mx-auto py-6 sm:py-8 stagger-enter"
       title={t('profile.title')}
       breadcrumbs={[
         { label: t('nav.dashboard'), href: '/dashboard' },

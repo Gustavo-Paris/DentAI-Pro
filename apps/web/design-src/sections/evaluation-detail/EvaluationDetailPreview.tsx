@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import '../../preview-theme.css'
 import { EvaluationDetail } from './components'
 import type {

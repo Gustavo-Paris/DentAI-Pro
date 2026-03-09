@@ -43,7 +43,7 @@ export default function GroupResult() {
   return (
     <>
       <DetailPage
-        className="relative z-10 max-w-5xl mx-auto py-6 sm:py-8"
+        className="relative z-10 max-w-5xl mx-auto py-6 sm:py-8 stagger-enter"
         title={`${g.currentTreatmentStyle.label} — ${t('components.groupResult.unifiedProtocol')}`}
         breadcrumbs={[
           { label: t('result.home'), href: '/dashboard' },
