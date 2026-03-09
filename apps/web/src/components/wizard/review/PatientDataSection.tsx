@@ -161,7 +161,7 @@ export function PatientDataSection({
               </div>
 
               {patientBirthDate && (
-                <div className="flex items-center gap-1 px-3 py-2 rounded-md bg-primary/10 text-primary min-w-[80px] justify-center">
+                <div className="flex items-center gap-1 px-3 py-2 rounded-lg bg-primary/10 text-primary min-w-[80px] justify-center">
                   <span className="text-sm font-medium">
                     {t('components.wizard.review.yearsOld', { age: calculateAge(patientBirthDate) })}
                   </span>

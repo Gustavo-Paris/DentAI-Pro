@@ -23,7 +23,7 @@ export interface SharedDetailPageProps {
 function SharedHeader({ brandName, badgeText }: { brandName: string; badgeText?: string }) {
   return (
     <header className="border-b border-border">
-      <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+      <div className="container mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
         <span className="text-lg font-semibold tracking-[0.2em] font-display text-gradient-brand">
           {brandName}
         </span>
@@ -53,7 +53,7 @@ function SharedHeader({ brandName, badgeText }: { brandName: string; badgeText?:
 
 function DefaultSkeleton() {
   return (
-    <div className="container mx-auto px-4 py-8 max-w-2xl">
+    <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-12 max-w-3xl">
       <div className="h-8 w-48 mb-8 rounded-lg bg-muted animate-pulse" />
       <div className="h-32 w-full mb-4 rounded-xl bg-muted animate-pulse" />
       <div className="h-32 w-full rounded-xl bg-muted animate-pulse" />
@@ -97,7 +97,7 @@ function ExpiredState({ config }: { config?: SharedDetailPageProps['expiredConfi
 
 function SharedFooter({ footer }: { footer: NonNullable<SharedDetailPageProps['footer']> }) {
   return (
-    <p className="text-center text-xs text-muted-foreground mt-8">
+    <p className="text-center text-xs text-muted-foreground mt-8 sm:mt-12">
       {footer.clinicName && (
         <>
           {footer.clinicName}
@@ -115,7 +115,7 @@ export function SharedDetailPage({
   state,
   expiredConfig,
   footer,
-  maxWidth = 'max-w-2xl',
+  maxWidth = 'max-w-3xl',
   loadingSkeleton,
   className,
   children,
@@ -141,7 +141,7 @@ export function SharedDetailPage({
       <div className="ai-grid-pattern absolute inset-0 opacity-30 dark:opacity-50 [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,black_70%,transparent_100%)] pointer-events-none" aria-hidden="true" />
       <div className="relative z-10">
         <SharedHeader brandName={brandName} badgeText={badgeText} />
-        <main className={cn('container mx-auto px-4 py-8', maxWidth)}>
+        <main className={cn('container mx-auto px-4 sm:px-6 py-8 sm:py-12', maxWidth)}>
           {children}
           {footer && <SharedFooter footer={footer} />}
         </main>

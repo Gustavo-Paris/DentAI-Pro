@@ -60,7 +60,7 @@ export function DraftRestoreModal({
                 {t('components.wizard.draftRestore.explanation', {
                   })}
               </p>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 rounded-lg px-3 py-2">
                 <Clock className="w-4 h-4" />
                 <span>{t('components.wizard.draftRestore.lastSaved', { time: timeAgo })}</span>
               </div>

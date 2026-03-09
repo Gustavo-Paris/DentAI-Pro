@@ -216,7 +216,7 @@ export function ProportionsCard({ analysis }: ProportionsCardProps) {
             if (!descKey) return null;
             const desc = t(descKey);
             return (
-              <div key={`desc-${item.label}`} className="flex items-start gap-2 py-1.5 px-3 rounded-md bg-warning/10">
+              <div key={`desc-${item.label}`} className="flex items-start gap-2 py-1.5 px-3 rounded-lg bg-warning/10">
                 <AlertCircle className="w-3.5 h-3.5 text-warning mt-0.5 shrink-0" />
                 <p className="text-xs text-warning/80">
                   <span className="font-medium">{item.label}:</span> {desc}
@@ -227,7 +227,7 @@ export function ProportionsCard({ analysis }: ProportionsCardProps) {
 
           {/* Buccal corridor orthodontic note */}
           {analysis.buccal_corridor === 'excessivo' && (
-            <div className="flex items-start gap-2 py-2 px-3 rounded-md bg-warning/10 border border-warning/30">
+            <div className="flex items-start gap-2 py-2 px-3 rounded-lg bg-warning/10 border border-warning/30">
               <AlertCircle className="w-4 h-4 text-warning mt-0.5 shrink-0" />
               <p className="text-xs text-warning/80">
                 {t('components.dsd.proportions.buccalCorridorOrthoNote')}

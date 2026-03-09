@@ -92,7 +92,7 @@ function ProtocolTable({ layers }: ProtocolTableProps) {
                 </dt>
                 <dd className="text-sm font-medium">
                   <span
-                    className="inline-flex items-center px-2 py-0.5 rounded-md text-sm font-medium"
+                    className="inline-flex items-center px-2 py-0.5 rounded-full text-sm font-medium"
                     style={{ backgroundColor: colors.numberBg }}
                   >
                     {layer.shade}

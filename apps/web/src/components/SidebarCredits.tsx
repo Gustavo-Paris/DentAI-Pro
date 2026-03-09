@@ -38,7 +38,7 @@ export const SidebarCredits = memo(function SidebarCredits() {
   return (
     <Link
       to="/profile?tab=assinatura"
-      className="block px-3 py-2.5 mx-2 rounded-md transition-colors hover:bg-sidebar-accent group"
+      className="block px-3 py-2.5 mx-2 rounded-lg transition-colors hover:bg-sidebar-accent group"
     >
       {/* Label + counter */}
       <div className="flex items-center justify-between mb-1.5">

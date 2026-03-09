@@ -65,7 +65,7 @@ const InventoryResinCard = memo(function InventoryResinCard({
       </div>
 
       {/* Info */}
-      <div className="p-2.5 space-y-1.5">
+      <div className="p-3 space-y-1.5">
         <div className="flex items-center justify-between gap-1">
           <span className="text-sm font-semibold text-foreground truncate">{item.shade}</span>
           <span className={`text-[10px] rounded-full px-2 py-0.5 font-medium shrink-0 ${typeClasses}`}>

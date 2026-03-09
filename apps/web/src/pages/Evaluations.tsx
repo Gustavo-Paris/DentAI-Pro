@@ -122,7 +122,7 @@ const SessionCard = memo(function SessionCard({
               )}
               <StatusBadge label={statusLabel} variant={SESSION_STATUS_CONFIG[sessionStatus].variant} size="sm" />
             </div>
-            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-1">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 mt-1">
               <p className="text-xs text-muted-foreground flex-shrink-0">
                 {t('evaluation.case', { count: session.evaluationCount })}
               </p>

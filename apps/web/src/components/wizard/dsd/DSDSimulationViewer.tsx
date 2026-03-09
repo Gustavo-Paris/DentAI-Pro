@@ -223,7 +223,7 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
                   onClick={(e) => { e.stopPropagation(); setViewMode(mode); }}
                   aria-pressed={viewMode === mode}
                   aria-label={t(labelKey, { defaultValue: mode === 'before' ? 'Antes' : mode === 'split' ? 'Dividir' : 'Depois' })}
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all duration-200 ${
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
                     viewMode === mode
                       ? 'bg-primary text-primary-foreground shadow-sm'
                       : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'

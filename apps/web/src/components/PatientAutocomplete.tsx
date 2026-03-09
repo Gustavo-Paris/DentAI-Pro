@@ -144,7 +144,7 @@ export const PatientAutocomplete = memo(function PatientAutocomplete({
       {showDropdown && (
         <div
           ref={dropdownRef}
-          className="absolute left-0 right-0 z-50 mt-1 py-1 max-h-64 overflow-auto rounded-md border border-border bg-popover shadow-md"
+          className="absolute left-0 right-0 z-50 mt-1 py-1 max-h-64 overflow-auto rounded-lg border border-border bg-popover shadow-md"
         >
           {/* Existing patients */}
           {filteredPatients.map((patient, index) => (

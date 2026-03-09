@@ -52,7 +52,7 @@ export function BruxismAlert({ show, treatmentType = 'resina' }: BruxismAlertPro
         </div>
 
         {/* Warning Box */}
-        <div className="p-2.5 bg-warning/20 rounded-md">
+        <div className="p-2.5 bg-warning/20 rounded-lg">
           <p className="text-xs font-medium text-warning">
             {t('components.protocol.bruxismAlert.warningBox')}
           </p>

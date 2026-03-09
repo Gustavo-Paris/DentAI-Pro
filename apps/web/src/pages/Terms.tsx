@@ -25,7 +25,7 @@ export default function Terms() {
       <section className="glass-panel rounded-xl p-6 sm:p-8" style={{ animation: 'fade-in-up 0.6s ease-out 0.45s both' }}>
         <h2 className={sectionHeadingClass}>{t('pages.terms.s2Title')}</h2>
         <p className="text-muted-foreground leading-relaxed">{t('pages.terms.s2Text', b)}</p>
-        <ul className="list-disc list-inside text-muted-foreground mt-3 space-y-1.5">
+        <ul className="list-disc list-inside text-muted-foreground mt-3 space-y-2">
           <li className="leading-relaxed">{t('pages.terms.s2Item1')}</li>
           <li className="leading-relaxed">{t('pages.terms.s2Item2')}</li>
           <li className="leading-relaxed">{t('pages.terms.s2Item3')}</li>
@@ -42,7 +42,7 @@ export default function Terms() {
           </p>
         </div>
         <p className="text-muted-foreground mt-2 leading-relaxed">{t('pages.terms.s3Text2')}</p>
-        <ul className="list-disc list-inside text-muted-foreground mt-3 space-y-1.5">
+        <ul className="list-disc list-inside text-muted-foreground mt-3 space-y-2">
           <li className="leading-relaxed">{t('pages.terms.s3Factor1')}</li>
           <li className="leading-relaxed">{t('pages.terms.s3Factor2')}</li>
           <li className="leading-relaxed">{t('pages.terms.s3Factor3')}</li>
@@ -58,7 +58,7 @@ export default function Terms() {
       <section className="glass-panel rounded-xl p-6 sm:p-8" style={{ animation: 'fade-in-up 0.6s ease-out 0.75s both' }}>
         <h2 className={sectionHeadingClass}>{t('pages.terms.s4Title')}</h2>
         <p className="text-muted-foreground leading-relaxed">{t('pages.terms.s4Text1', b)}</p>
-        <ul className="list-disc list-inside text-muted-foreground mt-3 space-y-1.5">
+        <ul className="list-disc list-inside text-muted-foreground mt-3 space-y-2">
           <li className="leading-relaxed">{t('pages.terms.s4Item1')}</li>
           <li className="leading-relaxed">{t('pages.terms.s4Item2')}</li>
           <li className="leading-relaxed">{t('pages.terms.s4Item3')}</li>
@@ -71,7 +71,7 @@ export default function Terms() {
       <section className="glass-panel rounded-xl p-6 sm:p-8" style={{ animation: 'fade-in-up 0.6s ease-out 0.9s both' }}>
         <h2 className={sectionHeadingClass}>{t('pages.terms.s5Title')}</h2>
         <p className="text-muted-foreground leading-relaxed">{t('pages.terms.s5Intro')}</p>
-        <ul className="list-disc list-inside text-muted-foreground mt-3 space-y-1.5">
+        <ul className="list-disc list-inside text-muted-foreground mt-3 space-y-2">
           <li className="leading-relaxed">{t('pages.terms.s5Item1')}</li>
           <li className="leading-relaxed">{t('pages.terms.s5Item2')}</li>
           <li className="leading-relaxed">{t('pages.terms.s5Item3')}</li>
@@ -86,7 +86,7 @@ export default function Terms() {
       <section className="glass-panel rounded-xl p-6 sm:p-8" style={{ animation: 'fade-in-up 0.6s ease-out 1.05s both' }}>
         <h2 className={sectionHeadingClass}>{t('pages.terms.s6Title')}</h2>
         <p className="text-muted-foreground leading-relaxed">{t('pages.terms.s6Text1')}</p>
-        <ul className="list-disc list-inside text-muted-foreground mt-3 space-y-1.5">
+        <ul className="list-disc list-inside text-muted-foreground mt-3 space-y-2">
           <li className="leading-relaxed">{t('pages.terms.s6Item1')}</li>
           <li className="leading-relaxed">{t('pages.terms.s6Item2')}</li>
           <li className="leading-relaxed">{t('pages.terms.s6Item3')}</li>

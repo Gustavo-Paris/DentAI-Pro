@@ -214,19 +214,19 @@ export default function Result() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                      <div className="glass-panel rounded-xl p-3 card-elevated">
+                      <div className="glass-panel rounded-xl p-4 card-elevated">
                         <p className="text-xs text-muted-foreground uppercase tracking-wider">{t('result.opacity')}</p>
                         <p className="text-sm font-semibold mt-1">{r.resin.opacity}</p>
                       </div>
-                      <div className="glass-panel rounded-xl p-3 card-elevated">
+                      <div className="glass-panel rounded-xl p-4 card-elevated">
                         <p className="text-xs text-muted-foreground uppercase tracking-wider">{t('result.resistance')}</p>
                         <p className="text-sm font-semibold mt-1">{r.resin.resistance}</p>
                       </div>
-                      <div className="glass-panel rounded-xl p-3 card-elevated">
+                      <div className="glass-panel rounded-xl p-4 card-elevated">
                         <p className="text-xs text-muted-foreground uppercase tracking-wider">{t('result.polishing')}</p>
                         <p className="text-sm font-semibold mt-1">{r.resin.polishing}</p>
                       </div>
-                      <div className="glass-panel rounded-xl p-3 card-elevated">
+                      <div className="glass-panel rounded-xl p-4 card-elevated">
                         <p className="text-xs text-muted-foreground uppercase tracking-wider">{t('result.aesthetics')}</p>
                         <p className="text-sm font-semibold mt-1">{r.resin.aesthetics}</p>
                       </div>
@@ -257,7 +257,7 @@ export default function Result() {
                       key={tab.key}
                       onClick={() => setActiveTab(tab.key)}
                       className={cn(
-                        'px-4 py-1.5 rounded-full text-sm font-medium transition-colors',
+                        'px-4 py-1.5 rounded-full text-sm font-medium transition-colors duration-200',
                         activeTab === tab.key
                           ? 'bg-primary text-primary-foreground'
                           : 'text-muted-foreground hover:text-foreground'
@@ -273,6 +273,7 @@ export default function Result() {
             {r.treatmentType === 'resina' && r.hasProtocol ? (
               <>
                 {activeTab !== 'dsd' && (
+                  <div key={activeTab} className="animate-[fade-in_0.3s_ease-out_both]">
                   <ProtocolSections
                     treatmentType={r.treatmentType}
                     hasProtocol={r.hasProtocol}
@@ -293,9 +294,10 @@ export default function Result() {
                     printHideStepByStep
                     visibleSection={activeTab as 'protocol' | 'finishing' | 'checklist'}
                   />
+                  </div>
                 )}
                 {activeTab === 'dsd' && evaluation.dsd_analysis && (
-                  <section className="mb-8">
+                  <section className="mb-8 animate-[fade-in_0.3s_ease-out_both]">
                     <CollapsibleDSD
                       analysis={evaluation.dsd_analysis}
                       beforeImage={r.photoUrls.frontal}

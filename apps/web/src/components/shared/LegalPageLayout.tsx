@@ -65,7 +65,7 @@ export function LegalPageLayout({ title, children }: LegalPageLayoutProps) {
           <div style={{ animation: 'fade-in-up 0.6s ease-out 0.1s both' }}>
             <h1 className="text-heading text-2xl sm:text-3xl font-semibold font-display mb-2">{title}</h1>
           </div>
-          <div className="prose prose-neutral dark:prose-invert max-w-none space-y-6">
+          <div className="prose prose-neutral dark:prose-invert max-w-none space-y-6 sm:space-y-8">
             {children}
           </div>
         </main>

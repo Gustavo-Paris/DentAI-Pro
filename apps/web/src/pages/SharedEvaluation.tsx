@@ -121,7 +121,7 @@ export default function SharedEvaluation() {
                       key={layer.type}
                       variant={idx === activeLayerIndex ? 'default' : 'outline'}
                       size="sm"
-                      className="text-xs transition-all duration-150"
+                      className="text-xs transition-all duration-200"
                       aria-pressed={idx === activeLayerIndex}
                       onClick={() => setActiveLayerIndex(idx)}
                     >
@@ -205,7 +205,7 @@ export default function SharedEvaluation() {
       )}
 
       {/* Tooth Cards */}
-      <div className="space-y-4 animate-[fade-in-up_0.6s_ease-out_0.2s_both]">
+      <div className="space-y-4 sm:space-y-6 animate-[fade-in-up_0.6s_ease-out_0.2s_both]">
         {evaluations.map((evaluation, index) => {
           const treatmentType = evaluation.treatment_type || 'resina';
           const config = getTreatmentConfig(treatmentType);

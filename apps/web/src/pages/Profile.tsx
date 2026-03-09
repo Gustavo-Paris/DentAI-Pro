@@ -132,6 +132,10 @@ export default function Profile() {
     <DetailPage
       className="relative z-10 max-w-5xl mx-auto py-6 sm:py-8"
       title={t('profile.title')}
+      breadcrumbs={[
+        { label: t('nav.dashboard'), href: '/dashboard' },
+        { label: t('profile.title') },
+      ]}
       query={{ data: p.isLoading ? undefined : p.profile, isLoading: p.isLoading }}
       tabs={[
         {

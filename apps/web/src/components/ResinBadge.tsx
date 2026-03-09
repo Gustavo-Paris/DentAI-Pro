@@ -38,7 +38,7 @@ function ResinBadgeInner({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-md font-medium transition-all',
+        'inline-flex items-center gap-1.5 rounded-lg font-medium transition-all',
         colorClasses,
         size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-3 py-1.5 text-sm',
         isClickable && 'cursor-pointer hover:ring-2 hover:ring-primary/50 hover:ring-offset-1',
