@@ -6,7 +6,7 @@ import { logger } from "../_shared/logger.ts";
 import { isAllowedRedirectUrl } from "../_shared/url-validation.ts";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-  apiVersion: "2024-09-30.acacia",
+  apiVersion: "2025-02-24.acacia",
   httpClient: Stripe.createFetchHttpClient(),
 });
 
