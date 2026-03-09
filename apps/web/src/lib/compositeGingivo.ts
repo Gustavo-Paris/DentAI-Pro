@@ -27,20 +27,16 @@ function loadImage(url: string): Promise<HTMLImageElement> {
  * Tuned for dental clinical photos (bright, neutral white lighting).
  */
 function isLipPixel(r: number, g: number, b: number, y: number, height: number): boolean {
-  // Lips are only in the top 45% of a dental smile photo
-  if (y > height * 0.45) return false;
+  // Upper lip lives in the top ~15-20% of a dental smile photo.
+  // Previously 45% which caught gum pixels (20-40% range), undoing gengivoplasty.
+  // Restricted to 22% to capture lips while preserving gum reduction changes.
+  if (y > height * 0.22) return false;
 
   const brightness = (r + g + b) / 3;
   const saturation = Math.max(r, g, b) - Math.min(r, g, b);
   const redDominance = r - g;
 
   // Lip: moderate brightness, strongly red-dominant, high saturation.
-  // These thresholds are tuned to distinguish lip tissue from gum tissue:
-  //   - brightness 50-170: excludes dark shadows (<50) and bright teeth/skin (>170)
-  //   - redDominance >35: lips are more red-dominant than gums (gums are lighter pink)
-  //   - saturation >45: ensures vivid color, filtering out desaturated skin tones
-  // Kept conservative to avoid false positives on gum tissue which would cause
-  // the compositor to incorrectly restore gum pixels from L2 (undoing gengivoplasty).
   return (
     brightness > 50 &&
     brightness < 170 &&

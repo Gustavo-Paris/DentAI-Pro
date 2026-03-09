@@ -220,11 +220,10 @@ export function useDSDLayerGeneration({
         }
       }
 
-      // Post-processing: composite L2 lips onto L3 if lips moved after retries exhausted
-      // SKIP for gingival layers — gengivoplasty changes the gum-lip boundary by design,
-      // and the compositor's isLipPixel heuristic catches gum pixels near the boundary,
-      // effectively undoing the gengivoplasty changes.
-      if (bestResult?.lips_moved && !isGingivalLayer && l2SignedUrl && bestResult.simulation_url) {
+      // Post-processing: composite L2 lips onto L3 if lips moved after retries exhausted.
+      // For gingival layers, isLipPixel is restricted to top 22% of image (lips only),
+      // preserving the gum reduction changes in the 22-45% band.
+      if (bestResult?.lips_moved && isGingivalLayer && l2SignedUrl && bestResult.simulation_url) {
         try {
           const l3SignedUrl = await getSignedDSDUrl(bestResult.simulation_url);
           if (l3SignedUrl) {
