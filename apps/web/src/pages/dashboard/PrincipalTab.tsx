@@ -12,7 +12,6 @@ import {
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { getDateLocale } from '@/lib/date-utils';
-import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { useSubscription } from '@/hooks/useSubscription';
 import { SessionCard } from './SessionCard';
 
@@ -154,10 +153,9 @@ function RecentSessions({
   loading: boolean;
 }) {
   const { t } = useTranslation();
-  const containerRef = useScrollReveal();
 
   return (
-    <div ref={containerRef} className="scroll-reveal">
+    <div>
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-semibold font-display uppercase tracking-wider text-muted-foreground">
           {t('dashboard.recent.title')}

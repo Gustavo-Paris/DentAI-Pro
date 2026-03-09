@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { ClinicalInsights, WeeklyTrendPoint } from '@/hooks/domain/useDashboard';
-import { Card, Badge, Button, Progress, Skeleton } from '@parisgroup-ai/pageshell/primitives';
+import { Card, Badge, Button, Progress } from '@parisgroup-ai/pageshell/primitives';
+import { ChartSkeleton } from '@/components/skeletons';
 import {
   ChartContainer,
   ChartTooltip,
@@ -15,7 +16,6 @@ import {
   BarChart, Bar,
 } from 'recharts';
 import { BarChart3, Plus, Trophy } from 'lucide-react';
-import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { cn } from '@/lib/utils';
 
 const BAR_SIZE = 20;
@@ -26,17 +26,17 @@ const BAR_SIZE = 20;
 
 function WeeklyTrendsChart({ data, loading }: { data: WeeklyTrendPoint[]; loading: boolean }) {
   const { t } = useTranslation();
-  const containerRef = useScrollReveal();
+
   const chartConfig: ChartConfig = {
     value: { label: t('dashboard.insights.evaluationsLabel'), color: 'var(--color-primary)' },
   };
 
   const totalPeriod = data.reduce((sum, d) => sum + d.value, 0);
 
-  if (loading) return <Skeleton className="h-52 w-full rounded-xl" />;
+  if (loading) return <ChartSkeleton />;
 
   return (
-    <div ref={containerRef} className="scroll-reveal">
+    <div>
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-semibold font-display uppercase tracking-wider text-muted-foreground">
           {t('dashboard.insights.weeklyTrend')}
@@ -80,13 +80,13 @@ function WeeklyTrendsChart({ data, loading }: { data: WeeklyTrendPoint[]; loadin
 
 function TreatmentDonut({ items }: { items: Array<{ label: string; value: number; color: string }> }) {
   const { t } = useTranslation();
-  const containerRef = useScrollReveal();
+
   const total = items.reduce((sum, item) => sum + item.value, 0);
 
   if (items.length === 0) return null;
 
   return (
-    <div ref={containerRef} className="scroll-reveal">
+    <div>
       <Card className="p-4 shadow-sm rounded-xl">
         <h3 className="text-sm font-semibold font-display text-muted-foreground mb-3">
           {t('dashboard.insights.treatmentDistribution')}
@@ -155,7 +155,7 @@ function TreatmentDonut({ items }: { items: Array<{ label: string; value: number
 
 function TopResinsChart({ resins }: { resins: Array<{ name: string; count: number }> }) {
   const { t } = useTranslation();
-  const containerRef = useScrollReveal();
+
 
   if (resins.length === 0) return null;
 
@@ -164,7 +164,7 @@ function TopResinsChart({ resins }: { resins: Array<{ name: string; count: numbe
   };
 
   return (
-    <div ref={containerRef} className="scroll-reveal">
+    <div>
       <Card className="p-4 shadow-sm rounded-xl">
         <h3 className="text-sm font-semibold font-display text-muted-foreground mb-3">
           {t('dashboard.insights.topResins')}
@@ -212,12 +212,12 @@ function ClinicalStatsCard({
   weeklyTrends: WeeklyTrendPoint[];
 }) {
   const { t } = useTranslation();
-  const containerRef = useScrollReveal();
+
   const totalWeeklyEvals = weeklyTrends.reduce((sum, w) => sum + w.value, 0);
   const avgPerWeek = weeklyTrends.length > 0 ? (totalWeeklyEvals / weeklyTrends.length).toFixed(1) : '0';
 
   return (
-    <div ref={containerRef} className="scroll-reveal">
+    <div>
       <Card className="p-4 space-y-3 shadow-sm rounded-xl">
         <h3 className="text-sm font-semibold font-display text-muted-foreground">{t('dashboard.insights.clinicalSummary')}</h3>
 
@@ -275,10 +275,10 @@ function PatientGrowthCard({
   patientGrowth: number | null;
 }) {
   const { t } = useTranslation();
-  const containerRef = useScrollReveal();
+
 
   return (
-    <div ref={containerRef} className="scroll-reveal">
+    <div>
       <Card className="p-4 shadow-sm rounded-xl">
         <h3 className="text-sm font-semibold font-display text-muted-foreground mb-3">
           {t('dashboard.insights.patientGrowth')}

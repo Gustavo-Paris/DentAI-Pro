@@ -112,7 +112,7 @@ export const ProcessingOverlay = memo(function ProcessingOverlay({
             </p>
           )}
 
-          <p className="text-xs text-muted-foreground mt-2 animate-pulse">
+          <p className="text-xs text-muted-foreground mt-2 animate-[fade-in_1.5s_ease-in-out_infinite_alternate]">
             {t('components.processingOverlay.doNotClose')}
           </p>
         </CardContent>

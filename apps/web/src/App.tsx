@@ -15,7 +15,6 @@ import CookieConsent from "@/components/CookieConsent";
 import PostHogProvider from "@/components/PostHogProvider";
 import { KeyboardShortcuts } from "@/components/KeyboardShortcuts";
 import { OfflineBanner } from "@/components/OfflineBanner";
-import { Skeleton } from "@parisgroup-ai/pageshell/primitives";
 import AppLayout from "@/components/AppLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { evaluations } from "@/data";
@@ -148,12 +147,12 @@ class RouteErrorBoundary extends Component<{ children: ReactNode }, { hasError: 
 // Loading fallback for lazy-loaded pages
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
-    <div className="flex flex-col items-center gap-4">
-      <span className="text-xl font-semibold tracking-[0.2em] font-display text-gradient-brand animate-pulse">
+    <div className="flex flex-col items-center gap-4 animate-fade-in-up">
+      <span className="text-xl font-semibold tracking-[0.2em] font-display text-gradient-brand">
         ToSmile.ai
       </span>
-      <div className="w-48">
-        <Skeleton className="h-1 w-full rounded-full" />
+      <div className="w-48 h-1 rounded-full bg-muted overflow-hidden">
+        <div className="h-full rounded-full bg-primary/40 animate-progress-indeterminate" />
       </div>
     </div>
   </div>
