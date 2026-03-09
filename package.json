@@ -29,7 +29,7 @@
   "lint-staged": {
     "apps/web/src/**/*.{ts,tsx}": [
       "bash -c 'cd apps/web && npx eslint --no-warn-ignored --max-warnings=0 \"$@\"' _",
-      "bash -c 'cd apps/web && pnpm exec tsc --noEmit'"
+      "bash -c 'scripts/typecheck-baseline.sh'"
     ],
     "supabase/functions/**/*.ts": [
       "bash -c 'deno check --no-lock \"$@\"' _"
