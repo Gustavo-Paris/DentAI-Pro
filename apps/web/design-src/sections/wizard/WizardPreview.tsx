@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import '../../preview-theme.css'
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { WizardShell } from './components'

@@ -22,8 +22,8 @@ Deno.test("null-ish empty string returns false (invalid URL)", () => {
   assertEquals(isAllowedRedirectUrl(""), false);
 });
 
-Deno.test("allowed origin https://tosmile.ai/profile returns true", () => {
-  assertEquals(isAllowedRedirectUrl("https://tosmile.ai/profile"), true);
+Deno.test("allowed origin https://tosmile-ai.vercel.app/profile returns true", () => {
+  assertEquals(isAllowedRedirectUrl("https://tosmile-ai.vercel.app/profile"), true);
 });
 
 Deno.test("allowed origin https://tosmile-ai.vercel.app/checkout returns true", () => {
@@ -37,9 +37,9 @@ Deno.test("disallowed origin https://evil.com/steal returns false", () => {
   assertEquals(isAllowedRedirectUrl("https://evil.com/steal"), false);
 });
 
-Deno.test("disallowed origin with similar prefix https://tosmile.ai.evil.com returns false", () => {
+Deno.test("disallowed origin with similar prefix https://tosmile-ai.vercel.app.evil.com returns false", () => {
   assertEquals(
-    isAllowedRedirectUrl("https://tosmile.ai.evil.com/steal"),
+    isAllowedRedirectUrl("https://tosmile-ai.vercel.app.evil.com/steal"),
     false,
   );
 });
@@ -51,7 +51,7 @@ Deno.test("invalid URL string returns false", () => {
 Deno.test("allowed origin with path and query params returns true", () => {
   assertEquals(
     isAllowedRedirectUrl(
-      "https://dentai.pro/profile?tab=assinatura&credits=success",
+      "https://tosmile-ai.vercel.app/profile?tab=assinatura&credits=success",
     ),
     true,
   );

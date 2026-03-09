@@ -264,7 +264,7 @@ Deno.test("Lower teeth NOT stripped when lower arch is predominant", () => {
   assertEquals(result.detected_teeth.length, 4, "All teeth should remain when lower arch is predominant");
 });
 
-Deno.test("Lower teeth NOT stripped when counts are equal", () => {
+Deno.test("Lower teeth stripped when counts are equal (upper >= lower)", () => {
   const analysis = makeAnalysis({
     confidence: 90,
     detected_teeth: [
@@ -278,8 +278,8 @@ Deno.test("Lower teeth NOT stripped when counts are equal", () => {
 
   const result = processAnalysisResult(analysis);
 
-  // Equal counts: 2 upper, 2 lower → condition is `upper > lower` which is false → keep all
-  assertEquals(result.detected_teeth.length, 4, "All teeth should remain when counts are equal");
+  // Equal counts: 2 upper, 2 lower → condition is `upper >= lower` which is true → strip lower
+  assertEquals(result.detected_teeth.length, 2, "Lower teeth stripped when counts are equal");
 });
 
 // ==========================================================================

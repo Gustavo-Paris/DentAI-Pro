@@ -461,21 +461,21 @@ Deno.test("Checklist text is updated when shades are replaced", async () => {
 // Test: validateMinimumLayerCount
 // ==========================================================================
 
-Deno.test("Anterior aesthetic case with <3 layers produces warning", () => {
+Deno.test("Anterior aesthetic case with <4 layers produces warning", () => {
   const warning = validateMinimumLayerCount(
     [{ name: "Dentina" }, { name: "Esmalte" }], // only 2 layers
     { tooth: "11", cavityClass: "Classe IV" },
   );
   assertExists(warning, "Should produce warning for 2-layer anterior aesthetic");
-  assertStringIncludes(warning, "3", "Warning should mention minimum 3 layers");
+  assertStringIncludes(warning, "4", "Warning should mention minimum 4 layers");
 });
 
-Deno.test("Anterior aesthetic case with 3+ layers produces no warning", () => {
+Deno.test("Anterior aesthetic case with 4+ layers produces no warning", () => {
   const warning = validateMinimumLayerCount(
-    [{ name: "Dentina" }, { name: "Translucidez" }, { name: "Esmalte" }],
+    [{ name: "Dentina" }, { name: "Translucidez" }, { name: "Efeitos Incisais" }, { name: "Esmalte" }],
     { tooth: "21", cavityClass: "Classe III" },
   );
-  assertEquals(warning, null, "No warning for 3+ layer anterior aesthetic");
+  assertEquals(warning, null, "No warning for 4+ layer anterior aesthetic");
 });
 
 Deno.test("Posterior case with 2 layers produces no warning", () => {

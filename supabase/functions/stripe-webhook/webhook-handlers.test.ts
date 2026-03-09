@@ -482,7 +482,7 @@ Deno.test("handleCreditPackPurchase falls back to metadata when DB fails", async
       type: "credit_pack",
       supabase_user_id: "user-123",
       pack_id: "pack-1",
-      credits: "15",
+      credits: "10",
     },
   });
 
@@ -491,7 +491,7 @@ Deno.test("handleCreditPackPurchase falls back to metadata when DB fails", async
   const rpcCall = calls.find((c) => c.table === "rpc:add_bonus_credits");
   assertEquals(rpcCall !== undefined, true, "Should call RPC with fallback credits");
   // deno-lint-ignore no-explicit-any
-  assertEquals((rpcCall as any).args[0].p_credits, 15, "Should use metadata credits (15) as fallback");
+  assertEquals((rpcCall as any).args[0].p_credits, 10, "Should use metadata credits (10) as fallback");
 });
 
 Deno.test("handleCreditPackPurchase returns early when metadata missing", async () => {
