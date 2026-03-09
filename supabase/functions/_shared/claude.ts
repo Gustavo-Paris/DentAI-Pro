@@ -490,6 +490,7 @@ export async function callClaudeVision(
     systemPrompt?: string;
     temperature?: number;
     maxTokens?: number;
+    timeoutMs?: number;
     /** Additional images to include after the first image */
     additionalImages?: Array<{ data: string; mimeType: string }>;
   } = {},

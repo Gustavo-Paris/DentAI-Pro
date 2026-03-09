@@ -384,7 +384,8 @@ export default function Profile() {
           ),
         },
       ]}
-      activeTab={activeTab}
+      key={activeTab}
+      defaultTab={activeTab}
       onTabChange={handleTabChange}
     />
   );

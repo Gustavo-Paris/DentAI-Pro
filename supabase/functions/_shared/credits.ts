@@ -188,7 +188,7 @@ async function getCreditInfo(
     return { available: 0, total: 0, cost, isFreeUser: true };
   }
 
-  const plan = sub.plan as { credits_per_month: number } | null;
+  const plan = sub.plan as unknown as { credits_per_month: number } | null;
   const totalCredits = (plan?.credits_per_month || 0) + (sub.credits_rollover || 0) + (sub.credits_bonus || 0);
   const available = Math.max(0, totalCredits - (sub.credits_used_this_month || 0));
 

@@ -100,7 +100,7 @@ describe('subscriptions.getCreditCosts', () => {
   it('should return cost list', async () => {
     const costs = [
       { operation: 'case_analysis', credits: 1, description: 'Análise de caso' },
-      { operation: 'dsd_simulation', credits: 2, description: 'Simulação DSD' },
+      { operation: 'dsd_simulation', credits: 1, description: 'Simulação DSD' },
     ];
     terminalResult = { data: costs, error: null };
 

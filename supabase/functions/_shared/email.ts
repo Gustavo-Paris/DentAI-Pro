@@ -55,7 +55,7 @@ export async function sendEmail(options: SendEmailOptions): Promise<void> {
     to: [options.to],
     subject: options.subject,
     html: options.html,
-    reply_to: options.replyTo,
+    replyTo: options.replyTo,
   });
 
   if (error) {

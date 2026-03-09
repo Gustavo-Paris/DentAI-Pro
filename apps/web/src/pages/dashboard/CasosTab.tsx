@@ -2,7 +2,8 @@ import { useState, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useEvaluationSessions } from '@/hooks/domain/useEvaluationSessions';
-import { Button, Card, Skeleton } from '@parisgroup-ai/pageshell/primitives';
+import { Button, Card } from '@parisgroup-ai/pageshell/primitives';
+import { ListSkeleton } from '@/components/skeletons';
 import { FileText, Plus, ChevronDown } from 'lucide-react';
 import { SessionCard } from './SessionCard';
 
@@ -43,13 +44,7 @@ export function CasosTab() {
   ];
 
   if (isLoading) {
-    return (
-      <div className="space-y-3">
-        {[1, 2, 3].map(i => (
-          <Skeleton key={i} className="h-[72px] w-full rounded-xl" />
-        ))}
-      </div>
-    );
+    return <ListSkeleton />;
   }
 
   return (

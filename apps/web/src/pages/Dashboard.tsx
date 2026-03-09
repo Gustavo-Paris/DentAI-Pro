@@ -5,7 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { DashboardPage, GenericErrorState } from '@parisgroup-ai/pageshell/composites';
 import type { ModuleConfig, DashboardTab } from '@parisgroup-ai/pageshell/composites';
 import { useDashboard } from '@/hooks/domain/useDashboard';
-import { TooltipProvider, Skeleton } from '@parisgroup-ai/pageshell/primitives';
+import { TooltipProvider } from '@parisgroup-ai/pageshell/primitives';
+import { StatsGridSkeleton, InlineTextSkeleton } from '@/components/skeletons';
 import { PageConfirmDialog } from '@parisgroup-ai/pageshell/interactions';
 import {
   Sparkles, Users, Package, Sun, Moon, Sunset,
@@ -24,13 +25,7 @@ import { OnboardingProgress } from '@/components/onboarding/OnboardingProgress';
 import { WelcomeModal } from '@/components/onboarding/WelcomeModal';
 
 function StatsGridFallback() {
-  return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <Skeleton key={i} className="h-[88px] rounded-xl" />
-      ))}
-    </div>
-  );
+  return <StatsGridSkeleton />;
 }
 
 export default function Dashboard() {
@@ -137,7 +132,7 @@ export default function Dashboard() {
           ),
         },
       ]
-    : undefined, [isTabbed, t, dashboard.sessions, dashboard.loadingSessions, dashboard.loadingInsights, dashboard.pendingDraft, dashboard.metrics.pendingSessions, dashboard.requestDiscardDraft, dashboard.clinicalInsights, dashboard.weeklyTrends]);
+    : undefined, [isTabbed, t, dashboard.sessions, dashboard.loadingSessions, dashboard.loadingInsights, dashboard.pendingDraft, dashboard.metrics.pendingSessions, dashboard.requestDiscardDraft, dashboard.clinicalInsights, dashboard.weeklyTrends, dashboard.patientsThisMonth, dashboard.patientGrowth]);
 
   const hour = new Date().getHours();
 
@@ -155,7 +150,7 @@ export default function Dashboard() {
           <h2 className="text-2xl sm:text-3xl font-semibold font-display tracking-tight">
             {dashboard.greeting},{' '}
             {dashboard.loadingProfile ? (
-              <Skeleton className="inline-block h-7 w-32 align-middle rounded-lg" />
+              <InlineTextSkeleton />
             ) : (
               <span className="text-primary neon-text">{dashboard.firstName}</span>
             )}
@@ -201,6 +196,7 @@ export default function Dashboard() {
           afterStats: <OnboardingProgress />,
         }
       : {}),
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- t is stable (i18next singleton)
   }), [TimeIcon, dashboard.greeting, dashboard.firstName, dashboard.loadingProfile, t, clinicAlerts, isTabbed, dashboard.metrics, dashboard.loadingMetrics, dashboard.weekRange, dashboard.weeklyTrends]);
 
   if (dashboard.isError) {

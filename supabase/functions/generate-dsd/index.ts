@@ -2,6 +2,7 @@ import { getCorsHeaders, handleCorsPreFlight, createErrorResponse, ERROR_MESSAGE
 import { getSupabaseClient, authenticateRequest, isAuthError } from "../_shared/middleware.ts";
 import { logger } from "../_shared/logger.ts";
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
+import { withCreditProtection, isInsufficientCreditsResponse } from "../_shared/withCreditProtection.ts";
 import type { DSDAnalysis, DSDResult } from "./types.ts";
 import { validateRequest } from "./validation.ts";
 import { hasSevereDestruction } from "./analysis-helpers.ts";
@@ -104,7 +105,8 @@ Deno.serve(async (req: Request) => {
       simulationNote = destructionCheck.reason || undefined;
     }
 
-    // Generate simulation image
+    // Generate simulation image (AI calls happen BEFORE credit protection —
+    // credits only consumed after AI succeeds, auto-refunded on post-processing error)
     let simulationUrl: string | null = null;
     let simulationDebug: string | undefined;
     let lipsMoved = false;
@@ -124,81 +126,90 @@ Deno.serve(async (req: Request) => {
       // Continue without simulation - analysis is still valid
     }
 
-    // Update evaluation if provided (ownership already verified above)
-    if (evaluationId) {
-      const { data: evalData, error: evalError } = await supabase
-        .from("evaluations")
-        .select("dsd_simulation_layers")
-        .eq("id", evaluationId)
-        .single();
+    // Credits + DB update wrapped in credit protection (auto-refund on error)
+    return await withCreditProtection(
+      { supabase, userId: user.id, operation: "dsd_simulation", operationId: reqId, corsHeaders },
+      async (credits) => {
+        const creditResult = await credits.consume();
+        if (isInsufficientCreditsResponse(creditResult)) return creditResult;
 
-      if (!evalError && evalData) {
-        const updateData: Record<string, unknown> = {
-          dsd_analysis: analysis,
-          dsd_simulation_url: simulationUrl,
-        };
+        // Update evaluation if provided (ownership already verified above)
+        if (evaluationId) {
+          const { data: evalData, error: evalError } = await supabase
+            .from("evaluations")
+            .select("dsd_simulation_layers")
+            .eq("id", evaluationId)
+            .single();
 
-        // When layerType is present, update the layers array
-        if (layerType && simulationUrl) {
-          const existingLayers = (evalData.dsd_simulation_layers as Array<Record<string, unknown>>) || [];
-          const newLayer = {
-            type: layerType,
-            label: layerType === 'restorations-only' ? 'Apenas Restaurações'
-              : layerType === 'complete-treatment' ? 'Tratamento Completo'
-              : layerType === 'root-coverage' ? 'Recobrimento Radicular'
-              : layerType === 'face-mockup' ? 'Simulação no Rosto'
-              : 'Restaurações + Clareamento',
-            simulation_url: simulationUrl,
-            whitening_level: patientPreferences?.whiteningLevel || 'natural',
-            includes_gengivoplasty: layerType !== 'face-mockup' && (layerType === 'complete-treatment' || layerType === 'root-coverage') &&
-              analysis.suggestions.some(s => {
-                const t = (s.treatment_indication || '').toLowerCase();
-                return t === 'gengivoplastia' || t === 'recobrimento_radicular';
-              }),
-          };
-          // Replace existing layer of same type or append
-          const idx = existingLayers.findIndex((l) => l.type === layerType);
-          if (idx >= 0) {
-            existingLayers[idx] = newLayer;
-          } else {
-            existingLayers.push(newLayer);
+          if (!evalError && evalData) {
+            const updateData: Record<string, unknown> = {
+              dsd_analysis: analysis,
+              dsd_simulation_url: simulationUrl,
+            };
+
+            // When layerType is present, update the layers array
+            if (layerType && simulationUrl) {
+              const existingLayers = (evalData.dsd_simulation_layers as Array<Record<string, unknown>>) || [];
+              const newLayer = {
+                type: layerType,
+                label: layerType === 'restorations-only' ? 'Apenas Restaurações'
+                  : layerType === 'complete-treatment' ? 'Tratamento Completo'
+                  : layerType === 'root-coverage' ? 'Recobrimento Radicular'
+                  : layerType === 'face-mockup' ? 'Simulação no Rosto'
+                  : 'Restaurações + Clareamento',
+                simulation_url: simulationUrl,
+                whitening_level: patientPreferences?.whiteningLevel || 'natural',
+                includes_gengivoplasty: layerType !== 'face-mockup' && (layerType === 'complete-treatment' || layerType === 'root-coverage') &&
+                  analysis.suggestions.some(s => {
+                    const t = (s.treatment_indication || '').toLowerCase();
+                    return t === 'gengivoplastia' || t === 'recobrimento_radicular';
+                  }),
+              };
+              // Replace existing layer of same type or append
+              const idx = existingLayers.findIndex((l) => l.type === layerType);
+              if (idx >= 0) {
+                existingLayers[idx] = newLayer;
+              } else {
+                existingLayers.push(newLayer);
+              }
+              updateData.dsd_simulation_layers = existingLayers;
+            }
+
+            const { error: dbError } = await supabase
+              .from("evaluations")
+              .update(updateData)
+              .eq("id", evaluationId)
+              .eq("user_id", user.id);
+
+            if (dbError) {
+              logger.error("Failed to save DSD simulation result to DB:", dbError);
+            }
           }
-          updateData.dsd_simulation_layers = existingLayers;
         }
 
-        const { error: dbError } = await supabase
-          .from("evaluations")
-          .update(updateData)
-          .eq("id", evaluationId)
-          .eq("user_id", user.id);
-
-        if (dbError) {
-          logger.error("Failed to save DSD simulation result to DB:", dbError);
+        // Log simulation debug info server-side
+        if (simulationDebug && !simulationUrl) {
+          logger.warn(`[${reqId}] Simulation failed (debug): ${simulationDebug}`);
         }
-      }
-    }
 
-    // Log simulation debug info server-side
-    if (simulationDebug && !simulationUrl) {
-      logger.warn(`[${reqId}] Simulation failed (debug): ${simulationDebug}`);
-    }
+        // Return result with note if applicable
+        const result: DSDResult & { layer_type?: string; lips_moved?: boolean } = {
+          analysis,
+          simulation_url: simulationUrl,
+          simulation_note: simulationNote,
+        };
+        if (layerType) {
+          result.layer_type = layerType;
+        }
+        if (lipsMoved) {
+          result.lips_moved = true;
+        }
 
-    // Return result with note if applicable
-    const result: DSDResult & { layer_type?: string; lips_moved?: boolean } = {
-      analysis,
-      simulation_url: simulationUrl,
-      simulation_note: simulationNote,
-    };
-    if (layerType) {
-      result.layer_type = layerType;
-    }
-    if (lipsMoved) {
-      result.lips_moved = true;
-    }
-
-    return new Response(JSON.stringify(result), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+        return new Response(JSON.stringify(result), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      },
+    );
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     logger.error(`[${reqId}] DSD generation error:`, msg);
