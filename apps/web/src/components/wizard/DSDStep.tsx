@@ -17,7 +17,7 @@ import { DSDErrorState } from './dsd/DSDErrorState';
 import { DSDPhotoQualityGate } from './dsd/DSDPhotoQualityGate';
 const DSDAnalysisView = lazy(() => import('./dsd/DSDAnalysisView'));
 import { DSDInitialState } from './dsd/DSDInitialState';
-import { ComponentSkeleton } from '@/components/skeleton-wrapper';
+import { ComponentSkeleton } from '@/components/skeletons';
 
 // Re-export types for backward compatibility with existing importers
 export type { TreatmentIndication, DSDSuggestion, DSDAnalysis, DSDResult };
@@ -56,17 +56,17 @@ export function DSDStep(props: DSDStepProps) {
 
   const handleToggleAnnotations = useCallback(
     () => state.setShowAnnotations(prev => !prev),
-    [state.setShowAnnotations]
+    [state]
   );
 
   const handleCloseWhiteningComparison = useCallback(
     () => state.setShowWhiteningComparison(false),
-    [state.setShowWhiteningComparison]
+    [state]
   );
 
   const handleGenerateAllLayers = useCallback(
     () => state.generateAllLayers(),
-    [state.generateAllLayers]
+    [state]
   );
 
   // Track dsd_started once

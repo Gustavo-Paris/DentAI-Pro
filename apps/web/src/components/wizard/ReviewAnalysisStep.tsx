@@ -1,11 +1,10 @@
-/* eslint-disable react-refresh/only-export-components */
 import { useState, useRef, useEffect, useMemo, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Info, ClipboardCheck, Mic, MicOff, Sparkles } from 'lucide-react';
 import { Label, Textarea, Button } from '@parisgroup-ai/pageshell/primitives';
 import type { Patient } from '@/components/PatientAutocomplete';
 import { useSpeechToText } from '@/hooks/useSpeechToText';
-import { ComponentSkeleton } from '@/components/skeleton-wrapper';
+import { ComponentSkeleton } from '@/components/skeletons';
 import { cn } from '@/lib/utils';
 import { PillToggle } from '@/components/pill-toggle';
 
@@ -109,7 +108,7 @@ export function ReviewAnalysisStep({
     onDobErrorChange?.(value);
   };
 
-  const detectedTeeth = analysisResult?.detected_teeth || [];
+  const detectedTeeth = useMemo(() => analysisResult?.detected_teeth || [], [analysisResult?.detected_teeth]);
   const hasMultipleTeeth = detectedTeeth.length > 1;
   const realSelectedTeeth = selectedTeeth.filter(st => st !== 'GENGIVO');
 
