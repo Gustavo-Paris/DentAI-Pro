@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- test file uses any for mock flexibility */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import PhotoUploader from '../PhotoUploader';
@@ -336,7 +337,7 @@ describe('PhotoUploader', () => {
       render(<PhotoUploader {...makeProps()} />);
       const input = document.querySelector('input[type="file"]') as HTMLInputElement;
       expect(input).toBeInTheDocument();
-      expect(input).toHaveAttribute('accept', 'image/*');
+      expect(input).toHaveAttribute('accept', '.jpg,.jpeg,.png,.webp,.heic');
       expect(input).toHaveClass('hidden');
     });
 
