@@ -6,9 +6,43 @@ import { logger } from "../_shared/logger.ts";
 import { isAllowedRedirectUrl } from "../_shared/url-validation.ts";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-  apiVersion: "2024-09-30.acacia",
+  apiVersion: "2025-02-24.acacia",
   httpClient: Stripe.createFetchHttpClient(),
 });
+
+// ---------------------------------------------------------------------------
+// ISS Tax Rate — Chapecó/SC, 2% inclusive
+// ---------------------------------------------------------------------------
+let cachedIssTaxRateId: string | null = null;
+
+async function getOrCreateIssTaxRate(): Promise<string> {
+  if (cachedIssTaxRateId) return cachedIssTaxRateId;
+
+  // Look for an existing active ISS tax rate
+  const existing = await stripe.taxRates.list({ limit: 100, active: true });
+  const found = existing.data.find(
+    (tr) => tr.display_name === "ISS" && tr.percentage === 2 && tr.inclusive === true,
+  );
+
+  if (found) {
+    cachedIssTaxRateId = found.id;
+    return found.id;
+  }
+
+  // Create it
+  const created = await stripe.taxRates.create({
+    display_name: "ISS",
+    description: "Imposto Sobre Serviços - Chapecó/SC",
+    percentage: 2,
+    inclusive: true,
+    country: "BR",
+    state: "SC",
+    jurisdiction: "Chapecó",
+  });
+
+  cachedIssTaxRateId = created.id;
+  return created.id;
+}
 
 interface RequestBody {
   priceId?: string;   // for subscription
@@ -129,10 +163,12 @@ Deno.serve(withErrorBoundary(async (req: Request) => {
     // Settings > Payment methods before it will work.
     const isPix = payment_method === "pix";
 
+    const taxRateId = await getOrCreateIssTaxRate();
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: "payment",
-      line_items: [{ price: pack.stripe_price_id, quantity: 1 }],
+      line_items: [{ price: pack.stripe_price_id, quantity: 1, tax_rates: [taxRateId] }],
       ...(isPix
         ? {
             payment_method_types: ["pix"],
@@ -191,9 +227,11 @@ Deno.serve(withErrorBoundary(async (req: Request) => {
     const stripeSubId = existingSub.stripe_subscription_id;
     const stripeSub = await stripe.subscriptions.retrieve(stripeSubId);
     const currentItemId = stripeSub.items.data[0].id;
+    const upgradeTaxRateId = await getOrCreateIssTaxRate();
 
     await stripe.subscriptions.update(stripeSubId, {
       items: [{ id: currentItemId, price: stripePriceId }],
+      default_tax_rates: [upgradeTaxRateId],
       proration_behavior: "always_invoice",
     });
 
@@ -207,6 +245,8 @@ Deno.serve(withErrorBoundary(async (req: Request) => {
   const checkoutSuccessUrl = successUrl || `${origin}/profile?subscription=success`;
   const checkoutCancelUrl = cancelUrl || `${origin}/profile?subscription=canceled`;
 
+  const taxRateId = await getOrCreateIssTaxRate();
+
   const session = await stripe.checkout.sessions.create({
     customer: customerId,
     mode: "subscription",
@@ -215,6 +255,7 @@ Deno.serve(withErrorBoundary(async (req: Request) => {
       {
         price: stripePriceId,
         quantity: 1,
+        tax_rates: [taxRateId],
       },
     ],
     success_url: checkoutSuccessUrl,

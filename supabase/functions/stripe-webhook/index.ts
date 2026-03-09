@@ -11,7 +11,7 @@ import {
 } from "./webhook-handlers.ts";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-  apiVersion: "2024-09-30.acacia",
+  apiVersion: "2025-02-24.acacia",
   httpClient: Stripe.createFetchHttpClient(),
 });
 
@@ -55,49 +55,101 @@ Deno.serve(async (req: Request) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || ""
     );
 
-    logger.important(`Processing webhook event: ${event.type}`);
+    // --- Idempotency check ---
+    const { data: existing } = await supabase
+      .from("webhook_events")
+      .select("id")
+      .eq("stripe_event_id", event.id)
+      .maybeSingle();
+
+    if (existing) {
+      logger.log(`Webhook event ${event.id} already processed — skipping`);
+      return new Response(JSON.stringify({ already_processed: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Record event as processing
+    const { error: insertError } = await supabase
+      .from("webhook_events")
+      .insert({
+        stripe_event_id: event.id,
+        event_type: event.type,
+        status: "processing",
+        payload: event.data.object as unknown as Record<string, unknown>,
+      });
+
+    if (insertError) {
+      // Unique constraint violation = another instance is already processing
+      if (insertError.code === "23505") {
+        logger.log(`Webhook event ${event.id} already being processed (concurrent) — skipping`);
+        return new Response(JSON.stringify({ already_processed: true }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      logger.error(`Failed to insert webhook_events row for ${event.id}:`, insertError);
+    }
+
+    logger.important(`Processing webhook event: ${event.type} (${event.id})`);
 
     // Handle different event types
-    switch (event.type) {
-      case "checkout.session.completed": {
-        const session = event.data.object as Stripe.Checkout.Session;
-        await handleCheckoutCompleted(supabase, session, stripe);
-        break;
+    try {
+      switch (event.type) {
+        case "checkout.session.completed": {
+          const session = event.data.object as Stripe.Checkout.Session;
+          await handleCheckoutCompleted(supabase, session, stripe, event.id);
+          break;
+        }
+
+        case "customer.subscription.created":
+        case "customer.subscription.updated": {
+          const subscription = event.data.object as Stripe.Subscription;
+          await handleSubscriptionUpdate(supabase, subscription);
+          break;
+        }
+
+        case "customer.subscription.deleted": {
+          const subscription = event.data.object as Stripe.Subscription;
+          await handleSubscriptionDeleted(supabase, subscription);
+          break;
+        }
+
+        case "invoice.paid": {
+          const invoice = event.data.object as Stripe.Invoice;
+          await handleInvoicePaid(supabase, invoice, event.id);
+          break;
+        }
+
+        case "invoice.payment_failed": {
+          const invoice = event.data.object as Stripe.Invoice;
+          await handleInvoiceFailed(supabase, invoice, event.id);
+          break;
+        }
+
+        case "invoice.payment_action_required": {
+          const invoice = event.data.object as Stripe.Invoice;
+          await handlePaymentActionRequired(supabase, invoice, event.id);
+          break;
+        }
+
+        default:
+          logger.log(`Unhandled event type: ${event.type}`);
       }
 
-      case "customer.subscription.created":
-      case "customer.subscription.updated": {
-        const subscription = event.data.object as Stripe.Subscription;
-        await handleSubscriptionUpdate(supabase, subscription);
-        break;
-      }
-
-      case "customer.subscription.deleted": {
-        const subscription = event.data.object as Stripe.Subscription;
-        await handleSubscriptionDeleted(supabase, subscription);
-        break;
-      }
-
-      case "invoice.paid": {
-        const invoice = event.data.object as Stripe.Invoice;
-        await handleInvoicePaid(supabase, invoice);
-        break;
-      }
-
-      case "invoice.payment_failed": {
-        const invoice = event.data.object as Stripe.Invoice;
-        await handleInvoiceFailed(supabase, invoice);
-        break;
-      }
-
-      case "invoice.payment_action_required": {
-        const invoice = event.data.object as Stripe.Invoice;
-        await handlePaymentActionRequired(supabase, invoice);
-        break;
-      }
-
-      default:
-        logger.log(`Unhandled event type: ${event.type}`);
+      // Mark as processed
+      await supabase
+        .from("webhook_events")
+        .update({ status: "processed" })
+        .eq("stripe_event_id", event.id);
+    } catch (handlerError) {
+      // Mark as failed
+      await supabase
+        .from("webhook_events")
+        .update({ status: "failed" })
+        .eq("stripe_event_id", event.id);
+      throw handlerError;
     }
 
     return new Response(JSON.stringify({ received: true }), {

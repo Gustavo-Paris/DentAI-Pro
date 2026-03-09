@@ -29,6 +29,7 @@ export async function handleCheckoutCompleted(
   supabase: SupabaseClient,
   session: Stripe.Checkout.Session,
   stripe: Stripe,
+  stripeEventId?: string,
 ) {
   // Check if this is a credit pack purchase (one-time payment)
   if (session.mode === "payment" && session.metadata?.type === "credit_pack") {
@@ -170,7 +171,7 @@ export async function handleSubscriptionDeleted(supabase: SupabaseClient, subscr
   logger.important(`Subscription ${subscription.id} marked as canceled`);
 }
 
-export async function handleInvoicePaid(supabase: SupabaseClient, invoice: Stripe.Invoice) {
+export async function handleInvoicePaid(supabase: SupabaseClient, invoice: Stripe.Invoice, stripeEventId?: string) {
   const customerId = invoice.customer as string;
 
   // Find user by customer ID
@@ -193,6 +194,7 @@ export async function handleInvoicePaid(supabase: SupabaseClient, invoice: Strip
       subscription_id: sub.id,
       stripe_invoice_id: invoice.id,
       stripe_payment_intent_id: invoice.payment_intent as string,
+      stripe_event_id: stripeEventId || null,
       amount: invoice.amount_paid,
       currency: invoice.currency,
       status: "succeeded",
@@ -234,7 +236,7 @@ export async function handleInvoicePaid(supabase: SupabaseClient, invoice: Strip
   }
 }
 
-export async function handleInvoiceFailed(supabase: SupabaseClient, invoice: Stripe.Invoice) {
+export async function handleInvoiceFailed(supabase: SupabaseClient, invoice: Stripe.Invoice, stripeEventId?: string) {
   const customerId = invoice.customer as string;
 
   const { data: sub } = await supabase
@@ -255,6 +257,7 @@ export async function handleInvoiceFailed(supabase: SupabaseClient, invoice: Str
       user_id: sub.user_id,
       subscription_id: sub.id,
       stripe_invoice_id: invoice.id,
+      stripe_event_id: stripeEventId || null,
       amount: invoice.amount_due,
       currency: invoice.currency,
       status: "failed",
@@ -385,7 +388,7 @@ export async function handleCreditPackPurchase(supabase: SupabaseClient, session
   logger.important(`Credit pack ${packId} (+${credits} credits) applied for user ${userId}`);
 }
 
-export async function handlePaymentActionRequired(supabase: SupabaseClient, invoice: Stripe.Invoice) {
+export async function handlePaymentActionRequired(supabase: SupabaseClient, invoice: Stripe.Invoice, _stripeEventId?: string) {
   const customerId = invoice.customer as string;
   logger.important(`Payment action required: customer=${customerId}, invoice=${invoice.id}, amount=${invoice.amount_due}`);
 
