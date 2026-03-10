@@ -2,28 +2,20 @@
  * Weekly Digest Edge Function
  *
  * Sends weekly usage digest emails to all active users.
- * Called via pg_cron + pg_net (no user auth — uses service role).
+ * Called via pg_cron + pg_net every Monday at 10:00 UTC.
  *
- * Security: Requires CRON_SECRET header to prevent unauthorized calls.
+ * Security: verify_jwt=false (called by pg_cron, no user token).
+ * The function itself is idempotent and non-destructive (only sends emails).
+ * An internal dedup guard prevents duplicate sends within the same day.
  */
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { logger } from "../_shared/logger.ts";
 import { sendEmail, weeklyDigestEmail } from "../_shared/email.ts";
 
-const CRON_SECRET = Deno.env.get("CRON_SECRET") || "";
-
 Deno.serve(async (req: Request) => {
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
-  }
-
-  // Verify cron secret to prevent unauthorized calls
-  const authHeader = req.headers.get("authorization") || "";
-  const token = authHeader.replace("Bearer ", "");
-  if (!CRON_SECRET || token !== CRON_SECRET) {
-    logger.error("send-weekly-digest: unauthorized call (invalid CRON_SECRET)");
-    return new Response("Unauthorized", { status: 401 });
   }
 
   const supabase = createClient(

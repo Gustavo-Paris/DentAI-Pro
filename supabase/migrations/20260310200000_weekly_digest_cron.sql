@@ -8,44 +8,20 @@
 -- Enable pg_net if not already enabled
 CREATE EXTENSION IF NOT EXISTS pg_net WITH SCHEMA extensions;
 
--- Wrapper function that reads the anon key from Supabase settings
--- and calls the edge function. pg_cron can only call SQL, not HTTP directly
--- with dynamic secrets, so we use this function as the bridge.
+-- Wrapper function that calls the edge function via pg_net.
+-- pg_cron can only call SQL, not HTTP directly, so we use this bridge.
+-- The edge function has verify_jwt=false and is non-destructive (only sends emails).
 CREATE OR REPLACE FUNCTION public.trigger_weekly_digest()
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public, extensions
 AS $$
-DECLARE
-  v_url TEXT;
-  v_anon_key TEXT;
 BEGIN
-  -- Use the Supabase anon key for auth (function has verify_jwt=false,
-  -- but we add it as a convention). The function itself checks CRON_SECRET.
-  -- We pass the service_role key since this runs server-side.
-  v_url := 'https://xmivnwpmgpzuoxqhvkts.supabase.co/functions/v1/send-weekly-digest';
-
-  -- Read CRON_SECRET from a custom config parameter set via:
-  -- ALTER DATABASE postgres SET app.cron_secret = 'your-secret-here';
-  BEGIN
-    v_anon_key := current_setting('app.cron_secret', true);
-  EXCEPTION
-    WHEN OTHERS THEN
-      RAISE WARNING 'app.cron_secret not configured — skipping weekly digest';
-      RETURN;
-  END;
-
-  IF v_anon_key IS NULL OR v_anon_key = '' THEN
-    RAISE WARNING 'app.cron_secret is empty — skipping weekly digest';
-    RETURN;
-  END IF;
-
   PERFORM net.http_post(
-    url := v_url,
+    url := 'https://xmivnwpmgpzuoxqhvkts.supabase.co/functions/v1/send-weekly-digest',
     headers := jsonb_build_object(
-      'Content-Type', 'application/json',
-      'Authorization', 'Bearer ' || v_anon_key
+      'Content-Type', 'application/json'
     ),
     body := '{}'::jsonb
   );

@@ -15,6 +15,22 @@ enable_confirmations = true
 max_frequency = "1m0s"
 otp_length = 8
 
+[auth.email.template.confirmation]
+subject = "Confirme seu email — ToSmile.ai"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.recovery]
+subject = "Redefinir senha — ToSmile.ai"
+content_path = "./supabase/templates/reset-password.html"
+
+[auth.email.template.magic_link]
+subject = "Seu link de acesso — ToSmile.ai"
+content_path = "./supabase/templates/magic-link.html"
+
+[auth.email.template.email_change]
+subject = "Confirmar novo email — ToSmile.ai"
+content_path = "./supabase/templates/email-change.html"
+
 [functions.recommend-resin]
 verify_jwt = false
 
