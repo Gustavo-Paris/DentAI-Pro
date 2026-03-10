@@ -1,4 +1,4 @@
-import { Suspense, lazy, useState, useEffect, useCallback, Component, type ReactNode, type ErrorInfo } from 'react';
+import { Suspense, lazy, useCallback, Component, type ReactNode, type ErrorInfo } from 'react';
 import * as Sentry from '@sentry/react';
 import { AlertCircle } from 'lucide-react';
 import { GlobalSearch } from "@/components/GlobalSearch";
@@ -99,21 +99,14 @@ const queryClient = new QueryClient({
 });
 
 // Redirect authenticated users from landing to dashboard.
-// When Supabase OAuth redirects back with #access_token, the SDK needs
-// a moment to parse the fragment. We show a loader until auth settles.
+// Supabase OAuth may redirect here with ?code= (PKCE) or #access_token (implicit).
+// Show a loader while the SDK exchanges the token, then redirect.
 function HomeRedirect() {
   const { user, loading } = useAuth();
-  const [authSettled, setAuthSettled] = useState(() => !window.location.hash.includes('access_token'));
+  const hasAuthCallback = window.location.search.includes('code=') ||
+    window.location.hash.includes('access_token');
 
-  useEffect(() => {
-    if (!authSettled && !loading) {
-      // Auth finished loading — give SDK one tick to process the hash
-      const id = setTimeout(() => setAuthSettled(true), 100);
-      return () => clearTimeout(id);
-    }
-  }, [authSettled, loading]);
-
-  if (loading || !authSettled) return <PageLoader />;
+  if (loading || (hasAuthCallback && !user)) return <PageLoader />;
   if (user) return <Navigate to="/dashboard" replace />;
   return <Suspense fallback={<PageLoader />}><Landing /></Suspense>;
 }
