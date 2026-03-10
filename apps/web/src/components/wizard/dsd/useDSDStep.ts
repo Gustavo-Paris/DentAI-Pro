@@ -39,11 +39,10 @@ function convertToLegacyDSD(analysis: PhotoAnalysisResult): DSDAnalysis {
     golden_ratio_compliance: analysis.golden_ratio_compliance ?? 50,
     symmetry_score: analysis.symmetry_score ?? 50,
     suggestions: analysis.detected_teeth
-      .filter(t => t.current_issue || t.proposed_change || t.indication_reason)
       .map(t => ({
         tooth: t.tooth,
-        current_issue: t.current_issue || t.indication_reason || 'Avaliação estética indicada',
-        proposed_change: t.proposed_change || t.treatment_indication || 'Tratamento restaurador',
+        current_issue: t.current_issue || t.indication_reason || `Dente ${t.tooth} — avaliação indicada`,
+        proposed_change: t.proposed_change || t.indication_reason || t.treatment_indication || 'Tratamento restaurador',
         treatment_indication: t.treatment_indication as DSDAnalysis['suggestions'][number]['treatment_indication'],
       })),
     observations: analysis.observations,
