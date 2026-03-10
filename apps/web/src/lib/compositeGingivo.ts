@@ -27,21 +27,24 @@ function loadImage(url: string): Promise<HTMLImageElement> {
  * Tuned for dental clinical photos (bright, neutral white lighting).
  */
 function isLipPixel(r: number, g: number, b: number, y: number, height: number): boolean {
-  // Upper lip lives in the top ~15-20% of a dental smile photo.
-  // Previously 45% which caught gum pixels (20-40% range), undoing gengivoplasty.
-  // Restricted to 22% to capture lips while preserving gum reduction changes.
-  if (y > height * 0.22) return false;
+  // Upper lip sits in the top ~10-30% of a dental smile photo.
+  // Gum tissue (which gengivoplasty changes) starts at ~30-45%.
+  // 30% catches the full lip while preserving gum reduction changes.
+  // Previous values: 45% (too wide, caught gum), 22% (too tight, missed lip edge).
+  if (y > height * 0.30) return false;
 
   const brightness = (r + g + b) / 3;
   const saturation = Math.max(r, g, b) - Math.min(r, g, b);
   const redDominance = r - g;
 
   // Lip: moderate brightness, strongly red-dominant, high saturation.
+  // Tightened redDominance (40 vs 35) to better separate lip (dark pink/red)
+  // from gum tissue (lighter pink) in the overlap zone near 25-30%.
   return (
     brightness > 50 &&
-    brightness < 170 &&
-    redDominance > 35 &&
-    saturation > 45
+    brightness < 160 &&
+    redDominance > 40 &&
+    saturation > 50
   );
 }
 
@@ -187,11 +190,10 @@ export async function compositeGengivoplastyLips(
     // Yield between heavy phases
     await yieldToMain();
 
-    // Step 2: Dilate the mask by 2px to catch lip edge artifacts.
-    // Increased from 1px to 2px — Gemini's lip modifications often bleed 1-2px
-    // beyond the detected lip boundary, so a 2px dilation ensures we restore
-    // those fringe pixels from L2 rather than leaving subtle color shifts.
-    const dilatedMask = dilateMask(lipChangedMask, width, height, 2);
+    // Step 2: Dilate the mask by 1px to catch lip edge artifacts.
+    // Reduced from 2px to 1px — with a 30% Y-limit near the gum zone,
+    // 2px dilation can push the mask into gum territory and undo gengivoplasty.
+    const dilatedMask = dilateMask(lipChangedMask, width, height, 1);
 
     // Step 3: Convert to float and blur for smooth blending (2px radius)
     const floatMask = new Float32Array(dilatedMask.length);
