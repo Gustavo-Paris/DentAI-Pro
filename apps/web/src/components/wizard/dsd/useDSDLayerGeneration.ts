@@ -319,8 +319,11 @@ export function useDSDLayerGeneration({
         }
       }
 
-      // === Phase 3: Generate L3 from L2 (gengivoplasty ONLY — if approved) ===
-      if (gingivoplastyApproved === true && l2Url) {
+      // === Phase 3: Generate L3 from L2 (gengivoplasty) ===
+      // Generate when: explicitly approved, OR undecided + "alta" smile line (always recommended)
+      const shouldGenerateL3 = gingivoplastyApproved === true ||
+        (gingivoplastyApproved === null && analysis.smile_line === 'alta');
+      if (shouldGenerateL3 && l2Url) {
         try {
           const l2Base64 = await urlToBase64(l2Url);
           logger.log('Layer chaining: L2 → L3 (gengivoplasty only)');
@@ -374,7 +377,7 @@ export function useDSDLayerGeneration({
         }
       }
 
-      const totalExpected = 2 + (gingivoplastyApproved === true ? 1 : 0);
+      const totalExpected = 2 + (shouldGenerateL3 ? 1 : 0);
       if (failed.length > 0) {
         toast.success(t('toasts.dsd.layersFailed', { success: compositedLayers.length, total: totalExpected }), {
           description: t('toasts.dsd.layersFailedDesc', { count: failed.length }),
