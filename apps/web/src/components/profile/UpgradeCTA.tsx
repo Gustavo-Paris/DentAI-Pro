@@ -9,13 +9,12 @@ import { Sparkles } from 'lucide-react';
 
 export interface UpgradeCTAProps {
   isFree: boolean;
-  isActive: boolean;
 }
 
-export function UpgradeCTA({ isFree, isActive }: UpgradeCTAProps) {
+export function UpgradeCTA({ isFree }: UpgradeCTAProps) {
   const { t } = useTranslation();
 
-  if (!isFree || isActive) return null;
+  if (!isFree) return null;
 
   return (
     <Card className="rounded-xl glass-panel bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">

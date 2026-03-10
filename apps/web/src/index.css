@@ -961,7 +961,7 @@
 
 /* Brand gradient — ToSmile wordmark, premium moments */
 .text-gradient-brand {
-  background: linear-gradient(135deg, var(--color-primary), var(--brand-accent), var(--color-primary));
+  background: linear-gradient(135deg, rgb(var(--color-primary-rgb)), var(--brand-accent), rgb(var(--color-primary-rgb)));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -969,7 +969,7 @@
 
 /* Legacy alias — maps to new class */
 .text-gradient-gold {
-  background: linear-gradient(135deg, var(--color-primary), var(--brand-accent), var(--color-primary));
+  background: linear-gradient(135deg, rgb(var(--color-primary-rgb)), var(--brand-accent), rgb(var(--color-primary-rgb)));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

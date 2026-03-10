@@ -51,7 +51,7 @@ export default function Profile() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const p = useProfile();
-  const { refreshSubscription, isFree, isActive } = useSubscription();
+  const { refreshSubscription, isFree } = useSubscription();
 
   // Profile form with Zod validation
   const form = useForm<ProfileFormData>({
@@ -343,7 +343,7 @@ export default function Profile() {
               <SubscriptionStatus />
               <CreditPackSection />
               <CreditUsageHistory />
-              <UpgradeCTA isFree={isFree} isActive={isActive} />
+              <UpgradeCTA isFree={isFree} />
             </div>
           ),
         },

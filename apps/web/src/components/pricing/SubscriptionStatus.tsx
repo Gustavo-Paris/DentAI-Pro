@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
-import { getDateLocale, getDateFormat } from '@/lib/date-utils';
-import { CreditCard, Calendar, Zap, Settings, AlertTriangle, Loader2, RefreshCw } from 'lucide-react';
+import { getDateLocale } from '@/lib/date-utils';
+import { CreditCard, Calendar, Zap, Settings, AlertTriangle, Loader2, RefreshCw, ArrowUpRight } from 'lucide-react';
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Badge, Progress } from '@parisgroup-ai/pageshell/primitives';
 import { useSubscription, formatPrice } from '@/hooks/useSubscription';
 import { PaymentWarningBanner } from '@/components/pricing/PaymentWarningBanner';
@@ -23,6 +24,7 @@ export function SubscriptionStatus() {
     currentPlan,
     isLoading,
     isActive,
+    isFree,
     creditsPerMonth,
     creditsUsed,
     creditsRollover,
@@ -99,7 +101,7 @@ export function SubscriptionStatus() {
                   : t('components.pricing.subscription.freeLabel')}
               </p>
             </div>
-            {subscription?.stripe_customer_id && (
+            {subscription?.stripe_customer_id ? (
               <Button
                 variant="outline"
                 size="sm"
@@ -115,7 +117,14 @@ export function SubscriptionStatus() {
                   </>
                 )}
               </Button>
-            )}
+            ) : isFree ? (
+              <Button size="sm" asChild>
+                <Link to="/pricing">
+                  <ArrowUpRight className="h-4 w-4 mr-1.5" />
+                  {t('common.viewPlans')}
+                </Link>
+              </Button>
+            ) : null}
           </div>
 
           {subscription?.current_period_end && isActive && (
