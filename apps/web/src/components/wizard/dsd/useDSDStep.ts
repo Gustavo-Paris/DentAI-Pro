@@ -30,6 +30,25 @@ import type { PhotoAnalysisResult } from '@/types/wizard';
 // ---------------------------------------------------------------------------
 
 function convertToLegacyDSD(analysis: PhotoAnalysisResult): DSDAnalysis {
+  // DEBUG: trace data flow for suggestions
+  logger.log('[DEBUG] convertToLegacyDSD called, detected_teeth count:', analysis.detected_teeth?.length);
+  logger.log('[DEBUG] detected_teeth sample:', JSON.stringify(analysis.detected_teeth?.slice(0, 2)?.map(t => ({
+    tooth: t.tooth,
+    current_issue: t.current_issue,
+    proposed_change: t.proposed_change,
+    indication_reason: t.indication_reason,
+    treatment_indication: t.treatment_indication,
+  }))));
+
+  const suggestions = analysis.detected_teeth
+    .map(t => ({
+      tooth: t.tooth,
+      current_issue: t.current_issue || t.indication_reason || `Dente ${t.tooth} — avaliação indicada`,
+      proposed_change: t.proposed_change || t.indication_reason || t.treatment_indication || 'Tratamento restaurador',
+      treatment_indication: t.treatment_indication as DSDAnalysis['suggestions'][number]['treatment_indication'],
+    }));
+  logger.log('[DEBUG] suggestions built:', suggestions.length, JSON.stringify(suggestions.slice(0, 2)));
+
   return {
     facial_midline: analysis.facial_midline ?? 'centrada',
     dental_midline: analysis.dental_midline ?? 'alinhada',
@@ -38,13 +57,7 @@ function convertToLegacyDSD(analysis: PhotoAnalysisResult): DSDAnalysis {
     occlusal_plane: analysis.occlusal_plane ?? 'nivelado',
     golden_ratio_compliance: analysis.golden_ratio_compliance ?? 50,
     symmetry_score: analysis.symmetry_score ?? 50,
-    suggestions: analysis.detected_teeth
-      .map(t => ({
-        tooth: t.tooth,
-        current_issue: t.current_issue || t.indication_reason || `Dente ${t.tooth} — avaliação indicada`,
-        proposed_change: t.proposed_change || t.indication_reason || t.treatment_indication || 'Tratamento restaurador',
-        treatment_indication: t.treatment_indication as DSDAnalysis['suggestions'][number]['treatment_indication'],
-      })),
+    suggestions,
     observations: analysis.observations,
     confidence: 'alta',
     lip_thickness: analysis.lip_thickness,

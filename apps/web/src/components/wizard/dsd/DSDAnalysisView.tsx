@@ -455,6 +455,14 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
       {/* Proportions Analysis */}
       <ProportionsCard analysis={analysis} />
 
+      {/* DEBUG: visible diagnostic for suggestions */}
+      <div className="bg-yellow-500/20 border border-yellow-500 p-3 rounded text-sm font-mono">
+        <p>DEBUG suggestions count: {analysis.suggestions?.length ?? 'undefined'}</p>
+        <p>DEBUG suggestions type: {typeof analysis.suggestions}</p>
+        <p>DEBUG analysis keys: {Object.keys(analysis).join(', ')}</p>
+        <p>DEBUG first suggestion: {JSON.stringify(analysis.suggestions?.[0])?.substring(0, 200)}</p>
+      </div>
+
       {/* Suggestions - grouped by tooth number */}
       <DSDSuggestionsCard suggestions={analysis.suggestions} />
 
@@ -503,6 +511,8 @@ export default DSDAnalysisView;
 
 function DSDSuggestionsCard({ suggestions }: { suggestions: DSDSuggestion[] | undefined }) {
   const { t } = useTranslation();
+  // eslint-disable-next-line no-console
+  console.log('[DEBUG] DSDSuggestionsCard received suggestions:', suggestions?.length, suggestions);
   if (!suggestions || suggestions.length === 0) return null;
 
   // Keywords that indicate a gengiva-related suggestion
