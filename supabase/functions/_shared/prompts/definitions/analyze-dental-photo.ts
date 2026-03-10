@@ -323,6 +323,8 @@ FALSOS POSITIVOS COMUNS (NAO diagnosticar como diastema):
 - Sombra interproximal entre dentes com contato proximal INTACTO (sem espaço real)
 - Interface de restauração proximal com gap marginal → é "Restauração insatisfatória com falha marginal", NAO diastema
 - Triângulo negro (black triangle) isolado por papila retraída sem espaço entre coroas
+- ASSIMETRIA DE COMPRIMENTO/FORMATO entre centrais (11/21) NAO é diastema — dentes podem ter comprimentos ou larguras diferentes sem gap entre eles. Assimetria é diagnóstico SEPARADO (tratar como "Recontorno Estético")
+- Proporção áurea desfavorável NAO implica diastema — proporções podem estar abaixo do ideal por laterais curtos, não por espaço entre dentes
 
 === DIFERENCIACAO CRITICA: DIASTEMA vs. RESTAURACAO INSATISFATORIA ===
 ANTES de diagnosticar "diastema", verificar:
@@ -338,6 +340,8 @@ ANTES de diagnosticar "diastema", verificar:
 - Se incisivos centrais (11/21) apresentam CONTATO PROXIMAL VISÍVEL (bordas mesiais se tocam ou quase se tocam), é IMPOSSÍVEL haver diastema — NÃO diagnosticar.
 - Diastema requer espaço VAZIO E CONTÍNUO entre as faces mesiais. Sombra interproximal normal NÃO é diastema.
 - Diastema somente se gap ≥1mm E claramente visível E ambas faces são esmalte natural
+- ⚠️ TESTE VISUAL OBRIGATÓRIO: Para confirmar diastema, deve ser possível ver LUZ passando entre as faces mesiais dos dentes. Se as bordas mesiais se tocam ou se sobrepõem visualmente (mesmo com assimetria de comprimento), NÃO há diastema.
+- Dentes com LARGURAS DIFERENTES ou COMPRIMENTOS DIFERENTES mas sem espaço entre eles = assimetria, NÃO diastema
 
 REGRAS DE DIASTEMA:
 - Se GAP é visível E faces proximais são esmalte natural → diagnosticar diastema

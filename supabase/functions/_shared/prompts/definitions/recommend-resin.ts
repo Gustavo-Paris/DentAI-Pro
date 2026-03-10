@@ -237,27 +237,29 @@ ${JSON.stringify(contralateralProtocol, null, 2)}
 COPIAR: Mesmo nº camadas, mesmos shades, mesma resina, mesma técnica, mesma confiança. Adapte APENAS o nº do dente.`
 }
 
-function buildLayerCapSection(restorationSize: string, cavityClass: string, aestheticLevel: string, region: string): string {
+function buildLayerCapSection(restorationSize: string, cavityClass: string, aestheticLevel: string, region: string, budget?: string): string {
   const classLower = cavityClass.toLowerCase()
   const isDiastema = classLower.includes('diastema') || classLower.includes('fechamento')
   const isAnteriorAesthetic = classLower.includes('recontorno') || classLower.includes('faceta') || classLower.includes('lente')
   const isAnteriorRegion = region.toLowerCase().includes('anterior')
   const sizeNorm = restorationSize.toLowerCase()
+  const isPremium = budget?.toLowerCase() === 'premium'
   const isAesthetic = ['estético', 'alto', 'muito alto'].includes(aestheticLevel)
   // Diastema closures and anterior aesthetic procedures are ALWAYS aesthetic
-  const forceAesthetic = isDiastema || (isAnteriorAesthetic && isAnteriorRegion)
+  // Premium budget in anterior region also forces aesthetic stratification
+  const forceAesthetic = isDiastema || (isAnteriorAesthetic && isAnteriorRegion) || (isPremium && isAnteriorRegion)
 
   let maxLayers: number | null = null
   let scenario = ''
 
-  if (isDiastema || (isAnteriorAesthetic && isAnteriorRegion)) {
-    if (isDiastema) {
+  if (isDiastema || (isAnteriorAesthetic && isAnteriorRegion) || (isPremium && isAnteriorRegion)) {
+    if (isDiastema && !isPremium) {
       if (sizeNorm.includes('pequen')) {
-        // Small diastema (<1mm): simplified technique — enamel resins only
+        // Small diastema (<1mm): simplified technique — enamel resins only (standard budget only)
         maxLayers = 2
         scenario = 'Diastema Pequeno (<1mm): Técnica SIMPLIFICADA — 2 camadas (Corpo + Esmalte claro). Apenas resinas de esmalte mais claro (WE ou W3). Sem necessidade de camada de dentina opaca.'
       } else if (sizeNorm.includes('médi') || sizeNorm.includes('medi')) {
-        // Medium diastema (1-2mm): DENTINA/BODY + enamel
+        // Medium diastema (1-2mm): DENTINA/BODY + enamel (standard budget only)
         maxLayers = 3
         scenario = 'Diastema Médio (1-2mm): 3 camadas — Dentina/Body + Cristas Proximais + Esmalte (WE ou W3 para dentes clareados). Se dentes clareados: usar DENTINA ou BODY + camada final WE ou W3.'
       } else {
@@ -265,6 +267,14 @@ function buildLayerCapSection(restorationSize: string, cavityClass: string, aest
         maxLayers = 5
         scenario = 'Diastema Grande/Extenso (>2mm): Mín 5 camadas (Aumento Incisal + Cristas Proximais + Corpo + Efeitos Incisais + Esmalte). Se dentes clareados: DENTINA ou BODY + camada esmalte final WE ou W3.'
       }
+    } else if (isDiastema && isPremium) {
+      // Premium budget: ALWAYS full stratification for diastema, regardless of size
+      maxLayers = 5
+      scenario = `Diastema + Budget Premium: Mín 5 camadas OBRIGATÓRIAS (Aumento Incisal + Cristas Proximais + Corpo + Efeitos Incisais + Esmalte). Budget premium exige estratificação completa para resultado natural — PROIBIDO gerar 2-3 camadas.`
+    } else if (isPremium && isAnteriorRegion) {
+      // Premium anterior (non-diastema): full stratification
+      maxLayers = 5
+      scenario = 'Anterior + Budget Premium: Mín 5 camadas (Aumento Incisal + Cristas Proximais + Corpo + Efeitos Incisais + Esmalte). Budget premium em anterior exige estratificação completa.'
     } else {
       maxLayers = 5
       scenario = 'Recontorno/Faceta Anterior Estético: Mín 5 camadas (Aumento Incisal + Cristas Proximais + Corpo + Efeitos Incisais + Esmalte)'
@@ -436,6 +446,8 @@ ALTERNATIVA SIMPLIFICADA (2 camadas):
   - Dentes clareados: W3 ou W4 (Estelite Bianco) como corpo, ou shade de dentina mais clara.
   - Evitar usar cores de esmalte puro (WE, CT, Trans) como corpo — são para camada final.
 - Esmalte Final: Escolher UMA ÚNICA resina — WE(Palfique LX5) para resultado mais branco, OU MW(Estelite Omega) para resultado natural. ⚠️ PROIBIDO usar MW + WE juntas na alternativa (ambas são esmalte final, uma substitui a outra). ⚠️ WE NÃO corresponde a "esmalte A2E" — são shades distintas. Dentes clareados: usar W3/W4(Estelite Bianco) como opção ÚNICA de esmalte.
+- ⚠️ PROIBIDO Tetric N-Ceram (Ivoclar Vivadent) para dentes ANTERIORES — polimento e estética inferiores para região anterior. ALTERNATIVAS para anterior: Empress Direct BL-L (Ivoclar), Estelite Omega (Tokuyama), Palfique LX5 (Tokuyama).
+  - Tetric N-Ceram é aceitável SOMENTE para dentes POSTERIORES onde estética não é prioridade.
 - Dentes clareados: Corpo W3/W4(Estelite Bianco) + Esmalte WE. Ou BL(Forma)/BL-L(Empress) como alternativa.
 - Cristas (se 3+ camadas na alternativa): XLE(Harmonize) ou BL-L(Empress). Evitar JE para cristas.
 - TN = Translucent Natural = cor de ESMALTE, usar apenas como camada final.
@@ -484,6 +496,11 @@ Procedimentos estéticos anteriores → SEMPRE isolamento ABSOLUTO (lençol de b
 
 TECNICAS OBSOLETAS - NAO USAR: "Bisel em esmalte", "Bisel amplo", "Ácido 30s em dentina".
 USAR: "Chanfro suave", "Sem preparo adicional", "Condicionamento conforme substrato".
+
+=== TEMPO DE CONDICIONAMENTO ACIDO (CRITICO) ===
+- ESMALTE: Ácido fosfórico 37% por 15-30 segundos (15s MINIMO, 30s MAXIMO). Tempo < 15s é INSUFICIENTE para padrão de condicionamento adequado em esmalte. Gerar warning "NÃO usar ácido por mais de 15s" para esmalte é ERRO CLINICO.
+- DENTINA: Ácido fosfórico 37% por NO MÁXIMO 15 segundos (evitar desmineralização excessiva).
+- REGRA: NAO gerar warning/alert limitando ácido a 15s quando o substrato é predominantemente ESMALTE. O limite de 15s aplica-se SOMENTE à dentina.
 
 === ACABAMENTO E POLIMENTO (OBRIGATORIO) ===
 FOTOPOLIMERIZACAO FINAL OBRIGATORIA: Após TODAS as camadas concluídas e ANTES de iniciar acabamento, fotopolimerizar 60 segundos por face (vestibular + palatina/lingual) para garantir conversão completa de monômeros residuais. Incluir no checklist como etapa obrigatória.
@@ -597,6 +614,7 @@ Inclua SOMENTE alertas que se aplicam ao caso. NAO adicione alertas genericos.
 ALERTS: Alertas técnicos, substituições de shade, pontos de atenção. Formato livre.
 WARNINGS (O que NÃO fazer): EXCLUSIVAMENTE proibições. CADA item DEVE começar com "NÃO" ou "NUNCA" ou "PROIBIDO".
 PROIBIDO gerar warning OU alert sobre sequência Sof-Lex — NÃO mencionar "sequência LARANJA padrão", NÃO escrever "NÃO polir com Sof-Lex vermelho", NÃO designar preferência entre sequências. Ambas (laranja e vermelha) são IGUALMENTE válidas. No protocolo, mencionar apenas "Sof-Lex (sequência completa)" sem designar cor como padrão.
+PROIBIDO gerar warning "NUNCA fotopolimerizar sem tira de poliéster" — tira de poliéster é TÉCNICA, não regra absoluta. O dentista decide quando usar matriz/tira conforme a situação clínica. Mencionar tira de poliéster como TÉCNICA na descrição da camada quando relevante (ex: cristas proximais), mas NÃO como proibição no warnings.
 Exemplos CORRETOS: "NÃO usar ácido 30s em dentina", "NUNCA aplicar borda incisal 100% opaca", "PROIBIDO bisel amplo em esmalte"
 Exemplos ERRADOS (NAO GERAR): "Considerar clareamento prévio", "Mock-up recomendado", "Translucidez incisal obrigatória"
 Se um item é uma RECOMENDAÇÃO → vai em ALERTS, não em WARNINGS.`,
@@ -607,7 +625,7 @@ Se um item é uma RECOMENDAÇÃO → vai em ALERTS, não em WARNINGS.`,
     const inventory = buildInventorySection(p.hasInventory, p.budget, p.budgetAppropriateInventory, p.inventoryResins)
     const inventoryInstr = buildInventoryInstructions(p.hasInventory, p.budget)
     const advancedStrat = buildAdvancedStratificationSection(p.aestheticLevel, p.cavityClass)
-    const layerCap = buildLayerCapSection(p.restorationSize, p.cavityClass, p.aestheticLevel, p.region)
+    const layerCap = buildLayerCapSection(p.restorationSize, p.cavityClass, p.aestheticLevel, p.region, p.budget)
     const bruxism = buildBruxismSection(p.bruxism)
     const aestheticGoals = buildAestheticGoalsSection(p.aestheticGoals)
     const dsdContext = buildDSDContextSection(p.dsdContext)
