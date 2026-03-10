@@ -126,10 +126,14 @@ export function useDSDGingivoplasty({
     });
     const hasGingivoEvidence = hasKeywordInSuggestions || hasKeywordInObservations;
 
+    // "Alta (gengival)" smile line = gummy smile with >3mm gingival exposure.
+    // This is a clear clinical indication — always recommend gengivoplasty.
     if (analysis.smile_line === 'alta') {
-      return hasGingivoEvidence ? 'recommended' : 'optional';
+      return 'recommended';
     }
 
+    // "Média" smile line — only recommend if there's explicit gingival evidence
+    // (e.g., asymmetry >1.5mm, short clinical crowns, localized hyperplasia)
     if (analysis.smile_line === 'média') {
       return hasGingivoEvidence ? 'recommended' : 'optional';
     }
@@ -191,11 +195,11 @@ export function useDSDGingivoplasty({
     } finally {
       setRetryingLayer(null);
     }
-  }, [result?.analysis, imageBase64, layerUrls, generateSingleLayer, resolveLayerUrl, setLayers, setLayerUrls, setActiveLayerIndex, setFailedLayers, setResult, setRetryingLayer, t]);
+  }, [result?.analysis, imageBase64, layerUrls, generateSingleLayer, resolveLayerUrl, setLayers, setLayerUrls, setActiveLayerIndex, setFailedLayers, setResult, setRetryingLayer, setGingivoplastyApproved, t]);
 
   const handleDiscardGingivoplasty = useCallback(() => {
     setGingivoplastyApproved(false);
-  }, []);
+  }, [setGingivoplastyApproved]);
 
   return {
     gingivoplastyApproved,
