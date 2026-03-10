@@ -103,16 +103,14 @@ export const ANALYZE_PHOTO_TOOL: OpenAITool[] = [
                 },
                 current_issue: {
                   type: "string",
-                  description: "Problema estético identificado (ex: 'Restauração infiltrada com gap mesial de ~1mm')",
-                  nullable: true
+                  description: "OBRIGATÓRIO. Problema estético/clínico identificado (ex: 'Restauração infiltrada com gap mesial de ~1mm'). Sempre preencher para cada dente."
                 },
                 proposed_change: {
                   type: "string",
-                  description: "Mudança proposta com medidas em mm (ex: 'Fechamento com resina composta ~1.5mm, harmonização com 21')",
-                  nullable: true
+                  description: "OBRIGATÓRIO. Mudança proposta com medidas em mm (ex: 'Fechamento com resina composta ~1.5mm, harmonização com 21'). Sempre preencher para cada dente."
                 }
               },
-              required: ["tooth", "priority", "treatment_indication"]
+              required: ["tooth", "priority", "treatment_indication", "current_issue", "proposed_change"]
             }
           },
           primary_tooth: {

@@ -711,10 +711,12 @@ Se >=2 anteriores precisam de intervenção -> avaliar 6-10 dentes do arco (13-2
 
 ## PARA CADA DENTE: campos clínicos + campos estéticos
 - Campos CLÍNICOS: tooth_number, region, cavity_class, size, substrate, substrate_condition, enamel_condition, depth, treatment_indication, priority, indication_reason, tooth_bounds
-- Campos ESTÉTICOS (por dente): current_issue, proposed_change (com medidas em mm)
+- Campos ESTÉTICOS (por dente) — OBRIGATÓRIO para TODOS os dentes:
+  - current_issue: descreva o problema identificado (ex: "Restauração antiga com infiltração marginal", "Proporção largura/altura 70% (ideal 75-80%)", "Cor A3.5 destoante do sorriso")
+  - proposed_change: descreva a mudança proposta com medidas em mm (ex: "Aumentar ~1.5mm em incisal", "Recontorno ~0.5mm mesial", "Clareamento para A2")
+  - NUNCA deixar current_issue ou proposed_change vazios — cada dente detectado DEVE ter ambos preenchidos
 - UMA treatment_indication por dente (sem conflitos)
 - Prioridade: alta (patologias) > média (restaurações) > baixa (estética)
-- Proposed changes com medidas em mm (OBRIGATORIO): "Aumentar ~1.5mm", "Recontorno ~0.5mm"
 - Para GENGIVOPLASTIA, calibrar medida pela severidade do sorriso gengival:
   - Sorriso gengival LEVE (2-3mm exposição): "Gengivoplastia ~2mm"
   - Sorriso gengival MODERADO (3-4mm exposição): "Gengivoplastia ~3mm"
@@ -890,7 +892,7 @@ Quando anamnese do paciente estiver disponivel no contexto:
     let prompt = `Analise esta foto dental e forneça uma análise COMPLETA:
 1. ANÁLISE CLÍNICA: identifique TODOS os dentes com problemas (cáries, restaurações, fraturas)
 2. ANÁLISE ESTÉTICA: avalie proporções, simetria, linha do sorriso, corredor bucal
-3. SUGESTÕES POR DENTE: para cada dente, forneça current_issue e proposed_change com medidas em mm
+3. SUGESTÕES POR DENTE (OBRIGATÓRIO): para CADA dente em detected_teeth, SEMPRE preencha current_issue (problema identificado) e proposed_change (mudança proposta com medidas em mm). Nenhum dente pode ficar sem esses dois campos
 
 Tipo de foto: ${imageType}
 
