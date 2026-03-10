@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { PageClinicActivityFeed } from '@parisgroup-ai/domain-odonto-ai/dashboard';
 import type { ActivityFeedItem } from '@parisgroup-ai/domain-odonto-ai/dashboard';
 import type { DashboardSession } from '@/hooks/domain/useDashboard';
 import { WizardDraft } from '@/hooks/useWizardDraft';
@@ -9,7 +8,9 @@ import { ListSkeleton, ActivityFeedSkeleton } from '@/components/skeletons';
 import {
   FileText, FileWarning, ChevronRight, ArrowRight, Plus,
   Sparkles, Users, Package, Settings, Zap,
+  Activity, Calendar, DollarSign, Clipboard, User, AlertTriangle,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { format, formatDistanceToNow } from 'date-fns';
 import { getDateLocale } from '@/lib/date-utils';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -236,11 +237,59 @@ function ActivityFeedSection({ sessions, loading }: { sessions: DashboardSession
     return feedItems;
   });
 
+  const TYPE_ICON_MAP: Record<string, React.ReactNode> = {
+    appointment: <Calendar className="w-3.5 h-3.5" />,
+    payment: <DollarSign className="w-3.5 h-3.5" />,
+    treatment: <Clipboard className="w-3.5 h-3.5" />,
+    patient: <User className="w-3.5 h-3.5" />,
+    alert: <AlertTriangle className="w-3.5 h-3.5" />,
+  };
+
+  const TYPE_COLOR_MAP: Record<string, string> = {
+    appointment: 'bg-blue-100 text-blue-600',
+    payment: 'bg-emerald-100 text-emerald-600',
+    treatment: 'bg-purple-100 text-purple-600',
+    patient: 'bg-sky-100 text-sky-600',
+    alert: 'bg-amber-100 text-amber-600',
+  };
+
+  const visibleItems = items.slice(0, 8);
+
   return (
-    <PageClinicActivityFeed
-      items={items}
-      maxItems={8}
-    />
+    <div className="rounded-lg border border-border bg-card">
+      <div className="flex items-center gap-2 border-b border-border px-4 py-3">
+        <Activity className="w-4 h-4 text-primary" />
+        <h3 className="text-sm font-semibold">{t('dashboard.activityFeed.title')}</h3>
+      </div>
+      {visibleItems.length === 0 ? (
+        <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+          {t('dashboard.activityFeed.empty')}
+        </div>
+      ) : (
+        <div className="relative">
+          <div className="absolute left-7 top-0 bottom-0 w-px bg-border" aria-hidden="true" />
+          <ul className="relative">
+            {visibleItems.map((item) => (
+              <li key={item.id} className="relative flex gap-3 px-4 py-3 transition-colors hover:bg-accent/5">
+                <div className={cn(
+                  'relative z-10 flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center',
+                  TYPE_COLOR_MAP[item.type] || TYPE_COLOR_MAP.treatment,
+                )}>
+                  {TYPE_ICON_MAP[item.type] || TYPE_ICON_MAP.treatment}
+                </div>
+                <div className="flex-1 min-w-0 pt-0.5">
+                  <p className="text-sm font-medium">{item.title}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 truncate">{item.description}</p>
+                  <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                    <span>{item.timestamp}</span>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
   );
 }
 

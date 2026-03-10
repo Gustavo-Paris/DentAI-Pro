@@ -169,6 +169,7 @@ export function useWizardSubmit({
       return false;
     }
     return true;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.patientAge, formData.tooth, patientBirthDate, selectedTeeth, setFormData]);
 
   // -------------------------------------------------------------------------
@@ -310,7 +311,10 @@ export function useWizardSubmit({
               treatment_indication: t.treatment_indication,
             })),
           observations: analysisResult.observations,
-          confidence: 'alta',
+          confidence: analysisResult.confidence != null
+            ? (analysisResult.confidence >= 80 ? 'alta' : analysisResult.confidence >= 50 ? 'média' : 'baixa')
+            : 'alta',
+          dsd_simulation_suitability: analysisResult.dsd_simulation_suitability,
         } : null,
         dsd_simulation_url: dsdResult?.simulation_url || null,
         dsd_simulation_layers: dsdResult?.layers || null,
@@ -708,6 +712,7 @@ export function useWizardSubmit({
       isSubmittingRef.current = false;
       setIsSubmitting(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     user,
     validateForm,

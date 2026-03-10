@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, Button, Badge, Collapsible, CollapsibleContent, CollapsibleTrigger } from '@parisgroup-ai/pageshell/primitives';
-import { ChevronDown, ChevronUp, Smile, Sparkles, Eye, Scissors, ArrowUp, ArrowDown, ShieldCheck } from 'lucide-react';
+import { Card, CardContent, Button, Badge, Collapsible, CollapsibleContent, CollapsibleTrigger, Alert, AlertDescription, AlertTitle } from '@parisgroup-ai/pageshell/primitives';
+import { ChevronDown, ChevronUp, Smile, Sparkles, Eye, Scissors, ArrowUp, ArrowDown, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { ComparisonSlider } from './ComparisonSlider';
 import { ProportionsCard } from './ProportionsCard';
 import type { DSDAnalysis, DSDSuggestion, SimulationLayer } from '@/types/dsd';
@@ -116,6 +116,17 @@ export function CollapsibleDSD({
 
       {/* Expanded Content */}
       <CollapsibleContent className="mt-4 space-y-4">
+        {/* Low suitability warning */}
+        {typeof analysis.dsd_simulation_suitability === 'number' && analysis.dsd_simulation_suitability < 50 && (
+          <Alert variant="destructive" className="border-warning/50 bg-warning/10 text-warning-foreground">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>{t('components.dsd.collapsible.lowSuitabilityTitle')}</AlertTitle>
+            <AlertDescription>
+              {t('components.dsd.collapsible.lowSuitabilityWarning', { score: analysis.dsd_simulation_suitability })}
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Layer tabs — show when multiple layers exist */}
         {hasLayers && layers.length > 1 && (
           <div className="flex flex-wrap gap-2">

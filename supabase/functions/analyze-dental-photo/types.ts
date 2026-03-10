@@ -62,6 +62,14 @@ export interface PhotoAnalysisResult {
   perceived_temperament?: "colérico" | "sanguíneo" | "melancólico" | "fleumático" | "misto";
   recommended_tooth_shape?: "quadrado" | "oval" | "triangular" | "retangular" | "natural";
   visagism_notes?: string;
+
+  // --- Gingival assessment ---
+  gingival_assessment?: {
+    indication: "recommended" | "optional" | "none";
+    evidence: ("asymmetry" | "short_crown" | "excess_tissue" | "hyperplasia" | "gummy_smile")[];
+    affected_teeth: string[];
+    confidence: number;
+  } | null;
 }
 
 export interface AdditionalPhotos {

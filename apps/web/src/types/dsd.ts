@@ -35,6 +35,8 @@ export interface DSDAnalysis {
   observations: string[];
   confidence: "alta" | "média" | "baixa";
   simulation_limitation?: string;
+  /** 0-100 score: how suitable the photo is for DSD simulation */
+  dsd_simulation_suitability?: number;
   /** Displayed in ProportionsCard (DSD step, Result page, SharedEvaluation) */
   lip_thickness?: "fino" | "médio" | "volumoso";
   /** Displayed in ProportionsCard + overbite alert in DSDAnalysisView */

@@ -572,6 +572,60 @@ export async function validateAndFixProtocolLayers({
   // Update layers with validated versions
   recommendation.protocol.layers = validatedLayers;
 
+  // Layer count enforcement: inject missing layers when below minimum for anterior aesthetic cases
+  if (tooth && cavityClass) {
+    const anterior = isAnteriorTooth(tooth);
+    const classLower = cavityClass.toLowerCase();
+    const isAestheticCase = AESTHETIC_CLASSES.some(c => classLower.includes(c));
+
+    if (anterior && isAestheticCase) {
+      const isDiastema = classLower.includes('diastema');
+      const sizeNorm = restorationSize?.toLowerCase() || '';
+      const isSmallDiastema = isDiastema && sizeNorm.includes('pequen');
+      const isMediumDiastema = isDiastema && (sizeNorm.includes('médi') || sizeNorm.includes('medi'));
+      const minRequired = isSmallDiastema ? 2 : isMediumDiastema ? 3 : 4;
+      const currentCount = recommendation.protocol.layers.length;
+
+      if (currentCount < minRequired && currentCount >= 1) {
+        logger.warn(`Layer count enforcement: ${currentCount} layers < ${minRequired} minimum for ${tooth} (${cavityClass}, size=${restorationSize}). Injecting missing layers.`);
+
+        // Determine what layers exist
+        const hasCristas = recommendation.protocol.layers.some((l: {name?: string}) => {
+          const n = (l.name || '').toLowerCase();
+          return n.includes('crista') || n.includes('proxima');
+        });
+
+        // Inject Cristas Proximais if missing and needed (for medium+ diastema and full stratification)
+        if (!hasCristas && minRequired >= 3) {
+          const cristasLayer = {
+            order: 0,
+            name: 'Cristas Proximais',
+            resin_brand: 'Kerr - Harmonize',
+            shade: 'XLE',
+            thickness: '0.3–0.5mm',
+            purpose: 'Reproduzir cristas marginais e pontos de contato proximais com resina de alta translucidez',
+            technique: 'Aplicar incremento de resina Harmonize XLE nas cristas marginais. Adaptar com espátula de inserção. Fotopolimerizar 20s.',
+            _injected: true,
+          };
+          // Insert after corpo, before esmalte
+          const esmalteIdx = recommendation.protocol.layers.findIndex((l: {name?: string}) => {
+            const n = (l.name || '').toLowerCase();
+            return n.includes('esmalte') && (n.includes('vestibular') || n.includes('final'));
+          });
+          const insertIdx = esmalteIdx >= 0 ? esmalteIdx : recommendation.protocol.layers.length;
+          recommendation.protocol.layers.splice(insertIdx, 0, cristasLayer);
+          validationAlerts.push('Cristas Proximais injetadas: camada obrigatória para diastema ≥1mm (estratificação mínima de 3 camadas).');
+          logger.warn('Layer injection: Cristas Proximais added for medium+ diastema');
+        }
+
+        // Re-number all layers after injection
+        for (let i = 0; i < recommendation.protocol.layers.length; i++) {
+          recommendation.protocol.layers[i].order = i + 1;
+        }
+      }
+    }
+  }
+
   // Enforce: anterior aesthetic protocols MUST include Efeitos Incisais layer
   if (tooth && cavityClass) {
     const anterior = isAnteriorTooth(tooth);
@@ -621,6 +675,21 @@ export async function validateAndFixProtocolLayers({
   const hasShadeReplacements = Object.keys(shadeReplacements).length > 0;
   const hasBrandReplacements = Object.keys(brandReplacements).length > 0;
 
+  // Helper: replace all tracked shade names and product line names in text
+  const applyTextFixes = (text: string): string => {
+    if (!hasShadeReplacements && !hasBrandReplacements) return text;
+    let fixed = text;
+    for (const [oldPL, newPL] of Object.entries(brandReplacements)) {
+      const escaped = oldPL.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      fixed = fixed.replace(new RegExp(escaped, 'gi'), newPL);
+    }
+    for (const [original, replacement] of Object.entries(shadeReplacements)) {
+      const escaped = original.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      fixed = fixed.replace(new RegExp(`\\b${escaped}\\b`, 'g'), replacement);
+    }
+    return fixed;
+  };
+
   if (hasShadeReplacements || hasBrandReplacements) {
     if (hasShadeReplacements) {
       logger.log(`Applying ${Object.keys(shadeReplacements).length} shade replacements: ${JSON.stringify(shadeReplacements)}`);
@@ -628,23 +697,6 @@ export async function validateAndFixProtocolLayers({
     if (hasBrandReplacements) {
       logger.log(`Applying ${Object.keys(brandReplacements).length} brand replacements: ${JSON.stringify(brandReplacements)}`);
     }
-
-    // Helper: replace all tracked shade names and product line names in text
-    const applyTextFixes = (text: string): string => {
-      let fixed = text;
-      // Apply brand (product line) replacements first — e.g. "Filtek Z350 XT" → "Harmonize"
-      for (const [oldPL, newPL] of Object.entries(brandReplacements)) {
-        // Match with flexible patterns: "Filtek Z350 XT", "Z350 XT", "Z350", etc.
-        const escaped = oldPL.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        fixed = fixed.replace(new RegExp(escaped, 'gi'), newPL);
-      }
-      // Apply shade replacements — e.g. "WE" → "XLE"
-      for (const [original, replacement] of Object.entries(shadeReplacements)) {
-        const escaped = original.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        fixed = fixed.replace(new RegExp(`\\b${escaped}\\b`, 'g'), replacement);
-      }
-      return fixed;
-    };
 
     // 1. Checklist (passo a passo)
     if (recommendation.protocol.checklist) {
@@ -696,6 +748,17 @@ export async function validateAndFixProtocolLayers({
                (eaLower.includes('bl') || eaLower.includes('bleach'));
       });
     });
+
+    // Apply shade/brand replacements to alert text so they reference final shades, not intermediate
+    if (hasShadeReplacements || hasBrandReplacements) {
+      for (let i = 0; i < newAlerts.length; i++) {
+        newAlerts[i] = applyTextFixes(newAlerts[i]);
+      }
+      for (let i = 0; i < existingAlerts.length; i++) {
+        existingAlerts[i] = applyTextFixes(existingAlerts[i]);
+      }
+    }
+
     recommendation.protocol.alerts = [...existingAlerts, ...newAlerts];
   }
 

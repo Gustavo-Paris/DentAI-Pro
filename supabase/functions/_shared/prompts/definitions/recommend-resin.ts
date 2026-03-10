@@ -118,7 +118,16 @@ O dentista POSSUI inventário. REGRAS:
 
 PRIORIDADE: Orçamento "${budget}" -> Inventário -> Técnica como desempate.
 Se nenhuma do inventário adequada ao orçamento -> melhor do inventário (budget_compliance=false).
-is_from_inventory DEVE ser true quando dentista tem inventário.`
+is_from_inventory DEVE ser true quando dentista tem inventário.
+
+=== INCOMPATIBILIDADE ORCAMENTO x INVENTARIO ===
+Se orçamento é "padrão" ou "econômico" E o inventário do dentista contém SOMENTE resinas premium (ex: IPS Empress Direct, Estelite Omega, Palfique LX5, GC Essentia):
+1. Gerar o protocolo principal usando as resinas do inventário (regra de inventário prevalece)
+2. Marcar budget_compliance=false
+3. Adicionar WARNING PROEMINENTE em alerts: "⚠️ ATENÇÃO: Inventário contém apenas resinas premium, incompatível com orçamento ${budget}. O protocolo principal usa material acima do orçamento. Considere adquirir resinas econômicas/intermediárias (Z350 XT, Harmonize, FORMA, Opallis) para pacientes com orçamento padrão."
+4. Na alternativa_simplificada: sugerir resinas universais/econômicas que funcionam independente do inventário — Vittra APS (FGM), Filtek Z350 XT (3M), FORMA (Ultradent), Opus Bulk Fill (FGM), ou Opallis (FGM). Estas são resinas de AMPLA DISPONIBILIDADE e custo acessível.
+5. A alternativa simplificada DEVE ser a recomendação PRIORITÁRIA neste cenário — incluir nota no tradeoff: "Recomendação prioritária para orçamento ${budget} — protocolo principal usa resinas premium do inventário que excedem o orçamento."
+⚠️ OBJETIVO: Garantir que o dentista perceba a incompatibilidade e tenha uma alternativa acessível, mesmo que precise adquirir resina fora do inventário.`
   }
   return `PRIORIDADE: Orçamento "${budget}" -> Melhor tecnicamente -> Aspectos clínicos.
 Nao recomende Premium se orçamento nao for premium!`
@@ -476,6 +485,7 @@ ALTERNATIVA SIMPLIFICADA (2 camadas):
 - Esmalte Final: Escolher UMA ÚNICA resina — WE(Palfique LX5) para resultado mais branco, OU MW(Estelite Omega) para resultado natural. ⚠️ PROIBIDO usar MW + WE juntas na alternativa (ambas são esmalte final, uma substitui a outra). ⚠️ WE NÃO corresponde a "esmalte A2E" — são shades distintas. Dentes clareados: usar W3/W4(Estelite Bianco) como opção ÚNICA de esmalte.
 - ⚠️ PROIBIDO Tetric N-Ceram (Ivoclar Vivadent) para dentes ANTERIORES — polimento e estética inferiores para região anterior. ALTERNATIVAS para anterior: Empress Direct BL-L (Ivoclar), Estelite Omega (Tokuyama), Palfique LX5 (Tokuyama).
   - Tetric N-Ceram é aceitável SOMENTE para dentes POSTERIORES onde estética não é prioridade.
+- Na alternativa simplificada, SEMPRE especificar qual cor é para Dentina/Corpo e qual é para Esmalte. Formato: "[Cor] como dentina/corpo ([espessura]) + [Cor] como esmalte final ([espessura])". Exemplo: "WB como dentina (0.8mm) + MW como esmalte final (0.5mm)". PROIBIDO descrever apenas "MW (Milky White)" sem indicar a função de cada cor.
 - Dentes clareados: Corpo W3/W4(Estelite Bianco) + Esmalte WE. Ou BL(Forma)/BL-L(Empress) como alternativa.
 - Cristas (se 3+ camadas na alternativa): XLE(Harmonize) ou BL-L(Empress). Evitar JE para cristas.
 - TN = Translucent Natural = cor de ESMALTE, usar apenas como camada final.
@@ -578,6 +588,8 @@ REGRAS CRITICAS:
 - resin_brand: "Fabricante - Linha" EXATAMENTE como no catálogo
 - Contralaterais com MESMO diagnóstico -> protocolo IDENTICO
 - Na "technique": APENAS técnica de inserção (nao info genérica de fotopolimerização)
+- NÃO usar emojis no protocolo. Usar texto puro em TODAS as seções, incluindo Acabamento e Polimento, checklist, alerts e warnings. PROIBIDO: ⏱ 🔄 💡 ✅ ⚠️ ou qualquer outro emoji/símbolo decorativo no JSON de saída.
+- NOTAS POR DENTE NO CHECKLIST: Quando o protocolo cobre múltiplos dentes com condições diferentes (ex: fechamento de diastema + reanatomização), incluir nota específica no passo-a-passo indicando a técnica apropriada para cada dente. Exemplo: "Dentes 11/21: usar tira de poliéster para fechamento mesial; Dentes 12/22: usar matrix para aumento mesiodistal". Breve, 1 linha por grupo de dentes.
 
 === CUIDADOS POS-RESINA (OBRIGATORIO em maintenance_advice) ===
 1. Manutenção profissional 6/6 meses (profilaxia + polimento retoque)

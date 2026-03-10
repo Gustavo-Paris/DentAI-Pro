@@ -1947,7 +1947,9 @@
         "gingivaRecontoured": "Gingiva recontoured",
         "gingivalChanges": "Gingival Changes",
         "viewWithGingiva": "View with gingiva",
-        "gingivoplastyIncluded": "Gingivoplasty included in complete treatment. Compare layers to visualize the difference."
+        "gingivoplastyIncluded": "Gingivoplasty included in complete treatment. Compare layers to visualize the difference.",
+        "lowSuitabilityWarning": "DSD simulation quality may be limited due to the provided photo (score: {{score}}/100). The layers may not accurately represent the actual result.",
+        "lowSuitabilityTitle": "Limited simulation quality"
       },
       "proportions": {
         "title": "Proportions Analysis",

@@ -34,14 +34,6 @@ export interface DSDResult {
   simulation_note?: string;
 }
 
-// Dual-pass smile line classifier result
-export interface SmileLineClassifierResult {
-  smile_line: "alta" | "média" | "baixa";
-  gingival_exposure_mm: number;
-  confidence: "alta" | "média" | "baixa";
-  justification: string;
-}
-
 export interface AdditionalPhotos {
   smile45?: string;
   face?: string;

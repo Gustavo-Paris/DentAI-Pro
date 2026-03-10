@@ -1,5 +1,6 @@
 /** Shape required by getProtocolFingerprint — works with both EvaluationItem and GroupEvaluation */
 export interface FingerprintableEvaluation {
+  id?: string;
   treatment_type?: string | null;
   resins?: { name: string; manufacturer: string } | null;
   stratification_protocol?: {
@@ -39,6 +40,12 @@ export function getProtocolFingerprint(evaluation: FingerprintableEvaluation): s
     return 'porcelana';
   }
 
-  // Generic treatments (gengivoplastia, implante, coroa, etc.)
+  // Gengivoplastia: each evaluation has its own unique generic_protocol,
+  // so they must never be grouped together. Use the evaluation id to ensure uniqueness.
+  if (treatmentType === 'gengivoplastia' && evaluation.id) {
+    return `gengivoplastia::${evaluation.id}`;
+  }
+
+  // Generic treatments (implante, coroa, etc.)
   return treatmentType;
 }

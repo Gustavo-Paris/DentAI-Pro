@@ -43,7 +43,7 @@ export const ANALYZE_PHOTO_TOOL: OpenAITool[] = [
                 restoration_size: {
                   type: "string",
                   enum: ["Pequena", "Média", "Grande", "Extensa"],
-                  description: "Tamanho estimado da restauração",
+                  description: "Tamanho estimado da restauração. Para Fechamento de Diastema: Pequena = gap <1mm, Média = gap 1-2mm, Grande = gap >2mm. Para outras classes: Pequena = <1/3 distância intercuspídea, Média = 1/3-2/3, Grande = >2/3, Extensa = cúspide envolvida.",
                   nullable: true
                 },
                 substrate: {
