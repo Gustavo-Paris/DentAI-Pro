@@ -17,7 +17,7 @@ export function getGenericProtocol(
   const tArr = (key: string) => i18n.t(key, { returnObjects: true }) as string[];
 
   // Simple protocols — all content from i18n
-  if (['implante', 'coroa', 'endodontia', 'gengivoplastia', 'recobrimento_radicular'].includes(treatmentType)) {
+  if (['resina', 'porcelana', 'implante', 'coroa', 'endodontia', 'gengivoplastia', 'recobrimento_radicular'].includes(treatmentType)) {
     return {
       treatment_type: treatmentType,
       tooth,

@@ -46,12 +46,14 @@ interface DSDStepProps {
 }
 
 const PHOTO_QUALITY_THRESHOLD = 55;
+const PHOTO_QUALITY_HARD_BLOCK = 30;
 
 export function DSDStep(props: DSDStepProps) {
   const state = useDSDStep(props);
   const hasFiredStartRef = useRef(false);
   const [qualityBypassed, setQualityBypassed] = useState(false);
 
+  const isHardBlocked = typeof props.photoQualityScore === 'number' && props.photoQualityScore < PHOTO_QUALITY_HARD_BLOCK;
   const isLowQuality = typeof props.photoQualityScore === 'number' && props.photoQualityScore < PHOTO_QUALITY_THRESHOLD;
 
   const handleToggleAnnotations = useCallback(
@@ -155,6 +157,19 @@ export function DSDStep(props: DSDStepProps) {
         layerUrls={state.layerUrls}
       />
       </Suspense>
+    );
+  }
+
+  // Hard block — photo is too poor for any useful simulation (< 30%)
+  if (isHardBlocked && !state.result) {
+    return (
+      <DSDPhotoQualityGate
+        onGenerateAnyway={() => {
+          // Hard block: no bypass, only skip
+        }}
+        onSkip={state.onSkip}
+        hardBlock
+      />
     );
   }
 

@@ -220,6 +220,33 @@ export const ANALYZE_PHOTO_TOOL: OpenAITool[] = [
             type: "string",
             description: "Notas sobre visagismo e personalidade dental. Requer foto facial.",
             nullable: true
+          },
+          gingival_assessment: {
+            type: "object",
+            description: "Avaliação gengival estruturada. Preencher SOMENTE quando achados gengivais existirem (assimetria, coroa curta por excesso de gengiva, hiperplasia, sorriso gengival). NÃO preencher se gengiva saudável e sem indicação de intervenção.",
+            nullable: true,
+            properties: {
+              indication: {
+                type: "string",
+                enum: ["recommended", "optional", "none"],
+                description: "Nível de indicação para gengivoplastia: 'recommended' (evidência forte: assimetria >1.5mm, sorriso gengival, coroa clínica curta por excesso tecidual), 'optional' (evidência fraca: leve assimetria, exposição gengival limítrofe), 'none' (sem indicação)"
+              },
+              evidence: {
+                type: "array",
+                items: { type: "string", enum: ["asymmetry", "short_crown", "excess_tissue", "hyperplasia", "gummy_smile"] },
+                description: "Evidências clínicas encontradas para indicação de gengivoplastia"
+              },
+              affected_teeth: {
+                type: "array",
+                items: { type: "string" },
+                description: "Dentes afetados em notação FDI (ex: '11', '21', '12')"
+              },
+              confidence: {
+                type: "number",
+                description: "Confiança na avaliação gengival (0-100)"
+              }
+            },
+            required: ["indication", "evidence", "affected_teeth", "confidence"]
           }
         },
         required: [

@@ -154,11 +154,21 @@ export async function dispatchTreatmentProtocol(
       if (!params.resinParams) {
         throw new Error('resinParams required for resina treatment type');
       }
-      await clients.invokeResin({
-        evaluationId,
-        ...params.resinParams,
-        operationId: params.operationId,
-      });
+      try {
+        await clients.invokeResin({
+          evaluationId,
+          ...params.resinParams,
+          operationId: params.operationId,
+        });
+      } catch (aiError) {
+        // Graceful degradation: AI failed → save generic template protocol
+        // so the user gets something useful instead of an error
+        logger.warn(`[dispatchTreatmentProtocol] AI resin call failed for tooth ${tooth}, falling back to generic protocol:`, aiError);
+        const fallbackProtocol = getGenericProtocol(treatmentType, tooth, params.genericToothData);
+        fallbackProtocol.summary = `[Protocolo padrão — IA indisponível] ${fallbackProtocol.summary}`;
+        fallbackProtocol.alerts.unshift('Protocolo gerado com base em diretrizes clínicas padrão. Regenere para protocolo personalizado por IA.');
+        await clients.saveGenericProtocol(evaluationId, fallbackProtocol);
+      }
       break;
     }
 
@@ -166,11 +176,19 @@ export async function dispatchTreatmentProtocol(
       if (!params.cementationParams) {
         throw new Error('cementationParams required for porcelana treatment type');
       }
-      await clients.invokeCementation({
-        evaluationId,
-        ...params.cementationParams,
-        operationId: params.operationId,
-      });
+      try {
+        await clients.invokeCementation({
+          evaluationId,
+          ...params.cementationParams,
+          operationId: params.operationId,
+        });
+      } catch (aiError) {
+        logger.warn(`[dispatchTreatmentProtocol] AI cementation call failed for tooth ${tooth}, falling back to generic protocol:`, aiError);
+        const fallbackProtocol = getGenericProtocol(treatmentType, tooth, params.genericToothData);
+        fallbackProtocol.summary = `[Protocolo padrão — IA indisponível] ${fallbackProtocol.summary}`;
+        fallbackProtocol.alerts.unshift('Protocolo gerado com base em diretrizes clínicas padrão. Regenere para protocolo personalizado por IA.');
+        await clients.saveGenericProtocol(evaluationId, fallbackProtocol);
+      }
       break;
     }
 

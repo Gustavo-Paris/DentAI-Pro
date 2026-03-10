@@ -15,6 +15,7 @@ import type {
   SimulationLayerType,
 } from '@/types/dsd';
 import { getLayerLabel } from '@/types/dsd';
+import type { PhotoAnalysisResult } from '@/types/wizard';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -26,6 +27,8 @@ export interface UseDSDGingivoplastyParams {
   imageBase64: string | null;
   /** Current DSD result with analysis */
   result: DSDResult | null;
+  /** Unified photo analysis result (may contain structured gingival_assessment) */
+  analysisResult?: PhotoAnalysisResult | null;
   /** Shared gingivoplasty approval state from parent */
   gingivoplastyApproved: boolean | null;
   setGingivoplastyApproved: React.Dispatch<React.SetStateAction<boolean | null>>;
@@ -91,6 +94,7 @@ async function urlToBase64(url: string): Promise<string> {
 export function useDSDGingivoplasty({
   imageBase64,
   result,
+  analysisResult,
   gingivoplastyApproved,
   setGingivoplastyApproved,
   layerUrls,
@@ -105,8 +109,18 @@ export function useDSDGingivoplasty({
 }: UseDSDGingivoplastyParams) {
   const { t } = useTranslation();
 
-  // Determine gingivoplasty confidence level from analysis
+  // Determine gingivoplasty confidence level from analysis.
+  // Prefers structured gingival_assessment from unified analysis when available,
+  // falling back to keyword mining for backward compatibility with older analyses.
   const getGingivoConfidence = useCallback((analysis: DSDAnalysis): GingivoConfidence => {
+    // --- Prefer structured gingival_assessment from PhotoAnalysisResult ---
+    const ga = analysisResult?.gingival_assessment;
+    if (ga && ga.indication) {
+      return ga.indication;
+    }
+
+    // --- Fallback: keyword mining (backward compat with older analyses) ---
+
     // Check for explicit gengivoplasty treatment indication
     const hasExplicitIndication = !!analysis.suggestions?.some(s => {
       const indication = (s.treatment_indication || '').toLowerCase();
@@ -115,16 +129,25 @@ export function useDSDGingivoplasty({
     if (hasExplicitIndication) return 'recommended';
 
     // Check for gingival keywords in suggestions text AND observations
-    const gingivoKeywords = ['gengivoplastia', 'excesso gengival', 'sorriso gengival', 'gengiva inserida', 'coroa clínica curta', 'coroa clinica curta', 'gummy smile', 'linha do sorriso alta', 'exposicao gengival', 'exposição gengival'];
-    const hasKeywordInSuggestions = !!analysis.suggestions?.some(s => {
-      const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
-      return gingivoKeywords.some(kw => text.includes(kw));
-    });
-    const hasKeywordInObservations = !!analysis.observations?.some(obs => {
-      const text = obs.toLowerCase();
-      return gingivoKeywords.some(kw => text.includes(kw));
-    });
-    const hasGingivoEvidence = hasKeywordInSuggestions || hasKeywordInObservations;
+    // Strong evidence = abnormal findings that justify surgical intervention
+    const strongGingivoKeywords = ['gengivoplastia', 'excesso gengival', 'sorriso gengival', 'gummy smile', 'coroa clínica curta', 'coroa clinica curta', 'hiperplasia', 'assimetria gengival', 'margem gengival irregular', 'zenite assimetric'];
+    // Weak evidence = normal anatomy descriptions that appear even in healthy cases
+    const allGingivoKeywords = [...strongGingivoKeywords, 'gengiva inserida', 'linha do sorriso alta', 'exposicao gengival', 'exposição gengival', 'margem gengival'];
+
+    const findKeywords = (keywords: string[]) => {
+      const inSuggestions = !!analysis.suggestions?.some(s => {
+        const text = `${s.current_issue} ${s.proposed_change}`.toLowerCase();
+        return keywords.some(kw => text.includes(kw));
+      });
+      const inObservations = !!analysis.observations?.some(obs => {
+        const text = obs.toLowerCase();
+        return keywords.some(kw => text.includes(kw));
+      });
+      return inSuggestions || inObservations;
+    };
+
+    const hasStrongEvidence = findKeywords(strongGingivoKeywords);
+    const hasAnyEvidence = findKeywords(allGingivoKeywords);
 
     // "Alta (gengival)" smile line = gummy smile with >3mm gingival exposure.
     // This is a clear clinical indication — always recommend gengivoplasty.
@@ -132,14 +155,16 @@ export function useDSDGingivoplasty({
       return 'recommended';
     }
 
-    // "Média" smile line — only recommend if there's explicit gingival evidence
-    // (e.g., asymmetry >1.5mm, short clinical crowns, localized hyperplasia)
+    // "Média" smile line — only recommend if there's STRONG gingival evidence
+    // (abnormal findings: asymmetry, short crowns, excess tissue, hyperplasia).
+    // Normal anatomy descriptions (e.g. "gengiva inserida") are NOT sufficient.
     if (analysis.smile_line === 'média') {
-      return hasGingivoEvidence ? 'recommended' : 'optional';
+      if (hasStrongEvidence) return 'recommended';
+      return hasAnyEvidence ? 'optional' : 'none';
     }
 
     return 'none';
-  }, []);
+  }, [analysisResult]);
 
   // Determine which layers to generate based on analysis
   const determineLayersNeeded = useCallback((analysis: DSDAnalysis): SimulationLayerType[] => {

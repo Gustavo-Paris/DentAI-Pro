@@ -2,7 +2,7 @@ import { memo, useState, lazy, Suspense } from 'react';
 import type { Ref } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Badge, Popover, PopoverContent, PopoverTrigger } from '@parisgroup-ai/pageshell/primitives';
-import { Check, Loader2, RefreshCw, Eye, User, Ruler, Ratio, SmilePlus, Columns2, SlidersHorizontal, SplitSquareHorizontal, Image, ImageOff } from 'lucide-react';
+import { Check, Loader2, RefreshCw, Eye, User, Ruler, Ratio, SmilePlus, Columns2, SlidersHorizontal, SplitSquareHorizontal, Image, ImageOff, Info } from 'lucide-react';
 import type { ComparisonViewMode } from '@/components/dsd/ComparisonSlider';
 import { ComparisonSlider } from '@/components/dsd/ComparisonSlider';
 import { AnnotationOverlay } from '@/components/dsd/AnnotationOverlay';

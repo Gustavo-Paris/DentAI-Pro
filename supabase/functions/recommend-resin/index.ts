@@ -376,6 +376,8 @@ Deno.serve(async (req) => {
 
     let recommendation: RecommendResinResponseParsed;
     let usedProvider: 'gemini' | 'claude' = 'gemini';
+    const EDGE_FUNCTION_BUDGET_MS = 140_000; // 150s Deno limit minus 10s safety margin
+    const aiStartTime = Date.now();
     try {
       // Gemini 3 Flash primary — 20x cheaper than Claude, frontier-class quality
       let aiResult: { functionCall: { name: string; args: Record<string, unknown> } | null; text: string | null };
@@ -389,8 +391,8 @@ Deno.serve(async (req) => {
               temperature: 0.0,
               maxTokens: promptDef.maxTokens,
               forceFunctionName: "generate_resin_protocol",
-              timeoutMs: 55_000,
-              maxRetries: 0, // no retry — fallback to Claude keeps total within 150s edge limit
+              timeoutMs: 45_000,
+              maxRetries: 0, // no retry — fallback to Claude uses remaining budget
             }
           );
           if (response.tokens) {
@@ -415,7 +417,14 @@ Deno.serve(async (req) => {
 
       // Gemini returned no function call (empty/text-only response) — also fall back to Claude
       if (!aiResult.functionCall && usedProvider === 'gemini') {
-        logger.warn(`Gemini returned no function call, falling back to Claude Sonnet`);
+        // Calculate remaining time budget for Claude fallback
+        const elapsedMs = Date.now() - aiStartTime;
+        const remainingMs = EDGE_FUNCTION_BUDGET_MS - elapsedMs;
+        if (remainingMs < 10_000) {
+          logger.error(`Insufficient time budget for Claude fallback: ${remainingMs}ms remaining after ${elapsedMs}ms`);
+          return createErrorResponse(ERROR_MESSAGES.AI_ERROR, 500, corsHeaders, 'TIMEOUT_BUDGET_EXHAUSTED');
+        }
+        logger.warn(`Gemini returned no function call, falling back to Claude Sonnet (${remainingMs}ms remaining)`);
         usedProvider = 'claude';
         const claudeResult = await callClaudeWithTools(
           promptDef.model,
@@ -425,7 +434,7 @@ Deno.serve(async (req) => {
             temperature: 0.0,
             maxTokens: promptDef.maxTokens,
             forceFunctionName: "generate_resin_protocol",
-            timeoutMs: 75_000, // 55s Gemini + 75s Claude = 130s < 150s edge limit
+            timeoutMs: remainingMs, // elapsed-time-aware: use whatever budget remains
             maxRetries: 0,
           }
         );

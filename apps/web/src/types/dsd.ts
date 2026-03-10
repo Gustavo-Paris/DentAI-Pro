@@ -77,6 +77,8 @@ export interface SimulationLayer {
   whitening_level: 'natural' | 'white' | 'hollywood';
   /** Whether gengivoplasty recontouring is included */
   includes_gengivoplasty: boolean;
+  /** Which AI model generated this layer (e.g. 'gemini-3.1-flash-image-preview' or 'gemini-3-pro-image-preview') */
+  model_used?: string;
 }
 
 /** i18n key map for layer labels */

@@ -169,6 +169,7 @@ export function useDSDStep({
   const gingivo = useDSDGingivoplasty({
     imageBase64,
     result,
+    analysisResult,
     gingivoplastyApproved,
     setGingivoplastyApproved,
     layerUrls: layerGen.layerUrls,

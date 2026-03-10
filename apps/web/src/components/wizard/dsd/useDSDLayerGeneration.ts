@@ -167,13 +167,13 @@ export function useDSDLayerGeneration({
     const MAX_LIP_RETRIES = isGingivalLayer ? 2 : 0;
 
     try {
-      let bestResult: (DSDResult & { lips_moved?: boolean }) | null = null;
+      let bestResult: (DSDResult & { lips_moved?: boolean; model_used?: string }) | null = null;
 
       for (let lipAttempt = 0; lipAttempt <= MAX_LIP_RETRIES; lipAttempt++) {
         const reqId = crypto.randomUUID();
         const { data } = await withRetry(
           async () => {
-            const resp = await invokeFunction<DSDResult & { layer_type?: string; lips_moved?: boolean; simulation_debug?: string }>('generate-dsd', {
+            const resp = await invokeFunction<DSDResult & { layer_type?: string; lips_moved?: boolean; simulation_debug?: string; model_used?: string }>('generate-dsd', {
               body: {
                 reqId,
                 imageBase64: effectiveImage,
@@ -249,6 +249,7 @@ export function useDSDLayerGeneration({
         simulation_url: bestResult.simulation_url,
         whitening_level: patientPreferences?.whiteningLevel || 'natural',
         includes_gengivoplasty: layerType === 'complete-treatment',
+        ...(bestResult.model_used ? { model_used: bestResult.model_used } : {}),
       };
     } catch (err) {
       logger.error(`Layer ${layerType} generation error:`, err);

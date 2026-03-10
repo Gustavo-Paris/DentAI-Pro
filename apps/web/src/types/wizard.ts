@@ -57,6 +57,14 @@ export interface PhotoAnalysisResult {
   perceived_temperament?: "colérico" | "sanguíneo" | "melancólico" | "fleumático" | "misto";
   recommended_tooth_shape?: "quadrado" | "oval" | "triangular" | "retangular" | "natural";
   visagism_notes?: string;
+
+  // --- Structured gingival assessment (optional, from unified analysis) ---
+  gingival_assessment?: {
+    indication: "recommended" | "optional" | "none";
+    evidence: string[];
+    affected_teeth: string[];
+    confidence: number;
+  };
 }
 
 export interface ReviewFormData {

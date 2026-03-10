@@ -94,7 +94,7 @@ Deno.serve(withErrorBoundary(async (req: Request) => {
   }
 
   // Get or create Stripe customer
-  let customerId: string;
+  let customerId = "";
 
   // Check if user already has a subscription record with Stripe customer
   const { data: existingSub } = await supabase
@@ -104,8 +104,18 @@ Deno.serve(withErrorBoundary(async (req: Request) => {
     .maybeSingle();
 
   if (existingSub?.stripe_customer_id) {
-    customerId = existingSub.stripe_customer_id;
-  } else {
+    // Validate the stored customer ID still works with the current Stripe key
+    // (handles test→live migration where test customer IDs are invalid)
+    try {
+      await stripe.customers.retrieve(existingSub.stripe_customer_id);
+      customerId = existingSub.stripe_customer_id;
+    } catch {
+      logger.warn(`Stale Stripe customer ${existingSub.stripe_customer_id} for user ${user.id}, creating new`);
+      customerId = ""; // force re-creation below
+    }
+  }
+
+  if (!customerId) {
     // Get user profile for name
     const { data: profile } = await supabase
       .from("profiles")

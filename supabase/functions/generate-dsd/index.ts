@@ -110,6 +110,7 @@ Deno.serve(async (req: Request) => {
     let simulationUrl: string | null = null;
     let simulationDebug: string | undefined;
     let lipsMoved = false;
+    let modelUsed: string | undefined;
     try {
       // For face-mockup, use the face photo as base image
       const simulationBaseImage = layerType === 'face-mockup' && additionalPhotos?.face
@@ -119,6 +120,7 @@ Deno.serve(async (req: Request) => {
       const simResult = await generateSimulation(simulationBaseImage, analysis, user.id, supabase, toothShape || 'natural', patientPreferences, layerType, inputAlreadyProcessed);
       simulationUrl = simResult.url;
       lipsMoved = simResult.lips_moved || false;
+      modelUsed = simResult.model_used;
     } catch (simError) {
       const simMsg = simError instanceof Error ? simError.message : String(simError);
       logger.error("Simulation error:", simMsg);
@@ -150,7 +152,7 @@ Deno.serve(async (req: Request) => {
             // When layerType is present, update the layers array
             if (layerType && simulationUrl) {
               const existingLayers = (evalData.dsd_simulation_layers as Array<Record<string, unknown>>) || [];
-              const newLayer = {
+              const newLayer: Record<string, unknown> = {
                 type: layerType,
                 label: layerType === 'restorations-only' ? 'Apenas Restaurações'
                   : layerType === 'complete-treatment' ? 'Tratamento Completo'
@@ -165,6 +167,9 @@ Deno.serve(async (req: Request) => {
                     return t === 'gengivoplastia' || t === 'recobrimento_radicular';
                   }),
               };
+              if (modelUsed) {
+                newLayer.model_used = modelUsed;
+              }
               // Replace existing layer of same type or append
               const idx = existingLayers.findIndex((l) => l.type === layerType);
               if (idx >= 0) {
@@ -193,7 +198,7 @@ Deno.serve(async (req: Request) => {
         }
 
         // Return result with note if applicable
-        const result: DSDResult & { layer_type?: string; lips_moved?: boolean; simulation_debug?: string } = {
+        const result: DSDResult & { layer_type?: string; lips_moved?: boolean; simulation_debug?: string; model_used?: string } = {
           analysis,
           simulation_url: simulationUrl,
           simulation_note: simulationNote,
@@ -206,6 +211,9 @@ Deno.serve(async (req: Request) => {
         }
         if (lipsMoved) {
           result.lips_moved = true;
+        }
+        if (modelUsed) {
+          result.model_used = modelUsed;
         }
 
         return new Response(JSON.stringify(result), {

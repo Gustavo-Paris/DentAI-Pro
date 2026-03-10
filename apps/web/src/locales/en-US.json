@@ -685,14 +685,14 @@
       "freeFeature2": "Resin recommendation",
       "freeFeature3": "AI analysis",
       "starterDesc": "For individual dentists",
-      "starterFeature1": "30 credits/month",
+      "starterFeature1": "20 credits/month",
       "starterFeature2": "Complete protocols",
       "starterFeature3": "PDF export",
       "proDesc": "For dental offices",
-      "proFeature1": "80 credits/month",
+      "proFeature1": "50 credits/month",
       "proFeature2": "Credit rollover",
       "proFeature3": "DSD simulations",
-      "proFeature4": "Up to 3 users",
+      "proFeature4": "Priority support",
       "eliteDesc": "For clinics",
       "eliteFeature1": "200 credits/month",
       "eliteFeature2": "Unlimited rollover",
@@ -1496,6 +1496,9 @@
         "qualityGate": {
           "title": "Limited Photo Visibility",
           "description": "The current photo may not generate an ideal smile simulation, as the teeth are not fully visible for image editing.",
+          "hardBlockTitle": "Photo Unsuitable for Simulation",
+          "hardBlockDescription": "The photo quality is insufficient to generate any useful simulation. The teeth are not visible enough for reliable digital editing.",
+          "hardBlockNote": "The clinical analysis was completed normally. Only the DSD simulation is not possible with this photo. Take a new photo with a lip retractor to enable DSD.",
           "tipsTitle": "For better results:",
           "tip1": "Use a lip retractor/spacer to expose all teeth",
           "tip2": "Ensure good direct lighting on the dental area",
@@ -2242,6 +2245,55 @@
     "invalidPhone": "Invalid phone number"
   },
   "protocols": {
+    "resina": {
+      "summary": "Tooth {{tooth}} indicated for direct composite resin restoration.",
+      "checklist": [
+        "Select appropriate composite resin for the region (anterior/posterior)",
+        "Perform rubber dam or relative isolation",
+        "Conservative cavity preparation with selective caries removal",
+        "Acid etching (37% phosphoric acid — 15s dentin, 30s enamel)",
+        "Apply adhesive system per manufacturer instructions",
+        "Insert resin in oblique increments (max 2mm)",
+        "Light cure each increment (20-40s per resin type)",
+        "Finishing and polishing (Sof-Lex discs or silicone tips)",
+        "Check occlusion and adjust premature contacts"
+      ],
+      "alerts": [
+        "Assess cavity depth — extensive restorations may need pulp protection",
+        "Check occlusion in maximum intercuspation and excursive movements",
+        "Consider bruxism: high-strength resins for posteriors"
+      ],
+      "recommendations": [
+        "Avoid hard foods for 24h",
+        "Final polishing at follow-up appointment if needed",
+        "Return for evaluation in 7 days"
+      ]
+    },
+    "porcelana": {
+      "summary": "Tooth {{tooth}} indicated for indirect ceramic restoration (veneer, contact lens, or onlay).",
+      "checklist": [
+        "Digital planning (diagnostic wax-up or DSD)",
+        "Select ceramic type (lithium disilicate, feldspathic, zirconia)",
+        "Minimally invasive preparation per restoration type",
+        "Impression (polyvinyl siloxane or intraoral scanning)",
+        "Shade selection with VITA guide and photographic documentation",
+        "Fabrication of provisional",
+        "Try-in of ceramic piece (fit, shade, marginal adaptation)",
+        "Adhesive cementation with dual or light-cure resin cement",
+        "Check occlusion and contact points",
+        "Polish interface and remove excess cement"
+      ],
+      "alerts": [
+        "Assess dental substrate — discoloration may require opaque cement",
+        "Verify adequate occlusal clearance for minimum ceramic thickness",
+        "Consider prior bleaching if needed"
+      ],
+      "recommendations": [
+        "Educate patient on ceramic restoration care",
+        "Avoid very hard foods and parafunctional habits",
+        "Return for evaluation in 7 days and follow-up in 6 months"
+      ]
+    },
     "implante": {
       "summary": "Tooth {{tooth}} indicated for extraction and implant rehabilitation.",
       "checklist": [

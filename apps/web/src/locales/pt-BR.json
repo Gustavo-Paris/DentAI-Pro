@@ -685,14 +685,14 @@
       "freeFeature2": "Recomendação de resina",
       "freeFeature3": "Análise com IA",
       "starterDesc": "Para dentistas individuais",
-      "starterFeature1": "30 créditos/mês",
+      "starterFeature1": "20 créditos/mês",
       "starterFeature2": "Protocolos completos",
       "starterFeature3": "Export PDF",
       "proDesc": "Para consultórios",
-      "proFeature1": "80 créditos/mês",
+      "proFeature1": "50 créditos/mês",
       "proFeature2": "Rollover de créditos",
       "proFeature3": "DSD Simulações",
-      "proFeature4": "Até 3 usuários",
+      "proFeature4": "Suporte prioritário",
       "eliteDesc": "Para clínicas",
       "eliteFeature1": "200 créditos/mês",
       "eliteFeature2": "Rollover ilimitado",
@@ -1496,6 +1496,9 @@
         "qualityGate": {
           "title": "Foto com Visibilidade Limitada",
           "description": "A foto atual pode não gerar uma simulação de sorriso com qualidade ideal, pois os dentes não estão totalmente visíveis para edição.",
+          "hardBlockTitle": "Foto Inadequada para Simulação",
+          "hardBlockDescription": "A qualidade da foto é insuficiente para gerar qualquer simulação útil. Os dentes não estão visíveis o suficiente para edição digital confiável.",
+          "hardBlockNote": "A análise clínica foi concluída normalmente. Apenas a simulação DSD não é possível com esta foto. Tire uma nova foto com afastador labial para habilitar o DSD.",
           "tipsTitle": "Para melhores resultados:",
           "tip1": "Use afastador/espaçador labial para expor todos os dentes",
           "tip2": "Garanta boa iluminação direta na região dos dentes",
@@ -2242,6 +2245,55 @@
     "invalidPhone": "Telefone inválido"
   },
   "protocols": {
+    "resina": {
+      "summary": "Dente {{tooth}} indicado para restauração direta em resina composta.",
+      "checklist": [
+        "Selecionar resina composta adequada para a região (anterior/posterior)",
+        "Realizar isolamento absoluto ou relativo",
+        "Preparo cavitário conservador com remoção seletiva de cárie",
+        "Condicionamento ácido (37% ácido fosfórico — 15s dentina, 30s esmalte)",
+        "Aplicar sistema adesivo conforme fabricante",
+        "Inserir resina em incrementos oblíquos (máx 2mm)",
+        "Fotopolimerizar cada incremento (20-40s conforme resina)",
+        "Acabamento e polimento (discos Sof-Lex ou pontas de silicone)",
+        "Verificar oclusão e ajustar contatos prematuros"
+      ],
+      "alerts": [
+        "Avaliar profundidade da cavidade — restaurações extensas podem necessitar proteção pulpar",
+        "Verificar oclusão em máxima intercuspidação e movimentos excursivos",
+        "Considerar bruxismo: resinas de alta resistência para posteriores"
+      ],
+      "recommendations": [
+        "Evitar alimentos duros por 24h",
+        "Polimento final em sessão de retorno se necessário",
+        "Retornar para avaliação em 7 dias"
+      ]
+    },
+    "porcelana": {
+      "summary": "Dente {{tooth}} indicado para restauração indireta em cerâmica (faceta, lente de contato ou onlay).",
+      "checklist": [
+        "Planejamento digital (enceramento diagnóstico ou DSD)",
+        "Selecionar tipo de cerâmica (dissilicato de lítio, feldspática, zircônia)",
+        "Preparo minimamente invasivo conforme tipo de restauração",
+        "Moldagem (silicone de adição ou escaneamento intraoral)",
+        "Seleção de cor com escala VITA e registro fotográfico",
+        "Confecção de provisório",
+        "Prova da peça cerâmica (ajuste, cor, adaptação marginal)",
+        "Cimentação adesiva com cimento resinoso dual ou fotopolimerizável",
+        "Verificar oclusão e pontos de contato",
+        "Polimento da interface e remoção de excessos"
+      ],
+      "alerts": [
+        "Avaliar substrato dentário — escurecimento pode exigir cimento opaco",
+        "Verificar espaço oclusal adequado para espessura mínima da cerâmica",
+        "Considerar clareamento prévio se necessário"
+      ],
+      "recommendations": [
+        "Orientar paciente sobre cuidados com restaurações cerâmicas",
+        "Evitar alimentos muito duros e hábitos parafuncionais",
+        "Retornar para avaliação em 7 dias e controle em 6 meses"
+      ]
+    },
     "implante": {
       "summary": "Dente {{tooth}} indicado para extração e reabilitação com implante.",
       "checklist": [

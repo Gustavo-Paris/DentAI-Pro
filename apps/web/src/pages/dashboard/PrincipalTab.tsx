@@ -240,8 +240,6 @@ function ActivityFeedSection({ sessions, loading }: { sessions: DashboardSession
     <PageClinicActivityFeed
       items={items}
       maxItems={8}
-      title={t('dashboard.activityFeed.title')}
-      emptyText={t('dashboard.activityFeed.empty')}
     />
   );
 }

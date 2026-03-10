@@ -778,6 +778,7 @@ WARNINGS: Desarmonia significativa, arco reverso, desgaste severo (bruxismo), li
 - face_shape, perceived_temperament, smile_arc
 - recommended_tooth_shape, visagism_notes
 - confidence, dsd_simulation_suitability (0-100)
+- gingival_assessment (OPCIONAL — preencher SOMENTE quando achados gengivais existirem: assimetria, coroa curta, excesso tecidual, hiperplasia, sorriso gengival. Campo estruturado com indication, evidence, affected_teeth, confidence.)
 
 === RECOMENDACAO DE FORMATO DENTARIO ===
 Com base no visagismo: "quadrado"|"oval"|"triangular"|"retangular"|"natural". Justifique.

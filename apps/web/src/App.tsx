@@ -170,7 +170,11 @@ function ConnectedGlobalSearch() {
 const App = () => (
   <ErrorBoundary>
     <ThemeProvider>
-    <PageShellI18nProvider locale="pt-BR" bundle={{ locale: 'pt-BR', messages: PT_BR_MESSAGES, currency: 'BRL' }}>
+    <PageShellI18nProvider locale="pt-BR" bundle={{ locale: 'pt-BR', messages: {
+      ...PT_BR_MESSAGES,
+      'domain.odonto.dashboard.activity.title': 'Atividade Recente',
+      'domain.odonto.dashboard.activity.empty': 'Nenhuma atividade recente',
+    }, currency: 'BRL' }}>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <a

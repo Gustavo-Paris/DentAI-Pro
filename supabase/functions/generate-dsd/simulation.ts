@@ -114,7 +114,7 @@ export async function generateSimulation(
   patientPreferences?: PatientPreferences,
   layerType?: 'restorations-only' | 'whitening-restorations' | 'complete-treatment' | 'root-coverage' | 'face-mockup',
   inputAlreadyProcessed?: boolean,
-): Promise<{ url: string | null; lips_moved?: boolean }> {
+): Promise<{ url: string | null; lips_moved?: boolean; model_used?: string }> {
   const SIMULATION_TIMEOUT = 55_000; // 55s max
 
   // Get whitening level from direct UI selection (no AI analysis needed!)
@@ -570,8 +570,9 @@ Responda APENAS 'SIM' ou 'NÃO'.`,
       throw new Error(`Storage upload failed: ${uploadError.message}`);
     }
 
-    logger.log("Simulation generated and uploaded:", fileName, lipsMoved ? "(lips_moved)" : "");
-    return { url: fileName, lips_moved: lipsMoved || undefined };
+    const primaryModel = 'gemini-3.1-flash-image-preview';
+    logger.log("Simulation generated and uploaded:", fileName, lipsMoved ? "(lips_moved)" : "", `(model: ${primaryModel})`);
+    return { url: fileName, lips_moved: lipsMoved || undefined, model_used: primaryModel };
   } catch (err) {
     // Primary (Nano Banana 2) failed — try Gemini 3 Pro Image as fallback
     const FALLBACK_MODEL = 'gemini-3-pro-image-preview';
@@ -637,8 +638,8 @@ Responda APENAS 'SIM' ou 'NÃO'.`,
         throw new Error(`Storage upload failed: ${uploadError.message}`);
       }
 
-      logger.log("Gemini 3 Pro fallback simulation uploaded:", fileName, lipsMoved ? "(lips_moved)" : "");
-      return { url: fileName, lips_moved: lipsMoved || undefined };
+      logger.log("Gemini 3 Pro fallback simulation uploaded:", fileName, lipsMoved ? "(lips_moved)" : "", `(model: ${FALLBACK_MODEL})`);
+      return { url: fileName, lips_moved: lipsMoved || undefined, model_used: FALLBACK_MODEL };
     } catch (fallbackErr) {
       // Both Nano Banana 2 and Gemini 3 Pro failed — propagate with context from both
       const fallbackMsg = fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr);
