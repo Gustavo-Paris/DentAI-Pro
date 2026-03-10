@@ -106,6 +106,91 @@ function applyLateralAgenesisHeuristic(
   }
 }
 
+/**
+ * When AI returns empty detected_teeth but observations describe specific teeth,
+ * synthesize DetectedTooth entries from observation text so the suggestions card renders.
+ * This is a safety net for aesthetic smile photos where Gemini puts everything in observations.
+ */
+function synthesizeTeethFromObservations(
+  observationText: string,
+  globalIndication: TreatmentIndication,
+): DetectedTooth[] {
+  const synthesized: DetectedTooth[] = [];
+  const seen = new Set<string>();
+
+  // Match FDI tooth numbers mentioned in observations (e.g., "dente 11", "21", "entre 11 e 21")
+  const toothPattern = /\b(1[1-8]|2[1-8]|3[1-8]|4[1-8])\b/g;
+  const matches = observationText.match(toothPattern);
+  if (!matches || matches.length === 0) return synthesized;
+
+  // Extract unique tooth numbers
+  for (const m of matches) {
+    if (seen.has(m)) continue;
+    seen.add(m);
+
+    const toothNum = parseInt(m, 10);
+    const isAnteriorSuperior = toothNum >= 11 && toothNum <= 23;
+    const isAnteriorInferior = toothNum >= 31 && toothNum <= 43;
+    const region = isAnteriorSuperior ? 'anterior-superior'
+      : isAnteriorInferior ? 'anterior-inferior'
+      : toothNum <= 28 ? 'posterior-superior'
+      : 'posterior-inferior';
+
+    // Determine treatment from context around this tooth number
+    const contextWindow = 200;
+    const idx = observationText.indexOf(m);
+    const context = observationText.slice(Math.max(0, idx - contextWindow), idx + contextWindow).toLowerCase();
+
+    let treatment: TreatmentIndication = globalIndication;
+    let cavityClass: string | null = null;
+    let issue = '';
+    let change = '';
+
+    if (context.includes('diastema') || context.includes('fechamento')) {
+      treatment = 'resina';
+      cavityClass = 'Fechamento de Diastema';
+      issue = `Diastema envolvendo dente ${m}`;
+      change = 'Fechamento com resina composta';
+    } else if (context.includes('gengivoplastia') || context.includes('gengival') || context.includes('sorriso gengival')) {
+      treatment = 'gengivoplastia';
+      issue = `Necessidade de harmonização gengival no dente ${m}`;
+      change = 'Gengivoplastia para adequação do contorno gengival';
+    } else if (context.includes('conoide') || context.includes('proporção reduzida') || context.includes('reanatomização') || context.includes('estreit')) {
+      treatment = 'resina';
+      cavityClass = 'Recontorno Estético';
+      issue = `Proporção inadequada do dente ${m}`;
+      change = 'Reanatomização para harmonização com adjacentes';
+    } else if (context.includes('assimetria') || context.includes('inclinação') || context.includes('desvi')) {
+      treatment = 'resina';
+      cavityClass = 'Recontorno Estético';
+      issue = `Assimetria envolvendo dente ${m}`;
+      change = 'Correção restauradora para harmonização';
+    } else {
+      issue = `Avaliação estética indicada para dente ${m}`;
+      change = 'Tratamento restaurador para harmonização do sorriso';
+    }
+
+    synthesized.push({
+      tooth: m,
+      tooth_region: region,
+      cavity_class: cavityClass,
+      restoration_size: null,
+      substrate: null,
+      substrate_condition: null,
+      enamel_condition: null,
+      depth: null,
+      priority: 'média',
+      notes: null,
+      treatment_indication: treatment,
+      indication_reason: issue,
+      current_issue: issue,
+      proposed_change: change,
+    });
+  }
+
+  return synthesized;
+}
+
 export function processAnalysisResult(
   analysisResult: PhotoAnalysisResult,
   options: PostProcessingOptions = {},
@@ -132,6 +217,18 @@ export function processAnalysisResult(
     current_issue: tooth.current_issue ?? undefined,
     proposed_change: tooth.proposed_change ?? undefined,
   }));
+
+  // Safety net: When AI returns empty detected_teeth but observations describe
+  // specific teeth/issues (common for aesthetic smile photos), synthesize entries
+  // from observations so the Sugestões de Tratamento card renders.
+  if (rawTeeth.length === 0) {
+    const obs = (analysisResult.observations ?? []).join(' ');
+    const synthesized = synthesizeTeethFromObservations(obs, globalIndication);
+    if (synthesized.length > 0) {
+      logger.warn(`Post-processing: detected_teeth was EMPTY but observations mention ${synthesized.length} teeth — synthesizing entries`);
+      rawTeeth.push(...synthesized);
+    }
+  }
 
   // Deduplicate: the AI model can return the same tooth number multiple times
   // (e.g., once for mesial diastema and once for distal). Keep the first occurrence
@@ -349,6 +446,40 @@ export function processAnalysisResult(
 
   const observations = [...(analysisResult.observations ?? [])];
   applyLateralAgenesisHeuristic(detectedTeeth, observations, primaryTooth);
+
+  // Generate observations from analysis data when AI returns none
+  if (observations.length === 0 && detectedTeeth.length > 0) {
+    // Diastema
+    const diastemTeeth = detectedTeeth.filter(t => t.current_issue?.toLowerCase().includes('diastema') || t.cavity_class === 'Fechamento de Diastema');
+    if (diastemTeeth.length > 0) {
+      observations.push(`Diastema detectado entre dentes ${diastemTeeth.map(t => t.tooth).join(', ')} — fechamento com resina composta indicado.`);
+    }
+    // Smile line
+    if (analysisResult.smile_line === 'alta') {
+      observations.push('Linha do sorriso alta com exposição gengival excessiva — gengivoplastia pode ser indicada.');
+    }
+    // Dental midline
+    if (analysisResult.dental_midline && analysisResult.dental_midline !== 'alinhada') {
+      const side = analysisResult.dental_midline === 'desviada_esquerda' ? 'esquerda' : 'direita';
+      observations.push(`Linha média dental desviada para ${side} em relação à facial — avaliar compensação restauradora.`);
+    }
+    // Occlusal plane
+    if (analysisResult.occlusal_plane && analysisResult.occlusal_plane !== 'nivelado') {
+      observations.push('Plano oclusal com inclinação detectada — avaliar assimetria esquelética.');
+    }
+    // Proportion/symmetry
+    if (typeof analysisResult.golden_ratio_compliance === 'number' && analysisResult.golden_ratio_compliance < 65) {
+      observations.push(`Proporção dentária fora do ideal (${analysisResult.golden_ratio_compliance}%) — reanatomização pode melhorar harmonia.`);
+    }
+    if (typeof analysisResult.symmetry_score === 'number' && analysisResult.symmetry_score < 65) {
+      observations.push(`Simetria bilateral reduzida (${analysisResult.symmetry_score}%) — restaurações podem harmonizar o sorriso.`);
+    }
+    // Treatment summary
+    const treatments = new Set(detectedTeeth.map(t => t.treatment_indication).filter(Boolean));
+    if (treatments.size > 0) {
+      observations.push(`Tratamentos indicados: ${[...treatments].join(', ')}. Total de ${detectedTeeth.length} dente(s) avaliado(s).`);
+    }
+  }
 
   // Visagism safety net: clear visagism fields if no face photo was provided
   // (AI may hallucinate face shape and temperament from an intraoral/smile photo alone)

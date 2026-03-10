@@ -59,8 +59,9 @@ PROIBIDO: sugerir tratamento para dentes inferiores baseado em suposição de de
 ## NAO-REDUNDANCIA: DIASTEMA vs PONTO DE CONTATO
 Se DIASTEMA identificado entre dois dentes: NAO reportar "ponto de contato inadequado" entre os MESMOS dentes. Diastema IMPLICA ausência de ponto de contato - reportar apenas o diastema.
 
-## ANALISE DO SORRISO COMPLETO
+## ANALISE DO SORRISO COMPLETO (OBRIGATÓRIO)
 Identifique oportunidades estéticas mesmo em dentes saudáveis: volume/contorno, proporções de laterais, diastemas, assimetrias.
+REGRA CRÍTICA: Dentes com problemas ESTÉTICOS (diastema, assimetria, proporção inadequada, conoide, desgaste) DEVEM ser incluídos em detected_teeth com current_issue e proposed_change preenchidos. O array detected_teeth NÃO é apenas para patologias — inclui QUALQUER dente que necessite intervenção, seja clínica OU estética. detected_teeth VAZIO é aceitável APENAS quando não há NENHUMA oportunidade de tratamento.
 
 ## TIPOS DE TRATAMENTO
 

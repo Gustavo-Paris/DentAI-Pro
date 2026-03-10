@@ -71,6 +71,8 @@ export interface UseDSDLayerGenerationParams {
   setSimulationImageUrl: React.Dispatch<React.SetStateAction<string | null>>;
   /** Update DSD result in parent */
   setResult: React.Dispatch<React.SetStateAction<DSDResult | null>>;
+  /** Auto-approve gingivoplasty when L3 is auto-generated */
+  onAutoApproveGingivoplasty?: () => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -85,6 +87,7 @@ export function useDSDLayerGeneration({
   invokeFunction,
   setSimulationImageUrl,
   setResult,
+  onAutoApproveGingivoplasty,
 }: UseDSDLayerGenerationParams) {
   const { t } = useTranslation();
 
@@ -334,6 +337,10 @@ export function useDSDLayerGeneration({
             const { layer: l3Processed, url: l3Url } = await resolveLayerUrl(l3Raw);
             compositedLayers.push(l3Processed);
             if (l3Url) resolvedUrls['complete-treatment'] = l3Url;
+            // Auto-approve gingivoplasty if L3 was generated from undecided state
+            if (gingivoplastyApproved === null && onAutoApproveGingivoplasty) {
+              onAutoApproveGingivoplasty();
+            }
           } else {
             failed.push('complete-treatment');
           }
@@ -393,7 +400,7 @@ export function useDSDLayerGeneration({
       setLayersGenerating(false);
       setIsSimulationGenerating(false);
     }
-  }, [imageBase64, generateSingleLayer, resolveLayerUrl, gingivoplastyApproved, setResult, setSimulationImageUrl, t]);
+  }, [imageBase64, generateSingleLayer, resolveLayerUrl, gingivoplastyApproved, onAutoApproveGingivoplasty, setResult, setSimulationImageUrl, t]);
 
   // Auto-generate layers when restored from a draft that has analysis but no layers
   useEffect(() => {

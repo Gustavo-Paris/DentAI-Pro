@@ -20,7 +20,7 @@ export const ANALYZE_PHOTO_TOOL: OpenAITool[] = [
           },
           detected_teeth: {
             type: "array",
-            description: "Lista de TODOS os dentes detectados com problemas, ordenados por prioridade",
+            description: "Lista de TODOS os dentes que necessitam intervenção (clínica OU estética), ordenados por prioridade. Inclui cáries, fraturas, restaurações defeituosas E também diastemas, assimetrias, proporções inadequadas, conoides, desgastes. NUNCA retorne array vazio se observations descrevem problemas dentários.",
             items: {
               type: "object",
               properties: {
