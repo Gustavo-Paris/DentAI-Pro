@@ -39,11 +39,11 @@ function convertToLegacyDSD(analysis: PhotoAnalysisResult): DSDAnalysis {
     golden_ratio_compliance: analysis.golden_ratio_compliance ?? 50,
     symmetry_score: analysis.symmetry_score ?? 50,
     suggestions: analysis.detected_teeth
-      .filter(t => t.current_issue && t.proposed_change)
+      .filter(t => t.current_issue || t.proposed_change || t.indication_reason)
       .map(t => ({
         tooth: t.tooth,
-        current_issue: t.current_issue!,
-        proposed_change: t.proposed_change!,
+        current_issue: t.current_issue || t.indication_reason || 'Avaliação estética indicada',
+        proposed_change: t.proposed_change || t.treatment_indication || 'Tratamento restaurador',
         treatment_indication: t.treatment_indication as DSDAnalysis['suggestions'][number]['treatment_indication'],
       })),
     observations: analysis.observations,
@@ -439,7 +439,7 @@ export function useDSDStep({
         setIsAnalyzing(false);
       }
     }
-  }, [imageBase64, canUseCredits, invokeFunction, refreshSubscription, getCreditCost, layerGen.generateAllLayers, additionalPhotos, patientPreferences, clinicalObservations, clinicalTeethFindings, analysisSteps.length, analysisResult, t]);
+  }, [imageBase64, canUseCredits, invokeFunction, refreshSubscription, getCreditCost, layerGen, additionalPhotos, patientPreferences, clinicalObservations, clinicalTeethFindings, analysisSteps.length, analysisResult, t]);
 
   // Auto-start analysis
   useEffect(() => {
