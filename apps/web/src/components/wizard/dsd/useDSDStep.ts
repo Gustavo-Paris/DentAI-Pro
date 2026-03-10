@@ -29,68 +29,7 @@ import type { PhotoAnalysisResult } from '@/types/wizard';
 // Converter: unified PhotoAnalysisResult → legacy DSDAnalysis
 // ---------------------------------------------------------------------------
 
-function buildSuggestionsFromObservations(observations: string[] | undefined, smileLine: string | undefined): DSDAnalysis['suggestions'] {
-  const suggestions: DSDAnalysis['suggestions'] = [];
-  if (!observations) return suggestions;
-
-  // Parse observations for treatment-relevant findings
-  const gingivoKeywords = ['gengivoplastia', 'gengival', 'sorriso gengival', 'exposição gengival', 'exposicao gengival'];
-  const midlineKeywords = ['linha média', 'linha media', 'desvio'];
-  const proportionKeywords = ['proporção', 'proporcao', 'simetria', 'assimetria'];
-
-  for (const obs of observations) {
-    const lower = obs.toLowerCase();
-    if (gingivoKeywords.some(kw => lower.includes(kw))) {
-      suggestions.push({
-        tooth: 'Gengiva',
-        current_issue: obs,
-        proposed_change: 'Gengivoplastia para harmonização do sorriso',
-        treatment_indication: 'gengivoplastia' as DSDAnalysis['suggestions'][number]['treatment_indication'],
-      });
-    } else if (midlineKeywords.some(kw => lower.includes(kw))) {
-      suggestions.push({
-        tooth: 'Linha Média',
-        current_issue: obs,
-        proposed_change: 'Compensação restauradora ou ortodôntica',
-      });
-    } else if (proportionKeywords.some(kw => lower.includes(kw))) {
-      suggestions.push({
-        tooth: 'Proporções',
-        current_issue: obs,
-        proposed_change: 'Restauração estética para harmonização',
-      });
-    }
-  }
-
-  // Add gengivoplasty suggestion from smile_line if not already present
-  if (smileLine === 'alta' && !suggestions.some(s => s.treatment_indication === 'gengivoplastia')) {
-    suggestions.push({
-      tooth: 'Gengiva',
-      current_issue: 'Linha do sorriso alta — exposição gengival excessiva',
-      proposed_change: 'Gengivoplastia para redução da exposição gengival',
-      treatment_indication: 'gengivoplastia' as DSDAnalysis['suggestions'][number]['treatment_indication'],
-    });
-  }
-
-  return suggestions;
-}
-
 function convertToLegacyDSD(analysis: PhotoAnalysisResult): DSDAnalysis {
-  // Build suggestions from detected_teeth when available, otherwise from observations
-  let suggestions: DSDAnalysis['suggestions'];
-
-  if (analysis.detected_teeth && analysis.detected_teeth.length > 0) {
-    suggestions = analysis.detected_teeth.map(t => ({
-      tooth: t.tooth,
-      current_issue: t.current_issue || t.indication_reason || `Dente ${t.tooth} — avaliação indicada`,
-      proposed_change: t.proposed_change || t.indication_reason || t.treatment_indication || 'Tratamento restaurador',
-      treatment_indication: t.treatment_indication as DSDAnalysis['suggestions'][number]['treatment_indication'],
-    }));
-  } else {
-    // Fallback: build suggestions from observations and smile line data
-    suggestions = buildSuggestionsFromObservations(analysis.observations, analysis.smile_line);
-  }
-
   return {
     facial_midline: analysis.facial_midline ?? 'centrada',
     dental_midline: analysis.dental_midline ?? 'alinhada',
@@ -99,7 +38,14 @@ function convertToLegacyDSD(analysis: PhotoAnalysisResult): DSDAnalysis {
     occlusal_plane: analysis.occlusal_plane ?? 'nivelado',
     golden_ratio_compliance: analysis.golden_ratio_compliance ?? 50,
     symmetry_score: analysis.symmetry_score ?? 50,
-    suggestions,
+    suggestions: analysis.detected_teeth
+      .filter(t => t.current_issue && t.proposed_change)
+      .map(t => ({
+        tooth: t.tooth,
+        current_issue: t.current_issue!,
+        proposed_change: t.proposed_change!,
+        treatment_indication: t.treatment_indication as DSDAnalysis['suggestions'][number]['treatment_indication'],
+      })),
     observations: analysis.observations,
     confidence: 'alta',
     lip_thickness: analysis.lip_thickness,
