@@ -1818,7 +1818,8 @@
       "costInfo": "Análise = {{analysis}} cr | DSD = {{dsd}} cr"
     },
     "sidebar": {
-      "creditsHint": "≈ {{analyses}} análises | {{dsd}} DSD"
+      "creditsHint": "≈ {{analyses}} análises | {{dsd}} DSD",
+      "subscriptionInactive": "Assinatura inativa — reative para usar créditos"
     },
     "addTeeth": {
       "title": "Adicionar Mais Dentes",

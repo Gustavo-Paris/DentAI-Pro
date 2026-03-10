@@ -172,7 +172,9 @@ export function useSubscription() {
   };
 
   // Check if user can perform an operation
+  // Must match server-side use_credits() which rejects inactive subscriptions
   const canUseCredits = (operation: string): boolean => {
+    if (!isActive && !isFree) return false;
     const cost = getCreditCost(operation);
     return creditsRemaining >= cost;
   };

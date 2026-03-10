@@ -34,12 +34,12 @@ const LANDING_FALLBACK_PLANS = [
     isPopular: false,
   },
   {
-    id: 'starter',
-    name: 'Starter',
+    id: 'essencial',
+    name: 'Essencial',
     descriptionKey: 'pricing.fallback.starterDesc',
 
     price_monthly: 5900,
-    credits_per_month: 30,
+    credits_per_month: 20,
     max_users: 1,
     allows_rollover: false,
     featureKeys: [
@@ -54,9 +54,9 @@ const LANDING_FALLBACK_PLANS = [
     name: 'Pro',
     descriptionKey: 'pricing.fallback.proDesc',
 
-    price_monthly: 11900,
-    credits_per_month: 80,
-    max_users: 3,
+    price_monthly: 9900,
+    credits_per_month: 50,
+    max_users: 1,
     allows_rollover: true,
     featureKeys: [
       { key: 'pricing.fallback.proFeature1'},

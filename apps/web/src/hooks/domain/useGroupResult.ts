@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { evaluations, storage, wizard } from '@/data';
@@ -83,6 +83,7 @@ export function useGroupResult() {
   const { sessionId = '', fingerprint = '' } = useParams<{ sessionId: string; fingerprint: string }>();
   const decodedFingerprint = decodeURIComponent(fingerprint);
   const { user } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { t } = useTranslation();
 
@@ -260,7 +261,18 @@ export function useGroupResult() {
       if (allIds.length >= 2) {
         try { await wizard.syncGroupProtocols(sessionId, allIds); } catch { /* non-critical */ }
       }
-      queryClient.invalidateQueries({ queryKey: ['group-result', sessionId] });
+      // After reprocessing, the protocol fingerprint may change (e.g. resina::no-resin → real fingerprint).
+      // Refetch to get updated data, then navigate to the new URL if fingerprint changed.
+      await queryClient.invalidateQueries({ queryKey: ['group-result', sessionId] });
+      const refreshed = await queryClient.fetchQuery({
+        queryKey: ['group-result', sessionId],
+        queryFn: () => evaluations.listBySession(sessionId, user!.id),
+      });
+      const updatedEval = (refreshed as unknown as GroupEvaluation[])?.find(ev => ev.id === primaryEval.id);
+      const newFingerprint = updatedEval ? getProtocolFingerprint(updatedEval) : decodedFingerprint;
+      if (newFingerprint !== decodedFingerprint) {
+        navigate(`/result/group/${sessionId}/${encodeURIComponent(newFingerprint)}`, { replace: true });
+      }
       toast.success(t('toasts.evaluationDetail.retrySuccess'));
     } catch (err) {
       logger.error('Retry protocol failed:', err);
@@ -269,7 +281,7 @@ export function useGroupResult() {
     } finally {
       setIsRetrying(false);
     }
-  }, [user, primaryEval, groupEvaluations, sessionId, queryClient, t]);
+  }, [user, primaryEval, groupEvaluations, sessionId, decodedFingerprint, queryClient, navigate, t]);
 
   // Mark all evaluations in the group as completed
   const handleMarkAllCompleted = useCallback(async () => {

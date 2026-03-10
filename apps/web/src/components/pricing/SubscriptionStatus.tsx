@@ -92,7 +92,7 @@ export function SubscriptionStatus() {
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
             <div>
-              <p className="font-medium">{currentPlan?.name || 'Starter'}</p>
+              <p className="font-medium">{currentPlan?.name || 'Essencial'}</p>
               <p className="text-sm text-muted-foreground">
                 {currentPlan?.price_monthly
                   ? `${formatPrice(currentPlan.price_monthly)}${t('components.pricing.card.perMonth')}`

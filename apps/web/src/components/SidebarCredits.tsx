@@ -10,12 +10,13 @@ import { cn } from '@/lib/utils';
  */
 export const SidebarCredits = memo(function SidebarCredits() {
   const { t } = useTranslation();
-  const { creditsRemaining, creditsTotal, isLoading, getCreditCost } = useSubscription();
+  const { creditsRemaining, creditsTotal, isLoading, getCreditCost, isActive, isFree } = useSubscription();
 
   if (isLoading) return null;
 
+  const isInactive = !isActive && !isFree;
   const isLow = creditsRemaining <= 5;
-  const isCritical = creditsRemaining <= 2;
+  const isCritical = creditsRemaining <= 2 || isInactive;
   const percentRemaining = creditsTotal > 0 ? (creditsRemaining / creditsTotal) * 100 : 0;
 
   const barColor = isCritical
@@ -59,11 +60,16 @@ export const SidebarCredits = memo(function SidebarCredits() {
       </div>
 
       {/* Hint text */}
-      <p className="text-xs text-sidebar-foreground/50 mt-1.5 group-hover:text-sidebar-foreground/70 transition-colors">
-        {t('components.sidebar.creditsHint', {
-          analyses: estimatedAnalyses,
-          dsd: estimatedDsd,
-        })}
+      <p className={cn(
+        'text-xs mt-1.5 transition-colors',
+        isInactive ? 'text-destructive font-medium' : 'text-sidebar-foreground/50 group-hover:text-sidebar-foreground/70',
+      )}>
+        {isInactive
+          ? t('components.sidebar.subscriptionInactive')
+          : t('components.sidebar.creditsHint', {
+              analyses: estimatedAnalyses,
+              dsd: estimatedDsd,
+            })}
       </p>
     </Link>
   );

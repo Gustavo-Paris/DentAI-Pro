@@ -391,7 +391,7 @@ Deno.serve(async (req) => {
               temperature: 0.0,
               maxTokens: promptDef.maxTokens,
               forceFunctionName: "generate_resin_protocol",
-              timeoutMs: 45_000,
+              timeoutMs: 50_000,
               maxRetries: 0, // no retry — fallback to Claude uses remaining budget
             }
           );
@@ -483,7 +483,7 @@ Deno.serve(async (req) => {
     }
 
     // Post-processing (no credit charge — protocol generation is included in case_analysis credit)
-    {
+    try {
         // Validate and fix protocol layers against resin_catalog
         await validateAndFixProtocolLayers({
           recommendation,
@@ -491,6 +491,7 @@ Deno.serve(async (req) => {
           supabase,
           tooth: data.tooth,
           cavityClass: data.cavityClass,
+          restorationSize: data.restorationSize,
         });
 
         // Post-AI inventory validation: ensure recommended resin is from inventory
@@ -500,12 +501,25 @@ Deno.serve(async (req) => {
         // Log budget compliance for debugging
         logger.log(`Budget: ${data.budget}, Recommended: ${recommendation.recommended_resin_name}, Price Range: ${recommendation.price_range}, Budget Compliant: ${recommendation.budget_compliance}`);
 
-        // Find the recommended resin in database
-        const recName = recommendation.recommended_resin_name ?? '';
-        const recommendedResin = resins.find(
+        // Find the recommended resin in database (exact match first, then fuzzy)
+        const recName = (recommendation.recommended_resin_name ?? '').trim();
+        let recommendedResin = resins.find(
           (r: { name: string }) =>
             r.name.toLowerCase() === recName.toLowerCase()
         );
+        if (!recommendedResin && recName) {
+          // Fuzzy fallback: partial match (AI sometimes returns slightly different names)
+          recommendedResin = resins.find(
+            (r: { name: string }) =>
+              r.name.toLowerCase().includes(recName.toLowerCase()) ||
+              recName.toLowerCase().includes(r.name.toLowerCase())
+          );
+          if (recommendedResin) {
+            logger.warn(`Resin fuzzy match: AI said "${recName}", matched DB "${recommendedResin.name}"`);
+          } else {
+            logger.warn(`Resin not found in DB: "${recName}" — recommended_resin_id will be null`);
+          }
+        }
 
         // Find the ideal resin if different
         let idealResin = null;
@@ -577,6 +591,10 @@ Deno.serve(async (req) => {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           }
         );
+    } catch (postErr) {
+      // Post-processing failed — log but still return what we have (AI result exists)
+      logger.error(`[${reqId}] Post-processing error:`, postErr);
+      return createErrorResponse(ERROR_MESSAGES.PROCESSING_ERROR, 500, corsHeaders, 'POST_PROCESSING_ERROR', reqId);
     }
   } catch (error: unknown) {
     logger.error(`[${reqId}] recommend-resin error:`, error);

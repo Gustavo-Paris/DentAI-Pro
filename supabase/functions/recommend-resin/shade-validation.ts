@@ -10,6 +10,8 @@ interface ShadeValidationParams {
   tooth?: string;
   /** Cavity class (e.g. "Classe III") — used for layer count validation */
   cavityClass?: string;
+  /** Restoration size (e.g. "Pequena", "Média") — used for diastema layer count exception */
+  restorationSize?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -19,6 +21,7 @@ interface ShadeValidationParams {
 interface LayerCountContext {
   tooth: string;          // FDI notation, e.g. "11", "36"
   cavityClass: string;    // e.g. "Classe III", "Classe IV", "Fechamento de Diastema"
+  restorationSize?: string; // e.g. "Pequena", "Média", "Grande"
 }
 
 // Anterior teeth: 13-23 (upper), 33-43 (lower) in FDI notation
@@ -55,9 +58,14 @@ export function validateMinimumLayerCount(layers: unknown[], context: LayerCount
   const isAestheticCase = AESTHETIC_CLASSES.some(c => classLower.includes(c));
 
   if (anterior && isAestheticCase) {
-    const minRequired = 4;
+    // Small diastema (<1mm) uses simplified 2-layer technique — don't flag as insufficient
+    const isSmallDiastema = classLower.includes('diastema') &&
+      context.restorationSize?.toLowerCase().includes('pequen');
+    const isMediumDiastema = classLower.includes('diastema') &&
+      (context.restorationSize?.toLowerCase().includes('médi') || context.restorationSize?.toLowerCase().includes('medi'));
+    const minRequired = isSmallDiastema ? 2 : isMediumDiastema ? 3 : 4;
     if (layerCount < minRequired) {
-      const warning = `Protocolo gerou apenas ${layerCount} camada(s) para dente anterior estético (${context.tooth}, ${context.cavityClass}). Mínimo recomendado: ${minRequired} camadas (dentina + efeitos/translucidez + esmalte).`;
+      const warning = `Protocolo gerou apenas ${layerCount} camada(s) para dente anterior estético (${context.tooth}, ${context.cavityClass}). Mínimo recomendado: ${minRequired} camadas.`;
       logger.warn(`Layer count validation: ${warning}`);
       return warning;
     }
@@ -85,6 +93,7 @@ export async function validateAndFixProtocolLayers({
   supabase,
   tooth,
   cavityClass,
+  restorationSize,
 }: ShadeValidationParams): Promise<void> {
   if (!recommendation.protocol?.layers || !Array.isArray(recommendation.protocol.layers)) {
     return;
@@ -694,7 +703,7 @@ export async function validateAndFixProtocolLayers({
   if (tooth && cavityClass && recommendation.protocol?.layers) {
     const layerWarning = validateMinimumLayerCount(
       recommendation.protocol.layers,
-      { tooth, cavityClass },
+      { tooth, cavityClass, restorationSize },
     );
     if (layerWarning) {
       recommendation.protocol.warnings = recommendation.protocol.warnings || [];
