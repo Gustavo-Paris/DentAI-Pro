@@ -98,6 +98,14 @@ const queryClient = new QueryClient({
   },
 });
 
+// Redirect authenticated users from landing to dashboard
+function HomeRedirect() {
+  const { user, loading } = useAuth();
+  if (loading) return <PageLoader />;
+  if (user) return <Navigate to="/dashboard" replace />;
+  return <Suspense fallback={<PageLoader />}><Landing /></Suspense>;
+}
+
 // Route-level error fallback — lighter than the root ErrorBoundary
 function RouteErrorFallback() {
   return (
@@ -190,7 +198,7 @@ const App = () => (
           <PostHogProvider>
           <Routes>
             {/* Public routes */}
-            <Route path="/" element={<Suspense fallback={<PageLoader />}><Landing /></Suspense>} />
+            <Route path="/" element={<HomeRedirect />} />
             <Route path="/login" element={<Suspense fallback={<PageLoader />}><Login /></Suspense>} />
             <Route path="/register" element={<Suspense fallback={<PageLoader />}><Register /></Suspense>} />
             <Route path="/forgot-password" element={<Suspense fallback={<PageLoader />}><ForgotPassword /></Suspense>} />
