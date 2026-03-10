@@ -107,7 +107,17 @@ export function useDSDStep({
   // -------------------------------------------------------------------------
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
-  const [result, setResult] = useState<DSDResult | null>(initialResult || null);
+  const [result, setResult] = useState<DSDResult | null>(() => {
+    if (initialResult) {
+      // DEBUG: tag initialResult path
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (initialResult.analysis as any)._debug_source = 'initialResult';
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (initialResult.analysis as any)._debug_initialResult_suggestions = initialResult.analysis?.suggestions?.length ?? -1;
+      return initialResult;
+    }
+    return null;
+  });
   const [error, setError] = useState<string | null>(null);
   const [errorCode, setErrorCode] = useState<string | null>(null);
   const [dsdConfirmed, setDsdConfirmed] = useState(!!initialResult);
@@ -236,6 +246,10 @@ export function useDSDStep({
   useEffect(() => {
     if (analysisResult && !initialResult && !result) {
       const legacyAnalysis = convertToLegacyDSD(analysisResult);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (legacyAnalysis as any)._debug_source = 'seed-useEffect';
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (legacyAnalysis as any)._debug_detected_teeth_count = analysisResult?.detected_teeth?.length ?? -1;
       setResult({
         analysis: legacyAnalysis,
         simulation_url: null,
@@ -391,9 +405,16 @@ export function useDSDStep({
       const analysisForResult = legacyAnalysis || data?.analysis;
 
       if (analysisForResult) {
+        // DEBUG: tag the source so diagnostic can identify which path produced the analysis
+        const debugInfo = {
+          _debug_source: legacyAnalysis ? 'convertToLegacyDSD' : 'data.analysis',
+          _debug_detected_teeth_count: analysisResult?.detected_teeth?.length ?? -1,
+          _debug_analysisResult_exists: !!analysisResult,
+          _debug_suggestions_count: analysisForResult.suggestions?.length ?? -1,
+        };
         const resultWithAnalysis: DSDResult = {
           ...data!,
-          analysis: analysisForResult,
+          analysis: { ...analysisForResult, ...debugInfo } as DSDAnalysis,
         };
         setResult(resultWithAnalysis);
         setIsAnalyzing(false);

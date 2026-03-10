@@ -457,10 +457,12 @@ export const DSDAnalysisView = memo(function DSDAnalysisView({
 
       {/* DEBUG: visible diagnostic for suggestions */}
       <div className="bg-yellow-500/20 border border-yellow-500 p-3 rounded text-sm font-mono">
-        <p>DEBUG suggestions count: {analysis.suggestions?.length ?? 'undefined'}</p>
-        <p>DEBUG suggestions type: {typeof analysis.suggestions}</p>
-        <p>DEBUG analysis keys: {Object.keys(analysis).join(', ')}</p>
-        <p>DEBUG first suggestion: {JSON.stringify(analysis.suggestions?.[0])?.substring(0, 200)}</p>
+        <p>suggestions count: {analysis.suggestions?.length ?? 'undefined'}</p>
+        <p>_debug_source: {(analysis as Record<string, unknown>)._debug_source as string ?? 'NOT SET'}</p>
+        <p>_debug_detected_teeth_count: {String((analysis as Record<string, unknown>)._debug_detected_teeth_count ?? 'NOT SET')}</p>
+        <p>_debug_analysisResult_exists: {String((analysis as Record<string, unknown>)._debug_analysisResult_exists ?? 'NOT SET')}</p>
+        <p>_debug_initialResult_suggestions: {String((analysis as Record<string, unknown>)._debug_initialResult_suggestions ?? 'NOT SET')}</p>
+        <p>first suggestion: {JSON.stringify(analysis.suggestions?.[0])?.substring(0, 200)}</p>
       </div>
 
       {/* Suggestions - grouped by tooth number */}
