@@ -5,6 +5,7 @@
  */
 export const ALLOWED_ORIGINS = [
   "https://tosmile.ai",
+  "https://www.tosmile.ai",
   "https://tosmile-ai.vercel.app",
   "https://auria-ai.vercel.app",
   "https://dentai-pro.vercel.app",

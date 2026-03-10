@@ -11,6 +11,7 @@ export function generateRequestId(): string {
 const PRODUCTION_ORIGINS = [
   // Primary custom domain
   "https://tosmile.ai",
+  "https://www.tosmile.ai",
   // Vercel subdomain
   "https://tosmile-ai.vercel.app",
   // Legacy Vercel subdomains — keep until traffic verified at zero

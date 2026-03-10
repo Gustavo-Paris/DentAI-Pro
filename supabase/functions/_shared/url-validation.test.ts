@@ -22,6 +22,14 @@ Deno.test("null-ish empty string returns false (invalid URL)", () => {
   assertEquals(isAllowedRedirectUrl(""), false);
 });
 
+Deno.test("allowed origin https://tosmile.ai/dashboard returns true", () => {
+  assertEquals(isAllowedRedirectUrl("https://tosmile.ai/dashboard"), true);
+});
+
+Deno.test("allowed origin https://www.tosmile.ai/settings returns true", () => {
+  assertEquals(isAllowedRedirectUrl("https://www.tosmile.ai/settings"), true);
+});
+
 Deno.test("allowed origin https://tosmile-ai.vercel.app/profile returns true", () => {
   assertEquals(isAllowedRedirectUrl("https://tosmile-ai.vercel.app/profile"), true);
 });
