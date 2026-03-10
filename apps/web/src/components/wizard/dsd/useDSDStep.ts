@@ -29,25 +29,67 @@ import type { PhotoAnalysisResult } from '@/types/wizard';
 // Converter: unified PhotoAnalysisResult → legacy DSDAnalysis
 // ---------------------------------------------------------------------------
 
-function convertToLegacyDSD(analysis: PhotoAnalysisResult): DSDAnalysis {
-  // DEBUG: trace data flow for suggestions
-  logger.log('[DEBUG] convertToLegacyDSD called, detected_teeth count:', analysis.detected_teeth?.length);
-  logger.log('[DEBUG] detected_teeth sample:', JSON.stringify(analysis.detected_teeth?.slice(0, 2)?.map(t => ({
-    tooth: t.tooth,
-    current_issue: t.current_issue,
-    proposed_change: t.proposed_change,
-    indication_reason: t.indication_reason,
-    treatment_indication: t.treatment_indication,
-  }))));
+function buildSuggestionsFromObservations(observations: string[] | undefined, smileLine: string | undefined): DSDAnalysis['suggestions'] {
+  const suggestions: DSDAnalysis['suggestions'] = [];
+  if (!observations) return suggestions;
 
-  const suggestions = analysis.detected_teeth
-    .map(t => ({
+  // Parse observations for treatment-relevant findings
+  const gingivoKeywords = ['gengivoplastia', 'gengival', 'sorriso gengival', 'exposição gengival', 'exposicao gengival'];
+  const midlineKeywords = ['linha média', 'linha media', 'desvio'];
+  const proportionKeywords = ['proporção', 'proporcao', 'simetria', 'assimetria'];
+
+  for (const obs of observations) {
+    const lower = obs.toLowerCase();
+    if (gingivoKeywords.some(kw => lower.includes(kw))) {
+      suggestions.push({
+        tooth: 'Gengiva',
+        current_issue: obs,
+        proposed_change: 'Gengivoplastia para harmonização do sorriso',
+        treatment_indication: 'gengivoplastia' as DSDAnalysis['suggestions'][number]['treatment_indication'],
+      });
+    } else if (midlineKeywords.some(kw => lower.includes(kw))) {
+      suggestions.push({
+        tooth: 'Linha Média',
+        current_issue: obs,
+        proposed_change: 'Compensação restauradora ou ortodôntica',
+      });
+    } else if (proportionKeywords.some(kw => lower.includes(kw))) {
+      suggestions.push({
+        tooth: 'Proporções',
+        current_issue: obs,
+        proposed_change: 'Restauração estética para harmonização',
+      });
+    }
+  }
+
+  // Add gengivoplasty suggestion from smile_line if not already present
+  if (smileLine === 'alta' && !suggestions.some(s => s.treatment_indication === 'gengivoplastia')) {
+    suggestions.push({
+      tooth: 'Gengiva',
+      current_issue: 'Linha do sorriso alta — exposição gengival excessiva',
+      proposed_change: 'Gengivoplastia para redução da exposição gengival',
+      treatment_indication: 'gengivoplastia' as DSDAnalysis['suggestions'][number]['treatment_indication'],
+    });
+  }
+
+  return suggestions;
+}
+
+function convertToLegacyDSD(analysis: PhotoAnalysisResult): DSDAnalysis {
+  // Build suggestions from detected_teeth when available, otherwise from observations
+  let suggestions: DSDAnalysis['suggestions'];
+
+  if (analysis.detected_teeth && analysis.detected_teeth.length > 0) {
+    suggestions = analysis.detected_teeth.map(t => ({
       tooth: t.tooth,
       current_issue: t.current_issue || t.indication_reason || `Dente ${t.tooth} — avaliação indicada`,
       proposed_change: t.proposed_change || t.indication_reason || t.treatment_indication || 'Tratamento restaurador',
       treatment_indication: t.treatment_indication as DSDAnalysis['suggestions'][number]['treatment_indication'],
     }));
-  logger.log('[DEBUG] suggestions built:', suggestions.length, JSON.stringify(suggestions.slice(0, 2)));
+  } else {
+    // Fallback: build suggestions from observations and smile line data
+    suggestions = buildSuggestionsFromObservations(analysis.observations, analysis.smile_line);
+  }
 
   return {
     facial_midline: analysis.facial_midline ?? 'centrada',
@@ -107,17 +149,7 @@ export function useDSDStep({
   // -------------------------------------------------------------------------
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
-  const [result, setResult] = useState<DSDResult | null>(() => {
-    if (initialResult) {
-      // DEBUG: tag initialResult path
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (initialResult.analysis as any)._debug_source = 'initialResult';
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (initialResult.analysis as any)._debug_initialResult_suggestions = initialResult.analysis?.suggestions?.length ?? -1;
-      return initialResult;
-    }
-    return null;
-  });
+  const [result, setResult] = useState<DSDResult | null>(initialResult || null);
   const [error, setError] = useState<string | null>(null);
   const [errorCode, setErrorCode] = useState<string | null>(null);
   const [dsdConfirmed, setDsdConfirmed] = useState(!!initialResult);
@@ -246,10 +278,6 @@ export function useDSDStep({
   useEffect(() => {
     if (analysisResult && !initialResult && !result) {
       const legacyAnalysis = convertToLegacyDSD(analysisResult);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (legacyAnalysis as any)._debug_source = 'seed-useEffect';
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (legacyAnalysis as any)._debug_detected_teeth_count = analysisResult?.detected_teeth?.length ?? -1;
       setResult({
         analysis: legacyAnalysis,
         simulation_url: null,
@@ -405,16 +433,9 @@ export function useDSDStep({
       const analysisForResult = legacyAnalysis || data?.analysis;
 
       if (analysisForResult) {
-        // DEBUG: tag the source so diagnostic can identify which path produced the analysis
-        const debugInfo = {
-          _debug_source: legacyAnalysis ? 'convertToLegacyDSD' : 'data.analysis',
-          _debug_detected_teeth_count: analysisResult?.detected_teeth?.length ?? -1,
-          _debug_analysisResult_exists: !!analysisResult,
-          _debug_suggestions_count: analysisForResult.suggestions?.length ?? -1,
-        };
         const resultWithAnalysis: DSDResult = {
           ...data!,
-          analysis: { ...analysisForResult, ...debugInfo } as DSDAnalysis,
+          analysis: analysisForResult,
         };
         setResult(resultWithAnalysis);
         setIsAnalyzing(false);
