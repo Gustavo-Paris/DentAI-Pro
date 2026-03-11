@@ -59,6 +59,26 @@ export function AnnotationOverlay({
 
   const usedFallbackBounds = new Set<number>();
 
+  // Detect which annotation types are present for the legend
+  const hasGingivo = annotatedSuggestions.some(s => isCervicalChange(s));
+  const hasIncisal = annotatedSuggestions.some(s => isIncisalIncrease(s) && !isCervicalChange(s));
+
+  // Track occupied label positions to avoid overlap
+  const occupiedYRanges: Array<{ x: number; yMin: number; yMax: number }> = [];
+  const resolveY = (x: number, baseY: number, height: number): number => {
+    let y = baseY;
+    const xTolerance = 30;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const conflict = occupiedYRanges.find(
+        r => Math.abs(r.x - x) < xTolerance && y < r.yMax + 2 && y + height > r.yMin - 2,
+      );
+      if (!conflict) break;
+      y = conflict.yMax + 3;
+    }
+    occupiedYRanges.push({ x, yMin: y, yMax: y + height });
+    return y;
+  };
+
   return (
     <svg
       aria-hidden="true"
@@ -102,6 +122,9 @@ export function AnnotationOverlay({
         const isIncisal = isIncisalIncrease(suggestion);
         const measurement = extractMeasurement(suggestion.proposed_change);
 
+        // Resolve label Y to avoid overlap with other tooth labels
+        const labelY = resolveY(cx, cy + ry + 4, 14);
+
         return (
           <g key={idx}>
             {/* Tooth dot marker */}
@@ -109,7 +132,7 @@ export function AnnotationOverlay({
             {/* Treatment label — glass pill */}
             <rect
               x={cx - 14}
-              y={cy + ry + 4}
+              y={labelY}
               width={28}
               height={14}
               rx={7}
@@ -117,7 +140,7 @@ export function AnnotationOverlay({
             />
             <text
               x={cx}
-              y={cy + ry + 14}
+              y={labelY + 10}
               textAnchor="middle"
               fill="white"
               fontSize={8}
@@ -210,6 +233,45 @@ export function AnnotationOverlay({
           </g>
         );
       })}
+
+      {/* Legend — bottom-left corner */}
+      <g transform={`translate(8, ${containerHeight - (hasGingivo && hasIncisal ? 52 : hasGingivo || hasIncisal ? 38 : 24)})`}>
+        <rect
+          x={0} y={0}
+          width={120}
+          height={hasGingivo && hasIncisal ? 48 : hasGingivo || hasIncisal ? 34 : 20}
+          rx={6}
+          fill="rgba(0,0,0,0.65)"
+        />
+        {/* Tooth marker legend */}
+        <circle cx={10} cy={10} r={3} fill="#3b82f6" fillOpacity={0.6} />
+        <text x={18} y={13} fill="white" fontSize={7} fontWeight={400}>
+          Dente analisado
+        </text>
+        {/* Gingival legend */}
+        {hasGingivo && (
+          <>
+            <line x1={6} y1={24} x2={14} y2={24} stroke="#ec4899" strokeWidth={1} strokeDasharray="3 1" />
+            <text x={18} y={27} fill="white" fontSize={7} fontWeight={400}>
+              Margem gengival
+            </text>
+          </>
+        )}
+        {/* Incisal legend */}
+        {hasIncisal && (
+          <>
+            <line
+              x1={6} y1={hasGingivo ? 38 : 24}
+              x2={14} y2={hasGingivo ? 38 : 24}
+              stroke="#3b82f6" strokeWidth={1}
+              markerEnd="url(#arrowDown)"
+            />
+            <text x={18} y={hasGingivo ? 41 : 27} fill="white" fontSize={7} fontWeight={400}>
+              Acréscimo incisal
+            </text>
+          </>
+        )}
+      </g>
     </svg>
   );
 }

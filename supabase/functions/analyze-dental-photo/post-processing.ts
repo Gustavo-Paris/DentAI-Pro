@@ -160,11 +160,36 @@ function synthesizeTeethFromObservations(
       cavityClass = 'Recontorno Estético';
       issue = `Proporção inadequada do dente ${m}`;
       change = 'Reanatomização para harmonização com adjacentes';
+    } else if (context.includes('restaura') || context.includes('resina') || context.includes('faceta') || context.includes('insatisfat')) {
+      treatment = 'resina';
+      cavityClass = 'Faceta Direta';
+      issue = `Restauração insatisfatória no dente ${m}`;
+      change = 'Substituição da restauração existente para harmonização de cor e forma';
+    } else if (context.includes('coloração') || context.includes('mancha') || context.includes('pigment') || context.includes('amarela') || context.includes('escurec')) {
+      treatment = 'resina';
+      cavityClass = 'Recontorno Estético';
+      issue = `Alteração cromática no dente ${m}`;
+      change = 'Harmonização de cor com restauração em resina composta';
+    } else if (context.includes('tamanho') || context.includes('largura') || context.includes('pequen') || context.includes('curto') || context.includes('menor')) {
+      treatment = 'resina';
+      cavityClass = 'Recontorno Estético';
+      issue = `Proporção reduzida do dente ${m} em relação aos adjacentes`;
+      change = 'Acréscimo de volume/comprimento para harmonização com arco do sorriso';
+    } else if (context.includes('fratur') || context.includes('lascam') || context.includes('trinca')) {
+      treatment = 'resina';
+      cavityClass = 'Classe IV';
+      issue = `Fratura/lascamento no dente ${m}`;
+      change = 'Restauração direta em resina composta para reconstrução';
     } else if (context.includes('assimetria') || context.includes('inclinação') || context.includes('desvi')) {
       treatment = 'resina';
       cavityClass = 'Recontorno Estético';
-      issue = `Assimetria envolvendo dente ${m}`;
-      change = 'Correção restauradora para harmonização';
+      issue = `Assimetria de forma/posição no dente ${m}`;
+      change = 'Recontorno estético em resina para harmonização do arco';
+    } else if (context.includes('bordo') || context.includes('borda') || context.includes('incisal') || context.includes('irregular')) {
+      treatment = 'resina';
+      cavityClass = 'Recontorno Estético';
+      issue = `Bordo incisal irregular no dente ${m}`;
+      change = 'Regularização do bordo incisal com resina composta';
     } else {
       issue = `Avaliação estética indicada para dente ${m}`;
       change = 'Tratamento restaurador para harmonização do sorriso';

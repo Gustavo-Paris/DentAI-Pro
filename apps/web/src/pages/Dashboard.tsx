@@ -1,4 +1,5 @@
-import { lazy, Suspense, useEffect, useMemo } from 'react';
+import { Suspense, useEffect, useMemo } from 'react';
+import { lazyRetry } from '@/lib/lazy-retry';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -15,10 +16,10 @@ import {
 import { format } from 'date-fns';
 import { getDateLocale, getDateFormat } from '@/lib/date-utils';
 
-const StatsGrid = lazy(() => import('./dashboard/StatsGrid').then(m => ({ default: m.StatsGrid })));
+const StatsGrid = lazyRetry(() => import('./dashboard/StatsGrid').then(m => ({ default: m.StatsGrid })));
 import { PrincipalTab } from './dashboard/PrincipalTab';
-const InsightsTab = lazy(() => import('./dashboard/InsightsTab').then(m => ({ default: m.InsightsTab })));
-const CasosTab = lazy(() => import('./dashboard/CasosTab').then(m => ({ default: m.CasosTab })));
+const InsightsTab = lazyRetry(() => import('./dashboard/InsightsTab').then(m => ({ default: m.InsightsTab })));
+const CasosTab = lazyRetry(() => import('./dashboard/CasosTab').then(m => ({ default: m.CasosTab })));
 import { PageClinicAlerts } from '@parisgroup-ai/domain-odonto-ai/dashboard';
 import type { ClinicAlert } from '@parisgroup-ai/domain-odonto-ai/dashboard';
 import { OnboardingProgress } from '@/components/onboarding/OnboardingProgress';

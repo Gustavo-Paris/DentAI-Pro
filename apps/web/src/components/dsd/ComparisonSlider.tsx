@@ -293,7 +293,7 @@ export function ComparisonSlider({
             className="absolute top-0 bottom-0 w-1 bg-background shadow-lg z-10 transition-opacity duration-300"
             style={{ left: `${effectiveSliderPosition}%`, transform: 'translateX(-50%)' }}
           >
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-background rounded-full shadow-lg flex items-center justify-center border-2 border-primary">
+            <div className="absolute top-[65%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-background rounded-full shadow-lg flex items-center justify-center border-2 border-primary">
               <GripVertical className="w-5 h-5 text-primary" />
             </div>
           </div>

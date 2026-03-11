@@ -305,8 +305,12 @@ export const PROPORTION_RULES = `PROPORTION RULES:
 - NUNCA alterar forma ou proporção de dentes que NÃO estão em "SPECIFIC CORRECTIONS"
 - COMPARAR antes/depois: dentes não tratados devem ter EXATAMENTE o mesmo formato, tamanho e posição
 
-⚠️ REGRA #2 — ANTI-REDESIGN (CRÍTICO):
+⚠️ REGRA #2 — CONSERVADORISMO (CRÍTICO):
 Esta simulação NÃO é projeto de facetas ou laminados. É uma PREVISÃO de restaurações diretas em resina.
+- PRINCÍPIO FUNDAMENTAL: SEMPRE preferir ADICIONAR material ao dente MENOR do que REDUZIR o dente MAIOR
+  → Se dente 12 é menor que homólogo 22: AUMENTAR 12, NUNCA reduzir 22
+  → Se dente tem comprimento incisal curto: ACRESCENTAR borda incisal, NUNCA encurtar adjacentes
+  → Adição de resina é REVERSÍVEL e CONSERVADORA. Redução/desgaste é IRREVERSÍVEL.
 - NÃO criar "dentes novos" — modificar os EXISTENTES com ajustes pontuais
 - A PROPORÇÃO RELATIVA entre dentes adjacentes deve ser PRESERVADA (se 12 é menor que 11 no original, continua menor)
 - NÃO uniformizar o tamanho/formato de todos os dentes — variação natural é IDENTIDADE do paciente

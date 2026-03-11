@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, Component, type ReactNode, type ErrorInfo } from 'react';
+import { Suspense, useCallback, Component, type ReactNode, type ErrorInfo } from 'react';
 import * as Sentry from '@sentry/react';
 import { AlertCircle } from 'lucide-react';
 import { GlobalSearch } from "@/components/GlobalSearch";
@@ -21,33 +21,7 @@ import { evaluations } from "@/data";
 import { QUERY_STALE_TIMES, QUERY_GC_TIMES } from "@/lib/constants";
 import i18n from '@/lib/i18n';
 import { logger } from '@/lib/logger';
-
-// Retry lazy imports on chunk loading failure (stale deploy).
-// After a new Vercel deploy, old chunk hashes become 404.
-// This auto-reloads the page once to fetch fresh assets.
-function lazyRetry<T extends { default: React.ComponentType<unknown> }>(
-  importFn: () => Promise<T>,
-): React.LazyExoticComponent<T['default']> {
-  return lazy(async () => {
-    try {
-      return await importFn();
-    } catch (error) {
-      const isChunkError =
-        error instanceof TypeError &&
-        error.message.includes('dynamically imported module');
-      if (isChunkError) {
-        const key = 'chunk-retry-' + window.location.pathname;
-        if (!sessionStorage.getItem(key)) {
-          sessionStorage.setItem(key, '1');
-          window.location.reload();
-          return new Promise(() => {}); // never resolves — reload takes over
-        }
-        sessionStorage.removeItem(key);
-      }
-      throw error;
-    }
-  });
-}
+import { lazyRetry } from '@/lib/lazy-retry';
 
 // Eager load static legal pages (small, no PageShell dependency)
 import Terms from "@/pages/Terms";

@@ -286,8 +286,30 @@ export function useDSDStep({
       .filter(Boolean) as ToothBoundsPct[];
     const valid = bounds.filter((b) =>
       Number.isFinite(b.x) && Number.isFinite(b.y) && Number.isFinite(b.width) && Number.isFinite(b.height) &&
-      b.width > 0 && b.height > 0
+      b.width > 0 && b.height > 0 && b.x >= 0 && b.x <= 100 && b.y >= 0 && b.y <= 100
     );
+
+    // Enforce symmetric consistency: average Y/height of contralateral pairs
+    const CONTRALATERAL: Record<string, string> = { '11': '21', '12': '22', '13': '23', '14': '24', '15': '25' };
+    const byTooth = new Map(valid.map(b => [b.tooth, b]));
+    for (const [right, left] of Object.entries(CONTRALATERAL)) {
+      const r = byTooth.get(right);
+      const l = byTooth.get(left);
+      if (r && l) {
+        const yDiff = Math.abs(r.y - l.y);
+        const hDiff = Math.abs(r.height - l.height);
+        if (yDiff > 5 || hDiff > 5) {
+          // Large asymmetry — average the values for smoother overlay
+          const avgY = (r.y + l.y) / 2;
+          const avgH = (r.height + l.height) / 2;
+          r.y = avgY;
+          l.y = avgY;
+          r.height = avgH;
+          l.height = avgH;
+        }
+      }
+    }
+
     if (valid.length > 0) {
       logger.log('toothBounds debug:', JSON.stringify(valid.map(b => ({ tooth: b.tooth, x: b.x, y: b.y, w: b.width, h: b.height }))));
     }

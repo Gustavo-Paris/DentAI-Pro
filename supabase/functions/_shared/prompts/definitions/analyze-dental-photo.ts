@@ -133,7 +133,20 @@ IRREGULARIDADE DE BORDO INCISAL (≠ desgaste):
 8. Profundidade estimada (Superficial, Média, Profunda)
 9. Prioridade: "alta" (cáries, fraturas, dor) | "média" (restaurações defeituosas, coroas) | "baixa" (estética opcional)
 10. INDICACAO DE TRATAMENTO: resina, porcelana, coroa, implante, endodontia, encaminhamento, gengivoplastia, ou recobrimento_radicular
-11. POSICAO NA IMAGEM (tooth_bounds): bounding box da COROA CLÍNICA visível (sem gengiva/raiz). x,y = CENTRO da coroa (0-100%), width/height = dimensões da coroa visível (%). y deve ser o centro vertical entre margem gengival e borda incisal (para superiores em sorriso: y~35-55%, width~5-12%, height~10-20%)
+11. POSICAO NA IMAGEM (tooth_bounds): bounding box da COROA CLÍNICA visível (sem gengiva/raiz). x,y = CENTRO da coroa (0-100%), width/height = dimensões da coroa visível (%).
+    REGRAS DE POSICIONAMENTO:
+    - x: posição horizontal do CENTRO do dente na imagem (0=esquerda, 100=direita)
+    - y: CENTRO VERTICAL da coroa clínica = (topo_gengival + bordo_incisal) / 2
+    - Superiores em sorriso: y tipicamente ~35-55%, width~5-12%, height~10-20%
+    - ARCO DO SORRISO: Os bordos incisais devem seguir a CURVATURA NATURAL do sorriso:
+      → Centrais (11/21): bordos incisais mais BAIXOS (y + height/2 = valor MAIOR)
+      → Laterais (12/22): bordos incisais ~1-2mm ACIMA dos centrais
+      → Caninos (13/23): bordos incisais ~1-2mm ACIMA dos laterais (pontas cuspídeas)
+      → Resultado: arco CONVEXO (U invertido) seguindo o lábio inferior
+    - VALIDAÇÃO OBRIGATÓRIA: Antes de finalizar, verificar que:
+      1. Dentes simétricos (11↔21, 12↔22, 13↔23) têm y e height SIMILARES (±3%)
+      2. A sequência de bordos incisais forma uma CURVA SUAVE (sem saltos bruscos)
+      3. x dos dentes está em ORDEM CORRETA da direita para esquerda na imagem
 
 ## QUALIDADE DA FOTO
 Se foto DISTANTE (face inteira em vez de close-up):
@@ -183,16 +196,21 @@ Diagnosticar restauração existente quando 2 OU MAIS dos seguintes sinais estiv
 NAO diagnosticar baseado em: bordos incisais translúcidos (natural), manchas sem interface, desgaste incisal leve isolado.
 NAO confundir sombra/iluminação com interface.
 
-FACETAS EM RESINA: Face vestibular INTEIRA com cor/textura UNIFORME diferente dos adjacentes + interface cervical visivel + reflexo de luz uniforme + ausência de caracterizações naturais.
-- Se face vestibular INTEIRA diferente dos adjacentes -> "Faceta em resina existente"
-- NAO confundir com dente natural mais claro - exija INTERFACE visível
+FACETAS EM RESINA — diagnóstico requer TODOS os 3 critérios SIMULTANEAMENTE:
+  1. Interface cervical VISÍVEL (linha de transição dente/resina na região do colo)
+  2. Face vestibular com textura/opacidade DIFERENTE dos adjacentes (não apenas cor mais clara)
+  3. Pelo menos 1 sinal adicional: pigmentação marginal, perda de translucidez incisal natural, ausência completa de periquimácies/mamelons
+- Se face vestibular mais BRANCA/OPACA mas SEM interface cervical visível -> NÃO é faceta, é dente natural claro
+- Dentes naturais podem ser SIGNIFICATIVAMENTE mais claros que adjacentes (clareamento prévio, variação genética)
+- NAO confundir reflexo de flash/iluminação com opacidade de resina
 
 REGISTRO: enamel_condition: "Restauração prévia", notes: "Restauração em resina existente", treatment: "resina" para reparo/substituição.
 
 EVITE FALSOS POSITIVOS (OBRIGATORIO):
-1. Variação de cor entre homólogos e NORMAL - exija sinais DIRETOS (interface, textura abrupta, falha marginal, translucidez localizada)
+1. Variação de cor entre homólogos é NORMAL — exija INTERFACE CERVICAL VISÍVEL como critério obrigatório
 2. Na dúvida -> dente íntegro (conservadorismo)
-3. PROIBIDO diagnosticar restauração baseado apenas em "cor diferente" ou "aspecto opaco"
+3. PROIBIDO diagnosticar restauração baseado apenas em "cor diferente", "aspecto opaco" ou "cor uniforme"
+4. Dentes centrais (11/21) frequentemente são mais claros que laterais (12/22) — isso é ANATOMIA NORMAL
 
 CHECKLIST POR DENTE ANTERIOR:
 a) Interface visível? -> "Restauração prévia"
@@ -513,17 +531,23 @@ Quando "indeterminado": Adicione observação: "Sobremordida nao avaliavel nesta
 Preservar/criar: Mamelons, translucidez incisal, gradiente de cor (cervical saturado -> incisal claro), textura (periquimácies), caracterizações sutis.
 
 === DETECCAO DE SINAIS DE BRUXISMO / DESGASTE PARAFUNCIONAL ===
-BUSCAR ATIVAMENTE sinais de bruxismo em TODOS os dentes visíveis:
-- FACETAS DE DESGASTE: Áreas planas e polidas nas bordas incisais (especialmente centrais e caninos) que eliminam anatomia natural dos mamelons
-- CUSPIDES APLAINADAS: Caninos com ponta cuspídea achatada/plana ao invés de pontiaguda
-- LASCAMENTOS (CHIPPING): Micro-fraturas irregulares nas bordas incisais, padrão de fragmentação típico de contato oclusal excessivo
-- ENCURTAMENTO GENERALIZADO: Bordas incisais visivelmente mais curtas que o esperado para a idade, arco do sorriso plano/reverso por desgaste
-- LINHA DE FRATURA (CRAZE LINES): Trincas verticais no esmalte vestibular, especialmente em incisivos centrais
-- ASSIMETRIA DE DESGASTE: Um lado com mais desgaste que o outro (sugere bruxismo excêntrico/lateralidade)
+Sinais INEQUÍVOCOS (alta especificidade):
+- FACETAS DE DESGASTE: Áreas planas e POLIDAS nas bordas incisais com >2mm de superfície plana, eliminando mamelons
+- CUSPIDES APLAINADAS: Caninos com ponta cuspídea COMPLETAMENTE plana (não apenas arredondada)
+- ENCURTAMENTO GENERALIZADO: Bordas incisais MENSURALMENTE mais curtas, arco do sorriso PLANO/REVERSO
 
-Se 2+ sinais detectados:
-- Adicionar nas observations: "Sinais compatíveis com bruxismo/desgaste parafuncional: [listar achados específicos]. Recomenda-se avaliação oclusal e considerar placa oclusal de proteção."
-- NÃO confundir desgaste fisiológico leve (compatível com idade) com bruxismo
+Sinais AMBÍGUOS (baixa especificidade — NÃO usar isoladamente):
+- Lascamentos leves, craze lines isoladas, assimetria leve de desgaste, perda de mamelons em adultos >30 anos
+
+CRITÉRIO DE DIAGNÓSTICO:
+- Requer 2+ sinais INEQUÍVOCOS, OU 1 inequívoco + 2 ambíguos
+- Sinais AMBÍGUOS sozinhos NUNCA são suficientes — mesmo que sejam 3+
+- NÃO confundir desgaste fisiológico compatível com idade com bruxismo
+- Na DÚVIDA entre "desgaste parafuncional" e "anatomia/idade normal" -> NORMAL
+- PROIBIDO diagnosticar bruxismo apenas por bordas incisais não serem perfeitamente retas ou translúcidas
+
+Se critério atendido:
+- Adicionar nas observations: "Sinais compatíveis com bruxismo/desgaste parafuncional: [listar achados ESPECÍFICOS com localização]. Recomenda-se avaliação oclusal e considerar placa oclusal de proteção."
 - Desgaste severo em paciente jovem (<35 anos) = FORTE suspeita de bruxismo
 - Se confirmado: qualquer restauração sugerida DEVE incluir nota sobre placa oclusal noturna obrigatória
 
