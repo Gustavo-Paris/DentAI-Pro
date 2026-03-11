@@ -206,6 +206,7 @@ export function useWizardSubmit({
     let radiographPath: string | null = null;
     const treatmentCounts: Record<string, number> = {};
     let successCount = 0;
+    let fallbackCount = 0;
     const failedTeeth: Array<{ tooth: string; error: unknown }> = [];
 
     // -------------------------------------------------------------------
@@ -338,7 +339,7 @@ export function useWizardSubmit({
       normalizedTreatment: string,
       evaluationId: string,
       toothData: DetectedTooth | undefined,
-    ): Promise<void> {
+    ): Promise<{ aiGenerated: boolean }> {
       // Build DSD context from unified analysis (replaces legacy dsdResult.analysis.suggestions)
       const dsdContext = toothData?.current_issue ? {
         currentIssue: toothData.current_issue,
@@ -360,9 +361,9 @@ export function useWizardSubmit({
       const operationId = `${evaluationId}:${tooth}:protocol`;
 
       // Generate protocol WITH retry (2 retries, 2s exponential backoff)
-      await withRetry(
+      const result = await withRetry(
         async () => {
-          await dispatchTreatmentProtocol(
+          return await dispatchTreatmentProtocol(
             {
               treatmentType: normalizedTreatment,
               evaluationId,
@@ -455,6 +456,7 @@ export function useWizardSubmit({
           },
         },
       );
+      return result;
     }
 
     // -------------------------------------------------------------------
@@ -521,7 +523,8 @@ export function useWizardSubmit({
             normalizedTreatment === 'recobrimento_radicular';
 
           if (needsAICall) {
-            await dispatchProtocolForTooth(tooth, normalizedTreatment, evaluation.id, toothData);
+            const dispatchResult = await dispatchProtocolForTooth(tooth, normalizedTreatment, evaluation.id, toothData);
+            if (!dispatchResult.aiGenerated) fallbackCount++;
             // Promoted sibling succeeded — clear the failed flag so remaining
             // siblings won't each redundantly call the AI
             if (promotedAsPrimary) {
@@ -639,8 +642,14 @@ export function useWizardSubmit({
             t('toasts.wizard.partialSuccess', { success: successCount, total: teethToProcess.length, failed: failedList }),
             { duration: 8000 },
           );
+        } else if (fallbackCount > 0) {
+          // All teeth processed but some used generic fallback instead of AI
+          toast.warning(
+            t('toasts.wizard.fallbackWarning', { total: successCount, fallback: fallbackCount }),
+            { duration: 8000 },
+          );
         } else {
-          // All succeeded
+          // All succeeded with AI protocols
           toast.success(
             t('toasts.wizard.allSuccess', { count: successCount }),
           );

@@ -93,7 +93,7 @@ export default function GroupResult() {
                     </div>
                   </div>
                   <Badge variant="secondary" className="text-xs">
-                    {g.groupTeeth.length} {t('components.groupResult.teeth')}
+                    {g.groupTeeth.length} {t('components.groupResult.teeth', { count: g.groupTeeth.length })}
                   </Badge>
                 </div>
               </CardContent>
@@ -106,7 +106,7 @@ export default function GroupResult() {
           return (
             <>
               {/* Protocol unavailable fallback */}
-              {!g.hasProtocol && !g.isSpecialTreatment && g.treatmentType === 'resina' && (
+              {!g.hasProtocol && !g.isSpecialTreatment && (
                 <ProtocolUnavailableAlert
                   onReprocess={g.handleRetryProtocol}
                   isRetrying={g.isRetrying}

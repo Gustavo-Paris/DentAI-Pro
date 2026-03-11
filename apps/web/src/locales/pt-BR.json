@@ -1157,7 +1157,8 @@
       "noCreditsDescription": "Faça upgrade do seu plano para criar novos casos.",
       "gingivoplastyAdded": "Gengivoplastia adicionada automaticamente pelo DSD",
       "allSuccess_one": "{{count}} protocolo gerado com sucesso",
-      "allSuccess_other": "{{count}} protocolos gerados com sucesso"
+      "allSuccess_other": "{{count}} protocolos gerados com sucesso",
+      "fallbackWarning": "{{total}} protocolos gerados — {{fallback}} com protocolo padrão (IA indisponível). Regenere para protocolo personalizado."
     },
     "dsd": {
       "simulationRefined": "Simulação refinada (lábios preservados)",
@@ -1303,7 +1304,7 @@
         "analyzingTitle": "Analisando Foto",
         "photoAnalyzing": "Foto sendo analisada",
         "estimatedTime": "~30-60 segundos",
-        "poweredBy": "Desenvolvido com Gemini 2.5 Pro",
+        "poweredBy": "Desenvolvido com Gemini 3.1 Pro",
         "cancel": "Cancelar",
         "defaultStep": "Detectando estruturas dentárias...",
         "remaining": "restante"
@@ -2083,9 +2084,11 @@
     },
     "groupResult": {
       "unifiedProtocol": "Protocolo Unificado",
-      "teeth": "dentes",
+      "teeth_one": "dente",
+      "teeth_other": "dentes",
       "applyIdenticalProtocol": "Aplicar protocolo idêntico para:",
-      "unifiedProtocolBreadcrumb": "Protocolo Unificado ({{count}} dentes)"
+      "unifiedProtocolBreadcrumb_one": "Protocolo Unificado ({{count}} dente)",
+      "unifiedProtocolBreadcrumb_other": "Protocolo Unificado ({{count}} dentes)"
     },
     "stepIndicator": {
       "ariaLabel": "Progresso do wizard",

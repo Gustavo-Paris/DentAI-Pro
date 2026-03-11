@@ -1157,7 +1157,8 @@
       "noCreditsDescription": "Upgrade your plan to create new cases.",
       "gingivoplastyAdded": "Gingivoplasty automatically added by DSD",
       "allSuccess_one": "{{count}} protocol generated successfully",
-      "allSuccess_other": "{{count}} protocols generated successfully"
+      "allSuccess_other": "{{count}} protocols generated successfully",
+      "fallbackWarning": "{{total}} protocols generated — {{fallback}} with standard protocol (AI unavailable). Regenerate for personalized protocol."
     },
     "dsd": {
       "simulationRefined": "Simulation refined (lips preserved)",
@@ -1303,7 +1304,7 @@
         "analyzingTitle": "Analyzing Photo",
         "photoAnalyzing": "Photo being analyzed",
         "estimatedTime": "~30-60 seconds",
-        "poweredBy": "Powered by Gemini 2.5 Pro",
+        "poweredBy": "Powered by Gemini 3.1 Pro",
         "cancel": "Cancel",
         "defaultStep": "Detecting dental structures...",
         "remaining": "remaining"
@@ -2083,9 +2084,11 @@
     },
     "groupResult": {
       "unifiedProtocol": "Unified Protocol",
-      "teeth": "teeth",
+      "teeth_one": "tooth",
+      "teeth_other": "teeth",
       "applyIdenticalProtocol": "Apply identical protocol for:",
-      "unifiedProtocolBreadcrumb": "Unified Protocol ({{count}} teeth)"
+      "unifiedProtocolBreadcrumb_one": "Unified Protocol ({{count}} tooth)",
+      "unifiedProtocolBreadcrumb_other": "Unified Protocol ({{count}} teeth)"
     },
     "stepIndicator": {
       "ariaLabel": "Wizard progress",
