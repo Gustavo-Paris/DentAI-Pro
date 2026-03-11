@@ -71,7 +71,12 @@ export function computeProtocol(eval_: EvaluationLike | null): ProtocolComputed 
   const protocolAlternative = protocol?.alternative;
 
   const resin = eval_?.resins ?? null;
-  const hasProtocol = isPorcelain ? !!cementationProtocol : isSpecialTreatment ? !!genericProtocol : layers.length > 0;
+  // For resina: prefer stratification layers, but also accept generic_protocol (AI fallback)
+  const hasProtocol = isPorcelain
+    ? !!cementationProtocol
+    : isSpecialTreatment
+      ? !!genericProtocol
+      : layers.length > 0 || !!genericProtocol;
   const currentTreatmentStyle = getTreatmentStyle(treatmentType);
 
   return {

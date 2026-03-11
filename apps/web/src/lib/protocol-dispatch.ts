@@ -110,6 +110,12 @@ export interface ProtocolDispatchClients {
   saveGenericProtocol: (evaluationId: string, protocol: GenericProtocolResult) => Promise<void>;
 }
 
+/** Result of a dispatch call indicating success type. */
+export interface DispatchResult {
+  /** Whether the AI edge function produced the protocol (vs generic fallback). */
+  aiGenerated: boolean;
+}
+
 /** All parameters needed for a single dispatch call. */
 export interface DispatchTreatmentProtocolParams {
   treatmentType: TreatmentType;
@@ -146,7 +152,7 @@ export interface DispatchTreatmentProtocolParams {
 export async function dispatchTreatmentProtocol(
   params: DispatchTreatmentProtocolParams,
   clients: ProtocolDispatchClients,
-): Promise<void> {
+): Promise<DispatchResult> {
   const { treatmentType, evaluationId, tooth } = params;
 
   switch (treatmentType) {
@@ -160,6 +166,7 @@ export async function dispatchTreatmentProtocol(
           ...params.resinParams,
           operationId: params.operationId,
         });
+        return { aiGenerated: true };
       } catch (aiError) {
         // Graceful degradation: AI failed → save generic template protocol
         // so the user gets something useful instead of an error
@@ -168,8 +175,8 @@ export async function dispatchTreatmentProtocol(
         fallbackProtocol.summary = `[Protocolo padrão — IA indisponível] ${fallbackProtocol.summary}`;
         fallbackProtocol.alerts.unshift('Protocolo gerado com base em diretrizes clínicas padrão. Regenere para protocolo personalizado por IA.');
         await clients.saveGenericProtocol(evaluationId, fallbackProtocol);
+        return { aiGenerated: false };
       }
-      break;
     }
 
     case 'porcelana': {
@@ -182,14 +189,15 @@ export async function dispatchTreatmentProtocol(
           ...params.cementationParams,
           operationId: params.operationId,
         });
+        return { aiGenerated: true };
       } catch (aiError) {
         logger.warn(`[dispatchTreatmentProtocol] AI cementation call failed for tooth ${tooth}, falling back to generic protocol:`, aiError);
         const fallbackProtocol = getGenericProtocol(treatmentType, tooth, params.genericToothData);
         fallbackProtocol.summary = `[Protocolo padrão — IA indisponível] ${fallbackProtocol.summary}`;
         fallbackProtocol.alerts.unshift('Protocolo gerado com base em diretrizes clínicas padrão. Regenere para protocolo personalizado por IA.');
         await clients.saveGenericProtocol(evaluationId, fallbackProtocol);
+        return { aiGenerated: false };
       }
-      break;
     }
 
     case 'implante':
@@ -204,7 +212,7 @@ export async function dispatchTreatmentProtocol(
         params.enrichGenericProtocol(genericProtocol);
       }
       await clients.saveGenericProtocol(evaluationId, genericProtocol);
-      break;
+      return { aiGenerated: true };
     }
 
     default: {
@@ -216,7 +224,7 @@ export async function dispatchTreatmentProtocol(
         params.enrichGenericProtocol(fallbackProtocol);
       }
       await clients.saveGenericProtocol(evaluationId, fallbackProtocol);
-      break;
+      return { aiGenerated: false };
     }
   }
 }
