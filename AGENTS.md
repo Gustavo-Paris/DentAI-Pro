@@ -1,7 +1,7 @@
 ---
 title: Agentes do Projeto - AURIA
 created: 2026-02-04
-updated: 2026-02-26
+updated: 2026-03-10
 author: Team AURIA
 status: published
 tags:
@@ -134,4 +134,4 @@ Filhos podem sobrescrever com `@override: razão`.
 - [[README]] — Setup e overview técnico
 
 ---
-*Atualizado: 2026-02-26*
+*Atualizado: 2026-03-10*

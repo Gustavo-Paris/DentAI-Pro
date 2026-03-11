@@ -15,6 +15,7 @@
 ## Links
 
 - [[AGENTS.md]] - Instruções específicas
+- [[../AGENTS.md]] - Packages index
 - [[../../AGENTS.md]] - Índice geral
 
 ---

@@ -1,7 +1,7 @@
 ---
 title: "AGENTS.md (supabase)"
 created: 2026-02-23
-updated: 2026-03-02
+updated: 2026-03-10
 author: Team AURIA
 status: published
 tags:
@@ -47,8 +47,8 @@ Backend do AURIA: 15 edge functions em Deno que proveem análise dental com IA, 
 | `analyze-dental-photo` | vision-tools | Gemini + Claude fallback | Análise unificada clínica + estética (cores, cavidades, proporções, DSD) |
 | `check-photo-quality` | vision | Gemini | Validação de qualidade de foto antes da análise |
 | `generate-dsd` | simulation-only | NB2 (primary) + G3PI (fallback) + Haiku (lip validation) | Simulação DSD (requer existingAnalysis da análise unificada) |
-| `recommend-resin` | text-tools | Claude tool-calling | Protocolo de estratificação de resina |
-| `recommend-cementation` | text-tools | Claude tool-calling | Protocolo de cimentação cerâmica |
+| `recommend-resin` | text-tools | Gemini 3 Flash (primary) + Claude Sonnet 4.6 (fallback) | Protocolo de estratificação de resina |
+| `recommend-cementation` | text-tools | Gemini 3 Flash (primary) + Claude Sonnet 4.6 (fallback) | Protocolo de cimentação cerâmica |
 | `stripe-webhook` | webhook | — | Sync assinaturas e créditos |
 | `create-checkout-session` | API | — | Sessão Stripe checkout |
 | `create-portal-session` | API | — | Portal de assinaturas Stripe |
@@ -99,10 +99,10 @@ Backend do AURIA: 15 edge functions em Deno que proveem análise dental com IA, 
 | Regra | Detalhe |
 |-------|---------|
 | **Gemini vision** | OBRIGATÓRIO `thinkingLevel: "low"` — "medium" causa WORKER_LIMIT (150s timeout) |
-| **Claude recommendations** | Usar Haiku 4.5 (~10-15s), NÃO Sonnet (~50s, timeout 60s) |
+| **Resin/Cementation** | Gemini 3 Flash (primary, 50s) → Claude Sonnet 4.6 (fallback, remaining budget). Elapsed-time-aware fallback |
 | **Tool-calling** | `tool_choice: { type: "tool", name }` para forçar structured output |
 | **DSD simulation** | Nano Banana 2 (primary) → Gemini 3 Pro Image (fallback). `callGeminiImageEdit` default model is NB2 |
-| **Timeout** | Edge functions têm 60s timeout. FunctionsFetchError no browser = timeout |
+| **Timeout** | Edge functions têm **150s** timeout server-side. Browser client tem split timeouts: 55s auth/db, 150s edge functions. `FunctionsFetchError` no browser = timeout |
 
 ### Credits & Rate Limiting
 
@@ -118,7 +118,7 @@ Backend do AURIA: 15 edge functions em Deno que proveem análise dental com IA, 
 | Padrão | Implementação |
 |--------|---------------|
 | **Retry** | Exponential backoff (1s → 16s), max 5 retries em 429/5xx |
-| **Fallback** | Claude: Sonnet → Haiku. Gemini image-edit: Pro → Flash |
+| **Fallback** | Resin/Cementation: Gemini 3 Flash → Claude Sonnet 4.6. DSD image-edit: Nano Banana 2 → Gemini 3 Pro Image. Analysis: Gemini 3.1 Pro → Claude Sonnet 4.6 |
 | **Circuit breaker** | 5 falhas consecutivas → bloqueia 60s |
 | **Fail-closed** | Validações safety-critical rejeitam em caso de erro |
 
@@ -128,10 +128,10 @@ Backend do AURIA: 15 edge functions em Deno que proveem análise dental com IA, 
 
 | Prompt | Provider | Modo | Model |
 |--------|----------|------|-------|
-| `analyze-dental-photo` | Gemini | vision-tools | gemini-3.1-pro |
+| `analyze-dental-photo` | Gemini + Claude fallback | vision-tools | gemini-3.1-pro (primary) / claude-sonnet-4-6 (fallback) |
 | `dsd-simulation` | Gemini | image-edit | NB2 (primary) / gemini-3-pro-image (fallback) |
-| `recommend-resin` | Claude | text-tools | claude-haiku-4-5 |
-| `recommend-cementation` | Claude | text-tools | claude-haiku-4-5 |
+| `recommend-resin` | Gemini + Claude fallback | text-tools | gemini-3-flash (primary) / claude-sonnet-4-6 (fallback) |
+| `recommend-cementation` | Gemini + Claude fallback | text-tools | gemini-3-flash (primary) / claude-sonnet-4-6 (fallback) |
 
 ## Comandos
 
@@ -148,4 +148,4 @@ Backend do AURIA: 15 edge functions em Deno que proveem análise dental com IA, 
 - [[../AGENTS.md]] — Índice geral
 
 ---
-*Atualizado: 2026-03-02*
+*Atualizado: 2026-03-10*
