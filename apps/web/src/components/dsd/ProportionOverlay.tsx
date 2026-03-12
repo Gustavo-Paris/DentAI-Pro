@@ -375,6 +375,36 @@ export function ProportionOverlay({
           />
         </g>
       )}
+
+      {/* ----------------------------------------------------------------- */}
+      {/* Legend — bottom-right corner                                      */}
+      {/* ----------------------------------------------------------------- */}
+      {(showMidline || showGoldenRatio || showSmileArc) && (() => {
+        const items: Array<{ color: string; dashed?: boolean; label: string }> = [];
+        if (showMidline) items.push({ color: COLORS.midline, dashed: true, label: t('components.wizard.dsd.proportionOverlay.midline') });
+        if (showGoldenRatio) items.push({ color: COLORS.goldenRatio, label: t('components.wizard.dsd.proportionOverlay.goldenRatioLabel') });
+        if (showSmileArc) items.push({ color: COLORS.smileArc, label: t('components.wizard.dsd.proportionOverlay.smileArcLabel') });
+        const legendH = items.length * 14 + 6;
+        return (
+          <g transform={`translate(${containerWidth - 128}, ${containerHeight - legendH - 8})`}>
+            <rect x={0} y={0} width={120} height={legendH} rx={6} fill="rgba(0,0,0,0.65)" />
+            {items.map((item, i) => (
+              <g key={item.label}>
+                <line
+                  x1={6} y1={10 + i * 14}
+                  x2={14} y2={10 + i * 14}
+                  stroke={item.color}
+                  strokeWidth={item.dashed ? 1 : 1.5}
+                  strokeDasharray={item.dashed ? '3 1' : undefined}
+                />
+                <text x={18} y={13 + i * 14} fill="white" fontSize={7} fontWeight={400}>
+                  {item.label}
+                </text>
+              </g>
+            ))}
+          </g>
+        );
+      })()}
     </svg>
   );
 }

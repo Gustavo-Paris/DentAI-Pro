@@ -1576,7 +1576,9 @@
           "toothPremolar": "Pré-molar",
           "ratioTooltip": "Proporção {{inner}}/{{outer}}: {{ratio}} (ideal: {{ideal}}). Quando a relação de largura entre dentes adjacentes se aproxima de 1.618 (proporção áurea), o sorriso é visualmente mais harmônico.",
           "midlineAdjusted": "Ajustada",
-          "resetMidline": "Restaurar posição original"
+          "resetMidline": "Restaurar posição original",
+          "goldenRatioLabel": "Proporção Áurea",
+          "smileArcLabel": "Arco do Sorriso"
         },
         "layerComparison": {
           "title": "Comparar Camadas",

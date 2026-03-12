@@ -107,12 +107,13 @@ describe('computeProportionLines', () => {
   // ---------------------------------------------------------------------------
 
   describe('midline', () => {
-    it('places midline between the two widest teeth (central incisors)', () => {
+    it('places midline at mesial contact between the two widest teeth (central incisors)', () => {
       const bounds = makeSixTeeth();
       const result = computeProportionLines(bounds, makeAnalysis());
 
       // Two widest teeth: x=42 (w=10) and x=52 (w=10)
-      // Midline X = (42 + 52) / 2 = 47
+      // Left inner edge = 42 + 10/2 = 47, Right inner edge = 52 - 10/2 = 47
+      // Midline X = (47 + 47) / 2 = 47
       expect(result.midline).not.toBeNull();
       expect(result.midline!.x).toBe(47);
     });
@@ -160,8 +161,10 @@ describe('computeProportionLines', () => {
       ];
       const result = computeProportionLines(bounds, makeAnalysis());
 
-      // Two widest: w=10 (x=45) and w=8 (x=60) → midline = (45 + 60) / 2 = 52.5
-      expect(result.midline!.x).toBe(52.5);
+      // Two widest: w=10 (x=45) and w=8 (x=60)
+      // Mesial contact: left inner edge = 45 + 10/2 = 50, right inner edge = 60 - 8/2 = 56
+      // Midline = (50 + 56) / 2 = 53
+      expect(result.midline!.x).toBe(53);
     });
   });
 

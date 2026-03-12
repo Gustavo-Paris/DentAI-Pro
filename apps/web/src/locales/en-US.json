@@ -1576,7 +1576,9 @@
           "toothPremolar": "Premolar",
           "ratioTooltip": "Ratio {{inner}}/{{outer}}: {{ratio}} (ideal: {{ideal}}). When the width ratio between adjacent teeth approaches 1.618 (golden ratio), the smile appears more harmonious.",
           "midlineAdjusted": "Adjusted",
-          "resetMidline": "Reset to original position"
+          "resetMidline": "Reset to original position",
+          "goldenRatioLabel": "Golden Ratio",
+          "smileArcLabel": "Smile Arc"
         },
         "layerComparison": {
           "title": "Compare Layers",

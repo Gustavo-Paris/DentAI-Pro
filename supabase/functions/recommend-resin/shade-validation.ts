@@ -395,7 +395,7 @@ function validateShades(
 
       // Enforce: esmalte vestibular final must NOT use translucent shades
       if (isEnamelLayer && layer.shade) {
-        const translucentShades = ['CT', 'GT', 'BT', 'YT', 'WT'];
+        const translucentShades = ['CT', 'GT', 'BT', 'YT', 'WT', 'Trans', 'Trans20', 'Trans30', 'Opal'];
         const isTranslucent = translucentShades.some(ts => layer.shade.toUpperCase() === ts.toUpperCase());
         const isVestibularFinal = layerType.includes('vestibular') || layerType.includes('final');
         if (isTranslucent && isVestibularFinal) {

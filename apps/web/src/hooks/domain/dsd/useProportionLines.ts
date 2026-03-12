@@ -108,8 +108,13 @@ export function computeProportionLines(
 // =============================================================================
 
 /**
- * Find the two widest teeth (presumed central incisors) and place the midline
- * at the average of their center X positions.
+ * Find the two central incisors and place the midline at the mesial contact
+ * point between them (the gap where their inner edges meet).
+ *
+ * Strategy: find the two widest teeth near the center of the arch (presumed
+ * central incisors), then compute the midline as the average of the RIGHT
+ * edge of the left central and the LEFT edge of the right central. This gives
+ * the mesial contact point rather than the average of tooth centers.
  *
  * The midline extends from above the tallest tooth to below the lowest tooth
  * with some padding.
@@ -127,7 +132,6 @@ function computeMidline(sorted: ToothBoundsPct[]): ProportionMidline {
     const [a, b] = [byWidth[0], byWidth[1]];
     // Guard: if two widest teeth are clearly on the same side of the arch,
     // they can't be the two centrals — fall back to centroid.
-    // Use tolerance so teeth near the center aren't misclassified.
     const tol = 5; // % tolerance
     const aIsLeft = a.x < centroid - tol;
     const bIsLeft = b.x < centroid - tol;
@@ -136,7 +140,13 @@ function computeMidline(sorted: ToothBoundsPct[]): ProportionMidline {
     if ((aIsLeft && bIsLeft) || (aIsRight && bIsRight)) {
       midX = centroid;
     } else {
-      midX = (a.x + b.x) / 2;
+      // Place midline at the MESIAL CONTACT POINT between the two centrals:
+      // average of the right edge of the left tooth and the left edge of the right tooth
+      const left = a.x < b.x ? a : b;
+      const right = a.x < b.x ? b : a;
+      const leftInnerEdge = left.x + left.width / 2; // right edge of left central
+      const rightInnerEdge = right.x - right.width / 2; // left edge of right central
+      midX = (leftInnerEdge + rightInnerEdge) / 2;
     }
   }
 
