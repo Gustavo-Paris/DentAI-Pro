@@ -107,9 +107,61 @@ function applyLateralAgenesisHeuristic(
 }
 
 /**
+ * Extract clinical context around a tooth number from observation text.
+ * Returns the most relevant sentence(s) mentioning this tooth, cleaned up.
+ */
+function extractContextForTooth(observationText: string, toothNumber: string): string {
+  // Split observations into sentences
+  const sentences = observationText.split(/[.;]\s*/);
+  const relevantSentences: string[] = [];
+
+  for (const sentence of sentences) {
+    if (sentence.includes(toothNumber) && sentence.trim().length > 10) {
+      // Clean up: remove "Dente XX:" prefixes and trim
+      const cleaned = sentence.replace(/^dente\s+\d+\s*[:\-–—]\s*/i, '').trim();
+      if (cleaned.length > 10) {
+        relevantSentences.push(cleaned);
+      }
+    }
+  }
+
+  return relevantSentences.join('. ').trim();
+}
+
+/**
+ * Determine treatment type and cavity class from observation context keywords.
+ */
+function classifyFromContext(
+  context: string,
+  globalIndication: TreatmentIndication,
+): { treatment: TreatmentIndication; cavityClass: string | null } {
+  const lc = context.toLowerCase();
+
+  if (lc.includes('diastema') || lc.includes('fechamento')) {
+    return { treatment: 'resina', cavityClass: 'Fechamento de Diastema' };
+  }
+  if (lc.includes('gengivoplastia') || lc.includes('sorriso gengival') || (lc.includes('gengival') && lc.includes('excesso'))) {
+    return { treatment: 'gengivoplastia', cavityClass: null };
+  }
+  if (lc.includes('fratur') || lc.includes('lascam') || lc.includes('trinca')) {
+    return { treatment: 'resina', cavityClass: 'Classe IV' };
+  }
+  if (lc.includes('restaura') || lc.includes('faceta') || lc.includes('insatisfat')) {
+    return { treatment: 'resina', cavityClass: 'Faceta Direta' };
+  }
+  if (lc.includes('conoide') || lc.includes('microdont')) {
+    return { treatment: 'resina', cavityClass: 'Recontorno Estético' };
+  }
+  return { treatment: globalIndication === 'gengivoplastia' ? 'gengivoplastia' : 'resina', cavityClass: 'Recontorno Estético' };
+}
+
+/**
  * When AI returns empty detected_teeth but observations describe specific teeth,
  * synthesize DetectedTooth entries from observation text so the suggestions card renders.
  * This is a safety net for aesthetic smile photos where Gemini puts everything in observations.
+ *
+ * Unlike previous hardcoded templates, this version extracts actual clinical details
+ * from the observation text to preserve the specificity the AI provided.
  */
 function synthesizeTeethFromObservations(
   observationText: string,
@@ -123,7 +175,6 @@ function synthesizeTeethFromObservations(
   const matches = observationText.match(toothPattern);
   if (!matches || matches.length === 0) return synthesized;
 
-  // Extract unique tooth numbers
   for (const m of matches) {
     if (seen.has(m)) continue;
     seen.add(m);
@@ -136,63 +187,38 @@ function synthesizeTeethFromObservations(
       : toothNum <= 28 ? 'posterior-superior'
       : 'posterior-inferior';
 
-    // Determine treatment from context around this tooth number
-    const contextWindow = 200;
-    const idx = observationText.indexOf(m);
-    const context = observationText.slice(Math.max(0, idx - contextWindow), idx + contextWindow).toLowerCase();
+    // Extract the actual clinical text the AI wrote about this tooth
+    const clinicalContext = extractContextForTooth(observationText, m);
+    const { treatment, cavityClass } = classifyFromContext(clinicalContext || observationText, globalIndication);
 
-    let treatment: TreatmentIndication = globalIndication;
-    let cavityClass: string | null = null;
-    let issue = '';
-    let change = '';
+    // Use the extracted context as current_issue (the AI's own words), with a fallback
+    // that still includes the tooth context rather than a hardcoded template
+    let issue: string;
+    let change: string;
 
-    if (context.includes('diastema') || context.includes('fechamento')) {
-      treatment = 'resina';
-      cavityClass = 'Fechamento de Diastema';
-      issue = `Diastema envolvendo dente ${m}`;
-      change = 'Fechamento com resina composta';
-    } else if (context.includes('gengivoplastia') || context.includes('gengival') || context.includes('sorriso gengival')) {
-      treatment = 'gengivoplastia';
-      issue = `Necessidade de harmonização gengival no dente ${m}`;
-      change = 'Gengivoplastia para adequação do contorno gengival';
-    } else if (context.includes('conoide') || context.includes('proporção reduzida') || context.includes('reanatomização') || context.includes('estreit')) {
-      treatment = 'resina';
-      cavityClass = 'Recontorno Estético';
-      issue = `Proporção inadequada do dente ${m}`;
-      change = 'Reanatomização para harmonização com adjacentes';
-    } else if (context.includes('restaura') || context.includes('resina') || context.includes('faceta') || context.includes('insatisfat')) {
-      treatment = 'resina';
-      cavityClass = 'Faceta Direta';
-      issue = `Restauração insatisfatória no dente ${m}`;
-      change = 'Substituição da restauração existente para harmonização de cor e forma';
-    } else if (context.includes('coloração') || context.includes('mancha') || context.includes('pigment') || context.includes('amarela') || context.includes('escurec')) {
-      treatment = 'resina';
-      cavityClass = 'Recontorno Estético';
-      issue = `Alteração cromática no dente ${m}`;
-      change = 'Harmonização de cor com restauração em resina composta';
-    } else if (context.includes('tamanho') || context.includes('largura') || context.includes('pequen') || context.includes('curto') || context.includes('menor')) {
-      treatment = 'resina';
-      cavityClass = 'Recontorno Estético';
-      issue = `Proporção reduzida do dente ${m} em relação aos adjacentes`;
-      change = 'Acréscimo de volume/comprimento para harmonização com arco do sorriso';
-    } else if (context.includes('fratur') || context.includes('lascam') || context.includes('trinca')) {
-      treatment = 'resina';
-      cavityClass = 'Classe IV';
-      issue = `Fratura/lascamento no dente ${m}`;
-      change = 'Restauração direta em resina composta para reconstrução';
-    } else if (context.includes('assimetria') || context.includes('inclinação') || context.includes('desvi')) {
-      treatment = 'resina';
-      cavityClass = 'Recontorno Estético';
-      issue = `Assimetria de forma/posição no dente ${m}`;
-      change = 'Recontorno estético em resina para harmonização do arco';
-    } else if (context.includes('bordo') || context.includes('borda') || context.includes('incisal') || context.includes('irregular')) {
-      treatment = 'resina';
-      cavityClass = 'Recontorno Estético';
-      issue = `Bordo incisal irregular no dente ${m}`;
-      change = 'Regularização do bordo incisal com resina composta';
+    if (clinicalContext.length > 20) {
+      // AI wrote enough detail — use it directly as the clinical finding
+      issue = clinicalContext.charAt(0).toUpperCase() + clinicalContext.slice(1);
+
+      // Build a reasonable proposed_change from the classification
+      if (treatment === 'gengivoplastia') {
+        change = `Gengivoplastia conforme achados: ${clinicalContext.substring(0, 100)}`;
+      } else if (cavityClass === 'Fechamento de Diastema') {
+        change = `Fechamento de diastema em resina composta (dente ${m}) — avaliar extensão do gap para definir técnica de estratificação`;
+      } else if (cavityClass === 'Classe IV') {
+        change = `Restauração direta em resina composta (dente ${m}) — reconstrução anatômica com recuperação de forma e textura`;
+      } else if (cavityClass === 'Faceta Direta') {
+        change = `Substituição da restauração existente por faceta direta em resina composta (dente ${m}), reanatomização vestibular`;
+      } else {
+        change = `Recontorno estético em resina composta (dente ${m}) — avaliar clinicamente para definir extensão e técnica`;
+      }
     } else {
-      issue = `Avaliação estética indicada para dente ${m}`;
-      change = 'Tratamento restaurador para harmonização do sorriso';
+      // Minimal context — provide tooth-specific fallback (not a generic template)
+      const contextWindow = 200;
+      const idx = observationText.indexOf(m);
+      const nearby = observationText.slice(Math.max(0, idx - contextWindow), idx + contextWindow).trim();
+      issue = `Achado clínico no dente ${m} (detalhes da IA em observações: "${nearby.substring(0, 120)}...")`;
+      change = `Avaliar dente ${m} clinicamente — IA identificou achado mas não estruturou em detected_teeth. Ver observações para contexto`;
     }
 
     synthesized.push({
@@ -446,6 +472,22 @@ export function processAnalysisResult(
     }
   }
 
+  // Post-processing: Correct Classe I on anterior teeth without caries → Recontorno Estético
+  // Classe I (fóssulas e fissuras) is primarily posterior. On anterior teeth (11-13, 21-23)
+  // it only applies to cingulum caries. If the substrate is not carious, the AI likely
+  // misclassified an aesthetic case as Classe I.
+  const anteriorNumbers = new Set(['11', '12', '13', '21', '22', '23']);
+  for (const tooth of detectedTeeth) {
+    if (
+      tooth.cavity_class === 'Classe I' &&
+      anteriorNumbers.has(tooth.tooth) &&
+      tooth.substrate_condition !== 'Cariado'
+    ) {
+      logger.warn(`Post-processing: correcting Classe I → Recontorno Estético for anterior tooth ${tooth.tooth} (substrate: ${tooth.substrate_condition ?? 'null'})`);
+      tooth.cavity_class = 'Recontorno Estético';
+    }
+  }
+
   // Aesthetic safety net: if smile_line is "baixa", gengivoplastia is contraindicated
   // (gums are not visible, so gingival procedures won't improve smile aesthetics)
   const smileLine = analysisResult.smile_line;
@@ -504,6 +546,24 @@ export function processAnalysisResult(
     if (treatments.size > 0) {
       observations.push(`Tratamentos indicados: ${[...treatments].join(', ')}. Total de ${detectedTeeth.length} dente(s) avaliado(s).`);
     }
+  }
+
+  // Completeness check: if 4+ anterior teeth detected but canines (13/23) missing,
+  // add warning. The prompt requires all 6 anterior teeth (13-23) to be individually
+  // evaluated, but Gemini sometimes omits canines.
+  const detectedAnteriorNums = new Set(
+    detectedTeeth.filter(t => anteriorNumbers.has(t.tooth)).map(t => t.tooth)
+  );
+  const hasEnoughAnteriors = detectedAnteriorNums.size >= 4;
+  const missingCanines: string[] = [];
+  if (hasEnoughAnteriors) {
+    if (!detectedAnteriorNums.has('13')) missingCanines.push('13');
+    if (!detectedAnteriorNums.has('23')) missingCanines.push('23');
+  }
+  if (missingCanines.length > 0) {
+    const warningMsg = `Caninos (${missingCanines.join(', ')}) não foram avaliados pela IA apesar de ${detectedAnteriorNums.size} dentes anteriores detectados. Considere avaliar manualmente ou reanalisar.`;
+    observations.push(warningMsg);
+    logger.warn(`Post-processing: ${warningMsg}`);
   }
 
   // Visagism safety net: clear visagism fields if no face photo was provided

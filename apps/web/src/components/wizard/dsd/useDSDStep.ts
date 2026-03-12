@@ -40,8 +40,8 @@ function convertToLegacyDSD(analysis: PhotoAnalysisResult): DSDAnalysis {
     symmetry_score: analysis.symmetry_score ?? 50,
     suggestions: analysis.detected_teeth.map(t => ({
         tooth: t.tooth,
-        current_issue: t.current_issue || t.indication_reason || `Dente ${t.tooth} — avaliação indicada`,
-        proposed_change: t.proposed_change || t.indication_reason || t.treatment_indication || 'Tratamento restaurador',
+        current_issue: t.current_issue || t.indication_reason || `Achado clínico no dente ${t.tooth} — ver observações para detalhes`,
+        proposed_change: t.proposed_change || `${t.treatment_indication === 'gengivoplastia' ? 'Gengivoplastia' : 'Restauração em resina composta'} no dente ${t.tooth} — avaliar clinicamente para definir técnica`,
         treatment_indication: t.treatment_indication as DSDAnalysis['suggestions'][number]['treatment_indication'],
       })),
     observations: analysis.observations,

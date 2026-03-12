@@ -867,10 +867,47 @@ ANTES de finalizar, verificar que TODOS os 6 dentes anteriores superiores (13, 1
 - Cada sugestão deve ter MEDIDAS em mm e descrição ESPECÍFICA (não genérica)
 
 DETALHAMENTO DAS SUGESTÕES (OBRIGATÓRIO):
-- RUIM: "Desgaste incisal leve" → genérico, não ajuda o dentista
+
+=== EXEMPLOS DE current_issue RUIM vs BOM ===
+- PROIBIDO: "Avaliação estética indicada para dente 11" → não diz NADA, é frase vazia
+- PROIBIDO: "Proporção inadequada do dente 12" → vago, qual proporção? o que está inadequado?
+- PROIBIDO: "Desgaste incisal leve" → genérico, não ajuda o dentista
+- BOM: "Restauração em resina insatisfatória com manchamento cervical, perda de anatomia vestibular e diferença de cor com esmalte adjacente"
 - BOM: "Desgaste incisal de ~0.8mm no bordo incisal com perda de mamelons e assimetria de ~0.5mm com homólogo 21"
-- RUIM: "Proporção inadequada" → vago
 - BOM: "Proporção L/A de ~85% (ideal 75-80%), lateral visivelmente mais curto que central (~2mm diferença), formato conoide leve"
+- BOM: "Faceta em resina com gap marginal mesial ~0.5mm, manchamento na interface dente-resina e perda de translucidez incisal"
+
+=== EXEMPLOS DE proposed_change RUIM vs BOM ===
+- PROIBIDO: "Tratamento restaurador para harmonização do sorriso" → genérico, não diz o procedimento
+- PROIBIDO: "Reanatomização para harmonização com adjacentes" → vago, que tipo de reanatomização?
+- BOM: "Substituição da faceta por nova faceta direta em resina composta, reanatomização vestibular com recuperação de mamelons e acréscimo incisal de ~1mm"
+- BOM: "Fechamento de diastema com resina composta ~1.5mm por lado, restauração do ponto de contato com 21"
+- BOM: "Recontorno estético do bordo incisal ~0.5mm com regularização da curva do sorriso, harmonização com 11"
+
+=== REGRA CRÍTICA: current_issue E proposed_change SÃO OBRIGATÓRIOS ===
+Para CADA dente em detected_teeth, os campos current_issue e proposed_change são OBRIGATÓRIOS.
+- current_issue deve DESCREVER o que o olho clínico vê (achado objetivo com medidas em mm).
+- proposed_change deve PRESCREVER o procedimento concreto (o que o dentista vai executar com medidas em mm).
+- Se um dentista ler a sugestão e não souber EXATAMENTE o que fazer → a sugestão é INÚTIL.
+- NUNCA retornar esses campos vazios, nulos, ou com frases genéricas.
+
+=== REGRA CRÍTICA: detected_teeth NUNCA PODE SER VAZIO SE HÁ ACHADOS ===
+Se as observations descrevem QUALQUER problema dentário, o array detected_teeth DEVE conter os dentes correspondentes.
+PROIBIDO: observations com "Diastema entre 11 e 21" mas detected_teeth = [].
+O sistema depende de detected_teeth estruturado para funcionar — observations sozinhas NÃO são exibidas como sugestões.
+
+=== DETECÇÃO DE RESTAURAÇÕES EXISTENTES (CRÍTICO) ===
+Restaurações insatisfatórias em resina/porcelana são o achado clínico MAIS COMUM em fotos intraorais.
+SINAIS de restauração existente:
+- Diferença de cor/opacidade entre regiões do mesmo dente
+- Linha de interface dente-resina visível
+- Manchamento marginal (linha escura na borda)
+- Perda de anatomia (contorno achatado vs natural)
+- Textura de superfície diferente (polimento vs esmalte natural)
+- Translucidez incisal ausente ou diferente
+
+Se restauração detectada → enamel_condition: "Restauração prévia" ou "Restauração prévia (faceta em resina)"
+Se restauração insatisfatória → prioridade "alta" e proposed_change com "substituição"
 
 APLIQUE visagismo. Seja CONSERVADOR com restaurações. Seja COMPLETO no arco. Seja ABRANGENTE na detecção. Considere o RESULTADO ESTETICO FINAL, não apenas patologias isoladas.
 INCLUIR SEMPRE: "Recomenda-se exames radiográficos complementares (periapical/interproximal) para diagnósticos auxiliares"

@@ -600,3 +600,155 @@ Deno.test("Adds agenesis observation and preserve-width note when canine substit
     "Should enrich atypical lateral to preserve width",
   );
 });
+
+// ==========================================================================
+// Test: Classe I on anterior teeth without caries → Recontorno Estético
+// ==========================================================================
+
+Deno.test("Corrects Classe I to Recontorno Estético for anterior teeth without caries", () => {
+  const analysis = makeAnalysis({
+    confidence: 85,
+    detected_teeth: [
+      makeTooth({
+        tooth: "11",
+        tooth_region: "anterior-superior",
+        cavity_class: "Classe I",
+        substrate_condition: "Saudável",
+      }),
+      makeTooth({
+        tooth: "21",
+        tooth_region: "anterior-superior",
+        cavity_class: "Classe I",
+        substrate_condition: "Saudável",
+      }),
+    ],
+  });
+
+  const result = processAnalysisResult(analysis);
+  const tooth11 = result.detected_teeth.find(t => t.tooth === "11");
+  const tooth21 = result.detected_teeth.find(t => t.tooth === "21");
+  assertExists(tooth11);
+  assertExists(tooth21);
+  assertEquals(tooth11.cavity_class, "Recontorno Estético", "Classe I on anterior without caries should become Recontorno Estético");
+  assertEquals(tooth21.cavity_class, "Recontorno Estético");
+});
+
+Deno.test("Preserves Classe I on anterior teeth WITH caries", () => {
+  const analysis = makeAnalysis({
+    confidence: 85,
+    detected_teeth: [
+      makeTooth({
+        tooth: "11",
+        tooth_region: "anterior-superior",
+        cavity_class: "Classe I",
+        substrate_condition: "Cariado",
+      }),
+    ],
+  });
+
+  const result = processAnalysisResult(analysis);
+  const tooth11 = result.detected_teeth.find(t => t.tooth === "11");
+  assertExists(tooth11);
+  assertEquals(tooth11.cavity_class, "Classe I", "Classe I on anterior WITH caries should be preserved");
+});
+
+Deno.test("Preserves Classe I on posterior teeth", () => {
+  const analysis = makeAnalysis({
+    confidence: 85,
+    detected_teeth: [
+      makeTooth({
+        tooth: "16",
+        tooth_region: "posterior-superior",
+        cavity_class: "Classe I",
+        substrate_condition: "Saudável",
+      }),
+    ],
+  });
+
+  const result = processAnalysisResult(analysis);
+  const tooth16 = result.detected_teeth.find(t => t.tooth === "16");
+  assertExists(tooth16);
+  assertEquals(tooth16.cavity_class, "Classe I", "Classe I on posterior should be preserved");
+});
+
+// ==========================================================================
+// Test: Missing canines warning when 4+ anteriors detected
+// ==========================================================================
+
+Deno.test("Adds warning when canines missing but 4+ anteriors detected", () => {
+  const analysis = makeAnalysis({
+    confidence: 85,
+    detected_teeth: [
+      makeTooth({ tooth: "11" }),
+      makeTooth({ tooth: "12" }),
+      makeTooth({ tooth: "21" }),
+      makeTooth({ tooth: "22" }),
+    ],
+  });
+
+  const result = processAnalysisResult(analysis);
+  const hasCanineWarning = result.observations.some(obs =>
+    obs.includes("Caninos") && obs.includes("não foram avaliados")
+  );
+  assertEquals(hasCanineWarning, true, "Should warn about missing canines when 4+ anteriors detected");
+});
+
+Deno.test("No canine warning when canines are present", () => {
+  const analysis = makeAnalysis({
+    confidence: 85,
+    detected_teeth: [
+      makeTooth({ tooth: "11" }),
+      makeTooth({ tooth: "12" }),
+      makeTooth({ tooth: "13" }),
+      makeTooth({ tooth: "21" }),
+      makeTooth({ tooth: "22" }),
+      makeTooth({ tooth: "23" }),
+    ],
+  });
+
+  const result = processAnalysisResult(analysis);
+  const hasCanineWarning = result.observations.some(obs =>
+    obs.includes("Caninos") && obs.includes("não foram avaliados")
+  );
+  assertEquals(hasCanineWarning, false, "Should NOT warn when canines are present");
+});
+
+Deno.test("No canine warning with fewer than 4 anteriors", () => {
+  const analysis = makeAnalysis({
+    confidence: 85,
+    detected_teeth: [
+      makeTooth({ tooth: "11" }),
+      makeTooth({ tooth: "21" }),
+    ],
+  });
+
+  const result = processAnalysisResult(analysis);
+  const hasCanineWarning = result.observations.some(obs =>
+    obs.includes("Caninos") && obs.includes("não foram avaliados")
+  );
+  assertEquals(hasCanineWarning, false, "Should NOT warn with fewer than 4 anteriors");
+});
+
+// ==========================================================================
+// Test: Synthesize fallback no longer uses generic phrases
+// ==========================================================================
+
+Deno.test("Synthesized teeth use specific fallback instead of generic phrases", () => {
+  const analysis = makeAnalysis({
+    confidence: 85,
+    detected_teeth: [],
+    observations: [
+      "Dente 11 apresenta alguma alteração estética que requer avaliação.",
+    ],
+  });
+
+  const result = processAnalysisResult(analysis);
+  const tooth11 = result.detected_teeth.find(t => t.tooth === "11");
+  assertExists(tooth11, "Should synthesize tooth 11 from observations");
+
+  // Verify it does NOT use the old generic phrases
+  const issue = tooth11.current_issue || "";
+  const change = tooth11.proposed_change || "";
+  assertEquals(issue.includes("Avaliação estética indicada"), false, "Should NOT use generic 'Avaliação estética indicada'");
+  assertEquals(change.includes("Tratamento restaurador para harmonização do sorriso"), false, "Should NOT use generic 'Tratamento restaurador para harmonização'");
+});

@@ -103,16 +103,14 @@ export const ANALYZE_PHOTO_TOOL: OpenAITool[] = [
                 },
                 current_issue: {
                   type: "string",
-                  description: "Problema estético identificado (ex: 'Restauração infiltrada com gap mesial de ~1mm')",
-                  nullable: true
+                  description: "OBRIGATÓRIO. Achado clínico ESPECÍFICO com detalhes visuais e medidas em mm. PROIBIDO frases genéricas como 'Avaliação estética indicada', 'Proporção inadequada', 'Diastema envolvendo dente X', 'Alteração cromática no dente X'. CORRETO: 'Restauração em resina insatisfatória com manchamento cervical e perda de anatomia vestibular' ou 'Desgaste incisal de ~0.8mm com perda de mamelons e assimetria de ~0.5mm com homólogo 21' ou 'Faceta em resina com gap marginal mesial ~0.5mm e diferença de cor com adjacentes' ou 'Diastema mesial de ~1.5mm entre 11 e 21, sem ponto de contato, papila ausente'."
                 },
                 proposed_change: {
                   type: "string",
-                  description: "Mudança proposta com medidas em mm (ex: 'Fechamento com resina composta ~1.5mm, harmonização com 21')",
-                  nullable: true
+                  description: "OBRIGATÓRIO. Tratamento proposto com procedimento ESPECÍFICO e medidas em mm. PROIBIDO frases genéricas como 'Tratamento restaurador para harmonização', 'Reanatomização para harmonização com adjacentes', 'Fechamento com resina composta', 'Harmonização de cor com restauração'. CORRETO: 'Substituição da faceta por nova faceta direta em resina composta, reanatomização vestibular com acréscimo incisal de ~1mm' ou 'Fechamento de diastema com resina composta ~1.5mm por lado, harmonização do ponto de contato com 21' ou 'Recontorno estético com acréscimo mesiodistal de ~0.8mm em resina, recuperação de anatomia vestibular e textura de superfície'."
                 }
               },
-              required: ["tooth", "priority", "treatment_indication"]
+              required: ["tooth", "priority", "treatment_indication", "current_issue", "proposed_change"]
             }
           },
           primary_tooth: {
