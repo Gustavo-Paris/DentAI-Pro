@@ -92,9 +92,16 @@ export default function GroupResult() {
                       ))}
                     </div>
                   </div>
-                  <Badge variant="secondary" className="text-xs">
-                    {g.groupTeeth.length} {t('components.groupResult.teeth', { count: g.groupTeeth.length })}
-                  </Badge>
+                  <div className="flex flex-col items-end gap-1.5">
+                    {evaluation.budget && (
+                      <Badge variant={evaluation.budget === 'premium' ? 'default' : 'outline'} className={`text-xs ${evaluation.budget === 'premium' ? 'bg-amber-500/90 hover:bg-amber-500 text-white' : ''}`}>
+                        {evaluation.budget === 'premium' ? t('evaluation.budgetPremium') : t('evaluation.budgetStandard')}
+                      </Badge>
+                    )}
+                    <Badge variant="secondary" className="text-xs">
+                      {g.groupTeeth.length} {t('components.groupResult.teeth', { count: g.groupTeeth.length })}
+                    </Badge>
+                  </div>
                 </div>
               </CardContent>
             </Card>

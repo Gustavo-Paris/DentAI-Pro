@@ -197,11 +197,12 @@ ${params.whiteningLevel === 'hollywood' ? '⚠️ HOLLYWOOD = MAXIMUM BRIGHTNESS
 WHAT TO CHANGE (ONLY):
 - Tooth COLOR: make teeth whiter/brighter according to the whitening level above
 - The whitening MUST be CLEARLY VISIBLE in a before/after comparison — this is the PRIMARY transformation
-- Apply whitening HARMONIOUSLY across ALL visible teeth — darker/stained teeth receive more whitening to match lighter ones
-- The final result must show COHERENT brightness across the smile, but ALLOW natural variation:
-  • Canines (13/23) are NATURALLY 1-2 shades more saturated/yellowish than incisors — KEEP this relative difference
+- Apply whitening HARMONIOUSLY across ALL visible teeth — darker/stained teeth receive MORE whitening to match lighter ones
+- The final result must show COHERENT brightness across the smile, but ALLOW minimal natural variation:
+  • Canines (13/23) must be whitened AGGRESSIVELY — reduce their natural yellow saturation to at most 0.5 shade darker than incisors (NOT 1-2 shades as natural)
   • Incisal edges are more translucent than cervical third — PRESERVE this gradient
   • Small differences between individual teeth are NORMAL and make the result look REAL
+- PREMOLARS (14/15/24/25): If visible, they MUST receive the SAME whitening treatment as anterior teeth — do NOT leave them at their original darker shade
 - Maintain natural translucency gradients (more translucent at incisal edges, more opaque at cervical)
 
 WHAT TO PRESERVE (DO NOT CHANGE — PIXEL-IDENTICAL):
@@ -455,7 +456,7 @@ You may ONLY modify pixels that are TEETH (white/ivory enamel surfaces visible t
 
 COLOR/WHITENING: ${whiteningConfig}
 - Apply whitening COHERENTLY across ALL visible teeth
-- Canines (13/23) are naturally 1-2 shades more saturated — PRESERVE this relative difference
+- Canines (13/23) must be whitened aggressively — at most 0.5 shade more saturated than incisors in the final result
 - Incisal edges should maintain natural translucency — do NOT make them opaque
 - Each tooth must retain individual micro-variations in color and texture
 

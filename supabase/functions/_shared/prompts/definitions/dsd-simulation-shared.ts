@@ -33,7 +33,7 @@ export function buildTextureInstruction(whiteningLevel?: string): string {
 - Criar GRADIENTE DE TRANSLUCIDEZ: opaco cervical → translúcido incisal
 - WHITENING COERÊNCIA: Todos os dentes visíveis devem atingir nível SIMILAR de claridade. Dentes mais escuros/manchados recebem mais clareamento para harmonizar com adjacentes.
 - PRESERVAR variação NATURAL entre dentes: pequenas diferenças de tom entre centrais, laterais e caninos são NORMAIS e desejáveis
-- Caninos (13/23) são naturalmente 1-2 tons mais saturados/amarelados que incisivos — MANTER essa diferença relativa${antiArtificialLines}
+- Caninos (13/23) são naturalmente mais saturados, mas na simulação com clareamento devem ser CLAREADOS AGRESSIVAMENTE para REDUZIR a diferença — resultado final: caninos no máximo 0.5 tom mais saturados que incisivos (não 1-2 tons como o natural)${antiArtificialLines}
 - Preservar micro-textura individual (craze lines, periquimácies, variações de translucidez)`
 }
 
@@ -165,13 +165,13 @@ export function buildWhiteningPrioritySection(params: Params): string {
     naturalityNote = '⚠️ HOLLYWOOD = MAXIMUM BRIGHTNESS. Teeth must be DRAMATICALLY WHITE like porcelain veneers.';
   } else if (params.whiteningLevel === 'white') {
     naturalityNote = `⚠️ MUDANÇA VISÍVEL OBRIGATÓRIA: O clareamento DEVE ser ÓBVIO na comparação antes/depois. Se antes/depois parecerem similares, a simulação FALHOU.
-- Caninos (13/23) podem ser 1-2 tons mais saturados que incisivos — diferença RELATIVA aceitável
+- Caninos (13/23) devem ser CLAREADOS AGRESSIVAMENTE — resultado final no máximo 0.5 tom mais saturados que incisivos (NÃO 1-2 tons)
 - Bordas incisais devem ter alguma translucidez — NÃO completamente opacas`;
   } else {
     naturalityNote = `⚠️ REALISMO OBRIGATÓRIO: O resultado deve parecer CLAREAMENTO DENTAL PROFISSIONAL — NÃO facetas de porcelana.
 - Dentes devem ficar VISIVELMENTE MAIS CLAROS que o original — a diferença deve ser ÓBVIA no antes/depois
 - Evitar extremos: NÃO azul-branco/cinza-branco, mas também NÃO amarelado/marfim — o alvo é branco NEUTRO limpo
-- Caninos (13/23) ficam naturalmente 1-2 tons mais saturados que incisivos — PRESERVAR essa diferença relativa
+- Caninos (13/23) devem ser CLAREADOS AGRESSIVAMENTE — resultado final no máximo 0.5 tom mais saturados que incisivos (NÃO manter diferença natural de 1-2 tons)
 - Bordas incisais devem ter TRANSLUCIDEZ (levemente acinzentadas/translúcidas) — NÃO opacas`;
   }
   return `
@@ -278,18 +278,20 @@ SHAPE CORRECTIONS (SOMENTE para dentes listados em "SPECIFIC CORRECTIONS FROM AN
 - Para laterais conoides diagnosticados: adicionar volume (lateral = ~62% da largura do central)
 - Dentes NÃO listados na análise: MANTER forma e contorno ORIGINAIS EXATOS
 
-SIMETRIA CONTRALATERAL (aplicar com MODERAÇÃO):
-- Corrigir SOMENTE assimetrias SIGNIFICATIVAS (diferença >15% em comprimento ou largura)
-- Pequenas diferenças naturais entre 11↔21, 12↔22, 13↔23 são NORMAIS — MANTER
-- NÃO forçar simetria perfeita — simetria natural NUNCA é exata
-- Aplicar apenas para dentes que TÊM diagnóstico de assimetria na análise
+SIMETRIA CONTRALATERAL:
+- CENTRAIS (11↔21): Devem ser VISUALMENTE IDÊNTICOS em largura e comprimento — assimetria entre centrais é o defeito mais perceptível ao olho humano. Se 11 aparenta maior que 21 (ou vice-versa), CORRIGIR para que fiquem simétricos.
+- LATERAIS (12↔22): Corrigir assimetrias >10% em comprimento ou largura
+- CANINOS (13↔23): Corrigir assimetrias significativas (>15%)
+- NÃO forçar simetria perfeita em dentes não-centrais — simetria natural NUNCA é exata
+- PRINCÍPIO: Sempre ADICIONAR ao menor, NUNCA reduzir o maior
 
-=== EXTENSAO ATE PRE-MOLARES ===
+=== EXTENSAO ATE PRE-MOLARES (OBRIGATORIO se visíveis) ===
 Se pré-molares (14/15/24/25) são VISIVEIS na foto:
-- INCLUIR na simulação: aplicar whitening e harmonização de cor
-- Manter proporções e FORMATO naturais originais
-- Se pré-molares têm restaurações antigas ou desarmonia visível → corrigir cor
-- Pré-molares devem receber o MESMO nível de whitening dos anteriores`
+- INCLUIR na simulação: aplicar whitening, harmonização de cor E correções de formato
+- Se pré-molares têm restaurações antigas, manchas ou desarmonia visível → corrigir cor E contorno
+- Pré-molares devem receber o MESMO nível de whitening dos anteriores — NÃO deixar amarelados
+- Se pré-molares apresentam formato desarmônico (muito pontiagudos, desgastados, ou com contorno irregular) → harmonizar contorno com o arco do sorriso
+- A transição de cor e forma entre caninos e pré-molares deve ser SUAVE e GRADUAL`
 }
 
 // ---------------------------------------------------------------------------

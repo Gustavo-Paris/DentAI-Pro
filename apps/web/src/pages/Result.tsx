@@ -129,11 +129,18 @@ export default function Result() {
                         {format(new Date(evaluation.created_at), `${getDateFormat('long')}, HH:mm`, { locale: getDateLocale() })}
                       </p>
                     </div>
-                    {['resina', 'porcelana', 'coroa'].includes(r.treatmentType) && (
-                      <Badge variant={r.currentTreatmentStyle.badgeVariant}>
-                        {r.treatmentType === 'resina' ? t('result.direct') : t('result.indirect')}
-                      </Badge>
-                    )}
+                    <div className="flex flex-col items-end gap-1.5">
+                      {evaluation.budget && (
+                        <Badge variant={evaluation.budget === 'premium' ? 'default' : 'outline'} className={evaluation.budget === 'premium' ? 'bg-amber-500/90 hover:bg-amber-500 text-white' : ''}>
+                          {evaluation.budget === 'premium' ? t('evaluation.budgetPremium') : t('evaluation.budgetStandard')}
+                        </Badge>
+                      )}
+                      {['resina', 'porcelana', 'coroa'].includes(r.treatmentType) && (
+                        <Badge variant={r.currentTreatmentStyle.badgeVariant}>
+                          {r.treatmentType === 'resina' ? t('result.direct') : t('result.indirect')}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
