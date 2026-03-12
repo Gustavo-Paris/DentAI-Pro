@@ -1021,6 +1021,7 @@
     "protocolUnavailable": "Protocol unavailable",
     "protocolUnavailableDesc": "The resin protocol generation was not completed. Try reprocessing this case.",
     "reprocess": "Reprocess case",
+    "reprocessing": "Reprocessing...",
     "tabs": {
       "protocol": "Protocol",
       "finishing": "Finishing",
@@ -1131,6 +1132,7 @@
       "photoQualityWarning": "The photo may not be ideal for DSD simulation. For better results, use a lip retractor, good lighting, and ensure teeth are fully visible."
     },
     "result": {
+      "markedComplete": "Marked as complete",
       "saveError": "Error saving progress",
       "pdfSuccess": "PDF generated successfully!",
       "pdfError": "Error generating PDF",
@@ -1158,7 +1160,8 @@
       "gingivoplastyAdded": "Gingivoplasty automatically added by DSD",
       "allSuccess_one": "{{count}} protocol generated successfully",
       "allSuccess_other": "{{count}} protocols generated successfully",
-      "fallbackWarning": "{{total}} protocols generated — {{fallback}} with standard protocol (AI unavailable). Regenerate for personalized protocol."
+      "fallbackWarning": "{{total}} protocols generated — {{fallback}} with standard protocol (AI unavailable). Regenerate for personalized protocol.",
+      "unknownError": "Error: {{message}}"
     },
     "dsd": {
       "simulationRefined": "Simulation refined (lips preserved)",
@@ -1178,6 +1181,7 @@
       "layersFailedDesc_other": "{{count}} layers failed — try again"
     },
     "evaluationDetail": {
+      "addTeethError": "Error adding teeth. Please try again.",
       "loadError": "Error loading evaluation",
       "notFound": "Evaluation not found",
       "caseCompleted": "Case marked as completed",
@@ -1324,7 +1328,9 @@
         "extraCredits": "+1 extra credit",
         "continueSimulation": "Continue with simulation",
         "shadeBeforeLabel": "Before",
-        "shadeAfterLabel": "After"
+        "shadeAfterLabel": "After",
+        "shadeTarget_hollywood": "Target: BL1 / BL3 (ultra white)",
+        "shadeTarget_natural": "Target: B1 / A1 (professional whitening)"
       },
       "review": {
         "title": "Analysis Review",
@@ -1347,6 +1353,8 @@
         "registerResins": "Register resins",
         "porcelainTitle": "Indication: Porcelain Veneers",
         "porcelainDefault": "This case may benefit from ceramic veneers for better aesthetic results and durability.",
+        "archDiagramLabel": "Dental arch diagram",
+        "archTooth": "Tooth {{toothId}}",
         "attentionPoints": "Attention points",
         "selectTeethTitle": "Select Teeth for Protocol",
         "selectTeethDesc": "Check the teeth you want to include in the protocol. Each tooth will generate a separate case.",
@@ -1407,6 +1415,7 @@
         "treatmentGengivoplastia": "Aesthetic Gingivoplasty",
         "cancel": "Cancel",
         "toggleTooth": "Toggle tooth {{number}}",
+        "tooltipPriority": "Priority: {{priorityLabel}}",
         "openCalendar": "Open calendar",
         "selected_one": "{{count}} selected",
         "selected_other": "{{count}} selected",
@@ -1431,6 +1440,7 @@
         "lastSaved": "Last saved: {{time}}",
         "continueOrNew": "Do you want to continue where you left off or start a new evaluation?",
         "recently": "recently",
+        "restoring": "Restoring...",
         "startOver": "Start from scratch",
         "continue": "Continue",
         "explanation": "You can continue the previous case or start a new evaluation from scratch."
@@ -1529,6 +1539,9 @@
           "before": "Before",
           "after": "After",
           "split": "Split",
+          "viewAfter": "After",
+          "viewBefore": "Before",
+          "viewSplit": "Split",
           "annotations": "Annotations",
           "adjusting": "Adjusting...",
           "generating": "Generating...",
@@ -1811,7 +1824,7 @@
       "credit_other": "{{count}} credits",
       "credits": "credits",
       "lowBalanceWarning": "Warning: low balance after this operation",
-      "description": "{{operation}} will cost {{cost}} credit(s). Confirm to proceed."
+      "description": "{{operation}} will cost {{cost}} credit. Confirm to proceed."
     },
     "creditBadge": {
       "creditsLabel": "Credits",
@@ -2118,6 +2131,7 @@
       }
     },
     "themeToggle": {
+      "label": "Theme",
       "system": "System",
       "light": "Light",
       "dark": "Dark",
@@ -2506,6 +2520,16 @@
     "defaultTitle": "ToSmile.ai — Intelligent Digital Dentistry"
   },
   "pdf": {
+    "anamnesis": {
+      "title": "Medical History"
+    },
+    "radiograph": {
+      "title": "Radiograph",
+      "panoramic": "Panoramic",
+      "periapical": "Periapical",
+      "bitewing": "Bitewing",
+      "availableInSystem": "Available in system"
+    },
     "header": {
       "subtitleWithClinic": "ToSmile.ai - Aesthetic Restoration Protocol",
       "title": "ToSmile.ai",

@@ -142,7 +142,7 @@ export function PatientPreferencesStep({
                     {/* Before/After tooth color indicators */}
                     <div className="flex items-center gap-2 mb-2">
                       <div className="flex items-center gap-1">
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="text-xs text-muted-foreground">
                           {t('components.wizard.preferences.shadeBeforeLabel', { defaultValue: 'Antes' })}
                         </span>
                         <div
@@ -158,7 +158,7 @@ export function PatientPreferencesStep({
                           style={{ backgroundColor: colors.after }}
                           aria-hidden="true"
                         />
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="text-xs text-muted-foreground">
                           {t('components.wizard.preferences.shadeAfterLabel', { defaultValue: 'Depois' })}
                         </span>
                       </div>
@@ -175,7 +175,7 @@ export function PatientPreferencesStep({
                     </span>
 
                     {/* Shade target label */}
-                    <p className="text-[10px] text-muted-foreground mb-2">
+                    <p className="text-xs text-muted-foreground mb-2">
                       {t(`components.wizard.preferences.shadeTarget_${option.value}`, { defaultValue: option.shadeLabel })}
                     </p>
 

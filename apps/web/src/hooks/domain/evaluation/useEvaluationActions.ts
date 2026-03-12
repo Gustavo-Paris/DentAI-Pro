@@ -15,10 +15,10 @@ import { EVALUATION_STATUS } from '@/lib/evaluation-status';
 import { withRetry } from '@/lib/retry';
 import { getFullRegion } from '../wizard/helpers';
 
-import { evaluationKeys } from './useEvaluationData';
+import { evaluationKeys, pendingTeethKeys } from '@/lib/query-keys';
 import { resolveAestheticGoalsForAI } from '@/lib/aesthetic-goals';
 import type { EvaluationItem, PendingChecklistResult } from '../useEvaluationDetail';
-import type { TreatmentType } from '@/components/AddTeethModal';
+import type { TreatmentType } from '@/types/evaluation';
 import type { User } from '@supabase/supabase-js';
 
 // ---------------------------------------------------------------------------
@@ -123,7 +123,7 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
         },
       );
     },
-    [evals, isChecklistComplete, getChecklistProgress, updateStatusMutation],
+    [evals, isChecklistComplete, getChecklistProgress, updateStatusMutation, t],
   );
 
   const handleMarkAllAsCompleted = useCallback(() => {
@@ -153,12 +153,12 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
         toast.error(t('toasts.evaluationDetail.statusError'));
       },
     });
-  }, [evals, isChecklistComplete, bulkCompleteMutation, queryClient, sessionId]);
+  }, [evals, isChecklistComplete, bulkCompleteMutation, queryClient, sessionId, t]);
 
   const handleExportPDF = useCallback((id: string) => {
     window.open(`/result/${id}?print=true`, '_blank');
     toast.info(t('toasts.evaluationDetail.openingPrint'));
-  }, []);
+  }, [t]);
 
   const handleShareCase = useCallback(async () => {
     if (!user || !sessionId) return;
@@ -178,7 +178,7 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
     } finally {
       setIsSharing(false);
     }
-  }, [user, sessionId]);
+  }, [user, sessionId, t]);
 
   const handleShareWhatsApp = useCallback(async () => {
     if (!user || !sessionId) return;
@@ -197,7 +197,7 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
     } finally {
       setIsSharing(false);
     }
-  }, [user, sessionId]);
+  }, [user, sessionId, t]);
 
   const handleDeleteSession = useCallback(async () => {
     if (!user || !sessionId) return;
@@ -216,7 +216,7 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
 
   const handleAddTeethSuccess = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: evaluationKeys.session(sessionId) });
-    queryClient.invalidateQueries({ queryKey: ['pendingTeeth', sessionId] });
+    queryClient.invalidateQueries({ queryKey: pendingTeethKeys.session(sessionId) });
   }, [queryClient, sessionId]);
 
   const handleBulkComplete = useCallback((ids: string[]) => {
@@ -240,7 +240,7 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
         toast.error(t('toasts.evaluationDetail.statusError'));
       },
     });
-  }, [evals, bulkCompleteMutation, queryClient, sessionId, clearSelection]);
+  }, [evals, isChecklistComplete, bulkCompleteMutation, queryClient, sessionId, clearSelection, t]);
 
   // ---- Retry failed evaluation ----
   const handleRetryEvaluation = useCallback(async (evaluationId: string) => {
@@ -321,7 +321,7 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
       toast.success(t('toasts.evaluationDetail.retrySuccess'));
     } catch (error) {
       logger.error('Error retrying evaluation:', error);
-      await evaluations.updateStatus(evaluationId, EVALUATION_STATUS.ERROR).catch(() => {});
+      await evaluations.updateStatus(evaluationId, EVALUATION_STATUS.ERROR).catch((err) => logger.warn('Failed to update evaluation status', { err }));
       toast.error(t('toasts.evaluationDetail.retryError'));
     } finally {
       setRetryingEvaluationId(null);
@@ -403,7 +403,7 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
           queryClient.invalidateQueries({ queryKey: evaluationKeys.session(sessionId) });
         } catch (err) {
           logger.error(`Regenerate failed for ${evaluation.tooth}:`, err);
-          await evaluations.updateStatus(evaluation.id, EVALUATION_STATUS.ERROR).catch(() => {});
+          await evaluations.updateStatus(evaluation.id, EVALUATION_STATUS.ERROR).catch((err) => logger.warn('Failed to update evaluation status', { err }));
         }
       }
 

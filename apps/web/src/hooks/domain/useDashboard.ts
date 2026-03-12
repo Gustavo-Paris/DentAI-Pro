@@ -131,6 +131,7 @@ function extractFirstName(fullName: string | null | undefined): string {
 // ---------------------------------------------------------------------------
 
 import { TREATMENT_COLORS, TREATMENT_COLOR_FALLBACK } from '@/lib/treatment-colors';
+import { profileKeys, dashboardKeys } from '@/lib/query-keys';
 
 function getTreatmentLabels(): Record<string, string> {
   return {
@@ -247,17 +248,6 @@ function computeInsights(
 }
 
 // ---------------------------------------------------------------------------
-// Query key factory
-// ---------------------------------------------------------------------------
-
-const dashboardQueryKeys = {
-  all: (userId?: string) => ['dashboard', userId] as const,
-  metrics: (userId?: string) => [...dashboardQueryKeys.all(userId), 'metrics'] as const,
-  counts: (userId?: string) => [...dashboardQueryKeys.all(userId), 'counts'] as const,
-  insights: (userId?: string) => [...dashboardQueryKeys.all(userId), 'insights'] as const,
-};
-
-// ---------------------------------------------------------------------------
 // Hook
 // ---------------------------------------------------------------------------
 
@@ -266,7 +256,7 @@ export function useDashboard(): DashboardState {
 
   // --- Data fetching (inline React Query) ---
   const { data: rawProfile, isLoading: loadingProfile, isError: profileError } = useQuery({
-    queryKey: ['profile', user?.id],
+    queryKey: profileKeys.detail(user?.id || ''),
     queryFn: () => {
       if (!user) throw new Error('User not authenticated');
       return profiles.getByUserId(user.id);
@@ -285,7 +275,7 @@ export function useDashboard(): DashboardState {
   }, [rawProfile]);
 
   const { data: dashboardData, isLoading: loadingDashboard, isError: dashboardError } = useQuery({
-    queryKey: dashboardQueryKeys.metrics(user?.id),
+    queryKey: dashboardKeys.metrics(user?.id),
     queryFn: async () => {
       if (!user) throw new Error('User not authenticated');
 
@@ -334,7 +324,7 @@ export function useDashboard(): DashboardState {
     gcTime: QUERY_GC_TIMES.PHI_SENSITIVE,
   });
   const { data: countsData } = useQuery({
-    queryKey: dashboardQueryKeys.counts(user?.id),
+    queryKey: dashboardKeys.counts(user?.id),
     queryFn: async () => {
       if (!user) throw new Error('User not authenticated');
       const thisMonthStart = startOfMonth(new Date());
@@ -353,7 +343,7 @@ export function useDashboard(): DashboardState {
   });
 
   const { data: insightsData, isLoading: loadingInsights, isError: insightsError } = useQuery({
-    queryKey: dashboardQueryKeys.insights(user?.id),
+    queryKey: dashboardKeys.insights(user?.id),
     queryFn: async () => {
       if (!user) throw new Error('User not authenticated');
       const raw = await evaluations.getDashboardInsights({ userId: user.id, weeksBack: 26 });

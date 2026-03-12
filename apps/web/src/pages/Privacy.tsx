@@ -15,14 +15,13 @@ export default function Privacy() {
   const b = { brandName: BRAND_NAME };
   return (
     <LegalPageLayout title={t('pages.privacyTitle')}>
-      <p className="text-sm text-muted-foreground" style={{ animation: 'fade-in-up 0.6s ease-out 0.15s both' }}>
+      <p className="text-sm text-muted-foreground animate-fade-in-up [animation-delay:0.15s]">
         {t('pages.lastUpdated')} 05/03/2026
       </p>
 
       {/* LGPD compliance badge */}
       <div
-        className="glass-panel rounded-lg px-4 py-3 inline-flex items-center gap-3"
-        style={{ animation: 'fade-in-up 0.6s ease-out 0.2s both' }}
+        className="glass-panel rounded-lg px-4 py-3 inline-flex items-center gap-3 animate-fade-in-up [animation-delay:0.2s]"
       >
         <div className="flex items-center justify-center w-8 h-8 rounded-full bg-success/10">
           <Shield className="w-4 h-4 text-success" aria-hidden="true" />
@@ -37,12 +36,12 @@ export default function Privacy() {
         </div>
       </div>
 
-      <section className="glass-panel rounded-xl p-6 sm:p-8" style={{ animation: 'fade-in-up 0.6s ease-out 0.3s both' }}>
+      <section className="glass-panel rounded-xl p-6 sm:p-8 animate-fade-in-up [animation-delay:0.3s]">
         <h2 className={sectionHeadingClass}>{t('pages.privacy.s1Title')}</h2>
         <p className="text-muted-foreground leading-relaxed">{t('pages.privacy.s1Text', b)}</p>
       </section>
 
-      <section className="glass-panel rounded-xl p-6 sm:p-8" style={{ animation: 'fade-in-up 0.6s ease-out 0.45s both' }}>
+      <section className="glass-panel rounded-xl p-6 sm:p-8 animate-fade-in-up [animation-delay:0.45s]">
         <h2 className={sectionHeadingClass}>{t('pages.privacy.s2Title')}</h2>
         <p className="text-muted-foreground leading-relaxed">{t('pages.privacy.s2Intro')}</p>
         <ul className="list-disc list-inside text-muted-foreground mt-3 space-y-2">
@@ -54,7 +53,7 @@ export default function Privacy() {
         </ul>
       </section>
 
-      <section className="glass-panel rounded-xl p-6 sm:p-8" style={{ animation: 'fade-in-up 0.6s ease-out 0.6s both' }}>
+      <section className="glass-panel rounded-xl p-6 sm:p-8 animate-fade-in-up [animation-delay:0.6s]">
         <h2 className={sectionHeadingClass}>{t('pages.privacy.s3Title')}</h2>
         <p className="text-muted-foreground leading-relaxed">{t('pages.privacy.s3Intro')}</p>
         <ul className="list-disc list-inside text-muted-foreground mt-3 space-y-2">
@@ -64,7 +63,7 @@ export default function Privacy() {
         </ul>
       </section>
 
-      <section className="glass-panel rounded-xl p-6 sm:p-8" style={{ animation: 'fade-in-up 0.6s ease-out 0.75s both' }}>
+      <section className="glass-panel rounded-xl p-6 sm:p-8 animate-fade-in-up [animation-delay:0.75s]">
         <h2 className={sectionHeadingClass}>{t('pages.privacy.s4Title')}</h2>
         <p className="text-muted-foreground leading-relaxed">{t('pages.privacy.s4Intro')}</p>
 
@@ -95,7 +94,7 @@ export default function Privacy() {
         <p className="text-muted-foreground leading-relaxed">{t('pages.privacy.s4Sub4Text')}</p>
       </section>
 
-      <section className="glass-panel rounded-xl p-6 sm:p-8" style={{ animation: 'fade-in-up 0.6s ease-out 0.9s both' }}>
+      <section className="glass-panel rounded-xl p-6 sm:p-8 animate-fade-in-up [animation-delay:0.9s]">
         <h2 className={sectionHeadingClass}>{t('pages.privacy.s5Title')}</h2>
         <p className="text-muted-foreground leading-relaxed">{t('pages.privacy.s5Intro')}</p>
         <ul className="list-disc list-inside text-muted-foreground mt-3 space-y-2">
@@ -109,7 +108,7 @@ export default function Privacy() {
         </ul>
       </section>
 
-      <section className="glass-panel rounded-xl p-6 sm:p-8" style={{ animation: 'fade-in-up 0.6s ease-out 1.05s both' }}>
+      <section className="glass-panel rounded-xl p-6 sm:p-8 animate-fade-in-up [animation-delay:1.05s]">
         <h2 className={sectionHeadingClass}>{t('pages.privacy.s6Title')}</h2>
         <p className="text-muted-foreground leading-relaxed">{t('pages.privacy.s6Text')}</p>
         <ul className="list-disc list-inside text-muted-foreground mt-3 space-y-2">
@@ -123,7 +122,7 @@ export default function Privacy() {
         </ul>
       </section>
 
-      <section className="glass-panel rounded-xl p-6 sm:p-8" style={{ animation: 'fade-in-up 0.6s ease-out 1.2s both' }}>
+      <section className="glass-panel rounded-xl p-6 sm:p-8 animate-fade-in-up [animation-delay:1.2s]">
         <h2 className={sectionHeadingClass}>{t('pages.privacy.s7Title')}</h2>
         <p className="text-muted-foreground leading-relaxed">{t('pages.privacy.s7Text')}</p>
         <ul className="list-disc list-inside text-muted-foreground mt-3 space-y-2">
@@ -135,7 +134,7 @@ export default function Privacy() {
         </ul>
       </section>
 
-      <section className="glass-panel rounded-xl p-6 sm:p-8" style={{ animation: 'fade-in-up 0.6s ease-out 1.35s both' }}>
+      <section className="glass-panel rounded-xl p-6 sm:p-8 animate-fade-in-up [animation-delay:1.35s]">
         <h2 className={sectionHeadingClass}>{t('pages.privacy.s8Title')}</h2>
         <p className="text-muted-foreground leading-relaxed">{t('pages.privacy.s8Intro')}</p>
         <ul className="list-disc list-inside text-muted-foreground mt-3 space-y-2">
@@ -152,32 +151,32 @@ export default function Privacy() {
         </p>
       </section>
 
-      <section className="glass-panel rounded-xl p-6 sm:p-8" style={{ animation: 'fade-in-up 0.6s ease-out 1.5s both' }}>
+      <section className="glass-panel rounded-xl p-6 sm:p-8 animate-fade-in-up [animation-delay:1.5s]">
         <h2 className={sectionHeadingClass}>{t('pages.privacy.s9Title')}</h2>
         <p className="text-muted-foreground leading-relaxed">{t('pages.privacy.s9Text')}</p>
       </section>
 
-      <section className="glass-panel rounded-xl p-6 sm:p-8" style={{ animation: 'fade-in-up 0.6s ease-out 1.65s both' }}>
+      <section className="glass-panel rounded-xl p-6 sm:p-8 animate-fade-in-up [animation-delay:1.65s]">
         <h2 className={sectionHeadingClass}>{t('pages.privacy.s10Title')}</h2>
         <p className="text-muted-foreground leading-relaxed">{t('pages.privacy.s10Text')}</p>
       </section>
 
-      <section className="glass-panel rounded-xl p-6 sm:p-8" style={{ animation: 'fade-in-up 0.6s ease-out 1.8s both' }}>
+      <section className="glass-panel rounded-xl p-6 sm:p-8 animate-fade-in-up [animation-delay:1.8s]">
         <h2 className={sectionHeadingClass}>{t('pages.privacy.s11Title')}</h2>
         <p className="text-muted-foreground leading-relaxed">{t('pages.privacy.s11Text', b)}</p>
       </section>
 
-      <section className="glass-panel rounded-xl p-6 sm:p-8" style={{ animation: 'fade-in-up 0.6s ease-out 1.95s both' }}>
+      <section className="glass-panel rounded-xl p-6 sm:p-8 animate-fade-in-up [animation-delay:1.95s]">
         <h2 className={sectionHeadingClass}>{t('pages.privacy.s12Title')}</h2>
         <p className="text-muted-foreground leading-relaxed">{t('pages.privacy.s12Text', b)}</p>
       </section>
 
-      <section className="glass-panel rounded-xl p-6 sm:p-8" style={{ animation: 'fade-in-up 0.6s ease-out 2.1s both' }}>
+      <section className="glass-panel rounded-xl p-6 sm:p-8 animate-fade-in-up [animation-delay:2.1s]">
         <h2 className={sectionHeadingClass}>{t('pages.privacy.s13Title')}</h2>
         <p className="text-muted-foreground leading-relaxed">{t('pages.privacy.s13Text')}</p>
       </section>
 
-      <section className="glass-panel rounded-xl p-6 sm:p-8" style={{ animation: 'fade-in-up 0.6s ease-out 2.25s both' }}>
+      <section className="glass-panel rounded-xl p-6 sm:p-8 animate-fade-in-up [animation-delay:2.25s]">
         <h2 className={sectionHeadingClass}>{t('pages.privacy.s14Title')}</h2>
         <p className="text-muted-foreground leading-relaxed">{t('pages.privacy.s14Text')}</p>
         <ul className="list-none text-muted-foreground mt-3 space-y-2">

@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { logger } from '@/lib/logger';
 import { QUERY_STALE_TIMES } from '@/lib/constants';
 import { useSubscription } from '@/hooks/useSubscription';
+import { profileKeys } from '@/lib/query-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -53,16 +54,6 @@ export interface ProfileActions {
   deleteAccount: (confirmation: string) => Promise<DeleteAccountResult>;
   sendWeeklyDigest: () => Promise<void>;
 }
-
-// ---------------------------------------------------------------------------
-// Query keys
-// ---------------------------------------------------------------------------
-
-const profileKeys = {
-  all: ['profile'] as const,
-  detail: (userId: string) => [...profileKeys.all, userId] as const,
-  payments: (userId: string) => ['payment-history', userId] as const,
-};
 
 // ---------------------------------------------------------------------------
 // Hook
@@ -172,7 +163,7 @@ export function useProfile(): ProfileState & ProfileActions {
       toast.info(t('toasts.profile.checkoutCanceled'));
       navigate('/profile', { replace: true });
     }
-  }, [searchParams, navigate, refreshSubscription]);
+  }, [searchParams, navigate, refreshSubscription, t]);
 
   // ---- Mutation ----
   const saveMutation = useMutation({

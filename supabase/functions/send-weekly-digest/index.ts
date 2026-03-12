@@ -4,27 +4,30 @@
  * Sends weekly usage digest emails to all active users.
  * Called via pg_cron + pg_net every Monday at 10:00 UTC.
  *
- * Security: Validates Bearer token against CRON_SECRET env var.
- * The secret is stored in Supabase Vault (for the SQL caller) and
- * as a Supabase secret (for this edge function).
+ * Security: Validates Bearer token against SUPABASE_SERVICE_ROLE_KEY.
+ * The SQL trigger function (trigger_weekly_digest) reads the service role key
+ * from vault.decrypted_secrets and passes it as the Authorization header.
+ * This requires no additional secret management beyond what Supabase already provides.
  */
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { logger } from "../_shared/logger.ts";
 import { sendEmail, weeklyDigestEmail } from "../_shared/email.ts";
 
-const CRON_SECRET = Deno.env.get("CRON_SECRET") || "";
+const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 
 Deno.serve(async (req: Request) => {
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
   }
 
-  // Verify cron secret — the SQL function reads it from Vault and passes as Bearer token
+  // Verify the caller is the internal pg_cron job.
+  // The SQL trigger reads the service_role_key from Vault and passes it as
+  // a Bearer token. Random external callers won't have this key.
   const authHeader = req.headers.get("authorization") || "";
-  const token = authHeader.replace("Bearer ", "");
-  if (!CRON_SECRET || token !== CRON_SECRET) {
-    logger.error("send-weekly-digest: unauthorized (invalid CRON_SECRET)");
+  const token = authHeader.replace("Bearer ", "").trim();
+  if (!SERVICE_ROLE_KEY || token !== SERVICE_ROLE_KEY) {
+    logger.error("send-weekly-digest: unauthorized");
     return new Response("Unauthorized", { status: 401 });
   }
 

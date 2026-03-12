@@ -12,6 +12,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { HelpButton } from '@/components/HelpButton';
 import * as profiles from '@/data/profiles';
 import { QUERY_STALE_TIMES } from '@/lib/constants';
+import { profileKeys } from '@/lib/query-keys';
 import {
   LayoutDashboard,
   FileText,
@@ -100,7 +101,7 @@ export default function AppLayout() {
   // Fetch avatar from profiles table (Supabase Storage) — same source as Profile page.
   // Falls back to Google OAuth avatar_url from user_metadata.
   const { data: profile } = useQuery({
-    queryKey: ['profile', user?.id],
+    queryKey: profileKeys.detail(user?.id || ''),
     queryFn: () => profiles.getByUserId(user!.id),
     enabled: !!user?.id,
     staleTime: QUERY_STALE_TIMES.MEDIUM,

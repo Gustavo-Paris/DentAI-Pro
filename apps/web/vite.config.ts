@@ -32,6 +32,8 @@ export default defineConfig(() => ({
         clientsClaim: true,
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
         globIgnores: ['**/vendor-heic-*.js', '**/vendor-pdf-*.js', '**/vendor-recharts-*.js'],
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/assets\//],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com/,

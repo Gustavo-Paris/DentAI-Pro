@@ -44,11 +44,13 @@ export default function CookieConsent() {
   return (
     <div
       role="dialog"
+      aria-modal="true"
       aria-label={t('components.cookieConsent.ariaLabel')}
+      aria-describedby="cookie-consent-description"
       className="fixed bottom-0 inset-x-0 z-[60] p-4 sm:p-6"
     >
       <div className="mx-auto max-w-3xl rounded-xl border border-border bg-card p-4 sm:p-6 shadow-lg flex flex-col sm:flex-row items-start sm:items-center gap-4">
-        <p className="text-sm text-card-foreground flex-1">
+        <p id="cookie-consent-description" className="text-sm text-card-foreground flex-1">
           {t('components.cookieConsent.message')}{' '}
           <a href="/privacy" className="underline text-primary">
             {t('components.cookieConsent.privacyLink')}

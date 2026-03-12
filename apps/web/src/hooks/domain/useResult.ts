@@ -13,6 +13,7 @@ import { SIGNED_URL_EXPIRY_SECONDS, QUERY_STALE_TIMES, QUERY_GC_TIMES } from '@/
 import type { TreatmentStyle } from '@/lib/treatment-config';
 import { fetchImageAsBase64 } from '@/lib/imageUtils';
 import { computeProtocol } from './protocolComputed';
+import { resultKeys, profileKeys } from '@/lib/query-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -97,15 +98,6 @@ interface PhotoUrls {
 export type { TreatmentStyle } from '@/lib/treatment-config';
 
 // ---------------------------------------------------------------------------
-// Query keys
-// ---------------------------------------------------------------------------
-
-const resultKeys = {
-  detail: (id: string) => ['result', id] as const,
-  dentistProfile: (userId: string) => ['profile', userId] as const,
-};
-
-// ---------------------------------------------------------------------------
 // Hook
 // ---------------------------------------------------------------------------
 
@@ -136,7 +128,7 @@ export function useResult() {
   });
 
   const { data: dentistProfile } = useQuery({
-    queryKey: resultKeys.dentistProfile(user?.id || ''),
+    queryKey: profileKeys.detail(user?.id || ''),
     queryFn: async () => {
       if (!user) throw new Error('User not authenticated');
       return profiles.getFullByUserId(user.id) as Promise<DentistProfile | null>;
@@ -146,7 +138,7 @@ export function useResult() {
   });
 
   const { data: photoUrls = { frontal: null, angle45: null, face: null } } = useQuery({
-    queryKey: ['result-photos', id],
+    queryKey: resultKeys.photos(id),
     queryFn: async () => {
       if (!evaluation) return { frontal: null, angle45: null, face: null };
       const urls: PhotoUrls = { frontal: null, angle45: null, face: null };
@@ -169,7 +161,7 @@ export function useResult() {
   });
 
   const { data: dsdSimulationUrl = null } = useQuery({
-    queryKey: ['result-dsd-url', id],
+    queryKey: resultKeys.dsdUrl(id),
     queryFn: async () => {
       if (!evaluation?.dsd_simulation_url) return null;
       return storage.getSignedDSDUrl(evaluation.dsd_simulation_url, SIGNED_URL_EXPIRY_SECONDS);
@@ -180,7 +172,7 @@ export function useResult() {
 
   // Load signed URLs for all simulation layers
   const { data: dsdLayerUrls = {} } = useQuery({
-    queryKey: ['result-dsd-layers', id],
+    queryKey: resultKeys.dsdLayers(id),
     queryFn: async () => {
       if (!evaluation?.dsd_simulation_layers?.length) return {};
       const urls: Record<string, string> = {};

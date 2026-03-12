@@ -108,6 +108,8 @@ export function AnalyzingStep({
             <img
               src={imageBase64}
               alt={t('components.wizard.analyzing.photoSent')}
+              width={192}
+              height={192}
               className="w-48 h-48 object-cover rounded-xl opacity-75 ring-1 ring-border"
             />
           </div>
@@ -180,7 +182,9 @@ export function AnalyzingStep({
             <img
               src={imageBase64}
               alt={t('components.wizard.analyzing.photoAnalyzing')}
-              className="w-full object-cover rounded-xl"
+              width={400}
+              height={300}
+              className="w-full h-auto object-cover rounded-xl"
             />
           </div>
         )}
@@ -229,13 +233,13 @@ export function AnalyzingStep({
                     ? 'text-sm text-muted-foreground line-through decoration-muted-foreground/30'
                     : isActive
                       ? 'text-sm text-foreground font-medium'
-                      : 'text-sm text-muted-foreground/40'
+                      : 'text-sm text-muted-foreground/70'
                 }
               >
                 {step.label.replace('...', '')}
               </span>
               {isActive && eta > 0 && (
-                <span className="text-xs text-muted-foreground/60 ml-auto tabular-nums">
+                <span className="text-xs text-muted-foreground/70 ml-auto tabular-nums">
                   ~{eta}s
                 </span>
               )}

@@ -195,7 +195,7 @@ export function createRateLimitResponse(
     JSON.stringify({
       error: "Rate limit exceeded",
       code: "RATE_LIMITED",
-      message: "Você excedeu o limite de requisições. Tente novamente mais tarde.",
+      message: "Rate limit exceeded. Please try again later.",
       retryAfter: result.retryAfter,
       remaining: result.remaining,
     }),

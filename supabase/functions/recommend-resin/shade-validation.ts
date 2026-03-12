@@ -25,7 +25,7 @@ interface LayerCountContext {
 }
 
 // Anterior teeth: 13-23 (upper), 33-43 (lower) in FDI notation
-function isAnteriorTooth(tooth: string): boolean {
+export function isAnteriorTooth(tooth: string): boolean {
   if (tooth.length !== 2) return false;
   const quadrant = parseInt(tooth[0], 10);
   const position = parseInt(tooth[1], 10);
@@ -82,96 +82,46 @@ export function validateMinimumLayerCount(layers: unknown[], context: LayerCount
   return null;
 }
 
-/**
- * Validates and fixes protocol layers against the resin_catalog.
- * Mutates recommendation.protocol.layers, recommendation.protocol.checklist,
- * and recommendation.protocol.alerts in place.
- */
-export async function validateAndFixProtocolLayers({
-  recommendation,
-  aestheticGoals,
-  supabase,
-  tooth,
-  cavityClass,
-  restorationSize,
-}: ShadeValidationParams): Promise<void> {
-  if (!recommendation.protocol?.layers || !Array.isArray(recommendation.protocol.layers)) {
-    return;
-  }
+// ---------------------------------------------------------------------------
+// Shared types for sub-functions
+// ---------------------------------------------------------------------------
 
-  const validatedLayers = [];
-  const validationAlerts: string[] = [];
-  const shadeReplacements: Record<string, string> = {}; // Track all shade corrections for checklist sync
-  const brandReplacements: Record<string, string> = {}; // Track product-line changes for checklist sync
+type CatalogRow = { shade: string; type: string; product_line: string };
+
+/** The non-optional protocol object extracted from RecommendResinResponseParsed. */
+// deno-lint-ignore no-explicit-any
+type Protocol = NonNullable<RecommendResinResponseParsed["protocol"]> & { [key: string]: any };
+
+interface ValidationState {
+  catalogRows: CatalogRow[];
+  shadeReplacements: Record<string, string>;
+  brandReplacements: Record<string, string>;
+  validationAlerts: string[];
+}
+
+// ---------------------------------------------------------------------------
+// Sub-function 1: validateShades
+// ---------------------------------------------------------------------------
+
+/**
+ * Validates each layer's shade against the resin catalog and applies
+ * enforcement rules (cristas, aumento incisal, dentina/corpo, Z350 BL, enamel).
+ * Mutates layers in-place; accumulates replacements and alerts in `state`.
+ */
+// deno-lint-ignore no-explicit-any
+function validateShades(
+  // deno-lint-ignore no-explicit-any
+  layers: any[],
+  wantsWhitening: boolean,
+  state: ValidationState,
+): { validatedLayers: typeof layers; productLineWithoutBL: string | null } {
+  const { catalogRows, shadeReplacements, brandReplacements, validationAlerts } = state;
 
   // Normalize shade: strip parenthetical descriptions AI sometimes adds, e.g. "MW (Milky White)" → "MW"
   function normalizeShade(shade: string): string {
     return shade.replace(/\s*\(.*?\)\s*$/, '').trim();
   }
 
-  // Check if patient requested whitening (BL shades)
-  const goalsLower = aestheticGoals?.toLowerCase() ?? '';
-  const wantsWhitening = goalsLower.includes('hollywood') ||
-                         goalsLower.includes('bl1') ||
-                         goalsLower.includes('bl2') ||
-                         goalsLower.includes('bl3') ||
-                         goalsLower.includes('intenso') ||
-                         goalsLower.includes('notável') ||
-                         goalsLower.includes('clareamento') ||
-                         goalsLower.includes('branqueamento') ||
-                         goalsLower.includes('mais claro') ||
-                         goalsLower.includes('mais branco') ||
-                         goalsLower.includes('white');
-
-  // Track if any layer uses a product line without BL shades
-  let productLineWithoutBL: string | null = null;
-
-  // ── Batch prefetch: single query replaces N+1 per-layer lookups ──
-  const productLines = new Set<string>();
-  for (const layer of recommendation.protocol.layers) {
-    // Pre-normalize shade values before any lookups
-    if (layer.shade) layer.shade = normalizeShade(layer.shade);
-    if (layer.shade === 'WT' && layer.resin_brand?.includes('Z350')) {
-      shadeReplacements['WT'] = 'CT';
-      layer.shade = 'CT';
-    }
-    const brandMatch = layer.resin_brand?.match(/^(.+?)\s*-\s*(.+)$/);
-    const pl = brandMatch ? brandMatch[2].trim() : layer.resin_brand;
-    if (pl) productLines.add(pl);
-  }
-  // Always include brands referenced by enforcement rules (cristas, aumento incisal, enamel final)
-  productLines.add('Harmonize');
-  productLines.add('Empress Direct');
-  productLines.add('FORMA');
-  productLines.add('Vittra APS');
-  productLines.add('Estelite Omega');
-  productLines.add('Palfique');
-
-  // Single DB call: fetch all catalog rows for every product line mentioned
-  const catalogRows: Array<{ shade: string; type: string; product_line: string }> = [];
-  if (productLines.size > 0) {
-    // ilike OR chain: product_line ilike %line1% OR ilike %line2% ...
-    const orFilter = Array.from(productLines)
-      .map((pl) => `product_line.ilike.%${pl}%`)
-      .join(",");
-    const { data: rows } = await supabase
-      .from("resin_catalog")
-      .select("shade, type, product_line")
-      .or(orFilter);
-    if (rows) {
-      for (const row of rows) {
-        const parsed = ResinCatalogRowSchema.safeParse(row);
-        if (parsed.success) {
-          catalogRows.push(parsed.data);
-        } else {
-          logger.warn(`Invalid resin catalog row skipped: ${JSON.stringify(row)}`);
-        }
-      }
-    }
-  }
-
-  // Build in-memory indexes for O(1) lookups
-  // Index: (product_line_keyword, shade) → catalog row
   function matchesLine(catalogLine: string, keyword: string): boolean {
     return catalogLine.toLowerCase().includes(keyword.toLowerCase());
   }
@@ -179,7 +129,10 @@ export async function validateAndFixProtocolLayers({
     return catalogRows.filter((r) => matchesLine(r.product_line, keyword));
   }
 
-  for (const layer of recommendation.protocol.layers) {
+  const validatedLayers = [];
+  let productLineWithoutBL: string | null = null;
+
+  for (const layer of layers) {
     // Skip catalog re-check for injected layers (e.g., Efeitos Incisais with synthetic shades)
     if (layer._injected) {
       validatedLayers.push(layer);
@@ -526,6 +479,9 @@ export async function validateAndFixProtocolLayers({
       const enforcedLineRows = enforcedProductLine !== productLine ? getRowsForLine(enforcedProductLine || '') : lineRows;
       const enforcedCatalogMatch = enforcedLineRows.find((r) => r.shade === layer.shade);
 
+      // Suppress unused variable warning for catalogMatch (used implicitly via the enforcement rules above)
+      void catalogMatch;
+
       if (!enforcedCatalogMatch) {
         // Shade doesn't exist - find appropriate alternative from cached rows
         let typeFilter = '';
@@ -561,6 +517,162 @@ export async function validateAndFixProtocolLayers({
     validatedLayers.push(layer);
   }
 
+  return { validatedLayers, productLineWithoutBL };
+}
+
+// ---------------------------------------------------------------------------
+// Sub-function 2: enforceLayerCount
+// ---------------------------------------------------------------------------
+
+/**
+ * Enforces minimum layer counts for anterior aesthetic cases by injecting
+ * Cristas Proximais when needed. Mutates protocol.layers in-place
+ * and appends to validationAlerts.
+ */
+function enforceLayerCount(
+  protocol: Protocol,
+  tooth: string | undefined,
+  cavityClass: string | undefined,
+  restorationSize: string | undefined,
+  validationAlerts: string[],
+): void {
+  if (!tooth || !cavityClass) return;
+
+  const anterior = isAnteriorTooth(tooth);
+  const classLower = cavityClass.toLowerCase();
+  const isAestheticCase = AESTHETIC_CLASSES.some(c => classLower.includes(c));
+
+  if (anterior && isAestheticCase) {
+    const isDiastema = classLower.includes('diastema');
+    const sizeNorm = restorationSize?.toLowerCase() || '';
+    const isSmallDiastema = isDiastema && sizeNorm.includes('pequen');
+    const isMediumDiastema = isDiastema && (sizeNorm.includes('médi') || sizeNorm.includes('medi'));
+    const minRequired = isSmallDiastema ? 2 : isMediumDiastema ? 3 : 4;
+    const currentCount = protocol.layers.length;
+
+    if (currentCount < minRequired && currentCount >= 1) {
+      logger.warn(`Layer count enforcement: ${currentCount} layers < ${minRequired} minimum for ${tooth} (${cavityClass}, size=${restorationSize}). Injecting missing layers.`);
+
+      // Determine what layers exist
+      const hasCristas = protocol.layers.some((l: {name?: string}) => {
+        const n = (l.name || '').toLowerCase();
+        return n.includes('crista') || n.includes('proxima');
+      });
+
+      // Inject Cristas Proximais if missing and needed (for medium+ diastema with explicit size classification)
+      if (!hasCristas && isDiastema && !isSmallDiastema && sizeNorm.length > 0) {
+        const cristasLayer = {
+          order: 0,
+          name: 'Cristas Proximais',
+          resin_brand: 'Kerr - Harmonize',
+          shade: 'XLE',
+          thickness: '0.3–0.5mm',
+          purpose: 'Reproduzir cristas marginais e pontos de contato proximais com resina de alta translucidez',
+          technique: 'Aplicar incremento de resina Harmonize XLE nas cristas marginais. Adaptar com espátula de inserção. Fotopolimerizar 20s.',
+          _injected: true,
+        };
+        // Insert after corpo, before esmalte
+        const esmalteIdx = protocol.layers.findIndex((l: {name?: string}) => {
+          const n = (l.name || '').toLowerCase();
+          return n.includes('esmalte') && (n.includes('vestibular') || n.includes('final'));
+        });
+        const insertIdx = esmalteIdx >= 0 ? esmalteIdx : protocol.layers.length;
+        protocol.layers.splice(insertIdx, 0, cristasLayer);
+        validationAlerts.push('Cristas Proximais injetadas: camada obrigatória para diastema ≥1mm (estratificação mínima de 3 camadas).');
+        logger.warn('Layer injection: Cristas Proximais added for medium+ diastema');
+      }
+
+      // Re-number all layers after injection
+      for (let i = 0; i < protocol.layers.length; i++) {
+        protocol.layers[i].order = i + 1;
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Sub-function 3: injectMissingLayers
+// ---------------------------------------------------------------------------
+
+/**
+ * Ensures anterior aesthetic protocols include the mandatory Efeitos Incisais layer.
+ * Injects it before the final enamel layer if missing.
+ * Mutates protocol.layers in-place and appends to validationAlerts.
+ */
+function injectMissingLayers(
+  protocol: Protocol,
+  tooth: string | undefined,
+  cavityClass: string | undefined,
+  validationAlerts: string[],
+): void {
+  if (!tooth || !cavityClass) return;
+
+  const anterior = isAnteriorTooth(tooth);
+  const classLower = cavityClass.toLowerCase();
+  const isAestheticCase = AESTHETIC_CLASSES.some(c => classLower.includes(c));
+
+  if (anterior && isAestheticCase && protocol.layers.length >= 3) {
+    const hasEfeitos = protocol.layers.some(
+      (l: { name?: string }) => {
+        const n = (l.name || '').toLowerCase();
+        return n.includes('efeito') || n.includes('corante') || n.includes('caracteriza');
+      }
+    );
+    if (!hasEfeitos) {
+      // Find where Esmalte Vestibular Final is and insert Efeitos before it
+      const esmalteIdx = protocol.layers.findIndex(
+        (l: { name?: string }) => {
+          const n = (l.name || '').toLowerCase();
+          return (n.includes('esmalte') && (n.includes('vestibular') || n.includes('final')));
+        }
+      );
+      const insertIdx = esmalteIdx >= 0 ? esmalteIdx : protocol.layers.length;
+      const efeitosLayer = {
+        order: insertIdx + 1,
+        name: 'Efeitos Incisais',
+        resin_brand: 'Ivoclar - Empress Direct Color',
+        shade: 'White/Amber/Blue',
+        thickness: '0.1mm',
+        purpose: 'Reproduzir efeitos ópticos naturais: halo opaco incisal, linhas de craze, translucidez adicional, micro-pontos de caracterização',
+        technique: 'Aplicar corante branco para halo opaco na borda incisal. Corante âmbar para linhas de craze. Corante azul (blue) para translucidez adicional e efeito de profundidade nas bordas incisais. Pincel fino antes da camada de esmalte.',
+        optional: true,
+        _injected: true,
+      };
+      protocol.layers.splice(insertIdx, 0, efeitosLayer);
+      // Re-number all layers
+      for (let i = 0; i < protocol.layers.length; i++) {
+        protocol.layers[i].order = i + 1;
+      }
+      validationAlerts.push(
+        'Efeitos Incisais adicionados ao protocolo — obrigatório para estético anterior. Camada marcada como opcional (decisão do dentista).'
+      );
+      logger.warn('Efeitos Incisais layer injected: anterior aesthetic protocol was missing corantes');
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Sub-function 4: reorderLayers (apply text fixes and deduplicate alerts)
+// ---------------------------------------------------------------------------
+
+/**
+ * Applies all accumulated shade/brand replacements to text fields (checklist,
+ * technique, purpose, alternative, justification) so they reference the final
+ * validated shades, not intermediate values. Also deduplicates and appends
+ * validation alerts to the protocol.
+ *
+ * Note: also receives `recommendation` to patch `recommendation.justification`
+ * (a top-level field, not nested under protocol).
+ */
+function reorderLayers(
+  protocol: Protocol,
+  recommendation: RecommendResinResponseParsed,
+  state: ValidationState,
+  wantsWhitening: boolean,
+  productLineWithoutBL: string | null,
+): void {
+  const { shadeReplacements, brandReplacements, validationAlerts } = state;
+
   // Add BL availability alert if needed
   if (wantsWhitening && productLineWithoutBL) {
     validationAlerts.push(
@@ -569,109 +681,6 @@ export async function validateAndFixProtocolLayers({
     logger.warn(`BL shades not available in ${productLineWithoutBL}, patient wants whitening`);
   }
 
-  // Update layers with validated versions
-  recommendation.protocol.layers = validatedLayers;
-
-  // Layer count enforcement: inject missing layers when below minimum for anterior aesthetic cases
-  if (tooth && cavityClass) {
-    const anterior = isAnteriorTooth(tooth);
-    const classLower = cavityClass.toLowerCase();
-    const isAestheticCase = AESTHETIC_CLASSES.some(c => classLower.includes(c));
-
-    if (anterior && isAestheticCase) {
-      const isDiastema = classLower.includes('diastema');
-      const sizeNorm = restorationSize?.toLowerCase() || '';
-      const isSmallDiastema = isDiastema && sizeNorm.includes('pequen');
-      const isMediumDiastema = isDiastema && (sizeNorm.includes('médi') || sizeNorm.includes('medi'));
-      const minRequired = isSmallDiastema ? 2 : isMediumDiastema ? 3 : 4;
-      const currentCount = recommendation.protocol.layers.length;
-
-      if (currentCount < minRequired && currentCount >= 1) {
-        logger.warn(`Layer count enforcement: ${currentCount} layers < ${minRequired} minimum for ${tooth} (${cavityClass}, size=${restorationSize}). Injecting missing layers.`);
-
-        // Determine what layers exist
-        const hasCristas = recommendation.protocol.layers.some((l: {name?: string}) => {
-          const n = (l.name || '').toLowerCase();
-          return n.includes('crista') || n.includes('proxima');
-        });
-
-        // Inject Cristas Proximais if missing and needed (for medium+ diastema and full stratification)
-        if (!hasCristas && minRequired >= 3) {
-          const cristasLayer = {
-            order: 0,
-            name: 'Cristas Proximais',
-            resin_brand: 'Kerr - Harmonize',
-            shade: 'XLE',
-            thickness: '0.3–0.5mm',
-            purpose: 'Reproduzir cristas marginais e pontos de contato proximais com resina de alta translucidez',
-            technique: 'Aplicar incremento de resina Harmonize XLE nas cristas marginais. Adaptar com espátula de inserção. Fotopolimerizar 20s.',
-            _injected: true,
-          };
-          // Insert after corpo, before esmalte
-          const esmalteIdx = recommendation.protocol.layers.findIndex((l: {name?: string}) => {
-            const n = (l.name || '').toLowerCase();
-            return n.includes('esmalte') && (n.includes('vestibular') || n.includes('final'));
-          });
-          const insertIdx = esmalteIdx >= 0 ? esmalteIdx : recommendation.protocol.layers.length;
-          recommendation.protocol.layers.splice(insertIdx, 0, cristasLayer);
-          validationAlerts.push('Cristas Proximais injetadas: camada obrigatória para diastema ≥1mm (estratificação mínima de 3 camadas).');
-          logger.warn('Layer injection: Cristas Proximais added for medium+ diastema');
-        }
-
-        // Re-number all layers after injection
-        for (let i = 0; i < recommendation.protocol.layers.length; i++) {
-          recommendation.protocol.layers[i].order = i + 1;
-        }
-      }
-    }
-  }
-
-  // Enforce: anterior aesthetic protocols MUST include Efeitos Incisais layer
-  if (tooth && cavityClass) {
-    const anterior = isAnteriorTooth(tooth);
-    const classLower = cavityClass.toLowerCase();
-    const isAestheticCase = AESTHETIC_CLASSES.some(c => classLower.includes(c));
-    if (anterior && isAestheticCase && recommendation.protocol.layers.length >= 3) {
-      const hasEfeitos = recommendation.protocol.layers.some(
-        (l: { name?: string }) => {
-          const n = (l.name || '').toLowerCase();
-          return n.includes('efeito') || n.includes('corante') || n.includes('caracteriza');
-        }
-      );
-      if (!hasEfeitos) {
-        // Find where Esmalte Vestibular Final is and insert Efeitos before it
-        const esmalteIdx = recommendation.protocol.layers.findIndex(
-          (l: { name?: string }) => {
-            const n = (l.name || '').toLowerCase();
-            return (n.includes('esmalte') && (n.includes('vestibular') || n.includes('final')));
-          }
-        );
-        const insertIdx = esmalteIdx >= 0 ? esmalteIdx : recommendation.protocol.layers.length;
-        const efeitosLayer = {
-          order: insertIdx + 1,
-          name: 'Efeitos Incisais',
-          resin_brand: 'Ivoclar - Empress Direct Color',
-          shade: 'White/Amber/Blue',
-          thickness: '0.1mm',
-          purpose: 'Reproduzir efeitos ópticos naturais: halo opaco incisal, linhas de craze, translucidez adicional, micro-pontos de caracterização',
-          technique: 'Aplicar corante branco para halo opaco na borda incisal. Corante âmbar para linhas de craze. Corante azul (blue) para translucidez adicional e efeito de profundidade nas bordas incisais. Pincel fino antes da camada de esmalte.',
-          optional: true,
-          _injected: true,
-        };
-        recommendation.protocol.layers.splice(insertIdx, 0, efeitosLayer);
-        // Re-number all layers
-        for (let i = 0; i < recommendation.protocol.layers.length; i++) {
-          recommendation.protocol.layers[i].order = i + 1;
-        }
-        validationAlerts.push(
-          'Efeitos Incisais adicionados ao protocolo — obrigatório para estético anterior. Camada marcada como opcional (decisão do dentista).'
-        );
-        logger.warn('Efeitos Incisais layer injected: anterior aesthetic protocol was missing corantes');
-      }
-    }
-  }
-
-  // Apply ALL shade and brand replacements to text fields so they match validated layers
   const hasShadeReplacements = Object.keys(shadeReplacements).length > 0;
   const hasBrandReplacements = Object.keys(brandReplacements).length > 0;
 
@@ -699,14 +708,14 @@ export async function validateAndFixProtocolLayers({
     }
 
     // 1. Checklist (passo a passo)
-    if (recommendation.protocol.checklist) {
-      recommendation.protocol.checklist = recommendation.protocol.checklist.map(
+    if (protocol.checklist) {
+      protocol.checklist = protocol.checklist.map(
         (item: string) => typeof item === 'string' ? applyTextFixes(item) : item
       );
     }
 
     // 2. Per-layer technique and purpose text
-    for (const layer of recommendation.protocol.layers) {
+    for (const layer of protocol.layers) {
       if (typeof layer.technique === 'string') {
         layer.technique = applyTextFixes(layer.technique);
       }
@@ -716,8 +725,8 @@ export async function validateAndFixProtocolLayers({
     }
 
     // 3. Alternative protocol fields
-    if (recommendation.protocol.alternative) {
-      const alt = recommendation.protocol.alternative;
+    if (protocol.alternative) {
+      const alt = protocol.alternative;
       if (typeof alt.shade === 'string') {
         alt.shade = applyTextFixes(alt.shade);
       }
@@ -729,7 +738,7 @@ export async function validateAndFixProtocolLayers({
       }
     }
 
-    // 4. Justification text
+    // 4. Justification text (top-level field on recommendation)
     if (typeof recommendation.justification === 'string') {
       recommendation.justification = applyTextFixes(recommendation.justification);
     }
@@ -737,7 +746,7 @@ export async function validateAndFixProtocolLayers({
 
   // Add validation alerts to protocol alerts (with deduplication)
   if (validationAlerts.length > 0) {
-    const existingAlerts: string[] = recommendation.protocol.alerts || [];
+    const existingAlerts: string[] = protocol.alerts || [];
     // Filter out validation alerts that duplicate AI-generated ones
     const newAlerts = validationAlerts.filter((va: string) => {
       const vaLower = va.toLowerCase();
@@ -759,23 +768,129 @@ export async function validateAndFixProtocolLayers({
       }
     }
 
-    recommendation.protocol.alerts = [...existingAlerts, ...newAlerts];
+    protocol.alerts = [...existingAlerts, ...newAlerts];
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Main orchestrator: validateAndFixProtocolLayers
+// ---------------------------------------------------------------------------
+
+/**
+ * Validates and fixes protocol layers against the resin_catalog.
+ * Mutates recommendation.protocol.layers, recommendation.protocol.checklist,
+ * and recommendation.protocol.alerts in place.
+ */
+export async function validateAndFixProtocolLayers({
+  recommendation,
+  aestheticGoals,
+  supabase,
+  tooth,
+  cavityClass,
+  restorationSize,
+}: ShadeValidationParams): Promise<void> {
+  if (!recommendation.protocol?.layers || !Array.isArray(recommendation.protocol.layers)) {
+    return;
   }
 
+  const state: ValidationState = {
+    catalogRows: [],
+    shadeReplacements: {},
+    brandReplacements: {},
+    validationAlerts: [],
+  };
+
+  // Check if patient requested whitening (BL shades)
+  const goalsLower = aestheticGoals?.toLowerCase() ?? '';
+  const wantsWhitening = goalsLower.includes('hollywood') ||
+                         goalsLower.includes('bl1') ||
+                         goalsLower.includes('bl2') ||
+                         goalsLower.includes('bl3') ||
+                         goalsLower.includes('intenso') ||
+                         goalsLower.includes('notável') ||
+                         goalsLower.includes('clareamento') ||
+                         goalsLower.includes('branqueamento') ||
+                         goalsLower.includes('mais claro') ||
+                         goalsLower.includes('mais branco') ||
+                         goalsLower.includes('white');
+
+  // ── Batch prefetch: single query replaces N+1 per-layer lookups ──
+  const productLines = new Set<string>();
+  for (const layer of recommendation.protocol.layers) {
+    // Pre-normalize shade values before any lookups
+    if (layer.shade) layer.shade = layer.shade.replace(/\s*\(.*?\)\s*$/, '').trim();
+    if (layer.shade === 'WT' && layer.resin_brand?.includes('Z350')) {
+      state.shadeReplacements['WT'] = 'CT';
+      layer.shade = 'CT';
+    }
+    const brandMatch = layer.resin_brand?.match(/^(.+?)\s*-\s*(.+)$/);
+    const pl = brandMatch ? brandMatch[2].trim() : layer.resin_brand;
+    if (pl) productLines.add(pl);
+  }
+  // Always include brands referenced by enforcement rules (cristas, aumento incisal, enamel final)
+  productLines.add('Harmonize');
+  productLines.add('Empress Direct');
+  productLines.add('FORMA');
+  productLines.add('Vittra APS');
+  productLines.add('Estelite Omega');
+  productLines.add('Palfique');
+
+  // Single DB call: fetch all catalog rows for every product line mentioned
+  if (productLines.size > 0) {
+    // ilike OR chain: product_line ilike %line1% OR ilike %line2% ...
+    const orFilter = Array.from(productLines)
+      .map((pl) => `product_line.ilike.%${pl}%`)
+      .join(",");
+    const { data: rows } = await supabase
+      .from("resin_catalog")
+      .select("shade, type, product_line")
+      .or(orFilter);
+    if (rows) {
+      for (const row of rows) {
+        const parsed = ResinCatalogRowSchema.safeParse(row);
+        if (parsed.success) {
+          state.catalogRows.push(parsed.data);
+        } else {
+          logger.warn(`Invalid resin catalog row skipped: ${JSON.stringify(row)}`);
+        }
+      }
+    }
+  }
+
+  // After the early-return guard, protocol is guaranteed to be defined.
+  const protocol = recommendation.protocol as Protocol;
+
+  // Step 1: Validate shades against catalog and apply enforcement rules
+  const { validatedLayers, productLineWithoutBL } = validateShades(
+    protocol.layers,
+    wantsWhitening,
+    state,
+  );
+  protocol.layers = validatedLayers;
+
+  // Step 2: Enforce minimum layer counts (inject Cristas Proximais if needed)
+  enforceLayerCount(protocol, tooth, cavityClass, restorationSize, state.validationAlerts);
+
+  // Step 3: Inject missing mandatory layers (Efeitos Incisais for anterior aesthetic cases)
+  injectMissingLayers(protocol, tooth, cavityClass, state.validationAlerts);
+
+  // Step 4: Apply text replacements, deduplicate alerts, and write final alerts to protocol
+  reorderLayers(protocol, recommendation, state, wantsWhitening, productLineWithoutBL);
+
   // Validate minimum layer count if clinical context is available
-  if (tooth && cavityClass && recommendation.protocol?.layers) {
+  if (tooth && cavityClass && protocol.layers) {
     const layerWarning = validateMinimumLayerCount(
-      recommendation.protocol.layers,
+      protocol.layers,
       { tooth, cavityClass, restorationSize },
     );
     if (layerWarning) {
-      recommendation.protocol.warnings = recommendation.protocol.warnings || [];
-      recommendation.protocol.warnings.push(layerWarning);
+      protocol.warnings = protocol.warnings || [];
+      protocol.warnings.push(layerWarning);
     }
   }
 
   // Clean up internal markers before returning
-  for (const layer of recommendation.protocol.layers) {
+  for (const layer of protocol.layers) {
     delete layer._injected;
   }
 }

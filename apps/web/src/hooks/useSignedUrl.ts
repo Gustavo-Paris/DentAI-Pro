@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/data';
 import { logger } from '@/lib/logger';
 import { SIGNED_URL_EXPIRY_SECONDS } from '@/lib/constants';
+import { signedUrlKey } from '@/lib/query-keys';
 
 interface ThumbnailOptions {
   width?: number;
@@ -21,26 +22,6 @@ interface UseSignedUrlResult {
   url: string | null;
   isLoading: boolean;
   error: Error | null;
-}
-
-/**
- * Build a stable query key for signed URL caching.
- * Includes thumbnail dimensions so different sizes get separate cache entries.
- */
-function signedUrlKey(
-  bucket: string,
-  path: string,
-  thumbnail?: ThumbnailOptions,
-): readonly unknown[] {
-  return [
-    'signed-url',
-    bucket,
-    path,
-    thumbnail?.width ?? 0,
-    thumbnail?.height ?? 0,
-    thumbnail?.quality ?? 0,
-    thumbnail?.resize ?? '',
-  ] as const;
 }
 
 /**

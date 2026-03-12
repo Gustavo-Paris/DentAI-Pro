@@ -34,6 +34,7 @@ export function CreditPackSection() {
             <button
               type="button"
               onClick={() => setPaymentMethod('card')}
+              aria-pressed={paymentMethod === 'card'}
               className={cn(
                 'flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
                 paymentMethod === 'card'
@@ -47,6 +48,7 @@ export function CreditPackSection() {
             <button
               type="button"
               onClick={() => setPaymentMethod('pix')}
+              aria-pressed={paymentMethod === 'pix'}
               className={cn(
                 'flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
                 paymentMethod === 'pix'

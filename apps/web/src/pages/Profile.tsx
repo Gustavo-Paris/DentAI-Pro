@@ -151,7 +151,14 @@ export default function Profile() {
                     {/* Avatar Section */}
                     <div className="flex flex-col items-center">
                       <div className="relative">
-                        <Avatar className="w-20 h-20 cursor-pointer" onClick={() => p.fileInputRef.current?.click()}>
+                        <Avatar
+                          className="w-20 h-20 cursor-pointer"
+                          role="button"
+                          tabIndex={0}
+                          aria-label={t('profile.changeAvatar')}
+                          onClick={() => p.fileInputRef.current?.click()}
+                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); p.fileInputRef.current?.click(); } }}
+                        >
                           <AvatarImage src={p.avatarPreview || undefined} alt={p.profile.full_name || 'Avatar'} />
                           <AvatarFallback className="text-xl bg-primary/10">
                             {p.isUploading ? (

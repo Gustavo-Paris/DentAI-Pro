@@ -13,16 +13,16 @@ export default function Terms() {
   const b = { brandName: BRAND_NAME };
   return (
     <LegalPageLayout title={t('pages.termsTitle')}>
-      <p className="text-sm text-muted-foreground" style={{ animation: 'fade-in-up 0.6s ease-out 0.15s both' }}>
+      <p className="text-sm text-muted-foreground animate-fade-in-up [animation-delay:0.15s]">
         {t('pages.lastUpdated')} 05/03/2026
       </p>
 
-      <section className="glass-panel rounded-xl p-6 sm:p-8" style={{ animation: 'fade-in-up 0.6s ease-out 0.3s both' }}>
+      <section className="glass-panel rounded-xl p-6 sm:p-8 animate-fade-in-up [animation-delay:0.3s]">
         <h2 className={sectionHeadingClass}>{t('pages.terms.s1Title')}</h2>
         <p className="text-muted-foreground leading-relaxed">{t('pages.terms.s1Text', b)}</p>
       </section>
 
-      <section className="glass-panel rounded-xl p-6 sm:p-8" style={{ animation: 'fade-in-up 0.6s ease-out 0.45s both' }}>
+      <section className="glass-panel rounded-xl p-6 sm:p-8 animate-fade-in-up [animation-delay:0.45s]">
         <h2 className={sectionHeadingClass}>{t('pages.terms.s2Title')}</h2>
         <p className="text-muted-foreground leading-relaxed">{t('pages.terms.s2Text', b)}</p>
         <ul className="list-disc list-inside text-muted-foreground mt-3 space-y-2">
@@ -34,7 +34,7 @@ export default function Terms() {
         <p className="text-muted-foreground mt-4 font-medium leading-relaxed">{t('pages.terms.s2Closing', b)}</p>
       </section>
 
-      <section className="glass-panel rounded-xl p-6 sm:p-8" style={{ animation: 'fade-in-up 0.6s ease-out 0.6s both' }}>
+      <section className="glass-panel rounded-xl p-6 sm:p-8 animate-fade-in-up [animation-delay:0.6s]">
         <h2 className={sectionHeadingClass}>{t('pages.terms.s3Title')}</h2>
         <div className="rounded-lg border border-warning/30 bg-warning/5 px-4 py-3 mb-4">
           <p className="text-sm font-semibold text-warning">
@@ -55,7 +55,7 @@ export default function Terms() {
         <p className="text-muted-foreground mt-3 leading-relaxed">{t('pages.terms.s3Text3')}</p>
       </section>
 
-      <section className="glass-panel rounded-xl p-6 sm:p-8" style={{ animation: 'fade-in-up 0.6s ease-out 0.75s both' }}>
+      <section className="glass-panel rounded-xl p-6 sm:p-8 animate-fade-in-up [animation-delay:0.75s]">
         <h2 className={sectionHeadingClass}>{t('pages.terms.s4Title')}</h2>
         <p className="text-muted-foreground leading-relaxed">{t('pages.terms.s4Text1', b)}</p>
         <ul className="list-disc list-inside text-muted-foreground mt-3 space-y-2">
@@ -68,7 +68,7 @@ export default function Terms() {
         <p className="text-muted-foreground mt-3 leading-relaxed">{t('pages.terms.s4Text2', b)}</p>
       </section>
 
-      <section className="glass-panel rounded-xl p-6 sm:p-8" style={{ animation: 'fade-in-up 0.6s ease-out 0.9s both' }}>
+      <section className="glass-panel rounded-xl p-6 sm:p-8 animate-fade-in-up [animation-delay:0.9s]">
         <h2 className={sectionHeadingClass}>{t('pages.terms.s5Title')}</h2>
         <p className="text-muted-foreground leading-relaxed">{t('pages.terms.s5Intro')}</p>
         <ul className="list-disc list-inside text-muted-foreground mt-3 space-y-2">
@@ -83,7 +83,7 @@ export default function Terms() {
         </ul>
       </section>
 
-      <section className="glass-panel rounded-xl p-6 sm:p-8" style={{ animation: 'fade-in-up 0.6s ease-out 1.05s both' }}>
+      <section className="glass-panel rounded-xl p-6 sm:p-8 animate-fade-in-up [animation-delay:1.05s]">
         <h2 className={sectionHeadingClass}>{t('pages.terms.s6Title')}</h2>
         <p className="text-muted-foreground leading-relaxed">{t('pages.terms.s6Text1')}</p>
         <ul className="list-disc list-inside text-muted-foreground mt-3 space-y-2">
@@ -96,32 +96,32 @@ export default function Terms() {
         </ul>
       </section>
 
-      <section className="glass-panel rounded-xl p-6 sm:p-8" style={{ animation: 'fade-in-up 0.6s ease-out 1.2s both' }}>
+      <section className="glass-panel rounded-xl p-6 sm:p-8 animate-fade-in-up [animation-delay:1.2s]">
         <h2 className={sectionHeadingClass}>{t('pages.terms.s7Title')}</h2>
         <p className="text-muted-foreground leading-relaxed">{t('pages.terms.s7Text', b)}</p>
       </section>
 
-      <section className="glass-panel rounded-xl p-6 sm:p-8" style={{ animation: 'fade-in-up 0.6s ease-out 1.35s both' }}>
+      <section className="glass-panel rounded-xl p-6 sm:p-8 animate-fade-in-up [animation-delay:1.35s]">
         <h2 className={sectionHeadingClass}>{t('pages.terms.s8Title')}</h2>
         <p className="text-muted-foreground leading-relaxed">{t('pages.terms.s8Text')}</p>
       </section>
 
-      <section className="glass-panel rounded-xl p-6 sm:p-8" style={{ animation: 'fade-in-up 0.6s ease-out 1.5s both' }}>
+      <section className="glass-panel rounded-xl p-6 sm:p-8 animate-fade-in-up [animation-delay:1.5s]">
         <h2 className={sectionHeadingClass}>{t('pages.terms.s9Title')}</h2>
         <p className="text-muted-foreground leading-relaxed">{t('pages.terms.s9Text')}</p>
       </section>
 
-      <section className="glass-panel rounded-xl p-6 sm:p-8" style={{ animation: 'fade-in-up 0.6s ease-out 1.65s both' }}>
+      <section className="glass-panel rounded-xl p-6 sm:p-8 animate-fade-in-up [animation-delay:1.65s]">
         <h2 className={sectionHeadingClass}>{t('pages.terms.s10Title')}</h2>
         <p className="text-muted-foreground leading-relaxed">{t('pages.terms.s10Text')}</p>
       </section>
 
-      <section className="glass-panel rounded-xl p-6 sm:p-8" style={{ animation: 'fade-in-up 0.6s ease-out 1.8s both' }}>
+      <section className="glass-panel rounded-xl p-6 sm:p-8 animate-fade-in-up [animation-delay:1.8s]">
         <h2 className={sectionHeadingClass}>{t('pages.terms.s11Title')}</h2>
         <p className="text-muted-foreground leading-relaxed">{t('pages.terms.s11Text')}</p>
       </section>
 
-      <section className="glass-panel rounded-xl p-6 sm:p-8" style={{ animation: 'fade-in-up 0.6s ease-out 1.95s both' }}>
+      <section className="glass-panel rounded-xl p-6 sm:p-8 animate-fade-in-up [animation-delay:1.95s]">
         <h2 className={sectionHeadingClass}>{t('pages.terms.s12Title')}</h2>
         <p className="text-muted-foreground leading-relaxed">
           {t('pages.terms.s12Text')}{' '}

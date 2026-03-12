@@ -89,7 +89,7 @@ export const EvaluationCards = memo(function EvaluationCards({
             )}
             {group.evaluations.map((evaluation) => {
               const treatmentConfig = getTreatmentConfig(evaluation.treatment_type);
-              const borderColor = treatmentConfig.variant === 'default' ? 'border-l-primary' : 'border-l-amber-500';
+              const borderColor = treatmentConfig.variant === 'default' ? 'border-l-primary' : 'border-l-amber-500 dark:border-l-amber-400';
               const isGrouped = showGroupHeader;
               return (
               <Card

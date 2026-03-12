@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { subscriptions } from '@/data';
 import { QUERY_STALE_TIMES } from '@/lib/constants';
+import { subscriptionKeys } from '@/lib/query-keys';
 
 /**
  * Fetches subscription plans for the public landing page.
@@ -9,7 +10,7 @@ import { QUERY_STALE_TIMES } from '@/lib/constants';
  */
 export function useLandingPlans() {
   const query = useQuery({
-    queryKey: ['subscription-plans'],
+    queryKey: subscriptionKeys.plans(),
     queryFn: () => subscriptions.getPlans(),
     staleTime: QUERY_STALE_TIMES.VERY_LONG,
     retry: 1,

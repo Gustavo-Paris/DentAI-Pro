@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { QUERY_STALE_TIMES } from '@/lib/constants';
 import { logger } from '@/lib/logger';
+import { inventoryKeys } from '@/lib/query-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -51,7 +52,7 @@ export function useInventoryManagement() {
 
   // --- Inventory data ---
   const inventoryQuery = useQuery({
-    queryKey: ['inventory', 'all', user?.id],
+    queryKey: inventoryKeys.allItems(user?.id),
     queryFn: async () => {
       if (!user) throw new Error('User not authenticated');
       const { items, count } = await inventory.list({
@@ -66,7 +67,7 @@ export function useInventoryManagement() {
   });
 
   const catalogQuery = useQuery({
-    queryKey: ['inventory', 'catalog'],
+    queryKey: inventoryKeys.catalog(),
     queryFn: () => inventory.getCatalog(),
     staleTime: QUERY_STALE_TIMES.EXTENDED,
   });
@@ -81,14 +82,14 @@ export function useInventoryManagement() {
       await inventory.addItems(user.id, resinIds);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      queryClient.invalidateQueries({ queryKey: inventoryKeys.all });
     },
   });
 
   const removeMutation = useMutation({
     mutationFn: (inventoryItemId: string) => inventory.removeItem(inventoryItemId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      queryClient.invalidateQueries({ queryKey: inventoryKeys.all });
     },
   });
 
@@ -206,7 +207,7 @@ export function useInventoryManagement() {
       logger.error('Failed to add resins to inventory:', error);
       toast.error(t('toasts.inventory.addError'));
     }
-  }, [selectedResins, addMutation]);
+  }, [selectedResins, addMutation, t]);
 
   const removeFromInventory = useCallback(
     async (inventoryItemId: string) => {
@@ -221,7 +222,7 @@ export function useInventoryManagement() {
         setRemovingResin(null);
       }
     },
-    [removeMutation],
+    [removeMutation, t],
   );
 
   const getInventoryItemId = useCallback(
@@ -256,7 +257,7 @@ export function useInventoryManagement() {
     link.click();
     URL.revokeObjectURL(url);
     toast.success(t('toasts.inventory.csvExported'));
-  }, [allItems]);
+  }, [allItems, t]);
 
   const handleCSVFile = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -326,7 +327,7 @@ export function useInventoryManagement() {
       toast.error(t('toasts.inventory.importError'));
     }
     setImporting(false);
-  }, [csvPreview, addMutation]);
+  }, [csvPreview, addMutation, t]);
 
   const closeImportDialog = useCallback(() => {
     setImportDialogOpen(false);

@@ -1,11 +1,39 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, cleanup } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
-// Mock @/lib/i18n directly — prevents loading i18next/react-i18next chain
+// Mock @/lib/i18n before any imports that may trigger the real i18next init.
+// This prevents the i18next.init() call (which uses react-i18next's
+// initReactI18next plugin) from running in the test environment.
 vi.mock('@/lib/i18n', () => ({
   default: { t: (key: string) => key, language: 'pt-BR' },
 }));
+
+// Mock i18next at the package level — prevents the module-level .use().init()
+// chain inside @/lib/i18n.ts from executing (which hangs the test worker via
+// react-i18next's async plugin initialisation).
+vi.mock('i18next', () => ({
+  default: {
+    use: vi.fn().mockReturnThis(),
+    init: vi.fn().mockResolvedValue(undefined),
+    t: (key: string) => key,
+    language: 'pt-BR',
+    hasResourceBundle: vi.fn().mockReturnValue(true),
+    addResourceBundle: vi.fn(),
+    changeLanguage: vi.fn().mockResolvedValue(undefined),
+  },
+}));
+
+// Mock react-router-dom Navigate to avoid hanging navigate internals
+vi.mock('react-router-dom', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('react-router-dom')>();
+  return {
+    ...actual,
+    Navigate: ({ to }: { to: string }) => (
+      <div data-testid="navigate" data-to={to} />
+    ),
+  };
+});
 
 import ProtectedRoute from '../ProtectedRoute';
 
@@ -22,8 +50,15 @@ vi.mock('@/contexts/AuthContext', () => ({
   useAuth: () => mockUseAuth(),
 }));
 
-// Skipped: hangs in CI test worker (module loading issue with @/lib/i18n chain)
-describe.skip('ProtectedRoute', () => {
+describe('ProtectedRoute', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
   it('should show loader when auth is loading', () => {
     mockUseAuth.mockReturnValue({ user: null, loading: true });
 
@@ -67,6 +102,9 @@ describe.skip('ProtectedRoute', () => {
       </MemoryRouter>
     );
 
+    // With Navigate mocked, the navigate element is rendered instead of children
     expect(screen.queryByText('Protected content')).not.toBeInTheDocument();
+    expect(screen.getByTestId('navigate')).toBeInTheDocument();
+    expect(screen.getByTestId('navigate').getAttribute('data-to')).toBe('/login');
   });
 });

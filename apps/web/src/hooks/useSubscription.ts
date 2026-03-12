@@ -6,6 +6,7 @@ import i18n from '@/lib/i18n';
 import { logger } from '@/lib/logger';
 import { subscriptions, creditUsage } from '@/data';
 import { QUERY_STALE_TIMES } from '@/lib/constants';
+import { subscriptionKeys } from '@/lib/query-keys';
 
 export type { SubscriptionPlan, Subscription, CreditCost, CreditPack } from '@/data/subscriptions';
 export type { CreditUsageRecord } from '@/data/credit-usage';
@@ -26,21 +27,21 @@ export function useSubscription() {
 
   // Fetch available plans
   const plansQuery = useQuery({
-    queryKey: ['subscription-plans'],
+    queryKey: subscriptionKeys.plans(),
     queryFn: () => subscriptions.getPlans(),
     staleTime: QUERY_STALE_TIMES.VERY_LONG,
   });
 
   // Fetch credit costs
   const creditCostsQuery = useQuery({
-    queryKey: ['credit-costs'],
+    queryKey: subscriptionKeys.creditCosts(),
     queryFn: () => subscriptions.getCreditCosts(),
     staleTime: QUERY_STALE_TIMES.VERY_LONG,
   });
 
   // Fetch user's subscription
   const subscriptionQuery = useQuery({
-    queryKey: ['subscription', user?.id],
+    queryKey: subscriptionKeys.detail(user?.id),
     queryFn: async () => {
       if (!user) return null;
       return subscriptions.getByUserId(user.id);
@@ -51,7 +52,7 @@ export function useSubscription() {
 
   // Fetch available credit packs
   const creditPacksQuery = useQuery({
-    queryKey: ['credit-packs'],
+    queryKey: subscriptionKeys.creditPacks(),
     queryFn: () => subscriptions.getCreditPacks(),
     staleTime: QUERY_STALE_TIMES.VERY_LONG,
   });
@@ -105,7 +106,7 @@ export function useSubscription() {
 
   // Fetch recent credit usage history
   const creditUsageQuery = useQuery({
-    queryKey: ['credit-usage', user?.id],
+    queryKey: subscriptionKeys.creditUsage(user?.id),
     queryFn: async () => {
       if (!user) return [];
       return creditUsage.listByUserId(user.id, { limit: 20 });
@@ -192,7 +193,7 @@ export function useSubscription() {
 
   // Refetch subscription after checkout
   const refreshSubscription = () => {
-    queryClient.invalidateQueries({ queryKey: ['subscription'] });
+    queryClient.invalidateQueries({ queryKey: subscriptionKeys.all });
   };
 
   // Credit packs

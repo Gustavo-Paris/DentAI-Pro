@@ -12,10 +12,10 @@ import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { EVALUATION_STATUS } from '@/lib/evaluation-status';
 
-import { evaluationKeys } from './useEvaluationData';
+import { evaluationKeys } from '@/lib/query-keys';
 import { resolveAestheticGoalsForAI } from '@/lib/aesthetic-goals';
 import type { EvaluationItem, PatientDataForModal } from '../useEvaluationDetail';
-import type { TreatmentType, SubmitTeethPayload } from '@/components/AddTeethModal';
+import type { TreatmentType, SubmitTeethPayload } from '@/types/evaluation';
 import type { User } from '@supabase/supabase-js';
 
 // ---------------------------------------------------------------------------

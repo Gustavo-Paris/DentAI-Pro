@@ -50,6 +50,7 @@ vi.mock('react-i18next', () => ({
   }),
   Trans: ({ children }: { children: unknown }) => children,
   I18nextProvider: ({ children }: { children: unknown }) => children,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   withTranslation: () => (Component: any) => Component,
 }));
 
@@ -69,11 +70,15 @@ vi.mock('@/lib/constants', () => ({
   TIMING: { WIZARD_SUBMIT_DELAY: 0 },
 }));
 
-vi.mock('../domain/wizard/helpers', () => ({
-  inferCavityClass: vi.fn(() => 'Classe I'),
-  getFullRegion: vi.fn(() => 'anterior-superior'),
-  getGenericProtocol: vi.fn(() => ({ summary: 'mock protocol' })),
-}));
+vi.mock('../domain/wizard/helpers', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../domain/wizard/helpers')>();
+  return {
+    ...actual,
+    inferCavityClass: vi.fn(() => 'Classe I'),
+    getFullRegion: vi.fn(() => 'anterior-superior'),
+    getGenericProtocol: vi.fn(() => ({ summary: 'mock protocol' })),
+  };
+});
 
 // ---------------------------------------------------------------------------
 // Helpers

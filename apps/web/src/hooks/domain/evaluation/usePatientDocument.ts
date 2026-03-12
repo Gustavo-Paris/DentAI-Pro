@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { generatePatientDocument, type PatientDocument } from '@/data/evaluations';
-import { evaluationKeys } from './useEvaluationData';
+import { evaluationKeys } from '@/lib/query-keys';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { logger } from '@/lib/logger';

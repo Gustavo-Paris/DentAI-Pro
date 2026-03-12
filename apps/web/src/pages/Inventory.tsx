@@ -80,7 +80,7 @@ const InventoryResinCard = memo(function InventoryResinCard({
       {/* Remove button */}
       <button
         onClick={() => onRemove(item.id)}
-        className="absolute top-1.5 right-1.5 p-2 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-full bg-destructive/10 hover:bg-destructive/20 transition-colors sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 focus-visible:opacity-100"
+        className="absolute top-1.5 right-1.5 p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-destructive/10 hover:bg-destructive/20 transition-colors sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 focus-visible:opacity-100"
         title={t('common.remove')}
         aria-label={t('inventory.removeResin')}
       >

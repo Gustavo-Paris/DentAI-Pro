@@ -1,5 +1,6 @@
-import type { DetectedTooth } from '@/types/wizard';
+import type { DetectedTooth, PhotoAnalysisResult, ReviewFormData, TreatmentType } from '@/types/wizard';
 import { ANTERIOR_TEETH } from './constants';
+import { normalizeTreatmentType } from '@/lib/treatment-config';
 
 // Re-export from canonical location for backward compatibility
 export { getGenericProtocol } from '@/lib/generic-protocol';
@@ -56,5 +57,44 @@ export function getFullRegion(tooth: string): string {
     return isUpper ? 'anterior-superior' : 'anterior-inferior';
   }
   return isUpper ? 'posterior-superior' : 'posterior-inferior';
+}
+
+// ---------------------------------------------------------------------------
+// Tooth data helpers (moved from useWizardSubmit)
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns the detected tooth data from the photo analysis result for a given tooth number.
+ */
+export function getToothData(
+  analysisResult: PhotoAnalysisResult | null,
+  toothNumber: string,
+): DetectedTooth | undefined {
+  return analysisResult?.detected_teeth?.find((t) => t.tooth === toothNumber);
+}
+
+/**
+ * Resolves the effective treatment type for a tooth, with fallback priority:
+ * explicit override → AI detected → form default → 'resina'
+ */
+export function getToothTreatment(
+  tooth: string,
+  toothTreatments: Record<string, TreatmentType>,
+  analysisResult: PhotoAnalysisResult | null,
+  formData: ReviewFormData,
+): TreatmentType {
+  return (
+    toothTreatments[tooth] ||
+    getToothData(analysisResult, tooth)?.treatment_indication ||
+    formData.treatmentType ||
+    'resina'
+  );
+}
+
+/**
+ * @deprecated Use normalizeTreatmentType from @/lib/treatment-config directly.
+ */
+export function normalizeTreatment(treatment: string): TreatmentType {
+  return normalizeTreatmentType(treatment) as TreatmentType;
 }
 

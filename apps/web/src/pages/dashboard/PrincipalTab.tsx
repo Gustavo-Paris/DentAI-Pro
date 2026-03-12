@@ -246,11 +246,11 @@ function ActivityFeedSection({ sessions, loading }: { sessions: DashboardSession
   };
 
   const TYPE_COLOR_MAP: Record<string, string> = {
-    appointment: 'bg-blue-100 text-blue-600',
-    payment: 'bg-emerald-100 text-emerald-600',
-    treatment: 'bg-purple-100 text-purple-600',
-    patient: 'bg-sky-100 text-sky-600',
-    alert: 'bg-amber-100 text-amber-600',
+    appointment: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
+    payment: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400',
+    treatment: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400',
+    patient: 'bg-sky-100 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400',
+    alert: 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400',
   };
 
   const visibleItems = items.slice(0, 8);

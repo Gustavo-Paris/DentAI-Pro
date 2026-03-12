@@ -49,7 +49,7 @@ export function ProgressRing({
         strokeLinecap="round"
         strokeDasharray={circumference}
         strokeDashoffset={offset}
-        style={{ transition: 'stroke-dashoffset 0.4s ease-out' }}
+        className="progress-ring-transition"
       />
       {/* Percentage text */}
       {showPercentage && (

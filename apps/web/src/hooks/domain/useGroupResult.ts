@@ -3,8 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { evaluations, storage, wizard } from '@/data';
-import type { Resin, StratificationProtocol, ProtocolLayer, CementationProtocol } from '@/types/protocol';
-import type { SimulationLayer } from '@/types/dsd';
+import type { SessionEvaluationRow } from '@/data/evaluations';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { logger } from '@/lib/logger';
@@ -19,59 +18,7 @@ import {
 } from '@/lib/protocol-dispatch';
 import { getFullRegion } from './wizard/helpers';
 import { resolveAestheticGoalsForAI } from '@/lib/aesthetic-goals';
-
-// ---------------------------------------------------------------------------
-// Types (reuse from useResult where possible)
-// ---------------------------------------------------------------------------
-
-interface GroupEvaluation {
-  id: string;
-  created_at: string;
-  patient_name: string | null;
-  patient_age: number;
-  tooth: string;
-  region: string;
-  cavity_class: string;
-  restoration_size: string;
-  substrate: string;
-  aesthetic_level: string;
-  tooth_color: string;
-  stratification_needed: boolean;
-  bruxism: boolean;
-  longevity_expectation: string;
-  budget: string;
-  recommendation_text: string | null;
-  alternatives: unknown[] | null;
-  resins: Resin | null;
-  photo_frontal: string | null;
-  stratification_protocol: StratificationProtocol | null;
-  protocol_layers: ProtocolLayer[] | null;
-  alerts: string[] | null;
-  warnings: string[] | null;
-  checklist_progress: number[] | null;
-  dsd_analysis: import('@/types/dsd').DSDAnalysis | null;
-  dsd_simulation_url: string | null;
-  dsd_simulation_layers: SimulationLayer[] | null;
-  treatment_type: string | null;
-  cementation_protocol: CementationProtocol | null;
-  ai_treatment_indication: string | null;
-  ai_indication_reason: string | null;
-  substrate_condition: string | null;
-  enamel_condition: string | null;
-  depth: string | null;
-  anamnesis: string | null;
-  generic_protocol: {
-    treatment_type: string;
-    tooth: string;
-    summary: string;
-    checklist: string[];
-    alerts: string[];
-    recommendations: string[];
-    ai_reason?: string;
-  } | null;
-  session_id: string;
-  patient_aesthetic_goals: string | null;
-}
+import { groupResultKeys } from '@/lib/query-keys';
 
 // getProtocolFingerprint imported from @/lib/protocol-fingerprint — single source of truth
 
@@ -89,7 +36,7 @@ export function useGroupResult() {
 
   // Load all evaluations for the session
   const { data: allEvaluations, isLoading, isError, error } = useQuery({
-    queryKey: ['group-result', sessionId],
+    queryKey: groupResultKeys.detail(sessionId),
     queryFn: () => evaluations.listBySession(sessionId, user!.id),
     enabled: !!user && !!sessionId,
     staleTime: QUERY_STALE_TIMES.SHORT,
@@ -99,7 +46,7 @@ export function useGroupResult() {
   // Filter to evaluations matching the fingerprint
   const groupEvaluations = useMemo(() => {
     if (!allEvaluations) return [];
-    return (allEvaluations as unknown as GroupEvaluation[]).filter(
+    return allEvaluations.filter(
       ev => getProtocolFingerprint(ev) === decodedFingerprint
     );
   }, [allEvaluations, decodedFingerprint]);
@@ -120,7 +67,7 @@ export function useGroupResult() {
 
   // Signed photo URL
   const { data: photoUrl = null } = useQuery({
-    queryKey: ['group-photo', primaryEval?.photo_frontal],
+    queryKey: groupResultKeys.photo(primaryEval?.photo_frontal),
     queryFn: async () => {
       if (!primaryEval?.photo_frontal) return null;
       return storage.getSignedPhotoUrl(primaryEval.photo_frontal, SIGNED_URL_EXPIRY_SECONDS);
@@ -131,7 +78,7 @@ export function useGroupResult() {
 
   // DSD simulation signed URL
   const { data: dsdSimulationUrl = null } = useQuery({
-    queryKey: ['group-dsd-url', primaryEval?.id],
+    queryKey: groupResultKeys.dsdUrl(primaryEval?.id),
     queryFn: async () => {
       if (!primaryEval?.dsd_simulation_url) return null;
       return storage.getSignedDSDUrl(primaryEval.dsd_simulation_url, SIGNED_URL_EXPIRY_SECONDS);
@@ -142,7 +89,7 @@ export function useGroupResult() {
 
   // DSD layer signed URLs
   const { data: dsdLayerUrls = {} } = useQuery({
-    queryKey: ['group-dsd-layers', primaryEval?.id],
+    queryKey: groupResultKeys.dsdLayers(primaryEval?.id),
     queryFn: async () => {
       if (!primaryEval?.dsd_simulation_layers?.length) return {};
       const urls: Record<string, string> = {};
@@ -177,12 +124,12 @@ export function useGroupResult() {
       await evaluations.updateChecklistBulk(ids, user.id, indices);
     },
     onMutate: async (indices) => {
-      await queryClient.cancelQueries({ queryKey: ['group-result', sessionId] });
-      const previousData = queryClient.getQueryData(['group-result', sessionId]);
+      await queryClient.cancelQueries({ queryKey: groupResultKeys.detail(sessionId) });
+      const previousData = queryClient.getQueryData(groupResultKeys.detail(sessionId));
       // Optimistic update: set checklist_progress on all group evaluations
-      queryClient.setQueryData(['group-result', sessionId], (old: unknown) => {
+      queryClient.setQueryData(groupResultKeys.detail(sessionId), (old: unknown) => {
         if (!Array.isArray(old)) return old;
-        return old.map((ev: GroupEvaluation) =>
+        return old.map((ev: SessionEvaluationRow) =>
           groupEvaluations.some(ge => ge.id === ev.id)
             ? { ...ev, checklist_progress: indices }
             : ev,
@@ -191,12 +138,12 @@ export function useGroupResult() {
       return { previousData };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['group-result', sessionId] });
+      queryClient.invalidateQueries({ queryKey: groupResultKeys.detail(sessionId) });
     },
     onError: (_err, _vars, context) => {
       // Rollback to previous data on error
       if (context?.previousData) {
-        queryClient.setQueryData(['group-result', sessionId], context.previousData);
+        queryClient.setQueryData(groupResultKeys.detail(sessionId), context.previousData);
       }
       logger.error('Error saving group checklist progress');
       toast.error(t('toasts.result.saveError'));
@@ -263,12 +210,12 @@ export function useGroupResult() {
       }
       // After reprocessing, the protocol fingerprint may change (e.g. resina::no-resin → real fingerprint).
       // Refetch to get updated data, then navigate to the new URL if fingerprint changed.
-      await queryClient.invalidateQueries({ queryKey: ['group-result', sessionId] });
+      await queryClient.invalidateQueries({ queryKey: groupResultKeys.detail(sessionId) });
       const refreshed = await queryClient.fetchQuery({
-        queryKey: ['group-result', sessionId],
+        queryKey: groupResultKeys.detail(sessionId),
         queryFn: () => evaluations.listBySession(sessionId, user!.id),
       });
-      const updatedEval = (refreshed as unknown as GroupEvaluation[])?.find(ev => ev.id === primaryEval.id);
+      const updatedEval = (refreshed as SessionEvaluationRow[])?.find(ev => ev.id === primaryEval.id);
       const newFingerprint = updatedEval ? getProtocolFingerprint(updatedEval) : decodedFingerprint;
       if (newFingerprint !== decodedFingerprint) {
         navigate(`/result/group/${sessionId}/${encodeURIComponent(newFingerprint)}`, { replace: true });
@@ -276,7 +223,7 @@ export function useGroupResult() {
       toast.success(t('toasts.evaluationDetail.retrySuccess'));
     } catch (err) {
       logger.error('Retry protocol failed:', err);
-      await evaluations.updateStatus(primaryEval.id, EVALUATION_STATUS.ERROR).catch(() => {});
+      await evaluations.updateStatus(primaryEval.id, EVALUATION_STATUS.ERROR).catch((err) => logger.warn('Failed to update evaluation status', { err }));
       toast.error(t('toasts.evaluationDetail.retryError'));
     } finally {
       setIsRetrying(false);
@@ -293,7 +240,7 @@ export function useGroupResult() {
     try {
       const ids = groupEvaluations.map(ev => ev.id);
       await evaluations.updateStatusBulk(ids, EVALUATION_STATUS.COMPLETED);
-      queryClient.invalidateQueries({ queryKey: ['group-result', sessionId] });
+      queryClient.invalidateQueries({ queryKey: groupResultKeys.detail(sessionId) });
       toast.success(t('toasts.result.markedComplete', { count: groupEvaluations.length }));
     } catch (error) {
       logger.error('Failed to mark evaluations as completed:', error);

@@ -14,7 +14,7 @@ import { parseAIResponse, RecommendResinResponseSchema, type RecommendResinRespo
 import { getContralateral } from "./tooth-utils.ts";
 import type { StratificationProtocol } from "./types.ts";
 import { groupResinsByPrice, getBudgetAppropriateResins, validateInventoryRecommendation } from "./inventory.ts";
-import { validateAndFixProtocolLayers } from "./shade-validation.ts";
+import { validateAndFixProtocolLayers, isAnteriorTooth } from "./shade-validation.ts";
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -492,7 +492,7 @@ Deno.serve(async (req) => {
       if (!recommendation.protocol) {
         logger.warn(`[${reqId}] Generating fallback protocol — AI failed to produce one`);
         const resinName = recommendation.recommended_resin_name || 'Resina composta';
-        const isAnterior = ['11','12','13','21','22','23','31','32','33','41','42','43'].includes(data.tooth);
+        const isAnterior = isAnteriorTooth(data.tooth);
         const shade = data.toothColor || 'A2';
 
         recommendation.protocol = {

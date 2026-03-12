@@ -1,5 +1,5 @@
 import type { SessionEvaluationRow } from '@/data/evaluations';
-import type { PendingTooth, SubmitTeethPayload } from '@/components/AddTeethModal';
+import type { PendingTooth, SubmitTeethPayload } from '@/types/evaluation';
 
 import { useEvaluationData } from './evaluation/useEvaluationData';
 import { useEvaluationSelection } from './evaluation/useEvaluationSelection';
@@ -7,10 +7,10 @@ import { useEvaluationActions } from './evaluation/useEvaluationActions';
 import { useAddTeethFlow } from './evaluation/useAddTeethFlow';
 
 // ---------------------------------------------------------------------------
-// Re-export query key factory from sub-hook (used by useEvaluationSessions)
+// Re-export query key factory (canonical source: @/lib/query-keys)
 // ---------------------------------------------------------------------------
 
-export { evaluationKeys } from './evaluation/useEvaluationData';
+export { evaluationKeys } from '@/lib/query-keys';
 
 // ---------------------------------------------------------------------------
 // Types (preserved for backward-compatible imports)

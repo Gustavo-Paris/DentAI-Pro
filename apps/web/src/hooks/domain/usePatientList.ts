@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { patients } from '@/data';
 import { QUERY_STALE_TIMES, QUERY_GC_TIMES } from '@/lib/constants';
 import { EVALUATION_STATUS } from '@/lib/evaluation-status';
+import { patientKeys } from '@/lib/query-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -27,7 +28,7 @@ export function usePatientList() {
   const { user } = useAuth();
 
   const query = useQuery({
-    queryKey: ['patients', 'all-with-stats', user?.id],
+    queryKey: patientKeys.allWithStats(user?.id),
     queryFn: async () => {
       if (!user) throw new Error('User not authenticated');
 
@@ -86,7 +87,7 @@ export function usePatientList() {
       return patients.create(user.id, data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['patients'] });
+      queryClient.invalidateQueries({ queryKey: patientKeys.all });
     },
   });
 

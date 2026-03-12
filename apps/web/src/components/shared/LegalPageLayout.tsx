@@ -27,7 +27,7 @@ export function LegalPageLayout({ title, children }: LegalPageLayoutProps) {
           }}
         />
         <div
-          className="glow-orb glow-orb-slow"
+          className="glow-orb glow-orb-slow [animation-delay:5s]"
           style={{
             width: 350,
             height: 350,
@@ -35,7 +35,6 @@ export function LegalPageLayout({ title, children }: LegalPageLayoutProps) {
             right: '5%',
             background:
               'radial-gradient(circle, rgb(var(--accent-violet-rgb) / 0.06) 0%, transparent 70%)',
-            animationDelay: '5s',
           }}
         />
       </div>
@@ -45,9 +44,8 @@ export function LegalPageLayout({ title, children }: LegalPageLayoutProps) {
 
       <div className="relative">
         <header
-          className="border-b border-border"
+          className="border-b border-border animate-fade-in-up"
           aria-label={t('common.siteNavigation')}
-          style={{ animation: 'fade-in-up 0.6s ease-out 0s both' }}
         >
           <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
             <Link to="/" className="text-xl font-display font-semibold text-gradient-brand">
@@ -62,7 +60,7 @@ export function LegalPageLayout({ title, children }: LegalPageLayoutProps) {
           </div>
         </header>
         <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
-          <div style={{ animation: 'fade-in-up 0.6s ease-out 0.1s both' }}>
+          <div className="animate-fade-in-up [animation-delay:0.1s]">
             <h1 className="text-heading text-2xl sm:text-3xl font-semibold font-display mb-2">{title}</h1>
           </div>
           <div className="prose prose-neutral dark:prose-invert max-w-none space-y-6 sm:space-y-8">

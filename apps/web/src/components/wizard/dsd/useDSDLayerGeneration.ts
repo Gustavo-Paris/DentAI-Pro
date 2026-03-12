@@ -28,13 +28,17 @@ const TOOTH_SHAPE = 'natural' as const;
  * Fetch an image URL and convert to a PNG data URL (base64).
  * Uses PNG (lossless) to prevent compression artifacts between layers.
  */
-async function urlToBase64(url: string): Promise<string> {
-  const resp = await fetch(url);
+async function urlToBase64(url: string, signal?: AbortSignal): Promise<string> {
+  const resp = await fetch(url, { signal });
   const blob = await resp.blob();
   return new Promise<string>((resolve, reject) => {
+    if (signal?.aborted) { reject(new DOMException('Aborted', 'AbortError')); return; }
     const img = new Image();
     const blobUrl = URL.createObjectURL(blob);
+    const onAbort = () => { URL.revokeObjectURL(blobUrl); reject(new DOMException('Aborted', 'AbortError')); };
+    if (signal) signal.addEventListener('abort', onAbort, { once: true });
     img.onload = () => {
+      if (signal) signal.removeEventListener('abort', onAbort);
       try {
         const canvas = document.createElement('canvas');
         canvas.width = img.naturalWidth;
@@ -43,13 +47,21 @@ async function urlToBase64(url: string): Promise<string> {
         if (!ctx) { URL.revokeObjectURL(blobUrl); reject(new Error('No canvas context')); return; }
         ctx.drawImage(img, 0, 0);
         URL.revokeObjectURL(blobUrl);
-        resolve(canvas.toDataURL('image/png'));
+        const dataUrl = canvas.toDataURL('image/png');
+        // Release GPU memory immediately after capture
+        canvas.width = 0;
+        canvas.height = 0;
+        resolve(dataUrl);
       } catch (err) {
         URL.revokeObjectURL(blobUrl);
         reject(err);
       }
     };
-    img.onerror = () => { URL.revokeObjectURL(blobUrl); reject(new Error('Failed to load image for base64 conversion')); };
+    img.onerror = () => {
+      if (signal) signal.removeEventListener('abort', onAbort);
+      URL.revokeObjectURL(blobUrl);
+      reject(new Error('Failed to load image for base64 conversion'));
+    };
     img.src = blobUrl;
   });
 }
@@ -106,6 +118,19 @@ export function useDSDLayerGeneration({
 
   // Auto-generate layers when restored from a draft
   const layerAutoGenTriggered = useRef(false);
+
+  // Abort controller for the active generation chain
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Guard against setState on unmounted component
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      abortControllerRef.current?.abort();
+    };
+  }, []);
 
   // Rehydrate layer signed URLs from persisted draft layers
   useEffect(() => {
@@ -262,6 +287,13 @@ export function useDSDLayerGeneration({
     const analysis = analysisData || currentResult?.analysis;
     if (!imageBase64 || !analysis) return;
 
+    // Abort any in-flight generation and create a fresh controller for this run
+    abortControllerRef.current?.abort();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+    const { signal } = controller;
+
+    if (!isMountedRef.current) return;
     setLayersGenerating(true);
     setIsSimulationGenerating(true);
     setSimulationError(false);
@@ -275,11 +307,13 @@ export function useDSDLayerGeneration({
 
       // === Phase 1: Generate L1 from original (corrections only, natural color) ===
       const l1Raw = await generateSingleLayer(analysis, 'restorations-only');
-      setLayerGenerationProgress(1);
+      if (signal.aborted) return;
+      if (isMountedRef.current) setLayerGenerationProgress(1);
 
       let l1Url: string | null = null;
       if (l1Raw) {
         const { layer: l1Processed, url } = await resolveLayerUrl(l1Raw);
+        if (signal.aborted) return;
         compositedLayers.push(l1Processed);
         l1Url = url;
         if (url) resolvedUrls['restorations-only'] = url;
@@ -291,13 +325,16 @@ export function useDSDLayerGeneration({
       let l2Url: string | null = null;
       if (l1Url) {
         try {
-          const l1Base64 = await urlToBase64(l1Url);
+          const l1Base64 = await urlToBase64(l1Url, signal);
+          if (signal.aborted) return;
           logger.log('Layer chaining: L1 → L2 (whitening only)');
           const l2Raw = await generateSingleLayer(analysis, 'whitening-restorations', l1Base64);
-          setLayerGenerationProgress(2);
+          if (signal.aborted) return;
+          if (isMountedRef.current) setLayerGenerationProgress(2);
 
           if (l2Raw) {
             const { layer: l2Processed, url } = await resolveLayerUrl(l2Raw);
+            if (signal.aborted) return;
             compositedLayers.push(l2Processed);
             l2Url = url;
             if (url) resolvedUrls['whitening-restorations'] = url;
@@ -305,16 +342,19 @@ export function useDSDLayerGeneration({
             failed.push('whitening-restorations');
           }
         } catch (err) {
+          if (signal.aborted) return;
           logger.error('L2 generation error:', err);
           failed.push('whitening-restorations');
-          setLayerGenerationProgress(2);
+          if (isMountedRef.current) setLayerGenerationProgress(2);
         }
       } else {
         logger.warn('L1 unavailable, generating L2 from original as fallback');
         const l2Fallback = await generateSingleLayer(analysis, 'whitening-restorations');
-        setLayerGenerationProgress(2);
+        if (signal.aborted) return;
+        if (isMountedRef.current) setLayerGenerationProgress(2);
         if (l2Fallback) {
           const { layer: l2Processed, url } = await resolveLayerUrl(l2Fallback);
+          if (signal.aborted) return;
           compositedLayers.push(l2Processed);
           l2Url = url;
           if (url) resolvedUrls['whitening-restorations'] = url;
@@ -329,13 +369,16 @@ export function useDSDLayerGeneration({
         (gingivoplastyApproved === null && analysis.smile_line === 'alta');
       if (shouldGenerateL3 && l2Url) {
         try {
-          const l2Base64 = await urlToBase64(l2Url);
+          const l2Base64 = await urlToBase64(l2Url, signal);
+          if (signal.aborted) return;
           logger.log('Layer chaining: L2 → L3 (gengivoplasty only)');
           const l3Raw = await generateSingleLayer(analysis, 'complete-treatment', l2Base64, l2Url);
-          setLayerGenerationProgress(3);
+          if (signal.aborted) return;
+          if (isMountedRef.current) setLayerGenerationProgress(3);
 
           if (l3Raw) {
             const { layer: l3Processed, url: l3Url } = await resolveLayerUrl(l3Raw);
+            if (signal.aborted) return;
             compositedLayers.push(l3Processed);
             if (l3Url) resolvedUrls['complete-treatment'] = l3Url;
             // Auto-approve gingivoplasty if L3 was generated from undecided state
@@ -346,11 +389,13 @@ export function useDSDLayerGeneration({
             failed.push('complete-treatment');
           }
         } catch (err) {
+          if (signal.aborted) return;
           logger.error('L3 generation error:', err);
           failed.push('complete-treatment');
         }
       }
 
+      if (!isMountedRef.current || signal.aborted) return;
       setFailedLayers(failed);
 
       if (compositedLayers.length === 0) {
@@ -379,7 +424,7 @@ export function useDSDLayerGeneration({
           setSimulationImageUrl(mainUrl);
         } else {
           const mainSignedUrl = await getSignedDSDUrl(mainLayer.simulation_url);
-          if (mainSignedUrl) {
+          if (!signal.aborted && isMountedRef.current && mainSignedUrl) {
             setSimulationImageUrl(mainSignedUrl);
           }
         }
@@ -395,11 +440,18 @@ export function useDSDLayerGeneration({
       }
       trackEvent('dsd_simulation_completed', { layers_count: compositedLayers.length });
     } catch (err) {
+      if (signal.aborted) return;
       logger.error('Generate all layers error:', err);
-      setSimulationError(true);
+      if (isMountedRef.current) setSimulationError(true);
     } finally {
-      setLayersGenerating(false);
-      setIsSimulationGenerating(false);
+      if (isMountedRef.current && !signal.aborted) {
+        setLayersGenerating(false);
+        setIsSimulationGenerating(false);
+      } else if (isMountedRef.current) {
+        // Aborted but component still mounted — reset loading indicators
+        setLayersGenerating(false);
+        setIsSimulationGenerating(false);
+      }
     }
   }, [imageBase64, generateSingleLayer, resolveLayerUrl, gingivoplastyApproved, onAutoApproveGingivoplasty, setResult, setSimulationImageUrl, t]);
 

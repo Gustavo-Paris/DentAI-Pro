@@ -6,6 +6,7 @@
  */
 
 import type { TreatmentType } from '@/lib/treatment-config';
+import { treatmentConfig } from '@/lib/treatment-config';
 import i18n from '@/lib/i18n';
 
 export function getGenericProtocol(
@@ -16,8 +17,9 @@ export function getGenericProtocol(
   const t = (key: string, opts?: Record<string, unknown>) => i18n.t(key, opts);
   const tArr = (key: string) => i18n.t(key, { returnObjects: true }) as string[];
 
-  // Simple protocols — all content from i18n
-  if (['resina', 'porcelana', 'implante', 'coroa', 'endodontia', 'gengivoplastia', 'recobrimento_radicular'].includes(treatmentType)) {
+  // Simple protocols — all content from i18n (all types except encaminhamento)
+  const simpleProtocolTypes = Object.keys(treatmentConfig).filter(k => k !== 'encaminhamento');
+  if (simpleProtocolTypes.includes(treatmentType)) {
     return {
       treatment_type: treatmentType,
       tooth,

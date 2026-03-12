@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { inventory, patients as patientsData } from '@/data';
 import { QUERY_STALE_TIMES } from '@/lib/constants';
 import { useWizardDraft } from '@/hooks/useWizardDraft';
+import { inventoryKeys, patientKeys } from '@/lib/query-keys';
 import { logger } from '@/lib/logger';
 import type { AdditionalPhotos } from '@/hooks/useWizardDraft';
 import type {
@@ -55,7 +56,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     getCreditCost,
   } = useSubscription();
   const { data: inventoryData } = useQuery({
-    queryKey: ['inventory', 'list', 0],
+    queryKey: inventoryKeys.list(0),
     queryFn: async () => {
       if (!user) throw new Error('User not authenticated');
       const { items, count } = await inventory.list({ userId: user.id, page: 0, pageSize: 30 });
@@ -65,7 +66,7 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
     staleTime: QUERY_STALE_TIMES.MEDIUM,
   });
   const { data: patientsForAutocomplete } = useQuery({
-    queryKey: ['patients', 'autocomplete', user?.id],
+    queryKey: patientKeys.autocomplete(user?.id),
     queryFn: () => patientsData.listForAutocomplete(user!.id),
     enabled: !!user,
     staleTime: QUERY_STALE_TIMES.MEDIUM,

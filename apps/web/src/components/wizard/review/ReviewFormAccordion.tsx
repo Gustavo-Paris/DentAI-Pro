@@ -44,7 +44,9 @@ export function ReviewFormAccordion({
             <img
               src={imageBase64}
               alt={t('components.wizard.review.analyzedPhoto')}
-              className="w-full rounded-lg ring-1 ring-border mb-4"
+              width={400}
+              height={300}
+              className="w-full h-auto rounded-lg ring-1 ring-border mb-4"
             />
 
             {/* DSD Aesthetic Notes */}

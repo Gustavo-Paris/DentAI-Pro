@@ -9,6 +9,23 @@
  * This HOF extracts the boilerplate: the 3 mutable variables (`creditsConsumed`,
  * `supabaseForRefund`, `userIdForRefund`) and the try/catch refund logic.
  *
+ * ## Functions that USE withCreditProtection
+ * - `analyze-dental-photo` — operation: "case_analysis" (1 credit per case)
+ * - `generate-dsd` — operation: "dsd_simulation" (1 credit per DSD)
+ *
+ * ## Functions EXEMPT from withCreditProtection (and why)
+ * - `recommend-resin` — called internally per-tooth AFTER case_analysis credit is consumed;
+ *   charging again would double-bill. Credits are verified once upstream.
+ * - `recommend-cementation` — same rationale as recommend-resin.
+ * - `check-photo-quality` — lightweight pre-flight check, no clinical output generated.
+ * - `generate-patient-document` — document generation, not an AI clinical analysis.
+ * - `create-checkout-session` / `create-portal-session` — Stripe billing, not credit-gated.
+ * - `stripe-webhook` / `sync-subscription` / `sync-credit-purchase` — internal sync, no user AI usage.
+ * - `apply-referral` — rewards flow, no AI involvement.
+ * - `data-export` / `delete-account` — LGPD data operations, never credit-gated.
+ * - `send-email` / `send-weekly-digest` — transactional email, not AI.
+ * - `health-check` — monitoring endpoint.
+ *
  * Usage:
  * ```ts
  * const result = await withCreditProtection(

@@ -1021,6 +1021,7 @@
     "protocolUnavailable": "Protocolo não disponível",
     "protocolUnavailableDesc": "A geração do protocolo de resina não foi concluída. Tente reprocessar este caso.",
     "reprocess": "Reprocessar caso",
+    "reprocessing": "Reprocessando...",
     "tabs": {
       "protocol": "Protocolo",
       "finishing": "Acabamento",
@@ -1131,6 +1132,7 @@
       "photoQualityWarning": "A foto pode não ser ideal para simulação DSD. Para melhores resultados, use afastador labial, boa iluminação e garanta que os dentes estejam totalmente visíveis."
     },
     "result": {
+      "markedComplete": "Marcado como concluído",
       "saveError": "Erro ao salvar progresso",
       "pdfSuccess": "PDF gerado com sucesso!",
       "pdfError": "Erro ao gerar PDF. Tente novamente.",
@@ -1158,7 +1160,8 @@
       "gingivoplastyAdded": "Gengivoplastia adicionada automaticamente pelo DSD",
       "allSuccess_one": "{{count}} protocolo gerado com sucesso",
       "allSuccess_other": "{{count}} protocolos gerados com sucesso",
-      "fallbackWarning": "{{total}} protocolos gerados — {{fallback}} com protocolo padrão (IA indisponível). Regenere para protocolo personalizado."
+      "fallbackWarning": "{{total}} protocolos gerados — {{fallback}} com protocolo padrão (IA indisponível). Regenere para protocolo personalizado.",
+      "unknownError": "Erro: {{message}}"
     },
     "dsd": {
       "simulationRefined": "Simulação refinada (lábios preservados)",
@@ -1178,6 +1181,7 @@
       "layersFailedDesc_other": "{{count}} camadas falharam — tente novamente"
     },
     "evaluationDetail": {
+      "addTeethError": "Erro ao adicionar dentes. Tente novamente.",
       "loadError": "Erro ao carregar avaliação",
       "notFound": "Avaliação não encontrada",
       "caseCompleted": "Caso marcado como finalizado",
@@ -1324,7 +1328,9 @@
         "extraCredits": "+1 crédito extra",
         "continueSimulation": "Continuar com simulação",
         "shadeBeforeLabel": "Antes",
-        "shadeAfterLabel": "Depois"
+        "shadeAfterLabel": "Depois",
+        "shadeTarget_hollywood": "Alvo: BL1 / BL3 (ultra branco)",
+        "shadeTarget_natural": "Alvo: B1 / A1 (clareamento profissional)"
       },
       "review": {
         "title": "Revisão da Análise",
@@ -1347,6 +1353,8 @@
         "registerResins": "Cadastrar resinas",
         "porcelainTitle": "Indicação: Facetas de Porcelana",
         "porcelainDefault": "Este caso pode se beneficiar de facetas cerâmicas para melhor resultado estético e durabilidade.",
+        "archDiagramLabel": "Diagrama de arcada dental",
+        "archTooth": "Dente {{toothId}}",
         "attentionPoints": "Pontos de atenção",
         "selectTeethTitle": "Selecione os Dentes para o Protocolo",
         "selectTeethDesc": "Marque os dentes que deseja incluir no protocolo. Cada dente gerará um caso separado.",
@@ -1407,6 +1415,7 @@
         "treatmentGengivoplastia": "Gengivoplastia Estética",
         "cancel": "Cancelar",
         "toggleTooth": "Alternar dente {{number}}",
+        "tooltipPriority": "Prioridade: {{priorityLabel}}",
         "openCalendar": "Abrir calendário",
         "selected_one": "{{count}} selecionado",
         "selected_other": "{{count}} selecionados",
@@ -1431,6 +1440,7 @@
         "lastSaved": "Último salvamento: {{time}}",
         "continueOrNew": "Deseja continuar de onde parou ou começar uma nova avaliação?",
         "recently": "recentemente",
+        "restoring": "Restaurando...",
         "startOver": "Começar do zero",
         "continue": "Continuar",
         "explanation": "Você pode continuar o caso anterior ou começar uma nova avaliação do zero."
@@ -1529,6 +1539,9 @@
           "before": "Antes",
           "after": "Depois",
           "split": "Dividir",
+          "viewAfter": "Depois",
+          "viewBefore": "Antes",
+          "viewSplit": "Dividir",
           "annotations": "Marcações",
           "adjusting": "Ajustando...",
           "generating": "Gerando...",
@@ -1811,7 +1824,7 @@
       "credit_other": "{{count}} créditos",
       "credits": "créditos",
       "lowBalanceWarning": "Atenção: saldo baixo após esta operação",
-      "description": "{{operation}} custará {{cost}} crédito(s). Confirme para prosseguir."
+      "description": "{{operation}} custará {{cost}} crédito. Confirme para prosseguir."
     },
     "creditBadge": {
       "creditsLabel": "Créditos",
@@ -2118,6 +2131,7 @@
       }
     },
     "themeToggle": {
+      "label": "Tema",
       "system": "Sistema",
       "light": "Claro",
       "dark": "Escuro",
@@ -2506,6 +2520,16 @@
     "defaultTitle": "ToSmile.ai — Odontologia Digital Inteligente"
   },
   "pdf": {
+    "anamnesis": {
+      "title": "Anamnese"
+    },
+    "radiograph": {
+      "title": "Radiografia",
+      "panoramic": "Panorâmica",
+      "periapical": "Periapical",
+      "bitewing": "Bitewing",
+      "availableInSystem": "Disponível no sistema"
+    },
     "header": {
       "subtitleWithClinic": "ToSmile.ai - Protocolo de Restauração Estética",
       "title": "ToSmile.ai",

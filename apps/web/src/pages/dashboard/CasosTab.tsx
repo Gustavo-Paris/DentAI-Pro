@@ -55,6 +55,7 @@ export function CasosTab() {
           <button
             key={f.id}
             onClick={() => handleFilterChange(f.id)}
+            aria-pressed={filter === f.id}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
               filter === f.id
                 ? 'bg-primary text-primary-foreground'
@@ -63,7 +64,7 @@ export function CasosTab() {
           >
             {f.label}
             <span className={`tabular-nums ${
-              filter === f.id ? 'text-primary-foreground/70' : 'text-muted-foreground/60'
+              filter === f.id ? 'text-primary-foreground' : 'text-muted-foreground'
             }`}>
               {f.count}
             </span>

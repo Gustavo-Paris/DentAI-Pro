@@ -11,18 +11,7 @@ import { EVALUATION_STATUS } from '@/lib/evaluation-status';
 import { logger } from '@/lib/logger';
 import { format } from 'date-fns';
 import { getDateLocale } from '@/lib/date-utils';
-
-// ---------------------------------------------------------------------------
-// Query key factory
-// ---------------------------------------------------------------------------
-
-const patientKeys = {
-  all: ['patients'] as const,
-  lists: () => [...patientKeys.all, 'list'] as const,
-  details: () => [...patientKeys.all, 'detail'] as const,
-  detail: (id: string) => [...patientKeys.details(), id] as const,
-  sessions: (id: string, page?: number) => [...patientKeys.detail(id), 'sessions', page] as const,
-};
+import { patientKeys } from '@/lib/query-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -234,7 +223,7 @@ export function usePatientProfile(): PatientProfileState & PatientProfileActions
       logger.error('Failed to update patient profile:', error);
       toast.error(t('toasts.patient.saveError'));
     }
-  }, [patient, patientId, editForm, updatePatientMutation]);
+  }, [patient, patientId, editForm, updatePatientMutation, t]);
 
   const loadMoreSessions = useCallback(() => {
     setSessionsPage((prev) => prev + 1);

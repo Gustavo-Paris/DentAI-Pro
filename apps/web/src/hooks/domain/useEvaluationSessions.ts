@@ -2,7 +2,7 @@ import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation } from 'react-router-dom';
 import { evaluations } from '@/data';
-import { evaluationKeys } from '@/hooks/domain/useEvaluationDetail';
+import { evaluationKeys } from '@/lib/query-keys';
 import { QUERY_STALE_TIMES, QUERY_GC_TIMES } from '@/lib/constants';
 import { EVALUATION_STATUS } from '@/lib/evaluation-status';
 
@@ -80,10 +80,15 @@ export function useEvaluationSessions() {
     teethCount?: number;
   } | null;
 
-  // Fetch ALL evaluations (lightweight query — only 9 small columns) and group
+  // Fetch evaluations (lightweight query — only 9 small columns) and group
   // by session client-side. ListPage handles pagination of the grouped sessions.
   // Previous approach fetched 20 evaluations server-side, which produced only
   // ~5 sessions when each session had ~4 teeth.
+  //
+  // SCALABILITY LIMITATION: Client-side GROUP BY does not scale past ~500
+  // individual evaluations. pageSize capped at 500; hasMore signals truncation.
+  // Proper fix requires a server-side GROUP BY query (post-launch).
+  const PAGE_SIZE = 500;
   const query = useQuery({
     queryKey: [...evaluationKeys.sessions(), user?.id],
     queryFn: async () => {
@@ -91,10 +96,11 @@ export function useEvaluationSessions() {
       const { rows } = await evaluations.list({
         userId: user.id,
         page: 0,
-        pageSize: 1000,
+        pageSize: PAGE_SIZE,
       });
       return {
         sessions: groupBySession(rows as RawEvaluation[]),
+        hasMore: rows.length >= PAGE_SIZE,
       };
     },
     enabled: !!user,
@@ -105,6 +111,7 @@ export function useEvaluationSessions() {
 
   return {
     sessions: query.data?.sessions ?? [],
+    hasMore: query.data?.hasMore ?? false,
     isLoading: query.isLoading,
     isError: query.isError,
     newSessionId: locationState?.newSessionId ?? null,

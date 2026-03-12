@@ -254,7 +254,7 @@ export default function EvaluationDetails() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="w-7 h-7"
+                  className="w-11 h-11"
                   onClick={detail.clearSelection}
                   aria-label={t('common.clearSelection')}
                 >

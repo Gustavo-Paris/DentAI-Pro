@@ -522,7 +522,9 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
               <img
                 src={imageBase64}
                 alt={t('components.wizard.photoUpload.altIntraoral')}
-                className="w-full max-h-[250px] md:max-h-[400px] object-contain ring-2 ring-primary/20 rounded-xl"
+                width={400}
+                height={300}
+                className="w-full h-auto max-h-[250px] md:max-h-[400px] object-contain ring-2 ring-primary/20 rounded-xl"
               />
               {/* Badge overlay */}
               <Badge className="absolute top-3 left-3 bg-background/80 backdrop-blur-sm text-foreground border border-border/50">
@@ -675,12 +677,14 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
                       <img
                         src={additionalPhotos.smile45}
                         alt={t('components.wizard.photoUpload.smile45Alt')}
+                        width={200}
+                        height={96}
                         className="w-full h-24 object-cover rounded-lg ring-1 ring-primary/20"
                       />
                       <Button
                         variant="secondary"
                         size="icon"
-                        className="absolute top-1 right-1 h-8 w-8 bg-background/80 backdrop-blur-sm"
+                        className="absolute top-1 right-1 h-11 w-11 bg-background/80 backdrop-blur-sm"
                         onClick={() => removeOptionalPhoto('smile45')}
                         aria-label={t('components.wizard.photoUpload.remove45')}
                       >
@@ -738,12 +742,14 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
                       <img
                         src={additionalPhotos.face}
                         alt={t('components.wizard.photoUpload.faceAlt')}
+                        width={200}
+                        height={96}
                         className="w-full h-24 object-cover rounded-lg ring-1 ring-primary/20"
                       />
                       <Button
                         variant="secondary"
                         size="icon"
-                        className="absolute top-1 right-1 h-8 w-8 bg-background/80 backdrop-blur-sm"
+                        className="absolute top-1 right-1 h-11 w-11 bg-background/80 backdrop-blur-sm"
                         onClick={() => removeOptionalPhoto('face')}
                         aria-label={t('components.wizard.photoUpload.removeFace')}
                       >
@@ -801,12 +807,14 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
                       <img
                         src={additionalPhotos.radiograph}
                         alt={t('components.wizard.photoUpload.radiographAlt')}
+                        width={200}
+                        height={96}
                         className="w-full h-24 object-cover rounded-lg ring-1 ring-primary/20"
                       />
                       <Button
                         variant="secondary"
                         size="icon"
-                        className="absolute top-1 right-1 h-8 w-8 bg-background/80 backdrop-blur-sm"
+                        className="absolute top-1 right-1 h-11 w-11 bg-background/80 backdrop-blur-sm"
                         onClick={() => removeOptionalPhoto('radiograph')}
                         aria-label={t('components.wizard.photoUpload.removeRadiograph')}
                       >
@@ -895,7 +903,7 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
                 </>
               )}
             </Button>
-            <p className="text-xs text-muted-foreground/70">
+            <p className="text-xs text-muted-foreground">
               {t('components.wizard.photoUpload.fullAnalysisCost')}
             </p>
           </div>
@@ -911,7 +919,7 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
                 <Zap className="w-4 h-4 mr-2" />
                 {t('components.wizard.photoUpload.quickAnalysis')}
               </Button>
-              <p className="text-xs text-muted-foreground/70">
+              <p className="text-xs text-muted-foreground">
                 {t('components.wizard.photoUpload.quickAnalysisCost')}
               </p>
             </div>

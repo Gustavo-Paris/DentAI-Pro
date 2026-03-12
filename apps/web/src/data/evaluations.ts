@@ -1,11 +1,13 @@
 import { subDays } from 'date-fns';
+import { logger } from '@/lib/logger';
 import { supabase } from './client';
 import type { EvaluationInsert } from './client';
 import { withQuery, withMutation, countByUser } from './utils';
 import { withRetry } from '@/lib/retry';
 import { EVALUATION_STATUS } from '@/lib/evaluation-status';
 import type { EvaluationStatus } from '@/lib/evaluation-status';
-import type { StratificationProtocol, CementationProtocol } from '@/types/protocol';
+import type { StratificationProtocol, CementationProtocol, ProtocolLayer } from '@/types/protocol';
+import type { DSDAnalysis, SimulationLayer } from '@/types/dsd';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -56,7 +58,15 @@ export interface SessionEvaluationRow {
   ai_treatment_indication: string | null;
   ai_indication_reason: string | null;
   cementation_protocol: CementationProtocol | null;
-  generic_protocol: { checklist?: string[] } | null;
+  generic_protocol: {
+    treatment_type: string;
+    tooth: string;
+    summary: string;
+    checklist: string[];
+    alerts: string[];
+    recommendations: string[];
+    ai_reason?: string | null;
+  } | null;
   tooth_color: string;
   bruxism: boolean;
   aesthetic_level: string;
@@ -71,18 +81,14 @@ export interface SessionEvaluationRow {
   anamnesis: string | null;
   stratification_needed: boolean;
   recommendation_text: string | null;
-  alternatives: Record<string, unknown> | null;
-  protocol_layers: Record<string, unknown> | null;
+  alternatives: unknown[] | null;
+  protocol_layers: ProtocolLayer[] | null;
   alerts: string[] | null;
   warnings: string[] | null;
   session_id: string | null;
-  dsd_analysis: Record<string, unknown> | null;
+  dsd_analysis: DSDAnalysis | null;
   dsd_simulation_url: string | null;
-  dsd_simulation_layers: Array<{
-    type: string;
-    simulation_url: string | null;
-    includes_gengivoplasty?: boolean;
-  }> | null;
+  dsd_simulation_layers: SimulationLayer[] | null;
   resins: { name: string; manufacturer: string } | null;
   ideal_resin: { name: string; manufacturer: string } | null;
   patient_document: PatientDocument | null;
@@ -475,7 +481,7 @@ export async function deleteSession(sessionId: string, userId: string) {
       .filter((p): p is string => !!p);
 
     if (photoPaths.length > 0) {
-      await supabase.storage.from('clinical-photos').remove(photoPaths).catch(() => {});
+      await supabase.storage.from('clinical-photos').remove(photoPaths).catch((err) => logger.warn('Failed to delete storage files', { err }));
     }
 
     // Also clean DSD simulations
@@ -489,7 +495,7 @@ export async function deleteSession(sessionId: string, userId: string) {
         await supabase.storage
           .from('dsd-simulations')
           .remove(files.map(f => `${prefix}/${f.name}`))
-          .catch(() => {});
+          .catch((err) => logger.warn('Failed to delete storage files', { err }));
       }
     }
   }

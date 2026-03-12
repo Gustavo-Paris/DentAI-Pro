@@ -11,21 +11,12 @@ import { getDateLocale, getDateFormat } from '@/lib/date-utils';
 import { QUERY_STALE_TIMES, QUERY_GC_TIMES } from '@/lib/constants';
 import { EVALUATION_STATUS } from '@/lib/evaluation-status';
 import type { PendingTooth } from '@/types/evaluation';
+import { evaluationKeys, pendingTeethKeys } from '@/lib/query-keys';
 
 import type { EvaluationItem, PatientDataForModal } from '../useEvaluationDetail';
 
-// ---------------------------------------------------------------------------
-// Query key factory
-// ---------------------------------------------------------------------------
-
-export const evaluationKeys = {
-  all: ['evaluations'] as const,
-  lists: () => [...evaluationKeys.all, 'list'] as const,
-  sessions: () => [...evaluationKeys.all, 'sessions'] as const,
-  session: (id: string) => [...evaluationKeys.sessions(), id] as const,
-  details: () => [...evaluationKeys.all, 'detail'] as const,
-  detail: (id: string) => [...evaluationKeys.details(), id] as const,
-};
+// Re-export for backward compatibility — consumers should import from @/lib/query-keys directly
+export { evaluationKeys } from '@/lib/query-keys';
 
 // ---------------------------------------------------------------------------
 // Return type
@@ -83,13 +74,13 @@ export function useEvaluationData(): UseEvaluationDataReturn {
       toast.error(t('toasts.evaluationDetail.notFound'));
       navigate('/dashboard');
     }
-  }, [loadingEvaluations, evaluationsError, rawEvaluations, sessionId, navigate]);
+  }, [loadingEvaluations, evaluationsError, rawEvaluations, sessionId, navigate, t]);
 
   const {
     data: pendingTeeth = [],
     isLoading: loadingPendingTeeth,
   } = useQuery({
-    queryKey: ['pendingTeeth', sessionId],
+    queryKey: pendingTeethKeys.session(sessionId),
     queryFn: () => evaluations.listPendingTeeth(sessionId, user!.id),
     enabled: !!user && !!sessionId,
     staleTime: QUERY_STALE_TIMES.SHORT,

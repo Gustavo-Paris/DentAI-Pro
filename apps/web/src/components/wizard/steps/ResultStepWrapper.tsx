@@ -64,31 +64,27 @@ export const ResultStepWrapper = memo(function ResultStepWrapper({
               {/* Success icon with pulse + bounce */}
               <div
                 className="w-20 h-20 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center success-pulse"
-                style={{ animationDelay: '0s' }}
               >
                 <CheckCircle className="w-12 h-12 text-primary drop-shadow-[0_0_12px_rgb(var(--color-primary-rgb)/0.5)]" />
               </div>
 
               {/* Title — staggered fade-in */}
               <p
-                className="text-xl font-semibold text-foreground neon-text"
-                style={{ animation: 'fade-in-up 0.6s ease-out 0.4s both' }}
+                className="text-xl font-semibold text-foreground neon-text animate-fade-in-up [animation-delay:0.4s]"
               >
                 {t('wizard.caseCreated')}
               </p>
 
               {/* Subtitle */}
               <p
-                className="text-sm text-muted-foreground max-w-xs text-center"
-                style={{ animation: 'fade-in-up 0.6s ease-out 0.6s both' }}
+                className="text-sm text-muted-foreground max-w-xs text-center animate-fade-in-up [animation-delay:0.6s]"
               >
                 {t('wizard.caseCreatedSubtitle', { defaultValue: 'Seu caso foi processado com sucesso.' })}
               </p>
 
               {/* Action buttons — staggered */}
               <div
-                className="flex flex-col sm:flex-row gap-3 pt-2"
-                style={{ animation: 'fade-in-up 0.6s ease-out 0.8s both' }}
+                className="flex flex-col sm:flex-row gap-3 pt-2 animate-fade-in-up [animation-delay:0.8s]"
               >
                 <Button
                   onClick={() => navigate(`/evaluation/${completedSessionId}`)}

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { evaluations, patients, inventory } from '@/data';
 import { QUERY_STALE_TIMES } from '@/lib/constants';
+import { onboardingKeys } from '@/lib/query-keys';
 
 export interface OnboardingStep {
   id: string;
@@ -26,7 +27,7 @@ export function useOnboardingProgress(): OnboardingProgress {
   const { t } = useTranslation();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['onboarding-progress', user?.id],
+    queryKey: onboardingKeys.progress(user?.id),
     queryFn: async () => {
       if (!user) throw new Error('Not authenticated');
       const [caseCount, patientCount, inventoryCount] = await Promise.all([

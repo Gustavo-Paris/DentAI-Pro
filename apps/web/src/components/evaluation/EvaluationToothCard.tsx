@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Badge } from '@parisgroup-ai/pageshell/primitives';
@@ -19,7 +20,7 @@ export interface EvaluationToothCardProps {
   plannedLabel?: string;
 }
 
-export function EvaluationToothCard({
+export const EvaluationToothCard = memo(function EvaluationToothCard({
   evaluation,
   onSelect,
   className,
@@ -74,4 +75,4 @@ export function EvaluationToothCard({
       </div>
     </div>
   );
-}
+});

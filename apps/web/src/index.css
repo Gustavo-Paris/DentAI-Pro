@@ -673,6 +673,12 @@
   box-shadow: 0 0 12px rgb(var(--color-primary-rgb) / 0.25);
 }
 
+/* Badge entrance — fade-in-up + badge-pulse-ring combined.
+   Using a CSS class keeps both animations under prefers-reduced-motion control. */
+.animate-badge-entrance {
+  animation: badge-pulse-ring 3s ease-in-out infinite, fade-in-up 0.6s ease-out both;
+}
+
 /* Neon text — glowing text effect for headings */
 .neon-text {
   text-shadow: 0 0 20px rgb(var(--color-primary-rgb) / 0.2);
@@ -891,6 +897,23 @@
    Reduced Motion — single consolidated block for all animations
    ═══════════════════════════════════════════════════════════════════════════ */
 @media (prefers-reduced-motion: reduce) {
+  /* ── Override fade-in-up keyframe at the source so ALL consumers are covered,
+        including Tailwind arbitrary variants like animate-[fade-in-up_...] and
+        dynamic inline animationDelay + animation class combinations. ── */
+  @keyframes fade-in-up {
+    from { opacity: 1; transform: none; }
+    to   { opacity: 1; transform: none; }
+  }
+
+  @keyframes fade-in {
+    from { opacity: 1; }
+    to   { opacity: 1; }
+  }
+
+  @keyframes badge-pulse-ring {
+    0%, 100% { box-shadow: none; }
+    50%      { box-shadow: none; }
+  }
   /* ── Scroll reveals ── */
   .scroll-reveal,
   .scroll-reveal-scale {
@@ -912,6 +935,7 @@
   .stagger-enter > * { animation: none; opacity: 1; transform: none; }
   .animate-count-up { animation: none; opacity: 1; transform: none; }
   .animate-fade-in-up { animation: none; opacity: 1; transform: none; }
+  .animate-badge-entrance { animation: none; opacity: 1; transform: none; }
   .animate-progress-indeterminate { animation: none; }
 
   /* ── Continuous / AI indicators ── */

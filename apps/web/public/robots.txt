@@ -13,4 +13,4 @@ Disallow: /pricing
 Disallow: /shared/
 Disallow: /settings
 
-Sitemap: https://tosmile.ai/sitemap.xml
+Sitemap: https://tosmile-ai.vercel.app/sitemap.xml

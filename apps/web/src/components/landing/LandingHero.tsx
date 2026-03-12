@@ -26,8 +26,7 @@ export function LandingHero() {
           <div className="text-center lg:text-left">
             <Badge
               variant="secondary"
-              className="mb-6 glow-badge"
-              style={{ animation: 'badge-pulse-ring 3s ease-in-out infinite, fade-in-up 0.6s ease-out 0.2s both' }}
+              className="mb-6 glow-badge animate-badge-entrance [animation-delay:0.2s]"
             >
               <Sparkles className="w-3 h-3 mr-1" aria-hidden="true" />
               {t('landing.heroTagline')}

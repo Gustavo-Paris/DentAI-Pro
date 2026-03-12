@@ -5,6 +5,7 @@ import { referral } from '@/data';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { QUERY_STALE_TIMES } from '@/lib/constants';
+import { referralKeys } from '@/lib/query-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -17,15 +18,6 @@ export interface ReferralState {
   shareUrl: string;
   copyToClipboard: () => void;
 }
-
-// ---------------------------------------------------------------------------
-// Query keys
-// ---------------------------------------------------------------------------
-
-const referralKeys = {
-  code: (userId: string) => ['referral-code', userId] as const,
-  stats: (userId: string) => ['referral-stats', userId] as const,
-};
 
 // ---------------------------------------------------------------------------
 // Hook
