@@ -335,6 +335,8 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
     setIsRegenerating(true);
     const newAestheticLevel = newBudget === 'premium' ? 'estético' : 'funcional';
 
+    let successCount = 0;
+
     try {
       // 1. Update all evaluations with new budget
       const allIds = evals.map(e => e.id);
@@ -348,7 +350,6 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
         e.treatment_type === 'resina' || e.treatment_type === 'porcelana'
       );
 
-      let successCount = 0;
       setRegenerationProgress({ current: 0, total: aiEvals.length });
 
       for (const evaluation of aiEvals) {
@@ -431,10 +432,16 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
       );
     } catch (error) {
       logger.error('Regeneration failed:', error);
-      toast.error(
-        t('toasts.evaluationDetail.regenerateError', {
-          }),
-      );
+      if (successCount > 0) {
+        toast.warning(
+          t('toasts.evaluationDetail.partialRegenError', { count: successCount }),
+        );
+      } else {
+        toast.error(
+          t('toasts.evaluationDetail.regenerateError', {
+            }),
+        );
+      }
     } finally {
       setIsRegenerating(false);
       setRegenerationProgress(null);

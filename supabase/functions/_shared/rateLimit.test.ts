@@ -205,7 +205,7 @@ Deno.test("retryAfter is longer when day limit is exceeded (day > hour > minute)
   assertEquals(resultHour.allowed, false);
   assertExists(resultDay.retryAfter);
   assertExists(resultHour.retryAfter);
-  assertEquals(resultDay.retryAfter! >= resultHour.retryAfter!, true);
+  assertEquals(resultDay.retryAfter! > resultHour.retryAfter!, true);
 });
 
 // ---------------------------------------------------------------------------

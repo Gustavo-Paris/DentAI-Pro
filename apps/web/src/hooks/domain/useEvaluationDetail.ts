@@ -7,12 +7,6 @@ import { useEvaluationActions } from './evaluation/useEvaluationActions';
 import { useAddTeethFlow } from './evaluation/useAddTeethFlow';
 
 // ---------------------------------------------------------------------------
-// Re-export query key factory (canonical source: @/lib/query-keys)
-// ---------------------------------------------------------------------------
-
-export { evaluationKeys } from '@/lib/query-keys';
-
-// ---------------------------------------------------------------------------
 // Types (preserved for backward-compatible imports)
 // ---------------------------------------------------------------------------
 

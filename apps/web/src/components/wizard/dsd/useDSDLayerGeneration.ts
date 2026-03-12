@@ -125,7 +125,6 @@ export function useDSDLayerGeneration({
   // Guard against setState on unmounted component
   const isMountedRef = useRef(true);
   useEffect(() => {
-    isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
       abortControllerRef.current?.abort();
@@ -444,11 +443,7 @@ export function useDSDLayerGeneration({
       logger.error('Generate all layers error:', err);
       if (isMountedRef.current) setSimulationError(true);
     } finally {
-      if (isMountedRef.current && !signal.aborted) {
-        setLayersGenerating(false);
-        setIsSimulationGenerating(false);
-      } else if (isMountedRef.current) {
-        // Aborted but component still mounted — reset loading indicators
+      if (isMountedRef.current) {
         setLayersGenerating(false);
         setIsSimulationGenerating(false);
       }

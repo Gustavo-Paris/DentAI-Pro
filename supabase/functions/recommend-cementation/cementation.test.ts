@@ -424,7 +424,7 @@ Deno.test("validateHFConcentration — appends to existing warnings without clob
   assertEquals(warnings.length >= 2, true, "Should have at least 2 warnings after correction");
 });
 
-Deno.test("validateHFConcentration — no correction for e.max alias (matched by regex)", () => {
+Deno.test("validateHFConcentration — applies HF correction for e.max alias (matched by regex)", () => {
   // 'e.max' matches the regex /e\.?max|dissilicato|lithium/i
   const protocol = makeProtocolWithHF(
     "Condicionamento com HF 10%",

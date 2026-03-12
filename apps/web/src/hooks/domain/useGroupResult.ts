@@ -206,7 +206,7 @@ export function useGroupResult() {
       // Sync protocols across group
       const allIds = groupEvaluations.map(ev => ev.id);
       if (allIds.length >= 2) {
-        try { await wizard.syncGroupProtocols(sessionId, allIds); } catch { /* non-critical */ }
+        try { await wizard.syncGroupProtocols(sessionId, allIds); } catch (error) { logger.warn('syncGroupProtocols failed after retry:', error); }
       }
       // After reprocessing, the protocol fingerprint may change (e.g. resina::no-resin → real fingerprint).
       // Refetch to get updated data, then navigate to the new URL if fingerprint changed.

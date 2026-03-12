@@ -73,6 +73,15 @@ function sanitizeSentryEvent<T extends Sentry.Event>(event: T): T {
   if (event.contexts) {
     event.contexts = scrubPHI(event.contexts) as typeof event.contexts;
   }
+  if (event.exception?.values) {
+    event.exception.values = event.exception.values.map((ex) => ({
+      ...ex,
+      value: ex.value ? String(scrubPHI(ex.value)) : ex.value,
+    }));
+  }
+  if (event.tags) {
+    event.tags = scrubPHI(event.tags) as typeof event.tags;
+  }
   return event;
 }
 
@@ -113,7 +122,7 @@ if (import.meta.env.PROD && env.VITE_SENTRY_DSN) {
       beforeAddRecordingEvent(event) {
         if (!event.data) return event;
         const payload = JSON.stringify(event.data);
-        if (PHI_PATTERNS.some((re) => { re.lastIndex = 0; return re.test(payload); })) {
+        if (PHI_PATTERNS.some((re) => new RegExp(re.source, re.flags).test(payload))) {
           return null; // drop this recording frame
         }
         return event;

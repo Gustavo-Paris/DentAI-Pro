@@ -19,16 +19,24 @@ import { TIMING } from '@/lib/constants';
 import { EVALUATION_STATUS } from '@/lib/evaluation-status';
 import { wizard as wizardData } from '@/data';
 import { normalizeTreatmentType } from '@/lib/treatment-config';
-import { inferCavityClass, getFullRegion, getToothData, getToothTreatment, normalizeTreatment } from './helpers';
+import { inferCavityClass, getFullRegion, getToothData, getToothTreatment } from './helpers';
 
-// Re-export for backward compatibility — canonical source is ./helpers
-export { getToothData, getToothTreatment, normalizeTreatment } from './helpers';
 import {
   dispatchTreatmentProtocol,
   DEFAULT_CERAMIC_TYPE,
   type ProtocolDispatchClients,
   type GenericProtocolResult,
 } from '@/lib/protocol-dispatch';
+
+/** Wizard submission progress steps */
+const SUBMISSION_STEPS = {
+  PATIENT: 1,
+  EVALUATIONS: 2,
+  PROTOCOLS: 3,
+  FINALIZING: 4,
+  COMPLETE: 5,
+  ERROR: 6,
+} as const;
 
 // ---------------------------------------------------------------------------
 // Params
@@ -75,7 +83,7 @@ async function createOrFindPatient(
   originalPatientBirthDate: string | null,
   setSubmissionStep: (step: number) => void,
 ): Promise<string | null> {
-  setSubmissionStep(1);
+  setSubmissionStep(SUBMISSION_STEPS.PATIENT);
   let patientId = selectedPatientId;
 
   if (formData.patientName && !patientId) {
@@ -353,7 +361,7 @@ async function createEvaluationsWithProtocols(
   // Strategy: call AI only for ONE representative tooth per treatment group,
   // then syncGroupProtocols copies the protocol to siblings. This avoids
   // concurrent edge-function calls that hit the Supabase 60s timeout.
-  setSubmissionStep(2);
+  setSubmissionStep(SUBMISSION_STEPS.EVALUATIONS);
 
   // Pre-compute treatment types and pick one "primary" tooth per group
   const primaryPerGroup: Record<string, string> = {}; // treatmentType -> first tooth
@@ -449,7 +457,8 @@ async function createEvaluationsWithProtocols(
 
       // Mark the evaluation as error so the user can identify it
       if (evaluationId) {
-        await wizardData.updateEvaluationStatus(evaluationId, EVALUATION_STATUS.ERROR);
+        await wizardData.updateEvaluationStatus(evaluationId, EVALUATION_STATUS.ERROR)
+          .catch((statusErr) => logger.warn('Failed to set evaluation error status:', statusErr));
       }
     }
 
@@ -467,7 +476,7 @@ async function createEvaluationsWithProtocols(
   }
 
   // Save pending teeth (detected but not selected by user)
-  setSubmissionStep(4);
+  setSubmissionStep(SUBMISSION_STEPS.FINALIZING);
   const allDetectedTeeth = analysisResult?.detected_teeth || [];
   const unselectedTeeth = allDetectedTeeth.filter((dt) => !teethToProcess.includes(dt.tooth));
 
@@ -508,8 +517,7 @@ async function finalizeSubmission(
   clearDraft: () => void,
   setStep: (step: number) => void,
   setCompletedSessionId: (id: string | null) => void,
-  setSubmissionComplete: (value: boolean) => void,
-): Promise<void> {
+): Promise<boolean> {
   // Track protocol/wizard completion
   if (ctx.successCount > 0) {
     trackEvent('protocol_generated', { teeth_count: ctx.successCount, has_inventory: teethToProcess.length > 0 });
@@ -525,12 +533,12 @@ async function finalizeSubmission(
     }
     toast.error(errorMessage, { duration: 5000 });
     setStep(5);
+    return false;
   } else {
     // At least some succeeded — show success animation then navigate
     clearDraft();
     setCompletedSessionId(sessionId);
     toast.dismiss();
-    setSubmissionComplete(true);
 
     if (ctx.failedTeeth.length > 0) {
       // Partial success — warn about failures
@@ -554,6 +562,7 @@ async function finalizeSubmission(
 
     // Brief delay for success animation — user chooses next action via buttons
     await new Promise((resolve) => setTimeout(resolve, TIMING.WIZARD_SUBMIT_DELAY));
+    return true;
   }
 }
 
@@ -731,10 +740,11 @@ export function useWizardSubmit({
         globalTimeout,
       ]);
 
-      await finalizeSubmission(
+      const succeeded = await finalizeSubmission(
         ctx, teethToProcess, sessionId, t,
-        clearDraft, setStep, setCompletedSessionId, setSubmissionComplete,
+        clearDraft, setStep, setCompletedSessionId,
       );
+      if (succeeded) setSubmissionComplete(true);
     } catch (error: unknown) {
       // This catch handles errors BEFORE the loop (patient creation, etc.)
       const err = error as { message?: string; code?: string };

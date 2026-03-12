@@ -6,7 +6,7 @@ import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { ListPage, GenericErrorState } from '@parisgroup-ai/pageshell/composites';
 import { useEvaluationSessions } from '@/hooks/domain/useEvaluationSessions';
 import type { EvaluationSession } from '@/hooks/domain/useEvaluationSessions';
-import { evaluationKeys } from '@/hooks/domain/evaluation/useEvaluationData';
+import { evaluationKeys } from '@/lib/query-keys';
 import { evaluations } from '@/data';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card } from '@parisgroup-ai/pageshell/primitives';

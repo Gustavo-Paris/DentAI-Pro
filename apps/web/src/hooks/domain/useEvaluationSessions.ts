@@ -67,6 +67,11 @@ function groupBySession(data: RawEvaluation[]): EvaluationSession[] {
   });
 }
 
+// SCALABILITY LIMITATION: Client-side GROUP BY does not scale past ~500
+// individual evaluations. pageSize capped at 500; hasMore signals truncation.
+// Proper fix requires a server-side GROUP BY query (post-launch).
+const PAGE_SIZE = 500;
+
 // ---------------------------------------------------------------------------
 // Hook
 // ---------------------------------------------------------------------------
@@ -84,11 +89,6 @@ export function useEvaluationSessions() {
   // by session client-side. ListPage handles pagination of the grouped sessions.
   // Previous approach fetched 20 evaluations server-side, which produced only
   // ~5 sessions when each session had ~4 teeth.
-  //
-  // SCALABILITY LIMITATION: Client-side GROUP BY does not scale past ~500
-  // individual evaluations. pageSize capped at 500; hasMore signals truncation.
-  // Proper fix requires a server-side GROUP BY query (post-launch).
-  const PAGE_SIZE = 500;
   const query = useQuery({
     queryKey: [...evaluationKeys.sessions(), user?.id],
     queryFn: async () => {

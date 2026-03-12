@@ -409,6 +409,11 @@ Deno.test("refundCredits: idempotent — already-refunded operationId returns tr
   const result = await refundCredits(client, "user-1", "case_analysis", "op-456");
 
   assertEquals(result, true);
+  // RPC must NOT have been called — idempotent path skips the refund
+  const rpcCalls = (client as unknown as { _calls: { rpc?: string }[] })._calls.filter(
+    (c) => c.rpc === "refund_credits"
+  );
+  assertEquals(rpcCalls.length, 0, "refund_credits RPC must not be called for already-refunded operation");
 });
 
 Deno.test("refundCredits: with operationId calls RPC when not yet refunded", async () => {

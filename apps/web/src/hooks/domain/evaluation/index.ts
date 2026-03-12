@@ -1,4 +1,4 @@
-export { useEvaluationData, evaluationKeys } from './useEvaluationData';
+export { useEvaluationData } from './useEvaluationData';
 export type { UseEvaluationDataReturn } from './useEvaluationData';
 
 export { useEvaluationActions } from './useEvaluationActions';

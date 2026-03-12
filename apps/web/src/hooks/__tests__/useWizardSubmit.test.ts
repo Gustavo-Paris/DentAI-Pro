@@ -1,12 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import {
-  getToothData,
-  getToothTreatment,
-  normalizeTreatment,
   useWizardSubmit,
 } from '../domain/wizard/useWizardSubmit';
 import type { UseWizardSubmitParams } from '../domain/wizard/useWizardSubmit';
+import {
+  getToothData,
+  getToothTreatment,
+  normalizeTreatment,
+} from '../domain/wizard/helpers';
 import type {
   PhotoAnalysisResult,
   ReviewFormData,

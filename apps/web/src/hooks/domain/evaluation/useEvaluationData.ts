@@ -15,9 +15,6 @@ import { evaluationKeys, pendingTeethKeys } from '@/lib/query-keys';
 
 import type { EvaluationItem, PatientDataForModal } from '../useEvaluationDetail';
 
-// Re-export for backward compatibility — consumers should import from @/lib/query-keys directly
-export { evaluationKeys } from '@/lib/query-keys';
-
 // ---------------------------------------------------------------------------
 // Return type
 // ---------------------------------------------------------------------------

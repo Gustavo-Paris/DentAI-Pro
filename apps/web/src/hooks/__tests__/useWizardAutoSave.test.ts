@@ -204,6 +204,14 @@ describe('useWizardAutoSave', () => {
   // -------------------------------------------------------------------------
 
   describe('visibilitychange auto-save', () => {
+    afterEach(() => {
+      Object.defineProperty(document, 'visibilityState', {
+        value: 'visible',
+        writable: true,
+        configurable: true,
+      });
+    });
+
     it('calls saveDraft immediately when document becomes hidden at step 2+', () => {
       const saveDraft = vi.fn();
       renderHook(() => useWizardAutoSave(makeParams({ saveDraft, step: 2, imageBase64: 'img' })));

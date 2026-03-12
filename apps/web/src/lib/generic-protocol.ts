@@ -9,6 +9,9 @@ import type { TreatmentType } from '@/lib/treatment-config';
 import { treatmentConfig } from '@/lib/treatment-config';
 import i18n from '@/lib/i18n';
 
+// Computed once at module level — all treatment types except 'encaminhamento'
+const simpleProtocolTypes = Object.keys(treatmentConfig).filter(k => k !== 'encaminhamento');
+
 export function getGenericProtocol(
   treatmentType: TreatmentType,
   tooth: string,
@@ -18,7 +21,6 @@ export function getGenericProtocol(
   const tArr = (key: string) => i18n.t(key, { returnObjects: true }) as string[];
 
   // Simple protocols — all content from i18n (all types except encaminhamento)
-  const simpleProtocolTypes = Object.keys(treatmentConfig).filter(k => k !== 'encaminhamento');
   if (simpleProtocolTypes.includes(treatmentType)) {
     return {
       treatment_type: treatmentType,

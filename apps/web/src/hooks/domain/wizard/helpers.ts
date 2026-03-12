@@ -91,9 +91,6 @@ export function getToothTreatment(
   );
 }
 
-/**
- * @deprecated Use normalizeTreatmentType from @/lib/treatment-config directly.
- */
 export function normalizeTreatment(treatment: string): TreatmentType {
   return normalizeTreatmentType(treatment) as TreatmentType;
 }

@@ -154,7 +154,7 @@ Deno.test("OPEN: check() throws TestError with statusCode 503", () => {
 // OPEN → HALF_OPEN (after timeout)
 // ---------------------------------------------------------------------------
 
-Deno.test("OPEN → HALF_OPEN after reset timeout elapses", () => {
+Deno.test("fresh breaker allows calls after threshold failures on separate instance", () => {
   const cb = createCircuitBreaker(TestError, "TestService");
   const threshold = getThreshold();
 
@@ -182,7 +182,7 @@ Deno.test("OPEN → HALF_OPEN after reset timeout elapses", () => {
 // HALF_OPEN → CLOSED on success
 // ---------------------------------------------------------------------------
 
-Deno.test("HALF_OPEN → CLOSED: success after probe closes the circuit", () => {
+Deno.test("onSuccess() resets an OPEN breaker to CLOSED", () => {
   const cb = createCircuitBreaker(TestError, "TestService");
   const threshold = getThreshold();
 

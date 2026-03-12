@@ -165,9 +165,6 @@ function validateShades(
     if (productLine && layer.shade) {
       const lineRows = getRowsForLine(productLine);
 
-      // Check if shade exists in the product line (was: per-layer DB query)
-      const catalogMatch = lineRows.find((r) => r.shade === layer.shade);
-
       // For enamel layer, ensure we use specific enamel shades when available
       const isEnamelLayer = layerType.includes('esmalte') || layerType.includes('enamel');
 
@@ -478,9 +475,6 @@ function validateShades(
       const enforcedProductLine = enforcedBrandMatch ? enforcedBrandMatch[2].trim() : layer.resin_brand;
       const enforcedLineRows = enforcedProductLine !== productLine ? getRowsForLine(enforcedProductLine || '') : lineRows;
       const enforcedCatalogMatch = enforcedLineRows.find((r) => r.shade === layer.shade);
-
-      // Suppress unused variable warning for catalogMatch (used implicitly via the enforcement rules above)
-      void catalogMatch;
 
       if (!enforcedCatalogMatch) {
         // Shade doesn't exist - find appropriate alternative from cached rows
