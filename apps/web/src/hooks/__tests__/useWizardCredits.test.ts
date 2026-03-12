@@ -243,15 +243,21 @@ describe('useWizardCredits', () => {
     });
 
     it('warning toast receives remaining and required in translation params', () => {
-      // This test validates the key is called with the right params.
-      // The global mock t: (key, params) => `${key}:${JSON.stringify(params)}`
+      // Assert directly on the toast.warning call args rather than relying on
+      // how the t() mock serializes params — decouples from mock format.
       const params = makeParams({ creditsRemaining: 4 });
       renderHook(() => useWizardCredits(params));
 
-      const call = mockToast.warning.mock.calls[0];
-      const message = call[0] as string;
-      // The message should include the key with params encoded
-      expect(message).toContain('toasts.wizard.lowCreditsWarning');
+      // The first arg is the translated message string (which includes the key
+      // via the global t mock), the second arg is the toast options object.
+      expect(mockToast.warning).toHaveBeenCalledWith(
+        expect.stringContaining('toasts.wizard.lowCreditsWarning'),
+        expect.anything(),
+      );
+
+      // Verify the translation was called with the correct interpolation params
+      // by inspecting how the t() mock encoded them in the message string.
+      const message = mockToast.warning.mock.calls[0][0] as string;
       expect(message).toContain('"remaining":4');
       expect(message).toContain('"required":5');
     });

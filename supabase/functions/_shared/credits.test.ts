@@ -46,27 +46,43 @@ interface MockCall {
 function makeClient({
   rpcResults = {} as Record<RpcName | string, { data: unknown; error: unknown }>,
   tableResults = {} as Record<string, { data: unknown; error: unknown }>,
+  alreadyConsumedOperationId = null as string | null,
+  alreadyRefundedOperationId = null as string | null,
+  // Legacy boolean aliases — kept for backward compat (treat as wildcard match)
   alreadyConsumed = false,
   alreadyRefunded = false,
 }: {
   rpcResults?: Record<string, { data: unknown; error: unknown }>;
   tableResults?: Record<string, { data: unknown; error: unknown }>;
+  alreadyConsumedOperationId?: string | null;
+  alreadyRefundedOperationId?: string | null;
   alreadyConsumed?: boolean;
   alreadyRefunded?: boolean;
 } = {}) {
   const calls: MockCall[] = [];
 
   const buildChain = (tableName: string) => {
-    let _eq1: unknown, _eq2: unknown, _eq3: unknown;
+    // Track eq() filter values so maybeSingle can scope its response.
+    // NOTE: The mock framework doesn't support per-call filter introspection at
+    // the level of individual .eq() chains — we capture them via closure instead.
+    const filters: Record<string, unknown> = {};
     const chain = {
       select: (_cols: string) => chain,
-      eq: (_col: string, _val: unknown) => chain,
+      eq: (col: string, val: unknown) => { filters[col] = val; return chain; },
       maybeSingle: async () => {
         // Handle idempotency guard tables
         if (tableName === "credit_transactions") {
-          // Return existing record for idempotent checks based on mock config
-          if (alreadyConsumed) return { data: { id: "tx-1" }, error: null };
-          if (alreadyRefunded) return { data: { id: "tx-2" }, error: null };
+          const queriedOpId = filters["operation_id"] as string | undefined;
+          // Scoped match: only return a hit when the queried operation_id matches
+          if (queriedOpId && alreadyConsumedOperationId === queriedOpId) {
+            return { data: { id: "tx-1" }, error: null };
+          }
+          if (queriedOpId && alreadyRefundedOperationId === queriedOpId) {
+            return { data: { id: "tx-2" }, error: null };
+          }
+          // Legacy boolean aliases: wildcard match regardless of operationId
+          if (!queriedOpId && alreadyConsumed) return { data: { id: "tx-1" }, error: null };
+          if (!queriedOpId && alreadyRefunded) return { data: { id: "tx-2" }, error: null };
           return { data: null, error: null };
         }
         if (tableResults[tableName]) return tableResults[tableName];
@@ -196,7 +212,9 @@ Deno.test("fail-closed: RPC error returns allowed=false, creditsAvailable=0", as
 // ---------------------------------------------------------------------------
 
 Deno.test("idempotent: already-consumed operationId returns allowed=true without re-charging", async () => {
-  const client = makeClient({ alreadyConsumed: true });
+  // Mock is scoped to the specific operationId "op-123" so that a DIFFERENT
+  // operationId would NOT trigger the idempotency path.
+  const client = makeClient({ alreadyConsumedOperationId: "op-123" });
 
   const result = await checkAndUseCredits(
     client,
@@ -404,7 +422,9 @@ Deno.test("refundCredits: returns false when RPC returns falsy data", async () =
 });
 
 Deno.test("refundCredits: idempotent — already-refunded operationId returns true without RPC", async () => {
-  const client = makeClient({ alreadyRefunded: true });
+  // Mock is scoped to the specific operationId "op-456" — a different
+  // operationId would NOT trigger the idempotency path.
+  const client = makeClient({ alreadyRefundedOperationId: "op-456" });
 
   const result = await refundCredits(client, "user-1", "case_analysis", "op-456");
 

@@ -95,7 +95,7 @@ describe('ProtectedRoute', () => {
     mockUseAuth.mockReturnValue({ user: null, loading: false });
 
     render(
-      <MemoryRouter initialEntries={['/dashboard']}>
+      <MemoryRouter>
         <ProtectedRoute>
           <div>Protected content</div>
         </ProtectedRoute>

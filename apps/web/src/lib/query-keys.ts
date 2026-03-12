@@ -131,7 +131,7 @@ export const signedUrlKey = (
   bucket: string,
   path: string,
   thumbnail?: ThumbnailOptions,
-): readonly unknown[] =>
+): readonly ['signed-url', string, string, number, number, number, string] =>
   [
     'signed-url',
     bucket,

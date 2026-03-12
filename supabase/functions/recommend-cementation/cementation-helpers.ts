@@ -229,7 +229,10 @@ export function validateHFConcentration(
   if (!Array.isArray(ceramicTreatment)) return protocol;
 
   let corrected = false;
-  protocol.ceramic_treatment = ceramicTreatment.map((step: Record<string, string>) => {
+  const validSteps = ceramicTreatment.filter(
+    (step): step is Record<string, string> => typeof step === 'object' && step !== null,
+  );
+  protocol.ceramic_treatment = validSteps.map((step) => {
     const stepText = `${step.step || ''} ${step.material || ''}`;
     if (/10\s*%/i.test(stepText) && /(?:HF|fluorídr|fluor)/i.test(stepText)) {
       corrected = true;

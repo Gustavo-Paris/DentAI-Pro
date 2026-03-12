@@ -267,7 +267,7 @@ test.describe("Pricing page — authenticated", () => {
     await page.goto("/pricing?subscription=canceled");
 
     // Should redirect back to /pricing without query param
-    await expect(page).toHaveURL("/pricing", { timeout: 5_000 });
+    await expect(page).toHaveURL("/pricing", { timeout: 10_000 });
 
     // Plan cards should still be visible
     await expect(

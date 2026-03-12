@@ -83,12 +83,16 @@ Deno.serve(async (req: Request) => {
         .select("id", { count: "exact", head: true })
         .eq("user_id", user_id);
 
-      // Count pending teeth (evaluations without completed protocols)
+      // Count pending teeth (evaluations without completed protocols, last 30 days).
+      // The 30-day window prevents inactive users with old unresolved evaluations
+      // from receiving weekly emails.
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
       const { count: pendingTeeth } = await supabase
         .from("evaluations")
         .select("id", { count: "exact", head: true })
         .eq("user_id", user_id)
-        .is("protocol", null);
+        .is("protocol", null)
+        .gte("created_at", thirtyDaysAgo);
 
       const stats = {
         casesThisWeek: casesThisWeek || 0,

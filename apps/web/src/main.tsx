@@ -55,7 +55,7 @@ function scrubPHI(value: unknown, depth = 0): unknown {
   return value;
 }
 
-/** Strip PHI from a Sentry event's breadcrumbs, request body and extra data. */
+/** Strip PHI from a Sentry event's breadcrumbs, request body, extra data, exceptions and tags. Mutates the event in-place. */
 function sanitizeSentryEvent<T extends Sentry.Event>(event: T): T {
   if (event.breadcrumbs?.values) {
     event.breadcrumbs.values = event.breadcrumbs.values.map((b) => ({

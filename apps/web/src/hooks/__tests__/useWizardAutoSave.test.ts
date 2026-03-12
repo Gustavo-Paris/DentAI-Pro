@@ -326,6 +326,13 @@ describe('useWizardAutoSave', () => {
   // -------------------------------------------------------------------------
 
   describe('beforeunload warning', () => {
+    // NOTE: These tests spy on window.addEventListener and filter for
+    // 'beforeunload' calls rather than dispatching an actual beforeunload event.
+    // Dispatching a real 'beforeunload' event in jsdom does not reliably invoke
+    // the returnValue setter (the mechanism used to show the browser dialog),
+    // so the spy-and-filter approach is necessary to verify registration without
+    // a major refactor of the hook or the test environment.
+
     it('adds beforeunload listener when step >= 2 and image is present', () => {
       const addSpy = vi.spyOn(window, 'addEventListener');
       renderHook(() => useWizardAutoSave(makeParams({ step: 2, imageBase64: 'img' })));
@@ -335,6 +342,8 @@ describe('useWizardAutoSave', () => {
     });
 
     it('does not add beforeunload listener when step is 1', () => {
+      // Filter for 'beforeunload' specifically because React and jsdom register
+      // other listeners (e.g., 'storage', 'popstate') during the render cycle.
       const addSpy = vi.spyOn(window, 'addEventListener');
       renderHook(() => useWizardAutoSave(makeParams({ step: 1, imageBase64: 'img' })));
 
@@ -344,6 +353,7 @@ describe('useWizardAutoSave', () => {
     });
 
     it('does not add beforeunload listener when imageBase64 is null', () => {
+      // Filter for 'beforeunload' specifically — see note above.
       const addSpy = vi.spyOn(window, 'addEventListener');
       renderHook(() => useWizardAutoSave(makeParams({ step: 3, imageBase64: null })));
 

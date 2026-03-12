@@ -28,6 +28,11 @@ import {
   type GenericProtocolResult,
 } from '@/lib/protocol-dispatch';
 
+/** Type guard: checks whether an unknown caught error has a `context` Response property. */
+function hasContext(err: unknown): err is { context: Response } {
+  return typeof err === 'object' && err !== null && 'context' in err;
+}
+
 /** Wizard submission progress steps */
 const SUBMISSION_STEPS = {
   PATIENT: 1,
@@ -239,6 +244,7 @@ async function dispatchProtocolForTooth(
     saveGenericProtocol: (id, protocol) => wizardData.updateEvaluationProtocol(id, protocol),
   };
 
+  // Credit idempotency key: ensures this tooth's protocol is only charged once
   const operationId = `${evaluationId}:${tooth}:protocol`;
 
   // Generate protocol WITH retry (2 retries, 2s exponential backoff)
@@ -323,7 +329,7 @@ async function dispatchProtocolForTooth(
         setCurrentRetryAttempt(attempt);
 
         // Extract edge function response body for better debugging
-        const context = (err as { context?: Response }).context;
+        const context = hasContext(err) ? err.context : undefined;
         if (context && typeof context.json === 'function') {
           try {
             const body = await context.json();

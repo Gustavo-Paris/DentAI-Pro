@@ -160,7 +160,8 @@ export function useGroupResult() {
     if (!user || !primaryEval) return;
     setIsRetrying(true);
     try {
-      await evaluations.updateStatus(primaryEval.id, EVALUATION_STATUS.ANALYZING);
+      await evaluations.updateStatus(primaryEval.id, EVALUATION_STATUS.ANALYZING)
+        .catch((err) => logger.warn('Failed to set ANALYZING status:', err));
       const treatmentType = (primaryEval.treatment_type || 'resina') as 'resina' | 'porcelana';
       const operationId = `${primaryEval.id}:${primaryEval.tooth}:protocol`;
       await dispatchTreatmentProtocol(
@@ -211,11 +212,11 @@ export function useGroupResult() {
       // After reprocessing, the protocol fingerprint may change (e.g. resina::no-resin → real fingerprint).
       // Refetch to get updated data, then navigate to the new URL if fingerprint changed.
       await queryClient.invalidateQueries({ queryKey: groupResultKeys.detail(sessionId) });
-      const refreshed = await queryClient.fetchQuery({
+      const refreshed = await queryClient.fetchQuery<SessionEvaluationRow[]>({
         queryKey: groupResultKeys.detail(sessionId),
         queryFn: () => evaluations.listBySession(sessionId, user!.id),
       });
-      const updatedEval = (refreshed as SessionEvaluationRow[])?.find(ev => ev.id === primaryEval.id);
+      const updatedEval = refreshed?.find(ev => ev.id === primaryEval.id);
       const newFingerprint = updatedEval ? getProtocolFingerprint(updatedEval) : decodedFingerprint;
       if (newFingerprint !== decodedFingerprint) {
         navigate(`/result/group/${sessionId}/${encodeURIComponent(newFingerprint)}`, { replace: true });
