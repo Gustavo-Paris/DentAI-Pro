@@ -144,8 +144,7 @@ export default function AppLayout() {
       brand={{
         logoSrc: '/logo.svg',
         icon: BrandToothIcon,
-        // PageShell types say string, but it renders as React children — JSX works at runtime.
-        title: (<span className="text-base font-bold tracking-wide text-sidebar-foreground">{BRAND_NAME}</span>) as unknown as string,
+        title: BRAND_NAME,
         href: '/dashboard',
       }}
       renderAvatar={renderAvatar}
