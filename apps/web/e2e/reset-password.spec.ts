@@ -38,12 +38,11 @@ test.describe("Reset Password", () => {
   test("request new link navigates to forgot-password", async ({ page }) => {
     await page.goto("/reset-password");
 
-    const newLinkBtn = page
-      .getByText(/solicitar novo link|novo link/i)
-      .first();
-    await expect(newLinkBtn).toBeVisible({ timeout: 10_000 });
+    // The button is wrapped in a <Link to="/forgot-password"> — click the link element
+    const link = page.locator('a[href="/forgot-password"]').first();
+    await expect(link).toBeVisible({ timeout: 10_000 });
 
-    await newLinkBtn.click();
+    await link.click();
 
     await expect(page).toHaveURL(/\/forgot-password/);
   });
