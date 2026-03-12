@@ -397,7 +397,7 @@ export default function NewCase() {
 
       {/* Draft Restore Modal */}
       <DraftRestoreModal
-        open={wizard.showRestoreModal}
+        open={wizard.showRestoreModal && disclaimer.accepted}
         onOpenChange={(open) => {
           if (!open) wizard.handleDiscardDraft();
         }}
