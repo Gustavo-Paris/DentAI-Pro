@@ -43,12 +43,25 @@ export function useGroupResult() {
     gcTime: QUERY_GC_TIMES.PHI_SENSITIVE,
   });
 
-  // Filter to evaluations matching the fingerprint
+  // Filter to evaluations matching the fingerprint, merging orphan resina groups
   const groupEvaluations = useMemo(() => {
     if (!allEvaluations) return [];
-    return allEvaluations.filter(
+    const exact = allEvaluations.filter(
       ev => getProtocolFingerprint(ev) === decodedFingerprint
     );
+
+    // Merge unsynced resina orphans (same logic as groupByTreatment in EvaluationDetails)
+    if (decodedFingerprint.startsWith('resina') && decodedFingerprint !== 'resina::no-resin' && decodedFingerprint !== 'resina') {
+      const exactIds = new Set(exact.map(ev => ev.id));
+      const orphans = allEvaluations.filter(ev => {
+        if (exactIds.has(ev.id)) return false;
+        const fp = getProtocolFingerprint(ev);
+        return fp === 'resina::no-resin' || fp === 'resina';
+      });
+      exact.push(...orphans);
+    }
+
+    return exact;
   }, [allEvaluations, decodedFingerprint]);
 
   // Use first evaluation as the protocol source
