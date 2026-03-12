@@ -369,7 +369,7 @@ export const recommendResin: PromptDefinition<Params> = {
   description: 'Gera recomendação completa de resina com protocolo de estratificação',
   model: 'claude-sonnet-4-6',
   temperature: 0.0,
-  maxTokens: 4096,
+  maxTokens: 8192,
   mode: 'text',
   provider: 'claude',
 

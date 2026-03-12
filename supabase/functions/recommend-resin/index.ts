@@ -451,8 +451,69 @@ Deno.serve(async (req) => {
 
       recommendation = parseAIResponse(RecommendResinResponseSchema, aiResult.functionCall.args, 'recommend-resin');
 
+      // Retry once if AI omitted the protocol object — this is the most critical output
       if (!recommendation.protocol) {
-        logger.warn(`[${reqId}] ${usedProvider} omitted protocol object — response will lack stratification details`);
+        const elapsedMs = Date.now() - aiStartTime;
+        const remainingMs = EDGE_FUNCTION_BUDGET_MS - elapsedMs;
+        if (remainingMs > 15_000) {
+          logger.warn(`[${reqId}] ${usedProvider} omitted protocol — retrying with remaining ${remainingMs}ms`);
+          try {
+            const retryResult = await callClaudeWithTools(
+              promptDef.model,
+              messages,
+              tools,
+              {
+                temperature: 0.0,
+                maxTokens: promptDef.maxTokens,
+                forceFunctionName: "generate_resin_protocol",
+                timeoutMs: remainingMs - 5_000,
+                maxRetries: 0,
+              }
+            );
+            if (retryResult.functionCall) {
+              const retryParsed = parseAIResponse(RecommendResinResponseSchema, retryResult.functionCall.args, 'recommend-resin-retry');
+              if (retryParsed.protocol) {
+                logger.log(`[${reqId}] Retry succeeded — protocol recovered`);
+                recommendation = retryParsed;
+                usedProvider = 'claude';
+              } else {
+                logger.warn(`[${reqId}] Retry also omitted protocol`);
+              }
+            }
+          } catch (retryErr) {
+            logger.warn(`[${reqId}] Retry failed: ${retryErr instanceof Error ? retryErr.message : String(retryErr)}`);
+          }
+        } else {
+          logger.warn(`[${reqId}] ${usedProvider} omitted protocol — insufficient time for retry (${remainingMs}ms remaining)`);
+        }
+      }
+
+      // Last resort: generate a minimal fallback protocol so the user never sees "Protocolo não disponível"
+      if (!recommendation.protocol) {
+        logger.warn(`[${reqId}] Generating fallback protocol — AI failed to produce one`);
+        const resinName = recommendation.recommended_resin_name || 'Resina composta';
+        const isAnterior = ['11','12','13','21','22','23','31','32','33','41','42','43'].includes(data.tooth);
+        const shade = data.toothColor || 'A2';
+
+        recommendation.protocol = {
+          layers: [
+            { order: 1, name: 'Dentina/Corpo', resin_brand: resinName, shade: shade, thickness: '1.0-1.5mm', purpose: 'Restauração de corpo dentinário', technique: 'Incrementos oblíquos de 2mm, fotopolimerizar 20s cada' },
+            { order: 2, name: 'Esmalte Vestibular', resin_brand: resinName, shade: isAnterior ? 'WE' : shade, thickness: '0.3-0.5mm', purpose: 'Camada estética final', technique: 'Camada fina vestibular, fotopolimerizar 20s' },
+          ],
+          alternative: { resin: resinName, shade: shade, technique: 'Técnica incremental única — incrementos oblíquos de 2mm', tradeoff: 'Menos naturalidade, porém simplifica execução' },
+          checklist: [
+            'Seleção de cor com dente hidratado sob luz natural',
+            'Isolamento absoluto ou relativo conforme caso',
+            'Condicionamento ácido 37% (15s esmalte, 15s dentina)',
+            'Adesivo conforme fabricante',
+            'Incrementos de 2mm, fotopolimerizar cada incremento',
+            'Acabamento com discos Sof-Lex ou lâmina 12',
+            'Polimento com pasta diamantada e feltro',
+          ],
+          confidence: 'baixa',
+          alerts: ['⚠️ Protocolo gerado automaticamente — IA não produziu estratificação detalhada. Revise clinicamente antes de executar.'],
+          warnings: [],
+        };
       }
     } catch (error) {
       if (error instanceof ClaudeError) {
