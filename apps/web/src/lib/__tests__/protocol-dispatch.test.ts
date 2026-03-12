@@ -116,16 +116,20 @@ describe('dispatchTreatmentProtocol', () => {
       ).rejects.toThrow('resinParams required');
     });
 
-    it('should propagate invokeResin errors', async () => {
+    it('should fall back to generic protocol when invokeResin fails', async () => {
       const clients = createMockClients();
       (clients.invokeResin as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('edge fn fail'));
 
-      await expect(
-        dispatchTreatmentProtocol(
-          { treatmentType: 'resina', evaluationId: 'eval-1', tooth: '11', resinParams: BASE_RESIN_PARAMS },
-          clients,
-        ),
-      ).rejects.toThrow('edge fn fail');
+      const result = await dispatchTreatmentProtocol(
+        { treatmentType: 'resina', evaluationId: 'eval-1', tooth: '11', resinParams: BASE_RESIN_PARAMS },
+        clients,
+      );
+
+      expect(result).toEqual({ aiGenerated: false });
+      expect(clients.saveGenericProtocol).toHaveBeenCalledWith('eval-1', expect.objectContaining({
+        treatment_type: 'resina',
+        tooth: '11',
+      }));
     });
   });
 
@@ -163,16 +167,20 @@ describe('dispatchTreatmentProtocol', () => {
       ).rejects.toThrow('cementationParams required');
     });
 
-    it('should propagate invokeCementation errors', async () => {
+    it('should fall back to generic protocol when invokeCementation fails', async () => {
       const clients = createMockClients();
       (clients.invokeCementation as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('cementation fail'));
 
-      await expect(
-        dispatchTreatmentProtocol(
-          { treatmentType: 'porcelana', evaluationId: 'eval-2', tooth: '21', cementationParams: BASE_CEMENTATION_PARAMS },
-          clients,
-        ),
-      ).rejects.toThrow('cementation fail');
+      const result = await dispatchTreatmentProtocol(
+        { treatmentType: 'porcelana', evaluationId: 'eval-2', tooth: '21', cementationParams: BASE_CEMENTATION_PARAMS },
+        clients,
+      );
+
+      expect(result).toEqual({ aiGenerated: false });
+      expect(clients.saveGenericProtocol).toHaveBeenCalledWith('eval-2', expect.objectContaining({
+        treatment_type: 'porcelana',
+        tooth: '21',
+      }));
     });
   });
 

@@ -266,14 +266,31 @@ describe('getProtocolFingerprint', () => {
     expect(getProtocolFingerprint(eval1)).toBe('porcelana::::');
   });
 
-  it('should return treatment type as fingerprint for generic treatments', () => {
+  it('should return treatment type as fingerprint for generic treatments (except gengivoplastia)', () => {
     for (const type of SPECIAL_TREATMENT_TYPES) {
+      if (type === 'gengivoplastia') continue; // gengivoplastia has unique fingerprint per evaluation
       const eval1: GroupEvaluation = {
         ...baseGroupEval,
         treatment_type: type,
       };
       expect(getProtocolFingerprint(eval1)).toBe(type);
     }
+  });
+
+  it('should return unique fingerprint per evaluation for gengivoplastia', () => {
+    const eval1: GroupEvaluation = {
+      ...baseGroupEval,
+      id: 'eval-gengivo-1',
+      treatment_type: 'gengivoplastia',
+    };
+    const eval2: GroupEvaluation = {
+      ...baseGroupEval,
+      id: 'eval-gengivo-2',
+      treatment_type: 'gengivoplastia',
+    };
+    expect(getProtocolFingerprint(eval1)).toBe('gengivoplastia::eval-gengivo-1');
+    expect(getProtocolFingerprint(eval2)).toBe('gengivoplastia::eval-gengivo-2');
+    expect(getProtocolFingerprint(eval1)).not.toBe(getProtocolFingerprint(eval2));
   });
 
   it('should default to resina when treatment_type is null', () => {
