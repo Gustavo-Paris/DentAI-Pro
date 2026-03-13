@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect, memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, Button, Badge, Alert, AlertDescription, Label, Textarea } from '@parisgroup-ai/pageshell/primitives';
+import { Card, CardContent, Button, Badge, Alert, AlertDescription, Label, Textarea, FileDropzone } from '@parisgroup-ai/pageshell/primitives';
+import { useIsMobile } from '@parisgroup-ai/pageshell/core';
 import { Camera, Upload, X, Loader2, User, Smile, Sparkles, Lightbulb, Zap, AlertCircle, CheckCircle2, AlertTriangle, ShieldAlert, FileImage, Mic, MicOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { compressImage, getImageDimensions } from '@/lib/imageUtils';
@@ -90,11 +91,9 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
   onAnamnesisChange,
 }: PhotoUploadStepProps) {
   const { t } = useTranslation();
-  const [dragActive, setDragActive] = useState(false);
   const [dragActiveSmile45, setDragActiveSmile45] = useState(false);
   const [dragActiveFace, setDragActiveFace] = useState(false);
   const [dragActiveRadiograph, setDragActiveRadiograph] = useState(false);
-  const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [isCompressing, setIsCompressing] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [processingOptional, setProcessingOptional] = useState<'smile45' | 'face' | 'radiograph' | null>(null);
@@ -119,21 +118,9 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
     prevListeningRef.current = speech.isListening;
   }, [speech.isListening, speech.transcript, anamnesis, onAnamnesisChange]);
 
-  const isMobileDevice = IS_MOBILE_DEVICE;
-
-  // Detecta tela pequena para layout responsivo
-  useEffect(() => {
-    const checkScreen = () => {
-      setIsSmallScreen(window.innerWidth < 768);
-    };
-
-    checkScreen();
-    window.addEventListener('resize', checkScreen);
-    return () => window.removeEventListener('resize', checkScreen);
-  }, []);
-
   // Mostra botão câmera se for mobile real OU tela pequena (para preview)
-  const showCameraButton = isMobileDevice || isSmallScreen;
+  const isMobile = useIsMobile();
+  const showCameraButton = IS_MOBILE_DEVICE || isMobile;
 
   // Background quality check — runs after photo is set
   useEffect(() => {
@@ -288,26 +275,6 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
     }
   }, [onImageChange, t]);
 
-  const handleDrag = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') {
-      setDragActive(true);
-    } else if (e.type === 'dragleave') {
-      setDragActive(false);
-    }
-  }, []);
-
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFile(e.dataTransfer.files[0]);
-    }
-  }, [handleFile]);
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       handleFile(e.target.files[0]);
@@ -439,81 +406,89 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
 
       {!imageBase64 ? (
         /* Premium Drop Zone */
-        <div
-          role="region"
-          aria-label={t('components.wizard.photoUpload.dropZoneLabel')}
-          className={`relative rounded-xl overflow-hidden transition-all duration-300 ${
-            dragActive
-              ? 'border-2 border-primary bg-primary/5 scale-[1.02] shadow-[0_0_30px_rgb(var(--color-primary-rgb)/0.15)]'
-              : 'border-2 border-dashed border-border hover:border-primary/40 transition-colors'
-          }`}
-          onDragEnter={handleDrag}
-          onDragLeave={handleDrag}
-          onDragOver={handleDrag}
-          onDrop={handleDrop}
+        <FileDropzone
+          accept={{ 'image/*': ['.jpg', '.jpeg', '.png', '.webp', '.heic'] }}
+          maxSize={10 * 1024 * 1024}
+          maxFiles={1}
+          onDrop={(acceptedFiles) => {
+            if (acceptedFiles[0]) handleFile(acceptedFiles[0]);
+          }}
+          className={`relative rounded-xl overflow-hidden transition-all duration-300`}
         >
-          <div className="relative">
-            <div className="ai-grid-pattern absolute inset-0 opacity-20 dark:opacity-40 pointer-events-none" aria-hidden="true" />
-            <div className="py-10 px-4 relative">
-              {isCompressing ? (
-                <div className="flex flex-col items-center justify-center text-center" role="status" aria-live="polite">
-                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                    <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                  </div>
-                  <h3 className="text-lg font-medium mb-2">
-                    {t('components.wizard.photoUpload.processing')}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {t('components.wizard.photoUpload.optimizing')}
-                  </p>
+          {({ isDragActive }) => (
+            <div
+              role="region"
+              aria-label={t('components.wizard.photoUpload.dropZoneLabel')}
+              className={`border-2 rounded-xl transition-all duration-300 ${
+                isDragActive
+                  ? 'border-primary bg-primary/5 scale-[1.02] shadow-[0_0_30px_rgb(var(--color-primary-rgb)/0.15)]'
+                  : 'border-dashed border-border hover:border-primary/40'
+              }`}
+            >
+              <div className="relative">
+                <div className="ai-grid-pattern absolute inset-0 opacity-20 dark:opacity-40 pointer-events-none" aria-hidden="true" />
+                <div className="py-10 px-4 relative">
+                  {isCompressing ? (
+                    <div className="flex flex-col items-center justify-center text-center" role="status" aria-live="polite">
+                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                        <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                      </div>
+                      <h3 className="text-lg font-medium mb-2">
+                        {t('components.wizard.photoUpload.processing')}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {t('components.wizard.photoUpload.optimizing')}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center text-center">
+                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 glow-icon">
+                        <Camera className="w-8 h-8 text-primary animate-[float_3s_ease-in-out_infinite]" />
+                      </div>
+
+                      <h3 className="text-lg font-medium mb-2">
+                        {t('components.wizard.photoUpload.dragHere')}
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-6">
+                        {showCameraButton ? t('components.wizard.photoUpload.orChooseMobile') : t('components.wizard.photoUpload.orChooseDesktop')}
+                      </p>
+
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <Button
+                          variant="default"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="btn-glow btn-press"
+                        >
+                          <Upload className="w-4 h-4 mr-2" />
+                          {t('components.wizard.photoUpload.chooseFromGallery')}
+                        </Button>
+                        {showCameraButton && (
+                          <Button
+                            variant="outline"
+                            onClick={() => cameraInputRef.current?.click()}
+                            className="btn-press"
+                          >
+                            <Camera className="w-4 h-4 mr-2" />
+                            {t('components.wizard.photoUpload.takePhoto')}
+                          </Button>
+                        )}
+                      </div>
+
+                      {/* Format chips */}
+                      <div className="flex items-center gap-2 mt-6">
+                        {['JPG', 'PNG', 'HEIC', '10MB'].map((fmt) => (
+                          <Badge key={fmt} variant="outline" className="text-xs font-normal glow-badge">
+                            {fmt}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center text-center">
-                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 glow-icon">
-                    <Camera className="w-8 h-8 text-primary animate-[float_3s_ease-in-out_infinite]" />
-                  </div>
-
-                  <h3 className="text-lg font-medium mb-2">
-                    {t('components.wizard.photoUpload.dragHere')}
-                  </h3>
-                  <p className="text-sm text-muted-foreground mb-6">
-                    {showCameraButton ? t('components.wizard.photoUpload.orChooseMobile') : t('components.wizard.photoUpload.orChooseDesktop')}
-                  </p>
-
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <Button
-                      variant="default"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="btn-glow btn-press"
-                    >
-                      <Upload className="w-4 h-4 mr-2" />
-                      {t('components.wizard.photoUpload.chooseFromGallery')}
-                    </Button>
-                    {showCameraButton && (
-                      <Button
-                        variant="outline"
-                        onClick={() => cameraInputRef.current?.click()}
-                        className="btn-press"
-                      >
-                        <Camera className="w-4 h-4 mr-2" />
-                        {t('components.wizard.photoUpload.takePhoto')}
-                      </Button>
-                    )}
-                  </div>
-
-                  {/* Format chips */}
-                  <div className="flex items-center gap-2 mt-6">
-                    {['JPG', 'PNG', 'HEIC', '10MB'].map((fmt) => (
-                      <Badge key={fmt} variant="outline" className="text-xs font-normal glow-badge">
-                        {fmt}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
+              </div>
             </div>
-          </div>
-        </div>
+          )}
+        </FileDropzone>
       ) : (
         /* Photo Preview — Premium Card */
         <Card className="glass-panel card-elevated overflow-hidden rounded-xl">
