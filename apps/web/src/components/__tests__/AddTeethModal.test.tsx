@@ -58,14 +58,51 @@ vi.mock('lucide-react', () => ({
   Wand2: ({ className }: any) => <span data-testid="wand-icon" className={className} />,
 }));
 
-// Mock UI components
+// Mock FormModal from composites — renders as a thin dialog shell so tests
+// can interact with the custom tooth-picker content placed in slots.beforeFields.
+vi.mock('@parisgroup-ai/pageshell/composites', () => ({
+  FormModal: ({
+    open,
+    onOpenChange,
+    title,
+    description,
+    icon,
+    onSubmit,
+    isSubmitting,
+    isSubmitDisabled,
+    submitText,
+    cancelText,
+    slots,
+  }: any) => {
+    if (!open) return null;
+    return (
+      <div data-testid="dialog" role="dialog">
+        <div data-testid="dialog-content">
+          <div>
+            {icon}
+            <h2>{title}</h2>
+            {description && <p>{description}</p>}
+          </div>
+          <div>{slots?.beforeFields}</div>
+          <div data-testid="dialog-footer">
+            <button onClick={() => onOpenChange?.(false)}>
+              {cancelText ?? 'Cancel'}
+            </button>
+            <button
+              onClick={onSubmit}
+              disabled={isSubmitting || isSubmitDisabled}
+            >
+              {submitText ?? 'Submit'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  },
+}));
+
+// Mock UI primitives used inside the tooth-picker content
 vi.mock('@parisgroup-ai/pageshell/primitives', () => ({
-  Dialog: ({ children, open }: any) => open ? <div data-testid="dialog" role="dialog">{children}</div> : null,
-  DialogContent: ({ children }: any) => <div data-testid="dialog-content">{children}</div>,
-  DialogHeader: ({ children }: any) => <div>{children}</div>,
-  DialogTitle: ({ children, className }: any) => <h2 className={className}>{children}</h2>,
-  DialogDescription: ({ children }: any) => <p>{children}</p>,
-  DialogFooter: ({ children }: any) => <div data-testid="dialog-footer">{children}</div>,
   Button: ({ children, onClick, disabled, ...props }: any) => (
     <button onClick={onClick} disabled={disabled} {...props}>{children}</button>
   ),
