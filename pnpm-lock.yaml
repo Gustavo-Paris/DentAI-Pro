@@ -10,16 +10,14 @@ overrides:
   '@types/react': ^18.3.18
   '@types/react-dom': ^18.3.5
   dompurify: '>=3.3.2'
-  '@parisgroup-ai/pageshell': '>=3.7.0'
-  '@parisgroup-ai/pageshell-core': '>=0.4.0'
 
 importers:
 
   .:
     dependencies:
       '@parisgroup-ai/agent-hub':
-        specifier: ^5.0.0
-        version: 5.0.0(@parisgroup-ai/pageshell@3.7.0(@parisgroup-ai/pageshell-core@0.4.0(date-fns@4.1.0)(react@18.3.1))(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(chart.js@4.5.1)(next@16.1.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-chartjs-2@5.3.1(chart.js@4.5.1)(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react-hook-form@7.71.1(react@18.3.1))(react-router-dom@7.13.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(reactflow@11.11.4(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(recharts@2.15.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(@types/node@22.19.8)(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(jiti@2.6.1)(lightningcss@1.31.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(terser@5.46.0)(yaml@2.8.2)
+        specifier: ^4.9.2
+        version: 4.12.0(@parisgroup-ai/pageshell@3.7.0(@parisgroup-ai/pageshell-core@0.4.0(date-fns@4.1.0)(react@18.3.1))(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(chart.js@4.5.1)(next@16.1.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-chartjs-2@5.3.1(chart.js@4.5.1)(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react-hook-form@7.71.1(react@18.3.1))(react-router-dom@7.13.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(reactflow@11.11.4(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(recharts@2.15.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(@types/node@22.19.8)(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(jiti@2.6.1)(lightningcss@1.31.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(terser@5.46.0)(yaml@2.8.2)
     devDependencies:
       '@playwright/test':
         specifier: 1.58.2
@@ -40,13 +38,13 @@ importers:
         specifier: ^3.10.0
         version: 3.10.0(react-hook-form@7.71.1(react@18.3.1))
       '@parisgroup-ai/domain-odonto-ai':
-        specifier: ^1.1.1
-        version: 1.1.1(@parisgroup-ai/pageshell@3.7.0(@parisgroup-ai/pageshell-core@0.4.0(date-fns@3.6.0)(react@18.3.1))(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(chart.js@4.5.1)(next@16.1.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-chartjs-2@5.3.1(chart.js@4.5.1)(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react-hook-form@7.71.1(react@18.3.1))(react-router-dom@6.30.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(reactflow@11.11.4(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(recharts@2.15.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(lucide-react@0.462.0(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: 1.1.0
+        version: 1.1.0(@parisgroup-ai/pageshell@3.7.0(@parisgroup-ai/pageshell-core@0.4.0(date-fns@3.6.0)(react@18.3.1))(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(chart.js@4.5.1)(next@16.1.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-chartjs-2@5.3.1(chart.js@4.5.1)(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react-hook-form@7.71.1(react@18.3.1))(react-router-dom@6.30.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(reactflow@11.11.4(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(recharts@2.15.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(react@18.3.1)
       '@parisgroup-ai/pageshell':
-        specifier: '>=3.7.0'
+        specifier: ^3.7.0
         version: 3.7.0(@parisgroup-ai/pageshell-core@0.4.0(date-fns@3.6.0)(react@18.3.1))(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(chart.js@4.5.1)(next@16.1.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-chartjs-2@5.3.1(chart.js@4.5.1)(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react-hook-form@7.71.1(react@18.3.1))(react-router-dom@6.30.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(reactflow@11.11.4(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(recharts@2.15.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@parisgroup-ai/pageshell-core':
-        specifier: '>=0.4.0'
+        specifier: ^0.4.0
         version: 0.4.0(date-fns@3.6.0)(react@18.3.1)
       '@radix-ui/react-slot':
         specifier: ^1.2.3
@@ -1491,8 +1489,8 @@ packages:
     resolution: {integrity: sha512-R5R9tb2AXs2IRLNKLBJDynhkfmx7mX0vi8NkhZb3gUkPWHn6HXk5J8iQ/dql0U3ApfWym4kXXmBDRGO+oeOfjg==}
     engines: {node: '>=14'}
 
-  '@parisgroup-ai/agent-hub@5.0.0':
-    resolution: {integrity: sha512-nmP/eh0hBzyjW/duug8cjJUY5bm09FUGluN/mpITXHZGsD5PrbHBNrBVaa50OrMCwhr+8ec2zTSregkm/ynXUQ==, tarball: https://npm.pkg.github.com/download/@parisgroup-ai/agent-hub/5.0.0/2f5459b4a4e554011400cea442adc56a04684a51}
+  '@parisgroup-ai/agent-hub@4.12.0':
+    resolution: {integrity: sha512-FSXaZ3LlW5niZq7W9jWavbyCPN2UEtA3Iw/wtI9iRUURlwKj2dsmK10IlMQl+BOX60mbnDYtPRQFLZAz5q/l9A==, tarball: https://npm.pkg.github.com/download/@parisgroup-ai/agent-hub/4.12.0/705277e17277795af1968b1073cb03084eb6eee1}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -1507,17 +1505,15 @@ packages:
     resolution: {integrity: sha512-BK31Z7cWLWRFlxV4FUmXLzRXdtCgNfiI9Zphw2jAmjmlHmzVGBvCttKFzxenx0L35pnHDsc3FxlpXZaT7edScA==, tarball: https://npm.pkg.github.com/download/@parisgroup-ai/design-os/0.3.2/758447808fecb72ae29fb96b05c4073bcf173756}
     hasBin: true
     peerDependencies:
-      '@parisgroup-ai/pageshell': '>=3.7.0'
+      '@parisgroup-ai/pageshell': ^3.0.11
       react: ^18.3.1
       react-dom: ^18.3.1
 
-  '@parisgroup-ai/domain-odonto-ai@1.1.1':
-    resolution: {integrity: sha512-MIg+QYd9/U01QBmYefrEt76yCMWJUpGbMDpYk5Dxy2e/pw19a+4eiHFgfk1Odz/d4btk7kdZWhDtuosoCGGQNA==, tarball: https://npm.pkg.github.com/download/@parisgroup-ai/domain-odonto-ai/1.1.1/247d267f2f37b2e5121a33a8ecf628d3d1016f56}
+  '@parisgroup-ai/domain-odonto-ai@1.1.0':
+    resolution: {integrity: sha512-3WvnPu6GD9qTQfk1bPajgfhpc5DWgUzRd9jl6S7pxZpZHrsaHEb+LMRkt8Wk3weZunNUkn0bnkEZGpWwHmEcJw==, tarball: https://npm.pkg.github.com/download/@parisgroup-ai/domain-odonto-ai/1.1.0/0ed26bbc104ade19c6945ef2f97bd5ebf123619a}
     peerDependencies:
-      '@parisgroup-ai/pageshell': '>=3.7.0'
-      lucide-react: '>=0.400.0'
+      '@parisgroup-ai/pageshell': '>=2.0.0'
       react: ^18.3.1
-      react-dom: ^18.3.1
 
   '@parisgroup-ai/pageshell-core@0.4.0':
     resolution: {integrity: sha512-6K9sfBSsmWfdaQ4gCiE5hjtFnUEKO5yDn2uwAvZAy87KqtIMsRWtYJnJVpvsOi1fWz74Ud2R+ehQ2kmLCQ9m9g==, tarball: https://npm.pkg.github.com/download/@parisgroup-ai/pageshell-core/0.4.0/735059fc0bccd9e37b0c1f1d53bcfbad853e6727}
@@ -1529,7 +1525,7 @@ packages:
   '@parisgroup-ai/pageshell@3.7.0':
     resolution: {integrity: sha512-vjicSS5iFc0sbSu+YvbxoiZvc5Ds2tkLa8lngZQsEK/5AsWInaQ/UTsRFJX/C7FPHh8h1ixPdsg2MlMPFBDmMg==, tarball: https://npm.pkg.github.com/download/@parisgroup-ai/pageshell/3.7.0/63f23d7c287a121c4aad41d6ec532627206d2406}
     peerDependencies:
-      '@parisgroup-ai/pageshell-core': '>=0.4.0'
+      '@parisgroup-ai/pageshell-core': '>=0.3.0'
       chart.js: ^4.4.0
       next: '>=14'
       react: ^18.3.1
@@ -7812,7 +7808,7 @@ snapshots:
 
   '@opentelemetry/semantic-conventions@1.39.0': {}
 
-  '@parisgroup-ai/agent-hub@5.0.0(@parisgroup-ai/pageshell@3.7.0(@parisgroup-ai/pageshell-core@0.4.0(date-fns@4.1.0)(react@18.3.1))(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(chart.js@4.5.1)(next@16.1.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-chartjs-2@5.3.1(chart.js@4.5.1)(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react-hook-form@7.71.1(react@18.3.1))(react-router-dom@7.13.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(reactflow@11.11.4(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(recharts@2.15.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(@types/node@22.19.8)(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(jiti@2.6.1)(lightningcss@1.31.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(terser@5.46.0)(yaml@2.8.2)':
+  '@parisgroup-ai/agent-hub@4.12.0(@parisgroup-ai/pageshell@3.7.0(@parisgroup-ai/pageshell-core@0.4.0(date-fns@4.1.0)(react@18.3.1))(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(chart.js@4.5.1)(next@16.1.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-chartjs-2@5.3.1(chart.js@4.5.1)(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react-hook-form@7.71.1(react@18.3.1))(react-router-dom@7.13.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(reactflow@11.11.4(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(recharts@2.15.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(@types/node@22.19.8)(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(jiti@2.6.1)(lightningcss@1.31.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(terser@5.46.0)(yaml@2.8.2)':
     dependencies:
       '@clack/prompts': 0.10.1
       '@modelcontextprotocol/sdk': 1.27.1(zod@3.25.76)
@@ -7928,12 +7924,10 @@ snapshots:
       - tsx
       - yaml
 
-  '@parisgroup-ai/domain-odonto-ai@1.1.1(@parisgroup-ai/pageshell@3.7.0(@parisgroup-ai/pageshell-core@0.4.0(date-fns@3.6.0)(react@18.3.1))(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(chart.js@4.5.1)(next@16.1.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-chartjs-2@5.3.1(chart.js@4.5.1)(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react-hook-form@7.71.1(react@18.3.1))(react-router-dom@6.30.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(reactflow@11.11.4(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(recharts@2.15.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(lucide-react@0.462.0(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@parisgroup-ai/domain-odonto-ai@1.1.0(@parisgroup-ai/pageshell@3.7.0(@parisgroup-ai/pageshell-core@0.4.0(date-fns@3.6.0)(react@18.3.1))(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(chart.js@4.5.1)(next@16.1.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-chartjs-2@5.3.1(chart.js@4.5.1)(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react-hook-form@7.71.1(react@18.3.1))(react-router-dom@6.30.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(reactflow@11.11.4(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(recharts@2.15.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(react@18.3.1)':
     dependencies:
       '@parisgroup-ai/pageshell': 3.7.0(@parisgroup-ai/pageshell-core@0.4.0(date-fns@3.6.0)(react@18.3.1))(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(chart.js@4.5.1)(next@16.1.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-chartjs-2@5.3.1(chart.js@4.5.1)(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react-hook-form@7.71.1(react@18.3.1))(react-router-dom@6.30.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(reactflow@11.11.4(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(recharts@2.15.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
-      lucide-react: 0.462.0(react@18.3.1)
       react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
 
   '@parisgroup-ai/pageshell-core@0.4.0(date-fns@3.6.0)(react@18.3.1)':
     dependencies:

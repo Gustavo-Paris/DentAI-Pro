@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
-    "@parisgroup-ai/domain-odonto-ai": "^1.1.1",
+    "@parisgroup-ai/domain-odonto-ai": "1.1.0",
     "@parisgroup-ai/pageshell": "^3.7.0",
     "@parisgroup-ai/pageshell-core": "^0.4.0",
     "@radix-ui/react-slot": "^1.2.3",
