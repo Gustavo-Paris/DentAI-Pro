@@ -45,8 +45,8 @@ export function CSVImportDialog({
           </p>
           <div className="max-h-24 overflow-y-auto space-y-1 border rounded-lg p-2 border-warning/30">
             {csvPreview.unmatched.map((line, i) => (
-              <p key={i} className="text-xs text-muted-foreground">
-                {line}
+              <p key={i} className="text-xs text-muted-foreground truncate" title={line}>
+                {line.length > 120 ? `${line.slice(0, 120)}...` : line}
               </p>
             ))}
           </div>

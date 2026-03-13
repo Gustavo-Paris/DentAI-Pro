@@ -98,7 +98,7 @@ export function AddResinsDialog({
         </Select>
       </div>
 
-      <div className="overflow-y-auto max-h-[40vh] mt-4 pr-2">
+      <div className="overflow-y-auto flex-1 min-h-0 max-h-[min(40vh,400px)] mt-4 pr-2">
         {Object.keys(groupedCatalog).length === 0 ? (
           <p className="text-center text-muted-foreground py-8">
             {catalogFilters.search ||

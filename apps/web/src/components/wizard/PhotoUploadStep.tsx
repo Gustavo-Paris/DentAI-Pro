@@ -4,8 +4,7 @@ import { Card, CardContent, Button, Badge, Alert, AlertDescription, Label, Texta
 import { useIsMobile } from '@parisgroup-ai/pageshell/core';
 import { Camera, Upload, X, Loader2, User, Smile, Sparkles, Lightbulb, Zap, AlertCircle, CheckCircle2, AlertTriangle, ShieldAlert, FileImage, Mic, MicOff } from 'lucide-react';
 import { toast } from 'sonner';
-import { compressImage, getImageDimensions } from '@/lib/imageUtils';
-import { compressBase64ForAnalysis } from '@/lib/imageUtils';
+import { compressImage, getImageDimensions, compressBase64ForAnalysis } from '@/lib/imageUtils';
 import { trackEvent } from '@/lib/analytics';
 import { supabase } from '@/data';
 import { useSpeechToText } from '@/hooks/useSpeechToText';
@@ -73,11 +72,6 @@ const readFileAsDataURL = (file: File): Promise<string> => {
   });
 };
 
-// Module-level constant: userAgent doesn't change during app lifetime
-const IS_MOBILE_DEVICE = typeof navigator !== 'undefined'
-  ? /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-  : false;
-
 export const PhotoUploadStep = memo(function PhotoUploadStep({
   imageBase64,
   onImageChange,
@@ -91,9 +85,6 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
   onAnamnesisChange,
 }: PhotoUploadStepProps) {
   const { t } = useTranslation();
-  const [dragActiveSmile45, setDragActiveSmile45] = useState(false);
-  const [dragActiveFace, setDragActiveFace] = useState(false);
-  const [dragActiveRadiograph, setDragActiveRadiograph] = useState(false);
   const [isCompressing, setIsCompressing] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [processingOptional, setProcessingOptional] = useState<'smile45' | 'face' | 'radiograph' | null>(null);
@@ -118,9 +109,8 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
     prevListeningRef.current = speech.isListening;
   }, [speech.isListening, speech.transcript, anamnesis, onAnamnesisChange]);
 
-  // Mostra botão câmera se for mobile real OU tela pequena (para preview)
-  const isMobile = useIsMobile();
-  const showCameraButton = IS_MOBILE_DEVICE || isMobile;
+  // Mostra botão câmera se for mobile (hook checks both viewport + userAgent)
+  const showCameraButton = useIsMobile();
 
   // Background quality check — runs after photo is set
   useEffect(() => {
@@ -413,6 +403,16 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
           onDrop={(acceptedFiles) => {
             if (acceptedFiles[0]) handleFile(acceptedFiles[0]);
           }}
+          onDropRejected={(rejections) => {
+            const code = rejections[0]?.errors?.[0]?.code;
+            if (code === 'file-too-large') {
+              toast.error(t('components.wizard.photoUpload.maxSize'));
+            } else if (code === 'file-invalid-type') {
+              toast.error(t('components.wizard.photoUpload.onlyImages'));
+            } else {
+              toast.error(t('components.wizard.photoUpload.processError'));
+            }
+          }}
           className={`relative rounded-xl overflow-hidden transition-all duration-300`}
         >
           {({ isDragActive }) => (
@@ -630,24 +630,9 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
               className="animate-fade-in-up"
               style={{ animationDelay: '100ms', animationFillMode: 'backwards' }}
             >
-              <Card
-                className={`glass-panel card-elevated overflow-hidden transition-all duration-200 ${
-                  dragActiveSmile45 ? 'border-primary bg-primary/5 scale-[1.02]' : ''
-                } ${!additionalPhotos.smile45 ? 'opacity-60 hover:opacity-100' : ''}`}
-                onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setDragActiveSmile45(true); }}
-                onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setDragActiveSmile45(false); }}
-                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setDragActiveSmile45(false);
-                  if (e.dataTransfer.files?.[0]) {
-                    handleOptionalFile(e.dataTransfer.files[0], 'smile45');
-                  }
-                }}
-              >
-                <CardContent className="p-3">
-                  {additionalPhotos.smile45 ? (
+              {additionalPhotos.smile45 ? (
+                <Card className="glass-panel card-elevated overflow-hidden">
+                  <CardContent className="p-3">
                     <div className="relative">
                       <img
                         src={additionalPhotos.smile45}
@@ -669,25 +654,38 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
                         {t('components.wizard.photoUpload.smile45Label')}
                       </Badge>
                     </div>
-                  ) : (
-                    <button
-                      onClick={() => smile45InputRef.current?.click()}
-                      disabled={processingOptional === 'smile45'}
-                      className="w-full h-24 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors border border-dashed border-border/50"
-                    >
-                      {processingOptional === 'smile45' ? (
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                      ) : (
-                        <>
-                          <Smile className="w-5 h-5" />
-                          <span className="text-xs font-medium">{t('components.wizard.photoUpload.smile45Label')}</span>
-                          <span className="text-xs">{t('components.wizard.photoUpload.optional')}</span>
-                        </>
-                      )}
-                    </button>
-                  )}
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              ) : (
+                <FileDropzone
+                  accept={{ 'image/*': ['.jpg', '.jpeg', '.png', '.webp', '.heic'] }}
+                  maxSize={10 * 1024 * 1024}
+                  maxFiles={1}
+                  onDrop={(files) => { if (files[0]) handleOptionalFile(files[0], 'smile45'); }}
+                  onDropRejected={() => toast.error(t('components.wizard.photoUpload.onlyImages'))}
+                  className="opacity-60 hover:opacity-100 transition-opacity"
+                >
+                  <Card className="glass-panel card-elevated overflow-hidden">
+                    <CardContent className="p-3">
+                      <button
+                        onClick={() => smile45InputRef.current?.click()}
+                        disabled={processingOptional === 'smile45'}
+                        className="w-full h-24 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors border border-dashed border-border/50"
+                      >
+                        {processingOptional === 'smile45' ? (
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : (
+                          <>
+                            <Smile className="w-5 h-5" />
+                            <span className="text-xs font-medium">{t('components.wizard.photoUpload.smile45Label')}</span>
+                            <span className="text-xs">{t('components.wizard.photoUpload.optional')}</span>
+                          </>
+                        )}
+                      </button>
+                    </CardContent>
+                  </Card>
+                </FileDropzone>
+              )}
             </div>
 
             {/* Foto Face */}
@@ -695,24 +693,9 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
               className="animate-fade-in-up"
               style={{ animationDelay: '200ms', animationFillMode: 'backwards' }}
             >
-              <Card
-                className={`glass-panel card-elevated overflow-hidden transition-all duration-200 ${
-                  dragActiveFace ? 'border-primary bg-primary/5 scale-[1.02]' : ''
-                } ${!additionalPhotos.face ? 'opacity-60 hover:opacity-100' : ''}`}
-                onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setDragActiveFace(true); }}
-                onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setDragActiveFace(false); }}
-                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setDragActiveFace(false);
-                  if (e.dataTransfer.files?.[0]) {
-                    handleOptionalFile(e.dataTransfer.files[0], 'face');
-                  }
-                }}
-              >
-                <CardContent className="p-3">
-                  {additionalPhotos.face ? (
+              {additionalPhotos.face ? (
+                <Card className="glass-panel card-elevated overflow-hidden">
+                  <CardContent className="p-3">
                     <div className="relative">
                       <img
                         src={additionalPhotos.face}
@@ -734,25 +717,38 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
                         {t('components.wizard.photoUpload.faceLabel')}
                       </Badge>
                     </div>
-                  ) : (
-                    <button
-                      onClick={() => faceInputRef.current?.click()}
-                      disabled={processingOptional === 'face'}
-                      className="w-full h-24 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors border border-dashed border-border/50"
-                    >
-                      {processingOptional === 'face' ? (
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                      ) : (
-                        <>
-                          <User className="w-5 h-5" />
-                          <span className="text-xs font-medium">{t('components.wizard.photoUpload.faceLabel')}</span>
-                          <span className="text-xs">{t('components.wizard.photoUpload.optional')}</span>
-                        </>
-                      )}
-                    </button>
-                  )}
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              ) : (
+                <FileDropzone
+                  accept={{ 'image/*': ['.jpg', '.jpeg', '.png', '.webp', '.heic'] }}
+                  maxSize={10 * 1024 * 1024}
+                  maxFiles={1}
+                  onDrop={(files) => { if (files[0]) handleOptionalFile(files[0], 'face'); }}
+                  onDropRejected={() => toast.error(t('components.wizard.photoUpload.onlyImages'))}
+                  className="opacity-60 hover:opacity-100 transition-opacity"
+                >
+                  <Card className="glass-panel card-elevated overflow-hidden">
+                    <CardContent className="p-3">
+                      <button
+                        onClick={() => faceInputRef.current?.click()}
+                        disabled={processingOptional === 'face'}
+                        className="w-full h-24 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors border border-dashed border-border/50"
+                      >
+                        {processingOptional === 'face' ? (
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : (
+                          <>
+                            <User className="w-5 h-5" />
+                            <span className="text-xs font-medium">{t('components.wizard.photoUpload.faceLabel')}</span>
+                            <span className="text-xs">{t('components.wizard.photoUpload.optional')}</span>
+                          </>
+                        )}
+                      </button>
+                    </CardContent>
+                  </Card>
+                </FileDropzone>
+              )}
             </div>
 
             {/* Radiografia */}
@@ -760,24 +756,9 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
               className="animate-fade-in-up"
               style={{ animationDelay: '300ms', animationFillMode: 'backwards' }}
             >
-              <Card
-                className={`glass-panel card-elevated overflow-hidden transition-all duration-200 ${
-                  dragActiveRadiograph ? 'border-primary bg-primary/5 scale-[1.02]' : ''
-                } ${!additionalPhotos.radiograph ? 'opacity-60 hover:opacity-100' : ''}`}
-                onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setDragActiveRadiograph(true); }}
-                onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setDragActiveRadiograph(false); }}
-                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setDragActiveRadiograph(false);
-                  if (e.dataTransfer.files?.[0]) {
-                    handleOptionalFile(e.dataTransfer.files[0], 'radiograph');
-                  }
-                }}
-              >
-                <CardContent className="p-3">
-                  {additionalPhotos.radiograph ? (
+              {additionalPhotos.radiograph ? (
+                <Card className="glass-panel card-elevated overflow-hidden">
+                  <CardContent className="p-3">
                     <div className="relative">
                       <img
                         src={additionalPhotos.radiograph}
@@ -799,25 +780,38 @@ export const PhotoUploadStep = memo(function PhotoUploadStep({
                         {t('components.wizard.photoUpload.radiographLabel')}
                       </Badge>
                     </div>
-                  ) : (
-                    <button
-                      onClick={() => radiographInputRef.current?.click()}
-                      disabled={processingOptional === 'radiograph'}
-                      className="w-full h-24 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors border border-dashed border-border/50"
-                    >
-                      {processingOptional === 'radiograph' ? (
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                      ) : (
-                        <>
-                          <FileImage className="w-5 h-5" />
-                          <span className="text-xs font-medium">{t('components.wizard.photoUpload.radiographLabel')}</span>
-                          <span className="text-xs">{t('components.wizard.photoUpload.optional')}</span>
-                        </>
-                      )}
-                    </button>
-                  )}
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              ) : (
+                <FileDropzone
+                  accept={{ 'image/*': ['.jpg', '.jpeg', '.png', '.webp', '.heic'] }}
+                  maxSize={10 * 1024 * 1024}
+                  maxFiles={1}
+                  onDrop={(files) => { if (files[0]) handleOptionalFile(files[0], 'radiograph'); }}
+                  onDropRejected={() => toast.error(t('components.wizard.photoUpload.onlyImages'))}
+                  className="opacity-60 hover:opacity-100 transition-opacity"
+                >
+                  <Card className="glass-panel card-elevated overflow-hidden">
+                    <CardContent className="p-3">
+                      <button
+                        onClick={() => radiographInputRef.current?.click()}
+                        disabled={processingOptional === 'radiograph'}
+                        className="w-full h-24 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors border border-dashed border-border/50"
+                      >
+                        {processingOptional === 'radiograph' ? (
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : (
+                          <>
+                            <FileImage className="w-5 h-5" />
+                            <span className="text-xs font-medium">{t('components.wizard.photoUpload.radiographLabel')}</span>
+                            <span className="text-xs">{t('components.wizard.photoUpload.optional')}</span>
+                          </>
+                        )}
+                      </button>
+                    </CardContent>
+                  </Card>
+                </FileDropzone>
+              )}
             </div>
           </div>
 

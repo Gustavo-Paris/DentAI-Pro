@@ -15,7 +15,7 @@ export function DSDLoadingState({ imageBase64, currentStep, analysisSteps }: DSD
     id: String(index),
     label: step.label.replace('...', ''),
   }));
-  const currentStepId = String(Math.min(currentStep, analysisSteps.length - 1));
+  const currentStepId = String(Math.min(currentStep, Math.max(analysisSteps.length - 1, 0)));
   const currentLabel = currentStep < analysisSteps.length
     ? analysisSteps[currentStep].label
     : t('components.wizard.dsd.loadingState.finishing');

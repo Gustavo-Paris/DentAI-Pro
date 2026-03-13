@@ -260,6 +260,12 @@ export default function NewCase() {
     }));
   }, [t, wizard.isQuickCase]);
 
+  // Pre-mapped steps for StepIndicator (avoids per-render re-mapping in JSX)
+  const indicatorSteps = useMemo(
+    () => stepsMeta.map(s => ({ id: String(s.id), label: s.label })),
+    [stepsMeta],
+  );
+
   // Map display index back to internal step for step indicator clicks
   const handleStepClick = (displayIndex: number) => {
     if (wizard.isQuickCase) {
@@ -308,7 +314,7 @@ export default function NewCase() {
             slots={{
               progress: (
                 <StepIndicator
-                  steps={stepsMeta.map(s => ({ id: String(s.id), label: s.label }))}
+                  steps={indicatorSteps}
                   currentStep={String(stepsMeta[displayStep]?.id ?? stepsMeta[0].id)}
                   onStepChange={(id) => {
                     const idx = stepsMeta.findIndex(s => String(s.id) === id);

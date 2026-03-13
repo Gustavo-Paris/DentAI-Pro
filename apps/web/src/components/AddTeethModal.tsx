@@ -82,6 +82,8 @@ export function AddTeethModal({
         pendingTeeth,
       });
 
+      // FormModal closes via onOpenChange when closeOnSuccess={false} is NOT set;
+      // we explicitly close here since closeOnSuccess={false} prevents auto-close.
       onClose();
     } catch (error) {
       logger.error('Error adding teeth:', error);
@@ -257,7 +259,7 @@ export function AddTeethModal({
       description={t('components.addTeeth.description')}
       icon={<Plus className="w-5 h-5 text-primary" />}
       size="md"
-      fields={[]}
+      fields={[]}        // Slot-only usage — all content via slots.beforeFields
       defaultValues={{}}
       onSubmit={handleSubmit}
       isSubmitting={isSubmitting}
