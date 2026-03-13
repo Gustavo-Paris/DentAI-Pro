@@ -5,7 +5,7 @@ import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { logger } from "@/lib/logger";
 import { ArrowLeft, SearchX } from "lucide-react";
 import { Button } from "@parisgroup-ai/pageshell/primitives";
-import { BRAND_NAME } from '@/lib/branding';
+import { BrandMark } from '@/components/BrandMark';
 
 // Not using PageShell composite: minimal centered 404 page — no composite fits this
 // intentionally simple layout with route logging side-effects.
@@ -65,8 +65,8 @@ export default function NotFound() {
 
       <header className="relative border-b border-border">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4">
-          <Link to="/" className="font-display tracking-[0.2em] text-gradient-brand text-lg font-semibold">
-            {BRAND_NAME}
+          <Link to="/">
+            <BrandMark size="sm" />
           </Link>
         </div>
       </header>

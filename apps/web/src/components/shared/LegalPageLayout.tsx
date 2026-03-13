@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@parisgroup-ai/pageshell/primitives';
 import { ArrowLeft } from 'lucide-react';
-import { BRAND_NAME } from '@/lib/branding';
+import { BrandMark } from '@/components/BrandMark';
 
 interface LegalPageLayoutProps {
   title: string;
@@ -48,8 +48,8 @@ export function LegalPageLayout({ title, children }: LegalPageLayoutProps) {
           aria-label={t('common.siteNavigation')}
         >
           <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-            <Link to="/" className="text-xl font-display font-semibold text-gradient-brand">
-              {BRAND_NAME}
+            <Link to="/">
+              <BrandMark size="md" />
             </Link>
             <Link to="/">
               <Button variant="ghost" size="sm">

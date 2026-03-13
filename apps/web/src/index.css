@@ -791,6 +791,16 @@
   box-shadow: none !important;
 }
 
+/* Brand title in sidebar — match BrandMark: gradient + tracking + font-display */
+.ui-theme aside h2.text-sidebar-foreground {
+  background: linear-gradient(to right, rgb(var(--color-primary-rgb)) 0%, var(--brand-accent) 70%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  letter-spacing: 0.2em !important;
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif !important;
+}
+
 /* Kill green pulsing status dot — make it static and smaller */
 .ui-theme aside [class*="animate-[sidebar-status-pulse"] {
   animation: none !important;
@@ -985,7 +995,7 @@
 
 /* Brand gradient — ToSmile wordmark, premium moments */
 .text-gradient-brand {
-  background: linear-gradient(135deg, rgb(var(--color-primary-rgb)), var(--brand-accent), rgb(var(--color-primary-rgb)));
+  background: linear-gradient(to right, rgb(var(--color-primary-rgb)) 0%, var(--brand-accent) 70%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -993,7 +1003,7 @@
 
 /* Legacy alias — maps to new class */
 .text-gradient-gold {
-  background: linear-gradient(135deg, rgb(var(--color-primary-rgb)), var(--brand-accent), rgb(var(--color-primary-rgb)));
+  background: linear-gradient(to right, rgb(var(--color-primary-rgb)) 0%, var(--brand-accent) 70%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

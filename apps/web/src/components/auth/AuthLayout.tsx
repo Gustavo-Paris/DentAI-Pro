@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Sparkles, Shield, Zap, Palette } from 'lucide-react';
-import { BRAND_NAME } from '@/lib/branding';
+import { BrandMark } from '@/components/BrandMark';
 
 interface AuthLayoutProps {
   title: ReactNode;
@@ -64,7 +64,7 @@ export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
         <div className="relative flex flex-col h-full px-12 xl:px-16 py-12 xl:py-16">
           {/* Brand & headline */}
           <div className="flex flex-col justify-center flex-1">
-            <span className="font-display tracking-[0.2em] text-gradient-brand text-2xl font-semibold mb-6 animate-[fade-in-up_0.6s_ease-out_0.2s_both]">{BRAND_NAME}</span>
+            <BrandMark size="lg" className="mb-6 animate-[fade-in-up_0.6s_ease-out_0.2s_both]" />
             <h2 className="text-3xl xl:text-4xl font-display font-semibold tracking-tight mb-3 animate-[fade-in-up_0.6s_ease-out_0.3s_both] neon-text">{t('landing.brandSlogan')}</h2>
             <p className="text-muted-foreground text-lg mb-10 animate-[fade-in-up_0.6s_ease-out_0.4s_both]">{t('landing.brandDescription')}</p>
 
@@ -92,8 +92,8 @@ export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
       <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-8 dark:bg-gradient-to-b dark:from-card/50 dark:to-background">
         <div className="w-full max-w-sm">
           <div className="text-center mb-6 sm:mb-8">
-            <Link to="/" className="font-display tracking-[0.2em] text-gradient-brand text-lg sm:text-xl font-semibold lg:hidden animate-[fade-in-up_0.6s_ease-out_0.2s_both]">
-              {BRAND_NAME}
+            <Link to="/" className="lg:hidden animate-[fade-in-up_0.6s_ease-out_0.2s_both]">
+              <BrandMark size="md" />
             </Link>
             <h1 className="text-xl sm:text-2xl font-semibold font-display mt-6 sm:mt-8 lg:mt-0 mb-2 animate-[fade-in-up_0.6s_ease-out_0.3s_both] neon-text">
               {title}

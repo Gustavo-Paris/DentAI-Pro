@@ -19,7 +19,7 @@ import { DetailPage, GenericErrorState } from '@parisgroup-ai/pageshell/composit
 import { useTranslation } from 'react-i18next';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useResult } from '@/hooks/domain/useResult';
-import { BRAND_NAME } from '@/lib/branding';
+import { BrandMark } from '@/components/BrandMark';
 import { cn } from '@/lib/utils';
 import { formatToothLabel } from '@/lib/treatment-config';
 
@@ -107,7 +107,7 @@ export default function Result() {
             <>
               {/* Print header */}
               <div className="hidden print:block mb-8">
-                <h1 className="text-2xl font-semibold">{BRAND_NAME}</h1>
+                <h1><BrandMark size="lg" /></h1>
                 <p className="text-sm text-muted-foreground">
                   {t('result.reportTitle')} • {format(new Date(evaluation.created_at), getDateFormat('long'), { locale: getDateLocale() })}
                 </p>

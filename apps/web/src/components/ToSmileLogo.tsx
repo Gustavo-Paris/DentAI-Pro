@@ -29,14 +29,14 @@ export function ToSmileLogo({ className }: ToSmileLogoProps) {
         d="M22 15C18 15 14 19 14 25C14 32 19 38 23 43C25 46.5 27 51 29 51C30.5 51 31.2 47.5 32 44C32.8 47.5 33.5 51 35 51C37 51 39 46.5 41 43C45 38 50 32 50 25C50 19 46 15 42 15C38.5 15 36 17 34 19.5L32 22L30 19.5C28 17 25.5 15 22 15Z"
         fill="url(#tosmile-teal)"
       />
-      {/* Smile arc highlight — subtle curve across the crown */}
+      {/* Smile arc highlight — white works on both light and dark backgrounds */}
       <path
         d="M20 26C24 30 28 31.5 32 31.5C36 31.5 40 30 44 26"
-        stroke="#0c111b"
-        strokeWidth="2"
+        stroke="#ffffff"
+        strokeWidth="2.5"
         strokeLinecap="round"
         fill="none"
-        opacity="0.3"
+        opacity="0.4"
       />
     </svg>
   );

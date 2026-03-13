@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { BRAND_NAME } from '@/lib/branding';
+import { BrandMark } from '@/components/BrandMark';
 
 export function HeroMockup() {
   const { t } = useTranslation();
@@ -20,7 +20,7 @@ export function HeroMockup() {
 
           {/* App header */}
           <div className="px-4 py-3 border-b border-border/50">
-            <div className="text-xs font-semibold tracking-[0.15em] text-gradient-brand">{BRAND_NAME}</div>
+            <BrandMark size="xs" />
             <div className="text-xs text-muted-foreground mt-0.5">{t('components.landing.heroMockup.analysisResult')}</div>
           </div>
 

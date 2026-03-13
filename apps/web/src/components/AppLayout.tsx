@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ReactRouterAppShell } from '@parisgroup-ai/pageshell/layouts/adapters/react-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { BRAND_NAME } from '@/lib/branding';
+import { ToSmileLogo } from '@/components/ToSmileLogo';
 import { CreditBadge } from '@/components/CreditBadge';
 import { PaymentWarningBanner } from '@/components/pricing/PaymentWarningBanner';
 import { SidebarCredits } from '@/components/SidebarCredits';
@@ -23,22 +24,10 @@ import {
   HelpCircle,
 } from 'lucide-react';
 
-// Custom brand icon — renders the tooth SVG with teal gradient (matches /logo.svg).
+// Custom brand icon — reuses ToSmileLogo for consistency across all brand touchpoints.
 // PageShell mobile header ignores logoSrc and renders icon inside a bg-primary badge.
 // This component + CSS override (.brand-tooth-icon) shows the actual logo instead.
-const BrandToothIcon = () => (
-  <svg className="brand-tooth-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-    <defs>
-      <linearGradient id="brand-teal" x1="16" y1="10" x2="48" y2="54" gradientUnits="userSpaceOnUse">
-        <stop offset="0%" stopColor="#22d3ee"/>
-        <stop offset="50%" stopColor="#06b6d4"/>
-        <stop offset="100%" stopColor="#0891b2"/>
-      </linearGradient>
-    </defs>
-    <path d="M22 15C18 15 14 19 14 25C14 32 19 38 23 43C25 46.5 27 51 29 51C30.5 51 31.2 47.5 32 44C32.8 47.5 33.5 51 35 51C37 51 39 46.5 41 43C45 38 50 32 50 25C50 19 46 15 42 15C38.5 15 36 17 34 19.5L32 22L30 19.5C28 17 25.5 15 22 15Z" fill="url(#brand-teal)"/>
-    <path d="M20 26C24 30 28 31.5 32 31.5C36 31.5 40 30 44 26" stroke="#06b6d4" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.4"/>
-  </svg>
-);
+const BrandToothIcon = () => <ToSmileLogo className="brand-tooth-icon" />;
 
 /**
  * Avatar with fallback chain: tries each URL in order, shows initials if all fail.

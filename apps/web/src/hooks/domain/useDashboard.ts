@@ -512,4 +512,4 @@ export function useDashboard(): DashboardState {
 }
 
 // Re-export for convenience
-export { dashboardQueryKeys as dashboardKeys };
+export { dashboardKeys } from '@/lib/query-keys';

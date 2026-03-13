@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
+import { BrandMark } from '@/components/BrandMark';
 
 export interface SharedDetailPageProps {
   brandName: string;
@@ -20,13 +21,11 @@ export interface SharedDetailPageProps {
   children?: ReactNode;
 }
 
-function SharedHeader({ brandName, badgeText }: { brandName: string; badgeText?: string }) {
+function SharedHeader({ badgeText }: { badgeText?: string }) {
   return (
     <header className="border-b border-border">
       <div className="container mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-        <span className="text-lg font-semibold tracking-[0.2em] font-display text-gradient-brand">
-          {brandName}
-        </span>
+        <BrandMark size="sm" />
         {badgeText && (
           <span className="inline-flex items-center gap-1 rounded-full border border-border px-2.5 py-0.5 text-xs font-semibold text-muted-foreground">
             <svg
@@ -140,7 +139,7 @@ export function SharedDetailPage({
       {/* Ambient AI grid overlay */}
       <div className="ai-grid-pattern absolute inset-0 opacity-30 dark:opacity-50 [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,black_70%,transparent_100%)] pointer-events-none" aria-hidden="true" />
       <div className="relative z-10">
-        <SharedHeader brandName={brandName} badgeText={badgeText} />
+        <SharedHeader badgeText={badgeText} />
         <main className={cn('container mx-auto px-4 sm:px-6 py-8 sm:py-12', maxWidth)}>
           {children}
           {footer && <SharedFooter footer={footer} />}
