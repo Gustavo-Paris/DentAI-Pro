@@ -3,7 +3,8 @@ import react from "@vitejs/plugin-react-swc";
 import { VitePWA } from "vite-plugin-pwa";
 import { visualizer } from "rollup-plugin-visualizer";
 import { sentryVitePlugin } from '@sentry/vite-plugin';
-import { designOS } from '@parisgroup-ai/design-os-pkg/vite';
+// TODO: enable when design-os-pkg publishes with dist/ in exports (currently points to .ts source)
+// import { designOS } from '@parisgroup-ai/design-os-pkg/vite';
 import tailwindcss from "tailwindcss";
 import autoprefixer from "autoprefixer";
 import path from "path";
@@ -24,10 +25,7 @@ export default defineConfig(() => ({
   },
   plugins: [
     react(),
-    designOS({
-      designDir: './design',
-      designSrcDir: './design-src',
-    }),
+    // designOS({ designDir: './design', designSrcDir: './design-src' }),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'icon-192.png', 'icon-512.png'],
