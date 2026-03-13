@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { DashboardMetrics, WeeklyTrendPoint } from '@/hooks/domain/useDashboard';
-import { Card, Skeleton, Tooltip, TooltipContent, TooltipTrigger } from '@parisgroup-ai/pageshell/primitives';
+import { KPICard, KPICardGroup, Tooltip, TooltipContent, TooltipTrigger } from '@parisgroup-ai/pageshell/primitives';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import {
   FileText, Users, TrendingUp, CheckCircle2,
@@ -61,7 +61,7 @@ function ProgressRing({ percent }: { percent: number }) {
 function MiniSparkline({ data }: { data: WeeklyTrendPoint[] }) {
   if (data.length === 0) return null;
   return (
-    <div className="shrink-0 w-14 sm:w-20">
+    <div className="w-14 sm:w-20">
       <ResponsiveContainer width="100%" height={28}>
         <AreaChart data={data} margin={{ top: 2, right: 0, bottom: 2, left: 0 }}>
           <defs>
@@ -85,16 +85,12 @@ function MiniSparkline({ data }: { data: WeeklyTrendPoint[] }) {
 }
 
 // ---------------------------------------------------------------------------
-// Animated Stat Value
+// Animated Stat Value — rendered via KPICard value prop
 // ---------------------------------------------------------------------------
 
-function AnimatedValue({ value, suffix }: { value: number; suffix?: string }) {
+function useAnimatedValue(value: number, suffix?: string): string {
   const animated = useCountAnimation(value);
-  return (
-    <span className="tabular-nums">
-      {animated}{suffix}
-    </span>
-  );
+  return `${animated}${suffix ?? ''}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -107,8 +103,7 @@ interface StatConfig {
   unitKey: string;
   icon: typeof FileText;
   tooltipKey: string;
-  iconBg: string;
-  getValueColor: (v: number) => string;
+  color: string;
   suffix?: string;
   extra?: 'sparkline' | 'progress-ring';
 }
@@ -120,8 +115,7 @@ const statConfigs: StatConfig[] = [
     unitKey: 'dashboard.stats.totalCasesUnit',
     icon: FileText,
     tooltipKey: 'dashboard.stats.totalCasesTooltip',
-    iconBg: 'bg-primary/10 text-primary dark:bg-primary/15',
-    getValueColor: () => 'text-foreground',
+    color: 'var(--color-primary)',
   },
   {
     key: 'totalPatients',
@@ -129,8 +123,7 @@ const statConfigs: StatConfig[] = [
     unitKey: 'dashboard.stats.patientsUnit',
     icon: Users,
     tooltipKey: 'dashboard.stats.patientsTooltip',
-    iconBg: 'bg-info/10 text-info',
-    getValueColor: () => 'text-foreground',
+    color: 'var(--color-info)',
   },
   {
     key: 'weeklySessions',
@@ -138,8 +131,7 @@ const statConfigs: StatConfig[] = [
     unitKey: 'dashboard.stats.thisWeekUnit',
     icon: TrendingUp,
     tooltipKey: 'dashboard.stats.thisWeekTooltip',
-    iconBg: 'bg-accent/10 text-accent',
-    getValueColor: () => 'text-foreground',
+    color: 'var(--color-accent)',
     extra: 'sparkline',
   },
   {
@@ -148,12 +140,61 @@ const statConfigs: StatConfig[] = [
     unitKey: 'dashboard.stats.completionUnit',
     icon: CheckCircle2,
     tooltipKey: 'dashboard.stats.completionTooltip',
-    iconBg: 'bg-success/10 text-success',
-    getValueColor: () => 'text-foreground',
+    color: 'var(--color-success)',
     suffix: '%',
     extra: 'progress-ring',
   },
 ];
+
+// ---------------------------------------------------------------------------
+// Individual animated KPI card
+// ---------------------------------------------------------------------------
+
+function AnimatedKPICard({
+  stat,
+  value,
+  loading,
+  tooltipText,
+  weeklyTrends,
+}: {
+  stat: StatConfig;
+  value: number;
+  loading: boolean;
+  tooltipText: string;
+  weeklyTrends: WeeklyTrendPoint[];
+}) {
+  const { t } = useTranslation();
+  const displayValue = useAnimatedValue(value, stat.suffix);
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        {/* KPICard renders its own card shell */}
+        <div>
+          <KPICard
+            label={t(stat.labelKey)}
+            value={loading ? 0 : displayValue}
+            subtitle={t(stat.unitKey)}
+            icon={stat.icon}
+            iconBackground
+            color={stat.color}
+            isLoading={loading}
+          >
+            {!loading && stat.extra === 'sparkline' && (
+              <MiniSparkline data={weeklyTrends} />
+            )}
+            {!loading && stat.extra === 'progress-ring' && (
+              <ProgressRing percent={value} />
+            )}
+          </KPICard>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent side="bottom">
+        <p>{tooltipText}</p>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // StatsGrid Component
@@ -171,10 +212,10 @@ export function StatsGrid({
   weeklyTrends: WeeklyTrendPoint[];
 }) {
   const { t } = useTranslation();
+
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 stagger-enter">
+    <KPICardGroup columns={4}>
       {statConfigs.map((stat) => {
-        const Icon = stat.icon;
         const value = metrics[stat.key];
         const tooltipText =
           stat.key === 'weeklySessions'
@@ -182,49 +223,16 @@ export function StatsGrid({
             : t(stat.tooltipKey);
 
         return (
-          <Tooltip key={stat.key}>
-            <TooltipTrigger asChild>
-              <Card
-                className="group relative overflow-hidden p-3 sm:p-4 cursor-default rounded-xl transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 glass-card glow-card"
-              >
-                {/* Glass top-edge highlight — subtle depth cue in dark mode */}
-                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-foreground/[0.06] to-transparent dark:block hidden pointer-events-none" />
-                <div className="flex items-center gap-2.5 mb-2.5">
-                  <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${stat.iconBg} transition-transform duration-200 group-hover:scale-110 glow-icon`}>
-                    <Icon className="w-4 h-4" aria-hidden="true" />
-                  </div>
-                  <p className="text-[11px] font-semibold text-muted-foreground tracking-wide uppercase leading-tight">
-                    {t(stat.labelKey)}
-                  </p>
-                </div>
-                {loading ? (
-                  <Skeleton className="h-10 w-14" />
-                ) : (
-                  <>
-                    <div className="flex items-center justify-between">
-                      <p className={`text-3xl font-semibold tracking-tight glow-stat ${stat.getValueColor(value)}`}>
-                        <AnimatedValue value={value} suffix={stat.suffix} />
-                      </p>
-                      {stat.extra === 'sparkline' && (
-                        <MiniSparkline data={weeklyTrends} />
-                      )}
-                      {stat.extra === 'progress-ring' && (
-                        <ProgressRing percent={value} />
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-0.5 leading-tight">
-                      {t(stat.unitKey)}
-                    </p>
-                  </>
-                )}
-              </Card>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">
-              <p>{tooltipText}</p>
-            </TooltipContent>
-          </Tooltip>
+          <AnimatedKPICard
+            key={stat.key}
+            stat={stat}
+            value={value}
+            loading={loading}
+            tooltipText={tooltipText}
+            weeklyTrends={weeklyTrends}
+          />
         );
       })}
-    </div>
+    </KPICardGroup>
   );
 }
