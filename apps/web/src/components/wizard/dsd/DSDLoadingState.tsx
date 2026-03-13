@@ -1,8 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Smile } from 'lucide-react';
-import { Card, CardContent } from '@parisgroup-ai/pageshell/primitives';
+import { Card, CardContent, StepIndicator } from '@parisgroup-ai/pageshell/primitives';
 import { ProgressRing } from '@/components/ProgressRing';
-import { CompactStepIndicator } from '@/components/CompactStepIndicator';
 
 interface DSDLoadingStateProps {
   imageBase64: string | null;
@@ -12,11 +11,11 @@ interface DSDLoadingStateProps {
 
 export function DSDLoadingState({ imageBase64, currentStep, analysisSteps }: DSDLoadingStateProps) {
   const { t } = useTranslation();
-  const compactSteps = analysisSteps.map((step, index) => ({
+  const psSteps = analysisSteps.map((step, index) => ({
+    id: String(index),
     label: step.label.replace('...', ''),
-    completed: index < currentStep,
   }));
-  const activeIndex = currentStep;
+  const currentStepId = String(Math.min(currentStep, analysisSteps.length - 1));
   const currentLabel = currentStep < analysisSteps.length
     ? analysisSteps[currentStep].label
     : t('components.wizard.dsd.loadingState.finishing');
@@ -54,10 +53,12 @@ export function DSDLoadingState({ imageBase64, currentStep, analysisSteps }: DSD
 
         {/* Horizontal compact steps */}
         <div className="flex justify-center">
-          <CompactStepIndicator
-            steps={compactSteps}
-            currentIndex={activeIndex}
-            variant="horizontal"
+          <StepIndicator
+            steps={psSteps}
+            currentStep={currentStepId}
+            orientation="horizontal"
+            showNumbers={true}
+            showConnectors={true}
           />
         </div>
     </div>

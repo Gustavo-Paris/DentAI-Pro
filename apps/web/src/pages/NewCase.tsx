@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
-import { Button, Badge } from '@parisgroup-ai/pageshell/primitives';
+import { Button, Badge, StepIndicator } from '@parisgroup-ai/pageshell/primitives';
 import {
   ArrowLeft,
   ArrowRight,
@@ -26,7 +26,6 @@ import { DraftRestoreModal } from '@/components/wizard/DraftRestoreModal';
 import { CreditConfirmDialog } from '@/components/CreditConfirmDialog';
 import { useAiDisclaimer, AiDisclaimerModal } from '@/components/AiDisclaimerModal';
 import { LoadingOverlay } from '@/components/LoadingOverlay';
-import { StepIndicator } from '@/components/wizard/StepIndicator';
 import {
   FotoStepWrapper,
   PrefsStepWrapper,
@@ -41,9 +40,6 @@ import {
 
 // Maps internal wizard.step (1-6) to display index for quick case
 const QUICK_STEP_MAP: Record<number, number> = { 1: 0, 3: 1, 5: 2, 6: 3 };
-// Resolved at render time via t() — see stepsMeta useMemo
-const QUICK_LABEL_KEYS = ['wizard.stepPhoto', 'wizard.stepAnalysis', 'wizard.stepReview', 'wizard.stepResult'] as const;
-const QUICK_ICONS = [Camera, Brain, ClipboardCheck, FileText];
 
 // Full flow step metadata (id, key, label key, icon) — no children, no deps beyond t()
 const FULL_STEP_META = [
@@ -254,8 +250,6 @@ export default function NewCase() {
 
   // Build steps metadata array — only id, key, label, icon (no children).
   // Deps: only t() and isQuickCase. Step content is rendered via ActiveStepContent.
-  const quickLabels = useMemo(() => QUICK_LABEL_KEYS.map(k => t(k)), [t]);
-
   const stepsMeta = useMemo(() => {
     const source = wizard.isQuickCase ? QUICK_STEP_META : FULL_STEP_META;
     return source.map(s => ({
@@ -314,11 +308,15 @@ export default function NewCase() {
             slots={{
               progress: (
                 <StepIndicator
-                  currentStep={displayStep}
-                  totalSteps={totalSteps}
-                  onStepClick={handleStepClick}
-                  stepLabels={wizard.isQuickCase ? quickLabels : undefined}
-                  stepIcons={wizard.isQuickCase ? QUICK_ICONS : undefined}
+                  steps={stepsMeta.map(s => ({ id: String(s.id), label: s.label }))}
+                  currentStep={String(stepsMeta[displayStep]?.id ?? stepsMeta[0].id)}
+                  onStepChange={(id) => {
+                    const idx = stepsMeta.findIndex(s => String(s.id) === id);
+                    if (idx !== -1) handleStepClick(idx);
+                  }}
+                  orientation="horizontal"
+                  showNumbers={false}
+                  showConnectors={true}
                 />
               ),
               beforeContent: (

@@ -1,9 +1,8 @@
 import { memo, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent } from '@parisgroup-ai/pageshell/primitives';
+import { Card, CardContent, StepIndicator } from '@parisgroup-ai/pageshell/primitives';
 import { ProgressRing } from './ProgressRing';
-import { CompactStepIndicator } from './CompactStepIndicator';
 
 interface ProcessingOverlayProps {
   isLoading: boolean;
@@ -80,6 +79,15 @@ export const ProcessingOverlay = memo(function ProcessingOverlay({
     ? steps.findIndex((s) => !s.completed)
     : -1;
 
+  const psSteps = steps
+    ? steps.map((s, i) => ({ id: String(i), label: s.label }))
+    : undefined;
+
+  // currentIndex === -1 means all steps done; clamp to last step id
+  const psCurrentStep = psSteps
+    ? String(currentIndex >= 0 ? currentIndex : psSteps.length - 1)
+    : '0';
+
   // Portal to document.body to escape AppShell stacking context
   const overlay = (
     <div
@@ -96,12 +104,14 @@ export const ProcessingOverlay = memo(function ProcessingOverlay({
 
           <p className="mt-4 font-semibold text-primary" aria-live="polite" aria-atomic="true">{displayMessage}</p>
 
-          {steps && steps.length > 0 && (
+          {psSteps && psSteps.length > 0 && (
             <div className="mt-4 w-full text-left">
-              <CompactStepIndicator
-                steps={steps}
-                currentIndex={currentIndex}
-                variant="vertical-compact"
+              <StepIndicator
+                steps={psSteps}
+                currentStep={psCurrentStep}
+                orientation="vertical"
+                showNumbers={true}
+                showConnectors={true}
               />
             </div>
           )}

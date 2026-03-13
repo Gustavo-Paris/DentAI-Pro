@@ -90,10 +90,6 @@ vi.mock('@/components/LoadingOverlay', () => ({
   LoadingOverlay: () => null,
 }));
 
-vi.mock('@/components/wizard/StepIndicator', () => ({
-  StepIndicator: () => <div data-testid="step-indicator" />,
-}));
-
 vi.mock('@/components/wizard/DraftRestoreModal', () => ({
   DraftRestoreModal: () => null,
 }));
@@ -114,6 +110,7 @@ vi.mock('@/components/wizard/steps', () => ({
 vi.mock('@parisgroup-ai/pageshell/primitives', () => ({
   Button: ({ children, ...p }: any) => <button {...p}>{children}</button>,
   Badge: ({ children }: any) => <span>{children}</span>,
+  StepIndicator: () => <div data-testid="step-indicator" />,
 }));
 
 vi.mock('@parisgroup-ai/pageshell/interactions', () => ({
