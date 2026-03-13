@@ -130,6 +130,7 @@ export default function EvaluationDetails() {
         className="relative z-10 max-w-5xl mx-auto stagger-enter"
         title={detail.patientName}
         breadcrumbs={[
+          { label: t('nav.dashboard'), href: '/dashboard' },
           { label: t('evaluation.title'), href: '/evaluations' },
           { label: detail.patientName },
         ]}
