@@ -1,8 +1,25 @@
 import { ptBR, enUS } from 'date-fns/locale';
 import i18n from '@/lib/i18n';
+import {
+  formatDateShort as psFormatDateShort,
+  formatDateLong as psFormatDateLong,
+  formatDayMonth as psFormatDayMonth,
+  formatDayMonthNumeric as psFormatDayMonthNumeric,
+  formatDateTime as psFormatDateTime,
+  formatRelativeTime as psFormatRelativeTime,
+  formatDateForFilename as psFormatDateForFilename,
+} from '@parisgroup-ai/pageshell/core';
 
 export function getDateLocale() {
   return i18n.language?.startsWith('en') ? enUS : ptBR;
+}
+
+/**
+ * Returns the current locale as a BCP 47 language tag string for use with
+ * PageShell formatters (which use Intl.DateTimeFormat, not date-fns locales).
+ */
+export function getLocaleString(): string {
+  return i18n.language?.startsWith('en') ? 'en-US' : 'pt-BR';
 }
 
 export function getDateFormat(format: 'short' | 'medium' | 'long' | 'greeting') {
@@ -13,6 +30,46 @@ export function getDateFormat(format: 'short' | 'medium' | 'long' | 'greeting') 
     case 'long': return isEn ? 'MMMM d, yyyy' : "d 'de' MMMM 'de' yyyy";
     case 'greeting': return isEn ? 'EEEE, MMMM d' : "EEEE, d 'de' MMMM";
   }
+}
+
+// ---------------------------------------------------------------------------
+// PageShell i18n-aware formatters (thin adapters)
+// These use Intl.DateTimeFormat under the hood — no date-fns format strings.
+// ---------------------------------------------------------------------------
+
+/** Short date with year: "13 de mar. de 2026" (pt-BR) / "Mar 13, 2026" (en-US) */
+export function formatDateMedium(date: Date | string): string {
+  return psFormatDateShort(date, { locale: getLocaleString() });
+}
+
+/** Long date with full month: "13 de março de 2026" (pt-BR) / "March 13, 2026" (en-US) */
+export function formatDateLong(date: Date | string): string {
+  return psFormatDateLong(date, { locale: getLocaleString() });
+}
+
+/** Day + abbreviated month: "13 de mar." (pt-BR) / "Mar 13" (en-US) */
+export function formatDayMonth(date: Date | string): string {
+  return psFormatDayMonth(date, { locale: getLocaleString() });
+}
+
+/** Numeric day/month: "13/03" (pt-BR) / "03/13" (en-US) */
+export function formatDayMonthNumeric(date: Date | string): string {
+  return psFormatDayMonthNumeric(date, { locale: getLocaleString() });
+}
+
+/** Date + time: "13/03/2026, 09:39" (pt-BR) / "3/13/2026, 9:39 AM" (en-US) */
+export function formatDateTimeLocale(date: Date | string): string {
+  return psFormatDateTime(date, { locale: getLocaleString() });
+}
+
+/** ISO date string for filenames: "2026-03-13" */
+export function formatDateFilename(date: Date | string): string {
+  return psFormatDateForFilename(date);
+}
+
+/** Relative time from now: "há 1 minuto" (pt-BR) / "1 minute ago" (en-US) */
+export function formatRelative(date: Date | string): string {
+  return psFormatRelativeTime(date, { locale: getLocaleString() });
 }
 
 // ---------------------------------------------------------------------------

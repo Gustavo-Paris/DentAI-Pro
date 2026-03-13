@@ -11,8 +11,7 @@ import {
   Activity, Calendar, DollarSign, Clipboard, User, AlertTriangle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { format, formatDistanceToNow } from 'date-fns';
-import { getDateLocale } from '@/lib/date-utils';
+import { formatRelative, formatDayMonthNumeric } from '@/lib/date-utils';
 import { useSubscription } from '@/hooks/useSubscription';
 import { SessionCard } from './SessionCard';
 
@@ -60,10 +59,7 @@ function DraftCard({
             </p>
             <span className="text-muted-foreground/40" aria-hidden="true">·</span>
             <p className="text-xs text-muted-foreground">
-              {t('dashboard.draft.savedAgo', { time: formatDistanceToNow(new Date(draft.lastSavedAt), {
-                addSuffix: true,
-                locale: getDateLocale(),
-              }) })}
+              {t('dashboard.draft.savedAgo', { time: formatRelative(new Date(draft.lastSavedAt)) })}
             </p>
           </div>
         </div>
@@ -222,12 +218,12 @@ function ActivityFeedSection({ sessions, loading }: { sessions: DashboardSession
 
   const items: ActivityFeedItem[] = sessions.flatMap((session) => {
     const feedItems: ActivityFeedItem[] = [];
-    const relativeTime = formatDistanceToNow(new Date(session.created_at), { addSuffix: true, locale: getDateLocale() });
+    const relativeTime = formatRelative(new Date(session.created_at));
     feedItems.push({
       id: session.session_id,
       type: 'treatment' as const,
       title: session.patient_name || t('dashboard.session.unnamedCase', {
-        date: format(new Date(session.created_at), 'dd/MM', { locale: getDateLocale() }),
+        date: formatDayMonthNumeric(new Date(session.created_at)),
         count: session.teeth.length,
       }),
       description: `${t('evaluation.case', { count: session.teeth.length })} \u2022 ${session.treatmentTypes.join(', ')}`,

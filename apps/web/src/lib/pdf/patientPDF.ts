@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf';
 import { format } from 'date-fns';
+import { formatDateFilename } from '@/lib/date-utils';
 import type { PatientDocument } from '@/data/evaluations';
 import { sanitizeText } from './pdfHelpers';
 
@@ -156,7 +157,7 @@ export async function generatePatientPDF(
   }
 
   // Download
-  const dateStr = format(new Date(), 'yyyy-MM-dd');
+  const dateStr = formatDateFilename(new Date());
   const safeName = patientName.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
   doc.save(`orientacoes-${safeName}-${dateStr}.pdf`);
 }

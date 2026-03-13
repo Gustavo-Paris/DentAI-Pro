@@ -1,5 +1,5 @@
 import jsPDF from 'jspdf';
-import { format } from 'date-fns';
+import { formatDateFilename } from '@/lib/date-utils';
 import type { TFunction } from 'i18next';
 import type { PDFData } from '@/types/protocol';
 import type { PDFRenderContext } from './pdf/pdfHelpers';
@@ -55,6 +55,6 @@ export async function generateProtocolPDF(data: PDFData, t: TFunction): Promise<
   renderFooter(ctx, data);
 
   // Save the PDF
-  const fileName = `protocolo-${data.tooth}-${format(new Date(data.createdAt), 'yyyy-MM-dd')}.pdf`;
+  const fileName = `protocolo-${data.tooth}-${formatDateFilename(new Date(data.createdAt))}.pdf`;
   pdf.save(fileName);
 }
