@@ -27,6 +27,14 @@ export default tseslint.config(
       "no-console": ["error", { allow: ["warn", "error"] }],
     },
   },
+  // Test files: relax rules that conflict with mock patterns
+  {
+    files: ["**/*.{test,spec}.{ts,tsx}", "src/test/**/*.{ts,tsx}"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-this-alias": "off",
+    },
+  },
   // Prevent direct Supabase imports in pages and domain hooks.
   // All data access should go through src/data/ (data client layer).
   // Out-of-scope pages (auth, landing, result, shared, pricing, profile) are excluded.

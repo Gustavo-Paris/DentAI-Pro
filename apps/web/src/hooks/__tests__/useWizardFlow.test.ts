@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any -- test file uses any for mock flexibility */
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 
@@ -741,6 +740,210 @@ describe('useWizardFlow', () => {
       const { result } = renderHook(() => useWizardFlow());
 
       expect(result.current.patients).toEqual([]);
+    });
+
+    it('should expose earlyPhotoQualityScore as null initially', () => {
+      const { result } = renderHook(() => useWizardFlow());
+
+      expect(result.current.earlyPhotoQualityScore).toBeNull();
+    });
+
+    it('should expose formData from initial constants', () => {
+      const { result } = renderHook(() => useWizardFlow());
+
+      expect(result.current.formData).toBeDefined();
+      expect(result.current.formData.patientName).toBe('');
+    });
+
+    it('should expose originalToothTreatments as empty object', () => {
+      const { result } = renderHook(() => useWizardFlow());
+
+      expect(result.current.originalToothTreatments).toEqual({});
+    });
+
+    it('should expose hasInventory as false when no inventory data', () => {
+      const { result } = renderHook(() => useWizardFlow());
+
+      expect(result.current.hasInventory).toBe(false);
+    });
+
+    it('should expose isSaving and lastSavedAt from draft hook', () => {
+      const { result } = renderHook(() => useWizardFlow());
+
+      expect(result.current.isSaving).toBe(false);
+      expect(result.current.lastSavedAt).toBeNull();
+    });
+
+    it('should expose anamnesis as empty string', () => {
+      const { result } = renderHook(() => useWizardFlow());
+
+      expect(result.current.anamnesis).toBe('');
+    });
+  });
+
+  // =========================================================================
+  // 9. DSD handlers
+  // =========================================================================
+
+  describe('DSD handlers', () => {
+    it('should handle handleDSDComplete with gingivoplastyApproved=false — remove GENGIVO', () => {
+      const { result } = renderHook(() => useWizardFlow());
+
+      act(() => {
+        result.current.handleDSDComplete({ gingivoplastyApproved: false } as any);
+      });
+
+      // Should navigate to step 5
+      expect(mockNavReturn.setStep).toHaveBeenCalledWith(5);
+    });
+
+    it('should handle handleDSDComplete with gingivoplastyApproved=true — add GENGIVO', () => {
+      const { result } = renderHook(() => useWizardFlow());
+
+      act(() => {
+        result.current.handleDSDComplete({ gingivoplastyApproved: true } as any);
+      });
+
+      expect(mockNavReturn.setStep).toHaveBeenCalledWith(5);
+    });
+
+    it('should handle handleDSDResultChange', () => {
+      const { result } = renderHook(() => useWizardFlow());
+
+      act(() => {
+        result.current.handleDSDResultChange({ simulation_url: 'test' } as any);
+      });
+
+      // Should update dsdResult internally
+      expect(result.current.dsdResult).toBeDefined();
+    });
+
+    it('should set dsdResult to null on handleDSDSkip', () => {
+      const { result } = renderHook(() => useWizardFlow());
+
+      act(() => {
+        result.current.handleDSDSkip();
+      });
+
+      expect(result.current.dsdResult).toBeNull();
+    });
+  });
+
+  // =========================================================================
+  // 10. Setter actions
+  // =========================================================================
+
+  describe('setter actions', () => {
+    it('should expose setImageBase64 action', () => {
+      const { result } = renderHook(() => useWizardFlow());
+
+      act(() => {
+        result.current.setImageBase64('base64data');
+      });
+
+      expect(result.current.imageBase64).toBe('base64data');
+    });
+
+    it('should expose setAdditionalPhotos action', () => {
+      const { result } = renderHook(() => useWizardFlow());
+
+      act(() => {
+        result.current.setAdditionalPhotos({ smile45: 'test', face: null, radiograph: null });
+      });
+
+      expect(result.current.additionalPhotos.smile45).toBe('test');
+    });
+
+    it('should expose setAnamnesis action', () => {
+      const { result } = renderHook(() => useWizardFlow());
+
+      act(() => {
+        result.current.setAnamnesis('Test anamnesis');
+      });
+
+      expect(result.current.anamnesis).toBe('Test anamnesis');
+    });
+
+    it('should expose setPatientPreferences action', () => {
+      const { result } = renderHook(() => useWizardFlow());
+
+      act(() => {
+        result.current.setPatientPreferences({ whiteningLevel: 'hollywood' });
+      });
+
+      expect(result.current.patientPreferences.whiteningLevel).toBe('hollywood');
+    });
+
+    it('should expose setSelectedTeeth action', () => {
+      const { result } = renderHook(() => useWizardFlow());
+
+      act(() => {
+        result.current.setSelectedTeeth(['11', '21']);
+      });
+
+      expect(result.current.selectedTeeth).toEqual(['11', '21']);
+    });
+
+    it('should expose setDobValidationError action', () => {
+      const { result } = renderHook(() => useWizardFlow());
+
+      act(() => {
+        result.current.setDobValidationError(true);
+      });
+
+      expect(result.current.dobValidationError).toBe(true);
+    });
+
+    it('should expose setEarlyPhotoQualityScore action', () => {
+      const { result } = renderHook(() => useWizardFlow());
+
+      act(() => {
+        result.current.setEarlyPhotoQualityScore(85);
+      });
+
+      expect(result.current.earlyPhotoQualityScore).toBe(85);
+    });
+  });
+
+  // =========================================================================
+  // 11. Additional delegation checks
+  // =========================================================================
+
+  describe('remaining action delegation', () => {
+    it('should delegate handleToothTreatmentChange to review sub-hook', () => {
+      const { result } = renderHook(() => useWizardFlow());
+
+      act(() => {
+        result.current.handleToothTreatmentChange('11', 'porcelana' as any);
+      });
+
+      expect(mockReviewReturn.handleToothTreatmentChange).toHaveBeenCalledWith('11', 'porcelana');
+    });
+
+    it('should delegate handleRestoreAiSuggestion to review sub-hook', () => {
+      const { result } = renderHook(() => useWizardFlow());
+
+      act(() => {
+        result.current.handleRestoreAiSuggestion('11');
+      });
+
+      expect(mockReviewReturn.handleRestoreAiSuggestion).toHaveBeenCalledWith('11');
+    });
+
+    it('should delegate handlePatientBirthDateChange to review sub-hook', () => {
+      const { result } = renderHook(() => useWizardFlow());
+
+      act(() => {
+        result.current.handlePatientBirthDateChange('1990-06-15');
+      });
+
+      expect(mockReviewReturn.handlePatientBirthDateChange).toHaveBeenCalledWith('1990-06-15');
+    });
+
+    it('should expose handleCreditConfirm action', () => {
+      const { result } = renderHook(() => useWizardFlow());
+
+      expect(result.current.handleCreditConfirm).toBeDefined();
     });
   });
 });

@@ -39,7 +39,6 @@ vi.mock('@/lib/analytics', () => ({
 
 // Mock PageConfirmDialog from pageshell (component migrated from AlertDialog)
 vi.mock('@parisgroup-ai/pageshell/interactions', () => ({
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   PageConfirmDialog: ({ children, open, title, icon, confirmText, cancelText, onConfirm, onCancel }: any) =>
     open ? (
       <div data-testid="alert-dialog">
