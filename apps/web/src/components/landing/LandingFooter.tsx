@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { BRAND_NAME } from '@/lib/branding';
+import { BrandMark } from '@/components/BrandMark';
 
 export function LandingFooter() {
   const { t } = useTranslation();
@@ -10,9 +10,13 @@ export function LandingFooter() {
       <div className="glow-divider mb-6 sm:mb-8" />
       <div className="container mx-auto px-4 sm:px-6">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="text-center sm:text-left">
+          <div className="flex items-center gap-2 text-center sm:text-left">
             <span className="text-xs sm:text-sm text-muted-foreground">
-              © {new Date().getFullYear()} {BRAND_NAME}. {t('landing.footer')}
+              © {new Date().getFullYear()}
+            </span>
+            <BrandMark size="xs" />
+            <span className="text-xs sm:text-sm text-muted-foreground">
+              {t('landing.footer')}
             </span>
           </div>
           <div className="flex items-center gap-4 text-xs sm:text-sm text-muted-foreground">

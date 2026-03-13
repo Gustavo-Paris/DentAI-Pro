@@ -7,6 +7,7 @@ import {
   Button,
 } from '@parisgroup-ai/pageshell/primitives';
 import { BRAND_NAME, WELCOME_STORAGE_KEY } from '@/lib/branding';
+import { BrandMark } from '@/components/BrandMark';
 import { Camera, Sparkles, FileText, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -96,7 +97,7 @@ export function WelcomeModal({ open, onClose, onTrySample, onCreateCase }: Welco
             {slide.id === 'welcome' ? (
               <>
                 {t('components.onboarding.welcome.welcomeTo')}{' '}
-                <span className="text-gradient-brand font-semibold">{BRAND_NAME}</span>
+                <BrandMark size="sm" />
               </>
             ) : (
               slide.title
