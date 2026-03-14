@@ -9,7 +9,6 @@ Disallow: /patients
 Disallow: /patient/
 Disallow: /inventory
 Disallow: /result/
-Disallow: /pricing
 Disallow: /shared/
 Disallow: /settings
 

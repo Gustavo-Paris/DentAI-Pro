@@ -69,7 +69,7 @@ export default function PostHogProvider({
   // --- 3. Auth-driven identification ---
   useEffect(() => {
     if (user && user.id !== prevUserId.current) {
-      void identifyUser(user.id, { email: user.email });
+      void identifyUser(user.id, {});
       prevUserId.current = user.id;
     }
 

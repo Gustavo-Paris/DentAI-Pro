@@ -1,11 +1,11 @@
 import { logger } from "../_shared/logger.ts";
 import { ResinCatalogRowSchema, type RecommendResinResponseParsed } from "../_shared/aiSchemas.ts";
+import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 
 interface ShadeValidationParams {
   recommendation: RecommendResinResponseParsed;
   aestheticGoals: string | undefined;
-  // deno-lint-ignore no-explicit-any
-  supabase: any;
+  supabase: SupabaseClient;
   /** FDI tooth notation (e.g. "11") — used for layer count validation */
   tooth?: string;
   /** Cavity class (e.g. "Classe III") — used for layer count validation */
@@ -89,8 +89,10 @@ export function validateMinimumLayerCount(layers: unknown[], context: LayerCount
 type CatalogRow = { shade: string; type: string; product_line: string };
 
 /** The non-optional protocol object extracted from RecommendResinResponseParsed. */
-// deno-lint-ignore no-explicit-any
-type Protocol = NonNullable<RecommendResinResponseParsed["protocol"]> & { [key: string]: any };
+type Protocol = NonNullable<RecommendResinResponseParsed["protocol"]> & {
+  warnings?: string[];
+  alerts?: string[];
+};
 
 interface ValidationState {
   catalogRows: CatalogRow[];
@@ -103,18 +105,28 @@ interface ValidationState {
 // Sub-function 1: validateShades
 // ---------------------------------------------------------------------------
 
+interface ProtocolLayer {
+  order?: number;
+  name?: string;
+  resin_brand?: string;
+  shade?: string;
+  thickness?: string;
+  purpose?: string;
+  technique?: string;
+  optional?: boolean;
+  _injected?: boolean;
+}
+
 /**
  * Validates each layer's shade against the resin catalog and applies
  * enforcement rules (cristas, aumento incisal, dentina/corpo, Z350 BL, enamel).
  * Mutates layers in-place; accumulates replacements and alerts in `state`.
  */
-// deno-lint-ignore no-explicit-any
 function validateShades(
-  // deno-lint-ignore no-explicit-any
-  layers: any[],
+  layers: ProtocolLayer[],
   wantsWhitening: boolean,
   state: ValidationState,
-): { validatedLayers: typeof layers; productLineWithoutBL: string | null } {
+): { validatedLayers: ProtocolLayer[]; productLineWithoutBL: string | null } {
   const { catalogRows, shadeReplacements, brandReplacements, validationAlerts } = state;
 
   // Normalize shade: strip parenthetical descriptions AI sometimes adds, e.g. "MW (Milky White)" → "MW"
@@ -129,7 +141,7 @@ function validateShades(
     return catalogRows.filter((r) => matchesLine(r.product_line, keyword));
   }
 
-  const validatedLayers = [];
+  const validatedLayers: ProtocolLayer[] = [];
   let productLineWithoutBL: string | null = null;
 
   for (const layer of layers) {
@@ -218,8 +230,9 @@ function validateShades(
       if (isAumentoIncisal && !layerType.includes('efeito') && layer.shade) {
         // All translucent shades that are clinically acceptable for palatal shell
         const translucentShades = ['CT', 'GT', 'BT', 'YT', 'TN', 'Trans', 'Trans20', 'Trans30', 'Opal'];
+        const shade = layer.shade;
         const isTranslucent = translucentShades.some(ts =>
-          layer.shade.toUpperCase() === ts.toUpperCase()
+          shade.toUpperCase() === ts.toUpperCase()
         );
         if (!isTranslucent) {
           const originalShade = layer.shade;
@@ -300,7 +313,8 @@ function validateShades(
       const isDentinaCorpoLayer = layerType.includes('dentina') || layerType.includes('corpo') || layerType.includes('body');
       if (isDentinaCorpoLayer && layer.shade) {
         const enamelShadesList = ['WE', 'A1E', 'A2E', 'A3E', 'B1E', 'B2E', 'CT', 'GT', 'BT', 'YT', 'MW', 'CE', 'JE', 'TN', 'INC', 'BL1', 'BL2', 'BL3', 'BL-L', 'BL-XL', 'BL-T', 'XLE', 'Trans20', 'Trans30', 'Trans', 'Opal'];
-        const isEnamelShadeForBody = enamelShadesList.some(es => layer.shade.toUpperCase() === es.toUpperCase());
+        const shade = layer.shade;
+        const isEnamelShadeForBody = enamelShadesList.some(es => shade.toUpperCase() === es.toUpperCase());
         if (isEnamelShadeForBody) {
           const originalShade = layer.shade;
           // Prefer WB, then DA1, then A1 as body shade
@@ -360,14 +374,15 @@ function validateShades(
         }
       }
 
-      if (isEnamelLayer) {
+      if (isEnamelLayer && layer.shade) {
         const enamelShades = lineRows.filter((r) =>
           r.type?.toLowerCase().includes('esmalte')
         );
 
         if (enamelShades.length > 0) {
+          const shade = layer.shade;
           const currentIsUniversal = !['WE', 'CE', 'JE', 'CT', 'Trans', 'IT', 'TN', 'Opal', 'INC', 'MW'].some(
-            prefix => layer.shade.toUpperCase().includes(prefix)
+            prefix => shade.toUpperCase().includes(prefix)
           );
 
           if (currentIsUniversal) {
@@ -396,7 +411,8 @@ function validateShades(
       // Enforce: esmalte vestibular final must NOT use translucent shades
       if (isEnamelLayer && layer.shade) {
         const translucentShades = ['CT', 'GT', 'BT', 'YT', 'WT', 'Trans', 'Trans20', 'Trans30', 'Opal'];
-        const isTranslucent = translucentShades.some(ts => layer.shade.toUpperCase() === ts.toUpperCase());
+        const shade = layer.shade;
+        const isTranslucent = translucentShades.some(ts => shade.toUpperCase() === ts.toUpperCase());
         const isVestibularFinal = layerType.includes('vestibular') || layerType.includes('final');
         if (isTranslucent && isVestibularFinal) {
           const originalShade = layer.shade;
@@ -548,14 +564,14 @@ function enforceLayerCount(
       logger.warn(`Layer count enforcement: ${currentCount} layers < ${minRequired} minimum for ${tooth} (${cavityClass}, size=${restorationSize}). Injecting missing layers.`);
 
       // Determine what layers exist
-      const hasCristas = protocol.layers.some((l: {name?: string}) => {
+      const hasCristas = protocol.layers.some((l: ProtocolLayer) => {
         const n = (l.name || '').toLowerCase();
         return n.includes('crista') || n.includes('proxima');
       });
 
       // Inject Cristas Proximais if missing and needed (for medium+ diastema with explicit size classification)
       if (!hasCristas && isDiastema && !isSmallDiastema && sizeNorm.length > 0) {
-        const cristasLayer = {
+        const cristasLayer: ProtocolLayer = {
           order: 0,
           name: 'Cristas Proximais',
           resin_brand: 'Kerr - Harmonize',
@@ -566,12 +582,13 @@ function enforceLayerCount(
           _injected: true,
         };
         // Insert after corpo, before esmalte
-        const esmalteIdx = protocol.layers.findIndex((l: {name?: string}) => {
+        const esmalteIdx = protocol.layers.findIndex((l: ProtocolLayer) => {
           const n = (l.name || '').toLowerCase();
           return n.includes('esmalte') && (n.includes('vestibular') || n.includes('final'));
         });
         const insertIdx = esmalteIdx >= 0 ? esmalteIdx : protocol.layers.length;
-        protocol.layers.splice(insertIdx, 0, cristasLayer);
+        // deno-lint-ignore no-explicit-any
+        (protocol.layers as any[]).splice(insertIdx, 0, cristasLayer);
         validationAlerts.push('Cristas Proximais injetadas: camada obrigatória para diastema ≥1mm (estratificação mínima de 3 camadas).');
         logger.warn('Layer injection: Cristas Proximais added for medium+ diastema');
       }
@@ -607,7 +624,7 @@ function injectMissingLayers(
 
   if (anterior && isAestheticCase && protocol.layers.length >= 3) {
     const hasEfeitos = protocol.layers.some(
-      (l: { name?: string }) => {
+      (l: ProtocolLayer) => {
         const n = (l.name || '').toLowerCase();
         return n.includes('efeito') || n.includes('corante') || n.includes('caracteriza');
       }
@@ -615,13 +632,13 @@ function injectMissingLayers(
     if (!hasEfeitos) {
       // Find where Esmalte Vestibular Final is and insert Efeitos before it
       const esmalteIdx = protocol.layers.findIndex(
-        (l: { name?: string }) => {
+        (l: ProtocolLayer) => {
           const n = (l.name || '').toLowerCase();
           return (n.includes('esmalte') && (n.includes('vestibular') || n.includes('final')));
         }
       );
       const insertIdx = esmalteIdx >= 0 ? esmalteIdx : protocol.layers.length;
-      const efeitosLayer = {
+      const efeitosLayer: ProtocolLayer = {
         order: insertIdx + 1,
         name: 'Efeitos Incisais',
         resin_brand: 'Ivoclar - Empress Direct Color',
@@ -632,7 +649,8 @@ function injectMissingLayers(
         optional: true,
         _injected: true,
       };
-      protocol.layers.splice(insertIdx, 0, efeitosLayer);
+      // deno-lint-ignore no-explicit-any
+      (protocol.layers as any[]).splice(insertIdx, 0, efeitosLayer);
       // Re-number all layers
       for (let i = 0; i < protocol.layers.length; i++) {
         protocol.layers[i].order = i + 1;
@@ -856,11 +874,13 @@ export async function validateAndFixProtocolLayers({
 
   // Step 1: Validate shades against catalog and apply enforcement rules
   const { validatedLayers, productLineWithoutBL } = validateShades(
-    protocol.layers,
+    protocol.layers as ProtocolLayer[],
     wantsWhitening,
     state,
   );
-  protocol.layers = validatedLayers;
+  // Cast back: ProtocolLayer is a structural subset of the schema layer type; fields are mutated in-place
+  // deno-lint-ignore no-explicit-any
+  protocol.layers = validatedLayers as any[];
 
   // Step 2: Enforce minimum layer counts (inject Cristas Proximais if needed)
   enforceLayerCount(protocol, tooth, cavityClass, restorationSize, state.validationAlerts);
@@ -885,6 +905,6 @@ export async function validateAndFixProtocolLayers({
 
   // Clean up internal markers before returning
   for (const layer of protocol.layers) {
-    delete layer._injected;
+    delete (layer as ProtocolLayer)._injected;
   }
 }

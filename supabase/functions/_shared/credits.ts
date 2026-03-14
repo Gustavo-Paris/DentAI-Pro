@@ -82,8 +82,10 @@ export async function checkAndUseCredits(
       type: "consume",
     });
     if (txError) {
-      logger.error("Failed to record credit transaction — idempotency guard compromised", { operationId, error: txError });
-      // Don't throw here as credits were already consumed — but log as error for monitoring
+      logger.error("Failed to record credit transaction — idempotency guard compromised. Refunding credits.", { operationId, error: txError });
+      // Refund the consumed credits since we can't guarantee idempotency
+      await supabase.rpc("refund_credits", { p_user_id: userId, p_operation: operation });
+      return { allowed: false, creditsAvailable: 0, creditsCost: 0, isFreeUser: false };
     }
   }
 

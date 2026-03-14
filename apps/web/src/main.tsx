@@ -89,6 +89,7 @@ function sanitizeSentryEvent<T extends Sentry.Event>(event: T): T {
 Sentry.init({
   dsn: env.VITE_SENTRY_DSN,
   environment: import.meta.env.MODE,
+  release: `dentai-web@${import.meta.env.VITE_APP_VERSION || '0.0.0'}`,
   enabled: import.meta.env.PROD && !!env.VITE_SENTRY_DSN,
   integrations: [
     Sentry.browserTracingIntegration(),

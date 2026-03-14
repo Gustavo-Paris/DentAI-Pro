@@ -229,7 +229,11 @@ export function useAddTeethFlow(deps: UseAddTeethFlowDeps): UseAddTeethFlowRetur
     } else if (failed.length > 0) {
       // Partial success — some teeth succeeded, some failed
       toast.warning(
-        `${succeeded.length} de ${results.length} dentes processados. ${failed.length} falharam — tente novamente.`,
+        t('toasts.evaluationDetail.partialAddTeeth', {
+          succeeded: succeeded.length,
+          total: results.length,
+          failed: failed.length,
+        }),
         { duration: 10000 },
       );
       handleAddTeethSuccess();

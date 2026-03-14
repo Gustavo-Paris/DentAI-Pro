@@ -136,17 +136,9 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
       return;
     }
 
-    const withIncompleteChecklist = 0; // already filtered above
-
     bulkCompleteMutation.mutate(pending.map((e) => e.id), {
       onSuccess: () => {
-        if (withIncompleteChecklist > 0) {
-          toast.success(
-            t('toasts.evaluationDetail.completedWithIncomplete', { count: pending.length, incomplete: withIncompleteChecklist }),
-          );
-        } else {
-          toast.success(t('toasts.evaluationDetail.bulkCompleted', { count: pending.length }));
-        }
+        toast.success(t('toasts.evaluationDetail.bulkCompleted', { count: pending.length }));
         queryClient.invalidateQueries({ queryKey: evaluationKeys.session(sessionId) });
       },
       onError: () => {
@@ -408,6 +400,11 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
         }
       }
 
+      // If no evaluations succeeded, throw to trigger error handling
+      if (successCount === 0 && aiEvals.length > 0) {
+        throw new Error('All regenerations failed');
+      }
+
       // 3. Sync protocols across group
       if (successCount >= 2) {
         try {
@@ -424,12 +421,19 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
       const budgetLabel = newBudget === 'premium'
         ? t('toasts.evaluationDetail.budgetPremium')
         : t('toasts.evaluationDetail.budgetStandard');
-      toast.success(
-        t('toasts.evaluationDetail.regenerateSuccess', {
-          count: successCount,
-          budget: budgetLabel,
+      const failedCount = aiEvals.length - successCount;
+      if (failedCount > 0) {
+        toast.warning(
+          t('toasts.evaluationDetail.partialRegenError', { count: successCount }),
+        );
+      } else {
+        toast.success(
+          t('toasts.evaluationDetail.regenerateSuccess', {
+            count: successCount,
+            budget: budgetLabel,
           }),
-      );
+        );
+      }
     } catch (error) {
       logger.error('Regeneration failed:', error);
       if (successCount > 0) {

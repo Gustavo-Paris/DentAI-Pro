@@ -114,8 +114,17 @@ async function createOrFindPatient(
     }
   }
 
+  // Warn if patient creation resulted in no patientId (data will still be saved, just without patient link)
+  if (formData.patientName && !patientId) {
+    logger.warn('Patient association lost — evaluations will be created without patient link');
+  }
+
   if (patientId && patientBirthDate && !originalPatientBirthDate) {
-    await wizardData.updatePatientBirthDate(patientId, patientBirthDate);
+    try {
+      await wizardData.updatePatientBirthDate(patientId, patientBirthDate);
+    } catch (birthDateErr) {
+      logger.warn('Failed to update patient birth date (non-critical):', birthDateErr);
+    }
   }
 
   return patientId;

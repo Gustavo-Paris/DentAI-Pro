@@ -31,7 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
-      Sentry.setUser(session?.user ? { id: session.user.id, email: session.user.email } : null);
+      Sentry.setUser(session?.user ? { id: session.user.id } : null);
       setLoading(false);
 
       // When Supabase fires PASSWORD_RECOVERY (user clicked reset link in email),
@@ -48,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      Sentry.setUser(session?.user ? { id: session.user.id, email: session.user.email } : null);
+      Sentry.setUser(session?.user ? { id: session.user.id } : null);
       setLoading(false);
     }).catch((error) => {
       logger.error('Failed to get auth session:', error);
@@ -59,6 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- navigate is stable (from useNavigate), including it causes infinite re-subscription
   }, []);
 
   // Idle timeout — sign out after 30 minutes of inactivity

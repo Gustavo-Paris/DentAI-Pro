@@ -128,6 +128,19 @@ Deno.serve(async (req: Request) => {
       // Continue without simulation - analysis is still valid
     }
 
+    // If simulation failed completely, return error WITHOUT consuming credits
+    if (!simulationUrl) {
+      logger.warn(`[${reqId}] DSD simulation failed — no credit consumed. Debug: ${simulationDebug}`);
+      return new Response(JSON.stringify({
+        error: "Simulação DSD falhou",
+        code: "SIMULATION_FAILED",
+        simulation_debug: simulationDebug,
+      }), {
+        status: 422,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Credits + DB update wrapped in credit protection (auto-refund on error)
     return await withCreditProtection(
       { supabase, userId: user.id, operation: "dsd_simulation", operationId: reqId, corsHeaders },

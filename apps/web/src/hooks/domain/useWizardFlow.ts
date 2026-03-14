@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthenticatedFetch } from '@/hooks/useAuthenticatedFetch';
@@ -181,10 +181,12 @@ export function useWizardFlow(): WizardFlowState & WizardFlowActions {
   });
 
   // Wire up forward refs now that photo hook is created
-  analyzePhotoRef.current = photo.analyzePhoto;
-  abortAnalysisRef.current = photo.abortAnalysis;
-  photoSettersRef.current.setAnalysisError = photo.setAnalysisError;
-  photoSettersRef.current.setIsAnalyzing = photo.setIsAnalyzing;
+  useLayoutEffect(() => {
+    analyzePhotoRef.current = photo.analyzePhoto;
+    abortAnalysisRef.current = photo.abortAnalysis;
+    photoSettersRef.current.setAnalysisError = photo.setAnalysisError;
+    photoSettersRef.current.setIsAnalyzing = photo.setIsAnalyzing;
+  }, [photo.analyzePhoto, photo.abortAnalysis, photo.setAnalysisError, photo.setIsAnalyzing]);
 
   // DSD handlers (inline — analysis is unified, no merge needed)
   const handleDSDComplete = useCallback((result: DSDResult | null) => {

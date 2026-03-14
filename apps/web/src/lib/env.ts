@@ -38,6 +38,9 @@ function parseEnv() {
     if (!parsed.VITE_SENTRY_DSN) {
       console.error('[AURIA] WARNING: VITE_SENTRY_DSN is not set — error monitoring is DISABLED in production');
     }
+    if (!parsed.VITE_TURNSTILE_SITE_KEY) {
+      console.error('[AURIA] WARNING: VITE_TURNSTILE_SITE_KEY is not set — bot protection is DISABLED in production');
+    }
     // PostHog is intentionally disabled — no warning needed
   }
 

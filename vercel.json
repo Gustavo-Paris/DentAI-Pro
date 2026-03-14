@@ -5,7 +5,7 @@
   "outputDirectory": "apps/web/dist",
   "framework": "vite",
   "rewrites": [
-    { "source": "/((?!api|assets|sitemap.xml|robots.txt|favicon.ico|manifest.json|favicon.svg|apple-touch-icon.png).*)", "destination": "/index.html" }
+    { "source": "/((?!api|assets|sitemap.xml|robots.txt|favicon.ico|manifest.json|favicon.svg|apple-touch-icon.png|og-image.png).*)", "destination": "/index.html" }
   ],
   "headers": [
     {

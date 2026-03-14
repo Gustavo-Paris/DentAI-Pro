@@ -1,5 +1,5 @@
 // Production-safe logger for Edge Functions
-const isDev = Deno.env.get("ENVIRONMENT") !== "production";
+const isDev = Deno.env.get("ENVIRONMENT") === "development";
 
 /** Redact email addresses from log messages (LGPD compliance). */
 function sanitize(msg: string): string {
