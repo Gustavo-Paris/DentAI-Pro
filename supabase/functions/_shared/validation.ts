@@ -136,6 +136,15 @@ const VALID_AESTHETIC_LEVELS = ["funcional", "estético", "baixo", "médio", "al
 const VALID_LONGEVITY = ["curto", "médio", "longo"];
 const VALID_BUDGETS = ["padrão", "premium", "econômico", "moderado"];
 
+const RESTORATION_SIZE_NORMALIZE: Record<string, string> = {
+  'small': 'Pequena', 'medium': 'Média', 'media': 'Média',
+  'large': 'Grande', 'extensive': 'Extensa',
+};
+const SUBSTRATE_NORMALIZE: Record<string, string> = {
+  'enamel': 'Esmalte', 'dentin': 'Dentina',
+  'enamel and dentin': 'Esmalte e Dentina', 'deep dentin': 'Dentina profunda',
+};
+
 function isUUID(value: unknown): boolean {
   return typeof value === "string" && UUID_REGEX.test(value);
 }
@@ -229,6 +238,10 @@ export function validateEvaluationData(data: unknown): ValidationResult<Evaluati
   if (!isValidEnum(obj.cavityClass, VALID_CAVITY_CLASSES)) {
     return { success: false, error: "Classe de cavidade inválida" };
   }
+
+  // Normalize English enum values from AI (defensive fallback)
+  obj.restorationSize = RESTORATION_SIZE_NORMALIZE[String(obj.restorationSize).toLowerCase().trim()] || obj.restorationSize;
+  obj.substrate = SUBSTRATE_NORMALIZE[String(obj.substrate).toLowerCase().trim()] || obj.substrate;
 
   if (!isValidEnum(obj.restorationSize, VALID_RESTORATION_SIZES)) {
     return { success: false, error: "Tamanho de restauração inválido" };

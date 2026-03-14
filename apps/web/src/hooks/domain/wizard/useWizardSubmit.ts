@@ -19,7 +19,7 @@ import { TIMING } from '@/lib/constants';
 import { EVALUATION_STATUS } from '@/lib/evaluation-status';
 import { wizard as wizardData } from '@/data';
 import { normalizeTreatmentType } from '@/lib/treatment-config';
-import { inferCavityClass, getFullRegion, getToothData, getToothTreatment } from './helpers';
+import { inferCavityClass, getFullRegion, getToothData, getToothTreatment, normalizeRestorationSize, normalizeSubstrate } from './helpers';
 
 import {
   dispatchTreatmentProtocol,
@@ -148,8 +148,8 @@ function buildEvaluationInsertData(
     tooth: isGengivoplasty ? 'GENGIVO' : tooth,
     region: isGengivoplasty ? 'anterior-superior' : getFullRegion(tooth),
     cavity_class: isGengivoplasty ? 'N/A' : inferCavityClass(toothData, formData.cavityClass, normalizedTreatment),
-    restoration_size: isGengivoplasty ? 'N/A' : (toothData?.restoration_size || formData.restorationSize),
-    substrate: isGengivoplasty ? 'N/A' : (toothData?.substrate || formData.substrate),
+    restoration_size: isGengivoplasty ? 'N/A' : normalizeRestorationSize(toothData?.restoration_size || formData.restorationSize),
+    substrate: isGengivoplasty ? 'N/A' : normalizeSubstrate(toothData?.substrate || formData.substrate),
     tooth_color: analysisResult?.vita_shade || formData.vitaShade || 'A2',
     depth: isGengivoplasty ? null : (toothData?.depth || formData.depth),
     substrate_condition: isGengivoplasty ? null : (toothData?.substrate_condition || formData.substrateCondition),

@@ -95,3 +95,29 @@ export function normalizeTreatment(treatment: string): TreatmentType {
   return normalizeTreatmentType(treatment) as TreatmentType;
 }
 
+const RESTORATION_SIZE_MAP: Record<string, string> = {
+  'small': 'Pequena', 'pequena': 'Pequena',
+  'medium': 'Média', 'média': 'Média', 'media': 'Média',
+  'large': 'Grande', 'grande': 'Grande',
+  'extensive': 'Extensa', 'extensa': 'Extensa',
+};
+
+export function normalizeRestorationSize(value: string | undefined): string {
+  if (!value) return 'Média';
+  const normalized = RESTORATION_SIZE_MAP[value.toLowerCase().trim()];
+  return normalized || 'Média';
+}
+
+const SUBSTRATE_MAP: Record<string, string> = {
+  'esmalte': 'Esmalte', 'enamel': 'Esmalte',
+  'dentina': 'Dentina', 'dentin': 'Dentina',
+  'esmalte e dentina': 'Esmalte e Dentina', 'enamel and dentin': 'Esmalte e Dentina',
+  'dentina profunda': 'Dentina profunda', 'deep dentin': 'Dentina profunda',
+};
+
+export function normalizeSubstrate(value: string | undefined): string {
+  if (!value) return 'Esmalte e Dentina';
+  const normalized = SUBSTRATE_MAP[value.toLowerCase().trim()];
+  return normalized || 'Esmalte e Dentina';
+}
+

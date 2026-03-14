@@ -6,6 +6,8 @@ import {
   getToothData,
   getToothTreatment,
   normalizeTreatment,
+  normalizeRestorationSize,
+  normalizeSubstrate,
 } from '../helpers';
 
 vi.mock('@/lib/treatment-config', () => ({
@@ -212,5 +214,52 @@ describe('getToothTreatment', () => {
 describe('normalizeTreatment', () => {
   it('delegates to normalizeTreatmentType', () => {
     expect(normalizeTreatment('RESINA')).toBe('resina');
+  });
+});
+
+describe('normalizeRestorationSize', () => {
+  it('passes valid Portuguese values through', () => {
+    expect(normalizeRestorationSize('Média')).toBe('Média');
+    expect(normalizeRestorationSize('Pequena')).toBe('Pequena');
+    expect(normalizeRestorationSize('Grande')).toBe('Grande');
+    expect(normalizeRestorationSize('Extensa')).toBe('Extensa');
+  });
+
+  it('normalizes English values to Portuguese', () => {
+    expect(normalizeRestorationSize('Medium')).toBe('Média');
+    expect(normalizeRestorationSize('Small')).toBe('Pequena');
+    expect(normalizeRestorationSize('Large')).toBe('Grande');
+    expect(normalizeRestorationSize('Extensive')).toBe('Extensa');
+  });
+
+  it('handles case-insensitive input', () => {
+    expect(normalizeRestorationSize('medium')).toBe('Média');
+    expect(normalizeRestorationSize('LARGE')).toBe('Grande');
+  });
+
+  it('returns default Média for unknown values', () => {
+    expect(normalizeRestorationSize('unknown')).toBe('Média');
+    expect(normalizeRestorationSize('')).toBe('Média');
+    expect(normalizeRestorationSize(undefined as any)).toBe('Média');
+  });
+});
+
+describe('normalizeSubstrate', () => {
+  it('passes valid Portuguese values through', () => {
+    expect(normalizeSubstrate('Esmalte')).toBe('Esmalte');
+    expect(normalizeSubstrate('Dentina')).toBe('Dentina');
+    expect(normalizeSubstrate('Esmalte e Dentina')).toBe('Esmalte e Dentina');
+    expect(normalizeSubstrate('Dentina profunda')).toBe('Dentina profunda');
+  });
+
+  it('normalizes English values', () => {
+    expect(normalizeSubstrate('Enamel')).toBe('Esmalte');
+    expect(normalizeSubstrate('Dentin')).toBe('Dentina');
+    expect(normalizeSubstrate('Enamel and Dentin')).toBe('Esmalte e Dentina');
+    expect(normalizeSubstrate('Deep Dentin')).toBe('Dentina profunda');
+  });
+
+  it('returns default for unknown values', () => {
+    expect(normalizeSubstrate('unknown')).toBe('Esmalte e Dentina');
   });
 });
