@@ -15,6 +15,43 @@ vi.mock('@parisgroup-ai/pageshell/primitives', () => ({
   Textarea: ({ value, onChange, ...p }: any) => (
     <textarea value={value} onChange={onChange} {...p} />
   ),
+  FileDropzone: ({ children, onDrop, onDropRejected, accept, maxSize, className }: any) => {
+    const handleDrop = (e: any) => {
+      e.preventDefault();
+      const files: File[] = Array.from(e.dataTransfer?.files ?? []);
+      if (files.length === 0) return;
+      const accepted: File[] = [];
+      const rejected: { file: File; errors: { code: string }[] }[] = [];
+      for (const file of files) {
+        const errors: { code: string }[] = [];
+        if (maxSize != null && file.size > maxSize) errors.push({ code: 'file-too-large' });
+        if (accept != null) {
+          const acceptedMimes = Object.keys(accept);
+          const matchesMime = acceptedMimes.some((mime) => {
+            if (mime.endsWith('/*')) return file.type.startsWith(mime.replace('/*', '/'));
+            return file.type === mime;
+          });
+          if (!matchesMime) errors.push({ code: 'file-invalid-type' });
+        }
+        if (errors.length > 0) rejected.push({ file, errors });
+        else accepted.push(file);
+      }
+      if (accepted.length > 0 && onDrop) onDrop(accepted);
+      if (rejected.length > 0 && onDropRejected) onDropRejected(rejected);
+    };
+    return (
+      <div
+        data-testid="file-dropzone"
+        className={className}
+        onDragEnter={() => {}}
+        onDragLeave={() => {}}
+        onDrop={handleDrop}
+        onClick={() => onDrop?.([new File([''], 'test.jpg', { type: 'image/jpeg' })])}
+      >
+        {typeof children === 'function' ? children({ isDragActive: false }) : children}
+      </div>
+    );
+  },
 }));
 
 vi.mock('lucide-react', () => {

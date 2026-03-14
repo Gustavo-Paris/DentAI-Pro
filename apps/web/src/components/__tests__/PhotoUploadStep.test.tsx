@@ -46,6 +46,24 @@ vi.mock('@parisgroup-ai/pageshell/primitives', () => ({
   AlertDescription: ({ children, ...props }: any) => <div {...props}>{children}</div>,
   Label: ({ children, ...props }: any) => <label {...props}>{children}</label>,
   Textarea: (props: any) => <textarea {...props} />,
+  FileDropzone: ({ children, onDrop, onDropRejected: _onDropRejected, className }: any) => {
+    const handleDrop = (e: any) => {
+      e.preventDefault();
+      if (onDrop) onDrop([new File([''], 'test.jpg', { type: 'image/jpeg' })]);
+    };
+    return (
+      <div
+        data-testid="file-dropzone"
+        className={className}
+        onDragEnter={() => {}}
+        onDragLeave={() => {}}
+        onDrop={handleDrop}
+        onClick={() => onDrop?.([new File([''], 'test.jpg', { type: 'image/jpeg' })])}
+      >
+        {typeof children === 'function' ? children({ isDragActive: false }) : children}
+      </div>
+    );
+  },
 }));
 
 describe('PhotoUploadStep', () => {
