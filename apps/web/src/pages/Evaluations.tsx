@@ -129,7 +129,7 @@ const SessionCard = memo(function SessionCard({
               {/* Treatment color chips */}
               {session.treatmentTypes.length > 0 && (
                 <>
-                  <span className="text-muted-foreground/40">·</span>
+                  <span className="text-muted-foreground/60">·</span>
                   <div className="flex gap-1.5 flex-wrap">
                     {session.treatmentTypes.map(type => {
                       const config = getTreatmentConfig(type);
@@ -155,7 +155,7 @@ const SessionCard = memo(function SessionCard({
               {/* Tooth badges */}
               {session.teeth.length > 0 && (
                 <>
-                  <span className="text-muted-foreground/40">·</span>
+                  <span className="text-muted-foreground/60">·</span>
                   <div className="flex gap-1.5 flex-wrap items-center min-w-0">
                     {session.teeth.slice(0, 3).map((tooth) => (
                       <Badge key={tooth} variant="outline" className="text-xs whitespace-nowrap">
@@ -179,7 +179,7 @@ const SessionCard = memo(function SessionCard({
             <span className="sm:hidden">
               {format(new Date(session.created_at), 'dd/MM', { locale: getDateLocale() })}
             </span>
-            <ChevronRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-muted-foreground group-hover:translate-x-0.5 transition-all" aria-hidden="true" />
+            <ChevronRight className="w-4 h-4 text-muted-foreground/60 group-hover:text-muted-foreground group-hover:translate-x-0.5 transition-all" aria-hidden="true" />
           </div>
         </div>
         {/* Progress bar */}

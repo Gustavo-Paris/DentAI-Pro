@@ -42,7 +42,7 @@ export function LandingFeatures() {
           ]).map((feature, index) => (
             <div
               key={index}
-              className={`scroll-reveal scroll-reveal-delay-${index + 1} text-left border border-border rounded-xl p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md group dark:bg-gradient-to-br dark:from-card dark:to-card/80 glass-panel glow-card`}
+              className={`scroll-reveal scroll-reveal-delay-${index + 1} text-left border border-border rounded-xl p-6 shadow-sm transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-1 hover:shadow-md group dark:bg-gradient-to-br dark:from-card dark:to-card/80 glass-panel glow-card`}
             >
               <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-primary/15 via-primary/8 to-[rgb(var(--accent-violet-rgb)/0.06)] flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110 glow-icon">
                 <feature.icon className="w-6 h-6 sm:w-7 sm:h-7 text-primary" aria-hidden="true" />

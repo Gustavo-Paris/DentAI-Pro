@@ -186,8 +186,9 @@ const App = () => (
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/shared/:token" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><SharedEvaluation /></Suspense></ErrorBoundary>} />
 
-            {/* Redirect legacy /cases route */}
+            {/* Redirect legacy routes */}
             <Route path="/cases" element={<Navigate to="/evaluations" replace />} />
+            <Route path="/signup" element={<Navigate to="/register" replace />} />
 
             {/* Protected routes WITH persistent nav layout */}
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>

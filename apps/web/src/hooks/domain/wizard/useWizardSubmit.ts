@@ -706,8 +706,9 @@ export function useWizardSubmit({
     // -------------------------------------------------------------------
     // Main flow: patient -> evaluations -> finalize (with global timeout)
     // -------------------------------------------------------------------
+    let globalTimeoutId: ReturnType<typeof setTimeout>;
     const globalTimeout = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error('CASE_GENERATION_TIMEOUT')), TIMING.CASE_GENERATION_TIMEOUT);
+      globalTimeoutId = setTimeout(() => reject(new Error('CASE_GENERATION_TIMEOUT')), TIMING.CASE_GENERATION_TIMEOUT);
     });
 
     try {
@@ -780,6 +781,7 @@ export function useWizardSubmit({
       toast.error(errorMessage, { duration: 5000 });
       if (shouldGoBack) setStep(5);
     } finally {
+      clearTimeout(globalTimeoutId!);
       isSubmittingRef.current = false;
       setIsSubmitting(false);
     }

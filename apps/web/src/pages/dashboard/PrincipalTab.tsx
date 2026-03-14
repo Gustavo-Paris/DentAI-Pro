@@ -57,7 +57,7 @@ function DraftCard({
             <p className="text-xs text-muted-foreground">
               {t('dashboard.draft.teethSelected', { count: teethCount })}
             </p>
-            <span className="text-muted-foreground/40" aria-hidden="true">·</span>
+            <span className="text-muted-foreground/60" aria-hidden="true">·</span>
             <p className="text-xs text-muted-foreground">
               {t('dashboard.draft.savedAgo', { time: formatRelative(new Date(draft.lastSavedAt)) })}
             </p>
@@ -128,7 +128,7 @@ function PendingActions({
                     {t('dashboard.pending.tapToComplete')}
                   </p>
                 </div>
-                <ChevronRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-muted-foreground group-hover:translate-x-0.5 transition-all shrink-0" aria-hidden="true" />
+                <ChevronRight className="w-4 h-4 text-muted-foreground/60 group-hover:text-muted-foreground group-hover:translate-x-0.5 transition-all shrink-0" aria-hidden="true" />
               </div>
             </Card>
           </Link>

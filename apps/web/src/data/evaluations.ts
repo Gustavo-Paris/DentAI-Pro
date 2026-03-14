@@ -153,18 +153,19 @@ export async function list({ userId, page = 0, pageSize = 20 }: EvaluationListPa
   return { rows: data || [], count: count || 0 };
 }
 
-export async function getById(evaluationId: string) {
-  return withQuery(() =>
-    supabase
+export async function getById(evaluationId: string, userId?: string) {
+  return withQuery(() => {
+    let query = supabase
       .from('evaluations')
       .select(`
         *,
         resins:resins!recommended_resin_id(*),
         ideal_resin:resins!ideal_resin_id(*)
       `)
-      .eq('id', evaluationId)
-      .maybeSingle(),
-  );
+      .eq('id', evaluationId);
+    if (userId) query = query.eq('user_id', userId);
+    return query.maybeSingle();
+  });
 }
 
 export async function listBySession(sessionId: string, userId: string): Promise<SessionEvaluationRow[]> {

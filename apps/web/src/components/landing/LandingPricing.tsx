@@ -92,7 +92,7 @@ export function LandingPricing() {
   const displayPlans = plans && plans.length > 0 ? plans : null;
 
   return (
-    <section id="pricing" className="py-12 sm:py-20 bg-secondary/30 relative overflow-hidden section-glow-bg">
+    <section id="pricing" aria-label={t('pricing.plansAndPricing')} className="py-12 sm:py-20 bg-secondary/30 relative overflow-hidden section-glow-bg">
       <div className="glow-divider" />
       <div className="container mx-auto px-4 sm:px-6">
         <div className="text-center mb-8 sm:mb-12">

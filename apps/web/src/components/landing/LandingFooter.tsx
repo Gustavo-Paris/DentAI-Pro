@@ -19,14 +19,14 @@ export function LandingFooter() {
               {t('landing.footer')}
             </span>
           </div>
-          <div className="flex items-center gap-4 text-xs sm:text-sm text-muted-foreground">
+          <nav aria-label={t('landing.footerNav')} className="flex items-center gap-4 text-xs sm:text-sm text-muted-foreground">
             <Link to="/terms" className="hover:text-foreground hover:underline underline-offset-4 transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 rounded">
               {t('landing.termsOfUse')}
             </Link>
             <Link to="/privacy" className="hover:text-foreground hover:underline underline-offset-4 transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 rounded">
               {t('landing.privacy')}
             </Link>
-          </div>
+          </nav>
         </div>
       </div>
     </footer>

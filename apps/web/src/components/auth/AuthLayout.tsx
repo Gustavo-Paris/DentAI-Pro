@@ -21,7 +21,7 @@ export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
   const { t } = useTranslation();
 
   return (
-    <main className="min-h-screen bg-background flex">
+    <main id="main-content" className="min-h-screen bg-background flex">
       {/* Brand panel — desktop only */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden grain-overlay bg-background" aria-hidden="true">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_rgb(var(--color-primary-rgb)/0.08),_transparent_60%)]" />
@@ -89,7 +89,7 @@ export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
       </div>
 
       {/* Form panel */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-8 dark:bg-gradient-to-b dark:from-card/50 dark:to-background">
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-8 overflow-y-auto dark:bg-gradient-to-b dark:from-card/50 dark:to-background">
         <div className="w-full max-w-sm">
           <div className="text-center mb-6 sm:mb-8">
             <Link to="/" className="lg:hidden animate-[fade-in-up_0.6s_ease-out_0.2s_both]">

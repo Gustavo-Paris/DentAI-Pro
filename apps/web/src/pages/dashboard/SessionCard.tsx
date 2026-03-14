@@ -69,7 +69,7 @@ export function SessionCard({ session }: { session: Pick<DashboardSession, 'sess
               </p>
               {session.hasDSD && (
                 <>
-                  <span className="text-muted-foreground/40">·</span>
+                  <span className="text-muted-foreground/60">·</span>
                   <Badge variant="outline" className={`text-xs px-1.5 gap-1 ${DSD_BADGE_CLASS}`}>
                     <Smile className="w-2.5 h-2.5" aria-hidden="true" />
                     DSD
@@ -78,7 +78,7 @@ export function SessionCard({ session }: { session: Pick<DashboardSession, 'sess
               )}
               {session.treatmentTypes.length > 0 && (
                 <>
-                  <span className="text-muted-foreground/40">·</span>
+                  <span className="text-muted-foreground/60">·</span>
                   <div className="flex gap-1.5 flex-wrap">
                     {session.treatmentTypes.map(type => {
                       const config = getTreatmentConfig(type);
@@ -111,7 +111,7 @@ export function SessionCard({ session }: { session: Pick<DashboardSession, 'sess
             <span className="sm:hidden">
               {formatDayMonthNumeric(new Date(session.created_at))}
             </span>
-            <ChevronRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-muted-foreground group-hover:translate-x-0.5 transition-all" aria-hidden="true" />
+            <ChevronRight className="w-4 h-4 text-muted-foreground/60 group-hover:text-muted-foreground group-hover:translate-x-0.5 transition-all" aria-hidden="true" />
           </div>
         </div>
         <div className="mt-2 h-1 rounded-full bg-secondary overflow-hidden" role="progressbar" aria-valuenow={Math.round(progressPercent)} aria-valuemin={0} aria-valuemax={100} aria-label={t('evaluation.progress')}>

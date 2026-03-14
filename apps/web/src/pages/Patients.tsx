@@ -99,7 +99,7 @@ const PatientCard = memo(function PatientCard({
               )}
               {patient.lastVisit && (
                 <>
-                  <span className="text-muted-foreground/40 hidden sm:inline">·</span>
+                  <span className="text-muted-foreground/60 hidden sm:inline">·</span>
                   <span className="hidden sm:inline">
                     {t('patients.lastVisit')}: {format(new Date(patient.lastVisit), getDateFormat('short'), { locale: getDateLocale() })}
                   </span>
@@ -109,7 +109,7 @@ const PatientCard = memo(function PatientCard({
           </div>
 
           {/* Chevron */}
-          <ChevronRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-muted-foreground group-hover:translate-x-0.5 transition-all shrink-0" aria-hidden="true" />
+          <ChevronRight className="w-4 h-4 text-muted-foreground/60 group-hover:text-muted-foreground group-hover:translate-x-0.5 transition-all shrink-0" aria-hidden="true" />
         </div>
       </Card>
     </Link>

@@ -273,7 +273,7 @@ export default function Register() {
 
       <p className="text-center text-sm text-muted-foreground mt-6">
         {t('auth.hasAccount')}{' '}
-        <Link to="/login" className="text-foreground underline underline-offset-4">
+        <Link to="/login" className="text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors duration-200">
           {t('auth.login')}
         </Link>
       </p>

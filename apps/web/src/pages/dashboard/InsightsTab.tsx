@@ -324,7 +324,7 @@ export function InsightsTab({
   if (!loading && !clinicalInsights && weeklyTrends.length === 0) {
     return (
       <Card className="p-8 sm:p-10 text-center">
-        <BarChart3 className="w-10 h-10 mx-auto text-muted-foreground/40 mb-3" />
+        <BarChart3 className="w-10 h-10 mx-auto text-muted-foreground/60 mb-3" />
         <p className="font-medium font-display text-sm mb-1">{t('dashboard.insights.noData')}</p>
         <p className="text-xs text-muted-foreground">
           {t('dashboard.insights.noDataDescription')}

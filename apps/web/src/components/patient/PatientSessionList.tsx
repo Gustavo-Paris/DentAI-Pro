@@ -110,7 +110,7 @@ export function PatientSessionList({
                         {isCompleted ? t('patients.completedStatus') : t('patients.inProgressStatus')}
                       </Badge>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-muted-foreground group-hover:translate-x-0.5 transition-all" aria-hidden="true" />
+                    <ChevronRight className="w-4 h-4 text-muted-foreground/60 group-hover:text-muted-foreground group-hover:translate-x-0.5 transition-all" aria-hidden="true" />
                   </div>
 
                   <div className="flex items-center gap-4">

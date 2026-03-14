@@ -158,7 +158,7 @@ export default function Login() {
             <div className="flex justify-end">
               <Link
                 to="/forgot-password"
-                className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-4"
+                className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors duration-200"
               >
                 {t('auth.forgotPasswordLink')}
               </Link>

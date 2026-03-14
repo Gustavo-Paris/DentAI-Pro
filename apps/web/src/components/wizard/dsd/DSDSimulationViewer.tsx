@@ -244,7 +244,7 @@ export const DSDSimulationViewer = memo(function DSDSimulationViewer({
         <div className="flex flex-wrap gap-2" role="tablist" aria-label={t('components.wizard.dsd.simulationViewer.layerTabs')}>
           {layers.map((layer, idx) => (
             <button
-              key={layer.type}
+              key={`${layer.type}-${idx}`}
               role="tab"
               aria-selected={activeLayerIndex === idx}
               onClick={() => {

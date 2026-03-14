@@ -64,7 +64,7 @@ export function CreditUsageHistory() {
       <CardContent>
         {creditUsageHistory.length === 0 ? (
           <div className="py-8 text-center">
-            <History className="w-10 h-10 mx-auto text-muted-foreground/40 mb-3" />
+            <History className="w-10 h-10 mx-auto text-muted-foreground/60 mb-3" />
             <p className="text-sm font-medium text-muted-foreground">{t('components.pricing.creditUsage.noUsage')}</p>
             <p className="text-xs text-muted-foreground mt-1">
               {t('components.pricing.creditUsage.noUsageDesc')}

@@ -18,7 +18,7 @@ export function LandingStats() {
           ].map((stat, i) => (
             <div
               key={i}
-              className={`scroll-reveal scroll-reveal-delay-${i + 1} ${i > 0 ? 'sm:border-l sm:border-primary/30' : ''}`}
+              className={`scroll-reveal scroll-reveal-delay-${i + 1} ${i > 0 ? 'sm:border-l sm:border-border/50' : ''}`}
             >
               <p className="text-4xl sm:text-5xl md:text-6xl font-semibold font-display text-primary glow-stat">{stat.value}</p>
               <p className="text-xs sm:text-sm text-muted-foreground mt-1">{stat.label}</p>
