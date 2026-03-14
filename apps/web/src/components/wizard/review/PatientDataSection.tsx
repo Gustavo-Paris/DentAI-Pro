@@ -175,6 +175,12 @@ export function PatientDataSection({
               )}
             </div>
 
+            {dobError && (
+              <p className="text-xs text-destructive" role="alert">
+                {t('components.wizard.review.invalidBirthDate')}
+              </p>
+            )}
+
             {!patientBirthDate && !dobError && (
               <p className="text-xs text-muted-foreground">
                 {t('components.wizard.review.recommendedForPrecision')}

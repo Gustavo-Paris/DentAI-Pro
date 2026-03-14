@@ -1387,6 +1387,7 @@
         "birthDateLabel": "Date of birth (optional)",
         "birthDatePlaceholder": "MM/DD/YYYY",
         "yearsOld": "{{age}} years old",
+        "invalidBirthDate": "Invalid date. Enter a date in the past.",
         "recommendedForPrecision": "Recommended for more precise protocols",
         "addForAutoFill": "Add to auto-fill in future visits",
         "photoAndObs": "Photo & Observations",
