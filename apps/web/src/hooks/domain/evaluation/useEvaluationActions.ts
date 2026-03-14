@@ -5,9 +5,9 @@ import { evaluations, wizard } from '@/data';
 import { useTranslation } from 'react-i18next';
 import {
   dispatchTreatmentProtocol,
-  DEFAULT_CERAMIC_TYPE,
   evaluationClients,
 } from '@/lib/protocol-dispatch';
+import { buildResinParams, buildCementationParams } from '@/lib/protocol-params';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { trackEvent } from '@/lib/analytics';
@@ -156,9 +156,10 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
     if (!user || !sessionId) return;
     setIsSharing(true);
 
+    let shareUrl: string | undefined;
     try {
       const token = await evaluations.getOrCreateShareLink(sessionId, user.id);
-      const shareUrl = `${window.location.origin}/shared/${token}`;
+      shareUrl = `${window.location.origin}/shared/${token}`;
       await navigator.clipboard.writeText(shareUrl);
       trackEvent('evaluation_shared', { method: 'clipboard_link' });
       toast.success(t('toasts.evaluationDetail.linkCopied'), {
@@ -166,7 +167,15 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
       });
     } catch (error) {
       logger.error('Error sharing case:', error);
-      toast.error(t('toasts.evaluationDetail.shareError'));
+      // If we have the shareUrl, show it to the user even though clipboard failed
+      if (typeof shareUrl === 'string') {
+        toast.info(t('toasts.evaluationDetail.linkManualCopy'), {
+          description: shareUrl,
+          duration: 15000,
+        });
+      } else {
+        toast.error(t('toasts.evaluationDetail.shareError'));
+      }
     } finally {
       setIsSharing(false);
     }
@@ -254,7 +263,7 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
             evaluationId,
             tooth: evaluation.tooth,
             operationId,
-            resinParams: treatmentType === 'resina' ? {
+            resinParams: treatmentType === 'resina' ? buildResinParams({
               userId: user.id,
               patientAge: String(evaluation.patient_age),
               tooth: evaluation.tooth,
@@ -265,7 +274,6 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
               bruxism: evaluation.bruxism,
               aestheticLevel: evaluation.aesthetic_level,
               toothColor: evaluation.tooth_color,
-              stratificationNeeded: true,
               budget: evaluation.budget,
               longevityExpectation: evaluation.longevity_expectation,
               substrateCondition: evaluation.substrate_condition ?? undefined,
@@ -273,16 +281,15 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
               depth: evaluation.depth ?? undefined,
               aestheticGoals: resolveAestheticGoalsForAI(evaluation.patient_aesthetic_goals),
               anamnesis: evaluation.anamnesis ?? undefined,
-            } : undefined,
-            cementationParams: treatmentType === 'porcelana' ? {
-              teeth: [evaluation.tooth],
+            }) : undefined,
+            cementationParams: treatmentType === 'porcelana' ? buildCementationParams({
+              tooth: evaluation.tooth,
               shade: evaluation.tooth_color,
-              ceramicType: DEFAULT_CERAMIC_TYPE,
               substrate: evaluation.substrate || 'Esmalte e Dentina',
               substrateCondition: 'Saudável',
               aestheticGoals: resolveAestheticGoalsForAI(evaluation.patient_aesthetic_goals),
               anamnesis: evaluation.anamnesis ?? undefined,
-            } : undefined,
+            }) : undefined,
             genericToothData: { indication_reason: evaluation.ai_indication_reason },
           },
           evalClients,
@@ -357,7 +364,7 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
               evaluationId: evaluation.id,
               tooth: evaluation.tooth,
               operationId,
-              resinParams: regenTreatment === 'resina' ? {
+              resinParams: regenTreatment === 'resina' ? buildResinParams({
                 userId: user.id,
                 patientAge: String(evaluation.patient_age),
                 tooth: evaluation.tooth,
@@ -368,7 +375,6 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
                 bruxism: evaluation.bruxism,
                 aestheticLevel: newAestheticLevel,
                 toothColor: evaluation.tooth_color,
-                stratificationNeeded: true,
                 budget: newBudget,
                 longevityExpectation: evaluation.longevity_expectation,
                 aestheticGoals: resolveAestheticGoalsForAI(evaluation.patient_aesthetic_goals),
@@ -376,16 +382,15 @@ export function useEvaluationActions(deps: UseEvaluationActionsDeps): UseEvaluat
                 enamelCondition: evaluation.enamel_condition ?? undefined,
                 depth: evaluation.depth ?? undefined,
                 anamnesis: evaluation.anamnesis ?? undefined,
-              } : undefined,
-              cementationParams: regenTreatment === 'porcelana' ? {
-                teeth: [evaluation.tooth],
+              }) : undefined,
+              cementationParams: regenTreatment === 'porcelana' ? buildCementationParams({
+                tooth: evaluation.tooth,
                 shade: evaluation.tooth_color,
-                ceramicType: DEFAULT_CERAMIC_TYPE,
                 substrate: evaluation.substrate || 'Esmalte e Dentina',
                 substrateCondition: 'Saudável',
                 aestheticGoals: resolveAestheticGoalsForAI(evaluation.patient_aesthetic_goals),
                 anamnesis: evaluation.anamnesis ?? undefined,
-              } : undefined,
+              }) : undefined,
             },
             evalClients,
           );

@@ -63,7 +63,10 @@ export function parseAIResponse<T>(
 // 1. PhotoAnalysisResult (analyze-dental-photo)
 // ---------------------------------------------------------------------------
 
-const TreatmentIndicationSchema = z.string().optional();
+const TreatmentIndicationSchema = z.enum([
+  'resina', 'porcelana', 'gengivoplastia', 'implante', 'coroa',
+  'endodontia', 'encaminhamento', 'recobrimento_radicular',
+]).or(z.string()).optional();
 
 const ToothBoundsSchema = z
   .object({
@@ -126,11 +129,11 @@ const DSDSuggestionSchema = z
 
 export const DSDAnalysisSchema = z
   .object({
-    facial_midline: z.string(),
-    dental_midline: z.string(),
-    smile_line: z.string(),
-    buccal_corridor: z.string(),
-    occlusal_plane: z.string(),
+    facial_midline: z.enum(['centrada', 'desviada_esquerda', 'desviada_direita']).catch('centrada'),
+    dental_midline: z.enum(['alinhada', 'desviada_esquerda', 'desviada_direita']).catch('alinhada'),
+    smile_line: z.enum(['baixa', 'média', 'alta']).catch('média'),
+    buccal_corridor: z.enum(['adequado', 'excessivo', 'ausente']).catch('adequado'),
+    occlusal_plane: z.enum(['nivelado', 'inclinado_esquerda', 'inclinado_direita']).catch('nivelado'),
     // P2-55: Bounded numeric scores to prevent nonsensical AI values
     golden_ratio_compliance: z.number().min(0).max(100),
     symmetry_score: z.number().min(0).max(100),
@@ -147,13 +150,13 @@ export const DSDAnalysisSchema = z
     }),
     simulation_limitation: z.string().optional(),
     // Lip analysis
-    lip_thickness: z.string().optional(),
+    lip_thickness: z.enum(['fino', 'médio', 'volumoso']).catch('médio').optional(),
     // Overbite suspicion
-    overbite_suspicion: z.string().optional(),
+    overbite_suspicion: z.enum(['sim', 'não', 'indeterminado']).catch('indeterminado').optional(),
     // Visagism fields
     face_shape: z.string().optional(),
     perceived_temperament: z.string().optional(),
-    smile_arc: z.string().optional(),
+    smile_arc: z.enum(['consonante', 'plano', 'reverso']).catch('consonante').optional(),
     recommended_tooth_shape: z.string().optional(),
     visagism_notes: z.string().optional(),
   })

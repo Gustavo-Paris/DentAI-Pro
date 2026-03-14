@@ -161,7 +161,19 @@ Deno.serve(async (req) => {
     // Build prompt using prompt management module
     const promptDef = getPrompt('recommend-resin');
     // Read optional DSD context from request body
-    const dsdContext = (rawData as Record<string, unknown>).dsdContext as RecommendResinParams['dsdContext'] | undefined;
+    let dsdContext = (rawData as Record<string, unknown>).dsdContext as RecommendResinParams['dsdContext'] | undefined;
+
+    // Sanitize user-influenced text fields in dsdContext to prevent prompt injection
+    if (dsdContext) {
+      dsdContext = {
+        ...dsdContext,
+        currentIssue: sanitizeForPrompt(dsdContext.currentIssue),
+        proposedChange: sanitizeForPrompt(dsdContext.proposedChange),
+        observations: Array.isArray(dsdContext.observations)
+          ? dsdContext.observations.map((o: string) => sanitizeForPrompt(o))
+          : dsdContext.observations,
+      };
+    }
 
     // Read optional anamnesis from request body
     const rawAnamnesis = (rawData as Record<string, unknown>).anamnesis;

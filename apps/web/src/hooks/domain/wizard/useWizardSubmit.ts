@@ -23,10 +23,10 @@ import { inferCavityClass, getFullRegion, getToothData, getToothTreatment, norma
 
 import {
   dispatchTreatmentProtocol,
-  DEFAULT_CERAMIC_TYPE,
   type ProtocolDispatchClients,
   type GenericProtocolResult,
 } from '@/lib/protocol-dispatch';
+import { buildResinParams, buildCementationParams } from '@/lib/protocol-params';
 
 /** Type guard: checks whether an unknown caught error has a `context` Response property. */
 function hasContext(err: unknown): err is { context: Response } {
@@ -265,7 +265,7 @@ async function dispatchProtocolForTooth(
           evaluationId,
           tooth,
           operationId,
-          resinParams: normalizedTreatment === 'resina' ? {
+          resinParams: normalizedTreatment === 'resina' ? buildResinParams({
             userId: user.id,
             patientAge: formData.patientAge || '30',
             tooth,
@@ -276,7 +276,6 @@ async function dispatchProtocolForTooth(
             bruxism: formData.bruxism,
             aestheticLevel: formData.budget === 'premium' ? 'estético' : 'funcional',
             toothColor: formData.vitaShade,
-            stratificationNeeded: true,
             budget: formData.budget,
             longevityExpectation: formData.longevityExpectation,
             aestheticGoals:
@@ -285,11 +284,10 @@ async function dispatchProtocolForTooth(
                 : 'Paciente prefere aparência NATURAL (A1/A2). Manter tons naturais.',
             dsdContext,
             anamnesis: fullAnamnesis,
-          } : undefined,
-          cementationParams: normalizedTreatment === 'porcelana' ? {
-            teeth: [tooth],
+          }) : undefined,
+          cementationParams: normalizedTreatment === 'porcelana' ? buildCementationParams({
+            tooth,
             shade: formData.vitaShade,
-            ceramicType: DEFAULT_CERAMIC_TYPE,
             substrate: toothData?.substrate || formData.substrate,
             substrateCondition:
               toothData?.substrate_condition || formData.substrateCondition,
@@ -305,7 +303,7 @@ async function dispatchProtocolForTooth(
                   observations: dsdContext.observations,
                 }
               : undefined,
-          } : undefined,
+          }) : undefined,
           genericToothData: toothData,
           enrichGenericProtocol: normalizedTreatment === 'gengivoplastia'
             ? (protocol: GenericProtocolResult) => {

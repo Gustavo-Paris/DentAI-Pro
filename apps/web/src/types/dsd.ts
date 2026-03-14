@@ -142,7 +142,7 @@ export interface AdditionalPhotos {
   radiograph: string | null;
 }
 
-export type WhiteningLevel = 'natural' | 'hollywood';
+export type WhiteningLevel = 'natural' | 'white' | 'hollywood';
 
 export interface PatientPreferences {
   whiteningLevel: WhiteningLevel;

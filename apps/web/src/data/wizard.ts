@@ -262,6 +262,12 @@ const CEMENTATION_SYNC_FIELDS = [
   'cementation_protocol',
 ] as const;
 
+export interface SyncResult {
+  total: number;
+  synced: number;
+  failed: number;
+}
+
 /**
  * After parallel protocol generation, sync protocols within each treatment group
  * so all teeth of the same type share the same brand/protocol.
@@ -269,8 +275,8 @@ const CEMENTATION_SYNC_FIELDS = [
 export async function syncGroupProtocols(
   sessionId: string,
   evaluationIds: string[],
-) {
-  if (evaluationIds.length < 2) return;
+): Promise<SyncResult> {
+  if (evaluationIds.length < 2) return { total: 0, synced: 0, failed: 0 };
 
   const { data: evaluations, error } = await supabase
     .from('evaluations')
@@ -283,7 +289,7 @@ export async function syncGroupProtocols(
     .eq('session_id', sessionId)
     .in('id', evaluationIds);
 
-  if (error || !evaluations || evaluations.length < 2) return;
+  if (error || !evaluations || evaluations.length < 2) return { total: 0, synced: 0, failed: 0 };
 
   // Group by treatment_type
   const groups: Record<string, typeof evaluations> = {};
@@ -333,8 +339,10 @@ export async function syncGroupProtocols(
   }
 
   const results = await Promise.allSettled(updates);
-  const failures = results.filter(r => r.status === 'rejected');
-  if (failures.length > 0) {
-    logger.warn(`syncGroupProtocols: ${failures.length}/${results.length} updates failed`);
+  const failed = results.filter(r => r.status === 'rejected').length;
+  const synced = results.length - failed;
+  if (failed > 0) {
+    logger.warn(`syncGroupProtocols: ${failed}/${results.length} updates failed`);
   }
+  return { total: results.length, synced, failed };
 }

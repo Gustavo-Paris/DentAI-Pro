@@ -57,6 +57,9 @@ export interface ResinDispatchParams {
   anamnesis?: string;
   /** Stable operation ID for credit idempotency on retry */
   operationId?: string;
+  substrateCondition?: string;
+  enamelCondition?: string;
+  depth?: string;
 }
 
 /** Parameters for the cementation (porcelana) edge function call. */

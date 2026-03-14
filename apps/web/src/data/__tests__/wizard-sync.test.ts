@@ -676,10 +676,9 @@ describe('syncGroupProtocols', () => {
   it('tolerates DB query error without throwing', async () => {
     mockQueryError = new Error('connection lost');
 
-    // Should not throw — syncGroupProtocols returns early on error
-    await expect(
-      syncGroupProtocols('session-1', ['e1', 'e2']),
-    ).resolves.toBeUndefined();
+    // Should not throw — syncGroupProtocols returns early on error with zero counts
+    const result = await syncGroupProtocols('session-1', ['e1', 'e2']);
+    expect(result).toEqual({ total: 0, synced: 0, failed: 0 });
     expect(mockUpdate).not.toHaveBeenCalled();
   });
 });

@@ -1194,6 +1194,7 @@
       "linkCopied": "Link copiado!",
       "linkExpiry": "O link expira em 7 dias.",
       "shareError": "Erro ao gerar link de compartilhamento",
+      "linkManualCopy": "Copie o link manualmente:",
       "allSelectedCompleted": "Todos os casos selecionados já estão finalizados",
       "statusCompleted": "Finalizado",
       "statusPlanned": "Planejado",
