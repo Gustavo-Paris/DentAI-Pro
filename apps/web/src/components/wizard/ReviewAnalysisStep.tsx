@@ -188,7 +188,7 @@ export function ReviewAnalysisStep({
           {analysisResult && (
             <AnalysisWarnings analysisResult={analysisResult} />
           )}
-          {hasMultipleTeeth && (
+          {hasMultipleTeeth ? (
             <Suspense fallback={<ComponentSkeleton height="280px" />}>
               <ToothSelectionCard
                 analysisResult={analysisResult!}
@@ -200,6 +200,22 @@ export function ReviewAnalysisStep({
                 onRestoreAiSuggestion={onRestoreAiSuggestion}
               />
             </Suspense>
+          ) : detectedTeeth.length === 1 && (
+            <div className="glass-panel rounded-xl p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm">
+                  {detectedTeeth[0].tooth}
+                </div>
+                <div>
+                  <p className="text-sm font-medium">
+                    {t('components.wizard.review.archTooth', { toothId: detectedTeeth[0].tooth })}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {detectedTeeth[0].cavity_class} &middot; {t(`treatments.${toothTreatments[detectedTeeth[0].tooth] || detectedTeeth[0].treatment_indication || 'resina'}.label`)}
+                  </p>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       )}

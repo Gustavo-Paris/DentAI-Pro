@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { Button, Badge, StepIndicator } from '@parisgroup-ai/pageshell/primitives';
@@ -183,8 +182,6 @@ export default function NewCase() {
   useDocumentTitle(t('pageTitle.newCase'));
   const wizard = useWizardFlow();
   const disclaimer = useAiDisclaimer();
-  const navigate = useNavigate();
-
   const stepContentRef = useRef<HTMLDivElement>(null);
 
   // Track wizard_started on mount
@@ -361,7 +358,7 @@ export default function NewCase() {
                     {wizard.step === 5 && (
                       wizard.isSampleCase ? (
                         <Button
-                          onClick={() => navigate('/new-case')}
+                          onClick={() => { window.location.href = '/new-case'; }}
                           className="w-full sm:w-auto btn-glow btn-press font-semibold"
                         >
                           <Sparkles className="w-4 h-4 mr-2" />

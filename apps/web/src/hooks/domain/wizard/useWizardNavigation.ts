@@ -59,8 +59,12 @@ export function useWizardNavigation({
   }, [step]);
 
   const goToStep = useCallback((targetStep: number) => {
+    if (targetStep < 1 || targetStep === step) return;
     // Only allow jumping to completed steps (past steps < current)
-    if (targetStep >= step || targetStep < 1) return;
+    if (targetStep >= step) {
+      toast.info(t('toasts.wizard.completeCurrentStep'));
+      return;
+    }
     // Allow going back from result (step 6) to review (step 5) only
     if (step === 6 && targetStep !== 5) return;
     // Step 3 is auto-processing — redirect to step 2 (or step 1 for quick case)
@@ -71,7 +75,7 @@ export function useWizardNavigation({
     // Quick case: skip steps 2 (preferences) and 4 (DSD)
     if (isQuickCase && (targetStep === 2 || targetStep === 4)) return;
     setStep(targetStep);
-  }, [step, isQuickCase]);
+  }, [step, isQuickCase, t]);
 
   const goToPreferences = useCallback(async () => {
     setIsQuickCase(false);
@@ -92,7 +96,7 @@ export function useWizardNavigation({
 
     fullFlowCreditsConfirmedRef.current = true;
     setStep(2);
-  }, [getCreditCost, creditsRemaining, navigate, confirmCreditUse]);
+  }, [getCreditCost, creditsRemaining, navigate, confirmCreditUse, t]);
 
   const goToQuickCase = useCallback(() => {
     setIsQuickCase(true);
@@ -144,7 +148,7 @@ export function useWizardNavigation({
     setIsAnalyzing(false);
     setStep(5);
     toast.info(t('toasts.wizard.manualEntry'));
-  }, [setAnalysisError, setIsAnalyzing]);
+  }, [setAnalysisError, setIsAnalyzing, t]);
 
   const cancelAnalysis = useCallback(() => {
     analysisAbortedRef.current = true;
@@ -160,7 +164,7 @@ export function useWizardNavigation({
       setStep(2);
     }
     toast.info(t('toasts.wizard.analysisCanceled'));
-  }, [isQuickCase, analysisAbortedRef, setIsAnalyzing, setAnalysisError, abortAnalysis]);
+  }, [isQuickCase, analysisAbortedRef, setIsAnalyzing, setAnalysisError, abortAnalysis, t]);
 
   return {
     step,

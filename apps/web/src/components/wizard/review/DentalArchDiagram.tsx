@@ -134,7 +134,7 @@ export const DentalArchDiagram = memo(function DentalArchDiagram({
         role="checkbox"
         aria-checked={isSelected}
         aria-label={t('components.wizard.review.archTooth', {
-          number: toothId,
+          toothId,
           defaultValue: `Dente ${toothId}`,
         })}
         tabIndex={0}
@@ -268,7 +268,7 @@ export const DentalArchDiagram = memo(function DentalArchDiagram({
 
           // Build tooltip lines
           const line1 = t('components.wizard.review.archTooth', {
-            number: hoveredTooth,
+            toothId: hoveredTooth,
             defaultValue: `Dente ${hoveredTooth}`,
           });
           const line2 = treatmentLabel || undefined;

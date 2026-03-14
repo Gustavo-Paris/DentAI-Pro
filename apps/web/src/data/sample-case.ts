@@ -12,7 +12,7 @@ import type {
 
 export const SAMPLE_ANALYSIS: PhotoAnalysisResult = {
   detected: true,
-  confidence: 0.92,
+  confidence: 92,
   detected_teeth: [
     {
       tooth: '21',

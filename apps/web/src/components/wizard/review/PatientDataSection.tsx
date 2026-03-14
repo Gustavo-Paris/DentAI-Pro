@@ -114,6 +114,12 @@ export function PatientDataSection({
                         handleBirthDateChange(isoDate);
                         const age = calculateAge(isoDate);
                         onFormChange({ patientAge: String(age) });
+                      } else if (
+                        date.getDate() === day &&
+                        date.getMonth() === month - 1 &&
+                        date.getFullYear() === year
+                      ) {
+                        setDobError(true);
                       }
                     }
                   }}
